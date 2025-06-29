@@ -1,13 +1,14 @@
+mod components;
 mod plugins;
 
 use bevy::prelude::*;
-use plugins::{menu, table};
+use plugins::{game, menu};
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-enum GameState {
+enum WorldState {
     #[default]
     Menu, // 主菜单
-    Table, // 21点游戏桌面
+    Game, // 21点游戏
 }
 
 fn main() {
@@ -23,9 +24,9 @@ fn main() {
             }),
             ..default()
         }))
-        .init_state::<GameState>()
+        .init_state::<WorldState>()
         .add_systems(Startup, setup)
-        .add_plugins((menu::menu_plugin, table::table_plugin))
+        .add_plugins((menu::menu_plugin, game::game_plugin))
         .run();
 }
 
@@ -35,6 +36,7 @@ fn setup(mut commands: Commands) {
 
 fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
     for entity in &to_despawn {
+        println!("despawn: {:?}", entity);
         commands.entity(entity).despawn();
     }
 }

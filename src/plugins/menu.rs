@@ -1,4 +1,4 @@
-use crate::{GameState, despawn_screen};
+use crate::{WorldState, despawn_screen};
 use bevy::prelude::*;
 
 const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
@@ -7,17 +7,17 @@ const BACKGROUND_COLOR: Color = Color::srgb(0.0, 0.3, 0.4);
 
 // This plugin will display a splash screen with Bevy logo for 1 second before switching to the menu
 pub fn menu_plugin(app: &mut App) {
-    // As this plugin is managing the splash screen, it will focus on the state `GameState::Splash`
+    // As this plugin is managing the splash screen, it will focus on the state `WorldState::Splash`
     app
-        // Current screen in the menu is handled by an independent state from `GameState`
+        // Current screen in the menu is handled by an independent state from `WorldState`
         .init_state::<MenuState>()
         // When entering the state, spawn everything needed for this screen
-        .add_systems(OnEnter(GameState::Menu), setup)
+        .add_systems(OnEnter(WorldState::Menu), setup)
         // While in this state, run the `countdown` system
-        // .add_systems(Update, countdown.run_if(in_state(GameState::Splash)))
-        .add_systems(Update, menu_action.run_if(in_state(GameState::Menu)))
+        // .add_systems(Update, countdown.run_if(in_state(WorldState::Splash)))
+        .add_systems(Update, menu_action.run_if(in_state(WorldState::Menu)))
         // When exiting the state, despawn everything that was spawned for this screen
-        .add_systems(OnExit(GameState::Menu), despawn_screen::<OnMenuScreen>);
+        .add_systems(OnExit(WorldState::Menu), despawn_screen::<OnMenuScreen>);
 }
 
 #[derive(Component)]
@@ -33,16 +33,15 @@ enum MenuButtonAction {
 // State used for the current menu screen
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 enum MenuState {
-    Main,
-    Settings,
-    SettingsDisplay,
-    SettingsSound,
+    // Main,
+    // Settings,
+    // SettingsDisplay,
+    // SettingsSound,
     #[default]
     Disabled,
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // let icon = asset_server.load("fxkt_logo.png");
     let default_font = asset_server.load("fonts/WenCangShuFang-2.ttf");
     let button_node = Node {
         width: Val::Px(300.0),
@@ -104,7 +103,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ),
         ],
     ));
-    commands.spawn(AudioPlayer::new(asset_server.load("sounds/menu_bgm.ogg")));
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("sounds/menu_bgm.ogg")),
+        OnMenuScreen,
+    ));
 }
 
 fn menu_action(
@@ -114,7 +116,7 @@ fn menu_action(
     >,
     mut app_exit_events: EventWriter<AppExit>,
     mut menu_state: ResMut<NextState<MenuState>>,
-    mut game_state: ResMut<NextState<GameState>>,
+    mut world_state: ResMut<NextState<WorldState>>,
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -123,7 +125,7 @@ fn menu_action(
                     app_exit_events.write(AppExit::Success);
                 }
                 MenuButtonAction::Play => {
-                    game_state.set(GameState::Table);
+                    world_state.set(WorldState::Game);
                     menu_state.set(MenuState::Disabled);
                 }
             }
