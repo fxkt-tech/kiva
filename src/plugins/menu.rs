@@ -5,19 +5,22 @@ const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
 const RED_COLOR: Color = Color::srgb(1.0, 0.0, 0.0);
 const BACKGROUND_COLOR: Color = Color::srgb(0.0, 0.3, 0.4);
 
-// This plugin will display a splash screen with Bevy logo for 1 second before switching to the menu
-pub fn menu_plugin(app: &mut App) {
-    // As this plugin is managing the splash screen, it will focus on the state `WorldState::Splash`
-    app
-        // Current screen in the menu is handled by an independent state from `WorldState`
-        .init_state::<MenuState>()
-        // When entering the state, spawn everything needed for this screen
-        .add_systems(OnEnter(WorldState::Menu), setup)
-        // While in this state, run the `countdown` system
-        // .add_systems(Update, countdown.run_if(in_state(WorldState::Splash)))
-        .add_systems(Update, menu_action.run_if(in_state(WorldState::Menu)))
-        // When exiting the state, despawn everything that was spawned for this screen
-        .add_systems(OnExit(WorldState::Menu), despawn_screen::<OnMenuScreen>);
+/// This plugin handles the menu interface
+pub struct MenuPlugin;
+
+impl Plugin for MenuPlugin {
+    fn build(&self, app: &mut App) {
+        // As this plugin is managing the menu screen, it will focus on the state `WorldState::Menu`
+        app
+            // Current screen in the menu is handled by an independent state from `WorldState`
+            .init_state::<MenuState>()
+            // When entering the state, spawn everything needed for this screen
+            .add_systems(OnEnter(WorldState::Menu), setup)
+            // While in this state, run the menu systems
+            .add_systems(Update, menu_action.run_if(in_state(WorldState::Menu)))
+            // When exiting the state, despawn everything that was spawned for this screen
+            .add_systems(OnExit(WorldState::Menu), despawn_screen::<OnMenuScreen>);
+    }
 }
 
 #[derive(Component)]

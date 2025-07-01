@@ -2,7 +2,7 @@ mod components;
 mod plugins;
 
 use bevy::prelude::*;
-use plugins::{game, menu};
+use plugins::KivaPlugins;
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 enum WorldState {
@@ -26,7 +26,7 @@ fn main() {
         }))
         .init_state::<WorldState>()
         .add_systems(Startup, setup)
-        .add_plugins((menu::menu_plugin, game::game_plugin))
+        .add_plugins(KivaPlugins)
         .run();
 }
 

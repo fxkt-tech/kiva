@@ -9,20 +9,23 @@ const TABLE_COLOR: Color = Color::srgb(0.05, 0.4, 0.3);
 const HALF_TABLE_COLOR: Color = Color::srgba(1.0, 0.4, 0.3, 0.5);
 const BTN_TEXT_COLOR: Color = Color::srgb(0.8, 0.8, 0.8);
 
-// This plugin will display a splash screen with Bevy logo for 1 second before switching to the menu
-pub fn game_plugin(app: &mut App) {
-    // As this plugin is managing the splash screen, it will focus on the state `::Splash`
-    app
-        // Current screen in the menu is handled by an independent state from ``
-        .init_state::<GameState>()
-        .insert_resource(Room::new())
-        // When entering the state, spawn everything needed for this screen
-        .add_systems(OnEnter(WorldState::Game), setup)
-        // While in this state, run the `countdown` system
-        // .add_systems(Update, countdown.run_if(in_state(WorldState::Splash)))
-        .add_systems(Update, player_action.run_if(in_state(WorldState::Game)))
-        // When exiting the state, despawn everything that was spawned for this screen
-        .add_systems(OnExit(WorldState::Game), cleanup_game);
+/// This plugin handles the game world and its states
+pub struct GamePlugin;
+
+impl Plugin for GamePlugin {
+    fn build(&self, app: &mut App) {
+        // As this plugin is managing the game screen, it will focus on the state `WorldState::Game`
+        app
+            // Current screen in the menu is handled by an independent state from ``
+            .init_state::<GameState>()
+            .insert_resource(Room::new())
+            // When entering the state, spawn everything needed for this screen
+            .add_systems(OnEnter(WorldState::Game), setup)
+            // While in this state, run the game systems
+            .add_systems(Update, player_action.run_if(in_state(WorldState::Game)))
+            // When exiting the state, despawn everything that was spawned for this screen
+            .add_systems(OnExit(WorldState::Game), cleanup_game);
+    }
 }
 
 #[derive(Resource, Clone)]
@@ -80,7 +83,6 @@ enum GameState {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut room: ResMut<Room>) {
-    println!("init game setup");
     let default_font = asset_server.load("fonts/WenCangShuFang-2.ttf");
     let table_node = Node {
         flex_direction: FlexDirection::Column,
