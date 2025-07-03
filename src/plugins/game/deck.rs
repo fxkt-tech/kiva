@@ -20,12 +20,11 @@ impl Card {
 // 卡组
 #[derive(Component, Clone)]
 pub struct Deck {
-    cards: Vec<Card>,
+    pub cards: Vec<Card>,
 }
 
-// 牌桌
-impl Deck {
-    pub fn new() -> Self {
+impl Default for Deck {
+    fn default() -> Self {
         let mut cards = Vec::new();
         for rank in 1..=11 {
             cards.push(Card { rank, entity: None });
@@ -35,9 +34,11 @@ impl Deck {
         cards.shuffle(&mut rng);
         Deck { cards }
     }
+}
 
+impl Deck {
     // 抽卡。需要考虑卡组是否为空
-    pub fn draw(&mut self) -> Option<Card> {
+    pub fn pop(&mut self) -> Option<Card> {
         self.cards.pop()
     }
 

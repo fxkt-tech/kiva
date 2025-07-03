@@ -1,7 +1,7 @@
 pub mod game;
 pub mod menu;
 
-pub use game::GamePlugin;
+pub use game::core::GamePlugin;
 pub use menu::MenuPlugin;
 
 use bevy::prelude::*;

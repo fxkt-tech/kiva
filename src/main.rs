@@ -1,4 +1,3 @@
-mod components;
 mod plugins;
 
 use bevy::prelude::*;
