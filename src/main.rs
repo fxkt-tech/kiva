@@ -7,14 +7,15 @@ use plugins::KivaPlugins;
 enum WorldState {
     #[default]
     Menu, // 主菜单
-    Game, // 21点游戏
+    Game,   // 21点（使用ui实现）
+    Game2D, // 21点（使用2d实现）
 }
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                title: "四方诛杀 v0.1.0".into(),
+                title: "21点 v0.1.0".into(),
                 resolution: (1280., 720.).into(),
                 resizable: false,
                 decorations: true,

@@ -1,7 +1,9 @@
 pub mod game;
+// pub mod game2d;
 pub mod menu;
 
 pub use game::core::GamePlugin;
+// pub use game2d::core::Game2dPlugin;
 pub use menu::MenuPlugin;
 
 use bevy::prelude::*;
@@ -13,7 +15,8 @@ pub struct KivaPlugins;
 impl PluginGroup for KivaPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
         bevy::app::PluginGroupBuilder::start::<Self>()
-            .add(GamePlugin)
             .add(MenuPlugin)
+            .add(GamePlugin)
+        // .add(Game2dPlugin)
     }
 }

@@ -1,4 +1,10 @@
-use crate::{WorldState, plugins::game::room::Room};
+use crate::{
+    WorldState,
+    plugins::game::{
+        node::{create_card_font, create_card_node},
+        room::Room,
+    },
+};
 use bevy::prelude::*;
 
 const TEXT_COLOR: Color = Color::srgb(0.4, 0.4, 0.4);
@@ -84,14 +90,7 @@ fn player_action(
                     if let Some(mut new_card) = room.deck.pop() {
                         let p = room.current_turn_player();
                         if let Some(entity) = p.entity {
-                            let card_node = Node {
-                                align_items: AlignItems::Center,
-                                justify_content: JustifyContent::Center,
-                                margin: UiRect::all(Val::Px(5.0)),
-                                width: Val::Percent(12.5),
-                                height: Val::Percent(90.0),
-                                ..default()
-                            };
+                            let card_node = create_card_node();
                             commands.entity(entity).with_children(|parent| {
                                 let card_entity = parent
                                     .spawn((
@@ -114,12 +113,12 @@ fn player_action(
                         }
                         p.give_me(new_card);
                         room.set_current_player_stand(false);
-                        room.turn();
+                        room.its_my_turn();
                     }
                 }
                 PlayerAction::Stand => {
                     room.set_current_player_stand(true);
-                    room.turn();
+                    room.its_my_turn();
                 }
                 PlayerAction::Quit => {
                     world_state.set(WorldState::Menu);
@@ -127,10 +126,13 @@ fn player_action(
                 }
 
                 PlayerAction::Continue => {
+                    println!("PlayerAction::Continue");
                     // 删除游戏结束弹窗
                     for entity in popup_query.iter() {
                         commands.entity(entity).despawn();
                     }
+
+                    room.set_is_popping(false);
 
                     // 重置游戏状态，准备新一轮游戏
                     room.reset_game(&mut commands);
@@ -162,14 +164,7 @@ fn computer_auto_play(
         if let Some(mut new_card) = room.deck.pop() {
             let computer = room.current_turn_player();
             if let Some(entity) = computer.entity {
-                let card_node = Node {
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    margin: UiRect::all(Val::Px(5.0)),
-                    width: Val::Percent(12.5),
-                    height: Val::Percent(90.0),
-                    ..default()
-                };
+                let card_node = create_card_node();
                 commands.entity(entity).with_children(|parent| {
                     let card_entity = parent
                         .spawn((
@@ -196,7 +191,7 @@ fn computer_auto_play(
         // 电脑不要牌
         room.set_current_player_stand(true);
     }
-    room.turn();
+    room.its_my_turn();
 }
 
 // 准备桌子
@@ -341,30 +336,21 @@ fn operate_bar(commands: &mut Commands, asset_server: &Res<AssetServer>, room: &
 
 // 初始发牌
 fn deal_cards(commands: &mut Commands, asset_server: &Res<AssetServer>, room: &mut ResMut<Room>) {
-    let card_node = Node {
-        align_items: AlignItems::Center,
-        justify_content: JustifyContent::Center,
-        margin: UiRect::all(Val::Px(5.0)),
-        width: Val::Percent(12.5),
-        height: Val::Percent(90.0),
-        ..default()
-    };
+    if let Some(card) = room.deck.pop() {
+        room.player1.give_me(card);
+    }
+    if let Some(card) = room.deck.pop() {
+        room.player2.give_me(card);
+    }
+    if let Some(card) = room.deck.pop() {
+        room.player1.give_me(card);
+    }
+    if let Some(card) = room.deck.pop() {
+        room.player2.give_me(card);
+    }
 
-    let card_font = TextFont {
-        font: asset_server.load("fonts/WenCangShuFang-2.ttf"),
-        font_size: 80.0,
-        ..default()
-    };
-
-    let card1 = room.deck.pop().unwrap();
-    room.player1.give_me(card1);
-    let card2 = room.deck.pop().unwrap();
-    room.player2.give_me(card2);
-    let card3 = room.deck.pop().unwrap();
-    room.player1.give_me(card3);
-    let card4 = room.deck.pop().unwrap();
-    room.player2.give_me(card4);
-
+    let card_node = create_card_node();
+    let card_font = create_card_font(asset_server);
     if let Some(entity) = room.player1.entity {
         commands.entity(entity).with_children(|parent| {
             for card in room.player1.cards.iter_mut() {
@@ -383,7 +369,6 @@ fn deal_cards(commands: &mut Commands, asset_server: &Res<AssetServer>, room: &m
             }
         });
     }
-
     if let Some(entity) = room.player2.entity {
         commands.entity(entity).with_children(|parent| {
             for card in room.player2.cards.iter_mut() {
@@ -405,8 +390,8 @@ fn deal_cards(commands: &mut Commands, asset_server: &Res<AssetServer>, room: &m
 }
 
 // 游戏结束判定与结算
-fn check_game_over(mut commands: Commands, room: Res<Room>, asset_server: Res<AssetServer>) {
-    if !room.is_game_over() {
+fn check_game_over(mut commands: Commands, mut room: ResMut<Room>, asset_server: Res<AssetServer>) {
+    if !room.is_game_over() || room.is_popping {
         return;
     }
     let player_score = room.player1.get_score();
@@ -425,6 +410,8 @@ fn check_game_over(mut commands: Commands, room: Res<Room>, asset_server: Res<As
         "平局！"
     };
 
+    room.set_is_popping(true);
+
     let default_font = asset_server.load("fonts/WenCangShuFang-2.ttf");
     let button_node = Node {
         width: Val::Px(200.0),
@@ -435,17 +422,19 @@ fn check_game_over(mut commands: Commands, room: Res<Room>, asset_server: Res<As
         ..default()
     };
 
+    println!("pop");
+
     // 弹窗或文本显示结果
     commands.spawn((
         GameOverPopup,
         Node {
-            width: Val::Percent(50.0),
-            height: Val::Percent(50.0),
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
             ..default()
         },
-        BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.1)),
+        BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5)),
         OnGameScreen,
         children![(
             Node {

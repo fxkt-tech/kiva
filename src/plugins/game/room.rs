@@ -10,6 +10,7 @@ pub struct Room {
     my_turn: bool,
     pub player1_stand: bool,
     pub player2_stand: bool,
+    pub is_popping: bool,
 
     pub entity: Option<Entity>,
 }
@@ -24,6 +25,7 @@ impl Default for Room {
             player1_stand: false,
             player2_stand: false,
             entity: None,
+            is_popping: false,
         }
     }
 }
@@ -53,7 +55,12 @@ impl Room {
         (self.player1_stand && self.player2_stand) || self.deck.cards.is_empty()
     }
 
-    pub fn turn(&mut self) {
+    pub fn set_is_popping(&mut self, is_popping: bool) {
+        self.is_popping = is_popping;
+    }
+
+    // 该我的回合了！
+    pub fn its_my_turn(&mut self) {
         self.my_turn = !self.my_turn;
     }
 

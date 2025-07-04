@@ -12,7 +12,7 @@ pub struct Player {
 impl Default for Player {
     fn default() -> Self {
         Player {
-            cards: Vec::new(),
+            cards: vec![],
             entity: None,
         }
     }
@@ -29,12 +29,10 @@ impl Player {
         self.cards.iter().map(|c| c.get_rank()).sum()
     }
 
+    // 清除手牌
     pub fn clear_cards(&mut self, commands: &mut Commands) {
-        println!("clear_cards");
         for card in self.cards.iter() {
-            println!("card: {}", card.get_rank());
             if let Some(entity) = card.entity {
-                println!("despawn card: {:?}", entity);
                 commands.entity(entity).despawn();
             }
         }
@@ -46,7 +44,7 @@ impl Player {
         if let Some(entity) = self.entity {
             commands.entity(entity).despawn();
         }
-        self.cards = Vec::new();
+        self.cards.clear();
         self.entity = None;
     }
 }
