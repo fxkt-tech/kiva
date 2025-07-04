@@ -24,10 +24,21 @@ impl Player {
         self.cards.push(card);
     }
 
-    /// 计算手牌点数（21点规则，A算1或11，JQK算10，普通牌按点数）
+    /// 计算手牌点数
     pub fn get_score(&self) -> u8 {
-        // 这里只用1-11，直接累加
         self.cards.iter().map(|c| c.get_rank()).sum()
+    }
+
+    pub fn clear_cards(&mut self, commands: &mut Commands) {
+        println!("clear_cards");
+        for card in self.cards.iter() {
+            println!("card: {}", card.get_rank());
+            if let Some(entity) = card.entity {
+                println!("despawn card: {:?}", entity);
+                commands.entity(entity).despawn();
+            }
+        }
+        self.cards.clear();
     }
 
     // 离开房间

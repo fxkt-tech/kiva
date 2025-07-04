@@ -65,10 +65,9 @@ impl Room {
         self.player2_stand = false;
     }
 
-    pub fn reset_game(&mut self) {
-        // 清空玩家手牌但保留实体引用
-        self.player1.cards.clear();
-        self.player2.cards.clear();
+    pub fn reset_game(&mut self, commands: &mut Commands) {
+        self.player1.clear_cards(commands);
+        self.player2.clear_cards(commands);
 
         // 重置牌组
         self.deck.reset();

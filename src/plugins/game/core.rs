@@ -24,6 +24,10 @@ impl Plugin for GamePlugin {
                 Update,
                 computer_auto_play.run_if(in_state(WorldState::Game)),
             )
+            .add_systems(
+                Update,
+                update_score_display.run_if(in_state(WorldState::Game)),
+            )
             .add_systems(Update, check_game_over.run_if(in_state(WorldState::Game)))
             // When exiting the state, despawn everything that was spawned for this screen
             .add_systems(OnExit(WorldState::Game), cleanup_game);
@@ -55,7 +59,7 @@ struct GameOverPopup;
 
 fn setup(mut commands: Commands, mut room: ResMut<Room>, asset_server: Res<AssetServer>) {
     prepare_table(&mut commands, &mut room);
-    take_seat(&mut commands, &mut room);
+    take_seat(&mut commands, &mut room, &asset_server);
     operate_bar(&mut commands, &asset_server, &mut room);
     deal_cards(&mut commands, &asset_server, &mut room);
     commands.spawn((
@@ -79,7 +83,6 @@ fn player_action(
                 PlayerAction::Draw => {
                     if let Some(mut new_card) = room.deck.pop() {
                         let p = room.current_turn_player();
-                        p.give_me(new_card);
                         if let Some(entity) = p.entity {
                             let card_node = Node {
                                 align_items: AlignItems::Center,
@@ -109,6 +112,7 @@ fn player_action(
                                 new_card.entity = Some(card_entity);
                             });
                         }
+                        p.give_me(new_card);
                         room.set_current_player_stand(false);
                         room.turn();
                     }
@@ -129,20 +133,10 @@ fn player_action(
                     }
 
                     // 重置游戏状态，准备新一轮游戏
-                    room.reset_game();
+                    room.reset_game(&mut commands);
 
-                    // 重新发初始牌
-                    let card1 = room.deck.pop().unwrap();
-                    room.player1.give_me(card1);
-                    let card2 = room.deck.pop().unwrap();
-                    room.player2.give_me(card2);
-                    let card3 = room.deck.pop().unwrap();
-                    room.player1.give_me(card3);
-                    let card4 = room.deck.pop().unwrap();
-                    room.player2.give_me(card4);
-
-                    // 更新UI显示新牌
-                    // update_cards_ui(&mut commands, &asset_server, &mut room);
+                    // 发牌
+                    deal_cards(&mut commands, &asset_server, &mut room);
                 }
             }
         }
@@ -167,7 +161,6 @@ fn computer_auto_play(
         // 电脑要牌
         if let Some(mut new_card) = room.deck.pop() {
             let computer = room.current_turn_player();
-            computer.give_me(new_card);
             if let Some(entity) = computer.entity {
                 let card_node = Node {
                     align_items: AlignItems::Center,
@@ -196,6 +189,7 @@ fn computer_auto_play(
                     new_card.entity = Some(card_entity);
                 });
             }
+            computer.give_me(new_card);
             room.set_current_player_stand(false);
         }
     } else {
@@ -223,7 +217,7 @@ fn prepare_table(commands: &mut Commands, room: &mut ResMut<Room>) {
 }
 
 // 都给我 坐下！
-fn take_seat(commands: &mut Commands, room: &mut ResMut<Room>) {
+fn take_seat(commands: &mut Commands, room: &mut ResMut<Room>, asset_server: &Res<AssetServer>) {
     let half_table_node = Node {
         align_items: AlignItems::Center,
         justify_content: JustifyContent::Start,
@@ -238,6 +232,18 @@ fn take_seat(commands: &mut Commands, room: &mut ResMut<Room>) {
         commands.entity(entity).with_children(|parent| {
             let player2_entity = parent
                 .spawn((half_table_node.clone(), BackgroundColor(HALF_TABLE_COLOR)))
+                .with_children(|p| {
+                    p.spawn((
+                        Text::new("总和: 0"),
+                        TextFont {
+                            font: asset_server.load("fonts/WenCangShuFang-2.ttf"),
+                            font_size: 40.0,
+                            ..default()
+                        },
+                        TextColor(Color::srgb(0.0, 0.0, 0.0)), // 黑色
+                        Name::new("score_text_p2"),
+                    ));
+                })
                 .id();
             room.player2.entity = Some(player2_entity);
         });
@@ -246,12 +252,25 @@ fn take_seat(commands: &mut Commands, room: &mut ResMut<Room>) {
         commands.entity(entity).with_children(|parent| {
             let player1_entity = parent
                 .spawn((half_table_node.clone(), BackgroundColor(HALF_TABLE_COLOR)))
+                .with_children(|p| {
+                    p.spawn((
+                        Text::new("总和: 0"),
+                        TextFont {
+                            font: asset_server.load("fonts/WenCangShuFang-2.ttf"),
+                            font_size: 40.0,
+                            ..default()
+                        },
+                        TextColor(Color::srgb(0.0, 0.0, 0.0)), // 黑色
+                        Name::new("score_text_p1"),
+                    ));
+                })
                 .id();
             room.player1.entity = Some(player1_entity);
         });
     }
 }
 
+// 玩家操作栏
 fn operate_bar(commands: &mut Commands, asset_server: &Res<AssetServer>, room: &mut ResMut<Room>) {
     let oper_node = Node {
         align_items: AlignItems::Center,
@@ -346,13 +365,9 @@ fn deal_cards(commands: &mut Commands, asset_server: &Res<AssetServer>, room: &m
     let card4 = room.deck.pop().unwrap();
     room.player2.give_me(card4);
 
-    // Get cards from players to render in the UI
-    let mut player1_cards = room.player1.cards.clone();
-    let mut player2_cards = room.player2.cards.clone();
-
     if let Some(entity) = room.player1.entity {
         commands.entity(entity).with_children(|parent| {
-            for card in player1_cards.iter_mut() {
+            for card in room.player1.cards.iter_mut() {
                 let card_entity = parent
                     .spawn((
                         card_node.clone(),
@@ -371,7 +386,7 @@ fn deal_cards(commands: &mut Commands, asset_server: &Res<AssetServer>, room: &m
 
     if let Some(entity) = room.player2.entity {
         commands.entity(entity).with_children(|parent| {
-            for card in player2_cards.iter_mut() {
+            for card in room.player2.cards.iter_mut() {
                 let card_entity = parent
                     .spawn((
                         card_node.clone(),
@@ -424,13 +439,13 @@ fn check_game_over(mut commands: Commands, room: Res<Room>, asset_server: Res<As
     commands.spawn((
         GameOverPopup,
         Node {
-            width: Val::Percent(100.0),
-            height: Val::Percent(100.0),
+            width: Val::Percent(50.0),
+            height: Val::Percent(50.0),
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
             ..default()
         },
-        BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.7)),
+        BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.1)),
         OnGameScreen,
         children![(
             Node {
@@ -439,6 +454,7 @@ fn check_game_over(mut commands: Commands, room: Res<Room>, asset_server: Res<As
                 justify_content: JustifyContent::Center,
                 ..default()
             },
+            // BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5)),
             children![
                 (
                     Text::new(result),
@@ -478,5 +494,31 @@ fn cleanup_game(
         commands.entity(entity).try_despawn();
     }
     room.clear(commands);
-    // commands.remove_resource::<Room>();
+}
+
+// 更新分数显示系统
+fn update_score_display(
+    room: Res<Room>,
+    mut text_query: Query<(&mut Text, &mut TextColor, &Name)>,
+) {
+    let player1_score = room.player1.get_score();
+    let player2_score = room.player2.get_score();
+
+    for (mut text, mut text_color, name) in text_query.iter_mut() {
+        if name.as_str() == "score_text_p1" {
+            *text = Text::new(format!("{}/21", player1_score));
+            if player1_score > 21 {
+                text_color.0 = Color::srgb(1.0, 0.0, 0.0); // 红色
+            } else {
+                text_color.0 = Color::srgb(0.0, 0.0, 0.0); // 黑色
+            }
+        } else if name.as_str() == "score_text_p2" {
+            *text = Text::new(format!("{}/21", player2_score));
+            if player2_score > 21 {
+                text_color.0 = Color::srgb(1.0, 0.0, 0.0); // 红色
+            } else {
+                text_color.0 = Color::srgb(0.0, 0.0, 0.0); // 黑色
+            }
+        }
+    }
 }
