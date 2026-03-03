@@ -1,22 +1,19 @@
+mod game;
+mod net;
 mod plugins;
+mod states;
 
 use bevy::prelude::*;
+use bevy::window::WindowResolution;
 use plugins::KivaPlugins;
-
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-enum WorldState {
-    #[default]
-    Menu, // 主菜单
-    Game,   // 21点（使用ui实现）
-    Game2D, // 21点（使用2d实现）
-}
+use states::WorldState;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                title: "21点 v0.1.0".into(),
-                resolution: (1280., 720.).into(),
+                title: "四方诛杀 v0.2.0".into(),
+                resolution: WindowResolution::new(1280, 720),
                 resizable: false,
                 decorations: true,
                 position: WindowPosition::Centered(MonitorSelection::Primary),
@@ -34,9 +31,8 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 }
 
-fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
+pub fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
     for entity in &to_despawn {
-        println!("despawn: {:?}", entity);
         commands.entity(entity).despawn();
     }
 }

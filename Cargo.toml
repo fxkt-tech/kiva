@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = { version = "0.16", features = ["dynamic_linking", "file_watcher"] }
+bevy = { version = "0.18", features = ["dynamic_linking", "file_watcher"] }
 rand = "0.9.1"
+serde = { version = "1", features = ["derive"] }
+bincode = { version = "2", features = ["serde"] }
 
 
 # Enable a small amount of optimization in the dev profile.
