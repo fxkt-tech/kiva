@@ -23,7 +23,6 @@ impl Plugin for GamePlugin {
                 OnEnter(WorldState::Game),
                 (
                     setup_table,
-                    hud::spawn_hud,
                     actions::spawn_action_bar,
                     start_game_immediately,
                 )
