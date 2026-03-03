@@ -9,6 +9,10 @@ use bevy::prelude::*;
 use events::*;
 use room::{GamePhase, Room};
 
+/// 系统集合标签：逻辑层必须在此集合内运行完后，渲染层才能响应消息
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct GameLogicSet;
+
 pub struct GameLogicPlugin;
 
 impl Plugin for GameLogicPlugin {
@@ -21,7 +25,7 @@ impl Plugin for GameLogicPlugin {
             .add_message::<RoundReset>()
             .add_message::<GameAction>()
             .add_plugins(ai::AiPlugin)
-            .add_systems(Update, process_game_actions);
+            .add_systems(Update, process_game_actions.in_set(GameLogicSet));
     }
 }
 
@@ -85,13 +89,16 @@ fn process_game_actions(
             }
             GameAction::StartGame => {
                 room.reset_round();
-                // 初始每人发两张牌（轮流发）
                 let player_ids: Vec<u8> = room
                     .seats
                     .iter()
                     .enumerate()
                     .filter_map(|(idx, s)| s.as_ref().map(|_| idx as u8))
                     .collect();
+                // 先发出 RoundReset，让渲染层清除旧牌、重置计数，
+                // 再写 CardDealt，确保新牌生成时旧状态已清理
+                round_reset.write(RoundReset);
+                // 每人轮流发两张牌
                 for _ in 0..2 {
                     for &pid in &player_ids {
                         if let Some(card) = room.deck.pop() {
@@ -107,7 +114,6 @@ fn process_game_actions(
                 }
                 let first = room.first_occupied_seat() as u8;
                 turn_changed.write(TurnChanged { player_id: first });
-                round_reset.write(RoundReset);
             }
             GameAction::Quit => {
                 // 由渲染层处理 WorldState 切换，逻辑层不感知
