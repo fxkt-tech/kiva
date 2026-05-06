@@ -51,7 +51,6 @@ pub struct PlayerId(pub usize);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PlayerKind {
-    Human,
     Ai,
 }
 

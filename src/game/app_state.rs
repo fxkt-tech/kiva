@@ -2,14 +2,13 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 
-use crate::game::domain::{PlayerId, Role};
+use crate::game::domain::PlayerId;
 use crate::game::session::GameSession;
 
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum AppScreen {
     #[default]
     Start,
-    RoleReveal,
     Game,
     Review,
 }
@@ -92,7 +91,6 @@ pub struct FlowState {
     pub public_records: Vec<String>,
     pub my_clues: Vec<String>,
     pub winner: Option<String>,
-    pub human_role: Option<Role>,
 }
 
 impl Default for FlowState {
@@ -100,10 +98,9 @@ impl Default for FlowState {
         Self {
             day: 1,
             phase: FlowPhase::Night,
-            public_records: vec!["第 1 夜：游戏开始。".to_string()],
+            public_records: vec!["第 1 夜：9 名 AI 入座，观战开始。".to_string()],
             my_clues: Vec::new(),
             winner: None,
-            human_role: None,
         }
     }
 }

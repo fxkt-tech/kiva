@@ -29,13 +29,21 @@ pub fn generate_speech(session: &GameSession, actor: PlayerId, day: u32) -> Stri
         return "我先过。".to_string();
     };
 
-    match player.role {
-        Role::Werewolf => format!("{} 号：我觉得今天先听发言，不要太早定票。", actor.0),
-        Role::Seer => format!("{} 号：第 {day} 天我会重点看投票和站边。", actor.0),
-        Role::Witch => format!("{} 号：我先不跳身份，大家聊清楚怀疑点。", actor.0),
-        Role::Hunter => format!("{} 号：我会看谁在强行带节奏。", actor.0),
-        Role::Villager => format!("{} 号：目前信息还少，我先听后面发言。", actor.0),
-    }
+    let speech = match player.role {
+        Role::Werewolf => "今天先听发言，不要太早定票。".to_string(),
+        Role::Seer => format!("第 {day} 天我会重点看投票和站边。"),
+        Role::Witch => "我先不跳身份，大家把怀疑点聊清楚。".to_string(),
+        Role::Hunter => "我会看谁在强行带节奏。".to_string(),
+        Role::Villager => "目前信息还少，我先听后面的发言。".to_string(),
+    };
+
+    format!(
+        "{} 号 / {} / {}：{}",
+        actor.0,
+        player.name,
+        player.role.label(),
+        speech
+    )
 }
 
 #[cfg(test)]
@@ -46,7 +54,7 @@ mod tests {
 
     #[test]
     fn wolf_target_is_living_non_wolf() {
-        let session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let session = GameSession::new_with_roles(Role::nine_player_deck());
 
         let target = choose_wolf_target(&session, PlayerId(1)).unwrap();
 
@@ -57,7 +65,7 @@ mod tests {
 
     #[test]
     fn seer_target_is_living_and_unchecked() {
-        let session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let session = GameSession::new_with_roles(Role::nine_player_deck());
         let checked = vec![PlayerId(4), PlayerId(5)];
 
         let target = choose_seer_target(&session, &checked).unwrap();
@@ -68,7 +76,7 @@ mod tests {
 
     #[test]
     fn vote_target_is_living_and_not_self() {
-        let session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let session = GameSession::new_with_roles(Role::nine_player_deck());
 
         let target = choose_vote_target(&session, PlayerId(2)).unwrap();
 
@@ -78,12 +86,12 @@ mod tests {
 
     #[test]
     fn speech_does_not_reveal_hidden_roles_for_villager() {
-        let session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let session = GameSession::new_with_roles(Role::nine_player_deck());
 
         let speech = generate_speech(&session, PlayerId(9), 1);
 
         assert!(!speech.contains("1号是狼人"));
         assert!(!speech.contains("1 号是狼人"));
-        assert!(speech.contains("9 号"));
+        assert!(speech.contains("9 号 / AI-09 /"));
     }
 }

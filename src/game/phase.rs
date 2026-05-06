@@ -3,11 +3,9 @@
 pub enum GamePhase {
     /// 游戏开始阶段。
     Start,
-    /// 角色揭示或分发阶段。
-    RoleReveal,
     /// 指定轮次的夜晚阶段。
     Night(u32),
-    /// 指定轮次的黎明阶段。
+    /// 指定轮次的天亮阶段。
     Dawn(u32),
     /// 指定轮次的白天发言阶段。
     DaySpeech(u32),

@@ -12,7 +12,7 @@ pub struct GameSession {
 }
 
 impl GameSession {
-    pub fn new_with_roles(roles: Vec<Role>, human_seat: usize) -> Self {
+    pub fn new_with_roles(roles: Vec<Role>) -> Self {
         let players = roles
             .into_iter()
             .enumerate()
@@ -20,17 +20,9 @@ impl GameSession {
                 let seat = index + 1;
                 Player {
                     id: PlayerId(seat),
-                    name: if seat == 1 {
-                        "你".to_string()
-                    } else {
-                        format!("{seat} 号")
-                    },
+                    name: format!("AI-{seat:02}"),
                     role,
-                    kind: if seat == human_seat {
-                        PlayerKind::Human
-                    } else {
-                        PlayerKind::Ai
-                    },
+                    kind: PlayerKind::Ai,
                     alive: true,
                 }
             })
@@ -77,22 +69,22 @@ mod tests {
     use crate::game::domain::{PlayerKind, Role};
 
     #[test]
-    fn session_creates_nine_players_with_one_human() {
-        let session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+    fn session_creates_nine_ai_players() {
+        let session = GameSession::new_with_roles(Role::nine_player_deck());
         assert_eq!(session.players.len(), 9);
         assert_eq!(
             session
                 .players
                 .iter()
-                .filter(|player| player.kind == PlayerKind::Human)
+                .filter(|player| player.kind == PlayerKind::Ai)
                 .count(),
-            1
+            9
         );
     }
 
     #[test]
     fn good_wins_when_all_wolves_are_dead() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
         for player in &mut session.players {
             if player.role == Role::Werewolf {
                 player.alive = false;
@@ -103,7 +95,7 @@ mod tests {
 
     #[test]
     fn wolves_win_when_wolves_equal_good_count() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
         let mut living_good = 0;
         for player in &mut session.players {
             if player.role == Role::Werewolf {

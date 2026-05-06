@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn night_kill_kills_target_unless_witch_saves() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
 
         let killed = resolve_night(
             &mut session,
@@ -88,10 +88,13 @@ mod tests {
                 ..NightActions::default()
             },
         );
-        assert_eq!(killed.deaths, vec![Death::new(PlayerId(4), DeathReason::WolfKill)]);
+        assert_eq!(
+            killed.deaths,
+            vec![Death::new(PlayerId(4), DeathReason::WolfKill)]
+        );
         assert!(!session.player(PlayerId(4)).unwrap().alive);
 
-        let mut saved_session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let mut saved_session = GameSession::new_with_roles(Role::nine_player_deck());
         let saved = resolve_night(
             &mut saved_session,
             NightActions {
@@ -106,7 +109,7 @@ mod tests {
 
     #[test]
     fn seer_check_returns_target_camp() {
-        let session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let session = GameSession::new_with_roles(Role::nine_player_deck());
 
         assert_eq!(check_camp(&session, PlayerId(1)), Some(Camp::Werewolf));
         assert_eq!(check_camp(&session, PlayerId(4)), Some(Camp::Good));
@@ -114,7 +117,7 @@ mod tests {
 
     #[test]
     fn witch_poison_kills_target() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
 
         let result = resolve_night(
             &mut session,
@@ -124,7 +127,10 @@ mod tests {
             },
         );
 
-        assert_eq!(result.deaths, vec![Death::new(PlayerId(5), DeathReason::WitchPoison)]);
+        assert_eq!(
+            result.deaths,
+            vec![Death::new(PlayerId(5), DeathReason::WitchPoison)]
+        );
         assert!(!session.player(PlayerId(5)).unwrap().alive);
     }
 
@@ -137,7 +143,7 @@ mod tests {
 
     #[test]
     fn hunter_shot_kills_target() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
 
         let death = resolve_hunter_shot(&mut session, PlayerId(6));
 

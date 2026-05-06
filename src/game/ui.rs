@@ -1,27 +1,41 @@
 use bevy::{
+    ecs::hierarchy::ChildSpawnerCommands,
     input::keyboard::{Key, KeyboardInput},
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    picking::hover::HoverMap,
     prelude::*,
 };
+use bevy_ui_widgets::{ControlOrientation, CoreScrollbarThumb, Scrollbar};
 use rand::seq::SliceRandom;
 
 use crate::game::ai::{choose_vote_target, choose_wolf_target, generate_speech};
 use crate::game::app_state::{
-    AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction,
-    SelectedPlayer, SessionResource, TrustMark, WitchIntent,
+    AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
+    SessionResource, WitchIntent,
 };
-use crate::game::domain::{PlayerId, PlayerKind, Role};
-use crate::game::rules::{check_camp, resolve_hunter_shot, resolve_night, NightActions};
+use crate::game::domain::{Player, PlayerId, Role};
+use crate::game::rules::{
+    DeathReason, NightActions, check_camp, resolve_hunter_shot, resolve_night,
+};
 use crate::game::session::{GameSession, Winner};
 
-const NIGHT_BG: Color = Color::srgb(0.018, 0.024, 0.040);
-const PANEL_BG: Color = Color::srgb(0.042, 0.050, 0.074);
-const TABLE_WOOD: Color = Color::srgb(0.135, 0.074, 0.040);
-const TABLE_INNER: Color = Color::srgb(0.090, 0.050, 0.030);
-const GOLD: Color = Color::srgb(0.950, 0.760, 0.350);
-const WARM_TEXT: Color = Color::srgb(0.900, 0.875, 0.810);
-const MUTED_TEXT: Color = Color::srgb(0.640, 0.675, 0.730);
-const DANGER: Color = Color::srgb(0.760, 0.075, 0.070);
+const BG: Color = Color::srgb(0.018, 0.022, 0.030);
+const PANEL: Color = Color::srgb(0.045, 0.052, 0.067);
+const PANEL_DARK: Color = Color::srgb(0.030, 0.035, 0.047);
+const SURFACE: Color = Color::srgb(0.070, 0.079, 0.095);
+const GOLD: Color = Color::srgb(0.930, 0.730, 0.330);
+const RED: Color = Color::srgb(0.720, 0.110, 0.120);
+const BLUE: Color = Color::srgb(0.230, 0.570, 0.760);
+const GREEN: Color = Color::srgb(0.260, 0.680, 0.490);
+const TEXT: Color = Color::srgb(0.900, 0.885, 0.835);
+const MUTED: Color = Color::srgb(0.620, 0.655, 0.710);
+const DEAD_BG: Color = Color::srgb(0.050, 0.052, 0.056);
+const DEAD_SURFACE: Color = Color::srgb(0.078, 0.080, 0.085);
+const DEAD_BORDER: Color = Color::srgb(0.155, 0.158, 0.165);
+const DEAD_TEXT: Color = Color::srgb(0.455, 0.465, 0.485);
 const CHINESE_FONT: &str = "fonts/chinese/STHeiti-Medium.ttc";
+const LOG_BUBBLE_LIMIT: usize = 32;
+const SCROLL_LINE_HEIGHT: f32 = 21.0;
 
 #[derive(Resource, Clone)]
 pub struct UiAssets {
@@ -57,6 +71,13 @@ pub struct SeatButton {
     pub player: PlayerId,
 }
 
+#[derive(EntityEvent, Debug)]
+#[entity_event(propagate, auto_propagate)]
+pub struct UiScroll {
+    entity: Entity,
+    delta: Vec2,
+}
+
 pub fn spawn_camera(mut commands: Commands) {
     commands.spawn(Camera2d);
 }
@@ -75,55 +96,15 @@ pub fn spawn_start_screen(mut commands: Commands, assets: Res<UiAssets>) {
     commands.spawn((
         screen_root(),
         children![
-            text(&assets, "AI 狼人杀", 52.0, WARM_TEXT),
-            text(&assets, "黑夜圆桌 / 9 人局 / 单人对抗 8 名 AI", 24.0, Color::srgb(0.74, 0.76, 0.80)),
-            text(&assets, "3 狼人、预言家、女巫、猎人、3 村民", 22.0, GOLD),
-            action_button(&assets, "开始游戏", ButtonAction::StartGame),
-            text(&assets, "规则：狼人夜晚击杀，好人白天放逐，狼人全灭则好人胜。", 18.0, MUTED_TEXT),
-        ],
-    ));
-}
-
-pub fn spawn_role_reveal_screen(
-    mut commands: Commands,
-    mut session: ResMut<SessionResource>,
-    mut flow: ResMut<FlowState>,
-    assets: Res<UiAssets>,
-) {
-    if session.session.is_none() {
-        let mut roles = Role::nine_player_deck();
-        roles.shuffle(&mut rand::rng());
-        session.session = Some(GameSession::new_with_roles(roles, 1));
-    }
-
-    let session = session.session.as_ref().expect("session initialized");
-    let human = session
-        .players
-        .iter()
-        .find(|player| player.kind == PlayerKind::Human)
-        .expect("human player exists");
-    flow.human_role = Some(human.role);
-    let teammate_line = if human.role == Role::Werewolf {
-        let teammates = session
-            .players
-            .iter()
-            .filter(|player| player.role == Role::Werewolf && player.id != human.id)
-            .map(|player| player.name.as_str())
-            .collect::<Vec<_>>()
-            .join("、");
-        format!("狼队友：{teammates}")
-    } else {
-        "你的身份信息仅自己可见。".to_string()
-    };
-
-    commands.spawn((
-        screen_root(),
-        children![
-            text(&assets, "身份揭示", 44.0, WARM_TEXT),
-            text(&assets, format!("你是：{}", human.role.label()), 36.0, role_color(human.role)),
-            text(&assets, role_goal(human.role), 22.0, WARM_TEXT),
-            text(&assets, teammate_line, 20.0, MUTED_TEXT),
-            action_button(&assets, "入夜", ButtonAction::EnterNight),
+            text(&assets, "AI 狼人杀观战台", 50.0, TEXT),
+            text(&assets, "9 人局 / 9 个 AI / 观战视角", 24.0, MUTED),
+            text(
+                &assets,
+                "左侧玩家身份公开，右侧同步记录发言、夜晚与投票。",
+                20.0,
+                GOLD
+            ),
+            action_button(&assets, "开始观战", ButtonAction::StartGame),
         ],
     ));
 }
@@ -136,7 +117,14 @@ pub fn spawn_game_placeholder(
     assets: Res<UiAssets>,
     pending_input: Res<PendingInput>,
 ) {
-    spawn_game_screen(&mut commands, &session, &flow, &selected_player, &assets, &pending_input);
+    spawn_game_screen(
+        &mut commands,
+        &session,
+        &flow,
+        &selected_player,
+        &assets,
+        &pending_input,
+    );
 }
 
 pub fn redraw_game_screen(
@@ -157,7 +145,14 @@ pub fn redraw_game_screen(
     for root in &roots {
         commands.entity(root).despawn();
     }
-    spawn_game_screen(&mut commands, &session, &flow, &selected_player, &assets, &pending_input);
+    spawn_game_screen(
+        &mut commands,
+        &session,
+        &flow,
+        &selected_player,
+        &assets,
+        &pending_input,
+    );
     redraw.value = false;
 }
 
@@ -167,50 +162,20 @@ fn spawn_game_screen(
     flow: &FlowState,
     selected_player: &SelectedPlayer,
     assets: &UiAssets,
-    pending_input: &PendingInput,
+    _pending_input: &PendingInput,
 ) {
     let Some(session) = session.session.as_ref() else {
-        commands.spawn((screen_root(), children![text(&assets, "缺少对局数据", 32.0, Color::WHITE)]));
+        commands.spawn((
+            screen_root(),
+            children![text(assets, "缺少对局数据", 32.0, TEXT)],
+        ));
         return;
     };
 
     let alive = session.alive_players().count();
     let selected = selected_player.player;
-    let human_role = flow
-        .human_role
-        .or_else(|| session.player(PlayerId(1)).map(|player| player.role));
-    let (phase_label, judge_hint, action_title, action_detail) = match flow.phase {
-        FlowPhase::Night => (
-            "夜晚",
-            "法官：黑夜降临。按身份选择目标或直接继续。",
-            "继续到天亮",
-            night_action_hint(human_role),
-        ),
-        FlowPhase::DaySpeech => (
-            "白天发言",
-            "法官：所有存活玩家依次发言。",
-            "进入投票",
-            "系统会记录一轮默认发言并进入投票。",
-        ),
-        FlowPhase::Vote => (
-            "投票",
-            "法官：请选择或等待系统归票。",
-            "结算投票",
-            "系统会按 AI 投票放逐一名玩家。",
-        ),
-        FlowPhase::HunterShot => (
-            "猎人开枪",
-            "法官：猎人可以选择一名玩家带走。",
-            "不开枪",
-            "点击座位后选择开枪，或直接跳过。",
-        ),
-        FlowPhase::Review => (
-            "复盘",
-            "法官：本局已经结束。",
-            "查看复盘",
-            "揭示身份和关键记录。",
-        ),
-    };
+    let (phase_label, judge_hint) = phase_copy(flow.phase);
+
     commands
         .spawn((
             ScreenRoot,
@@ -222,79 +187,32 @@ fn spawn_game_screen(
                 row_gap: px(14),
                 ..default()
             },
-            BackgroundColor(Color::srgb(0.025, 0.032, 0.055)),
+            BackgroundColor(BG),
         ))
         .with_children(|root| {
             root.spawn(judge_bar(
-                &assets,
+                assets,
                 phase_label,
                 judge_hint,
                 &format!("存活 {alive}/9"),
             ));
-            root.spawn((
-                Node {
-                    width: percent(100),
-                    flex_grow: 1.0,
-                    column_gap: px(14),
-                    ..default()
-                },
-            ))
-            .with_children(|body| {
-                body.spawn((
-                    Node {
-                        width: percent(70),
-                        height: percent(100),
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        row_gap: px(18),
-                        ..default()
-                    },
-                    BackgroundColor(TABLE_WOOD),
-                ))
-                .with_children(|table_panel| {
-                    table_panel.spawn(text(&assets, "黑夜圆桌", 28.0, GOLD));
-                    table_panel
-                        .spawn((
-                            Node {
-                                width: px(620),
-                                height: px(420),
-                                display: Display::Grid,
-                                grid_template_columns: RepeatedGridTrack::flex(3, 1.0),
-                                grid_template_rows: RepeatedGridTrack::flex(3, 1.0),
-                                row_gap: px(14),
-                                column_gap: px(14),
-                                padding: UiRect::all(px(18)),
-                                ..default()
-                            },
-                            BackgroundColor(TABLE_INNER),
-                        ))
-                        .with_children(|grid| {
-                            for player in &session.players {
-                                grid.spawn(seat_button(
-                                    &assets,
-                                    player.id,
-                                    &player.name,
-                                    player.role,
-                                    player.alive,
-                                    player.kind == PlayerKind::Human,
-                                    selected == Some(player.id),
-                                ));
-                            }
-                        });
+
+            root.spawn((Node {
+                width: percent(100),
+                height: percent(100),
+                flex_grow: 1.0,
+                flex_shrink: 1.0,
+                column_gap: px(14),
+                overflow: Overflow::clip_y(),
+                ..default()
+            },))
+                .with_children(|body| {
+                    body.spawn(player_list(assets, &session.players, selected));
+                    body.spawn(observer_panel(assets, session, flow));
+                    spawn_log_panel(body, assets, &flow.public_records);
                 });
-                body.spawn(info_drawer(&assets, &flow.public_records, &flow.my_clues));
-            });
-            root.spawn(action_console(
-                &assets,
-                action_title,
-                action_detail,
-                ButtonAction::AdvanceFlow,
-                flow.phase,
-                human_role,
-                pending_input,
-                selected,
-            ));
+
+            root.spawn(observer_console(assets, flow.phase));
         });
 }
 
@@ -305,22 +223,29 @@ pub fn spawn_review_screen(
     assets: Res<UiAssets>,
 ) {
     let winner = flow.winner.as_deref().unwrap_or("未分出胜负");
-    commands
-        .spawn((screen_root(),))
-        .with_children(|root| {
-            root.spawn(text(&assets, "复盘", 44.0, Color::srgb(0.96, 0.91, 0.82)));
-            root.spawn(text(&assets, format!("结果：{winner}"), 30.0, GOLD));
-            if let Some(session) = session.session.as_ref() {
-                for player in &session.players {
-                    root.spawn(text(
-                        &assets,
-                        format!("{}：{}", player.name, player.role.label()),
-                        20.0,
-                        if player.role == Role::Werewolf { DANGER } else { WARM_TEXT },
-                    ));
-                }
+    commands.spawn((screen_root(),)).with_children(|root| {
+        root.spawn(text(&assets, "复盘", 44.0, TEXT));
+        root.spawn(text(&assets, format!("结果：{winner}"), 30.0, GOLD));
+        if let Some(session) = session.session.as_ref() {
+            for player in &session.players {
+                root.spawn(text(
+                    &assets,
+                    format!(
+                        "{}：{} / {}",
+                        player.name,
+                        player.role.label(),
+                        status_label(player.alive)
+                    ),
+                    20.0,
+                    if player.role == Role::Werewolf {
+                        RED
+                    } else {
+                        TEXT
+                    },
+                ));
             }
-        });
+        }
+    });
 }
 
 pub fn button_action_system(
@@ -338,30 +263,21 @@ pub fn button_action_system(
         }
 
         match action {
-            ButtonAction::StartGame => next_screen.set(AppScreen::RoleReveal),
-            ButtonAction::EnterNight => next_screen.set(AppScreen::Game),
-            ButtonAction::WitchSave => {
-                action_state.witch_intent = WitchIntent::Save;
-                redraw.value = true;
+            ButtonAction::StartGame => {
+                let mut roles = Role::nine_player_deck();
+                roles.shuffle(&mut rand::rng());
+                session.session = Some(GameSession::new_with_roles(roles));
+                *flow = FlowState::default();
+                *action_state = PlayerAction::default();
+                pending_input.text.clear();
+                next_screen.set(AppScreen::Game);
             }
-            ButtonAction::WitchPoison => {
-                action_state.witch_intent = WitchIntent::Poison;
-                redraw.value = true;
-            }
-            ButtonAction::WitchNoUse => {
-                action_state.selected_target = None;
-                action_state.witch_intent = WitchIntent::None;
-                redraw.value = true;
-            }
-            ButtonAction::HunterShoot => {
-                advance_hunter_shot(&mut session, &mut flow, &mut action_state, &mut next_screen);
-                redraw.value = true;
-            }
-            ButtonAction::HunterSkip => {
-                flow.phase = FlowPhase::Vote;
-                action_state.hunter_shot_pending = false;
-                redraw.value = true;
-            }
+            ButtonAction::EnterNight
+            | ButtonAction::WitchSave
+            | ButtonAction::WitchPoison
+            | ButtonAction::WitchNoUse
+            | ButtonAction::HunterShoot
+            | ButtonAction::HunterSkip => {}
             ButtonAction::AdvanceFlow => {
                 advance_flow(
                     &mut session,
@@ -381,10 +297,9 @@ pub fn text_input_system(
     mut ime_reader: MessageReader<Ime>,
     mut pending: ResMut<PendingInput>,
     screen: Res<State<AppScreen>>,
-    flow: Res<FlowState>,
     mut redraw: ResMut<NeedsGameRedraw>,
 ) {
-    if screen.get() != &AppScreen::Game || flow.phase != FlowPhase::DaySpeech {
+    if screen.get() != &AppScreen::Game {
         return;
     }
 
@@ -437,6 +352,73 @@ pub fn seat_selection_system(
     }
 }
 
+pub fn send_scroll_events(
+    mut mouse_wheel_reader: MessageReader<MouseWheel>,
+    hover_map: Res<HoverMap>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut commands: Commands,
+) {
+    for mouse_wheel in mouse_wheel_reader.read() {
+        let mut delta = -Vec2::new(mouse_wheel.x, mouse_wheel.y);
+
+        if mouse_wheel.unit == MouseScrollUnit::Line {
+            delta *= SCROLL_LINE_HEIGHT;
+        }
+
+        if keyboard_input.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight]) {
+            std::mem::swap(&mut delta.x, &mut delta.y);
+        }
+
+        for pointer_map in hover_map.values() {
+            for entity in pointer_map.keys().copied() {
+                commands.trigger(UiScroll { entity, delta });
+            }
+        }
+    }
+}
+
+pub fn on_scroll_handler(
+    mut scroll: On<UiScroll>,
+    mut query: Query<(&mut ScrollPosition, &Node, &ComputedNode)>,
+) {
+    let Ok((mut scroll_position, node, computed)) = query.get_mut(scroll.entity) else {
+        return;
+    };
+
+    let max_offset = (computed.content_size() - computed.size()) * computed.inverse_scale_factor();
+    let delta = &mut scroll.delta;
+
+    if node.overflow.x == OverflowAxis::Scroll && delta.x != 0.0 {
+        let at_limit = if delta.x > 0.0 {
+            scroll_position.x >= max_offset.x
+        } else {
+            scroll_position.x <= 0.0
+        };
+
+        if !at_limit {
+            scroll_position.x = (scroll_position.x + delta.x).clamp(0.0, max_offset.x.max(0.0));
+            delta.x = 0.0;
+        }
+    }
+
+    if node.overflow.y == OverflowAxis::Scroll && delta.y != 0.0 {
+        let at_limit = if delta.y > 0.0 {
+            scroll_position.y >= max_offset.y
+        } else {
+            scroll_position.y <= 0.0
+        };
+
+        if !at_limit {
+            scroll_position.y = (scroll_position.y + delta.y).clamp(0.0, max_offset.y.max(0.0));
+            delta.y = 0.0;
+        }
+    }
+
+    if *delta == Vec2::ZERO {
+        scroll.propagate(false);
+    }
+}
+
 fn screen_root() -> impl Bundle {
     (
         ScreenRoot,
@@ -450,7 +432,7 @@ fn screen_root() -> impl Bundle {
             padding: UiRect::all(px(32)),
             ..default()
         },
-        BackgroundColor(NIGHT_BG),
+        BackgroundColor(BG),
     )
 }
 
@@ -467,68 +449,577 @@ fn action_button(assets: &UiAssets, label: &'static str, action: ButtonAction) -
             ..default()
         },
         BorderColor::all(GOLD),
-        BackgroundColor(DANGER),
-        children![text(assets, label, 22.0, WARM_TEXT)],
+        BackgroundColor(RED),
+        children![text(assets, label, 22.0, TEXT)],
     )
 }
 
-fn seat_button(
-    assets: &UiAssets,
-    id: PlayerId,
-    name: &str,
-    role: Role,
-    alive: bool,
-    human: bool,
-    selected: bool,
-) -> impl Bundle {
-    let label = if human {
-        format!("{} 号\n{name}\n你 / {}", id.0, role.label())
-    } else {
-        format!("{} 号\n{name}\n{}", id.0, if alive { "存活" } else { "死亡" })
-    };
-    let background = if !alive {
-        Color::srgb(0.025, 0.028, 0.036)
-    } else if human {
-        Color::srgb(0.135, 0.105, 0.055)
+fn player_list(assets: &UiAssets, players: &[Player], selected: Option<PlayerId>) -> impl Bundle {
+    (
+        Node {
+            width: percent(27),
+            height: percent(100),
+            flex_direction: FlexDirection::Column,
+            row_gap: px(8),
+            padding: UiRect::all(px(12)),
+            ..default()
+        },
+        BackgroundColor(PANEL),
+        children![
+            text(assets, "玩家", 25.0, GOLD),
+            player_row(assets, &players[0], selected),
+            player_row(assets, &players[1], selected),
+            player_row(assets, &players[2], selected),
+            player_row(assets, &players[3], selected),
+            player_row(assets, &players[4], selected),
+            player_row(assets, &players[5], selected),
+            player_row(assets, &players[6], selected),
+            player_row(assets, &players[7], selected),
+            player_row(assets, &players[8], selected),
+        ],
+    )
+}
+
+fn player_row(assets: &UiAssets, player: &Player, selected: Option<PlayerId>) -> impl Bundle {
+    let selected = selected == Some(player.id);
+    let role_color = role_color(player.role);
+    let bg = if !player.alive {
+        DEAD_BG
     } else if selected {
-        Color::srgb(0.180, 0.135, 0.055)
+        Color::srgb(0.120, 0.105, 0.065)
     } else {
-        Color::srgb(0.070, 0.086, 0.122)
+        SURFACE
     };
-    let border = if selected {
-        Color::srgb(0.98, 0.86, 0.42)
-    } else if human {
+    let border = if !player.alive {
+        DEAD_BORDER
+    } else if selected {
         GOLD
-    } else if !alive {
-        Color::srgb(0.18, 0.18, 0.20)
     } else {
-        Color::srgb(0.28, 0.32, 0.40)
+        Color::srgb(0.145, 0.160, 0.190)
     };
+    let primary_text = if player.alive { TEXT } else { DEAD_TEXT };
+    let secondary_text = if player.alive { role_color } else { DEAD_TEXT };
 
     (
         Button,
-        SeatButton { player: id },
+        SeatButton { player: player.id },
         Node {
-            min_width: px(150),
-            min_height: px(96),
+            width: percent(100),
+            height: px(58),
             align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
+            column_gap: px(10),
             border: UiRect::all(px(1)),
-            padding: UiRect::all(px(8)),
+            padding: UiRect::horizontal(px(10)),
             ..default()
         },
         BorderColor::all(border),
-        BackgroundColor(background),
-        children![text(
-            assets,
-            label,
-            16.0,
-            if alive { WARM_TEXT } else { Color::srgb(0.42, 0.44, 0.48) }
+        BackgroundColor(bg),
+        children![
+            avatar(assets, player),
+            (
+                Node {
+                    flex_direction: FlexDirection::Column,
+                    flex_grow: 1.0,
+                    row_gap: px(2),
+                    ..default()
+                },
+                children![
+                    text(
+                        assets,
+                        format!("{}  {}", player.id.0, player.name),
+                        16.0,
+                        primary_text
+                    ),
+                    text(
+                        assets,
+                        format!("{} / {}", player.role.label(), status_label(player.alive)),
+                        14.0,
+                        secondary_text
+                    ),
+                ],
+            ),
+        ],
+    )
+}
+
+fn avatar(assets: &UiAssets, player: &Player) -> impl Bundle {
+    let color = if player.alive {
+        role_color(player.role)
+    } else {
+        DEAD_TEXT
+    };
+    (
+        Node {
+            width: px(38),
+            height: px(38),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            border: UiRect::all(px(1)),
+            ..default()
+        },
+        BorderColor::all(if player.alive { color } else { DEAD_BORDER }),
+        BackgroundColor(if player.alive {
+            Color::srgb(0.105, 0.112, 0.132)
+        } else {
+            DEAD_SURFACE
+        }),
+        children![text(assets, role_icon(player.role), 18.0, color)],
+    )
+}
+
+fn observer_panel(assets: &UiAssets, session: &GameSession, flow: &FlowState) -> impl Bundle {
+    let wolves = session
+        .alive_players()
+        .filter(|player| player.role == Role::Werewolf)
+        .count();
+    let good = session
+        .alive_players()
+        .filter(|player| player.role != Role::Werewolf)
+        .count();
+    let selected_hint = "观战模式：身份公开，点击左侧玩家可高亮，点击底部按钮推进 AI 行动。";
+
+    (
+        Node {
+            width: percent(35),
+            height: percent(100),
+            flex_direction: FlexDirection::Column,
+            justify_content: JustifyContent::SpaceBetween,
+            padding: UiRect::all(px(16)),
+            ..default()
+        },
+        BackgroundColor(PANEL_DARK),
+        children![
+            (
+                Node {
+                    flex_direction: FlexDirection::Column,
+                    row_gap: px(16),
+                    ..default()
+                },
+                children![
+                    text(assets, "Superpowers 观战面板", 27.0, TEXT),
+                    text(assets, format!("第 {} 天", flow.day), 40.0, GOLD),
+                    stat_strip(assets, wolves, good),
+                    text(assets, selected_hint, 17.0, MUTED),
+                ],
+            ),
+            (
+                Node {
+                    flex_direction: FlexDirection::Column,
+                    row_gap: px(8),
+                    padding: UiRect::all(px(14)),
+                    ..default()
+                },
+                BackgroundColor(SURFACE),
+                children![
+                    text(assets, "当前局势", 20.0, GOLD),
+                    text(assets, phase_detail(flow.phase), 17.0, TEXT),
+                    text(
+                        assets,
+                        "狼人全灭则好人胜；狼人数量不少于好人则狼人胜。",
+                        15.0,
+                        MUTED
+                    ),
+                ],
+            ),
+        ],
+    )
+}
+
+fn stat_strip(assets: &UiAssets, wolves: usize, good: usize) -> impl Bundle {
+    (
+        Node {
+            width: percent(100),
+            column_gap: px(10),
+            ..default()
+        },
+        children![
+            stat_box(assets, "狼人", wolves, RED),
+            stat_box(assets, "好人", good, GREEN),
+        ],
+    )
+}
+
+fn stat_box(assets: &UiAssets, label: &'static str, value: usize, color: Color) -> impl Bundle {
+    (
+        Node {
+            width: percent(50),
+            height: px(82),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            row_gap: px(4),
+            ..default()
+        },
+        BackgroundColor(SURFACE),
+        children![
+            text(assets, label, 16.0, MUTED),
+            text(assets, value.to_string(), 30.0, color),
+        ],
+    )
+}
+
+#[allow(dead_code)]
+fn old_log_panel(assets: &UiAssets, records: &[String]) -> impl Bundle {
+    (
+        Node {
+            width: percent(38),
+            height: percent(100),
+            flex_direction: FlexDirection::Column,
+            row_gap: px(10),
+            padding: UiRect::all(px(14)),
+            ..default()
+        },
+        BackgroundColor(PANEL),
+        children![
+            text(assets, "日志", 25.0, GOLD),
+            text(assets, display_log(records, "暂无公开记录。"), 15.0, MUTED),
+        ],
+    )
+}
+
+#[allow(dead_code)]
+fn fixed_log_panel(assets: &UiAssets, records: &[String]) -> impl Bundle {
+    let latest = recent_records(records);
+    (
+        Node {
+            width: percent(38),
+            height: percent(100),
+            flex_direction: FlexDirection::Column,
+            row_gap: px(10),
+            padding: UiRect::all(px(14)),
+            ..default()
+        },
+        BackgroundColor(PANEL),
+        children![
+            text(assets, "日志", 25.0, GOLD),
+            log_bubble(assets, log_record(&latest, 0), 0),
+            log_bubble(assets, log_record(&latest, 1), 1),
+            log_bubble(assets, log_record(&latest, 2), 2),
+            log_bubble(assets, log_record(&latest, 3), 3),
+            log_bubble(assets, log_record(&latest, 4), 4),
+            log_bubble(assets, log_record(&latest, 5), 5),
+            log_bubble(assets, log_record(&latest, 6), 6),
+            log_bubble(assets, log_record(&latest, 7), 7),
+            log_bubble(assets, log_record(&latest, 8), 8),
+        ],
+    )
+}
+
+#[allow(dead_code)]
+fn log_panel(assets: &UiAssets, records: &[String]) -> impl Bundle {
+    let visible_records = visible_log_records(records);
+    let has_scroll = visible_records.len() > 9;
+    (
+        Node {
+            width: percent(38),
+            height: percent(100),
+            flex_direction: FlexDirection::Column,
+            row_gap: px(10),
+            padding: UiRect::all(px(14)),
+            ..default()
+        },
+        BackgroundColor(PANEL),
+        children![
+            text(assets, "日志", 25.0, GOLD),
+            (
+                Node {
+                    width: percent(100),
+                    height: px(0),
+                    flex_grow: 1.0,
+                    flex_shrink: 1.0,
+                    column_gap: px(8),
+                    overflow: Overflow::scroll_y(),
+                    ..default()
+                },
+                ScrollPosition(Vec2::ZERO),
+                children![
+                    (
+                        Node {
+                            width: percent(100),
+                            flex_direction: FlexDirection::Column,
+                            row_gap: px(10),
+                            padding: UiRect::right(px(4)),
+                            ..default()
+                        },
+                        children![
+                            log_bubble(assets, log_record(&visible_records, 0), 0),
+                            log_bubble(assets, log_record(&visible_records, 1), 1),
+                            log_bubble(assets, log_record(&visible_records, 2), 2),
+                            log_bubble(assets, log_record(&visible_records, 3), 3),
+                            log_bubble(assets, log_record(&visible_records, 4), 4),
+                            log_bubble(assets, log_record(&visible_records, 5), 5),
+                            log_bubble(assets, log_record(&visible_records, 6), 6),
+                            log_bubble(assets, log_record(&visible_records, 7), 7),
+                            log_bubble(assets, log_record(&visible_records, 8), 8),
+                            log_bubble(assets, log_record(&visible_records, 9), 9),
+                            log_bubble(assets, log_record(&visible_records, 10), 10),
+                            log_bubble(assets, log_record(&visible_records, 11), 11),
+                            log_bubble(assets, log_record(&visible_records, 12), 12),
+                            log_bubble(assets, log_record(&visible_records, 13), 13),
+                            log_bubble(assets, log_record(&visible_records, 14), 14),
+                            log_bubble(assets, log_record(&visible_records, 15), 15),
+                            log_bubble(assets, log_record(&visible_records, 16), 16),
+                            log_bubble(assets, log_record(&visible_records, 17), 17),
+                            log_bubble(assets, log_record(&visible_records, 18), 18),
+                            log_bubble(assets, log_record(&visible_records, 19), 19),
+                            log_bubble(assets, log_record(&visible_records, 20), 20),
+                            log_bubble(assets, log_record(&visible_records, 21), 21),
+                            log_bubble(assets, log_record(&visible_records, 22), 22),
+                            log_bubble(assets, log_record(&visible_records, 23), 23),
+                            log_bubble(assets, log_record(&visible_records, 24), 24),
+                            log_bubble(assets, log_record(&visible_records, 25), 25),
+                            log_bubble(assets, log_record(&visible_records, 26), 26),
+                            log_bubble(assets, log_record(&visible_records, 27), 27),
+                            log_bubble(assets, log_record(&visible_records, 28), 28),
+                            log_bubble(assets, log_record(&visible_records, 29), 29),
+                            log_bubble(assets, log_record(&visible_records, 30), 30),
+                            log_bubble(assets, log_record(&visible_records, 31), 31),
+                        ],
+                    ),
+                    scroll_bar(assets, has_scroll),
+                ],
+            ),
+        ],
+    )
+}
+
+fn spawn_log_panel(parent: &mut ChildSpawnerCommands, assets: &UiAssets, records: &[String]) {
+    let visible_records = visible_log_records(records);
+    parent
+        .spawn((
+            Node {
+                width: percent(38),
+                height: percent(100),
+                flex_direction: FlexDirection::Column,
+                row_gap: px(10),
+                padding: UiRect::all(px(14)),
+                ..default()
+            },
+            BackgroundColor(PANEL),
+        ))
+        .with_children(|panel| {
+            panel.spawn(text(assets, "日志", 25.0, GOLD));
+            panel
+                .spawn((Node {
+                    width: percent(100),
+                    height: px(0),
+                    flex_grow: 1.0,
+                    display: Display::Grid,
+                    grid_template_columns: vec![
+                        RepeatedGridTrack::flex(1, 1.0),
+                        RepeatedGridTrack::auto(1),
+                    ],
+                    column_gap: px(8),
+                    ..default()
+                },))
+                .with_children(|frame| {
+                    let scroll_area_id = frame
+                        .spawn((
+                            Node {
+                                width: percent(100),
+                                height: percent(100),
+                                flex_direction: FlexDirection::Column,
+                                row_gap: px(10),
+                                padding: UiRect::right(px(4)),
+                                overflow: Overflow::scroll_y(),
+                                ..default()
+                            },
+                            ScrollPosition(Vec2::ZERO),
+                        ))
+                        .with_children(|scroll_area| {
+                            for (index, record) in visible_records.iter().enumerate() {
+                                scroll_area.spawn(log_bubble(assets, record.clone(), index));
+                            }
+                        })
+                        .id();
+
+                    frame.spawn((
+                        Node {
+                            width: px(8),
+                            height: percent(100),
+                            grid_column: GridPlacement::start(2),
+                            ..default()
+                        },
+                        Scrollbar::new(scroll_area_id, ControlOrientation::Vertical, 18.0),
+                        children![(
+                            Node {
+                                position_type: PositionType::Absolute,
+                                border_radius: BorderRadius::all(px(4)),
+                                ..default()
+                            },
+                            BackgroundColor(Color::srgb(0.360, 0.385, 0.430)),
+                            CoreScrollbarThumb,
+                        )],
+                    ));
+                });
+        });
+}
+
+fn recent_records(records: &[String]) -> Vec<String> {
+    if records.is_empty() {
+        return vec!["暂无公开记录。".to_string()];
+    }
+
+    records.iter().rev().take(9).cloned().collect()
+}
+
+fn log_record(records: &[String], index: usize) -> String {
+    records.get(index).cloned().unwrap_or_default()
+}
+
+fn visible_log_records(records: &[String]) -> Vec<String> {
+    if records.is_empty() {
+        return vec!["暂无公开记录。".to_string()];
+    }
+
+    records
+        .iter()
+        .skip(records.len().saturating_sub(LOG_BUBBLE_LIMIT))
+        .cloned()
+        .collect()
+}
+
+#[allow(dead_code)]
+fn scroll_bar(assets: &UiAssets, visible: bool) -> impl Bundle {
+    (
+        Node {
+            width: px(5),
+            height: percent(100),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            padding: UiRect::vertical(px(4)),
+            ..default()
+        },
+        if visible {
+            Visibility::Visible
+        } else {
+            Visibility::Hidden
+        },
+        BackgroundColor(Color::srgb(0.035, 0.040, 0.052)),
+        children![(
+            Node {
+                width: px(5),
+                height: percent(28),
+                ..default()
+            },
+            BackgroundColor(Color::srgb(0.360, 0.385, 0.430)),
+            children![text(assets, "", 1.0, Color::NONE)],
         )],
     )
 }
 
-fn judge_bar(assets: &UiAssets, phase: &'static str, hint: &'static str, alive: &str) -> impl Bundle {
+fn log_bubble(assets: &UiAssets, record: String, index: usize) -> impl Bundle {
+    let visible = !record.is_empty();
+    let height = if visible { Val::Auto } else { px(0) };
+    let padding = if visible {
+        UiRect::all(px(10))
+    } else {
+        UiRect::ZERO
+    };
+    let accent = if visible {
+        log_accent(&record)
+    } else {
+        Color::NONE
+    };
+    let background = if !visible {
+        Color::NONE
+    } else if index + 1 == LOG_BUBBLE_LIMIT {
+        Color::srgb(0.090, 0.095, 0.112)
+    } else {
+        SURFACE
+    };
+
+    (
+        Node {
+            width: percent(100),
+            height,
+            align_items: AlignItems::FlexStart,
+            column_gap: px(10),
+            padding,
+            border: UiRect::left(px(3)),
+            ..default()
+        },
+        if visible {
+            Visibility::Visible
+        } else {
+            Visibility::Hidden
+        },
+        BorderColor::all(accent),
+        BackgroundColor(background),
+        children![
+            (
+                Node {
+                    width: px(26),
+                    height: px(26),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                BackgroundColor(accent),
+                children![text(
+                    assets,
+                    if visible { log_icon(&record) } else { "" },
+                    14.0,
+                    Color::srgb(0.980, 0.970, 0.930)
+                )],
+            ),
+            (
+                Node {
+                    width: px(0),
+                    flex_direction: FlexDirection::Column,
+                    flex_grow: 1.0,
+                    flex_shrink: 1.0,
+                    row_gap: px(3),
+                    ..default()
+                },
+                children![
+                    text(
+                        assets,
+                        if visible { log_title(&record) } else { "" },
+                        13.0,
+                        accent
+                    ),
+                    wrapped_text(assets, record, 14.0, TEXT),
+                ],
+            ),
+        ],
+    )
+}
+
+fn observer_console(assets: &UiAssets, phase: FlowPhase) -> impl Bundle {
+    (
+        Node {
+            width: percent(100),
+            height: px(96),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::SpaceBetween,
+            padding: UiRect::horizontal(px(22)),
+            ..default()
+        },
+        BackgroundColor(PANEL),
+        children![
+            (
+                Node {
+                    flex_direction: FlexDirection::Column,
+                    row_gap: px(5),
+                    ..default()
+                },
+                children![
+                    text(assets, console_title(phase), 22.0, TEXT),
+                    text(assets, console_hint(phase), 16.0, MUTED),
+                ],
+            ),
+            action_button(assets, advance_label(phase), ButtonAction::AdvanceFlow),
+        ],
+    )
+}
+
+fn judge_bar(
+    assets: &UiAssets,
+    phase: &'static str,
+    hint: &'static str,
+    alive: &str,
+) -> impl Bundle {
     (
         Node {
             width: percent(100),
@@ -538,40 +1029,16 @@ fn judge_bar(assets: &UiAssets, phase: &'static str, hint: &'static str, alive: 
             padding: UiRect::horizontal(px(22)),
             ..default()
         },
-        BackgroundColor(PANEL_BG),
+        BackgroundColor(PANEL),
         children![
             text(assets, phase, 28.0, GOLD),
-            text(assets, hint, 20.0, Color::srgb(0.86, 0.88, 0.95)),
-            text(assets, alive.to_string(), 20.0, MUTED_TEXT),
+            text(assets, hint, 20.0, TEXT),
+            text(assets, alive.to_string(), 20.0, MUTED),
         ],
     )
 }
 
-fn info_drawer(assets: &UiAssets, records: &[String], my_clues: &[String]) -> impl Bundle {
-    let public_log = display_log(records, "暂无公开记录。");
-    let private_log = display_log(my_clues, "暂无私有线索。");
-
-    (
-        Node {
-            width: percent(30),
-            height: percent(100),
-            flex_direction: FlexDirection::Column,
-            row_gap: px(12),
-            padding: UiRect::all(px(16)),
-            ..default()
-        },
-        BackgroundColor(PANEL_BG),
-        children![
-            text(assets, "信息抽屉", 24.0, GOLD),
-            text(assets, "公开记录", 19.0, WARM_TEXT),
-            text(assets, public_log, 15.0, MUTED_TEXT),
-            text(assets, "我的线索", 19.0, WARM_TEXT),
-            text(assets, private_log, 15.0, MUTED_TEXT),
-            text(assets, format!("默认标记：{:?}", TrustMark::Neutral), 16.0, Color::srgb(0.54, 0.58, 0.66)),
-        ],
-    )
-}
-
+#[allow(dead_code)]
 fn display_log(records: &[String], empty: &'static str) -> String {
     if records.is_empty() {
         empty.to_string()
@@ -582,146 +1049,6 @@ fn display_log(records: &[String], empty: &'static str) -> String {
             .map(|(index, record)| format!("{:02}. {}", index + 1, record))
             .collect::<Vec<_>>()
             .join("\n")
-    }
-}
-
-fn action_console(
-    assets: &UiAssets,
-    title: &'static str,
-    detail: &'static str,
-    action: ButtonAction,
-    phase: FlowPhase,
-    human_role: Option<Role>,
-    pending_input: &PendingInput,
-    selected: Option<PlayerId>,
-) -> impl Bundle {
-    let target_text = selected
-        .map(|player| format!("当前选择：{} 号", player.0))
-        .unwrap_or_else(|| "当前未选择目标。".to_string());
-    let input_text = if pending_input.text.is_empty() {
-        "输入你的发言，或直接继续使用默认发言。".to_string()
-    } else {
-        format!("你的发言：{}", pending_input.text)
-    };
-
-    (
-        Node {
-            width: percent(100),
-            height: px(116),
-            flex_direction: FlexDirection::Column,
-            justify_content: JustifyContent::Center,
-            row_gap: px(7),
-            padding: UiRect::horizontal(px(22)),
-            ..default()
-        },
-        BackgroundColor(PANEL_BG),
-        children![
-            text(assets, title, 21.0, GOLD),
-            text(assets, detail, 17.0, MUTED_TEXT),
-            text(
-                assets,
-                if phase == FlowPhase::DaySpeech {
-                    input_text
-                } else {
-                    target_text
-                },
-                16.0,
-                WARM_TEXT
-            ),
-            action_controls(assets, action, phase, human_role),
-        ],
-    )
-}
-
-fn action_controls(
-    assets: &UiAssets,
-    _action: ButtonAction,
-    phase: FlowPhase,
-    human_role: Option<Role>,
-) -> impl Bundle {
-    let actions = visible_actions(phase, human_role);
-    let first = actions.first().copied();
-    let second = actions.get(1).copied();
-    let third = actions.get(2).copied();
-    let fourth = actions.get(3).copied();
-    (
-        Node {
-            column_gap: px(12),
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        children![
-            optional_action_button(assets, first),
-            optional_action_button(assets, second),
-            optional_action_button(assets, third),
-            optional_action_button(assets, fourth),
-        ],
-    )
-}
-
-fn optional_action_button(
-    assets: &UiAssets,
-    action: Option<(&'static str, ButtonAction)>,
-) -> impl Bundle {
-    if let Some((label, action)) = action {
-        (
-            Button,
-            action,
-            Node {
-                width: px(160),
-                height: px(48),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                border: UiRect::all(px(1)),
-                ..default()
-            },
-            Visibility::Visible,
-            BorderColor::all(GOLD),
-            BackgroundColor(DANGER),
-            children![text(assets, label, 19.0, WARM_TEXT)],
-        )
-    } else {
-        (
-            Button,
-            ButtonAction::AdvanceFlow,
-            Node {
-                width: px(0),
-                height: px(0),
-                ..default()
-            },
-            Visibility::Hidden,
-            BorderColor::all(Color::NONE),
-            BackgroundColor(Color::NONE),
-            children![text(assets, "", 1.0, Color::NONE)],
-        )
-    }
-}
-
-fn visible_actions(
-    phase: FlowPhase,
-    human_role: Option<Role>,
-) -> Vec<(&'static str, ButtonAction)> {
-    match phase {
-        FlowPhase::Night => match human_role {
-            Some(Role::Werewolf) => vec![("确认击杀", ButtonAction::AdvanceFlow)],
-            Some(Role::Seer) => vec![("确认查验", ButtonAction::AdvanceFlow)],
-            Some(Role::Witch) => vec![
-                ("使用解药", ButtonAction::WitchSave),
-                ("使用毒药", ButtonAction::WitchPoison),
-                ("不用药", ButtonAction::WitchNoUse),
-                ("确认", ButtonAction::AdvanceFlow),
-            ],
-            Some(Role::Hunter) | Some(Role::Villager) | None => {
-                vec![("等待天亮", ButtonAction::AdvanceFlow)]
-            }
-        },
-        FlowPhase::DaySpeech => vec![("提交发言", ButtonAction::AdvanceFlow)],
-        FlowPhase::Vote => vec![("确认投票", ButtonAction::AdvanceFlow)],
-        FlowPhase::HunterShot => vec![
-            ("开枪", ButtonAction::HunterShoot),
-            ("不开枪", ButtonAction::HunterSkip),
-        ],
-        FlowPhase::Review => vec![("查看复盘", ButtonAction::AdvanceFlow)],
     }
 }
 
@@ -750,16 +1077,6 @@ fn advance_flow_state(
     action: &mut PlayerAction,
     pending_input: &mut PendingInput,
 ) -> bool {
-    if !human_is_alive(session) && flow.phase != FlowPhase::Review {
-        action.selected_target = None;
-        action.witch_intent = WitchIntent::None;
-        action.hunter_shot_pending = false;
-        pending_input.text.clear();
-        flow.winner = Some("你已死亡".to_string());
-        flow.phase = FlowPhase::Review;
-        return true;
-    }
-
     match flow.phase {
         FlowPhase::Night => {
             let wolf_actor = session
@@ -767,115 +1084,109 @@ fn advance_flow_state(
                 .iter()
                 .find(|player| player.alive && player.role == Role::Werewolf)
                 .map(|player| player.id);
-            let human_role = flow
-                .human_role
-                .or_else(|| session.player(PlayerId(1)).map(|player| player.role));
-            let wolf_target = if human_role == Some(Role::Werewolf) {
-                action.selected_target
-            } else {
-                wolf_actor.and_then(|actor| choose_wolf_target(session, actor))
-            };
-            if human_role == Some(Role::Seer)
-                && let Some(target) = action.selected_target
+            let wolf_target = wolf_actor.and_then(|actor| choose_wolf_target(session, actor));
+            let seer_target = session
+                .players
+                .iter()
+                .find(|player| player.alive && player.role == Role::Seer)
+                .and_then(|seer| choose_ai_seer_target(session, seer.id));
+            if let Some(target) = seer_target
                 && let Some(camp) = check_camp(session, target)
             {
-                flow.my_clues
-                    .push(format!("你查验了 {} 号，结果是 {:?}。", target.0, camp));
+                flow.public_records.push(format!(
+                    "第 {} 夜：预言家查验 {} 号，结果为 {}。",
+                    flow.day,
+                    target.0,
+                    camp_label(camp)
+                ));
             }
-            let poison_target = if human_role == Some(Role::Witch)
-                && action.witch_intent == WitchIntent::Poison
-            {
-                action.selected_target
-            } else {
-                None
-            };
+
             let result = resolve_night(
                 session,
                 NightActions {
                     wolf_target,
-                    witch_save: human_role == Some(Role::Witch)
-                        && action.witch_intent == WitchIntent::Save,
-                    witch_poison_target: poison_target,
+                    witch_save: false,
+                    witch_poison_target: None,
                 },
             );
-            let hunter_died = result.deaths.iter().any(|death| {
-                session
-                    .player(death.player)
-                    .map(|player| player.role == Role::Hunter)
-                    .unwrap_or(false)
-            });
+
+            let mut hunter_target = None;
             if result.deaths.is_empty() {
-                flow.public_records.push(format!("第 {} 夜：平安夜。", flow.day));
+                flow.public_records
+                    .push(format!("第 {} 夜：平安夜。", flow.day));
             } else {
-                for death in result.deaths {
+                for death in &result.deaths {
                     flow.public_records.push(format!(
-                        "第 {} 夜：{} 号死亡（{:?}）。",
-                        flow.day, death.player.0, death.reason
+                        "第 {} 夜：{} 号死亡（{}）。",
+                        flow.day,
+                        death.player.0,
+                        death_reason_label(death.reason)
                     ));
+                    if hunter_can_auto_shoot(session, death.player, death.reason) {
+                        hunter_target = choose_vote_target(session, death.player);
+                    }
                 }
             }
-            if hunter_died && human_role == Some(Role::Hunter) {
-                flow.phase = FlowPhase::HunterShot;
+
+            if let Some(target) = hunter_target {
+                action.selected_target = Some(target);
                 action.hunter_shot_pending = true;
-                action.selected_target = None;
-                action.witch_intent = WitchIntent::None;
+                flow.phase = FlowPhase::HunterShot;
                 return false;
             }
+
             action.selected_target = None;
             action.witch_intent = WitchIntent::None;
-            if !human_is_alive(session) {
-                flow.winner = Some("你已死亡".to_string());
-                flow.phase = FlowPhase::Review;
-                return true;
-            }
+            pending_input.text.clear();
             flow.phase = FlowPhase::DaySpeech;
             false
         }
-        FlowPhase::HunterShot => false,
-        FlowPhase::DaySpeech => {
-            let human_speech = if pending_input.text.trim().is_empty() {
-                "1 号：我先听发言，投票前再给判断。".to_string()
+        FlowPhase::HunterShot => {
+            let target = action.selected_target;
+            if let Some(target) = target {
+                let death = resolve_hunter_shot(session, target);
+                flow.public_records
+                    .push(format!("猎人开枪带走 {} 号。", death.player.0));
+            }
+            action.selected_target = None;
+            action.hunter_shot_pending = false;
+            if end_if_winner(session, flow) {
+                true
             } else {
-                format!("1 号：{}", pending_input.text.trim())
-            };
-            flow.public_records.push(human_speech);
-            pending_input.text.clear();
-
+                flow.phase = FlowPhase::DaySpeech;
+                false
+            }
+        }
+        FlowPhase::DaySpeech => {
             for player in session.alive_players() {
-                if player.id == PlayerId(1) {
-                    continue;
-                }
                 flow.public_records
                     .push(generate_speech(session, player.id, flow.day));
             }
+            pending_input.text.clear();
             flow.phase = FlowPhase::Vote;
             false
         }
         FlowPhase::Vote => {
-            let target = action
-                .selected_target
-                .or_else(|| choose_vote_target(session, PlayerId(1)));
+            let target = choose_group_vote_target(session);
             if let Some(target) = target {
                 if let Some(player) = session.player_mut(target) {
                     player.alive = false;
                 }
                 flow.public_records
                     .push(format!("第 {} 天：{} 号被放逐。", flow.day, target.0));
+
+                if hunter_can_auto_shoot(session, target, DeathReason::Exile)
+                    && let Some(shot_target) = choose_vote_target(session, target)
+                {
+                    action.selected_target = Some(shot_target);
+                    action.hunter_shot_pending = true;
+                    flow.phase = FlowPhase::HunterShot;
+                    return false;
+                }
             }
             action.selected_target = None;
 
-            if !human_is_alive(session) {
-                flow.winner = Some("你已死亡".to_string());
-                flow.phase = FlowPhase::Review;
-                return true;
-            }
-
-            if let Some(winner) = session.winner() {
-                flow.winner = Some(match winner {
-                    Winner::Good => "好人胜利".to_string(),
-                    Winner::Werewolf => "狼人胜利".to_string(),
-                });
-                flow.phase = FlowPhase::Review;
+            if end_if_winner(session, flow) {
                 true
             } else {
                 flow.day += 1;
@@ -883,55 +1194,43 @@ fn advance_flow_state(
                 false
             }
         }
-        FlowPhase::Review => {
-            true
-        }
+        FlowPhase::Review => true,
     }
 }
 
-fn human_is_alive(session: &GameSession) -> bool {
+fn choose_ai_seer_target(session: &GameSession, seer: PlayerId) -> Option<PlayerId> {
     session
-        .player(PlayerId(1))
-        .map(|player| player.alive)
-        .unwrap_or(false)
+        .alive_players()
+        .find(|player| player.id != seer)
+        .map(|player| player.id)
 }
 
-fn advance_hunter_shot(
-    session: &mut SessionResource,
-    flow: &mut FlowState,
-    action: &mut PlayerAction,
-    next_screen: &mut NextState<AppScreen>,
-) {
-    let Some(session) = session.session.as_mut() else {
-        return;
-    };
-    if let Some(target) = action.selected_target {
-        let death = resolve_hunter_shot(session, target);
-        flow.public_records
-            .push(format!("猎人开枪带走了 {} 号。", death.player.0));
-    }
-    action.selected_target = None;
-    action.hunter_shot_pending = false;
+fn choose_group_vote_target(session: &GameSession) -> Option<PlayerId> {
+    session
+        .alive_players()
+        .find(|player| player.role == Role::Werewolf)
+        .or_else(|| session.alive_players().next())
+        .map(|player| player.id)
+}
 
+fn hunter_can_auto_shoot(session: &GameSession, hunter: PlayerId, reason: DeathReason) -> bool {
+    matches!(reason, DeathReason::WolfKill | DeathReason::Exile)
+        && session
+            .player(hunter)
+            .map(|player| player.role == Role::Hunter)
+            .unwrap_or(false)
+}
+
+fn end_if_winner(session: &GameSession, flow: &mut FlowState) -> bool {
     if let Some(winner) = session.winner() {
         flow.winner = Some(match winner {
             Winner::Good => "好人胜利".to_string(),
             Winner::Werewolf => "狼人胜利".to_string(),
         });
         flow.phase = FlowPhase::Review;
-        next_screen.set(AppScreen::Review);
+        true
     } else {
-        flow.phase = FlowPhase::DaySpeech;
-        next_screen.set(AppScreen::Game);
-    }
-}
-
-fn night_action_hint(role: Option<Role>) -> &'static str {
-    match role {
-        Some(Role::Werewolf) => "点击座位选择今晚击杀目标。",
-        Some(Role::Seer) => "点击座位选择查验目标。",
-        Some(Role::Witch) => "点击座位选择毒药目标，或点击女巫救人。",
-        Some(Role::Hunter) | Some(Role::Villager) | None => "你今晚没有主动行动，点击继续。",
+        false
     }
 }
 
@@ -955,21 +1254,147 @@ fn text(assets: &UiAssets, label: impl Into<String>, font_size: f32, color: Colo
     )
 }
 
-fn role_goal(role: Role) -> &'static str {
-    match role {
-        Role::Werewolf => "阵营目标：隐藏身份，淘汰足够多的好人。",
-        Role::Seer => "阵营目标：查验身份，帮助好人找出全部狼人。",
-        Role::Witch => "阵营目标：谨慎使用解药和毒药，帮助好人阵营。",
-        Role::Hunter => "阵营目标：在关键死亡时带走可疑目标。",
-        Role::Villager => "阵营目标：通过发言和投票找出狼人。",
-    }
+fn wrapped_text(
+    assets: &UiAssets,
+    label: impl Into<String>,
+    font_size: f32,
+    color: Color,
+) -> impl Bundle {
+    (
+        Text::new(label),
+        TextFont {
+            font: assets.font.clone(),
+            font_size,
+            ..default()
+        },
+        TextColor(color),
+        TextLayout::new_with_linebreak(LineBreak::WordOrCharacter),
+    )
 }
 
 fn role_color(role: Role) -> Color {
     match role {
-        Role::Werewolf => DANGER,
-        Role::Seer | Role::Witch | Role::Hunter => GOLD,
-        Role::Villager => Color::srgb(0.86, 0.84, 0.76),
+        Role::Werewolf => RED,
+        Role::Seer => BLUE,
+        Role::Witch => Color::srgb(0.720, 0.410, 0.800),
+        Role::Hunter => GOLD,
+        Role::Villager => GREEN,
+    }
+}
+
+fn role_icon(role: Role) -> &'static str {
+    match role {
+        Role::Werewolf => "狼",
+        Role::Seer => "预",
+        Role::Witch => "巫",
+        Role::Hunter => "猎",
+        Role::Villager => "民",
+    }
+}
+
+fn status_label(alive: bool) -> &'static str {
+    if alive { "存活" } else { "死亡" }
+}
+
+fn log_accent(record: &str) -> Color {
+    if record.contains("死亡") || record.contains("被放逐") || record.contains("开枪") {
+        RED
+    } else if record.contains("查验") {
+        BLUE
+    } else if record.contains("夜") {
+        GOLD
+    } else {
+        GREEN
+    }
+}
+
+fn log_icon(record: &str) -> &'static str {
+    if record.contains("死亡") || record.contains("被放逐") {
+        "!"
+    } else if record.contains("查验") {
+        "?"
+    } else if record.contains("夜") {
+        "N"
+    } else {
+        "言"
+    }
+}
+
+fn log_title(record: &str) -> &'static str {
+    if record.contains("死亡") || record.contains("被放逐") || record.contains("开枪") {
+        "结算"
+    } else if record.contains("查验") {
+        "查验"
+    } else if record.contains("夜") {
+        "夜晚"
+    } else {
+        "发言"
+    }
+}
+
+fn phase_copy(phase: FlowPhase) -> (&'static str, &'static str) {
+    match phase {
+        FlowPhase::Night => ("夜晚", "AI 狼人、预言家与女巫依次行动。"),
+        FlowPhase::DaySpeech => ("白天发言", "所有存活 AI 依次发言。"),
+        FlowPhase::Vote => ("投票", "AI 自动归票并放逐一名玩家。"),
+        FlowPhase::HunterShot => ("猎人开枪", "猎人死亡后自动选择目标。"),
+        FlowPhase::Review => ("复盘", "本局已经结束。"),
+    }
+}
+
+fn phase_detail(phase: FlowPhase) -> &'static str {
+    match phase {
+        FlowPhase::Night => "等待夜晚结算。",
+        FlowPhase::DaySpeech => "下一步将写入所有 AI 发言。",
+        FlowPhase::Vote => "下一步将结算集体投票。",
+        FlowPhase::HunterShot => "下一步将结算猎人开枪。",
+        FlowPhase::Review => "查看胜负与全员身份。",
+    }
+}
+
+fn console_title(phase: FlowPhase) -> &'static str {
+    match phase {
+        FlowPhase::Night => "推进夜晚",
+        FlowPhase::DaySpeech => "推进发言",
+        FlowPhase::Vote => "推进投票",
+        FlowPhase::HunterShot => "推进猎人",
+        FlowPhase::Review => "查看复盘",
+    }
+}
+
+fn console_hint(phase: FlowPhase) -> &'static str {
+    match phase {
+        FlowPhase::Night => "结算 AI 夜间行动，并把结果写入右侧日志。",
+        FlowPhase::DaySpeech => "生成本轮所有存活 AI 的发言。",
+        FlowPhase::Vote => "结算 AI 投票与放逐。",
+        FlowPhase::HunterShot => "结算猎人带人。",
+        FlowPhase::Review => "本局结束。",
+    }
+}
+
+fn advance_label(phase: FlowPhase) -> &'static str {
+    match phase {
+        FlowPhase::Night => "结算夜晚",
+        FlowPhase::DaySpeech => "生成发言",
+        FlowPhase::Vote => "结算投票",
+        FlowPhase::HunterShot => "结算开枪",
+        FlowPhase::Review => "复盘",
+    }
+}
+
+fn camp_label(camp: crate::game::domain::Camp) -> &'static str {
+    match camp {
+        crate::game::domain::Camp::Good => "好人",
+        crate::game::domain::Camp::Werewolf => "狼人",
+    }
+}
+
+fn death_reason_label(reason: DeathReason) -> &'static str {
+    match reason {
+        DeathReason::WolfKill => "狼刀",
+        DeathReason::WitchPoison => "毒药",
+        DeathReason::Exile => "放逐",
+        DeathReason::HunterShot => "猎枪",
     }
 }
 
@@ -978,115 +1403,64 @@ mod tests {
     use super::*;
 
     #[test]
-    fn flow_can_advance_from_night_to_vote() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+    fn flow_can_advance_from_night_to_vote_for_ai_observer() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
         let mut flow = FlowState::default();
         let mut action = PlayerAction::default();
         let mut pending = PendingInput::default();
 
         assert_eq!(flow.phase, FlowPhase::Night);
 
-        assert!(!advance_flow_state(&mut session, &mut flow, &mut action, &mut pending));
+        assert!(!advance_flow_state(
+            &mut session,
+            &mut flow,
+            &mut action,
+            &mut pending
+        ));
         assert_eq!(flow.phase, FlowPhase::DaySpeech);
-        assert!(flow.public_records.iter().any(|record| record.contains("夜")));
+        assert!(
+            flow.public_records
+                .iter()
+                .any(|record| record.contains("第 1 夜"))
+        );
 
-        assert!(!advance_flow_state(&mut session, &mut flow, &mut action, &mut pending));
+        assert!(!advance_flow_state(
+            &mut session,
+            &mut flow,
+            &mut action,
+            &mut pending
+        ));
         assert_eq!(flow.phase, FlowPhase::Vote);
-        assert!(flow.public_records.iter().any(|record| record.contains("号：")));
+        assert!(
+            flow.public_records
+                .iter()
+                .any(|record| record.contains("号 / AI-") && record.contains(" / "))
+        );
     }
 
     #[test]
-    fn player_vote_target_is_exiled() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+    fn vote_target_is_exiled_without_human_input() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
         let mut flow = FlowState {
             phase: FlowPhase::Vote,
             ..default()
         };
-        let mut action = PlayerAction {
-            selected_target: Some(PlayerId(4)),
-            ..default()
-        };
+        let mut action = PlayerAction::default();
         let mut pending = PendingInput::default();
 
-        assert!(!advance_flow_state(&mut session, &mut flow, &mut action, &mut pending));
+        assert!(!advance_flow_state(
+            &mut session,
+            &mut flow,
+            &mut action,
+            &mut pending
+        ));
 
-        assert!(!session.player(PlayerId(4)).unwrap().alive);
-        assert_eq!(action.selected_target, None);
-        assert!(flow.public_records.iter().any(|record| record.contains("4 号被放逐")));
-    }
-
-    #[test]
-    fn player_speech_is_recorded() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
-        let mut flow = FlowState {
-            phase: FlowPhase::DaySpeech,
-            ..default()
-        };
-        let mut action = PlayerAction::default();
-        let mut pending = PendingInput {
-            text: "我怀疑 4 号".to_string(),
-        };
-
-        assert!(!advance_flow_state(&mut session, &mut flow, &mut action, &mut pending));
-
-        assert!(pending.text.is_empty());
-        assert!(flow.public_records.iter().any(|record| record.contains("我怀疑 4 号")));
-    }
-
-    #[test]
-    fn dead_human_cannot_advance_active_play() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
-        session.player_mut(PlayerId(1)).unwrap().alive = false;
-        let mut flow = FlowState {
-            phase: FlowPhase::DaySpeech,
-            ..default()
-        };
-        let mut action = PlayerAction {
-            selected_target: Some(PlayerId(4)),
-            ..default()
-        };
-        let mut pending = PendingInput {
-            text: "死人不该继续发言".to_string(),
-        };
-
-        assert!(advance_flow_state(&mut session, &mut flow, &mut action, &mut pending));
-
-        assert_eq!(flow.phase, FlowPhase::Review);
-        assert_eq!(flow.winner.as_deref(), Some("你已死亡"));
-        assert_eq!(action.selected_target, None);
-        assert!(pending.text.is_empty());
-        assert!(!flow.public_records.iter().any(|record| record.contains("死人不该继续发言")));
-        assert!(session.player(PlayerId(4)).unwrap().alive);
-    }
-
-    #[test]
-    fn human_death_after_night_resolution_enters_review() {
-        let mut session = GameSession::new_with_roles(
-            vec![
-                Role::Seer,
-                Role::Werewolf,
-                Role::Werewolf,
-                Role::Werewolf,
-                Role::Witch,
-                Role::Hunter,
-                Role::Villager,
-                Role::Villager,
-                Role::Villager,
-            ],
-            1,
+        assert!(session.players.iter().any(|player| !player.alive));
+        assert!(
+            flow.public_records
+                .iter()
+                .any(|record| record.contains("被放逐"))
         );
-        let mut flow = FlowState {
-            human_role: Some(Role::Seer),
-            ..default()
-        };
-        let mut action = PlayerAction::default();
-        let mut pending = PendingInput::default();
-
-        assert!(advance_flow_state(&mut session, &mut flow, &mut action, &mut pending));
-
-        assert_eq!(flow.phase, FlowPhase::Review);
-        assert_eq!(flow.winner.as_deref(), Some("你已死亡"));
-        assert!(!session.player(PlayerId(1)).unwrap().alive);
     }
 
     #[test]
@@ -1102,62 +1476,5 @@ mod tests {
         assert!(display.contains("01. 第 1 夜：游戏开始。"));
         assert!(display.contains("02. 第 1 夜：平安夜。"));
         assert!(display.contains("03. 1 号：我先听发言。"));
-    }
-
-    #[test]
-    fn seer_check_is_private_and_not_public() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
-        let mut flow = FlowState {
-            human_role: Some(Role::Seer),
-            ..default()
-        };
-        let mut action = PlayerAction {
-            selected_target: Some(PlayerId(4)),
-            ..default()
-        };
-        let mut pending = PendingInput::default();
-
-        assert!(!advance_flow_state(&mut session, &mut flow, &mut action, &mut pending));
-
-        assert!(flow.my_clues.iter().any(|record| record.contains("查验了 4 号")));
-        assert!(!flow.public_records.iter().any(|record| record.contains("查验")));
-        assert!(!flow.public_records.iter().any(|record| record.contains("私有线索")));
-    }
-
-    #[test]
-    fn witch_selection_without_poison_intent_does_not_poison_target() {
-        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
-        let mut flow = FlowState {
-            human_role: Some(Role::Witch),
-            ..default()
-        };
-        let mut action = PlayerAction {
-            selected_target: Some(PlayerId(5)),
-            witch_intent: WitchIntent::None,
-            ..default()
-        };
-        let mut pending = PendingInput::default();
-
-        assert!(!advance_flow_state(&mut session, &mut flow, &mut action, &mut pending));
-
-        assert!(session.player(PlayerId(5)).unwrap().alive);
-        assert!(!flow
-            .public_records
-            .iter()
-            .any(|record| record.contains("5 号死亡")));
-    }
-
-    #[test]
-    fn night_actions_are_filtered_by_role() {
-        let wolf_actions = visible_actions(FlowPhase::Night, Some(Role::Werewolf));
-        assert!(wolf_actions.contains(&("确认击杀", ButtonAction::AdvanceFlow)));
-        assert!(!wolf_actions.iter().any(|(label, _)| label.contains("女巫")));
-        assert!(!wolf_actions
-            .iter()
-            .any(|(_, action)| matches!(action, ButtonAction::WitchSave | ButtonAction::WitchPoison)));
-
-        let witch_actions = visible_actions(FlowPhase::Night, Some(Role::Witch));
-        assert!(witch_actions.iter().any(|(_, action)| *action == ButtonAction::WitchSave));
-        assert!(witch_actions.iter().any(|(_, action)| *action == ButtonAction::WitchPoison));
     }
 }

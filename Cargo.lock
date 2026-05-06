@@ -3062,6 +3062,8 @@ name = "kiva"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_input_focus",
+ "bevy_ui_widgets",
  "rand",
 ]
 
