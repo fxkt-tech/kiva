@@ -1,4 +1,7 @@
-use crate::game::domain::{Camp, Player, PlayerId, PlayerKind, Role};
+use rand::seq::SliceRandom;
+
+use crate::game::domain::{Camp, Player, PlayerId, PlayerKind, PlayerProfile, Role};
+use crate::game::player_pool::PlayerPool;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Winner {
@@ -13,14 +16,50 @@ pub struct GameSession {
 
 impl GameSession {
     pub fn new_with_roles(roles: Vec<Role>) -> Self {
+        let profiles = (1..=roles.len())
+            .map(|seat| PlayerProfile {
+                name: format!("AI-{seat:02}"),
+                personality_preference: "基础 AI 玩家".to_string(),
+                avatar: "AI".to_string(),
+                ai: crate::game::domain::PlayerAiConfig {
+                    model: "gpt-4.1-mini".to_string(),
+                    api_key: "KIVA_AI_API_KEY".to_string(),
+                    base_url: "https://api.openai.com/v1".to_string(),
+                },
+            })
+            .collect();
+
+        Self::new_with_roles_and_profiles(roles, profiles)
+    }
+
+    pub fn new_random_from_pool<R: rand::Rng + ?Sized>(mut roles: Vec<Role>, rng: &mut R) -> Self {
+        roles.shuffle(rng);
+        let profiles = PlayerPool::default()
+            .draw_nine(rng)
+            .expect("default player pool must contain at least nine players");
+
+        Self::new_with_roles_and_profiles(roles, profiles)
+    }
+
+    pub fn new_with_roles_and_profiles(roles: Vec<Role>, profiles: Vec<PlayerProfile>) -> Self {
+        assert_eq!(
+            roles.len(),
+            profiles.len(),
+            "roles and player profiles must have the same length"
+        );
+
         let players = roles
             .into_iter()
+            .zip(profiles)
             .enumerate()
-            .map(|(index, role)| {
+            .map(|(index, (role, profile))| {
                 let seat = index + 1;
                 Player {
                     id: PlayerId(seat),
-                    name: format!("AI-{seat:02}"),
+                    name: profile.name,
+                    personality_preference: profile.personality_preference,
+                    avatar: profile.avatar,
+                    ai: profile.ai,
                     role,
                     kind: PlayerKind::Ai,
                     alive: true,

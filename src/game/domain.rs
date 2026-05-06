@@ -54,10 +54,28 @@ pub enum PlayerKind {
     Ai,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlayerAiConfig {
+    pub model: String,
+    pub api_key: String,
+    pub base_url: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlayerProfile {
+    pub name: String,
+    pub personality_preference: String,
+    pub avatar: String,
+    pub ai: PlayerAiConfig,
+}
+
 #[derive(Debug, Clone)]
 pub struct Player {
     pub id: PlayerId,
     pub name: String,
+    pub personality_preference: String,
+    pub avatar: String,
+    pub ai: PlayerAiConfig,
     pub role: Role,
     pub kind: PlayerKind,
     pub alive: bool,

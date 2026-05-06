@@ -1,13 +1,3 @@
-use bevy::{
-    ecs::hierarchy::ChildSpawnerCommands,
-    input::keyboard::{Key, KeyboardInput},
-    input::mouse::{MouseScrollUnit, MouseWheel},
-    picking::hover::HoverMap,
-    prelude::*,
-};
-use bevy_ui_widgets::{ControlOrientation, CoreScrollbarThumb, Scrollbar};
-use rand::seq::SliceRandom;
-
 use crate::game::ai::{choose_vote_target, choose_wolf_target, generate_speech};
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
@@ -18,6 +8,14 @@ use crate::game::rules::{
     DeathReason, NightActions, check_camp, resolve_hunter_shot, resolve_night,
 };
 use crate::game::session::{GameSession, Winner};
+use bevy::{
+    ecs::hierarchy::ChildSpawnerCommands,
+    input::keyboard::{Key, KeyboardInput},
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    picking::hover::HoverMap,
+    prelude::*,
+};
+use bevy_ui_widgets::{ControlOrientation, CoreScrollbarThumb, Scrollbar};
 
 const BG: Color = Color::srgb(0.018, 0.022, 0.030);
 const PANEL: Color = Color::srgb(0.045, 0.052, 0.067);
@@ -264,9 +262,8 @@ pub fn button_action_system(
 
         match action {
             ButtonAction::StartGame => {
-                let mut roles = Role::nine_player_deck();
-                roles.shuffle(&mut rand::rng());
-                session.session = Some(GameSession::new_with_roles(roles));
+                let roles = Role::nine_player_deck();
+                session.session = Some(GameSession::new_random_from_pool(roles, &mut rand::rng()));
                 *flow = FlowState::default();
                 *action_state = PlayerAction::default();
                 pending_input.text.clear();
@@ -563,7 +560,7 @@ fn avatar(assets: &UiAssets, player: &Player) -> impl Bundle {
         } else {
             DEAD_SURFACE
         }),
-        children![text(assets, role_icon(player.role), 18.0, color)],
+        children![text(assets, player.avatar.clone(), 18.0, color)],
     )
 }
 
@@ -596,7 +593,7 @@ fn observer_panel(assets: &UiAssets, session: &GameSession, flow: &FlowState) ->
                     ..default()
                 },
                 children![
-                    text(assets, "Superpowers 观战面板", 27.0, TEXT),
+                    text(assets, "观战面板", 27.0, TEXT),
                     text(assets, format!("第 {} 天", flow.day), 40.0, GOLD),
                     stat_strip(assets, wolves, good),
                     text(assets, selected_hint, 17.0, MUTED),
@@ -874,8 +871,9 @@ fn visible_log_records(records: &[String]) -> Vec<String> {
 
     records
         .iter()
-        .skip(records.len().saturating_sub(LOG_BUBBLE_LIMIT))
+        .rev()
         .cloned()
+        .take(LOG_BUBBLE_LIMIT)
         .collect()
 }
 
@@ -1282,6 +1280,7 @@ fn role_color(role: Role) -> Color {
     }
 }
 
+#[allow(dead_code)]
 fn role_icon(role: Role) -> &'static str {
     match role {
         Role::Werewolf => "狼",
