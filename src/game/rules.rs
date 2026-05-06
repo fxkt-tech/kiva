@@ -1,118 +1,147 @@
-use crate::game::card::Card;
-use crate::game::player::{Player, PlayerId};
+use crate::game::domain::{Camp, PlayerId};
+use crate::game::session::GameSession;
 
-pub fn calc_score(hand: &[Card]) -> u8 {
-    hand.iter().map(|c| c.rank).sum()
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeathReason {
+    WolfKill,
+    WitchPoison,
+    Exile,
+    HunterShot,
 }
 
-#[allow(dead_code)]
-pub fn is_bust(hand: &[Card]) -> bool {
-    calc_score(hand) > 21
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Death {
+    pub player: PlayerId,
+    pub reason: DeathReason,
 }
 
-/// 返回胜者的 PlayerId 列表（可能平局多人）
-/// 规则：爆牌者淘汰，剩余者中点数最高者胜，同分平局
-pub fn judge_winner(seats: &[Option<Player>; 4]) -> Vec<PlayerId> {
-    let scores: Vec<(PlayerId, u8)> = seats
-        .iter()
-        .enumerate()
-        .filter_map(|(_i, seat)| {
-            seat.as_ref().map(|p| (p.id, calc_score(&p.hand)))
-        })
-        .filter(|(_, score)| *score <= 21)
-        .collect();
+impl Death {
+    pub fn new(player: PlayerId, reason: DeathReason) -> Self {
+        Self { player, reason }
+    }
+}
 
-    if scores.is_empty() {
-        // 所有人都爆牌，返回所有参与者（平局）
-        return seats
-            .iter()
-            .filter_map(|s| s.as_ref().map(|p| p.id))
-            .collect();
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct NightActions {
+    pub wolf_target: Option<PlayerId>,
+    pub witch_save: bool,
+    pub witch_poison_target: Option<PlayerId>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct NightResult {
+    pub deaths: Vec<Death>,
+}
+
+pub fn resolve_night(session: &mut GameSession, actions: NightActions) -> NightResult {
+    let mut deaths = Vec::new();
+
+    if let Some(target) = actions.wolf_target
+        && !actions.witch_save
+    {
+        kill(session, target);
+        deaths.push(Death::new(target, DeathReason::WolfKill));
     }
 
-    let max_score = scores.iter().map(|(_, s)| *s).max().unwrap_or(0);
-    scores
-        .into_iter()
-        .filter(|(_, s)| *s == max_score)
-        .map(|(id, _)| id)
-        .collect()
+    if let Some(target) = actions.witch_poison_target {
+        kill(session, target);
+        deaths.push(Death::new(target, DeathReason::WitchPoison));
+    }
+
+    NightResult { deaths }
 }
 
-/// 游戏结束条件：所有在座玩家都 stand，或牌组耗尽
-pub fn is_round_over(seats: &[Option<Player>; 4], deck_empty: bool) -> bool {
-    if deck_empty {
-        return true;
+pub fn check_camp(session: &GameSession, target: PlayerId) -> Option<Camp> {
+    session.player(target).map(|player| player.role.camp())
+}
+
+pub fn hunter_can_shoot(reason: DeathReason) -> bool {
+    matches!(reason, DeathReason::WolfKill | DeathReason::Exile)
+}
+
+pub fn resolve_hunter_shot(session: &mut GameSession, target: PlayerId) -> Death {
+    kill(session, target);
+    Death::new(target, DeathReason::HunterShot)
+}
+
+fn kill(session: &mut GameSession, target: PlayerId) {
+    if let Some(player) = session.player_mut(target) {
+        player.alive = false;
     }
-    seats.iter().filter_map(|s| s.as_ref()).all(|p| p.is_stand)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::card::Card;
-    use crate::game::player::Player;
+    use crate::game::domain::{Camp, PlayerId, Role};
+    use crate::game::session::GameSession;
 
-    fn card(rank: u8) -> Card {
-        Card { rank }
-    }
-    fn player_with_hand(id: u8, ranks: &[u8]) -> Player {
-        let mut p = Player::new(id, "test", false);
-        for &r in ranks {
-            p.take_card(card(r));
-        }
-        p
+    #[test]
+    fn night_kill_kills_target_unless_witch_saves() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+
+        let killed = resolve_night(
+            &mut session,
+            NightActions {
+                wolf_target: Some(PlayerId(4)),
+                witch_save: false,
+                ..NightActions::default()
+            },
+        );
+        assert_eq!(killed.deaths, vec![Death::new(PlayerId(4), DeathReason::WolfKill)]);
+        assert!(!session.player(PlayerId(4)).unwrap().alive);
+
+        let mut saved_session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+        let saved = resolve_night(
+            &mut saved_session,
+            NightActions {
+                wolf_target: Some(PlayerId(4)),
+                witch_save: true,
+                ..NightActions::default()
+            },
+        );
+        assert!(saved.deaths.is_empty());
+        assert!(saved_session.player(PlayerId(4)).unwrap().alive);
     }
 
     #[test]
-    fn calc_score_sums_ranks() {
-        assert_eq!(calc_score(&[card(5), card(7)]), 12);
+    fn seer_check_returns_target_camp() {
+        let session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+
+        assert_eq!(check_camp(&session, PlayerId(1)), Some(Camp::Werewolf));
+        assert_eq!(check_camp(&session, PlayerId(4)), Some(Camp::Good));
     }
 
     #[test]
-    fn is_bust_over_21() {
-        assert!(is_bust(&[card(11), card(11)]));
-        assert!(!is_bust(&[card(10), card(11)]));
+    fn witch_poison_kills_target() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
+
+        let result = resolve_night(
+            &mut session,
+            NightActions {
+                witch_poison_target: Some(PlayerId(5)),
+                ..NightActions::default()
+            },
+        );
+
+        assert_eq!(result.deaths, vec![Death::new(PlayerId(5), DeathReason::WitchPoison)]);
+        assert!(!session.player(PlayerId(5)).unwrap().alive);
     }
 
     #[test]
-    fn judge_winner_highest_wins() {
-        let mut seats: [Option<Player>; 4] = [None, None, None, None];
-        seats[0] = Some(player_with_hand(0, &[10, 8])); // 18
-        seats[1] = Some(player_with_hand(1, &[9, 9])); // 18
-        seats[2] = Some(player_with_hand(2, &[7, 7])); // 14
-        let winners = judge_winner(&seats);
-        assert_eq!(winners.len(), 2); // 平局
-        assert!(winners.contains(&0));
-        assert!(winners.contains(&1));
+    fn hunter_can_shoot_after_exile_or_wolf_kill_but_not_poison() {
+        assert!(hunter_can_shoot(DeathReason::Exile));
+        assert!(hunter_can_shoot(DeathReason::WolfKill));
+        assert!(!hunter_can_shoot(DeathReason::WitchPoison));
     }
 
     #[test]
-    fn judge_winner_bust_excluded() {
-        let mut seats: [Option<Player>; 4] = [None, None, None, None];
-        seats[0] = Some(player_with_hand(0, &[11, 11])); // 22 爆牌
-        seats[1] = Some(player_with_hand(1, &[9, 8])); // 17
-        let winners = judge_winner(&seats);
-        assert_eq!(winners, vec![1]);
-    }
+    fn hunter_shot_kills_target() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck(), 1);
 
-    #[test]
-    fn judge_winner_all_bust_returns_all() {
-        let mut seats: [Option<Player>; 4] = [None, None, None, None];
-        seats[0] = Some(player_with_hand(0, &[11, 11]));
-        seats[1] = Some(player_with_hand(1, &[11, 11]));
-        let winners = judge_winner(&seats);
-        assert_eq!(winners.len(), 2);
-    }
+        let death = resolve_hunter_shot(&mut session, PlayerId(6));
 
-    #[test]
-    fn round_over_when_all_stand() {
-        let mut seats: [Option<Player>; 4] = [None, None, None, None];
-        let mut p0 = Player::new(0, "a", false);
-        let mut p1 = Player::new(1, "b", false);
-        p0.is_stand = true;
-        p1.is_stand = true;
-        seats[0] = Some(p0);
-        seats[1] = Some(p1);
-        assert!(is_round_over(&seats, false));
+        assert_eq!(death, Death::new(PlayerId(6), DeathReason::HunterShot));
+        assert!(!session.player(PlayerId(6)).unwrap().alive);
     }
 }
