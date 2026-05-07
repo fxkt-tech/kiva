@@ -127,6 +127,24 @@ pub fn validate_vote(
     Ok(())
 }
 
+pub fn validate_seer_check(
+    session: &GameSession,
+    actor: PlayerId,
+    checked: &[PlayerId],
+    decision: &TargetDecision,
+) -> Result<(), DecisionError> {
+    require_reason(&decision.reason)?;
+    let Some(target) = session.player(decision.target) else {
+        return Err(DecisionError::IllegalTarget(decision.target));
+    };
+
+    if !target.alive || decision.target == actor || checked.contains(&decision.target) {
+        return Err(DecisionError::IllegalTarget(decision.target));
+    }
+
+    Ok(())
+}
+
 #[allow(dead_code)]
 pub fn validate_wolf_kill(
     session: &GameSession,

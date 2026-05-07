@@ -1,12 +1,12 @@
 use crate::game::decision::{
     AiDecisionKind, TargetDecision, parse_speech_decision, parse_target_decision, validate_vote,
-    validate_wolf_kill,
+    validate_seer_check, validate_wolf_kill,
 };
 use crate::game::domain::{PlayerId, Role};
 use crate::game::events::{EventLog, EventVisibility, GameEvent};
 use crate::game::llm::{LlmClient, LlmError, LlmRequest};
 use crate::game::prompt::build_prompt;
-use crate::game::rules::VoteCast;
+use crate::game::rules::{VoteCast, check_camp};
 use crate::game::session::GameSession;
 
 #[derive(Debug, Default)]
@@ -155,6 +155,48 @@ pub fn choose_wolf_kill(
     Ok(Some(decision.target))
 }
 
+pub fn choose_seer_check(
+    client: &impl LlmClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    night: u32,
+    checked: &[PlayerId],
+) -> Result<Option<PlayerId>, LlmError> {
+    let decision = match build_target_with_llm(
+        client,
+        session,
+        log,
+        actor,
+        AiDecisionKind::SeerCheck {
+            night,
+            checked: checked.to_vec(),
+        },
+    ) {
+        Ok(decision) => {
+            validate_seer_check(session, actor, checked, &decision)
+                .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+            decision
+        }
+        Err(LlmError::NotConfigured) => fallback_seer_check_decision(session, actor, checked),
+        Err(err) => return Err(err),
+    };
+
+    if let Some(camp) = check_camp(session, decision.target) {
+        log.append(
+            GameEvent::SeerChecked {
+                night,
+                seer: actor,
+                target: decision.target,
+                camp,
+            },
+            EventVisibility::ActorOnly(actor),
+        );
+    }
+
+    Ok(Some(decision.target))
+}
+
 fn build_vote_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -252,6 +294,21 @@ fn fallback_wolf_kill_decision(session: &GameSession, actor: PlayerId) -> Target
     TargetDecision {
         target,
         reason: "未配置 LLM，使用默认狼刀。".to_string(),
+    }
+}
+
+fn fallback_seer_check_decision(
+    session: &GameSession,
+    actor: PlayerId,
+    checked: &[PlayerId],
+) -> TargetDecision {
+    let target = choose_seer_target(session, checked)
+        .filter(|target| *target != actor)
+        .or_else(|| choose_vote_target(session, actor))
+        .unwrap_or(actor);
+    TargetDecision {
+        target,
+        reason: "未配置 LLM，使用默认查验。".to_string(),
     }
 }
 
@@ -395,5 +452,28 @@ mod tests {
             &log.events()[0].event,
             GameEvent::WolfKillChosen { actor: PlayerId(1), target: PlayerId(4), .. }
         ));
+    }
+
+    #[test]
+    fn seer_check_uses_fake_llm_and_appends_actor_only_event() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
+        let actor = PlayerId(4);
+        let player = session.player_mut(actor).unwrap();
+        player.ai.base_url = "https://example.test/v1".to_string();
+        player.ai.api_key = "test-key".to_string();
+        player.ai.model = "test-model".to_string();
+        let mut log = EventLog::default();
+        let client = FakeLlmClient {
+            response: r#"{"target":1,"reason":"先验前置位。"}"#,
+        };
+
+        let target = choose_seer_check(&client, &session, &mut log, actor, 1, &[]).unwrap();
+
+        assert_eq!(target, Some(PlayerId(1)));
+        assert!(matches!(
+            &log.events()[0].event,
+            GameEvent::SeerChecked { seer: PlayerId(4), target: PlayerId(1), .. }
+        ));
+        assert_eq!(log.events()[0].visibility, EventVisibility::ActorOnly(actor));
     }
 }

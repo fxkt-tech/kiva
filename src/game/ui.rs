@@ -1,5 +1,6 @@
 ﻿use crate::game::ai::{
-    NoopLlmClient, choose_vote_target, choose_wolf_kill, generate_day_speech, generate_vote,
+    NoopLlmClient, choose_seer_check, choose_vote_target, choose_wolf_kill, generate_day_speech,
+    generate_vote,
 };
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
@@ -1197,7 +1198,11 @@ fn advance_flow_state(
                 .players
                 .iter()
                 .find(|player| player.alive && player.role == Role::Seer)
-                .and_then(|seer| choose_ai_seer_target(session, seer.id));
+                .and_then(|seer| {
+                    choose_seer_check(&client, session, &mut flow.event_log, seer.id, flow.day, &[])
+                        .ok()
+                })
+                .flatten();
             if let Some(target) = seer_target
                 && let Some(camp) = check_camp(session, target)
             {
@@ -1352,13 +1357,6 @@ fn start_speech_playback(
     speech.timer = Timer::from_seconds(0.5, TimerMode::Once);
     speech.active = true;
     redraw.value = true;
-}
-
-fn choose_ai_seer_target(session: &GameSession, seer: PlayerId) -> Option<PlayerId> {
-    session
-        .alive_players()
-        .find(|player| player.id != seer)
-        .map(|player| player.id)
 }
 
 fn hunter_can_auto_shoot(session: &GameSession, hunter: PlayerId, reason: DeathReason) -> bool {
