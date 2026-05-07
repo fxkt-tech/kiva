@@ -11,6 +11,7 @@ pub mod llm;
 pub mod phase;
 pub mod player_config;
 pub mod player_pool;
+pub mod prompt;
 pub mod rules;
 pub mod session;
 pub mod ui;

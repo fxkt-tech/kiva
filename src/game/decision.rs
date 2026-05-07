@@ -49,6 +49,7 @@ pub struct TargetDecision {
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[allow(dead_code)]
 pub struct WitchDecision {
     pub action: WitchActionDecision,
     #[serde(default, deserialize_with = "deserialize_optional_player_id")]
@@ -58,6 +59,7 @@ pub struct WitchDecision {
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[allow(dead_code)]
 pub enum WitchActionDecision {
     Save,
     Poison,
@@ -108,6 +110,7 @@ pub fn parse_target_decision(json: &str) -> Result<TargetDecision, DecisionError
     serde_json::from_str(json).map_err(|err| DecisionError::InvalidJson(err.to_string()))
 }
 
+#[allow(dead_code)]
 pub fn validate_wolf_kill(
     session: &GameSession,
     actor: PlayerId,
@@ -125,6 +128,7 @@ pub fn validate_wolf_kill(
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn validate_witch_decision(
     wolf_target: Option<PlayerId>,
     has_save: bool,
@@ -155,6 +159,7 @@ pub fn validate_witch_decision(
     Ok(())
 }
 
+#[allow(dead_code)]
 fn require_reason(reason: &str) -> Result<(), DecisionError> {
     if reason.trim().is_empty() {
         Err(DecisionError::EmptyReason)

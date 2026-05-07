@@ -17,6 +17,7 @@ pub struct LlmRequest {
 }
 
 impl LlmRequest {
+    #[allow(dead_code)]
     pub fn new(config: &PlayerAiConfig, user: String) -> Result<Self, LlmError> {
         if config.base_url.trim().is_empty()
             || config.api_key.trim().is_empty()
