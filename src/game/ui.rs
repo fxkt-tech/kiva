@@ -1,11 +1,12 @@
 ﻿use crate::game::ai::{
-    NoopLlmClient, choose_seer_check, choose_vote_target, choose_wolf_kill, generate_day_speech,
-    generate_vote,
+    NoopLlmClient, choose_seer_check, choose_vote_target, choose_witch_medicine, choose_wolf_kill,
+    generate_day_speech, generate_vote,
 };
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
     SessionResource, SpeechPlayback, WitchIntent,
 };
+use crate::game::decision::WitchActionDecision;
 use crate::game::domain::{Player, PlayerId, PlayerKind, Role};
 use crate::game::rules::{
     DeathReason, NightActions, check_camp, resolve_hunter_shot, resolve_night, tally_votes,
@@ -1213,13 +1214,39 @@ fn advance_flow_state(
                     camp_label(camp)
                 ));
             }
+            let witch_decision = session
+                .players
+                .iter()
+                .find(|player| player.alive && player.role == Role::Witch)
+                .and_then(|witch| {
+                    choose_witch_medicine(
+                        &client,
+                        session,
+                        &mut flow.event_log,
+                        witch.id,
+                        flow.day,
+                        wolf_target,
+                        true,
+                        true,
+                    )
+                    .ok()
+                });
 
             let result = resolve_night(
                 session,
                 NightActions {
                     wolf_target,
-                    witch_save: false,
-                    witch_poison_target: None,
+                    witch_save: matches!(
+                        witch_decision.as_ref().map(|decision| decision.action),
+                        Some(WitchActionDecision::Save)
+                    ),
+                    witch_poison_target: witch_decision.and_then(|decision| {
+                        if decision.action == WitchActionDecision::Poison {
+                            decision.target
+                        } else {
+                            None
+                        }
+                    }),
                 },
             );
 

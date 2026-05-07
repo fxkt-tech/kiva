@@ -1,9 +1,10 @@
 use crate::game::decision::{
     AiDecisionKind, TargetDecision, parse_speech_decision, parse_target_decision, validate_vote,
-    validate_seer_check, validate_wolf_kill,
+    validate_seer_check, validate_witch_decision, validate_wolf_kill, parse_witch_decision,
+    WitchActionDecision, WitchDecision,
 };
 use crate::game::domain::{PlayerId, Role};
-use crate::game::events::{EventLog, EventVisibility, GameEvent};
+use crate::game::events::{EventLog, EventVisibility, GameEvent, WitchMedicineAction};
 use crate::game::llm::{LlmClient, LlmError, LlmRequest};
 use crate::game::prompt::build_prompt;
 use crate::game::rules::{VoteCast, check_camp};
@@ -197,6 +198,53 @@ pub fn choose_seer_check(
     Ok(Some(decision.target))
 }
 
+pub fn choose_witch_medicine(
+    client: &impl LlmClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    night: u32,
+    wolf_target: Option<PlayerId>,
+    has_save: bool,
+    has_poison: bool,
+) -> Result<WitchDecision, LlmError> {
+    let decision = match build_witch_with_llm(
+        client,
+        session,
+        log,
+        actor,
+        night,
+        wolf_target,
+        has_save,
+        has_poison,
+    ) {
+        Ok(decision) => {
+            validate_witch_decision(wolf_target, has_save, has_poison, &decision)
+                .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+            decision
+        }
+        Err(LlmError::NotConfigured) => fallback_witch_decision(),
+        Err(err) => return Err(err),
+    };
+
+    log.append(
+        GameEvent::WitchMedicineUsed {
+            night,
+            witch: actor,
+            action: match decision.action {
+                WitchActionDecision::Save => WitchMedicineAction::Save,
+                WitchActionDecision::Poison => WitchMedicineAction::Poison,
+                WitchActionDecision::Skip => WitchMedicineAction::Skip,
+            },
+            target: decision.target,
+            reason: decision.reason.clone(),
+        },
+        EventVisibility::ActorOnly(actor),
+    );
+
+    Ok(decision)
+}
+
 fn build_vote_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -241,6 +289,41 @@ fn build_target_with_llm(
     })?;
 
     parse_target_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
+}
+
+fn build_witch_with_llm(
+    client: &impl LlmClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    night: u32,
+    wolf_target: Option<PlayerId>,
+    has_save: bool,
+    has_poison: bool,
+) -> Result<WitchDecision, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Err(LlmError::InvalidResponse("actor not found".to_string()));
+    };
+
+    let prompt = build_prompt(
+        session,
+        actor,
+        AiDecisionKind::WitchMedicine {
+            night,
+            wolf_target,
+            has_save,
+            has_poison,
+        },
+        log,
+    );
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client.complete(LlmRequest {
+        system: prompt.system,
+        ..request
+    })?;
+
+    parse_witch_decision(&response.content)
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
 }
 
@@ -309,6 +392,14 @@ fn fallback_seer_check_decision(
     TargetDecision {
         target,
         reason: "未配置 LLM，使用默认查验。".to_string(),
+    }
+}
+
+fn fallback_witch_decision() -> WitchDecision {
+    WitchDecision {
+        action: WitchActionDecision::Skip,
+        target: None,
+        reason: "未配置 LLM，默认不用药。".to_string(),
     }
 }
 
@@ -473,6 +564,39 @@ mod tests {
         assert!(matches!(
             &log.events()[0].event,
             GameEvent::SeerChecked { seer: PlayerId(4), target: PlayerId(1), .. }
+        ));
+        assert_eq!(log.events()[0].visibility, EventVisibility::ActorOnly(actor));
+    }
+
+    #[test]
+    fn witch_medicine_uses_fake_llm_and_appends_actor_only_event() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
+        let actor = PlayerId(5);
+        let player = session.player_mut(actor).unwrap();
+        player.ai.base_url = "https://example.test/v1".to_string();
+        player.ai.api_key = "test-key".to_string();
+        player.ai.model = "test-model".to_string();
+        let mut log = EventLog::default();
+        let client = FakeLlmClient {
+            response: r#"{"action":"save","target":null,"reason":"首夜救人。"}"#,
+        };
+
+        let decision = choose_witch_medicine(
+            &client,
+            &session,
+            &mut log,
+            actor,
+            1,
+            Some(PlayerId(4)),
+            true,
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(decision.action, WitchActionDecision::Save);
+        assert!(matches!(
+            &log.events()[0].event,
+            GameEvent::WitchMedicineUsed { witch: PlayerId(5), action: WitchMedicineAction::Save, .. }
         ));
         assert_eq!(log.events()[0].visibility, EventVisibility::ActorOnly(actor));
     }

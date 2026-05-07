@@ -110,6 +110,10 @@ pub fn parse_target_decision(json: &str) -> Result<TargetDecision, DecisionError
     serde_json::from_str(json).map_err(|err| DecisionError::InvalidJson(err.to_string()))
 }
 
+pub fn parse_witch_decision(json: &str) -> Result<WitchDecision, DecisionError> {
+    serde_json::from_str(json).map_err(|err| DecisionError::InvalidJson(err.to_string()))
+}
+
 pub fn validate_vote(
     session: &GameSession,
     actor: PlayerId,
