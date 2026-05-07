@@ -1,5 +1,5 @@
 ﻿use crate::game::ai::{
-    NoopLlmClient, choose_vote_target, choose_wolf_target, generate_day_speech, generate_vote,
+    NoopLlmClient, choose_vote_target, choose_wolf_kill, generate_day_speech, generate_vote,
 };
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
@@ -1187,7 +1187,12 @@ fn advance_flow_state(
                 .iter()
                 .find(|player| player.alive && player.role == Role::Werewolf)
                 .map(|player| player.id);
-            let wolf_target = wolf_actor.and_then(|actor| choose_wolf_target(session, actor));
+            let client = NoopLlmClient;
+            let wolf_target = wolf_actor
+                .and_then(|actor| {
+                    choose_wolf_kill(&client, session, &mut flow.event_log, actor, flow.day).ok()
+                })
+                .flatten();
             let seer_target = session
                 .players
                 .iter()

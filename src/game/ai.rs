@@ -1,5 +1,6 @@
 use crate::game::decision::{
     AiDecisionKind, TargetDecision, parse_speech_decision, parse_target_decision, validate_vote,
+    validate_wolf_kill,
 };
 use crate::game::domain::{PlayerId, Role};
 use crate::game::events::{EventLog, EventVisibility, GameEvent};
@@ -118,6 +119,42 @@ pub fn generate_vote(
     })
 }
 
+pub fn choose_wolf_kill(
+    client: &impl LlmClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    night: u32,
+) -> Result<Option<PlayerId>, LlmError> {
+    let decision = match build_target_with_llm(
+        client,
+        session,
+        log,
+        actor,
+        AiDecisionKind::WolfKill { night },
+    ) {
+        Ok(decision) => {
+            validate_wolf_kill(session, actor, &decision)
+                .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+            decision
+        }
+        Err(LlmError::NotConfigured) => fallback_wolf_kill_decision(session, actor),
+        Err(err) => return Err(err),
+    };
+
+    log.append(
+        GameEvent::WolfKillChosen {
+            night,
+            actor,
+            target: decision.target,
+            reason: decision.reason,
+        },
+        EventVisibility::Wolves,
+    );
+
+    Ok(Some(decision.target))
+}
+
 fn build_vote_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -141,6 +178,28 @@ fn build_vote_with_llm(
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
 
     Ok(decision)
+}
+
+fn build_target_with_llm(
+    client: &impl LlmClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    decision_kind: AiDecisionKind,
+) -> Result<TargetDecision, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Err(LlmError::InvalidResponse("actor not found".to_string()));
+    };
+
+    let prompt = build_prompt(session, actor, decision_kind, log);
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client.complete(LlmRequest {
+        system: prompt.system,
+        ..request
+    })?;
+
+    parse_target_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
 }
 
 fn build_day_speech_with_llm(
@@ -185,6 +244,14 @@ fn fallback_vote_decision(session: &GameSession, actor: PlayerId) -> TargetDecis
     TargetDecision {
         target,
         reason: "未配置 LLM，使用默认投票。".to_string(),
+    }
+}
+
+fn fallback_wolf_kill_decision(session: &GameSession, actor: PlayerId) -> TargetDecision {
+    let target = choose_wolf_target(session, actor).unwrap_or(actor);
+    TargetDecision {
+        target,
+        reason: "未配置 LLM，使用默认狼刀。".to_string(),
     }
 }
 
@@ -305,6 +372,28 @@ mod tests {
         assert!(matches!(
             &log.events()[0].event,
             GameEvent::VoteCast { voter: PlayerId(1), target: PlayerId(4), .. }
+        ));
+    }
+
+    #[test]
+    fn wolf_kill_uses_fake_llm_and_appends_private_event() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
+        let actor = PlayerId(1);
+        let player = session.player_mut(actor).unwrap();
+        player.ai.base_url = "https://example.test/v1".to_string();
+        player.ai.api_key = "test-key".to_string();
+        player.ai.model = "test-model".to_string();
+        let mut log = EventLog::default();
+        let client = FakeLlmClient {
+            response: r#"{"target":4,"reason":"疑似预言家。"}"#,
+        };
+
+        let target = choose_wolf_kill(&client, &session, &mut log, actor, 1).unwrap();
+
+        assert_eq!(target, Some(PlayerId(4)));
+        assert!(matches!(
+            &log.events()[0].event,
+            GameEvent::WolfKillChosen { actor: PlayerId(1), target: PlayerId(4), .. }
         ));
     }
 }
