@@ -1,4 +1,6 @@
-﻿use crate::game::ai::{choose_vote_target, choose_wolf_target, generate_speech};
+﻿use crate::game::ai::{
+    NoopLlmClient, choose_vote_target, choose_wolf_target, generate_day_speech,
+};
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
     SessionResource, SpeechPlayback, WitchIntent,
@@ -333,8 +335,11 @@ pub fn speech_playback_system(
 
     if let Some(actor) = speech.current_speaker {
         let day = flow.day;
-        flow.public_records
-            .push(generate_speech(session, actor, day));
+        let client = NoopLlmClient;
+        let _ = generate_day_speech(&client, session, &mut flow.event_log, actor, day);
+        if let Some(record) = flow.event_log.public_projection().last().cloned() {
+            flow.public_records.push(record);
+        }
     }
 
     if let Some(next_speaker) = speech.queue.pop() {
