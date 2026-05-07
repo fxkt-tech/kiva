@@ -1,5 +1,5 @@
 ﻿use crate::game::ai::{
-    NoopLlmClient, choose_vote_target, choose_wolf_target, generate_day_speech,
+    NoopLlmClient, choose_vote_target, choose_wolf_target, generate_day_speech, generate_vote,
 };
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
@@ -7,7 +7,7 @@ use crate::game::app_state::{
 };
 use crate::game::domain::{Player, PlayerId, PlayerKind, Role};
 use crate::game::rules::{
-    DeathReason, NightActions, check_camp, resolve_hunter_shot, resolve_night,
+    DeathReason, NightActions, check_camp, resolve_hunter_shot, resolve_night, tally_votes,
 };
 use crate::game::session::{GameSession, Winner};
 use bevy::{
@@ -1265,11 +1265,34 @@ fn advance_flow_state(
             false
         }
         FlowPhase::Vote => {
-            let target = choose_group_vote_target(session);
+            let client = NoopLlmClient;
+            let votes = session
+                .alive_players()
+                .map(|player| player.id)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .filter_map(|actor| {
+                    generate_vote(&client, session, &mut flow.event_log, actor, flow.day).ok()
+                })
+                .collect::<Vec<_>>();
+            for record in flow.event_log.public_projection() {
+                if !flow.public_records.contains(&record) {
+                    flow.public_records.push(record);
+                }
+            }
+
+            let target = tally_votes(&votes);
             if let Some(target) = target {
                 if let Some(player) = session.player_mut(target) {
                     player.alive = false;
                 }
+                flow.event_log.append(
+                    crate::game::events::GameEvent::PlayerExiled {
+                        day: flow.day,
+                        player: target,
+                    },
+                    crate::game::events::EventVisibility::Public,
+                );
                 flow.public_records
                     .push(format!("第 {} 天：{} 号被放逐。", flow.day, target.0));
 
@@ -1330,14 +1353,6 @@ fn choose_ai_seer_target(session: &GameSession, seer: PlayerId) -> Option<Player
     session
         .alive_players()
         .find(|player| player.id != seer)
-        .map(|player| player.id)
-}
-
-fn choose_group_vote_target(session: &GameSession) -> Option<PlayerId> {
-    session
-        .alive_players()
-        .find(|player| player.role == Role::Werewolf)
-        .or_else(|| session.alive_players().next())
         .map(|player| player.id)
 }
 

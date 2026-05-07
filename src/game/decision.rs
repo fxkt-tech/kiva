@@ -110,6 +110,23 @@ pub fn parse_target_decision(json: &str) -> Result<TargetDecision, DecisionError
     serde_json::from_str(json).map_err(|err| DecisionError::InvalidJson(err.to_string()))
 }
 
+pub fn validate_vote(
+    session: &GameSession,
+    actor: PlayerId,
+    decision: &TargetDecision,
+) -> Result<(), DecisionError> {
+    require_reason(&decision.reason)?;
+    let Some(target) = session.player(decision.target) else {
+        return Err(DecisionError::IllegalTarget(decision.target));
+    };
+
+    if !target.alive || decision.target == actor {
+        return Err(DecisionError::IllegalTarget(decision.target));
+    }
+
+    Ok(())
+}
+
 #[allow(dead_code)]
 pub fn validate_wolf_kill(
     session: &GameSession,

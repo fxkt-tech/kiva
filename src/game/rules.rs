@@ -33,6 +33,29 @@ pub struct NightResult {
     pub deaths: Vec<Death>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VoteCast {
+    pub voter: PlayerId,
+    pub target: PlayerId,
+    pub reason: String,
+}
+
+pub fn tally_votes(votes: &[VoteCast]) -> Option<PlayerId> {
+    let mut counts = std::collections::HashMap::<PlayerId, usize>::new();
+    for vote in votes {
+        *counts.entry(vote.target).or_default() += 1;
+    }
+
+    counts
+        .into_iter()
+        .max_by(|(left_target, left_count), (right_target, right_count)| {
+            left_count
+                .cmp(right_count)
+                .then_with(|| right_target.0.cmp(&left_target.0))
+        })
+        .map(|(target, _)| target)
+}
+
 pub fn resolve_night(session: &mut GameSession, actions: NightActions) -> NightResult {
     let mut deaths = Vec::new();
 
@@ -150,5 +173,28 @@ mod tests {
 
         assert_eq!(death, Death::new(PlayerId(6), DeathReason::HunterShot));
         assert!(!session.player(PlayerId(6)).unwrap().alive);
+    }
+
+    #[test]
+    fn vote_tally_exiles_highest_vote_target() {
+        let votes = vec![
+            VoteCast {
+                voter: PlayerId(1),
+                target: PlayerId(4),
+                reason: "a".to_string(),
+            },
+            VoteCast {
+                voter: PlayerId(2),
+                target: PlayerId(4),
+                reason: "b".to_string(),
+            },
+            VoteCast {
+                voter: PlayerId(3),
+                target: PlayerId(5),
+                reason: "c".to_string(),
+            },
+        ];
+
+        assert_eq!(tally_votes(&votes), Some(PlayerId(4)));
     }
 }

@@ -1,8 +1,11 @@
-use crate::game::decision::{AiDecisionKind, parse_speech_decision};
+use crate::game::decision::{
+    AiDecisionKind, TargetDecision, parse_speech_decision, parse_target_decision, validate_vote,
+};
 use crate::game::domain::{PlayerId, Role};
 use crate::game::events::{EventLog, EventVisibility, GameEvent};
 use crate::game::llm::{LlmClient, LlmError, LlmRequest};
 use crate::game::prompt::build_prompt;
+use crate::game::rules::VoteCast;
 use crate::game::session::GameSession;
 
 #[derive(Debug, Default)]
@@ -85,6 +88,61 @@ pub fn generate_day_speech(
     Ok(())
 }
 
+pub fn generate_vote(
+    client: &impl LlmClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    day: u32,
+) -> Result<VoteCast, LlmError> {
+    let decision = match build_vote_with_llm(client, session, log, actor, day) {
+        Ok(decision) => decision,
+        Err(LlmError::NotConfigured) => fallback_vote_decision(session, actor),
+        Err(err) => return Err(err),
+    };
+
+    log.append(
+        GameEvent::VoteCast {
+            day,
+            voter: actor,
+            target: decision.target,
+            reason: decision.reason.clone(),
+        },
+        EventVisibility::Public,
+    );
+
+    Ok(VoteCast {
+        voter: actor,
+        target: decision.target,
+        reason: decision.reason,
+    })
+}
+
+fn build_vote_with_llm(
+    client: &impl LlmClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    day: u32,
+) -> Result<TargetDecision, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Ok(fallback_vote_decision(session, actor));
+    };
+
+    let prompt = build_prompt(session, actor, AiDecisionKind::Vote { day }, log);
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client.complete(LlmRequest {
+        system: prompt.system,
+        ..request
+    })?;
+    let decision = parse_target_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+    validate_vote(session, actor, &decision)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+
+    Ok(decision)
+}
+
 fn build_day_speech_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -119,6 +177,14 @@ fn fallback_speech_content(session: &GameSession, actor: PlayerId, day: u32) -> 
         Role::Witch => "我先不跳身份，大家把怀疑点聊清楚。".to_string(),
         Role::Hunter => "我会看谁在强行带节奏。".to_string(),
         Role::Villager => "目前信息还少，我先听后面的发言。".to_string(),
+    }
+}
+
+fn fallback_vote_decision(session: &GameSession, actor: PlayerId) -> TargetDecision {
+    let target = choose_vote_target(session, actor).unwrap_or(actor);
+    TargetDecision {
+        target,
+        reason: "未配置 LLM，使用默认投票。".to_string(),
     }
 }
 
@@ -217,6 +283,28 @@ mod tests {
         assert!(matches!(
             &log.events()[0].event,
             GameEvent::DaySpeech { speaker: PlayerId(9), content, .. } if content.contains("信息还少")
+        ));
+    }
+
+    #[test]
+    fn vote_uses_fake_llm_and_appends_typed_event() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
+        let actor = PlayerId(1);
+        let player = session.player_mut(actor).unwrap();
+        player.ai.base_url = "https://example.test/v1".to_string();
+        player.ai.api_key = "test-key".to_string();
+        player.ai.model = "test-model".to_string();
+        let mut log = EventLog::default();
+        let client = FakeLlmClient {
+            response: r#"{"target":4,"reason":"发言可疑。"}"#,
+        };
+
+        let vote = generate_vote(&client, &session, &mut log, actor, 1).unwrap();
+
+        assert_eq!(vote.target, PlayerId(4));
+        assert!(matches!(
+            &log.events()[0].event,
+            GameEvent::VoteCast { voter: PlayerId(1), target: PlayerId(4), .. }
         ));
     }
 }
