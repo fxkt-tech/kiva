@@ -1,6 +1,6 @@
 ﻿use crate::game::ai::{
-    NoopLlmClient, choose_seer_check, choose_witch_medicine, choose_wolf_kill,
-    generate_day_speech, generate_vote, resolve_hunter_ai,
+    NoopLlmClient, choose_seer_check, choose_witch_medicine, choose_wolf_kill, generate_day_speech,
+    generate_vote, resolve_hunter_ai,
 };
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
@@ -8,9 +8,8 @@ use crate::game::app_state::{
 };
 use crate::game::decision::WitchActionDecision;
 use crate::game::domain::{Player, PlayerId, PlayerKind, Role};
-use crate::game::rules::{
-    DeathReason, NightActions, check_camp, resolve_night, tally_votes,
-};
+use crate::game::events::{EventVisibility, GameEvent};
+use crate::game::rules::{DeathReason, NightActions, resolve_night, tally_votes};
 use crate::game::session::{GameSession, Winner};
 use bevy::{
     ecs::hierarchy::ChildSpawnerCommands,
@@ -223,7 +222,7 @@ fn spawn_game_screen(
                         current_speaker,
                     ));
                     body.spawn(observer_panel(assets, session, flow));
-                    spawn_log_panel(body, assets, &flow.public_records);
+                    spawn_log_panel(body, assets, &flow.public_records());
                 });
 
             root.spawn(observer_console(assets, flow.phase));
@@ -339,9 +338,6 @@ pub fn speech_playback_system(
         let day = flow.day;
         let client = NoopLlmClient;
         let _ = generate_day_speech(&client, session, &mut flow.event_log, actor, day);
-        if let Some(record) = flow.event_log.public_projection().last().cloned() {
-            flow.public_records.push(record);
-        }
     }
 
     if let Some(next_speaker) = speech.queue.pop() {
@@ -1195,25 +1191,22 @@ fn advance_flow_state(
                     choose_wolf_kill(&client, session, &mut flow.event_log, actor, flow.day).ok()
                 })
                 .flatten();
-            let seer_target = session
+            let _seer_target = session
                 .players
                 .iter()
                 .find(|player| player.alive && player.role == Role::Seer)
                 .and_then(|seer| {
-                    choose_seer_check(&client, session, &mut flow.event_log, seer.id, flow.day, &[])
-                        .ok()
+                    choose_seer_check(
+                        &client,
+                        session,
+                        &mut flow.event_log,
+                        seer.id,
+                        flow.day,
+                        &[],
+                    )
+                    .ok()
                 })
                 .flatten();
-            if let Some(target) = seer_target
-                && let Some(camp) = check_camp(session, target)
-            {
-                flow.public_records.push(format!(
-                    "第 {} 夜：预言家查验 {} 号，结果为 {}。",
-                    flow.day,
-                    target.0,
-                    camp_label(camp)
-                ));
-            }
             let witch_decision = session
                 .players
                 .iter()
@@ -1251,17 +1244,15 @@ fn advance_flow_state(
             );
 
             let mut pending_hunter = None;
-            if result.deaths.is_empty() {
-                flow.public_records
-                    .push(format!("第 {} 夜：平安夜。", flow.day));
-            } else {
+            flow.event_log.append(
+                GameEvent::NightDeaths {
+                    night: flow.day,
+                    deaths: result.deaths.clone(),
+                },
+                EventVisibility::Public,
+            );
+            if !result.deaths.is_empty() {
                 for death in &result.deaths {
-                    flow.public_records.push(format!(
-                        "第 {} 夜：{} 号死亡（{}）。",
-                        flow.day,
-                        death.player.0,
-                        death_reason_label(death.reason)
-                    ));
                     if hunter_can_auto_shoot(session, death.player, death.reason) {
                         pending_hunter = Some((death.player, death.reason));
                     }
@@ -1294,9 +1285,6 @@ fn advance_flow_state(
                     flow.day,
                     reason,
                 );
-                if let Some(record) = flow.event_log.public_projection().last().cloned() {
-                    flow.public_records.push(record);
-                }
             }
             action.selected_target = None;
             action.hunter_actor = None;
@@ -1324,11 +1312,6 @@ fn advance_flow_state(
                     generate_vote(&client, session, &mut flow.event_log, actor, flow.day).ok()
                 })
                 .collect::<Vec<_>>();
-            for record in flow.event_log.public_projection() {
-                if !flow.public_records.contains(&record) {
-                    flow.public_records.push(record);
-                }
-            }
 
             let target = tally_votes(&votes);
             if let Some(target) = target {
@@ -1336,14 +1319,12 @@ fn advance_flow_state(
                     player.alive = false;
                 }
                 flow.event_log.append(
-                    crate::game::events::GameEvent::PlayerExiled {
+                    GameEvent::PlayerExiled {
                         day: flow.day,
                         player: target,
                     },
-                    crate::game::events::EventVisibility::Public,
+                    EventVisibility::Public,
                 );
-                flow.public_records
-                    .push(format!("第 {} 天：{} 号被放逐。", flow.day, target.0));
 
                 if hunter_can_auto_shoot(session, target, DeathReason::Exile) {
                     action.hunter_actor = Some(target);
@@ -1568,22 +1549,6 @@ fn advance_label(phase: FlowPhase) -> &'static str {
     }
 }
 
-fn camp_label(camp: crate::game::domain::Camp) -> &'static str {
-    match camp {
-        crate::game::domain::Camp::Good => "好人",
-        crate::game::domain::Camp::Werewolf => "狼人",
-    }
-}
-
-fn death_reason_label(reason: DeathReason) -> &'static str {
-    match reason {
-        DeathReason::WolfKill => "狼刀",
-        DeathReason::WitchPoison => "毒药",
-        DeathReason::Exile => "放逐",
-        DeathReason::HunterShot => "猎枪",
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1605,9 +1570,9 @@ mod tests {
         ));
         assert_eq!(flow.phase, FlowPhase::DaySpeech);
         assert!(
-            flow.public_records
+            flow.public_records()
                 .iter()
-                .any(|record| record.contains("第 1 夜"))
+                .any(|record| record.contains("1"))
         );
     }
 
@@ -1646,9 +1611,9 @@ mod tests {
 
         assert!(session.players.iter().any(|player| !player.alive));
         assert!(
-            flow.public_records
+            flow.public_records()
                 .iter()
-                .any(|record| record.contains("被放逐"))
+                .any(|record| record.contains("2"))
         );
     }
 

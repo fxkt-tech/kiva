@@ -127,9 +127,15 @@ pub struct FlowState {
     pub day: u32,
     pub phase: FlowPhase,
     pub event_log: EventLog,
-    pub public_records: Vec<String>,
     pub my_clues: Vec<String>,
     pub winner: Option<String>,
+}
+
+impl FlowState {
+    #[allow(dead_code)]
+    pub fn public_records(&self) -> Vec<String> {
+        self.event_log.public_projection()
+    }
 }
 
 impl Default for FlowState {
@@ -138,9 +144,31 @@ impl Default for FlowState {
             day: 1,
             phase: FlowPhase::Night,
             event_log: EventLog::default(),
-            public_records: vec!["第 1 夜：9 名 AI 入座，观战开始。".to_string()],
             my_clues: Vec::new(),
             winner: None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::game::events::{EventVisibility, GameEvent};
+
+    #[test]
+    fn public_records_are_projected_from_event_log() {
+        let mut flow = FlowState::default();
+        flow.event_log.append(
+            GameEvent::PlayerExiled {
+                day: 1,
+                player: PlayerId(2),
+            },
+            EventVisibility::Public,
+        );
+
+        assert_eq!(
+            flow.public_records(),
+            vec!["第 1 天：2 号被放逐。".to_string()]
+        );
     }
 }
