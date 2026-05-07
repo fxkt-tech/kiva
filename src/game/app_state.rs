@@ -4,6 +4,7 @@ use bevy::prelude::*;
 
 use crate::game::domain::PlayerId;
 use crate::game::events::EventLog;
+use crate::game::rules::DeathReason;
 use crate::game::session::GameSession;
 
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -74,6 +75,8 @@ pub struct PlayerAction {
     pub selected_target: Option<PlayerId>,
     pub witch_intent: WitchIntent,
     pub hunter_shot_pending: bool,
+    pub hunter_actor: Option<PlayerId>,
+    pub hunter_death_reason: Option<DeathReason>,
 }
 
 #[derive(Resource, Debug, Default)]

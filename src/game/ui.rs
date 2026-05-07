@@ -1,6 +1,6 @@
 ﻿use crate::game::ai::{
-    NoopLlmClient, choose_seer_check, choose_vote_target, choose_witch_medicine, choose_wolf_kill,
-    generate_day_speech, generate_vote,
+    NoopLlmClient, choose_seer_check, choose_witch_medicine, choose_wolf_kill,
+    generate_day_speech, generate_vote, resolve_hunter_ai,
 };
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
@@ -9,7 +9,7 @@ use crate::game::app_state::{
 use crate::game::decision::WitchActionDecision;
 use crate::game::domain::{Player, PlayerId, PlayerKind, Role};
 use crate::game::rules::{
-    DeathReason, NightActions, check_camp, resolve_hunter_shot, resolve_night, tally_votes,
+    DeathReason, NightActions, check_camp, resolve_night, tally_votes,
 };
 use crate::game::session::{GameSession, Winner};
 use bevy::{
@@ -1250,7 +1250,7 @@ fn advance_flow_state(
                 },
             );
 
-            let mut hunter_target = None;
+            let mut pending_hunter = None;
             if result.deaths.is_empty() {
                 flow.public_records
                     .push(format!("第 {} 夜：平安夜。", flow.day));
@@ -1263,13 +1263,14 @@ fn advance_flow_state(
                         death_reason_label(death.reason)
                     ));
                     if hunter_can_auto_shoot(session, death.player, death.reason) {
-                        hunter_target = choose_vote_target(session, death.player);
+                        pending_hunter = Some((death.player, death.reason));
                     }
                 }
             }
 
-            if let Some(target) = hunter_target {
-                action.selected_target = Some(target);
+            if let Some((hunter, reason)) = pending_hunter {
+                action.hunter_actor = Some(hunter);
+                action.hunter_death_reason = Some(reason);
                 action.hunter_shot_pending = true;
                 flow.phase = FlowPhase::HunterShot;
                 return false;
@@ -1282,13 +1283,24 @@ fn advance_flow_state(
             false
         }
         FlowPhase::HunterShot => {
-            let target = action.selected_target;
-            if let Some(target) = target {
-                let death = resolve_hunter_shot(session, target);
-                flow.public_records
-                    .push(format!("猎人开枪带走 {} 号。", death.player.0));
+            let client = NoopLlmClient;
+            if let (Some(hunter), Some(reason)) = (action.hunter_actor, action.hunter_death_reason)
+            {
+                let _ = resolve_hunter_ai(
+                    &client,
+                    session,
+                    &mut flow.event_log,
+                    hunter,
+                    flow.day,
+                    reason,
+                );
+                if let Some(record) = flow.event_log.public_projection().last().cloned() {
+                    flow.public_records.push(record);
+                }
             }
             action.selected_target = None;
+            action.hunter_actor = None;
+            action.hunter_death_reason = None;
             action.hunter_shot_pending = false;
             if end_if_winner(session, flow) {
                 true
@@ -1333,10 +1345,9 @@ fn advance_flow_state(
                 flow.public_records
                     .push(format!("第 {} 天：{} 号被放逐。", flow.day, target.0));
 
-                if hunter_can_auto_shoot(session, target, DeathReason::Exile)
-                    && let Some(shot_target) = choose_vote_target(session, target)
-                {
-                    action.selected_target = Some(shot_target);
+                if hunter_can_auto_shoot(session, target, DeathReason::Exile) {
+                    action.hunter_actor = Some(target);
+                    action.hunter_death_reason = Some(DeathReason::Exile);
                     action.hunter_shot_pending = true;
                     flow.phase = FlowPhase::HunterShot;
                     return false;

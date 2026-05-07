@@ -1,13 +1,14 @@
 use crate::game::decision::{
     AiDecisionKind, TargetDecision, parse_speech_decision, parse_target_decision, validate_vote,
     validate_seer_check, validate_witch_decision, validate_wolf_kill, parse_witch_decision,
-    WitchActionDecision, WitchDecision,
+    WitchActionDecision, WitchDecision, parse_hunter_decision, HunterActionDecision,
+    HunterDecision,
 };
 use crate::game::domain::{PlayerId, Role};
 use crate::game::events::{EventLog, EventVisibility, GameEvent, WitchMedicineAction};
 use crate::game::llm::{LlmClient, LlmError, LlmRequest};
 use crate::game::prompt::build_prompt;
-use crate::game::rules::{VoteCast, check_camp};
+use crate::game::rules::{DeathReason, VoteCast, check_camp, hunter_can_shoot, resolve_hunter_shot};
 use crate::game::session::GameSession;
 
 #[derive(Debug, Default)]
@@ -245,6 +246,47 @@ pub fn choose_witch_medicine(
     Ok(decision)
 }
 
+pub fn resolve_hunter_ai(
+    client: &impl LlmClient,
+    session: &mut GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    day: u32,
+    death_reason: DeathReason,
+) -> Result<(), LlmError> {
+    if !hunter_can_shoot(death_reason) {
+        return Ok(());
+    }
+
+    let decision = match build_hunter_with_llm(client, session, log, actor, day, death_reason) {
+        Ok(decision) => validate_hunter_decision(session, actor, decision)?,
+        Err(LlmError::NotConfigured) => fallback_hunter_decision(),
+        Err(err) => return Err(err),
+    };
+
+    if let Some(target) = decision.target
+        && decision.action == HunterActionDecision::Shoot
+    {
+        resolve_hunter_shot(session, target);
+    }
+
+    log.append(
+        GameEvent::HunterShot {
+            day,
+            hunter: actor,
+            target: if decision.action == HunterActionDecision::Shoot {
+                decision.target
+            } else {
+                None
+            },
+            reason: decision.reason,
+        },
+        EventVisibility::Public,
+    );
+
+    Ok(())
+}
+
 fn build_vote_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -327,6 +369,34 @@ fn build_witch_with_llm(
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
 }
 
+fn build_hunter_with_llm(
+    client: &impl LlmClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    day: u32,
+    death_reason: DeathReason,
+) -> Result<HunterDecision, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Err(LlmError::InvalidResponse("actor not found".to_string()));
+    };
+
+    let prompt = build_prompt(
+        session,
+        actor,
+        AiDecisionKind::HunterShot { day, death_reason },
+        log,
+    );
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client.complete(LlmRequest {
+        system: prompt.system,
+        ..request
+    })?;
+
+    parse_hunter_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
+}
+
 fn build_day_speech_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -400,6 +470,42 @@ fn fallback_witch_decision() -> WitchDecision {
         action: WitchActionDecision::Skip,
         target: None,
         reason: "未配置 LLM，默认不用药。".to_string(),
+    }
+}
+
+fn fallback_hunter_decision() -> HunterDecision {
+    HunterDecision {
+        action: HunterActionDecision::Skip,
+        target: None,
+        reason: "未配置 LLM，默认不开枪。".to_string(),
+    }
+}
+
+fn validate_hunter_decision(
+    session: &GameSession,
+    actor: PlayerId,
+    decision: HunterDecision,
+) -> Result<HunterDecision, LlmError> {
+    if decision.reason.trim().is_empty() {
+        return Err(LlmError::InvalidResponse("empty hunter reason".to_string()));
+    }
+    match decision.action {
+        HunterActionDecision::Skip => Ok(HunterDecision {
+            target: None,
+            ..decision
+        }),
+        HunterActionDecision::Shoot => {
+            let Some(target) = decision.target else {
+                return Err(LlmError::InvalidResponse("missing hunter target".to_string()));
+            };
+            let Some(player) = session.player(target) else {
+                return Err(LlmError::InvalidResponse("illegal hunter target".to_string()));
+            };
+            if !player.alive || target == actor {
+                return Err(LlmError::InvalidResponse("illegal hunter target".to_string()));
+            }
+            Ok(decision)
+        }
     }
 }
 
@@ -599,5 +705,36 @@ mod tests {
             GameEvent::WitchMedicineUsed { witch: PlayerId(5), action: WitchMedicineAction::Save, .. }
         ));
         assert_eq!(log.events()[0].visibility, EventVisibility::ActorOnly(actor));
+    }
+
+    #[test]
+    fn hunter_can_choose_to_skip_shot() {
+        let mut session = GameSession::new_with_roles(Role::nine_player_deck());
+        let mut log = EventLog::default();
+        let client = FakeLlmClient {
+            response: r#"{"action":"skip","target":null,"reason":"没有确定狼坑。"}"#,
+        };
+
+        let actor = PlayerId(6);
+        let player = session.player_mut(actor).unwrap();
+        player.ai.base_url = "https://example.test/v1".to_string();
+        player.ai.api_key = "test-key".to_string();
+        player.ai.model = "test-model".to_string();
+
+        resolve_hunter_ai(
+            &client,
+            &mut session,
+            &mut log,
+            actor,
+            1,
+            DeathReason::Exile,
+        )
+        .unwrap();
+
+        assert!(session.player(PlayerId(1)).unwrap().alive);
+        assert!(matches!(
+            &log.events()[0].event,
+            GameEvent::HunterShot { target: None, .. }
+        ));
     }
 }
