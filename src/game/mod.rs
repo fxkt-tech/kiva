@@ -5,6 +5,7 @@ use bevy_ui_widgets::ScrollbarPlugin;
 pub mod ai;
 pub mod app_state;
 pub mod domain;
+pub mod events;
 pub mod phase;
 pub mod player_config;
 pub mod player_pool;

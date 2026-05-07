@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 
 use crate::game::domain::PlayerId;
+use crate::game::events::EventLog;
 use crate::game::session::GameSession;
 
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -122,6 +123,7 @@ pub enum FlowPhase {
 pub struct FlowState {
     pub day: u32,
     pub phase: FlowPhase,
+    pub event_log: EventLog,
     pub public_records: Vec<String>,
     pub my_clues: Vec<String>,
     pub winner: Option<String>,
@@ -132,6 +134,7 @@ impl Default for FlowState {
         Self {
             day: 1,
             phase: FlowPhase::Night,
+            event_log: EventLog::default(),
             public_records: vec!["第 1 夜：9 名 AI 入座，观战开始。".to_string()],
             my_clues: Vec::new(),
             winner: None,
