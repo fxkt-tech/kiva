@@ -1,34 +1,33 @@
 use crate::game::decision::{
-    AiDecisionKind, TargetDecision, parse_speech_decision, parse_target_decision, validate_vote,
-    validate_seer_check, validate_witch_decision, validate_wolf_kill, parse_witch_decision,
-    WitchActionDecision, WitchDecision, parse_hunter_decision, HunterActionDecision,
-    HunterDecision,
+    AiDecisionKind, HunterActionDecision, HunterDecision, TargetDecision, WitchActionDecision,
+    WitchDecision, parse_hunter_decision, parse_speech_decision, parse_target_decision,
+    parse_witch_decision, validate_seer_check, validate_vote, validate_witch_decision,
+    validate_wolf_kill,
 };
 use crate::game::domain::{PlayerId, Role};
 use crate::game::events::{EventLog, EventVisibility, GameEvent, WitchMedicineAction};
-use crate::game::llm::{LlmClient, LlmError, LlmRequest};
+use crate::game::llm::{LlmClient, LlmError, LlmRequest, OpenAiCompatibleClient};
 use crate::game::prompt::build_prompt;
-use crate::game::rules::{DeathReason, VoteCast, check_camp, hunter_can_shoot, resolve_hunter_shot};
+use crate::game::rules::{
+    DeathReason, VoteCast, check_camp, hunter_can_shoot, resolve_hunter_shot,
+};
 use crate::game::session::GameSession;
-
+#[cfg(test)]
 #[derive(Debug, Default)]
 pub struct NoopLlmClient;
-
+#[cfg(test)]
 impl LlmClient for NoopLlmClient {
     fn complete(&self, _request: LlmRequest) -> Result<crate::game::llm::LlmResponse, LlmError> {
         Err(LlmError::NotConfigured)
     }
 }
-
 pub fn choose_wolf_target(session: &GameSession, actor: PlayerId) -> Option<PlayerId> {
     let actor_role = session.player(actor).map(|player| player.role);
-
     session
         .alive_players()
         .find(|player| Some(player.role) != actor_role && player.role != Role::Werewolf)
         .map(|player| player.id)
 }
-
 #[allow(dead_code)]
 pub fn choose_seer_target(session: &GameSession, checked: &[PlayerId]) -> Option<PlayerId> {
     session
@@ -36,37 +35,37 @@ pub fn choose_seer_target(session: &GameSession, checked: &[PlayerId]) -> Option
         .find(|player| !checked.contains(&player.id))
         .map(|player| player.id)
 }
-
 pub fn choose_vote_target(session: &GameSession, actor: PlayerId) -> Option<PlayerId> {
     session
         .alive_players()
         .find(|player| player.id != actor)
         .map(|player| player.id)
 }
-
 #[allow(dead_code)]
 pub fn generate_speech(session: &GameSession, actor: PlayerId, day: u32) -> String {
     let Some(player) = session.player(actor) else {
-        return "我先过。".to_string();
+        return "Pass for now.".to_string();
     };
-
     let speech = match player.role {
-        Role::Werewolf => "今天先听发言，不要太早定票。".to_string(),
-        Role::Seer => format!("第 {day} 天我会重点看投票和站边。"),
-        Role::Witch => "我先不跳身份，大家把怀疑点聊清楚。".to_string(),
-        Role::Hunter => "我会看谁在强行带节奏。".to_string(),
-        Role::Villager => "目前信息还少，我先听后面的发言。".to_string(),
+        Role::Werewolf => "I will listen first and avoid locking votes too early.".to_string(),
+        Role::Seer => format!("Day {day}: I will focus on votes and alignments."),
+        Role::Witch => {
+            "I will keep my role hidden and ask everyone to clarify suspicions.".to_string()
+        }
+        Role::Hunter => "I will watch who is forcing the tempo.".to_string(),
+        Role::Villager => {
+            "There is limited information, so I will listen to later speeches.".to_string()
+        }
     };
-
     format!(
-        "{} 号 / {} / {}：{}",
+        "{} / {} / {}: {}",
         actor.0,
         player.name,
         player.role.label(),
         speech
     )
 }
-
+#[cfg_attr(not(test), allow(dead_code))]
 pub fn generate_day_speech(
     client: &impl LlmClient,
     session: &GameSession,
@@ -79,7 +78,6 @@ pub fn generate_day_speech(
         Err(LlmError::NotConfigured) => fallback_speech_content(session, actor, day),
         Err(err) => return Err(err),
     };
-
     log.append(
         GameEvent::DaySpeech {
             day,
@@ -90,7 +88,6 @@ pub fn generate_day_speech(
     );
     Ok(())
 }
-
 pub fn generate_vote(
     client: &impl LlmClient,
     session: &GameSession,
@@ -103,7 +100,6 @@ pub fn generate_vote(
         Err(LlmError::NotConfigured) => fallback_vote_decision(session, actor),
         Err(err) => return Err(err),
     };
-
     log.append(
         GameEvent::VoteCast {
             day,
@@ -113,14 +109,61 @@ pub fn generate_vote(
         },
         EventVisibility::Public,
     );
-
     Ok(VoteCast {
         voter: actor,
         target: decision.target,
         reason: decision.reason,
     })
 }
-
+pub async fn generate_day_speech_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    day: u32,
+) -> Result<(), LlmError> {
+    let speech = match build_day_speech_with_llm_async(client, session, log, actor, day).await {
+        Ok(speech) => speech,
+        Err(LlmError::NotConfigured) => fallback_speech_content(session, actor, day),
+        Err(err) => return Err(err),
+    };
+    log.append(
+        GameEvent::DaySpeech {
+            day,
+            speaker: actor,
+            content: speech,
+        },
+        EventVisibility::Public,
+    );
+    Ok(())
+}
+pub async fn generate_vote_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    day: u32,
+) -> Result<VoteCast, LlmError> {
+    let decision = match build_vote_with_llm_async(client, session, log, actor, day).await {
+        Ok(decision) => decision,
+        Err(LlmError::NotConfigured) => fallback_vote_decision(session, actor),
+        Err(err) => return Err(err),
+    };
+    log.append(
+        GameEvent::VoteCast {
+            day,
+            voter: actor,
+            target: decision.target,
+            reason: decision.reason.clone(),
+        },
+        EventVisibility::Public,
+    );
+    Ok(VoteCast {
+        voter: actor,
+        target: decision.target,
+        reason: decision.reason,
+    })
+}
 pub fn choose_wolf_kill(
     client: &impl LlmClient,
     session: &GameSession,
@@ -143,7 +186,6 @@ pub fn choose_wolf_kill(
         Err(LlmError::NotConfigured) => fallback_wolf_kill_decision(session, actor),
         Err(err) => return Err(err),
     };
-
     log.append(
         GameEvent::WolfKillChosen {
             night,
@@ -153,10 +195,43 @@ pub fn choose_wolf_kill(
         },
         EventVisibility::Wolves,
     );
-
     Ok(Some(decision.target))
 }
-
+pub async fn choose_wolf_kill_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    night: u32,
+) -> Result<Option<PlayerId>, LlmError> {
+    let decision = match build_target_with_llm_async(
+        client,
+        session,
+        log,
+        actor,
+        AiDecisionKind::WolfKill { night },
+    )
+    .await
+    {
+        Ok(decision) => {
+            validate_wolf_kill(session, actor, &decision)
+                .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+            decision
+        }
+        Err(LlmError::NotConfigured) => fallback_wolf_kill_decision(session, actor),
+        Err(err) => return Err(err),
+    };
+    log.append(
+        GameEvent::WolfKillChosen {
+            night,
+            actor,
+            target: decision.target,
+            reason: decision.reason,
+        },
+        EventVisibility::Wolves,
+    );
+    Ok(Some(decision.target))
+}
 pub fn choose_seer_check(
     client: &impl LlmClient,
     session: &GameSession,
@@ -183,7 +258,6 @@ pub fn choose_seer_check(
         Err(LlmError::NotConfigured) => fallback_seer_check_decision(session, actor, checked),
         Err(err) => return Err(err),
     };
-
     if let Some(camp) = check_camp(session, decision.target) {
         log.append(
             GameEvent::SeerChecked {
@@ -195,10 +269,49 @@ pub fn choose_seer_check(
             EventVisibility::ActorOnly(actor),
         );
     }
-
     Ok(Some(decision.target))
 }
-
+pub async fn choose_seer_check_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    night: u32,
+    checked: &[PlayerId],
+) -> Result<Option<PlayerId>, LlmError> {
+    let decision = match build_target_with_llm_async(
+        client,
+        session,
+        log,
+        actor,
+        AiDecisionKind::SeerCheck {
+            night,
+            checked: checked.to_vec(),
+        },
+    )
+    .await
+    {
+        Ok(decision) => {
+            validate_seer_check(session, actor, checked, &decision)
+                .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+            decision
+        }
+        Err(LlmError::NotConfigured) => fallback_seer_check_decision(session, actor, checked),
+        Err(err) => return Err(err),
+    };
+    if let Some(camp) = check_camp(session, decision.target) {
+        log.append(
+            GameEvent::SeerChecked {
+                night,
+                seer: actor,
+                target: decision.target,
+                camp,
+            },
+            EventVisibility::ActorOnly(actor),
+        );
+    }
+    Ok(Some(decision.target))
+}
 pub fn choose_witch_medicine(
     client: &impl LlmClient,
     session: &GameSession,
@@ -227,7 +340,6 @@ pub fn choose_witch_medicine(
         Err(LlmError::NotConfigured) => fallback_witch_decision(),
         Err(err) => return Err(err),
     };
-
     log.append(
         GameEvent::WitchMedicineUsed {
             night,
@@ -242,10 +354,54 @@ pub fn choose_witch_medicine(
         },
         EventVisibility::ActorOnly(actor),
     );
-
     Ok(decision)
 }
-
+pub async fn choose_witch_medicine_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    night: u32,
+    wolf_target: Option<PlayerId>,
+    has_save: bool,
+    has_poison: bool,
+) -> Result<WitchDecision, LlmError> {
+    let decision = match build_witch_with_llm_async(
+        client,
+        session,
+        log,
+        actor,
+        night,
+        wolf_target,
+        has_save,
+        has_poison,
+    )
+    .await
+    {
+        Ok(decision) => {
+            validate_witch_decision(wolf_target, has_save, has_poison, &decision)
+                .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+            decision
+        }
+        Err(LlmError::NotConfigured) => fallback_witch_decision(),
+        Err(err) => return Err(err),
+    };
+    log.append(
+        GameEvent::WitchMedicineUsed {
+            night,
+            witch: actor,
+            action: match decision.action {
+                WitchActionDecision::Save => WitchMedicineAction::Save,
+                WitchActionDecision::Poison => WitchMedicineAction::Poison,
+                WitchActionDecision::Skip => WitchMedicineAction::Skip,
+            },
+            target: decision.target,
+            reason: decision.reason.clone(),
+        },
+        EventVisibility::ActorOnly(actor),
+    );
+    Ok(decision)
+}
 pub fn resolve_hunter_ai(
     client: &impl LlmClient,
     session: &mut GameSession,
@@ -257,19 +413,16 @@ pub fn resolve_hunter_ai(
     if !hunter_can_shoot(death_reason) {
         return Ok(());
     }
-
     let decision = match build_hunter_with_llm(client, session, log, actor, day, death_reason) {
         Ok(decision) => validate_hunter_decision(session, actor, decision)?,
         Err(LlmError::NotConfigured) => fallback_hunter_decision(),
         Err(err) => return Err(err),
     };
-
     if let Some(target) = decision.target
         && decision.action == HunterActionDecision::Shoot
     {
         resolve_hunter_shot(session, target);
     }
-
     log.append(
         GameEvent::HunterShot {
             day,
@@ -283,10 +436,45 @@ pub fn resolve_hunter_ai(
         },
         EventVisibility::Public,
     );
-
     Ok(())
 }
-
+pub async fn resolve_hunter_ai_async(
+    client: &OpenAiCompatibleClient,
+    session: &mut GameSession,
+    log: &mut EventLog,
+    actor: PlayerId,
+    day: u32,
+    death_reason: DeathReason,
+) -> Result<(), LlmError> {
+    if !hunter_can_shoot(death_reason) {
+        return Ok(());
+    }
+    let decision =
+        match build_hunter_with_llm_async(client, session, log, actor, day, death_reason).await {
+            Ok(decision) => validate_hunter_decision(session, actor, decision)?,
+            Err(LlmError::NotConfigured) => fallback_hunter_decision(),
+            Err(err) => return Err(err),
+        };
+    if let Some(target) = decision.target
+        && decision.action == HunterActionDecision::Shoot
+    {
+        resolve_hunter_shot(session, target);
+    }
+    log.append(
+        GameEvent::HunterShot {
+            day,
+            hunter: actor,
+            target: if decision.action == HunterActionDecision::Shoot {
+                decision.target
+            } else {
+                None
+            },
+            reason: decision.reason,
+        },
+        EventVisibility::Public,
+    );
+    Ok(())
+}
 fn build_vote_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -297,7 +485,6 @@ fn build_vote_with_llm(
     let Some(player) = session.player(actor) else {
         return Ok(fallback_vote_decision(session, actor));
     };
-
     let prompt = build_prompt(session, actor, AiDecisionKind::Vote { day }, log);
     let request = LlmRequest::new(&player.ai, prompt.user)?;
     let response = client.complete(LlmRequest {
@@ -308,10 +495,32 @@ fn build_vote_with_llm(
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
     validate_vote(session, actor, &decision)
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
-
     Ok(decision)
 }
-
+async fn build_vote_with_llm_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    day: u32,
+) -> Result<TargetDecision, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Ok(fallback_vote_decision(session, actor));
+    };
+    let prompt = build_prompt(session, actor, AiDecisionKind::Vote { day }, log);
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client
+        .complete_async(LlmRequest {
+            system: prompt.system,
+            ..request
+        })
+        .await?;
+    let decision = parse_target_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+    validate_vote(session, actor, &decision)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+    Ok(decision)
+}
 fn build_target_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -322,18 +531,36 @@ fn build_target_with_llm(
     let Some(player) = session.player(actor) else {
         return Err(LlmError::InvalidResponse("actor not found".to_string()));
     };
-
     let prompt = build_prompt(session, actor, decision_kind, log);
     let request = LlmRequest::new(&player.ai, prompt.user)?;
     let response = client.complete(LlmRequest {
         system: prompt.system,
         ..request
     })?;
-
     parse_target_decision(&response.content)
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
 }
-
+async fn build_target_with_llm_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    decision_kind: AiDecisionKind,
+) -> Result<TargetDecision, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Err(LlmError::InvalidResponse("actor not found".to_string()));
+    };
+    let prompt = build_prompt(session, actor, decision_kind, log);
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client
+        .complete_async(LlmRequest {
+            system: prompt.system,
+            ..request
+        })
+        .await?;
+    parse_target_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
+}
 fn build_witch_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -347,7 +574,6 @@ fn build_witch_with_llm(
     let Some(player) = session.player(actor) else {
         return Err(LlmError::InvalidResponse("actor not found".to_string()));
     };
-
     let prompt = build_prompt(
         session,
         actor,
@@ -364,11 +590,43 @@ fn build_witch_with_llm(
         system: prompt.system,
         ..request
     })?;
-
     parse_witch_decision(&response.content)
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
 }
-
+async fn build_witch_with_llm_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    night: u32,
+    wolf_target: Option<PlayerId>,
+    has_save: bool,
+    has_poison: bool,
+) -> Result<WitchDecision, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Err(LlmError::InvalidResponse("actor not found".to_string()));
+    };
+    let prompt = build_prompt(
+        session,
+        actor,
+        AiDecisionKind::WitchMedicine {
+            night,
+            wolf_target,
+            has_save,
+            has_poison,
+        },
+        log,
+    );
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client
+        .complete_async(LlmRequest {
+            system: prompt.system,
+            ..request
+        })
+        .await?;
+    parse_witch_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
+}
 fn build_hunter_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -380,7 +638,6 @@ fn build_hunter_with_llm(
     let Some(player) = session.player(actor) else {
         return Err(LlmError::InvalidResponse("actor not found".to_string()));
     };
-
     let prompt = build_prompt(
         session,
         actor,
@@ -392,11 +649,37 @@ fn build_hunter_with_llm(
         system: prompt.system,
         ..request
     })?;
-
     parse_hunter_decision(&response.content)
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
 }
-
+async fn build_hunter_with_llm_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    day: u32,
+    death_reason: DeathReason,
+) -> Result<HunterDecision, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Err(LlmError::InvalidResponse("actor not found".to_string()));
+    };
+    let prompt = build_prompt(
+        session,
+        actor,
+        AiDecisionKind::HunterShot { day, death_reason },
+        log,
+    );
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client
+        .complete_async(LlmRequest {
+            system: prompt.system,
+            ..request
+        })
+        .await?;
+    parse_hunter_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))
+}
+#[cfg_attr(not(test), allow(dead_code))]
 fn build_day_speech_with_llm(
     client: &impl LlmClient,
     session: &GameSession,
@@ -405,9 +688,8 @@ fn build_day_speech_with_llm(
     day: u32,
 ) -> Result<String, LlmError> {
     let Some(player) = session.player(actor) else {
-        return Ok("我先过。".to_string());
+        return Ok("Pass for now.".to_string());
     };
-
     let prompt = build_prompt(session, actor, AiDecisionKind::DaySpeech { day }, log);
     let request = LlmRequest::new(&player.ai, prompt.user)?;
     let response = client.complete(LlmRequest {
@@ -416,40 +698,60 @@ fn build_day_speech_with_llm(
     })?;
     let decision = parse_speech_decision(&response.content)
         .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
-
     Ok(decision.speech)
 }
-
+async fn build_day_speech_with_llm_async(
+    client: &OpenAiCompatibleClient,
+    session: &GameSession,
+    log: &EventLog,
+    actor: PlayerId,
+    day: u32,
+) -> Result<String, LlmError> {
+    let Some(player) = session.player(actor) else {
+        return Ok("Pass for now.".to_string());
+    };
+    let prompt = build_prompt(session, actor, AiDecisionKind::DaySpeech { day }, log);
+    let request = LlmRequest::new(&player.ai, prompt.user)?;
+    let response = client
+        .complete_async(LlmRequest {
+            system: prompt.system,
+            ..request
+        })
+        .await?;
+    let decision = parse_speech_decision(&response.content)
+        .map_err(|err| LlmError::InvalidResponse(format!("{err:?}")))?;
+    Ok(decision.speech)
+}
 fn fallback_speech_content(session: &GameSession, actor: PlayerId, day: u32) -> String {
     let Some(player) = session.player(actor) else {
-        return "我先过。".to_string();
+        return "Pass for now.".to_string();
     };
-
     match player.role {
-        Role::Werewolf => "今天先听发言，不要太早定票。".to_string(),
-        Role::Seer => format!("第 {day} 天我会重点看投票和站边。"),
-        Role::Witch => "我先不跳身份，大家把怀疑点聊清楚。".to_string(),
-        Role::Hunter => "我会看谁在强行带节奏。".to_string(),
-        Role::Villager => "目前信息还少，我先听后面的发言。".to_string(),
+        Role::Werewolf => "I will listen first and avoid locking votes too early.".to_string(),
+        Role::Seer => format!("Day {day}: I will focus on votes and alignments."),
+        Role::Witch => {
+            "I will keep my role hidden and ask everyone to clarify suspicions.".to_string()
+        }
+        Role::Hunter => "I will watch who is forcing the tempo.".to_string(),
+        Role::Villager => {
+            "There is limited information, so I will listen to later speeches.".to_string()
+        }
     }
 }
-
 fn fallback_vote_decision(session: &GameSession, actor: PlayerId) -> TargetDecision {
     let target = choose_vote_target(session, actor).unwrap_or(actor);
     TargetDecision {
         target,
-        reason: "未配置 LLM，使用默认投票。".to_string(),
+        reason: "LLM is not configured; using fallback vote.".to_string(),
     }
 }
-
 fn fallback_wolf_kill_decision(session: &GameSession, actor: PlayerId) -> TargetDecision {
     let target = choose_wolf_target(session, actor).unwrap_or(actor);
     TargetDecision {
         target,
-        reason: "未配置 LLM，使用默认狼刀。".to_string(),
+        reason: "LLM is not configured; using fallback wolf kill.".to_string(),
     }
 }
-
 fn fallback_seer_check_decision(
     session: &GameSession,
     actor: PlayerId,
@@ -461,26 +763,23 @@ fn fallback_seer_check_decision(
         .unwrap_or(actor);
     TargetDecision {
         target,
-        reason: "未配置 LLM，使用默认查验。".to_string(),
+        reason: "LLM is not configured; using fallback seer check.".to_string(),
     }
 }
-
 fn fallback_witch_decision() -> WitchDecision {
     WitchDecision {
         action: WitchActionDecision::Skip,
         target: None,
-        reason: "未配置 LLM，默认不用药。".to_string(),
+        reason: "LLM is not configured; skipping medicine.".to_string(),
     }
 }
-
 fn fallback_hunter_decision() -> HunterDecision {
     HunterDecision {
         action: HunterActionDecision::Skip,
         target: None,
-        reason: "未配置 LLM，默认不开枪。".to_string(),
+        reason: "LLM is not configured; skipping shot.".to_string(),
     }
 }
-
 fn validate_hunter_decision(
     session: &GameSession,
     actor: PlayerId,
@@ -496,19 +795,24 @@ fn validate_hunter_decision(
         }),
         HunterActionDecision::Shoot => {
             let Some(target) = decision.target else {
-                return Err(LlmError::InvalidResponse("missing hunter target".to_string()));
+                return Err(LlmError::InvalidResponse(
+                    "missing hunter target".to_string(),
+                ));
             };
             let Some(player) = session.player(target) else {
-                return Err(LlmError::InvalidResponse("illegal hunter target".to_string()));
+                return Err(LlmError::InvalidResponse(
+                    "illegal hunter target".to_string(),
+                ));
             };
             if !player.alive || target == actor {
-                return Err(LlmError::InvalidResponse("illegal hunter target".to_string()));
+                return Err(LlmError::InvalidResponse(
+                    "illegal hunter target".to_string(),
+                ));
             }
             Ok(decision)
         }
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -516,11 +820,9 @@ mod tests {
     use crate::game::events::{EventLog, GameEvent};
     use crate::game::llm::{LlmError, LlmRequest, LlmResponse};
     use crate::game::session::GameSession;
-
     struct FakeLlmClient {
         response: &'static str,
     }
-
     impl crate::game::llm::LlmClient for FakeLlmClient {
         fn complete(&self, _request: LlmRequest) -> Result<LlmResponse, LlmError> {
             Ok(LlmResponse {
@@ -528,50 +830,37 @@ mod tests {
             })
         }
     }
-
     #[test]
     fn wolf_target_is_living_non_wolf() {
         let session = GameSession::new_with_roles(Role::nine_player_deck());
-
         let target = choose_wolf_target(&session, PlayerId(1)).unwrap();
-
         let player = session.player(target).unwrap();
         assert!(player.alive);
         assert_ne!(player.role, Role::Werewolf);
     }
-
     #[test]
     fn seer_target_is_living_and_unchecked() {
         let session = GameSession::new_with_roles(Role::nine_player_deck());
         let checked = vec![PlayerId(4), PlayerId(5)];
-
         let target = choose_seer_target(&session, &checked).unwrap();
-
         assert!(session.player(target).unwrap().alive);
         assert!(!checked.contains(&target));
     }
-
     #[test]
     fn vote_target_is_living_and_not_self() {
         let session = GameSession::new_with_roles(Role::nine_player_deck());
-
         let target = choose_vote_target(&session, PlayerId(2)).unwrap();
-
         assert!(session.player(target).unwrap().alive);
         assert_ne!(target, PlayerId(2));
     }
-
     #[test]
     fn speech_does_not_reveal_hidden_roles_for_villager() {
         let session = GameSession::new_with_roles(Role::nine_player_deck());
-
         let speech = generate_speech(&session, PlayerId(9), 1);
-
-        assert!(!speech.contains("1号是狼人"));
-        assert!(!speech.contains("1 号是狼人"));
-        assert!(speech.contains("9 号 / AI-09 /"));
+        assert!(!speech.contains("1鍙锋槸鐙间汉"));
+        assert!(!speech.contains("1 鍙锋槸鐙间汉"));
+        assert!(speech.contains("9 / AI-09 /"));
     }
-
     #[test]
     fn day_speech_uses_fake_llm_and_appends_typed_event() {
         let mut session = GameSession::new_with_roles(Role::nine_player_deck());
@@ -582,31 +871,25 @@ mod tests {
         player.ai.model = "test-model".to_string();
         let mut log = EventLog::default();
         let client = FakeLlmClient {
-            response: r#"{"speech":"我先听后置位。"}"#,
+            response: "{\"speech\":\"I will listen first.\"}",
         };
-
         generate_day_speech(&client, &session, &mut log, actor, 1).unwrap();
-
         assert!(matches!(
             &log.events()[0].event,
-            GameEvent::DaySpeech { speaker: PlayerId(1), content, .. } if content == "我先听后置位。"
+            GameEvent::DaySpeech { speaker: PlayerId(1), content, .. } if content == "I will listen first."
         ));
     }
-
     #[test]
     fn day_speech_falls_back_when_player_llm_is_unconfigured() {
         let session = GameSession::new_with_roles(Role::nine_player_deck());
         let mut log = EventLog::default();
         let client = NoopLlmClient;
-
         generate_day_speech(&client, &session, &mut log, PlayerId(9), 1).unwrap();
-
         assert!(matches!(
             &log.events()[0].event,
-            GameEvent::DaySpeech { speaker: PlayerId(9), content, .. } if content.contains("信息还少")
+            GameEvent::DaySpeech { speaker: PlayerId(9), content, .. } if content.contains("limited information")
         ));
     }
-
     #[test]
     fn vote_uses_fake_llm_and_appends_typed_event() {
         let mut session = GameSession::new_with_roles(Role::nine_player_deck());
@@ -617,18 +900,19 @@ mod tests {
         player.ai.model = "test-model".to_string();
         let mut log = EventLog::default();
         let client = FakeLlmClient {
-            response: r#"{"target":4,"reason":"发言可疑。"}"#,
+            response: "{\"target\":4,\"reason\":\"suspicious speech\"}",
         };
-
         let vote = generate_vote(&client, &session, &mut log, actor, 1).unwrap();
-
         assert_eq!(vote.target, PlayerId(4));
         assert!(matches!(
             &log.events()[0].event,
-            GameEvent::VoteCast { voter: PlayerId(1), target: PlayerId(4), .. }
+            GameEvent::VoteCast {
+                voter: PlayerId(1),
+                target: PlayerId(4),
+                ..
+            }
         ));
     }
-
     #[test]
     fn wolf_kill_uses_fake_llm_and_appends_private_event() {
         let mut session = GameSession::new_with_roles(Role::nine_player_deck());
@@ -639,18 +923,19 @@ mod tests {
         player.ai.model = "test-model".to_string();
         let mut log = EventLog::default();
         let client = FakeLlmClient {
-            response: r#"{"target":4,"reason":"疑似预言家。"}"#,
+            response: "{\"target\":4,\"reason\":\"possible seer\"}",
         };
-
         let target = choose_wolf_kill(&client, &session, &mut log, actor, 1).unwrap();
-
         assert_eq!(target, Some(PlayerId(4)));
         assert!(matches!(
             &log.events()[0].event,
-            GameEvent::WolfKillChosen { actor: PlayerId(1), target: PlayerId(4), .. }
+            GameEvent::WolfKillChosen {
+                actor: PlayerId(1),
+                target: PlayerId(4),
+                ..
+            }
         ));
     }
-
     #[test]
     fn seer_check_uses_fake_llm_and_appends_actor_only_event() {
         let mut session = GameSession::new_with_roles(Role::nine_player_deck());
@@ -661,19 +946,23 @@ mod tests {
         player.ai.model = "test-model".to_string();
         let mut log = EventLog::default();
         let client = FakeLlmClient {
-            response: r#"{"target":1,"reason":"先验前置位。"}"#,
+            response: "{\"target\":1,\"reason\":\"check front seat\"}",
         };
-
         let target = choose_seer_check(&client, &session, &mut log, actor, 1, &[]).unwrap();
-
         assert_eq!(target, Some(PlayerId(1)));
         assert!(matches!(
             &log.events()[0].event,
-            GameEvent::SeerChecked { seer: PlayerId(4), target: PlayerId(1), .. }
+            GameEvent::SeerChecked {
+                seer: PlayerId(4),
+                target: PlayerId(1),
+                ..
+            }
         ));
-        assert_eq!(log.events()[0].visibility, EventVisibility::ActorOnly(actor));
+        assert_eq!(
+            log.events()[0].visibility,
+            EventVisibility::ActorOnly(actor)
+        );
     }
-
     #[test]
     fn witch_medicine_uses_fake_llm_and_appends_actor_only_event() {
         let mut session = GameSession::new_with_roles(Role::nine_player_deck());
@@ -684,9 +973,8 @@ mod tests {
         player.ai.model = "test-model".to_string();
         let mut log = EventLog::default();
         let client = FakeLlmClient {
-            response: r#"{"action":"save","target":null,"reason":"首夜救人。"}"#,
+            response: "{\"action\":\"save\",\"target\":null,\"reason\":\"save tonight\"}",
         };
-
         let decision = choose_witch_medicine(
             &client,
             &session,
@@ -698,29 +986,32 @@ mod tests {
             true,
         )
         .unwrap();
-
         assert_eq!(decision.action, WitchActionDecision::Save);
         assert!(matches!(
             &log.events()[0].event,
-            GameEvent::WitchMedicineUsed { witch: PlayerId(5), action: WitchMedicineAction::Save, .. }
+            GameEvent::WitchMedicineUsed {
+                witch: PlayerId(5),
+                action: WitchMedicineAction::Save,
+                ..
+            }
         ));
-        assert_eq!(log.events()[0].visibility, EventVisibility::ActorOnly(actor));
+        assert_eq!(
+            log.events()[0].visibility,
+            EventVisibility::ActorOnly(actor)
+        );
     }
-
     #[test]
     fn hunter_can_choose_to_skip_shot() {
         let mut session = GameSession::new_with_roles(Role::nine_player_deck());
         let mut log = EventLog::default();
         let client = FakeLlmClient {
-            response: r#"{"action":"skip","target":null,"reason":"没有确定狼坑。"}"#,
+            response: "{\"action\":\"skip\",\"target\":null,\"reason\":\"no clear target\"}",
         };
-
         let actor = PlayerId(6);
         let player = session.player_mut(actor).unwrap();
         player.ai.base_url = "https://example.test/v1".to_string();
         player.ai.api_key = "test-key".to_string();
         player.ai.model = "test-model".to_string();
-
         resolve_hunter_ai(
             &client,
             &mut session,
@@ -730,7 +1021,6 @@ mod tests {
             DeathReason::Exile,
         )
         .unwrap();
-
         assert!(session.player(PlayerId(1)).unwrap().alive);
         assert!(matches!(
             &log.events()[0].event,

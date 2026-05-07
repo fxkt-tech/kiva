@@ -1,5 +1,12 @@
+use async_openai::Client;
+use async_openai::config::OpenAIConfig;
+use async_openai::types::chat::{
+    ChatCompletionRequestMessage, ChatCompletionRequestSystemMessageArgs,
+    ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequest,
+    CreateChatCompletionRequestArgs, ResponseFormat,
+};
+
 use crate::game::domain::PlayerAiConfig;
-use serde::{Deserialize, Serialize};
 
 #[allow(dead_code)]
 pub trait LlmClient {
@@ -65,21 +72,32 @@ pub struct OpenAiCompatibleClient;
 
 impl LlmClient for OpenAiCompatibleClient {
     fn complete(&self, request: LlmRequest) -> Result<LlmResponse, LlmError> {
-        let url = format!("{}/chat/completions", request.base_url.trim_end_matches('/'));
-        let body = serialize_chat_request(&request)?;
-        let value: ChatCompletionResponse = ureq::post(&url)
-            .set("Authorization", &format!("Bearer {}", request.api_key))
-            .set("Content-Type", "application/json")
-            .send_string(&body)
-            .map_err(|err| LlmError::RequestFailed(err.to_string()))?
-            .into_json()
-            .map_err(|err| LlmError::InvalidResponse(err.to_string()))?;
+        let runtime = tokio::runtime::Runtime::new()
+            .map_err(|err| LlmError::RequestFailed(err.to_string()))?;
 
-        let content = value
+        runtime.block_on(self.complete_async(request))
+    }
+}
+
+impl OpenAiCompatibleClient {
+    pub async fn complete_async(&self, request: LlmRequest) -> Result<LlmResponse, LlmError> {
+        let chat_request = build_chat_request(&request)?;
+        let config = OpenAIConfig::new()
+            .with_api_key(request.api_key)
+            .with_api_base(request.base_url.trim_end_matches('/'));
+        let client = Client::with_config(config);
+
+        let response = client
+            .chat()
+            .create(chat_request)
+            .await
+            .map_err(|err| LlmError::RequestFailed(err.to_string()))?;
+
+        let content = response
             .choices
             .into_iter()
             .next()
-            .map(|choice| choice.message.content)
+            .and_then(|choice| choice.message.content)
             .filter(|content| !content.trim().is_empty())
             .ok_or_else(|| LlmError::InvalidResponse("missing completion content".to_string()))?;
 
@@ -87,65 +105,38 @@ impl LlmClient for OpenAiCompatibleClient {
     }
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 pub fn serialize_chat_request(request: &LlmRequest) -> Result<String, LlmError> {
-    let body = ChatCompletionRequest {
-        model: &request.model,
-        messages: vec![
-            ChatMessage {
-                role: "system",
-                content: &request.system,
-            },
-            ChatMessage {
-                role: "user",
-                content: &request.user,
-            },
-        ],
-        temperature: request.temperature,
-        response_format: match request.response_format {
-            LlmResponseFormat::Text => None,
-            LlmResponseFormat::JsonObject => Some(ResponseFormat {
-                format_type: "json_object",
-            }),
-        },
-    };
-
-    serde_json::to_string(&body).map_err(|err| LlmError::InvalidResponse(err.to_string()))
+    let request = build_chat_request(request)?;
+    serde_json::to_string(&request).map_err(|err| LlmError::InvalidResponse(err.to_string()))
 }
 
-#[derive(Debug, Serialize)]
-struct ChatCompletionRequest<'a> {
-    model: &'a str,
-    messages: Vec<ChatMessage<'a>>,
-    temperature: f32,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    response_format: Option<ResponseFormat<'a>>,
-}
+fn build_chat_request(request: &LlmRequest) -> Result<CreateChatCompletionRequest, LlmError> {
+    let system = ChatCompletionRequestSystemMessageArgs::default()
+        .content(request.system.clone())
+        .build()
+        .map_err(|err| LlmError::InvalidResponse(err.to_string()))?;
+    let user = ChatCompletionRequestUserMessageArgs::default()
+        .content(request.user.clone())
+        .build()
+        .map_err(|err| LlmError::InvalidResponse(err.to_string()))?;
 
-#[derive(Debug, Serialize)]
-struct ChatMessage<'a> {
-    role: &'a str,
-    content: &'a str,
-}
+    let mut builder = CreateChatCompletionRequestArgs::default();
+    builder
+        .model(request.model.clone())
+        .messages(vec![
+            ChatCompletionRequestMessage::System(system),
+            ChatCompletionRequestMessage::User(user),
+        ])
+        .temperature(request.temperature);
 
-#[derive(Debug, Serialize)]
-struct ResponseFormat<'a> {
-    #[serde(rename = "type")]
-    format_type: &'a str,
-}
+    if request.response_format == LlmResponseFormat::JsonObject {
+        builder.response_format(ResponseFormat::JsonObject);
+    }
 
-#[derive(Debug, Deserialize)]
-struct ChatCompletionResponse {
-    choices: Vec<ChatChoice>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ChatChoice {
-    message: ChatChoiceMessage,
-}
-
-#[derive(Debug, Deserialize)]
-struct ChatChoiceMessage {
-    content: String,
+    builder
+        .build()
+        .map_err(|err| LlmError::InvalidResponse(err.to_string()))
 }
 
 #[cfg(test)]
@@ -159,7 +150,7 @@ mod tests {
             base_url: "".to_string(),
             api_key: "".to_string(),
             model: "".to_string(),
-            system_prompt: "你是测试玩家。".to_string(),
+            system_prompt: "test player".to_string(),
         };
 
         let err = LlmRequest::new(&config, "user prompt".to_string()).unwrap_err();

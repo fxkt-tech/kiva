@@ -17,6 +17,22 @@ pub fn default_profiles() -> Vec<PlayerProfile> {
     ]
 }
 
+pub fn apply_runtime_ai_config(profiles: &mut [PlayerProfile]) {
+    let base_url = std::env::var("KIVA_LLM_BASE_URL").unwrap_or_default();
+    let api_key = std::env::var("KIVA_LLM_API_KEY").unwrap_or_default();
+    let model = std::env::var("KIVA_LLM_MODEL").unwrap_or_default();
+
+    if base_url.trim().is_empty() || api_key.trim().is_empty() || model.trim().is_empty() {
+        return;
+    }
+
+    for profile in profiles {
+        profile.ai.base_url = base_url.clone();
+        profile.ai.api_key = api_key.clone();
+        profile.ai.model = model.clone();
+    }
+}
+
 fn profile(
     name: &'static str,
     personality_preference: &'static str,
@@ -36,5 +52,61 @@ fn profile(
                 除非公开跳身份能明显提高胜率。"
             ),
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    #[test]
+    fn runtime_ai_config_applies_complete_global_env_config() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe {
+            std::env::set_var("KIVA_LLM_BASE_URL", "https://example.test/v1");
+            std::env::set_var("KIVA_LLM_API_KEY", "test-key");
+            std::env::set_var("KIVA_LLM_MODEL", "test-model");
+        }
+        let mut profiles = default_profiles();
+
+        apply_runtime_ai_config(&mut profiles);
+
+        assert!(profiles.iter().all(|profile| {
+            profile.ai.base_url == "https://example.test/v1"
+                && profile.ai.api_key == "test-key"
+                && profile.ai.model == "test-model"
+        }));
+        unsafe {
+            std::env::remove_var("KIVA_LLM_BASE_URL");
+            std::env::remove_var("KIVA_LLM_API_KEY");
+            std::env::remove_var("KIVA_LLM_MODEL");
+        }
+    }
+
+    #[test]
+    fn runtime_ai_config_ignores_incomplete_env_config() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        unsafe {
+            std::env::set_var("KIVA_LLM_BASE_URL", "https://example.test/v1");
+            std::env::remove_var("KIVA_LLM_API_KEY");
+            std::env::set_var("KIVA_LLM_MODEL", "test-model");
+        }
+        let mut profiles = default_profiles();
+
+        apply_runtime_ai_config(&mut profiles);
+
+        assert!(
+            profiles
+                .iter()
+                .all(|profile| profile.ai.base_url.is_empty())
+        );
+        assert!(profiles.iter().all(|profile| profile.ai.api_key.is_empty()));
+        assert!(profiles.iter().all(|profile| profile.ai.model.is_empty()));
+        unsafe {
+            std::env::remove_var("KIVA_LLM_BASE_URL");
+            std::env::remove_var("KIVA_LLM_MODEL");
+        }
     }
 }

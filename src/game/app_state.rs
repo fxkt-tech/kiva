@@ -56,7 +56,7 @@ pub struct PlayerMarks {
     pub notes: HashMap<PlayerId, String>,
 }
 
-#[derive(Resource, Debug, Default)]
+#[derive(Resource, Debug, Default, Clone)]
 pub struct PendingInput {
     pub text: String,
 }
@@ -70,7 +70,7 @@ pub enum WitchIntent {
     Poison,
 }
 
-#[derive(Resource, Debug, Default)]
+#[derive(Resource, Debug, Default, Clone)]
 pub struct PlayerAction {
     pub selected_target: Option<PlayerId>,
     pub witch_intent: WitchIntent,
@@ -84,12 +84,18 @@ pub struct NeedsGameRedraw {
     pub value: bool,
 }
 
+#[derive(Resource, Debug, Default)]
+pub struct AiTaskState {
+    pub active: bool,
+}
+
 #[derive(Resource, Debug)]
 pub struct SpeechPlayback {
     pub queue: Vec<PlayerId>,
     pub current_speaker: Option<PlayerId>,
     pub timer: Timer,
     pub active: bool,
+    pub thinking: bool,
 }
 
 impl Default for SpeechPlayback {
@@ -99,6 +105,7 @@ impl Default for SpeechPlayback {
             current_speaker: None,
             timer: Timer::from_seconds(0.5, TimerMode::Once),
             active: false,
+            thinking: false,
         }
     }
 }
@@ -109,6 +116,7 @@ impl SpeechPlayback {
         self.current_speaker = None;
         self.timer.reset();
         self.active = false;
+        self.thinking = false;
     }
 }
 
@@ -121,7 +129,7 @@ pub enum FlowPhase {
     Review,
 }
 
-#[derive(Resource, Debug)]
+#[derive(Resource, Debug, Clone)]
 #[allow(dead_code)]
 pub struct FlowState {
     pub day: u32,
@@ -168,7 +176,7 @@ mod tests {
 
         assert_eq!(
             flow.public_records(),
-            vec!["第 1 天：2 号被放逐。".to_string()]
+            vec!["[DAY 1 EXILE] Seat 2 is exiled.".to_string()]
         );
     }
 }

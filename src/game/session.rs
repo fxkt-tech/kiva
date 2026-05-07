@@ -1,6 +1,7 @@
 use rand::seq::SliceRandom;
 
 use crate::game::domain::{Camp, Player, PlayerId, PlayerKind, PlayerProfile, Role};
+use crate::game::player_config::apply_runtime_ai_config;
 use crate::game::player_pool::PlayerPool;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -36,9 +37,10 @@ impl GameSession {
 
     pub fn new_random_from_pool<R: rand::Rng + ?Sized>(mut roles: Vec<Role>, rng: &mut R) -> Self {
         roles.shuffle(rng);
-        let profiles = PlayerPool::default()
+        let mut profiles = PlayerPool::default()
             .draw_nine(rng)
             .expect("default player pool must contain at least nine players");
+        apply_runtime_ai_config(&mut profiles);
 
         Self::new_with_roles_and_profiles(roles, profiles)
     }

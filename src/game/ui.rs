@@ -1,14 +1,16 @@
-﻿use crate::game::ai::{
-    NoopLlmClient, choose_seer_check, choose_witch_medicine, choose_wolf_kill, generate_day_speech,
-    generate_vote, resolve_hunter_ai,
+use crate::game::ai::{
+    choose_seer_check, choose_seer_check_async, choose_witch_medicine, choose_witch_medicine_async,
+    choose_wolf_kill, choose_wolf_kill_async, generate_day_speech_async, generate_vote,
+    generate_vote_async, resolve_hunter_ai, resolve_hunter_ai_async,
 };
 use crate::game::app_state::{
-    AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
-    SessionResource, SpeechPlayback, WitchIntent,
+    AiTaskState, AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction,
+    SelectedPlayer, SessionResource, SpeechPlayback, WitchIntent,
 };
 use crate::game::decision::WitchActionDecision;
 use crate::game::domain::{Player, PlayerId, PlayerKind, Role};
 use crate::game::events::{EventVisibility, GameEvent};
+use crate::game::llm::OpenAiCompatibleClient;
 use crate::game::rules::{DeathReason, NightActions, resolve_night, tally_votes};
 use crate::game::session::{GameSession, Winner};
 use bevy::{
@@ -17,8 +19,10 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     picking::hover::HoverMap,
     prelude::*,
+    tasks::{AsyncComputeTaskPool, Task},
 };
 use bevy_ui_widgets::{ControlOrientation, CoreScrollbarThumb, Scrollbar};
+use futures_lite::future;
 
 const BG: Color = Color::srgb(0.018, 0.022, 0.030);
 const PANEL: Color = Color::srgb(0.045, 0.052, 0.067);
@@ -37,6 +41,35 @@ const DEAD_TEXT: Color = Color::srgb(0.455, 0.465, 0.485);
 const CHINESE_FONT: &str = "fonts/chinese/STHeiti-Medium.ttc";
 const LOG_BUBBLE_LIMIT: usize = 32;
 const SCROLL_LINE_HEIGHT: f32 = 21.0;
+
+#[derive(Component)]
+pub enum AiTaskKind {
+    Flow,
+    Speech,
+}
+
+#[derive(Component)]
+pub struct AiFlowTask {
+    kind: AiTaskKind,
+    task: Task<AiFlowTaskResult>,
+}
+
+struct AiFlowTaskInput {
+    session: GameSession,
+    flow: FlowState,
+    action: PlayerAction,
+    pending_input: PendingInput,
+}
+
+struct AiFlowTaskResult {
+    session: GameSession,
+    flow: FlowState,
+    action: PlayerAction,
+    pending_input: PendingInput,
+    review: bool,
+    started_phase: FlowPhase,
+    started_day: u32,
+}
 
 #[derive(Resource, Clone)]
 pub struct UiAssets {
@@ -262,6 +295,7 @@ pub fn spawn_review_screen(
 }
 
 pub fn button_action_system(
+    mut commands: Commands,
     mut interactions: Query<(&Interaction, &ButtonAction), (Changed<Interaction>, With<Button>)>,
     mut next_screen: ResMut<NextState<AppScreen>>,
     mut session: ResMut<SessionResource>,
@@ -270,6 +304,7 @@ pub fn button_action_system(
     mut pending_input: ResMut<PendingInput>,
     mut redraw: ResMut<NeedsGameRedraw>,
     mut speech: ResMut<SpeechPlayback>,
+    mut ai_task: ResMut<AiTaskState>,
 ) {
     for (interaction, action) in &mut interactions {
         if *interaction != Interaction::Pressed {
@@ -282,6 +317,7 @@ pub fn button_action_system(
                 session.session = Some(GameSession::new_random_from_pool(roles, &mut rand::rng()));
                 *flow = FlowState::default();
                 *action_state = PlayerAction::default();
+                ai_task.active = false;
                 speech.reset();
                 pending_input.text.clear();
                 next_screen.set(AppScreen::Game);
@@ -299,28 +335,120 @@ pub fn button_action_system(
                 }
 
                 speech.reset();
-                advance_flow(
-                    &mut session,
-                    &mut flow,
-                    &mut action_state,
-                    &mut pending_input,
-                    &mut next_screen,
+                spawn_ai_flow_task(
+                    &mut commands,
+                    &session,
+                    &flow,
+                    &action_state,
+                    &pending_input,
+                    &mut ai_task,
                 );
-                redraw.value = true;
+                if !ai_task.active {
+                    advance_flow(
+                        &mut session,
+                        &mut flow,
+                        &mut action_state,
+                        &mut pending_input,
+                        &mut next_screen,
+                    );
+                    redraw.value = true;
+                }
             }
         }
     }
 }
 
-pub fn speech_playback_system(
-    time: Res<Time>,
-    session: Res<SessionResource>,
+pub fn ai_task_poll_system(
+    mut commands: Commands,
+    mut tasks: Query<(Entity, &mut AiFlowTask)>,
+    mut session: ResMut<SessionResource>,
     mut flow: ResMut<FlowState>,
+    mut action: ResMut<PlayerAction>,
+    mut pending_input: ResMut<PendingInput>,
+    mut ai_task: ResMut<AiTaskState>,
+    mut next_screen: ResMut<NextState<AppScreen>>,
+    mut redraw: ResMut<NeedsGameRedraw>,
+) {
+    for (entity, mut task) in &mut tasks {
+        if !matches!(task.kind, AiTaskKind::Flow) {
+            continue;
+        }
+        let Some(result) = future::block_on(future::poll_once(&mut task.task)) else {
+            continue;
+        };
+
+        if result.started_phase != flow.phase || result.started_day != flow.day {
+            ai_task.active = false;
+            commands.entity(entity).despawn();
+            continue;
+        }
+
+        session.session = Some(result.session);
+        *flow = result.flow;
+        *action = result.action;
+        *pending_input = result.pending_input;
+        ai_task.active = false;
+        commands.entity(entity).despawn();
+
+        if result.review {
+            next_screen.set(AppScreen::Review);
+        } else {
+            next_screen.set(AppScreen::Game);
+        }
+        redraw.value = true;
+    }
+}
+
+pub fn speech_playback_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut session: ResMut<SessionResource>,
+    mut flow: ResMut<FlowState>,
+    mut action: ResMut<PlayerAction>,
     mut pending_input: ResMut<PendingInput>,
     mut speech: ResMut<SpeechPlayback>,
     mut redraw: ResMut<NeedsGameRedraw>,
+    mut tasks: Query<(Entity, &mut AiFlowTask)>,
 ) {
     if !speech.active || flow.phase != FlowPhase::DaySpeech {
+        return;
+    }
+
+    for (entity, mut task) in &mut tasks {
+        if !matches!(task.kind, AiTaskKind::Speech) {
+            continue;
+        }
+        let Some(result) = future::block_on(future::poll_once(&mut task.task)) else {
+            continue;
+        };
+
+        if result.started_phase != flow.phase || result.started_day != flow.day {
+            commands.entity(entity).despawn();
+            speech.thinking = false;
+            continue;
+        }
+
+        session.session = Some(result.session);
+        *flow = result.flow;
+        *action = result.action;
+        *pending_input = result.pending_input;
+        commands.entity(entity).despawn();
+        speech.thinking = false;
+
+        if let Some(next_speaker) = speech.queue.pop() {
+            speech.current_speaker = Some(next_speaker);
+            speech.timer.reset();
+        } else {
+            speech.reset();
+            pending_input.text.clear();
+            flow.phase = FlowPhase::Vote;
+        }
+
+        redraw.value = true;
+        return;
+    }
+
+    if speech.thinking {
         return;
     }
 
@@ -335,21 +463,21 @@ pub fn speech_playback_system(
     };
 
     if let Some(actor) = speech.current_speaker {
-        let day = flow.day;
-        let client = NoopLlmClient;
-        let _ = generate_day_speech(&client, session, &mut flow.event_log, actor, day);
-    }
-
-    if let Some(next_speaker) = speech.queue.pop() {
-        speech.current_speaker = Some(next_speaker);
-        speech.timer.reset();
+        spawn_day_speech_task(
+            &mut commands,
+            session.clone(),
+            flow.clone(),
+            action.clone(),
+            pending_input.clone(),
+            actor,
+        );
+        speech.thinking = true;
     } else {
         speech.reset();
         pending_input.text.clear();
         flow.phase = FlowPhase::Vote;
+        redraw.value = true;
     }
-
-    redraw.value = true;
 }
 
 pub fn text_input_system(
@@ -1172,6 +1300,102 @@ fn advance_flow(
     }
 }
 
+fn spawn_ai_flow_task(
+    commands: &mut Commands,
+    session: &SessionResource,
+    flow: &FlowState,
+    action: &PlayerAction,
+    pending_input: &PendingInput,
+    ai_task: &mut AiTaskState,
+) {
+    if ai_task.active {
+        return;
+    }
+
+    let Some(session) = session.session.clone() else {
+        return;
+    };
+
+    ai_task.active = true;
+    let input = AiFlowTaskInput {
+        session,
+        flow: flow.clone(),
+        action: action.clone(),
+        pending_input: pending_input.clone(),
+    };
+    let task = AsyncComputeTaskPool::get().spawn(async move { run_ai_flow_task(input) });
+    commands.spawn(AiFlowTask {
+        kind: AiTaskKind::Flow,
+        task,
+    });
+}
+
+fn spawn_day_speech_task(
+    commands: &mut Commands,
+    session: GameSession,
+    flow: FlowState,
+    action: PlayerAction,
+    pending_input: PendingInput,
+    actor: PlayerId,
+) {
+    let task = AsyncComputeTaskPool::get().spawn(async move {
+        let session = session;
+        let mut flow = flow;
+        let started_phase = flow.phase;
+        let started_day = flow.day;
+        let day = flow.day;
+        let _ = run_with_tokio_runtime(async {
+            let client = OpenAiCompatibleClient;
+            generate_day_speech_async(&client, &session, &mut flow.event_log, actor, day).await
+        });
+
+        AiFlowTaskResult {
+            session,
+            flow,
+            action,
+            pending_input,
+            review: false,
+            started_phase,
+            started_day,
+        }
+    });
+    commands.spawn(AiFlowTask {
+        kind: AiTaskKind::Speech,
+        task,
+    });
+}
+
+fn run_ai_flow_task(input: AiFlowTaskInput) -> AiFlowTaskResult {
+    let mut session = input.session;
+    let mut flow = input.flow;
+    let started_phase = flow.phase;
+    let started_day = flow.day;
+    let mut action = input.action;
+    let mut pending_input = input.pending_input;
+    let review = run_with_tokio_runtime(async {
+        advance_flow_state_async(&mut session, &mut flow, &mut action, &mut pending_input).await
+    })
+    .unwrap_or_else(|_| {
+        advance_flow_state(&mut session, &mut flow, &mut action, &mut pending_input)
+    });
+
+    AiFlowTaskResult {
+        session,
+        flow,
+        action,
+        pending_input,
+        review,
+        started_phase,
+        started_day,
+    }
+}
+
+fn run_with_tokio_runtime<T>(
+    future: impl std::future::Future<Output = T>,
+) -> Result<T, std::io::Error> {
+    tokio::runtime::Runtime::new().map(|runtime| runtime.block_on(future))
+}
+
 fn advance_flow_state(
     session: &mut GameSession,
     flow: &mut FlowState,
@@ -1185,7 +1409,7 @@ fn advance_flow_state(
                 .iter()
                 .find(|player| player.alive && player.role == Role::Werewolf)
                 .map(|player| player.id);
-            let client = NoopLlmClient;
+            let client = OpenAiCompatibleClient;
             let wolf_target = wolf_actor
                 .and_then(|actor| {
                     choose_wolf_kill(&client, session, &mut flow.event_log, actor, flow.day).ok()
@@ -1274,7 +1498,7 @@ fn advance_flow_state(
             false
         }
         FlowPhase::HunterShot => {
-            let client = NoopLlmClient;
+            let client = OpenAiCompatibleClient;
             if let (Some(hunter), Some(reason)) = (action.hunter_actor, action.hunter_death_reason)
             {
                 let _ = resolve_hunter_ai(
@@ -1302,7 +1526,7 @@ fn advance_flow_state(
             false
         }
         FlowPhase::Vote => {
-            let client = NoopLlmClient;
+            let client = OpenAiCompatibleClient;
             let votes = session
                 .alive_players()
                 .map(|player| player.id)
@@ -1312,6 +1536,197 @@ fn advance_flow_state(
                     generate_vote(&client, session, &mut flow.event_log, actor, flow.day).ok()
                 })
                 .collect::<Vec<_>>();
+
+            let target = tally_votes(&votes);
+            if let Some(target) = target {
+                if let Some(player) = session.player_mut(target) {
+                    player.alive = false;
+                }
+                flow.event_log.append(
+                    GameEvent::PlayerExiled {
+                        day: flow.day,
+                        player: target,
+                    },
+                    EventVisibility::Public,
+                );
+
+                if hunter_can_auto_shoot(session, target, DeathReason::Exile) {
+                    action.hunter_actor = Some(target);
+                    action.hunter_death_reason = Some(DeathReason::Exile);
+                    action.hunter_shot_pending = true;
+                    flow.phase = FlowPhase::HunterShot;
+                    return false;
+                }
+            }
+            action.selected_target = None;
+
+            if end_if_winner(session, flow) {
+                true
+            } else {
+                flow.day += 1;
+                flow.phase = FlowPhase::Night;
+                false
+            }
+        }
+        FlowPhase::Review => true,
+    }
+}
+
+async fn advance_flow_state_async(
+    session: &mut GameSession,
+    flow: &mut FlowState,
+    action: &mut PlayerAction,
+    pending_input: &mut PendingInput,
+) -> bool {
+    match flow.phase {
+        FlowPhase::Night => {
+            let wolf_actor = session
+                .players
+                .iter()
+                .find(|player| player.alive && player.role == Role::Werewolf)
+                .map(|player| player.id);
+            let client = OpenAiCompatibleClient;
+            let wolf_target = match wolf_actor {
+                Some(actor) => {
+                    choose_wolf_kill_async(&client, session, &mut flow.event_log, actor, flow.day)
+                        .await
+                        .ok()
+                        .flatten()
+                }
+                None => None,
+            };
+            let _seer_target = match session
+                .players
+                .iter()
+                .find(|player| player.alive && player.role == Role::Seer)
+                .map(|seer| seer.id)
+            {
+                Some(seer) => choose_seer_check_async(
+                    &client,
+                    session,
+                    &mut flow.event_log,
+                    seer,
+                    flow.day,
+                    &[],
+                )
+                .await
+                .ok()
+                .flatten(),
+                None => None,
+            };
+            let witch_decision = match session
+                .players
+                .iter()
+                .find(|player| player.alive && player.role == Role::Witch)
+                .map(|witch| witch.id)
+            {
+                Some(witch) => choose_witch_medicine_async(
+                    &client,
+                    session,
+                    &mut flow.event_log,
+                    witch,
+                    flow.day,
+                    wolf_target,
+                    true,
+                    true,
+                )
+                .await
+                .ok(),
+                None => None,
+            };
+
+            let result = resolve_night(
+                session,
+                NightActions {
+                    wolf_target,
+                    witch_save: matches!(
+                        witch_decision.as_ref().map(|decision| decision.action),
+                        Some(WitchActionDecision::Save)
+                    ),
+                    witch_poison_target: witch_decision.and_then(|decision| {
+                        if decision.action == WitchActionDecision::Poison {
+                            decision.target
+                        } else {
+                            None
+                        }
+                    }),
+                },
+            );
+
+            let mut pending_hunter = None;
+            flow.event_log.append(
+                GameEvent::NightDeaths {
+                    night: flow.day,
+                    deaths: result.deaths.clone(),
+                },
+                EventVisibility::Public,
+            );
+            if !result.deaths.is_empty() {
+                for death in &result.deaths {
+                    if hunter_can_auto_shoot(session, death.player, death.reason) {
+                        pending_hunter = Some((death.player, death.reason));
+                    }
+                }
+            }
+
+            if let Some((hunter, reason)) = pending_hunter {
+                action.hunter_actor = Some(hunter);
+                action.hunter_death_reason = Some(reason);
+                action.hunter_shot_pending = true;
+                flow.phase = FlowPhase::HunterShot;
+                return false;
+            }
+
+            action.selected_target = None;
+            action.witch_intent = WitchIntent::None;
+            pending_input.text.clear();
+            flow.phase = FlowPhase::DaySpeech;
+            false
+        }
+        FlowPhase::HunterShot => {
+            let client = OpenAiCompatibleClient;
+            if let (Some(hunter), Some(reason)) = (action.hunter_actor, action.hunter_death_reason)
+            {
+                let _ = resolve_hunter_ai_async(
+                    &client,
+                    session,
+                    &mut flow.event_log,
+                    hunter,
+                    flow.day,
+                    reason,
+                )
+                .await;
+            }
+            action.selected_target = None;
+            action.hunter_actor = None;
+            action.hunter_death_reason = None;
+            action.hunter_shot_pending = false;
+            if end_if_winner(session, flow) {
+                true
+            } else {
+                flow.phase = FlowPhase::DaySpeech;
+                false
+            }
+        }
+        FlowPhase::DaySpeech => {
+            pending_input.text.clear();
+            false
+        }
+        FlowPhase::Vote => {
+            let client = OpenAiCompatibleClient;
+            let actors = session
+                .alive_players()
+                .map(|player| player.id)
+                .collect::<Vec<_>>();
+            let mut votes = Vec::new();
+            for actor in actors {
+                if let Ok(vote) =
+                    generate_vote_async(&client, session, &mut flow.event_log, actor, flow.day)
+                        .await
+                {
+                    votes.push(vote);
+                }
+            }
 
             let target = tally_votes(&votes);
             if let Some(target) = target {
