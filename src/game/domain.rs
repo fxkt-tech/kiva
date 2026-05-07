@@ -56,9 +56,10 @@ pub enum PlayerKind {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlayerAiConfig {
-    pub model: String,
-    pub api_key: String,
     pub base_url: String,
+    pub api_key: String,
+    pub model: String,
+    pub system_prompt: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

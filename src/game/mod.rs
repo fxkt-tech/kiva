@@ -6,6 +6,7 @@ pub mod ai;
 pub mod app_state;
 pub mod domain;
 pub mod phase;
+pub mod player_config;
 pub mod player_pool;
 pub mod rules;
 pub mod session;

@@ -23,9 +23,10 @@ impl GameSession {
                 personality_preference: "基础 AI 玩家".to_string(),
                 avatar: "AI".to_string(),
                 ai: crate::game::domain::PlayerAiConfig {
-                    model: "gpt-4.1-mini".to_string(),
-                    api_key: "KIVA_AI_API_KEY".to_string(),
-                    base_url: "https://api.openai.com/v1".to_string(),
+                    base_url: String::new(),
+                    api_key: String::new(),
+                    model: String::new(),
+                    system_prompt: "你是基础 AI 玩家。".to_string(),
                 },
             })
             .collect();
