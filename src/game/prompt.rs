@@ -66,7 +66,10 @@ fn summarize_event(logged: &LoggedEvent) -> String {
             voter,
             target,
             reason,
-        } => format!("第 {day} 天：{} 号投票给 {} 号：{reason}", voter.0, target.0),
+        } => format!(
+            "第 {day} 天：{} 号投票给 {} 号：{reason}",
+            voter.0, target.0
+        ),
         GameEvent::PlayerExiled { day, player } => format!("第 {day} 天：{} 号被放逐。", player.0),
         GameEvent::WolfChat {
             night,
@@ -78,7 +81,10 @@ fn summarize_event(logged: &LoggedEvent) -> String {
             actor,
             target,
             reason,
-        } => format!("第 {night} 夜：狼人 {} 号选择刀 {} 号：{reason}", actor.0, target.0),
+        } => format!(
+            "第 {night} 夜：狼人 {} 号选择刀 {} 号：{reason}",
+            actor.0, target.0
+        ),
         GameEvent::SeerChecked {
             night,
             target,
@@ -91,7 +97,11 @@ fn summarize_event(logged: &LoggedEvent) -> String {
             target,
             reason,
             ..
-        } => format!("第 {night} 夜：你选择 {:?} {:?}：{reason}", action, target.map(|id| id.0)),
+        } => format!(
+            "第 {night} 夜：你选择 {:?} {:?}：{reason}",
+            action,
+            target.map(|id| id.0)
+        ),
         GameEvent::NightDeaths { night, deaths } if deaths.is_empty() => {
             format!("第 {night} 夜：平安夜。")
         }
@@ -177,7 +187,12 @@ mod tests {
             EventVisibility::Wolves,
         );
 
-        let prompt = build_prompt(&session, PlayerId(7), AiDecisionKind::DaySpeech { day: 1 }, &log);
+        let prompt = build_prompt(
+            &session,
+            PlayerId(7),
+            AiDecisionKind::DaySpeech { day: 1 },
+            &log,
+        );
 
         assert!(prompt.user.contains("公开发言"));
         assert!(!prompt.user.contains("私聊刀人"));
