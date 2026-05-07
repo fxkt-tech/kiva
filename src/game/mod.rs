@@ -12,6 +12,7 @@ pub mod player_pool;
 pub mod rules;
 pub mod session;
 pub mod ui;
+pub mod visibility;
 
 use app_state::{
     ActiveInfoTab, AppScreen, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, PlayerMarks,

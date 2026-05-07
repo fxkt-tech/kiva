@@ -99,6 +99,7 @@ pub struct EventLog {
 }
 
 impl EventLog {
+    #[allow(dead_code)]
     pub fn append(&mut self, event: GameEvent, visibility: EventVisibility) {
         self.next_sequence += 1;
         self.events.push(LoggedEvent {
@@ -108,10 +109,12 @@ impl EventLog {
         });
     }
 
+    #[allow(dead_code)]
     pub fn events(&self) -> &[LoggedEvent] {
         &self.events
     }
 
+    #[allow(dead_code)]
     pub fn public_projection(&self) -> Vec<String> {
         self.events
             .iter()
@@ -121,6 +124,7 @@ impl EventLog {
     }
 }
 
+#[allow(dead_code)]
 fn format_public_event(logged: &LoggedEvent) -> String {
     match &logged.event {
         GameEvent::GameStarted { day } => format!("第 {day} 夜：游戏开始。"),
@@ -170,6 +174,7 @@ fn format_public_event(logged: &LoggedEvent) -> String {
 }
 
 impl FlowPhase {
+    #[allow(dead_code)]
     fn label(self) -> &'static str {
         match self {
             FlowPhase::Night => "夜晚",
