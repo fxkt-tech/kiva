@@ -13,7 +13,7 @@ pub mod ui;
 
 use app_state::{
     ActiveInfoTab, AppScreen, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, PlayerMarks,
-    SelectedPlayer, SessionResource,
+    SelectedPlayer, SessionResource, SpeechPlayback,
 };
 
 pub struct WerewolfGamePlugin;
@@ -30,6 +30,7 @@ impl Plugin for WerewolfGamePlugin {
             .init_resource::<PlayerAction>()
             .init_resource::<FlowState>()
             .init_resource::<NeedsGameRedraw>()
+            .init_resource::<SpeechPlayback>()
             .init_resource::<ui::UiAssets>()
             .add_systems(Startup, (ui::spawn_camera, ui::enable_ime))
             .add_systems(OnEnter(AppScreen::Start), ui::spawn_start_screen)
@@ -44,6 +45,7 @@ impl Plugin for WerewolfGamePlugin {
                     ui::button_action_system,
                     ui::seat_selection_system,
                     ui::text_input_system,
+                    ui::speech_playback_system,
                     ui::send_scroll_events,
                     ui::redraw_game_screen,
                 ),

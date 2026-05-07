@@ -55,6 +55,7 @@ pub fn check_camp(session: &GameSession, target: PlayerId) -> Option<Camp> {
     session.player(target).map(|player| player.role.camp())
 }
 
+#[allow(dead_code)]
 pub fn hunter_can_shoot(reason: DeathReason) -> bool {
     matches!(reason, DeathReason::WolfKill | DeathReason::Exile)
 }

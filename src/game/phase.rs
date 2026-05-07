@@ -1,5 +1,6 @@
 /// 表示游戏当前所处的阶段。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum GamePhase {
     /// 游戏开始阶段。
     Start,

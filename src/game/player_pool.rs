@@ -16,10 +16,12 @@ impl Default for PlayerPool {
 }
 
 impl PlayerPool {
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn new(profiles: Vec<PlayerProfile>) -> Self {
         Self { profiles }
     }
 
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn len(&self) -> usize {
         self.profiles.len()
     }

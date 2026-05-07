@@ -1,9 +1,9 @@
-use crate::game::ai::{choose_vote_target, choose_wolf_target, generate_speech};
+﻿use crate::game::ai::{choose_vote_target, choose_wolf_target, generate_speech};
 use crate::game::app_state::{
     AppScreen, FlowPhase, FlowState, NeedsGameRedraw, PendingInput, PlayerAction, SelectedPlayer,
-    SessionResource, WitchIntent,
+    SessionResource, SpeechPlayback, WitchIntent,
 };
-use crate::game::domain::{Player, PlayerId, Role};
+use crate::game::domain::{Player, PlayerId, PlayerKind, Role};
 use crate::game::rules::{
     DeathReason, NightActions, check_camp, resolve_hunter_shot, resolve_night,
 };
@@ -53,6 +53,7 @@ impl FromWorld for UiAssets {
 pub struct ScreenRoot;
 
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum ButtonAction {
     StartGame,
     EnterNight,
@@ -114,6 +115,7 @@ pub fn spawn_game_placeholder(
     selected_player: Res<SelectedPlayer>,
     assets: Res<UiAssets>,
     pending_input: Res<PendingInput>,
+    speech: Res<SpeechPlayback>,
 ) {
     spawn_game_screen(
         &mut commands,
@@ -122,6 +124,7 @@ pub fn spawn_game_placeholder(
         &selected_player,
         &assets,
         &pending_input,
+        &speech,
     );
 }
 
@@ -135,6 +138,7 @@ pub fn redraw_game_screen(
     selected_player: Res<SelectedPlayer>,
     assets: Res<UiAssets>,
     pending_input: Res<PendingInput>,
+    speech: Res<SpeechPlayback>,
 ) {
     if screen.get() != &AppScreen::Game || !redraw.value {
         return;
@@ -150,6 +154,7 @@ pub fn redraw_game_screen(
         &selected_player,
         &assets,
         &pending_input,
+        &speech,
     );
     redraw.value = false;
 }
@@ -161,6 +166,7 @@ fn spawn_game_screen(
     selected_player: &SelectedPlayer,
     assets: &UiAssets,
     _pending_input: &PendingInput,
+    speech: &SpeechPlayback,
 ) {
     let Some(session) = session.session.as_ref() else {
         commands.spawn((
@@ -172,6 +178,7 @@ fn spawn_game_screen(
 
     let alive = session.alive_players().count();
     let selected = selected_player.player;
+    let current_speaker = speech.current_speaker.filter(|_| speech.active);
     let (phase_label, judge_hint) = phase_copy(flow.phase);
 
     commands
@@ -205,7 +212,12 @@ fn spawn_game_screen(
                 ..default()
             },))
                 .with_children(|body| {
-                    body.spawn(player_list(assets, &session.players, selected));
+                    body.spawn(player_list(
+                        assets,
+                        &session.players,
+                        selected,
+                        current_speaker,
+                    ));
                     body.spawn(observer_panel(assets, session, flow));
                     spawn_log_panel(body, assets, &flow.public_records);
                 });
@@ -254,6 +266,7 @@ pub fn button_action_system(
     mut action_state: ResMut<PlayerAction>,
     mut pending_input: ResMut<PendingInput>,
     mut redraw: ResMut<NeedsGameRedraw>,
+    mut speech: ResMut<SpeechPlayback>,
 ) {
     for (interaction, action) in &mut interactions {
         if *interaction != Interaction::Pressed {
@@ -266,6 +279,7 @@ pub fn button_action_system(
                 session.session = Some(GameSession::new_random_from_pool(roles, &mut rand::rng()));
                 *flow = FlowState::default();
                 *action_state = PlayerAction::default();
+                speech.reset();
                 pending_input.text.clear();
                 next_screen.set(AppScreen::Game);
             }
@@ -276,6 +290,12 @@ pub fn button_action_system(
             | ButtonAction::HunterShoot
             | ButtonAction::HunterSkip => {}
             ButtonAction::AdvanceFlow => {
+                if flow.phase == FlowPhase::DaySpeech {
+                    start_speech_playback(&session, &mut speech, &mut redraw);
+                    continue;
+                }
+
+                speech.reset();
                 advance_flow(
                     &mut session,
                     &mut flow,
@@ -287,6 +307,46 @@ pub fn button_action_system(
             }
         }
     }
+}
+
+pub fn speech_playback_system(
+    time: Res<Time>,
+    session: Res<SessionResource>,
+    mut flow: ResMut<FlowState>,
+    mut pending_input: ResMut<PendingInput>,
+    mut speech: ResMut<SpeechPlayback>,
+    mut redraw: ResMut<NeedsGameRedraw>,
+) {
+    if !speech.active || flow.phase != FlowPhase::DaySpeech {
+        return;
+    }
+
+    speech.timer.tick(time.delta());
+    if !speech.timer.is_finished() {
+        return;
+    }
+
+    let Some(session) = session.session.as_ref() else {
+        speech.reset();
+        return;
+    };
+
+    if let Some(actor) = speech.current_speaker {
+        let day = flow.day;
+        flow.public_records
+            .push(generate_speech(session, actor, day));
+    }
+
+    if let Some(next_speaker) = speech.queue.pop() {
+        speech.current_speaker = Some(next_speaker);
+        speech.timer.reset();
+    } else {
+        speech.reset();
+        pending_input.text.clear();
+        flow.phase = FlowPhase::Vote;
+    }
+
+    redraw.value = true;
 }
 
 pub fn text_input_system(
@@ -451,7 +511,12 @@ fn action_button(assets: &UiAssets, label: &'static str, action: ButtonAction) -
     )
 }
 
-fn player_list(assets: &UiAssets, players: &[Player], selected: Option<PlayerId>) -> impl Bundle {
+fn player_list(
+    assets: &UiAssets,
+    players: &[Player],
+    selected: Option<PlayerId>,
+    current_speaker: Option<PlayerId>,
+) -> impl Bundle {
     (
         Node {
             width: percent(27),
@@ -464,24 +529,32 @@ fn player_list(assets: &UiAssets, players: &[Player], selected: Option<PlayerId>
         BackgroundColor(PANEL),
         children![
             text(assets, "玩家", 25.0, GOLD),
-            player_row(assets, &players[0], selected),
-            player_row(assets, &players[1], selected),
-            player_row(assets, &players[2], selected),
-            player_row(assets, &players[3], selected),
-            player_row(assets, &players[4], selected),
-            player_row(assets, &players[5], selected),
-            player_row(assets, &players[6], selected),
-            player_row(assets, &players[7], selected),
-            player_row(assets, &players[8], selected),
+            player_row(assets, &players[0], selected, current_speaker),
+            player_row(assets, &players[1], selected, current_speaker),
+            player_row(assets, &players[2], selected, current_speaker),
+            player_row(assets, &players[3], selected, current_speaker),
+            player_row(assets, &players[4], selected, current_speaker),
+            player_row(assets, &players[5], selected, current_speaker),
+            player_row(assets, &players[6], selected, current_speaker),
+            player_row(assets, &players[7], selected, current_speaker),
+            player_row(assets, &players[8], selected, current_speaker),
         ],
     )
 }
 
-fn player_row(assets: &UiAssets, player: &Player, selected: Option<PlayerId>) -> impl Bundle {
+fn player_row(
+    assets: &UiAssets,
+    player: &Player,
+    selected: Option<PlayerId>,
+    current_speaker: Option<PlayerId>,
+) -> impl Bundle {
     let selected = selected == Some(player.id);
+    let speaking = current_speaker == Some(player.id);
     let role_color = role_color(player.role);
     let bg = if !player.alive {
         DEAD_BG
+    } else if speaking {
+        Color::srgb(0.180, 0.130, 0.035)
     } else if selected {
         Color::srgb(0.120, 0.105, 0.065)
     } else {
@@ -489,6 +562,8 @@ fn player_row(assets: &UiAssets, player: &Player, selected: Option<PlayerId>) ->
     };
     let border = if !player.alive {
         DEAD_BORDER
+    } else if speaking {
+        Color::srgb(1.000, 0.830, 0.250)
     } else if selected {
         GOLD
     } else {
@@ -529,14 +604,39 @@ fn player_row(assets: &UiAssets, player: &Player, selected: Option<PlayerId>) ->
                     ),
                     text(
                         assets,
-                        format!("{} / {}", player.role.label(), status_label(player.alive)),
+                        player_status_line(player, speaking),
                         14.0,
                         secondary_text
+                    ),
+                    text(
+                        assets,
+                        format!(
+                            "{} / {} / {}",
+                            player_kind_label(&player.kind),
+                            player.ai.model,
+                            player.personality_preference
+                        ),
+                        11.0,
+                        MUTED
                     ),
                 ],
             ),
         ],
     )
+}
+
+fn player_status_line(player: &Player, speaking: bool) -> String {
+    if speaking {
+        format!("{} / 发言中", player.role.label())
+    } else {
+        format!("{} / {}", player.role.label(), status_label(player.alive))
+    }
+}
+
+fn player_kind_label(kind: &PlayerKind) -> &'static str {
+    match kind {
+        PlayerKind::Ai => "AI",
+    }
 }
 
 fn avatar(assets: &UiAssets, player: &Player) -> impl Bundle {
@@ -1156,12 +1256,7 @@ fn advance_flow_state(
             }
         }
         FlowPhase::DaySpeech => {
-            for player in session.alive_players() {
-                flow.public_records
-                    .push(generate_speech(session, player.id, flow.day));
-            }
             pending_input.text.clear();
-            flow.phase = FlowPhase::Vote;
             false
         }
         FlowPhase::Vote => {
@@ -1194,6 +1289,36 @@ fn advance_flow_state(
         }
         FlowPhase::Review => true,
     }
+}
+
+fn start_speech_playback(
+    session: &SessionResource,
+    speech: &mut SpeechPlayback,
+    redraw: &mut NeedsGameRedraw,
+) {
+    if speech.active {
+        return;
+    }
+
+    let Some(session) = session.session.as_ref() else {
+        return;
+    };
+
+    let mut queue = session
+        .alive_players()
+        .map(|player| player.id)
+        .collect::<Vec<_>>();
+    queue.reverse();
+
+    let Some(first_speaker) = queue.pop() else {
+        return;
+    };
+
+    speech.queue = queue;
+    speech.current_speaker = Some(first_speaker);
+    speech.timer = Timer::from_seconds(0.5, TimerMode::Once);
+    speech.active = true;
+    redraw.value = true;
 }
 
 fn choose_ai_seer_target(session: &GameSession, seer: PlayerId) -> Option<PlayerId> {
@@ -1280,6 +1405,7 @@ fn role_color(role: Role) -> Color {
     }
 }
 
+#[allow(dead_code)]
 #[allow(dead_code)]
 fn role_icon(role: Role) -> &'static str {
     match role {
@@ -1402,7 +1528,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn flow_can_advance_from_night_to_vote_for_ai_observer() {
+    fn flow_can_advance_from_night_to_day_speech_for_ai_observer() {
         let mut session = GameSession::new_with_roles(Role::nine_player_deck());
         let mut flow = FlowState::default();
         let mut action = PlayerAction::default();
@@ -1422,19 +1548,22 @@ mod tests {
                 .iter()
                 .any(|record| record.contains("第 1 夜"))
         );
+    }
 
-        assert!(!advance_flow_state(
-            &mut session,
-            &mut flow,
-            &mut action,
-            &mut pending
-        ));
-        assert_eq!(flow.phase, FlowPhase::Vote);
-        assert!(
-            flow.public_records
-                .iter()
-                .any(|record| record.contains("号 / AI-") && record.contains(" / "))
-        );
+    #[test]
+    fn speech_playback_starts_with_first_alive_player() {
+        let session = SessionResource {
+            session: Some(GameSession::new_with_roles(Role::nine_player_deck())),
+        };
+        let mut speech = SpeechPlayback::default();
+        let mut redraw = NeedsGameRedraw::default();
+
+        start_speech_playback(&session, &mut speech, &mut redraw);
+
+        assert!(speech.active);
+        assert_eq!(speech.current_speaker, Some(PlayerId(1)));
+        assert_eq!(speech.queue.len(), 8);
+        assert!(redraw.value);
     }
 
     #[test]

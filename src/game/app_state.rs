@@ -24,6 +24,7 @@ pub struct SelectedPlayer {
 }
 
 #[derive(Resource, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[allow(dead_code)]
 pub enum InfoTab {
     #[default]
     PublicRecords,
@@ -32,11 +33,13 @@ pub enum InfoTab {
 }
 
 #[derive(Resource, Debug, Default)]
+#[allow(dead_code)]
 pub struct ActiveInfoTab {
     pub tab: InfoTab,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[allow(dead_code)]
 pub enum TrustMark {
     Trusted,
     #[default]
@@ -45,6 +48,7 @@ pub enum TrustMark {
 }
 
 #[derive(Resource, Debug, Default)]
+#[allow(dead_code)]
 pub struct PlayerMarks {
     pub trust: HashMap<PlayerId, TrustMark>,
     pub notes: HashMap<PlayerId, String>,
@@ -56,6 +60,7 @@ pub struct PendingInput {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[allow(dead_code)]
 pub enum WitchIntent {
     #[default]
     None,
@@ -75,6 +80,34 @@ pub struct NeedsGameRedraw {
     pub value: bool,
 }
 
+#[derive(Resource, Debug)]
+pub struct SpeechPlayback {
+    pub queue: Vec<PlayerId>,
+    pub current_speaker: Option<PlayerId>,
+    pub timer: Timer,
+    pub active: bool,
+}
+
+impl Default for SpeechPlayback {
+    fn default() -> Self {
+        Self {
+            queue: Vec::new(),
+            current_speaker: None,
+            timer: Timer::from_seconds(0.5, TimerMode::Once),
+            active: false,
+        }
+    }
+}
+
+impl SpeechPlayback {
+    pub fn reset(&mut self) {
+        self.queue.clear();
+        self.current_speaker = None;
+        self.timer.reset();
+        self.active = false;
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FlowPhase {
     Night,
@@ -85,6 +118,7 @@ pub enum FlowPhase {
 }
 
 #[derive(Resource, Debug)]
+#[allow(dead_code)]
 pub struct FlowState {
     pub day: u32,
     pub phase: FlowPhase,

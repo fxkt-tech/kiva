@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use kiva::game::WerewolfGamePlugin;
+
+mod game;
+
+use game::WerewolfGamePlugin;
 
 fn main() {
     App::new()

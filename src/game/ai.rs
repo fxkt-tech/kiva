@@ -10,6 +10,7 @@ pub fn choose_wolf_target(session: &GameSession, actor: PlayerId) -> Option<Play
         .map(|player| player.id)
 }
 
+#[allow(dead_code)]
 pub fn choose_seer_target(session: &GameSession, checked: &[PlayerId]) -> Option<PlayerId> {
     session
         .alive_players()

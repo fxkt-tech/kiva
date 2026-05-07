@@ -15,6 +15,7 @@ pub struct GameSession {
 }
 
 impl GameSession {
+    #[allow(dead_code)]
     pub fn new_with_roles(roles: Vec<Role>) -> Self {
         let profiles = (1..=roles.len())
             .map(|seat| PlayerProfile {
