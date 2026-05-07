@@ -4,6 +4,7 @@ use bevy_ui_widgets::ScrollbarPlugin;
 
 pub mod ai;
 pub mod app_state;
+pub mod decision;
 pub mod domain;
 pub mod events;
 pub mod llm;
