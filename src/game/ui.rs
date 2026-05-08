@@ -152,6 +152,7 @@ pub fn spawn_game_placeholder(
     assets: Res<UiAssets>,
     pending_input: Res<PendingInput>,
     speech: Res<SpeechPlayback>,
+    ai_task: Res<AiTaskState>,
 ) {
     spawn_game_screen(
         &mut commands,
@@ -161,6 +162,7 @@ pub fn spawn_game_placeholder(
         &assets,
         &pending_input,
         &speech,
+        ai_task.active,
     );
 }
 
@@ -175,6 +177,7 @@ pub fn redraw_game_screen(
     assets: Res<UiAssets>,
     pending_input: Res<PendingInput>,
     speech: Res<SpeechPlayback>,
+    ai_task: Res<AiTaskState>,
 ) {
     if screen.get() != &AppScreen::Game || !redraw.value {
         return;
@@ -191,6 +194,7 @@ pub fn redraw_game_screen(
         &assets,
         &pending_input,
         &speech,
+        ai_task.active,
     );
     redraw.value = false;
 }
@@ -203,6 +207,7 @@ fn spawn_game_screen(
     assets: &UiAssets,
     _pending_input: &PendingInput,
     speech: &SpeechPlayback,
+    ai_task_active: bool,
 ) {
     let Some(session) = session.session.as_ref() else {
         commands.spawn((
@@ -215,6 +220,7 @@ fn spawn_game_screen(
     let alive = session.alive_players().count();
     let selected = selected_player.player;
     let current_speaker = speech.current_speaker.filter(|_| speech.active);
+    let busy = ai_task_active || speech.active || speech.thinking;
     let (phase_label, judge_hint) = phase_copy(flow.phase);
 
     commands
@@ -258,7 +264,7 @@ fn spawn_game_screen(
                     spawn_log_panel(body, assets, &flow.public_records());
                 });
 
-            root.spawn(observer_console(assets, flow.phase));
+            root.spawn(observer_console(assets, flow.phase, busy));
         });
 }
 
@@ -329,6 +335,10 @@ pub fn button_action_system(
             | ButtonAction::HunterShoot
             | ButtonAction::HunterSkip => {}
             ButtonAction::AdvanceFlow => {
+                if ai_task.active || speech.active || speech.thinking {
+                    continue;
+                }
+
                 if flow.phase == FlowPhase::DaySpeech {
                     start_speech_playback(&session, &mut speech, &mut redraw);
                     continue;
@@ -343,6 +353,7 @@ pub fn button_action_system(
                     &pending_input,
                     &mut ai_task,
                 );
+                redraw.value = true;
                 if !ai_task.active {
                     advance_flow(
                         &mut session,
@@ -472,6 +483,7 @@ pub fn speech_playback_system(
             actor,
         );
         speech.thinking = true;
+        redraw.value = true;
     } else {
         speech.reset();
         pending_input.text.clear();
@@ -625,6 +637,27 @@ fn screen_root() -> impl Bundle {
 }
 
 fn action_button(assets: &UiAssets, label: &'static str, action: ButtonAction) -> impl Bundle {
+    action_button_with_state(assets, label, action, false)
+}
+
+fn action_button_with_state(
+    assets: &UiAssets,
+    label: &'static str,
+    action: ButtonAction,
+    disabled: bool,
+) -> impl Bundle {
+    let border = if disabled {
+        Color::srgb(0.260, 0.275, 0.305)
+    } else {
+        GOLD
+    };
+    let background = if disabled {
+        Color::srgb(0.155, 0.165, 0.185)
+    } else {
+        RED
+    };
+    let text_color = if disabled { MUTED } else { TEXT };
+
     (
         Button,
         action,
@@ -636,9 +669,9 @@ fn action_button(assets: &UiAssets, label: &'static str, action: ButtonAction) -
             border: UiRect::all(px(1)),
             ..default()
         },
-        BorderColor::all(GOLD),
-        BackgroundColor(RED),
-        children![text(assets, label, 22.0, TEXT)],
+        BorderColor::all(border),
+        BackgroundColor(background),
+        children![text(assets, label, 22.0, text_color)],
     )
 }
 
@@ -1215,7 +1248,7 @@ fn log_bubble(assets: &UiAssets, record: String, index: usize) -> impl Bundle {
     )
 }
 
-fn observer_console(assets: &UiAssets, phase: FlowPhase) -> impl Bundle {
+fn observer_console(assets: &UiAssets, phase: FlowPhase, busy: bool) -> impl Bundle {
     (
         Node {
             width: percent(100),
@@ -1235,10 +1268,28 @@ fn observer_console(assets: &UiAssets, phase: FlowPhase) -> impl Bundle {
                 },
                 children![
                     text(assets, console_title(phase), 22.0, TEXT),
-                    text(assets, console_hint(phase), 16.0, MUTED),
+                    text(
+                        assets,
+                        if busy {
+                            "AI thinking..."
+                        } else {
+                            console_hint(phase)
+                        },
+                        16.0,
+                        MUTED
+                    ),
                 ],
             ),
-            action_button(assets, advance_label(phase), ButtonAction::AdvanceFlow),
+            action_button_with_state(
+                assets,
+                if busy {
+                    "Running..."
+                } else {
+                    advance_label(phase)
+                },
+                ButtonAction::AdvanceFlow,
+                busy
+            ),
         ],
     )
 }
