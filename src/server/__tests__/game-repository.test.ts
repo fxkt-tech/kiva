@@ -146,4 +146,37 @@ describe("game repository", () => {
     expect(content).toContain('\n  "game":');
     expect(content.endsWith("\n")).toBe(true);
   });
+
+  it("serializes game locks across repository instances", async () => {
+    const rootDir = await createTempDir();
+    const firstRepository = createGameRepository(rootDir);
+    const secondRepository = createGameRepository(rootDir);
+    const gameId = "game-lock" as GameId;
+    const order: string[] = [];
+    let releaseFirstLock: () => void = () => {};
+    const firstLockStarted = new Promise<void>((resolve) => {
+      const firstLock = firstRepository.withGameLock(gameId, async () => {
+        order.push("first-start");
+        resolve();
+        await new Promise<void>((release) => {
+          releaseFirstLock = release;
+        });
+        order.push("first-end");
+      });
+      void firstLock;
+    });
+
+    await firstLockStarted;
+    const secondLock = secondRepository.withGameLock(gameId, async () => {
+      order.push("second");
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(order).toEqual(["first-start"]);
+
+    releaseFirstLock();
+    await secondLock;
+
+    expect(order).toEqual(["first-start", "first-end", "second"]);
+  });
 });

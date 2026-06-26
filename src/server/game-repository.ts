@@ -3,9 +3,11 @@ import {
   readdir,
   readFile,
   rename,
+  rmdir,
   writeFile,
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
+import { setTimeout } from "node:timers/promises";
 import { join } from "node:path";
 import type { DraftEvent } from "@/core/drafts";
 import type { GameEvent } from "@/core/events";
@@ -22,17 +24,30 @@ export type GameRepository = {
   readonly get: (gameId: GameId) => Promise<GameRecord | null>;
   readonly list: () => Promise<readonly GameRecord[]>;
   readonly save: (record: GameRecord) => Promise<void>;
+  readonly withGameLock: <T>(
+    gameId: GameId,
+    operation: () => Promise<T>,
+  ) => Promise<T>;
 };
 
 export function createGameRepository(rootDir = ".kiva-data"): GameRepository {
   const gamesDir = join(rootDir, "games");
+  const locksDir = join(rootDir, "locks");
 
   async function ensureGamesDir(): Promise<void> {
     await mkdir(gamesDir, { recursive: true });
   }
 
+  async function ensureLocksDir(): Promise<void> {
+    await mkdir(locksDir, { recursive: true });
+  }
+
   function recordPath(gameId: GameId): string {
     return join(gamesDir, `${encodeURIComponent(gameId)}.json`);
+  }
+
+  function lockPath(gameId: GameId): string {
+    return join(locksDir, `${encodeURIComponent(gameId)}.lock`);
   }
 
   return {
@@ -72,9 +87,39 @@ export function createGameRepository(rootDir = ".kiva-data"): GameRepository {
       await writeFile(tempPath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
       await rename(tempPath, targetPath);
     },
+
+    async withGameLock(gameId, operation) {
+      const release = await acquireLock(lockPath(gameId), ensureLocksDir);
+      try {
+        return await operation();
+      } finally {
+        await release();
+      }
+    },
   };
 }
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
+}
+
+async function acquireLock(
+  path: string,
+  ensureParentDir: () => Promise<void>,
+): Promise<() => Promise<void>> {
+  await ensureParentDir();
+
+  while (true) {
+    try {
+      await mkdir(path);
+      return () => rmdir(path);
+    } catch (error) {
+      if (isNodeError(error) && error.code === "EEXIST") {
+        await setTimeout(10);
+        continue;
+      }
+
+      throw error;
+    }
+  }
 }

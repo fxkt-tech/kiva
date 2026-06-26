@@ -176,6 +176,7 @@ function createDeferredSaveRepository(): GameRepository & {
   let record: GameRecord | null = null;
   let releaseDeferredSave: () => void = () => {};
   let deferredSaveStarted: () => void = () => {};
+  let lockTail: Promise<void> = Promise.resolve();
   const deferredSaveStartedPromise = new Promise<void>((resolve) => {
     deferredSaveStarted = resolve;
   });
@@ -203,6 +204,21 @@ function createDeferredSaveRepository(): GameRepository & {
       }
 
       record = structuredClone(nextRecord);
+    },
+
+    async withGameLock(_gameId, operation) {
+      const previous = lockTail;
+      let releaseCurrent!: () => void;
+      lockTail = new Promise<void>((resolve) => {
+        releaseCurrent = resolve;
+      });
+      await previous;
+
+      try {
+        return await operation();
+      } finally {
+        releaseCurrent();
+      }
     },
 
     waitForDeferredSave() {

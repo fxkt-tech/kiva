@@ -17,8 +17,6 @@ type DraftDisplayInput = {
   readonly text: string;
 };
 
-const mutationLocks = new Map<string, Promise<void>>();
-
 export function createGameActions(repository: GameRepository) {
   async function loadGame(gameId: GameId): Promise<GameRecord> {
     const record = await repository.get(gameId);
@@ -52,7 +50,7 @@ export function createGameActions(repository: GameRepository) {
     },
 
     async continueGame(gameId: GameId): Promise<GameRecord> {
-      return withGameMutationLock(gameId, async () => {
+      return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);
         if (record.draft) {
           return record;
@@ -76,7 +74,7 @@ export function createGameActions(repository: GameRepository) {
     },
 
     async confirmDraft(gameId: GameId): Promise<GameRecord> {
-      return withGameMutationLock(gameId, async () => {
+      return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);
         if (!record.draft) {
           return record;
@@ -105,7 +103,7 @@ export function createGameActions(repository: GameRepository) {
       gameId: GameId,
       display: DraftDisplayInput,
     ): Promise<GameRecord> {
-      return withGameMutationLock(gameId, async () => {
+      return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);
         if (!record.draft) {
           return record;
@@ -130,7 +128,7 @@ export function createGameActions(repository: GameRepository) {
     },
 
     async deleteDraft(gameId: GameId): Promise<GameRecord> {
-      return withGameMutationLock(gameId, async () => {
+      return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);
         const updatedAt = now();
         const nextRecord: GameRecord = {
@@ -147,7 +145,7 @@ export function createGameActions(repository: GameRepository) {
     async rollbackAfter(gameId: GameId, index: number): Promise<GameRecord> {
       validateRollbackIndex(index);
 
-      return withGameMutationLock(gameId, async () => {
+      return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);
         const updatedAt = now();
         const nextRecord: GameRecord = {
@@ -165,31 +163,6 @@ export function createGameActions(repository: GameRepository) {
 
 function now(): string {
   return new Date().toISOString();
-}
-
-async function withGameMutationLock<T>(
-  gameId: GameId,
-  operation: () => Promise<T>,
-): Promise<T> {
-  const key = gameId.toString();
-  const previous = mutationLocks.get(key) ?? Promise.resolve();
-  let releaseCurrent!: () => void;
-  const current = new Promise<void>((resolve) => {
-    releaseCurrent = resolve;
-  });
-  const tail = previous.catch(() => undefined).then(() => current);
-
-  mutationLocks.set(key, tail);
-  await previous.catch(() => undefined);
-
-  try {
-    return await operation();
-  } finally {
-    releaseCurrent();
-    if (mutationLocks.get(key) === tail) {
-      mutationLocks.delete(key);
-    }
-  }
 }
 
 function validateRollbackIndex(index: number): void {
