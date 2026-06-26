@@ -18,15 +18,20 @@ export function appendEvent(
     throw new Error("Only active events can be appended");
   }
 
-  if (events.some((event) => event.id === nextEvent.id)) {
-    throw new Error(`Duplicate event id ${nextEvent.id}`);
+  const existingGameIds = new Set(events.map((event) => event.gameId));
+  if (existingGameIds.size > 1) {
+    throw new Error("Event log contains multiple game ids");
   }
 
-  const logGameId = activeEvents.at(0)?.gameId;
+  const logGameId = events.at(0)?.gameId;
   if (logGameId !== undefined && nextEvent.gameId !== logGameId) {
     throw new Error(
       `Cannot append event for game ${nextEvent.gameId} to log for game ${logGameId}`,
     );
+  }
+
+  if (events.some((event) => event.id === nextEvent.id)) {
+    throw new Error(`Duplicate event id ${nextEvent.id}`);
   }
 
   activeEvents.forEach((event, index) => {

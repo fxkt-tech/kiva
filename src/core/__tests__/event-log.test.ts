@@ -62,6 +62,24 @@ describe("event log", () => {
     ).toThrow("Cannot append event for game g2 to log for game g1");
   });
 
+  it("rejects cross-game append when existing events are superseded", () => {
+    expect(() =>
+      appendEvent(
+        [event(1, "superseded")],
+        event(1, "active", { id: "e2" as EventId, gameId: "g2" as GameId }),
+      ),
+    ).toThrow("Cannot append event for game g2 to log for game g1");
+  });
+
+  it("rejects mixed-game existing logs", () => {
+    expect(() =>
+      appendEvent(
+        [event(1), event(2, "active", { gameId: "g2" as GameId })],
+        event(3, "active"),
+      ),
+    ).toThrow("Event log contains multiple game ids");
+  });
+
   it("rejects corrupt active event sequences", () => {
     expect(() =>
       appendEvent([event(1), event(3)], event(4, "active")),
