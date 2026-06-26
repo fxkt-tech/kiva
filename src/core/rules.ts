@@ -1,7 +1,9 @@
 import type { PlayerSnapshot } from "./player";
-import type { PlayerId, Ruleset } from "./types";
+import type { GameRole, PlayerId, Ruleset } from "./types";
 
 export type NightActionKind = "wolf_kill" | "seer_check" | "witch_poison";
+
+const GOD_ROLES = new Set<GameRole>(["seer", "witch"]);
 
 export type NightResolutionInput = {
   readonly wolfKillTargetId: PlayerId | null;
@@ -37,10 +39,24 @@ export function getLegalNightTargets(
   }
 
   if (action === "seer_check") {
-    return players
-      .filter((player) => alive.has(player.playerId))
-      .filter((player) => player.playerId !== actorPlayerId)
-      .map((player) => player.playerId);
+    return getActorSpecificTargets(players, alive, actorPlayerId);
+  }
+
+  return getActorSpecificTargets(players, alive, actorPlayerId);
+}
+
+function getActorSpecificTargets(
+  players: readonly PlayerSnapshot[],
+  alive: ReadonlySet<PlayerId>,
+  actorPlayerId?: PlayerId,
+): readonly PlayerId[] {
+  if (!actorPlayerId) {
+    return [];
+  }
+
+  const actor = players.find((player) => player.playerId === actorPlayerId);
+  if (!actor || !alive.has(actor.playerId)) {
+    return [];
   }
 
   return players
@@ -93,8 +109,8 @@ export function checkWinCondition(
     return { ended: false };
   }
 
-  const livingGods = livingPlayers.filter(
-    (player) => player.gameRole === "seer" || player.gameRole === "witch",
+  const livingGods = livingPlayers.filter((player) =>
+    GOD_ROLES.has(player.gameRole),
   );
   if (livingGods.length === 0) {
     return { ended: true, winner: "wolves", reason: "all_gods_dead" };

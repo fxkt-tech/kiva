@@ -13,6 +13,7 @@ const p3 = "p3" as PlayerId;
 const p4 = "p4" as PlayerId;
 const p5 = "p5" as PlayerId;
 const p6 = "p6" as PlayerId;
+const unknownPlayerId = "unknown" as PlayerId;
 
 const players = [
   createPlayerSnapshot({
@@ -66,6 +67,57 @@ describe("rules", () => {
     ).toEqual([p1, p2, p4]);
   });
 
+  it("allows witch to poison living players except self", () => {
+    expect(
+      getLegalNightTargets("witch_poison", players, [p1, p3, p4, p5], p4),
+    ).toEqual([p1, p3, p5]);
+  });
+
+  it("returns no seer targets when actor is omitted", () => {
+    expect(getLegalNightTargets("seer_check", players, [p1, p2, p3, p4])).toEqual(
+      [],
+    );
+  });
+
+  it("returns no seer targets when actor is unknown", () => {
+    expect(
+      getLegalNightTargets("seer_check", players, [p1, p2, p3, p4], unknownPlayerId),
+    ).toEqual([]);
+  });
+
+  it("returns no seer targets when actor is dead", () => {
+    expect(
+      getLegalNightTargets("seer_check", players, [p1, p2, p4], p3),
+    ).toEqual([]);
+  });
+
+  it("returns no witch poison targets when actor is invalid", () => {
+    expect(
+      getLegalNightTargets("witch_poison", players, [p1, p2, p3, p4], unknownPlayerId),
+    ).toEqual([]);
+  });
+
+  it("ignores unknown alive player ids when building targets", () => {
+    expect(
+      getLegalNightTargets("wolf_kill", players, [
+        p1,
+        p2,
+        p3,
+        unknownPlayerId,
+      ]),
+    ).toEqual([p3]);
+  });
+
+  it("kills wolf target without antidote", () => {
+    expect(
+      resolveNightDeaths({
+        wolfKillTargetId: p3,
+        antidoteTargetId: null,
+        poisonTargetId: null,
+      }),
+    ).toEqual([p3]);
+  });
+
   it("rescues wolf kill with antidote", () => {
     expect(
       resolveNightDeaths({
@@ -86,6 +138,16 @@ describe("rules", () => {
     ).toEqual([p5]);
   });
 
+  it("deduplicates a target killed by both wolves and poison", () => {
+    expect(
+      resolveNightDeaths({
+        wolfKillTargetId: p3,
+        antidoteTargetId: null,
+        poisonTargetId: p3,
+      }),
+    ).toEqual([p3]);
+  });
+
   it("good team wins when all wolves are dead", () => {
     expect(checkWinCondition(players, [p1, p2], createDefaultRuleset())).toEqual({
       ended: true,
@@ -94,11 +156,38 @@ describe("rules", () => {
     });
   });
 
+  it("wolves win by slaughter all when all good players are dead", () => {
+    expect(
+      checkWinCondition(players, [p3, p4, p5, p6], {
+        ...createDefaultRuleset(),
+        winCondition: "slaughter_all",
+      }),
+    ).toEqual({
+      ended: true,
+      winner: "wolves",
+      reason: "all_good_dead",
+    });
+  });
+
   it("wolves win by slaughter side when all gods are dead", () => {
     expect(checkWinCondition(players, [p3, p4], createDefaultRuleset())).toEqual({
       ended: true,
       winner: "wolves",
       reason: "all_gods_dead",
+    });
+  });
+
+  it("wolves win by slaughter side when all villagers are dead", () => {
+    expect(checkWinCondition(players, [p5, p6], createDefaultRuleset())).toEqual({
+      ended: true,
+      winner: "wolves",
+      reason: "all_villagers_dead",
+    });
+  });
+
+  it("does not end when both sides still have live win groups", () => {
+    expect(checkWinCondition(players, [], createDefaultRuleset())).toEqual({
+      ended: false,
     });
   });
 });
