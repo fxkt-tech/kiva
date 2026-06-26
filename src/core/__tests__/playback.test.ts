@@ -47,13 +47,27 @@ describe("playback compiler", () => {
         phase: "night",
         title: "Title 1",
         text: "Text 1",
+        durationMs: 1600,
       },
       {
         index: 7,
         phase: "night",
         title: "phase_started",
         text: "",
+        durationMs: 1600,
       },
     ]);
+  });
+
+  it("assigns stable durations by public event type", () => {
+    expect(
+      compilePublicPlayback([
+        event(1, { kind: "public" }, { type: "death_announced" }),
+        event(2, { kind: "public" }, { type: "day_speech_given" }),
+        event(3, { kind: "public" }, { type: "vote_cast" }),
+        event(4, { kind: "public" }, { type: "exile_resolved" }),
+        event(5, { kind: "public" }, { type: "game_ended" }),
+      ]).map((item) => item.durationMs),
+    ).toEqual([2200, 4200, 1200, 2400, 5000]);
   });
 });

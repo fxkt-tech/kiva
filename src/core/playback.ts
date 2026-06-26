@@ -7,6 +7,7 @@ export type PlaybackItem = {
   readonly phase: Phase;
   readonly title: string;
   readonly text: string;
+  readonly durationMs: number;
 };
 
 export function compilePublicPlayback(
@@ -19,5 +20,27 @@ export function compilePublicPlayback(
       phase: event.phase,
       title: event.display?.title ?? event.type,
       text: event.display?.text ?? "",
+      durationMs: durationForEvent(event),
     }));
+}
+
+function durationForEvent(event: GameEvent): number {
+  switch (event.type) {
+    case "phase_started":
+      return 1600;
+    case "death_announced":
+      return 2200;
+    case "last_words_given":
+    case "day_speech_given":
+    case "pk_speech_given":
+      return 4200;
+    case "vote_cast":
+      return 1200;
+    case "exile_resolved":
+      return 2400;
+    case "game_ended":
+      return 5000;
+    default:
+      return 2200;
+  }
 }

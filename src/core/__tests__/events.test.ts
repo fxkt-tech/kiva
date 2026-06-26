@@ -200,7 +200,13 @@ describe("full game event model", () => {
       payload: { targetPlayerId: null, voteType: "pk" },
     });
     expect(compilePublicPlayback([event])).toEqual([
-      { index: 1, phase: "vote", title: "弃票", text: "1 号玩家弃票。" },
+      {
+        index: 1,
+        phase: "vote",
+        title: "弃票",
+        text: "1 号玩家弃票。",
+        durationMs: 1200,
+      },
     ]);
   });
 });
