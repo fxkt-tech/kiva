@@ -56,6 +56,37 @@ describe("player snapshots", () => {
     expect(first.modelBindingSnapshot).not.toBe(second.modelBindingSnapshot);
   });
 
+  it("copies custom model bindings into snapshots", () => {
+    const modelBinding = {
+      provider: "test-provider",
+      model: "test-model",
+      temperature: 0.2,
+      maxTokens: 800,
+      responseFormat: "json" as const,
+    };
+
+    const snapshot = createPlayerSnapshot({
+      playerId: "p1" as PlayerId,
+      seatNo: 1,
+      name: "P1",
+      gameRole: "werewolf",
+      modelBindingSnapshot: modelBinding,
+    });
+
+    modelBinding.provider = "mutated-provider";
+    modelBinding.model = "mutated-model";
+    modelBinding.temperature = 1;
+    modelBinding.maxTokens = 10;
+
+    expect(snapshot.modelBindingSnapshot).toEqual({
+      provider: "test-provider",
+      model: "test-model",
+      temperature: 0.2,
+      maxTokens: 800,
+      responseFormat: "json",
+    });
+  });
+
   it("accepts the approved fixed six player board", () => {
     const players = [
       player("p1", 1, "werewolf"),

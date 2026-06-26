@@ -100,7 +100,9 @@ export function createPlayerSnapshot(
     speakingStyle: input.speakingStyle ?? "",
     reasoningStyle: input.reasoningStyle ?? "",
     systemPrompt: input.systemPrompt ?? "",
-    modelBindingSnapshot: input.modelBindingSnapshot ?? { ...defaultModelBinding },
+    modelBindingSnapshot: {
+      ...(input.modelBindingSnapshot ?? defaultModelBinding),
+    },
     gameRole: input.gameRole,
     faction,
     initialPrivateKnowledge: createInitialPrivateKnowledge(input.gameRole),
