@@ -1,14 +1,19 @@
 import { createDraftEvent, type DraftEvent } from "./drafts";
 import { getActiveEvents } from "./event-log";
+import type { VoteType } from "./events";
 import type { Game } from "./game";
 import type { PlayerSnapshot } from "./player";
 import {
+  checkWinCondition,
+  createEndgameReveal,
+  getEligibleVoters,
   getLegalNightTargets,
+  resolveVote,
   resolveNightDeaths,
   validateWitchDecision,
 } from "./rules";
-import { deriveGameState } from "./state";
-import type { DraftId, GameRole, PlayerId } from "./types";
+import { deriveGameState, type DerivedGameState } from "./state";
+import type { DraftId, GameRole, Phase, PlayerId } from "./types";
 import type { GameEvent } from "./events";
 
 export type PlanNextDraftInput = {
@@ -37,28 +42,62 @@ export function planNextDraft(input: PlanNextDraftInput): DraftEvent | null {
   const effectivePlayers = derivePlayersFromRoleAssignments(input.game, events);
   const state = deriveGameState(effectivePlayers, events);
 
-  if (!hasNightOneStarted(events)) {
-    if (state.currentPhase !== "setup") {
-      return null;
+  const pendingEnd = planPendingEndDraft(input, effectivePlayers, state);
+  if (pendingEnd) {
+    return pendingEnd;
+  }
+
+  const afterExile = planAfterExileDraft(input, events, effectivePlayers, state);
+  if (afterExile) {
+    return afterExile;
+  }
+
+  const latestEvent = events.at(-1);
+  if (!latestEvent || state.currentPhase === "setup") {
+    return draftPhaseStarted(input, "night", 1, "第 1 夜开始", "夜晚开始。");
+  }
+
+  if (latestEvent.type === "death_announced") {
+    if (state.pendingLastWords.length > 0) {
+      return draftPhaseStarted(
+        input,
+        "last_words",
+        state.dayNumber,
+        "遗言阶段",
+        "死亡玩家发表遗言。",
+      );
     }
 
-    return createDraftEvent({
-      id: input.draftId,
-      gameId: input.game.id,
-      type: "phase_started",
-      phase: "night",
-      visibility: { kind: "public" },
-      payload: { phase: "night", dayNumber: 1 },
-      display: { title: "第 1 夜开始", text: "夜晚开始。" },
-      createdAt: input.createdAt,
-    });
+    return draftPhaseStarted(
+      input,
+      "speech",
+      state.dayNumber,
+      "发言阶段",
+      "存活玩家依次发言。",
+    );
   }
 
-  if (state.currentPhase !== "night" || state.dayNumber !== 1) {
-    return null;
+  if (state.currentPhase === "night") {
+    return planNightDraft(input, events, effectivePlayers, state);
   }
 
-  return planFirstNightDraft(input, events, effectivePlayers, state.alivePlayerIds);
+  if (state.currentPhase === "last_words") {
+    return planLastWordsDraft(input, events, state);
+  }
+
+  if (state.currentPhase === "speech") {
+    return planDaySpeechDraft(input, state);
+  }
+
+  if (state.currentPhase === "vote") {
+    return planDailyVoteDraft(input, state);
+  }
+
+  if (state.currentPhase === "pk") {
+    return planPkDraft(input, state);
+  }
+
+  return null;
 }
 
 function planRoleAssignment(
@@ -100,18 +139,36 @@ function planRoleAssignment(
   });
 }
 
-function planFirstNightDraft(
+function planNightDraft(
   input: PlanNextDraftInput,
   events: readonly GameEvent[],
   players: readonly PlayerSnapshot[],
-  alivePlayerIds: readonly PlayerId[],
+  state: DerivedGameState,
 ): DraftEvent | null {
-  const wolfKill = findEvent(events, "wolf_kill_selected");
+  const phaseEvents = getCurrentPhaseEvents(events, "night", state.dayNumber);
+  const wolfKill = findEvent(phaseEvents, "wolf_kill_selected");
   if (!wolfKill) {
-    const wolf = firstPlayerIdByRole(players, "werewolf");
-    const target = players.find((player) => player.gameRole !== "werewolf");
+    const wolf = firstAlivePlayerIdByRole(
+      players,
+      state.alivePlayerIds,
+      "werewolf",
+    );
+    const target = getLegalNightTargets(
+      "wolf_kill",
+      players,
+      state.alivePlayerIds,
+    )[0];
 
-    if (!wolf || !target) {
+    if (!wolf) {
+      return draftGameEndIfNeeded(
+        input,
+        players,
+        state.deadPlayerIds,
+        state.dayNumber,
+      );
+    }
+
+    if (!target) {
       return null;
     }
 
@@ -121,39 +178,48 @@ function planFirstNightDraft(
       type: "wolf_kill_selected",
       phase: "night",
       actorPlayerId: wolf,
-      targetPlayerIds: [target.playerId],
+      targetPlayerIds: [target],
       visibility: { kind: "faction_private", faction: "wolves" },
-      payload: { targetPlayerId: target.playerId },
+      payload: { targetPlayerId: target },
       display: { title: "狼人刀人", text: "狼人选择夜间击杀目标。" },
       createdAt: input.createdAt,
     });
   }
 
-  const seerCheck = findEvent(events, "seer_check_selected");
+  const seer = firstAlivePlayerIdByRole(players, state.alivePlayerIds, "seer");
+  const seerCheck = findEvent(phaseEvents, "seer_check_selected");
+  const seerCanAct =
+    seer !== undefined &&
+    getLegalNightTargets("seer_check", players, state.alivePlayerIds, seer)
+      .length > 0;
+
   if (!seerCheck) {
-    const seer = firstPlayerIdByRole(players, "seer");
-    const target = firstPlayerIdByRole(players, "werewolf");
+    if (seerCanAct && seer) {
+      const target = chooseSeerTarget(
+        players,
+        state.alivePlayerIds,
+        events,
+        seer,
+      );
 
-    if (!seer || !target) {
-      return null;
+      if (target) {
+        return createDraftEvent({
+          id: input.draftId,
+          gameId: input.game.id,
+          type: "seer_check_selected",
+          phase: "night",
+          actorPlayerId: seer,
+          targetPlayerIds: [target],
+          visibility: { kind: "player_private", playerIds: [seer] },
+          payload: { targetPlayerId: target },
+          display: { title: "预言家查验", text: "预言家选择查验目标。" },
+          createdAt: input.createdAt,
+        });
+      }
     }
-
-    return createDraftEvent({
-      id: input.draftId,
-      gameId: input.game.id,
-      type: "seer_check_selected",
-      phase: "night",
-      actorPlayerId: seer,
-      targetPlayerIds: [target],
-      visibility: { kind: "player_private", playerIds: [seer] },
-      payload: { targetPlayerId: target },
-      display: { title: "预言家查验", text: "预言家选择查验目标。" },
-      createdAt: input.createdAt,
-    });
   }
 
-  if (!hasEvent(events, "seer_check_result")) {
-    const seer = firstPlayerIdByRole(players, "seer");
+  if (seerCheck && !hasEvent(phaseEvents, "seer_check_result")) {
     const checkedPlayer = players.find(
       (player) => player.playerId === seerCheck.payload.targetPlayerId,
     );
@@ -179,11 +245,8 @@ function planFirstNightDraft(
     });
   }
 
-  if (!hasEvent(events, "witch_death_info_shown")) {
-    const witch = firstPlayerIdByRole(players, "witch");
-    if (!witch) {
-      return null;
-    }
+  const witch = firstAlivePlayerIdByRole(players, state.alivePlayerIds, "witch");
+  if (witch && !hasEvent(phaseEvents, "witch_death_info_shown")) {
 
     return createDraftEvent({
       id: input.draftId,
@@ -199,11 +262,11 @@ function planFirstNightDraft(
     });
   }
 
-  if (!hasEvent(events, "witch_antidote_decided")) {
-    const witch = firstPlayerIdByRole(players, "witch");
-    if (!witch) {
-      return null;
-    }
+  if (
+    witch &&
+    state.witch.antidoteAvailable &&
+    !hasEvent(phaseEvents, "witch_antidote_decided")
+  ) {
 
     return createDraftEvent({
       id: input.draftId,
@@ -218,11 +281,11 @@ function planFirstNightDraft(
     });
   }
 
-  if (!hasEvent(events, "witch_poison_decided")) {
-    const witch = firstPlayerIdByRole(players, "witch");
-    if (!witch) {
-      return null;
-    }
+  if (
+    witch &&
+    state.witch.poisonAvailable &&
+    !hasEvent(phaseEvents, "witch_poison_decided")
+  ) {
 
     return createDraftEvent({
       id: input.draftId,
@@ -237,15 +300,13 @@ function planFirstNightDraft(
     });
   }
 
-  if (!hasEvent(events, "night_resolved")) {
-    const antidote = findEvent(events, "witch_antidote_decided");
-    const poison = findEvent(events, "witch_poison_decided");
-    const witch = firstPlayerIdByRole(players, "witch");
+  if (!hasEvent(phaseEvents, "night_resolved")) {
+    const antidote = findEvent(phaseEvents, "witch_antidote_decided");
+    const poison = findEvent(phaseEvents, "witch_poison_decided");
     if (
-      !witch ||
       !isLegalTarget(
         wolfKill.payload.targetPlayerId,
-        getLegalNightTargets("wolf_kill", players, alivePlayerIds),
+        getLegalNightTargets("wolf_kill", players, state.alivePlayerIds),
       )
     ) {
       return null;
@@ -266,24 +327,26 @@ function planFirstNightDraft(
       poisonTargetId !== null &&
       !isLegalTarget(
         poisonTargetId,
-        getLegalNightTargets("witch_poison", players, alivePlayerIds, witch),
+        getLegalNightTargets("witch_poison", players, state.alivePlayerIds, witch),
       )
     ) {
       return null;
     }
 
-    const witchDecision = validateWitchDecision(
-      {
-        nightNumber: 1,
-        witchPlayerId: witch,
-        killedPlayerId: wolfKill.payload.targetPlayerId,
-        antidoteTargetId,
-        poisonTargetId,
-      },
-      input.game.ruleset,
-    );
-    if (!witchDecision.ok) {
-      return null;
+    if (witch) {
+      const witchDecision = validateWitchDecision(
+        {
+          nightNumber: state.dayNumber,
+          witchPlayerId: witch,
+          killedPlayerId: wolfKill.payload.targetPlayerId,
+          antidoteTargetId,
+          poisonTargetId,
+        },
+        input.game.ruleset,
+      );
+      if (!witchDecision.ok) {
+        return null;
+      }
     }
 
     const deadPlayerIds = resolveNightDeaths({
@@ -305,26 +368,379 @@ function planFirstNightDraft(
     });
   }
 
-  if (!hasEvent(events, "death_announced")) {
-    const nightResolved = findEvent(events, "night_resolved");
-    if (!nightResolved) {
-      return null;
-    }
+  return planAfterNightResolvedDraft(input, phaseEvents, players, state);
+}
 
+function planAfterNightResolvedDraft(
+  input: PlanNextDraftInput,
+  phaseEvents: readonly GameEvent[],
+  players: readonly PlayerSnapshot[],
+  state: DerivedGameState,
+): DraftEvent | null {
+  const nightResolved = findEvent(phaseEvents, "night_resolved");
+  if (!nightResolved) {
+    return null;
+  }
+
+  const end = draftGameEndIfNeeded(
+    input,
+    players,
+    state.deadPlayerIds,
+    state.dayNumber,
+  );
+  if (end) {
+    return end;
+  }
+
+  if (hasEvent(phaseEvents, "death_announced")) {
+    return null;
+  }
+
+  return createDraftEvent({
+    id: input.draftId,
+    gameId: input.game.id,
+    type: "death_announced",
+    phase: "day",
+    targetPlayerIds: nightResolved.payload.deadPlayerIds,
+    visibility: { kind: "public" },
+    payload: { deadPlayerIds: nightResolved.payload.deadPlayerIds },
+    display: { title: "昨夜死讯", text: "公布昨夜死亡玩家。" },
+    createdAt: input.createdAt,
+  });
+}
+
+function planLastWordsDraft(
+  input: PlanNextDraftInput,
+  events: readonly GameEvent[],
+  state: DerivedGameState,
+): DraftEvent | null {
+  const pending = state.pendingLastWords[0];
+  if (pending) {
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
-      type: "death_announced",
-      phase: "day",
-      targetPlayerIds: nightResolved.payload.deadPlayerIds,
+      type: "last_words_given",
+      phase: "last_words",
+      actorPlayerId: pending.playerId,
+      targetPlayerIds: [pending.playerId],
       visibility: { kind: "public" },
-      payload: { deadPlayerIds: nightResolved.payload.deadPlayerIds },
-      display: { title: "昨夜死讯", text: "公布昨夜死亡玩家。" },
+      payload: {
+        playerId: pending.playerId,
+        text: "我的遗言先到这里。",
+        dayNumber: state.dayNumber,
+        reason: pending.reason,
+      },
+      display: { title: "遗言", text: "死亡玩家发表遗言。" },
       createdAt: input.createdAt,
     });
   }
 
-  return null;
+  if (lastWordsStartedAfterExile(events, state.dayNumber)) {
+    return draftPhaseStarted(
+      input,
+      "night",
+      state.dayNumber + 1,
+      `第 ${state.dayNumber + 1} 夜开始`,
+      "进入下一夜。",
+    );
+  }
+
+  return draftPhaseStarted(
+    input,
+    "speech",
+    state.dayNumber,
+    "发言阶段",
+    "存活玩家依次发言。",
+  );
+}
+
+function planDaySpeechDraft(
+  input: PlanNextDraftInput,
+  state: DerivedGameState,
+): DraftEvent | null {
+  const spoken = new Set(state.daySpeech.spokenPlayerIds);
+  const speaker = state.alivePlayerIds.find((playerId) => !spoken.has(playerId));
+  if (speaker) {
+    return createDraftEvent({
+      id: input.draftId,
+      gameId: input.game.id,
+      type: "day_speech_given",
+      phase: "speech",
+      actorPlayerId: speaker,
+      visibility: { kind: "public" },
+      payload: {
+        playerId: speaker,
+        text: "我先给出自己的判断。",
+        dayNumber: state.dayNumber,
+        round: 1,
+      },
+      display: { title: "白天发言", text: "存活玩家发表一轮发言。" },
+      createdAt: input.createdAt,
+    });
+  }
+
+  return draftPhaseStarted(
+    input,
+    "vote",
+    state.dayNumber,
+    "放逐投票",
+    "进入本日放逐投票。",
+  );
+}
+
+function planDailyVoteDraft(
+  input: PlanNextDraftInput,
+  state: DerivedGameState,
+): DraftEvent | null {
+  const existingVotes = getVoteGroup(state, "exile", 1)?.votes ?? [];
+  const voted = new Set(existingVotes.map((vote) => vote.voterPlayerId));
+  const voter = state.alivePlayerIds.find((playerId) => !voted.has(playerId));
+  if (voter) {
+    const target = chooseVoteTarget(voter, state.alivePlayerIds);
+    return createDraftEvent({
+      id: input.draftId,
+      gameId: input.game.id,
+      type: "vote_cast",
+      phase: "vote",
+      actorPlayerId: voter,
+      targetPlayerIds: target ? [target] : [],
+      visibility: { kind: "public" },
+      payload: {
+        voterPlayerId: voter,
+        targetPlayerId: target,
+        dayNumber: state.dayNumber,
+        round: 1,
+        voteType: "exile",
+      },
+      display: { title: "投票", text: "玩家投出放逐票。" },
+      createdAt: input.createdAt,
+    });
+  }
+
+  const resolution = resolveVote({
+    votes: existingVotes,
+    allowAbstainVote: input.game.ruleset.allowAbstainVote,
+  });
+  return createDraftEvent({
+    id: input.draftId,
+    gameId: input.game.id,
+    type: "exile_resolved",
+    phase: "vote",
+    targetPlayerIds: resolution.exiledPlayerId ? [resolution.exiledPlayerId] : [],
+    visibility: { kind: "public" },
+    payload: {
+      ...resolution,
+      voteType: "exile",
+      dayNumber: state.dayNumber,
+      round: 1,
+      revealedRoles: [],
+    },
+    display: { title: "投票结算", text: "公布本轮放逐投票结果。" },
+    createdAt: input.createdAt,
+  });
+}
+
+function planPkDraft(
+  input: PlanNextDraftInput,
+  state: DerivedGameState,
+): DraftEvent | null {
+  if (state.pk.status !== "pending") {
+    return null;
+  }
+
+  const round = state.pk.round + 1;
+  const spoken = new Set(state.daySpeech.pkSpokenPlayerIds);
+  const speaker = state.pk.tiedPlayerIds.find((playerId) => !spoken.has(playerId));
+  if (speaker) {
+    return createDraftEvent({
+      id: input.draftId,
+      gameId: input.game.id,
+      type: "pk_speech_given",
+      phase: "pk",
+      actorPlayerId: speaker,
+      visibility: { kind: "public" },
+      payload: {
+        playerId: speaker,
+        text: "我补充自己的 PK 发言。",
+        dayNumber: state.dayNumber,
+        round,
+      },
+      display: { title: "PK 发言", text: "平票玩家进行 PK 发言。" },
+      createdAt: input.createdAt,
+    });
+  }
+
+  const eligibleVoters = getEligibleVoters({
+    alivePlayerIds: state.alivePlayerIds,
+    voteType: "pk",
+    pkPlayerIds: state.pk.tiedPlayerIds,
+    pkVoters: input.game.ruleset.pkVoters,
+  });
+  const existingVotes = getVoteGroup(state, "pk", round)?.votes ?? [];
+  const voted = new Set(existingVotes.map((vote) => vote.voterPlayerId));
+  const voter = eligibleVoters.find((playerId) => !voted.has(playerId));
+  if (voter) {
+    const target = choosePkVoteTarget(voter, state.pk.tiedPlayerIds);
+    return createDraftEvent({
+      id: input.draftId,
+      gameId: input.game.id,
+      type: "vote_cast",
+      phase: "vote",
+      actorPlayerId: voter,
+      targetPlayerIds: target ? [target] : [],
+      visibility: { kind: "public" },
+      payload: {
+        voterPlayerId: voter,
+        targetPlayerId: target,
+        dayNumber: state.dayNumber,
+        round,
+        voteType: "pk",
+      },
+      display: { title: "PK 投票", text: "玩家投出 PK 票。" },
+      createdAt: input.createdAt,
+    });
+  }
+
+  const resolution = resolveVote({
+    votes: existingVotes,
+    allowAbstainVote: input.game.ruleset.allowAbstainVote,
+  });
+  return createDraftEvent({
+    id: input.draftId,
+    gameId: input.game.id,
+    type: "exile_resolved",
+    phase: "vote",
+    targetPlayerIds: resolution.exiledPlayerId ? [resolution.exiledPlayerId] : [],
+    visibility: { kind: "public" },
+    payload: {
+      exiledPlayerId: resolution.exiledPlayerId,
+      tiedPlayerIds: resolution.exiledPlayerId ? [] : resolution.tiedPlayerIds,
+      voteTable: resolution.voteTable,
+      voteType: "pk",
+      dayNumber: state.dayNumber,
+      round,
+      revealedRoles: [],
+    },
+    display: { title: "PK 结算", text: "公布 PK 投票结果。" },
+    createdAt: input.createdAt,
+  });
+}
+
+function planPendingEndDraft(
+  input: PlanNextDraftInput,
+  players: readonly PlayerSnapshot[],
+  state: DerivedGameState,
+): DraftEvent | null {
+  if (state.currentPhase !== "night" && state.currentPhase !== "vote") {
+    return null;
+  }
+
+  return draftGameEndIfNeeded(
+    input,
+    players,
+    state.deadPlayerIds,
+    state.dayNumber,
+  );
+}
+
+function planAfterExileDraft(
+  input: PlanNextDraftInput,
+  events: readonly GameEvent[],
+  players: readonly PlayerSnapshot[],
+  state: DerivedGameState,
+): DraftEvent | null {
+  const latestEvent = events.at(-1);
+  if (latestEvent?.type !== "exile_resolved") {
+    return null;
+  }
+
+  if (
+    latestEvent.payload.voteType === "exile" &&
+    latestEvent.payload.tiedPlayerIds.length > 0
+  ) {
+    return draftPhaseStarted(
+      input,
+      "pk",
+      latestEvent.payload.dayNumber,
+      "PK 阶段",
+      "平票玩家进入 PK。",
+    );
+  }
+
+  const end = draftGameEndIfNeeded(
+    input,
+    players,
+    state.deadPlayerIds,
+    latestEvent.payload.dayNumber,
+  );
+  if (end) {
+    return end;
+  }
+
+  if (state.pendingLastWords.length > 0) {
+    return draftPhaseStarted(
+      input,
+      "last_words",
+      latestEvent.payload.dayNumber,
+      "遗言阶段",
+      "出局玩家发表遗言。",
+    );
+  }
+
+  return draftPhaseStarted(
+    input,
+    "night",
+    latestEvent.payload.dayNumber + 1,
+    `第 ${latestEvent.payload.dayNumber + 1} 夜开始`,
+    "进入下一夜。",
+  );
+}
+
+function draftGameEndIfNeeded(
+  input: PlanNextDraftInput,
+  players: readonly PlayerSnapshot[],
+  deadPlayerIds: readonly PlayerId[],
+  dayNumber: number,
+): DraftEvent | null {
+  const result = checkWinCondition(players, deadPlayerIds, input.game.ruleset);
+  if (!result.ended) {
+    return null;
+  }
+
+  return createDraftEvent({
+    id: input.draftId,
+    gameId: input.game.id,
+    type: "game_ended",
+    phase: "ended",
+    visibility: { kind: "public" },
+    payload: {
+      winner: result.winner,
+      reason: result.reason,
+      dayNumber,
+      revealedRoles: createEndgameReveal(players),
+    },
+    display: { title: "游戏结束", text: "对局已满足胜负条件。" },
+    createdAt: input.createdAt,
+  });
+}
+
+function draftPhaseStarted(
+  input: PlanNextDraftInput,
+  phase: Phase,
+  dayNumber: number,
+  title: string,
+  text: string,
+): DraftEvent {
+  return createDraftEvent({
+    id: input.draftId,
+    gameId: input.game.id,
+    type: "phase_started",
+    phase,
+    visibility: { kind: "public" },
+    payload: { phase, dayNumber },
+    display: { title, text },
+    createdAt: input.createdAt,
+  });
 }
 
 function firstPlayerIdByRole(
@@ -332,6 +748,17 @@ function firstPlayerIdByRole(
   role: GameRole,
 ): PlayerId | undefined {
   return players.find((player) => player.gameRole === role)?.playerId;
+}
+
+function firstAlivePlayerIdByRole(
+  players: readonly PlayerSnapshot[],
+  alivePlayerIds: readonly PlayerId[],
+  role: GameRole,
+): PlayerId | undefined {
+  const alive = new Set(alivePlayerIds);
+  return players.find(
+    (player) => player.gameRole === role && alive.has(player.playerId),
+  )?.playerId;
 }
 
 function findEvent<Type extends GameEvent["type"]>(
@@ -343,15 +770,6 @@ function findEvent<Type extends GameEvent["type"]>(
 
 function hasEvent(events: readonly GameEvent[], type: GameEvent["type"]) {
   return events.some((event) => event.type === type);
-}
-
-function hasNightOneStarted(events: readonly GameEvent[]): boolean {
-  return events.some(
-    (event) =>
-      event.type === "phase_started" &&
-      event.payload.phase === "night" &&
-      event.payload.dayNumber === 1,
-  );
 }
 
 function derivePlayersFromRoleAssignments(
@@ -385,4 +803,116 @@ function isLegalTarget(
   legalTargetIds: readonly PlayerId[],
 ): boolean {
   return legalTargetIds.includes(targetPlayerId);
+}
+
+function getCurrentPhaseEvents(
+  events: readonly GameEvent[],
+  phase: Phase,
+  dayNumber: number,
+): readonly GameEvent[] {
+  const startIndex = findLastIndex(
+    events,
+    (event) =>
+      event.type === "phase_started" &&
+      event.payload.phase === phase &&
+      event.payload.dayNumber === dayNumber,
+  );
+  if (startIndex < 0) {
+    return [];
+  }
+
+  const endIndex = events.findIndex(
+    (event, index) => index > startIndex && event.type === "phase_started",
+  );
+  return events.slice(startIndex + 1, endIndex < 0 ? undefined : endIndex);
+}
+
+function chooseSeerTarget(
+  players: readonly PlayerSnapshot[],
+  alivePlayerIds: readonly PlayerId[],
+  events: readonly GameEvent[],
+  seer: PlayerId,
+): PlayerId | null {
+  const checked = new Set(
+    events
+      .filter((event): event is EventOf<"seer_check_selected"> =>
+        event.type === "seer_check_selected",
+      )
+      .map((event) => event.payload.targetPlayerId),
+  );
+  const legalTargets = getLegalNightTargets(
+    "seer_check",
+    players,
+    alivePlayerIds,
+    seer,
+  ).filter((playerId) => !checked.has(playerId));
+  const wolfTarget = legalTargets.find(
+    (playerId) =>
+      players.find((player) => player.playerId === playerId)?.gameRole ===
+      "werewolf",
+  );
+
+  return wolfTarget ?? legalTargets[0] ?? null;
+}
+
+function getVoteGroup(
+  state: DerivedGameState,
+  voteType: VoteType,
+  round: number,
+) {
+  return state.votes.find(
+    (group) =>
+      group.dayNumber === state.dayNumber &&
+      group.voteType === voteType &&
+      group.round === round,
+  );
+}
+
+function chooseVoteTarget(
+  voter: PlayerId,
+  alivePlayerIds: readonly PlayerId[],
+): PlayerId | null {
+  return alivePlayerIds.find((playerId) => playerId !== voter) ?? null;
+}
+
+function choosePkVoteTarget(
+  voter: PlayerId,
+  tiedPlayerIds: readonly PlayerId[],
+): PlayerId | null {
+  return (
+    tiedPlayerIds.find((playerId) => playerId !== voter) ??
+    tiedPlayerIds[0] ??
+    null
+  );
+}
+
+function lastWordsStartedAfterExile(
+  events: readonly GameEvent[],
+  dayNumber: number,
+): boolean {
+  const lastWordsStartIndex = findLastIndex(
+    events,
+    (event) =>
+      event.type === "phase_started" &&
+      event.payload.phase === "last_words" &&
+      event.payload.dayNumber === dayNumber,
+  );
+  if (lastWordsStartIndex < 1) {
+    return false;
+  }
+
+  return events[lastWordsStartIndex - 1]?.type === "exile_resolved";
+}
+
+function findLastIndex<T>(
+  items: readonly T[],
+  predicate: (item: T) => boolean,
+): number {
+  for (let index = items.length - 1; index >= 0; index -= 1) {
+    if (predicate(items[index])) {
+      return index;
+    }
+  }
+
+  return -1;
 }

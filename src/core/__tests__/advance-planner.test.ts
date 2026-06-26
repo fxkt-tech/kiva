@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { planNextDraft } from "../advance-planner";
 import { confirmDraftEvent, createDraftEvent, type DraftEvent } from "../drafts";
 import type { GameEvent } from "../events";
+import type { Game } from "../game";
 import { createSeedGame } from "../game";
 import {
   factionForRole,
@@ -155,9 +156,12 @@ describe("advance planner", () => {
       "night_resolved",
       "death_announced",
     ]);
-    expect(planNextDraft({ game, events, draftId: draftId(16), createdAt })).toBe(
-      null,
-    );
+    expect(
+      planNextDraft({ game, events, draftId: draftId(16), createdAt }),
+    ).toMatchObject({
+      type: "phase_started",
+      payload: { phase: "last_words", dayNumber: 1 },
+    });
   });
 
   it("ignores superseded events when choosing the next draft", () => {
@@ -384,6 +388,275 @@ describe("advance planner", () => {
   });
 });
 
+describe("complete deterministic game flow", () => {
+  it("can advance from setup to game_ended without LLM, then returns null", () => {
+    const game = createGame();
+    let events: readonly GameEvent[] = [];
+    const plannedTypes: GameEvent["type"][] = [];
+
+    for (let step = 1; step <= 120; step += 1) {
+      const draft = planNextDraft({
+        game,
+        events,
+        draftId: draftId(100 + step),
+        createdAt,
+      });
+      if (!draft) {
+        break;
+      }
+
+      plannedTypes.push(draft.type);
+      events = confirmNext(events, draft);
+
+      if (draft.type === "game_ended") {
+        break;
+      }
+    }
+
+    expect(plannedTypes).toContain("last_words_given");
+    expect(plannedTypes).toContain("day_speech_given");
+    expect(plannedTypes).toContain("vote_cast");
+    expect(plannedTypes).toContain("exile_resolved");
+    expect(plannedTypes).toContain("game_ended");
+    expect(
+      plannedTypes.includes("phase_started") &&
+        events.some(
+          (event) =>
+            event.type === "phase_started" &&
+            event.payload.phase === "night" &&
+            event.payload.dayNumber === 2,
+        ),
+    ).toBe(true);
+    expect(plannedTypes.at(-1)).toBe("game_ended");
+    expect(
+      planNextDraft({
+        game,
+        events,
+        draftId: draftId(999),
+        createdAt,
+      }),
+    ).toBeNull();
+  });
+
+  it("plans game end after exile kills the last wolf", () => {
+    const game = createGame();
+    const events: readonly GameEvent[] = [
+      ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
+      confirmedPhaseStarted("night", 1, 7),
+      confirmedEvent(
+        createDraftEvent({
+          id: draftId(8),
+          gameId,
+          type: "night_resolved",
+          phase: "night",
+          targetPlayerIds: [game.players[0].playerId],
+          visibility: { kind: "host_only" },
+          payload: { deadPlayerIds: [game.players[0].playerId] },
+          createdAt,
+        }),
+        8,
+      ),
+      confirmedPhaseStarted("vote", 1, 9),
+      confirmedEvent(
+        createDraftEvent({
+          id: draftId(10),
+          gameId,
+          type: "exile_resolved",
+          phase: "vote",
+          targetPlayerIds: [game.players[1].playerId],
+          visibility: { kind: "public" },
+          payload: {
+            exiledPlayerId: game.players[1].playerId,
+            tiedPlayerIds: [],
+            voteType: "exile",
+            voteTable: [],
+            dayNumber: 1,
+            round: 1,
+            revealedRoles: [],
+          },
+          createdAt,
+        }),
+        10,
+      ),
+    ];
+
+    expect(
+      planNextDraft({
+        game,
+        events,
+        draftId: draftId(301),
+        createdAt,
+      }),
+    ).toMatchObject({
+      type: "game_ended",
+      payload: {
+        winner: "good",
+        reason: "all_wolves_dead",
+        dayNumber: 1,
+      },
+    });
+  });
+
+  it("plans PK speeches, revote, and PK exile resolution after a tied daily vote", () => {
+    const game = createGame();
+    let events = createEventsThroughDailyTie(game);
+
+    const pkPhase = requireDraft(
+      planNextDraft({
+        game,
+        events,
+        draftId: draftId(400),
+        createdAt,
+      }),
+    );
+    expect(pkPhase).toMatchObject({
+      type: "phase_started",
+      payload: { phase: "pk", dayNumber: 1 },
+    });
+    events = confirmNext(events, pkPhase);
+
+    const pkSpeech1 = requireDraft(
+      planNextDraft({ game, events, draftId: draftId(401), createdAt }),
+    );
+    expect(pkSpeech1.type).toBe("pk_speech_given");
+    events = confirmNext(events, pkSpeech1);
+
+    const pkSpeech2 = requireDraft(
+      planNextDraft({ game, events, draftId: draftId(402), createdAt }),
+    );
+    expect(pkSpeech2.type).toBe("pk_speech_given");
+    events = confirmNext(events, pkSpeech2);
+
+    const pkVote = requireDraft(
+      planNextDraft({ game, events, draftId: draftId(403), createdAt }),
+    );
+    expect(pkVote).toMatchObject({
+      type: "vote_cast",
+      payload: { voteType: "pk", round: 2, dayNumber: 1 },
+    });
+
+    events = confirmAllCurrentVotes(game, confirmNext(events, pkVote), "pk", 2);
+    const pkResolved = planNextDraft({
+      game,
+      events,
+      draftId: draftId(404),
+      createdAt,
+    });
+
+    expect(pkResolved).toMatchObject({
+      type: "exile_resolved",
+      payload: { voteType: "pk", round: 2, dayNumber: 1 },
+    });
+  });
+
+  it("plans game end after night resolution kills all wolves", () => {
+    const game = createGame();
+    const events: readonly GameEvent[] = [
+      ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
+      confirmedPhaseStarted("night", 1, 7),
+      confirmedEvent(
+        createDraftEvent({
+          id: draftId(8),
+          gameId,
+          type: "night_resolved",
+          phase: "night",
+          targetPlayerIds: [game.players[0].playerId, game.players[1].playerId],
+          visibility: { kind: "host_only" },
+          payload: {
+            deadPlayerIds: [game.players[0].playerId, game.players[1].playerId],
+          },
+          createdAt,
+        }),
+        8,
+      ),
+    ];
+
+    expect(
+      planNextDraft({
+        game,
+        events,
+        draftId: draftId(500),
+        createdAt,
+      }),
+    ).toMatchObject({
+      type: "game_ended",
+      payload: {
+        winner: "good",
+        reason: "all_wolves_dead",
+        dayNumber: 1,
+      },
+    });
+  });
+
+  it("does not draft a witch medicine again after it was used on a previous night", () => {
+    const game = createGame();
+    let events: readonly GameEvent[] = [];
+
+    for (let step = 1; step <= 120; step += 1) {
+      const draft = requireDraft(
+        planNextDraft({
+          game,
+          events,
+          draftId: draftId(900 + step),
+          createdAt,
+        }),
+      );
+
+      if (draft.type === "witch_antidote_decided") {
+        const wolfKill = events.find(
+          (event): event is Extract<GameEvent, { type: "wolf_kill_selected" }> =>
+            event.type === "wolf_kill_selected",
+        );
+        if (!wolfKill) {
+          throw new Error("Expected wolf kill before witch antidote");
+        }
+
+        const killedPlayerId = wolfKill.payload.targetPlayerId;
+        events = confirmNext(events, {
+          ...draft,
+          targetPlayerIds: [killedPlayerId],
+          payload: { used: true, targetPlayerId: killedPlayerId },
+        });
+        continue;
+      }
+
+      events = confirmNext(events, draft);
+
+      if (
+        draft.type === "phase_started" &&
+        draft.payload.phase === "night" &&
+        draft.payload.dayNumber === 2
+      ) {
+        break;
+      }
+    }
+
+    const nightTwoDraftTypes: GameEvent["type"][] = [];
+    for (let step = 1; step <= 10; step += 1) {
+      const draft = planNextDraft({
+        game,
+        events,
+        draftId: draftId(1100 + step),
+        createdAt,
+      });
+      if (!draft) {
+        break;
+      }
+
+      nightTwoDraftTypes.push(draft.type);
+      events = confirmNext(events, draft);
+
+      if (draft.type === "witch_poison_decided") {
+        break;
+      }
+    }
+
+    expect(nightTwoDraftTypes).toContain("witch_death_info_shown");
+    expect(nightTwoDraftTypes).not.toContain("witch_antidote_decided");
+    expect(nightTwoDraftTypes).toContain("witch_poison_decided");
+  });
+});
+
 function assignedRoleEvents(roles: readonly GameRole[]): readonly GameEvent[] {
   const game = createGame();
   return game.players.map((player, index) =>
@@ -433,4 +706,115 @@ function confirmedEvent(draft: DraftEvent, index: number): GameEvent {
     index,
     createdAt,
   });
+}
+
+function confirmAllUntil(
+  game: Game,
+  stopType: GameEvent["type"],
+): readonly GameEvent[] {
+  let events: readonly GameEvent[] = [];
+
+  for (let step = 1; step <= 120; step += 1) {
+    const draft = requireDraft(
+      planNextDraft({
+        game,
+        events,
+        draftId: draftId(600 + step),
+        createdAt,
+      }),
+    );
+    events = confirmNext(events, draft);
+
+    if (draft.type === stopType) {
+      return events;
+    }
+  }
+
+  throw new Error(`Planner did not reach ${stopType}`);
+}
+
+function createEventsThroughDailyTie(game: Game): readonly GameEvent[] {
+  let events = confirmAllUntil(game, "vote_cast");
+  events = confirmAllCurrentVotes(game, events, "exile", 1);
+
+  const voteEvents = events.filter(
+    (event): event is Extract<GameEvent, { type: "vote_cast" }> =>
+      event.type === "vote_cast" &&
+      event.payload.voteType === "exile" &&
+      event.payload.round === 1,
+  );
+  const firstVoteIndex = events.findIndex((event) => event === voteEvents[0]);
+  const tiedPlayerIds = [game.players[1].playerId, game.players[3].playerId];
+  const voteTargets = [
+    tiedPlayerIds[0],
+    tiedPlayerIds[1],
+    tiedPlayerIds[0],
+    tiedPlayerIds[1],
+    game.players[4].playerId,
+  ];
+
+  events = events.map((event, index) => {
+    if (index < firstVoteIndex || event.type !== "vote_cast") {
+      return event;
+    }
+
+    const voteOffset = index - firstVoteIndex;
+    const targetPlayerId = voteTargets[voteOffset % voteTargets.length];
+    return {
+      ...event,
+      targetPlayerIds: [targetPlayerId],
+      payload: {
+        ...event.payload,
+        targetPlayerId,
+      },
+    };
+  });
+
+  const tieResolution = requireDraft(
+    planNextDraft({
+      game,
+      events,
+      draftId: draftId(799),
+      createdAt,
+    }),
+  );
+  expect(tieResolution).toMatchObject({
+    type: "exile_resolved",
+    payload: {
+      exiledPlayerId: null,
+      tiedPlayerIds,
+      voteType: "exile",
+      round: 1,
+    },
+  });
+
+  return confirmNext(events, tieResolution);
+}
+
+function confirmAllCurrentVotes(
+  game: Game,
+  initialEvents: readonly GameEvent[],
+  voteType: "exile" | "pk",
+  round: number,
+): readonly GameEvent[] {
+  let events = initialEvents;
+
+  for (let step = 1; step <= game.players.length; step += 1) {
+    const draft = planNextDraft({
+      game,
+      events,
+      draftId: draftId(700 + events.length + step),
+      createdAt,
+    });
+
+    if (!draft || draft.type !== "vote_cast") {
+      return events;
+    }
+
+    expect(draft.payload.voteType).toBe(voteType);
+    expect(draft.payload.round).toBe(round);
+    events = confirmNext(events, draft);
+  }
+
+  return events;
 }
