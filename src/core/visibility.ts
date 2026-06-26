@@ -35,5 +35,9 @@ export function canPlayerSee(
       context.wolfPlayerIds.includes(viewerPlayerId)
     );
   }
+  return denyUnhandledVisibility(visibility);
+}
+
+function denyUnhandledVisibility(_visibility: never): false {
   return false;
 }

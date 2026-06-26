@@ -54,6 +54,22 @@ describe("visibility projector", () => {
     ).toHaveLength(0);
   });
 
+  it("shows custom visibility events only to listed players", () => {
+    const events = [
+      baseEvent({
+        index: 1,
+        visibility: { kind: "custom", playerIds: [seer] },
+      }),
+    ];
+
+    expect(
+      projectVisibleEvents(events, seer, { wolfPlayerIds: [wolf] }),
+    ).toHaveLength(1);
+    expect(
+      projectVisibleEvents(events, witch, { wolfPlayerIds: [wolf] }),
+    ).toHaveLength(0);
+  });
+
   it("shows wolf faction events only to wolves", () => {
     const events = [
       baseEvent({
@@ -82,5 +98,42 @@ describe("visibility projector", () => {
     expect(
       projectVisibleEvents(events, seer, { wolfPlayerIds: [wolf] }),
     ).toHaveLength(0);
+  });
+
+  it("returns visible active events in sorted index order after filtering", () => {
+    const events = [
+      baseEvent({
+        id: "e4" as EventId,
+        index: 4,
+        visibility: { kind: "player_private", playerIds: [witch] },
+      }),
+      baseEvent({
+        id: "e2" as EventId,
+        index: 2,
+        visibility: { kind: "host_only" },
+      }),
+      baseEvent({
+        id: "e3" as EventId,
+        index: 3,
+        visibility: { kind: "public" },
+      }),
+      baseEvent({
+        id: "e1" as EventId,
+        index: 1,
+        visibility: { kind: "player_private", playerIds: [seer] },
+      }),
+      baseEvent({
+        id: "e5" as EventId,
+        index: 5,
+        status: "superseded",
+        visibility: { kind: "public" },
+      }),
+    ];
+
+    expect(
+      projectVisibleEvents(events, seer, { wolfPlayerIds: [wolf] }).map(
+        (event) => event.index,
+      ),
+    ).toEqual([1, 3]);
   });
 });
