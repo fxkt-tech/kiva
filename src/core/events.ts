@@ -90,19 +90,67 @@ export type DeathAnnouncedEvent = GameEventBase<
   { readonly deadPlayerIds: readonly PlayerId[] }
 >;
 
+export type VoteType = "sheriff" | "exile" | "pk";
+
+export type GameEndReason =
+  | "all_wolves_dead"
+  | "all_gods_dead"
+  | "all_villagers_dead"
+  | "all_good_dead";
+
+export type VoteTableEntry = {
+  readonly voterPlayerId: PlayerId;
+  readonly targetPlayerId: PlayerId | null;
+};
+
+export type RevealedRole = {
+  readonly playerId: PlayerId;
+  readonly roleId: GameRole;
+  readonly roleName: string;
+  readonly faction: Faction;
+};
+
+export type LastWordsReason = "night_death" | "exile" | "hunter_shot";
+
 export type LastWordsGivenEvent = GameEventBase<
   "last_words_given",
-  { readonly playerId: PlayerId; readonly text: string }
+  {
+    readonly playerId: PlayerId;
+    readonly text: string;
+    readonly dayNumber: number;
+    readonly reason: LastWordsReason;
+  }
 >;
 
 export type DaySpeechGivenEvent = GameEventBase<
   "day_speech_given",
-  { readonly playerId: PlayerId; readonly text: string }
+  {
+    readonly playerId: PlayerId;
+    readonly text: string;
+    readonly dayNumber: number;
+    readonly round: number;
+  }
 >;
 
 export type VoteCastEvent = GameEventBase<
   "vote_cast",
-  { readonly voterPlayerId: PlayerId; readonly targetPlayerId: PlayerId | null }
+  {
+    readonly voterPlayerId: PlayerId;
+    readonly targetPlayerId: PlayerId | null;
+    readonly dayNumber: number;
+    readonly round: number;
+    readonly voteType: VoteType;
+  }
+>;
+
+export type PkSpeechGivenEvent = GameEventBase<
+  "pk_speech_given",
+  {
+    readonly playerId: PlayerId;
+    readonly text: string;
+    readonly dayNumber: number;
+    readonly round: number;
+  }
 >;
 
 export type ExileResolvedEvent = GameEventBase<
@@ -110,12 +158,22 @@ export type ExileResolvedEvent = GameEventBase<
   {
     readonly exiledPlayerId: PlayerId | null;
     readonly tiedPlayerIds: readonly PlayerId[];
+    readonly voteType: VoteType;
+    readonly voteTable: readonly VoteTableEntry[];
+    readonly dayNumber: number;
+    readonly round: number;
+    readonly revealedRoles: readonly RevealedRole[];
   }
 >;
 
 export type GameEndedEvent = GameEventBase<
   "game_ended",
-  { readonly winner: "wolves" | "good"; readonly reason: string }
+  {
+    readonly winner: "wolves" | "good";
+    readonly reason: GameEndReason;
+    readonly dayNumber: number;
+    readonly revealedRoles: readonly RevealedRole[];
+  }
 >;
 
 export type GameEvent =
@@ -131,6 +189,7 @@ export type GameEvent =
   | DeathAnnouncedEvent
   | LastWordsGivenEvent
   | DaySpeechGivenEvent
+  | PkSpeechGivenEvent
   | VoteCastEvent
   | ExileResolvedEvent
   | GameEndedEvent;
