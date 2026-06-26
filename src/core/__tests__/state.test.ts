@@ -8,6 +8,7 @@ const gameId = "g1" as GameId;
 const p1 = "p1" as PlayerId;
 const p2 = "p2" as PlayerId;
 const p3 = "p3" as PlayerId;
+const unknownPlayerId = "unknown" as PlayerId;
 
 function event(index: number, event: Partial<GameEvent>): GameEvent {
   return {
@@ -88,5 +89,66 @@ describe("deriveGameState", () => {
 
     expect(state.witch.antidoteAvailable).toBe(false);
     expect(state.witch.poisonAvailable).toBe(true);
+  });
+
+  it("derives latest phase by active event index", () => {
+    const state = deriveGameState(players, [
+      event(2, {
+        type: "phase_started",
+        phase: "day",
+        payload: { phase: "day", dayNumber: 2 },
+      }),
+      event(1, {
+        type: "phase_started",
+        phase: "night",
+        payload: { phase: "night", dayNumber: 1 },
+      }),
+    ]);
+
+    expect(state.currentPhase).toBe("day");
+    expect(state.dayNumber).toBe(2);
+  });
+
+  it("ignores superseded deaths and medicine uses", () => {
+    const state = deriveGameState(players, [
+      event(1, {
+        status: "superseded",
+        type: "night_resolved",
+        payload: { deadPlayerIds: [p3] },
+      }),
+      event(2, {
+        status: "superseded",
+        type: "witch_antidote_decided",
+        actorPlayerId: p3,
+        payload: { used: true, targetPlayerId: p2 },
+      }),
+    ]);
+
+    expect(state.alivePlayerIds).toEqual([p1, p2, p3]);
+    expect(state.deadPlayerIds).toEqual([]);
+    expect(state.witch.antidoteAvailable).toBe(true);
+  });
+
+  it("throws when a night-resolved death references an unknown player", () => {
+    expect(() =>
+      deriveGameState(players, [
+        event(1, {
+          type: "night_resolved",
+          payload: { deadPlayerIds: [unknownPlayerId] },
+        }),
+      ]),
+    ).toThrow("Unknown dead player id unknown");
+  });
+
+  it("keeps duplicate night-resolved death ids idempotent", () => {
+    const state = deriveGameState(players, [
+      event(1, {
+        type: "night_resolved",
+        payload: { deadPlayerIds: [p3, p3] },
+      }),
+    ]);
+
+    expect(state.alivePlayerIds).toEqual([p1, p2]);
+    expect(state.deadPlayerIds).toEqual([p3]);
   });
 });

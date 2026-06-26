@@ -21,6 +21,8 @@ export function deriveGameState(
   let currentPhase: Phase = "setup";
   let dayNumber = 0;
   const dead = new Set<PlayerId>();
+  const allPlayerIds = players.map((player) => player.playerId);
+  const knownPlayerIds = new Set(allPlayerIds);
   let antidoteAvailable = true;
   let poisonAvailable = true;
 
@@ -32,6 +34,10 @@ export function deriveGameState(
 
     if (event.type === "night_resolved") {
       for (const playerId of event.payload.deadPlayerIds) {
+        if (!knownPlayerIds.has(playerId)) {
+          throw new Error(`Unknown dead player id ${playerId}`);
+        }
+
         dead.add(playerId);
       }
     }
@@ -44,8 +50,6 @@ export function deriveGameState(
       poisonAvailable = false;
     }
   }
-
-  const allPlayerIds = players.map((player) => player.playerId);
 
   return {
     currentPhase,
