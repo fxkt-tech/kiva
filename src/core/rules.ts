@@ -11,6 +11,25 @@ export type NightResolutionInput = {
   readonly poisonTargetId: PlayerId | null;
 };
 
+export type WitchDecisionInput = {
+  readonly nightNumber: number;
+  readonly witchPlayerId: PlayerId;
+  readonly killedPlayerId: PlayerId | null;
+  readonly antidoteTargetId: PlayerId | null;
+  readonly poisonTargetId: PlayerId | null;
+};
+
+export type WitchDecisionValidationResult =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly reason:
+        | "same_night_antidote_and_poison_forbidden"
+        | "first_night_self_save_forbidden"
+        | "antidote_without_death"
+        | "antidote_target_mismatch";
+    };
+
 export type WinCheckResult =
   | { readonly ended: false }
   | {
@@ -43,6 +62,40 @@ export function getLegalNightTargets(
   }
 
   return getActorSpecificTargets(players, alive, "witch", actorPlayerId);
+}
+
+export function validateWitchDecision(
+  input: WitchDecisionInput,
+  ruleset: Ruleset,
+): WitchDecisionValidationResult {
+  if (
+    input.antidoteTargetId &&
+    input.poisonTargetId &&
+    !ruleset.witchAllowSameNightAntidoteAndPoison
+  ) {
+    return { ok: false, reason: "same_night_antidote_and_poison_forbidden" };
+  }
+
+  if (input.antidoteTargetId && !input.killedPlayerId) {
+    return { ok: false, reason: "antidote_without_death" };
+  }
+
+  if (
+    input.antidoteTargetId &&
+    input.antidoteTargetId !== input.killedPlayerId
+  ) {
+    return { ok: false, reason: "antidote_target_mismatch" };
+  }
+
+  if (
+    input.nightNumber === 1 &&
+    input.antidoteTargetId === input.witchPlayerId &&
+    !ruleset.witchFirstNightSelfSave
+  ) {
+    return { ok: false, reason: "first_night_self_save_forbidden" };
+  }
+
+  return { ok: true };
 }
 
 function getActorSpecificTargets(

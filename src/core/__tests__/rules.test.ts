@@ -4,6 +4,7 @@ import {
   checkWinCondition,
   getLegalNightTargets,
   resolveNightDeaths,
+  validateWitchDecision,
 } from "../rules";
 import { createDefaultRuleset, type PlayerId } from "../types";
 
@@ -140,7 +141,7 @@ describe("rules", () => {
     ).toEqual([]);
   });
 
-  it("kills poison target even when wolf kill is rescued", () => {
+  it("settles allowed same-night antidote and poison by rescuing the kill and applying poison", () => {
     expect(
       resolveNightDeaths({
         wolfKillTargetId: p3,
@@ -158,6 +159,129 @@ describe("rules", () => {
         poisonTargetId: p3,
       }),
     ).toEqual([p3]);
+  });
+
+  it("rejects same-night antidote and poison by default", () => {
+    expect(
+      validateWitchDecision(
+        {
+          nightNumber: 2,
+          witchPlayerId: p4,
+          killedPlayerId: p3,
+          antidoteTargetId: p3,
+          poisonTargetId: p5,
+        },
+        createDefaultRuleset(),
+      ),
+    ).toEqual({
+      ok: false,
+      reason: "same_night_antidote_and_poison_forbidden",
+    });
+  });
+
+  it("accepts same-night antidote and poison when ruleset allows it", () => {
+    expect(
+      validateWitchDecision(
+        {
+          nightNumber: 2,
+          witchPlayerId: p4,
+          killedPlayerId: p3,
+          antidoteTargetId: p3,
+          poisonTargetId: p5,
+        },
+        {
+          ...createDefaultRuleset(),
+          witchAllowSameNightAntidoteAndPoison: true,
+        },
+      ),
+    ).toEqual({ ok: true });
+  });
+
+  it("rejects first-night self-save when ruleset forbids it", () => {
+    expect(
+      validateWitchDecision(
+        {
+          nightNumber: 1,
+          witchPlayerId: p4,
+          killedPlayerId: p4,
+          antidoteTargetId: p4,
+          poisonTargetId: null,
+        },
+        {
+          ...createDefaultRuleset(),
+          witchFirstNightSelfSave: false,
+        },
+      ),
+    ).toEqual({
+      ok: false,
+      reason: "first_night_self_save_forbidden",
+    });
+  });
+
+  it("rejects antidote without death", () => {
+    expect(
+      validateWitchDecision(
+        {
+          nightNumber: 2,
+          witchPlayerId: p4,
+          killedPlayerId: null,
+          antidoteTargetId: p3,
+          poisonTargetId: null,
+        },
+        createDefaultRuleset(),
+      ),
+    ).toEqual({
+      ok: false,
+      reason: "antidote_without_death",
+    });
+  });
+
+  it("rejects antidote target mismatch", () => {
+    expect(
+      validateWitchDecision(
+        {
+          nightNumber: 2,
+          witchPlayerId: p4,
+          killedPlayerId: p3,
+          antidoteTargetId: p5,
+          poisonTargetId: null,
+        },
+        createDefaultRuleset(),
+      ),
+    ).toEqual({
+      ok: false,
+      reason: "antidote_target_mismatch",
+    });
+  });
+
+  it("accepts valid antidote only", () => {
+    expect(
+      validateWitchDecision(
+        {
+          nightNumber: 2,
+          witchPlayerId: p4,
+          killedPlayerId: p3,
+          antidoteTargetId: p3,
+          poisonTargetId: null,
+        },
+        createDefaultRuleset(),
+      ),
+    ).toEqual({ ok: true });
+  });
+
+  it("accepts valid poison only", () => {
+    expect(
+      validateWitchDecision(
+        {
+          nightNumber: 2,
+          witchPlayerId: p4,
+          killedPlayerId: p3,
+          antidoteTargetId: null,
+          poisonTargetId: p5,
+        },
+        createDefaultRuleset(),
+      ),
+    ).toEqual({ ok: true });
   });
 
   it("good team wins when all wolves are dead", () => {
