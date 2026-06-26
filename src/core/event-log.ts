@@ -5,7 +5,6 @@ export function getActiveEvents(
 ): readonly GameEvent[] {
   return events
     .filter((event) => event.status === "active")
-    .slice()
     .sort((a, b) => a.index - b.index);
 }
 
@@ -14,6 +13,31 @@ export function appendEvent(
   nextEvent: GameEvent,
 ): readonly GameEvent[] {
   const activeEvents = getActiveEvents(events);
+
+  if (nextEvent.status !== "active") {
+    throw new Error("Only active events can be appended");
+  }
+
+  if (events.some((event) => event.id === nextEvent.id)) {
+    throw new Error(`Duplicate event id ${nextEvent.id}`);
+  }
+
+  const logGameId = activeEvents.at(0)?.gameId;
+  if (logGameId !== undefined && nextEvent.gameId !== logGameId) {
+    throw new Error(
+      `Cannot append event for game ${nextEvent.gameId} to log for game ${logGameId}`,
+    );
+  }
+
+  activeEvents.forEach((event, index) => {
+    const expectedIndex = index + 1;
+    if (event.index !== expectedIndex) {
+      throw new Error(
+        `Active event log is not contiguous at index ${expectedIndex}`,
+      );
+    }
+  });
+
   const lastIndex = activeEvents.at(-1)?.index ?? 0;
   const expectedIndex = lastIndex + 1;
 
@@ -21,10 +45,6 @@ export function appendEvent(
     throw new Error(
       `Expected next event index ${expectedIndex} but received ${nextEvent.index}`,
     );
-  }
-
-  if (nextEvent.status !== "active") {
-    throw new Error("Only active events can be appended");
   }
 
   return [...events, nextEvent];

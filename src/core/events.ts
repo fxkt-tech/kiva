@@ -1,4 +1,12 @@
-import type { EventId, GameId, Phase, PlayerId } from "./types";
+import type {
+  DraftId,
+  EventId,
+  Faction,
+  GameId,
+  GameRole,
+  Phase,
+  PlayerId,
+} from "./types";
 
 export type EventStatus = "active" | "superseded";
 
@@ -24,7 +32,7 @@ export type GameEventBase<Type extends string, Payload> = {
     readonly title?: string;
     readonly text?: string;
   };
-  readonly createdFromDraftId?: string;
+  readonly createdFromDraftId?: DraftId;
   readonly createdAt: string;
 };
 
@@ -35,7 +43,11 @@ export type PhaseStartedEvent = GameEventBase<
 
 export type RoleAssignedEvent = GameEventBase<
   "role_assigned",
-  { readonly playerId: PlayerId; readonly role: string; readonly faction: string }
+  {
+    readonly playerId: PlayerId;
+    readonly role: GameRole;
+    readonly faction: Faction;
+  }
 >;
 
 export type WolfKillSelectedEvent = GameEventBase<
