@@ -22,9 +22,9 @@ function event(
 
 describe("event log", () => {
   it("filters only active events in index order", () => {
-    expect(getActiveEvents([event(2), event(1, "superseded")])).toEqual([
-      event(2),
-    ]);
+    expect(
+      getActiveEvents([event(3), event(1), event(2, "superseded")]),
+    ).toEqual([event(1), event(3)]);
   });
 
   it("appends the next sequential active event", () => {
