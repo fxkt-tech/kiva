@@ -90,6 +90,34 @@ export type DeathAnnouncedEvent = GameEventBase<
   { readonly deadPlayerIds: readonly PlayerId[] }
 >;
 
+export type LastWordsGivenEvent = GameEventBase<
+  "last_words_given",
+  { readonly playerId: PlayerId; readonly text: string }
+>;
+
+export type DaySpeechGivenEvent = GameEventBase<
+  "day_speech_given",
+  { readonly playerId: PlayerId; readonly text: string }
+>;
+
+export type VoteCastEvent = GameEventBase<
+  "vote_cast",
+  { readonly voterPlayerId: PlayerId; readonly targetPlayerId: PlayerId | null }
+>;
+
+export type ExileResolvedEvent = GameEventBase<
+  "exile_resolved",
+  {
+    readonly exiledPlayerId: PlayerId | null;
+    readonly tiedPlayerIds: readonly PlayerId[];
+  }
+>;
+
+export type GameEndedEvent = GameEventBase<
+  "game_ended",
+  { readonly winner: "wolves" | "good"; readonly reason: string }
+>;
+
 export type GameEvent =
   | PhaseStartedEvent
   | RoleAssignedEvent
@@ -100,4 +128,9 @@ export type GameEvent =
   | WitchAntidoteDecidedEvent
   | WitchPoisonDecidedEvent
   | NightResolvedEvent
-  | DeathAnnouncedEvent;
+  | DeathAnnouncedEvent
+  | LastWordsGivenEvent
+  | DaySpeechGivenEvent
+  | VoteCastEvent
+  | ExileResolvedEvent
+  | GameEndedEvent;
