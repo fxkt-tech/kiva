@@ -69,19 +69,19 @@ export function validateWitchDecision(
   ruleset: Ruleset,
 ): WitchDecisionValidationResult {
   if (
-    input.antidoteTargetId &&
-    input.poisonTargetId &&
+    input.antidoteTargetId !== null &&
+    input.poisonTargetId !== null &&
     !ruleset.witchAllowSameNightAntidoteAndPoison
   ) {
     return { ok: false, reason: "same_night_antidote_and_poison_forbidden" };
   }
 
-  if (input.antidoteTargetId && !input.killedPlayerId) {
+  if (input.antidoteTargetId !== null && input.killedPlayerId === null) {
     return { ok: false, reason: "antidote_without_death" };
   }
 
   if (
-    input.antidoteTargetId &&
+    input.antidoteTargetId !== null &&
     input.antidoteTargetId !== input.killedPlayerId
   ) {
     return { ok: false, reason: "antidote_target_mismatch" };

@@ -254,6 +254,24 @@ describe("rules", () => {
     });
   });
 
+  it("treats an empty-string antidote target as present", () => {
+    expect(
+      validateWitchDecision(
+        {
+          nightNumber: 2,
+          witchPlayerId: p4,
+          killedPlayerId: p3,
+          antidoteTargetId: "" as PlayerId,
+          poisonTargetId: null,
+        },
+        createDefaultRuleset(),
+      ),
+    ).toEqual({
+      ok: false,
+      reason: "antidote_target_mismatch",
+    });
+  });
+
   it("accepts valid antidote only", () => {
     expect(
       validateWitchDecision(
