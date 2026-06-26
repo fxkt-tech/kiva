@@ -39,15 +39,16 @@ export function getLegalNightTargets(
   }
 
   if (action === "seer_check") {
-    return getActorSpecificTargets(players, alive, actorPlayerId);
+    return getActorSpecificTargets(players, alive, "seer", actorPlayerId);
   }
 
-  return getActorSpecificTargets(players, alive, actorPlayerId);
+  return getActorSpecificTargets(players, alive, "witch", actorPlayerId);
 }
 
 function getActorSpecificTargets(
   players: readonly PlayerSnapshot[],
   alive: ReadonlySet<PlayerId>,
+  actorRole: GameRole,
   actorPlayerId?: PlayerId,
 ): readonly PlayerId[] {
   if (!actorPlayerId) {
@@ -55,7 +56,7 @@ function getActorSpecificTargets(
   }
 
   const actor = players.find((player) => player.playerId === actorPlayerId);
-  if (!actor || !alive.has(actor.playerId)) {
+  if (!actor || !alive.has(actor.playerId) || actor.gameRole !== actorRole) {
     return [];
   }
 

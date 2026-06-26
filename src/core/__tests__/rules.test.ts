@@ -91,9 +91,21 @@ describe("rules", () => {
     ).toEqual([]);
   });
 
+  it("returns no seer targets when actor is not seer", () => {
+    expect(
+      getLegalNightTargets("seer_check", players, [p1, p2, p3, p4], p4),
+    ).toEqual([]);
+  });
+
   it("returns no witch poison targets when actor is invalid", () => {
     expect(
       getLegalNightTargets("witch_poison", players, [p1, p2, p3, p4], unknownPlayerId),
+    ).toEqual([]);
+  });
+
+  it("returns no witch poison targets when actor is not witch", () => {
+    expect(
+      getLegalNightTargets("witch_poison", players, [p1, p2, p3, p4], p3),
     ).toEqual([]);
   });
 
