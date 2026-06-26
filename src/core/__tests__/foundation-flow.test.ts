@@ -6,6 +6,11 @@ import { projectVisibleEvents } from "../visibility";
 import type { GameEvent } from "../events";
 import type { EventId, GameId, PlayerId } from "../types";
 
+type EventOf<Type extends GameEvent["type"]> = Extract<
+  GameEvent,
+  { type: Type }
+>;
+
 const gameId = "g1" as GameId;
 const wolf1 = "p1" as PlayerId;
 const wolf2 = "p2" as PlayerId;
@@ -53,19 +58,14 @@ const players = [
   }),
 ];
 
-function event(index: number, event: Partial<GameEvent>): GameEvent {
+function eventBase(index: number) {
   return {
     id: `e${index}` as EventId,
     gameId,
     index,
     status: "active",
-    type: "phase_started",
-    phase: "night",
-    visibility: { kind: "public" },
-    payload: { phase: "night", dayNumber: 1 },
     createdAt: "2026-06-26T00:00:00.000Z",
-    ...event,
-  } as GameEvent;
+  } as const;
 }
 
 describe("foundation flow", () => {
@@ -77,37 +77,46 @@ describe("foundation flow", () => {
     });
 
     const events = [
-      event(1, {
+      {
+        ...eventBase(1),
         type: "phase_started",
         phase: "night",
+        visibility: { kind: "public" },
         payload: { phase: "night", dayNumber: 1 },
-      }),
-      event(2, {
+      } satisfies EventOf<"phase_started">,
+      {
+        ...eventBase(2),
         type: "wolf_kill_selected",
+        phase: "night",
         actorPlayerId: wolf1,
         targetPlayerIds: [seer],
         visibility: { kind: "faction_private", faction: "wolves" },
         payload: { targetPlayerId: seer },
-      }),
-      event(3, {
+      } satisfies EventOf<"wolf_kill_selected">,
+      {
+        ...eventBase(3),
         type: "seer_check_result",
+        phase: "night",
         actorPlayerId: seer,
         targetPlayerIds: [wolf1],
         visibility: { kind: "player_private", playerIds: [seer] },
         payload: { targetPlayerId: wolf1, result: "wolves" },
-      }),
-      event(4, {
+      } satisfies EventOf<"seer_check_result">,
+      {
+        ...eventBase(4),
         type: "night_resolved",
+        phase: "night",
         visibility: { kind: "host_only" },
         payload: { deadPlayerIds: dead },
-      }),
-      event(5, {
+      } satisfies EventOf<"night_resolved">,
+      {
+        ...eventBase(5),
         type: "death_announced",
         phase: "day",
         visibility: { kind: "public" },
         payload: { deadPlayerIds: dead },
-      }),
-    ];
+      } satisfies EventOf<"death_announced">,
+    ] satisfies readonly GameEvent[];
 
     const villagerView = projectVisibleEvents(events, villager1, {
       wolfPlayerIds: [wolf1, wolf2],
@@ -120,16 +129,28 @@ describe("foundation flow", () => {
     });
     const state = deriveGameState(players, events);
 
-    expect(villagerView.map((visibleEvent) => visibleEvent.type)).toEqual([
+    const villagerEventTypes = villagerView.map(
+      (visibleEvent) => visibleEvent.type,
+    );
+    const wolfEventTypes = wolfView.map((visibleEvent) => visibleEvent.type);
+    const seerEventTypes = seerView.map((visibleEvent) => visibleEvent.type);
+
+    expect(villagerEventTypes).toEqual([
       "phase_started",
       "death_announced",
     ]);
-    expect(wolfView.map((visibleEvent) => visibleEvent.type)).toContain(
-      "wolf_kill_selected",
-    );
-    expect(seerView.map((visibleEvent) => visibleEvent.type)).toContain(
-      "seer_check_result",
-    );
+    expect(villagerEventTypes).not.toContain("wolf_kill_selected");
+    expect(villagerEventTypes).not.toContain("seer_check_result");
+    expect(villagerEventTypes).not.toContain("night_resolved");
+
+    expect(wolfEventTypes).toContain("wolf_kill_selected");
+    expect(wolfEventTypes).not.toContain("seer_check_result");
+    expect(wolfEventTypes).not.toContain("night_resolved");
+
+    expect(seerEventTypes).toContain("seer_check_result");
+    expect(seerEventTypes).not.toContain("wolf_kill_selected");
+    expect(seerEventTypes).not.toContain("night_resolved");
+
     expect(state.deadPlayerIds).toEqual([seer]);
   });
 });
