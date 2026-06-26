@@ -16,6 +16,11 @@ export type ModelBindingSnapshot = {
   readonly fallbackModel?: string;
 };
 
+export type PrivateKnowledgeKey =
+  | "own_role"
+  | "wolf_teammates"
+  | "witch_medicines";
+
 export type PlayerSnapshot = {
   readonly playerId: PlayerId;
   readonly seatNo: number;
@@ -29,7 +34,7 @@ export type PlayerSnapshot = {
   readonly modelBindingSnapshot: ModelBindingSnapshot;
   readonly gameRole: GameRole;
   readonly faction: Faction;
-  readonly initialPrivateKnowledge: readonly string[];
+  readonly initialPrivateKnowledge: readonly PrivateKnowledgeKey[];
 };
 
 export type CreatePlayerSnapshotInput = {
@@ -55,6 +60,7 @@ export type BoardValidationResult =
       readonly actual: number;
     }
   | { readonly ok: false; readonly reason: "duplicate_player_id" }
+  | { readonly ok: false; readonly reason: "invalid_seat"; readonly seatNo: number }
   | { readonly ok: false; readonly reason: "duplicate_seat" }
   | {
       readonly ok: false;
@@ -72,6 +78,13 @@ const defaultModelBinding: ModelBindingSnapshot = {
   responseFormat: "json",
 };
 
+const PRIVATE_KNOWLEDGE_BY_ROLE = {
+  werewolf: ["own_role", "wolf_teammates"],
+  seer: ["own_role"],
+  witch: ["own_role", "witch_medicines"],
+  villager: ["own_role"],
+} satisfies Record<GameRole, readonly PrivateKnowledgeKey[]>;
+
 export function createPlayerSnapshot(
   input: CreatePlayerSnapshotInput,
 ): PlayerSnapshot {
@@ -87,17 +100,17 @@ export function createPlayerSnapshot(
     speakingStyle: input.speakingStyle ?? "",
     reasoningStyle: input.reasoningStyle ?? "",
     systemPrompt: input.systemPrompt ?? "",
-    modelBindingSnapshot: input.modelBindingSnapshot ?? defaultModelBinding,
+    modelBindingSnapshot: input.modelBindingSnapshot ?? { ...defaultModelBinding },
     gameRole: input.gameRole,
     faction,
     initialPrivateKnowledge: createInitialPrivateKnowledge(input.gameRole),
   };
 }
 
-function createInitialPrivateKnowledge(role: GameRole): readonly string[] {
-  if (role === "werewolf") return ["own_role", "wolf_teammates"];
-  if (role === "witch") return ["own_role", "witch_medicines"];
-  return ["own_role"];
+function createInitialPrivateKnowledge(
+  role: GameRole,
+): readonly PrivateKnowledgeKey[] {
+  return [...PRIVATE_KNOWLEDGE_BY_ROLE[role]];
 }
 
 export function validateSixPlayerBoard(
@@ -115,6 +128,16 @@ export function validateSixPlayerBoard(
 
   if (new Set(players.map((p) => p.playerId)).size !== players.length) {
     return { ok: false, reason: "duplicate_player_id" };
+  }
+
+  const invalidSeat = players.find(
+    (p) =>
+      !Number.isInteger(p.seatNo) ||
+      p.seatNo < 1 ||
+      p.seatNo > ruleset.playerCount,
+  );
+  if (invalidSeat) {
+    return { ok: false, reason: "invalid_seat", seatNo: invalidSeat.seatNo };
   }
 
   if (new Set(players.map((p) => p.seatNo)).size !== players.length) {
