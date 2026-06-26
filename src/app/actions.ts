@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { GameId } from "@/core/types";
+import type { DraftPayloadEdit } from "@/core/draft-edit";
+import type { GameId, PlayerId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
 
@@ -35,6 +36,15 @@ export async function editDraftDisplayAction(
   revalidatePath(editorPath(gameId));
 }
 
+export async function editDraftPayloadAction(
+  gameId: GameId,
+  formData: FormData,
+) {
+  await gameActions.editDraftPayload(gameId, draftPayloadEditFromForm(formData));
+  revalidatePath(editorPath(gameId));
+  revalidatePath(previewPath(gameId));
+}
+
 export async function deleteDraftAction(gameId: GameId) {
   await gameActions.deleteDraft(gameId);
   revalidatePath(editorPath(gameId));
@@ -49,6 +59,27 @@ export async function rollbackAfterAction(gameId: GameId, index: number) {
 function formValue(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
+}
+
+function draftPayloadEditFromForm(formData: FormData): DraftPayloadEdit {
+  const edit: DraftPayloadEdit = {};
+
+  if (formData.has("targetPlayerId")) {
+    const targetPlayerId = formValue(formData, "targetPlayerId").trim();
+    edit.targetPlayerId =
+      targetPlayerId === "" ? null : (targetPlayerId as PlayerId);
+  }
+
+  if (formData.has("used")) {
+    const used = formValue(formData, "used").trim().toLowerCase();
+    edit.used = used === "true" || used === "on" || used === "1";
+  }
+
+  if (formData.has("text")) {
+    edit.text = formValue(formData, "text");
+  }
+
+  return edit;
 }
 
 function editorPath(gameId: GameId): string {

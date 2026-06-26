@@ -121,6 +121,47 @@ describe("game actions", () => {
     });
   });
 
+  it("updates current draft payload before confirmation", async () => {
+    const { actions } = await createActions();
+    const created = await actions.createGame();
+
+    for (let step = 0; step < created.game.players.length + 1; step += 1) {
+      await actions.continueGame(created.game.id);
+      await actions.confirmDraft(created.game.id);
+    }
+
+    const withWolfKillDraft = await actions.continueGame(created.game.id);
+    const editedTarget = created.game.players[4]?.playerId;
+    expect(editedTarget).toBeDefined();
+    expect(withWolfKillDraft.draft).toMatchObject({
+      type: "wolf_kill_selected",
+    });
+    expect(withWolfKillDraft.draft?.payload).not.toMatchObject({
+      targetPlayerId: editedTarget,
+    });
+
+    const edited = await actions.editDraftPayload(created.game.id, {
+      targetPlayerId: editedTarget,
+    });
+
+    expect(edited.draft).toMatchObject({
+      type: "wolf_kill_selected",
+      targetPlayerIds: [editedTarget],
+      payload: { targetPlayerId: editedTarget },
+    });
+
+    const confirmed = await actions.confirmDraft(created.game.id);
+    const wolfKillEvent = confirmed.events.find(
+      (event) => event.type === "wolf_kill_selected",
+    );
+
+    expect(wolfKillEvent).toMatchObject({
+      type: "wolf_kill_selected",
+      targetPlayerIds: [editedTarget],
+      payload: { targetPlayerId: editedTarget },
+    });
+  });
+
   it("rejects invalid rollback indexes", async () => {
     const { actions } = await createActions();
     const created = await actions.createGame();

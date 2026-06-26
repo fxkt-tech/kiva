@@ -1,4 +1,8 @@
 import { planNextDraft } from "@/core/advance-planner";
+import {
+  applyDraftPayloadEdit,
+  type DraftPayloadEdit,
+} from "@/core/draft-edit";
 import { confirmDraftEvent } from "@/core/drafts";
 import {
   appendEvent,
@@ -120,6 +124,28 @@ export function createGameActions(repository: GameRepository) {
               text: display.text.trim(),
             },
           },
+        };
+
+        await repository.save(nextRecord);
+        return nextRecord;
+      });
+    },
+
+    async editDraftPayload(
+      gameId: GameId,
+      edit: DraftPayloadEdit,
+    ): Promise<GameRecord> {
+      return repository.withGameLock(gameId, async () => {
+        const record = await loadGame(gameId);
+        if (!record.draft) {
+          return record;
+        }
+
+        const updatedAt = now();
+        const nextRecord: GameRecord = {
+          ...record,
+          game: { ...record.game, updatedAt },
+          draft: applyDraftPayloadEdit(record.draft, edit),
         };
 
         await repository.save(nextRecord);
