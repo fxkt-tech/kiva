@@ -47,6 +47,17 @@ describe("deriveGameState", () => {
     }),
   ];
 
+  it("derives default state when there are no events", () => {
+    const state = deriveGameState(players, []);
+
+    expect(state.currentPhase).toBe("setup");
+    expect(state.dayNumber).toBe(0);
+    expect(state.alivePlayerIds).toEqual([p1, p2, p3]);
+    expect(state.deadPlayerIds).toEqual([]);
+    expect(state.witch.antidoteAvailable).toBe(true);
+    expect(state.witch.poisonAvailable).toBe(true);
+  });
+
   it("starts all players alive and tracks current phase", () => {
     const state = deriveGameState(players, [
       event(1, {
