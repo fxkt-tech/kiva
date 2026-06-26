@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import { createPlayerSnapshot } from "../player";
 import {
   checkWinCondition,
+  createEndgameReveal,
+  getEligibleVoters,
   getLegalNightTargets,
   resolveNightDeaths,
+  resolveVote,
   validateWitchDecision,
 } from "../rules";
 import { createDefaultRuleset, type PlayerId } from "../types";
@@ -343,5 +346,134 @@ describe("rules", () => {
     expect(checkWinCondition(players, [], createDefaultRuleset())).toEqual({
       ended: false,
     });
+  });
+
+  it("exiles the single highest vote target", () => {
+    expect(
+      resolveVote({
+        votes: [
+          { voterPlayerId: p1, targetPlayerId: p3 },
+          { voterPlayerId: p2, targetPlayerId: p3 },
+          { voterPlayerId: p3, targetPlayerId: p1 },
+          { voterPlayerId: p4, targetPlayerId: null },
+        ],
+        allowAbstainVote: true,
+      }),
+    ).toEqual({
+      exiledPlayerId: p3,
+      tiedPlayerIds: [],
+      voteTable: [
+        { voterPlayerId: p1, targetPlayerId: p3 },
+        { voterPlayerId: p2, targetPlayerId: p3 },
+        { voterPlayerId: p3, targetPlayerId: p1 },
+        { voterPlayerId: p4, targetPlayerId: null },
+      ],
+    });
+  });
+
+  it("returns tied highest targets in first-voted order", () => {
+    expect(
+      resolveVote({
+        votes: [
+          { voterPlayerId: p1, targetPlayerId: p5 },
+          { voterPlayerId: p2, targetPlayerId: p6 },
+          { voterPlayerId: p3, targetPlayerId: p6 },
+          { voterPlayerId: p4, targetPlayerId: p5 },
+        ],
+        allowAbstainVote: true,
+      }),
+    ).toEqual({
+      exiledPlayerId: null,
+      tiedPlayerIds: [p5, p6],
+      voteTable: [
+        { voterPlayerId: p1, targetPlayerId: p5 },
+        { voterPlayerId: p2, targetPlayerId: p6 },
+        { voterPlayerId: p3, targetPlayerId: p6 },
+        { voterPlayerId: p4, targetPlayerId: p5 },
+      ],
+    });
+  });
+
+  it("returns no exile and no tie when every vote abstains", () => {
+    expect(
+      resolveVote({
+        votes: [
+          { voterPlayerId: p1, targetPlayerId: null },
+          { voterPlayerId: p2, targetPlayerId: null },
+        ],
+        allowAbstainVote: true,
+      }),
+    ).toEqual({
+      exiledPlayerId: null,
+      tiedPlayerIds: [],
+      voteTable: [
+        { voterPlayerId: p1, targetPlayerId: null },
+        { voterPlayerId: p2, targetPlayerId: null },
+      ],
+    });
+  });
+
+  it("throws when abstain votes are forbidden", () => {
+    expect(() =>
+      resolveVote({
+        votes: [
+          { voterPlayerId: p1, targetPlayerId: p3 },
+          { voterPlayerId: p2, targetPlayerId: null },
+        ],
+        allowAbstainVote: false,
+      }),
+    ).toThrow("Abstain votes are not allowed");
+  });
+
+  it("excludes pk players from eligible voters when pk voting is non-pk only", () => {
+    expect(
+      getEligibleVoters({
+        alivePlayerIds: [p1, p2, p3, p4, p5],
+        voteType: "pk",
+        pkPlayerIds: [p2, p4],
+        pkVoters: "non_pk_only",
+      }),
+    ).toEqual([p1, p3, p5]);
+  });
+
+  it("keeps all living players eligible for pk voting when self filtering is done by the candidate UI", () => {
+    expect(
+      getEligibleVoters({
+        alivePlayerIds: [p1, p2, p3, p4, p5],
+        voteType: "pk",
+        pkPlayerIds: [p2, p4],
+        pkVoters: "all_living_non_self",
+      }),
+    ).toEqual([p1, p2, p3, p4, p5]);
+  });
+
+  it("keeps every living player eligible for exile and sheriff votes", () => {
+    const input = {
+      alivePlayerIds: [p1, p2, p3],
+      pkPlayerIds: [p2],
+      pkVoters: "non_pk_only" as const,
+    };
+
+    expect(getEligibleVoters({ ...input, voteType: "exile" })).toEqual([
+      p1,
+      p2,
+      p3,
+    ]);
+    expect(getEligibleVoters({ ...input, voteType: "sheriff" })).toEqual([
+      p1,
+      p2,
+      p3,
+    ]);
+  });
+
+  it("reveals every endgame role with localized role names", () => {
+    expect(createEndgameReveal(players)).toEqual([
+      { playerId: p1, roleId: "werewolf", roleName: "狼人", faction: "wolves" },
+      { playerId: p2, roleId: "werewolf", roleName: "狼人", faction: "wolves" },
+      { playerId: p3, roleId: "seer", roleName: "预言家", faction: "good" },
+      { playerId: p4, roleId: "witch", roleName: "女巫", faction: "good" },
+      { playerId: p5, roleId: "villager", roleName: "平民", faction: "good" },
+      { playerId: p6, roleId: "villager", roleName: "平民", faction: "good" },
+    ]);
   });
 });

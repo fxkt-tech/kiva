@@ -1,5 +1,11 @@
 import type { PlayerSnapshot } from "./player";
-import type { GameRole, PlayerId, Ruleset } from "./types";
+import type {
+  GameEndReason,
+  RevealedRole,
+  VoteTableEntry,
+  VoteType,
+} from "./events";
+import type { GameRole, PlayerId, PkVoters, Ruleset } from "./types";
 
 export type NightActionKind = "wolf_kill" | "seer_check" | "witch_poison";
 
@@ -30,17 +36,43 @@ export type WitchDecisionValidationResult =
         | "antidote_target_mismatch";
     };
 
+export type VoteInput = {
+  readonly voterPlayerId: PlayerId;
+  readonly targetPlayerId: PlayerId | null;
+};
+
+export type VoteResolution = {
+  readonly exiledPlayerId: PlayerId | null;
+  readonly tiedPlayerIds: readonly PlayerId[];
+  readonly voteTable: readonly VoteTableEntry[];
+};
+
+export type ResolveVoteInput = {
+  readonly votes: readonly VoteInput[];
+  readonly allowAbstainVote: boolean;
+};
+
+export type EligibleVotersInput = {
+  readonly alivePlayerIds: readonly PlayerId[];
+  readonly voteType: VoteType;
+  readonly pkPlayerIds: readonly PlayerId[];
+  readonly pkVoters: PkVoters;
+};
+
 export type WinCheckResult =
   | { readonly ended: false }
   | {
       readonly ended: true;
       readonly winner: "wolves" | "good";
-      readonly reason:
-        | "all_wolves_dead"
-        | "all_gods_dead"
-        | "all_villagers_dead"
-        | "all_good_dead";
+      readonly reason: GameEndReason;
     };
+
+const ROLE_NAMES = {
+  werewolf: "狼人",
+  seer: "预言家",
+  witch: "女巫",
+  villager: "平民",
+} satisfies Record<GameRole, string>;
 
 export function getLegalNightTargets(
   action: NightActionKind,
@@ -96,6 +128,76 @@ export function validateWitchDecision(
   }
 
   return { ok: true };
+}
+
+export function resolveVote(input: ResolveVoteInput): VoteResolution {
+  const voteTable = [...input.votes];
+
+  if (
+    !input.allowAbstainVote &&
+    voteTable.some((vote) => vote.targetPlayerId === null)
+  ) {
+    throw new Error("Abstain votes are not allowed");
+  }
+
+  const counts = new Map<PlayerId, number>();
+  const firstVotedOrder: PlayerId[] = [];
+
+  for (const vote of voteTable) {
+    if (vote.targetPlayerId === null) {
+      continue;
+    }
+
+    if (!counts.has(vote.targetPlayerId)) {
+      firstVotedOrder.push(vote.targetPlayerId);
+    }
+    counts.set(vote.targetPlayerId, (counts.get(vote.targetPlayerId) ?? 0) + 1);
+  }
+
+  if (counts.size === 0) {
+    return { exiledPlayerId: null, tiedPlayerIds: [], voteTable };
+  }
+
+  const highestVoteCount = Math.max(...counts.values());
+  const highestTargets = firstVotedOrder.filter(
+    (playerId) => counts.get(playerId) === highestVoteCount,
+  );
+
+  if (highestTargets.length === 1) {
+    return {
+      exiledPlayerId: highestTargets[0] ?? null,
+      tiedPlayerIds: [],
+      voteTable,
+    };
+  }
+
+  return {
+    exiledPlayerId: null,
+    tiedPlayerIds: highestTargets,
+    voteTable,
+  };
+}
+
+export function getEligibleVoters(
+  input: EligibleVotersInput,
+): readonly PlayerId[] {
+  if (input.voteType !== "pk" || input.pkVoters === "all_living_non_self") {
+    return [...input.alivePlayerIds];
+  }
+
+  const pkPlayers = new Set(input.pkPlayerIds);
+  return input.alivePlayerIds.filter((playerId) => !pkPlayers.has(playerId));
+}
+
+export function createEndgameReveal(
+  players: readonly PlayerSnapshot[],
+): readonly RevealedRole[] {
+  return players.map((player) => ({
+    playerId: player.playerId,
+    roleId: player.gameRole,
+    roleName: ROLE_NAMES[player.gameRole],
+    faction: player.faction,
+  }));
 }
 
 function getActorSpecificTargets(
