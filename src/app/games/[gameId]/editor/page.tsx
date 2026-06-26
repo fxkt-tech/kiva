@@ -66,7 +66,11 @@ export default async function EditorPage({ params }: EditorPageProps) {
           </div>
 
           <aside className="flex min-w-0 flex-col gap-5">
-            <DraftPanel gameId={typedGameId} draft={record.draft} />
+            <DraftPanel
+              gameId={typedGameId}
+              draft={record.draft}
+              players={record.game.players}
+            />
             <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
               <div className="border-b border-zinc-800 px-4 py-3">
                 <h2 className="text-sm font-semibold text-zinc-100">
