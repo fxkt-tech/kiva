@@ -4,6 +4,7 @@ import { confirmDraftEvent, createDraftEvent, type DraftEvent } from "../drafts"
 import type { GameEvent } from "../events";
 import type { Game } from "../game";
 import { createSeedGame } from "../game";
+import { compilePublicPlayback } from "../playback";
 import {
   factionForRole,
   type DraftId,
@@ -438,6 +439,34 @@ describe("complete deterministic game flow", () => {
     ).toBeNull();
   });
 
+  it("renders public playback display with speakers, deaths, and winner", () => {
+    const game = createGame();
+    const events = confirmCompleteGame(game);
+    const playback = compilePublicPlayback(events);
+
+    expect(
+      playback.some(
+        (item) =>
+          item.title.includes("发言") &&
+          /\d+ 号 .+发言/.test(`${item.title} ${item.text}`),
+      ),
+    ).toBe(true);
+    expect(
+      playback.some(
+        (item) =>
+          item.title.includes("死讯") &&
+          /死亡：\d+ 号/.test(`${item.title} ${item.text}`),
+      ),
+    ).toBe(true);
+    expect(
+      playback.some(
+        (item) =>
+          item.title.includes("游戏结束") &&
+          /(好人|狼人)阵营胜利/.test(`${item.title} ${item.text}`),
+      ),
+    ).toBe(true);
+  });
+
   it("plans game end after exile kills the last wolf", () => {
     const game = createGame();
     const events: readonly GameEvent[] = [
@@ -731,6 +760,28 @@ function confirmAllUntil(
   }
 
   throw new Error(`Planner did not reach ${stopType}`);
+}
+
+function confirmCompleteGame(game: Game): readonly GameEvent[] {
+  let events: readonly GameEvent[] = [];
+
+  for (let step = 1; step <= 120; step += 1) {
+    const draft = requireDraft(
+      planNextDraft({
+        game,
+        events,
+        draftId: draftId(1200 + step),
+        createdAt,
+      }),
+    );
+    events = confirmNext(events, draft);
+
+    if (draft.type === "game_ended") {
+      return events;
+    }
+  }
+
+  throw new Error("Planner did not reach game_ended");
 }
 
 function createEventsThroughDailyTie(game: Game): readonly GameEvent[] {

@@ -1,6 +1,6 @@
 import { createDraftEvent, type DraftEvent } from "./drafts";
 import { getActiveEvents } from "./event-log";
-import type { VoteType } from "./events";
+import type { GameEndReason, VoteType } from "./events";
 import type { Game } from "./game";
 import type { PlayerSnapshot } from "./player";
 import {
@@ -82,19 +82,19 @@ export function planNextDraft(input: PlanNextDraftInput): DraftEvent | null {
   }
 
   if (state.currentPhase === "last_words") {
-    return planLastWordsDraft(input, events, state);
+    return planLastWordsDraft(input, events, effectivePlayers, state);
   }
 
   if (state.currentPhase === "speech") {
-    return planDaySpeechDraft(input, state);
+    return planDaySpeechDraft(input, effectivePlayers, state);
   }
 
   if (state.currentPhase === "vote") {
-    return planDailyVoteDraft(input, state);
+    return planDailyVoteDraft(input, effectivePlayers, state);
   }
 
   if (state.currentPhase === "pk") {
-    return planPkDraft(input, state);
+    return planPkDraft(input, effectivePlayers, state);
   }
 
   return null;
@@ -404,7 +404,13 @@ function planAfterNightResolvedDraft(
     targetPlayerIds: nightResolved.payload.deadPlayerIds,
     visibility: { kind: "public" },
     payload: { deadPlayerIds: nightResolved.payload.deadPlayerIds },
-    display: { title: "昨夜死讯", text: "公布昨夜死亡玩家。" },
+    display: {
+      title: "昨夜死讯",
+      text:
+        nightResolved.payload.deadPlayerIds.length > 0
+          ? `昨夜死亡：${playerListLabel(players, nightResolved.payload.deadPlayerIds)}。`
+          : "昨夜平安夜，没有玩家死亡。",
+    },
     createdAt: input.createdAt,
   });
 }
@@ -412,10 +418,12 @@ function planAfterNightResolvedDraft(
 function planLastWordsDraft(
   input: PlanNextDraftInput,
   events: readonly GameEvent[],
+  players: readonly PlayerSnapshot[],
   state: DerivedGameState,
 ): DraftEvent | null {
   const pending = state.pendingLastWords[0];
   if (pending) {
+    const speaker = playerLabel(players, pending.playerId);
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -430,7 +438,10 @@ function planLastWordsDraft(
         dayNumber: state.dayNumber,
         reason: pending.reason,
       },
-      display: { title: "遗言", text: "死亡玩家发表遗言。" },
+      display: {
+        title: `${speaker}遗言`,
+        text: `${speaker}发表遗言：我的遗言先到这里。`,
+      },
       createdAt: input.createdAt,
     });
   }
@@ -456,11 +467,13 @@ function planLastWordsDraft(
 
 function planDaySpeechDraft(
   input: PlanNextDraftInput,
+  players: readonly PlayerSnapshot[],
   state: DerivedGameState,
 ): DraftEvent | null {
   const spoken = new Set(state.daySpeech.spokenPlayerIds);
   const speaker = state.alivePlayerIds.find((playerId) => !spoken.has(playerId));
   if (speaker) {
+    const speakerLabel = playerLabel(players, speaker);
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -474,7 +487,10 @@ function planDaySpeechDraft(
         dayNumber: state.dayNumber,
         round: 1,
       },
-      display: { title: "白天发言", text: "存活玩家发表一轮发言。" },
+      display: {
+        title: `${speakerLabel}发言`,
+        text: `${speakerLabel}发言：我先给出自己的判断。`,
+      },
       createdAt: input.createdAt,
     });
   }
@@ -490,6 +506,7 @@ function planDaySpeechDraft(
 
 function planDailyVoteDraft(
   input: PlanNextDraftInput,
+  players: readonly PlayerSnapshot[],
   state: DerivedGameState,
 ): DraftEvent | null {
   const existingVotes = getVoteGroup(state, "exile", 1)?.votes ?? [];
@@ -497,6 +514,8 @@ function planDailyVoteDraft(
   const voter = state.alivePlayerIds.find((playerId) => !voted.has(playerId));
   if (voter) {
     const target = chooseVoteTarget(voter, state.alivePlayerIds);
+    const voterLabel = playerLabel(players, voter);
+    const targetText = target ? playerLabel(players, target) : "弃票";
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -512,7 +531,10 @@ function planDailyVoteDraft(
         round: 1,
         voteType: "exile",
       },
-      display: { title: "投票", text: "玩家投出放逐票。" },
+      display: {
+        title: `${voterLabel}投票`,
+        text: `${voterLabel}投给 ${targetText}。`,
+      },
       createdAt: input.createdAt,
     });
   }
@@ -535,13 +557,21 @@ function planDailyVoteDraft(
       round: 1,
       revealedRoles: [],
     },
-    display: { title: "投票结算", text: "公布本轮放逐投票结果。" },
+    display: {
+      title: "投票结算",
+      text: exileResolutionText(
+        players,
+        resolution.exiledPlayerId,
+        resolution.tiedPlayerIds,
+      ),
+    },
     createdAt: input.createdAt,
   });
 }
 
 function planPkDraft(
   input: PlanNextDraftInput,
+  players: readonly PlayerSnapshot[],
   state: DerivedGameState,
 ): DraftEvent | null {
   if (state.pk.status !== "pending") {
@@ -552,6 +582,7 @@ function planPkDraft(
   const spoken = new Set(state.daySpeech.pkSpokenPlayerIds);
   const speaker = state.pk.tiedPlayerIds.find((playerId) => !spoken.has(playerId));
   if (speaker) {
+    const speakerLabel = playerLabel(players, speaker);
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -565,7 +596,10 @@ function planPkDraft(
         dayNumber: state.dayNumber,
         round,
       },
-      display: { title: "PK 发言", text: "平票玩家进行 PK 发言。" },
+      display: {
+        title: `${speakerLabel}PK 发言`,
+        text: `${speakerLabel}PK 发言：我补充自己的 PK 发言。`,
+      },
       createdAt: input.createdAt,
     });
   }
@@ -581,6 +615,8 @@ function planPkDraft(
   const voter = eligibleVoters.find((playerId) => !voted.has(playerId));
   if (voter) {
     const target = choosePkVoteTarget(voter, state.pk.tiedPlayerIds);
+    const voterLabel = playerLabel(players, voter);
+    const targetText = target ? playerLabel(players, target) : "弃票";
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -596,7 +632,10 @@ function planPkDraft(
         round,
         voteType: "pk",
       },
-      display: { title: "PK 投票", text: "玩家投出 PK 票。" },
+      display: {
+        title: `${voterLabel}PK 投票`,
+        text: `${voterLabel}投给 ${targetText}。`,
+      },
       createdAt: input.createdAt,
     });
   }
@@ -621,7 +660,14 @@ function planPkDraft(
       round,
       revealedRoles: [],
     },
-    display: { title: "PK 结算", text: "公布 PK 投票结果。" },
+    display: {
+      title: "PK 结算",
+      text: exileResolutionText(
+        players,
+        resolution.exiledPlayerId,
+        resolution.tiedPlayerIds,
+      ),
+    },
     createdAt: input.createdAt,
   });
 }
@@ -719,7 +765,10 @@ function draftGameEndIfNeeded(
       dayNumber,
       revealedRoles: createEndgameReveal(players),
     },
-    display: { title: "游戏结束", text: "对局已满足胜负条件。" },
+    display: {
+      title: `游戏结束：${winnerLabel(result.winner)}胜利`,
+      text: `${winnerLabel(result.winner)}胜利，原因：${winReasonLabel(result.reason)}。`,
+    },
     createdAt: input.createdAt,
   });
 }
@@ -902,6 +951,58 @@ function lastWordsStartedAfterExile(
   }
 
   return events[lastWordsStartIndex - 1]?.type === "exile_resolved";
+}
+
+function playerLabel(
+  players: readonly PlayerSnapshot[],
+  playerId: PlayerId,
+): string {
+  const player = players.find((candidate) => candidate.playerId === playerId);
+  if (!player) {
+    return `未知玩家 ${playerId}`;
+  }
+
+  return `${player.seatNo} 号 ${player.name}`;
+}
+
+function playerListLabel(
+  players: readonly PlayerSnapshot[],
+  playerIds: readonly PlayerId[],
+): string {
+  return playerIds.map((playerId) => playerLabel(players, playerId)).join("、");
+}
+
+function exileResolutionText(
+  players: readonly PlayerSnapshot[],
+  exiledPlayerId: PlayerId | null,
+  tiedPlayerIds: readonly PlayerId[],
+): string {
+  if (exiledPlayerId) {
+    return `放逐出局：${playerLabel(players, exiledPlayerId)}。`;
+  }
+
+  if (tiedPlayerIds.length > 0) {
+    return `平票：${playerListLabel(players, tiedPlayerIds)}。`;
+  }
+
+  return "本轮无人被放逐。";
+}
+
+function winnerLabel(winner: "wolves" | "good"): string {
+  return winner === "wolves" ? "狼人阵营" : "好人阵营";
+}
+
+function winReasonLabel(reason: GameEndReason): string {
+  switch (reason) {
+    case "all_wolves_dead":
+      return "所有狼人出局";
+    case "all_gods_dead":
+      return "所有神职出局";
+    case "all_villagers_dead":
+      return "所有平民出局";
+    case "all_good_dead":
+      return "所有好人出局";
+  }
 }
 
 function findLastIndex<T>(
