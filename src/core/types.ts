@@ -24,9 +24,16 @@ export type VoteReveal = "after_all_votes" | "immediate";
 export type DeadRoleReveal = "endgame" | "on_death";
 export type PkVoters = "non_pk_only" | "all_living_non_self";
 
+export type SixPlayerRoleCounts = {
+  readonly werewolf: 2;
+  readonly seer: 1;
+  readonly witch: 1;
+  readonly villager: 2;
+};
+
 export type Ruleset = {
   readonly playerCount: 6;
-  readonly roleCounts: Readonly<Record<GameRole, number>>;
+  readonly roleCounts: SixPlayerRoleCounts;
   readonly winCondition: WinCondition;
   readonly witchFirstNightSelfSave: boolean;
   readonly witchAllowSameNightAntidoteAndPoison: boolean;
@@ -40,8 +47,15 @@ export function isWerewolfRole(role: GameRole): role is "werewolf" {
   return role === "werewolf";
 }
 
+const FACTION_BY_ROLE = {
+  werewolf: "wolves",
+  seer: "good",
+  witch: "good",
+  villager: "good",
+} satisfies Record<GameRole, Faction>;
+
 export function factionForRole(role: GameRole): Faction {
-  return role === "werewolf" ? "wolves" : "good";
+  return FACTION_BY_ROLE[role];
 }
 
 export function createDefaultRuleset(): Ruleset {
