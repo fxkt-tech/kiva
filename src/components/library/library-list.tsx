@@ -30,7 +30,7 @@ export function LibraryList({ tab, selectedId, items }: LibraryListProps) {
             return (
               <Link
                 key={item.id}
-                href={`/library?tab=${tab}&id=${item.id}`}
+                href={libraryItemHref(tab, item.id)}
                 aria-current={selected ? "page" : undefined}
                 className={[
                   "block border-l-2 px-3 py-3 transition",
@@ -76,4 +76,9 @@ function statusLabel(item: LibraryListItem): string {
   }
 
   return item.enabled ? "enabled" : "disabled";
+}
+
+function libraryItemHref(tab: LibraryListProps["tab"], id: string): string {
+  const params = new URLSearchParams({ tab, id });
+  return `/library?${params.toString()}`;
 }

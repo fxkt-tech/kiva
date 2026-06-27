@@ -6,6 +6,7 @@ import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import type { LibraryActionsRecord } from "@/server/library-actions";
+import { LibraryList } from "./library-list";
 import { LibraryWorkspace } from "./library-workspace";
 
 describe("LibraryWorkspace", () => {
@@ -61,6 +62,29 @@ describe("LibraryWorkspace", () => {
     expect(withoutId).toContain("6人狼人杀试运行");
     expect(withInvalidId).toContain("Preset editor");
     expect(withInvalidId).toContain("6人狼人杀试运行");
+  });
+
+  it("URL-encodes special characters in object list links", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(LibraryList, {
+        tab: "roles",
+        selectedId: null,
+        items: [
+          {
+            id: "role&/#/?id=1",
+            name: "Special role",
+            enabled: true,
+            meta: "custom",
+            valid: true,
+          },
+        ],
+      }),
+    );
+
+    expect(html).toContain(
+      'href="/library?tab=roles&amp;id=role%26%2F%23%2F%3Fid%3D1"',
+    );
+    expect(html).not.toContain('href="/library?tab=roles&amp;id=role&amp;');
   });
 });
 
