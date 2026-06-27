@@ -98,6 +98,31 @@ export function compilePublicPlayback(
     });
 }
 
+export function playbackTotalDurationMs(
+  items: readonly PlaybackItem[],
+): number {
+  const lastItem = items.at(-1);
+  return lastItem ? lastItem.startsAtMs + lastItem.durationMs : 0;
+}
+
+export function playbackIndexAtMs(
+  items: readonly PlaybackItem[],
+  timeMs: number,
+): number {
+  if (items.length === 0) {
+    return 0;
+  }
+
+  const clampedTimeMs = Math.max(0, timeMs);
+  const index = items.findIndex(
+    (item) =>
+      clampedTimeMs >= item.startsAtMs &&
+      clampedTimeMs < item.startsAtMs + item.durationMs,
+  );
+
+  return index === -1 ? items.length - 1 : index;
+}
+
 function kindForEvent(event: GameEvent): PlaybackSceneKind {
   switch (event.type) {
     case "phase_started":

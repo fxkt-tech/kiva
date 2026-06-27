@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { createSeedGame } from "../game";
-import { compilePublicPlayback } from "../playback";
+import {
+  compilePublicPlayback,
+  playbackTotalDurationMs,
+  playbackIndexAtMs,
+} from "../playback";
 import type { EventVisibility, GameEvent } from "../events";
 import type { EventId, GameId, PlayerId } from "../types";
 
@@ -223,4 +227,39 @@ describe("playback compiler", () => {
     expect(playback[0]?.players.find((player) => player.playerId === players[1].playerId))
       .toMatchObject({ status: "dead", highlighted: true });
   });
+
+  it("resolves total duration and scene index from timeline milliseconds", () => {
+    const playback = [
+      playbackItem(1, 0, 1000),
+      playbackItem(2, 1000, 2500),
+      playbackItem(3, 3500, 500),
+    ];
+
+    expect(playbackTotalDurationMs(playback)).toBe(4000);
+    expect(playbackIndexAtMs(playback, -1)).toBe(0);
+    expect(playbackIndexAtMs(playback, 0)).toBe(0);
+    expect(playbackIndexAtMs(playback, 999)).toBe(0);
+    expect(playbackIndexAtMs(playback, 1000)).toBe(1);
+    expect(playbackIndexAtMs(playback, 3999)).toBe(2);
+    expect(playbackIndexAtMs(playback, 9999)).toBe(2);
+    expect(playbackIndexAtMs([], 0)).toBe(0);
+  });
 });
+
+function playbackItem(
+  index: number,
+  startsAtMs: number,
+  durationMs: number,
+): ReturnType<typeof compilePublicPlayback>[number] {
+  return {
+    index,
+    phase: "day",
+    kind: "announcement",
+    title: `Scene ${index}`,
+    text: "",
+    details: [],
+    durationMs,
+    startsAtMs,
+    players: [],
+  };
+}

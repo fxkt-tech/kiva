@@ -26,8 +26,8 @@ describe("PlaybackStage", () => {
   it("renders sequence controls and progress", () => {
     const html = renderStage([
       item({ index: 1, title: "First event" }),
-      item({ index: 2, title: "Second event" }),
-      item({ index: 3, title: "Third event" }),
+      item({ index: 2, title: "Second event", startsAtMs: 2200 }),
+      item({ index: 3, title: "Third event", startsAtMs: 4400 }),
     ]);
 
     expect(html).toContain("Prev");
@@ -35,9 +35,23 @@ describe("PlaybackStage", () => {
     expect(html).toContain("Next");
     expect(html).toContain("Reset");
     expect(html).toContain("Speed");
+    expect(html).toContain("Timeline");
+    expect(html).toContain("0:00 / 0:06");
+    expect(html).toContain("type=\"range\"");
     expect(html).toContain("0.5x");
     expect(html).toContain("2x");
     expect(html).toContain("1 / 3");
+  });
+
+  it("can hide controls for recording output", () => {
+    const html = renderStage(
+      [item({ index: 1, title: "Recording frame" })],
+      { controls: "hidden" },
+    );
+
+    expect(html).toContain("Recording frame");
+    expect(html).not.toContain("Playback controls");
+    expect(html).not.toContain("Speed");
   });
 
   it("renders scene details and player status inside the stage", () => {
@@ -103,8 +117,13 @@ describe("PlaybackStage", () => {
   });
 });
 
-function renderStage(items: readonly PlaybackItem[]): string {
-  return renderToStaticMarkup(React.createElement(PlaybackStage, { items }));
+function renderStage(
+  items: readonly PlaybackItem[],
+  props: Partial<React.ComponentProps<typeof PlaybackStage>> = {},
+): string {
+  return renderToStaticMarkup(
+    React.createElement(PlaybackStage, { items, ...props }),
+  );
 }
 
 function item(

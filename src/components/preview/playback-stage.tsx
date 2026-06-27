@@ -1,16 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { PlaybackItem } from "@/core/playback";
+import {
+  playbackIndexAtMs,
+  playbackTotalDurationMs,
+  type PlaybackItem,
+} from "@/core/playback";
 
 const SPEED_OPTIONS = [0.5, 1, 1.5, 2] as const;
 type PlaybackSpeed = (typeof SPEED_OPTIONS)[number];
 
 type PlaybackStageProps = {
   readonly items: readonly PlaybackItem[];
+  readonly controls?: "visible" | "hidden";
 };
 
-export function PlaybackStage({ items }: PlaybackStageProps) {
+export function PlaybackStage({
+  items,
+  controls = "visible",
+}: PlaybackStageProps) {
   const hasItems = items.length > 0;
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -19,6 +27,8 @@ export function PlaybackStage({ items }: PlaybackStageProps) {
   const safeIndex = hasItems ? Math.min(index, maxIndex) : 0;
   const current = hasItems ? items[safeIndex] : undefined;
   const progress = hasItems ? `${safeIndex + 1} / ${items.length}` : "0 / 0";
+  const totalDurationMs = playbackTotalDurationMs(items);
+  const currentTimeMs = current?.startsAtMs ?? 0;
 
   useEffect(() => {
     if (!hasItems) {
@@ -82,6 +92,11 @@ export function PlaybackStage({ items }: PlaybackStageProps) {
     setPlaying(false);
   }
 
+  function seekTo(timeMs: number) {
+    setIndex(playbackIndexAtMs(items, timeMs));
+    setPlaying(false);
+  }
+
   const canAdvance = hasItems && safeIndex < maxIndex;
   const activelyPlaying = playing && canAdvance;
 
@@ -135,62 +150,85 @@ export function PlaybackStage({ items }: PlaybackStageProps) {
           ) : null}
         </div>
       </section>
-      <section
-        aria-label="Playback controls"
-        className="flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-200 shadow-lg shadow-black/40"
-      >
-        <div className="font-mono text-zinc-400">{progress}</div>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-zinc-400">
-            <span>Speed</span>
-            <select
-              className="border border-zinc-700 bg-zinc-950 px-2 py-2 text-zinc-200 outline-none transition focus:border-zinc-500"
-              onChange={(event) =>
-                setSpeed(Number(event.currentTarget.value) as PlaybackSpeed)
-              }
-              value={speed}
-            >
-              {SPEED_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}x
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-            disabled={!hasItems || index === 0}
-            onClick={goToPrevious}
-            type="button"
-          >
-            Prev
-          </button>
-          <button
-            className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-            disabled={!canAdvance}
-            onClick={() => setPlaying((currentPlaying) => !currentPlaying)}
-            type="button"
-          >
-            {activelyPlaying ? "Pause" : "Play"}
-          </button>
-          <button
-            className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-            disabled={!canAdvance}
-            onClick={goToNext}
-            type="button"
-          >
-            Next
-          </button>
-          <button
-            className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-            disabled={!hasItems || (safeIndex === 0 && !playing)}
-            onClick={reset}
-            type="button"
-          >
-            Reset
-          </button>
-        </div>
-      </section>
+      {controls === "visible" ? (
+        <section
+          aria-label="Playback controls"
+          className="grid w-full max-w-6xl gap-3 border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-200 shadow-lg shadow-black/40"
+        >
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between gap-4 text-xs text-zinc-500">
+              <span>Timeline</span>
+              <span className="font-mono">
+                {formatTime(currentTimeMs)} / {formatTime(totalDurationMs)}
+              </span>
+            </div>
+            <input
+              aria-label="Timeline"
+              className="h-2 w-full accent-cyan-400"
+              disabled={!hasItems}
+              max={Math.max(0, totalDurationMs - 1)}
+              min={0}
+              onChange={(event) => seekTo(Number(event.currentTarget.value))}
+              step={100}
+              type="range"
+              value={currentTimeMs}
+            />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="font-mono text-zinc-400">{progress}</div>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-2 text-xs text-zinc-400">
+                <span>Speed</span>
+                <select
+                  className="border border-zinc-700 bg-zinc-950 px-2 py-2 text-zinc-200 outline-none transition focus:border-zinc-500"
+                  onChange={(event) =>
+                    setSpeed(Number(event.currentTarget.value) as PlaybackSpeed)
+                  }
+                  value={speed}
+                >
+                  {SPEED_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}x
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
+                disabled={!hasItems || index === 0}
+                onClick={goToPrevious}
+                type="button"
+              >
+                Prev
+              </button>
+              <button
+                className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
+                disabled={!canAdvance}
+                onClick={() => setPlaying((currentPlaying) => !currentPlaying)}
+                type="button"
+              >
+                {activelyPlaying ? "Pause" : "Play"}
+              </button>
+              <button
+                className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
+                disabled={!canAdvance}
+                onClick={goToNext}
+                type="button"
+              >
+                Next
+              </button>
+              <button
+                className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
+                disabled={!hasItems || (safeIndex === 0 && !playing)}
+                onClick={reset}
+                type="button"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }
