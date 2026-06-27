@@ -24,7 +24,7 @@ export function buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt {
     promptVersion: SPEECH_PROMPT_VERSION,
     schemaName: "werewolf_speech_v1",
     systemPrompt: [
-      input.context.viewer.systemPrompt,
+      ...baseViewerSystemPrompts(input.context.viewer),
       "你正在参与一局狼人杀内容创作。",
       "你只能依据用户消息中列出的可见信息发言。",
       "禁止引用、暗示或利用未出现在可见信息中的上帝视角事实。",
@@ -36,7 +36,7 @@ export function buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt {
         content: [
           `游戏：${input.context.gameTitle}`,
           `你是：${input.context.viewer.seatNo} 号 ${input.context.viewer.name}`,
-          `你的身份：${roleLabel(input.context.viewer.role)}（${factionLabel(input.context.viewer.faction)}）`,
+          `你的身份：${input.context.viewer.roleName}（${factionLabel(input.context.viewer.faction)}）`,
           `人设：${input.context.viewer.persona}`,
           `发言风格：${input.context.viewer.speakingStyle}`,
           `推理风格：${input.context.viewer.reasoningStyle}`,
@@ -65,6 +65,24 @@ export function buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt {
       },
     ],
   };
+}
+
+export function baseViewerSystemPrompts(
+  viewer: Pick<
+    PlayerLlmContext["viewer"],
+    | "characterSystemPromptSnapshot"
+    | "roleSystemPromptSnapshot"
+    | "systemPrompt"
+  >,
+): string[] {
+  return [
+    firstNonEmpty(viewer.characterSystemPromptSnapshot, viewer.systemPrompt),
+    viewer.roleSystemPromptSnapshot,
+  ].filter((prompt) => prompt.length > 0);
+}
+
+export function firstNonEmpty(...values: readonly string[]): string {
+  return values.map((value) => value.trim()).find((value) => value.length > 0) ?? "";
 }
 
 function rosterLine(player: PlayerLlmContext["roster"][number]): string {

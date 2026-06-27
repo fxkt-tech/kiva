@@ -50,9 +50,57 @@ describe("action generation", () => {
         reasoning: "优先查验发言和站边最可疑的人。",
       },
     });
+    expect(result.generation?.request?.systemPrompt).toContain(
+      seer.characterSystemPromptSnapshot,
+    );
+    expect(result.generation?.request?.systemPrompt).toContain(
+      seer.roleSystemPromptSnapshot,
+    );
+    expect(result.generation?.request?.systemPrompt).toContain(
+      seer.roleActionPromptSnapshot,
+    );
+    expect(result.generation?.request?.messages[0]?.content).toContain(
+      `你的身份：${seer.roleName}`,
+    );
+    expect(result.generation?.request?.messages[0]?.content).toContain(
+      "可选目标",
+    );
+    expect(result.generation?.request?.messages[0]?.content).toContain(
+      "可见事件",
+    );
     expect(result.generation?.request?.messages[0]?.content).toContain(
       "reasoning",
     );
+  });
+
+  it("falls back to legacy system prompt for action prompts when snapshots are empty", async () => {
+    const legacySystemPrompt = "旧局行动人设 prompt";
+    const legacyGame = {
+      ...game,
+      players: game.players.map((player) =>
+        player.playerId === seer.playerId
+          ? {
+              ...player,
+              characterSystemPromptSnapshot: "",
+              roleSystemPromptSnapshot: "",
+              roleActionPromptSnapshot: null,
+              systemPrompt: legacySystemPrompt,
+            }
+          : player,
+      ),
+    };
+
+    const result = await generateActionDraft({
+      game: legacyGame,
+      events: setupEvents(),
+      draft: seerDraft(villager.playerId),
+      llmClient: new MockLlmClient([{ targetPlayerId: wolf.playerId }]),
+      generationId: "generation_legacy",
+      createdAt,
+    });
+
+    expect(result.generation?.request?.systemPrompt).toContain(legacySystemPrompt);
+    expect(result.generation?.request?.systemPrompt).toContain("行动建议");
   });
 
   it("includes visible event text and details in action prompts", async () => {

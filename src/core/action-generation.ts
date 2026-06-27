@@ -9,6 +9,7 @@ import {
 } from "./generation-record";
 import type { LlmClient } from "./llm";
 import { buildPlayerLlmContext } from "./player-context";
+import { baseViewerSystemPrompts, firstNonEmpty } from "./prompt-builders";
 import {
   getLegalNightTargets,
 } from "./rules";
@@ -56,15 +57,18 @@ export async function generateActionDraft(
   const legalTargetIds = legalTargetIdsForDraft(input.game, input.events, input.draft);
   const request = {
     systemPrompt: [
-      context.viewer.systemPrompt,
+      ...baseViewerSystemPrompts(context.viewer),
+      firstNonEmpty(context.viewer.roleActionPromptSnapshot ?? ""),
       "你只能根据可见信息给出狼人杀行动建议。",
       "必须输出 JSON 对象，不要输出 Markdown。",
-    ].join("\n"),
+    ].filter((prompt) => prompt.length > 0).join("\n"),
     messages: [
       {
         role: "user" as const,
         content: [
           `draft=${input.draft.type}`,
+          `你是：${context.viewer.seatNo} 号 ${context.viewer.name}`,
+          `你的身份：${context.viewer.roleName}`,
           "玩家名单：",
           ...context.roster.map(
             (player) =>

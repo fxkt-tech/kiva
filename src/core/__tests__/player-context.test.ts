@@ -28,6 +28,24 @@ describe("player LLM context", () => {
     expect(context.timeline.map((item) => item.title)).not.toContain("夜间结算");
   });
 
+  it("exposes viewer role and prompt snapshots", () => {
+    const context = buildPlayerLlmContext({
+      game,
+      events: [],
+      viewerPlayerId: seer.playerId,
+    });
+
+    expect(context.viewer).toMatchObject({
+      roleName: seer.roleName,
+      team: seer.team,
+      mechanicKey: seer.mechanicKey,
+      characterSystemPromptSnapshot: seer.characterSystemPromptSnapshot,
+      roleSystemPromptSnapshot: seer.roleSystemPromptSnapshot,
+      roleActionPromptSnapshot: seer.roleActionPromptSnapshot,
+      systemPrompt: seer.systemPrompt,
+    });
+  });
+
   it("does not expose hidden roles in the safe roster", () => {
     const context = buildPlayerLlmContext({
       game,

@@ -48,15 +48,49 @@ describe("prompt builders", () => {
 
     expect(prompt.promptVersion).toBe(SPEECH_PROMPT_VERSION);
     expect(prompt.schemaName).toBe("werewolf_speech_v1");
-    expect(prompt.systemPrompt).toContain(seer.systemPrompt);
+    expect(prompt.systemPrompt).toContain(seer.characterSystemPromptSnapshot);
+    expect(prompt.systemPrompt).toContain(seer.roleSystemPromptSnapshot);
+    expect(prompt.systemPrompt).toContain("你只能依据用户消息中列出的可见信息发言");
     expect(combined).toContain("短句、直接、有推进感");
     expect(combined).toContain("3 号 周知");
+    expect(combined).toContain(`你的身份：${seer.roleName}`);
     expect(combined).toContain("查验结果");
     expect(combined).toContain("speech");
     expect(combined).toContain("必须输出 JSON 对象");
     expect(combined).toContain('"text"');
     expect(combined).not.toContain("1 号 秦川：狼人");
     expect(combined).not.toContain("5 号 陈墨：平民");
+  });
+
+  it("falls back to legacy viewer system prompt when prompt snapshots are empty", () => {
+    const legacySystemPrompt = "旧局人设 prompt 仍要保留";
+    const legacyGame = {
+      ...game,
+      players: game.players.map((player) =>
+        player.playerId === seer.playerId
+          ? {
+              ...player,
+              characterSystemPromptSnapshot: "",
+              roleSystemPromptSnapshot: "",
+              roleActionPromptSnapshot: null,
+              systemPrompt: legacySystemPrompt,
+            }
+          : player,
+      ),
+    };
+    const context = buildPlayerLlmContext({
+      game: legacyGame,
+      events: [roleAssigned(1, seer)],
+      viewerPlayerId: seer.playerId,
+    });
+
+    const prompt = buildSpeechPrompt({
+      context,
+      draft: speechDraft(),
+    });
+
+    expect(prompt.systemPrompt).toContain(legacySystemPrompt);
+    expect(prompt.systemPrompt).toContain("你只能依据用户消息中列出的可见信息发言");
   });
 });
 

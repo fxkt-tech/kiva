@@ -28,10 +28,16 @@ export type PlayerLlmContext = {
     readonly seatNo: number;
     readonly name: string;
     readonly role: GameRole;
+    readonly roleName: string;
     readonly faction: Faction;
+    readonly team: PlayerSnapshot["team"];
+    readonly mechanicKey: PlayerSnapshot["mechanicKey"];
     readonly persona: string;
     readonly speakingStyle: string;
     readonly reasoningStyle: string;
+    readonly characterSystemPromptSnapshot: string;
+    readonly roleSystemPromptSnapshot: string;
+    readonly roleActionPromptSnapshot: string | null;
     readonly systemPrompt: string;
     readonly modelBindingSnapshot: ModelBindingSnapshot;
   };
@@ -72,10 +78,16 @@ export function buildPlayerLlmContext(
       seatNo: viewer.seatNo,
       name: viewer.name,
       role: viewer.gameRole,
+      roleName: viewer.roleName,
       faction: viewer.faction,
+      team: viewer.team,
+      mechanicKey: viewer.mechanicKey,
       persona: viewer.persona,
       speakingStyle: viewer.speakingStyle,
       reasoningStyle: viewer.reasoningStyle,
+      characterSystemPromptSnapshot: viewer.characterSystemPromptSnapshot,
+      roleSystemPromptSnapshot: viewer.roleSystemPromptSnapshot,
+      roleActionPromptSnapshot: viewer.roleActionPromptSnapshot,
       systemPrompt: viewer.systemPrompt,
       modelBindingSnapshot: viewer.modelBindingSnapshot,
     },

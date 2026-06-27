@@ -37,7 +37,9 @@ describe("speech generation", () => {
       purpose: "speech",
       request: {
         schemaName: "werewolf_speech_v1",
-        systemPrompt: expect.stringContaining(speaker.systemPrompt),
+        systemPrompt: expect.stringContaining(
+          speaker.characterSystemPromptSnapshot,
+        ),
         messages: expect.arrayContaining([
           expect.objectContaining({
             role: "user",
@@ -50,6 +52,12 @@ describe("speech generation", () => {
         reasoning: "我是预言家，需要公开推进自己的查验结论。",
       },
     });
+    expect(result.generation?.request?.systemPrompt).toContain(
+      speaker.roleSystemPromptSnapshot,
+    );
+    expect(result.generation?.request?.systemPrompt).toContain(
+      "你只能依据用户消息中列出的可见信息发言",
+    );
     expect(result.generation?.request?.messages[0]?.content).toContain(
       "reasoning",
     );
