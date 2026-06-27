@@ -141,6 +141,128 @@ describe("library actions", () => {
     });
   });
 
+  it("saves a character prompt while preserving dependent presets", async () => {
+    const { actions, libraryRepository } = await createSeededActions();
+    const updatedCharacter = {
+      ...seedCharacters[0],
+      systemPrompt: "更新后的角色卡系统提示词",
+      updatedAt: NOW,
+    };
+
+    await actions.saveCharacter(updatedCharacter);
+
+    const saved = await libraryRepository.loadAll();
+    expect(
+      saved.characters.find((character) => character.id === "qin_chuan"),
+    ).toMatchObject({
+      systemPrompt: "更新后的角色卡系统提示词",
+      updatedAt: NOW,
+    });
+    expect(saved.presets).toEqual(seedPresets);
+  });
+
+  it("saves a preset after validating its role and character references", async () => {
+    const { actions, libraryRepository } = await createSeededActions();
+    const updatedPreset = {
+      ...seedPresets[0],
+      name: "更新后的 6 人预设",
+      updatedAt: NOW,
+    };
+
+    await actions.savePreset(updatedPreset);
+
+    const saved = await libraryRepository.loadAll();
+    expect(
+      saved.presets.find((preset) => preset.id === "six_player_standard"),
+    ).toMatchObject({
+      name: "更新后的 6 人预设",
+      updatedAt: NOW,
+    });
+    expect(saved.roles).toEqual(seedRoles);
+    expect(saved.characters).toEqual(seedCharacters);
+  });
+
+  it("duplicates a role with a fresh id and timestamps", async () => {
+    const { actions, libraryRepository } = await createSeededActions();
+
+    const copy = await actions.duplicateRole("seer");
+
+    expect(copy).toMatchObject({
+      id: "seer_copy",
+      name: seedRoles[1].name,
+      createdAt: NOW,
+      updatedAt: NOW,
+    });
+    await expect(libraryRepository.loadAll()).resolves.toMatchObject({
+      roles: expect.arrayContaining([
+        expect.objectContaining({ id: "seer" }),
+        expect.objectContaining({ id: "seer_copy" }),
+      ]),
+    });
+  });
+
+  it("duplicates a preset with a fresh id and timestamps", async () => {
+    const { actions, libraryRepository } = await createSeededActions();
+
+    const copy = await actions.duplicatePreset("six_player_standard");
+
+    expect(copy).toMatchObject({
+      id: "six_player_standard_copy",
+      name: seedPresets[0].name,
+      createdAt: NOW,
+      updatedAt: NOW,
+    });
+    expect(copy.roleIds).toEqual(seedPresets[0].roleIds);
+    expect(copy.characterIds).toEqual(seedPresets[0].characterIds);
+    await expect(libraryRepository.loadAll()).resolves.toMatchObject({
+      presets: expect.arrayContaining([
+        expect.objectContaining({ id: "six_player_standard" }),
+        expect.objectContaining({ id: "six_player_standard_copy" }),
+      ]),
+    });
+  });
+
+  it("uses an incrementing suffix when duplicate copy ids already exist", async () => {
+    const { actions, libraryRepository } = await createSeededActions();
+
+    const firstCopy = await actions.duplicateCharacter("qin_chuan");
+    const secondCopy = await actions.duplicateCharacter("qin_chuan");
+
+    expect(firstCopy.id).toBe("qin_chuan_copy");
+    expect(secondCopy.id).toBe("qin_chuan_copy_2");
+    await expect(libraryRepository.loadAll()).resolves.toMatchObject({
+      characters: expect.arrayContaining([
+        expect.objectContaining({ id: "qin_chuan" }),
+        expect.objectContaining({ id: "qin_chuan_copy" }),
+        expect.objectContaining({ id: "qin_chuan_copy_2" }),
+      ]),
+    });
+  });
+
+  it("disables a preset without changing its validated references", async () => {
+    const { actions, libraryRepository } = await createSeededActions();
+
+    const disabledPreset = await actions.setPresetEnabled(
+      "six_player_standard",
+      false,
+    );
+
+    expect(disabledPreset).toMatchObject({
+      id: "six_player_standard",
+      enabled: false,
+      updatedAt: NOW,
+    });
+    const saved = await libraryRepository.loadAll();
+    expect(
+      saved.presets.find((preset) => preset.id === "six_player_standard"),
+    ).toMatchObject({
+      enabled: false,
+      updatedAt: NOW,
+    });
+    expect(saved.roles).toEqual(seedRoles);
+    expect(saved.characters).toEqual(seedCharacters);
+  });
+
   it("creates a six player game from a preset id", async () => {
     const { actions, gameRepository } = await createSeededActions();
 
@@ -161,6 +283,21 @@ describe("library actions", () => {
 
     await expect(libraryRepository.loadAll()).resolves.toMatchObject({
       roles: seedRoles,
+      presets: seedPresets,
+    });
+  });
+
+  it("rejects disabling a character while an enabled preset still references it", async () => {
+    const { actions, libraryRepository } = await createSeededActions();
+
+    await expect(
+      actions.setCharacterEnabled("qin_chuan", false),
+    ).rejects.toThrow(
+      "Game preset six_player_standard characterIds[0] references disabled character: qin_chuan",
+    );
+
+    await expect(libraryRepository.loadAll()).resolves.toMatchObject({
+      characters: seedCharacters,
       presets: seedPresets,
     });
   });
