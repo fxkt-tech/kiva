@@ -325,10 +325,13 @@ describe("character definitions", () => {
   });
 
   it.each([
+    ["role", { role: "werewolf" }],
     ["faction", { faction: "good" }],
     ["team", { team: "god" }],
     ["mechanicKey", { mechanicKey: "seer_check" }],
     ["visibilityRules", { visibilityRules: ["own_role"] }],
+    ["nightOrder", { nightOrder: 20 }],
+    ["rolePrompt", { rolePrompt: "你是预言家。" }],
   ])("rejects gameplay role field %s at runtime", (field, roleField) => {
     expect(() =>
       validateCharacterDefinitions([{ ...validCharacter(), ...roleField }]),

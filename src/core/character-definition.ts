@@ -16,6 +16,7 @@ export type CharacterDefinition = {
 };
 
 const ROLE_ONLY_FIELDS = [
+  "role",
   "faction",
   "team",
   "mechanicKey",
