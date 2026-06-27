@@ -163,13 +163,13 @@ describe("game actions", () => {
 
   it("generates speech draft text and records generation during continue", async () => {
     const repository = createGameRepository(await createTempDir());
+    const created = await createGameActions(repository).createGame();
     const actions = createGameActions(repository, {
-      llmClient: new MockLlmClient([
-        { text: "遗言先过。" },
-        { text: "我这里先报信息，1 号查杀。" },
-      ]),
+      llmClient: new MockLlmClient(speechPathOutputs(created, [
+        "遗言先过。",
+        "我这里先报信息，1 号查杀。",
+      ])),
     });
-    const created = await actions.createGame();
 
     const withSpeech = await continueUntilDraftType(
       actions,
@@ -181,7 +181,7 @@ describe("game actions", () => {
       type: "day_speech_given",
       payload: { text: "我这里先报信息，1 号查杀。" },
     });
-    expect(withSpeech.generations).toHaveLength(2);
+    expect(withSpeech.generations.filter((record) => record.purpose === "speech")).toHaveLength(2);
     expect(withSpeech.generations.at(-1)).toMatchObject({
       status: "success",
       purpose: "speech",
@@ -206,7 +206,7 @@ describe("game actions", () => {
       type: "day_speech_given",
       payload: { text: "我先给出自己的判断。" },
     });
-    expect(withSpeech.generations[0]).toMatchObject({
+    expect(withSpeech.generations.at(-1)).toMatchObject({
       status: "failed",
       purpose: "speech",
       error: "model unavailable",
@@ -215,14 +215,14 @@ describe("game actions", () => {
 
   it("regenerates the current speech draft without advancing", async () => {
     const repository = createGameRepository(await createTempDir());
+    const created = await createGameActions(repository).createGame();
     const actions = createGameActions(repository, {
-      llmClient: new MockLlmClient([
-        { text: "遗言先过。" },
-        { text: "第一次发言。" },
-        { text: "重新生成后的发言。" },
-      ]),
+      llmClient: new MockLlmClient(speechPathOutputs(created, [
+        "遗言先过。",
+        "第一次发言。",
+        "重新生成后的发言。",
+      ])),
     });
-    const created = await actions.createGame();
     const withSpeech = await continueUntilDraftType(
       actions,
       created.game.id,
@@ -251,6 +251,77 @@ describe("game actions", () => {
     const regenerated = await actions.regenerateDraft(created.game.id);
 
     expect(regenerated).toEqual(withRoleDraft);
+  });
+
+  it("generates wolf and seer action suggestions during continue", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const wolfTarget = "placeholder";
+    const actions = createGameActions(repository, {
+      llmClient: new MockLlmClient([
+        { targetPlayerId: wolfTarget },
+        { targetPlayerId: wolfTarget },
+      ]),
+    });
+    const created = await actions.createGame();
+    const realWolfTarget = created.game.players[4]?.playerId;
+    const realSeerTarget = created.game.players[0]?.playerId;
+    expect(realWolfTarget).toBeDefined();
+    expect(realSeerTarget).toBeDefined();
+    const generatedActions = createGameActions(repository, {
+      llmClient: new MockLlmClient([
+        { targetPlayerId: realWolfTarget },
+        { targetPlayerId: realSeerTarget },
+      ]),
+    });
+
+    const withWolfKill = await continueUntilDraftType(
+      generatedActions,
+      created.game.id,
+      "wolf_kill_selected",
+    );
+    expect(withWolfKill.draft).toMatchObject({
+      type: "wolf_kill_selected",
+      payload: { targetPlayerId: realWolfTarget },
+    });
+    await generatedActions.confirmDraft(created.game.id);
+
+    const withSeerCheck = await continueUntilDraftType(
+      generatedActions,
+      created.game.id,
+      "seer_check_selected",
+    );
+    expect(withSeerCheck.draft).toMatchObject({
+      type: "seer_check_selected",
+      payload: { targetPlayerId: realSeerTarget },
+    });
+    expect(withSeerCheck.generations.filter((record) => record.purpose === "action")).toHaveLength(2);
+  });
+
+  it("generates witch medicine action suggestions during continue", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const actions = createGameActions(repository, {
+      llmClient: new MockLlmClient([
+        { targetPlayerId: null },
+        { targetPlayerId: null },
+        { used: false, targetPlayerId: null },
+      ]),
+    });
+    const created = await actions.createGame();
+
+    const withWitchAntidote = await continueUntilDraftType(
+      actions,
+      created.game.id,
+      "witch_antidote_decided",
+    );
+
+    expect(withWitchAntidote.draft).toMatchObject({
+      type: "witch_antidote_decided",
+      payload: { used: false, targetPlayerId: null },
+    });
+    expect(withWitchAntidote.generations.at(-1)).toMatchObject({
+      purpose: "action",
+      status: "success",
+    });
   });
 
   it("rejects invalid rollback indexes", async () => {
@@ -331,6 +402,20 @@ function failingLlmClient(): LlmClient {
       throw new Error("model unavailable");
     },
   };
+}
+
+function speechPathOutputs(
+  record: GameRecord,
+  speeches: readonly string[],
+): readonly Record<string, unknown>[] {
+  const players = record.game.players;
+  return [
+    { targetPlayerId: players[4]?.playerId },
+    { targetPlayerId: players[0]?.playerId },
+    { used: false, targetPlayerId: null },
+    { used: false, targetPlayerId: null },
+    ...speeches.map((text) => ({ text })),
+  ];
 }
 
 function createDeferredSaveRepository(): GameRepository & {

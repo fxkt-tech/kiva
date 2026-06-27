@@ -15,6 +15,7 @@ import { createDefaultRuleset, type GameId } from "@/core/types";
 import { createDraftId, createEventId, createGameId } from "@/core/id";
 import type { LlmClient } from "@/core/llm";
 import { generateSpeechDraft } from "@/core/speech-generation";
+import { generateActionDraft } from "@/core/action-generation";
 import type { GameRecord, GameRepository } from "./game-repository";
 
 export type GameActions = ReturnType<typeof createGameActions>;
@@ -78,7 +79,7 @@ export function createGameActions(
           createdAt: updatedAt,
         });
         const generatedDraft = plannedDraft
-          ? await maybeGenerateSpeechDraft({
+          ? await maybeGenerateDraft({
               record,
               draft: plannedDraft,
               llmClient: options.llmClient,
@@ -156,7 +157,7 @@ export function createGameActions(
         }
 
         const updatedAt = now();
-        const generatedDraft = await maybeGenerateSpeechDraft({
+        const generatedDraft = await maybeGenerateDraft({
           record,
           draft: record.draft,
           llmClient: options.llmClient,
@@ -213,7 +214,7 @@ export function createGameActions(
   };
 }
 
-async function maybeGenerateSpeechDraft(input: {
+async function maybeGenerateDraft(input: {
   readonly record: GameRecord;
   readonly draft: NonNullable<GameRecord["draft"]>;
   readonly llmClient: LlmClient | undefined;
@@ -223,7 +224,19 @@ async function maybeGenerateSpeechDraft(input: {
     return { draft: input.draft, generation: null };
   }
 
-  return generateSpeechDraft({
+  const speechResult = await generateSpeechDraft({
+    game: input.record.game,
+    events: input.record.events,
+    draft: input.draft,
+    llmClient: input.llmClient,
+    generationId: createGenerationId(),
+    createdAt: input.createdAt,
+  });
+  if (speechResult.generation) {
+    return speechResult;
+  }
+
+  return generateActionDraft({
     game: input.record.game,
     events: input.record.events,
     draft: input.draft,
