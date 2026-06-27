@@ -28,7 +28,7 @@ export function buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt {
       "你正在参与一局狼人杀内容创作。",
       "你只能依据用户消息中列出的可见信息发言。",
       "禁止引用、暗示或利用未出现在可见信息中的上帝视角事实。",
-      '必须输出 JSON 对象，格式为 {"text":"你的发言"}，不要输出 Markdown。',
+      '必须输出 JSON 对象，格式为 {"text":"你的发言","reasoning":"简短说明你为什么这样发言"}，不要输出 Markdown。',
     ].join("\n"),
     messages: [
       {
@@ -59,7 +59,8 @@ export function buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt {
           "- 只根据以上可见信息分析。",
           "- 发言要像真实玩家，不要解释你是 AI。",
           "- 不要编造未发生的事件。",
-          '- 必须输出 JSON 对象，且只包含 "text" 字段。',
+          '- 必须输出 JSON 对象，且只包含 "text" 和 "reasoning" 字段。',
+          '- reasoning 是给主理人看的简短决策依据，只能引用以上可见信息。',
         ].join("\n"),
       },
     ],

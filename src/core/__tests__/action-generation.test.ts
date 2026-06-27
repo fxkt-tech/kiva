@@ -17,7 +17,12 @@ describe("action generation", () => {
       game,
       events: setupEvents(),
       draft: seerDraft(villager.playerId),
-      llmClient: new MockLlmClient([{ targetPlayerId: wolf.playerId }]),
+      llmClient: new MockLlmClient([
+        {
+          targetPlayerId: wolf.playerId,
+          reasoning: "优先查验发言和站边最可疑的人。",
+        },
+      ]),
       generationId: "generation_1",
       createdAt,
     });
@@ -40,8 +45,14 @@ describe("action generation", () => {
           }),
         ]),
       },
-      parsedOutput: { targetPlayerId: wolf.playerId },
+      parsedOutput: {
+        targetPlayerId: wolf.playerId,
+        reasoning: "优先查验发言和站边最可疑的人。",
+      },
     });
+    expect(result.generation?.request?.messages[0]?.content).toContain(
+      "reasoning",
+    );
   });
 
   it("includes visible event text and details in action prompts", async () => {

@@ -17,7 +17,12 @@ describe("speech generation", () => {
       game,
       events: [roleAssigned(1)],
       draft: speechDraft("默认发言"),
-      llmClient: new MockLlmClient([{ text: "我验了 1 号，是查杀。" }]),
+      llmClient: new MockLlmClient([
+        {
+          text: "我验了 1 号，是查杀。",
+          reasoning: "我是预言家，需要公开推进自己的查验结论。",
+        },
+      ]),
       generationId: "generation_1",
       createdAt,
     });
@@ -40,8 +45,14 @@ describe("speech generation", () => {
           }),
         ]),
       },
-      parsedOutput: { text: "我验了 1 号，是查杀。" },
+      parsedOutput: {
+        text: "我验了 1 号，是查杀。",
+        reasoning: "我是预言家，需要公开推进自己的查验结论。",
+      },
     });
+    expect(result.generation?.request?.messages[0]?.content).toContain(
+      "reasoning",
+    );
   });
 
   it("returns unsupported drafts unchanged without generation record", async () => {
