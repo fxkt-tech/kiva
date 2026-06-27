@@ -30,6 +30,16 @@ describe("action generation", () => {
     expect(result.generation).toMatchObject({
       status: "success",
       purpose: "action",
+      request: {
+        schemaName: "werewolf_action_v1",
+        systemPrompt: expect.stringContaining("行动建议"),
+        messages: expect.arrayContaining([
+          expect.objectContaining({
+            role: "user",
+            content: expect.stringContaining("可选目标"),
+          }),
+        ]),
+      },
       parsedOutput: { targetPlayerId: wolf.playerId },
     });
   });
@@ -49,6 +59,10 @@ describe("action generation", () => {
     expect(result.generation).toMatchObject({
       status: "failed",
       purpose: "action",
+      request: {
+        schemaName: "werewolf_action_v1",
+        messages: expect.any(Array),
+      },
       error: "Illegal targetPlayerId for wolf_kill_selected",
     });
   });

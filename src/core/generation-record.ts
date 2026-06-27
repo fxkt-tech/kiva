@@ -3,6 +3,14 @@ import type { DraftId, GameId, PlayerId } from "./types";
 
 export type GenerationPurpose = "speech" | "action";
 export type GenerationStatus = "success" | "failed";
+export type GenerationRequestSnapshot = {
+  readonly schemaName: string;
+  readonly systemPrompt: string;
+  readonly messages: readonly {
+    readonly role: "system" | "user" | "assistant";
+    readonly content: string;
+  }[];
+};
 
 export type GenerationRecord = {
   readonly id: string;
@@ -15,6 +23,7 @@ export type GenerationRecord = {
   readonly provider: string;
   readonly model: string;
   readonly inputContextHash: string;
+  readonly request: GenerationRequestSnapshot | null;
   readonly rawOutput: string | null;
   readonly parsedOutput: Record<string, unknown> | null;
   readonly error: string | null;
@@ -30,6 +39,7 @@ export type SuccessfulGenerationRecordInput = {
   readonly promptVersion: string;
   readonly modelBinding: ModelBindingSnapshot;
   readonly inputContextHash: string;
+  readonly request: GenerationRequestSnapshot;
   readonly rawOutput: string;
   readonly parsedOutput: Record<string, unknown>;
   readonly createdAt: string;
@@ -44,6 +54,7 @@ export type FailedGenerationRecordInput = {
   readonly promptVersion: string;
   readonly modelBinding: ModelBindingSnapshot;
   readonly inputContextHash: string;
+  readonly request: GenerationRequestSnapshot;
   readonly rawOutput: string | null;
   readonly error: unknown;
   readonly createdAt: string;
@@ -63,6 +74,7 @@ export function createSuccessfulGenerationRecord(
     provider: input.modelBinding.provider,
     model: input.modelBinding.model,
     inputContextHash: input.inputContextHash,
+    request: input.request,
     rawOutput: input.rawOutput,
     parsedOutput: input.parsedOutput,
     error: null,
@@ -84,6 +96,7 @@ export function createFailedGenerationRecord(
     provider: input.modelBinding.provider,
     model: input.modelBinding.model,
     inputContextHash: input.inputContextHash,
+    request: input.request,
     rawOutput: input.rawOutput,
     parsedOutput: null,
     error: errorMessage(input.error),

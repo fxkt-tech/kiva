@@ -58,6 +58,21 @@ describe("DraftPanel payload controls", () => {
     expect(html).not.toContain("old error");
   });
 
+  it("renders an LLM details popup for the latest generation", () => {
+    const draft = daySpeechDraft();
+    const html = renderPanel(draft, [
+      generationRecord({ draftId: draft.id, status: "success", error: null }),
+    ]);
+
+    expect(html).toContain("LLM details");
+    expect(html).toContain("Request");
+    expect(html).toContain("system prompt");
+    expect(html).toContain("visible context");
+    expect(html).toContain("Raw output");
+    expect(html).toContain("Parsed output");
+    expect(html).toContain("Reasoning");
+  });
+
   it("renders witch used false field and nullable target select", () => {
     const html = renderPanel(witchAntidoteDraft());
 
@@ -190,8 +205,14 @@ function generationRecord(input: {
     provider: "mock",
     model: "mock-model",
     inputContextHash: "ctx",
+    request: {
+      schemaName: "werewolf_speech_v1",
+      systemPrompt: "system prompt",
+      messages: [{ role: "user", content: "visible context" }],
+    },
     rawOutput: "{}",
-    parsedOutput: input.status === "success" ? { text: "ok" } : null,
+    parsedOutput:
+      input.status === "success" ? { text: "ok", reasoning: "because" } : null,
     error: input.error,
     createdAt:
       input.status === "success"

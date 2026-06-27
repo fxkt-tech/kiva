@@ -30,6 +30,16 @@ describe("speech generation", () => {
       status: "success",
       playerId: speaker.playerId,
       purpose: "speech",
+      request: {
+        schemaName: "werewolf_speech_v1",
+        systemPrompt: expect.stringContaining(speaker.systemPrompt),
+        messages: expect.arrayContaining([
+          expect.objectContaining({
+            role: "user",
+            content: expect.stringContaining("当前要生成的发言"),
+          }),
+        ]),
+      },
       parsedOutput: { text: "我验了 1 号，是查杀。" },
     });
   });
@@ -62,6 +72,10 @@ describe("speech generation", () => {
     expect(result.generation).toMatchObject({
       id: "generation_2",
       status: "failed",
+      request: {
+        schemaName: "werewolf_speech_v1",
+        messages: expect.any(Array),
+      },
       parsedOutput: null,
       error: "LLM speech output must include non-empty text",
     });

@@ -11,6 +11,7 @@ import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
 import { AutoContinueDraft } from "./auto-continue-draft";
 import { FormSubmitButton } from "./form-submit-button";
+import { LlmGenerationDetails } from "./llm-generation-details";
 
 type DraftPanelProps = {
   readonly gameId: GameId;
@@ -88,10 +89,13 @@ export function DraftPanel({
             <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
               Generation
             </div>
-            <div className="mt-1.5 flex flex-wrap gap-2 text-xs text-zinc-400">
+            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
               <span>{latestGeneration.status}</span>
-              <span>{latestGeneration.provider}/{latestGeneration.model}</span>
+              <span>
+                {latestGeneration.provider}/{latestGeneration.model}
+              </span>
               <span>{latestGeneration.promptVersion}</span>
+              <LlmGenerationDetails generation={latestGeneration} />
             </div>
             {latestGeneration.error ? (
               <p className="mt-1.5 whitespace-pre-wrap break-words text-xs leading-5 text-red-300">

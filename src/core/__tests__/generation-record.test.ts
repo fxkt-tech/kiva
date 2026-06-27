@@ -16,6 +16,11 @@ const modelBinding = {
   maxTokens: 500,
   responseFormat: "json",
 } as const;
+const request = {
+  schemaName: "werewolf_speech_v1",
+  systemPrompt: "system prompt",
+  messages: [{ role: "user", content: "visible context" }],
+} as const;
 
 describe("generation records", () => {
   it("creates success records for parsed model output", () => {
@@ -29,6 +34,7 @@ describe("generation records", () => {
         promptVersion: "speech:v1",
         modelBinding,
         inputContextHash: "ctx_hash",
+        request,
         rawOutput: '{"text":"hello"}',
         parsedOutput: { text: "hello" },
         createdAt,
@@ -44,6 +50,7 @@ describe("generation records", () => {
       provider: "mock",
       model: "mock-model",
       inputContextHash: "ctx_hash",
+      request,
       rawOutput: '{"text":"hello"}',
       parsedOutput: { text: "hello" },
       error: null,
@@ -62,6 +69,7 @@ describe("generation records", () => {
         promptVersion: "speech:v1",
         modelBinding,
         inputContextHash: "ctx_hash",
+        request,
         rawOutput: "not json",
         error: new Error("bad output"),
         createdAt,
@@ -70,6 +78,7 @@ describe("generation records", () => {
       id: "generation_2",
       status: "failed",
       parsedOutput: null,
+      request,
       rawOutput: "not json",
       error: "bad output",
     });

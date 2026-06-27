@@ -44,13 +44,16 @@ export async function generateSpeechDraft(
     viewerPlayerId: playerId,
   });
   const prompt = buildSpeechPrompt({ context, draft: input.draft });
+  const request = {
+    systemPrompt: prompt.systemPrompt,
+    messages: prompt.messages,
+    schemaName: prompt.schemaName,
+  };
 
   try {
     const output = await input.llmClient.generateJson({
       modelBinding: context.viewer.modelBindingSnapshot,
-      systemPrompt: prompt.systemPrompt,
-      messages: prompt.messages,
-      schemaName: prompt.schemaName,
+      ...request,
     });
     const text = parseSpeechText(output.parsed);
 
@@ -65,6 +68,7 @@ export async function generateSpeechDraft(
         promptVersion: prompt.promptVersion,
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
+        request,
         rawOutput: output.rawText,
         parsedOutput: output.parsed,
         createdAt: input.createdAt,
@@ -82,6 +86,7 @@ export async function generateSpeechDraft(
         promptVersion: prompt.promptVersion,
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
+        request,
         rawOutput: null,
         error,
         createdAt: input.createdAt,

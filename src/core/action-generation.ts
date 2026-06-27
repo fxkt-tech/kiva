@@ -54,34 +54,37 @@ export async function generateActionDraft(
     viewerPlayerId: playerId,
   });
   const legalTargetIds = legalTargetIdsForDraft(input.game, input.events, input.draft);
+  const request = {
+    systemPrompt: [
+      context.viewer.systemPrompt,
+      "你只能根据可见信息给出狼人杀行动建议。",
+      "必须输出 JSON 对象，不要输出 Markdown。",
+    ].join("\n"),
+    messages: [
+      {
+        role: "user" as const,
+        content: [
+          `draft=${input.draft.type}`,
+          "玩家名单：",
+          ...context.roster.map(
+            (player) =>
+              `${player.seatNo} ${player.name} playerId=${player.playerId}`,
+          ),
+          "可选目标：",
+          ...legalTargetIds.map((targetPlayerId) => `playerId=${targetPlayerId}`),
+          "可见事件：",
+          ...context.timeline.map((item) => `#${item.index} ${item.title}`),
+          '输出字段：targetPlayerId，可选 used。弃票用 {"targetPlayerId":null}。',
+        ].join("\n"),
+      },
+    ],
+    schemaName: "werewolf_action_v1",
+  };
 
   try {
     const output = await input.llmClient.generateJson({
       modelBinding: context.viewer.modelBindingSnapshot,
-      systemPrompt: [
-        context.viewer.systemPrompt,
-        "你只能根据可见信息给出狼人杀行动建议。",
-        "必须输出 JSON 对象，不要输出 Markdown。",
-      ].join("\n"),
-      messages: [
-        {
-          role: "user",
-          content: [
-            `draft=${input.draft.type}`,
-            "玩家名单：",
-            ...context.roster.map(
-              (player) =>
-                `${player.seatNo} ${player.name} playerId=${player.playerId}`,
-            ),
-            "可选目标：",
-            ...legalTargetIds.map((targetPlayerId) => `playerId=${targetPlayerId}`),
-            "可见事件：",
-            ...context.timeline.map((item) => `#${item.index} ${item.title}`),
-            '输出字段：targetPlayerId，可选 used。弃票用 {"targetPlayerId":null}。',
-          ].join("\n"),
-        },
-      ],
-      schemaName: "werewolf_action_v1",
+      ...request,
     });
     const edit = parseAndValidateActionEdit(input.game, input.events, input.draft, output.parsed);
 
@@ -96,6 +99,7 @@ export async function generateActionDraft(
         promptVersion: ACTION_PROMPT_VERSION,
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
+        request,
         rawOutput: output.rawText,
         parsedOutput: output.parsed,
         createdAt: input.createdAt,
@@ -113,6 +117,7 @@ export async function generateActionDraft(
         promptVersion: ACTION_PROMPT_VERSION,
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
+        request,
         rawOutput: null,
         error,
         createdAt: input.createdAt,
