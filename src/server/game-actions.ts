@@ -10,18 +10,24 @@ import {
   getActiveEvents,
   rollbackAfterIndex,
 } from "@/core/event-log";
-import { createSeedGame } from "@/core/game";
+import { createGameFromPreset } from "@/core/game";
 import { createDefaultRuleset, type GameId } from "@/core/types";
 import { createDraftId, createEventId, createGameId } from "@/core/id";
 import type { LlmClient } from "@/core/llm";
 import { generateSpeechDraft } from "@/core/speech-generation";
 import { generateActionDraft } from "@/core/action-generation";
+import { seedCharacters } from "@/seeds/characters";
+import { seedPresets } from "@/seeds/presets";
+import { seedRoles } from "@/seeds/roles";
 import type { GameRecord, GameRepository } from "./game-repository";
+import type { LibraryRecord, LibraryRepository } from "./library-repository";
 
 export type GameActions = ReturnType<typeof createGameActions>;
 
 export type CreateGameActionsOptions = {
   readonly llmClient?: LlmClient;
+  readonly libraryRepository?: LibraryRepository;
+  readonly defaultPresetId?: string;
 };
 
 export function createGameActions(
@@ -40,10 +46,20 @@ export function createGameActions(
   return {
     async createGame(): Promise<GameRecord> {
       const createdAt = now();
-      const game = createSeedGame({
+      const library = await loadGameLibrary(options.libraryRepository);
+      const presetId = options.defaultPresetId ?? "six_player_standard";
+      const preset = library.presets.find((item) => item.id === presetId);
+      if (!preset) {
+        throw new Error(`Game preset not found: ${presetId}`);
+      }
+      const game = createGameFromPreset({
         gameId: createGameId(),
+        title: preset.name,
         createdAt,
         ruleset: createDefaultRuleset(),
+        preset,
+        roles: library.roles,
+        characters: library.characters,
       });
       const record: GameRecord = {
         game,
@@ -202,6 +218,20 @@ export function createGameActions(
         return nextRecord;
       });
     },
+  };
+}
+
+async function loadGameLibrary(
+  libraryRepository: LibraryRepository | undefined,
+): Promise<LibraryRecord> {
+  if (libraryRepository) {
+    return libraryRepository.loadAll();
+  }
+
+  return {
+    roles: seedRoles,
+    characters: seedCharacters,
+    presets: seedPresets,
   };
 }
 

@@ -5,12 +5,16 @@ import { afterEach, describe, expect, it } from "vitest";
 import { getActiveEvents } from "@/core/event-log";
 import { MockLlmClient, type LlmClient } from "@/core/llm";
 import type { GameId } from "@/core/types";
+import { seedCharacters } from "@/seeds/characters";
+import { seedPresets } from "@/seeds/presets";
+import { seedRoles } from "@/seeds/roles";
 import { createGameActions } from "../game-actions";
 import {
   createGameRepository,
   type GameRecord,
   type GameRepository,
 } from "../game-repository";
+import type { LibraryRepository } from "../library-repository";
 
 const tempDirs: string[] = [];
 
@@ -44,6 +48,63 @@ describe("game actions", () => {
     });
     await expect(repository.get(created.game.id)).resolves.toEqual(created);
     await expect(actions.getGame(created.game.id)).resolves.toEqual(created);
+  });
+
+  it("creates a game from an injected role library repository", async () => {
+    const repository = createGameRepository(await createTempDir());
+    let loadAllCalls = 0;
+    const libraryRepository = fakeLibraryRepository({
+      loadAll: async () => {
+        loadAllCalls += 1;
+        return {
+          roles: seedRoles,
+          characters: seedCharacters,
+          presets: seedPresets,
+        };
+      },
+    });
+    const actions = createGameActions(repository, { libraryRepository });
+
+    const created = await actions.createGame();
+
+    expect(loadAllCalls).toBe(1);
+    expect(created.game.title).toBe("6人狼人杀试运行");
+    expect(created.game.players.map((player) => player.name)).toEqual([
+      "秦川",
+      "林夏",
+      "周知",
+      "许棠",
+      "陈墨",
+      "沈岚",
+    ]);
+    expect(created.game.players[0]).toMatchObject({
+      characterSourceId: "qin_chuan",
+      roleSourceId: "werewolf",
+      roleSystemPromptSnapshot: seedRoles[0].systemPrompt,
+      characterSystemPromptSnapshot: seedCharacters[0].systemPrompt,
+      mechanicKey: "wolf_kill",
+      team: "wolf",
+    });
+    await expect(repository.get(created.game.id)).resolves.toEqual(created);
+  });
+
+  it("throws when the configured default preset id is not in the library", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const libraryRepository = fakeLibraryRepository({
+      loadAll: async () => ({
+        roles: seedRoles,
+        characters: seedCharacters,
+        presets: seedPresets,
+      }),
+    });
+    const actions = createGameActions(repository, {
+      libraryRepository,
+      defaultPresetId: "missing_preset",
+    });
+
+    await expect(actions.createGame()).rejects.toThrow(
+      "Game preset not found: missing_preset",
+    );
   });
 
   it("confirms the current draft into one official event without planning the next draft", async () => {
@@ -451,6 +512,33 @@ function failingLlmClient(): LlmClient {
     async generateJson() {
       throw new Error("model unavailable");
     },
+  };
+}
+
+function fakeLibraryRepository(
+  overrides: Partial<LibraryRepository>,
+): LibraryRepository {
+  return {
+    async getRoles() {
+      return seedRoles;
+    },
+    async getCharacters() {
+      return seedCharacters;
+    },
+    async getPresets() {
+      return seedPresets;
+    },
+    async getAll() {
+      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets };
+    },
+    async loadAll() {
+      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets };
+    },
+    async saveRoles() {},
+    async saveCharacters() {},
+    async savePresets() {},
+    async saveAll() {},
+    ...overrides,
   };
 }
 

@@ -1,6 +1,14 @@
+import type { CharacterDefinition } from "./character-definition";
+import type { GamePreset } from "./game-preset";
 import { createPlayerSnapshot, type PlayerSnapshot } from "./player";
+import type { RoleDefinition } from "./role-definition";
+import { seedCharacters } from "@/seeds/characters";
+import { seedPresets } from "@/seeds/presets";
+import { seedRoles } from "@/seeds/roles";
 import {
   createDefaultRuleset,
+  GAME_ROLES,
+  type GameRole,
   type GameId,
   type PlayerId,
   type Ruleset,
@@ -24,35 +32,95 @@ export type CreateSeedGameInput = {
   readonly ruleset?: Ruleset;
 };
 
-export function createSeedGame(input: CreateSeedGameInput): Game {
-  const ruleset = input.ruleset ?? createDefaultRuleset();
-  const players = [
-    ["p1", 1, "秦川", "werewolf"],
-    ["p2", 2, "林夏", "werewolf"],
-    ["p3", 3, "周知", "seer"],
-    ["p4", 4, "许棠", "witch"],
-    ["p5", 5, "陈墨", "villager"],
-    ["p6", 6, "沈岚", "villager"],
-  ] as const;
+export type CreateGameFromPresetInput = {
+  readonly gameId: GameId;
+  readonly title: string;
+  readonly createdAt: string;
+  readonly ruleset: Ruleset;
+  readonly preset: GamePreset;
+  readonly roles: readonly RoleDefinition[];
+  readonly characters: readonly CharacterDefinition[];
+};
+
+export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
+  if (input.preset.seatAssignments === null) {
+    throw new Error(`Game preset ${input.preset.id} must include seatAssignments`);
+  }
+
+  const rolesById = new Map(input.roles.map((role) => [role.id, role]));
+  const charactersById = new Map(
+    input.characters.map((character) => [character.id, character]),
+  );
+
+  const players = input.preset.seatAssignments.map((seat) => {
+    const role = rolesById.get(seat.roleId);
+    if (!role) {
+      throw new Error(`Role definition not found: ${seat.roleId}`);
+    }
+    const gameRole = toSupportedGameRole(role.id);
+    const character = charactersById.get(seat.characterId);
+    if (!character) {
+      throw new Error(`Character definition not found: ${seat.characterId}`);
+    }
+
+    return createPlayerSnapshot({
+      playerId: `${input.gameId}_p${seat.seatNo}` as PlayerId,
+      seatNo: seat.seatNo,
+      name: character.name,
+      gameRole,
+      characterSourceId: character.id,
+      roleSourceId: role.id,
+      avatar: character.avatar,
+      persona: character.persona,
+      speakingStyle: character.speakingStyle,
+      reasoningStyle: character.reasoningStyle,
+      characterSystemPromptSnapshot: character.systemPrompt,
+      roleSystemPromptSnapshot: role.systemPrompt,
+      roleActionPromptSnapshot: role.actionPrompt,
+      systemPrompt: character.systemPrompt,
+      modelBindingSnapshot:
+        seat.modelBindingOverride ??
+        character.defaultModelBinding ??
+        role.defaultModelBinding ??
+        undefined,
+      roleName: role.name,
+      faction: role.faction,
+      team: role.team,
+      mechanicKey: role.mechanicKey,
+    });
+  });
 
   return {
     id: input.gameId,
-    title: "6人狼人杀试运行",
+    title: input.title,
     status: "drafting",
-    ruleset,
-    players: players.map(([suffix, seatNo, name, role]) =>
-      createPlayerSnapshot({
-        playerId: `${input.gameId}_${suffix}` as PlayerId,
-        seatNo,
-        name,
-        gameRole: role,
-        persona: "冷静、愿意表达判断",
-        speakingStyle: "短句、直接、有推进感",
-        reasoningStyle: "根据自己可见的信息给出结论",
-        systemPrompt: "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
-      }),
-    ),
+    ruleset: input.ruleset,
+    players,
     createdAt: input.createdAt,
     updatedAt: input.createdAt,
   };
+}
+
+export function createSeedGame(input: CreateSeedGameInput): Game {
+  return createGameFromPreset({
+    gameId: input.gameId,
+    title: "6人狼人杀试运行",
+    createdAt: input.createdAt,
+    ruleset: input.ruleset ?? createDefaultRuleset(),
+    preset: seedPresets[0],
+    roles: seedRoles,
+    characters: seedCharacters,
+  });
+}
+
+function toSupportedGameRole(roleId: string): GameRole {
+  if (!isGameRole(roleId)) {
+    throw new Error(`Role is not supported by current ruleset: ${roleId}`);
+  }
+
+  return roleId;
+}
+
+function isGameRole(roleId: string): roleId is GameRole {
+  return (GAME_ROLES as readonly string[]).includes(roleId);
 }
