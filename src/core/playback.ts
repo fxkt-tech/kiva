@@ -19,6 +19,23 @@ export type PlaybackScenePlayer = {
   readonly highlighted: boolean;
 };
 
+export type PlaybackRhythmConfig = {
+  readonly phaseMs: number;
+  readonly announcementMs: number;
+  readonly deathAnnouncementMs: number;
+  readonly speechBaseMs: number;
+  readonly speechMsPerCharacter: number;
+  readonly speechMinMs: number;
+  readonly speechMaxMs: number;
+  readonly voteMs: number;
+  readonly resolutionMs: number;
+  readonly gameEndMs: number;
+};
+
+export type CompilePublicPlaybackOptions = {
+  readonly rhythm?: Partial<PlaybackRhythmConfig>;
+};
+
 export type PlaybackItem = {
   readonly index: number;
   readonly phase: Phase;
@@ -31,12 +48,27 @@ export type PlaybackItem = {
   readonly players: readonly PlaybackScenePlayer[];
 };
 
+const defaultRhythm: PlaybackRhythmConfig = {
+  phaseMs: 1600,
+  announcementMs: 2200,
+  deathAnnouncementMs: 2200,
+  speechBaseMs: 3600,
+  speechMsPerCharacter: 60,
+  speechMinMs: 4200,
+  speechMaxMs: 12000,
+  voteMs: 1200,
+  resolutionMs: 2400,
+  gameEndMs: 5000,
+};
+
 export function compilePublicPlayback(
   events: readonly GameEvent[],
   players: readonly PlayerSnapshot[],
+  options: CompilePublicPlaybackOptions = {},
 ): readonly PlaybackItem[] {
   let startsAtMs = 0;
   const publiclyDeadPlayerIds = new Set<PlayerId>();
+  const rhythm = { ...defaultRhythm, ...options.rhythm };
 
   return getActiveEvents(events)
     .filter((event) => event.visibility.kind === "public")
@@ -48,7 +80,7 @@ export function compilePublicPlayback(
 
       updatePublicDeaths(publiclyDeadPlayerIds, event);
 
-      const durationMs = durationForEvent(event);
+      const durationMs = durationForEvent(event, presented.text, rhythm);
       const scene = {
         index: event.index,
         phase: event.phase,
@@ -166,23 +198,35 @@ function highlightedPlayersForEvent(event: GameEvent): ReadonlySet<PlayerId> {
   return playerIds;
 }
 
-function durationForEvent(event: GameEvent): number {
+function durationForEvent(
+  event: GameEvent,
+  text: string,
+  rhythm: PlaybackRhythmConfig,
+): number {
   switch (event.type) {
     case "phase_started":
-      return 1600;
+      return rhythm.phaseMs;
     case "death_announced":
-      return 2200;
+      return rhythm.deathAnnouncementMs;
     case "last_words_given":
     case "day_speech_given":
     case "pk_speech_given":
-      return 4200;
+      return clamp(
+        rhythm.speechBaseMs + text.length * rhythm.speechMsPerCharacter,
+        rhythm.speechMinMs,
+        rhythm.speechMaxMs,
+      );
     case "vote_cast":
-      return 1200;
+      return rhythm.voteMs;
     case "exile_resolved":
-      return 2400;
+      return rhythm.resolutionMs;
     case "game_ended":
-      return 5000;
+      return rhythm.gameEndMs;
     default:
-      return 2200;
+      return rhythm.announcementMs;
   }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }

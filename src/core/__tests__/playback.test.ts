@@ -134,6 +134,43 @@ describe("playback compiler", () => {
     ).toEqual([2200, 4200, 1200, 2400, 5000]);
   });
 
+  it("allows playback rhythm overrides and estimates longer speech duration from text length", () => {
+    const longSpeech = "我认为今天的信息已经足够多，前置位的逻辑有明显断点，后置位需要重点解释投票理由。";
+
+    const playback = compilePublicPlayback([
+      event(1, { kind: "public" }, {
+        type: "phase_started",
+        phase: "day",
+        payload: { phase: "day", dayNumber: 1 },
+      }),
+      event(2, { kind: "public" }, {
+        type: "day_speech_given",
+        phase: "speech",
+        actorPlayerId: players[0].playerId,
+        payload: {
+          playerId: players[0].playerId,
+          text: longSpeech,
+          dayNumber: 1,
+          round: 1,
+        },
+      }),
+    ], players, {
+      rhythm: {
+        phaseMs: 900,
+        speechBaseMs: 1000,
+        speechMsPerCharacter: 100,
+        speechMinMs: 2000,
+        speechMaxMs: 6000,
+      },
+    });
+
+    expect(playback.map((item) => item.durationMs)).toEqual([
+      900,
+      Math.min(6000, Math.max(2000, 1000 + longSpeech.length * 100)),
+    ]);
+    expect(playback[1]?.startsAtMs).toBe(900);
+  });
+
   it("keeps public player status from revealing private night deaths before announcement", () => {
     const killedPlayerId = players[0].playerId;
 

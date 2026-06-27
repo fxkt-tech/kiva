@@ -63,6 +63,36 @@ describe("PlaybackStage", () => {
     expect(html).toContain("dead");
   });
 
+  it("renders dedicated speech and vote templates", () => {
+    const speechHtml = renderStage([
+      item({
+        index: 2,
+        kind: "speech",
+        title: "1 号 秦川发言",
+        text: "我先报一下我的视角。",
+        players: [
+          player({ seatNo: 1, name: "秦川", highlighted: true }),
+          player({ seatNo: 2, name: "林夏" }),
+        ],
+      }),
+    ]);
+    const voteHtml = renderStage([
+      item({
+        index: 3,
+        kind: "vote",
+        title: "放逐投票",
+        text: "1 号 秦川 投给 2 号 林夏。",
+        details: ["1 号 秦川 -> 2 号 林夏"],
+      }),
+    ]);
+
+    expect(speechHtml).toContain("Speaker");
+    expect(speechHtml).toContain("秦川");
+    expect(voteHtml).toContain("Vote card");
+    expect(voteHtml).toContain("1 号 秦川");
+    expect(voteHtml).toContain("2 号 林夏");
+  });
+
   it("disables playback controls that cannot advance a single-item sequence", () => {
     const html = renderStage([item({ index: 1, title: "Only event" })]);
 

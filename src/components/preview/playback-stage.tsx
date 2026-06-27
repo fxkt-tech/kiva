@@ -91,54 +91,8 @@ export function PlaybackStage({ items }: PlaybackStageProps) {
         <div className="grid h-full grid-rows-[1fr_auto]">
           {current ? (
             <div className="grid min-h-0 grid-cols-[minmax(0,1fr)_260px] gap-6 px-[5%] pt-[4%]">
-              <article className="flex min-w-0 flex-col justify-center">
-                <div className="mb-5 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.18em] text-zinc-500">
-                  <span>#{current.index}</span>
-                  <span>{current.phase}</span>
-                  <span>{current.kind}</span>
-                </div>
-                <h1 className="break-words text-4xl font-semibold leading-tight text-zinc-50 sm:text-5xl lg:text-6xl">
-                  {current.title}
-                </h1>
-                {current.text ? (
-                  <p className="mt-6 whitespace-pre-wrap break-words text-xl leading-8 text-zinc-300 sm:text-2xl sm:leading-10">
-                    {current.text}
-                  </p>
-                ) : null}
-              </article>
-              <aside className="min-h-0 py-2">
-                <div className="mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600">
-                  Players
-                </div>
-                <div className="grid gap-2">
-                  {current.players.map((player) => (
-                    <div
-                      className={[
-                        "grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 border px-3 py-2 text-sm",
-                        player.highlighted
-                          ? "border-cyan-500/60 bg-cyan-500/10 text-zinc-100"
-                          : "border-zinc-800 bg-zinc-950/70 text-zinc-400",
-                        player.status === "dead" ? "opacity-65" : "",
-                      ].join(" ")}
-                      key={player.playerId}
-                    >
-                      <span className="text-xs text-zinc-600">
-                        Seat {player.seatNo}
-                      </span>
-                      <span className="truncate font-medium">{player.name}</span>
-                      <span
-                        className={
-                          player.status === "dead"
-                            ? "text-xs text-red-300"
-                            : "text-xs text-emerald-300"
-                        }
-                      >
-                        {player.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </aside>
+              <SceneBody scene={current} />
+              <PlayerRail scene={current} />
             </div>
           ) : (
             <div className="flex h-full flex-col items-center justify-center text-center">
@@ -238,6 +192,149 @@ export function PlaybackStage({ items }: PlaybackStageProps) {
         </div>
       </section>
     </main>
+  );
+}
+
+function SceneBody({ scene }: { readonly scene: PlaybackItem }) {
+  const highlightedPlayers = scene.players.filter((player) => player.highlighted);
+  const primaryPlayer = highlightedPlayers[0];
+
+  if (scene.kind === "speech") {
+    return (
+      <article className="flex min-w-0 flex-col justify-center">
+        <SceneMeta scene={scene} />
+        <div className="mb-4 text-xs uppercase tracking-[0.18em] text-cyan-300">
+          Speaker
+        </div>
+        {primaryPlayer ? (
+          <div className="mb-6 flex items-baseline gap-3">
+            <span className="text-lg text-zinc-500">
+              Seat {primaryPlayer.seatNo}
+            </span>
+            <span className="text-4xl font-semibold text-zinc-50">
+              {primaryPlayer.name}
+            </span>
+          </div>
+        ) : null}
+        <blockquote className="max-w-4xl border-l-2 border-cyan-400 pl-6 text-2xl leading-10 text-zinc-200">
+          {scene.text}
+        </blockquote>
+      </article>
+    );
+  }
+
+  if (scene.kind === "vote") {
+    return (
+      <article className="flex min-w-0 flex-col justify-center">
+        <SceneMeta scene={scene} />
+        <div className="mb-4 text-xs uppercase tracking-[0.18em] text-amber-300">
+          Vote card
+        </div>
+        <h1 className="break-words text-5xl font-semibold leading-tight text-zinc-50">
+          {scene.title}
+        </h1>
+        <div className="mt-6 max-w-3xl border border-amber-400/30 bg-amber-400/10 px-5 py-4 text-2xl leading-9 text-amber-50">
+          {scene.text}
+        </div>
+      </article>
+    );
+  }
+
+  if (scene.kind === "resolution") {
+    return (
+      <article className="flex min-w-0 flex-col justify-center">
+        <SceneMeta scene={scene} />
+        <div className="mb-4 text-xs uppercase tracking-[0.18em] text-red-300">
+          Resolution
+        </div>
+        <h1 className="break-words text-5xl font-semibold leading-tight text-zinc-50">
+          {scene.title}
+        </h1>
+        <p className="mt-6 max-w-4xl whitespace-pre-wrap break-words text-2xl leading-9 text-zinc-300">
+          {scene.text}
+        </p>
+      </article>
+    );
+  }
+
+  if (scene.kind === "phase") {
+    return (
+      <article className="flex min-w-0 flex-col justify-center">
+        <SceneMeta scene={scene} />
+        <div className="text-xs uppercase tracking-[0.22em] text-zinc-600">
+          Phase
+        </div>
+        <h1 className="mt-4 break-words text-6xl font-semibold leading-none text-zinc-50">
+          {scene.title}
+        </h1>
+        <p className="mt-6 whitespace-pre-wrap break-words text-2xl leading-9 text-zinc-400">
+          {scene.text}
+        </p>
+      </article>
+    );
+  }
+
+  return (
+    <article className="flex min-w-0 flex-col justify-center">
+      <SceneMeta scene={scene} />
+      <div className="mb-4 text-xs uppercase tracking-[0.18em] text-zinc-500">
+        Announcement
+      </div>
+      <h1 className="break-words text-5xl font-semibold leading-tight text-zinc-50">
+        {scene.title}
+      </h1>
+      {scene.text ? (
+        <p className="mt-6 whitespace-pre-wrap break-words text-2xl leading-9 text-zinc-300">
+          {scene.text}
+        </p>
+      ) : null}
+    </article>
+  );
+}
+
+function SceneMeta({ scene }: { readonly scene: PlaybackItem }) {
+  return (
+    <div className="mb-5 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.18em] text-zinc-500">
+      <span>#{scene.index}</span>
+      <span>{scene.phase}</span>
+      <span>{scene.kind}</span>
+    </div>
+  );
+}
+
+function PlayerRail({ scene }: { readonly scene: PlaybackItem }) {
+  return (
+    <aside className="min-h-0 py-2">
+      <div className="mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600">
+        Players
+      </div>
+      <div className="grid gap-2">
+        {scene.players.map((player) => (
+          <div
+            className={[
+              "grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 border px-3 py-2 text-sm",
+              player.highlighted
+                ? "border-cyan-500/60 bg-cyan-500/10 text-zinc-100"
+                : "border-zinc-800 bg-zinc-950/70 text-zinc-400",
+              player.status === "dead" ? "opacity-65" : "",
+            ].join(" ")}
+            key={player.playerId}
+          >
+            <span className="text-xs text-zinc-600">Seat {player.seatNo}</span>
+            <span className="truncate font-medium">{player.name}</span>
+            <span
+              className={
+                player.status === "dead"
+                  ? "text-xs text-red-300"
+                  : "text-xs text-emerald-300"
+              }
+            >
+              {player.status}
+            </span>
+          </div>
+        ))}
+      </div>
+    </aside>
   );
 }
 
