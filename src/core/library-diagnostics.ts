@@ -132,7 +132,11 @@ export function promptPreviewForPresetSeat(input: {
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
 }): string {
-  const assignment = input.preset.seatAssignments?.find(
+  if (!Array.isArray(input.preset.seatAssignments)) {
+    return "No seat assignment selected.";
+  }
+
+  const assignment = input.preset.seatAssignments.find(
     (seat) => seat.seatNo === input.seatNo,
   );
   if (assignment === undefined) {
@@ -258,6 +262,10 @@ function presetReferenceMessages(
   const messages: string[] = [];
 
   for (const preset of presets) {
+    if (!Array.isArray(preset.roleIds) || !Array.isArray(preset.characterIds)) {
+      continue;
+    }
+
     for (const [index, roleId] of preset.roleIds.entries()) {
       const role = rolesById.get(roleId);
       if (role === undefined) {
@@ -295,6 +303,10 @@ function gameCreationDiagnostic(
 
   if (input.preset.seatAssignments === null) {
     messages.push(`Game preset ${input.preset.id} must include seatAssignments`);
+    return { canCreateGame: false, messages };
+  }
+
+  if (!Array.isArray(input.preset.seatAssignments)) {
     return { canCreateGame: false, messages };
   }
 

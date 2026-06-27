@@ -402,6 +402,72 @@ describe("library diagnostics", () => {
     });
   });
 
+  it("returns diagnostics instead of throwing for malformed preset reference lists", () => {
+    const preset = {
+      ...presetWithSeats({
+        roles: ["werewolf", "seer"],
+        characters: ["qin", "lin"],
+      }),
+      roleIds: "werewolf",
+    } as unknown as GamePreset;
+
+    expect(() =>
+      diagnosePreset({
+        preset,
+        roles: [werewolf, seer],
+        characters: [qin, lin],
+        presets: [preset],
+      }),
+    ).not.toThrow();
+    expect(
+      diagnosePreset({
+        preset,
+        roles: [werewolf, seer],
+        characters: [qin, lin],
+        presets: [preset],
+      }),
+    ).toMatchObject({
+      valid: false,
+      canCreateGame: false,
+      messages: expect.arrayContaining([
+        "Game preset two_player_test roleIds must be an array",
+      ]),
+    });
+  });
+
+  it("returns diagnostics instead of throwing for malformed seat assignments", () => {
+    const preset = {
+      ...presetWithSeats({
+        roles: ["werewolf", "seer"],
+        characters: ["qin", "lin"],
+      }),
+      seatAssignments: 42,
+    } as unknown as GamePreset;
+
+    expect(() =>
+      diagnosePreset({
+        preset,
+        roles: [werewolf, seer],
+        characters: [qin, lin],
+        presets: [preset],
+      }),
+    ).not.toThrow();
+    expect(
+      diagnosePreset({
+        preset,
+        roles: [werewolf, seer],
+        characters: [qin, lin],
+        presets: [preset],
+      }),
+    ).toMatchObject({
+      valid: false,
+      canCreateGame: false,
+      messages: expect.arrayContaining([
+        "Game preset two_player_test seatAssignments must be an array or null",
+      ]),
+    });
+  });
+
   it("marks presets invalid and not creatable when they reference unknown characters", () => {
     const preset = presetWithSeats({
       roles: ["werewolf", "seer"],
