@@ -15,6 +15,15 @@ export type CharacterDefinition = {
   readonly updatedAt: string;
 };
 
+const ROLE_ONLY_FIELDS = [
+  "faction",
+  "team",
+  "mechanicKey",
+  "visibilityRules",
+  "nightOrder",
+  "rolePrompt",
+] as const;
+
 export function validateCharacterDefinitions(
   characters: unknown,
 ): readonly CharacterDefinition[] {
@@ -24,11 +33,13 @@ export function validateCharacterDefinitions(
 
   const characterIds = new Set<string>();
 
-  for (const character of characters) {
-    assertCharacterObject(character);
+  for (const [index, character] of characters.entries()) {
+    const path = `Character definition[${index}]`;
+    assertCharacterObject(character, path);
+    rejectRoleOnlyFields(character, path);
     const characterId = requireStableId(
       character.id,
-      "Character definition id",
+      `${path} id`,
     );
 
     if (characterIds.has(characterId)) {
@@ -78,9 +89,21 @@ export function validateCharacterDefinitions(
 
 function assertCharacterObject(
   character: unknown,
+  path: string,
 ): asserts character is CharacterDefinition {
   if (character === null || typeof character !== "object") {
-    throw new Error("Character definition must be an object");
+    throw new Error(`${path} must be an object`);
+  }
+}
+
+function rejectRoleOnlyFields(
+  character: CharacterDefinition,
+  path: string,
+): void {
+  for (const field of ROLE_ONLY_FIELDS) {
+    if (field in character) {
+      throw new Error(`${path} must not include role field: ${field}`);
+    }
   }
 }
 
@@ -165,11 +188,11 @@ function validateModelBinding(value: unknown, characterId: string): void {
 
   const binding = value as Partial<ModelBindingSnapshot>;
 
-  if (!isNonBlankString(binding.provider)) {
+  if (!isStableString(binding.provider)) {
     throw new Error(`Character ${characterId} defaultModelBinding.provider must be set`);
   }
 
-  if (!isNonBlankString(binding.model)) {
+  if (!isStableString(binding.model)) {
     throw new Error(`Character ${characterId} defaultModelBinding.model must be set`);
   }
 
@@ -200,7 +223,7 @@ function validateModelBinding(value: unknown, characterId: string): void {
 
   if (
     binding.fallbackModel !== undefined &&
-    !isNonBlankString(binding.fallbackModel)
+    !isStableString(binding.fallbackModel)
   ) {
     throw new Error(
       `Character ${characterId} defaultModelBinding.fallbackModel must be a non-empty string`,
@@ -220,4 +243,8 @@ function requireIsoTimestamp(value: unknown, fieldName: string): void {
 
 function isNonBlankString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function isStableString(value: unknown): value is string {
+  return isNonBlankString(value) && value === value.trim();
 }

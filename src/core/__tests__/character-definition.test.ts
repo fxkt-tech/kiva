@@ -59,16 +59,16 @@ describe("character definitions", () => {
 
   it("rejects non-object entries", () => {
     expect(() => validateCharacterDefinitions([null])).toThrow(
-      "Character definition must be an object",
+      "Character definition[0] must be an object",
     );
   });
 
   it.each([
-    ["blank id", { id: "" }, "Character definition id must not be blank"],
+    ["blank id", { id: "" }, "Character definition[0] id must not be blank"],
     [
       "whitespace id",
       { id: " calm-analyst" },
-      "Character definition id must not include leading or trailing whitespace",
+      "Character definition[0] id must not include leading or trailing whitespace",
     ],
     ["blank name", { name: "" }, "Character calm-analyst must include a name"],
   ] satisfies Array<[string, Partial<CharacterDefinition>, string]>)(
@@ -177,10 +177,32 @@ describe("character definitions", () => {
       "Character calm-analyst defaultModelBinding.provider must be set",
     ],
     [
+      "provider whitespace",
+      {
+        provider: " mock",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+      },
+      "Character calm-analyst defaultModelBinding.provider must be set",
+    ],
+    [
       "model",
       {
         provider: "mock",
         model: "",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+      },
+      "Character calm-analyst defaultModelBinding.model must be set",
+    ],
+    [
+      "model whitespace",
+      {
+        provider: "mock",
+        model: "mock-model ",
         temperature: 0.7,
         maxTokens: 1000,
         responseFormat: "json",
@@ -199,12 +221,34 @@ describe("character definitions", () => {
       "Character calm-analyst defaultModelBinding.temperature must be a finite number",
     ],
     [
+      "temperature NaN",
+      {
+        provider: "mock",
+        model: "mock-model",
+        temperature: NaN,
+        maxTokens: 1000,
+        responseFormat: "json",
+      },
+      "Character calm-analyst defaultModelBinding.temperature must be a finite number",
+    ],
+    [
       "maxTokens",
       {
         provider: "mock",
         model: "mock-model",
         temperature: 0.7,
         maxTokens: 0,
+        responseFormat: "json",
+      },
+      "Character calm-analyst defaultModelBinding.maxTokens must be a positive integer",
+    ],
+    [
+      "maxTokens decimal",
+      {
+        provider: "mock",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 1000.5,
         responseFormat: "json",
       },
       "Character calm-analyst defaultModelBinding.maxTokens must be a positive integer",
@@ -229,6 +273,18 @@ describe("character definitions", () => {
         maxTokens: 1000,
         responseFormat: "json",
         fallbackModel: "",
+      },
+      "Character calm-analyst defaultModelBinding.fallbackModel must be a non-empty string",
+    ],
+    [
+      "fallbackModel whitespace",
+      {
+        provider: "mock",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+        fallbackModel: " mock-fallback",
       },
       "Character calm-analyst defaultModelBinding.fallbackModel must be a non-empty string",
     ],
@@ -266,5 +322,16 @@ describe("character definitions", () => {
     expect(character).not.toHaveProperty("team");
     expect(character).not.toHaveProperty("mechanicKey");
     expect(character).not.toHaveProperty("visibilityRules");
+  });
+
+  it.each([
+    ["faction", { faction: "good" }],
+    ["team", { team: "god" }],
+    ["mechanicKey", { mechanicKey: "seer_check" }],
+    ["visibilityRules", { visibilityRules: ["own_role"] }],
+  ])("rejects gameplay role field %s at runtime", (field, roleField) => {
+    expect(() =>
+      validateCharacterDefinitions([{ ...validCharacter(), ...roleField }]),
+    ).toThrow(`Character definition[0] must not include role field: ${field}`);
   });
 });
