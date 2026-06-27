@@ -48,6 +48,21 @@ export class MockLlmClient implements LlmClient {
   }
 }
 
+export class LocalHeuristicLlmClient implements LlmClient {
+  async generateJson(
+    request: LlmGenerateJsonRequest,
+  ): Promise<LlmGenerateJsonResult> {
+    const parsed = localOutputForRequest(request);
+
+    return {
+      provider: request.modelBinding.provider,
+      model: request.modelBinding.model,
+      rawText: JSON.stringify(parsed),
+      parsed,
+    };
+  }
+}
+
 export type OpenAICompatibleLlmClientInput = {
   readonly baseUrl: string;
   readonly apiKey: string;
@@ -131,4 +146,37 @@ function stripJsonFence(rawText: string): string {
   const trimmed = rawText.trim();
   const fenced = /^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(trimmed);
   return fenced ? fenced[1].trim() : trimmed;
+}
+
+function localOutputForRequest(
+  request: LlmGenerateJsonRequest,
+): Record<string, unknown> {
+  const userContent = request.messages
+    .filter((message) => message.role === "user")
+    .map((message) => message.content)
+    .join("\n");
+
+  if (request.schemaName === "werewolf_speech_v1") {
+    return { text: "我先根据目前能看到的信息给出自己的判断。" };
+  }
+
+  if (request.schemaName === "werewolf_action_v1") {
+    if (
+      userContent.includes("witch_antidote_decided") ||
+      userContent.includes("witch_poison_decided")
+    ) {
+      return { used: false, targetPlayerId: null };
+    }
+
+    if (userContent.includes("vote_cast")) {
+      return { targetPlayerId: null };
+    }
+
+    const targetPlayerId = /可选目标：[\s\S]*?playerId=([^\s]+)/.exec(
+      userContent,
+    )?.[1];
+    return { targetPlayerId: targetPlayerId ?? null };
+  }
+
+  return {};
 }

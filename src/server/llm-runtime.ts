@@ -1,4 +1,8 @@
-import { OpenAICompatibleLlmClient, type LlmClient } from "@/core/llm";
+import {
+  LocalHeuristicLlmClient,
+  OpenAICompatibleLlmClient,
+  type LlmClient,
+} from "@/core/llm";
 
 type RuntimeEnv = Partial<
   Pick<
@@ -20,7 +24,7 @@ export function createRuntimeLlmClient(
   const apiKey = env.OPENAI_COMPATIBLE_API_KEY?.trim();
 
   if (!baseUrl || !apiKey) {
-    return undefined;
+    return new LocalHeuristicLlmClient();
   }
 
   return new OpenAICompatibleLlmClient({

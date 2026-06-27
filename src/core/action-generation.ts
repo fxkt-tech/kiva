@@ -53,6 +53,7 @@ export async function generateActionDraft(
     events: input.events,
     viewerPlayerId: playerId,
   });
+  const legalTargetIds = legalTargetIdsForDraft(input.game, input.events, input.draft);
 
   try {
     const output = await input.llmClient.generateJson({
@@ -68,7 +69,12 @@ export async function generateActionDraft(
           content: [
             `draft=${input.draft.type}`,
             "玩家名单：",
-            ...context.roster.map((player) => `${player.seatNo} ${player.name}`),
+            ...context.roster.map(
+              (player) =>
+                `${player.seatNo} ${player.name} playerId=${player.playerId}`,
+            ),
+            "可选目标：",
+            ...legalTargetIds.map((targetPlayerId) => `playerId=${targetPlayerId}`),
             "可见事件：",
             ...context.timeline.map((item) => `#${item.index} ${item.title}`),
             '输出字段：targetPlayerId，可选 used。弃票用 {"targetPlayerId":null}。',
@@ -112,6 +118,27 @@ export async function generateActionDraft(
         createdAt: input.createdAt,
       }),
     };
+  }
+}
+
+function legalTargetIdsForDraft(
+  game: Game,
+  events: readonly GameEvent[],
+  draft: ActionDraft,
+): readonly PlayerId[] {
+  switch (draft.type) {
+    case "seer_check_selected":
+      return legalNightTargets(game, events, "seer_check", draft.actorPlayerId);
+    case "wolf_kill_selected":
+      return legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId);
+    case "witch_antidote_decided":
+      return legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId);
+    case "witch_poison_decided":
+      return legalNightTargets(game, events, "witch_poison", draft.actorPlayerId);
+    case "vote_cast":
+      return deriveGameState(game.players, events).alivePlayerIds.filter(
+        (playerId) => playerId !== draft.payload.voterPlayerId,
+      );
   }
 }
 
