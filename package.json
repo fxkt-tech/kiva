@@ -10,6 +10,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "seed:roles": "tsx src/scripts/seed-library.ts roles",
+    "seed:characters": "tsx src/scripts/seed-library.ts characters",
+    "seed:presets": "tsx src/scripts/seed-library.ts presets",
+    "seed:library": "tsx src/scripts/seed-library.ts all",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -31,6 +35,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "postcss": "^8.5.15",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"
   }
