@@ -35,12 +35,42 @@ export function ValidationPanel({
       ) : (
         <div className="mt-4 space-y-4">
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <Status label="Valid" value={diagnostic.valid ? "yes" : "no"} />
+            <Status
+              label="Validation"
+              value={diagnostic.valid ? "valid" : "invalid"}
+              tone={diagnostic.valid ? "good" : "bad"}
+            />
             <Status
               label="Refs"
               value={String(diagnostic.references.length)}
             />
+            {typeof diagnostic.canCreateGame === "boolean" ? (
+              <Status
+                label="Can create game"
+                value={diagnostic.canCreateGame ? "yes" : "no"}
+                tone={diagnostic.canCreateGame ? "good" : "bad"}
+              />
+            ) : null}
           </div>
+          <section>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+              References
+            </h3>
+            {diagnostic.references.length === 0 ? (
+              <p className="mt-2 text-sm text-zinc-500">No references.</p>
+            ) : (
+              <ul className="mt-2 space-y-2 text-sm text-zinc-300">
+                {diagnostic.references.map((reference) => (
+                  <li
+                    key={reference}
+                    className="rounded border border-zinc-800 bg-zinc-900/55 px-2 py-1"
+                  >
+                    {reference}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
           <section>
             <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
               Messages
@@ -74,14 +104,27 @@ export function ValidationPanel({
 function Status({
   label,
   value,
+  tone = "neutral",
 }: {
   readonly label: string;
   readonly value: string;
+  readonly tone?: "neutral" | "good" | "bad";
 }) {
   return (
     <div className="rounded border border-zinc-800 bg-zinc-900/55 px-3 py-2">
       <div className="text-xs text-zinc-500">{label}</div>
-      <div className="mt-1 font-mono text-sm text-zinc-100">{value}</div>
+      <div
+        className={[
+          "mt-1 font-mono text-sm",
+          tone === "good"
+            ? "text-emerald-300"
+            : tone === "bad"
+              ? "text-red-300"
+              : "text-zinc-100",
+        ].join(" ")}
+      >
+        {value}
+      </div>
     </div>
   );
 }
