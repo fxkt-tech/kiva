@@ -17,7 +17,15 @@ const HARD_CODED_SEATS = [
 ] as const;
 
 const CHARACTER_NAMES = ["秦川", "林夏", "周知", "许棠", "陈墨", "沈岚"];
-const ROLE_ONLY_FIELDS = ["faction", "team", "mechanicKey"] as const;
+const ROLE_ONLY_FIELDS = [
+  "role",
+  "faction",
+  "team",
+  "mechanicKey",
+  "visibilityRules",
+  "nightOrder",
+  "rolePrompt",
+] as const;
 
 describe("seed library", () => {
   test("validates seed roles, characters, and presets", () => {
