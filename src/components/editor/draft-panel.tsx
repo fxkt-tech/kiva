@@ -26,8 +26,8 @@ export function DraftPanel({
 }: DraftPanelProps) {
   if (!draft) {
     return (
-      <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
-        <div className="border-b border-zinc-800 px-4 py-3">
+      <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
+        <div className="shrink-0 border-b border-zinc-800 px-4 py-3">
           <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
         </div>
         <div className="px-4 py-8 text-sm text-zinc-500">
@@ -41,8 +41,8 @@ export function DraftPanel({
   const latestGeneration = latestGenerationForDraft(generations, draft.id);
 
   return (
-    <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="flex items-start justify-between gap-3 border-b border-zinc-800 px-4 py-3">
+    <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
+      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-800 px-4 py-3">
         <div>
           <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
           <div className="mt-1 text-xs text-zinc-500">
@@ -53,7 +53,7 @@ export function DraftPanel({
           {draft.type}
         </span>
       </div>
-      <div className="space-y-4 p-4">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
         <div>
           <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
             Summary

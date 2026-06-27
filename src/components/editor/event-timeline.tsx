@@ -20,8 +20,8 @@ export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
   });
 
   return (
-    <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="border-b border-zinc-800 px-4 py-3">
+    <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
+      <div className="shrink-0 border-b border-zinc-800 px-4 py-3">
         <h2 className="text-sm font-semibold text-zinc-100">Timeline</h2>
       </div>
       {orderedEvents.length === 0 ? (
@@ -29,7 +29,7 @@ export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
           No confirmed events yet.
         </div>
       ) : (
-        <ol className="divide-y divide-zinc-800">
+        <ol className="min-h-0 flex-1 divide-y divide-zinc-800 overflow-y-auto">
           {orderedEvents.map((event) => {
             const active = event.status === "active";
             const presented = formatEventForHost(event, players);

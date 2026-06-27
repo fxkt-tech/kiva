@@ -12,14 +12,14 @@ export function GameBoard({ game, events }: GameBoardProps) {
   const deadPlayerIds = new Set(state.deadPlayerIds);
 
   return (
-    <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
+    <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
+      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3">
         <h2 className="text-sm font-semibold text-zinc-100">Board</h2>
         <div className="text-xs text-zinc-500">
           {state.currentPhase} · Day {state.dayNumber}
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-y-auto p-3 sm:grid-cols-2 xl:grid-cols-3">
         {[...game.players]
           .sort((left, right) => left.seatNo - right.seatNo)
           .map((player) => {

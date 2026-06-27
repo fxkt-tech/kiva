@@ -25,63 +25,66 @@ export default async function EditorPage({ params }: EditorPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-5 text-zinc-100 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-5">
-        <header className="flex flex-col gap-4 border-b border-zinc-800 pb-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <Link href="/" className="text-xs text-zinc-500 hover:text-zinc-300">
-              Local games
-            </Link>
-            <h1 className="mt-2 truncate text-2xl font-semibold text-zinc-50">
-              {record.game.title}
-            </h1>
-            <p className="mt-1 truncate text-xs text-zinc-500">
-              {record.game.id}
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
+    <main className="h-screen overflow-hidden bg-zinc-950 p-4 text-zinc-100 sm:p-5">
+      <div className="flex h-full min-h-0 flex-col gap-4">
+        <header className="flex shrink-0 flex-col gap-3 border-b border-zinc-800 pb-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
             <Link
-              href={`/games/${record.game.id}/preview`}
-              className="rounded-md border border-zinc-700 px-4 py-2 text-center text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
-              target="_blank"
+              href="/"
+              className="shrink-0 rounded-md border border-zinc-800 px-3 py-2 text-xs font-medium text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-100"
             >
-              Open preview
+              Back
             </Link>
+            <div className="min-w-0">
+              <h1 className="truncate text-xl font-semibold text-zinc-50">
+                {record.game.title}
+              </h1>
+              <p className="mt-1 truncate text-xs text-zinc-500">
+                {record.game.id}
+              </p>
+            </div>
           </div>
+          <Link
+            href={`/games/${record.game.id}/preview`}
+            className="rounded-md border border-zinc-700 px-4 py-2 text-center text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+            target="_blank"
+          >
+            Open preview
+          </Link>
         </header>
 
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="flex min-w-0 flex-col gap-5">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.72fr)]">
+          <div className="grid min-h-0 gap-4 lg:grid-rows-[minmax(210px,0.44fr)_minmax(0,1fr)]">
             <GameBoard game={record.game} events={record.events} />
-            <EventTimeline
-              gameId={typedGameId}
-              events={record.events}
-              players={record.game.players}
-            />
-          </div>
-
-          <aside className="flex min-w-0 flex-col gap-5">
             <DraftPanel
               gameId={typedGameId}
               draft={record.draft}
               players={record.game.players}
               generations={record.generations}
             />
-            <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
-              <div className="border-b border-zinc-800 px-4 py-3">
+          </div>
+
+          <div className="grid min-h-0 gap-4 lg:grid-rows-[minmax(0,1fr)_minmax(210px,0.38fr)]">
+            <EventTimeline
+              gameId={typedGameId}
+              events={record.events}
+              players={record.game.players}
+            />
+            <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
+              <div className="shrink-0 border-b border-zinc-800 px-4 py-3">
                 <h2 className="text-sm font-semibold text-zinc-100">
                   Embedded preview
                 </h2>
               </div>
-              <div className="p-3">
+              <div className="min-h-0 flex-1 p-3">
                 <iframe
                   title="Public playback preview"
                   src={`/games/${record.game.id}/preview`}
-                  className="aspect-video w-full rounded-md border border-zinc-800 bg-black"
+                  className="h-full w-full rounded-md border border-zinc-800 bg-black"
                 />
               </div>
             </section>
-          </aside>
+          </div>
         </div>
       </div>
     </main>
