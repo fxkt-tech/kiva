@@ -14,12 +14,8 @@ const gameActions = createGameActions(createGameRepository(), {
 
 export async function createGameAction() {
   const record = await gameActions.createGame();
+  await gameActions.continueGame(record.game.id);
   redirect(editorPath(record.game.id));
-}
-
-export async function continueGameAction(gameId: GameId) {
-  await gameActions.continueGame(gameId);
-  revalidatePath(editorPath(gameId));
 }
 
 export async function confirmDraftAction(gameId: GameId) {

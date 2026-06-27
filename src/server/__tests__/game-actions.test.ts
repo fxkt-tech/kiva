@@ -46,7 +46,7 @@ describe("game actions", () => {
     await expect(actions.getGame(created.game.id)).resolves.toEqual(created);
   });
 
-  it("continues a game, confirms the draft, appends one official event, and clears draft", async () => {
+  it("continues a game, confirms the draft, appends one official event, and plans the next draft", async () => {
     const { actions, repository } = await createActions();
     const created = await actions.createGame();
 
@@ -56,7 +56,10 @@ describe("game actions", () => {
 
     const confirmed = await actions.confirmDraft(created.game.id);
 
-    expect(confirmed.draft).toBeNull();
+    expect(confirmed.draft).toMatchObject({
+      id: expect.stringMatching(/^draft_/),
+      type: "role_assigned",
+    });
     expect(getActiveEvents(confirmed.events)).toHaveLength(1);
     expect(confirmed.events[0]).toMatchObject({
       id: expect.stringMatching(/^event_1_/),
@@ -72,7 +75,10 @@ describe("game actions", () => {
         status: event.status,
         type: event.type,
       })),
-      draft: null,
+      draft: {
+        id: confirmed.draft?.id,
+        type: confirmed.draft?.type,
+      },
       generations: [],
     });
   });
@@ -361,7 +367,9 @@ describe("game actions", () => {
     await editPromise;
     const confirmed = await confirmPromise;
 
-    expect(confirmed.draft).toBeNull();
+    expect(confirmed.draft).toMatchObject({
+      type: "seer_check_selected",
+    });
     expect(confirmed.events.at(-1)).toMatchObject({
       type: "wolf_kill_selected",
       targetPlayerIds: [editedTarget],

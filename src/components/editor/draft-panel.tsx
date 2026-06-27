@@ -30,7 +30,7 @@ export function DraftPanel({
           <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
         </div>
         <div className="px-4 py-8 text-sm text-zinc-500">
-          No draft. Continue the game to plan the next event.
+          No draft. The game has no pending step.
         </div>
       </section>
     );

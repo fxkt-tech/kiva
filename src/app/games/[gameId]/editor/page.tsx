@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { continueGameAction } from "@/app/actions";
 import { DraftPanel } from "@/components/editor/draft-panel";
 import { EventTimeline } from "@/components/editor/event-timeline";
 import { GameBoard } from "@/components/editor/game-board";
@@ -41,14 +40,6 @@ export default async function EditorPage({ params }: EditorPageProps) {
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <form action={continueGameAction.bind(null, typedGameId)}>
-              <button
-                type="submit"
-                className="w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-white sm:w-auto"
-              >
-                Continue
-              </button>
-            </form>
             <Link
               href={`/games/${record.game.id}/preview`}
               className="rounded-md border border-zinc-700 px-4 py-2 text-center text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"

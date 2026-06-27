@@ -115,11 +115,34 @@ export function createGameActions(
           index: nextIndex,
           createdAt: updatedAt,
         });
-        const nextRecord: GameRecord = {
-          game: { ...record.game, updatedAt },
-          events: appendEvent(record.events, nextEvent),
+        const nextEvents = appendEvent(record.events, nextEvent);
+        const updatedGame = { ...record.game, updatedAt };
+        const confirmedRecord: GameRecord = {
+          game: updatedGame,
+          events: nextEvents,
           draft: null,
           generations: record.generations,
+        };
+        const plannedDraft = planNextDraft({
+          game: updatedGame,
+          events: nextEvents,
+          draftId: createDraftId(),
+          createdAt: updatedAt,
+        });
+        const generatedDraft = plannedDraft
+          ? await maybeGenerateDraft({
+              record: confirmedRecord,
+              draft: plannedDraft,
+              llmClient: options.llmClient,
+              createdAt: updatedAt,
+            })
+          : { draft: null, generation: null };
+        const nextRecord: GameRecord = {
+          ...confirmedRecord,
+          draft: generatedDraft.draft,
+          generations: generatedDraft.generation
+            ? [...record.generations, generatedDraft.generation]
+            : record.generations,
         };
 
         await repository.save(nextRecord);
