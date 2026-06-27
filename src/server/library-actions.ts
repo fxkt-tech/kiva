@@ -44,125 +44,147 @@ export function createLibraryActions({
 
   return {
     async getLibrary(): Promise<LibraryActionsRecord> {
-      const library = await loadLibrary();
-      return {
-        ...library,
-        diagnostics: diagnosticsForLibrary(library),
-      };
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        return {
+          ...library,
+          diagnostics: diagnosticsForLibrary(library),
+        };
+      });
     },
 
     async saveRole(role: RoleDefinition): Promise<RoleDefinition> {
-      const library = await loadLibrary();
-      const roles = upsertById(library.roles, role);
-      await saveLibrary({ ...library, roles });
-      return role;
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const roles = upsertById(library.roles, role);
+        await saveLibrary({ ...library, roles });
+        return role;
+      });
     },
 
     async saveCharacter(
       character: CharacterDefinition,
     ): Promise<CharacterDefinition> {
-      const library = await loadLibrary();
-      const characters = upsertById(library.characters, character);
-      await saveLibrary({ ...library, characters });
-      return character;
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const characters = upsertById(library.characters, character);
+        await saveLibrary({ ...library, characters });
+        return character;
+      });
     },
 
     async savePreset(preset: GamePreset): Promise<GamePreset> {
-      const library = await loadLibrary();
-      const presets = upsertById(library.presets, preset);
-      await saveLibrary({ ...library, presets });
-      return preset;
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const presets = upsertById(library.presets, preset);
+        await saveLibrary({ ...library, presets });
+        return preset;
+      });
     },
 
     async duplicateRole(id: string): Promise<RoleDefinition> {
-      const library = await loadLibrary();
-      const source = requireById(library.roles, id, "Role");
-      const timestamp = now();
-      const copy: RoleDefinition = {
-        ...source,
-        id: nextCopyId(
-          id,
-          library.roles.map((role) => role.id),
-        ),
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      };
-      await saveLibrary({ ...library, roles: [...library.roles, copy] });
-      return copy;
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const source = requireById(library.roles, id, "Role");
+        const timestamp = now();
+        const copy: RoleDefinition = {
+          ...source,
+          id: nextCopyId(
+            id,
+            library.roles.map((role) => role.id),
+          ),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        await saveLibrary({ ...library, roles: [...library.roles, copy] });
+        return copy;
+      });
     },
 
     async duplicateCharacter(id: string): Promise<CharacterDefinition> {
-      const library = await loadLibrary();
-      const source = requireById(library.characters, id, "Character");
-      const timestamp = now();
-      const copy: CharacterDefinition = {
-        ...source,
-        id: nextCopyId(
-          id,
-          library.characters.map((character) => character.id),
-        ),
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      };
-      await saveLibrary({
-        ...library,
-        characters: [...library.characters, copy],
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const source = requireById(library.characters, id, "Character");
+        const timestamp = now();
+        const copy: CharacterDefinition = {
+          ...source,
+          id: nextCopyId(
+            id,
+            library.characters.map((character) => character.id),
+          ),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        await saveLibrary({
+          ...library,
+          characters: [...library.characters, copy],
+        });
+        return copy;
       });
-      return copy;
     },
 
     async duplicatePreset(id: string): Promise<GamePreset> {
-      const library = await loadLibrary();
-      const source = requireById(library.presets, id, "Game preset");
-      const timestamp = now();
-      const copy: GamePreset = {
-        ...source,
-        id: nextCopyId(
-          id,
-          library.presets.map((preset) => preset.id),
-        ),
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      };
-      await saveLibrary({ ...library, presets: [...library.presets, copy] });
-      return copy;
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const source = requireById(library.presets, id, "Game preset");
+        const timestamp = now();
+        const copy: GamePreset = {
+          ...source,
+          id: nextCopyId(
+            id,
+            library.presets.map((preset) => preset.id),
+          ),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        await saveLibrary({ ...library, presets: [...library.presets, copy] });
+        return copy;
+      });
     },
 
     async setRoleEnabled(
       id: string,
       enabled: boolean,
     ): Promise<RoleDefinition> {
-      const library = await loadLibrary();
-      const role = requireById(library.roles, id, "Role");
-      const updatedRole = { ...role, enabled, updatedAt: now() };
-      const roles = replaceById(library.roles, updatedRole);
-      await saveLibrary({ ...library, roles });
-      return updatedRole;
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const role = requireById(library.roles, id, "Role");
+        const updatedRole = { ...role, enabled, updatedAt: now() };
+        const roles = replaceById(library.roles, updatedRole);
+        await saveLibrary({ ...library, roles });
+        return updatedRole;
+      });
     },
 
     async setCharacterEnabled(
       id: string,
       enabled: boolean,
     ): Promise<CharacterDefinition> {
-      const library = await loadLibrary();
-      const character = requireById(library.characters, id, "Character");
-      const updatedCharacter = { ...character, enabled, updatedAt: now() };
-      const characters = replaceById(library.characters, updatedCharacter);
-      await saveLibrary({ ...library, characters });
-      return updatedCharacter;
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const character = requireById(library.characters, id, "Character");
+        const updatedCharacter = { ...character, enabled, updatedAt: now() };
+        const characters = replaceById(library.characters, updatedCharacter);
+        await saveLibrary({ ...library, characters });
+        return updatedCharacter;
+      });
     },
 
     async setPresetEnabled(id: string, enabled: boolean): Promise<GamePreset> {
-      const library = await loadLibrary();
-      const preset = requireById(library.presets, id, "Game preset");
-      const updatedPreset = { ...preset, enabled, updatedAt: now() };
-      const presets = replaceById(library.presets, updatedPreset);
-      await saveLibrary({ ...library, presets });
-      return updatedPreset;
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const preset = requireById(library.presets, id, "Game preset");
+        const updatedPreset = { ...preset, enabled, updatedAt: now() };
+        const presets = replaceById(library.presets, updatedPreset);
+        await saveLibrary({ ...library, presets });
+        return updatedPreset;
+      });
     },
 
     async createGameFromPreset(presetId: string): Promise<GameRecord> {
-      return gameActions.createGameFromPresetId(presetId);
+      return libraryRepository.withLibraryLock(async () =>
+        gameActions.createGameFromPresetId(presetId),
+      );
     },
   };
 }

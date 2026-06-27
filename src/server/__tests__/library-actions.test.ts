@@ -7,7 +7,11 @@ import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import { createGameRepository } from "../game-repository";
 import { createLibraryActions } from "../library-actions";
-import { createLibraryRepository } from "../library-repository";
+import {
+  createLibraryRepository,
+  type LibraryRecord,
+  type LibraryRepository,
+} from "../library-repository";
 
 const tempDirs: string[] = [];
 const NOW = "2026-06-27T12:34:56.000Z";
@@ -301,4 +305,191 @@ describe("library actions", () => {
       presets: seedPresets,
     });
   });
+
+  it("serializes concurrent library writes so both updates are preserved", async () => {
+    const libraryRepository = createRaceDetectingLibraryRepository();
+    const gameRepository = createGameRepository(await createTempDir());
+    const actions = createLibraryActions({ libraryRepository, gameRepository });
+
+    await Promise.all([
+      actions.saveRole({
+        ...seedRoles[0],
+        systemPrompt: "并发更新后的狼人提示词",
+        updatedAt: NOW,
+      }),
+      actions.saveCharacter({
+        ...seedCharacters[0],
+        systemPrompt: "并发更新后的角色卡提示词",
+        updatedAt: NOW,
+      }),
+    ]);
+
+    const saved = await libraryRepository.loadAll();
+    expect(saved.roles.find((role) => role.id === "werewolf")).toMatchObject({
+      systemPrompt: "并发更新后的狼人提示词",
+    });
+    expect(
+      saved.characters.find((character) => character.id === "qin_chuan"),
+    ).toMatchObject({
+      systemPrompt: "并发更新后的角色卡提示词",
+    });
+  });
+
+  it("reads library diagnostics under the library lock", async () => {
+    const libraryRepository = createLockCountingLibraryRepository();
+    const gameRepository = createGameRepository(await createTempDir());
+    const actions = createLibraryActions({ libraryRepository, gameRepository });
+
+    await actions.getLibrary();
+
+    expect(libraryRepository.lockCalls).toBe(1);
+  });
+
+  it("creates games from presets under the library lock", async () => {
+    const libraryRepository = createLockCountingLibraryRepository();
+    const gameRepository = createGameRepository(await createTempDir());
+    const actions = createLibraryActions({ libraryRepository, gameRepository });
+
+    const record = await actions.createGameFromPreset("six_player_standard");
+
+    expect(record.game.players).toHaveLength(6);
+    expect(libraryRepository.lockCalls).toBe(1);
+  });
 });
+
+function createRaceDetectingLibraryRepository(): LibraryRepository {
+  let record = cloneLibraryRecord({
+    roles: seedRoles,
+    characters: seedCharacters,
+    presets: seedPresets,
+  });
+  let lockTail: Promise<void> = Promise.resolve();
+  let inLock = false;
+  let hasUsedLock = false;
+  let unlockedLoadAllCalls = 0;
+  let releaseConcurrentLoads: (() => void) | null = null;
+  const concurrentLoadsReady = new Promise<void>((resolve) => {
+    releaseConcurrentLoads = resolve;
+  });
+
+  async function loadAll() {
+    const snapshot = cloneLibraryRecord(record);
+    if (!inLock && !hasUsedLock) {
+      unlockedLoadAllCalls += 1;
+      if (unlockedLoadAllCalls === 2) {
+        releaseConcurrentLoads?.();
+      }
+      if (unlockedLoadAllCalls <= 2) {
+        await concurrentLoadsReady;
+      }
+    }
+    return snapshot;
+  }
+
+  return {
+    async getRoles() {
+      return (await loadAll()).roles;
+    },
+    async getCharacters() {
+      return (await loadAll()).characters;
+    },
+    async getPresets() {
+      return (await loadAll()).presets;
+    },
+    async getAll() {
+      return loadAll();
+    },
+    loadAll,
+    async saveRoles(roles) {
+      record = { ...record, roles: [...roles] };
+    },
+    async saveCharacters(characters) {
+      record = { ...record, characters: [...characters] };
+    },
+    async savePresets(presets) {
+      record = { ...record, presets: [...presets] };
+    },
+    async saveAll(nextRecord) {
+      record = cloneLibraryRecord(nextRecord);
+    },
+    async withLibraryLock(operation) {
+      const previous = lockTail;
+      let release: () => void = () => {};
+      lockTail = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await previous;
+      hasUsedLock = true;
+      inLock = true;
+      try {
+        return await operation();
+      } finally {
+        inLock = false;
+        release();
+      }
+    },
+  };
+}
+
+function createLockCountingLibraryRepository(): LibraryRepository & {
+  readonly lockCalls: number;
+} {
+  let lockCalls = 0;
+  const repository = createMemoryLibraryRepository();
+
+  return {
+    ...repository,
+    get lockCalls() {
+      return lockCalls;
+    },
+    async withLibraryLock(operation) {
+      lockCalls += 1;
+      return operation();
+    },
+  };
+}
+
+function createMemoryLibraryRepository(): LibraryRepository {
+  let record = cloneLibraryRecord({
+    roles: seedRoles,
+    characters: seedCharacters,
+    presets: seedPresets,
+  });
+
+  return {
+    async getRoles() {
+      return cloneLibraryRecord(record).roles;
+    },
+    async getCharacters() {
+      return cloneLibraryRecord(record).characters;
+    },
+    async getPresets() {
+      return cloneLibraryRecord(record).presets;
+    },
+    async getAll() {
+      return cloneLibraryRecord(record);
+    },
+    async loadAll() {
+      return cloneLibraryRecord(record);
+    },
+    async saveRoles(roles) {
+      record = { ...record, roles: [...roles] };
+    },
+    async saveCharacters(characters) {
+      record = { ...record, characters: [...characters] };
+    },
+    async savePresets(presets) {
+      record = { ...record, presets: [...presets] };
+    },
+    async saveAll(nextRecord) {
+      record = cloneLibraryRecord(nextRecord);
+    },
+    async withLibraryLock(operation) {
+      return operation();
+    },
+  };
+}
+
+function cloneLibraryRecord(record: LibraryRecord): LibraryRecord {
+  return structuredClone(record) as LibraryRecord;
+}

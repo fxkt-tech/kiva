@@ -562,6 +562,9 @@ function fakeLibraryRepository(
     async saveCharacters() {},
     async savePresets() {},
     async saveAll() {},
+    async withLibraryLock(operation) {
+      return operation();
+    },
     ...overrides,
   };
 }
