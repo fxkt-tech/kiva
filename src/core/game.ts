@@ -1,6 +1,10 @@
 import type { CharacterDefinition } from "./character-definition";
-import type { GamePreset } from "./game-preset";
-import { createPlayerSnapshot, type PlayerSnapshot } from "./player";
+import { validateGamePresets, type GamePreset } from "./game-preset";
+import {
+  createPlayerSnapshot,
+  validateSixPlayerBoard,
+  type PlayerSnapshot,
+} from "./player";
 import type { RoleDefinition } from "./role-definition";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
@@ -43,6 +47,11 @@ export type CreateGameFromPresetInput = {
 };
 
 export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
+  validateGamePresets([input.preset], {
+    roles: input.roles,
+    characters: input.characters,
+  });
+
   if (input.preset.seatAssignments === null) {
     throw new Error(`Game preset ${input.preset.id} must include seatAssignments`);
   }
@@ -90,7 +99,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
     });
   });
 
-  return {
+  const game: Game = {
     id: input.gameId,
     title: input.title,
     status: "drafting",
@@ -99,6 +108,13 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
     createdAt: input.createdAt,
     updatedAt: input.createdAt,
   };
+
+  const boardValidation = validateSixPlayerBoard(game.players, input.ruleset);
+  if (!boardValidation.ok) {
+    throw new Error(`Game preset ${input.preset.id} does not match ruleset`);
+  }
+
+  return game;
 }
 
 export function createSeedGame(input: CreateSeedGameInput): Game {

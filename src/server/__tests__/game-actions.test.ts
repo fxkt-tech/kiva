@@ -46,6 +46,12 @@ describe("game actions", () => {
       events: [],
       draft: null,
     });
+    expect(created.game.players[0]).toMatchObject({
+      characterSourceId: "qin_chuan",
+      roleSourceId: "werewolf",
+      roleSystemPromptSnapshot: seedRoles[0].systemPrompt,
+      characterSystemPromptSnapshot: seedCharacters[0].systemPrompt,
+    });
     await expect(repository.get(created.game.id)).resolves.toEqual(created);
     await expect(actions.getGame(created.game.id)).resolves.toEqual(created);
   });

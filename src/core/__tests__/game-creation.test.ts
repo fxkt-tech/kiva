@@ -128,4 +128,51 @@ describe("game creation", () => {
       }),
     ).toThrow("Role is not supported by current ruleset: hunter");
   });
+
+  it("rejects presets that reference missing role definitions", () => {
+    const preset = {
+      ...seedPresets[0]!,
+      seatAssignments: seedPresets[0]!.seatAssignments!.map((seat, index) =>
+        index === 0 ? { ...seat, roleId: "missing_role" } : seat,
+      ),
+      roleIds: ["missing_role", ...seedPresets[0]!.roleIds.slice(1)],
+    } satisfies GamePreset;
+
+    expect(() =>
+      createGameFromPreset({
+        gameId,
+        title: "Missing role",
+        createdAt,
+        ruleset: createDefaultRuleset(),
+        preset,
+        roles: seedRoles,
+        characters: seedCharacters,
+      }),
+    ).toThrow("references unknown role: missing_role");
+  });
+
+  it("rejects presets that reference missing character definitions", () => {
+    const preset = {
+      ...seedPresets[0]!,
+      seatAssignments: seedPresets[0]!.seatAssignments!.map((seat, index) =>
+        index === 0 ? { ...seat, characterId: "missing_character" } : seat,
+      ),
+      characterIds: [
+        "missing_character",
+        ...seedPresets[0]!.characterIds.slice(1),
+      ],
+    } satisfies GamePreset;
+
+    expect(() =>
+      createGameFromPreset({
+        gameId,
+        title: "Missing character",
+        createdAt,
+        ruleset: createDefaultRuleset(),
+        preset,
+        roles: seedRoles,
+        characters: seedCharacters,
+      }),
+    ).toThrow("references unknown character: missing_character");
+  });
 });
