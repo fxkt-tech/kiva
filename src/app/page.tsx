@@ -23,14 +23,22 @@ export default async function HomePage() {
               Local games
             </h1>
           </div>
-          <form action={createGameAction}>
-            <button
-              type="submit"
-              className="w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-white sm:w-auto"
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link
+              href="/library"
+              className="rounded-md border border-zinc-700 px-4 py-2 text-center text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
             >
-              New game
-            </button>
-          </form>
+              Library
+            </Link>
+            <form action={createGameAction}>
+              <button
+                type="submit"
+                className="w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-white sm:w-auto"
+              >
+                New game
+              </button>
+            </form>
+          </div>
         </header>
 
         <section className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/45">
