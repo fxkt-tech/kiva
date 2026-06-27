@@ -38,6 +38,7 @@ describe("PlaybackStage", () => {
     expect(html).toContain("Timeline");
     expect(html).toContain("0:00 / 0:06");
     expect(html).toContain("type=\"range\"");
+    expect(html).toContain("Start recording");
     expect(html).toContain("0.5x");
     expect(html).toContain("2x");
     expect(html).toContain("1 / 3");
@@ -122,7 +123,11 @@ function renderStage(
   props: Partial<React.ComponentProps<typeof PlaybackStage>> = {},
 ): string {
   return renderToStaticMarkup(
-    React.createElement(PlaybackStage, { items, ...props }),
+    React.createElement(PlaybackStage, {
+      cleanPreviewHref: "/games/game_1/preview?controls=0",
+      items,
+      ...props,
+    }),
   );
 }
 

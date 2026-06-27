@@ -6,17 +6,20 @@ import {
   playbackTotalDurationMs,
   type PlaybackItem,
 } from "@/core/playback";
+import { RecordingControls } from "./recording-controls";
 
 const SPEED_OPTIONS = [0.5, 1, 1.5, 2] as const;
 type PlaybackSpeed = (typeof SPEED_OPTIONS)[number];
 
 type PlaybackStageProps = {
   readonly items: readonly PlaybackItem[];
+  readonly cleanPreviewHref: string;
   readonly controls?: "visible" | "hidden";
 };
 
 export function PlaybackStage({
   items,
+  cleanPreviewHref,
   controls = "visible",
 }: PlaybackStageProps) {
   const hasItems = items.length > 0;
@@ -177,6 +180,7 @@ export function PlaybackStage({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="font-mono text-zinc-400">{progress}</div>
             <div className="flex flex-wrap items-center gap-2">
+              <RecordingControls cleanPreviewHref={cleanPreviewHref} />
               <label className="flex items-center gap-2 text-xs text-zinc-400">
                 <span>Speed</span>
                 <select
