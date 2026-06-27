@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
   validateCharacterDefinitions,
@@ -22,6 +22,7 @@ export type LibraryRepository = {
   readonly getCharacters: () => Promise<readonly CharacterDefinition[]>;
   readonly getPresets: () => Promise<readonly GamePreset[]>;
   readonly getAll: () => Promise<LibraryRecord>;
+  readonly loadAll: () => Promise<LibraryRecord>;
   readonly saveRoles: (roles: readonly RoleDefinition[]) => Promise<void>;
   readonly saveCharacters: (
     characters: readonly CharacterDefinition[],
@@ -71,8 +72,59 @@ export function createLibraryRepository(rootDir = ".kiva-data"): LibraryReposito
   async function writeJson(path: string, data: unknown): Promise<void> {
     await ensureRootDir();
     const tempPath = `${path}.${randomUUID()}.tmp`;
-    await writeFile(tempPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
-    await rename(tempPath, path);
+    try {
+      await writeFile(tempPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+      await rename(tempPath, path);
+    } catch (error) {
+      await unlinkIfExists(tempPath);
+      throw error;
+    }
+  }
+
+  async function writeJsonBatch(
+    entries: readonly { readonly path: string; readonly data: unknown }[],
+  ): Promise<void> {
+    await ensureRootDir();
+
+    const staged = entries.map((entry) => ({
+      ...entry,
+      tempPath: `${entry.path}.${randomUUID()}.tmp`,
+      backupPath: `${entry.path}.${randomUUID()}.bak`,
+      hadOriginal: false,
+      replaced: false,
+    }));
+
+    try {
+      for (const entry of staged) {
+        await writeFile(
+          entry.tempPath,
+          `${JSON.stringify(entry.data, null, 2)}\n`,
+          "utf8",
+        );
+      }
+
+      for (const entry of staged) {
+        entry.hadOriginal = await moveIfExists(entry.path, entry.backupPath);
+        await rename(entry.tempPath, entry.path);
+        entry.replaced = true;
+      }
+
+      await Promise.all(staged.map((entry) => removeIfExists(entry.backupPath)));
+    } catch (error) {
+      for (const entry of staged) {
+        await unlinkIfExists(entry.tempPath);
+
+        if (entry.replaced) {
+          await unlinkIfExists(entry.path);
+        }
+
+        if (entry.hadOriginal) {
+          await moveIfExists(entry.backupPath, entry.path);
+        }
+      }
+
+      throw error;
+    }
   }
 
   return {
@@ -91,6 +143,13 @@ export function createLibraryRepository(rootDir = ".kiva-data"): LibraryReposito
     },
 
     async getAll() {
+      const roles = await readRoles();
+      const characters = await readCharacters();
+      const presets = await readPresets({ roles, characters });
+      return { roles, characters, presets };
+    },
+
+    async loadAll() {
       const roles = await readRoles();
       const characters = await readCharacters();
       const presets = await readPresets({ roles, characters });
@@ -119,13 +178,44 @@ export function createLibraryRepository(rootDir = ".kiva-data"): LibraryReposito
       const characters = validateCharacterDefinitions(record.characters);
       const presets = validateGamePresets(record.presets, { roles, characters });
 
-      await writeJson(rolesPath, roles);
-      await writeJson(charactersPath, characters);
-      await writeJson(presetsPath, presets);
+      await writeJsonBatch([
+        { path: rolesPath, data: roles },
+        { path: charactersPath, data: characters },
+        { path: presetsPath, data: presets },
+      ]);
     },
   };
 }
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
+}
+
+async function moveIfExists(from: string, to: string): Promise<boolean> {
+  try {
+    await rename(from, to);
+    return true;
+  } catch (error) {
+    if (isNodeError(error) && error.code === "ENOENT") {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
+async function unlinkIfExists(path: string): Promise<void> {
+  try {
+    await unlink(path);
+  } catch (error) {
+    if (isNodeError(error) && error.code === "ENOENT") {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+async function removeIfExists(path: string): Promise<void> {
+  await rm(path, { force: true, recursive: true });
 }

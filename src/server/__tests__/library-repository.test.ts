@@ -1,4 +1,4 @@
-import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -48,6 +48,11 @@ describe("library repository", () => {
     });
 
     await expect(repository.getAll()).resolves.toEqual({
+      roles: seedRoles,
+      characters: seedCharacters,
+      presets: seedPresets,
+    });
+    await expect(repository.loadAll()).resolves.toEqual({
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
@@ -129,5 +134,39 @@ describe("library repository", () => {
       "presets.json",
       "roles.json",
     ]);
+  });
+
+  it("cleans temporary files after a failed single-file write", async () => {
+    const rootDir = await createTempDir();
+    const repository = createLibraryRepository(rootDir);
+
+    await mkdir(join(rootDir, "roles.json"));
+
+    await expect(repository.saveRoles(seedRoles)).rejects.toThrow();
+
+    const filenames = await readdir(rootDir);
+    expect(filenames).toEqual(["roles.json"]);
+  });
+
+  it("replaces stale directory entries during saveAll", async () => {
+    const rootDir = await createTempDir();
+    const repository = createLibraryRepository(rootDir);
+
+    await mkdir(join(rootDir, "characters.json"));
+
+    await repository.saveAll({
+      roles: seedRoles,
+      characters: seedCharacters,
+      presets: seedPresets,
+    });
+
+    await expect(repository.getAll()).resolves.toEqual({
+      roles: seedRoles,
+      characters: seedCharacters,
+      presets: seedPresets,
+    });
+    const filenames = await readdir(rootDir);
+    expect(filenames.some((filename) => filename.endsWith(".tmp"))).toBe(false);
+    expect(filenames.some((filename) => filename.endsWith(".bak"))).toBe(false);
   });
 });

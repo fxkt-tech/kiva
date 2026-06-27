@@ -23,25 +23,25 @@ async function main(): Promise<void> {
       presets: seedPresets,
     });
     console.log(
-      `Seeded library: ${seedRoles.length} roles, ${seedCharacters.length} characters, ${seedPresets.length} presets`,
+      `Seeded role library: ${seedRoles.length} roles, ${seedCharacters.length} characters, ${seedPresets.length} presets`,
     );
     return;
   }
 
   if (target === "roles") {
     await repository.saveRoles(seedRoles);
-    console.log(`Seeded library: ${seedRoles.length} roles`);
+    console.log(`Seeded role library: ${seedRoles.length} roles`);
     return;
   }
 
   if (target === "characters") {
     await repository.saveCharacters(seedCharacters);
-    console.log(`Seeded library: ${seedCharacters.length} characters`);
+    console.log(`Seeded role library: ${seedCharacters.length} characters`);
     return;
   }
 
   await repository.savePresets(seedPresets);
-  console.log(`Seeded library: ${seedPresets.length} presets`);
+  console.log(`Seeded role library: ${seedPresets.length} presets`);
 }
 
 function parseTarget(args: readonly string[]): SeedTarget {
