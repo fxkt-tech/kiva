@@ -1,18 +1,122 @@
-import type { RoleDefinition } from "@/core/role-definition";
+import { saveRoleAction } from "@/app/library/actions";
+import type { ModelBindingSnapshot } from "@/core/player";
+import type {
+  RoleDefinition,
+  RoleMechanicKey,
+  RoleTeam,
+} from "@/core/role-definition";
+import type { Faction } from "@/core/types";
+import { DirtyFormGuard } from "./dirty-form-guard";
 
 export function RoleEditor({ role }: { readonly role: RoleDefinition }) {
+  const lockedContract = isBuiltInRole(role.id);
+
   return (
-    <div className="space-y-4">
-      <EditorHeader eyebrow="Role editor" title={role.name} id={role.id} />
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-        <Field label="Faction" value={role.faction} />
-        <Field label="Team" value={role.team} />
-        <Field label="Mechanic" value={role.mechanicKey} />
-        <Field label="Night order" value={role.nightOrder ?? "none"} />
-      </dl>
-      <PromptBlock title="System prompt" value={role.systemPrompt} />
-      <PromptBlock title="Action prompt" value={role.actionPrompt ?? "none"} />
-    </div>
+    <form action={saveRoleAction} className="space-y-5">
+      <DirtyFormGuard />
+      <input type="hidden" name="createdAt" value={role.createdAt} />
+      <input
+        type="hidden"
+        name="defaultModelBinding"
+        value={modelBindingValue(role.defaultModelBinding)}
+      />
+
+      <EditorHeader
+        eyebrow="Role editor"
+        title={role.name}
+        id={role.id}
+        enabled={role.enabled}
+      />
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <TextField label="Id" name="id" defaultValue={role.id} />
+        <TextField label="Name" name="name" defaultValue={role.name} />
+      </div>
+
+      <label className="flex items-center gap-2 text-sm text-zinc-300">
+        <input
+          type="checkbox"
+          name="enabled"
+          defaultChecked={role.enabled}
+          className="h-4 w-4 accent-cyan-300"
+        />
+        Enabled
+      </label>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <SelectField
+          label="Faction"
+          name="faction"
+          value={role.faction}
+          options={["wolves", "good"] satisfies readonly Faction[]}
+          disabled={lockedContract}
+        />
+        <SelectField
+          label="Team"
+          name="team"
+          value={role.team}
+          options={["wolf", "god", "villager"] satisfies readonly RoleTeam[]}
+          disabled={lockedContract}
+        />
+        <SelectField
+          label="Mechanic"
+          name="mechanicKey"
+          value={role.mechanicKey}
+          options={
+            [
+              "wolf_kill",
+              "seer_check",
+              "witch_medicine",
+              "none",
+            ] satisfies readonly RoleMechanicKey[]
+          }
+          disabled={lockedContract}
+        />
+      </div>
+
+      {lockedContract ? (
+        <>
+          <input type="hidden" name="faction" value={role.faction} />
+          <input type="hidden" name="team" value={role.team} />
+          <input type="hidden" name="mechanicKey" value={role.mechanicKey} />
+        </>
+      ) : null}
+
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px]">
+        <TextField
+          label="Visibility rules"
+          name="visibilityRules"
+          defaultValue={role.visibilityRules.join(",")}
+        />
+        <TextField
+          label="Night order"
+          name="nightOrder"
+          defaultValue={role.nightOrder?.toString() ?? ""}
+        />
+      </div>
+
+      <TextareaField
+        label="System prompt"
+        name="systemPrompt"
+        defaultValue={role.systemPrompt}
+        rows={7}
+      />
+      <TextareaField
+        label="Action prompt"
+        name="actionPrompt"
+        defaultValue={role.actionPrompt ?? ""}
+        rows={4}
+      />
+
+      <div className="flex justify-end border-t border-zinc-800 pt-4">
+        <button
+          type="submit"
+          className="rounded bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-white"
+        >
+          Save role
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -20,52 +124,125 @@ function EditorHeader({
   eyebrow,
   title,
   id,
+  enabled,
 }: {
   readonly eyebrow: string;
   readonly title: string;
   readonly id: string;
+  readonly enabled: boolean;
 }) {
   return (
-    <div className="border-b border-zinc-800 pb-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
-        {eyebrow}
-      </p>
-      <h2 className="mt-1 text-xl font-semibold text-zinc-50">{title}</h2>
-      <p className="mt-1 text-xs text-zinc-500">{id}</p>
+    <div className="flex items-start justify-between gap-3 border-b border-zinc-800 pb-3">
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
+          {eyebrow}
+        </p>
+        <h2 className="mt-1 truncate text-xl font-semibold text-zinc-50">
+          {title}
+        </h2>
+        <p className="mt-1 truncate text-xs text-zinc-500">{id}</p>
+      </div>
+      <span
+        className={[
+          "rounded border px-2 py-1 text-xs font-medium",
+          enabled
+            ? "border-emerald-500/40 text-emerald-300"
+            : "border-zinc-700 text-zinc-500",
+        ].join(" ")}
+      >
+        {enabled ? "enabled" : "disabled"}
+      </span>
     </div>
   );
 }
 
-function Field({
+function TextField({
   label,
-  value,
+  name,
+  defaultValue,
 }: {
   readonly label: string;
-  readonly value: string | number;
+  readonly name: string;
+  readonly defaultValue: string;
 }) {
   return (
-    <div>
-      <dt className="text-xs text-zinc-500">{label}</dt>
-      <dd className="mt-1 truncate font-medium text-zinc-200">{value}</dd>
-    </div>
+    <label className="block text-sm text-zinc-300">
+      <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+        {label}
+      </span>
+      <input
+        name={name}
+        defaultValue={defaultValue}
+        className="mt-1 w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-cyan-300"
+      />
+    </label>
   );
 }
 
-function PromptBlock({
-  title,
+function SelectField<T extends string>({
+  label,
+  name,
   value,
+  options,
+  disabled,
 }: {
-  readonly title: string;
-  readonly value: string;
+  readonly label: string;
+  readonly name: string;
+  readonly value: T;
+  readonly options: readonly T[];
+  readonly disabled?: boolean;
 }) {
   return (
-    <section>
-      <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-        {title}
-      </h3>
-      <p className="mt-2 whitespace-pre-wrap rounded border border-zinc-800 bg-zinc-900/55 p-3 text-sm leading-6 text-zinc-300">
-        {value}
-      </p>
-    </section>
+    <label className="block text-sm text-zinc-300">
+      <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+        {label}
+      </span>
+      <select
+        name={name}
+        defaultValue={value}
+        disabled={disabled}
+        className="mt-1 w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-cyan-300 disabled:cursor-not-allowed disabled:text-zinc-500"
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
   );
+}
+
+function TextareaField({
+  label,
+  name,
+  defaultValue,
+  rows,
+}: {
+  readonly label: string;
+  readonly name: string;
+  readonly defaultValue: string;
+  readonly rows: number;
+}) {
+  return (
+    <label className="block text-sm text-zinc-300">
+      <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+        {label}
+      </span>
+      <textarea
+        name={name}
+        defaultValue={defaultValue}
+        rows={rows}
+        className="mt-1 w-full resize-y rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm leading-6 text-zinc-100 outline-none transition focus:border-cyan-300"
+      />
+    </label>
+  );
+}
+
+function modelBindingValue(value: ModelBindingSnapshot | null): string {
+  return value === null ? "" : JSON.stringify(value);
+}
+
+function isBuiltInRole(roleId: string): boolean {
+  return ["werewolf", "seer", "witch", "villager"].includes(roleId);
 }
