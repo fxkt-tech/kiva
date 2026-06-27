@@ -60,7 +60,11 @@ export type BoardValidationResult =
       readonly actual: number;
     }
   | { readonly ok: false; readonly reason: "duplicate_player_id" }
-  | { readonly ok: false; readonly reason: "invalid_seat"; readonly seatNo: number }
+  | {
+      readonly ok: false;
+      readonly reason: "invalid_seat";
+      readonly seatNo: number;
+    }
   | { readonly ok: false; readonly reason: "duplicate_seat" }
   | {
       readonly ok: false;
@@ -71,8 +75,8 @@ export type BoardValidationResult =
     };
 
 const defaultModelBinding: ModelBindingSnapshot = {
-  provider: "mock",
-  model: "mock-role-model",
+  provider: "volcengine",
+  model: "doubao-seed-1-6-flash-250828",
   temperature: 0.7,
   maxTokens: 1200,
   responseFormat: "json",

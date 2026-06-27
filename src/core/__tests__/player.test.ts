@@ -47,8 +47,8 @@ describe("player snapshots", () => {
     expect(first.reasoningStyle).toBe("");
     expect(first.systemPrompt).toBe("");
     expect(first.modelBindingSnapshot).toEqual({
-      provider: "mock",
-      model: "mock-role-model",
+      provider: "volcengine",
+      model: "doubao-seed-1-6-flash-250828",
       temperature: 0.7,
       maxTokens: 1200,
       responseFormat: "json",
