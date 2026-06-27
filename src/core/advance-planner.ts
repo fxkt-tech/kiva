@@ -1,6 +1,6 @@
 import { createDraftEvent, type DraftEvent } from "./drafts";
 import { getActiveEvents } from "./event-log";
-import type { GameEndReason, VoteType } from "./events";
+import type { VoteType } from "./events";
 import type { Game } from "./game";
 import type { PlayerSnapshot } from "./player";
 import {
@@ -54,27 +54,15 @@ export function planNextDraft(input: PlanNextDraftInput): DraftEvent | null {
 
   const latestEvent = events.at(-1);
   if (!latestEvent || state.currentPhase === "setup") {
-    return draftPhaseStarted(input, "night", 1, "第 1 夜开始", "夜晚开始。");
+    return draftPhaseStarted(input, "night", 1);
   }
 
   if (latestEvent.type === "death_announced") {
     if (state.pendingLastWords.length > 0) {
-      return draftPhaseStarted(
-        input,
-        "last_words",
-        state.dayNumber,
-        "遗言阶段",
-        "死亡玩家发表遗言。",
-      );
+      return draftPhaseStarted(input, "last_words", state.dayNumber);
     }
 
-    return draftPhaseStarted(
-      input,
-      "speech",
-      state.dayNumber,
-      "发言阶段",
-      "存活玩家依次发言。",
-    );
+    return draftPhaseStarted(input, "speech", state.dayNumber);
   }
 
   if (state.currentPhase === "night") {
@@ -134,7 +122,6 @@ function planRoleAssignment(
       role: player.gameRole,
       faction: player.faction,
     },
-    display: { title: "身份牌", text: `你的身份是 ${player.gameRole}。` },
     createdAt: input.createdAt,
   });
 }
@@ -181,7 +168,6 @@ function planNightDraft(
       targetPlayerIds: [target],
       visibility: { kind: "faction_private", faction: "wolves" },
       payload: { targetPlayerId: target },
-      display: { title: "狼人刀人", text: "狼人选择夜间击杀目标。" },
       createdAt: input.createdAt,
     });
   }
@@ -212,7 +198,6 @@ function planNightDraft(
           targetPlayerIds: [target],
           visibility: { kind: "player_private", playerIds: [seer] },
           payload: { targetPlayerId: target },
-          display: { title: "预言家查验", text: "预言家选择查验目标。" },
           createdAt: input.createdAt,
         });
       }
@@ -240,7 +225,6 @@ function planNightDraft(
         targetPlayerId: checkedPlayer.playerId,
         result: checkedPlayer.faction,
       },
-      display: { title: "查验结果", text: "预言家收到查验结果。" },
       createdAt: input.createdAt,
     });
   }
@@ -257,7 +241,6 @@ function planNightDraft(
       targetPlayerIds: [wolfKill.payload.targetPlayerId],
       visibility: { kind: "player_private", playerIds: [witch] },
       payload: { killedPlayerId: wolfKill.payload.targetPlayerId },
-      display: { title: "女巫信息", text: "女巫得知夜间死亡信息。" },
       createdAt: input.createdAt,
     });
   }
@@ -276,7 +259,6 @@ function planNightDraft(
       actorPlayerId: witch,
       visibility: { kind: "player_private", playerIds: [witch] },
       payload: { used: false, targetPlayerId: null },
-      display: { title: "女巫解药", text: "女巫默认不使用解药。" },
       createdAt: input.createdAt,
     });
   }
@@ -295,7 +277,6 @@ function planNightDraft(
       actorPlayerId: witch,
       visibility: { kind: "player_private", playerIds: [witch] },
       payload: { used: false, targetPlayerId: null },
-      display: { title: "女巫毒药", text: "女巫默认不使用毒药。" },
       createdAt: input.createdAt,
     });
   }
@@ -363,7 +344,6 @@ function planNightDraft(
       targetPlayerIds: deadPlayerIds,
       visibility: { kind: "host_only" },
       payload: { deadPlayerIds },
-      display: { title: "夜间结算", text: "系统结算夜间死亡。" },
       createdAt: input.createdAt,
     });
   }
@@ -404,13 +384,6 @@ function planAfterNightResolvedDraft(
     targetPlayerIds: nightResolved.payload.deadPlayerIds,
     visibility: { kind: "public" },
     payload: { deadPlayerIds: nightResolved.payload.deadPlayerIds },
-    display: {
-      title: "昨夜死讯",
-      text:
-        nightResolved.payload.deadPlayerIds.length > 0
-          ? `昨夜死亡：${playerListLabel(players, nightResolved.payload.deadPlayerIds)}。`
-          : "昨夜平安夜，没有玩家死亡。",
-    },
     createdAt: input.createdAt,
   });
 }
@@ -423,7 +396,6 @@ function planLastWordsDraft(
 ): DraftEvent | null {
   const pending = state.pendingLastWords[0];
   if (pending) {
-    const speaker = playerLabel(players, pending.playerId);
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -438,31 +410,15 @@ function planLastWordsDraft(
         dayNumber: state.dayNumber,
         reason: pending.reason,
       },
-      display: {
-        title: `${speaker}遗言`,
-        text: `${speaker}发表遗言：我的遗言先到这里。`,
-      },
       createdAt: input.createdAt,
     });
   }
 
   if (lastWordsStartedAfterExile(events, state.dayNumber)) {
-    return draftPhaseStarted(
-      input,
-      "night",
-      state.dayNumber + 1,
-      `第 ${state.dayNumber + 1} 夜开始`,
-      "进入下一夜。",
-    );
+    return draftPhaseStarted(input, "night", state.dayNumber + 1);
   }
 
-  return draftPhaseStarted(
-    input,
-    "speech",
-    state.dayNumber,
-    "发言阶段",
-    "存活玩家依次发言。",
-  );
+  return draftPhaseStarted(input, "speech", state.dayNumber);
 }
 
 function planDaySpeechDraft(
@@ -473,7 +429,6 @@ function planDaySpeechDraft(
   const spoken = new Set(state.daySpeech.spokenPlayerIds);
   const speaker = state.alivePlayerIds.find((playerId) => !spoken.has(playerId));
   if (speaker) {
-    const speakerLabel = playerLabel(players, speaker);
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -487,21 +442,11 @@ function planDaySpeechDraft(
         dayNumber: state.dayNumber,
         round: 1,
       },
-      display: {
-        title: `${speakerLabel}发言`,
-        text: `${speakerLabel}发言：我先给出自己的判断。`,
-      },
       createdAt: input.createdAt,
     });
   }
 
-  return draftPhaseStarted(
-    input,
-    "vote",
-    state.dayNumber,
-    "放逐投票",
-    "进入本日放逐投票。",
-  );
+  return draftPhaseStarted(input, "vote", state.dayNumber);
 }
 
 function planDailyVoteDraft(
@@ -514,8 +459,6 @@ function planDailyVoteDraft(
   const voter = state.alivePlayerIds.find((playerId) => !voted.has(playerId));
   if (voter) {
     const target = chooseVoteTarget(voter, state.alivePlayerIds);
-    const voterLabel = playerLabel(players, voter);
-    const targetText = target ? playerLabel(players, target) : "弃票";
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -530,10 +473,6 @@ function planDailyVoteDraft(
         dayNumber: state.dayNumber,
         round: 1,
         voteType: "exile",
-      },
-      display: {
-        title: `${voterLabel}投票`,
-        text: `${voterLabel}投给 ${targetText}。`,
       },
       createdAt: input.createdAt,
     });
@@ -557,14 +496,6 @@ function planDailyVoteDraft(
       round: 1,
       revealedRoles: [],
     },
-    display: {
-      title: "投票结算",
-      text: exileResolutionText(
-        players,
-        resolution.exiledPlayerId,
-        resolution.tiedPlayerIds,
-      ),
-    },
     createdAt: input.createdAt,
   });
 }
@@ -582,7 +513,6 @@ function planPkDraft(
   const spoken = new Set(state.daySpeech.pkSpokenPlayerIds);
   const speaker = state.pk.tiedPlayerIds.find((playerId) => !spoken.has(playerId));
   if (speaker) {
-    const speakerLabel = playerLabel(players, speaker);
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -595,10 +525,6 @@ function planPkDraft(
         text: "我补充自己的 PK 发言。",
         dayNumber: state.dayNumber,
         round,
-      },
-      display: {
-        title: `${speakerLabel}PK 发言`,
-        text: `${speakerLabel}PK 发言：我补充自己的 PK 发言。`,
       },
       createdAt: input.createdAt,
     });
@@ -615,8 +541,6 @@ function planPkDraft(
   const voter = eligibleVoters.find((playerId) => !voted.has(playerId));
   if (voter) {
     const target = choosePkVoteTarget(voter, state.pk.tiedPlayerIds);
-    const voterLabel = playerLabel(players, voter);
-    const targetText = target ? playerLabel(players, target) : "弃票";
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
@@ -631,10 +555,6 @@ function planPkDraft(
         dayNumber: state.dayNumber,
         round,
         voteType: "pk",
-      },
-      display: {
-        title: `${voterLabel}PK 投票`,
-        text: `${voterLabel}投给 ${targetText}。`,
       },
       createdAt: input.createdAt,
     });
@@ -659,14 +579,6 @@ function planPkDraft(
       dayNumber: state.dayNumber,
       round,
       revealedRoles: [],
-    },
-    display: {
-      title: "PK 结算",
-      text: exileResolutionText(
-        players,
-        resolution.exiledPlayerId,
-        resolution.tiedPlayerIds,
-      ),
     },
     createdAt: input.createdAt,
   });
@@ -704,13 +616,7 @@ function planAfterExileDraft(
     latestEvent.payload.voteType === "exile" &&
     latestEvent.payload.tiedPlayerIds.length > 0
   ) {
-    return draftPhaseStarted(
-      input,
-      "pk",
-      latestEvent.payload.dayNumber,
-      "PK 阶段",
-      "平票玩家进入 PK。",
-    );
+    return draftPhaseStarted(input, "pk", latestEvent.payload.dayNumber);
   }
 
   const end = draftGameEndIfNeeded(
@@ -724,21 +630,13 @@ function planAfterExileDraft(
   }
 
   if (state.pendingLastWords.length > 0) {
-    return draftPhaseStarted(
-      input,
-      "last_words",
-      latestEvent.payload.dayNumber,
-      "遗言阶段",
-      "出局玩家发表遗言。",
-    );
+    return draftPhaseStarted(input, "last_words", latestEvent.payload.dayNumber);
   }
 
   return draftPhaseStarted(
     input,
     "night",
     latestEvent.payload.dayNumber + 1,
-    `第 ${latestEvent.payload.dayNumber + 1} 夜开始`,
-    "进入下一夜。",
   );
 }
 
@@ -765,10 +663,6 @@ function draftGameEndIfNeeded(
       dayNumber,
       revealedRoles: createEndgameReveal(players),
     },
-    display: {
-      title: `游戏结束：${winnerLabel(result.winner)}胜利`,
-      text: `${winnerLabel(result.winner)}胜利，原因：${winReasonLabel(result.reason)}。`,
-    },
     createdAt: input.createdAt,
   });
 }
@@ -777,8 +671,6 @@ function draftPhaseStarted(
   input: PlanNextDraftInput,
   phase: Phase,
   dayNumber: number,
-  title: string,
-  text: string,
 ): DraftEvent {
   return createDraftEvent({
     id: input.draftId,
@@ -787,7 +679,6 @@ function draftPhaseStarted(
     phase,
     visibility: { kind: "public" },
     payload: { phase, dayNumber },
-    display: { title, text },
     createdAt: input.createdAt,
   });
 }
@@ -951,58 +842,6 @@ function lastWordsStartedAfterExile(
   }
 
   return events[lastWordsStartIndex - 1]?.type === "exile_resolved";
-}
-
-function playerLabel(
-  players: readonly PlayerSnapshot[],
-  playerId: PlayerId,
-): string {
-  const player = players.find((candidate) => candidate.playerId === playerId);
-  if (!player) {
-    return `未知玩家 ${playerId}`;
-  }
-
-  return `${player.seatNo} 号 ${player.name}`;
-}
-
-function playerListLabel(
-  players: readonly PlayerSnapshot[],
-  playerIds: readonly PlayerId[],
-): string {
-  return playerIds.map((playerId) => playerLabel(players, playerId)).join("、");
-}
-
-function exileResolutionText(
-  players: readonly PlayerSnapshot[],
-  exiledPlayerId: PlayerId | null,
-  tiedPlayerIds: readonly PlayerId[],
-): string {
-  if (exiledPlayerId) {
-    return `放逐出局：${playerLabel(players, exiledPlayerId)}。`;
-  }
-
-  if (tiedPlayerIds.length > 0) {
-    return `平票：${playerListLabel(players, tiedPlayerIds)}。`;
-  }
-
-  return "本轮无人被放逐。";
-}
-
-function winnerLabel(winner: "wolves" | "good"): string {
-  return winner === "wolves" ? "狼人阵营" : "好人阵营";
-}
-
-function winReasonLabel(reason: GameEndReason): string {
-  switch (reason) {
-    case "all_wolves_dead":
-      return "所有狼人出局";
-    case "all_gods_dead":
-      return "所有神职出局";
-    case "all_villagers_dead":
-      return "所有平民出局";
-    case "all_good_dead":
-      return "所有好人出局";
-  }
 }
 
 function findLastIndex<T>(

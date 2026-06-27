@@ -1,5 +1,7 @@
 import { getActiveEvents } from "./event-log";
+import { formatEventForPublic } from "./event-presenter";
 import type { GameEvent } from "./events";
+import type { PlayerSnapshot } from "./player";
 import type { Phase } from "./types";
 
 export type PlaybackItem = {
@@ -12,16 +14,24 @@ export type PlaybackItem = {
 
 export function compilePublicPlayback(
   events: readonly GameEvent[],
+  players: readonly PlayerSnapshot[],
 ): readonly PlaybackItem[] {
   return getActiveEvents(events)
     .filter((event) => event.visibility.kind === "public")
-    .map((event) => ({
-      index: event.index,
-      phase: event.phase,
-      title: event.display?.title ?? event.type,
-      text: event.display?.text ?? "",
-      durationMs: durationForEvent(event),
-    }));
+    .flatMap((event) => {
+      const presented = formatEventForPublic(event, players);
+      return presented
+        ? [
+            {
+              index: event.index,
+              phase: event.phase,
+              title: presented.title,
+              text: presented.text,
+              durationMs: durationForEvent(event),
+            },
+          ]
+        : [];
+    });
 }
 
 function durationForEvent(event: GameEvent): number {

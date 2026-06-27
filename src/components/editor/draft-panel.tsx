@@ -1,11 +1,10 @@
 import {
   confirmDraftAction,
   deleteDraftAction,
-  editDraftDisplayAction,
   editDraftPayloadAction,
 } from "@/app/actions";
 import type { DraftEvent } from "@/core/drafts";
-import type { EventVisibility } from "@/core/events";
+import { formatDraftForHost, formatVisibility } from "@/core/event-presenter";
 import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
 
@@ -29,6 +28,8 @@ export function DraftPanel({ gameId, draft, players }: DraftPanelProps) {
     );
   }
 
+  const presented = formatDraftForHost(draft, players);
+
   return (
     <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
       <div className="flex items-start justify-between gap-3 border-b border-zinc-800 px-4 py-3">
@@ -45,41 +46,33 @@ export function DraftPanel({ gameId, draft, players }: DraftPanelProps) {
       <div className="space-y-4 p-4">
         <div>
           <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-            Reason
+            Summary
           </div>
+          <h3 className="mt-2 break-words text-sm font-medium text-zinc-100">
+            {presented.title}
+          </h3>
           <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300">
-            {draft.reason || "No reason provided."}
+            {presented.text}
           </p>
+          {presented.details && presented.details.length > 0 ? (
+            <ul className="mt-2 space-y-1 text-xs text-zinc-500">
+              {presented.details.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          ) : null}
         </div>
 
-        <form
-          action={editDraftDisplayAction.bind(null, gameId)}
-          className="space-y-3"
-        >
-          <label className="block">
-            <span className="text-xs font-medium text-zinc-400">Title</span>
-            <input
-              name="title"
-              defaultValue={draft.display?.title ?? draft.type}
-              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-400"
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs font-medium text-zinc-400">Text</span>
-            <textarea
-              name="text"
-              defaultValue={draft.display?.text ?? ""}
-              rows={5}
-              className="mt-1 w-full resize-y rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm leading-6 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-400"
-            />
-          </label>
-          <button
-            type="submit"
-            className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
-          >
-            Save display
-          </button>
-        </form>
+        {draft.reason ? (
+          <div>
+            <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+              Reason
+            </div>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-500">
+              {draft.reason}
+            </p>
+          </div>
+        ) : null}
 
         <DraftPayloadForm gameId={gameId} draft={draft} players={players} />
 
@@ -241,19 +234,4 @@ function PlayerTargetField({
       </select>
     </label>
   );
-}
-
-function formatVisibility(visibility: EventVisibility): string {
-  switch (visibility.kind) {
-    case "public":
-      return "public";
-    case "host_only":
-      return "host only";
-    case "player_private":
-      return `private ${visibility.playerIds.length}`;
-    case "faction_private":
-      return `${visibility.faction} private`;
-    case "custom":
-      return `custom ${visibility.playerIds.length}`;
-  }
 }

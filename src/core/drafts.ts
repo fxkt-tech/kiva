@@ -46,7 +46,6 @@ export function confirmDraftEvent(input: ConfirmDraftEventInput): GameEvent {
     targetPlayerIds: draft.targetPlayerIds,
     visibility: draft.visibility,
     payload: draft.payload,
-    display: draft.display,
     createdFromDraftId: draft.id,
     createdAt: input.createdAt,
   } as GameEvent;

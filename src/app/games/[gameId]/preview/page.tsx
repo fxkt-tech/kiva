@@ -21,5 +21,9 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
     notFound();
   }
 
-  return <PlaybackStage items={compilePublicPlayback(record.events)} />;
+  return (
+    <PlaybackStage
+      items={compilePublicPlayback(record.events, record.game.players)}
+    />
+  );
 }

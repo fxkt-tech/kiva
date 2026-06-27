@@ -439,10 +439,10 @@ describe("complete deterministic game flow", () => {
     ).toBeNull();
   });
 
-  it("renders public playback display with speakers, deaths, and winner", () => {
+  it("renders public playback from structured facts with speakers, deaths, and winner", () => {
     const game = createGame();
     const events = confirmCompleteGame(game);
-    const playback = compilePublicPlayback(events);
+    const playback = compilePublicPlayback(events, game.players);
 
     expect(
       playback.some(

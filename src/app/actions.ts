@@ -25,17 +25,6 @@ export async function confirmDraftAction(gameId: GameId) {
   revalidatePath(previewPath(gameId));
 }
 
-export async function editDraftDisplayAction(
-  gameId: GameId,
-  formData: FormData,
-) {
-  await gameActions.editDraftDisplay(gameId, {
-    title: formValue(formData, "title"),
-    text: formValue(formData, "text"),
-  });
-  revalidatePath(editorPath(gameId));
-}
-
 export async function editDraftPayloadAction(
   gameId: GameId,
   formData: FormData,

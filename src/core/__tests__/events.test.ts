@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { confirmDraftEvent, createDraftEvent } from "../drafts";
+import { createSeedGame } from "../game";
 import { compilePublicPlayback } from "../playback";
 import type { GameEvent, RevealedRole, VoteTableEntry } from "../events";
 import type { DraftId, EventId, GameId, PlayerId } from "../types";
@@ -7,6 +8,10 @@ import type { DraftId, EventId, GameId, PlayerId } from "../types";
 const gameId = "game_1" as GameId;
 const player1 = "player_1" as PlayerId;
 const player2 = "player_2" as PlayerId;
+const game = createSeedGame({
+  gameId,
+  createdAt: "2026-06-26T00:00:00.000Z",
+});
 
 describe("full game event model", () => {
   it("supports last words, speeches, voting, exile, and game end payloads", () => {
@@ -183,7 +188,6 @@ describe("full game event model", () => {
         round: 1,
         voteType: "pk",
       },
-      display: { title: "弃票", text: "1 号玩家弃票。" },
       createdAt: "2026-06-26T00:00:00.000Z",
     });
 
@@ -199,12 +203,12 @@ describe("full game event model", () => {
       type: "vote_cast",
       payload: { targetPlayerId: null, voteType: "pk" },
     });
-    expect(compilePublicPlayback([event])).toEqual([
+    expect(compilePublicPlayback([event], game.players)).toEqual([
       {
         index: 1,
         phase: "vote",
-        title: "弃票",
-        text: "1 号玩家弃票。",
+        title: "PK 投票",
+        text: expect.stringContaining("弃票"),
         durationMs: 1200,
       },
     ]);

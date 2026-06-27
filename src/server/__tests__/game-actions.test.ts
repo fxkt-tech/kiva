@@ -99,28 +99,6 @@ describe("game actions", () => {
     await expect(repository.get(created.game.id)).resolves.toEqual(rolledBack);
   });
 
-  it("updates current draft display before confirmation", async () => {
-    const { actions } = await createActions();
-    const created = await actions.createGame();
-    await actions.continueGame(created.game.id);
-
-    const edited = await actions.editDraftDisplay(created.game.id, {
-      title: "  Custom title  ",
-      text: "  Custom text  ",
-    });
-
-    expect(edited.draft?.display).toEqual({
-      title: "Custom title",
-      text: "Custom text",
-    });
-
-    const confirmed = await actions.confirmDraft(created.game.id);
-    expect(confirmed.events[0]?.display).toEqual({
-      title: "Custom title",
-      text: "Custom text",
-    });
-  });
-
   it("updates current draft payload before confirmation", async () => {
     const { actions } = await createActions();
     const created = await actions.createGame();
@@ -178,11 +156,19 @@ describe("game actions", () => {
     const repository = createDeferredSaveRepository();
     const actions = createGameActions(repository);
     const created = await actions.createGame();
-    await actions.continueGame(created.game.id);
+    for (let step = 0; step < created.game.players.length + 1; step += 1) {
+      await actions.continueGame(created.game.id);
+      await actions.confirmDraft(created.game.id);
+    }
+    const withWolfKillDraft = await actions.continueGame(created.game.id);
+    const editedTarget = created.game.players[4]?.playerId;
+    expect(editedTarget).toBeDefined();
+    expect(withWolfKillDraft.draft).toMatchObject({
+      type: "wolf_kill_selected",
+    });
 
-    const editPromise = actions.editDraftDisplay(created.game.id, {
-      title: "Edited",
-      text: "Edited text",
+    const editPromise = actions.editDraftPayload(created.game.id, {
+      targetPlayerId: editedTarget,
     });
     await repository.waitForDeferredSave();
     const confirmPromise = actions.confirmDraft(created.game.id);
@@ -192,10 +178,10 @@ describe("game actions", () => {
     const confirmed = await confirmPromise;
 
     expect(confirmed.draft).toBeNull();
-    expect(confirmed.events).toHaveLength(1);
-    expect(confirmed.events[0]?.display).toEqual({
-      title: "Edited",
-      text: "Edited text",
+    expect(confirmed.events.at(-1)).toMatchObject({
+      type: "wolf_kill_selected",
+      targetPlayerIds: [editedTarget],
+      payload: { targetPlayerId: editedTarget },
     });
     await expect(repository.get(created.game.id)).resolves.toEqual(confirmed);
   });
@@ -239,7 +225,11 @@ function createDeferredSaveRepository(): GameRepository & {
     },
 
     async save(nextRecord) {
-      if (nextRecord.draft?.display?.title === "Edited") {
+      if (
+        nextRecord.draft?.type === "wolf_kill_selected" &&
+        nextRecord.draft.payload.targetPlayerId ===
+          record?.game.players[4]?.playerId
+      ) {
         deferredSaveStarted();
         await releaseDeferredSavePromise;
       }

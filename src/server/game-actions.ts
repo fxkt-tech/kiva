@@ -16,11 +16,6 @@ import type { GameRecord, GameRepository } from "./game-repository";
 
 export type GameActions = ReturnType<typeof createGameActions>;
 
-type DraftDisplayInput = {
-  readonly title: string;
-  readonly text: string;
-};
-
 export function createGameActions(repository: GameRepository) {
   async function loadGame(gameId: GameId): Promise<GameRecord> {
     const record = await repository.get(gameId);
@@ -96,34 +91,6 @@ export function createGameActions(repository: GameRepository) {
           game: { ...record.game, updatedAt },
           events: appendEvent(record.events, nextEvent),
           draft: null,
-        };
-
-        await repository.save(nextRecord);
-        return nextRecord;
-      });
-    },
-
-    async editDraftDisplay(
-      gameId: GameId,
-      display: DraftDisplayInput,
-    ): Promise<GameRecord> {
-      return repository.withGameLock(gameId, async () => {
-        const record = await loadGame(gameId);
-        if (!record.draft) {
-          return record;
-        }
-
-        const updatedAt = now();
-        const nextRecord: GameRecord = {
-          ...record,
-          game: { ...record.game, updatedAt },
-          draft: {
-            ...record.draft,
-            display: {
-              title: display.title.trim(),
-              text: display.text.trim(),
-            },
-          },
         };
 
         await repository.save(nextRecord);

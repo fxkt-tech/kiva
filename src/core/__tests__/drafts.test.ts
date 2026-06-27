@@ -24,7 +24,6 @@ describe("drafts", () => {
       targetPlayerIds: [playerId],
       visibility: { kind: "public" },
       payload: { deadPlayerIds: [playerId] },
-      display: { title: "昨夜死讯", text: "昨夜 1 号玩家死亡。" },
       createdAt: "2026-06-26T00:00:00.000Z",
     });
 
@@ -42,7 +41,6 @@ describe("drafts", () => {
       targetPlayerIds: [playerId],
       visibility: { kind: "public" },
       payload: { deadPlayerIds: [playerId] },
-      display: { title: "昨夜死讯", text: "昨夜 1 号玩家死亡。" },
       createdAt: "2026-06-26T00:00:00.000Z",
     });
 

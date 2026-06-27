@@ -1,13 +1,16 @@
 import { rollbackAfterAction } from "@/app/actions";
-import type { GameEvent, EventVisibility } from "@/core/events";
+import { formatEventForHost, formatVisibility } from "@/core/event-presenter";
+import type { GameEvent } from "@/core/events";
+import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
 
 type EventTimelineProps = {
   readonly gameId: GameId;
   readonly events: readonly GameEvent[];
+  readonly players: readonly PlayerSnapshot[];
 };
 
-export function EventTimeline({ gameId, events }: EventTimelineProps) {
+export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
   const orderedEvents = [...events].sort((left, right) => {
     if (left.index === right.index) {
       return left.createdAt.localeCompare(right.createdAt);
@@ -29,6 +32,7 @@ export function EventTimeline({ gameId, events }: EventTimelineProps) {
         <ol className="divide-y divide-zinc-800">
           {orderedEvents.map((event) => {
             const active = event.status === "active";
+            const presented = formatEventForHost(event, players);
 
             return (
               <li
@@ -48,11 +52,18 @@ export function EventTimeline({ gameId, events }: EventTimelineProps) {
                       <span>{event.status}</span>
                     </div>
                     <div className="mt-2 break-words text-sm font-medium text-zinc-100">
-                      {event.display?.title ?? event.type}
+                      {presented.title}
                     </div>
                     <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-400">
-                      {event.display?.text || "No display text."}
+                      {presented.text}
                     </p>
+                    {presented.details && presented.details.length > 0 ? (
+                      <ul className="mt-2 space-y-1 text-xs text-zinc-500">
+                        {presented.details.map((detail) => (
+                          <li key={detail}>{detail}</li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                   {active ? (
                     <form
@@ -79,19 +90,4 @@ export function EventTimeline({ gameId, events }: EventTimelineProps) {
       )}
     </section>
   );
-}
-
-function formatVisibility(visibility: EventVisibility): string {
-  switch (visibility.kind) {
-    case "public":
-      return "public";
-    case "host_only":
-      return "host only";
-    case "player_private":
-      return `private ${visibility.playerIds.length}`;
-    case "faction_private":
-      return `${visibility.faction} private`;
-    case "custom":
-      return `custom ${visibility.playerIds.length}`;
-  }
 }

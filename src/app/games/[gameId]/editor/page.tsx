@@ -62,7 +62,11 @@ export default async function EditorPage({ params }: EditorPageProps) {
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="flex min-w-0 flex-col gap-5">
             <GameBoard game={record.game} events={record.events} />
-            <EventTimeline gameId={typedGameId} events={record.events} />
+            <EventTimeline
+              gameId={typedGameId}
+              events={record.events}
+              players={record.game.players}
+            />
           </div>
 
           <aside className="flex min-w-0 flex-col gap-5">

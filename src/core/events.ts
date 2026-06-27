@@ -28,10 +28,6 @@ export type GameEventBase<Type extends string, Payload> = {
   readonly targetPlayerIds?: readonly PlayerId[];
   readonly visibility: EventVisibility;
   readonly payload: Payload;
-  readonly display?: {
-    readonly title?: string;
-    readonly text?: string;
-  };
   readonly createdFromDraftId?: DraftId;
   readonly createdAt: string;
 };
