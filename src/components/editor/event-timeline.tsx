@@ -21,7 +21,7 @@ export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
 
   return (
     <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="shrink-0 border-b border-zinc-800 px-4 py-3">
+      <div className="shrink-0 border-b border-zinc-800 px-3 py-2">
         <h2 className="text-sm font-semibold text-zinc-100">Timeline</h2>
       </div>
       {orderedEvents.length === 0 ? (

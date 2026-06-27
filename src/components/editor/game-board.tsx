@@ -13,13 +13,13 @@ export function GameBoard({ game, events }: GameBoardProps) {
 
   return (
     <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3">
+      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-3 py-2">
         <h2 className="text-sm font-semibold text-zinc-100">Board</h2>
         <div className="text-xs text-zinc-500">
           {state.currentPhase} · Day {state.dayNumber}
         </div>
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-y-auto p-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid min-h-0 grid-cols-1 gap-2 p-2 sm:grid-cols-2 xl:grid-cols-3">
         {[...game.players]
           .sort((left, right) => left.seatNo - right.seatNo)
           .map((player) => {
@@ -28,7 +28,7 @@ export function GameBoard({ game, events }: GameBoardProps) {
             return (
               <article
                 key={player.playerId}
-                className="min-w-0 rounded-md border border-zinc-800 bg-zinc-950/55 p-3"
+                className="min-w-0 rounded-md border border-zinc-800 bg-zinc-950/55 px-3 py-2"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -49,7 +49,7 @@ export function GameBoard({ game, events }: GameBoardProps) {
                     {dead ? "dead" : "alive"}
                   </span>
                 </div>
-                <div className="mt-3 text-xs uppercase tracking-[0.14em] text-zinc-400">
+                <div className="mt-2 text-xs uppercase tracking-[0.14em] text-zinc-400">
                   {player.gameRole}
                 </div>
               </article>

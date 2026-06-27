@@ -27,10 +27,10 @@ export function DraftPanel({
   if (!draft) {
     return (
       <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-        <div className="shrink-0 border-b border-zinc-800 px-4 py-3">
+        <div className="shrink-0 border-b border-zinc-800 px-3 py-2">
           <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
         </div>
-        <div className="px-4 py-8 text-sm text-zinc-500">
+        <div className="px-3 py-6 text-sm text-zinc-500">
           No draft. The game has no pending step.
         </div>
       </section>
@@ -42,7 +42,7 @@ export function DraftPanel({
 
   return (
     <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-800 px-4 py-3">
+      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-800 px-3 py-2">
         <div>
           <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
           <div className="mt-1 text-xs text-zinc-500">
@@ -53,19 +53,19 @@ export function DraftPanel({
           {draft.type}
         </span>
       </div>
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
         <div>
           <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
             Summary
           </div>
-          <h3 className="mt-2 break-words text-sm font-medium text-zinc-100">
+          <h3 className="mt-1.5 break-words text-sm font-medium text-zinc-100">
             {presented.title}
           </h3>
-          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300">
+          <p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300">
             {presented.text}
           </p>
           {presented.details && presented.details.length > 0 ? (
-            <ul className="mt-2 space-y-1 text-xs text-zinc-500">
+            <ul className="mt-1.5 space-y-1 text-xs text-zinc-500">
               {presented.details.map((detail) => (
                 <li key={detail}>{detail}</li>
               ))}
@@ -78,24 +78,24 @@ export function DraftPanel({
             <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
               Reason
             </div>
-            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-500">
+            <p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-500">
               {draft.reason}
             </p>
           </div>
         ) : null}
 
         {latestGeneration ? (
-          <div className="border-t border-zinc-800 pt-4">
+          <div className="border-t border-zinc-800 pt-3">
             <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
               Generation
             </div>
-            <div className="mt-2 flex flex-wrap gap-2 text-xs text-zinc-400">
+            <div className="mt-1.5 flex flex-wrap gap-2 text-xs text-zinc-400">
               <span>{latestGeneration.status}</span>
               <span>{latestGeneration.provider}/{latestGeneration.model}</span>
               <span>{latestGeneration.promptVersion}</span>
             </div>
             {latestGeneration.error ? (
-              <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-5 text-red-300">
+              <p className="mt-1.5 whitespace-pre-wrap break-words text-xs leading-5 text-red-300">
                 {latestGeneration.error}
               </p>
             ) : null}
@@ -110,7 +110,7 @@ export function DraftPanel({
               <FormSubmitButton
                 label="Regenerate"
                 pendingLabel="Regenerating..."
-                className="w-full rounded-md border border-sky-900/80 px-3 py-2 text-xs font-medium text-sky-300 transition hover:border-sky-600 hover:text-sky-200 sm:w-auto"
+                className="w-full rounded-md border border-sky-900/80 px-3 py-1.5 text-xs font-medium text-sky-300 transition hover:border-sky-600 hover:text-sky-200 sm:w-auto"
               />
             </form>
           ) : null}
@@ -118,14 +118,14 @@ export function DraftPanel({
             <FormSubmitButton
               label="Confirm draft"
               pendingLabel="Confirming..."
-              className="w-full rounded-md bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-950 transition hover:bg-white sm:w-auto"
+              className="w-full rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-950 transition hover:bg-white sm:w-auto"
             />
           </form>
           <form action={deleteDraftAction.bind(null, gameId)}>
             <FormSubmitButton
               label="Delete draft"
               pendingLabel="Deleting..."
-              className="w-full rounded-md border border-red-900/80 px-3 py-2 text-xs font-medium text-red-300 transition hover:border-red-600 hover:text-red-200 sm:w-auto"
+              className="w-full rounded-md border border-red-900/80 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:border-red-600 hover:text-red-200 sm:w-auto"
             />
           </form>
         </div>
@@ -172,7 +172,7 @@ function DraftPayloadForm({
   return (
     <form
       action={editDraftPayloadAction.bind(null, gameId)}
-      className="space-y-3 border-t border-zinc-800 pt-4"
+      className="space-y-2 border-t border-zinc-800 pt-3"
     >
       <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
         Action payload
@@ -181,7 +181,7 @@ function DraftPayloadForm({
       <FormSubmitButton
         label="Save action"
         pendingLabel="Saving..."
-        className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+        className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
       />
     </form>
   );
@@ -236,8 +236,8 @@ function renderDraftPayloadControls(
           <textarea
             name="text"
             defaultValue={draft.payload.text}
-            rows={5}
-            className="mt-1 w-full resize-y rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm leading-6 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-400"
+            rows={4}
+            className="mt-1 w-full resize-none rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm leading-6 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-400"
           />
         </label>
       );
