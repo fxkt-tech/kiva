@@ -113,6 +113,24 @@ describe("game actions", () => {
     );
   });
 
+  it("creates a game from an explicit preset id", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const libraryRepository = fakeLibraryRepository({
+      loadAll: async () => ({
+        roles: seedRoles,
+        characters: seedCharacters,
+        presets: seedPresets,
+      }),
+    });
+    const actions = createGameActions(repository, { libraryRepository });
+
+    const created = await actions.createGameFromPresetId("six_player_standard");
+
+    expect(created.game.title).toBe("6人狼人杀试运行");
+    expect(created.game.players).toHaveLength(6);
+    await expect(repository.get(created.game.id)).resolves.toEqual(created);
+  });
+
   it("confirms the current draft into one official event without planning the next draft", async () => {
     const { actions, repository } = await createActions();
     const created = await actions.createGame();

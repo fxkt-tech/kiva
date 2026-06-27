@@ -43,33 +43,41 @@ export function createGameActions(
     return record;
   }
 
+  async function createGameFromPresetId(presetId: string): Promise<GameRecord> {
+    const createdAt = now();
+    const library = await loadGameLibrary(options.libraryRepository);
+    const preset = library.presets.find((item) => item.id === presetId);
+    if (!preset) {
+      throw new Error(`Game preset not found: ${presetId}`);
+    }
+    const game = createGameFromPreset({
+      gameId: createGameId(),
+      title: preset.name,
+      createdAt,
+      ruleset: createDefaultRuleset(),
+      preset,
+      roles: library.roles,
+      characters: library.characters,
+    });
+    const record: GameRecord = {
+      game,
+      events: [],
+      draft: null,
+      generations: [],
+    };
+
+    await repository.save(record);
+    return record;
+  }
+
   return {
     async createGame(): Promise<GameRecord> {
-      const createdAt = now();
-      const library = await loadGameLibrary(options.libraryRepository);
       const presetId = options.defaultPresetId ?? "six_player_standard";
-      const preset = library.presets.find((item) => item.id === presetId);
-      if (!preset) {
-        throw new Error(`Game preset not found: ${presetId}`);
-      }
-      const game = createGameFromPreset({
-        gameId: createGameId(),
-        title: preset.name,
-        createdAt,
-        ruleset: createDefaultRuleset(),
-        preset,
-        roles: library.roles,
-        characters: library.characters,
-      });
-      const record: GameRecord = {
-        game,
-        events: [],
-        draft: null,
-        generations: [],
-      };
+      return createGameFromPresetId(presetId);
+    },
 
-      await repository.save(record);
-      return record;
+    async createGameFromPresetId(presetId: string): Promise<GameRecord> {
+      return createGameFromPresetId(presetId);
     },
 
     async getGame(gameId: GameId): Promise<GameRecord | null> {
