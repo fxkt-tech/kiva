@@ -73,7 +73,7 @@ export async function generateActionDraft(
           "可选目标：",
           ...legalTargetIds.map((targetPlayerId) => `playerId=${targetPlayerId}`),
           "可见事件：",
-          ...context.timeline.map((item) => `#${item.index} ${item.title}`),
+          ...context.timeline.flatMap((item) => timelinePromptLines(item)),
           '输出字段：targetPlayerId，可选 used。弃票用 {"targetPlayerId":null}。',
         ].join("\n"),
       },
@@ -124,6 +124,18 @@ export async function generateActionDraft(
       }),
     };
   }
+}
+
+function timelinePromptLines(item: {
+  readonly index: number;
+  readonly title: string;
+  readonly text: string;
+  readonly details?: readonly string[];
+}): string[] {
+  return [
+    `#${item.index} ${item.title}：${item.text}`,
+    ...(item.details ?? []).map((detail) => `  - ${detail}`),
+  ];
 }
 
 function legalTargetIdsForDraft(

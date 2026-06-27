@@ -44,6 +44,65 @@ describe("action generation", () => {
     });
   });
 
+  it("includes visible event text and details in action prompts", async () => {
+    const result = await generateActionDraft({
+      game,
+      events: [
+        ...setupEvents(),
+        {
+          ...baseEvent(6),
+          type: "day_speech_given",
+          phase: "speech",
+          actorPlayerId: villager.playerId,
+          targetPlayerIds: [villager.playerId],
+          visibility: { kind: "public" },
+          payload: {
+            playerId: villager.playerId,
+            text: "我觉得 1 号发言像狼人。",
+            dayNumber: 1,
+            round: 1,
+          },
+        },
+        {
+          ...baseEvent(7),
+          type: "exile_resolved",
+          phase: "vote",
+          targetPlayerIds: [],
+          visibility: { kind: "public" },
+          payload: {
+            voteType: "exile",
+            dayNumber: 1,
+            round: 1,
+            exiledPlayerId: null,
+            tiedPlayerIds: [wolf.playerId, villager.playerId],
+            voteTable: [
+              {
+                voterPlayerId: villager.playerId,
+                targetPlayerId: wolf.playerId,
+              },
+              {
+                voterPlayerId: wolf.playerId,
+                targetPlayerId: villager.playerId,
+              },
+            ],
+            revealedRoles: [],
+          },
+        },
+      ],
+      draft: voteDraft(villager.playerId),
+      llmClient: new MockLlmClient([{ targetPlayerId: null }]),
+      generationId: "generation_5",
+      createdAt,
+    });
+
+    const content = result.generation?.request?.messages[0]?.content ?? "";
+
+    expect(content).toContain("#6 5 号 陈墨发言：我觉得 1 号发言像狼人。");
+    expect(content).toContain("#7 投票结算：平票：1 号 秦川、5 号 陈墨。");
+    expect(content).toContain("  - 5 号 陈墨 -> 1 号 秦川");
+    expect(content).toContain("  - 1 号 秦川 -> 5 号 陈墨");
+  });
+
   it("rejects illegal wolf kill targets and keeps draft unchanged", async () => {
     const draft = wolfDraft(villager.playerId);
     const result = await generateActionDraft({
