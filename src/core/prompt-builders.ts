@@ -75,14 +75,31 @@ export function baseViewerSystemPrompts(
     | "systemPrompt"
   >,
 ): string[] {
-  return [
+  return uniqueNonEmptyPrompts([
     firstNonEmpty(viewer.characterSystemPromptSnapshot, viewer.systemPrompt),
     viewer.roleSystemPromptSnapshot,
-  ].filter((prompt) => prompt.length > 0);
+  ]);
 }
 
 export function firstNonEmpty(...values: readonly string[]): string {
   return values.map((value) => value.trim()).find((value) => value.length > 0) ?? "";
+}
+
+export function uniqueNonEmptyPrompts(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const prompts: string[] = [];
+
+  for (const value of values) {
+    const prompt = value.trim();
+    if (prompt.length === 0 || seen.has(prompt)) {
+      continue;
+    }
+
+    seen.add(prompt);
+    prompts.push(prompt);
+  }
+
+  return prompts;
 }
 
 function rosterLine(player: PlayerLlmContext["roster"][number]): string {

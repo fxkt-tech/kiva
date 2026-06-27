@@ -3,7 +3,12 @@ import type { DraftEvent } from "../drafts";
 import type { GameEvent } from "../events";
 import { createSeedGame } from "../game";
 import { buildPlayerLlmContext } from "../player-context";
-import { buildSpeechPrompt, SPEECH_PROMPT_VERSION } from "../prompt-builders";
+import {
+  baseViewerSystemPrompts,
+  buildSpeechPrompt,
+  SPEECH_PROMPT_VERSION,
+  uniqueNonEmptyPrompts,
+} from "../prompt-builders";
 import type { DraftId, EventId, GameId } from "../types";
 
 const gameId = "game_1" as GameId;
@@ -91,6 +96,20 @@ describe("prompt builders", () => {
 
     expect(prompt.systemPrompt).toContain(legacySystemPrompt);
     expect(prompt.systemPrompt).toContain("你只能依据用户消息中列出的可见信息发言");
+  });
+
+  it("normalizes empty and duplicate viewer system prompt fragments", () => {
+    expect(
+      baseViewerSystemPrompts({
+        characterSystemPromptSnapshot: "  共同 prompt  ",
+        roleSystemPromptSnapshot: "共同 prompt",
+        systemPrompt: "fallback prompt",
+      }),
+    ).toEqual(["共同 prompt"]);
+    expect(uniqueNonEmptyPrompts(["  a  ", "", "a", " b "])).toEqual([
+      "a",
+      "b",
+    ]);
   });
 });
 
