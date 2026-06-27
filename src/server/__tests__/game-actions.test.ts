@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { getActiveEvents } from "@/core/event-log";
+import { MockLlmClient, type LlmClient } from "@/core/llm";
 import type { GameId } from "@/core/types";
 import { createGameActions } from "../game-actions";
 import {
@@ -160,6 +161,58 @@ describe("game actions", () => {
     });
   });
 
+  it("generates speech draft text and records generation during continue", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const actions = createGameActions(repository, {
+      llmClient: new MockLlmClient([
+        { text: "遗言先过。" },
+        { text: "我这里先报信息，1 号查杀。" },
+      ]),
+    });
+    const created = await actions.createGame();
+
+    const withSpeech = await continueUntilDraftType(
+      actions,
+      created.game.id,
+      "day_speech_given",
+    );
+
+    expect(withSpeech.draft).toMatchObject({
+      type: "day_speech_given",
+      payload: { text: "我这里先报信息，1 号查杀。" },
+    });
+    expect(withSpeech.generations).toHaveLength(2);
+    expect(withSpeech.generations.at(-1)).toMatchObject({
+      status: "success",
+      purpose: "speech",
+      parsedOutput: { text: "我这里先报信息，1 号查杀。" },
+    });
+  });
+
+  it("keeps default speech draft and records failure when generation fails", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const actions = createGameActions(repository, {
+      llmClient: failingLlmClient(),
+    });
+    const created = await actions.createGame();
+
+    const withSpeech = await continueUntilDraftType(
+      actions,
+      created.game.id,
+      "day_speech_given",
+    );
+
+    expect(withSpeech.draft).toMatchObject({
+      type: "day_speech_given",
+      payload: { text: "我先给出自己的判断。" },
+    });
+    expect(withSpeech.generations[0]).toMatchObject({
+      status: "failed",
+      purpose: "speech",
+      error: "model unavailable",
+    });
+  });
+
   it("rejects invalid rollback indexes", async () => {
     const { actions } = await createActions();
     const created = await actions.createGame();
@@ -215,6 +268,30 @@ describe("game actions", () => {
     );
   });
 });
+
+async function continueUntilDraftType(
+  actions: ReturnType<typeof createGameActions>,
+  gameId: GameId,
+  draftType: NonNullable<GameRecord["draft"]>["type"],
+): Promise<GameRecord> {
+  for (let step = 0; step < 40; step += 1) {
+    const record = await actions.continueGame(gameId);
+    if (record.draft?.type === draftType) {
+      return record;
+    }
+    await actions.confirmDraft(gameId);
+  }
+
+  throw new Error(`Draft not reached: ${draftType}`);
+}
+
+function failingLlmClient(): LlmClient {
+  return {
+    async generateJson() {
+      throw new Error("model unavailable");
+    },
+  };
+}
 
 function createDeferredSaveRepository(): GameRepository & {
   readonly waitForDeferredSave: () => Promise<void>;

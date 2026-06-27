@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { planNextDraft } from "@/core/advance-planner";
 import {
   applyDraftPayloadEdit,
@@ -12,11 +13,20 @@ import {
 import { createSeedGame } from "@/core/game";
 import { createDefaultRuleset, type GameId } from "@/core/types";
 import { createDraftId, createEventId, createGameId } from "@/core/id";
+import type { LlmClient } from "@/core/llm";
+import { generateSpeechDraft } from "@/core/speech-generation";
 import type { GameRecord, GameRepository } from "./game-repository";
 
 export type GameActions = ReturnType<typeof createGameActions>;
 
-export function createGameActions(repository: GameRepository) {
+export type CreateGameActionsOptions = {
+  readonly llmClient?: LlmClient;
+};
+
+export function createGameActions(
+  repository: GameRepository,
+  options: CreateGameActionsOptions = {},
+) {
   async function loadGame(gameId: GameId): Promise<GameRecord> {
     const record = await repository.get(gameId);
     if (!record) {
@@ -61,15 +71,27 @@ export function createGameActions(repository: GameRepository) {
         }
 
         const updatedAt = now();
+        const plannedDraft = planNextDraft({
+          game: record.game,
+          events: record.events,
+          draftId: createDraftId(),
+          createdAt: updatedAt,
+        });
+        const generatedDraft = plannedDraft
+          ? await maybeGenerateSpeechDraft({
+              record,
+              draft: plannedDraft,
+              llmClient: options.llmClient,
+              createdAt: updatedAt,
+            })
+          : { draft: null, generation: null };
         const nextRecord: GameRecord = {
           ...record,
           game: { ...record.game, updatedAt },
-          draft: planNextDraft({
-            game: record.game,
-            events: record.events,
-            draftId: createDraftId(),
-            createdAt: updatedAt,
-          }),
+          draft: generatedDraft.draft,
+          generations: generatedDraft.generation
+            ? [...record.generations, generatedDraft.generation]
+            : record.generations,
         };
 
         await repository.save(nextRecord);
@@ -159,6 +181,30 @@ export function createGameActions(repository: GameRepository) {
       });
     },
   };
+}
+
+async function maybeGenerateSpeechDraft(input: {
+  readonly record: GameRecord;
+  readonly draft: NonNullable<GameRecord["draft"]>;
+  readonly llmClient: LlmClient | undefined;
+  readonly createdAt: string;
+}) {
+  if (!input.llmClient) {
+    return { draft: input.draft, generation: null };
+  }
+
+  return generateSpeechDraft({
+    game: input.record.game,
+    events: input.record.events,
+    draft: input.draft,
+    llmClient: input.llmClient,
+    generationId: createGenerationId(),
+    createdAt: input.createdAt,
+  });
+}
+
+function createGenerationId(): string {
+  return `generation_${randomUUID()}`;
 }
 
 function now(): string {
