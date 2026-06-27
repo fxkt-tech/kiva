@@ -14,6 +14,7 @@ import {
   firstNonEmpty,
   uniqueNonEmptyPrompts,
 } from "./prompt-builders";
+import { mechanicForDraftType } from "./role-mechanics";
 import {
   getLegalNightTargets,
 } from "./rules";
@@ -59,6 +60,7 @@ export async function generateActionDraft(
     viewerPlayerId: playerId,
   });
   const legalTargetIds = legalTargetIdsForDraft(input.game, input.events, input.draft);
+  const mechanicKey = mechanicForDraftType(input.draft.type);
   const request = {
     systemPrompt: [
       ...uniqueNonEmptyPrompts([
@@ -73,6 +75,7 @@ export async function generateActionDraft(
         role: "user" as const,
         content: [
           `draft=${input.draft.type}`,
+          `mechanic=${mechanicKey}`,
           `你是：${context.viewer.seatNo} 号 ${context.viewer.name}`,
           `你的身份：${context.viewer.roleName}`,
           "玩家名单：",

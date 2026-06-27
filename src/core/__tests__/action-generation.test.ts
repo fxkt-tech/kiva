@@ -63,6 +63,9 @@ describe("action generation", () => {
       `你的身份：${seer.roleName}`,
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
+      "mechanic=seer_check",
+    );
+    expect(result.generation?.request?.messages[0]?.content).toContain(
       "可选目标",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
