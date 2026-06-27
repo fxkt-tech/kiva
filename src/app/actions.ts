@@ -20,11 +20,6 @@ export async function createGameAction() {
 
 export async function confirmDraftAction(gameId: GameId) {
   await gameActions.confirmDraft(gameId);
-  revalidatePath(editorPath(gameId));
-  revalidatePath(previewPath(gameId));
-}
-
-export async function continueGameAction(gameId: GameId) {
   await gameActions.continueGame(gameId);
   revalidatePath(editorPath(gameId));
   revalidatePath(previewPath(gameId));

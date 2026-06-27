@@ -78,21 +78,11 @@ export function createGameActions(
           draftId: createDraftId(),
           createdAt: updatedAt,
         });
-        const generatedDraft = plannedDraft
-          ? await maybeGenerateDraft({
-              record,
-              draft: plannedDraft,
-              llmClient: options.llmClient,
-              createdAt: updatedAt,
-            })
-          : { draft: null, generation: null };
         const nextRecord: GameRecord = {
           ...record,
           game: { ...record.game, updatedAt },
-          draft: generatedDraft.draft,
-          generations: generatedDraft.generation
-            ? [...record.generations, generatedDraft.generation]
-            : record.generations,
+          draft: plannedDraft,
+          generations: record.generations,
         };
 
         await repository.save(nextRecord);

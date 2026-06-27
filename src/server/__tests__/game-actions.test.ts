@@ -167,14 +167,16 @@ describe("game actions", () => {
     });
   });
 
-  it("generates speech draft text and records generation during continue", async () => {
+  it("plans speech drafts during continue and generates content during regenerate", async () => {
     const repository = createGameRepository(await createTempDir());
     const created = await createGameActions(repository).createGame();
     const actions = createGameActions(repository, {
-      llmClient: new MockLlmClient(speechPathOutputs(created, [
-        "遗言先过。",
-        "我这里先报信息，1 号查杀。",
-      ])),
+      llmClient: new MockLlmClient([
+        {
+          text: "我这里先报信息，1 号查杀。",
+          reasoning: "根据可见信息推进发言。",
+        },
+      ]),
     });
 
     const withSpeech = await continueUntilDraftType(
@@ -185,17 +187,27 @@ describe("game actions", () => {
 
     expect(withSpeech.draft).toMatchObject({
       type: "day_speech_given",
+      payload: { text: "我先给出自己的判断。" },
+    });
+    expect(withSpeech.generations).toHaveLength(0);
+
+    const generated = await actions.regenerateDraft(created.game.id);
+
+    expect(generated.draft).toMatchObject({
+      type: "day_speech_given",
       payload: { text: "我这里先报信息，1 号查杀。" },
     });
-    expect(withSpeech.generations.filter((record) => record.purpose === "speech")).toHaveLength(2);
-    expect(withSpeech.generations.at(-1)).toMatchObject({
+    expect(generated.generations.at(-1)).toMatchObject({
       status: "success",
       purpose: "speech",
-      parsedOutput: { text: "我这里先报信息，1 号查杀。" },
+      parsedOutput: {
+        text: "我这里先报信息，1 号查杀。",
+        reasoning: "根据可见信息推进发言。",
+      },
     });
   });
 
-  it("keeps default speech draft and records failure when generation fails", async () => {
+  it("keeps default speech draft and records failure when regeneration fails", async () => {
     const repository = createGameRepository(await createTempDir());
     const actions = createGameActions(repository, {
       llmClient: failingLlmClient(),
@@ -212,7 +224,14 @@ describe("game actions", () => {
       type: "day_speech_given",
       payload: { text: "我先给出自己的判断。" },
     });
-    expect(withSpeech.generations.at(-1)).toMatchObject({
+
+    const regenerated = await actions.regenerateDraft(created.game.id);
+
+    expect(regenerated.draft).toMatchObject({
+      type: "day_speech_given",
+      payload: { text: "我先给出自己的判断。" },
+    });
+    expect(regenerated.generations.at(-1)).toMatchObject({
       status: "failed",
       purpose: "speech",
       error: "model unavailable",
@@ -223,11 +242,12 @@ describe("game actions", () => {
     const repository = createGameRepository(await createTempDir());
     const created = await createGameActions(repository).createGame();
     const actions = createGameActions(repository, {
-      llmClient: new MockLlmClient(speechPathOutputs(created, [
-        "遗言先过。",
-        "第一次发言。",
-        "重新生成后的发言。",
-      ])),
+      llmClient: new MockLlmClient([
+        {
+          text: "重新生成后的发言。",
+          reasoning: "根据当前可见信息重新组织发言。",
+        },
+      ]),
     });
     const withSpeech = await continueUntilDraftType(
       actions,
@@ -245,7 +265,10 @@ describe("game actions", () => {
     expect(regenerated.events).toEqual(withSpeech.events);
     expect(regenerated.generations.at(-1)).toMatchObject({
       status: "success",
-      parsedOutput: { text: "重新生成后的发言。" },
+      parsedOutput: {
+        text: "重新生成后的发言。",
+        reasoning: "根据当前可见信息重新组织发言。",
+      },
     });
   });
 
@@ -259,7 +282,7 @@ describe("game actions", () => {
     expect(regenerated).toEqual(withRoleDraft);
   });
 
-  it("generates wolf and seer action suggestions during continue", async () => {
+  it("generates wolf and seer action suggestions during regenerate", async () => {
     const repository = createGameRepository(await createTempDir());
     const wolfTarget = "placeholder";
     const actions = createGameActions(repository, {
@@ -287,6 +310,11 @@ describe("game actions", () => {
     );
     expect(withWolfKill.draft).toMatchObject({
       type: "wolf_kill_selected",
+    });
+
+    const generatedWolfKill = await generatedActions.regenerateDraft(created.game.id);
+    expect(generatedWolfKill.draft).toMatchObject({
+      type: "wolf_kill_selected",
       payload: { targetPlayerId: realWolfTarget },
     });
     await generatedActions.confirmDraft(created.game.id);
@@ -298,12 +326,17 @@ describe("game actions", () => {
     );
     expect(withSeerCheck.draft).toMatchObject({
       type: "seer_check_selected",
+    });
+
+    const generatedSeerCheck = await generatedActions.regenerateDraft(created.game.id);
+    expect(generatedSeerCheck.draft).toMatchObject({
+      type: "seer_check_selected",
       payload: { targetPlayerId: realSeerTarget },
     });
-    expect(withSeerCheck.generations.filter((record) => record.purpose === "action")).toHaveLength(2);
+    expect(generatedSeerCheck.generations.filter((record) => record.purpose === "action")).toHaveLength(2);
   });
 
-  it("generates witch medicine action suggestions during continue", async () => {
+  it("generates witch medicine action suggestions during regenerate", async () => {
     const repository = createGameRepository(await createTempDir());
     const actions = createGameActions(repository, {
       llmClient: new MockLlmClient([
@@ -322,9 +355,15 @@ describe("game actions", () => {
 
     expect(withWitchAntidote.draft).toMatchObject({
       type: "witch_antidote_decided",
+    });
+
+    const generated = await actions.regenerateDraft(created.game.id);
+
+    expect(generated.draft).toMatchObject({
+      type: "witch_antidote_decided",
       payload: { used: false, targetPlayerId: null },
     });
-    expect(withWitchAntidote.generations.at(-1)).toMatchObject({
+    expect(generated.generations.at(-1)).toMatchObject({
       purpose: "action",
       status: "success",
     });
@@ -413,20 +452,6 @@ function failingLlmClient(): LlmClient {
       throw new Error("model unavailable");
     },
   };
-}
-
-function speechPathOutputs(
-  record: GameRecord,
-  speeches: readonly string[],
-): readonly Record<string, unknown>[] {
-  const players = record.game.players;
-  return [
-    { targetPlayerId: players[4]?.playerId },
-    { targetPlayerId: players[0]?.playerId },
-    { used: false, targetPlayerId: null },
-    { used: false, targetPlayerId: null },
-    ...speeches.map((text) => ({ text })),
-  ];
 }
 
 function createDeferredSaveRepository(): GameRepository & {

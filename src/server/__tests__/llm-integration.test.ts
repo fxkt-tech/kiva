@@ -21,10 +21,12 @@ describe("LLM integration", () => {
     const repository = createGameRepository(await createTempDir());
     const created = await createGameActions(repository).createGame();
     const actions = createGameActions(repository, {
-      llmClient: new MockLlmClient(speechPathOutputs(created, [
-        "遗言由模型生成。",
-        "白天发言由模型生成。",
-      ])),
+      llmClient: new MockLlmClient([
+        {
+          text: "白天发言由模型生成。",
+          reasoning: "根据当前可见信息生成白天发言。",
+        },
+      ]),
     });
 
     const withSpeech = await continueUntilDraftType(
@@ -34,9 +36,13 @@ describe("LLM integration", () => {
     );
     expect(withSpeech.draft).toMatchObject({
       type: "day_speech_given",
-      payload: { text: "白天发言由模型生成。" },
     });
 
+    const generated = await actions.regenerateDraft(created.game.id);
+    expect(generated.draft).toMatchObject({
+      type: "day_speech_given",
+      payload: { text: "白天发言由模型生成。" },
+    });
     const confirmed = await actions.confirmDraft(created.game.id);
     const playback = compilePublicPlayback(
       confirmed.events,
@@ -69,18 +75,4 @@ async function continueUntilDraftType(
   }
 
   throw new Error(`Draft not reached: ${draftType}`);
-}
-
-function speechPathOutputs(
-  record: GameRecord,
-  speeches: readonly string[],
-): readonly Record<string, unknown>[] {
-  const players = record.game.players;
-  return [
-    { targetPlayerId: players[4]?.playerId },
-    { targetPlayerId: players[0]?.playerId },
-    { used: false, targetPlayerId: null },
-    { used: false, targetPlayerId: null },
-    ...speeches.map((text) => ({ text })),
-  ];
 }

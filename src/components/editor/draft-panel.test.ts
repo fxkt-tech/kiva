@@ -14,11 +14,20 @@ const game = createSeedGame({ gameId, createdAt });
 const players = game.players;
 
 describe("DraftPanel payload controls", () => {
-  it("auto-continues from an empty draft state without a manual next button", () => {
+  it("renders a plain empty state without an automatic next-draft transition", () => {
     const html = renderPanel(null);
 
-    expect(html).toContain("Generating next draft");
+    expect(html).toContain("No draft");
+    expect(html).not.toContain("Generating next draft");
     expect(html).not.toContain("Generate next draft");
+  });
+
+  it("renders a whole-draft LLM loading overlay before the first generation returns", () => {
+    const html = renderPanel(wolfKillDraft(players[0].playerId));
+
+    expect(html).toContain("Generating LLM draft");
+    expect(html).toContain("待确认：狼人刀人");
+    expect(html).toContain("aria-busy=\"true\"");
   });
 
   it("renders player options for target payload drafts", () => {
@@ -38,10 +47,10 @@ describe("DraftPanel payload controls", () => {
     expect(html).toContain("Regenerate");
   });
 
-  it("does not render regenerate control for non-speech drafts", () => {
+  it("renders regenerate control for action drafts", () => {
     const html = renderPanel(wolfKillDraft(players[0].playerId));
 
-    expect(html).not.toContain("Regenerate");
+    expect(html).toContain("Regenerate");
   });
 
   it("renders latest generation summary for current draft", () => {
