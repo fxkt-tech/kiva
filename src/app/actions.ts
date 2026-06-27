@@ -6,8 +6,11 @@ import type { DraftPayloadEdit } from "@/core/draft-edit";
 import type { GameId, PlayerId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
+import { createRuntimeLlmClient } from "@/server/llm-runtime";
 
-const gameActions = createGameActions(createGameRepository());
+const gameActions = createGameActions(createGameRepository(), {
+  llmClient: createRuntimeLlmClient(),
+});
 
 export async function createGameAction() {
   const record = await gameActions.createGame();
