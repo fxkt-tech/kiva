@@ -1,5 +1,6 @@
 import {
   confirmDraftAction,
+  continueGameAction,
   deleteDraftAction,
   editDraftPayloadAction,
   regenerateDraftAction,
@@ -30,8 +31,15 @@ export function DraftPanel({
         <div className="shrink-0 border-b border-zinc-800 px-3 py-2">
           <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
         </div>
-        <div className="px-3 py-6 text-sm text-zinc-500">
-          No draft. The game has no pending step.
+        <div className="space-y-3 px-3 py-6 text-sm text-zinc-500">
+          <p>No draft. The last confirmed result is already in timeline.</p>
+          <form action={continueGameAction.bind(null, gameId)}>
+            <FormSubmitButton
+              label="Generate next draft"
+              pendingLabel="Generating..."
+              className="rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-950 transition hover:bg-white"
+            />
+          </form>
         </div>
       </section>
     );

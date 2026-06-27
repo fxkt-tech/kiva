@@ -46,7 +46,7 @@ describe("game actions", () => {
     await expect(actions.getGame(created.game.id)).resolves.toEqual(created);
   });
 
-  it("continues a game, confirms the draft, appends one official event, and plans the next draft", async () => {
+  it("confirms the current draft into one official event without planning the next draft", async () => {
     const { actions, repository } = await createActions();
     const created = await actions.createGame();
 
@@ -56,10 +56,7 @@ describe("game actions", () => {
 
     const confirmed = await actions.confirmDraft(created.game.id);
 
-    expect(confirmed.draft).toMatchObject({
-      id: expect.stringMatching(/^draft_/),
-      type: "role_assigned",
-    });
+    expect(confirmed.draft).toBeNull();
     expect(getActiveEvents(confirmed.events)).toHaveLength(1);
     expect(confirmed.events[0]).toMatchObject({
       id: expect.stringMatching(/^event_1_/),
@@ -75,11 +72,14 @@ describe("game actions", () => {
         status: event.status,
         type: event.type,
       })),
-      draft: {
-        id: confirmed.draft?.id,
-        type: confirmed.draft?.type,
-      },
+      draft: null,
       generations: [],
+    });
+
+    const withNextDraft = await actions.continueGame(created.game.id);
+    expect(withNextDraft.draft).toMatchObject({
+      id: expect.stringMatching(/^draft_/),
+      type: "role_assigned",
     });
   });
 
@@ -367,15 +367,18 @@ describe("game actions", () => {
     await editPromise;
     const confirmed = await confirmPromise;
 
-    expect(confirmed.draft).toMatchObject({
-      type: "seer_check_selected",
-    });
+    expect(confirmed.draft).toBeNull();
     expect(confirmed.events.at(-1)).toMatchObject({
       type: "wolf_kill_selected",
       targetPlayerIds: [editedTarget],
       payload: { targetPlayerId: editedTarget },
     });
     await expect(repository.get(created.game.id)).resolves.toEqual(confirmed);
+
+    const withNextDraft = await actions.continueGame(created.game.id);
+    expect(withNextDraft.draft).toMatchObject({
+      type: "seer_check_selected",
+    });
   });
 
   it("throws when the game does not exist", async () => {

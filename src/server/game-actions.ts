@@ -123,30 +123,8 @@ export function createGameActions(
           draft: null,
           generations: record.generations,
         };
-        const plannedDraft = planNextDraft({
-          game: updatedGame,
-          events: nextEvents,
-          draftId: createDraftId(),
-          createdAt: updatedAt,
-        });
-        const generatedDraft = plannedDraft
-          ? await maybeGenerateDraft({
-              record: confirmedRecord,
-              draft: plannedDraft,
-              llmClient: options.llmClient,
-              createdAt: updatedAt,
-            })
-          : { draft: null, generation: null };
-        const nextRecord: GameRecord = {
-          ...confirmedRecord,
-          draft: generatedDraft.draft,
-          generations: generatedDraft.generation
-            ? [...record.generations, generatedDraft.generation]
-            : record.generations,
-        };
-
-        await repository.save(nextRecord);
-        return nextRecord;
+        await repository.save(confirmedRecord);
+        return confirmedRecord;
       });
     },
 
