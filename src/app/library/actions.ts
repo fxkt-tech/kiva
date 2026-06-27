@@ -11,9 +11,11 @@ import {
   roleFromFormData,
 } from "./form-parsers";
 
+const dataDir = process.env.KIVA_DATA_DIR;
+
 const libraryActions = createLibraryActions({
-  libraryRepository: createLibraryRepository(process.env.KIVA_DATA_DIR),
-  gameRepository: createGameRepository(),
+  libraryRepository: createLibraryRepository(dataDir),
+  gameRepository: createGameRepository(dataDir),
 });
 
 export async function saveRoleAction(formData: FormData) {

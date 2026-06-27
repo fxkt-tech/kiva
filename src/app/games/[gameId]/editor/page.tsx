@@ -16,7 +16,8 @@ type EditorPageProps = {
 export default async function EditorPage({ params }: EditorPageProps) {
   const { gameId } = await params;
   const typedGameId = gameId as GameId;
-  const gameActions = createGameActions(createGameRepository());
+  const dataDir = process.env.KIVA_DATA_DIR;
+  const gameActions = createGameActions(createGameRepository(dataDir));
   const loadedRecord = await gameActions.getGame(typedGameId);
 
   if (!loadedRecord) {

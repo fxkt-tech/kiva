@@ -6,7 +6,10 @@ import { createGameRepository } from "@/server/game-repository";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const records = await createGameActions(createGameRepository()).listGames();
+  const dataDir = process.env.KIVA_DATA_DIR;
+  const records = await createGameActions(
+    createGameRepository(dataDir),
+  ).listGames();
 
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-6 text-zinc-100 sm:px-6 lg:px-8">

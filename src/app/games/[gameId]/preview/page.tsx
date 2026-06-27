@@ -13,7 +13,8 @@ type PreviewPageProps = {
 
 export default async function PreviewPage({ params }: PreviewPageProps) {
   const { gameId } = await params;
-  const record = await createGameActions(createGameRepository()).getGame(
+  const dataDir = process.env.KIVA_DATA_DIR;
+  const record = await createGameActions(createGameRepository(dataDir)).getGame(
     gameId as GameId,
   );
 

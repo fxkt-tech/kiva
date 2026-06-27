@@ -8,7 +8,9 @@ import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
 import { createRuntimeLlmClient } from "@/server/llm-runtime";
 
-const gameActions = createGameActions(createGameRepository(), {
+const dataDir = process.env.KIVA_DATA_DIR;
+
+const gameActions = createGameActions(createGameRepository(dataDir), {
   llmClient: createRuntimeLlmClient(),
 });
 
