@@ -87,25 +87,61 @@ export function PlaybackStage({ items }: PlaybackStageProps) {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black p-4 text-white">
-      <section className="aspect-video w-full max-w-6xl overflow-hidden bg-zinc-950 shadow-2xl shadow-black">
-        <div className="flex h-full flex-col justify-center px-[7%] py-[6%]">
+      <section className="aspect-video w-full max-w-6xl overflow-hidden bg-[#070708] shadow-2xl shadow-black">
+        <div className="grid h-full grid-rows-[1fr_auto]">
           {current ? (
-            <article className="max-w-4xl">
-              <div className="mb-5 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.2em] text-zinc-500">
-                <span>#{current.index}</span>
-                <span>{current.phase}</span>
-              </div>
-              <h1 className="break-words text-4xl font-semibold leading-tight text-zinc-50 sm:text-5xl lg:text-6xl">
-                {current.title}
-              </h1>
-              {current.text ? (
-                <p className="mt-6 whitespace-pre-wrap break-words text-xl leading-8 text-zinc-300 sm:text-2xl sm:leading-10">
-                  {current.text}
-                </p>
-              ) : null}
-            </article>
+            <div className="grid min-h-0 grid-cols-[minmax(0,1fr)_260px] gap-6 px-[5%] pt-[4%]">
+              <article className="flex min-w-0 flex-col justify-center">
+                <div className="mb-5 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.18em] text-zinc-500">
+                  <span>#{current.index}</span>
+                  <span>{current.phase}</span>
+                  <span>{current.kind}</span>
+                </div>
+                <h1 className="break-words text-4xl font-semibold leading-tight text-zinc-50 sm:text-5xl lg:text-6xl">
+                  {current.title}
+                </h1>
+                {current.text ? (
+                  <p className="mt-6 whitespace-pre-wrap break-words text-xl leading-8 text-zinc-300 sm:text-2xl sm:leading-10">
+                    {current.text}
+                  </p>
+                ) : null}
+              </article>
+              <aside className="min-h-0 py-2">
+                <div className="mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600">
+                  Players
+                </div>
+                <div className="grid gap-2">
+                  {current.players.map((player) => (
+                    <div
+                      className={[
+                        "grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 border px-3 py-2 text-sm",
+                        player.highlighted
+                          ? "border-cyan-500/60 bg-cyan-500/10 text-zinc-100"
+                          : "border-zinc-800 bg-zinc-950/70 text-zinc-400",
+                        player.status === "dead" ? "opacity-65" : "",
+                      ].join(" ")}
+                      key={player.playerId}
+                    >
+                      <span className="text-xs text-zinc-600">
+                        Seat {player.seatNo}
+                      </span>
+                      <span className="truncate font-medium">{player.name}</span>
+                      <span
+                        className={
+                          player.status === "dead"
+                            ? "text-xs text-red-300"
+                            : "text-xs text-emerald-300"
+                        }
+                      >
+                        {player.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </aside>
+            </div>
           ) : (
-            <div className="text-center">
+            <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="text-sm uppercase tracking-[0.2em] text-zinc-600">
                 Playback
               </div>
@@ -114,6 +150,35 @@ export function PlaybackStage({ items }: PlaybackStageProps) {
               </p>
             </div>
           )}
+          {current ? (
+            <div className="border-t border-zinc-900 px-[5%] py-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="mb-2 text-xs uppercase tracking-[0.18em] text-zinc-600">
+                    Details
+                  </div>
+                  {current.details.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {current.details.map((detail) => (
+                        <span
+                          className="max-w-full break-words border border-zinc-800 bg-zinc-950 px-2.5 py-1 text-xs text-zinc-400"
+                          key={detail}
+                        >
+                          {detail}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-zinc-700">No extra details</p>
+                  )}
+                </div>
+                <div className="shrink-0 text-right font-mono text-xs text-zinc-600">
+                  <div>{formatTime(current.startsAtMs)}</div>
+                  <div>{formatTime(current.startsAtMs + current.durationMs)}</div>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
       <section
@@ -174,4 +239,12 @@ export function PlaybackStage({ items }: PlaybackStageProps) {
       </section>
     </main>
   );
+}
+
+function formatTime(milliseconds: number): string {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }

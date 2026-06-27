@@ -44,16 +44,34 @@ describe("playback compiler", () => {
       {
         index: 1,
         phase: "night",
+        kind: "phase",
         title: "第 1 夜开始",
         text: "夜晚开始。",
+        details: [],
         durationMs: 1600,
+        startsAtMs: 0,
+        players: expect.arrayContaining([
+          expect.objectContaining({
+            playerId: players[0].playerId,
+            status: "alive",
+          }),
+        ]),
       },
       {
         index: 7,
         phase: "night",
+        kind: "phase",
         title: "第 1 夜开始",
         text: "夜晚开始。",
+        details: [],
         durationMs: 1600,
+        startsAtMs: 1600,
+        players: expect.arrayContaining([
+          expect.objectContaining({
+            playerId: players[0].playerId,
+            status: "alive",
+          }),
+        ]),
       },
     ]);
   });
@@ -114,5 +132,58 @@ describe("playback compiler", () => {
         }),
       ], players).map((item) => item.durationMs),
     ).toEqual([2200, 4200, 1200, 2400, 5000]);
+  });
+
+  it("keeps public player status from revealing private night deaths before announcement", () => {
+    const killedPlayerId = players[0].playerId;
+
+    const playback = compilePublicPlayback([
+      event(1, { kind: "public" }),
+      event(2, { kind: "host_only" }, {
+        type: "night_resolved",
+        phase: "night",
+        payload: { deadPlayerIds: [killedPlayerId] },
+      }),
+      event(3, { kind: "public" }, {
+        type: "death_announced",
+        phase: "day",
+        payload: { deadPlayerIds: [killedPlayerId] },
+      }),
+    ], players);
+
+    expect(playback[0]?.players.find((player) => player.playerId === killedPlayerId))
+      .toMatchObject({ status: "alive" });
+    expect(playback[1]?.players.find((player) => player.playerId === killedPlayerId))
+      .toMatchObject({ status: "dead", highlighted: true });
+  });
+
+  it("carries presenter details into playback scenes", () => {
+    const playback = compilePublicPlayback([
+      event(1, { kind: "public" }, {
+        type: "exile_resolved",
+        phase: "vote",
+        payload: {
+          exiledPlayerId: players[1].playerId,
+          tiedPlayerIds: [],
+          voteTable: [
+            {
+              voterPlayerId: players[0].playerId,
+              targetPlayerId: players[1].playerId,
+            },
+          ],
+          voteType: "exile",
+          dayNumber: 1,
+          round: 1,
+          revealedRoles: [],
+        },
+      }),
+    ], players);
+
+    expect(playback[0]).toMatchObject({
+      kind: "resolution",
+      details: [expect.stringContaining("->")],
+    });
+    expect(playback[0]?.players.find((player) => player.playerId === players[1].playerId))
+      .toMatchObject({ status: "dead", highlighted: true });
   });
 });

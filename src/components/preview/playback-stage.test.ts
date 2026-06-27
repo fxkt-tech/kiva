@@ -40,6 +40,29 @@ describe("PlaybackStage", () => {
     expect(html).toContain("1 / 3");
   });
 
+  it("renders scene details and player status inside the stage", () => {
+    const html = renderStage([
+      item({
+        index: 8,
+        title: "投票结算",
+        text: "放逐出局：2 号 林夏。",
+        details: ["1 号 秦川 -> 2 号 林夏"],
+        players: [
+          player({ seatNo: 1, name: "秦川", highlighted: false }),
+          player({ seatNo: 2, name: "林夏", status: "dead", highlighted: true }),
+        ],
+      }),
+    ]);
+
+    expect(html).toContain("1 号 秦川");
+    expect(html).toContain("2 号 林夏");
+    expect(html).toContain("Seat 1");
+    expect(html).toContain("秦川");
+    expect(html).toContain("Seat 2");
+    expect(html).toContain("林夏");
+    expect(html).toContain("dead");
+  });
+
   it("disables playback controls that cannot advance a single-item sequence", () => {
     const html = renderStage([item({ index: 1, title: "Only event" })]);
 
@@ -59,8 +82,24 @@ function item(
 ): PlaybackItem {
   return {
     durationMs: 2200,
+    startsAtMs: 0,
+    kind: "announcement",
     phase: "day",
     text: "",
+    details: [],
+    players: [],
+    ...overrides,
+  };
+}
+
+function player(
+  overrides: Partial<PlaybackItem["players"][number]> &
+    Pick<PlaybackItem["players"][number], "seatNo" | "name">,
+): PlaybackItem["players"][number] {
+  return {
+    playerId: `player_${overrides.seatNo}` as PlaybackItem["players"][number]["playerId"],
+    status: "alive",
+    highlighted: false,
     ...overrides,
   };
 }

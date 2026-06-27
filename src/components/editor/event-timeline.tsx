@@ -1,16 +1,24 @@
 import { rollbackAfterAction } from "@/app/actions";
 import { formatEventForHost, formatVisibility } from "@/core/event-presenter";
 import type { GameEvent } from "@/core/events";
+import type { GenerationRecord } from "@/core/generation-record";
 import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
+import { LlmGenerationDetails } from "./llm-generation-details";
 
 type EventTimelineProps = {
   readonly gameId: GameId;
   readonly events: readonly GameEvent[];
   readonly players: readonly PlayerSnapshot[];
+  readonly generations: readonly GenerationRecord[];
 };
 
-export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
+export function EventTimeline({
+  gameId,
+  events,
+  players,
+  generations,
+}: EventTimelineProps) {
   const orderedEvents = [...events].sort((left, right) => {
     if (left.index === right.index) {
       return right.createdAt.localeCompare(left.createdAt);
@@ -33,6 +41,8 @@ export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
           {orderedEvents.map((event) => {
             const active = event.status === "active";
             const presented = formatEventForHost(event, players);
+            const eventGenerations = generationsForEvent(generations, event);
+            const latestGeneration = eventGenerations[0] ?? null;
 
             return (
               <li
@@ -64,6 +74,27 @@ export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
                         ))}
                       </ul>
                     ) : null}
+                    {latestGeneration ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-zinc-800 pt-3 text-xs text-zinc-500">
+                        <span className="font-medium uppercase tracking-[0.14em]">
+                          Generation
+                        </span>
+                        <span>{latestGeneration.status}</span>
+                        <span>
+                          {latestGeneration.provider}/{latestGeneration.model}
+                        </span>
+                        <span>{latestGeneration.promptVersion}</span>
+                        {eventGenerations.length > 1 ? (
+                          <span>{eventGenerations.length} generations</span>
+                        ) : null}
+                        <LlmGenerationDetails generation={latestGeneration} />
+                        {latestGeneration.error ? (
+                          <span className="basis-full break-words text-red-300">
+                            {latestGeneration.error}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                   {active ? (
                     <form
@@ -90,4 +121,17 @@ export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
       )}
     </section>
   );
+}
+
+function generationsForEvent(
+  generations: readonly GenerationRecord[],
+  event: GameEvent,
+): readonly GenerationRecord[] {
+  if (!event.createdFromDraftId) {
+    return [];
+  }
+
+  return [...generations]
+    .filter((generation) => generation.draftId === event.createdFromDraftId)
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }

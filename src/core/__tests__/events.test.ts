@@ -203,10 +203,11 @@ describe("full game event model", () => {
       type: "vote_cast",
       payload: { targetPlayerId: null, voteType: "pk" },
     });
-    expect(compilePublicPlayback([event], game.players)).toEqual([
+    expect(compilePublicPlayback([event], game.players)).toMatchObject([
       {
         index: 1,
         phase: "vote",
+        kind: "vote",
         title: "PK 投票",
         text: expect.stringContaining("弃票"),
         durationMs: 1200,

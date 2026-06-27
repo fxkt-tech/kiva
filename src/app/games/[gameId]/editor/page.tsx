@@ -66,6 +66,7 @@ export default async function EditorPage({ params }: EditorPageProps) {
               gameId={typedGameId}
               events={record.events}
               players={record.game.players}
+              generations={record.generations}
             />
             <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
               <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-3 py-2">
