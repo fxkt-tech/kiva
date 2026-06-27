@@ -24,6 +24,12 @@ function validRole(overrides: Partial<RoleDefinition> = {}): RoleDefinition {
 }
 
 describe("role definitions", () => {
+  it("rejects a non-array collection", () => {
+    expect(() => validateRoleDefinitions({})).toThrow(
+      "Role definitions must be an array",
+    );
+  });
+
   it("accepts a valid role collection", () => {
     const roles = [
       validRole(),
@@ -70,6 +76,27 @@ describe("role definitions", () => {
     );
   });
 
+  it.each([
+    ["name", { name: 123 }, "Role seer must include a name"],
+    ["systemPrompt", { systemPrompt: {} }, "Role seer must include a systemPrompt"],
+    ["enabled", { enabled: "yes" }, "Role seer enabled must be a boolean"],
+    ["createdAt", { createdAt: "not-a-date" }, "Role seer createdAt must be an ISO timestamp"],
+    ["createdAt", { createdAt: "2026-06-27" }, "Role seer createdAt must be an ISO timestamp"],
+    ["updatedAt", { updatedAt: "" }, "Role seer updatedAt must be an ISO timestamp"],
+  ] satisfies Array<[string, Record<string, unknown>, string]>)(
+    "rejects invalid %s field types",
+    (_field, overrides, message) => {
+      expect(() =>
+        validateRoleDefinitions([
+          {
+            ...validRole(),
+            ...overrides,
+          },
+        ]),
+      ).toThrow(message);
+    },
+  );
+
   it("rejects duplicate ids", () => {
     expect(() =>
       validateRoleDefinitions([
@@ -115,6 +142,89 @@ describe("role definitions", () => {
       validateRoleDefinitions([validRole({ nightOrder })]),
     ).toThrow("Role seer nightOrder must be null or a finite number >= 0");
   });
+
+  it.each([
+    ["object", "invalid", "Role seer defaultModelBinding must be an object or null"],
+    [
+      "provider",
+      {
+        provider: "",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+      },
+      "Role seer defaultModelBinding.provider must be set",
+    ],
+    [
+      "model",
+      {
+        provider: "mock",
+        model: "",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+      },
+      "Role seer defaultModelBinding.model must be set",
+    ],
+    [
+      "temperature",
+      {
+        provider: "mock",
+        model: "mock-model",
+        temperature: Infinity,
+        maxTokens: 1000,
+        responseFormat: "json",
+      },
+      "Role seer defaultModelBinding.temperature must be a finite number",
+    ],
+    [
+      "maxTokens",
+      {
+        provider: "mock",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 0,
+        responseFormat: "json",
+      },
+      "Role seer defaultModelBinding.maxTokens must be a positive integer",
+    ],
+    [
+      "responseFormat",
+      {
+        provider: "mock",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "text",
+      },
+      "Role seer defaultModelBinding.responseFormat must be json",
+    ],
+    [
+      "fallbackModel",
+      {
+        provider: "mock",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+        fallbackModel: "",
+      },
+      "Role seer defaultModelBinding.fallbackModel must be a non-empty string",
+    ],
+  ] satisfies Array<[string, unknown, string]>)(
+    "rejects invalid default model binding %s",
+    (_field, defaultModelBinding, message) => {
+      expect(() =>
+        validateRoleDefinitions([
+          {
+            ...validRole(),
+            defaultModelBinding,
+          },
+        ]),
+      ).toThrow(message);
+    },
+  );
 
   it("allows disabled role definitions without prompts", () => {
     expect(

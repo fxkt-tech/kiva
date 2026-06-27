@@ -37,9 +37,11 @@ export type RoleDefinition = {
 
 const FACTIONS = ["wolves", "good"] as const;
 
-export function validateRoleDefinitions(
-  roles: readonly RoleDefinition[],
-): readonly RoleDefinition[] {
+export function validateRoleDefinitions(roles: unknown): readonly RoleDefinition[] {
+  if (!Array.isArray(roles)) {
+    throw new Error("Role definitions must be an array");
+  }
+
   const roleIds = new Set<string>();
 
   for (const role of roles) {
@@ -65,11 +67,11 @@ export function validateRoleDefinitions(
       );
     }
 
-    if (role.name.trim().length === 0) {
+    if (!isNonBlankString(role.name)) {
       throw new Error(`Role ${roleId} must include a name`);
     }
 
-    if (role.enabled && role.systemPrompt.trim().length === 0) {
+    if (role.enabled && !isNonBlankString(role.systemPrompt)) {
       throw new Error(`Role ${roleId} must include a systemPrompt`);
     }
 
@@ -97,20 +99,21 @@ export function validateRoleDefinitions(
       throw new Error(`Role ${roleId} enabled must be a boolean`);
     }
 
-    requireIsoString(role.createdAt, `Role ${roleId} createdAt`);
-    requireIsoString(role.updatedAt, `Role ${roleId} updatedAt`);
+    validateModelBinding(role.defaultModelBinding, roleId);
+    requireIsoTimestamp(role.createdAt, `Role ${roleId} createdAt`);
+    requireIsoTimestamp(role.updatedAt, `Role ${roleId} updatedAt`);
   }
 
-  return roles;
+  return roles as readonly RoleDefinition[];
 }
 
-function assertRoleObject(role: RoleDefinition): void {
+function assertRoleObject(role: unknown): asserts role is RoleDefinition {
   if (role === null || typeof role !== "object") {
     throw new Error("Role definition must be an object");
   }
 }
 
-function requireStableId(value: string, fieldName: string): string {
+function requireStableId(value: unknown, fieldName: string): string {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new Error(`${fieldName} must not be blank`);
   }
@@ -122,14 +125,77 @@ function requireStableId(value: string, fieldName: string): string {
   return value;
 }
 
-function requireIsoString(value: string, fieldName: string): void {
-  if (typeof value !== "string" || value.trim().length === 0) {
-    throw new Error(`${fieldName} must be a non-empty string`);
+function requireIsoTimestamp(value: unknown, fieldName: string): void {
+  if (
+    typeof value !== "string" ||
+    Number.isNaN(Date.parse(value)) ||
+    new Date(value).toISOString() !== value
+  ) {
+    throw new Error(`${fieldName} must be an ISO timestamp`);
   }
 }
 
 function isValidNightOrder(value: number | null): boolean {
-  return value === null || (typeof value === "number" && Number.isFinite(value) && value >= 0);
+  return (
+    value === null ||
+    (typeof value === "number" && Number.isFinite(value) && value >= 0)
+  );
+}
+
+function validateModelBinding(value: unknown, roleId: string): void {
+  if (value === null) {
+    return;
+  }
+
+  if (typeof value !== "object") {
+    throw new Error(`Role ${roleId} defaultModelBinding must be an object or null`);
+  }
+
+  const binding = value as Partial<ModelBindingSnapshot>;
+
+  if (!isNonBlankString(binding.provider)) {
+    throw new Error(`Role ${roleId} defaultModelBinding.provider must be set`);
+  }
+
+  if (!isNonBlankString(binding.model)) {
+    throw new Error(`Role ${roleId} defaultModelBinding.model must be set`);
+  }
+
+  if (
+    typeof binding.temperature !== "number" ||
+    !Number.isFinite(binding.temperature)
+  ) {
+    throw new Error(
+      `Role ${roleId} defaultModelBinding.temperature must be a finite number`,
+    );
+  }
+
+  if (
+    typeof binding.maxTokens !== "number" ||
+    !Number.isInteger(binding.maxTokens) ||
+    binding.maxTokens <= 0
+  ) {
+    throw new Error(
+      `Role ${roleId} defaultModelBinding.maxTokens must be a positive integer`,
+    );
+  }
+
+  if (binding.responseFormat !== "json") {
+    throw new Error(`Role ${roleId} defaultModelBinding.responseFormat must be json`);
+  }
+
+  if (
+    binding.fallbackModel !== undefined &&
+    !isNonBlankString(binding.fallbackModel)
+  ) {
+    throw new Error(
+      `Role ${roleId} defaultModelBinding.fallbackModel must be a non-empty string`,
+    );
+  }
+}
+
+function isNonBlankString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function isOneOf<T extends readonly string[]>(
