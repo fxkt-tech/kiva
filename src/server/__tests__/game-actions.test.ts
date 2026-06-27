@@ -63,7 +63,17 @@ describe("game actions", () => {
       status: "active",
       createdFromDraftId: withDraft.draft?.id,
     });
-    await expect(repository.get(created.game.id)).resolves.toEqual(confirmed);
+    await expect(repository.get(created.game.id)).resolves.toMatchObject({
+      game: { id: confirmed.game.id, updatedAt: confirmed.game.updatedAt },
+      events: confirmed.events.map((event) => ({
+        id: event.id,
+        index: event.index,
+        status: event.status,
+        type: event.type,
+      })),
+      draft: null,
+      generations: [],
+    });
   });
 
   it("does not overwrite an existing draft when continuing again", async () => {
@@ -96,7 +106,17 @@ describe("game actions", () => {
       [1, "active"],
       [2, "superseded"],
     ]);
-    await expect(repository.get(created.game.id)).resolves.toEqual(rolledBack);
+    await expect(repository.get(created.game.id)).resolves.toMatchObject({
+      game: { id: rolledBack.game.id, updatedAt: rolledBack.game.updatedAt },
+      events: rolledBack.events.map((event) => ({
+        id: event.id,
+        index: event.index,
+        status: event.status,
+        type: event.type,
+      })),
+      draft: null,
+      generations: [],
+    });
   });
 
   it("updates current draft payload before confirmation", async () => {

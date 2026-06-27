@@ -34,7 +34,12 @@ export function createGameActions(repository: GameRepository) {
         createdAt,
         ruleset: createDefaultRuleset(),
       });
-      const record: GameRecord = { game, events: [], draft: null };
+      const record: GameRecord = {
+        game,
+        events: [],
+        draft: null,
+        generations: [],
+      };
 
       await repository.save(record);
       return record;
@@ -91,6 +96,7 @@ export function createGameActions(repository: GameRepository) {
           game: { ...record.game, updatedAt },
           events: appendEvent(record.events, nextEvent),
           draft: null,
+          generations: record.generations,
         };
 
         await repository.save(nextRecord);
@@ -145,6 +151,7 @@ export function createGameActions(repository: GameRepository) {
           game: { ...record.game, updatedAt },
           events: rollbackAfterIndex(record.events, index),
           draft: null,
+          generations: record.generations,
         };
 
         await repository.save(nextRecord);

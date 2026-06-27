@@ -12,12 +12,14 @@ import { join } from "node:path";
 import type { DraftEvent } from "@/core/drafts";
 import type { GameEvent } from "@/core/events";
 import type { Game } from "@/core/game";
+import type { GenerationRecord } from "@/core/generation-record";
 import type { GameId } from "@/core/types";
 
 export type GameRecord = {
   readonly game: Game;
   readonly events: readonly GameEvent[];
   readonly draft: DraftEvent | null;
+  readonly generations: readonly GenerationRecord[];
 };
 
 export type GameRepository = {
@@ -54,7 +56,7 @@ export function createGameRepository(rootDir = ".kiva-data"): GameRepository {
     async get(gameId) {
       try {
         const content = await readFile(recordPath(gameId), "utf8");
-        return JSON.parse(content) as GameRecord;
+        return normalizeRecord(JSON.parse(content));
       } catch (error) {
         if (isNodeError(error) && error.code === "ENOENT") {
           return null;
@@ -71,7 +73,7 @@ export function createGameRepository(rootDir = ".kiva-data"): GameRepository {
           .filter((filename) => filename.endsWith(".json"))
           .map(async (filename) => {
             const content = await readFile(join(gamesDir, filename), "utf8");
-            return JSON.parse(content) as GameRecord;
+            return normalizeRecord(JSON.parse(content));
           }),
       );
 
@@ -96,6 +98,17 @@ export function createGameRepository(rootDir = ".kiva-data"): GameRepository {
         await release();
       }
     },
+  };
+}
+
+function normalizeRecord(rawRecord: unknown): GameRecord {
+  const record = rawRecord as Omit<GameRecord, "generations"> & {
+    readonly generations?: readonly GenerationRecord[];
+  };
+
+  return {
+    ...record,
+    generations: record.generations ?? [],
   };
 }
 

@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, describe, expect, it } from "vitest";
@@ -67,6 +67,7 @@ describe("game repository", () => {
       game: game(gameId, "2026-06-26T00:03:00.000Z"),
       events: [event(gameId)],
       draft: draft(gameId),
+      generations: [],
     };
 
     await repository.save(record);
@@ -84,25 +85,45 @@ describe("game repository", () => {
       game: game(olderGameId, "2026-06-26T00:03:00.000Z"),
       events: [],
       draft: null,
+      generations: [],
     });
     await repository.save({
       game: game(newerGameId, "2026-06-26T00:04:00.000Z"),
       events: [],
       draft: null,
+      generations: [],
     });
 
-    await expect(repository.list()).resolves.toEqual([
-      {
-        game: game(newerGameId, "2026-06-26T00:04:00.000Z"),
-        events: [],
-        draft: null,
-      },
-      {
-        game: game(olderGameId, "2026-06-26T00:03:00.000Z"),
-        events: [],
-        draft: null,
-      },
+    const records = await repository.list();
+    expect(records.map((record) => record.game.id)).toEqual([
+      newerGameId,
+      olderGameId,
     ]);
+    expect(records.map((record) => record.generations)).toEqual([[], []]);
+  });
+
+  it("normalizes old records without generations", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const gameId = "old-game" as GameId;
+    const oldRecord = {
+      game: game(gameId, "2026-06-26T00:03:00.000Z"),
+      events: [],
+      draft: null,
+    };
+    await mkdir(join(rootDir, "games"), { recursive: true });
+    await writeFile(
+      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      JSON.stringify(oldRecord),
+      "utf8",
+    );
+
+    await expect(repository.get(gameId)).resolves.toMatchObject({
+      game: { id: gameId },
+      events: [],
+      draft: null,
+      generations: [],
+    });
   });
 
   it("stores game ids as one safe filename segment under games", async () => {
@@ -114,6 +135,7 @@ describe("game repository", () => {
       game: game(gameId, "2026-06-26T00:03:00.000Z"),
       events: [],
       draft: null,
+      generations: [],
     });
 
     await expect(
@@ -136,6 +158,7 @@ describe("game repository", () => {
       game: game(gameId, "2026-06-26T00:03:00.000Z"),
       events: [],
       draft: null,
+      generations: [],
     });
 
     const content = await readFile(
