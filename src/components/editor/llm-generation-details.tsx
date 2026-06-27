@@ -25,7 +25,7 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
       <dialog
         ref={dialogRef}
         aria-labelledby={titleId}
-        className="max-h-[82vh] w-[min(920px,calc(100vw-32px))] overflow-hidden rounded-lg border border-zinc-700 bg-zinc-950 p-0 text-zinc-100 backdrop:bg-black/70"
+        className="fixed inset-0 m-auto max-h-[82vh] w-[min(920px,calc(100vw-32px))] overflow-hidden rounded-lg border border-zinc-700 bg-zinc-950 p-0 text-zinc-100 backdrop:bg-black/70"
       >
         <div className="flex items-center justify-between gap-3 border-b border-zinc-800 px-4 py-3">
           <div>
