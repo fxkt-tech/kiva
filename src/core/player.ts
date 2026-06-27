@@ -21,19 +21,35 @@ export type PrivateKnowledgeKey =
   | "wolf_teammates"
   | "witch_medicines";
 
+export type PlayerTeam = "wolf" | "god" | "villager";
+
+export type PlayerMechanicKey =
+  | "wolf_kill"
+  | "seer_check"
+  | "witch_medicine"
+  | "none";
+
 export type PlayerSnapshot = {
   readonly playerId: PlayerId;
   readonly seatNo: number;
+  readonly characterSourceId: string | null;
   readonly profileSourceId?: string;
   readonly name: string;
-  readonly avatar?: string;
+  readonly roleSourceId: string;
+  readonly avatar: string | null;
   readonly persona: string;
   readonly speakingStyle: string;
   readonly reasoningStyle: string;
+  readonly characterSystemPromptSnapshot: string;
+  readonly roleSystemPromptSnapshot: string;
+  readonly roleActionPromptSnapshot: string | null;
   readonly systemPrompt: string;
   readonly modelBindingSnapshot: ModelBindingSnapshot;
   readonly gameRole: GameRole;
+  readonly roleName: string;
   readonly faction: Faction;
+  readonly team: PlayerTeam;
+  readonly mechanicKey: PlayerMechanicKey;
   readonly initialPrivateKnowledge: readonly PrivateKnowledgeKey[];
 };
 
@@ -42,13 +58,23 @@ export type CreatePlayerSnapshotInput = {
   readonly seatNo: number;
   readonly name: string;
   readonly gameRole: GameRole;
+  readonly characterSourceId?: string | null;
   readonly profileSourceId?: string;
-  readonly avatar?: string;
+  readonly roleSourceId?: string;
+  readonly avatar?: string | null;
   readonly persona?: string;
   readonly speakingStyle?: string;
   readonly reasoningStyle?: string;
+  readonly characterSystemPromptSnapshot?: string;
+  readonly roleSystemPromptSnapshot?: string;
+  readonly roleActionPromptSnapshot?: string | null;
   readonly systemPrompt?: string;
   readonly modelBindingSnapshot?: ModelBindingSnapshot;
+  readonly roleName?: string;
+  readonly faction?: Faction;
+  readonly team?: PlayerTeam;
+  readonly mechanicKey?: PlayerMechanicKey;
+  readonly initialPrivateKnowledge?: readonly PrivateKnowledgeKey[];
 };
 
 export type BoardValidationResult =
@@ -89,27 +115,61 @@ const PRIVATE_KNOWLEDGE_BY_ROLE = {
   villager: ["own_role"],
 } satisfies Record<GameRole, readonly PrivateKnowledgeKey[]>;
 
+const ROLE_NAME_BY_ROLE = {
+  werewolf: "狼人",
+  seer: "预言家",
+  witch: "女巫",
+  villager: "平民",
+} satisfies Record<GameRole, string>;
+
+const TEAM_BY_ROLE = {
+  werewolf: "wolf",
+  seer: "god",
+  witch: "god",
+  villager: "villager",
+} satisfies Record<GameRole, PlayerTeam>;
+
+const MECHANIC_KEY_BY_ROLE = {
+  werewolf: "wolf_kill",
+  seer: "seer_check",
+  witch: "witch_medicine",
+  villager: "none",
+} satisfies Record<GameRole, PlayerMechanicKey>;
+
 export function createPlayerSnapshot(
   input: CreatePlayerSnapshotInput,
 ): PlayerSnapshot {
-  const faction = factionForRole(input.gameRole);
+  const characterSystemPromptSnapshot =
+    input.characterSystemPromptSnapshot ?? input.systemPrompt ?? "";
 
   return {
     playerId: input.playerId,
     seatNo: input.seatNo,
-    profileSourceId: input.profileSourceId,
+    characterSourceId: input.characterSourceId ?? input.profileSourceId ?? null,
+    profileSourceId:
+      input.profileSourceId ?? input.characterSourceId ?? undefined,
     name: input.name,
-    avatar: input.avatar,
+    roleSourceId: input.roleSourceId ?? input.gameRole,
+    avatar: input.avatar ?? null,
     persona: input.persona ?? "",
     speakingStyle: input.speakingStyle ?? "",
     reasoningStyle: input.reasoningStyle ?? "",
-    systemPrompt: input.systemPrompt ?? "",
+    characterSystemPromptSnapshot,
+    roleSystemPromptSnapshot: input.roleSystemPromptSnapshot ?? "",
+    roleActionPromptSnapshot: input.roleActionPromptSnapshot ?? null,
+    systemPrompt: input.systemPrompt ?? input.characterSystemPromptSnapshot ?? "",
     modelBindingSnapshot: {
       ...(input.modelBindingSnapshot ?? defaultModelBinding),
     },
     gameRole: input.gameRole,
-    faction,
-    initialPrivateKnowledge: createInitialPrivateKnowledge(input.gameRole),
+    roleName: input.roleName ?? ROLE_NAME_BY_ROLE[input.gameRole],
+    faction: input.faction ?? factionForRole(input.gameRole),
+    team: input.team ?? TEAM_BY_ROLE[input.gameRole],
+    mechanicKey: input.mechanicKey ?? MECHANIC_KEY_BY_ROLE[input.gameRole],
+    initialPrivateKnowledge:
+      input.initialPrivateKnowledge !== undefined
+        ? [...input.initialPrivateKnowledge]
+        : createInitialPrivateKnowledge(input.gameRole),
   };
 }
 

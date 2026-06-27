@@ -13,6 +13,7 @@ import type { DraftEvent } from "@/core/drafts";
 import type { GameEvent } from "@/core/events";
 import type { Game } from "@/core/game";
 import type { GenerationRecord } from "@/core/generation-record";
+import { createPlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
 
 export type GameRecord = {
@@ -108,6 +109,12 @@ function normalizeRecord(rawRecord: unknown): GameRecord {
 
   return {
     ...record,
+    game: {
+      ...record.game,
+      players: record.game.players.map((player) =>
+        createPlayerSnapshot(player),
+      ),
+    },
     generations: record.generations ?? [],
   };
 }

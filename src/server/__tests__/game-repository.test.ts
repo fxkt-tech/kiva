@@ -32,6 +32,31 @@ function game(gameId: GameId, updatedAt: string): Game {
   };
 }
 
+function legacyGameWithoutPlayerLibrarySnapshots(
+  gameId: GameId,
+  updatedAt: string,
+): unknown {
+  const currentGame = game(gameId, updatedAt);
+
+  return {
+    ...currentGame,
+    players: currentGame.players.map((player) => ({
+      playerId: player.playerId,
+      seatNo: player.seatNo,
+      profileSourceId: player.profileSourceId,
+      name: player.name,
+      persona: player.persona,
+      speakingStyle: player.speakingStyle,
+      reasoningStyle: player.reasoningStyle,
+      systemPrompt: player.systemPrompt,
+      modelBindingSnapshot: player.modelBindingSnapshot,
+      gameRole: player.gameRole,
+      faction: player.faction,
+      initialPrivateKnowledge: player.initialPrivateKnowledge,
+    })),
+  };
+}
+
 function event(gameId: GameId): GameEvent {
   return {
     id: "event-1" as EventId,
@@ -123,6 +148,92 @@ describe("game repository", () => {
       events: [],
       draft: null,
       generations: [],
+    });
+  });
+
+  it("normalizes old player snapshots when loading a game", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const gameId = "old-player-snapshots" as GameId;
+    const oldRecord = {
+      game: legacyGameWithoutPlayerLibrarySnapshots(
+        gameId,
+        "2026-06-26T00:03:00.000Z",
+      ),
+      events: [],
+      draft: null,
+    };
+    await mkdir(join(rootDir, "games"), { recursive: true });
+    await writeFile(
+      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      JSON.stringify(oldRecord),
+      "utf8",
+    );
+
+    const loaded = await repository.get(gameId);
+
+    expect(loaded?.game.players[0]).toMatchObject({
+      characterSourceId: null,
+      roleSourceId: "werewolf",
+      roleName: "狼人",
+      team: "wolf",
+      mechanicKey: "wolf_kill",
+      characterSystemPromptSnapshot:
+        "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+      roleSystemPromptSnapshot: "",
+      roleActionPromptSnapshot: null,
+      avatar: null,
+    });
+  });
+
+  it("normalizes old player snapshots when listing games", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const olderGameId = "older-old-player-snapshots" as GameId;
+    const newerGameId = "newer-old-player-snapshots" as GameId;
+    await mkdir(join(rootDir, "games"), { recursive: true });
+    await writeFile(
+      join(rootDir, "games", `${encodeURIComponent(olderGameId)}.json`),
+      JSON.stringify({
+        game: legacyGameWithoutPlayerLibrarySnapshots(
+          olderGameId,
+          "2026-06-26T00:03:00.000Z",
+        ),
+        events: [],
+        draft: null,
+      }),
+      "utf8",
+    );
+    await writeFile(
+      join(rootDir, "games", `${encodeURIComponent(newerGameId)}.json`),
+      JSON.stringify({
+        game: legacyGameWithoutPlayerLibrarySnapshots(
+          newerGameId,
+          "2026-06-26T00:04:00.000Z",
+        ),
+        events: [],
+        draft: null,
+      }),
+      "utf8",
+    );
+
+    const records = await repository.list();
+
+    expect(records.map((record) => record.game.id)).toEqual([
+      newerGameId,
+      olderGameId,
+    ]);
+    expect(records[0].game.players[0]).toMatchObject({
+      characterSourceId: null,
+      roleSourceId: "werewolf",
+      roleName: "狼人",
+      team: "wolf",
+      mechanicKey: "wolf_kill",
+      characterSystemPromptSnapshot:
+        "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+      roleSystemPromptSnapshot: "",
+      roleActionPromptSnapshot: null,
+      avatar: null,
     });
   });
 

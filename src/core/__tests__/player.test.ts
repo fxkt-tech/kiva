@@ -46,6 +46,17 @@ describe("player snapshots", () => {
     expect(first.speakingStyle).toBe("");
     expect(first.reasoningStyle).toBe("");
     expect(first.systemPrompt).toBe("");
+    expect(first).toMatchObject({
+      characterSourceId: null,
+      roleSourceId: "werewolf",
+      avatar: null,
+      roleName: "狼人",
+      team: "wolf",
+      mechanicKey: "wolf_kill",
+      characterSystemPromptSnapshot: "",
+      roleSystemPromptSnapshot: "",
+      roleActionPromptSnapshot: null,
+    });
     expect(first.modelBindingSnapshot).toEqual({
       provider: "volcengine",
       model: "doubao-seed-1-6-flash-250828",
@@ -54,6 +65,107 @@ describe("player snapshots", () => {
       responseFormat: "json",
     });
     expect(first.modelBindingSnapshot).not.toBe(second.modelBindingSnapshot);
+  });
+
+  it("stores role library snapshot fields", () => {
+    const snapshot = createPlayerSnapshot({
+      playerId: "p1" as PlayerId,
+      seatNo: 1,
+      name: "P1",
+      gameRole: "seer",
+      characterSourceId: "character-seer",
+      profileSourceId: "legacy-profile",
+      roleSourceId: "custom-seer",
+      avatar: "seer.png",
+      persona: "careful",
+      speakingStyle: "short",
+      reasoningStyle: "deductive",
+      characterSystemPromptSnapshot: "character prompt",
+      roleSystemPromptSnapshot: "role prompt",
+      roleActionPromptSnapshot: "action prompt",
+      systemPrompt: "legacy prompt",
+      roleName: "验人者",
+      team: "god",
+      mechanicKey: "seer_check",
+    });
+
+    expect(snapshot).toMatchObject({
+      characterSourceId: "character-seer",
+      profileSourceId: "legacy-profile",
+      roleSourceId: "custom-seer",
+      avatar: "seer.png",
+      persona: "careful",
+      speakingStyle: "short",
+      reasoningStyle: "deductive",
+      characterSystemPromptSnapshot: "character prompt",
+      roleSystemPromptSnapshot: "role prompt",
+      roleActionPromptSnapshot: "action prompt",
+      systemPrompt: "legacy prompt",
+      roleName: "验人者",
+      team: "god",
+      mechanicKey: "seer_check",
+    });
+  });
+
+  it("fills character source from legacy profile source", () => {
+    const snapshot = createPlayerSnapshot({
+      playerId: "p1" as PlayerId,
+      seatNo: 1,
+      name: "P1",
+      gameRole: "villager",
+      profileSourceId: "profile-1",
+    });
+
+    expect(snapshot).toMatchObject({
+      characterSourceId: "profile-1",
+      profileSourceId: "profile-1",
+    });
+  });
+
+  it("defaults role metadata and prompt snapshots from legacy input", () => {
+    const seer = createPlayerSnapshot({
+      playerId: "p1" as PlayerId,
+      seatNo: 1,
+      name: "P1",
+      gameRole: "seer",
+      characterSystemPromptSnapshot: "character snapshot",
+    });
+    const witch = createPlayerSnapshot({
+      playerId: "p2" as PlayerId,
+      seatNo: 2,
+      name: "P2",
+      gameRole: "witch",
+      systemPrompt: "legacy prompt",
+    });
+    const villager = createPlayerSnapshot({
+      playerId: "p3" as PlayerId,
+      seatNo: 3,
+      name: "P3",
+      gameRole: "villager",
+    });
+
+    expect(seer).toMatchObject({
+      roleName: "预言家",
+      team: "god",
+      mechanicKey: "seer_check",
+      avatar: null,
+      characterSystemPromptSnapshot: "character snapshot",
+      roleSystemPromptSnapshot: "",
+      roleActionPromptSnapshot: null,
+      systemPrompt: "character snapshot",
+    });
+    expect(witch).toMatchObject({
+      roleName: "女巫",
+      team: "god",
+      mechanicKey: "witch_medicine",
+      characterSystemPromptSnapshot: "legacy prompt",
+      systemPrompt: "legacy prompt",
+    });
+    expect(villager).toMatchObject({
+      roleName: "平民",
+      team: "villager",
+      mechanicKey: "none",
+    });
   });
 
   it("copies custom model bindings into snapshots", () => {
