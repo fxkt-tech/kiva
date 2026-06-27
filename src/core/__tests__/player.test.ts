@@ -122,6 +122,19 @@ describe("player snapshots", () => {
     });
   });
 
+  it("does not add a legacy profile source when only character source exists", () => {
+    const snapshot = createPlayerSnapshot({
+      playerId: "p1" as PlayerId,
+      seatNo: 1,
+      name: "P1",
+      gameRole: "villager",
+      characterSourceId: "character-1",
+    });
+
+    expect(snapshot.characterSourceId).toBe("character-1");
+    expect(snapshot).not.toHaveProperty("profileSourceId");
+  });
+
   it("defaults role metadata and prompt snapshots from legacy input", () => {
     const seer = createPlayerSnapshot({
       playerId: "p1" as PlayerId,
@@ -197,6 +210,23 @@ describe("player snapshots", () => {
       maxTokens: 800,
       responseFormat: "json",
     });
+  });
+
+  it("copies custom initial private knowledge into snapshots", () => {
+    const initialPrivateKnowledge = ["own_role", "wolf_teammates"] as const;
+    const snapshot = createPlayerSnapshot({
+      playerId: "p1" as PlayerId,
+      seatNo: 1,
+      name: "P1",
+      gameRole: "werewolf",
+      initialPrivateKnowledge,
+    });
+
+    expect(snapshot.initialPrivateKnowledge).toEqual([
+      "own_role",
+      "wolf_teammates",
+    ]);
+    expect(snapshot.initialPrivateKnowledge).not.toBe(initialPrivateKnowledge);
   });
 
   it("accepts the approved fixed six player board", () => {

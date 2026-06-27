@@ -6,6 +6,7 @@ import {
   type PlayerId,
   type Ruleset,
 } from "./types";
+import type { RoleMechanicKey, RoleTeam } from "./role-definition";
 
 export type ModelBindingSnapshot = {
   readonly provider: string;
@@ -21,13 +22,9 @@ export type PrivateKnowledgeKey =
   | "wolf_teammates"
   | "witch_medicines";
 
-export type PlayerTeam = "wolf" | "god" | "villager";
+export type PlayerTeam = RoleTeam;
 
-export type PlayerMechanicKey =
-  | "wolf_kill"
-  | "seer_check"
-  | "witch_medicine"
-  | "none";
+export type PlayerMechanicKey = RoleMechanicKey;
 
 export type PlayerSnapshot = {
   readonly playerId: PlayerId;
@@ -146,8 +143,9 @@ export function createPlayerSnapshot(
     playerId: input.playerId,
     seatNo: input.seatNo,
     characterSourceId: input.characterSourceId ?? input.profileSourceId ?? null,
-    profileSourceId:
-      input.profileSourceId ?? input.characterSourceId ?? undefined,
+    ...(input.profileSourceId === undefined
+      ? {}
+      : { profileSourceId: input.profileSourceId }),
     name: input.name,
     roleSourceId: input.roleSourceId ?? input.gameRole,
     avatar: input.avatar ?? null,
