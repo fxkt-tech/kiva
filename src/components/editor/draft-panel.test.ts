@@ -14,6 +14,13 @@ const game = createSeedGame({ gameId, createdAt });
 const players = game.players;
 
 describe("DraftPanel payload controls", () => {
+  it("auto-continues from an empty draft state without a manual next button", () => {
+    const html = renderPanel(null);
+
+    expect(html).toContain("Generating next draft");
+    expect(html).not.toContain("Generate next draft");
+  });
+
   it("renders player options for target payload drafts", () => {
     const html = renderPanel(wolfKillDraft(players[0].playerId));
 
@@ -77,7 +84,7 @@ describe("DraftPanel payload controls", () => {
 });
 
 function renderPanel(
-  draft: DraftEvent,
+  draft: DraftEvent | null,
   generations: readonly GenerationRecord[] = [],
 ): string {
   return renderToStaticMarkup(

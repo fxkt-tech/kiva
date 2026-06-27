@@ -1,6 +1,5 @@
 import {
   confirmDraftAction,
-  continueGameAction,
   deleteDraftAction,
   editDraftPayloadAction,
   regenerateDraftAction,
@@ -10,6 +9,7 @@ import { formatDraftForHost, formatVisibility } from "@/core/event-presenter";
 import type { GenerationRecord } from "@/core/generation-record";
 import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
+import { AutoContinueDraft } from "./auto-continue-draft";
 import { FormSubmitButton } from "./form-submit-button";
 
 type DraftPanelProps = {
@@ -31,16 +31,7 @@ export function DraftPanel({
         <div className="shrink-0 border-b border-zinc-800 px-3 py-2">
           <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
         </div>
-        <div className="space-y-3 px-3 py-6 text-sm text-zinc-500">
-          <p>No draft. The last confirmed result is already in timeline.</p>
-          <form action={continueGameAction.bind(null, gameId)}>
-            <FormSubmitButton
-              label="Generate next draft"
-              pendingLabel="Generating..."
-              className="rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-950 transition hover:bg-white"
-            />
-          </form>
-        </div>
+        <AutoContinueDraft gameId={gameId} />
       </section>
     );
   }
