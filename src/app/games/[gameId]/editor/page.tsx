@@ -16,13 +16,16 @@ type EditorPageProps = {
 export default async function EditorPage({ params }: EditorPageProps) {
   const { gameId } = await params;
   const typedGameId = gameId as GameId;
-  const record = await createGameActions(createGameRepository()).getGame(
-    typedGameId,
-  );
+  const gameActions = createGameActions(createGameRepository());
+  const loadedRecord = await gameActions.getGame(typedGameId);
 
-  if (!record) {
+  if (!loadedRecord) {
     notFound();
   }
+
+  const record = loadedRecord.draft
+    ? loadedRecord
+    : await gameActions.continueGame(typedGameId);
 
   return (
     <main className="h-screen overflow-hidden bg-zinc-950 p-3 text-zinc-100 sm:p-4">
