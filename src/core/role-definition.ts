@@ -1,80 +1,140 @@
 import type { ModelBindingSnapshot } from "./player";
 import type { Faction } from "./types";
 
-export type RoleAbilityId =
-  | "werewolf_kill"
-  | "seer_check"
-  | "witch_antidote"
-  | "witch_poison"
-  | "hunter_shoot"
-  | "vote"
-  | "speak"
-  | "last_words";
+const ROLE_TEAMS = ["wolf", "god", "villager"] as const;
+export type RoleTeam = (typeof ROLE_TEAMS)[number];
 
-export type RoleVisibilityScope = "public" | "self" | "faction" | "system";
+const ROLE_MECHANIC_KEYS = [
+  "wolf_kill",
+  "seer_check",
+  "witch_medicine",
+  "none",
+] as const;
+export type RoleMechanicKey = (typeof ROLE_MECHANIC_KEYS)[number];
+
+const ROLE_KNOWLEDGE_RULES = [
+  "own_role",
+  "wolf_teammates",
+  "witch_medicines",
+] as const;
+export type RoleKnowledgeRule = (typeof ROLE_KNOWLEDGE_RULES)[number];
 
 export type RoleDefinition = {
-  id: string;
-  name: string;
-  faction: Faction;
-  abilities: RoleAbilityId[];
-  nightOrder: number | null;
-  visibleTo: RoleVisibilityScope;
-  rolePrompt: string;
-  actionPrompt: string | null;
-  defaultModelBinding: ModelBindingSnapshot | null;
-  metadata: Record<string, string>;
+  readonly id: string;
+  readonly name: string;
+  readonly faction: Faction;
+  readonly team: RoleTeam;
+  readonly mechanicKey: RoleMechanicKey;
+  readonly systemPrompt: string;
+  readonly actionPrompt: string | null;
+  readonly visibilityRules: readonly RoleKnowledgeRule[];
+  readonly nightOrder: number | null;
+  readonly defaultModelBinding: ModelBindingSnapshot | null;
+  readonly enabled: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 };
 
-const ROLE_ABILITY_IDS = new Set<string>([
-  "werewolf_kill",
-  "seer_check",
-  "witch_antidote",
-  "witch_poison",
-  "hunter_shoot",
-  "vote",
-  "speak",
-  "last_words",
-]);
+const FACTIONS = ["wolves", "good"] as const;
 
-export function validateRoleDefinitions(roles: RoleDefinition[]): void {
+export function validateRoleDefinitions(
+  roles: readonly RoleDefinition[],
+): readonly RoleDefinition[] {
   const roleIds = new Set<string>();
 
   for (const role of roles) {
-    const roleId = role.id.trim();
-
-    if (roleId.length === 0) {
-      throw new Error("Role definition id must not be blank");
-    }
-
-    if (role.name.trim().length === 0) {
-      throw new Error(`Role definition "${roleId}" name must not be blank`);
-    }
-
-    if (role.rolePrompt.trim().length === 0) {
-      throw new Error(`Role definition "${roleId}" rolePrompt must not be blank`);
-    }
+    assertRoleObject(role);
+    const roleId = requireStableId(role.id, "Role definition id");
 
     if (roleIds.has(roleId)) {
-      throw new Error(`Duplicate role definition id "${roleId}"`);
+      throw new Error(`Duplicate role definition id: ${roleId}`);
     }
     roleIds.add(roleId);
 
-    for (const ability of role.abilities) {
-      if (!ROLE_ABILITY_IDS.has(ability)) {
+    if (!isOneOf(role.faction, FACTIONS)) {
+      throw new Error(`Role ${roleId} has invalid faction: ${String(role.faction)}`);
+    }
+
+    if (!isOneOf(role.team, ROLE_TEAMS)) {
+      throw new Error(`Role ${roleId} has invalid team: ${String(role.team)}`);
+    }
+
+    if (!isOneOf(role.mechanicKey, ROLE_MECHANIC_KEYS)) {
+      throw new Error(
+        `Role ${roleId} has invalid mechanicKey: ${String(role.mechanicKey)}`,
+      );
+    }
+
+    if (role.name.trim().length === 0) {
+      throw new Error(`Role ${roleId} must include a name`);
+    }
+
+    if (role.enabled && role.systemPrompt.trim().length === 0) {
+      throw new Error(`Role ${roleId} must include a systemPrompt`);
+    }
+
+    if (role.actionPrompt !== null && typeof role.actionPrompt !== "string") {
+      throw new Error(`Role ${roleId} actionPrompt must be a string or null`);
+    }
+
+    if (!Array.isArray(role.visibilityRules)) {
+      throw new Error(`Role ${roleId} visibilityRules must be an array`);
+    }
+
+    for (const rule of role.visibilityRules) {
+      if (!isOneOf(rule, ROLE_KNOWLEDGE_RULES)) {
         throw new Error(
-          `Role definition "${roleId}" has unknown ability "${String(ability)}"`,
+          `Role ${roleId} has invalid visibility rule: ${String(rule)}`,
         );
       }
     }
 
-    if (
-      role.nightOrder !== null &&
-      (!Number.isFinite(role.nightOrder) || role.nightOrder < 0)
-    ) {
-      throw new Error(
-        `Role definition "${roleId}" nightOrder must be null or a finite number >= 0`,
-      );
+    if (!isValidNightOrder(role.nightOrder)) {
+      throw new Error(`Role ${roleId} nightOrder must be null or a finite number >= 0`);
     }
+
+    if (typeof role.enabled !== "boolean") {
+      throw new Error(`Role ${roleId} enabled must be a boolean`);
+    }
+
+    requireIsoString(role.createdAt, `Role ${roleId} createdAt`);
+    requireIsoString(role.updatedAt, `Role ${roleId} updatedAt`);
   }
+
+  return roles;
+}
+
+function assertRoleObject(role: RoleDefinition): void {
+  if (role === null || typeof role !== "object") {
+    throw new Error("Role definition must be an object");
+  }
+}
+
+function requireStableId(value: string, fieldName: string): string {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`${fieldName} must not be blank`);
+  }
+
+  if (value !== value.trim()) {
+    throw new Error(`${fieldName} must not include leading or trailing whitespace`);
+  }
+
+  return value;
+}
+
+function requireIsoString(value: string, fieldName: string): void {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`${fieldName} must be a non-empty string`);
+  }
+}
+
+function isValidNightOrder(value: number | null): boolean {
+  return value === null || (typeof value === "number" && Number.isFinite(value) && value >= 0);
+}
+
+function isOneOf<T extends readonly string[]>(
+  value: unknown,
+  values: T,
+): value is T[number] {
+  return typeof value === "string" && values.includes(value);
 }

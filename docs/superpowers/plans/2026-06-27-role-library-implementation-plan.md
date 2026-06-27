@@ -39,134 +39,52 @@
 - Create: `src/core/role-definition.ts`
 - Create: `src/core/__tests__/role-definition.test.ts`
 
-- [ ] **Step 1: Write failing tests for role validation**
+- [x] **Step 1: Write failing tests for role validation**
 
-Create `src/core/__tests__/role-definition.test.ts`:
+Tests must assert the real `RoleDefinition` contract:
 
-```ts
-import { describe, expect, it } from "vitest";
-import {
-  validateRoleDefinitions,
-  type RoleDefinition,
-} from "../role-definition";
+- accepts valid unique definitions and returns the original readonly array.
+- rejects blank `id`, `name`, and enabled `systemPrompt`.
+- rejects duplicate ids.
+- rejects ids with leading or trailing whitespace.
+- rejects invalid runtime `faction`, `team`, `mechanicKey`, `visibilityRules`, and `nightOrder` values.
+- allows disabled definitions without a prompt.
 
-const baseRole: RoleDefinition = {
-  id: "seer",
-  name: "预言家",
-  faction: "good",
-  team: "god",
-  mechanicKey: "seer_check",
-  systemPrompt: "你是预言家。",
-  actionPrompt: "选择一名玩家查验阵营。",
-  visibilityRules: ["own_role"],
-  nightOrder: 20,
-  defaultModelBinding: null,
-  enabled: true,
-  createdAt: "2026-06-27T00:00:00.000Z",
-  updatedAt: "2026-06-27T00:00:00.000Z",
-};
-
-describe("role definitions", () => {
-  it("accepts valid unique role definitions", () => {
-    expect(validateRoleDefinitions([baseRole])).toEqual([baseRole]);
-  });
-
-  it("rejects duplicate role ids", () => {
-    expect(() => validateRoleDefinitions([baseRole, baseRole])).toThrow(
-      "Duplicate role definition id: seer",
-    );
-  });
-
-  it("rejects empty prompts for enabled roles", () => {
-    expect(() =>
-      validateRoleDefinitions([{ ...baseRole, systemPrompt: "" }]),
-    ).toThrow("Role seer must include a systemPrompt");
-  });
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
 ```bash
-pnpm test src/core/__tests__/role-definition.test.ts
+pnpm vitest run src/core/__tests__/role-definition.test.ts
 ```
 
 Expected: FAIL because `src/core/role-definition.ts` does not exist.
 
-- [ ] **Step 3: Implement role definition model**
+- [x] **Step 3: Implement role definition model**
 
-Create `src/core/role-definition.ts`:
+`src/core/role-definition.ts` exports:
 
-```ts
-import type { ModelBindingSnapshot } from "./player";
-import type { Faction } from "./types";
+- `RoleTeam`: `"wolf" | "god" | "villager"`.
+- `RoleMechanicKey`: `"wolf_kill" | "seer_check" | "witch_medicine" | "none"`.
+- `RoleKnowledgeRule`: `"own_role" | "wolf_teammates" | "witch_medicines"`.
+- `RoleDefinition`: readonly role-library configuration with `id`, `name`, `faction`, `team`, `mechanicKey`, `systemPrompt`, `actionPrompt`, `visibilityRules`, `nightOrder`, `defaultModelBinding`, `enabled`, `createdAt`, and `updatedAt`.
+- `validateRoleDefinitions(roles): readonly RoleDefinition[]`.
 
-export type RoleTeam = "wolf" | "god" | "villager";
+The validator should reject malformed JSON-boundary values with field-specific errors instead of relying only on TypeScript.
 
-export type RoleMechanicKey =
-  | "wolf_kill"
-  | "seer_check"
-  | "witch_medicine"
-  | "none";
-
-export type RoleKnowledgeRule =
-  | "own_role"
-  | "wolf_teammates"
-  | "witch_medicines";
-
-export type RoleDefinition = {
-  readonly id: string;
-  readonly name: string;
-  readonly faction: Faction;
-  readonly team: RoleTeam;
-  readonly mechanicKey: RoleMechanicKey;
-  readonly systemPrompt: string;
-  readonly actionPrompt: string | null;
-  readonly visibilityRules: readonly RoleKnowledgeRule[];
-  readonly nightOrder: number | null;
-  readonly defaultModelBinding: ModelBindingSnapshot | null;
-  readonly enabled: boolean;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-};
-
-export function validateRoleDefinitions(
-  roles: readonly RoleDefinition[],
-): readonly RoleDefinition[] {
-  const seen = new Set<string>();
-
-  for (const role of roles) {
-    if (seen.has(role.id)) {
-      throw new Error(`Duplicate role definition id: ${role.id}`);
-    }
-    seen.add(role.id);
-
-    if (role.enabled && role.systemPrompt.trim().length === 0) {
-      throw new Error(`Role ${role.id} must include a systemPrompt`);
-    }
-
-    if (role.enabled && role.name.trim().length === 0) {
-      throw new Error(`Role ${role.id} must include a name`);
-    }
-  }
-
-  return roles;
-}
-```
-
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
 ```bash
-pnpm test src/core/__tests__/role-definition.test.ts
+pnpm vitest run src/core/__tests__/role-definition.test.ts
+pnpm typecheck
+pnpm test
 ```
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/core/role-definition.ts src/core/__tests__/role-definition.test.ts
