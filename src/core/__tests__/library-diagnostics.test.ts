@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import type { CharacterDefinition } from "../character-definition";
 import type { GamePreset } from "../game-preset";
 import {
@@ -378,6 +379,29 @@ describe("library diagnostics", () => {
     });
   });
 
+  it("reports multiple independent preset reference errors together", () => {
+    const preset = presetWithSeats({
+      roles: ["werewolf", "missing_role"],
+      characters: ["qin", "missing_character"],
+    });
+
+    expect(
+      diagnosePreset({
+        preset,
+        roles: [werewolf, seer],
+        characters: [qin, lin],
+        presets: [preset],
+      }),
+    ).toMatchObject({
+      valid: false,
+      canCreateGame: false,
+      messages: expect.arrayContaining([
+        "Game preset two_player_test roleIds[1] references unknown role: missing_role",
+        "Game preset two_player_test characterIds[1] references unknown character: missing_character",
+      ]),
+    });
+  });
+
   it("marks presets invalid and not creatable when they reference unknown characters", () => {
     const preset = presetWithSeats({
       roles: ["werewolf", "seer"],
@@ -604,6 +628,15 @@ describe("library diagnostics", () => {
         characters: [character({ ...qin, defaultModelBinding: null }), lin],
       }),
     ).toContain("model: volcengine/doubao-seed-1-6-flash-250828");
+  });
+
+  it("keeps diagnostics independent from game seed helpers", () => {
+    const source = readFileSync(
+      "src/core/library-diagnostics.ts",
+      "utf8",
+    );
+
+    expect(source).not.toContain('from "./game"');
   });
 });
 

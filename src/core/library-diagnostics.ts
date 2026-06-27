@@ -2,16 +2,16 @@ import {
   validateCharacterDefinitions,
   type CharacterDefinition,
 } from "./character-definition";
-import { createGameFromPreset } from "./game";
 import { validateGamePresets, type GamePreset } from "./game-preset";
 import {
   createPlayerSnapshot,
+  validateSixPlayerBoard,
   type ModelBindingSnapshot,
+  type PlayerSnapshot,
 } from "./player";
 import { validateRoleDefinitions, type RoleDefinition } from "./role-definition";
 import {
   createDefaultRuleset,
-  type GameId,
   type GameRole,
   type PlayerId,
 } from "./types";
@@ -239,26 +239,126 @@ function gamePresetValidationMessages(
     messages.push(errorMessage(error));
   }
 
+  messages.push(...presetReferenceMessages(presets, libraries));
+
+  return uniqueMessages(messages);
+}
+
+function presetReferenceMessages(
+  presets: readonly GamePreset[],
+  libraries: {
+    readonly roles: readonly RoleDefinition[];
+    readonly characters: readonly CharacterDefinition[];
+  },
+): readonly string[] {
+  const rolesById = new Map(libraries.roles.map((role) => [role.id, role]));
+  const charactersById = new Map(
+    libraries.characters.map((character) => [character.id, character]),
+  );
+  const messages: string[] = [];
+
+  for (const preset of presets) {
+    for (const [index, roleId] of preset.roleIds.entries()) {
+      const role = rolesById.get(roleId);
+      if (role === undefined) {
+        messages.push(
+          `Game preset ${preset.id} roleIds[${index}] references unknown role: ${roleId}`,
+        );
+      } else if (!role.enabled) {
+        messages.push(
+          `Game preset ${preset.id} roleIds[${index}] references disabled role: ${roleId}`,
+        );
+      }
+    }
+
+    for (const [index, characterId] of preset.characterIds.entries()) {
+      const character = charactersById.get(characterId);
+      if (character === undefined) {
+        messages.push(
+          `Game preset ${preset.id} characterIds[${index}] references unknown character: ${characterId}`,
+        );
+      } else if (!character.enabled) {
+        messages.push(
+          `Game preset ${preset.id} characterIds[${index}] references disabled character: ${characterId}`,
+        );
+      }
+    }
+  }
+
   return messages;
 }
 
 function gameCreationDiagnostic(
   input: LibraryContext & { readonly preset: GamePreset },
 ): { readonly canCreateGame: boolean; readonly messages: readonly string[] } {
-  try {
-    createGameFromPreset({
-      gameId: "library_diagnostic_preview" as GameId,
-      title: input.preset.name,
-      createdAt: "2026-06-27T00:00:00.000Z",
-      ruleset: createDefaultRuleset(),
-      preset: input.preset,
-      roles: input.roles,
-      characters: input.characters,
-    });
-    return { canCreateGame: true, messages: [] };
-  } catch (error) {
-    return { canCreateGame: false, messages: [errorMessage(error)] };
+  const messages: string[] = [];
+
+  if (input.preset.seatAssignments === null) {
+    messages.push(`Game preset ${input.preset.id} must include seatAssignments`);
+    return { canCreateGame: false, messages };
   }
+
+  const rolesById = new Map(input.roles.map((role) => [role.id, role]));
+  const charactersById = new Map(
+    input.characters.map((character) => [character.id, character]),
+  );
+  const players: PlayerSnapshot[] = [];
+
+  for (const seat of input.preset.seatAssignments) {
+    const role = rolesById.get(seat.roleId);
+    if (role === undefined) {
+      messages.push(`Role definition not found: ${seat.roleId}`);
+      continue;
+    }
+
+    if (!isBuiltInRole(role.id)) {
+      messages.push(`Role is not supported by current ruleset: ${role.id}`);
+      continue;
+    }
+
+    const character = charactersById.get(seat.characterId);
+    if (character === undefined) {
+      messages.push(`Character definition not found: ${seat.characterId}`);
+      continue;
+    }
+
+    players.push(
+      createPlayerSnapshot({
+        playerId: `library_diagnostic_preview_p${seat.seatNo}` as PlayerId,
+        seatNo: seat.seatNo,
+        name: character.name,
+        gameRole: role.id,
+        characterSourceId: character.id,
+        roleSourceId: role.id,
+        avatar: character.avatar,
+        persona: character.persona,
+        speakingStyle: character.speakingStyle,
+        reasoningStyle: character.reasoningStyle,
+        characterSystemPromptSnapshot: character.systemPrompt,
+        roleSystemPromptSnapshot: role.systemPrompt,
+        roleActionPromptSnapshot: role.actionPrompt,
+        systemPrompt: character.systemPrompt,
+        modelBindingSnapshot:
+          seat.modelBindingOverride ??
+          character.defaultModelBinding ??
+          role.defaultModelBinding ??
+          undefined,
+        roleName: role.name,
+        faction: role.faction,
+        team: role.team,
+        mechanicKey: role.mechanicKey,
+      }),
+    );
+  }
+
+  if (messages.length === 0) {
+    const boardValidation = validateSixPlayerBoard(players, createDefaultRuleset());
+    if (!boardValidation.ok) {
+      messages.push(`Game preset ${input.preset.id} does not match ruleset`);
+    }
+  }
+
+  return { canCreateGame: messages.length === 0, messages: uniqueMessages(messages) };
 }
 
 function uniqueMessages(messages: readonly string[]): readonly string[] {
