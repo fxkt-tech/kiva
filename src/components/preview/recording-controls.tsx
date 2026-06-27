@@ -5,12 +5,14 @@ import { useEffect, useRef, useState } from "react";
 
 type RecordingControlsProps = {
   readonly cleanPreviewHref: string;
+  readonly recordingHref?: string;
 };
 
 type RecordingStatus = "idle" | "recording" | "ready" | "failed";
 
 export function RecordingControls({
   cleanPreviewHref,
+  recordingHref,
 }: RecordingControlsProps) {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -97,6 +99,15 @@ export function RecordingControls({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      {recordingHref ? (
+        <a
+          className="inline-flex items-center gap-1.5 border border-cyan-800 px-3 py-2 text-xs text-cyan-200 transition hover:border-cyan-500 hover:bg-cyan-950/40"
+          href={recordingHref}
+        >
+          <ExternalLink aria-hidden="true" size={14} />
+          Open recording studio
+        </a>
+      ) : null}
       <a
         className="inline-flex items-center gap-1.5 border border-zinc-700 px-3 py-2 text-xs text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900"
         href={cleanPreviewHref}

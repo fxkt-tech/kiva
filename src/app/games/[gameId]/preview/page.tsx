@@ -38,6 +38,7 @@ export default async function PreviewPage({
           : "visible"
       }
       items={compilePublicPlayback(record.events, record.game.players)}
+      recordingHref={`/games/${record.game.id}/record`}
     />
   );
 }

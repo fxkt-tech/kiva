@@ -8,9 +8,12 @@ describe("RecordingControls", () => {
     const html = renderToStaticMarkup(
       React.createElement(RecordingControls, {
         cleanPreviewHref: "/games/game_1/preview?controls=0",
+        recordingHref: "/games/game_1/record",
       }),
     );
 
+    expect(html).toContain("Open recording studio");
+    expect(html).toContain("/games/game_1/record");
     expect(html).toContain("Open clean preview");
     expect(html).toContain("/games/game_1/preview?controls=0");
     expect(html).toContain("Start recording");
