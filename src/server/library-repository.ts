@@ -108,8 +108,6 @@ export function createLibraryRepository(rootDir = ".kiva-data"): LibraryReposito
         await rename(entry.tempPath, entry.path);
         entry.replaced = true;
       }
-
-      await Promise.all(staged.map((entry) => removeIfExists(entry.backupPath)));
     } catch (error) {
       for (const entry of staged) {
         await unlinkIfExists(entry.tempPath);
@@ -125,6 +123,8 @@ export function createLibraryRepository(rootDir = ".kiva-data"): LibraryReposito
 
       throw error;
     }
+
+    await Promise.all(staged.map((entry) => removeIfExists(entry.backupPath)));
   }
 
   return {
