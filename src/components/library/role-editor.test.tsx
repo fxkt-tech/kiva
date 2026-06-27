@@ -37,10 +37,13 @@ describe("RoleEditor", () => {
     expect(html).toContain('name="team"');
     expect(html).toContain('name="mechanicKey"');
     expect(html).toContain('disabled=""');
-    expect(html).toContain('type="hidden"');
-    expect(html).toContain('value="wolves"');
-    expect(html).toContain('value="wolf"');
-    expect(html).toContain('value="wolf_kill"');
+    expect(html).toMatch(
+      /<input type="hidden" name="faction" value="wolves"\/?>/,
+    );
+    expect(html).toMatch(/<input type="hidden" name="team" value="wolf"\/?>/);
+    expect(html).toMatch(
+      /<input type="hidden" name="mechanicKey" value="wolf_kill"\/?>/,
+    );
   });
 
   it("preserves default model binding in hidden JSON", () => {
