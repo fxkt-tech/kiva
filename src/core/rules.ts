@@ -83,6 +83,13 @@ export function getLegalNightTargets(
   const alive = new Set(alivePlayerIds);
 
   if (action === "wolf_kill") {
+    const actor = actorPlayerId
+      ? players.find((player) => player.playerId === actorPlayerId)
+      : undefined;
+    if (!actor || actor.gameRole !== "werewolf" || !alive.has(actor.playerId)) {
+      return [];
+    }
+
     return players
       .filter((player) => alive.has(player.playerId))
       .filter((player) => player.gameRole !== "werewolf")

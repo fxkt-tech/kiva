@@ -140,12 +140,6 @@ function planNightDraft(
       state.alivePlayerIds,
       "werewolf",
     );
-    const target = getLegalNightTargets(
-      "wolf_kill",
-      players,
-      state.alivePlayerIds,
-    )[0];
-
     if (!wolf) {
       return draftGameEndIfNeeded(
         input,
@@ -154,6 +148,13 @@ function planNightDraft(
         state.dayNumber,
       );
     }
+
+    const target = getLegalNightTargets(
+      "wolf_kill",
+      players,
+      state.alivePlayerIds,
+      wolf,
+    )[0];
 
     if (!target) {
       return null;
@@ -287,7 +288,12 @@ function planNightDraft(
     if (
       !isLegalTarget(
         wolfKill.payload.targetPlayerId,
-        getLegalNightTargets("wolf_kill", players, state.alivePlayerIds),
+        getLegalNightTargets(
+          "wolf_kill",
+          players,
+          state.alivePlayerIds,
+          wolfKill.actorPlayerId,
+        ),
       )
     ) {
       return null;

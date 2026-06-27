@@ -129,6 +129,26 @@ describe("game creation", () => {
     ).toThrow("Role is not supported by current ruleset: hunter");
   });
 
+  it("rejects supported role definitions whose contract fields are inconsistent", () => {
+    const mismatchedRole: RoleDefinition = {
+      ...seedRoles[0],
+      id: "werewolf",
+      faction: "good",
+    };
+
+    expect(() =>
+      createGameFromPreset({
+        gameId,
+        title: "Mismatched role",
+        createdAt,
+        ruleset: createDefaultRuleset(),
+        preset: seedPresets[0]!,
+        roles: [mismatchedRole, ...seedRoles.slice(1)],
+        characters: seedCharacters,
+      }),
+    ).toThrow("Role werewolf does not match the current ruleset contract");
+  });
+
   it("rejects presets that reference missing role definitions", () => {
     const preset = {
       ...seedPresets[0]!,

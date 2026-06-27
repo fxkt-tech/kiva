@@ -61,8 +61,17 @@ const players = [
 describe("rules", () => {
   it("allows wolves to target living non-wolves", () => {
     expect(
-      getLegalNightTargets("wolf_kill", players, [p1, p2, p3, p4, p5, p6]),
+      getLegalNightTargets("wolf_kill", players, [p1, p2, p3, p4, p5, p6], p1),
     ).toEqual([p3, p4, p5, p6]);
+  });
+
+  it("returns no wolf kill targets when actor is omitted or not a wolf", () => {
+    expect(
+      getLegalNightTargets("wolf_kill", players, [p1, p2, p3, p4], undefined),
+    ).toEqual([]);
+    expect(
+      getLegalNightTargets("wolf_kill", players, [p1, p2, p3, p4], p3),
+    ).toEqual([]);
   });
 
   it("allows seer to check living players except self", () => {
@@ -120,7 +129,7 @@ describe("rules", () => {
         p2,
         p3,
         unknownPlayerId,
-      ]),
+      ], p1),
     ).toEqual([p3]);
   });
 

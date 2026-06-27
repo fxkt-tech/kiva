@@ -5,7 +5,7 @@ import {
   validateSixPlayerBoard,
   type PlayerSnapshot,
 } from "./player";
-import type { RoleDefinition } from "./role-definition";
+import { validateRoleDefinitions, type RoleDefinition } from "./role-definition";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
@@ -47,6 +47,7 @@ export type CreateGameFromPresetInput = {
 };
 
 export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
+  validateRoleDefinitions(input.roles);
   validateGamePresets([input.preset], {
     roles: input.roles,
     characters: input.characters,

@@ -1,6 +1,6 @@
 import { isPlainObject, validateModelBindingSnapshot } from "./model-binding";
 import type { ModelBindingSnapshot } from "./player";
-import type { Faction } from "./types";
+import type { Faction, GameRole } from "./types";
 
 const ROLE_TEAMS = ["wolf", "god", "villager"] as const;
 export type RoleTeam = (typeof ROLE_TEAMS)[number];
@@ -38,6 +38,20 @@ export type RoleDefinition = {
 
 const FACTIONS = ["wolves", "good"] as const;
 
+const SUPPORTED_ROLE_CONTRACTS = {
+  werewolf: { faction: "wolves", team: "wolf", mechanicKey: "wolf_kill" },
+  seer: { faction: "good", team: "god", mechanicKey: "seer_check" },
+  witch: { faction: "good", team: "god", mechanicKey: "witch_medicine" },
+  villager: { faction: "good", team: "villager", mechanicKey: "none" },
+} satisfies Record<
+  GameRole,
+  {
+    readonly faction: Faction;
+    readonly team: RoleTeam;
+    readonly mechanicKey: RoleMechanicKey;
+  }
+>;
+
 export function validateRoleDefinitions(roles: unknown): readonly RoleDefinition[] {
   if (!Array.isArray(roles)) {
     throw new Error("Role definitions must be an array");
@@ -67,6 +81,8 @@ export function validateRoleDefinitions(roles: unknown): readonly RoleDefinition
         `Role ${roleId} has invalid mechanicKey: ${String(role.mechanicKey)}`,
       );
     }
+
+    assertSupportedRoleContract(role);
 
     if (!isNonBlankString(role.name)) {
       throw new Error(`Role ${roleId} must include a name`);
@@ -109,6 +125,21 @@ export function validateRoleDefinitions(roles: unknown): readonly RoleDefinition
   }
 
   return roles as readonly RoleDefinition[];
+}
+
+export function assertSupportedRoleContract(role: RoleDefinition): void {
+  if (!isSupportedRoleId(role.id)) {
+    return;
+  }
+
+  const contract = SUPPORTED_ROLE_CONTRACTS[role.id];
+  if (
+    role.faction !== contract.faction ||
+    role.team !== contract.team ||
+    role.mechanicKey !== contract.mechanicKey
+  ) {
+    throw new Error(`Role ${role.id} does not match the current ruleset contract`);
+  }
 }
 
 function assertRoleObject(role: unknown): asserts role is RoleDefinition {
@@ -155,4 +186,8 @@ function isOneOf<T extends readonly string[]>(
   values: T,
 ): value is T[number] {
   return typeof value === "string" && values.includes(value);
+}
+
+function isSupportedRoleId(roleId: string): roleId is GameRole {
+  return roleId in SUPPORTED_ROLE_CONTRACTS;
 }

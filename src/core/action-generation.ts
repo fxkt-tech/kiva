@@ -9,6 +9,7 @@ import {
 } from "./generation-record";
 import type { LlmClient } from "./llm";
 import { buildPlayerLlmContext } from "./player-context";
+import type { PlayerContextRosterEntry } from "./player-context";
 import {
   baseViewerSystemPrompts,
   firstNonEmpty,
@@ -79,10 +80,7 @@ export async function generateActionDraft(
           `你是：${context.viewer.seatNo} 号 ${context.viewer.name}`,
           `你的身份：${context.viewer.roleName}`,
           "玩家名单：",
-          ...context.roster.map(
-            (player) =>
-              `${player.seatNo} ${player.name} playerId=${player.playerId}`,
-          ),
+          ...context.roster.map((player) => rosterPromptLine(player)),
           "可选目标：",
           ...legalTargetIds.map((targetPlayerId) => `playerId=${targetPlayerId}`),
           "可见事件：",
@@ -94,6 +92,28 @@ export async function generateActionDraft(
     ],
     schemaName: "werewolf_action_v1",
   };
+
+  if (
+    !canActorPerformActionDraft(input.game, input.events, input.draft, context.viewer)
+  ) {
+    return {
+      draft: input.draft,
+      generation: createFailedGenerationRecord({
+        id: input.generationId,
+        gameId: input.game.id,
+        draftId: input.draft.id,
+        playerId,
+        purpose: "action",
+        promptVersion: ACTION_PROMPT_VERSION,
+        modelBinding: context.viewer.modelBindingSnapshot,
+        inputContextHash: contextHash(context),
+        request,
+        rawOutput: null,
+        error: new Error(`Player cannot perform ${input.draft.type}`),
+        createdAt: input.createdAt,
+      }),
+    };
+  }
 
   try {
     const output = await input.llmClient.generateJson({
@@ -140,6 +160,17 @@ export async function generateActionDraft(
   }
 }
 
+function rosterPromptLine(player: PlayerContextRosterEntry): string {
+  return [
+    `${player.seatNo} ${player.name}`,
+    `playerId=${player.playerId}`,
+    player.role ? `role=${player.role}` : null,
+    player.faction ? `faction=${player.faction}` : null,
+  ]
+    .filter((part): part is string => part !== null)
+    .join(" ");
+}
+
 function timelinePromptLines(item: {
   readonly index: number;
   readonly title: string;
@@ -163,7 +194,7 @@ function legalTargetIdsForDraft(
     case "wolf_kill_selected":
       return legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId);
     case "witch_antidote_decided":
-      return legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId);
+      return legalAntidoteTargets(events);
     case "witch_poison_decided":
       return legalNightTargets(game, events, "witch_poison", draft.actorPlayerId);
     case "vote_cast":
@@ -195,6 +226,31 @@ function actionActorId(draft: ActionDraft): PlayerId {
   }
 }
 
+function canActorPerformActionDraft(
+  game: Game,
+  events: readonly GameEvent[],
+  draft: ActionDraft,
+  viewer: {
+    readonly playerId: PlayerId;
+    readonly role: Game["players"][number]["gameRole"];
+    readonly mechanicKey: Game["players"][number]["mechanicKey"];
+  },
+): boolean {
+  switch (draft.type) {
+    case "wolf_kill_selected":
+      return viewer.role === "werewolf" && viewer.mechanicKey === "wolf_kill";
+    case "seer_check_selected":
+      return viewer.role === "seer" && viewer.mechanicKey === "seer_check";
+    case "witch_antidote_decided":
+    case "witch_poison_decided":
+      return viewer.role === "witch" && viewer.mechanicKey === "witch_medicine";
+    case "vote_cast":
+      return deriveGameState(game.players, events).alivePlayerIds.includes(
+        viewer.playerId,
+      );
+  }
+}
+
 function parseAndValidateActionEdit(
   game: Game,
   events: readonly GameEvent[],
@@ -209,7 +265,7 @@ function parseAndValidateActionEdit(
     case "vote_cast":
       return voteEdit(game, events, draft, output);
     case "witch_antidote_decided":
-      return witchEdit(draft.type, output, legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId));
+      return witchEdit(draft.type, output, legalAntidoteTargets(events));
     case "witch_poison_decided":
       return witchEdit(draft.type, output, legalNightTargets(game, events, "witch_poison", draft.actorPlayerId));
   }
@@ -276,6 +332,16 @@ function legalNightTargets(
 ): readonly PlayerId[] {
   const state = deriveGameState(game.players, events);
   return getLegalNightTargets(action, game.players, state.alivePlayerIds, actorPlayerId);
+}
+
+function legalAntidoteTargets(events: readonly GameEvent[]): readonly PlayerId[] {
+  const wolfKill = [...events]
+    .reverse()
+    .find((event): event is Extract<GameEvent, { type: "wolf_kill_selected" }> =>
+      event.type === "wolf_kill_selected",
+    );
+
+  return wolfKill ? [wolfKill.payload.targetPlayerId] : [];
 }
 
 function contextHash(context: unknown): string {

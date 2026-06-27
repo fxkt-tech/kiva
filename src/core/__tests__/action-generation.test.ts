@@ -165,6 +165,47 @@ describe("action generation", () => {
     expect(content).toContain("  - 1 号 秦川 -> 5 号 陈墨");
   });
 
+  it("keeps safe visible role information in action prompts", async () => {
+    const result = await generateActionDraft({
+      game,
+      events: setupEvents(),
+      draft: wolfDraft(villager.playerId),
+      llmClient: new MockLlmClient([{ targetPlayerId: seer.playerId }]),
+      generationId: "generation_roster",
+      createdAt,
+    });
+
+    const content = result.generation?.request?.messages[0]?.content ?? "";
+
+    expect(content).toContain(`1 秦川 playerId=${wolf.playerId} role=werewolf faction=wolves`);
+    expect(content).toContain(`2 林夏 playerId=${game.players[1]?.playerId} role=werewolf faction=wolves`);
+    expect(content).toContain(`3 周知 playerId=${seer.playerId}`);
+    expect(content).not.toContain(`3 周知 playerId=${seer.playerId} role=seer`);
+  });
+
+  it("rejects action drafts whose actor cannot use the draft mechanic", async () => {
+    const draft = {
+      ...wolfDraft(villager.playerId),
+      actorPlayerId: seer.playerId,
+    } satisfies DraftEvent;
+
+    const result = await generateActionDraft({
+      game,
+      events: setupEvents(),
+      draft,
+      llmClient: new MockLlmClient([{ targetPlayerId: villager.playerId }]),
+      generationId: "generation_bad_actor",
+      createdAt,
+    });
+
+    expect(result.draft).toEqual(draft);
+    expect(result.generation).toMatchObject({
+      status: "failed",
+      purpose: "action",
+      error: "Player cannot perform wolf_kill_selected",
+    });
+  });
+
   it("rejects illegal wolf kill targets and keeps draft unchanged", async () => {
     const draft = wolfDraft(villager.playerId);
     const result = await generateActionDraft({

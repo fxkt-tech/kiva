@@ -144,6 +144,41 @@ describe("role definitions", () => {
   });
 
   it.each([
+    [
+      "werewolf faction",
+      {
+        id: "werewolf",
+        name: "狼人",
+        faction: "good",
+        team: "wolf",
+        mechanicKey: "wolf_kill",
+      },
+      "Role werewolf does not match the current ruleset contract",
+    ],
+    [
+      "seer mechanic",
+      { id: "seer", mechanicKey: "wolf_kill" },
+      "Role seer does not match the current ruleset contract",
+    ],
+    [
+      "villager team",
+      {
+        id: "villager",
+        name: "平民",
+        faction: "good",
+        team: "god",
+        mechanicKey: "none",
+      },
+      "Role villager does not match the current ruleset contract",
+    ],
+  ] satisfies Array<[string, Partial<RoleDefinition>, string]>)(
+    "rejects %s mismatches for supported roles",
+    (_case, overrides, message) => {
+      expect(() => validateRoleDefinitions([validRole(overrides)])).toThrow(message);
+    },
+  );
+
+  it.each([
     ["object", "invalid", "Role seer defaultModelBinding must be an object or null"],
     [
       "provider",
