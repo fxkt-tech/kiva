@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { DraftEvent } from "@/core/drafts";
+import type { GenerationRecord } from "@/core/generation-record";
 import { createSeedGame } from "@/core/game";
 import type { DraftId, GameId, PlayerId } from "@/core/types";
 import { DraftPanel } from "./draft-panel";
@@ -36,6 +37,20 @@ describe("DraftPanel payload controls", () => {
     expect(html).not.toContain("Regenerate");
   });
 
+  it("renders latest generation summary for current draft", () => {
+    const draft = daySpeechDraft();
+    const html = renderPanel(draft, [
+      generationRecord({ draftId: draft.id, status: "failed", error: "old error" }),
+      generationRecord({ draftId: draft.id, status: "success", error: null }),
+    ]);
+
+    expect(html).toContain("Generation");
+    expect(html).toContain("success");
+    expect(html).toContain("mock/mock-model");
+    expect(html).toContain("speech:v1");
+    expect(html).not.toContain("old error");
+  });
+
   it("renders witch used false field and nullable target select", () => {
     const html = renderPanel(witchAntidoteDraft());
 
@@ -61,9 +76,12 @@ describe("DraftPanel payload controls", () => {
   });
 });
 
-function renderPanel(draft: DraftEvent): string {
+function renderPanel(
+  draft: DraftEvent,
+  generations: readonly GenerationRecord[] = [],
+): string {
   return renderToStaticMarkup(
-    React.createElement(DraftPanel, { gameId, draft, players }),
+    React.createElement(DraftPanel, { gameId, draft, players, generations }),
   );
 }
 
@@ -147,4 +165,30 @@ function daySpeechDraft(): DraftEvent {
     },
     createdAt,
   } as DraftEvent;
+}
+
+function generationRecord(input: {
+  readonly draftId: string;
+  readonly status: GenerationRecord["status"];
+  readonly error: string | null;
+}): GenerationRecord {
+  return {
+    id: `generation_${input.status}`,
+    gameId,
+    draftId: input.draftId as GenerationRecord["draftId"],
+    playerId: players[0].playerId,
+    purpose: "speech",
+    status: input.status,
+    promptVersion: "speech:v1",
+    provider: "mock",
+    model: "mock-model",
+    inputContextHash: "ctx",
+    rawOutput: "{}",
+    parsedOutput: input.status === "success" ? { text: "ok" } : null,
+    error: input.error,
+    createdAt:
+      input.status === "success"
+        ? "2026-06-26T00:01:00.000Z"
+        : "2026-06-26T00:00:00.000Z",
+  };
 }

@@ -6,6 +6,7 @@ import {
 } from "@/app/actions";
 import type { DraftEvent } from "@/core/drafts";
 import { formatDraftForHost, formatVisibility } from "@/core/event-presenter";
+import type { GenerationRecord } from "@/core/generation-record";
 import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
 
@@ -13,9 +14,15 @@ type DraftPanelProps = {
   readonly gameId: GameId;
   readonly draft: DraftEvent | null;
   readonly players: readonly PlayerSnapshot[];
+  readonly generations: readonly GenerationRecord[];
 };
 
-export function DraftPanel({ gameId, draft, players }: DraftPanelProps) {
+export function DraftPanel({
+  gameId,
+  draft,
+  players,
+  generations,
+}: DraftPanelProps) {
   if (!draft) {
     return (
       <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
@@ -30,6 +37,7 @@ export function DraftPanel({ gameId, draft, players }: DraftPanelProps) {
   }
 
   const presented = formatDraftForHost(draft, players);
+  const latestGeneration = latestGenerationForDraft(generations, draft.id);
 
   return (
     <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
@@ -75,6 +83,24 @@ export function DraftPanel({ gameId, draft, players }: DraftPanelProps) {
           </div>
         ) : null}
 
+        {latestGeneration ? (
+          <div className="border-t border-zinc-800 pt-4">
+            <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+              Generation
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-zinc-400">
+              <span>{latestGeneration.status}</span>
+              <span>{latestGeneration.provider}/{latestGeneration.model}</span>
+              <span>{latestGeneration.promptVersion}</span>
+            </div>
+            {latestGeneration.error ? (
+              <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-5 text-red-300">
+                {latestGeneration.error}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
         <DraftPayloadForm gameId={gameId} draft={draft} players={players} />
 
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -107,6 +133,18 @@ export function DraftPanel({ gameId, draft, players }: DraftPanelProps) {
         </div>
       </div>
     </section>
+  );
+}
+
+function latestGenerationForDraft(
+  generations: readonly GenerationRecord[],
+  draftId: DraftEvent["id"],
+): GenerationRecord | null {
+  return (
+    [...generations]
+      .filter((generation) => generation.draftId === draftId)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0] ??
+    null
   );
 }
 

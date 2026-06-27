@@ -74,6 +74,7 @@ export default async function EditorPage({ params }: EditorPageProps) {
               gameId={typedGameId}
               draft={record.draft}
               players={record.game.players}
+              generations={record.generations}
             />
             <section className="rounded-lg border border-zinc-800 bg-zinc-900/45">
               <div className="border-b border-zinc-800 px-4 py-3">
