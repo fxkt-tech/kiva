@@ -34,6 +34,12 @@ export async function editDraftPayloadAction(
   revalidatePath(previewPath(gameId));
 }
 
+export async function regenerateDraftAction(gameId: GameId) {
+  await gameActions.regenerateDraft(gameId);
+  revalidatePath(editorPath(gameId));
+  revalidatePath(previewPath(gameId));
+}
+
 export async function deleteDraftAction(gameId: GameId) {
   await gameActions.deleteDraft(gameId);
   revalidatePath(editorPath(gameId));

@@ -24,6 +24,18 @@ describe("DraftPanel payload controls", () => {
     expect(html).toContain("选择击杀 1 号");
   });
 
+  it("renders regenerate control for speech drafts", () => {
+    const html = renderPanel(daySpeechDraft());
+
+    expect(html).toContain("Regenerate");
+  });
+
+  it("does not render regenerate control for non-speech drafts", () => {
+    const html = renderPanel(wolfKillDraft(players[0].playerId));
+
+    expect(html).not.toContain("Regenerate");
+  });
+
   it("renders witch used false field and nullable target select", () => {
     const html = renderPanel(witchAntidoteDraft());
 
@@ -114,6 +126,25 @@ function roleAssignedDraft(playerId: PlayerId): DraftEvent {
     targetPlayerIds: [playerId],
     visibility: { kind: "player_private", playerIds: [playerId] },
     payload: { playerId, role: "werewolf", faction: "wolves" },
+    createdAt,
+  } as DraftEvent;
+}
+
+function daySpeechDraft(): DraftEvent {
+  return {
+    id: draftId,
+    gameId,
+    status: "draft",
+    type: "day_speech_given",
+    phase: "speech",
+    actorPlayerId: players[0].playerId,
+    visibility: { kind: "public" },
+    payload: {
+      playerId: players[0].playerId,
+      text: "默认发言",
+      dayNumber: 1,
+      round: 1,
+    },
     createdAt,
   } as DraftEvent;
 }

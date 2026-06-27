@@ -148,6 +148,36 @@ export function createGameActions(
       });
     },
 
+    async regenerateDraft(gameId: GameId): Promise<GameRecord> {
+      return repository.withGameLock(gameId, async () => {
+        const record = await loadGame(gameId);
+        if (!record.draft || !options.llmClient) {
+          return record;
+        }
+
+        const updatedAt = now();
+        const generatedDraft = await maybeGenerateSpeechDraft({
+          record,
+          draft: record.draft,
+          llmClient: options.llmClient,
+          createdAt: updatedAt,
+        });
+        if (!generatedDraft.generation) {
+          return record;
+        }
+
+        const nextRecord: GameRecord = {
+          ...record,
+          game: { ...record.game, updatedAt },
+          draft: generatedDraft.draft,
+          generations: [...record.generations, generatedDraft.generation],
+        };
+
+        await repository.save(nextRecord);
+        return nextRecord;
+      });
+    },
+
     async deleteDraft(gameId: GameId): Promise<GameRecord> {
       return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);

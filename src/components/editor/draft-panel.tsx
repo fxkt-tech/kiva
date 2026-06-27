@@ -2,6 +2,7 @@ import {
   confirmDraftAction,
   deleteDraftAction,
   editDraftPayloadAction,
+  regenerateDraftAction,
 } from "@/app/actions";
 import type { DraftEvent } from "@/core/drafts";
 import { formatDraftForHost, formatVisibility } from "@/core/event-presenter";
@@ -77,6 +78,16 @@ export function DraftPanel({ gameId, draft, players }: DraftPanelProps) {
         <DraftPayloadForm gameId={gameId} draft={draft} players={players} />
 
         <div className="flex flex-col gap-2 sm:flex-row">
+          {isRegenerableDraft(draft) ? (
+            <form action={regenerateDraftAction.bind(null, gameId)}>
+              <button
+                type="submit"
+                className="w-full rounded-md border border-sky-900/80 px-3 py-2 text-xs font-medium text-sky-300 transition hover:border-sky-600 hover:text-sky-200 sm:w-auto"
+              >
+                Regenerate
+              </button>
+            </form>
+          ) : null}
           <form action={confirmDraftAction.bind(null, gameId)}>
             <button
               type="submit"
@@ -96,6 +107,14 @@ export function DraftPanel({ gameId, draft, players }: DraftPanelProps) {
         </div>
       </div>
     </section>
+  );
+}
+
+function isRegenerableDraft(draft: DraftEvent): boolean {
+  return (
+    draft.type === "day_speech_given" ||
+    draft.type === "last_words_given" ||
+    draft.type === "pk_speech_given"
   );
 }
 

@@ -213,6 +213,46 @@ describe("game actions", () => {
     });
   });
 
+  it("regenerates the current speech draft without advancing", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const actions = createGameActions(repository, {
+      llmClient: new MockLlmClient([
+        { text: "遗言先过。" },
+        { text: "第一次发言。" },
+        { text: "重新生成后的发言。" },
+      ]),
+    });
+    const created = await actions.createGame();
+    const withSpeech = await continueUntilDraftType(
+      actions,
+      created.game.id,
+      "day_speech_given",
+    );
+
+    const regenerated = await actions.regenerateDraft(created.game.id);
+
+    expect(regenerated.draft).toMatchObject({
+      id: withSpeech.draft?.id,
+      type: "day_speech_given",
+      payload: { text: "重新生成后的发言。" },
+    });
+    expect(regenerated.events).toEqual(withSpeech.events);
+    expect(regenerated.generations.at(-1)).toMatchObject({
+      status: "success",
+      parsedOutput: { text: "重新生成后的发言。" },
+    });
+  });
+
+  it("keeps unsupported drafts unchanged when regenerating", async () => {
+    const { actions } = await createActions();
+    const created = await actions.createGame();
+    const withRoleDraft = await actions.continueGame(created.game.id);
+
+    const regenerated = await actions.regenerateDraft(created.game.id);
+
+    expect(regenerated).toEqual(withRoleDraft);
+  });
+
   it("rejects invalid rollback indexes", async () => {
     const { actions } = await createActions();
     const created = await actions.createGame();
