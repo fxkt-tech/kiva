@@ -13,10 +13,10 @@ type EventTimelineProps = {
 export function EventTimeline({ gameId, events, players }: EventTimelineProps) {
   const orderedEvents = [...events].sort((left, right) => {
     if (left.index === right.index) {
-      return left.createdAt.localeCompare(right.createdAt);
+      return right.createdAt.localeCompare(left.createdAt);
     }
 
-    return left.index - right.index;
+    return right.index - left.index;
   });
 
   return (
