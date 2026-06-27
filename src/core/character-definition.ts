@@ -1,3 +1,4 @@
+import { isPlainObject, validateModelBindingSnapshot } from "./model-binding";
 import type { ModelBindingSnapshot } from "./player";
 
 export type CharacterDefinition = {
@@ -74,7 +75,10 @@ export function validateCharacterDefinitions(
       requireEnabledText(character.systemPrompt, characterId, "systemPrompt");
     }
 
-    validateModelBinding(character.defaultModelBinding, characterId);
+    validateModelBindingSnapshot(
+      character.defaultModelBinding,
+      `Character ${characterId} defaultModelBinding`,
+    );
     requireIsoTimestamp(
       character.createdAt,
       `Character ${characterId} createdAt`,
@@ -92,7 +96,7 @@ function assertCharacterObject(
   character: unknown,
   path: string,
 ): asserts character is CharacterDefinition {
-  if (character === null || typeof character !== "object") {
+  if (!isPlainObject(character)) {
     throw new Error(`${path} must be an object`);
   }
 }
@@ -176,62 +180,6 @@ function requireTextField(
   }
 }
 
-function validateModelBinding(value: unknown, characterId: string): void {
-  if (value === null) {
-    return;
-  }
-
-  if (typeof value !== "object") {
-    throw new Error(
-      `Character ${characterId} defaultModelBinding must be an object or null`,
-    );
-  }
-
-  const binding = value as Partial<ModelBindingSnapshot>;
-
-  if (!isStableString(binding.provider)) {
-    throw new Error(`Character ${characterId} defaultModelBinding.provider must be set`);
-  }
-
-  if (!isStableString(binding.model)) {
-    throw new Error(`Character ${characterId} defaultModelBinding.model must be set`);
-  }
-
-  if (
-    typeof binding.temperature !== "number" ||
-    !Number.isFinite(binding.temperature)
-  ) {
-    throw new Error(
-      `Character ${characterId} defaultModelBinding.temperature must be a finite number`,
-    );
-  }
-
-  if (
-    typeof binding.maxTokens !== "number" ||
-    !Number.isInteger(binding.maxTokens) ||
-    binding.maxTokens <= 0
-  ) {
-    throw new Error(
-      `Character ${characterId} defaultModelBinding.maxTokens must be a positive integer`,
-    );
-  }
-
-  if (binding.responseFormat !== "json") {
-    throw new Error(
-      `Character ${characterId} defaultModelBinding.responseFormat must be json`,
-    );
-  }
-
-  if (
-    binding.fallbackModel !== undefined &&
-    !isStableString(binding.fallbackModel)
-  ) {
-    throw new Error(
-      `Character ${characterId} defaultModelBinding.fallbackModel must be a non-empty string`,
-    );
-  }
-}
-
 function requireIsoTimestamp(value: unknown, fieldName: string): void {
   if (
     typeof value !== "string" ||
@@ -244,8 +192,4 @@ function requireIsoTimestamp(value: unknown, fieldName: string): void {
 
 function isNonBlankString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
-}
-
-function isStableString(value: unknown): value is string {
-  return isNonBlankString(value) && value === value.trim();
 }

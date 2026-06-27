@@ -1,3 +1,4 @@
+import { isPlainObject, validateModelBindingSnapshot } from "./model-binding";
 import type { ModelBindingSnapshot } from "./player";
 import type { Faction } from "./types";
 
@@ -99,7 +100,10 @@ export function validateRoleDefinitions(roles: unknown): readonly RoleDefinition
       throw new Error(`Role ${roleId} enabled must be a boolean`);
     }
 
-    validateModelBinding(role.defaultModelBinding, roleId);
+    validateModelBindingSnapshot(
+      role.defaultModelBinding,
+      `Role ${roleId} defaultModelBinding`,
+    );
     requireIsoTimestamp(role.createdAt, `Role ${roleId} createdAt`);
     requireIsoTimestamp(role.updatedAt, `Role ${roleId} updatedAt`);
   }
@@ -108,7 +112,7 @@ export function validateRoleDefinitions(roles: unknown): readonly RoleDefinition
 }
 
 function assertRoleObject(role: unknown): asserts role is RoleDefinition {
-  if (role === null || typeof role !== "object") {
+  if (!isPlainObject(role)) {
     throw new Error("Role definition must be an object");
   }
 }
@@ -140,58 +144,6 @@ function isValidNightOrder(value: number | null): boolean {
     value === null ||
     (typeof value === "number" && Number.isFinite(value) && value >= 0)
   );
-}
-
-function validateModelBinding(value: unknown, roleId: string): void {
-  if (value === null) {
-    return;
-  }
-
-  if (typeof value !== "object") {
-    throw new Error(`Role ${roleId} defaultModelBinding must be an object or null`);
-  }
-
-  const binding = value as Partial<ModelBindingSnapshot>;
-
-  if (!isNonBlankString(binding.provider)) {
-    throw new Error(`Role ${roleId} defaultModelBinding.provider must be set`);
-  }
-
-  if (!isNonBlankString(binding.model)) {
-    throw new Error(`Role ${roleId} defaultModelBinding.model must be set`);
-  }
-
-  if (
-    typeof binding.temperature !== "number" ||
-    !Number.isFinite(binding.temperature)
-  ) {
-    throw new Error(
-      `Role ${roleId} defaultModelBinding.temperature must be a finite number`,
-    );
-  }
-
-  if (
-    typeof binding.maxTokens !== "number" ||
-    !Number.isInteger(binding.maxTokens) ||
-    binding.maxTokens <= 0
-  ) {
-    throw new Error(
-      `Role ${roleId} defaultModelBinding.maxTokens must be a positive integer`,
-    );
-  }
-
-  if (binding.responseFormat !== "json") {
-    throw new Error(`Role ${roleId} defaultModelBinding.responseFormat must be json`);
-  }
-
-  if (
-    binding.fallbackModel !== undefined &&
-    !isNonBlankString(binding.fallbackModel)
-  ) {
-    throw new Error(
-      `Role ${roleId} defaultModelBinding.fallbackModel must be a non-empty string`,
-    );
-  }
 }
 
 function isNonBlankString(value: unknown): value is string {

@@ -180,6 +180,12 @@ describe("game presets", () => {
     );
   });
 
+  it("rejects array entries", () => {
+    expect(() => validateGamePresets([[]], libraries())).toThrow(
+      "Game preset[0] must be an object",
+    );
+  });
+
   it.each([
     ["blank id", { id: "" }, "Game preset[0] id must not be blank"],
     [
@@ -351,6 +357,11 @@ describe("game presets", () => {
       "Game preset six-player-standard seatAssignments[0] must be an object",
     ],
     [
+      "array entry",
+      { seatAssignments: [[], validSeatAssignment({ seatNo: 2 }), validSeatAssignment({ seatNo: 3 })] },
+      "Game preset six-player-standard seatAssignments[0] must be an object",
+    ],
+    [
       "duplicate seat",
       {
         seatAssignments: [
@@ -429,25 +440,126 @@ describe("game presets", () => {
     );
   });
 
-  it("rejects seat assignments that reference disabled library entries", () => {
+  it("rejects seat assignments that reference unknown role entries", () => {
+    expect(() =>
+      validateGamePresets(
+        [
+          validPreset({
+            roleIds: ["werewolf", "seer", "villager"],
+            seatAssignments: [
+              validSeatAssignment({ seatNo: 1, roleId: "werewolf" }),
+              validSeatAssignment({ seatNo: 2, roleId: "witch", characterId: "warm-mediator" }),
+              validSeatAssignment({
+                seatNo: 3,
+                roleId: "villager",
+                characterId: "direct-skeptic",
+              }),
+            ],
+          }),
+        ],
+        libraries(),
+      ),
+    ).toThrow(
+      "Game preset six-player-standard seatAssignments[1] roleId references unknown role: witch",
+    );
+  });
+
+  it("rejects seat assignments that reference disabled role entries", () => {
     expect(() =>
       validateGamePresets(
         [
           validPreset({
             roleIds: ["werewolf", "seer", "villager"],
             characterIds: ["calm-analyst", "warm-mediator", "direct-skeptic"],
+            seatAssignments: [
+              validSeatAssignment({ seatNo: 1, roleId: "werewolf" }),
+              validSeatAssignment({
+                seatNo: 2,
+                roleId: "villager-disabled",
+                characterId: "warm-mediator",
+              }),
+              validSeatAssignment({
+                seatNo: 3,
+                roleId: "seer",
+                characterId: "direct-skeptic",
+              }),
+            ],
           }),
         ],
         libraries({
           roles: [
             validRole({ id: "werewolf" }),
             validRole(),
-            validRole({ id: "villager", enabled: false }),
+            validRole({ id: "villager-disabled", enabled: false }),
+            validRole({ id: "villager" }),
           ],
         }),
       ),
     ).toThrow(
-      "Game preset six-player-standard roleIds[2] references disabled role: villager",
+      "Game preset six-player-standard seatAssignments[1] roleId references disabled role: villager-disabled",
+    );
+  });
+
+  it("rejects seat assignments that reference disabled character entries", () => {
+    expect(() =>
+      validateGamePresets(
+        [
+          validPreset({
+            characterIds: ["calm-analyst", "warm-mediator", "direct-skeptic"],
+            seatAssignments: [
+              validSeatAssignment({ seatNo: 1, roleId: "werewolf" }),
+              validSeatAssignment({
+                seatNo: 2,
+                roleId: "seer",
+                characterId: "disabled-character",
+              }),
+              validSeatAssignment({
+                seatNo: 3,
+                roleId: "villager",
+                characterId: "direct-skeptic",
+              }),
+            ],
+          }),
+        ],
+        libraries({
+          characters: [
+            validCharacter(),
+            validCharacter({ id: "warm-mediator" }),
+            validCharacter({ id: "direct-skeptic" }),
+            validCharacter({ id: "disabled-character", enabled: false }),
+          ],
+        }),
+      ),
+    ).toThrow(
+      "Game preset six-player-standard seatAssignments[1] characterId references disabled character: disabled-character",
+    );
+  });
+
+  it("rejects seat assignments that reference unknown character entries", () => {
+    expect(() =>
+      validateGamePresets(
+        [
+          validPreset({
+            characterIds: ["calm-analyst", "warm-mediator", "direct-skeptic"],
+            seatAssignments: [
+              validSeatAssignment({ seatNo: 1, roleId: "werewolf" }),
+              validSeatAssignment({
+                seatNo: 2,
+                roleId: "seer",
+                characterId: "quiet-observer",
+              }),
+              validSeatAssignment({
+                seatNo: 3,
+                roleId: "villager",
+                characterId: "direct-skeptic",
+              }),
+            ],
+          }),
+        ],
+        libraries(),
+      ),
+    ).toThrow(
+      "Game preset six-player-standard seatAssignments[1] characterId references unknown character: quiet-observer",
     );
   });
 
@@ -476,6 +588,36 @@ describe("game presets", () => {
       ),
     ).toThrow(
       "Game preset six-player-standard seatAssignments[1] modelBindingOverride.maxTokens must be a positive integer",
+    );
+  });
+
+  it("rejects array modelBindingOverride values", () => {
+    expect(() =>
+      validateGamePresets(
+        [
+          validPreset({
+            seatAssignments: [
+              validSeatAssignment({ seatNo: 1, roleId: "werewolf" }),
+              {
+                ...validSeatAssignment({
+                  seatNo: 2,
+                  roleId: "seer",
+                  characterId: "warm-mediator",
+                }),
+                modelBindingOverride: [],
+              } as unknown as GamePresetSeatAssignment,
+              validSeatAssignment({
+                seatNo: 3,
+                roleId: "villager",
+                characterId: "direct-skeptic",
+              }),
+            ],
+          }),
+        ],
+        libraries(),
+      ),
+    ).toThrow(
+      "Game preset six-player-standard seatAssignments[1] modelBindingOverride must be an object or null",
     );
   });
 });

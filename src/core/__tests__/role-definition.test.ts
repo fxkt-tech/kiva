@@ -157,10 +157,32 @@ describe("role definitions", () => {
       "Role seer defaultModelBinding.provider must be set",
     ],
     [
+      "provider whitespace",
+      {
+        provider: " mock",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+      },
+      "Role seer defaultModelBinding.provider must be set",
+    ],
+    [
       "model",
       {
         provider: "mock",
         model: "",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+      },
+      "Role seer defaultModelBinding.model must be set",
+    ],
+    [
+      "model whitespace",
+      {
+        provider: "mock",
+        model: "mock-model ",
         temperature: 0.7,
         maxTokens: 1000,
         responseFormat: "json",
@@ -209,6 +231,18 @@ describe("role definitions", () => {
         maxTokens: 1000,
         responseFormat: "json",
         fallbackModel: "",
+      },
+      "Role seer defaultModelBinding.fallbackModel must be a non-empty string",
+    ],
+    [
+      "fallbackModel whitespace",
+      {
+        provider: "mock",
+        model: "mock-model",
+        temperature: 0.7,
+        maxTokens: 1000,
+        responseFormat: "json",
+        fallbackModel: " mock-fallback",
       },
       "Role seer defaultModelBinding.fallbackModel must be a non-empty string",
     ],

@@ -1,4 +1,5 @@
 import type { CharacterDefinition } from "./character-definition";
+import { isPlainObject, validateModelBindingSnapshot } from "./model-binding";
 import type { ModelBindingSnapshot } from "./player";
 import type { RoleDefinition } from "./role-definition";
 
@@ -108,7 +109,7 @@ function assertPresetObject(
   preset: unknown,
   path: string,
 ): asserts preset is GamePreset {
-  if (preset === null || typeof preset !== "object") {
+  if (!isPlainObject(preset)) {
     throw new Error(`${path} must be an object`);
   }
 }
@@ -235,7 +236,7 @@ function validateSeatAssignments({
     });
     assignedCharacterIds.push(characterId);
 
-    validateModelBinding(
+    validateModelBindingSnapshot(
       assignment.modelBindingOverride,
       `${assignmentPath} modelBindingOverride`,
     );
@@ -258,7 +259,7 @@ function assertSeatAssignmentObject(
   assignment: unknown,
   path: string,
 ): asserts assignment is GamePresetSeatAssignment {
-  if (assignment === null || typeof assignment !== "object") {
+  if (!isPlainObject(assignment)) {
     throw new Error(`${path} must be an object`);
   }
 }
@@ -282,52 +283,6 @@ function validateEnabledReference<T extends { readonly enabled: boolean }>({
 
   if (!definition.enabled) {
     throw new Error(`${path} references disabled ${entityName}: ${id}`);
-  }
-}
-
-function validateModelBinding(value: unknown, path: string): void {
-  if (value === null) {
-    return;
-  }
-
-  if (typeof value !== "object") {
-    throw new Error(`${path} must be an object or null`);
-  }
-
-  const binding = value as Partial<ModelBindingSnapshot>;
-
-  if (!isStableString(binding.provider)) {
-    throw new Error(`${path}.provider must be set`);
-  }
-
-  if (!isStableString(binding.model)) {
-    throw new Error(`${path}.model must be set`);
-  }
-
-  if (
-    typeof binding.temperature !== "number" ||
-    !Number.isFinite(binding.temperature)
-  ) {
-    throw new Error(`${path}.temperature must be a finite number`);
-  }
-
-  if (
-    typeof binding.maxTokens !== "number" ||
-    !Number.isInteger(binding.maxTokens) ||
-    binding.maxTokens <= 0
-  ) {
-    throw new Error(`${path}.maxTokens must be a positive integer`);
-  }
-
-  if (binding.responseFormat !== "json") {
-    throw new Error(`${path}.responseFormat must be json`);
-  }
-
-  if (
-    binding.fallbackModel !== undefined &&
-    !isStableString(binding.fallbackModel)
-  ) {
-    throw new Error(`${path}.fallbackModel must be a non-empty string`);
   }
 }
 
@@ -390,8 +345,4 @@ function isPositiveInteger(value: unknown): value is number {
 
 function isNonBlankString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
-}
-
-function isStableString(value: unknown): value is string {
-  return isNonBlankString(value) && value === value.trim();
 }
