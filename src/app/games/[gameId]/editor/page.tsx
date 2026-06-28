@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DraftPanel } from "@/components/editor/draft-panel";
 import { EventTimeline } from "@/components/editor/event-timeline";
-import { GameBoard } from "@/components/editor/game-board";
 import type { GameId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
@@ -50,24 +49,8 @@ export default async function EditorPage({ params }: EditorPageProps) {
           </div>
         </header>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(520px,0.82fr)]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(520px,0.9fr)]">
           <div className="grid min-h-0 gap-3 lg:grid-rows-[auto_minmax(0,1fr)]">
-            <GameBoard game={record.game} events={record.events} />
-            <DraftPanel
-              gameId={typedGameId}
-              draft={record.draft}
-              players={record.game.players}
-              generations={record.generations}
-            />
-          </div>
-
-          <div className="grid min-h-0 gap-3 lg:grid-rows-[minmax(0,1fr)_auto]">
-            <EventTimeline
-              gameId={typedGameId}
-              events={record.events}
-              players={record.game.players}
-              generations={record.generations}
-            />
             <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
               <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-3 py-2">
                 <h2 className="text-sm font-semibold text-zinc-100">
@@ -89,6 +72,21 @@ export default async function EditorPage({ params }: EditorPageProps) {
                 />
               </div>
             </section>
+            <EventTimeline
+              gameId={typedGameId}
+              events={record.events}
+              players={record.game.players}
+              generations={record.generations}
+            />
+          </div>
+
+          <div className="min-h-0">
+            <DraftPanel
+              gameId={typedGameId}
+              draft={record.draft}
+              players={record.game.players}
+              generations={record.generations}
+            />
           </div>
         </div>
       </div>

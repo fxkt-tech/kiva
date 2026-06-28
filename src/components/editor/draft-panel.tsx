@@ -28,7 +28,7 @@ export function DraftPanel({
 }: DraftPanelProps) {
   if (!draft) {
     return (
-      <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
+      <section className="flex h-full min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
         <div className="shrink-0 border-b border-zinc-800 px-3 py-2">
           <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
         </div>
@@ -46,7 +46,7 @@ export function DraftPanel({
   return (
     <section
       aria-busy={generatingInitialDraft}
-      className="relative flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45"
+      className="relative flex h-full min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45"
     >
       <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-800 px-3 py-2">
         <div>
