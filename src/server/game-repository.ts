@@ -33,7 +33,7 @@ export type GameRepository = {
   ) => Promise<T>;
 };
 
-export function createGameRepository(rootDir = ".kiva-data"): GameRepository {
+export function createGameRepository(rootDir = "kivdb"): GameRepository {
   const gamesDir = join(rootDir, "games");
   const locksDir = join(rootDir, "locks");
 

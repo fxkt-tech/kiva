@@ -1,0 +1,234 @@
+{
+  "game": {
+    "id": "game_08efb9fa-9547-45d3-863a-9c759c6816e2",
+    "title": "6人狼人杀试运行",
+    "status": "drafting",
+    "ruleset": {
+      "playerCount": 6,
+      "roleCounts": {
+        "werewolf": 2,
+        "seer": 1,
+        "witch": 1,
+        "villager": 2
+      },
+      "winCondition": "slaughter_side",
+      "witchFirstNightSelfSave": true,
+      "witchAllowSameNightAntidoteAndPoison": false,
+      "voteReveal": "after_all_votes",
+      "deadRoleReveal": "endgame",
+      "pkVoters": "non_pk_only",
+      "allowAbstainVote": true
+    },
+    "players": [
+      {
+        "playerId": "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p1",
+        "seatNo": 1,
+        "characterSourceId": "qin_chuan",
+        "name": "秦川",
+        "roleSourceId": "werewolf",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p2",
+        "seatNo": 2,
+        "characterSourceId": "lin_xia",
+        "name": "林夏",
+        "roleSourceId": "werewolf",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p3",
+        "seatNo": 3,
+        "characterSourceId": "zhou_zhi",
+        "name": "周知",
+        "roleSourceId": "seer",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可以查验一名玩家的阵营信息，白天根据查验结果和发言推动放逐狼人。",
+        "roleActionPromptSnapshot": "夜晚请选择要查验的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "seer",
+        "roleName": "预言家",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "seer_check",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p4",
+        "seatNo": 4,
+        "characterSourceId": "xu_tang",
+        "name": "许棠",
+        "roleSourceId": "witch",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可根据规则使用解药或毒药，白天结合夜晚信息和发言寻找狼人。",
+        "roleActionPromptSnapshot": "夜晚请决定是否使用药剂，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "witch",
+        "roleName": "女巫",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "witch_medicine",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "witch_medicines"
+        ]
+      },
+      {
+        "playerId": "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p5",
+        "seatNo": 5,
+        "characterSourceId": "chen_mo",
+        "name": "陈墨",
+        "roleSourceId": "villager",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p6",
+        "seatNo": 6,
+        "characterSourceId": "shen_lan",
+        "name": "沈岚",
+        "roleSourceId": "villager",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      }
+    ],
+    "createdAt": "2026-06-27T12:38:06.138Z",
+    "updatedAt": "2026-06-27T12:38:06.147Z"
+  },
+  "events": [],
+  "draft": {
+    "id": "draft_fc7b0933-89fa-476b-999b-0361f021f9d5",
+    "gameId": "game_08efb9fa-9547-45d3-863a-9c759c6816e2",
+    "type": "role_assigned",
+    "phase": "setup",
+    "targetPlayerIds": [
+      "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p1"
+    ],
+    "visibility": {
+      "kind": "player_private",
+      "playerIds": [
+        "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p1"
+      ]
+    },
+    "payload": {
+      "playerId": "game_08efb9fa-9547-45d3-863a-9c759c6816e2_p1",
+      "role": "werewolf",
+      "faction": "wolves"
+    },
+    "createdAt": "2026-06-27T12:38:06.147Z",
+    "status": "draft"
+  },
+  "generations": []
+}

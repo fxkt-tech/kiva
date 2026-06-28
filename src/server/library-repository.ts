@@ -41,7 +41,7 @@ export type LibraryRepository = {
   readonly withLibraryLock: <T>(operation: () => Promise<T>) => Promise<T>;
 };
 
-export function createLibraryRepository(rootDir = ".kiva-data"): LibraryRepository {
+export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
   const rolesPath = join(rootDir, "roles.json");
   const charactersPath = join(rootDir, "characters.json");
   const presetsPath = join(rootDir, "presets.json");

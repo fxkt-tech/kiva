@@ -12,8 +12,10 @@ import {
 } from "../game-repository";
 
 const tempDirs: string[] = [];
+const originalCwd = process.cwd();
 
 afterEach(async () => {
+  process.chdir(originalCwd);
   await Promise.all(
     tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })),
   );
@@ -84,6 +86,25 @@ function draft(gameId: GameId): DraftEvent {
 }
 
 describe("game repository", () => {
+  it("uses kivdb as the default data directory", async () => {
+    const rootDir = await createTempDir();
+    process.chdir(rootDir);
+    const repository = createGameRepository();
+    const gameId = "game-1" as GameId;
+
+    await repository.save({
+      game: game(gameId, "2026-06-26T00:03:00.000Z"),
+      events: [],
+      draft: null,
+      generations: [],
+    });
+
+    const savedFile = await stat(
+      join(rootDir, "kivdb", "games", `${encodeURIComponent(gameId)}.json`),
+    );
+    expect(savedFile.isFile()).toBe(true);
+  });
+
   it("returns a saved game record with game, events, and draft", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);

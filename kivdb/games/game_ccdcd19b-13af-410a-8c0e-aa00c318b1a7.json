@@ -1,0 +1,1372 @@
+{
+  "game": {
+    "id": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+    "title": "6人狼人杀试运行",
+    "status": "drafting",
+    "ruleset": {
+      "playerCount": 6,
+      "roleCounts": {
+        "werewolf": 2,
+        "seer": 1,
+        "witch": 1,
+        "villager": 2
+      },
+      "winCondition": "slaughter_side",
+      "witchFirstNightSelfSave": true,
+      "witchAllowSameNightAntidoteAndPoison": false,
+      "voteReveal": "after_all_votes",
+      "deadRoleReveal": "endgame",
+      "pkVoters": "non_pk_only",
+      "allowAbstainVote": true
+    },
+    "players": [
+      {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "seatNo": 1,
+        "name": "秦川",
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "werewolf",
+        "faction": "wolves",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+        "seatNo": 2,
+        "name": "林夏",
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "werewolf",
+        "faction": "wolves",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3",
+        "seatNo": 3,
+        "name": "周知",
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "seer",
+        "faction": "good",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+        "seatNo": 4,
+        "name": "许棠",
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "witch",
+        "faction": "good",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "witch_medicines"
+        ]
+      },
+      {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+        "seatNo": 5,
+        "name": "陈墨",
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "villager",
+        "faction": "good",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+        "seatNo": 6,
+        "name": "沈岚",
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "villager",
+        "faction": "good",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      }
+    ],
+    "createdAt": "2026-06-26T14:51:29.061Z",
+    "updatedAt": "2026-06-26T17:15:36.910Z"
+  },
+  "events": [
+    {
+      "id": "event_1_26a8c546-1f2a-4caf-bf23-6c29e45ea6f0",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 1,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "role": "werewolf",
+        "faction": "wolves"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 werewolf。"
+      },
+      "createdFromDraftId": "draft_4c254a09-459b-41b4-a71e-15b0b834cd3d",
+      "createdAt": "2026-06-26T14:53:03.630Z"
+    },
+    {
+      "id": "event_2_a8466a41-0e5e-44fe-ab32-9f5f536ca64c",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 2,
+      "status": "superseded",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+        "role": "werewolf",
+        "faction": "wolves"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 werewolf。"
+      },
+      "createdFromDraftId": "draft_0f8cef4c-f7e3-49b9-85ec-ec6b884c1542",
+      "createdAt": "2026-06-26T14:53:29.637Z"
+    },
+    {
+      "id": "event_3_c769e98d-7bee-4a3d-ab20-6a6cb239a11d",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 3,
+      "status": "superseded",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3",
+        "role": "seer",
+        "faction": "good"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 seer。"
+      },
+      "createdFromDraftId": "draft_d5e9fb7b-9b37-4b69-b990-9289ec9c75f2",
+      "createdAt": "2026-06-26T14:53:29.715Z"
+    },
+    {
+      "id": "event_4_1d514ef1-c1f4-4291-9b3d-0aeec59311de",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 4,
+      "status": "superseded",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+        "role": "witch",
+        "faction": "good"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 witch。"
+      },
+      "createdFromDraftId": "draft_3e2cc106-86f3-4067-bbc6-b4e84b3f1be6",
+      "createdAt": "2026-06-26T14:53:29.803Z"
+    },
+    {
+      "id": "event_5_ae49540e-67ba-4108-acaf-b2dde0af3b35",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 5,
+      "status": "superseded",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+        "role": "villager",
+        "faction": "good"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 villager。"
+      },
+      "createdFromDraftId": "draft_36e6bdb6-8ca8-4d0d-8b24-7d89901d961d",
+      "createdAt": "2026-06-26T14:53:29.905Z"
+    },
+    {
+      "id": "event_6_c3d03b93-26c8-476f-82e1-89625d188296",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 6,
+      "status": "superseded",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+        "role": "villager",
+        "faction": "good"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 villager。"
+      },
+      "createdFromDraftId": "draft_35957adb-6f05-4a1c-bccd-659d543b331a",
+      "createdAt": "2026-06-26T14:53:29.988Z"
+    },
+    {
+      "id": "event_7_b348430f-526c-465a-ba2c-47ac9b61400b",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 7,
+      "status": "superseded",
+      "type": "phase_started",
+      "phase": "night",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "night",
+        "dayNumber": 1
+      },
+      "display": {
+        "title": "第 1 夜开始",
+        "text": "夜晚开始。"
+      },
+      "createdFromDraftId": "draft_66d7d050-629f-4193-a2a4-fba23d28b722",
+      "createdAt": "2026-06-26T14:53:30.084Z"
+    },
+    {
+      "id": "event_2_c7f15f05-bdeb-49a1-be66-429890aef59a",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 2,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+        "role": "werewolf",
+        "faction": "wolves"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 werewolf。"
+      },
+      "createdFromDraftId": "draft_0658013a-25e5-4af2-86b8-39ecd44f15fc",
+      "createdAt": "2026-06-26T15:34:47.900Z"
+    },
+    {
+      "id": "event_3_78ea5e4c-8984-4b5f-b1d1-91c2a829117e",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 3,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3",
+        "role": "seer",
+        "faction": "good"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 seer。"
+      },
+      "createdFromDraftId": "draft_bf484903-6ae4-4ea6-926d-0331c01204d9",
+      "createdAt": "2026-06-26T15:35:50.285Z"
+    },
+    {
+      "id": "event_4_3b42033e-5ee8-4c28-90ca-57efae1a75ff",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 4,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+        "role": "witch",
+        "faction": "good"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 witch。"
+      },
+      "createdFromDraftId": "draft_b5a4c081-b1b1-4c07-a75a-1807dc3da6f4",
+      "createdAt": "2026-06-26T15:35:53.870Z"
+    },
+    {
+      "id": "event_5_d59cc6f7-ddad-419a-9a38-86a371692efa",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 5,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+        "role": "villager",
+        "faction": "good"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 villager。"
+      },
+      "createdFromDraftId": "draft_46466383-7fa4-4c06-aa45-673de837b06a",
+      "createdAt": "2026-06-26T15:35:56.427Z"
+    },
+    {
+      "id": "event_6_89c89c9a-d344-4c13-80a4-fa50db0e82fd",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 6,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6"
+        ]
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+        "role": "villager",
+        "faction": "good"
+      },
+      "display": {
+        "title": "身份牌",
+        "text": "你的身份是 villager。"
+      },
+      "createdFromDraftId": "draft_e9467aef-cb3e-44f2-977e-9174d7f83617",
+      "createdAt": "2026-06-26T15:35:58.534Z"
+    },
+    {
+      "id": "event_7_2c123585-b4ff-4619-84a3-64c533ae1a4d",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 7,
+      "status": "active",
+      "type": "phase_started",
+      "phase": "night",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "night",
+        "dayNumber": 1
+      },
+      "display": {
+        "title": "第 1 夜开始",
+        "text": "夜晚开始。"
+      },
+      "createdFromDraftId": "draft_3953d181-734b-4d7a-93d3-af5694a0af06",
+      "createdAt": "2026-06-26T15:36:03.613Z"
+    },
+    {
+      "id": "event_8_e46965ec-8b6b-4762-9dc0-4a4988d9e451",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 8,
+      "status": "active",
+      "type": "wolf_kill_selected",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      ],
+      "visibility": {
+        "kind": "faction_private",
+        "faction": "wolves"
+      },
+      "payload": {
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      },
+      "display": {
+        "title": "狼人刀人",
+        "text": "狼人选择夜间击杀目标。"
+      },
+      "createdFromDraftId": "draft_426a532e-9073-458c-9d98-f22c42d0f1f4",
+      "createdAt": "2026-06-26T15:36:32.705Z"
+    },
+    {
+      "id": "event_9_6ffd34a6-2179-4436-94e3-6be0df3956c7",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 9,
+      "status": "active",
+      "type": "seer_check_selected",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+        ]
+      },
+      "payload": {
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      },
+      "display": {
+        "title": "预言家查验",
+        "text": "预言家选择查验目标。"
+      },
+      "createdFromDraftId": "draft_97ecbfd9-361d-4ef3-be0f-39d8707f9f9b",
+      "createdAt": "2026-06-26T15:36:39.814Z"
+    },
+    {
+      "id": "event_10_e1e8dd21-0c6a-45df-8069-5f5941b4fb44",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 10,
+      "status": "active",
+      "type": "seer_check_result",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+        ]
+      },
+      "payload": {
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "result": "wolves"
+      },
+      "display": {
+        "title": "查验结果",
+        "text": "预言家收到查验结果。"
+      },
+      "createdFromDraftId": "draft_7d43eaa3-cb62-483d-b3e7-733b1d2ddd91",
+      "createdAt": "2026-06-26T15:36:45.091Z"
+    },
+    {
+      "id": "event_11_1cfe8c48-91d9-4653-8b24-a191dc7f4e0d",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 11,
+      "status": "active",
+      "type": "witch_death_info_shown",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "payload": {
+        "killedPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      },
+      "display": {
+        "title": "女巫信息",
+        "text": "女巫得知夜间死亡信息。"
+      },
+      "createdFromDraftId": "draft_6cf517a0-018a-4a36-a4c2-15a7b5d477c7",
+      "createdAt": "2026-06-26T15:36:49.067Z"
+    },
+    {
+      "id": "event_12_69fa25ee-1ba8-4380-b6b2-3ec60813a593",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 12,
+      "status": "active",
+      "type": "witch_antidote_decided",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "payload": {
+        "used": false,
+        "targetPlayerId": null
+      },
+      "display": {
+        "title": "女巫解药",
+        "text": "女巫默认不使用解药。"
+      },
+      "createdFromDraftId": "draft_9051d5b1-c828-46d7-9842-8d9a69a0f2e8",
+      "createdAt": "2026-06-26T15:36:53.361Z"
+    },
+    {
+      "id": "event_13_d1985a64-9a81-4cec-841a-cff31f33163b",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 13,
+      "status": "active",
+      "type": "witch_poison_decided",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "payload": {
+        "used": false,
+        "targetPlayerId": null
+      },
+      "display": {
+        "title": "女巫毒药",
+        "text": "女巫默认不使用毒药。"
+      },
+      "createdFromDraftId": "draft_f5bf51ec-fc5b-46a2-a4f9-1ea7a576dd25",
+      "createdAt": "2026-06-26T15:36:56.588Z"
+    },
+    {
+      "id": "event_14_5ac9223d-03d9-4374-bf0f-603ee29684b8",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 14,
+      "status": "active",
+      "type": "night_resolved",
+      "phase": "night",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      ],
+      "visibility": {
+        "kind": "host_only"
+      },
+      "payload": {
+        "deadPlayerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+        ]
+      },
+      "display": {
+        "title": "夜间结算",
+        "text": "系统结算夜间死亡。"
+      },
+      "createdFromDraftId": "draft_22e7b20a-24d1-468d-815b-d419a16aca84",
+      "createdAt": "2026-06-26T15:37:07.341Z"
+    },
+    {
+      "id": "event_15_0c9477db-d8e7-4c2b-ab51-2d2e6b899f7e",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 15,
+      "status": "active",
+      "type": "death_announced",
+      "phase": "day",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "deadPlayerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+        ]
+      },
+      "display": {
+        "title": "昨夜死讯",
+        "text": "公布昨夜死亡玩家。"
+      },
+      "createdFromDraftId": "draft_75d1c161-8ed4-4773-86dc-46da7913ebc7",
+      "createdAt": "2026-06-26T15:37:16.817Z"
+    },
+    {
+      "id": "event_16_a00f3685-b725-4246-b8f3-bf31a6fcaf5a",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 16,
+      "status": "active",
+      "type": "phase_started",
+      "phase": "last_words",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "last_words",
+        "dayNumber": 1
+      },
+      "display": {
+        "title": "遗言阶段",
+        "text": "死亡玩家发表遗言。"
+      },
+      "createdFromDraftId": "draft_99674e76-7a34-4871-b918-ecbb6c3549d6",
+      "createdAt": "2026-06-26T17:12:59.461Z"
+    },
+    {
+      "id": "event_17_e1028250-388e-4529-8b4c-eae71136ac5a",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 17,
+      "status": "active",
+      "type": "last_words_given",
+      "phase": "last_words",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3",
+        "text": "我的遗言先到这里。",
+        "dayNumber": 1,
+        "reason": "night_death"
+      },
+      "display": {
+        "title": "遗言",
+        "text": "死亡玩家发表遗言。"
+      },
+      "createdFromDraftId": "draft_9ee30146-8888-4d6c-8679-8734609555ad",
+      "createdAt": "2026-06-26T17:13:06.937Z"
+    },
+    {
+      "id": "event_18_4caeab84-86c8-48e1-b1eb-e8d968e037fb",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 18,
+      "status": "active",
+      "type": "phase_started",
+      "phase": "speech",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "speech",
+        "dayNumber": 1
+      },
+      "display": {
+        "title": "发言阶段",
+        "text": "存活玩家依次发言。"
+      },
+      "createdFromDraftId": "draft_bcd29bf6-9b9a-46eb-9e24-823324335025",
+      "createdAt": "2026-06-26T17:13:14.675Z"
+    },
+    {
+      "id": "event_19_4e180ee8-aa39-4547-b3d6-51021410ac0a",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 19,
+      "status": "active",
+      "type": "day_speech_given",
+      "phase": "speech",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "text": "我先给出自己的判断。",
+        "dayNumber": 1,
+        "round": 1
+      },
+      "display": {
+        "title": "白天发言",
+        "text": "存活玩家发表一轮发言。"
+      },
+      "createdFromDraftId": "draft_719ffd1c-87bd-4e39-93e4-526773acb978",
+      "createdAt": "2026-06-26T17:13:23.123Z"
+    },
+    {
+      "id": "event_20_50682e16-fadf-48bb-8e1f-95acc781a362",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 20,
+      "status": "active",
+      "type": "day_speech_given",
+      "phase": "speech",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+        "text": "我先给出自己的判断。",
+        "dayNumber": 1,
+        "round": 1
+      },
+      "display": {
+        "title": "白天发言",
+        "text": "存活玩家发表一轮发言。"
+      },
+      "createdFromDraftId": "draft_a160d1ac-a2d5-45e4-9235-4df2b1275d1b",
+      "createdAt": "2026-06-26T17:13:27.723Z"
+    },
+    {
+      "id": "event_21_c30597f1-37b2-4de0-bdf5-7410bfcd653d",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 21,
+      "status": "active",
+      "type": "day_speech_given",
+      "phase": "speech",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+        "text": "我先给出自己的判断。",
+        "dayNumber": 1,
+        "round": 1
+      },
+      "display": {
+        "title": "白天发言",
+        "text": "存活玩家发表一轮发言。"
+      },
+      "createdFromDraftId": "draft_a01ab385-fa2a-4735-8ec3-a5f0b853c504",
+      "createdAt": "2026-06-26T17:13:36.439Z"
+    },
+    {
+      "id": "event_22_fa8e7902-4915-449d-b838-afd01bf55791",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 22,
+      "status": "active",
+      "type": "day_speech_given",
+      "phase": "speech",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+        "text": "我先给出自己的判断。",
+        "dayNumber": 1,
+        "round": 1
+      },
+      "display": {
+        "title": "白天发言",
+        "text": "存活玩家发表一轮发言。"
+      },
+      "createdFromDraftId": "draft_c1518d12-69f3-4916-8dd3-4caf9bd1d9e8",
+      "createdAt": "2026-06-26T17:13:42.030Z"
+    },
+    {
+      "id": "event_23_c54ade69-0cae-4b68-abdd-52ca2e893597",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 23,
+      "status": "active",
+      "type": "day_speech_given",
+      "phase": "speech",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+        "text": "我先给出自己的判断。",
+        "dayNumber": 1,
+        "round": 1
+      },
+      "display": {
+        "title": "白天发言",
+        "text": "存活玩家发表一轮发言。"
+      },
+      "createdFromDraftId": "draft_d2734c45-1ce8-4468-9e5e-05e5c1a99278",
+      "createdAt": "2026-06-26T17:13:48.163Z"
+    },
+    {
+      "id": "event_24_8abe5fc8-b414-4935-820f-2da7978c294a",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 24,
+      "status": "active",
+      "type": "phase_started",
+      "phase": "vote",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "vote",
+        "dayNumber": 1
+      },
+      "display": {
+        "title": "放逐投票",
+        "text": "进入本日放逐投票。"
+      },
+      "createdFromDraftId": "draft_d4d29c10-2eb7-473c-9aa3-2c5881e7c1fe",
+      "createdAt": "2026-06-26T17:13:52.940Z"
+    },
+    {
+      "id": "event_25_70f14c49-df66-461e-8d04-287701839abb",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 25,
+      "status": "active",
+      "type": "vote_cast",
+      "phase": "vote",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+        "dayNumber": 1,
+        "round": 1,
+        "voteType": "exile"
+      },
+      "display": {
+        "title": "投票",
+        "text": "玩家投出放逐票。"
+      },
+      "createdFromDraftId": "draft_8f19899b-8b04-4c3b-bc9b-eeb15ebb4011",
+      "createdAt": "2026-06-26T17:14:04.274Z"
+    },
+    {
+      "id": "event_26_eb3f1fac-9054-4b12-8da3-12d8475038eb",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 26,
+      "status": "active",
+      "type": "vote_cast",
+      "phase": "vote",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "dayNumber": 1,
+        "round": 1,
+        "voteType": "exile"
+      },
+      "display": {
+        "title": "投票",
+        "text": "玩家投出放逐票。"
+      },
+      "createdFromDraftId": "draft_3e035777-3038-4d1f-b321-0384be951828",
+      "createdAt": "2026-06-26T17:14:10.717Z"
+    },
+    {
+      "id": "event_27_00b33fd4-e0be-4b07-b3e8-f413d85bbd59",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 27,
+      "status": "active",
+      "type": "vote_cast",
+      "phase": "vote",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "dayNumber": 1,
+        "round": 1,
+        "voteType": "exile"
+      },
+      "display": {
+        "title": "投票",
+        "text": "玩家投出放逐票。"
+      },
+      "createdFromDraftId": "draft_9001bf8a-7aa9-452d-806b-e557f969bd33",
+      "createdAt": "2026-06-26T17:14:12.986Z"
+    },
+    {
+      "id": "event_28_d9d1981f-cde1-4da6-a34c-6c4a224ae7f3",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 28,
+      "status": "active",
+      "type": "vote_cast",
+      "phase": "vote",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "dayNumber": 1,
+        "round": 1,
+        "voteType": "exile"
+      },
+      "display": {
+        "title": "投票",
+        "text": "玩家投出放逐票。"
+      },
+      "createdFromDraftId": "draft_e4b40ad6-6754-4eee-8383-6ffff7fdd09f",
+      "createdAt": "2026-06-26T17:14:15.381Z"
+    },
+    {
+      "id": "event_29_039aff09-2c95-49d1-bc0a-aa71f51dec74",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 29,
+      "status": "active",
+      "type": "vote_cast",
+      "phase": "vote",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "dayNumber": 1,
+        "round": 1,
+        "voteType": "exile"
+      },
+      "display": {
+        "title": "投票",
+        "text": "玩家投出放逐票。"
+      },
+      "createdFromDraftId": "draft_c07f902e-f269-4d6b-98db-e0f85bf1d0d7",
+      "createdAt": "2026-06-26T17:14:18.135Z"
+    },
+    {
+      "id": "event_30_4073d1f2-eb72-4ef4-ab17-9edf42e00620",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 30,
+      "status": "active",
+      "type": "exile_resolved",
+      "phase": "vote",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "exiledPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "tiedPlayerIds": [],
+        "voteTable": [
+          {
+            "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+            "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2"
+          },
+          {
+            "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+            "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+          },
+          {
+            "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+            "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+          },
+          {
+            "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+            "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+          },
+          {
+            "voterPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+            "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+          }
+        ],
+        "voteType": "exile",
+        "dayNumber": 1,
+        "round": 1,
+        "revealedRoles": []
+      },
+      "display": {
+        "title": "投票结算",
+        "text": "公布本轮放逐投票结果。"
+      },
+      "createdFromDraftId": "draft_854d5b74-2bfb-4495-9b29-cc38e00f16b1",
+      "createdAt": "2026-06-26T17:14:21.597Z"
+    },
+    {
+      "id": "event_31_0793d48f-15a7-42a9-8c31-5ebc04c59af0",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 31,
+      "status": "active",
+      "type": "phase_started",
+      "phase": "last_words",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "last_words",
+        "dayNumber": 1
+      },
+      "display": {
+        "title": "遗言阶段",
+        "text": "出局玩家发表遗言。"
+      },
+      "createdFromDraftId": "draft_8f29ac8a-f37f-432b-bdfe-a9ecbdd099e4",
+      "createdAt": "2026-06-26T17:14:24.066Z"
+    },
+    {
+      "id": "event_32_244f966f-e5ec-4e04-b417-ed84cb127244",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 32,
+      "status": "active",
+      "type": "last_words_given",
+      "phase": "last_words",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1"
+      ],
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+        "text": "我的遗言先到这里。",
+        "dayNumber": 1,
+        "reason": "exile"
+      },
+      "display": {
+        "title": "遗言",
+        "text": "死亡玩家发表遗言。"
+      },
+      "createdFromDraftId": "draft_3e8f70ad-a6fb-4a18-b299-1e19d080e94a",
+      "createdAt": "2026-06-26T17:14:27.579Z"
+    },
+    {
+      "id": "event_33_8d16cf9f-3652-4b95-8f7e-626cc6919a3d",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 33,
+      "status": "active",
+      "type": "phase_started",
+      "phase": "night",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "night",
+        "dayNumber": 2
+      },
+      "display": {
+        "title": "第 2 夜开始",
+        "text": "进入下一夜。"
+      },
+      "createdFromDraftId": "draft_0e730ce5-a769-4934-af82-bb04d8a8b329",
+      "createdAt": "2026-06-26T17:14:32.007Z"
+    },
+    {
+      "id": "event_34_43060449-0a08-46cf-9b71-7d07b9520a0a",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 34,
+      "status": "active",
+      "type": "wolf_kill_selected",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+      ],
+      "visibility": {
+        "kind": "faction_private",
+        "faction": "wolves"
+      },
+      "payload": {
+        "targetPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+      },
+      "display": {
+        "title": "狼人刀人",
+        "text": "狼人选择夜间击杀目标。"
+      },
+      "createdFromDraftId": "draft_ca58c254-3a61-4f4b-aa3b-a1b462b4de0b",
+      "createdAt": "2026-06-26T17:15:07.446Z"
+    },
+    {
+      "id": "event_35_e4d30b52-d323-43f0-9f89-11c27ba67356",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 35,
+      "status": "active",
+      "type": "witch_death_info_shown",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "payload": {
+        "killedPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+      },
+      "display": {
+        "title": "女巫信息",
+        "text": "女巫得知夜间死亡信息。"
+      },
+      "createdFromDraftId": "draft_2e2a26a7-d2fc-4942-832d-b7efed6a817c",
+      "createdAt": "2026-06-26T17:15:11.967Z"
+    },
+    {
+      "id": "event_36_a58c5ac8-d046-4d5b-9d79-cd05ff0913b3",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 36,
+      "status": "active",
+      "type": "witch_antidote_decided",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "payload": {
+        "used": false,
+        "targetPlayerId": null
+      },
+      "display": {
+        "title": "女巫解药",
+        "text": "女巫默认不使用解药。"
+      },
+      "createdFromDraftId": "draft_55f16c59-c2a8-4475-b4bb-dc6e1fdb3a02",
+      "createdAt": "2026-06-26T17:15:24.130Z"
+    },
+    {
+      "id": "event_37_a7027927-8182-4f50-a8e5-d7f8cc41807f",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 37,
+      "status": "active",
+      "type": "witch_poison_decided",
+      "phase": "night",
+      "actorPlayerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "payload": {
+        "used": false,
+        "targetPlayerId": null
+      },
+      "display": {
+        "title": "女巫毒药",
+        "text": "女巫默认不使用毒药。"
+      },
+      "createdFromDraftId": "draft_16ff817f-9562-4ff9-a96c-6bd90b760909",
+      "createdAt": "2026-06-26T17:15:26.719Z"
+    },
+    {
+      "id": "event_38_710ed6e5-a7ff-4d06-b404-ea2abe190c52",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 38,
+      "status": "active",
+      "type": "night_resolved",
+      "phase": "night",
+      "targetPlayerIds": [
+        "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+      ],
+      "visibility": {
+        "kind": "host_only"
+      },
+      "payload": {
+        "deadPlayerIds": [
+          "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4"
+        ]
+      },
+      "display": {
+        "title": "夜间结算",
+        "text": "系统结算夜间死亡。"
+      },
+      "createdFromDraftId": "draft_be9869d6-6a9c-4013-9b59-36a40228300d",
+      "createdAt": "2026-06-26T17:15:29.334Z"
+    },
+    {
+      "id": "event_39_9e825098-9f3a-4c36-bc63-135806948016",
+      "gameId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7",
+      "index": 39,
+      "status": "active",
+      "type": "game_ended",
+      "phase": "ended",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "winner": "wolves",
+        "reason": "all_gods_dead",
+        "dayNumber": 2,
+        "revealedRoles": [
+          {
+            "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p1",
+            "roleId": "werewolf",
+            "roleName": "狼人",
+            "faction": "wolves"
+          },
+          {
+            "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p2",
+            "roleId": "werewolf",
+            "roleName": "狼人",
+            "faction": "wolves"
+          },
+          {
+            "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p3",
+            "roleId": "seer",
+            "roleName": "预言家",
+            "faction": "good"
+          },
+          {
+            "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p4",
+            "roleId": "witch",
+            "roleName": "女巫",
+            "faction": "good"
+          },
+          {
+            "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p5",
+            "roleId": "villager",
+            "roleName": "平民",
+            "faction": "good"
+          },
+          {
+            "playerId": "game_ccdcd19b-13af-410a-8c0e-aa00c318b1a7_p6",
+            "roleId": "villager",
+            "roleName": "平民",
+            "faction": "good"
+          }
+        ]
+      },
+      "display": {
+        "title": "游戏结束",
+        "text": "对局已满足胜负条件。"
+      },
+      "createdFromDraftId": "draft_5f9b3c29-b4ad-4e69-8ad8-347dbff10469",
+      "createdAt": "2026-06-26T17:15:31.670Z"
+    }
+  ],
+  "draft": null
+}

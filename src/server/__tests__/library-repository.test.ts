@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -11,8 +11,10 @@ import { seedRoles } from "@/seeds/roles";
 import { createLibraryRepository } from "../library-repository";
 
 const tempDirs: string[] = [];
+const originalCwd = process.cwd();
 
 afterEach(async () => {
+  process.chdir(originalCwd);
   await Promise.all(
     tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })),
   );
@@ -25,6 +27,21 @@ async function createTempDir(): Promise<string> {
 }
 
 describe("library repository", () => {
+  it("uses kivdb as the default data directory", async () => {
+    const rootDir = await createTempDir();
+    process.chdir(rootDir);
+    const repository = createLibraryRepository();
+
+    await repository.saveAll({
+      roles: seedRoles,
+      characters: seedCharacters,
+      presets: seedPresets,
+    });
+
+    const savedFile = await stat(join(rootDir, "kivdb", "roles.json"));
+    expect(savedFile.isFile()).toBe(true);
+  });
+
   it("returns empty arrays when library files are missing", async () => {
     const repository = createLibraryRepository(await createTempDir());
 

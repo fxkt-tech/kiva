@@ -1,0 +1,475 @@
+{
+  "game": {
+    "id": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+    "title": "6人狼人杀试运行",
+    "status": "drafting",
+    "ruleset": {
+      "playerCount": 6,
+      "roleCounts": {
+        "werewolf": 2,
+        "seer": 1,
+        "witch": 1,
+        "villager": 2
+      },
+      "winCondition": "slaughter_side",
+      "witchFirstNightSelfSave": true,
+      "witchAllowSameNightAntidoteAndPoison": false,
+      "voteReveal": "after_all_votes",
+      "deadRoleReveal": "endgame",
+      "pkVoters": "non_pk_only",
+      "allowAbstainVote": true
+    },
+    "players": [
+      {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1",
+        "seatNo": 1,
+        "characterSourceId": "qin_chuan",
+        "name": "秦川",
+        "roleSourceId": "werewolf",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p2",
+        "seatNo": 2,
+        "characterSourceId": "lin_xia",
+        "name": "林夏",
+        "roleSourceId": "werewolf",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3",
+        "seatNo": 3,
+        "characterSourceId": "zhou_zhi",
+        "name": "周知",
+        "roleSourceId": "seer",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可以查验一名玩家的阵营信息，白天根据查验结果和发言推动放逐狼人。",
+        "roleActionPromptSnapshot": "夜晚请选择要查验的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "seer",
+        "roleName": "预言家",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "seer_check",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p4",
+        "seatNo": 4,
+        "characterSourceId": "xu_tang",
+        "name": "许棠",
+        "roleSourceId": "witch",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可根据规则使用解药或毒药，白天结合夜晚信息和发言寻找狼人。",
+        "roleActionPromptSnapshot": "夜晚请决定是否使用药剂，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "witch",
+        "roleName": "女巫",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "witch_medicine",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "witch_medicines"
+        ]
+      },
+      {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p5",
+        "seatNo": 5,
+        "characterSourceId": "chen_mo",
+        "name": "陈墨",
+        "roleSourceId": "villager",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p6",
+        "seatNo": 6,
+        "characterSourceId": "shen_lan",
+        "name": "沈岚",
+        "roleSourceId": "villager",
+        "avatar": null,
+        "persona": "冷静、愿意表达判断",
+        "speakingStyle": "短句、直接、有推进感",
+        "reasoningStyle": "根据自己可见的信息给出结论",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      }
+    ],
+    "createdAt": "2026-06-27T16:28:17.754Z",
+    "updatedAt": "2026-06-27T16:29:17.112Z"
+  },
+  "events": [
+    {
+      "id": "event_1_01705a45-3c30-44bc-83a8-ff75fcacf49a",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "index": 1,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1"
+        ]
+      },
+      "payload": {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1",
+        "role": "werewolf",
+        "faction": "wolves"
+      },
+      "createdFromDraftId": "draft_8e8b6805-062a-4167-b7be-eec2ad59fcba",
+      "createdAt": "2026-06-27T16:28:48.125Z"
+    },
+    {
+      "id": "event_2_2cc925ad-ae6a-4c40-a205-7ab36a201cc1",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "index": 2,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p2"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p2"
+        ]
+      },
+      "payload": {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p2",
+        "role": "werewolf",
+        "faction": "wolves"
+      },
+      "createdFromDraftId": "draft_ee857725-dc16-423a-97a1-b64f7cf6dd05",
+      "createdAt": "2026-06-27T16:28:49.281Z"
+    },
+    {
+      "id": "event_3_415cef6b-2d79-474d-ac0d-5898b6383600",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "index": 3,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3"
+        ]
+      },
+      "payload": {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3",
+        "role": "seer",
+        "faction": "good"
+      },
+      "createdFromDraftId": "draft_1c8c71ce-6d29-4f7d-b733-5261e7851e7c",
+      "createdAt": "2026-06-27T16:28:51.063Z"
+    },
+    {
+      "id": "event_4_86233e0d-6975-418d-a7d2-ddb521df018d",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "index": 4,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p4"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p4"
+        ]
+      },
+      "payload": {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p4",
+        "role": "witch",
+        "faction": "good"
+      },
+      "createdFromDraftId": "draft_22265129-3a48-4cd2-8d4b-7c9b7597d985",
+      "createdAt": "2026-06-27T16:28:51.727Z"
+    },
+    {
+      "id": "event_5_e003210b-5f88-4f9d-88f4-b1dd0694618d",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "index": 5,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p5"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p5"
+        ]
+      },
+      "payload": {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p5",
+        "role": "villager",
+        "faction": "good"
+      },
+      "createdFromDraftId": "draft_6a4e7bcf-8727-4d77-a1c4-86a6957b8bee",
+      "createdAt": "2026-06-27T16:28:52.465Z"
+    },
+    {
+      "id": "event_6_d5de68e5-a1a2-4094-852b-56e70ae4e178",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "index": 6,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p6"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p6"
+        ]
+      },
+      "payload": {
+        "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p6",
+        "role": "villager",
+        "faction": "good"
+      },
+      "createdFromDraftId": "draft_5d5677a7-7e42-4241-9048-5df47b6ece43",
+      "createdAt": "2026-06-27T16:28:54.840Z"
+    },
+    {
+      "id": "event_7_924e8d08-9a65-4fb1-95d1-08f11e41ea08",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "index": 7,
+      "status": "active",
+      "type": "phase_started",
+      "phase": "night",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "night",
+        "dayNumber": 1
+      },
+      "createdFromDraftId": "draft_23143352-95ca-431b-8309-ec72dd38368c",
+      "createdAt": "2026-06-27T16:28:56.282Z"
+    },
+    {
+      "id": "event_8_1c44a820-b9ca-4ccc-bbfe-e4e6878f3ace",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "index": 8,
+      "status": "active",
+      "type": "wolf_kill_selected",
+      "phase": "night",
+      "actorPlayerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1",
+      "targetPlayerIds": [
+        "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3"
+      ],
+      "visibility": {
+        "kind": "faction_private",
+        "faction": "wolves"
+      },
+      "payload": {
+        "targetPlayerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3"
+      },
+      "createdFromDraftId": "draft_1e9e9c3d-5e98-4440-a6ef-b83cd51929d8",
+      "createdAt": "2026-06-27T16:29:17.045Z"
+    }
+  ],
+  "draft": {
+    "id": "draft_e3c6cef8-ab3d-4ca7-a4bc-eba988ae1813",
+    "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+    "type": "seer_check_selected",
+    "phase": "night",
+    "actorPlayerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3",
+    "targetPlayerIds": [
+      "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1"
+    ],
+    "visibility": {
+      "kind": "player_private",
+      "playerIds": [
+        "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3"
+      ]
+    },
+    "payload": {
+      "targetPlayerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1"
+    },
+    "createdAt": "2026-06-27T16:29:17.049Z",
+    "status": "draft"
+  },
+  "generations": [
+    {
+      "id": "generation_10a77bc0-a876-4c30-93e2-0ff4106c9866",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "draftId": "draft_1e9e9c3d-5e98-4440-a6ef-b83cd51929d8",
+      "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1",
+      "purpose": "action",
+      "status": "success",
+      "promptVersion": "action:v1",
+      "provider": "volcengine",
+      "model": "doubao-seed-1-6-flash-250828",
+      "inputContextHash": "36babd1d",
+      "request": {
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。\n你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。\n夜晚请选择要袭击的目标，并给出简短理由。\n你只能根据可见信息给出狼人杀行动建议。\n必须输出 JSON 对象，不要输出 Markdown。",
+        "messages": [
+          {
+            "role": "user",
+            "content": "draft=wolf_kill_selected\nmechanic=wolf_kill\n你是：1 号 秦川\n你的身份：狼人\n玩家名单：\n1 秦川 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1 role=werewolf faction=wolves\n2 林夏 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p2 role=werewolf faction=wolves\n3 周知 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3\n4 许棠 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p4\n5 陈墨 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p5\n6 沈岚 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p6\n可选目标：\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p4\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p5\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p6\n可见事件：\n#1 身份牌：1 号 秦川 获得身份：狼人。\n#7 第 1 夜开始：夜晚开始。\n输出字段：targetPlayerId、reasoning，可选 used。弃票用 {\"targetPlayerId\":null,\"reasoning\":\"简短说明原因\"}。\nreasoning 是给主理人看的简短决策依据，只能引用以上可见信息。"
+          }
+        ],
+        "schemaName": "werewolf_action_v1"
+      },
+      "rawOutput": "{\"targetPlayerId\":\"game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3\",\"reasoning\":\"第1夜开始，作为狼人，选择3号周知作为袭击目标，优先清除一名好人以推进阵营胜利。\"}",
+      "parsedOutput": {
+        "targetPlayerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3",
+        "reasoning": "第1夜开始，作为狼人，选择3号周知作为袭击目标，优先清除一名好人以推进阵营胜利。"
+      },
+      "error": null,
+      "createdAt": "2026-06-27T16:28:56.342Z"
+    },
+    {
+      "id": "generation_27446e6a-d3f8-4dcc-a0c0-b0aaab92b96d",
+      "gameId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206",
+      "draftId": "draft_e3c6cef8-ab3d-4ca7-a4bc-eba988ae1813",
+      "playerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3",
+      "purpose": "action",
+      "status": "success",
+      "promptVersion": "action:v1",
+      "provider": "volcengine",
+      "model": "doubao-seed-1-6-flash-250828",
+      "inputContextHash": "e986a23d",
+      "request": {
+        "systemPrompt": "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。\n你是好人阵营神职角色。夜晚可以查验一名玩家的阵营信息，白天根据查验结果和发言推动放逐狼人。\n夜晚请选择要查验的目标，并给出简短理由。\n你只能根据可见信息给出狼人杀行动建议。\n必须输出 JSON 对象，不要输出 Markdown。",
+        "messages": [
+          {
+            "role": "user",
+            "content": "draft=seer_check_selected\nmechanic=seer_check\n你是：3 号 周知\n你的身份：预言家\n玩家名单：\n1 秦川 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1\n2 林夏 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p2\n3 周知 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p3 role=seer faction=good\n4 许棠 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p4\n5 陈墨 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p5\n6 沈岚 playerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p6\n可选目标：\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p2\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p4\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p5\nplayerId=game_d9d66538-3d6e-4068-981b-402e4eaa5206_p6\n可见事件：\n#3 身份牌：3 号 周知 获得身份：预言家。\n#7 第 1 夜开始：夜晚开始。\n输出字段：targetPlayerId、reasoning，可选 used。弃票用 {\"targetPlayerId\":null,\"reasoning\":\"简短说明原因\"}。\nreasoning 是给主理人看的简短决策依据，只能引用以上可见信息。"
+          }
+        ],
+        "schemaName": "werewolf_action_v1"
+      },
+      "rawOutput": "{\"targetPlayerId\":\"game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1\",\"reasoning\":\"第1夜开始，作为预言家需尽快获取信息，选择查验1号玩家以确定其身份，为后续白天判断局势提供依据。\"}",
+      "parsedOutput": {
+        "targetPlayerId": "game_d9d66538-3d6e-4068-981b-402e4eaa5206_p1",
+        "reasoning": "第1夜开始，作为预言家需尽快获取信息，选择查验1号玩家以确定其身份，为后续白天判断局势提供依据。"
+      },
+      "error": null,
+      "createdAt": "2026-06-27T16:29:17.112Z"
+    }
+  ]
+}

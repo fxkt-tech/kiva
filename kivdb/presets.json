@@ -1,0 +1,65 @@
+[
+  {
+    "id": "six_player_standard",
+    "name": "6人狼人杀试运行",
+    "rulesetId": "classic_six",
+    "playerCount": 6,
+    "roleIds": [
+      "werewolf",
+      "werewolf",
+      "seer",
+      "witch",
+      "villager",
+      "villager"
+    ],
+    "characterIds": [
+      "qin_chuan",
+      "lin_xia",
+      "zhou_zhi",
+      "xu_tang",
+      "chen_mo",
+      "shen_lan"
+    ],
+    "seatAssignments": [
+      {
+        "seatNo": 1,
+        "roleId": "werewolf",
+        "characterId": "qin_chuan",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 2,
+        "roleId": "werewolf",
+        "characterId": "lin_xia",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 3,
+        "roleId": "seer",
+        "characterId": "zhou_zhi",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 4,
+        "roleId": "witch",
+        "characterId": "xu_tang",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 5,
+        "roleId": "villager",
+        "characterId": "chen_mo",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 6,
+        "roleId": "villager",
+        "characterId": "shen_lan",
+        "modelBindingOverride": null
+      }
+    ],
+    "enabled": true,
+    "createdAt": "2026-06-27T00:00:00.000Z",
+    "updatedAt": "2026-06-27T16:28:15.491Z"
+  }
+]
