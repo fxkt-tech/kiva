@@ -31,14 +31,12 @@ export default async function PreviewPage({
 
   return (
     <PlaybackStage
-      cleanPreviewHref={`/games/${record.game.id}/preview?controls=0`}
       controls={
         controlsParam === "0" || controlsParam === "hidden"
           ? "hidden"
           : "visible"
       }
       items={compilePublicPlayback(record.events, record.game.players)}
-      recordingHref={`/games/${record.game.id}/record`}
     />
   );
 }

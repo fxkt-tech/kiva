@@ -11,8 +11,9 @@ describe("PlaybackStage", () => {
       item({ index: 2, title: "Second event", text: "Later announcement" }),
     ]);
 
-    expect(html).toContain("First event");
-    expect(html).toContain("Opening announcement");
+    expect(html).toContain("width=\"1920\"");
+    expect(html).toContain("height=\"1080\"");
+    expect(html).toContain("aria-label=\"Playback canvas\"");
     expect(html).not.toContain("Second event");
     expect(html).not.toContain("Later announcement");
   });
@@ -20,7 +21,7 @@ describe("PlaybackStage", () => {
   it("renders the waiting state when there are no public playback items", () => {
     const html = renderStage([]);
 
-    expect(html).toContain("Waiting for public event");
+    expect(html).toContain("No playable scenes");
   });
 
   it("renders sequence controls and progress", () => {
@@ -30,18 +31,15 @@ describe("PlaybackStage", () => {
       item({ index: 3, title: "Third event", startsAtMs: 4400 }),
     ]);
 
-    expect(html).toContain("Prev");
+    expect(html).toContain("Record");
     expect(html).toContain("Play");
-    expect(html).toContain("Next");
     expect(html).toContain("Reset");
-    expect(html).toContain("Speed");
     expect(html).toContain("Timeline");
     expect(html).toContain("0:00 / 0:06");
     expect(html).toContain("type=\"range\"");
-    expect(html).toContain("Start recording");
-    expect(html).toContain("0.5x");
-    expect(html).toContain("2x");
     expect(html).toContain("1 / 3");
+    expect(html).not.toContain("Open clean preview");
+    expect(html).not.toContain("Open recording studio");
   });
 
   it("can hide controls for recording output", () => {
@@ -50,12 +48,12 @@ describe("PlaybackStage", () => {
       { controls: "hidden" },
     );
 
-    expect(html).toContain("Recording frame");
+    expect(html).toContain("aria-label=\"Playback canvas\"");
     expect(html).not.toContain("Playback controls");
-    expect(html).not.toContain("Speed");
+    expect(html).not.toContain("Record");
   });
 
-  it("renders scene details and player status inside the stage", () => {
+  it("keeps scene content out of the DOM because video output is canvas-only", () => {
     const html = renderStage([
       item({
         index: 8,
@@ -69,51 +67,16 @@ describe("PlaybackStage", () => {
       }),
     ]);
 
-    expect(html).toContain("1 号 秦川");
-    expect(html).toContain("2 号 林夏");
-    expect(html).toContain("Seat 1");
-    expect(html).toContain("秦川");
-    expect(html).toContain("Seat 2");
-    expect(html).toContain("林夏");
-    expect(html).toContain("dead");
-  });
-
-  it("renders dedicated speech and vote templates", () => {
-    const speechHtml = renderStage([
-      item({
-        index: 2,
-        kind: "speech",
-        title: "1 号 秦川发言",
-        text: "我先报一下我的视角。",
-        players: [
-          player({ seatNo: 1, name: "秦川", highlighted: true }),
-          player({ seatNo: 2, name: "林夏" }),
-        ],
-      }),
-    ]);
-    const voteHtml = renderStage([
-      item({
-        index: 3,
-        kind: "vote",
-        title: "放逐投票",
-        text: "1 号 秦川 投给 2 号 林夏。",
-        details: ["1 号 秦川 -> 2 号 林夏"],
-      }),
-    ]);
-
-    expect(speechHtml).toContain("Speaker");
-    expect(speechHtml).toContain("秦川");
-    expect(voteHtml).toContain("Vote card");
-    expect(voteHtml).toContain("1 号 秦川");
-    expect(voteHtml).toContain("2 号 林夏");
+    expect(html).not.toContain("放逐出局");
+    expect(html).not.toContain("秦川");
+    expect(html).not.toContain("林夏");
   });
 
   it("disables playback controls that cannot advance a single-item sequence", () => {
     const html = renderStage([item({ index: 1, title: "Only event" })]);
 
-    expect(html).toContain("Only event");
     expect(html).toContain(">Play</button>");
-    expect(html).toContain(">Next</button>");
+    expect(html).toContain(">Record</button>");
     expect(html).toContain("disabled");
   });
 });
@@ -124,7 +87,6 @@ function renderStage(
 ): string {
   return renderToStaticMarkup(
     React.createElement(PlaybackStage, {
-      cleanPreviewHref: "/games/game_1/preview?controls=0",
       items,
       ...props,
     }),

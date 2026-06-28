@@ -1,159 +1,188 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   playbackIndexAtMs,
   playbackTotalDurationMs,
   type PlaybackItem,
 } from "@/core/playback";
-import { RecordingControls } from "./recording-controls";
 
-const SPEED_OPTIONS = [0.5, 1, 1.5, 2] as const;
-type PlaybackSpeed = (typeof SPEED_OPTIONS)[number];
+const CANVAS_WIDTH = 1920;
+const CANVAS_HEIGHT = 1080;
+const FRAME_RATE = 30;
+const TICK_MS = 1000 / FRAME_RATE;
 
 type PlaybackStageProps = {
   readonly items: readonly PlaybackItem[];
-  readonly cleanPreviewHref: string;
-  readonly recordingHref?: string;
   readonly controls?: "visible" | "hidden";
 };
 
+type RecordingStatus = "idle" | "recording" | "ready" | "failed";
+
 export function PlaybackStage({
   items,
-  cleanPreviewHref,
-  recordingHref,
   controls = "visible",
 }: PlaybackStageProps) {
-  const hasItems = items.length > 0;
-  const [index, setIndex] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const downloadUrlRef = useRef<string | null>(null);
+  const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState<PlaybackSpeed>(1);
-  const maxIndex = Math.max(0, items.length - 1);
-  const safeIndex = hasItems ? Math.min(index, maxIndex) : 0;
-  const current = hasItems ? items[safeIndex] : undefined;
-  const progress = hasItems ? `${safeIndex + 1} / ${items.length}` : "0 / 0";
+  const [recordingStatus, setRecordingStatus] =
+    useState<RecordingStatus>("idle");
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const hasItems = items.length > 0;
   const totalDurationMs = playbackTotalDurationMs(items);
-  const currentTimeMs = current?.startsAtMs ?? 0;
+  const safeTimeMs = clamp(currentTimeMs, 0, Math.max(0, totalDurationMs));
+  const safeIndex = hasItems ? playbackIndexAtMs(items, safeTimeMs) : 0;
+  const progress = hasItems ? `${safeIndex + 1} / ${items.length}` : "0 / 0";
+  const canPlay = hasItems && safeTimeMs < totalDurationMs;
+  const canRecord = hasItems && recordingStatus !== "recording";
 
   useEffect(() => {
-    if (!hasItems) {
-      setIndex(0);
-      setPlaying(false);
-      return;
-    }
+    setCurrentTimeMs((timeMs) => clamp(timeMs, 0, Math.max(0, totalDurationMs)));
+  }, [totalDurationMs]);
 
-    setIndex((currentIndex) => {
-      const nextIndex = Math.min(currentIndex, maxIndex);
-      if (nextIndex >= maxIndex) {
-        setPlaying(false);
-      }
-
-      return nextIndex;
-    });
-  }, [hasItems, maxIndex]);
+  useEffect(() => {
+    drawPlaybackFrame(canvasRef.current, items, safeTimeMs);
+  }, [items, safeTimeMs]);
 
   useEffect(() => {
     if (!playing || !hasItems) {
       return;
     }
 
-    const timeoutId = window.setTimeout(() => {
-      setIndex((currentIndex) => {
-        if (currentIndex >= maxIndex) {
+    const intervalId = window.setInterval(() => {
+      setCurrentTimeMs((timeMs) => {
+        const nextTimeMs = Math.min(totalDurationMs, timeMs + TICK_MS);
+        if (nextTimeMs >= totalDurationMs) {
+          window.clearInterval(intervalId);
           setPlaying(false);
-          return currentIndex;
+          stopRecording();
         }
 
-        const nextIndex = currentIndex + 1;
-        if (nextIndex >= maxIndex) {
-          setPlaying(false);
-        }
-
-        return nextIndex;
+        return nextTimeMs;
       });
-    }, Math.max(250, (current?.durationMs ?? 2200) / speed));
+    }, TICK_MS);
 
-    return () => window.clearTimeout(timeoutId);
-  }, [current?.durationMs, hasItems, maxIndex, playing, speed]);
+    return () => window.clearInterval(intervalId);
+  }, [hasItems, playing, totalDurationMs]);
 
-  function goToPrevious() {
-    setIndex((currentIndex) => Math.max(0, currentIndex - 1));
+  useEffect(() => {
+    return () => {
+      if (downloadUrlRef.current) {
+        URL.revokeObjectURL(downloadUrlRef.current);
+      }
+    };
+  }, []);
+
+  function play() {
+    if (!hasItems) {
+      return;
+    }
+
+    if (safeTimeMs >= totalDurationMs) {
+      setCurrentTimeMs(0);
+    }
+    setPlaying(true);
   }
 
-  function goToNext() {
-    setIndex((currentIndex) => {
-      const nextIndex = Math.min(maxIndex, currentIndex + 1);
-
-      if (nextIndex >= maxIndex) {
-        setPlaying(false);
-      }
-
-      return nextIndex;
-    });
+  function pause() {
+    setPlaying(false);
   }
 
   function reset() {
-    setIndex(0);
+    setCurrentTimeMs(0);
     setPlaying(false);
   }
 
   function seekTo(timeMs: number) {
-    setIndex(playbackIndexAtMs(items, timeMs));
+    setCurrentTimeMs(clamp(timeMs, 0, Math.max(0, totalDurationMs)));
     setPlaying(false);
   }
 
-  const canAdvance = hasItems && safeIndex < maxIndex;
-  const activelyPlaying = playing && canAdvance;
+  function startRecording() {
+    const canvas = canvasRef.current;
+    setError(null);
+
+    if (!canvas || !hasItems) {
+      return;
+    }
+
+    if (!canvas.captureStream || !window.MediaRecorder) {
+      setRecordingStatus("failed");
+      setError("Canvas recording is not supported.");
+      return;
+    }
+
+    if (downloadUrlRef.current) {
+      URL.revokeObjectURL(downloadUrlRef.current);
+      downloadUrlRef.current = null;
+      setDownloadUrl(null);
+    }
+
+    try {
+      const stream = canvas.captureStream(FRAME_RATE);
+      const mimeType = preferredMimeType();
+      const recorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType } : undefined,
+      );
+
+      chunksRef.current = [];
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        const blob = new Blob(chunksRef.current, {
+          type: recorder.mimeType || "video/webm",
+        });
+        const nextDownloadUrl = URL.createObjectURL(blob);
+        downloadUrlRef.current = nextDownloadUrl;
+        recorderRef.current = null;
+        setDownloadUrl(nextDownloadUrl);
+        setRecordingStatus("ready");
+      };
+
+      drawPlaybackFrame(canvas, items, 0);
+      setCurrentTimeMs(0);
+      recorder.start();
+      setRecordingStatus("recording");
+      setPlaying(true);
+    } catch (caught) {
+      recorderRef.current = null;
+      setPlaying(false);
+      setRecordingStatus("failed");
+      setError(caught instanceof Error ? caught.message : String(caught));
+    }
+  }
+
+  function stopRecording() {
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+    }
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black p-4 text-white">
-      <section className="aspect-video w-full max-w-6xl overflow-hidden bg-[#070708] shadow-2xl shadow-black">
-        <div className="grid h-full grid-rows-[1fr_auto]">
-          {current ? (
-            <div className="grid min-h-0 grid-cols-[minmax(0,1fr)_260px] gap-6 px-[5%] pt-[4%]">
-              <SceneBody scene={current} />
-              <PlayerRail scene={current} />
-            </div>
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center text-center">
-              <div className="text-sm uppercase tracking-[0.2em] text-zinc-600">
-                Playback
-              </div>
-              <p className="mt-4 text-3xl font-semibold text-zinc-300">
-                Waiting for public event
-              </p>
-            </div>
-          )}
-          {current ? (
-            <div className="border-t border-zinc-900 px-[5%] py-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="mb-2 text-xs uppercase tracking-[0.18em] text-zinc-600">
-                    Details
-                  </div>
-                  {current.details.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {current.details.map((detail) => (
-                        <span
-                          className="max-w-full break-words border border-zinc-800 bg-zinc-950 px-2.5 py-1 text-xs text-zinc-400"
-                          key={detail}
-                        >
-                          {detail}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-zinc-700">No extra details</p>
-                  )}
-                </div>
-                <div className="shrink-0 text-right font-mono text-xs text-zinc-600">
-                  <div>{formatTime(current.startsAtMs)}</div>
-                  <div>{formatTime(current.startsAtMs + current.durationMs)}</div>
-                </div>
-              </div>
-            </div>
-          ) : null}
-        </div>
+      <section className="aspect-video w-full max-w-6xl overflow-hidden bg-black shadow-2xl shadow-black">
+        <canvas
+          aria-label="Playback canvas"
+          className="h-full w-full bg-black"
+          height={CANVAS_HEIGHT}
+          ref={canvasRef}
+          width={CANVAS_WIDTH}
+        />
+        {!hasItems ? <span className="sr-only">No playable scenes</span> : null}
       </section>
       {controls === "visible" ? (
         <section
@@ -164,76 +193,64 @@ export function PlaybackStage({
             <div className="flex items-center justify-between gap-4 text-xs text-zinc-500">
               <span>Timeline</span>
               <span className="font-mono">
-                {formatTime(currentTimeMs)} / {formatTime(totalDurationMs)}
+                {formatTime(safeTimeMs)} / {formatTime(totalDurationMs)}
               </span>
             </div>
             <input
               aria-label="Timeline"
               className="h-2 w-full accent-cyan-400"
-              disabled={!hasItems}
-              max={Math.max(0, totalDurationMs - 1)}
+              disabled={!hasItems || recordingStatus === "recording"}
+              max={Math.max(0, totalDurationMs)}
               min={0}
               onChange={(event) => seekTo(Number(event.currentTarget.value))}
               step={100}
               type="range"
-              value={currentTimeMs}
+              value={safeTimeMs}
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="font-mono text-zinc-400">{progress}</div>
             <div className="flex flex-wrap items-center gap-2">
-              <RecordingControls
-                cleanPreviewHref={cleanPreviewHref}
-                recordingHref={recordingHref}
-              />
-              <label className="flex items-center gap-2 text-xs text-zinc-400">
-                <span>Speed</span>
-                <select
-                  className="border border-zinc-700 bg-zinc-950 px-2 py-2 text-zinc-200 outline-none transition focus:border-zinc-500"
-                  onChange={(event) =>
-                    setSpeed(Number(event.currentTarget.value) as PlaybackSpeed)
-                  }
-                  value={speed}
-                >
-                  {SPEED_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}x
-                    </option>
-                  ))}
-                </select>
-              </label>
               <button
-                className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-                disabled={!hasItems || index === 0}
-                onClick={goToPrevious}
+                className="border border-red-900/70 px-3 py-2 text-red-200 transition hover:border-red-500 hover:bg-red-950/40 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
+                disabled={!canRecord}
+                onClick={startRecording}
                 type="button"
               >
-                Prev
+                Record
               </button>
               <button
                 className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-                disabled={!canAdvance}
-                onClick={() => setPlaying((currentPlaying) => !currentPlaying)}
+                disabled={!canPlay}
+                onClick={playing ? pause : play}
                 type="button"
               >
-                {activelyPlaying ? "Pause" : "Play"}
+                {playing ? "Pause" : "Play"}
               </button>
               <button
                 className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-                disabled={!canAdvance}
-                onClick={goToNext}
-                type="button"
-              >
-                Next
-              </button>
-              <button
-                className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-                disabled={!hasItems || (safeIndex === 0 && !playing)}
+                disabled={!hasItems || (safeTimeMs === 0 && !playing)}
                 onClick={reset}
                 type="button"
               >
                 Reset
               </button>
+              {downloadUrl ? (
+                <a
+                  className="border border-emerald-800 px-3 py-2 text-emerald-200 transition hover:border-emerald-500 hover:bg-emerald-950/40"
+                  download="kiva-playback.webm"
+                  href={downloadUrl}
+                >
+                  Download WebM
+                </a>
+              ) : null}
+              {recordingStatus === "recording" ? (
+                <span className="text-xs text-red-300">Recording</span>
+              ) : null}
+              {recordingStatus === "ready" ? (
+                <span className="text-xs text-emerald-300">Ready</span>
+              ) : null}
+              {error ? <span className="text-xs text-red-300">{error}</span> : null}
             </div>
           </div>
         </section>
@@ -242,147 +259,270 @@ export function PlaybackStage({
   );
 }
 
-function SceneBody({ scene }: { readonly scene: PlaybackItem }) {
-  const highlightedPlayers = scene.players.filter((player) => player.highlighted);
-  const primaryPlayer = highlightedPlayers[0];
+function drawPlaybackFrame(
+  canvas: HTMLCanvasElement | null,
+  items: readonly PlaybackItem[],
+  timeMs: number,
+): void {
+  if (!canvas) {
+    return;
+  }
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return;
+  }
+
+  const scene = items[playbackIndexAtMs(items, timeMs)];
+  drawBackground(context);
+
+  if (!scene) {
+    drawText(context, "No playable scenes", 120, 520, {
+      color: "#d4d4d8",
+      font: "600 64px sans-serif",
+      maxWidth: 1680,
+      lineHeight: 78,
+    });
+    return;
+  }
+
+  drawSceneMeta(context, scene);
+  drawPlayers(context, scene);
+  drawSceneContent(context, scene);
+  drawSceneDetails(context, scene);
+}
+
+function drawBackground(context: CanvasRenderingContext2D): void {
+  context.fillStyle = "#050506";
+  context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  context.fillStyle = "#0b0f12";
+  context.fillRect(0, 0, CANVAS_WIDTH, 108);
+  context.strokeStyle = "#18181b";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(0, 108);
+  context.lineTo(CANVAS_WIDTH, 108);
+  context.stroke();
+}
+
+function drawSceneMeta(
+  context: CanvasRenderingContext2D,
+  scene: PlaybackItem,
+): void {
+  drawText(context, `#${scene.index}   ${scene.phase}   ${scene.kind}`, 96, 66, {
+    color: "#71717a",
+    font: "600 24px sans-serif",
+    maxWidth: 1100,
+    lineHeight: 32,
+  });
+}
+
+function drawSceneContent(
+  context: CanvasRenderingContext2D,
+  scene: PlaybackItem,
+): void {
+  const label = scene.kind === "speech"
+    ? "Speaker"
+    : scene.kind === "vote"
+      ? "Vote card"
+      : scene.kind === "resolution"
+        ? "Resolution"
+        : scene.kind === "phase"
+          ? "Phase"
+          : "Announcement";
+  const labelColor = scene.kind === "vote"
+    ? "#fbbf24"
+    : scene.kind === "resolution"
+      ? "#fca5a5"
+      : scene.kind === "speech"
+        ? "#67e8f9"
+        : "#71717a";
+
+  drawText(context, label, 104, 232, {
+    color: labelColor,
+    font: "700 28px sans-serif",
+    maxWidth: 1000,
+    lineHeight: 36,
+  });
 
   if (scene.kind === "speech") {
-    return (
-      <article className="flex min-w-0 flex-col justify-center">
-        <SceneMeta scene={scene} />
-        <div className="mb-4 text-xs uppercase tracking-[0.18em] text-cyan-300">
-          Speaker
-        </div>
-        {primaryPlayer ? (
-          <div className="mb-6 flex items-baseline gap-3">
-            <span className="text-lg text-zinc-500">
-              Seat {primaryPlayer.seatNo}
-            </span>
-            <span className="text-4xl font-semibold text-zinc-50">
-              {primaryPlayer.name}
-            </span>
-          </div>
-        ) : null}
-        <blockquote className="max-w-4xl border-l-2 border-cyan-400 pl-6 text-2xl leading-10 text-zinc-200">
-          {scene.text}
-        </blockquote>
-      </article>
-    );
+    const speaker = scene.players.find((player) => player.highlighted);
+    if (speaker) {
+      drawText(context, `Seat ${speaker.seatNo}  ${speaker.name}`, 104, 315, {
+        color: "#f4f4f5",
+        font: "700 68px sans-serif",
+        maxWidth: 1180,
+        lineHeight: 78,
+      });
+    }
+    drawText(context, scene.text, 128, 450, {
+      color: "#e4e4e7",
+      font: "400 46px sans-serif",
+      maxWidth: 1160,
+      lineHeight: 68,
+    });
+    context.strokeStyle = "#22d3ee";
+    context.lineWidth = 5;
+    context.beginPath();
+    context.moveTo(104, 448);
+    context.lineTo(104, 850);
+    context.stroke();
+    return;
   }
 
-  if (scene.kind === "vote") {
-    return (
-      <article className="flex min-w-0 flex-col justify-center">
-        <SceneMeta scene={scene} />
-        <div className="mb-4 text-xs uppercase tracking-[0.18em] text-amber-300">
-          Vote card
-        </div>
-        <h1 className="break-words text-5xl font-semibold leading-tight text-zinc-50">
-          {scene.title}
-        </h1>
-        <div className="mt-6 max-w-3xl border border-amber-400/30 bg-amber-400/10 px-5 py-4 text-2xl leading-9 text-amber-50">
-          {scene.text}
-        </div>
-      </article>
-    );
-  }
+  const titleFont = scene.kind === "phase"
+    ? "800 92px sans-serif"
+    : "800 72px sans-serif";
+  drawText(context, scene.title, 104, scene.kind === "phase" ? 420 : 330, {
+    color: "#fafafa",
+    font: titleFont,
+    maxWidth: 1220,
+    lineHeight: scene.kind === "phase" ? 106 : 86,
+  });
 
-  if (scene.kind === "resolution") {
-    return (
-      <article className="flex min-w-0 flex-col justify-center">
-        <SceneMeta scene={scene} />
-        <div className="mb-4 text-xs uppercase tracking-[0.18em] text-red-300">
-          Resolution
-        </div>
-        <h1 className="break-words text-5xl font-semibold leading-tight text-zinc-50">
-          {scene.title}
-        </h1>
-        <p className="mt-6 max-w-4xl whitespace-pre-wrap break-words text-2xl leading-9 text-zinc-300">
-          {scene.text}
-        </p>
-      </article>
-    );
-  }
+  if (scene.text) {
+    if (scene.kind === "vote") {
+      context.fillStyle = "rgba(251, 191, 36, 0.10)";
+      context.strokeStyle = "rgba(251, 191, 36, 0.35)";
+      context.lineWidth = 2;
+      context.fillRect(104, 500, 1040, 150);
+      context.strokeRect(104, 500, 1040, 150);
+      drawText(context, scene.text, 138, 585, {
+        color: "#fef3c7",
+        font: "500 46px sans-serif",
+        maxWidth: 970,
+        lineHeight: 60,
+      });
+      return;
+    }
 
-  if (scene.kind === "phase") {
-    return (
-      <article className="flex min-w-0 flex-col justify-center">
-        <SceneMeta scene={scene} />
-        <div className="text-xs uppercase tracking-[0.22em] text-zinc-600">
-          Phase
-        </div>
-        <h1 className="mt-4 break-words text-6xl font-semibold leading-none text-zinc-50">
-          {scene.title}
-        </h1>
-        <p className="mt-6 whitespace-pre-wrap break-words text-2xl leading-9 text-zinc-400">
-          {scene.text}
-        </p>
-      </article>
-    );
+    drawText(context, scene.text, 104, scene.kind === "phase" ? 575 : 490, {
+      color: "#d4d4d8",
+      font: "400 46px sans-serif",
+      maxWidth: 1220,
+      lineHeight: 66,
+    });
   }
-
-  return (
-    <article className="flex min-w-0 flex-col justify-center">
-      <SceneMeta scene={scene} />
-      <div className="mb-4 text-xs uppercase tracking-[0.18em] text-zinc-500">
-        Announcement
-      </div>
-      <h1 className="break-words text-5xl font-semibold leading-tight text-zinc-50">
-        {scene.title}
-      </h1>
-      {scene.text ? (
-        <p className="mt-6 whitespace-pre-wrap break-words text-2xl leading-9 text-zinc-300">
-          {scene.text}
-        </p>
-      ) : null}
-    </article>
-  );
 }
 
-function SceneMeta({ scene }: { readonly scene: PlaybackItem }) {
-  return (
-    <div className="mb-5 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.18em] text-zinc-500">
-      <span>#{scene.index}</span>
-      <span>{scene.phase}</span>
-      <span>{scene.kind}</span>
-    </div>
-  );
+function drawPlayers(
+  context: CanvasRenderingContext2D,
+  scene: PlaybackItem,
+): void {
+  const x = 1400;
+  drawText(context, "Players", x, 170, {
+    color: "#71717a",
+    font: "700 24px sans-serif",
+    maxWidth: 360,
+    lineHeight: 32,
+  });
+
+  scene.players.forEach((player, index) => {
+    const y = 210 + index * 92;
+    context.fillStyle = player.highlighted
+      ? "rgba(34, 211, 238, 0.12)"
+      : "rgba(24, 24, 27, 0.72)";
+    context.strokeStyle = player.highlighted
+      ? "rgba(34, 211, 238, 0.55)"
+      : "#27272a";
+    context.lineWidth = 2;
+    context.fillRect(x, y, 400, 68);
+    context.strokeRect(x, y, 400, 68);
+    drawText(context, `Seat ${player.seatNo}`, x + 20, y + 42, {
+      color: "#71717a",
+      font: "500 20px sans-serif",
+      maxWidth: 92,
+      lineHeight: 24,
+    });
+    drawText(context, player.name, x + 122, y + 43, {
+      color: player.status === "dead" ? "#a1a1aa" : "#f4f4f5",
+      font: "700 28px sans-serif",
+      maxWidth: 150,
+      lineHeight: 32,
+    });
+    drawText(context, player.status, x + 310, y + 42, {
+      color: player.status === "dead" ? "#fca5a5" : "#6ee7b7",
+      font: "600 20px sans-serif",
+      maxWidth: 74,
+      lineHeight: 24,
+    });
+  });
 }
 
-function PlayerRail({ scene }: { readonly scene: PlaybackItem }) {
-  return (
-    <aside className="min-h-0 py-2">
-      <div className="mb-3 text-xs uppercase tracking-[0.18em] text-zinc-600">
-        Players
-      </div>
-      <div className="grid gap-2">
-        {scene.players.map((player) => (
-          <div
-            className={[
-              "grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-2 border px-3 py-2 text-sm",
-              player.highlighted
-                ? "border-cyan-500/60 bg-cyan-500/10 text-zinc-100"
-                : "border-zinc-800 bg-zinc-950/70 text-zinc-400",
-              player.status === "dead" ? "opacity-65" : "",
-            ].join(" ")}
-            key={player.playerId}
-          >
-            <span className="text-xs text-zinc-600">Seat {player.seatNo}</span>
-            <span className="truncate font-medium">{player.name}</span>
-            <span
-              className={
-                player.status === "dead"
-                  ? "text-xs text-red-300"
-                  : "text-xs text-emerald-300"
-              }
-            >
-              {player.status}
-            </span>
-          </div>
-        ))}
-      </div>
-    </aside>
-  );
+function drawSceneDetails(
+  context: CanvasRenderingContext2D,
+  scene: PlaybackItem,
+): void {
+  context.strokeStyle = "#18181b";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(0, 932);
+  context.lineTo(CANVAS_WIDTH, 932);
+  context.stroke();
+  drawText(context, "Details", 96, 984, {
+    color: "#52525b",
+    font: "700 22px sans-serif",
+    maxWidth: 160,
+    lineHeight: 28,
+  });
+  const detailText = scene.details.length > 0 ? scene.details.join("    ") : "";
+  if (detailText) {
+    drawText(context, detailText, 230, 984, {
+      color: "#a1a1aa",
+      font: "400 24px sans-serif",
+      maxWidth: 1500,
+      lineHeight: 34,
+    });
+  }
+}
+
+function drawText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  options: {
+    readonly color: string;
+    readonly font: string;
+    readonly maxWidth: number;
+    readonly lineHeight: number;
+  },
+): void {
+  context.fillStyle = options.color;
+  context.font = options.font;
+  context.textBaseline = "alphabetic";
+
+  const words = Array.from(text);
+  let line = "";
+  let currentY = y;
+  for (const word of words) {
+    const nextLine = `${line}${word}`;
+    if (line && context.measureText(nextLine).width > options.maxWidth) {
+      context.fillText(line, x, currentY);
+      line = word;
+      currentY += options.lineHeight;
+    } else {
+      line = nextLine;
+    }
+  }
+
+  if (line) {
+    context.fillText(line, x, currentY);
+  }
+}
+
+function preferredMimeType(): string | undefined {
+  for (const mimeType of [
+    "video/webm;codecs=vp9",
+    "video/webm;codecs=vp8",
+    "video/webm",
+  ]) {
+    if (MediaRecorder.isTypeSupported(mimeType)) {
+      return mimeType;
+    }
+  }
+
+  return undefined;
 }
 
 function formatTime(milliseconds: number): string {
@@ -391,4 +531,8 @@ function formatTime(milliseconds: number): string {
   const seconds = totalSeconds % 60;
 
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
