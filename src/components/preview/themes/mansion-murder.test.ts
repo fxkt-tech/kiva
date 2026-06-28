@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PlaybackItem, PlaybackScenePlayer } from "@/core/playback";
+import type { ThemeRenderInput } from "../show-theme";
 import { mansionMurderTheme } from "./mansion-murder";
 
 describe("mansion murder theme", () => {
@@ -12,6 +13,51 @@ describe("mansion murder theme", () => {
     expect(textCalls(ctx)).toContain("Title");
   });
 
+  it("uses day and night background images by phase", () => {
+    const dayContext = fakeContext();
+    const nightContext = fakeContext();
+
+    mansionMurderTheme.render.renderBackground(
+      input(dayContext, scene({ phase: "day" }), {
+        backgroundImages: {
+          day: image({ width: 1672, height: 941 }),
+          night: image({ width: 1200, height: 900 }),
+        },
+      }),
+    );
+    mansionMurderTheme.render.renderBackground(
+      input(nightContext, scene({ phase: "night" }), {
+        backgroundImages: {
+          day: image({ width: 1672, height: 941 }),
+          night: image({ width: 1200, height: 900 }),
+        },
+      }),
+    );
+
+    expect(dayContext.drawImage).toHaveBeenCalledWith(
+      expect.objectContaining({ width: 1672 }),
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number),
+      0,
+      0,
+      1920,
+      1080,
+    );
+    expect(nightContext.drawImage).toHaveBeenCalledWith(
+      expect.objectContaining({ width: 1200 }),
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number),
+      0,
+      0,
+      1920,
+      1080,
+    );
+  });
+
   it("renders fixed suspect cards on both sides", () => {
     const ctx = fakeContext();
 
@@ -20,6 +66,7 @@ describe("mansion murder theme", () => {
     expect(textCalls(ctx)).toContain("Seat 1");
     expect(textCalls(ctx)).toContain("Seat 4");
     expect(textCalls(ctx)).toContain("秦川");
+    expect(textCalls(ctx)).toContain("身份：狼人");
   });
 
   it("renders speech scenes with speaker focus and subtitles", () => {
@@ -88,7 +135,11 @@ describe("mansion murder theme", () => {
   });
 });
 
-function input(ctx: CanvasRenderingContext2D, scene: PlaybackItem) {
+function input(
+  ctx: CanvasRenderingContext2D,
+  scene: PlaybackItem,
+  overrides: Partial<ThemeRenderInput> = {},
+): ThemeRenderInput {
   return {
     ctx,
     scene,
@@ -110,6 +161,8 @@ function input(ctx: CanvasRenderingContext2D, scene: PlaybackItem) {
     timeMs: scene.startsAtMs,
     sceneTimeMs: 0,
     enterProgress: 1,
+    backgroundImages: { day: null, night: null },
+    ...overrides,
   };
 }
 
@@ -140,6 +193,7 @@ function player(overrides: Partial<PlaybackScenePlayer> = {}): PlaybackScenePlay
     playerId: `player_${overrides.seatNo ?? 1}` as PlaybackScenePlayer["playerId"],
     seatNo: 1,
     name: "秦川",
+    roleName: "狼人",
     status: "alive",
     highlighted: false,
     ...overrides,
@@ -163,8 +217,16 @@ function fakeContext(): CanvasRenderingContext2D {
     fill: vi.fn(),
     stroke: vi.fn(),
     arc: vi.fn(),
+    drawImage: vi.fn(),
     save: vi.fn(),
     restore: vi.fn(),
     createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
   } as unknown as CanvasRenderingContext2D;
+}
+
+function image(input: {
+  readonly width: number;
+  readonly height: number;
+}): HTMLImageElement {
+  return input as HTMLImageElement;
 }

@@ -278,6 +278,31 @@ describe("library actions", () => {
     await expect(gameRepository.get(record.game.id)).resolves.toEqual(record);
   });
 
+  it("creates a game from a temporary preset without saving that preset", async () => {
+    const { actions, libraryRepository, gameRepository } = await createSeededActions();
+    const temporaryPreset = {
+      ...seedPresets[0],
+      id: "temporary_new_game",
+      name: "临时随机局",
+      seatAssignments: seedPresets[0].seatAssignments?.map((seat) =>
+        seat.seatNo === 1
+          ? { ...seat, characterId: "lin_xia" }
+          : seat.seatNo === 2
+            ? { ...seat, characterId: "qin_chuan" }
+            : seat,
+      ) ?? null,
+    };
+
+    const record = await actions.createGameFromTemporaryPreset(temporaryPreset);
+
+    expect(record.game.title).toBe("临时随机局");
+    expect(record.game.players[0]?.name).toBe("林夏");
+    await expect(gameRepository.get(record.game.id)).resolves.toEqual(record);
+    await expect(libraryRepository.loadAll()).resolves.toMatchObject({
+      presets: seedPresets,
+    });
+  });
+
   it("rejects disabling a role while an enabled preset still references it", async () => {
     const { actions, libraryRepository } = await createSeededActions();
 

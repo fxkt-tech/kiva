@@ -41,8 +41,17 @@ export const mansionMurderTheme: ShowThemePack = {
 
 function renderBackground(input: ThemeRenderInput): void {
   const ctx = input.ctx;
-  clearCanvas(ctx, mansionMurderTheme.tokens.background);
-  drawMansionBackdrop(ctx);
+  const backgroundImage = input.scene.phase === "night"
+    ? input.backgroundImages.night
+    : input.backgroundImages.day;
+
+  if (backgroundImage) {
+    drawCoverImage(ctx, backgroundImage, WIDTH, HEIGHT);
+  } else {
+    clearCanvas(ctx, mansionMurderTheme.tokens.background);
+    drawMansionBackdrop(ctx);
+  }
+
   drawVignette(ctx);
   drawTopCaseBar(ctx, input);
 }
@@ -152,6 +161,36 @@ function drawMansionBackdrop(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 826, WIDTH, 254);
 }
 
+function drawCoverImage(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  width: number,
+  height: number,
+): void {
+  const imageRatio = image.width / image.height;
+  const canvasRatio = width / height;
+  const sourceWidth = imageRatio > canvasRatio
+    ? image.height * canvasRatio
+    : image.width;
+  const sourceHeight = imageRatio > canvasRatio
+    ? image.height
+    : image.width / canvasRatio;
+  const sourceX = (image.width - sourceWidth) / 2;
+  const sourceY = (image.height - sourceHeight) / 2;
+
+  ctx.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    width,
+    height,
+  );
+}
+
 function drawSuspectCard(ctx: CanvasRenderingContext2D, slot: PlayerSlot): void {
   const player = slot.player;
   const dead = player.status === "dead";
@@ -181,6 +220,10 @@ function drawSuspectCard(ctx: CanvasRenderingContext2D, slot: PlayerSlot): void 
   ctx.font = "900 38px sans-serif";
   ctx.fillText(player.name, slot.rect.x + 138, slot.rect.y + 105);
 
+  ctx.fillStyle = dead ? mansionMurderTheme.tokens.muted : roleColor(player.roleName);
+  ctx.font = "800 22px sans-serif";
+  ctx.fillText(`身份：${player.roleName}`, slot.rect.x + 138, slot.rect.y + 142);
+
   drawStatusStamp(ctx, dead ? "DEAD" : "ALIVE", {
     x: slot.rect.x + slot.rect.width - 128,
     y: slot.rect.y + 126,
@@ -191,6 +234,12 @@ function drawSuspectCard(ctx: CanvasRenderingContext2D, slot: PlayerSlot): void 
     stroke: dead ? "rgba(180, 35, 42, 0.72)" : "rgba(134, 239, 172, 0.42)",
     text: dead ? "#fecaca" : "#bbf7d0",
   });
+}
+
+function roleColor(roleName: string): string {
+  return roleName === "狼人"
+    ? mansionMurderTheme.tokens.wolf
+    : mansionMurderTheme.tokens.good;
 }
 
 function drawAnnouncementMoment(input: ThemeRenderInput): void {

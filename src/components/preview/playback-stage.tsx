@@ -9,18 +9,25 @@ import {
 import {
   DEFAULT_SHOW_THEME_ID,
   getShowTheme,
+  type PreviewBackgroundImages,
   renderThemeFrame,
 } from "./show-theme";
+import { systemVoiceSourceForScene } from "./preview-audio";
 import { createSixPlayerStageLayout } from "./stage-layout";
 
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
 const FRAME_RATE = 30;
 const TICK_MS = 1000 / FRAME_RATE;
+const backgroundImageSources = {
+  day: "/kivdb-assets/preview/day-background.png",
+  night: "/kivdb-assets/preview/night-background.png",
+} as const;
 
 type PlaybackStageProps = {
   readonly items: readonly PlaybackItem[];
   readonly controls?: "visible" | "hidden";
+  readonly initialPosition?: "start" | "end";
 };
 
 type RecordingStatus = "idle" | "recording" | "ready" | "failed";
@@ -28,17 +35,24 @@ type RecordingStatus = "idle" | "recording" | "ready" | "failed";
 export function PlaybackStage({
   items,
   controls = "visible",
+  initialPosition = "start",
 }: PlaybackStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioSceneKeyRef = useRef<string | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const downloadUrlRef = useRef<string | null>(null);
-  const [currentTimeMs, setCurrentTimeMs] = useState(0);
+  const [currentTimeMs, setCurrentTimeMs] = useState(() =>
+    initialTimeForItems(items, initialPosition),
+  );
   const [playing, setPlaying] = useState(false);
   const [recordingStatus, setRecordingStatus] =
     useState<RecordingStatus>("idle");
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [backgroundImages, setBackgroundImages] =
+    useState<PreviewBackgroundImages>({ day: null, night: null });
   const hasItems = items.length > 0;
   const totalDurationMs = playbackTotalDurationMs(items);
   const safeTimeMs = clamp(currentTimeMs, 0, Math.max(0, totalDurationMs));
@@ -48,12 +62,26 @@ export function PlaybackStage({
   const canRecord = hasItems && recordingStatus !== "recording";
 
   useEffect(() => {
-    setCurrentTimeMs((timeMs) => clamp(timeMs, 0, Math.max(0, totalDurationMs)));
-  }, [totalDurationMs]);
+    setCurrentTimeMs(initialTimeForItems(items, initialPosition));
+  }, [initialPosition, items]);
 
   useEffect(() => {
-    drawPlaybackFrame(canvasRef.current, items, safeTimeMs);
-  }, [items, safeTimeMs]);
+    drawPlaybackFrame(canvasRef.current, items, safeTimeMs, backgroundImages);
+  }, [backgroundImages, items, safeTimeMs]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadBackgroundImages().then((images) => {
+      if (!cancelled) {
+        setBackgroundImages(images);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!playing || !hasItems) {
@@ -77,7 +105,16 @@ export function PlaybackStage({
   }, [hasItems, playing, totalDurationMs]);
 
   useEffect(() => {
+    if (!playing || !hasItems) {
+      return;
+    }
+
+    playSystemVoiceForScene(items[safeIndex]);
+  }, [hasItems, items, playing, safeIndex]);
+
+  useEffect(() => {
     return () => {
+      stopSystemVoice();
       if (downloadUrlRef.current) {
         URL.revokeObjectURL(downloadUrlRef.current);
       }
@@ -97,16 +134,19 @@ export function PlaybackStage({
 
   function pause() {
     setPlaying(false);
+    stopSystemVoice();
   }
 
   function reset() {
     setCurrentTimeMs(0);
     setPlaying(false);
+    stopSystemVoice();
   }
 
   function seekTo(timeMs: number) {
     setCurrentTimeMs(clamp(timeMs, 0, Math.max(0, totalDurationMs)));
     setPlaying(false);
+    stopSystemVoice();
   }
 
   function startRecording() {
@@ -158,7 +198,7 @@ export function PlaybackStage({
         setRecordingStatus("ready");
       };
 
-      drawPlaybackFrame(canvas, items, 0);
+      drawPlaybackFrame(canvas, items, 0, backgroundImages);
       setCurrentTimeMs(0);
       recorder.start();
       setRecordingStatus("recording");
@@ -176,6 +216,45 @@ export function PlaybackStage({
     if (recorder && recorder.state !== "inactive") {
       recorder.stop();
     }
+  }
+
+  function playSystemVoiceForScene(scene: PlaybackItem | undefined) {
+    if (!scene) {
+      return;
+    }
+
+    const source = systemVoiceSourceForScene(scene);
+    const sceneKey = `${scene.index}:${source ?? ""}`;
+    if (audioSceneKeyRef.current === sceneKey) {
+      return;
+    }
+
+    stopSystemVoice();
+    audioSceneKeyRef.current = sceneKey;
+
+    if (!source) {
+      return;
+    }
+
+    const audio = new Audio(source);
+    audioRef.current = audio;
+    audio.play().catch(() => {
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    });
+  }
+
+  function stopSystemVoice() {
+    const audio = audioRef.current;
+    audioSceneKeyRef.current = null;
+    audioRef.current = null;
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
   }
 
   return (
@@ -265,10 +344,22 @@ export function PlaybackStage({
   );
 }
 
+function initialTimeForItems(
+  items: readonly PlaybackItem[],
+  initialPosition: NonNullable<PlaybackStageProps["initialPosition"]>,
+): number {
+  if (initialPosition === "start") {
+    return 0;
+  }
+
+  return playbackTotalDurationMs(items);
+}
+
 function drawPlaybackFrame(
   canvas: HTMLCanvasElement | null,
   items: readonly PlaybackItem[],
   timeMs: number,
+  backgroundImages: PreviewBackgroundImages = { day: null, night: null },
 ): void {
   if (!canvas) {
     return;
@@ -296,6 +387,25 @@ function drawPlaybackFrame(
     items,
     layout: createSixPlayerStageLayout(scene.players),
     timeMs,
+    backgroundImages,
+  });
+}
+
+async function loadBackgroundImages(): Promise<PreviewBackgroundImages> {
+  const [day, night] = await Promise.all([
+    loadImage(backgroundImageSources.day),
+    loadImage(backgroundImageSources.night),
+  ]);
+
+  return { day, night };
+}
+
+function loadImage(src: string): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
   });
 }
 

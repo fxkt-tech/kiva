@@ -1,5 +1,5 @@
 import { getActiveEvents } from "./event-log";
-import { formatEventForPublic } from "./event-presenter";
+import { formatEventForHost, formatEventForPublic } from "./event-presenter";
 import type { GameEvent } from "./events";
 import type { PlayerSnapshot } from "./player";
 import type { Phase, PlayerId } from "./types";
@@ -15,6 +15,7 @@ export type PlaybackScenePlayer = {
   readonly playerId: PlayerId;
   readonly seatNo: number;
   readonly name: string;
+  readonly roleName: string;
   readonly status: "alive" | "dead";
   readonly highlighted: boolean;
 };
@@ -34,6 +35,8 @@ export type PlaybackRhythmConfig = {
 
 export type CompilePublicPlaybackOptions = {
   readonly rhythm?: Partial<PlaybackRhythmConfig>;
+  readonly audience?: "public" | "director";
+  readonly durationForScene?: (scene: PlaybackItem, event: GameEvent) => number | null;
 };
 
 export type PlaybackItem = {
@@ -69,19 +72,20 @@ export function compilePublicPlayback(
   let startsAtMs = 0;
   const publiclyDeadPlayerIds = new Set<PlayerId>();
   const rhythm = { ...defaultRhythm, ...options.rhythm };
+  const audience = options.audience ?? "public";
 
   return getActiveEvents(events)
-    .filter((event) => event.visibility.kind === "public")
-    .filter((event) => event.type !== "vote_cast")
+    .filter((event) => shouldIncludeEvent(event, audience))
     .flatMap((event) => {
-      const presented = formatEventForPublic(event, players);
+      const presented = audience === "director"
+        ? formatEventForHost(event, players)
+        : formatEventForPublic(event, players);
       if (!presented) {
         return [];
       }
 
       updatePublicDeaths(publiclyDeadPlayerIds, event);
 
-      const durationMs = durationForEvent(event, presented.text, rhythm);
       const scene = {
         index: event.index,
         phase: event.phase,
@@ -89,14 +93,28 @@ export function compilePublicPlayback(
         title: presented.title,
         text: presented.text,
         details: presented.details ?? [],
-        durationMs,
+        durationMs: durationForEvent(event, presented.text, rhythm),
         startsAtMs,
         players: playersForScene(players, publiclyDeadPlayerIds, event),
       };
+      const durationMs =
+        options.durationForScene?.(scene, event) ?? scene.durationMs;
+      const sceneWithDuration = { ...scene, durationMs };
       startsAtMs += durationMs;
 
-      return [scene];
+      return [sceneWithDuration];
     });
+}
+
+function shouldIncludeEvent(
+  event: GameEvent,
+  audience: NonNullable<CompilePublicPlaybackOptions["audience"]>,
+): boolean {
+  if (event.type === "vote_cast" || event.type === "role_assigned") {
+    return false;
+  }
+
+  return audience === "director" || event.visibility.kind === "public";
 }
 
 export function playbackTotalDurationMs(
@@ -177,6 +195,7 @@ function playersForScene(
     playerId: player.playerId,
     seatNo: player.seatNo,
     name: player.name,
+    roleName: player.roleName,
     status: deadPlayerIds.has(player.playerId) ? "dead" : "alive",
     highlighted: highlightedPlayerIds.has(player.playerId),
   }));

@@ -139,6 +139,31 @@ describe("library diagnostics", () => {
     expect(diagnostic.promptPreview).not.toContain("选择袭击目标。");
   });
 
+  it("labels character prompt preview sections", () => {
+    const diagnostic = diagnoseCharacter({
+      character: qin,
+      roles: [werewolf, seer],
+      characters: [qin, lin],
+      presets: [],
+    });
+
+    expect(diagnostic.promptPreview).toBe(
+      [
+        "角色基础提示：",
+        "你是秦川。",
+        "",
+        "人设：",
+        "冷静",
+        "",
+        "发言风格：",
+        "短句",
+        "",
+        "推理风格：",
+        "证据优先",
+      ].join("\n"),
+    );
+  });
+
   it("marks character diagnostics invalid when enabled character prompt is blank", () => {
     expect(
       diagnoseCharacter({

@@ -264,6 +264,47 @@ describe("action generation", () => {
       payload: { used: true, targetPlayerId: wolf.playerId },
     });
   });
+
+  it("requires explicit used output for witch medicine suggestions", async () => {
+    const draft = witchPoisonDraft();
+    const result = await generateActionDraft({
+      game,
+      events: setupEvents(),
+      draft,
+      llmClient: new MockLlmClient([
+        { targetPlayerId: wolf.playerId, reasoning: "想使用毒药" },
+      ]),
+      generationId: "generation_missing_used",
+      createdAt,
+    });
+
+    expect(result.draft).toEqual(draft);
+    expect(result.generation).toMatchObject({
+      status: "failed",
+      purpose: "action",
+      error: "used is required for witch_poison_decided",
+    });
+  });
+
+  it("tells witch medicine drafts to output used explicitly", async () => {
+    const result = await generateActionDraft({
+      game,
+      events: setupEvents(),
+      draft: witchPoisonDraft(),
+      llmClient: new MockLlmClient([
+        { used: true, targetPlayerId: wolf.playerId },
+      ]),
+      generationId: "generation_witch_prompt",
+      createdAt,
+    });
+
+    const content = result.generation?.request?.messages[0]?.content ?? "";
+
+    expect(content).toContain("used");
+    expect(content).toContain('"used":true');
+    expect(content).toContain('"used":false');
+    expect(content).toContain("used 是必填布尔值");
+  });
 });
 
 function setupEvents(): readonly GameEvent[] {

@@ -7,7 +7,7 @@ import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import type { LibraryActionsRecord } from "@/server/library-actions";
 import { LibraryList } from "./library-list";
-import { LibraryWorkspace } from "./library-workspace";
+import { LibraryWorkspace, selectedEditorKey } from "./library-workspace";
 
 describe("LibraryWorkspace", () => {
   it("renders tabs, object list, detail region, and validation region", () => {
@@ -62,6 +62,17 @@ describe("LibraryWorkspace", () => {
     expect(withoutId).toContain("6人狼人杀试运行");
     expect(withInvalidId).toContain("Preset editor");
     expect(withInvalidId).toContain("6人狼人杀试运行");
+  });
+
+  it("uses the selected object identity as the editor key", () => {
+    expect(selectedEditorKey({ kind: "role", id: "werewolf" })).toBe(
+      "role:werewolf",
+    );
+    expect(selectedEditorKey({ kind: "role", id: "seer" })).toBe("role:seer");
+    expect(selectedEditorKey({ kind: "character", id: "seer" })).toBe(
+      "character:seer",
+    );
+    expect(selectedEditorKey(null)).toBeNull();
   });
 
   it("URL-encodes special characters in object list links", () => {

@@ -80,6 +80,7 @@ function fakeContext(): CanvasRenderingContext2D {
     fill: vi.fn(),
     stroke: vi.fn(),
     arc: vi.fn(),
+    drawImage: vi.fn(),
     save: vi.fn(),
     restore: vi.fn(),
     createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),

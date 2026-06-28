@@ -3,9 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { DraftPayloadEdit } from "@/core/draft-edit";
+import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
 import type { GameId, PlayerId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
+import { createLibraryActions } from "@/server/library-actions";
+import { createLibraryRepository } from "@/server/library-repository";
 import { createRuntimeLlmClient } from "@/server/llm-runtime";
 
 const dataDir = process.env.KIVA_DATA_DIR;
@@ -13,9 +16,38 @@ const dataDir = process.env.KIVA_DATA_DIR;
 const gameActions = createGameActions(createGameRepository(dataDir), {
   llmClient: createRuntimeLlmClient(),
 });
+const libraryActions = createLibraryActions({
+  libraryRepository: createLibraryRepository(dataDir),
+  gameRepository: createGameRepository(dataDir),
+});
 
 export async function createGameAction() {
   redirect("/library?tab=presets");
+}
+
+export async function createGameFromPresetHomeAction(presetId: string) {
+  const record = await libraryActions.createGameFromPreset(presetId);
+  revalidatePath("/");
+  redirect(`/games/${record.game.id}/editor`);
+}
+
+export async function createGameFromSeatAssignmentsAction(formData: FormData) {
+  const seatAssignments = seatAssignmentsFromForm(formData);
+  const preset: GamePreset = {
+    id: `temporary_${Date.now()}`,
+    name: "随机 6 人狼人杀",
+    rulesetId: "six_player_werewolf",
+    playerCount: 6,
+    roleIds: seatAssignments.map((seat) => seat.roleId),
+    characterIds: seatAssignments.map((seat) => seat.characterId),
+    seatAssignments,
+    enabled: true,
+    createdAt: now(),
+    updatedAt: now(),
+  };
+  const record = await libraryActions.createGameFromTemporaryPreset(preset);
+  revalidatePath("/");
+  redirect(`/games/${record.game.id}/editor`);
 }
 
 export async function deleteGameAction(gameId: GameId) {
@@ -59,6 +91,25 @@ export async function rollbackAfterAction(gameId: GameId, index: number) {
 function formValue(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
+}
+
+function seatAssignmentsFromForm(
+  formData: FormData,
+): readonly GamePresetSeatAssignment[] {
+  return Array.from({ length: 6 }, (_, index) => {
+    const seatNo = index + 1;
+
+    return {
+      seatNo,
+      roleId: formValue(formData, `seat.${seatNo}.roleId`),
+      characterId: formValue(formData, `seat.${seatNo}.characterId`),
+      modelBindingOverride: null,
+    };
+  });
+}
+
+function now(): string {
+  return new Date().toISOString();
 }
 
 function draftPayloadEditFromForm(formData: FormData): DraftPayloadEdit {

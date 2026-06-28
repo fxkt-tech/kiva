@@ -24,6 +24,12 @@ export type ThemeRenderInput = {
   readonly timeMs: number;
   readonly sceneTimeMs: number;
   readonly enterProgress: number;
+  readonly backgroundImages: PreviewBackgroundImages;
+};
+
+export type PreviewBackgroundImages = {
+  readonly day: HTMLImageElement | null;
+  readonly night: HTMLImageElement | null;
 };
 
 export type ShowThemeRenderers = {
@@ -57,6 +63,7 @@ export function renderThemeFrame(
     readonly items: readonly PlaybackItem[];
     readonly layout: StageLayout;
     readonly timeMs: number;
+    readonly backgroundImages?: PreviewBackgroundImages;
   },
 ): void {
   const sceneTimeMs = Math.max(0, input.timeMs - input.scene.startsAtMs);
@@ -69,6 +76,7 @@ export function renderThemeFrame(
     timeMs: input.timeMs,
     sceneTimeMs,
     enterProgress,
+    backgroundImages: input.backgroundImages ?? { day: null, night: null },
   };
 
   input.theme.render.renderBackground(renderInput);

@@ -57,6 +57,7 @@ describe("playback compiler", () => {
         players: expect.arrayContaining([
           expect.objectContaining({
             playerId: players[0].playerId,
+            roleName: players[0].roleName,
             status: "alive",
           }),
         ]),
@@ -73,6 +74,7 @@ describe("playback compiler", () => {
         players: expect.arrayContaining([
           expect.objectContaining({
             playerId: players[0].playerId,
+            roleName: players[0].roleName,
             status: "alive",
           }),
         ]),
@@ -174,6 +176,33 @@ describe("playback compiler", () => {
     ]);
     expect(playback[1]?.startsAtMs).toBe(900);
   });
+
+  it("uses scene duration overrides before falling back to rhythm estimates", () => {
+    const playback = compilePublicPlayback([
+      event(1, { kind: "public" }, {
+        type: "phase_started",
+        phase: "night",
+        payload: { phase: "night", dayNumber: 1 },
+      }),
+      event(2, { kind: "public" }, {
+        type: "day_speech_given",
+        phase: "speech",
+        actorPlayerId: players[0].playerId,
+        payload: {
+          playerId: players[0].playerId,
+          text: "短发言",
+          dayNumber: 1,
+          round: 1,
+        },
+      }),
+    ], players, {
+      durationForScene: (scene) => scene.title === "第 1 夜开始" ? 2160 : null,
+    });
+
+    expect(playback.map((item) => item.durationMs)).toEqual([2160, 4200]);
+    expect(playback[1]?.startsAtMs).toBe(2160);
+  });
+
 
   it("keeps public player status from revealing private night deaths before announcement", () => {
     const killedPlayerId = players[0].playerId;
@@ -292,6 +321,40 @@ describe("playback compiler", () => {
         expect.stringContaining("弃票"),
       ],
     });
+  });
+
+  it("can compile director playback with private night actions", () => {
+    const playback = compilePublicPlayback([
+      event(1, { kind: "public" }),
+      event(2, { kind: "faction_private", faction: "wolves" }, {
+        type: "wolf_kill_selected",
+        phase: "night",
+        actorPlayerId: players[0].playerId,
+        targetPlayerIds: [players[2].playerId],
+        payload: { targetPlayerId: players[2].playerId },
+      }),
+      event(3, { kind: "player_private", playerIds: [players[2].playerId] }, {
+        type: "seer_check_selected",
+        phase: "night",
+        actorPlayerId: players[2].playerId,
+        targetPlayerIds: [players[0].playerId],
+        payload: { targetPlayerId: players[0].playerId },
+      }),
+      event(4, { kind: "player_private", playerIds: [players[3].playerId] }, {
+        type: "witch_antidote_decided",
+        phase: "night",
+        actorPlayerId: players[3].playerId,
+        targetPlayerIds: [players[2].playerId],
+        payload: { used: true, targetPlayerId: players[2].playerId },
+      }),
+    ], players, { audience: "director" });
+
+    expect(playback.map((item) => item.title)).toEqual([
+      "第 1 夜开始",
+      "狼人刀人",
+      "预言家查验",
+      "女巫解药",
+    ]);
   });
 
   it("resolves total duration and scene index from timeline milliseconds", () => {

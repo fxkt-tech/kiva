@@ -116,6 +116,7 @@ function player(
     playerId: `player_${overrides.seatNo}` as PlaybackItem["players"][number]["playerId"],
     status: "alive",
     highlighted: false,
+    roleName: "狼人",
     ...overrides,
   };
 }

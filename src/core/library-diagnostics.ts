@@ -78,12 +78,7 @@ export function diagnoseCharacter(
       input.character.enabled,
     references: presetsReferencingCharacter(input.presets, input.character.id),
     messages,
-    promptPreview: joinPromptParts([
-      input.character.systemPrompt,
-      input.character.persona,
-      input.character.speakingStyle,
-      input.character.reasoningStyle,
-    ]),
+    promptPreview: characterPromptPreview(input.character),
   };
 }
 
@@ -151,11 +146,11 @@ export function promptPreviewForPresetSeat(input: {
     return "Seat assignment references missing library items.";
   }
 
-  return joinPromptParts([
-    character.systemPrompt,
-    role.systemPrompt,
-    role.actionPrompt,
-    `model: ${resolvedModelLabel({ assignment, character, role })}`,
+  return joinPromptSections([
+    characterPromptPreview(character),
+    labeledPromptSection("身份规则", role.systemPrompt),
+    labeledPromptSection("行动规则", role.actionPrompt),
+    `模型：${resolvedModelLabel({ assignment, character, role })}`,
   ]);
 }
 
@@ -383,6 +378,27 @@ function errorMessage(error: unknown): string {
 
 function joinPromptParts(parts: readonly (string | null)[]): string {
   return parts.filter(isPresentText).join("\n");
+}
+
+function characterPromptPreview(character: CharacterDefinition): string {
+  return joinPromptSections([
+    labeledPromptSection("角色基础提示", character.systemPrompt),
+    labeledPromptSection("人设", character.persona),
+    labeledPromptSection("发言风格", character.speakingStyle),
+    labeledPromptSection("推理风格", character.reasoningStyle),
+  ]);
+}
+
+function labeledPromptSection(label: string, value: string | null): string {
+  if (!isPresentText(value)) {
+    return "";
+  }
+
+  return `${label}：\n${value}`;
+}
+
+function joinPromptSections(parts: readonly string[]): string {
+  return parts.filter(isPresentText).join("\n\n");
 }
 
 function resolvedModelLabel(input: {

@@ -85,7 +85,7 @@ export async function generateActionDraft(
           ...legalTargetIds.map((targetPlayerId) => `playerId=${targetPlayerId}`),
           "可见事件：",
           ...context.timeline.flatMap((item) => timelinePromptLines(item)),
-          '输出字段：targetPlayerId、reasoning，可选 used。弃票用 {"targetPlayerId":null,"reasoning":"简短说明原因"}。',
+          actionOutputInstruction(input.draft.type),
           "reasoning 是给主理人看的简短决策依据，只能引用以上可见信息。",
         ].join("\n"),
       },
@@ -181,6 +181,28 @@ function timelinePromptLines(item: {
     `#${item.index} ${item.title}：${item.text}`,
     ...(item.details ?? []).map((detail) => `  - ${detail}`),
   ];
+}
+
+function actionOutputInstruction(draftType: ActionDraft["type"]): string {
+  switch (draftType) {
+    case "witch_antidote_decided":
+      return [
+        "输出字段：used、targetPlayerId、reasoning。",
+        'used 是必填布尔值。使用解药输出 {"used":true,"targetPlayerId":"从可选目标中选择的 playerId","reasoning":"简短说明原因"}。',
+        '不使用解药输出 {"used":false,"targetPlayerId":null,"reasoning":"简短说明原因"}。',
+      ].join("\n");
+    case "witch_poison_decided":
+      return [
+        "输出字段：used、targetPlayerId、reasoning。",
+        'used 是必填布尔值。使用毒药输出 {"used":true,"targetPlayerId":"从可选目标中选择的 playerId","reasoning":"简短说明原因"}。',
+        '不使用毒药输出 {"used":false,"targetPlayerId":null,"reasoning":"简短说明原因"}。',
+      ].join("\n");
+    case "vote_cast":
+      return '输出字段：targetPlayerId、reasoning。弃票用 {"targetPlayerId":null,"reasoning":"简短说明原因"}。';
+    case "seer_check_selected":
+    case "wolf_kill_selected":
+      return '输出字段：targetPlayerId、reasoning。必须从可选目标中选择一个 playerId。';
+  }
 }
 
 function legalTargetIdsForDraft(
@@ -311,7 +333,11 @@ function witchEdit(
   output: Record<string, unknown>,
   legalTargets: readonly PlayerId[],
 ): DraftPayloadEdit {
-  const used = output.used === true;
+  if (typeof output.used !== "boolean") {
+    throw new Error(`used is required for ${draftType}`);
+  }
+
+  const used = output.used;
   if (!used) {
     return { used: false, targetPlayerId: null };
   }

@@ -4,7 +4,10 @@ import { DraftPanel } from "@/components/editor/draft-panel";
 import { EventTimeline } from "@/components/editor/event-timeline";
 import type { GameId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
-import { createGameRepository } from "@/server/game-repository";
+import {
+  createGameRepository,
+  type GameRecord,
+} from "@/server/game-repository";
 
 type EditorPageProps = {
   readonly params: Promise<{
@@ -26,6 +29,7 @@ export default async function EditorPage({ params }: EditorPageProps) {
   const record = loadedRecord.draft
     ? loadedRecord
     : await gameActions.continueGame(typedGameId);
+  const previewHref = currentPreviewHref(record);
 
   return (
     <main className="h-screen overflow-hidden bg-zinc-950 p-3 text-zinc-100 sm:p-4">
@@ -57,7 +61,7 @@ export default async function EditorPage({ params }: EditorPageProps) {
                   Preview
                 </h2>
                 <Link
-                  href={`/games/${record.game.id}/preview`}
+                  href={previewHref}
                   className="shrink-0 rounded-md border border-zinc-700 px-2.5 py-1 text-xs font-medium text-zinc-300 transition hover:border-zinc-500 hover:text-white"
                   target="_blank"
                 >
@@ -66,8 +70,9 @@ export default async function EditorPage({ params }: EditorPageProps) {
               </div>
               <div className="p-2">
                 <iframe
+                  key={previewHref}
                   title="Public playback preview"
-                  src={`/games/${record.game.id}/preview`}
+                  src={previewHref}
                   className="aspect-video w-full rounded-md border border-zinc-800 bg-black"
                 />
               </div>
@@ -92,4 +97,19 @@ export default async function EditorPage({ params }: EditorPageProps) {
       </div>
     </main>
   );
+}
+
+function currentPreviewHref(record: GameRecord): string {
+  const params = new URLSearchParams({
+    focus: "current",
+    rev: [
+      record.game.updatedAt,
+      record.events.length,
+      record.draft?.id ?? "none",
+      record.draft?.createdAt ?? "none",
+      record.generations.at(-1)?.createdAt ?? "none",
+    ].join("|"),
+  });
+
+  return `/games/${record.game.id}/preview?${params.toString()}`;
 }

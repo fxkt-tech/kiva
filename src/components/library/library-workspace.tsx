@@ -106,11 +106,18 @@ export function LibraryWorkspace({
             {selected === null ? (
               <EmptyDetail />
             ) : selected.kind === "role" ? (
-              <RoleEditor role={selected.item} />
+              <RoleEditor
+                key={selectedEditorKey(selected)}
+                role={selected.item}
+              />
             ) : selected.kind === "character" ? (
-              <CharacterEditor character={selected.item} />
+              <CharacterEditor
+                key={selectedEditorKey(selected)}
+                character={selected.item}
+              />
             ) : (
               <PresetEditor
+                key={selectedEditorKey(selected)}
                 preset={selected.item}
                 roles={library.roles}
                 characters={library.characters}
@@ -127,6 +134,12 @@ export function LibraryWorkspace({
       </div>
     </main>
   );
+}
+
+export function selectedEditorKey(
+  selected: Pick<SelectedItem, "kind" | "id"> | null,
+): string | null {
+  return selected === null ? null : `${selected.kind}:${selected.id}`;
 }
 
 function EmptyDetail() {

@@ -45,6 +45,7 @@ function player(seatNo: number): PlaybackScenePlayer {
     playerId: `player_${seatNo}` as PlaybackScenePlayer["playerId"],
     seatNo,
     name: `玩家${seatNo}`,
+    roleName: "平民",
     status: "alive",
     highlighted: false,
   };

@@ -186,6 +186,13 @@ export function createLibraryActions({
         gameActions.createGameFromPresetId(presetId),
       );
     },
+
+    async createGameFromTemporaryPreset(preset: GamePreset): Promise<GameRecord> {
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        return gameActions.createGameFromPresetRecord(preset, library);
+      });
+    },
   };
 }
 

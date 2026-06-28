@@ -70,6 +70,31 @@ export function createGameActions(
     return record;
   }
 
+  async function createGameFromPresetRecord(
+    preset: LibraryRecord["presets"][number],
+    library: Pick<LibraryRecord, "roles" | "characters">,
+  ): Promise<GameRecord> {
+    const createdAt = now();
+    const game = createGameFromPreset({
+      gameId: createGameId(),
+      title: preset.name,
+      createdAt,
+      ruleset: createDefaultRuleset(),
+      preset,
+      roles: library.roles,
+      characters: library.characters,
+    });
+    const record: GameRecord = {
+      game,
+      events: [],
+      draft: null,
+      generations: [],
+    };
+
+    await repository.save(record);
+    return record;
+  }
+
   return {
     async createGame(): Promise<GameRecord> {
       const presetId = options.defaultPresetId ?? "six_player_standard";
@@ -78,6 +103,13 @@ export function createGameActions(
 
     async createGameFromPresetId(presetId: string): Promise<GameRecord> {
       return createGameFromPresetId(presetId);
+    },
+
+    async createGameFromPresetRecord(
+      preset: LibraryRecord["presets"][number],
+      library: Pick<LibraryRecord, "roles" | "characters">,
+    ): Promise<GameRecord> {
+      return createGameFromPresetRecord(preset, library);
     },
 
     async getGame(gameId: GameId): Promise<GameRecord | null> {

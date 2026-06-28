@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { createGameAction, deleteGameAction } from "@/app/actions";
+import { deleteGameAction } from "@/app/actions";
+import { NewGameDialog } from "@/components/home/new-game-dialog";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
+import { createLibraryActions } from "@/server/library-actions";
+import { createLibraryRepository } from "@/server/library-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +13,13 @@ export default async function HomePage() {
   const records = await createGameActions(
     createGameRepository(dataDir),
   ).listGames();
+  const library = await createLibraryActions({
+    libraryRepository: createLibraryRepository(dataDir),
+    gameRepository: createGameRepository(dataDir),
+  }).getLibrary();
+  const creatablePresets = library.presets.filter(
+    (preset) => library.diagnostics.presets[preset.id]?.canCreateGame === true,
+  );
 
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-6 text-zinc-100 sm:px-6 lg:px-8">
@@ -30,14 +40,11 @@ export default async function HomePage() {
             >
               Library
             </Link>
-            <form action={createGameAction}>
-              <button
-                type="submit"
-                className="w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-white sm:w-auto"
-              >
-                New game
-              </button>
-            </form>
+            <NewGameDialog
+              presets={creatablePresets}
+              roles={library.roles.filter((role) => role.enabled)}
+              characters={library.characters.filter((character) => character.enabled)}
+            />
           </div>
         </header>
 

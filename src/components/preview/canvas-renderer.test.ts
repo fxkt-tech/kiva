@@ -153,6 +153,7 @@ function player(overrides: Partial<PlaybackScenePlayer>): PlaybackScenePlayer {
     playerId: "player_1" as PlaybackScenePlayer["playerId"],
     seatNo: 1,
     name: "秦川",
+    roleName: "狼人",
     status: "alive",
     highlighted: false,
     ...overrides,
