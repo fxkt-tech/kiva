@@ -1,15 +1,17 @@
-import type { PlaybackItem, PlaybackScenePlayer } from "@/core/playback";
+import type { PlaybackScenePlayer } from "@/core/playback";
 import {
   clearCanvas,
+  drawAvatar,
   drawGlowText,
   drawPanel,
-  drawPlayerFile,
+  drawStatusStamp,
+  drawSubtitleBar,
   drawTextBlock,
   drawVignette,
-  drawVoteLine,
-  type Point,
+  drawVoteResultTable,
   type Rect,
 } from "../canvas-renderer";
+import type { PlayerSlot } from "../stage-layout";
 import type { ShowThemePack, ThemeRenderInput } from "../show-theme";
 
 const WIDTH = 1920;
@@ -29,144 +31,107 @@ export const mansionMurderTheme: ShowThemePack = {
     wolf: "#f87171",
   },
   render: {
-    renderPhase,
-    renderAnnouncement,
-    renderSpeech,
-    renderVote,
-    renderResolution,
-    renderEnd: renderResolution,
+    renderBackground,
+    renderPlayerCard,
+    renderCenterStage,
+    renderSubtitle,
+    renderEffect,
   },
 };
 
-function renderPhase(input: ThemeRenderInput): void {
-  baseFrame(input, "CASE FILE");
-  drawChapterCard(input.ctx, input.scene, {
-    label: "CASE FILE",
-    titleY: 500,
-    titleSize: 92,
-  });
-}
-
-function renderAnnouncement(input: ThemeRenderInput): void {
-  baseFrame(input, "CASE BULLETIN");
-  drawChapterCard(input.ctx, input.scene, {
-    label: "CASE BULLETIN",
-    titleY: 360,
-    titleSize: 70,
-  });
-  drawTextBlock(input.ctx, input.scene.text, 138, 520, {
-    color: "#d8d0c4",
-    font: "400 42px sans-serif",
-    maxWidth: 1120,
-    lineHeight: 62,
-  });
-  drawPlayerFiles(input.ctx, input.scene, { x: 1370, y: 210 });
-}
-
-function renderSpeech(input: ThemeRenderInput): void {
-  baseFrame(input, "SUSPECT STATEMENT");
-  const speaker = activePlayer(input.scene);
-  drawPlayerFiles(input.ctx, input.scene, { x: 1370, y: 210 });
-  drawTextBlock(input.ctx, "SUSPECT STATEMENT", 104, 210, {
-    color: mansionMurderTheme.tokens.accent,
-    font: "700 28px sans-serif",
-    maxWidth: 760,
-    lineHeight: 36,
-  });
-  if (speaker) {
-    drawSuspectPortrait(input.ctx, speaker);
-  }
-  drawPanel(
-    input.ctx,
-    { x: 100, y: 430, width: 1160, height: 395 },
-    {
-      fill: "rgba(244, 241, 234, 0.08)",
-      stroke: "rgba(244, 241, 234, 0.22)",
-    },
-  );
-  drawTextBlock(input.ctx, input.scene.text, 142, 510, {
-    color: "#ede7dc",
-    font: "400 44px sans-serif",
-    maxWidth: 1065,
-    lineHeight: 66,
-  });
-}
-
-function renderVote(input: ThemeRenderInput): void {
-  baseFrame(input, "EVIDENCE VOTE");
-  drawTextBlock(input.ctx, "EVIDENCE VOTE", 104, 190, {
-    color: "#fca5a5",
-    font: "700 28px sans-serif",
-    maxWidth: 760,
-    lineHeight: 36,
-  });
-  drawTextBlock(input.ctx, input.scene.title, 104, 280, {
-    color: mansionMurderTheme.tokens.text,
-    font: "800 70px sans-serif",
-    maxWidth: 1100,
-    lineHeight: 84,
-  });
-  drawCaseBoard(input.ctx, input.scene);
-  drawTextBlock(input.ctx, input.scene.text, 104, 875, {
-    color: "#e7dccd",
-    font: "500 36px sans-serif",
-    maxWidth: 1220,
-    lineHeight: 52,
-  });
-}
-
-function renderResolution(input: ThemeRenderInput): void {
-  baseFrame(input, "CASE STATUS");
-  drawTextBlock(input.ctx, "CASE STATUS", 104, 210, {
-    color: mansionMurderTheme.tokens.danger,
-    font: "700 28px sans-serif",
-    maxWidth: 760,
-    lineHeight: 36,
-  });
-  drawGlowText(input.ctx, input.scene.title, 104, 350, {
-    color: mansionMurderTheme.tokens.text,
-    glow: "rgba(180, 35, 42, 0.65)",
-    font: "800 74px sans-serif",
-    maxWidth: 1180,
-    lineHeight: 88,
-  });
-  drawTextBlock(input.ctx, input.scene.text, 104, 505, {
-    color: "#d8d0c4",
-    font: "400 42px sans-serif",
-    maxWidth: 1180,
-    lineHeight: 62,
-  });
-  drawPlayerFiles(input.ctx, input.scene, { x: 1370, y: 210 });
-  drawDetails(input.ctx, input.scene);
-}
-
-function baseFrame(input: ThemeRenderInput, label: string): void {
+function renderBackground(input: ThemeRenderInput): void {
   const ctx = input.ctx;
   clearCanvas(ctx, mansionMurderTheme.tokens.background);
   drawMansionBackdrop(ctx);
   drawVignette(ctx);
-  drawTopCaseBar(ctx, input.scene, label);
+  drawTopCaseBar(ctx, input);
 }
 
-function drawTopCaseBar(
-  ctx: CanvasRenderingContext2D,
-  scene: PlaybackItem,
-  label: string,
-): void {
-  drawPanel(ctx, { x: 0, y: 0, width: WIDTH, height: 108 }, {
+function renderPlayerCard(input: ThemeRenderInput): void {
+  input.layout.playerSlots.forEach((slot) => {
+    drawSuspectCard(input.ctx, slot);
+  });
+}
+
+function renderCenterStage(input: ThemeRenderInput): void {
+  switch (input.scene.kind) {
+    case "speech":
+      drawSpeechFocus(input);
+      return;
+    case "vote":
+      drawVoteMoment(input);
+      return;
+    case "resolution":
+      drawResolutionMoment(input);
+      return;
+    case "phase":
+    case "announcement":
+      drawAnnouncementMoment(input);
+      return;
+  }
+}
+
+function renderSubtitle(input: ThemeRenderInput): void {
+  const speaker = activePlayer(input.scene.players);
+  drawSubtitleBar(input.ctx, {
+    speaker: speaker
+      ? `${speaker.seatNo} 号 ${speaker.name}`
+      : labelForScene(input),
+    text: input.scene.text || input.scene.title,
+    rect: input.layout.subtitle,
+    colors: {
+      fill: "rgba(5, 5, 6, 0.86)",
+      stroke: "rgba(143, 211, 255, 0.30)",
+      speaker: speaker ? mansionMurderTheme.tokens.accent : "#c7bba8",
+      text: mansionMurderTheme.tokens.text,
+    },
+  });
+}
+
+function renderEffect(input: ThemeRenderInput): void {
+  const speaker = activePlayer(input.scene.players);
+  if (!speaker || input.scene.kind !== "speech") {
+    return;
+  }
+
+  const slot = input.layout.playerSlots.find(
+    (candidate) => candidate.player.playerId === speaker.playerId,
+  );
+  if (!slot) {
+    return;
+  }
+
+  input.ctx.strokeStyle = "rgba(143, 211, 255, 0.55)";
+  input.ctx.lineWidth = 6;
+  input.ctx.strokeRect(
+    slot.rect.x - 8,
+    slot.rect.y - 8,
+    slot.rect.width + 16,
+    slot.rect.height + 16,
+  );
+}
+
+function drawTopCaseBar(ctx: CanvasRenderingContext2D, input: ThemeRenderInput): void {
+  drawPanel(ctx, { x: 0, y: 0, width: WIDTH, height: 98 }, {
     fill: "rgba(12, 10, 9, 0.92)",
     stroke: "rgba(120, 113, 108, 0.18)",
   });
-  drawTextBlock(ctx, label, 96, 66, {
+  drawTextBlock(ctx, "MANSION MURDER", 88, 60, {
     color: mansionMurderTheme.tokens.muted,
-    font: "700 24px sans-serif",
-    maxWidth: 460,
+    font: "800 24px sans-serif",
+    maxWidth: 420,
     lineHeight: 32,
   });
-  drawTextBlock(ctx, `#${scene.index}   ${scene.phase}   ${scene.kind}`, 1370, 66, {
+  drawTextBlock(ctx, input.scene.title, 690, 60, {
+    color: mansionMurderTheme.tokens.text,
+    font: "800 32px sans-serif",
+    maxWidth: 620,
+    lineHeight: 38,
+  });
+  drawTextBlock(ctx, `#${input.scene.index}   ${input.scene.phase}`, 1570, 60, {
     color: "#6f655d",
-    font: "600 22px sans-serif",
-    maxWidth: 450,
+    font: "700 22px sans-serif",
+    maxWidth: 270,
     lineHeight: 30,
   });
 }
@@ -174,167 +139,198 @@ function drawTopCaseBar(
 function drawMansionBackdrop(ctx: CanvasRenderingContext2D): void {
   const gradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
   gradient.addColorStop(0, "#050506");
-  gradient.addColorStop(0.48, "#10100f");
-  gradient.addColorStop(1, "#160b0c");
+  gradient.addColorStop(0.5, "#12100d");
+  gradient.addColorStop(1, "#190a0c");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  ctx.fillStyle = "rgba(143, 211, 255, 0.06)";
-  for (let index = 0; index < 6; index += 1) {
-    ctx.fillRect(130 + index * 225, 120, 72, 600);
+  ctx.fillStyle = "rgba(143, 211, 255, 0.055)";
+  for (let index = 0; index < 7; index += 1) {
+    ctx.fillRect(548 + index * 116, 132, 34, 650);
   }
-  ctx.fillStyle = "rgba(180, 35, 42, 0.09)";
-  ctx.fillRect(0, 910, WIDTH, 170);
+  ctx.fillStyle = "rgba(180, 35, 42, 0.10)";
+  ctx.fillRect(0, 826, WIDTH, 254);
 }
 
-function drawChapterCard(
-  ctx: CanvasRenderingContext2D,
-  scene: PlaybackItem,
-  options: {
-    readonly label: string;
-    readonly titleY: number;
-    readonly titleSize: number;
-  },
-): void {
-  drawPanel(ctx, { x: 96, y: 220, width: 1170, height: 570 }, {
-    fill: "rgba(244, 241, 234, 0.08)",
-    stroke: "rgba(244, 241, 234, 0.25)",
+function drawSuspectCard(ctx: CanvasRenderingContext2D, slot: PlayerSlot): void {
+  const player = slot.player;
+  const dead = player.status === "dead";
+  drawPanel(ctx, slot.rect, {
+    fill: dead ? "rgba(24, 18, 18, 0.68)" : "rgba(23, 18, 15, 0.92)",
+    stroke: player.highlighted
+      ? "rgba(143, 211, 255, 0.75)"
+      : "rgba(244, 241, 234, 0.18)",
+    lineWidth: player.highlighted ? 4 : 2,
   });
-  drawTextBlock(ctx, options.label, 138, 300, {
+
+  drawAvatar(ctx, player.name, {
+    x: slot.rect.x + 74,
+    y: slot.rect.y + 76,
+    radius: 42,
+  }, {
+    fill: dead ? "rgba(41, 37, 36, 0.96)" : "rgba(143, 211, 255, 0.16)",
+    stroke: dead ? "rgba(120, 113, 108, 0.38)" : "rgba(143, 211, 255, 0.62)",
+    text: dead ? mansionMurderTheme.tokens.muted : mansionMurderTheme.tokens.text,
+  });
+
+  ctx.fillStyle = mansionMurderTheme.tokens.muted;
+  ctx.font = "800 20px sans-serif";
+  ctx.fillText(`Seat ${player.seatNo}`, slot.rect.x + 138, slot.rect.y + 56);
+
+  ctx.fillStyle = dead ? mansionMurderTheme.tokens.muted : mansionMurderTheme.tokens.text;
+  ctx.font = "900 38px sans-serif";
+  ctx.fillText(player.name, slot.rect.x + 138, slot.rect.y + 105);
+
+  drawStatusStamp(ctx, dead ? "DEAD" : "ALIVE", {
+    x: slot.rect.x + slot.rect.width - 128,
+    y: slot.rect.y + 126,
+    width: 96,
+    height: 42,
+  }, {
+    fill: dead ? "rgba(69, 10, 10, 0.45)" : "rgba(6, 78, 59, 0.28)",
+    stroke: dead ? "rgba(180, 35, 42, 0.72)" : "rgba(134, 239, 172, 0.42)",
+    text: dead ? "#fecaca" : "#bbf7d0",
+  });
+}
+
+function drawAnnouncementMoment(input: ThemeRenderInput): void {
+  const rect = input.layout.center;
+  drawPanel(input.ctx, rect, {
+    fill: "rgba(244, 241, 234, 0.07)",
+    stroke: "rgba(244, 241, 234, 0.24)",
+  });
+  drawTextBlock(input.ctx, labelForScene(input), rect.x + 42, rect.y + 82, {
     color: mansionMurderTheme.tokens.danger,
-    font: "700 28px sans-serif",
-    maxWidth: 700,
+    font: "800 28px sans-serif",
+    maxWidth: rect.width - 84,
     lineHeight: 36,
   });
-  drawTextBlock(ctx, scene.title, 138, options.titleY, {
+  drawGlowText(input.ctx, input.scene.title, rect.x + 42, rect.y + 260, {
     color: mansionMurderTheme.tokens.text,
-    font: `800 ${options.titleSize}px sans-serif`,
-    maxWidth: 1030,
-    lineHeight: options.titleSize + 14,
+    glow: "rgba(180, 35, 42, 0.45)",
+    font: "900 70px sans-serif",
+    maxWidth: rect.width - 84,
+    lineHeight: 84,
   });
-  if (scene.text) {
-    drawTextBlock(ctx, scene.text, 142, 660, {
-      color: "#bdb4a8",
-      font: "400 38px sans-serif",
-      maxWidth: 1000,
-      lineHeight: 54,
-    });
-  }
-  drawPlayerFiles(ctx, scene, { x: 1370, y: 210 });
+  drawTextBlock(input.ctx, input.scene.text, rect.x + 46, rect.y + 410, {
+    color: "#d8d0c4",
+    font: "500 38px sans-serif",
+    maxWidth: rect.width - 92,
+    lineHeight: 56,
+  });
 }
 
-function drawSuspectPortrait(
+function drawSpeechFocus(input: ThemeRenderInput): void {
+  const rect = input.layout.center;
+  const speaker = activePlayer(input.scene.players);
+  drawPanel(input.ctx, rect, {
+    fill: "rgba(15, 23, 42, 0.28)",
+    stroke: "rgba(143, 211, 255, 0.26)",
+  });
+  drawTextBlock(input.ctx, "SUSPECT STATEMENT", rect.x + 44, rect.y + 82, {
+    color: mansionMurderTheme.tokens.accent,
+    font: "800 28px sans-serif",
+    maxWidth: rect.width - 88,
+    lineHeight: 36,
+  });
+
+  if (speaker) {
+    drawFeaturedSpeaker(input.ctx, speaker, {
+      x: rect.x + 78,
+      y: rect.y + 155,
+      width: rect.width - 156,
+      height: 260,
+    });
+  }
+
+  drawTextBlock(input.ctx, input.scene.title, rect.x + 44, rect.y + 510, {
+    color: "#c7bba8",
+    font: "800 40px sans-serif",
+    maxWidth: rect.width - 88,
+    lineHeight: 52,
+  });
+}
+
+function drawFeaturedSpeaker(
   ctx: CanvasRenderingContext2D,
   player: PlaybackScenePlayer,
+  rect: Rect,
 ): void {
-  drawPanel(ctx, { x: 104, y: 255, width: 740, height: 120 }, {
-    fill: "rgba(15, 23, 42, 0.42)",
-    stroke: "rgba(143, 211, 255, 0.45)",
+  drawPanel(ctx, rect, {
+    fill: "rgba(5, 5, 6, 0.48)",
+    stroke: "rgba(143, 211, 255, 0.38)",
   });
-  drawTextBlock(ctx, `Seat ${player.seatNo}`, 134, 302, {
-    color: mansionMurderTheme.tokens.muted,
-    font: "500 26px sans-serif",
-    maxWidth: 160,
-    lineHeight: 34,
+  drawAvatar(ctx, player.name, {
+    x: rect.x + 106,
+    y: rect.y + 130,
+    radius: 74,
+  }, {
+    fill: "rgba(143, 211, 255, 0.18)",
+    stroke: "rgba(143, 211, 255, 0.68)",
+    text: mansionMurderTheme.tokens.text,
   });
-  drawTextBlock(ctx, player.name, 285, 323, {
-    color: mansionMurderTheme.tokens.text,
-    font: "800 58px sans-serif",
-    maxWidth: 460,
-    lineHeight: 68,
+  ctx.fillStyle = mansionMurderTheme.tokens.muted;
+  ctx.font = "800 26px sans-serif";
+  ctx.fillText(`${player.seatNo} 号`, rect.x + 225, rect.y + 105);
+  ctx.fillStyle = mansionMurderTheme.tokens.text;
+  ctx.font = "900 66px sans-serif";
+  ctx.fillText(player.name, rect.x + 225, rect.y + 178);
+}
+
+function drawVoteMoment(input: ThemeRenderInput): void {
+  drawVoteResultTable(input.ctx, {
+    title: input.scene.title,
+    rows: input.scene.details.length > 0 ? input.scene.details : [input.scene.text],
+    result: input.scene.details.length > 0 ? [input.scene.text] : ["等待本轮投票结算"],
+    rect: input.layout.center,
+    colors: {
+      fill: "rgba(23, 18, 15, 0.92)",
+      stroke: "rgba(180, 35, 42, 0.54)",
+      title: mansionMurderTheme.tokens.text,
+      text: "#d8d0c4",
+      accent: mansionMurderTheme.tokens.danger,
+    },
   });
 }
 
-function drawPlayerFiles(
-  ctx: CanvasRenderingContext2D,
-  scene: PlaybackItem,
-  origin: Point,
-): void {
-  drawTextBlock(ctx, "SUSPECT FILES", origin.x, origin.y - 40, {
-    color: mansionMurderTheme.tokens.muted,
-    font: "700 22px sans-serif",
-    maxWidth: 380,
-    lineHeight: 30,
-  });
-
-  scene.players.forEach((player, index) => {
-    drawPlayerFile(ctx, player, {
-      x: origin.x,
-      y: origin.y + index * 86,
-      width: 410,
-      height: 66,
-    }, {
-      fill: player.status === "dead"
-        ? "rgba(24, 18, 18, 0.78)"
-        : "rgba(23, 18, 15, 0.88)",
-      stroke: mansionMurderTheme.tokens.accent,
-      text: mansionMurderTheme.tokens.text,
-      muted: mansionMurderTheme.tokens.muted,
-      statusAlive: mansionMurderTheme.tokens.good,
-      statusDead: mansionMurderTheme.tokens.danger,
+function drawResolutionMoment(input: ThemeRenderInput): void {
+  if (input.scene.details.length > 0 && input.scene.title.includes("投票")) {
+    drawVoteResultTable(input.ctx, {
+      title: input.scene.title,
+      rows: input.scene.details,
+      result: [input.scene.text],
+      rect: input.layout.center,
+      colors: {
+        fill: "rgba(23, 18, 15, 0.92)",
+        stroke: "rgba(180, 35, 42, 0.54)",
+        title: mansionMurderTheme.tokens.text,
+        text: "#d8d0c4",
+        accent: mansionMurderTheme.tokens.danger,
+      },
     });
-  });
-}
-
-function drawCaseBoard(ctx: CanvasRenderingContext2D, scene: PlaybackItem): void {
-  const rects = boardRects(scene.players);
-  rects.forEach((rect, index) => {
-    const player = scene.players[index];
-    if (player) {
-      drawPlayerFile(ctx, player, rect, {
-        fill: "rgba(23, 18, 15, 0.90)",
-        stroke: mansionMurderTheme.tokens.danger,
-        text: mansionMurderTheme.tokens.text,
-        muted: mansionMurderTheme.tokens.muted,
-        statusAlive: mansionMurderTheme.tokens.good,
-        statusDead: mansionMurderTheme.tokens.danger,
-      });
-    }
-  });
-
-  const highlighted = rects.filter((_, index) => scene.players[index]?.highlighted);
-  if (highlighted.length >= 2) {
-    for (let index = 0; index < highlighted.length - 1; index += 1) {
-      drawVoteLine(ctx, center(highlighted[index]!), center(highlighted[index + 1]!), mansionMurderTheme.tokens.danger, 5);
-    }
-  } else if (rects.length >= 2) {
-    drawVoteLine(ctx, center(rects[0]!), center(rects[1]!), mansionMurderTheme.tokens.danger, 4);
-  }
-}
-
-function boardRects(players: readonly PlaybackScenePlayer[]): Rect[] {
-  return players.map((_, index) => ({
-    x: 145 + (index % 3) * 385,
-    y: 410 + Math.floor(index / 3) * 150,
-    width: 335,
-    height: 92,
-  }));
-}
-
-function center(rect: Rect): Point {
-  return {
-    x: rect.x + rect.width / 2,
-    y: rect.y + rect.height / 2,
-  };
-}
-
-function drawDetails(ctx: CanvasRenderingContext2D, scene: PlaybackItem): void {
-  if (scene.details.length === 0) {
     return;
   }
 
-  drawPanel(ctx, { x: 104, y: 760, width: 1180, height: 150 }, {
-    fill: "rgba(244, 241, 234, 0.06)",
-    stroke: "rgba(244, 241, 234, 0.18)",
-  });
-  drawTextBlock(ctx, scene.details.join("    "), 136, 825, {
-    color: "#bdb4a8",
-    font: "400 28px sans-serif",
-    maxWidth: 1110,
-    lineHeight: 42,
-  });
+  drawAnnouncementMoment(input);
 }
 
-function activePlayer(scene: PlaybackItem): PlaybackScenePlayer | undefined {
-  return scene.players.find((player) => player.highlighted);
+function labelForScene(input: ThemeRenderInput): string {
+  switch (input.scene.kind) {
+    case "phase":
+      return "CASE FILE";
+    case "speech":
+      return "SUSPECT STATEMENT";
+    case "vote":
+      return "EVIDENCE VOTE";
+    case "resolution":
+      return "CASE STATUS";
+    case "announcement":
+      return "CASE BULLETIN";
+  }
+}
+
+function activePlayer(
+  players: readonly PlaybackScenePlayer[],
+): PlaybackScenePlayer | undefined {
+  return players.find((player) => player.highlighted);
 }

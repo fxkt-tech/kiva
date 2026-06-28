@@ -11,6 +11,7 @@ import {
   getShowTheme,
   renderThemeFrame,
 } from "./show-theme";
+import { createSixPlayerStageLayout } from "./stage-layout";
 
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
@@ -293,6 +294,7 @@ function drawPlaybackFrame(
     theme: getShowTheme(DEFAULT_SHOW_THEME_ID),
     scene,
     items,
+    layout: createSixPlayerStageLayout(scene.players),
     timeMs,
   });
 }

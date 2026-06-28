@@ -12,9 +12,8 @@ describe("show theme registry", () => {
     expect(getShowTheme("missing-theme").id).toBe(DEFAULT_SHOW_THEME_ID);
   });
 
-  it("routes scene rendering through the matching theme renderer", () => {
-    const renderSpeech = vi.fn();
-    const renderAnnouncement = vi.fn();
+  it("renders a frame through the fixed player-stage layers", () => {
+    const calls: string[] = [];
     const theme: ShowThemePack = {
       id: "test_theme",
       name: "Test Theme",
@@ -29,12 +28,11 @@ describe("show theme registry", () => {
         wolf: "#f44",
       },
       render: {
-        renderPhase: vi.fn(),
-        renderAnnouncement,
-        renderSpeech,
-        renderVote: vi.fn(),
-        renderResolution: vi.fn(),
-        renderEnd: vi.fn(),
+        renderBackground: vi.fn(() => calls.push("background")),
+        renderPlayerCard: vi.fn(() => calls.push("players")),
+        renderCenterStage: vi.fn(() => calls.push("center")),
+        renderSubtitle: vi.fn(() => calls.push("subtitle")),
+        renderEffect: vi.fn(() => calls.push("effect")),
       },
     };
 
@@ -42,11 +40,15 @@ describe("show theme registry", () => {
       theme,
       scene: scene({ kind: "speech" }),
       items: [scene({ kind: "speech" })],
+      layout: {
+        playerSlots: [],
+        center: { x: 0, y: 0, width: 100, height: 100 },
+        subtitle: { x: 0, y: 100, width: 100, height: 20 },
+      },
       timeMs: 1200,
     });
 
-    expect(renderSpeech).toHaveBeenCalledTimes(1);
-    expect(renderAnnouncement).not.toHaveBeenCalled();
+    expect(calls).toEqual(["background", "players", "center", "subtitle", "effect"]);
   });
 });
 
@@ -75,6 +77,7 @@ function fakeContext(): CanvasRenderingContext2D {
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
+    fill: vi.fn(),
     stroke: vi.fn(),
     arc: vi.fn(),
     save: vi.fn(),

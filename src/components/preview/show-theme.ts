@@ -1,4 +1,5 @@
-import type { PlaybackItem, PlaybackSceneKind } from "@/core/playback";
+import type { PlaybackItem } from "@/core/playback";
+import type { StageLayout } from "./stage-layout";
 import { mansionMurderTheme } from "./themes/mansion-murder";
 
 export const DEFAULT_SHOW_THEME_ID = "mansion_murder";
@@ -19,18 +20,18 @@ export type ThemeRenderInput = {
   readonly ctx: CanvasRenderingContext2D;
   readonly scene: PlaybackItem;
   readonly items: readonly PlaybackItem[];
+  readonly layout: StageLayout;
   readonly timeMs: number;
   readonly sceneTimeMs: number;
   readonly enterProgress: number;
 };
 
 export type ShowThemeRenderers = {
-  readonly renderPhase: (input: ThemeRenderInput) => void;
-  readonly renderAnnouncement: (input: ThemeRenderInput) => void;
-  readonly renderSpeech: (input: ThemeRenderInput) => void;
-  readonly renderVote: (input: ThemeRenderInput) => void;
-  readonly renderResolution: (input: ThemeRenderInput) => void;
-  readonly renderEnd: (input: ThemeRenderInput) => void;
+  readonly renderBackground: (input: ThemeRenderInput) => void;
+  readonly renderPlayerCard: (input: ThemeRenderInput) => void;
+  readonly renderCenterStage: (input: ThemeRenderInput) => void;
+  readonly renderSubtitle: (input: ThemeRenderInput) => void;
+  readonly renderEffect: (input: ThemeRenderInput) => void;
 };
 
 export type ShowThemePack = {
@@ -54,6 +55,7 @@ export function renderThemeFrame(
     readonly theme: ShowThemePack;
     readonly scene: PlaybackItem;
     readonly items: readonly PlaybackItem[];
+    readonly layout: StageLayout;
     readonly timeMs: number;
   },
 ): void {
@@ -63,28 +65,15 @@ export function renderThemeFrame(
     ctx,
     scene: input.scene,
     items: input.items,
+    layout: input.layout,
     timeMs: input.timeMs,
     sceneTimeMs,
     enterProgress,
   };
 
-  rendererForKind(input.theme, input.scene.kind)(renderInput);
-}
-
-function rendererForKind(
-  theme: ShowThemePack,
-  kind: PlaybackSceneKind,
-): (input: ThemeRenderInput) => void {
-  switch (kind) {
-    case "phase":
-      return theme.render.renderPhase;
-    case "speech":
-      return theme.render.renderSpeech;
-    case "vote":
-      return theme.render.renderVote;
-    case "resolution":
-      return theme.render.renderResolution;
-    case "announcement":
-      return theme.render.renderAnnouncement;
-  }
+  input.theme.render.renderBackground(renderInput);
+  input.theme.render.renderPlayerCard(renderInput);
+  input.theme.render.renderCenterStage(renderInput);
+  input.theme.render.renderSubtitle(renderInput);
+  input.theme.render.renderEffect(renderInput);
 }
