@@ -8,10 +8,12 @@ Different games may use different show themes. The renderer must not hard-code o
 
 ## Goal
 
-Build a theme-pack architecture for canvas playback:
+Build a player-stage architecture for canvas playback:
 
 - Keep `PlaybackItem[]` as gameplay facts.
-- Add a `ShowTheme` layer that controls visual direction only.
+- Make the 6 players the persistent visual subjects.
+- Use a left-3 / right-3 stage layout so the center stays available for show moments.
+- Add a `ShowTheme` layer that skins the stage and effects without replacing the stage structure.
 - Support a first high-quality theme: `mansion_murder`.
 - Add a second contrasting theme later: `wilderness_survival`, to prove the architecture is not one-off.
 - Preserve the current one-click canvas recording flow.
@@ -26,9 +28,17 @@ Build a theme-pack architecture for canvas playback:
 
 ## Core Principle
 
-Game events are facts. Theme packs are direction.
+Game events are facts. The player stage is structure. Theme packs are direction.
 
 For example, a `vote` scene always says who voted for whom. The mansion theme may render it as a red string on a detective board. The wilderness theme may render it as an exile mark on a camp map. The underlying scene does not change.
+
+The first visual priority is not the theme background. It is the player ensemble:
+
+- every player has a visible card
+- each card has avatar, seat number, name, and status
+- dead players remain visible but become gray and stamped
+- the current speaker is highlighted
+- scene overlays happen around the player stage, not instead of it
 
 ## Architecture
 
@@ -36,8 +46,11 @@ For example, a `vote` scene always says who voted for whom. The mansion theme ma
 GameEvent[]
   -> compilePublicPlayback()
   -> PlaybackItem[]
-  -> ShowThemePack
-  -> ThemeDirector
+  -> PlayerStageLayout
+  -> PlayerCardLayer
+  -> CenterStageLayer
+  -> SubtitleLayer
+  -> ThemeSkin
   -> CanvasRenderer
   -> canvas.captureStream()
 ```
@@ -57,7 +70,113 @@ GameEvent[]
 
 No theme fields should be added directly to `PlaybackItem`.
 
-### ShowThemePack
+### PlayerStageLayout
+
+The first implementation supports the 6-player horizontal program layout:
+
+```text
+[ P1 ]                         [ P4 ]
+[ P2 ]      Center Stage       [ P5 ]
+[ P3 ]                         [ P6 ]
+
+             Subtitle Bar
+```
+
+This layout is fixed for 6 players:
+
+- left column: seats 1, 2, 3
+- right column: seats 4, 5, 6
+- center region: phase title, voting result table, death announcement, game end reveal
+- bottom region: speech subtitles and narrator-style announcements
+
+The layout engine returns geometry only:
+
+```ts
+type StageLayout = {
+  playerSlots: readonly PlayerSlot[];
+  center: Rect;
+  subtitle: Rect;
+};
+```
+
+It does not draw anything and does not know theme colors.
+
+### PlayerCardLayer
+
+Every scene renders player cards. Cards are the persistent visual anchor of the program.
+
+Card contents:
+
+- avatar placeholder or image
+- seat number
+- player name
+- alive/dead state
+- current speaker highlight
+- target/result highlight when relevant
+- future extension slot for role/player special effects
+
+Dead players:
+
+- card desaturated/gray
+- avatar dimmed
+- `DEAD` or theme-specific stamp
+- still kept in their seat
+
+### CenterStageLayer
+
+The center stage changes by scene kind:
+
+- phase: chapter/title card
+- announcement: public event announcement
+- vote: vote table and result summary
+- resolution: exile/PK/death/game result
+- end: winner reveal and role reveal
+
+Vote scenes do not use vote lines. They show the whole vote result in the center:
+
+```text
+放逐投票
+
+1号 秦川 -> 3号 周知
+2号 林夏 -> 3号 周知
+4号 许棠 -> 5号 陈墨
+
+本轮结果
+3号 周知 2票
+5号 陈墨 1票
+弃票 1票
+```
+
+### SubtitleLayer
+
+Speech and last words use a bottom subtitle bar:
+
+- speaker name and seat label
+- speech text
+- legible high-contrast typography
+- no scene text body in the center during normal speech
+
+This is the primary way spoken content is presented.
+
+### EffectLayer
+
+First version effects:
+
+- current speaker glow
+- dead player gray/stamp
+- target/result highlight
+- scene fade-in
+
+Future reserved effects:
+
+- player-specific speaking effects
+- role-specific overlays
+- avatar/illustration reveal
+- theme-specific special animation
+
+These are designed as extension points, not implemented in this phase.
+
+### ShowThemePack / ThemeSkin
 
 Each theme pack owns the full program packaging:
 
@@ -81,40 +200,39 @@ type ShowThemePack = {
 - glow/shadow intensity
 - grain/noise settings
 
-`render` contains scene renderers:
+`render` contains skin renderers for the shared stage:
 
-- `renderTitle`
-- `renderPhase`
-- `renderAnnouncement`
-- `renderSpeech`
-- `renderVote`
-- `renderResolution`
-- `renderEnd`
+- `renderBackground`
+- `renderPlayerCard`
+- `renderCenterStage`
+- `renderSubtitle`
+- `renderEffect`
 
 ### ThemeDirector
 
-The director chooses the renderer for a scene:
+The director coordinates the layers for every frame:
 
 ```ts
 renderThemeFrame(ctx, {
   theme,
   scene,
   items,
+  layout,
   timeMs,
   sceneTimeMs,
   progress,
 });
 ```
 
-The director also computes animation progress:
+The director computes animation progress and calls layers in order:
 
-- scene enter progress
-- scene local time
-- vote reveal progress
-- speaker spotlight progress
-- end reveal progress
+1. background
+2. player cards
+3. center stage
+4. subtitle
+5. effects
 
-This prevents individual renderers from re-implementing time math.
+This prevents themes from replacing the entire program structure with a one-off composition.
 
 ### CanvasRenderer
 
@@ -123,13 +241,14 @@ Shared low-level drawing helpers:
 - `drawTextBlock`
 - `drawPanel`
 - `drawGlowText`
-- `drawPlayerBadge`
-- `drawSeatGrid`
-- `drawVoteLine`
+- `drawPlayerCardShell`
+- `drawAvatar`
+- `drawStatusStamp`
+- `drawVoteResultTable`
 - `drawNoise`
 - `drawVignette`
 
-Theme renderers call these helpers, but decide layout and metaphor.
+Theme renderers call these helpers, but player positions and layer order come from the stage system.
 
 ## First Theme: Mansion Murder
 
@@ -138,7 +257,7 @@ Visual identity:
 - A rainy mansion / detective board atmosphere.
 - Deep black, ink gray, faded paper, blood red, cold blue highlights.
 - Player cards look like suspect files.
-- Voting is represented by evidence strings and stamped cards.
+- Voting is represented by a center evidence/result board, not lines.
 - Death is represented by a file blackout and red case mark.
 - Game end is a case-closed reveal.
 
@@ -148,7 +267,7 @@ Scene design:
 
 - Large title: game title or "Mansion Murder Werewolf".
 - Subtitle: game id or episode label.
-- Six suspect cards fan in.
+- Six suspect files appear in left/right stage positions.
 
 ### Night / Phase
 
@@ -158,19 +277,19 @@ Scene design:
 
 ### Speech
 
-- Current speaker appears as the active suspect file.
-- Other players are smaller files on the side.
-- Speech text appears as transcript paper.
+- Current speaker file glows in its fixed slot.
+- Other players remain visible in their fixed slots.
+- Speech text appears in the bottom subtitle bar.
 
 ### Vote
 
-- Player cards laid out as suspect files.
-- Vote lines appear as red evidence string.
-- Target card receives stacked vote markers.
+- Player cards remain in left/right positions.
+- Center stage shows the full vote table.
+- Result summary highlights top vote target or tie.
 
 ### Announcement / Death
 
-- Affected player file darkens.
+- Affected player file darkens in its fixed slot.
 - Red "DEAD" / out marker.
 - Announcement text appears as a case bulletin.
 
@@ -191,7 +310,7 @@ Visual identity:
 - Votes are exile trail marks.
 - Death/out state is a darkened camp marker.
 
-This theme should reuse the same renderer interfaces. If adding it requires rewriting playback data or hard-coding theme branches in `PlaybackStage`, the architecture failed.
+This theme should reuse the same player-stage interfaces. If adding it requires rewriting playback data, changing player layout contracts, or hard-coding theme branches in `PlaybackStage`, the architecture failed.
 
 ## Data Model
 
@@ -242,7 +361,8 @@ Core tests:
 
 - theme registry returns `mansion_murder`
 - unknown theme falls back to default
-- `renderThemeFrame` chooses the renderer matching scene kind
+- `renderThemeFrame` calls background, player cards, center stage, subtitle, and effects in order
+- 6-player stage layout returns left seats 1-3 and right seats 4-6
 
 Component tests:
 
@@ -254,6 +374,8 @@ Renderer tests:
 
 - smoke test render functions with a fake canvas context
 - verify each scene kind calls expected helper operations
+- verify speech renders subtitle text through subtitle layer
+- verify vote renders center result table instead of vote lines
 
 Manual verification:
 
@@ -266,11 +388,11 @@ Manual verification:
 
 ## Implementation Order
 
-1. Extract shared canvas drawing helpers from `playback-stage.tsx`.
-2. Add `ShowThemePack` types and registry.
-3. Move current plain renderer into a `basic` internal theme only if needed as a fallback.
-4. Implement `mansion_murder` theme.
-5. Wire `PlaybackStage` to render through theme registry.
+1. Add 6-player stage layout.
+2. Extract shared canvas drawing helpers from `playback-stage.tsx`.
+3. Add `ShowThemePack` types and registry around shared stage layers.
+4. Implement `mansion_murder` skin for player cards, center stage, subtitle, and effects.
+5. Wire `PlaybackStage` to render through player stage + theme skin.
 6. Add `showThemeId` fallback path without exposing UI.
 7. Run tests and manual preview verification.
 
@@ -278,6 +400,9 @@ Manual verification:
 
 - The preview no longer looks like a plain debug canvas.
 - The visible playback canvas has a clear mansion murder program identity.
-- Scene types have meaningfully different layouts.
+- All six players have persistent left/right cards.
+- Speech uses a bottom subtitle bar and highlighted speaker card.
+- Dead players remain visible and gray/stamped.
+- Vote scenes use a central vote result board, not connecting lines.
 - Recording still captures only canvas content.
 - The code has a theme boundary that can support `wilderness_survival` without rewriting `PlaybackStage`.
