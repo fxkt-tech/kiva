@@ -294,7 +294,7 @@ function drawVoteMoment(input: ThemeRenderInput): void {
 }
 
 function drawResolutionMoment(input: ThemeRenderInput): void {
-  if (input.scene.details.length > 0 && input.scene.title.includes("投票")) {
+  if (input.scene.details.length > 0 && input.scene.phase === "vote") {
     drawVoteResultTable(input.ctx, {
       title: input.scene.title,
       rows: input.scene.details,

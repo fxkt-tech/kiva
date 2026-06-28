@@ -72,6 +72,7 @@ export function compilePublicPlayback(
 
   return getActiveEvents(events)
     .filter((event) => event.visibility.kind === "public")
+    .filter((event) => event.type !== "vote_cast")
     .flatMap((event) => {
       const presented = formatEventForPublic(event, players);
       if (!presented) {

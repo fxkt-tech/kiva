@@ -135,7 +135,7 @@ describe("playback compiler", () => {
           },
         }),
       ], players).map((item) => item.durationMs),
-    ).toEqual([2200, 4200, 1200, 2400, 5000]);
+    ).toEqual([2200, 4200, 2400, 5000]);
   });
 
   it("allows playback rhythm overrides and estimates longer speech duration from text length", () => {
@@ -226,6 +226,72 @@ describe("playback compiler", () => {
     });
     expect(playback[0]?.players.find((player) => player.playerId === players[1].playerId))
       .toMatchObject({ status: "dead", highlighted: true });
+  });
+
+  it("suppresses individual public vote casts and plays the resolved vote as one result scene", () => {
+    const playback = compilePublicPlayback([
+      event(1, { kind: "public" }, {
+        type: "vote_cast",
+        phase: "vote",
+        actorPlayerId: players[0].playerId,
+        targetPlayerIds: [players[1].playerId],
+        payload: {
+          voterPlayerId: players[0].playerId,
+          targetPlayerId: players[1].playerId,
+          dayNumber: 1,
+          round: 1,
+          voteType: "exile",
+        },
+      }),
+      event(2, { kind: "public" }, {
+        type: "vote_cast",
+        phase: "vote",
+        actorPlayerId: players[1].playerId,
+        targetPlayerIds: [],
+        payload: {
+          voterPlayerId: players[1].playerId,
+          targetPlayerId: null,
+          dayNumber: 1,
+          round: 1,
+          voteType: "exile",
+        },
+      }),
+      event(3, { kind: "public" }, {
+        type: "exile_resolved",
+        phase: "vote",
+        targetPlayerIds: [players[1].playerId],
+        payload: {
+          exiledPlayerId: players[1].playerId,
+          tiedPlayerIds: [],
+          voteTable: [
+            {
+              voterPlayerId: players[0].playerId,
+              targetPlayerId: players[1].playerId,
+            },
+            {
+              voterPlayerId: players[1].playerId,
+              targetPlayerId: null,
+            },
+          ],
+          voteType: "exile",
+          dayNumber: 1,
+          round: 1,
+          revealedRoles: [],
+        },
+      }),
+    ], players);
+
+    expect(playback).toHaveLength(1);
+    expect(playback[0]).toMatchObject({
+      index: 3,
+      kind: "resolution",
+      title: "投票结算",
+      text: expect.stringContaining("出局"),
+      details: [
+        expect.stringContaining("->"),
+        expect.stringContaining("弃票"),
+      ],
+    });
   });
 
   it("resolves total duration and scene index from timeline milliseconds", () => {

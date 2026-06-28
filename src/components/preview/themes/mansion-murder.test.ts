@@ -57,6 +57,7 @@ describe("mansion murder theme", () => {
     mansionMurderTheme.render.renderCenterStage(
       input(ctx, scene({
         kind: "resolution",
+        phase: "vote",
         title: "投票结算",
         text: "2 号 林夏出局。",
         details: ["1 号 秦川 -> 2 号 林夏"],
@@ -64,6 +65,24 @@ describe("mansion murder theme", () => {
     );
 
     expect(textCalls(ctx)).toContain("投票结算");
+    expect(textCalls(ctx)).toContain("1 号 秦川 -> 2 号 林夏");
+    expect(textCalls(ctx)).toContain("本轮结果");
+  });
+
+  it("renders pk vote resolutions with visible vote rows", () => {
+    const ctx = fakeContext();
+
+    mansionMurderTheme.render.renderCenterStage(
+      input(ctx, scene({
+        kind: "resolution",
+        phase: "vote",
+        title: "PK 结算",
+        text: "无人出局，进入下一轮。",
+        details: ["1 号 秦川 -> 2 号 林夏"],
+      })),
+    );
+
+    expect(textCalls(ctx)).toContain("PK 结算");
     expect(textCalls(ctx)).toContain("1 号 秦川 -> 2 号 林夏");
     expect(textCalls(ctx)).toContain("本轮结果");
   });

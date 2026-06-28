@@ -172,7 +172,7 @@ describe("full game event model", () => {
     });
   });
 
-  it("keeps draft confirmation and public playback compatible with new events", () => {
+  it("keeps draft confirmation compatible while public playback suppresses single vote casts", () => {
     const draft = createDraftEvent({
       id: "draft_1" as DraftId,
       gameId,
@@ -203,15 +203,6 @@ describe("full game event model", () => {
       type: "vote_cast",
       payload: { targetPlayerId: null, voteType: "pk" },
     });
-    expect(compilePublicPlayback([event], game.players)).toMatchObject([
-      {
-        index: 1,
-        phase: "vote",
-        kind: "vote",
-        title: "PK 投票",
-        text: expect.stringContaining("弃票"),
-        durationMs: 1200,
-      },
-    ]);
+    expect(compilePublicPlayback([event], game.players)).toEqual([]);
   });
 });
