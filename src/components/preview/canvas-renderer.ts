@@ -12,6 +12,12 @@ export type Point = {
   readonly y: number;
 };
 
+export type Circle = {
+  readonly x: number;
+  readonly y: number;
+  readonly radius: number;
+};
+
 export function clearCanvas(
   ctx: CanvasRenderingContext2D,
   color: string,
@@ -73,6 +79,52 @@ export function drawPanel(
   }
 }
 
+export function drawAvatar(
+  ctx: CanvasRenderingContext2D,
+  name: string,
+  circle: Circle,
+  options: {
+    readonly fill: string;
+    readonly stroke: string;
+    readonly text: string;
+  },
+): void {
+  const initial = Array.from(name)[0] ?? "";
+  ctx.fillStyle = options.fill;
+  ctx.strokeStyle = options.stroke;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = options.text;
+  ctx.font = "700 28px sans-serif";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(initial, circle.x - 12, circle.y + 10);
+}
+
+export function drawStatusStamp(
+  ctx: CanvasRenderingContext2D,
+  label: string,
+  rect: Rect,
+  options: {
+    readonly fill: string;
+    readonly stroke: string;
+    readonly text: string;
+  },
+): void {
+  drawPanel(ctx, rect, {
+    fill: options.fill,
+    stroke: options.stroke,
+    lineWidth: 2,
+  });
+  ctx.fillStyle = options.text;
+  ctx.font = "800 18px sans-serif";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(label, rect.x + 22, rect.y + 29);
+}
+
 export function drawGlowText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -91,6 +143,40 @@ export function drawGlowText(
   ctx.shadowBlur = 18;
   drawTextBlock(ctx, text, x, y, options);
   ctx.restore();
+}
+
+export function drawSubtitleBar(
+  ctx: CanvasRenderingContext2D,
+  options: {
+    readonly speaker: string;
+    readonly text: string;
+    readonly rect: Rect;
+    readonly colors: {
+      readonly fill: string;
+      readonly stroke: string;
+      readonly speaker: string;
+      readonly text: string;
+    };
+  },
+): void {
+  drawPanel(ctx, options.rect, {
+    fill: options.colors.fill,
+    stroke: options.colors.stroke,
+    lineWidth: 2,
+  });
+  ctx.fillStyle = options.colors.speaker;
+  ctx.font = "800 28px sans-serif";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(options.speaker, options.rect.x + 36, options.rect.y + 56);
+
+  ctx.fillStyle = options.colors.text;
+  ctx.font = "700 34px sans-serif";
+  drawTextBlock(ctx, options.text, options.rect.x + 36, options.rect.y + 110, {
+    color: options.colors.text,
+    font: "700 34px sans-serif",
+    maxWidth: options.rect.width - 72,
+    lineHeight: 42,
+  });
 }
 
 export function drawPlayerFile(
@@ -120,6 +206,51 @@ export function drawPlayerFile(
   ctx.fillStyle =
     player.status === "dead" ? options.statusDead : options.statusAlive;
   ctx.fillText(player.status, rect.x + rect.width - 90, rect.y + 46);
+}
+
+export function drawVoteResultTable(
+  ctx: CanvasRenderingContext2D,
+  options: {
+    readonly title: string;
+    readonly rows: readonly string[];
+    readonly result: readonly string[];
+    readonly rect: Rect;
+    readonly colors: {
+      readonly fill: string;
+      readonly stroke: string;
+      readonly title: string;
+      readonly text: string;
+      readonly accent: string;
+    };
+  },
+): void {
+  drawPanel(ctx, options.rect, {
+    fill: options.colors.fill,
+    stroke: options.colors.stroke,
+    lineWidth: 2,
+  });
+
+  const x = options.rect.x + 32;
+  ctx.fillStyle = options.colors.title;
+  ctx.font = "800 34px sans-serif";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(options.title, x, options.rect.y + 54);
+
+  ctx.fillStyle = options.colors.text;
+  ctx.font = "600 24px sans-serif";
+  options.rows.forEach((row, index) => {
+    ctx.fillText(row, x, options.rect.y + 112 + index * 38);
+  });
+
+  ctx.fillStyle = options.colors.accent;
+  ctx.font = "800 26px sans-serif";
+  ctx.fillText("本轮结果", x, options.rect.y + 242);
+
+  ctx.fillStyle = options.colors.text;
+  ctx.font = "700 24px sans-serif";
+  options.result.forEach((row, index) => {
+    ctx.fillText(row, x, options.rect.y + 288 + index * 36);
+  });
 }
 
 export function drawVoteLine(

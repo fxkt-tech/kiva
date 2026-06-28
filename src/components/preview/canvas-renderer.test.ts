@@ -2,9 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 import type { PlaybackScenePlayer } from "@/core/playback";
 import {
   clearCanvas,
+  drawAvatar,
   drawPanel,
   drawPlayerFile,
+  drawStatusStamp,
+  drawSubtitleBar,
   drawTextBlock,
+  drawVoteResultTable,
   drawVoteLine,
 } from "./canvas-renderer";
 
@@ -76,6 +80,72 @@ describe("canvas renderer helpers", () => {
     expect(ctx.lineTo).toHaveBeenCalledWith(80, 90);
     expect(ctx.stroke).toHaveBeenCalled();
   });
+
+  it("draws avatar placeholders with initials", () => {
+    const ctx = fakeContext();
+
+    drawAvatar(ctx, "周知", { x: 40, y: 50, radius: 28 }, {
+      fill: "#111",
+      stroke: "#222",
+      text: "#fff",
+    });
+
+    expect(ctx.arc).toHaveBeenCalledWith(40, 50, 28, 0, Math.PI * 2);
+    expect(ctx.fillText).toHaveBeenCalledWith("周", 28, 60);
+  });
+
+  it("draws status stamps", () => {
+    const ctx = fakeContext();
+
+    drawStatusStamp(ctx, "DEAD", { x: 80, y: 90, width: 120, height: 44 }, {
+      fill: "#300",
+      stroke: "#900",
+      text: "#fee",
+    });
+
+    expect(ctx.fillText).toHaveBeenCalledWith("DEAD", 102, 119);
+  });
+
+  it("draws vote result tables", () => {
+    const ctx = fakeContext();
+
+    drawVoteResultTable(ctx, {
+      title: "放逐投票",
+      rows: ["1号 秦川 -> 3号 周知", "2号 林夏 -> 弃票"],
+      result: ["3号 周知 1票", "弃票 1票"],
+      rect: { x: 100, y: 120, width: 620, height: 360 },
+      colors: {
+        fill: "#111",
+        stroke: "#222",
+        title: "#fff",
+        text: "#ddd",
+        accent: "#f00",
+      },
+    });
+
+    expect(ctx.fillText).toHaveBeenCalledWith("放逐投票", 132, 174);
+    expect(ctx.fillText).toHaveBeenCalledWith("1号 秦川 -> 3号 周知", 132, 232);
+    expect(ctx.fillText).toHaveBeenCalledWith("本轮结果", 132, 362);
+  });
+
+  it("draws subtitle bars", () => {
+    const ctx = fakeContext();
+
+    drawSubtitleBar(ctx, {
+      speaker: "1号 秦川",
+      text: "我先发言。",
+      rect: { x: 120, y: 860, width: 1680, height: 150 },
+      colors: {
+        fill: "#111",
+        stroke: "#222",
+        speaker: "#0ff",
+        text: "#fff",
+      },
+    });
+
+    expect(ctx.fillText).toHaveBeenCalledWith("1号 秦川", 156, 916);
+    expect(ctx.fillText).toHaveBeenCalledWith("我先发言。", 156, 970);
+  });
 });
 
 function player(overrides: Partial<PlaybackScenePlayer>): PlaybackScenePlayer {
@@ -103,6 +173,7 @@ function fakeContext({
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
+    fill: vi.fn(),
     stroke: vi.fn(),
     arc: vi.fn(),
     save: vi.fn(),
