@@ -6,6 +6,11 @@ import {
   playbackTotalDurationMs,
   type PlaybackItem,
 } from "@/core/playback";
+import {
+  DEFAULT_SHOW_THEME_ID,
+  getShowTheme,
+  renderThemeFrame,
+} from "./show-theme";
 
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
@@ -274,241 +279,22 @@ function drawPlaybackFrame(
   }
 
   const scene = items[playbackIndexAtMs(items, timeMs)];
-  drawBackground(context);
 
   if (!scene) {
-    drawText(context, "No playable scenes", 120, 520, {
-      color: "#d4d4d8",
-      font: "600 64px sans-serif",
-      maxWidth: 1680,
-      lineHeight: 78,
-    });
+    context.fillStyle = "#050506";
+    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+    context.fillStyle = "#d4d4d8";
+    context.font = "600 64px sans-serif";
+    context.fillText("No playable scenes", 120, 520);
     return;
   }
 
-  drawSceneMeta(context, scene);
-  drawPlayers(context, scene);
-  drawSceneContent(context, scene);
-  drawSceneDetails(context, scene);
-}
-
-function drawBackground(context: CanvasRenderingContext2D): void {
-  context.fillStyle = "#050506";
-  context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  context.fillStyle = "#0b0f12";
-  context.fillRect(0, 0, CANVAS_WIDTH, 108);
-  context.strokeStyle = "#18181b";
-  context.lineWidth = 2;
-  context.beginPath();
-  context.moveTo(0, 108);
-  context.lineTo(CANVAS_WIDTH, 108);
-  context.stroke();
-}
-
-function drawSceneMeta(
-  context: CanvasRenderingContext2D,
-  scene: PlaybackItem,
-): void {
-  drawText(context, `#${scene.index}   ${scene.phase}   ${scene.kind}`, 96, 66, {
-    color: "#71717a",
-    font: "600 24px sans-serif",
-    maxWidth: 1100,
-    lineHeight: 32,
+  renderThemeFrame(context, {
+    theme: getShowTheme(DEFAULT_SHOW_THEME_ID),
+    scene,
+    items,
+    timeMs,
   });
-}
-
-function drawSceneContent(
-  context: CanvasRenderingContext2D,
-  scene: PlaybackItem,
-): void {
-  const label = scene.kind === "speech"
-    ? "Speaker"
-    : scene.kind === "vote"
-      ? "Vote card"
-      : scene.kind === "resolution"
-        ? "Resolution"
-        : scene.kind === "phase"
-          ? "Phase"
-          : "Announcement";
-  const labelColor = scene.kind === "vote"
-    ? "#fbbf24"
-    : scene.kind === "resolution"
-      ? "#fca5a5"
-      : scene.kind === "speech"
-        ? "#67e8f9"
-        : "#71717a";
-
-  drawText(context, label, 104, 232, {
-    color: labelColor,
-    font: "700 28px sans-serif",
-    maxWidth: 1000,
-    lineHeight: 36,
-  });
-
-  if (scene.kind === "speech") {
-    const speaker = scene.players.find((player) => player.highlighted);
-    if (speaker) {
-      drawText(context, `Seat ${speaker.seatNo}  ${speaker.name}`, 104, 315, {
-        color: "#f4f4f5",
-        font: "700 68px sans-serif",
-        maxWidth: 1180,
-        lineHeight: 78,
-      });
-    }
-    drawText(context, scene.text, 128, 450, {
-      color: "#e4e4e7",
-      font: "400 46px sans-serif",
-      maxWidth: 1160,
-      lineHeight: 68,
-    });
-    context.strokeStyle = "#22d3ee";
-    context.lineWidth = 5;
-    context.beginPath();
-    context.moveTo(104, 448);
-    context.lineTo(104, 850);
-    context.stroke();
-    return;
-  }
-
-  const titleFont = scene.kind === "phase"
-    ? "800 92px sans-serif"
-    : "800 72px sans-serif";
-  drawText(context, scene.title, 104, scene.kind === "phase" ? 420 : 330, {
-    color: "#fafafa",
-    font: titleFont,
-    maxWidth: 1220,
-    lineHeight: scene.kind === "phase" ? 106 : 86,
-  });
-
-  if (scene.text) {
-    if (scene.kind === "vote") {
-      context.fillStyle = "rgba(251, 191, 36, 0.10)";
-      context.strokeStyle = "rgba(251, 191, 36, 0.35)";
-      context.lineWidth = 2;
-      context.fillRect(104, 500, 1040, 150);
-      context.strokeRect(104, 500, 1040, 150);
-      drawText(context, scene.text, 138, 585, {
-        color: "#fef3c7",
-        font: "500 46px sans-serif",
-        maxWidth: 970,
-        lineHeight: 60,
-      });
-      return;
-    }
-
-    drawText(context, scene.text, 104, scene.kind === "phase" ? 575 : 490, {
-      color: "#d4d4d8",
-      font: "400 46px sans-serif",
-      maxWidth: 1220,
-      lineHeight: 66,
-    });
-  }
-}
-
-function drawPlayers(
-  context: CanvasRenderingContext2D,
-  scene: PlaybackItem,
-): void {
-  const x = 1400;
-  drawText(context, "Players", x, 170, {
-    color: "#71717a",
-    font: "700 24px sans-serif",
-    maxWidth: 360,
-    lineHeight: 32,
-  });
-
-  scene.players.forEach((player, index) => {
-    const y = 210 + index * 92;
-    context.fillStyle = player.highlighted
-      ? "rgba(34, 211, 238, 0.12)"
-      : "rgba(24, 24, 27, 0.72)";
-    context.strokeStyle = player.highlighted
-      ? "rgba(34, 211, 238, 0.55)"
-      : "#27272a";
-    context.lineWidth = 2;
-    context.fillRect(x, y, 400, 68);
-    context.strokeRect(x, y, 400, 68);
-    drawText(context, `Seat ${player.seatNo}`, x + 20, y + 42, {
-      color: "#71717a",
-      font: "500 20px sans-serif",
-      maxWidth: 92,
-      lineHeight: 24,
-    });
-    drawText(context, player.name, x + 122, y + 43, {
-      color: player.status === "dead" ? "#a1a1aa" : "#f4f4f5",
-      font: "700 28px sans-serif",
-      maxWidth: 150,
-      lineHeight: 32,
-    });
-    drawText(context, player.status, x + 310, y + 42, {
-      color: player.status === "dead" ? "#fca5a5" : "#6ee7b7",
-      font: "600 20px sans-serif",
-      maxWidth: 74,
-      lineHeight: 24,
-    });
-  });
-}
-
-function drawSceneDetails(
-  context: CanvasRenderingContext2D,
-  scene: PlaybackItem,
-): void {
-  context.strokeStyle = "#18181b";
-  context.lineWidth = 2;
-  context.beginPath();
-  context.moveTo(0, 932);
-  context.lineTo(CANVAS_WIDTH, 932);
-  context.stroke();
-  drawText(context, "Details", 96, 984, {
-    color: "#52525b",
-    font: "700 22px sans-serif",
-    maxWidth: 160,
-    lineHeight: 28,
-  });
-  const detailText = scene.details.length > 0 ? scene.details.join("    ") : "";
-  if (detailText) {
-    drawText(context, detailText, 230, 984, {
-      color: "#a1a1aa",
-      font: "400 24px sans-serif",
-      maxWidth: 1500,
-      lineHeight: 34,
-    });
-  }
-}
-
-function drawText(
-  context: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  options: {
-    readonly color: string;
-    readonly font: string;
-    readonly maxWidth: number;
-    readonly lineHeight: number;
-  },
-): void {
-  context.fillStyle = options.color;
-  context.font = options.font;
-  context.textBaseline = "alphabetic";
-
-  const words = Array.from(text);
-  let line = "";
-  let currentY = y;
-  for (const word of words) {
-    const nextLine = `${line}${word}`;
-    if (line && context.measureText(nextLine).width > options.maxWidth) {
-      context.fillText(line, x, currentY);
-      line = word;
-      currentY += options.lineHeight;
-    } else {
-      line = nextLine;
-    }
-  }
-
-  if (line) {
-    context.fillText(line, x, currentY);
-  }
 }
 
 function preferredMimeType(): string | undefined {
