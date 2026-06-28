@@ -18,6 +18,11 @@ export async function createGameAction() {
   redirect("/library?tab=presets");
 }
 
+export async function deleteGameAction(gameId: GameId) {
+  await gameActions.deleteGame(gameId);
+  revalidatePath("/");
+}
+
 export async function confirmDraftAction(gameId: GameId) {
   await gameActions.confirmDraft(gameId);
   await gameActions.continueGame(gameId);

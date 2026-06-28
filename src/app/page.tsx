@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createGameAction } from "@/app/actions";
+import { createGameAction, deleteGameAction } from "@/app/actions";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
 
@@ -46,7 +46,7 @@ export default async function HomePage() {
             <span>Game</span>
             <span className="hidden sm:block">Events</span>
             <span className="hidden sm:block">Updated</span>
-            <span>Open</span>
+            <span>Operate</span>
           </div>
           {records.length === 0 ? (
             <div className="px-4 py-10 text-sm text-zinc-400">
@@ -78,12 +78,29 @@ export default async function HomePage() {
                   >
                     {formatDate(record.game.updatedAt)}
                   </time>
-                  <Link
-                    href={`/games/${record.game.id}/editor`}
-                    className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
-                  >
-                    Editor
-                  </Link>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Link
+                      href={`/games/${record.game.id}/preview`}
+                      className="rounded-md border border-sky-900/80 px-3 py-2 text-xs font-medium text-sky-300 transition hover:border-sky-600 hover:text-sky-200"
+                      target="_blank"
+                    >
+                      Preview
+                    </Link>
+                    <Link
+                      href={`/games/${record.game.id}/editor`}
+                      className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+                    >
+                      Editor
+                    </Link>
+                    <form action={deleteGameAction.bind(null, record.game.id)}>
+                      <button
+                        type="submit"
+                        className="rounded-md border border-red-900/80 px-3 py-2 text-xs font-medium text-red-300 transition hover:border-red-600 hover:text-red-200"
+                      >
+                        Delete
+                      </button>
+                    </form>
+                  </div>
                 </div>
               ))}
             </div>

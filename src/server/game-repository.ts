@@ -4,6 +4,7 @@ import {
   readFile,
   rename,
   rmdir,
+  unlink,
   writeFile,
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
@@ -27,6 +28,7 @@ export type GameRepository = {
   readonly get: (gameId: GameId) => Promise<GameRecord | null>;
   readonly list: () => Promise<readonly GameRecord[]>;
   readonly save: (record: GameRecord) => Promise<void>;
+  readonly delete: (gameId: GameId) => Promise<void>;
   readonly withGameLock: <T>(
     gameId: GameId,
     operation: () => Promise<T>,
@@ -89,6 +91,18 @@ export function createGameRepository(rootDir = "kivdb"): GameRepository {
       const tempPath = `${targetPath}.${randomUUID()}.tmp`;
       await writeFile(tempPath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
       await rename(tempPath, targetPath);
+    },
+
+    async delete(gameId) {
+      try {
+        await unlink(recordPath(gameId));
+      } catch (error) {
+        if (isNodeError(error) && error.code === "ENOENT") {
+          return;
+        }
+
+        throw error;
+      }
     },
 
     async withGameLock(gameId, operation) {

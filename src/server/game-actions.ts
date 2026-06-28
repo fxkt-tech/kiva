@@ -209,6 +209,12 @@ export function createGameActions(
       });
     },
 
+    async deleteGame(gameId: GameId): Promise<void> {
+      return repository.withGameLock(gameId, async () => {
+        await repository.delete(gameId);
+      });
+    },
+
     async rollbackAfter(gameId: GameId, index: number): Promise<GameRecord> {
       validateRollbackIndex(index);
 

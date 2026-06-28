@@ -121,6 +121,32 @@ describe("game repository", () => {
     await expect(repository.get(gameId)).resolves.toEqual(record);
   });
 
+  it("deletes a saved game record", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const gameId = "game-delete" as GameId;
+
+    await repository.save({
+      game: game(gameId, "2026-06-26T00:03:00.000Z"),
+      events: [],
+      draft: null,
+      generations: [],
+    });
+
+    await repository.delete(gameId);
+
+    await expect(repository.get(gameId)).resolves.toBeNull();
+    await expect(
+      stat(join(rootDir, "games", `${encodeURIComponent(gameId)}.json`)),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("treats deleting a missing game as a no-op", async () => {
+    const repository = createGameRepository(await createTempDir());
+
+    await expect(repository.delete("missing-game" as GameId)).resolves.toBeUndefined();
+  });
+
   it("lists saved records newest first by game updated time", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);

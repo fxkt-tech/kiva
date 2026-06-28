@@ -56,6 +56,17 @@ describe("game actions", () => {
     await expect(actions.getGame(created.game.id)).resolves.toEqual(created);
   });
 
+  it("deletes a game record", async () => {
+    const { actions, repository } = await createActions();
+    const created = await actions.createGame();
+
+    await actions.deleteGame(created.game.id);
+
+    await expect(repository.get(created.game.id)).resolves.toBeNull();
+    await expect(actions.getGame(created.game.id)).resolves.toBeNull();
+    await expect(actions.listGames()).resolves.toEqual([]);
+  });
+
   it("creates a game from an injected role library repository", async () => {
     const repository = createGameRepository(await createTempDir());
     let loadAllCalls = 0;
@@ -608,6 +619,12 @@ function createDeferredSaveRepository(): GameRepository & {
       }
 
       record = structuredClone(nextRecord);
+    },
+
+    async delete(gameId) {
+      if (record?.game.id === gameId) {
+        record = null;
+      }
     },
 
     async withGameLock(_gameId, operation) {
