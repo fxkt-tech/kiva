@@ -94,6 +94,30 @@ describe("canvas renderer helpers", () => {
     expect(ctx.fillText).toHaveBeenCalledWith("周", 28, 60);
   });
 
+  it("draws avatar images clipped to the avatar circle", () => {
+    const ctx = fakeContext();
+
+    drawAvatar(ctx, "秦川", { x: 40, y: 50, radius: 28 }, {
+      fill: "#111",
+      stroke: "#222",
+      text: "#fff",
+      image: { width: 1200, height: 800 } as HTMLImageElement,
+    });
+
+    expect(ctx.clip).toHaveBeenCalled();
+    expect(ctx.drawImage).toHaveBeenCalledWith(
+      expect.objectContaining({ width: 1200 }),
+      200,
+      0,
+      800,
+      800,
+      12,
+      22,
+      56,
+      56,
+    );
+  });
+
   it("draws status stamps", () => {
     const ctx = fakeContext();
 
@@ -153,6 +177,7 @@ function player(overrides: Partial<PlaybackScenePlayer>): PlaybackScenePlayer {
     playerId: "player_1" as PlaybackScenePlayer["playerId"],
     seatNo: 1,
     name: "秦川",
+    avatar: null,
     roleName: "狼人",
     status: "alive",
     highlighted: false,
@@ -177,6 +202,8 @@ function fakeContext({
     fill: vi.fn(),
     stroke: vi.fn(),
     arc: vi.fn(),
+    clip: vi.fn(),
+    drawImage: vi.fn(),
     save: vi.fn(),
     restore: vi.fn(),
     createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),

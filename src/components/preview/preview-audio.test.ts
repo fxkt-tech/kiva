@@ -67,6 +67,7 @@ function player(
   return {
     playerId: `player_${overrides.seatNo}` as PlaybackItem["players"][number]["playerId"],
     name: "玩家",
+    avatar: null,
     roleName: "平民",
     status: "alive",
     highlighted: false,

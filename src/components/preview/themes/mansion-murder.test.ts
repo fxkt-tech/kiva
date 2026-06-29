@@ -69,6 +69,33 @@ describe("mansion murder theme", () => {
     expect(textCalls(ctx)).toContain("身份：狼人");
   });
 
+  it("renders player avatar images when they are loaded", () => {
+    const ctx = fakeContext();
+    const avatar = "/kivdb-assets/characters/avatar_qinchuan.png";
+
+    mansionMurderTheme.render.renderPlayerCard(
+      input(ctx, scene({
+        players: [player({ avatar })],
+      }), {
+        avatarImages: {
+          [avatar]: image({ width: 1200, height: 1200 }),
+        },
+      }),
+    );
+
+    expect(ctx.drawImage).toHaveBeenCalledWith(
+      expect.objectContaining({ width: 1200 }),
+      0,
+      0,
+      1200,
+      1200,
+      120,
+      182,
+      84,
+      84,
+    );
+  });
+
   it("renders speech scenes with speaker focus and subtitles", () => {
     const ctx = fakeContext();
     const speechScene = scene({ kind: "speech", players: [player({ highlighted: true })] });
@@ -162,6 +189,7 @@ function input(
     sceneTimeMs: 0,
     enterProgress: 1,
     backgroundImages: { day: null, night: null },
+    avatarImages: {},
     ...overrides,
   };
 }
@@ -193,6 +221,7 @@ function player(overrides: Partial<PlaybackScenePlayer> = {}): PlaybackScenePlay
     playerId: `player_${overrides.seatNo ?? 1}` as PlaybackScenePlayer["playerId"],
     seatNo: 1,
     name: "秦川",
+    avatar: null,
     roleName: "狼人",
     status: "alive",
     highlighted: false,
@@ -217,6 +246,7 @@ function fakeContext(): CanvasRenderingContext2D {
     fill: vi.fn(),
     stroke: vi.fn(),
     arc: vi.fn(),
+    clip: vi.fn(),
     drawImage: vi.fn(),
     save: vi.fn(),
     restore: vi.fn(),

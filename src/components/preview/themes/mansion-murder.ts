@@ -58,7 +58,7 @@ function renderBackground(input: ThemeRenderInput): void {
 
 function renderPlayerCard(input: ThemeRenderInput): void {
   input.layout.playerSlots.forEach((slot) => {
-    drawSuspectCard(input.ctx, slot);
+    drawSuspectCard(input.ctx, slot, input);
   });
 }
 
@@ -191,9 +191,14 @@ function drawCoverImage(
   );
 }
 
-function drawSuspectCard(ctx: CanvasRenderingContext2D, slot: PlayerSlot): void {
+function drawSuspectCard(
+  ctx: CanvasRenderingContext2D,
+  slot: PlayerSlot,
+  input: ThemeRenderInput,
+): void {
   const player = slot.player;
   const dead = player.status === "dead";
+  const avatarImage = player.avatar ? input.avatarImages[player.avatar] : null;
   drawPanel(ctx, slot.rect, {
     fill: dead ? "rgba(24, 18, 18, 0.68)" : "rgba(23, 18, 15, 0.92)",
     stroke: player.highlighted
@@ -210,6 +215,7 @@ function drawSuspectCard(ctx: CanvasRenderingContext2D, slot: PlayerSlot): void 
     fill: dead ? "rgba(41, 37, 36, 0.96)" : "rgba(143, 211, 255, 0.16)",
     stroke: dead ? "rgba(120, 113, 108, 0.38)" : "rgba(143, 211, 255, 0.62)",
     text: dead ? mansionMurderTheme.tokens.muted : mansionMurderTheme.tokens.text,
+    image: avatarImage,
   });
 
   ctx.fillStyle = mansionMurderTheme.tokens.muted;

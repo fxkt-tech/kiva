@@ -46,6 +46,7 @@ describe("show theme registry", () => {
         subtitle: { x: 0, y: 100, width: 100, height: 20 },
       },
       timeMs: 1200,
+      avatarImages: {},
     });
 
     expect(calls).toEqual(["background", "players", "center", "subtitle", "effect"]);

@@ -15,6 +15,7 @@ export type PlaybackScenePlayer = {
   readonly playerId: PlayerId;
   readonly seatNo: number;
   readonly name: string;
+  readonly avatar: string | null;
   readonly roleName: string;
   readonly status: "alive" | "dead";
   readonly highlighted: boolean;
@@ -195,6 +196,7 @@ function playersForScene(
     playerId: player.playerId,
     seatNo: player.seatNo,
     name: player.name,
+    avatar: player.avatar,
     roleName: player.roleName,
     status: deadPlayerIds.has(player.playerId) ? "dead" : "alive",
     highlighted: highlightedPlayerIds.has(player.playerId),

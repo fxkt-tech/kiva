@@ -2,7 +2,7 @@
   {
     "id": "qin_chuan",
     "name": "秦川",
-    "avatar": null,
+    "avatar": "/kivdb-assets/characters/avatar_qinchuan.png",
     "tags": [
       "强势推进",
       "票型压迫",
@@ -15,7 +15,7 @@
     "defaultModelBinding": null,
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
-    "updatedAt": "2026-06-28T00:00:00.000Z"
+    "updatedAt": "2026-06-29T00:00:00.000Z"
   },
   {
     "id": "lin_xia",

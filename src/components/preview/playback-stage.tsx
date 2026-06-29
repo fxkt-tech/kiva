@@ -9,6 +9,7 @@ import {
 import {
   DEFAULT_SHOW_THEME_ID,
   getShowTheme,
+  type PreviewAvatarImages,
   type PreviewBackgroundImages,
   renderThemeFrame,
 } from "./show-theme";
@@ -53,6 +54,7 @@ export function PlaybackStage({
   const [error, setError] = useState<string | null>(null);
   const [backgroundImages, setBackgroundImages] =
     useState<PreviewBackgroundImages>({ day: null, night: null });
+  const [avatarImages, setAvatarImages] = useState<PreviewAvatarImages>({});
   const hasItems = items.length > 0;
   const totalDurationMs = playbackTotalDurationMs(items);
   const safeTimeMs = clamp(currentTimeMs, 0, Math.max(0, totalDurationMs));
@@ -66,8 +68,14 @@ export function PlaybackStage({
   }, [initialPosition, items]);
 
   useEffect(() => {
-    drawPlaybackFrame(canvasRef.current, items, safeTimeMs, backgroundImages);
-  }, [backgroundImages, items, safeTimeMs]);
+    drawPlaybackFrame(
+      canvasRef.current,
+      items,
+      safeTimeMs,
+      backgroundImages,
+      avatarImages,
+    );
+  }, [avatarImages, backgroundImages, items, safeTimeMs]);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,6 +90,20 @@ export function PlaybackStage({
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadAvatarImages(items).then((images) => {
+      if (!cancelled) {
+        setAvatarImages(images);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
 
   useEffect(() => {
     if (!playing || !hasItems) {
@@ -198,7 +220,7 @@ export function PlaybackStage({
         setRecordingStatus("ready");
       };
 
-      drawPlaybackFrame(canvas, items, 0, backgroundImages);
+      drawPlaybackFrame(canvas, items, 0, backgroundImages, avatarImages);
       setCurrentTimeMs(0);
       recorder.start();
       setRecordingStatus("recording");
@@ -360,6 +382,7 @@ function drawPlaybackFrame(
   items: readonly PlaybackItem[],
   timeMs: number,
   backgroundImages: PreviewBackgroundImages = { day: null, night: null },
+  avatarImages: PreviewAvatarImages = {},
 ): void {
   if (!canvas) {
     return;
@@ -388,6 +411,7 @@ function drawPlaybackFrame(
     layout: createSixPlayerStageLayout(scene.players),
     timeMs,
     backgroundImages,
+    avatarImages,
   });
 }
 
@@ -403,10 +427,28 @@ async function loadBackgroundImages(): Promise<PreviewBackgroundImages> {
 function loadImage(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const image = new Image();
+    image.crossOrigin = "anonymous";
     image.onload = () => resolve(image);
     image.onerror = () => resolve(null);
     image.src = src;
   });
+}
+
+async function loadAvatarImages(
+  items: readonly PlaybackItem[],
+): Promise<PreviewAvatarImages> {
+  const sources = [
+    ...new Set(
+      items.flatMap((item) =>
+        item.players.flatMap((player) => (player.avatar ? [player.avatar] : [])),
+      ),
+    ),
+  ];
+  const entries = await Promise.all(
+    sources.map(async (source) => [source, await loadImage(source)] as const),
+  );
+
+  return Object.fromEntries(entries);
 }
 
 function preferredMimeType(): string | undefined {

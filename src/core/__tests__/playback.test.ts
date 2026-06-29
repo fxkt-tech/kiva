@@ -57,6 +57,7 @@ describe("playback compiler", () => {
         players: expect.arrayContaining([
           expect.objectContaining({
             playerId: players[0].playerId,
+            avatar: players[0].avatar,
             roleName: players[0].roleName,
             status: "alive",
           }),
@@ -80,6 +81,18 @@ describe("playback compiler", () => {
         ]),
       },
     ]);
+  });
+
+  it("carries player avatar paths into playback scenes", () => {
+    const avatar = "/kivdb-assets/characters/avatar_qinchuan.png";
+    const playback = compilePublicPlayback(
+      [event(1, { kind: "public" })],
+      players.map((player, index) =>
+        index === 0 ? { ...player, avatar } : player,
+      ),
+    );
+
+    expect(playback[0]?.players[0]).toMatchObject({ avatar });
   });
 
   it("assigns stable durations by public event type", () => {

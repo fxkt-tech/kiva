@@ -87,8 +87,25 @@ export function drawAvatar(
     readonly fill: string;
     readonly stroke: string;
     readonly text: string;
+    readonly image?: HTMLImageElement | null;
   },
 ): void {
+  if (options.image) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+    ctx.clip();
+    drawCoverImageInCircle(ctx, options.image, circle);
+    ctx.restore();
+
+    ctx.strokeStyle = options.stroke;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+    ctx.stroke();
+    return;
+  }
+
   const initial = Array.from(name)[0] ?? "";
   ctx.fillStyle = options.fill;
   ctx.strokeStyle = options.stroke;
@@ -102,6 +119,31 @@ export function drawAvatar(
   ctx.font = "700 28px sans-serif";
   ctx.textBaseline = "alphabetic";
   ctx.fillText(initial, circle.x - 12, circle.y + 10);
+}
+
+function drawCoverImageInCircle(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  circle: Circle,
+): void {
+  const size = circle.radius * 2;
+  const imageRatio = image.width / image.height;
+  const sourceWidth = imageRatio > 1 ? image.height : image.width;
+  const sourceHeight = imageRatio > 1 ? image.height : image.width;
+  const sourceX = (image.width - sourceWidth) / 2;
+  const sourceY = (image.height - sourceHeight) / 2;
+
+  ctx.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    circle.x - circle.radius,
+    circle.y - circle.radius,
+    size,
+    size,
+  );
 }
 
 export function drawStatusStamp(

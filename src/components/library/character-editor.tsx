@@ -19,14 +19,23 @@ export function CharacterEditor({
       />
 
       <div className="flex items-start justify-between gap-3 border-b border-zinc-800 pb-3">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
-            Character editor
-          </p>
-          <h2 className="mt-1 truncate text-xl font-semibold text-zinc-50">
-            {character.name}
-          </h2>
-          <p className="mt-1 truncate text-xs text-zinc-500">{character.id}</p>
+        <div className="flex min-w-0 items-center gap-3">
+          {character.avatar ? (
+            <img
+              alt=""
+              className="h-16 w-16 shrink-0 rounded-full border border-cyan-300/35 object-cover"
+              src={character.avatar}
+            />
+          ) : null}
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
+              Character editor
+            </p>
+            <h2 className="mt-1 truncate text-xl font-semibold text-zinc-50">
+              {character.name}
+            </h2>
+            <p className="mt-1 truncate text-xs text-zinc-500">{character.id}</p>
+          </div>
         </div>
         <span
           className={[

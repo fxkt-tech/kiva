@@ -178,7 +178,7 @@
         "characterSourceId": "qin_chuan",
         "name": "秦川",
         "roleSourceId": "werewolf",
-        "avatar": null,
+        "avatar": "/kivdb-assets/characters/avatar_qinchuan.png",
         "persona": "强势、警觉、喜欢主动定义局势；不怕站边，也愿意为判断承担压力。",
         "speakingStyle": "语气短促有压迫感，常用明确结论开场，会点名要求别人回应关键问题。",
         "reasoningStyle": "优先看发言立场、投票意图和夜晚行动收益；会把零散信息快速压缩成可执行的归票方向。",
@@ -205,7 +205,7 @@
       }
     ],
     "createdAt": "2026-06-28T14:04:36.522Z",
-    "updatedAt": "2026-06-28T17:30:28.175Z"
+    "updatedAt": "2026-06-29T00:38:36.091Z"
   },
   "events": [
     {
