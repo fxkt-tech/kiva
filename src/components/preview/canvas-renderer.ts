@@ -42,21 +42,24 @@ export function drawTextBlock(
   ctx.font = options.font;
   ctx.textBaseline = "alphabetic";
 
-  let line = "";
   let currentY = y;
-  for (const character of Array.from(text)) {
-    const nextLine = `${line}${character}`;
-    if (line && ctx.measureText(nextLine).width > options.maxWidth) {
-      ctx.fillText(line, x, currentY);
-      line = character;
-      currentY += options.lineHeight;
-    } else {
-      line = nextLine;
+  for (const paragraph of text.split("\n")) {
+    let line = "";
+    for (const character of Array.from(paragraph)) {
+      const nextLine = `${line}${character}`;
+      if (line && ctx.measureText(nextLine).width > options.maxWidth) {
+        ctx.fillText(line, x, currentY);
+        line = character;
+        currentY += options.lineHeight;
+      } else {
+        line = nextLine;
+      }
     }
-  }
 
-  if (line) {
-    ctx.fillText(line, x, currentY);
+    if (line) {
+      ctx.fillText(line, x, currentY);
+    }
+    currentY += options.lineHeight;
   }
 }
 

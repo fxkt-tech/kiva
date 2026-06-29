@@ -1,13 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PlaybackItem, PlaybackScenePlayer } from "@/core/playback";
-import type { ThemeRenderInput } from "../show-theme";
+import { createShotFrame } from "../shot-engine/director";
+import type { SkinRenderInput } from "../show-theme";
 import { mansionMurderTheme } from "./mansion-murder";
 
 describe("mansion murder theme", () => {
   it("renders backgrounds with the case bar", () => {
     const ctx = fakeContext();
 
-    mansionMurderTheme.render.renderBackground(input(ctx, scene({ kind: "phase" })));
+    mansionMurderTheme.draw.background(input(ctx, scene({ kind: "phase" })));
+    mansionMurderTheme.draw.topBar(input(ctx, scene({ kind: "phase" })));
 
     expect(textCalls(ctx)).toContain("MANSION MURDER");
     expect(textCalls(ctx)).toContain("Title");
@@ -17,7 +19,7 @@ describe("mansion murder theme", () => {
     const dayContext = fakeContext();
     const nightContext = fakeContext();
 
-    mansionMurderTheme.render.renderBackground(
+    mansionMurderTheme.draw.background(
       input(dayContext, scene({ phase: "day" }), {
         backgroundImages: {
           day: image({ width: 1672, height: 941 }),
@@ -25,7 +27,7 @@ describe("mansion murder theme", () => {
         },
       }),
     );
-    mansionMurderTheme.render.renderBackground(
+    mansionMurderTheme.draw.background(
       input(nightContext, scene({ phase: "night" }), {
         backgroundImages: {
           day: image({ width: 1672, height: 941 }),
@@ -58,10 +60,13 @@ describe("mansion murder theme", () => {
     );
   });
 
-  it("renders fixed suspect cards on both sides", () => {
+  it("renders compact seat track items on both sides", () => {
     const ctx = fakeContext();
+    const renderInput = input(ctx, scene());
 
-    mansionMurderTheme.render.renderPlayerCard(input(ctx, scene()));
+    renderInput.frame.layout.seatSlots.forEach((slot) => {
+      mansionMurderTheme.draw.seat({ ...renderInput, slot });
+    });
 
     expect(textCalls(ctx)).toContain("Seat 1");
     expect(textCalls(ctx)).toContain("Seat 4");
@@ -72,16 +77,18 @@ describe("mansion murder theme", () => {
   it("renders player avatar images when they are loaded", () => {
     const ctx = fakeContext();
     const avatar = "/kivdb-assets/characters/avatar_qinchuan.png";
+    const renderInput = input(ctx, scene({
+      players: [player({ avatar })],
+    }), {
+      avatarImages: {
+        [avatar]: image({ width: 1200, height: 1200 }),
+      },
+    });
 
-    mansionMurderTheme.render.renderPlayerCard(
-      input(ctx, scene({
-        players: [player({ avatar })],
-      }), {
-        avatarImages: {
-          [avatar]: image({ width: 1200, height: 1200 }),
-        },
-      }),
-    );
+    mansionMurderTheme.draw.seat({
+      ...renderInput,
+      slot: renderInput.frame.layout.seatSlots[0]!,
+    });
 
     expect(ctx.drawImage).toHaveBeenCalledWith(
       expect.objectContaining({ width: 1200 }),
@@ -89,10 +96,10 @@ describe("mansion murder theme", () => {
       0,
       1200,
       1200,
-      120,
-      182,
-      84,
-      84,
+      86,
+      172,
+      68,
+      68,
     );
   });
 
@@ -100,8 +107,8 @@ describe("mansion murder theme", () => {
     const ctx = fakeContext();
     const speechScene = scene({ kind: "speech", players: [player({ highlighted: true })] });
 
-    mansionMurderTheme.render.renderCenterStage(input(ctx, speechScene));
-    mansionMurderTheme.render.renderSubtitle(input(ctx, speechScene));
+    mansionMurderTheme.draw.speechShot(input(ctx, speechScene));
+    mansionMurderTheme.draw.subtitle(input(ctx, speechScene));
 
     expect(textCalls(ctx)).toContain("SUSPECT STATEMENT");
     expect(textCalls(ctx)).toContain("秦川");
@@ -111,7 +118,7 @@ describe("mansion murder theme", () => {
   it("renders vote scenes as center result tables without lines", () => {
     const ctx = fakeContext();
 
-    mansionMurderTheme.render.renderCenterStage(
+    mansionMurderTheme.draw.voteShot(
       input(ctx, scene({
         kind: "vote",
         title: "放逐投票",
@@ -128,7 +135,7 @@ describe("mansion murder theme", () => {
   it("renders vote resolutions with visible vote rows", () => {
     const ctx = fakeContext();
 
-    mansionMurderTheme.render.renderCenterStage(
+    mansionMurderTheme.draw.resolutionShot(
       input(ctx, scene({
         kind: "resolution",
         phase: "vote",
@@ -146,7 +153,7 @@ describe("mansion murder theme", () => {
   it("renders pk vote resolutions with visible vote rows", () => {
     const ctx = fakeContext();
 
-    mansionMurderTheme.render.renderCenterStage(
+    mansionMurderTheme.draw.resolutionShot(
       input(ctx, scene({
         kind: "resolution",
         phase: "vote",
@@ -165,32 +172,20 @@ describe("mansion murder theme", () => {
 function input(
   ctx: CanvasRenderingContext2D,
   scene: PlaybackItem,
-  overrides: Partial<ThemeRenderInput> = {},
-): ThemeRenderInput {
-  return {
-    ctx,
+  overrides: Partial<SkinRenderInput["frame"]> = {},
+): SkinRenderInput {
+  const frame = createShotFrame({
     scene,
     items: [scene],
-    layout: {
-      playerSlots: scene.players.map((scenePlayer, index) => ({
-        player: scenePlayer,
-        side: scenePlayer.seatNo <= 3 ? "left" as const : "right" as const,
-        rect: {
-          x: scenePlayer.seatNo <= 3 ? 88 : 1402,
-          y: 150 + (index % 3) * 232,
-          width: 430,
-          height: 190,
-        },
-      })),
-      center: { x: 560, y: 150, width: 800, height: 650 },
-      subtitle: { x: 120, y: 860, width: 1680, height: 150 },
-    },
     timeMs: scene.startsAtMs,
-    sceneTimeMs: 0,
-    enterProgress: 1,
     backgroundImages: { day: null, night: null },
     avatarImages: {},
-    ...overrides,
+  });
+
+  return {
+    ctx,
+    frame: { ...frame, ...overrides },
+    skin: mansionMurderTheme,
   };
 }
 
@@ -251,6 +246,7 @@ function fakeContext(): CanvasRenderingContext2D {
     save: vi.fn(),
     restore: vi.fn(),
     createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    globalAlpha: 1,
   } as unknown as CanvasRenderingContext2D;
 }
 

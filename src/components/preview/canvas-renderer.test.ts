@@ -35,6 +35,20 @@ describe("canvas renderer helpers", () => {
     expect(ctx.fillText).toHaveBeenCalledTimes(6);
   });
 
+  it("honors explicit line breaks in text blocks", () => {
+    const ctx = fakeContext();
+
+    drawTextBlock(ctx, "第一行\n第二行", 10, 20, {
+      color: "#fff",
+      font: "20px sans-serif",
+      maxWidth: 120,
+      lineHeight: 30,
+    });
+
+    expect(ctx.fillText).toHaveBeenCalledWith("第一行", 10, 20);
+    expect(ctx.fillText).toHaveBeenCalledWith("第二行", 10, 50);
+  });
+
   it("draws filled and stroked panels", () => {
     const ctx = fakeContext();
 
