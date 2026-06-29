@@ -15,12 +15,12 @@
     "defaultModelBinding": null,
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
-    "updatedAt": "2026-06-30T00:00:00.000Z"
+    "updatedAt": "2026-06-29T17:35:24.194Z"
   },
   {
     "id": "lin_xia",
     "name": "林夏",
-    "avatar": null,
+    "avatar": "/kivdb-assets/characters/avatar_linxia.png",
     "tags": [
       "天真笨蛋",
       "直觉反应",
@@ -33,12 +33,12 @@
     "defaultModelBinding": null,
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
-    "updatedAt": "2026-06-30T00:00:00.000Z"
+    "updatedAt": "2026-06-29T17:19:44.167Z"
   },
   {
     "id": "zhou_zhi",
     "name": "周知",
-    "avatar": null,
+    "avatar": "/kivdb-assets/characters/avatar_zhouzhi.png",
     "tags": [
       "数据统计",
       "票型记录",
@@ -51,12 +51,12 @@
     "defaultModelBinding": null,
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
-    "updatedAt": "2026-06-30T00:00:00.000Z"
+    "updatedAt": "2026-06-29T17:19:55.093Z"
   },
   {
     "id": "xia_yu",
     "name": "夏宇",
-    "avatar": null,
+    "avatar": "/kivdb-assets/characters/avatar_xiayu.png",
     "tags": [
       "阳光推进",
       "互动带动",
@@ -69,12 +69,12 @@
     "defaultModelBinding": null,
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
-    "updatedAt": "2026-06-30T00:00:00.000Z"
+    "updatedAt": "2026-06-29T17:20:03.151Z"
   },
   {
     "id": "chen_mo",
     "name": "陈墨",
-    "avatar": null,
+    "avatar": "/kivdb-assets/characters/avatar_chenmo.png",
     "tags": [
       "胆小自保",
       "压力反应",
@@ -87,12 +87,12 @@
     "defaultModelBinding": null,
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
-    "updatedAt": "2026-06-30T00:00:00.000Z"
+    "updatedAt": "2026-06-29T17:20:15.046Z"
   },
   {
     "id": "gu_qingyan",
     "name": "顾清妍",
-    "avatar": null,
+    "avatar": "/kivdb-assets/characters/avatar_guqingyan.png",
     "tags": [
       "强势御姐",
       "压迫审问",
@@ -105,6 +105,6 @@
     "defaultModelBinding": null,
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
-    "updatedAt": "2026-06-30T00:00:00.000Z"
+    "updatedAt": "2026-06-29T17:20:28.129Z"
   }
 ]

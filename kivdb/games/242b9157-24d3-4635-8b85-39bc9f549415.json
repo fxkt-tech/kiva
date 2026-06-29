@@ -1,0 +1,423 @@
+{
+  "game": {
+    "id": "242b9157-24d3-4635-8b85-39bc9f549415",
+    "title": "随机 6 人狼人杀",
+    "status": "drafting",
+    "ruleset": {
+      "playerCount": 6,
+      "roleCounts": {
+        "werewolf": 2,
+        "seer": 1,
+        "witch": 1,
+        "villager": 2
+      },
+      "winCondition": "slaughter_side",
+      "witchFirstNightSelfSave": true,
+      "witchAllowSameNightAntidoteAndPoison": false,
+      "voteReveal": "after_all_votes",
+      "deadRoleReveal": "endgame",
+      "pkVoters": "non_pk_only",
+      "allowAbstainVote": true
+    },
+    "players": [
+      {
+        "playerId": "p1",
+        "seatNo": 1,
+        "characterSourceId": "zhou_zhi",
+        "name": "周知",
+        "roleSourceId": "villager",
+        "avatar": "/kivdb-assets/characters/avatar_zhouzhi.png",
+        "persona": "严谨、认真、像记账员一样记录全场信息；不擅长读情绪，但对数字、顺序和身份坑位非常敏感。",
+        "speakingStyle": "表达编号化，喜欢说“目前有三组信息”“第一、第二、第三”；语气平稳，尽量避免情绪化判断。",
+        "reasoningStyle": "重点统计票型、发言顺序、查验结果、死亡顺序和身份坑位；会用已发生事实排除不可能情况。",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的玩家周知。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是数据党，优先记录票型、顺序、坑位和可验证事实。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "systemPrompt": "你是狼人杀对局中的玩家周知。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是数据党，优先记录票型、顺序、坑位和可验证事实。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p2",
+        "seatNo": 2,
+        "characterSourceId": "chen_mo",
+        "name": "陈墨",
+        "roleSourceId": "seer",
+        "avatar": "/kivdb-assets/characters/avatar_chenmo.png",
+        "persona": "胆小、敏感、怕被点名；习惯先自保，担心自己说错话被抗推。",
+        "speakingStyle": "吞吞吐吐，常用“我不一定对”“我只是感觉”“你们别先打我”；会先解释自己为什么这么说。",
+        "reasoningStyle": "从谁给自己压力、谁突然转火、谁在找替罪羊切入；判断常带犹豫，但能敏锐察觉别人把锅推给谁。",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的玩家陈墨。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你胆小懦弱、怕被抗推，说话谨慎犹豫，但会注意谁在施压和甩锅。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可以查验一名玩家的阵营信息，白天根据查验结果和发言推动放逐狼人。",
+        "roleActionPromptSnapshot": "夜晚请选择要查验的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的玩家陈墨。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你胆小懦弱、怕被抗推，说话谨慎犹豫，但会注意谁在施压和甩锅。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "seer",
+        "roleName": "预言家",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "seer_check",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p3",
+        "seatNo": 3,
+        "characterSourceId": "qin_chuan",
+        "name": "秦川",
+        "roleSourceId": "werewolf",
+        "avatar": "/kivdb-assets/characters/avatar_qinchuan.png",
+        "persona": "冷静、疏离、观察力强；习惯把局势拆成条件、收益和概率，很少被情绪带动。",
+        "speakingStyle": "语气平稳克制，常用“如果……那么……”“这个行为的收益是……”来推进判断；不急着抢话，但一开口会直接压住关键点。",
+        "reasoningStyle": "优先分析阵营收益、行动成本和信息不对称；会把每个人的发言转化成可验证的假设，并持续修正概率。",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的玩家秦川。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你说话冷静克制，像在计算局势，重点分析收益、概率和信息差。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的玩家秦川。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你说话冷静克制，像在计算局势，重点分析收益、概率和信息差。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "p4",
+        "seatNo": 4,
+        "characterSourceId": "lin_xia",
+        "name": "林夏",
+        "roleSourceId": "witch",
+        "avatar": "/kivdb-assets/characters/avatar_linxia.png",
+        "persona": "幼态、天真、反应慢半拍；经常被复杂逻辑绕晕，但对谁在欺负谁、谁突然变凶很敏感。",
+        "speakingStyle": "短句多，语气急急忙忙又有点委屈；常说“等一下”“我没听懂”“所以你是这个意思吗”。",
+        "reasoningStyle": "逻辑链不长，更多依靠直觉和情绪反应；会复述别人观点寻找矛盾，偶尔凭直觉撞到关键问题。",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的玩家林夏。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你脑子不太好使，容易被绕晕，但说话真诚，常用直觉和情绪反应判断谁可疑。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可根据规则使用解药或毒药，白天结合夜晚信息和发言寻找狼人。",
+        "roleActionPromptSnapshot": "夜晚请决定是否使用药剂，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的玩家林夏。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你脑子不太好使，容易被绕晕，但说话真诚，常用直觉和情绪反应判断谁可疑。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "witch",
+        "roleName": "女巫",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "witch_medicine",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "witch_medicines"
+        ]
+      },
+      {
+        "playerId": "p5",
+        "seatNo": 5,
+        "characterSourceId": "xia_yu",
+        "name": "夏宇",
+        "roleSourceId": "villager",
+        "avatar": "/kivdb-assets/characters/avatar_xiayu.png",
+        "persona": "阳光、外向、行动力强；喜欢把沉默的人拉进讨论，愿意第一个给方向，也愿意为判断承担压力。",
+        "speakingStyle": "热情直接，有感染力，常用“兄弟们别闷着”“今天得把方向聊出来”；发言节奏快，喜欢点名互动。",
+        "reasoningStyle": "从互动关系、临场反应和表态意愿切入；会观察谁不敢说、谁突然跟风、谁被点名后反应不自然。",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的玩家夏宇。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你阳光开朗、外向主动，喜欢带动全场发言，用互动和反应判断身份。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "systemPrompt": "你是狼人杀对局中的玩家夏宇。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你阳光开朗、外向主动，喜欢带动全场发言，用互动和反应判断身份。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p6",
+        "seatNo": 6,
+        "characterSourceId": "gu_qingyan",
+        "name": "顾清妍",
+        "roleSourceId": "werewolf",
+        "avatar": "/kivdb-assets/characters/avatar_guqingyan.png",
+        "persona": "成熟、锋利、有距离感；掌控欲强，喜欢把发言权拉回自己手里，不接受含糊解释。",
+        "speakingStyle": "冷淡直接，带审问感，常说“我不接受这个解释”“你重新说一遍你的逻辑”；语气强势但不失控。",
+        "reasoningStyle": "重点抓站位、态度变化和前后口径；会逼别人给出明确立场，并通过压力测试观察反应。",
+        "characterSystemPromptSnapshot": "你是狼人杀对局中的玩家顾清妍。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是强势御姐型玩家，冷淡、锋利、擅长审问和判断站位。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "systemPrompt": "你是狼人杀对局中的玩家顾清妍。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是强势御姐型玩家，冷淡、锋利、擅长审问和判断站位。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-1-6-flash-250828",
+          "temperature": 0.7,
+          "maxTokens": 1200,
+          "responseFormat": "json"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      }
+    ],
+    "createdAt": "2026-06-29T17:32:51.524Z",
+    "updatedAt": "2026-06-29T17:33:02.089Z"
+  },
+  "events": [
+    {
+      "id": "event_1_2315f98e-3486-4995-ab63-abf3037c171a",
+      "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+      "index": 1,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "p1"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "p1"
+        ]
+      },
+      "payload": {
+        "playerId": "p1",
+        "role": "villager",
+        "faction": "good"
+      },
+      "createdFromDraftId": "draft_60051b26-0362-4800-9949-3fe15b157686",
+      "createdAt": "2026-06-29T17:32:56.349Z"
+    },
+    {
+      "id": "event_2_a85f86ef-5483-49a0-a471-7bf8b99e351c",
+      "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+      "index": 2,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "p2"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "p2"
+        ]
+      },
+      "payload": {
+        "playerId": "p2",
+        "role": "seer",
+        "faction": "good"
+      },
+      "createdFromDraftId": "draft_c02ae2d1-dfb2-4763-9d62-c92069258763",
+      "createdAt": "2026-06-29T17:32:56.884Z"
+    },
+    {
+      "id": "event_3_87865b6a-31ee-46e4-816c-59c32cfc3d49",
+      "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+      "index": 3,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "p3"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "p3"
+        ]
+      },
+      "payload": {
+        "playerId": "p3",
+        "role": "werewolf",
+        "faction": "wolves"
+      },
+      "createdFromDraftId": "draft_f00a7e4c-013d-49ff-9d78-c5c3b137cb5b",
+      "createdAt": "2026-06-29T17:32:57.409Z"
+    },
+    {
+      "id": "event_4_95a40fef-8f4b-407d-b420-2a12b8c4af50",
+      "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+      "index": 4,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "p4"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "p4"
+        ]
+      },
+      "payload": {
+        "playerId": "p4",
+        "role": "witch",
+        "faction": "good"
+      },
+      "createdFromDraftId": "draft_650401b8-f08b-40f0-a6b1-83354c57f5ba",
+      "createdAt": "2026-06-29T17:32:57.918Z"
+    },
+    {
+      "id": "event_5_b709604c-1970-4f1c-904a-5b5ac4ec29cb",
+      "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+      "index": 5,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "p5"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "p5"
+        ]
+      },
+      "payload": {
+        "playerId": "p5",
+        "role": "villager",
+        "faction": "good"
+      },
+      "createdFromDraftId": "draft_480be0d5-689a-46af-adaf-03a1fc2348d6",
+      "createdAt": "2026-06-29T17:32:58.464Z"
+    },
+    {
+      "id": "event_6_5ef2da7e-282c-4aa6-ab14-67819a6218d6",
+      "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+      "index": 6,
+      "status": "active",
+      "type": "role_assigned",
+      "phase": "setup",
+      "targetPlayerIds": [
+        "p6"
+      ],
+      "visibility": {
+        "kind": "player_private",
+        "playerIds": [
+          "p6"
+        ]
+      },
+      "payload": {
+        "playerId": "p6",
+        "role": "werewolf",
+        "faction": "wolves"
+      },
+      "createdFromDraftId": "draft_2a46ef35-239f-499d-82b5-efcee03e659a",
+      "createdAt": "2026-06-29T17:32:56.592Z"
+    },
+    {
+      "id": "event_7_fe696c74-4f1f-41be-8f68-17f6061f3528",
+      "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+      "index": 7,
+      "status": "active",
+      "type": "phase_started",
+      "phase": "night",
+      "visibility": {
+        "kind": "public"
+      },
+      "payload": {
+        "phase": "night",
+        "dayNumber": 1
+      },
+      "createdFromDraftId": "draft_ad7cbb84-7f4e-488c-a0e2-2426b76fd91f",
+      "createdAt": "2026-06-29T17:33:01.977Z"
+    }
+  ],
+  "draft": {
+    "id": "draft_fa69cf75-79d2-456f-8d45-6ed0732c5ddf",
+    "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+    "type": "wolf_kill_selected",
+    "phase": "night",
+    "actorPlayerId": "p3",
+    "targetPlayerIds": [
+      "p5"
+    ],
+    "visibility": {
+      "kind": "faction_private",
+      "faction": "wolves"
+    },
+    "payload": {
+      "targetPlayerId": "p5"
+    },
+    "createdAt": "2026-06-29T17:33:01.979Z",
+    "status": "draft"
+  },
+  "generations": [
+    {
+      "id": "generation_a9d52446-172c-4fb0-8e9b-f7335bcb5407",
+      "gameId": "242b9157-24d3-4635-8b85-39bc9f549415",
+      "draftId": "draft_fa69cf75-79d2-456f-8d45-6ed0732c5ddf",
+      "playerId": "p3",
+      "purpose": "action",
+      "status": "success",
+      "promptVersion": "action:v1",
+      "provider": "volcengine",
+      "model": "doubao-seed-1-6-flash-250828",
+      "inputContextHash": "35461102",
+      "request": {
+        "systemPrompt": "你是狼人杀对局中的玩家秦川。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你说话冷静克制，像在计算局势，重点分析收益、概率和信息差。\n你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。\n夜晚请选择要袭击的目标，并给出简短理由。\n你只能根据可见信息给出狼人杀行动建议。\n必须输出 JSON 对象，不要输出 Markdown。",
+        "messages": [
+          {
+            "role": "user",
+            "content": "draft=wolf_kill_selected\nmechanic=wolf_kill\n你是：3 号 秦川\n你的身份：狼人\n本局规则：\n- 玩家数：6\n- 角色配置：狼人 2、预言家 1、女巫 1、平民 2\n- 本局没有守卫、猎人、白痴或其他未列出的身份。\n- 胜利条件：屠边\n- 女巫首夜自救：允许\n- 女巫同夜使用解药和毒药：不允许\n- 投票公开：所有人投票后统一公开\n- 死亡身份公开：游戏结束后公开\n- PK 投票范围：仅非 PK 玩家\n- 弃票：允许\n玩家名单：\n1 周知 playerId=p1\n2 陈墨 playerId=p2\n3 秦川 playerId=p3 role=werewolf faction=wolves\n4 林夏 playerId=p4\n5 夏宇 playerId=p5\n6 顾清妍 playerId=p6 role=werewolf faction=wolves\n可选目标：\nplayerId=p1\nplayerId=p2\nplayerId=p4\nplayerId=p5\n可见事件：\n- 身份牌：3 号 秦川 获得身份：狼人。\n- 第 1 夜开始：夜晚开始。\n输出字段：targetPlayerId、reasoning。必须从可选目标中选择一个 playerId。\nreasoning 是玩家的简短思考过程，只能引用以上可见信息。"
+          }
+        ],
+        "schemaName": "werewolf_action_v1"
+      },
+      "rawOutput": "{\"targetPlayerId\":\"p5\",\"reasoning\":\"首夜为加速达成屠边胜利条件，优先选择减少好人阵营神职数量。四个可选目标中存在神职（预言家/女巫）的概率较高，选择p5夏宇作为袭击目标以削弱好人信息优势。\"}",
+      "parsedOutput": {
+        "targetPlayerId": "p5",
+        "reasoning": "首夜为加速达成屠边胜利条件，优先选择减少好人阵营神职数量。四个可选目标中存在神职（预言家/女巫）的概率较高，选择p5夏宇作为袭击目标以削弱好人信息优势。"
+      },
+      "error": null,
+      "createdAt": "2026-06-29T17:33:02.089Z"
+    }
+  ]
+}
