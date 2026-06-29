@@ -5,8 +5,8 @@ import { subtitleCueForScene, subtitleWindows } from "./subtitles";
 describe("preview subtitle cues", () => {
   it("splits long Chinese-heavy text into readable windows", () => {
     const windows = subtitleWindows(
-      "各位，我是4号林夏。刚才听了许棠的发言，我觉得需要先确认预言家的信息。这个线索现在很关键。"
-        + "不过许棠，你说第2夜死了1号和2号，狼人刀了他们，那你觉得这两个死亡和你的预言家身份有没有关联呢？"
+      "各位，我是4号林夏。刚才听了夏宇的发言，我觉得需要先确认预言家的信息。这个线索现在很关键。"
+        + "不过夏宇，你说第2夜死了1号和2号，狼人刀了他们，那你觉得这两个死亡和你的预言家身份有没有关联呢？"
         + "比如狼人会不会是因为知道你是预言家所以才刀了被你查过的好人？",
     );
 

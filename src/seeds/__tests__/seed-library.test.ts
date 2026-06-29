@@ -11,12 +11,12 @@ const HARD_CODED_SEATS = [
   { seatNo: 1, roleId: "werewolf", characterId: "qin_chuan" },
   { seatNo: 2, roleId: "werewolf", characterId: "lin_xia" },
   { seatNo: 3, roleId: "seer", characterId: "zhou_zhi" },
-  { seatNo: 4, roleId: "witch", characterId: "xu_tang" },
+  { seatNo: 4, roleId: "witch", characterId: "xia_yu" },
   { seatNo: 5, roleId: "villager", characterId: "chen_mo" },
-  { seatNo: 6, roleId: "villager", characterId: "shen_lan" },
+  { seatNo: 6, roleId: "villager", characterId: "gu_qingyan" },
 ] as const;
 
-const CHARACTER_NAMES = ["秦川", "林夏", "周知", "许棠", "陈墨", "沈岚"];
+const CHARACTER_NAMES = ["秦川", "林夏", "周知", "夏宇", "陈墨", "顾清妍"];
 const ROLE_ONLY_FIELDS = [
   "role",
   "faction",

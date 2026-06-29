@@ -22,17 +22,26 @@ export type ShotLayout = {
 
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
+const SIDE_WIDTH = CANVAS_WIDTH / 4;
+const CENTER_WIDTH = CANVAS_WIDTH / 2;
+const STAGE_TOP = 130;
+const STAGE_HEIGHT = 700;
+const SEAT_HEIGHT = 210;
+const SEAT_GAP = 35;
+const SEAT_MARGIN_X = 32;
+const SEAT_WIDTH = SIDE_WIDTH - SEAT_MARGIN_X * 2;
+const RIGHT_COLUMN_X = SIDE_WIDTH + CENTER_WIDTH;
 
 const leftSeatRects: readonly Rect[] = [
-  { x: 72, y: 150, width: 350, height: 112 },
-  { x: 72, y: 286, width: 350, height: 112 },
-  { x: 72, y: 422, width: 350, height: 112 },
+  { x: SEAT_MARGIN_X, y: STAGE_TOP, width: SEAT_WIDTH, height: SEAT_HEIGHT },
+  { x: SEAT_MARGIN_X, y: STAGE_TOP + SEAT_HEIGHT + SEAT_GAP, width: SEAT_WIDTH, height: SEAT_HEIGHT },
+  { x: SEAT_MARGIN_X, y: STAGE_TOP + (SEAT_HEIGHT + SEAT_GAP) * 2, width: SEAT_WIDTH, height: SEAT_HEIGHT },
 ];
 
 const rightSeatRects: readonly Rect[] = [
-  { x: 1498, y: 150, width: 350, height: 112 },
-  { x: 1498, y: 286, width: 350, height: 112 },
-  { x: 1498, y: 422, width: 350, height: 112 },
+  { x: RIGHT_COLUMN_X + SEAT_MARGIN_X, y: STAGE_TOP, width: SEAT_WIDTH, height: SEAT_HEIGHT },
+  { x: RIGHT_COLUMN_X + SEAT_MARGIN_X, y: STAGE_TOP + SEAT_HEIGHT + SEAT_GAP, width: SEAT_WIDTH, height: SEAT_HEIGHT },
+  { x: RIGHT_COLUMN_X + SEAT_MARGIN_X, y: STAGE_TOP + (SEAT_HEIGHT + SEAT_GAP) * 2, width: SEAT_WIDTH, height: SEAT_HEIGHT },
 ];
 
 export function createCinematicShotLayout(
@@ -60,9 +69,9 @@ export function createCinematicShotLayout(
     safe: { x: 56, y: 48, width: CANVAS_WIDTH - 112, height: CANVAS_HEIGHT - 96 },
     topBar: { x: 0, y: 0, width: CANVAS_WIDTH, height: 96 },
     seatSlots,
-    mainStage: { x: 456, y: 132, width: 1008, height: 668 },
-    portrait: { x: 560, y: 192, width: 800, height: 438 },
-    eventPanel: { x: 560, y: 186, width: 800, height: 520 },
-    subtitle: { x: 220, y: 824, width: 1480, height: 188 },
+    mainStage: { x: SIDE_WIDTH, y: STAGE_TOP, width: CENTER_WIDTH, height: STAGE_HEIGHT },
+    portrait: { x: SIDE_WIDTH + 44, y: STAGE_TOP + 50, width: CENTER_WIDTH - 88, height: 520 },
+    eventPanel: { x: SIDE_WIDTH + 40, y: STAGE_TOP + 40, width: CENTER_WIDTH - 80, height: STAGE_HEIGHT - 80 },
+    subtitle: { x: 220, y: 852, width: 1480, height: 168 },
   };
 }

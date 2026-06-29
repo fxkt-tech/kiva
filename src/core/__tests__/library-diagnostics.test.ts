@@ -52,9 +52,9 @@ const villager = role({
 const qin = character({ id: "qin", name: "秦川", systemPrompt: "你是秦川。" });
 const lin = character({ id: "lin", name: "林夏", systemPrompt: "你是林夏。" });
 const zhou = character({ id: "zhou", name: "周知", systemPrompt: "你是周知。" });
-const xu = character({ id: "xu", name: "许棠", systemPrompt: "你是许棠。" });
+const xu = character({ id: "xu", name: "夏宇", systemPrompt: "你是夏宇。" });
 const chen = character({ id: "chen", name: "陈墨", systemPrompt: "你是陈墨。" });
-const shen = character({ id: "shen", name: "沈岚", systemPrompt: "你是沈岚。" });
+const shen = character({ id: "shen", name: "顾清妍", systemPrompt: "你是顾清妍。" });
 
 describe("library diagnostics", () => {
   it("reports role references, built-in contract status, and role prompt preview", () => {

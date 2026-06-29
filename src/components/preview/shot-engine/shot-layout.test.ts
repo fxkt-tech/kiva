@@ -47,6 +47,24 @@ describe("cinematic shot layout", () => {
       layout.mainStage.y + layout.mainStage.height,
     );
   });
+
+  it("uses quarter-width side columns and a half-width center stage", () => {
+    const layout = createCinematicShotLayout([
+      player(1),
+      player(4),
+    ]);
+
+    expect(layout.mainStage).toMatchObject({
+      x: 480,
+      width: 960,
+    });
+    expect(layout.seatSlots[0]?.rect.x).toBeGreaterThanOrEqual(0);
+    expect(layout.seatSlots[0]?.rect.x + layout.seatSlots[0]!.rect.width)
+      .toBeLessThanOrEqual(480);
+    expect(layout.seatSlots[1]?.rect.x).toBeGreaterThanOrEqual(1440);
+    expect(layout.seatSlots[1]?.rect.x + layout.seatSlots[1]!.rect.width)
+      .toBeLessThanOrEqual(1920);
+  });
 });
 
 function player(seatNo: number): PlaybackScenePlayer {

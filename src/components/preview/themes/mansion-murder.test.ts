@@ -96,10 +96,10 @@ describe("mansion murder theme", () => {
       0,
       1200,
       1200,
-      86,
-      172,
-      68,
-      68,
+      262,
+      150,
+      168,
+      168,
     );
   });
 
@@ -115,7 +115,7 @@ describe("mansion murder theme", () => {
     expect(textCalls(ctx)).toContain("Text");
   });
 
-  it("renders vote scenes as center result tables without lines", () => {
+  it("renders vote scenes as a pending vote board without lines", () => {
     const ctx = fakeContext();
 
     mansionMurderTheme.draw.voteShot(
@@ -128,7 +128,9 @@ describe("mansion murder theme", () => {
     );
 
     expect(textCalls(ctx)).toContain("放逐投票");
-    expect(textCalls(ctx)).toContain("等待本轮投票结算");
+    expect(textCalls(ctx)).toContain("投票明细");
+    expect(textCalls(ctx)).toContain("票型统计");
+    expect(textCalls(ctx)).toContain("等待所有玩家完成投票");
     expect(ctx.lineTo).not.toHaveBeenCalled();
   });
 
@@ -146,8 +148,10 @@ describe("mansion murder theme", () => {
     );
 
     expect(textCalls(ctx)).toContain("投票结算");
-    expect(textCalls(ctx)).toContain("1 号 秦川 -> 2 号 林夏");
-    expect(textCalls(ctx)).toContain("本轮结果");
+    expect(textCalls(ctx)).toContain("1 号 秦川");
+    expect(textCalls(ctx)).toContain("2 号 林夏");
+    expect(textCalls(ctx)).toContain("放逐出局");
+    expect(textCalls(ctx)).toContain("1 票");
   });
 
   it("renders pk vote resolutions with visible vote rows", () => {
@@ -164,8 +168,9 @@ describe("mansion murder theme", () => {
     );
 
     expect(textCalls(ctx)).toContain("PK 结算");
-    expect(textCalls(ctx)).toContain("1 号 秦川 -> 2 号 林夏");
-    expect(textCalls(ctx)).toContain("本轮结果");
+    expect(textCalls(ctx)).toContain("1 号 秦川");
+    expect(textCalls(ctx)).toContain("2 号 林夏");
+    expect(textCalls(ctx)).toContain("当前状态");
   });
 });
 
@@ -203,9 +208,9 @@ function scene(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
       player({ seatNo: 1, name: "秦川", highlighted: true }),
       player({ seatNo: 2, name: "林夏" }),
       player({ seatNo: 3, name: "周知" }),
-      player({ seatNo: 4, name: "许棠" }),
+      player({ seatNo: 4, name: "夏宇" }),
       player({ seatNo: 5, name: "陈墨" }),
-      player({ seatNo: 6, name: "沈岚", status: "dead" }),
+      player({ seatNo: 6, name: "顾清妍", status: "dead" }),
     ],
     ...overrides,
   };
@@ -238,6 +243,8 @@ function fakeContext(): CanvasRenderingContext2D {
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
+    quadraticCurveTo: vi.fn(),
+    closePath: vi.fn(),
     fill: vi.fn(),
     stroke: vi.fn(),
     arc: vi.fn(),

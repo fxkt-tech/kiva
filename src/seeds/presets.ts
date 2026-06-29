@@ -13,9 +13,9 @@ export const seedPresets: readonly GamePreset[] = [
       "qin_chuan",
       "lin_xia",
       "zhou_zhi",
-      "xu_tang",
+      "xia_yu",
       "chen_mo",
-      "shen_lan",
+      "gu_qingyan",
     ],
     seatAssignments: [
       {
@@ -39,7 +39,7 @@ export const seedPresets: readonly GamePreset[] = [
       {
         seatNo: 4,
         roleId: "witch",
-        characterId: "xu_tang",
+        characterId: "xia_yu",
         modelBindingOverride: null,
       },
       {
@@ -51,7 +51,7 @@ export const seedPresets: readonly GamePreset[] = [
       {
         seatNo: 6,
         roleId: "villager",
-        characterId: "shen_lan",
+        characterId: "gu_qingyan",
         modelBindingOverride: null,
       },
     ],

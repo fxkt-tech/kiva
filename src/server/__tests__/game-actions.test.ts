@@ -120,9 +120,9 @@ describe("game actions", () => {
       "秦川",
       "林夏",
       "周知",
-      "许棠",
+      "夏宇",
       "陈墨",
-      "沈岚",
+      "顾清妍",
     ]);
     expect(created.game.players[0]).toMatchObject({
       characterSourceId: "qin_chuan",

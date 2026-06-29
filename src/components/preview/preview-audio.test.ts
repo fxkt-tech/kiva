@@ -27,7 +27,7 @@ describe("preview audio", () => {
     expect(
       systemVoiceSourceForScene(
         scene({
-          title: "2 号 沈岚遗言",
+          title: "2 号 顾清妍遗言",
           kind: "speech",
           players: [player({ seatNo: 2, highlighted: true })],
         }),
@@ -36,7 +36,7 @@ describe("preview audio", () => {
     expect(
       systemVoiceSourceForScene(
         scene({
-          title: "3 号 许棠PK 发言",
+          title: "3 号 夏宇PK 发言",
           kind: "speech",
           players: [player({ seatNo: 3, highlighted: true })],
         }),

@@ -33,9 +33,9 @@ describe("game creation", () => {
       "秦川",
       "林夏",
       "周知",
-      "许棠",
+      "夏宇",
       "陈墨",
-      "沈岚",
+      "顾清妍",
     ]);
     expect(game.players.map((player) => player.gameRole)).toEqual([
       "werewolf",
@@ -80,9 +80,9 @@ describe("game creation", () => {
       { playerId: "p1", seatNo: 1, name: "秦川", gameRole: "werewolf" },
       { playerId: "p2", seatNo: 2, name: "林夏", gameRole: "werewolf" },
       { playerId: "p3", seatNo: 3, name: "周知", gameRole: "seer" },
-      { playerId: "p4", seatNo: 4, name: "许棠", gameRole: "witch" },
+      { playerId: "p4", seatNo: 4, name: "夏宇", gameRole: "witch" },
       { playerId: "p5", seatNo: 5, name: "陈墨", gameRole: "villager" },
-      { playerId: "p6", seatNo: 6, name: "沈岚", gameRole: "villager" },
+      { playerId: "p6", seatNo: 6, name: "顾清妍", gameRole: "villager" },
     ]);
   });
 
