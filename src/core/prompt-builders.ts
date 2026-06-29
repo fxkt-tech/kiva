@@ -1,6 +1,7 @@
 import type { DraftEvent } from "./drafts";
 import type { LlmMessage } from "./llm";
 import type { PlayerLlmContext } from "./player-context";
+import type { Ruleset } from "./types";
 
 export const SPEECH_PROMPT_VERSION = "speech:v1";
 
@@ -41,12 +42,14 @@ export function buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt {
           `发言风格：${input.context.viewer.speakingStyle}`,
           `推理风格：${input.context.viewer.reasoningStyle}`,
           "",
+          ...rulesetPromptLines(input.context.ruleset),
+          "",
           "玩家名单：",
           ...input.context.roster.map((player) => rosterLine(player)),
           "",
           "你可见的事件时间线：",
           ...input.context.timeline.map(
-            (item) => `#${item.index} ${item.title}：${item.text}`,
+            (item) => `- ${item.title}：${item.text}`,
           ),
           "",
           "当前要生成的发言：",
@@ -60,11 +63,27 @@ export function buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt {
           "- 发言要像真实玩家，不要解释你是 AI。",
           "- 不要编造未发生的事件。",
           '- 必须输出 JSON 对象，且只包含 "text" 和 "reasoning" 字段。',
-          '- reasoning 是给主理人看的简短决策依据，只能引用以上可见信息。',
+          "- reasoning 是玩家的简短思考过程，只能引用以上可见信息。",
         ].join("\n"),
       },
     ],
   };
+}
+
+export function rulesetPromptLines(ruleset: Ruleset): readonly string[] {
+  return [
+    "本局规则：",
+    `- 玩家数：${ruleset.playerCount}`,
+    `- 角色配置：狼人 ${ruleset.roleCounts.werewolf}、预言家 ${ruleset.roleCounts.seer}、女巫 ${ruleset.roleCounts.witch}、平民 ${ruleset.roleCounts.villager}`,
+    "- 本局没有守卫、猎人、白痴或其他未列出的身份。",
+    `- 胜利条件：${winConditionLabel(ruleset.winCondition)}`,
+    `- 女巫首夜自救：${ruleset.witchFirstNightSelfSave ? "允许" : "不允许"}`,
+    `- 女巫同夜使用解药和毒药：${ruleset.witchAllowSameNightAntidoteAndPoison ? "允许" : "不允许"}`,
+    `- 投票公开：${voteRevealLabel(ruleset.voteReveal)}`,
+    `- 死亡身份公开：${deadRoleRevealLabel(ruleset.deadRoleReveal)}`,
+    `- PK 投票范围：${pkVotersLabel(ruleset.pkVoters)}`,
+    `- 弃票：${ruleset.allowAbstainVote ? "允许" : "不允许"}`,
+  ];
 }
 
 export function baseViewerSystemPrompts(
@@ -128,4 +147,40 @@ function roleLabel(role: string): string {
 
 function factionLabel(faction: string): string {
   return faction === "wolves" ? "狼人阵营" : "好人阵营";
+}
+
+function winConditionLabel(winCondition: Ruleset["winCondition"]): string {
+  switch (winCondition) {
+    case "slaughter_side":
+      return "屠边";
+    case "slaughter_all":
+      return "屠城";
+  }
+}
+
+function voteRevealLabel(voteReveal: Ruleset["voteReveal"]): string {
+  switch (voteReveal) {
+    case "after_all_votes":
+      return "所有人投票后统一公开";
+    case "immediate":
+      return "投票后立即公开";
+  }
+}
+
+function deadRoleRevealLabel(deadRoleReveal: Ruleset["deadRoleReveal"]): string {
+  switch (deadRoleReveal) {
+    case "endgame":
+      return "游戏结束后公开";
+    case "on_death":
+      return "死亡时公开";
+  }
+}
+
+function pkVotersLabel(pkVoters: Ruleset["pkVoters"]): string {
+  switch (pkVoters) {
+    case "non_pk_only":
+      return "仅非 PK 玩家";
+    case "all_living_non_self":
+      return "所有存活且不能投自己";
+  }
 }

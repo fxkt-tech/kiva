@@ -1,5 +1,6 @@
 "use client";
 
+import { FileSearch, X } from "lucide-react";
 import { useId, useRef } from "react";
 import type { ReactNode } from "react";
 import type { GenerationRecord } from "@/core/generation-record";
@@ -18,9 +19,11 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
       <button
         type="button"
         onClick={() => dialogRef.current?.showModal()}
-        className="rounded-md border border-zinc-700 px-2 py-1 text-xs font-medium text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+        aria-label="LLM details"
+        title="LLM details"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
       >
-        LLM details
+        <FileSearch aria-hidden="true" className="h-3.5 w-3.5" />
       </button>
       <dialog
         ref={dialogRef}
@@ -40,9 +43,11 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
           <form method="dialog">
             <button
               type="submit"
-              className="rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+              aria-label="Close"
+              title="Close"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
             >
-              Close
+              <X aria-hidden="true" className="h-4 w-4" />
             </button>
           </form>
         </div>
@@ -67,10 +72,10 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
             )}
           </GenerationBlock>
 
-          <GenerationBlock title="Reasoning">
+          <GenerationBlock title="Player reasoning">
             <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-zinc-300">
               {reasoning ??
-                "No explicit reasoning field was returned by the model. Hidden model reasoning is not available."}
+                "No player reasoning field was returned by the model. Hidden model reasoning is not available."}
             </pre>
           </GenerationBlock>
 

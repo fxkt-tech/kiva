@@ -4,6 +4,8 @@ import type { GameEvent } from "@/core/events";
 import type { GenerationRecord } from "@/core/generation-record";
 import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
+import { Maximize2, Minimize2, Undo2 } from "lucide-react";
+import Link from "next/link";
 import { LlmGenerationDetails } from "./llm-generation-details";
 
 type EventTimelineProps = {
@@ -11,6 +13,8 @@ type EventTimelineProps = {
   readonly events: readonly GameEvent[];
   readonly players: readonly PlayerSnapshot[];
   readonly generations: readonly GenerationRecord[];
+  readonly previewHidden?: boolean;
+  readonly togglePreviewHref?: string;
 };
 
 export function EventTimeline({
@@ -18,6 +22,8 @@ export function EventTimeline({
   events,
   players,
   generations,
+  previewHidden = false,
+  togglePreviewHref,
 }: EventTimelineProps) {
   const orderedEvents = [...events].sort((left, right) => {
     if (left.index === right.index) {
@@ -29,8 +35,22 @@ export function EventTimeline({
 
   return (
     <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="shrink-0 border-b border-zinc-800 px-3 py-2">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-3 py-2">
         <h2 className="text-sm font-semibold text-zinc-100">Timeline</h2>
+        {togglePreviewHref ? (
+          <Link
+            href={togglePreviewHref}
+            aria-label={previewHidden ? "Show preview" : "Hide preview"}
+            title={previewHidden ? "Show preview" : "Hide preview"}
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+          >
+            {previewHidden ? (
+              <Minimize2 aria-hidden="true" className="h-4 w-4" />
+            ) : (
+              <Maximize2 aria-hidden="true" className="h-4 w-4" />
+            )}
+          </Link>
+        ) : null}
       </div>
       {orderedEvents.length === 0 ? (
         <div className="px-4 py-8 text-sm text-zinc-500">
@@ -107,9 +127,11 @@ export function EventTimeline({
                     >
                       <button
                         type="submit"
-                        className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-300 transition hover:border-amber-500 hover:text-amber-200"
+                        aria-label={`Roll back after event ${event.index}`}
+                        title={`Roll back after event ${event.index}`}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-amber-500 hover:text-amber-200"
                       >
-                        Roll back after
+                        <Undo2 aria-hidden="true" className="h-4 w-4" />
                       </button>
                     </form>
                   ) : null}

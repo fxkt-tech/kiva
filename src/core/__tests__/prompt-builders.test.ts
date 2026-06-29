@@ -59,10 +59,15 @@ describe("prompt builders", () => {
     expect(combined).toContain("短句、直接、有推进感");
     expect(combined).toContain("3 号 周知");
     expect(combined).toContain(`你的身份：${seer.roleName}`);
+    expect(combined).toContain("本局规则：");
+    expect(combined).toContain("角色配置：狼人 2、预言家 1、女巫 1、平民 2");
+    expect(combined).toContain("本局没有守卫");
     expect(combined).toContain("查验结果");
     expect(combined).toContain("speech");
     expect(combined).toContain("必须输出 JSON 对象");
     expect(combined).toContain('"text"');
+    expect(combined).not.toContain("#3");
+    expect(combined).not.toContain("reasoning 是给主理人看的");
     expect(combined).not.toContain("1 号 秦川：狼人");
     expect(combined).not.toContain("5 号 陈墨：平民");
   });

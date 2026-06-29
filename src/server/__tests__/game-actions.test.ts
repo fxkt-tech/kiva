@@ -42,7 +42,11 @@ describe("game actions", () => {
     const created = await actions.createGame();
 
     expect(created).toMatchObject({
-      game: { id: expect.stringMatching(/^game_/) },
+      game: {
+        id: expect.stringMatching(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+        ),
+      },
       events: [],
       draft: null,
     });
@@ -65,6 +69,32 @@ describe("game actions", () => {
     await expect(repository.get(created.game.id)).resolves.toBeNull();
     await expect(actions.getGame(created.game.id)).resolves.toBeNull();
     await expect(actions.listGames()).resolves.toEqual([]);
+  });
+
+  it("renames a game record", async () => {
+    const { actions, repository } = await createActions();
+    const created = await actions.createGame();
+
+    const renamed = await actions.renameGame(created.game.id, "  新标题  ");
+
+    expect(renamed.game.title).toBe("新标题");
+    expect(renamed.game.updatedAt).not.toBe(created.game.updatedAt);
+    await expect(repository.get(created.game.id)).resolves.toMatchObject({
+      game: {
+        id: created.game.id,
+        title: "新标题",
+        updatedAt: renamed.game.updatedAt,
+      },
+    });
+  });
+
+  it("rejects blank game names", async () => {
+    const { actions } = await createActions();
+    const created = await actions.createGame();
+
+    await expect(actions.renameGame(created.game.id, "   ")).rejects.toThrow(
+      "Game title cannot be blank",
+    );
   });
 
   it("creates a game from an injected role library repository", async () => {

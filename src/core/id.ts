@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { DraftId, EventId, GameId } from "./types";
 
 export function createGameId(): GameId {
-  return `game_${randomUUID()}` as GameId;
+  return randomUUID() as GameId;
 }
 
 export function createDraftId(): DraftId {

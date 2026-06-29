@@ -2,7 +2,7 @@ import type { GameEvent } from "./events";
 import { formatEventForHost, type PresentedEvent } from "./event-presenter";
 import type { Game } from "./game";
 import type { ModelBindingSnapshot, PlayerSnapshot } from "./player";
-import type { Faction, GameRole, PlayerId } from "./types";
+import type { Faction, GameRole, PlayerId, Ruleset } from "./types";
 import { projectVisibleEvents, type VisibilityContext } from "./visibility";
 
 export type PlayerContextRosterEntry = {
@@ -23,6 +23,7 @@ export type PlayerContextTimelineItem = PresentedEvent & {
 export type PlayerLlmContext = {
   readonly gameId: Game["id"];
   readonly gameTitle: string;
+  readonly ruleset: Ruleset;
   readonly viewer: {
     readonly playerId: PlayerId;
     readonly seatNo: number;
@@ -73,6 +74,7 @@ export function buildPlayerLlmContext(
   return {
     gameId: input.game.id,
     gameTitle: input.game.title,
+    ruleset: input.game.ruleset,
     viewer: {
       playerId: viewer.playerId,
       seatNo: viewer.seatNo,

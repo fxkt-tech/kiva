@@ -13,6 +13,7 @@ import type { PlayerContextRosterEntry } from "./player-context";
 import {
   baseViewerSystemPrompts,
   firstNonEmpty,
+  rulesetPromptLines,
   uniqueNonEmptyPrompts,
 } from "./prompt-builders";
 import { mechanicForDraftType } from "./role-mechanics";
@@ -79,6 +80,7 @@ export async function generateActionDraft(
           `mechanic=${mechanicKey}`,
           `你是：${context.viewer.seatNo} 号 ${context.viewer.name}`,
           `你的身份：${context.viewer.roleName}`,
+          ...rulesetPromptLines(context.ruleset),
           "玩家名单：",
           ...context.roster.map((player) => rosterPromptLine(player)),
           "可选目标：",
@@ -86,7 +88,7 @@ export async function generateActionDraft(
           "可见事件：",
           ...context.timeline.flatMap((item) => timelinePromptLines(item)),
           actionOutputInstruction(input.draft.type),
-          "reasoning 是给主理人看的简短决策依据，只能引用以上可见信息。",
+          "reasoning 是玩家的简短思考过程，只能引用以上可见信息。",
         ].join("\n"),
       },
     ],
@@ -172,13 +174,12 @@ function rosterPromptLine(player: PlayerContextRosterEntry): string {
 }
 
 function timelinePromptLines(item: {
-  readonly index: number;
   readonly title: string;
   readonly text: string;
   readonly details?: readonly string[];
 }): string[] {
   return [
-    `#${item.index} ${item.title}：${item.text}`,
+    `- ${item.title}：${item.text}`,
     ...(item.details ?? []).map((detail) => `  - ${detail}`),
   ];
 }

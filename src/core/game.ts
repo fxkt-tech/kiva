@@ -74,7 +74,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
     }
 
     return createPlayerSnapshot({
-      playerId: `${input.gameId}_p${seat.seatNo}` as PlayerId,
+      playerId: `p${seat.seatNo}` as PlayerId,
       seatNo: seat.seatNo,
       name: character.name,
       gameRole,

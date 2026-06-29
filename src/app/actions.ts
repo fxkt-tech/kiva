@@ -55,6 +55,13 @@ export async function deleteGameAction(gameId: GameId) {
   revalidatePath("/");
 }
 
+export async function renameGameAction(gameId: GameId, formData: FormData) {
+  await gameActions.renameGame(gameId, formValue(formData, "title"));
+  revalidatePath("/");
+  revalidatePath(editorPath(gameId));
+  revalidatePath(previewPath(gameId));
+}
+
 export async function confirmDraftAction(gameId: GameId) {
   await gameActions.confirmDraft(gameId);
   await gameActions.continueGame(gameId);

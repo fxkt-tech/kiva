@@ -66,6 +66,12 @@ describe("action generation", () => {
       "mechanic=seer_check",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
+      "本局规则：",
+    );
+    expect(result.generation?.request?.messages[0]?.content).toContain(
+      "本局没有守卫",
+    );
+    expect(result.generation?.request?.messages[0]?.content).toContain(
       "可选目标",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
@@ -159,10 +165,13 @@ describe("action generation", () => {
 
     const content = result.generation?.request?.messages[0]?.content ?? "";
 
-    expect(content).toContain("#6 5 号 陈墨发言：我觉得 1 号发言像狼人。");
-    expect(content).toContain("#7 投票结算：平票：1 号 秦川、5 号 陈墨。");
+    expect(content).toContain("- 5 号 陈墨发言：我觉得 1 号发言像狼人。");
+    expect(content).toContain("- 投票结算：平票：1 号 秦川、5 号 陈墨。");
     expect(content).toContain("  - 5 号 陈墨 -> 1 号 秦川");
     expect(content).toContain("  - 1 号 秦川 -> 5 号 陈墨");
+    expect(content).not.toContain("#6");
+    expect(content).not.toContain("#7");
+    expect(content).not.toContain("reasoning 是给主理人看的");
   });
 
   it("keeps safe visible role information in action prompts", async () => {

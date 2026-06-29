@@ -4,6 +4,7 @@ import {
   editDraftPayloadAction,
   regenerateDraftAction,
 } from "@/app/actions";
+import { Check, Loader2, RefreshCw, Save, Trash2 } from "lucide-react";
 import type { DraftEvent } from "@/core/drafts";
 import { formatDraftForHost, formatVisibility } from "@/core/event-presenter";
 import type { GenerationRecord } from "@/core/generation-record";
@@ -117,24 +118,36 @@ export function DraftPanel({
           {isLlmDraft(draft) ? (
             <form action={regenerateDraftAction.bind(null, gameId)}>
               <FormSubmitButton
-                label="Regenerate"
-                pendingLabel="Regenerating..."
-                className="w-full rounded-md border border-sky-900/80 px-3 py-1.5 text-xs font-medium text-sky-300 transition hover:border-sky-600 hover:text-sky-200 sm:w-auto"
+                label={<RefreshCw aria-hidden="true" className="h-4 w-4" />}
+                pendingLabel={
+                  <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                }
+                ariaLabel="Regenerate"
+                title="Regenerate"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-sky-900/80 text-sky-300 transition hover:border-sky-600 hover:text-sky-200 disabled:opacity-50"
               />
             </form>
           ) : null}
           <form action={confirmDraftAction.bind(null, gameId)}>
             <FormSubmitButton
-              label="Confirm draft"
-              pendingLabel="Confirming..."
-              className="w-full rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-950 transition hover:bg-white sm:w-auto"
+              label={<Check aria-hidden="true" className="h-4 w-4" />}
+              pendingLabel={
+                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+              }
+              ariaLabel="Confirm draft"
+              title="Confirm draft"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-zinc-100 text-zinc-950 transition hover:bg-white disabled:opacity-50"
             />
           </form>
           <form action={deleteDraftAction.bind(null, gameId)}>
             <FormSubmitButton
-              label="Delete draft"
-              pendingLabel="Deleting..."
-              className="w-full rounded-md border border-red-900/80 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:border-red-600 hover:text-red-200 sm:w-auto"
+              label={<Trash2 aria-hidden="true" className="h-4 w-4" />}
+              pendingLabel={
+                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+              }
+              ariaLabel="Delete draft"
+              title="Delete draft"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-red-900/80 text-red-300 transition hover:border-red-600 hover:text-red-200 disabled:opacity-50"
             />
           </form>
         </div>
@@ -194,9 +207,13 @@ function DraftPayloadForm({
       </div>
       {controls}
       <FormSubmitButton
-        label="Save action"
-        pendingLabel="Saving..."
-        className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+        label={<Save aria-hidden="true" className="h-4 w-4" />}
+        pendingLabel={
+          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+        }
+        ariaLabel="Save action"
+        title="Save action"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-700 text-zinc-200 transition hover:border-zinc-500 hover:text-white disabled:opacity-50"
       />
     </form>
   );

@@ -46,12 +46,12 @@ describe("game creation", () => {
       "villager",
     ]);
     expect(game.players.map((player) => player.playerId)).toEqual([
-      `${gameId}_p1`,
-      `${gameId}_p2`,
-      `${gameId}_p3`,
-      `${gameId}_p4`,
-      `${gameId}_p5`,
-      `${gameId}_p6`,
+      "p1",
+      "p2",
+      "p3",
+      "p4",
+      "p5",
+      "p6",
     ]);
 
     expect(game.players[0]).toMatchObject({
@@ -66,7 +66,7 @@ describe("game creation", () => {
     expect(game.players[0]?.systemPrompt).toBe(seedCharacters[0].systemPrompt);
   });
 
-  it("keeps createSeedGame compatible with the old seat, name, role, and playerId format", () => {
+  it("keeps createSeedGame compatible with the seat, name, role, and playerId format", () => {
     const game = createSeedGame({ gameId, createdAt });
 
     expect(
@@ -77,12 +77,12 @@ describe("game creation", () => {
         gameRole: player.gameRole,
       })),
     ).toEqual([
-      { playerId: `${gameId}_p1`, seatNo: 1, name: "秦川", gameRole: "werewolf" },
-      { playerId: `${gameId}_p2`, seatNo: 2, name: "林夏", gameRole: "werewolf" },
-      { playerId: `${gameId}_p3`, seatNo: 3, name: "周知", gameRole: "seer" },
-      { playerId: `${gameId}_p4`, seatNo: 4, name: "许棠", gameRole: "witch" },
-      { playerId: `${gameId}_p5`, seatNo: 5, name: "陈墨", gameRole: "villager" },
-      { playerId: `${gameId}_p6`, seatNo: 6, name: "沈岚", gameRole: "villager" },
+      { playerId: "p1", seatNo: 1, name: "秦川", gameRole: "werewolf" },
+      { playerId: "p2", seatNo: 2, name: "林夏", gameRole: "werewolf" },
+      { playerId: "p3", seatNo: 3, name: "周知", gameRole: "seer" },
+      { playerId: "p4", seatNo: 4, name: "许棠", gameRole: "witch" },
+      { playerId: "p5", seatNo: 5, name: "陈墨", gameRole: "villager" },
+      { playerId: "p6", seatNo: 6, name: "沈岚", gameRole: "villager" },
     ]);
   });
 

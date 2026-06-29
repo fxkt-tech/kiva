@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Eye, SquarePen, Trash2 } from "lucide-react";
 import { deleteGameAction } from "@/app/actions";
+import { GameTitleEditor } from "@/components/home/game-title-editor";
 import { NewGameDialog } from "@/components/home/new-game-dialog";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
@@ -49,67 +51,86 @@ export default async function HomePage() {
         </header>
 
         <section className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/45">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-zinc-800 px-4 py-3 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[minmax(0,1fr)_160px_160px_auto]">
-            <span>Game</span>
-            <span className="hidden sm:block">Events</span>
-            <span className="hidden sm:block">Updated</span>
-            <span>Operate</span>
-          </div>
           {records.length === 0 ? (
             <div className="px-4 py-10 text-sm text-zinc-400">
               No local games yet.
             </div>
           ) : (
-            <div className="divide-y divide-zinc-800">
-              {records.map((record) => (
-                <div
-                  key={record.game.id}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-4 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_160px_160px_auto] sm:items-center"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate font-medium text-zinc-100">
-                      {record.game.title}
-                    </div>
-                    <div className="mt-1 truncate text-xs text-zinc-500">
-                      {record.game.id}
-                    </div>
-                  </div>
-                  <div className="hidden text-zinc-400 sm:block">
-                    {record.events.filter((event) => event.status === "active")
-                      .length}
-                    {record.draft ? " + draft" : ""}
-                  </div>
-                  <time
-                    dateTime={record.game.updatedAt}
-                    className="hidden text-zinc-500 sm:block"
-                  >
-                    {formatDate(record.game.updatedAt)}
-                  </time>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    <Link
-                      href={`/games/${record.game.id}/preview`}
-                      className="rounded-md border border-sky-900/80 px-3 py-2 text-xs font-medium text-sky-300 transition hover:border-sky-600 hover:text-sky-200"
-                      target="_blank"
-                    >
-                      Preview
-                    </Link>
-                    <Link
-                      href={`/games/${record.game.id}/editor`}
-                      className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
-                    >
-                      Editor
-                    </Link>
-                    <form action={deleteGameAction.bind(null, record.game.id)}>
-                      <button
-                        type="submit"
-                        className="rounded-md border border-red-900/80 px-3 py-2 text-xs font-medium text-red-300 transition hover:border-red-600 hover:text-red-200"
-                      >
-                        Delete
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] table-fixed text-left text-sm">
+                <colgroup>
+                  <col className="w-auto" />
+                  <col className="w-28" />
+                  <col className="w-36" />
+                  <col className="w-40" />
+                </colgroup>
+                <thead>
+                  <tr className="border-b border-zinc-800 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                    <th className="px-4 py-3 font-medium">Game</th>
+                    <th className="px-4 py-3 font-medium">Events</th>
+                    <th className="px-4 py-3 font-medium">Updated</th>
+                    <th className="px-4 py-3 text-right font-medium">Operate</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800">
+                  {records.map((record) => (
+                    <tr key={record.game.id} className="align-middle">
+                      <td className="px-4 py-4">
+                        <div className="min-w-0">
+                          <GameTitleEditor
+                            gameId={record.game.id}
+                            title={record.game.title}
+                          />
+                          <div className="mt-1 truncate text-xs text-zinc-500">
+                            {record.game.id}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-zinc-400">
+                        {record.events.filter((event) => event.status === "active")
+                          .length}
+                        {record.draft ? " + draft" : ""}
+                      </td>
+                      <td className="px-4 py-4">
+                        <time dateTime={record.game.updatedAt} className="text-zinc-500">
+                          {formatDate(record.game.updatedAt)}
+                        </time>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex justify-end gap-2">
+                          <Link
+                            href={`/games/${record.game.id}/preview`}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-sky-900/80 text-sky-300 transition hover:border-sky-600 hover:text-sky-200"
+                            target="_blank"
+                            aria-label="Preview game"
+                            title="Preview game"
+                          >
+                            <Eye aria-hidden="true" className="h-4 w-4" />
+                          </Link>
+                          <Link
+                            href={`/games/${record.game.id}/editor`}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-700 text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+                            aria-label="Open editor"
+                            title="Open editor"
+                          >
+                            <SquarePen aria-hidden="true" className="h-4 w-4" />
+                          </Link>
+                          <form action={deleteGameAction.bind(null, record.game.id)}>
+                            <button
+                              type="submit"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-900/80 text-red-300 transition hover:border-red-600 hover:text-red-200"
+                              aria-label="Delete game"
+                              title="Delete game"
+                            >
+                              <Trash2 aria-hidden="true" className="h-4 w-4" />
+                            </button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </section>

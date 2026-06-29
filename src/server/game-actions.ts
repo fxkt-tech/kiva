@@ -120,6 +120,28 @@ export function createGameActions(
       return repository.list();
     },
 
+    async renameGame(gameId: GameId, title: string): Promise<GameRecord> {
+      const normalizedTitle = title.trim();
+      if (normalizedTitle.length === 0) {
+        throw new Error("Game title cannot be blank");
+      }
+
+      return repository.withGameLock(gameId, async () => {
+        const record = await loadGame(gameId);
+        const updatedRecord: GameRecord = {
+          ...record,
+          game: {
+            ...record.game,
+            title: normalizedTitle,
+            updatedAt: now(),
+          },
+        };
+
+        await repository.save(updatedRecord);
+        return updatedRecord;
+      });
+    },
+
     async continueGame(gameId: GameId): Promise<GameRecord> {
       return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);
