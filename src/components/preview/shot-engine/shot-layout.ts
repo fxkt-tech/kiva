@@ -1,5 +1,5 @@
 import type { PlaybackScenePlayer } from "@/core/playback";
-import type { Rect } from "../canvas-renderer";
+import type { Rect } from "../geometry";
 
 export type SeatTrackSide = "left" | "right";
 

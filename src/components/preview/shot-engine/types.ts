@@ -1,5 +1,5 @@
 import type { PlaybackItem, PlaybackScenePlayer } from "@/core/playback";
-import type { PreviewAvatarImages, PreviewBackgroundImages } from "../show-theme";
+import type { PreviewAvatarImages, PreviewBackgroundImages } from "../preview-renderer";
 import type { ShotLayout } from "./shot-layout";
 import type { SubtitleCue } from "./subtitles";
 

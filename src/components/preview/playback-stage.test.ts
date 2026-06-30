@@ -11,9 +11,8 @@ describe("PlaybackStage", () => {
       item({ index: 2, title: "Second event", text: "Later announcement" }),
     ]);
 
-    expect(html).toContain("width=\"1920\"");
-    expect(html).toContain("height=\"1080\"");
     expect(html).toContain("aria-label=\"Playback canvas\"");
+    expect(html).toContain("[&amp;_canvas]:h-full");
     expect(html).not.toContain("Second event");
     expect(html).not.toContain("Later announcement");
   });
@@ -31,38 +30,18 @@ describe("PlaybackStage", () => {
       item({ index: 3, title: "Third event", startsAtMs: 4400 }),
     ]);
 
-    expect(html).toContain("Record");
-    expect(html).toContain("Play");
-    expect(html).toContain("Reset");
-    expect(html).toContain("Timeline");
+    expect(html).toContain("aria-label=\"Start recording\"");
+    expect(html).toContain("aria-label=\"Previous\"");
+    expect(html).toContain("aria-label=\"Play\"");
+    expect(html).toContain("aria-label=\"Next\"");
+    expect(html).toContain("aria-label=\"Reset\"");
+    expect(html).toContain("aria-label=\"Download WebM\"");
+    expect(html).toContain("aria-label=\"Timeline\"");
     expect(html).toContain("0:00 / 0:06");
     expect(html).toContain("type=\"range\"");
     expect(html).toContain("1 / 3");
     expect(html).not.toContain("Open clean preview");
     expect(html).not.toContain("Open recording studio");
-  });
-
-  it("can hide controls for recording output", () => {
-    const html = renderStage(
-      [item({ index: 1, title: "Recording frame" })],
-      { controls: "hidden" },
-    );
-
-    expect(html).toContain("aria-label=\"Playback canvas\"");
-    expect(html).not.toContain("Playback controls");
-    expect(html).not.toContain("Record");
-  });
-
-  it("renders a canvas host for the Pixi renderer without leaking scene content", () => {
-    const html = renderStage(
-      [item({ index: 1, title: "Pixi frame", text: "Pixi-only scene" })],
-      { renderer: "pixi" },
-    );
-
-    expect(html).toContain("aria-label=\"Playback canvas\"");
-    expect(html).toContain("[&amp;_canvas]:h-full");
-    expect(html).not.toContain("width=\"1920\"");
-    expect(html).not.toContain("Pixi-only scene");
   });
 
   it("keeps scene content out of the DOM because video output is canvas-only", () => {
@@ -87,8 +66,11 @@ describe("PlaybackStage", () => {
   it("disables playback controls that cannot advance a single-item sequence", () => {
     const html = renderStage([item({ index: 1, title: "Only event" })]);
 
-    expect(html).toContain(">Play</button>");
-    expect(html).toContain(">Record</button>");
+    expect(html).toContain("aria-label=\"Play\"");
+    expect(html).toContain("aria-label=\"Previous\"");
+    expect(html).toContain("aria-label=\"Next\"");
+    expect(html).toContain("aria-label=\"Start recording\"");
+    expect(html).toContain("aria-label=\"Download WebM\"");
     expect(html).toContain("disabled");
   });
 });

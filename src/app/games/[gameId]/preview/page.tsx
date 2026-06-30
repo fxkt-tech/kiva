@@ -15,9 +15,7 @@ type PreviewPageProps = {
     readonly gameId: string;
   }>;
   readonly searchParams?: Promise<{
-    readonly controls?: string;
     readonly focus?: string;
-    readonly renderer?: string;
   }>;
 };
 
@@ -27,9 +25,7 @@ export default async function PreviewPage({
 }: PreviewPageProps) {
   const { gameId } = await params;
   const resolvedSearchParams = await searchParams;
-  const controlsParam = resolvedSearchParams?.controls;
   const focusParam = resolvedSearchParams?.focus;
-  const rendererParam = resolvedSearchParams?.renderer;
   const dataDir = process.env.KIVA_DATA_DIR;
   const record = await createGameActions(createGameRepository(dataDir)).getGame(
     gameId as GameId,
@@ -47,11 +43,6 @@ export default async function PreviewPage({
 
   return (
     <PlaybackStage
-      controls={
-        controlsParam === "0" || controlsParam === "hidden"
-          ? "hidden"
-          : "visible"
-      }
       initialPosition={focusCurrent ? "end" : "start"}
       items={compilePublicPlayback(playbackEvents, record.game.players, {
         audience: "director",
@@ -60,7 +51,6 @@ export default async function PreviewPage({
           return source ? voiceDurations.get(source) ?? null : null;
         },
       })}
-      renderer={rendererParam === "canvas2d" ? "canvas2d" : "pixi"}
     />
   );
 }

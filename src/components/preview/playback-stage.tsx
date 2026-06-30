@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  CircleDot,
+  Download,
+  Pause,
+  Play,
+  RotateCcw,
+  SkipBack,
+  SkipForward,
+  Square,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   playbackIndexAtMs,
@@ -9,17 +20,11 @@ import {
 import {
   type PreviewAvatarImages,
   type PreviewBackgroundImages,
-} from "./show-theme";
-import { systemVoiceSourceForScene } from "./preview-audio";
-import {
-  Canvas2DPreviewRenderer,
   type PreviewRenderFrameInput,
   type PreviewRendererHandle,
-  type PreviewRendererKind,
 } from "./preview-renderer";
+import { systemVoiceSourceForScene } from "./preview-audio";
 
-const CANVAS_WIDTH = 1920;
-const CANVAS_HEIGHT = 1080;
 const FRAME_RATE = 30;
 const TICK_MS = 1000 / FRAME_RATE;
 const backgroundImageSources = {
@@ -29,20 +34,15 @@ const backgroundImageSources = {
 
 type PlaybackStageProps = {
   readonly items: readonly PlaybackItem[];
-  readonly controls?: "visible" | "hidden";
   readonly initialPosition?: "start" | "end";
-  readonly renderer?: PreviewRendererKind;
 };
 
 type RecordingStatus = "idle" | "recording" | "ready" | "failed";
 
 export function PlaybackStage({
   items,
-  controls = "visible",
   initialPosition = "start",
-  renderer = "canvas2d",
 }: PlaybackStageProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const pixiHostRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<PreviewRendererHandle | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -70,7 +70,13 @@ export function PlaybackStage({
   const safeIndex = hasItems ? playbackIndexAtMs(items, safeTimeMs) : 0;
   const progress = hasItems ? `${safeIndex + 1} / ${items.length}` : "0 / 0";
   const canPlay = hasItems && safeTimeMs < totalDurationMs;
+  const canNavigate =
+    hasItems && recordingStatus !== "recording" && items.length > 1;
+  const canGoPrevious = canNavigate && safeIndex > 0;
+  const canGoNext = canNavigate && safeIndex < items.length - 1;
   const canRecord = hasItems && recordingStatus !== "recording";
+  const isRecording = recordingStatus === "recording";
+  const recordControlLabel = isRecording ? "Stop recording" : "Start recording";
   latestRenderInputRef.current = {
     items,
     timeMs: safeTimeMs,
@@ -90,18 +96,6 @@ export function PlaybackStage({
       rendererRef.current?.destroy();
       rendererRef.current = null;
       setRendererHandle(null);
-
-      if (renderer === "canvas2d") {
-        if (!canvasRef.current) {
-          return;
-        }
-
-        currentRenderer = new Canvas2DPreviewRenderer(canvasRef.current);
-        rendererRef.current = currentRenderer;
-        renderLatestFrame(currentRenderer, latestRenderInputRef.current);
-        setRendererHandle(currentRenderer);
-        return;
-      }
 
       if (!pixiHostRef.current) {
         return;
@@ -139,7 +133,7 @@ export function PlaybackStage({
         setRendererHandle(null);
       }
     };
-  }, [renderer]);
+  }, []);
 
   useEffect(() => {
     renderLatestFrame(rendererHandle, latestRenderInputRef.current);
@@ -245,6 +239,15 @@ export function PlaybackStage({
     stopSystemVoice();
   }
 
+  function seekToItem(index: number) {
+    const item = items[index];
+    if (!item) {
+      return;
+    }
+
+    seekTo(item.startsAtMs);
+  }
+
   function startRecording() {
     const canvas = rendererRef.current?.canvas ?? null;
     setError(null);
@@ -317,6 +320,8 @@ export function PlaybackStage({
     if (recorder && recorder.state !== "inactive") {
       recorder.stop();
     }
+    setPlaying(false);
+    stopSystemVoice();
   }
 
   function playSystemVoiceForScene(scene: PlaybackItem | undefined) {
@@ -372,95 +377,144 @@ export function PlaybackStage({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black p-4 text-white">
       <section className="aspect-video w-full max-w-6xl overflow-hidden bg-black shadow-2xl shadow-black">
-        {renderer === "pixi" ? (
-          <div
-            aria-label="Playback canvas"
-            className="h-full w-full bg-black [&_canvas]:h-full [&_canvas]:w-full"
-            ref={pixiHostRef}
-          />
-        ) : (
-          <canvas
-            aria-label="Playback canvas"
-            className="h-full w-full bg-black"
-            height={CANVAS_HEIGHT}
-            ref={canvasRef}
-            width={CANVAS_WIDTH}
-          />
-        )}
+        <div
+          aria-label="Playback canvas"
+          className="h-full w-full bg-black [&_canvas]:h-full [&_canvas]:w-full"
+          ref={pixiHostRef}
+        />
         {!hasItems ? <span className="sr-only">No playable scenes</span> : null}
       </section>
-      {controls === "visible" ? (
-        <section
-          aria-label="Playback controls"
-          className="grid w-full max-w-6xl gap-3 border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-200 shadow-lg shadow-black/40"
-        >
-          <div className="grid gap-2">
-            <div className="flex items-center justify-between gap-4 text-xs text-zinc-500">
-              <span>Timeline</span>
-              <span className="font-mono">
-                {formatTime(safeTimeMs)} / {formatTime(totalDurationMs)}
-              </span>
-            </div>
-            <input
-              aria-label="Timeline"
-              className="h-2 w-full accent-cyan-400"
-              disabled={!hasItems || recordingStatus === "recording"}
-              max={Math.max(0, totalDurationMs)}
-              min={0}
-              onChange={(event) => seekTo(Number(event.currentTarget.value))}
-              step={100}
-              type="range"
-              value={safeTimeMs}
-            />
+      <section
+        aria-label="Playback controls"
+        className="grid w-full max-w-6xl gap-3 border border-zinc-800 bg-zinc-950/95 px-4 py-3 text-sm text-zinc-200 shadow-lg shadow-black/40"
+      >
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between gap-4 text-xs text-zinc-500">
+            <span className="font-mono">{progress}</span>
+            <span className="font-mono">
+              {formatTime(safeTimeMs)} / {formatTime(totalDurationMs)}
+            </span>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="font-mono text-zinc-400">{progress}</div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                className="border border-red-900/70 px-3 py-2 text-red-200 transition hover:border-red-500 hover:bg-red-950/40 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-                disabled={!canRecord}
-                onClick={startRecording}
-                type="button"
-              >
-                Record
-              </button>
-              <button
-                className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-                disabled={!canPlay}
-                onClick={playing ? pause : play}
-                type="button"
-              >
-                {playing ? "Pause" : "Play"}
-              </button>
-              <button
-                className="border border-zinc-700 px-3 py-2 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-900 disabled:text-zinc-700"
-                disabled={!hasItems || (safeTimeMs === 0 && !playing)}
-                onClick={reset}
-                type="button"
-              >
-                Reset
-              </button>
-              {downloadUrl ? (
-                <a
-                  className="border border-emerald-800 px-3 py-2 text-emerald-200 transition hover:border-emerald-500 hover:bg-emerald-950/40"
-                  download="kiva-playback.webm"
-                  href={downloadUrl}
-                >
-                  Download WebM
-                </a>
-              ) : null}
-              {recordingStatus === "recording" ? (
-                <span className="text-xs text-red-300">Recording</span>
-              ) : null}
-              {recordingStatus === "ready" ? (
-                <span className="text-xs text-emerald-300">Ready</span>
-              ) : null}
-              {error ? <span className="text-xs text-red-300">{error}</span> : null}
-            </div>
+          <input
+            aria-label="Timeline"
+            className="h-2 w-full accent-cyan-400"
+            disabled={!hasItems || isRecording}
+            max={Math.max(0, totalDurationMs)}
+            min={0}
+            onChange={(event) => seekTo(Number(event.currentTarget.value))}
+            step={100}
+            type="range"
+            value={safeTimeMs}
+          />
+        </div>
+        <div className="grid grid-cols-[minmax(8rem,1fr)_auto_minmax(8rem,1fr)] items-center gap-3">
+          <div className="min-w-0 font-mono text-xs text-zinc-500">
+            {error ? <span className="text-red-300">{error}</span> : null}
           </div>
-        </section>
-      ) : null}
+          <div className="flex items-center justify-center gap-2">
+            <IconButton
+              disabled={!canGoPrevious}
+              label="Previous"
+              onClick={() => seekToItem(safeIndex - 1)}
+            >
+              <SkipBack aria-hidden="true" size={20} strokeWidth={2.4} />
+            </IconButton>
+            <IconButton
+              disabled={!canPlay}
+              label={playing ? "Pause" : "Play"}
+              onClick={playing ? pause : play}
+              variant="primary"
+            >
+              {playing ? (
+                <Pause aria-hidden="true" size={22} strokeWidth={2.5} />
+              ) : (
+                <Play aria-hidden="true" size={22} strokeWidth={2.5} />
+              )}
+            </IconButton>
+            <IconButton
+              disabled={!canGoNext}
+              label="Next"
+              onClick={() => seekToItem(safeIndex + 1)}
+            >
+              <SkipForward aria-hidden="true" size={20} strokeWidth={2.4} />
+            </IconButton>
+            <IconButton
+              disabled={!hasItems || (safeTimeMs === 0 && !playing)}
+              label="Reset"
+              onClick={reset}
+            >
+              <RotateCcw aria-hidden="true" size={20} strokeWidth={2.4} />
+            </IconButton>
+          </div>
+          <div className="flex items-center justify-end gap-2">
+            {isRecording ? (
+              <span
+                aria-label="Recording"
+                className="h-2 w-2 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.9)]"
+              />
+            ) : null}
+            <IconButton
+              disabled={!isRecording && !canRecord}
+              label={recordControlLabel}
+              onClick={isRecording ? stopRecording : startRecording}
+              variant="record"
+            >
+              {isRecording ? (
+                <Square aria-hidden="true" size={19} strokeWidth={2.7} />
+              ) : (
+                <CircleDot aria-hidden="true" size={21} strokeWidth={2.5} />
+              )}
+            </IconButton>
+            <a
+              aria-disabled={!downloadUrl}
+              aria-label="Download WebM"
+              className="inline-flex h-10 w-10 items-center justify-center border border-emerald-900/70 text-emerald-200 transition hover:border-emerald-500 hover:bg-emerald-950/40 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:border-zinc-900 aria-disabled:text-zinc-700"
+              download={downloadUrl ? "kiva-playback.webm" : undefined}
+              href={downloadUrl ?? undefined}
+              title="Download WebM"
+            >
+              <Download aria-hidden="true" size={20} strokeWidth={2.4} />
+            </a>
+          </div>
+        </div>
+      </section>
     </main>
+  );
+}
+
+function IconButton({
+  children,
+  disabled,
+  label,
+  onClick,
+  variant = "default",
+}: {
+  readonly children: ReactNode;
+  readonly disabled: boolean;
+  readonly label: string;
+  readonly onClick: () => void;
+  readonly variant?: "default" | "primary" | "record";
+}) {
+  const className = {
+    default:
+      "border-zinc-700 text-zinc-200 hover:border-zinc-500 hover:bg-zinc-900 disabled:border-zinc-900 disabled:text-zinc-700",
+    primary:
+      "border-cyan-700 text-cyan-100 hover:border-cyan-400 hover:bg-cyan-950/40 disabled:border-zinc-900 disabled:text-zinc-700",
+    record:
+      "border-red-900/70 text-red-200 hover:border-red-500 hover:bg-red-950/40 disabled:border-zinc-900 disabled:text-zinc-700",
+  }[variant];
+
+  return (
+    <button
+      aria-label={label}
+      className={`inline-flex h-10 w-10 items-center justify-center border transition disabled:cursor-not-allowed ${className}`}
+      disabled={disabled}
+      onClick={onClick}
+      title={label}
+      type="button"
+    >
+      {children}
+    </button>
   );
 }
 
