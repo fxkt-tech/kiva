@@ -53,6 +53,18 @@ describe("PlaybackStage", () => {
     expect(html).not.toContain("Record");
   });
 
+  it("renders a canvas host for the Pixi renderer without leaking scene content", () => {
+    const html = renderStage(
+      [item({ index: 1, title: "Pixi frame", text: "Pixi-only scene" })],
+      { renderer: "pixi" },
+    );
+
+    expect(html).toContain("aria-label=\"Playback canvas\"");
+    expect(html).toContain("[&amp;_canvas]:h-full");
+    expect(html).not.toContain("width=\"1920\"");
+    expect(html).not.toContain("Pixi-only scene");
+  });
+
   it("keeps scene content out of the DOM because video output is canvas-only", () => {
     const html = renderStage([
       item({

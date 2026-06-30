@@ -63,7 +63,7 @@ describe("drafts", () => {
     expect(event).not.toHaveProperty("reason");
   });
 
-  it("creates a fixed six-player game aggregate", async () => {
+  it("creates a fixed twelve-player game aggregate", async () => {
     const { createSeedGame } = await import("../game");
     const record = createSeedGame({
       gameId,
@@ -71,9 +71,9 @@ describe("drafts", () => {
       ruleset: createDefaultRuleset(),
     });
 
-    expect(record.players).toHaveLength(6);
+    expect(record.players).toHaveLength(12);
     expect(record.players.map((player) => player.seatNo)).toEqual([
-      1, 2, 3, 4, 5, 6,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
     ]);
   });
 });

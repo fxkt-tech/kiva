@@ -180,6 +180,9 @@ function updatePublicDeaths(
         deadPlayerIds.add(event.payload.exiledPlayerId);
       }
       return;
+    case "hunter_shot_decided":
+      deadPlayerIds.add(event.payload.targetPlayerId);
+      return;
     default:
       return;
   }
@@ -239,6 +242,9 @@ function highlightedPlayersForEvent(event: GameEvent): ReadonlySet<PlayerId> {
       event.payload.tiedPlayerIds.forEach((playerId) => {
         playerIds.add(playerId);
       });
+      break;
+    case "hunter_shot_decided":
+      playerIds.add(event.payload.targetPlayerId);
       break;
   }
 

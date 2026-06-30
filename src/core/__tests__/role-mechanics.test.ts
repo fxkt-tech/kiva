@@ -8,6 +8,8 @@ describe("role mechanics", () => {
     ["seer_check_selected", "seer_check"],
     ["witch_antidote_decided", "witch_medicine"],
     ["witch_poison_decided", "witch_medicine"],
+    ["guard_protect_selected", "guard_protect"],
+    ["hunter_shot_decided", "hunter_shot"],
     ["vote_cast", "none"],
   ] satisfies readonly (readonly [ActionDraftType, RoleMechanicKey])[])(
     "maps %s to %s",

@@ -304,19 +304,19 @@ describe("library diagnostics", () => {
   });
 
   it("keeps presets valid but not creatable when create game rejects an otherwise valid role reference", () => {
-    const hunter = role({
-      id: "hunter",
-      name: "猎人",
+    const fool = role({
+      id: "fool",
+      name: "白痴",
       faction: "good",
       team: "villager",
       mechanicKey: "none",
-      systemPrompt: "你是猎人。",
+      systemPrompt: "你是白痴。",
       actionPrompt: null,
     });
     const preset = sixPlayerPreset({
-      roleIds: ["hunter", "werewolf", "seer", "witch", "villager", "villager"],
+      roleIds: ["fool", "werewolf", "seer", "witch", "villager", "villager"],
       seatAssignments: [
-        seatAssignment({ seatNo: 1, roleId: "hunter", characterId: "qin" }),
+        seatAssignment({ seatNo: 1, roleId: "fool", characterId: "qin" }),
         seatAssignment({ seatNo: 2, roleId: "werewolf", characterId: "lin" }),
         seatAssignment({ seatNo: 3, roleId: "seer", characterId: "zhou" }),
         seatAssignment({ seatNo: 4, roleId: "witch", characterId: "xu" }),
@@ -328,7 +328,7 @@ describe("library diagnostics", () => {
     expect(
       diagnosePreset({
         preset,
-        roles: [hunter, werewolf, seer, witch, villager],
+        roles: [fool, werewolf, seer, witch, villager],
         characters: [qin, lin, zhou, xu, chen, shen],
         presets: [preset],
       }),
@@ -336,7 +336,7 @@ describe("library diagnostics", () => {
       valid: true,
       canCreateGame: false,
       messages: expect.arrayContaining([
-        "Role is not supported by current ruleset: hunter",
+        "Role is not supported by current ruleset: fool",
       ]),
     });
   });
@@ -661,14 +661,17 @@ describe("library diagnostics", () => {
       characters: ["qin", "lin"],
     });
 
-    expect(
-      promptPreviewForPresetSeat({
-        preset,
-        seatNo: 1,
-        roles: [werewolf, seer],
-        characters: [qin, lin],
-      }),
-    ).toContain("你是秦川。\n你是狼人。\n选择袭击目标。\nmodel: mock/mock-model");
+    const preview = promptPreviewForPresetSeat({
+      preset,
+      seatNo: 1,
+      roles: [werewolf, seer],
+      characters: [qin, lin],
+    });
+
+    expect(preview).toContain("角色基础提示：\n你是秦川。");
+    expect(preview).toContain("身份规则：\n你是狼人。");
+    expect(preview).toContain("行动规则：\n选择袭击目标。");
+    expect(preview).toContain("模型：mock/mock-model");
   });
 
   it("resolves seat model with override before character, role, then core default", () => {
@@ -690,8 +693,8 @@ describe("library diagnostics", () => {
       roles: [role({ ...werewolf, defaultModelBinding: roleDefault }), seer],
       characters: [character({ ...qin, defaultModelBinding: characterDefault }), lin],
     });
-    expect(overridePreview).toContain("model: seat/override");
-    expect(overridePreview).not.toContain("model: character/default");
+    expect(overridePreview).toContain("模型：seat/override");
+    expect(overridePreview).not.toContain("模型：character/default");
 
     expect(
       promptPreviewForPresetSeat({
@@ -700,7 +703,7 @@ describe("library diagnostics", () => {
         roles: [role({ ...werewolf, defaultModelBinding: roleDefault }), seer],
         characters: [character({ ...qin, defaultModelBinding: characterDefault }), lin],
       }),
-    ).toContain("model: character/default");
+    ).toContain("模型：character/default");
 
     expect(
       promptPreviewForPresetSeat({
@@ -709,7 +712,7 @@ describe("library diagnostics", () => {
         roles: [role({ ...werewolf, defaultModelBinding: roleDefault }), seer],
         characters: [character({ ...qin, defaultModelBinding: null }), lin],
       }),
-    ).toContain("model: role/default");
+    ).toContain("模型：role/default");
 
     expect(
       promptPreviewForPresetSeat({
@@ -718,7 +721,7 @@ describe("library diagnostics", () => {
         roles: [role({ ...werewolf, defaultModelBinding: null }), seer],
         characters: [character({ ...qin, defaultModelBinding: null }), lin],
       }),
-    ).toContain("model: volcengine/doubao-seed-1-6-flash-250828");
+    ).toContain("模型：volcengine/doubao-seed-1-6-flash-250828");
   });
 
   it("keeps diagnostics independent from game seed helpers", () => {

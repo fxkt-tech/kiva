@@ -8,15 +8,34 @@ import { seedPresets } from "../presets";
 import { seedRoles } from "../roles";
 
 const HARD_CODED_SEATS = [
-  { seatNo: 1, roleId: "werewolf", characterId: "qin_chuan" },
-  { seatNo: 2, roleId: "werewolf", characterId: "lin_xia" },
-  { seatNo: 3, roleId: "seer", characterId: "zhou_zhi" },
-  { seatNo: 4, roleId: "witch", characterId: "xia_yu" },
-  { seatNo: 5, roleId: "villager", characterId: "chen_mo" },
-  { seatNo: 6, roleId: "villager", characterId: "gu_qingyan" },
+  { seatNo: 1, roleId: "villager", characterId: "zhou_zhi" },
+  { seatNo: 2, roleId: "seer", characterId: "chen_mo" },
+  { seatNo: 3, roleId: "werewolf", characterId: "qin_chuan" },
+  { seatNo: 4, roleId: "witch", characterId: "lin_xia" },
+  { seatNo: 5, roleId: "villager", characterId: "xia_yu" },
+  { seatNo: 6, roleId: "werewolf", characterId: "gu_qingyan" },
+  { seatNo: 7, roleId: "guard", characterId: "shen_lan" },
+  { seatNo: 8, roleId: "hunter", characterId: "xu_yan" },
+  { seatNo: 9, roleId: "werewolf", characterId: "bai_qi" },
+  { seatNo: 10, roleId: "villager", characterId: "tang_tang" },
+  { seatNo: 11, roleId: "werewolf", characterId: "lu_zhao" },
+  { seatNo: 12, roleId: "villager", characterId: "su_jin" },
 ] as const;
 
-const CHARACTER_NAMES = ["秦川", "林夏", "周知", "夏宇", "陈墨", "顾清妍"];
+const CHARACTER_NAMES = [
+  "秦川",
+  "林夏",
+  "周知",
+  "夏宇",
+  "陈墨",
+  "顾清妍",
+  "沈岚",
+  "许砚",
+  "白祁",
+  "唐棠",
+  "陆昭",
+  "苏瑾",
+];
 const ROLE_ONLY_FIELDS = [
   "role",
   "faction",
@@ -39,8 +58,8 @@ describe("seed library", () => {
     ).toBe(seedPresets);
   });
 
-  test("keeps the default preset aligned with the current hardcoded six-player seats", () => {
-    const preset = seedPresets.find((item) => item.id === "six_player_standard");
+  test("keeps the default preset aligned with the current hardcoded twelve-player seats", () => {
+    const preset = seedPresets.find((item) => item.id === "twelve_player_standard");
 
     expect(preset).toBeDefined();
     expect(preset?.seatAssignments).toEqual(
@@ -55,7 +74,7 @@ describe("seed library", () => {
   });
 
   test("keeps role ids as a multiset and character ids unique", () => {
-    const preset = seedPresets.find((item) => item.id === "six_player_standard");
+    const preset = seedPresets.find((item) => item.id === "twelve_player_standard");
     const roleCounts = new Map<string, number>();
 
     for (const roleId of preset?.roleIds ?? []) {
@@ -63,10 +82,12 @@ describe("seed library", () => {
     }
 
     expect(Object.fromEntries(roleCounts)).toEqual({
-      werewolf: 2,
+      werewolf: 4,
       seer: 1,
       witch: 1,
-      villager: 2,
+      hunter: 1,
+      guard: 1,
+      villager: 4,
     });
     expect(new Set(preset?.characterIds).size).toBe(preset?.characterIds.length);
   });

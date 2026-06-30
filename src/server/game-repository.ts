@@ -15,7 +15,12 @@ import type { GameEvent } from "@/core/events";
 import type { Game } from "@/core/game";
 import type { GenerationRecord } from "@/core/generation-record";
 import { createPlayerSnapshot } from "@/core/player";
-import type { GameId } from "@/core/types";
+import {
+  createDefaultRuleset,
+  createSixPlayerRuleset,
+  type GameId,
+  type Ruleset,
+} from "@/core/types";
 
 export type GameRecord = {
   readonly game: Game;
@@ -125,11 +130,26 @@ function normalizeRecord(rawRecord: unknown): GameRecord {
     ...record,
     game: {
       ...record.game,
+      ruleset: normalizeRuleset(record.game.ruleset),
       players: record.game.players.map((player) =>
         createPlayerSnapshot(player),
       ),
     },
     generations: record.generations ?? [],
+  };
+}
+
+function normalizeRuleset(ruleset: Ruleset): Ruleset {
+  const fallback =
+    ruleset.playerCount === 6 ? createSixPlayerRuleset() : createDefaultRuleset();
+
+  return {
+    ...fallback,
+    ...ruleset,
+    roleCounts: {
+      ...fallback.roleCounts,
+      ...ruleset.roleCounts,
+    },
   };
 }
 

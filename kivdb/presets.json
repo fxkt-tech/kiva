@@ -1,65 +1,113 @@
 [
   {
-    "id": "six_player_standard",
-    "name": "6人狼人杀试运行",
-    "rulesetId": "classic_six",
-    "playerCount": 6,
+    "id": "twelve_player_standard",
+    "name": "12人狼人杀标准局",
+    "rulesetId": "classic_twelve",
+    "playerCount": 12,
     "roleIds": [
-      "werewolf",
-      "werewolf",
+      "villager",
       "seer",
+      "werewolf",
       "witch",
       "villager",
+      "werewolf",
+      "guard",
+      "hunter",
+      "werewolf",
+      "villager",
+      "werewolf",
       "villager"
     ],
     "characterIds": [
+      "zhou_zhi",
+      "chen_mo",
       "qin_chuan",
       "lin_xia",
-      "zhou_zhi",
       "xia_yu",
-      "chen_mo",
-      "gu_qingyan"
+      "gu_qingyan",
+      "shen_lan",
+      "xu_yan",
+      "bai_qi",
+      "tang_tang",
+      "lu_zhao",
+      "su_jin"
     ],
     "seatAssignments": [
       {
         "seatNo": 1,
+        "roleId": "villager",
+        "characterId": "zhou_zhi",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 2,
+        "roleId": "seer",
+        "characterId": "chen_mo",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 3,
         "roleId": "werewolf",
         "characterId": "qin_chuan",
         "modelBindingOverride": null
       },
       {
-        "seatNo": 2,
-        "roleId": "werewolf",
-        "characterId": "lin_xia",
-        "modelBindingOverride": null
-      },
-      {
-        "seatNo": 3,
-        "roleId": "seer",
-        "characterId": "zhou_zhi",
-        "modelBindingOverride": null
-      },
-      {
         "seatNo": 4,
         "roleId": "witch",
-        "characterId": "xia_yu",
+        "characterId": "lin_xia",
         "modelBindingOverride": null
       },
       {
         "seatNo": 5,
         "roleId": "villager",
-        "characterId": "chen_mo",
+        "characterId": "xia_yu",
         "modelBindingOverride": null
       },
       {
         "seatNo": 6,
-        "roleId": "villager",
+        "roleId": "werewolf",
         "characterId": "gu_qingyan",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 7,
+        "roleId": "guard",
+        "characterId": "shen_lan",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 8,
+        "roleId": "hunter",
+        "characterId": "xu_yan",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 9,
+        "roleId": "werewolf",
+        "characterId": "bai_qi",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 10,
+        "roleId": "villager",
+        "characterId": "tang_tang",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 11,
+        "roleId": "werewolf",
+        "characterId": "lu_zhao",
+        "modelBindingOverride": null
+      },
+      {
+        "seatNo": 12,
+        "roleId": "villager",
+        "characterId": "su_jin",
         "modelBindingOverride": null
       }
     ],
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
-    "updatedAt": "2026-06-27T16:28:15.491Z"
+    "updatedAt": "2026-06-27T00:00:00.000Z"
   }
 ]

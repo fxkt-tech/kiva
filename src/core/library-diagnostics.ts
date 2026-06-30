@@ -12,6 +12,7 @@ import {
 import { validateRoleDefinitions, type RoleDefinition } from "./role-definition";
 import {
   createDefaultRuleset,
+  createSixPlayerRuleset,
   type GameRole,
   type PlayerId,
 } from "./types";
@@ -359,7 +360,11 @@ function gameCreationDiagnostic(
   }
 
   if (messages.length === 0) {
-    const boardValidation = validateSixPlayerBoard(players, createDefaultRuleset());
+    const ruleset =
+      input.preset.playerCount === 6
+        ? createSixPlayerRuleset()
+        : createDefaultRuleset();
+    const boardValidation = validateSixPlayerBoard(players, ruleset);
     if (!boardValidation.ok) {
       messages.push(`Game preset ${input.preset.id} does not match ruleset`);
     }
@@ -458,5 +463,7 @@ function isBuiltInRole(roleId: string): roleId is GameRole {
   return roleId === "werewolf" ||
     roleId === "seer" ||
     roleId === "witch" ||
+    roleId === "hunter" ||
+    roleId === "guard" ||
     roleId === "villager";
 }

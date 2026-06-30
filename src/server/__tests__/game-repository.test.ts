@@ -221,12 +221,12 @@ describe("game repository", () => {
 
     expect(loaded?.game.players[0]).toMatchObject({
       characterSourceId: null,
-      roleSourceId: "werewolf",
-      roleName: "狼人",
-      team: "wolf",
-      mechanicKey: "wolf_kill",
+      roleSourceId: "villager",
+      roleName: "平民",
+      team: "villager",
+      mechanicKey: "none",
       characterSystemPromptSnapshot:
-        "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "你是狼人杀对局中的玩家周知。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是数据党，优先记录票型、顺序、坑位和可验证事实。",
       roleSystemPromptSnapshot: "",
       roleActionPromptSnapshot: null,
       avatar: null,
@@ -272,12 +272,12 @@ describe("game repository", () => {
     ]);
     expect(records[0].game.players[0]).toMatchObject({
       characterSourceId: null,
-      roleSourceId: "werewolf",
-      roleName: "狼人",
-      team: "wolf",
-      mechanicKey: "wolf_kill",
+      roleSourceId: "villager",
+      roleName: "平民",
+      team: "villager",
+      mechanicKey: "none",
       characterSystemPromptSnapshot:
-        "你是狼人杀对局中的一名玩家，只能依据你可见的信息行动。",
+        "你是狼人杀对局中的玩家周知。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是数据党，优先记录票型、顺序、坑位和可验证事实。",
       roleSystemPromptSnapshot: "",
       roleActionPromptSnapshot: null,
       avatar: null,

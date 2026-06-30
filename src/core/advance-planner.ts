@@ -9,7 +9,7 @@ import {
   getEligibleVoters,
   getLegalNightTargets,
   resolveVote,
-  resolveNightDeaths,
+  resolveNightDeathDetails,
   validateWitchDecision,
 } from "./rules";
 import { deriveGameState, type DerivedGameState } from "./state";
@@ -45,6 +45,21 @@ export function planNextDraft(input: PlanNextDraftInput): DraftEvent | null {
   const pendingEnd = planPendingEndDraft(input, effectivePlayers, state);
   if (pendingEnd) {
     return pendingEnd;
+  }
+
+  const afterHunterShot = planAfterHunterShotDraft(input, events, state);
+  if (afterHunterShot) {
+    return afterHunterShot;
+  }
+
+  const pendingHunterShot = planPendingHunterShotDraft(
+    input,
+    events,
+    effectivePlayers,
+    state,
+  );
+  if (pendingHunterShot) {
+    return pendingHunterShot;
   }
 
   const afterExile = planAfterExileDraft(input, events, effectivePlayers, state);
@@ -133,6 +148,37 @@ function planNightDraft(
   state: DerivedGameState,
 ): DraftEvent | null {
   const phaseEvents = getCurrentPhaseEvents(events, "night", state.dayNumber);
+  const guard = firstAlivePlayerIdByRole(players, state.alivePlayerIds, "guard");
+  const guardProtect = findEvent(phaseEvents, "guard_protect_selected");
+  if (!guardProtect && guard) {
+    const previousGuardTarget = previousGuardTargetId(events, state.dayNumber);
+    const targets = getLegalNightTargets(
+      "guard_protect",
+      players,
+      state.alivePlayerIds,
+      guard,
+    ).filter((target) =>
+      input.game.ruleset.guardForbidConsecutiveSameTarget
+        ? target !== previousGuardTarget
+        : true,
+    );
+    const target = targets[0];
+
+    if (target) {
+      return createDraftEvent({
+        id: input.draftId,
+        gameId: input.game.id,
+        type: "guard_protect_selected",
+        phase: "night",
+        actorPlayerId: guard,
+        targetPlayerIds: [target],
+        visibility: { kind: "player_private", playerIds: [guard] },
+        payload: { targetPlayerId: target },
+        createdAt: input.createdAt,
+      });
+    }
+  }
+
   const wolfKill = findEvent(phaseEvents, "wolf_kill_selected");
   if (!wolfKill) {
     const wolf = firstAlivePlayerIdByRole(
@@ -283,6 +329,7 @@ function planNightDraft(
   }
 
   if (!hasEvent(phaseEvents, "night_resolved")) {
+    const guardProtect = findEvent(phaseEvents, "guard_protect_selected");
     const antidote = findEvent(phaseEvents, "witch_antidote_decided");
     const poison = findEvent(phaseEvents, "witch_poison_decided");
     if (
@@ -299,10 +346,35 @@ function planNightDraft(
       return null;
     }
 
+    if (
+      guardProtect &&
+      !isLegalTarget(
+        guardProtect.payload.targetPlayerId,
+        getLegalNightTargets(
+          "guard_protect",
+          players,
+          state.alivePlayerIds,
+          guardProtect.actorPlayerId,
+        ),
+      )
+    ) {
+      return null;
+    }
+
+    if (
+      guardProtect &&
+      input.game.ruleset.guardForbidConsecutiveSameTarget &&
+      guardProtect.payload.targetPlayerId ===
+        previousGuardTargetId(events, state.dayNumber)
+    ) {
+      return null;
+    }
+
     const antidoteTargetId =
       antidote?.payload.used === true ? antidote.payload.targetPlayerId : null;
     const poisonTargetId =
       poison?.payload.used === true ? poison.payload.targetPlayerId : null;
+    const guardTargetId = guardProtect?.payload.targetPlayerId ?? null;
     if (
       (antidote?.payload.used === true && antidoteTargetId === null) ||
       (poison?.payload.used === true && poisonTargetId === null)
@@ -336,11 +408,13 @@ function planNightDraft(
       }
     }
 
-    const deadPlayerIds = resolveNightDeaths({
+    const deaths = resolveNightDeathDetails({
       wolfKillTargetId: wolfKill.payload.targetPlayerId,
+      guardTargetId,
       antidoteTargetId,
       poisonTargetId,
     });
+    const deadPlayerIds = deaths.map((death) => death.playerId);
 
     return createDraftEvent({
       id: input.draftId,
@@ -349,7 +423,7 @@ function planNightDraft(
       phase: "night",
       targetPlayerIds: deadPlayerIds,
       visibility: { kind: "host_only" },
-      payload: { deadPlayerIds },
+      payload: { deadPlayerIds, deaths },
       createdAt: input.createdAt,
     });
   }
@@ -394,6 +468,75 @@ function planAfterNightResolvedDraft(
   });
 }
 
+function planPendingHunterShotDraft(
+  input: PlanNextDraftInput,
+  events: readonly GameEvent[],
+  players: readonly PlayerSnapshot[],
+  state: DerivedGameState,
+): DraftEvent | null {
+  const hunter = players.find(
+    (player) =>
+      player.gameRole === "hunter" &&
+      state.deadPlayerIds.includes(player.playerId),
+  );
+  if (!hunter) {
+    return null;
+  }
+
+  if (
+    events.some(
+      (event) =>
+        event.type === "hunter_shot_decided" &&
+        event.actorPlayerId === hunter.playerId,
+    )
+  ) {
+    return null;
+  }
+
+  const deathReason = hunterDeathReason(events, hunter.playerId);
+  if (deathReason !== "wolf_kill" && deathReason !== "exile") {
+    return null;
+  }
+
+  const target = getLegalNightTargets(
+    "hunter_shot",
+    players,
+    state.alivePlayerIds,
+    hunter.playerId,
+  )[0];
+  if (!target) {
+    return null;
+  }
+
+  return createDraftEvent({
+    id: input.draftId,
+    gameId: input.game.id,
+    type: "hunter_shot_decided",
+    phase: "last_words",
+    actorPlayerId: hunter.playerId,
+    targetPlayerIds: [target],
+    visibility: { kind: "public" },
+    payload: { targetPlayerId: target },
+    createdAt: input.createdAt,
+  });
+}
+
+function planAfterHunterShotDraft(
+  input: PlanNextDraftInput,
+  events: readonly GameEvent[],
+  state: DerivedGameState,
+): DraftEvent | null {
+  if (events.at(-1)?.type !== "hunter_shot_decided") {
+    return null;
+  }
+
+  if (state.pendingLastWords.length > 0) {
+    return draftPhaseStarted(input, "last_words", state.dayNumber);
+  }
+
+  return draftPhaseStarted(input, "night", state.dayNumber + 1);
+}
+
 function planLastWordsDraft(
   input: PlanNextDraftInput,
   events: readonly GameEvent[],
@@ -420,7 +563,7 @@ function planLastWordsDraft(
     });
   }
 
-  if (lastWordsStartedAfterExile(events, state.dayNumber)) {
+  if (lastWordsShouldAdvanceToNextNight(events, state.dayNumber)) {
     return draftPhaseStarted(input, "night", state.dayNumber + 1);
   }
 
@@ -646,6 +789,42 @@ function planAfterExileDraft(
   );
 }
 
+function hunterDeathReason(
+  events: readonly GameEvent[],
+  hunterPlayerId: PlayerId,
+): "wolf_kill" | "witch_poison" | "exile" | "hunter_shot" | null {
+  for (const event of [...events].reverse()) {
+    if (
+      event.type === "hunter_shot_decided" &&
+      event.payload.targetPlayerId === hunterPlayerId
+    ) {
+      return "hunter_shot";
+    }
+
+    if (
+      event.type === "exile_resolved" &&
+      event.payload.exiledPlayerId === hunterPlayerId
+    ) {
+      return "exile";
+    }
+
+    if (event.type === "night_resolved") {
+      const matchingDeath = event.payload.deaths?.find(
+        (death) => death.playerId === hunterPlayerId,
+      );
+      if (matchingDeath) {
+        return matchingDeath.reason;
+      }
+
+      if (event.payload.deadPlayerIds.includes(hunterPlayerId)) {
+        return "wolf_kill";
+      }
+    }
+  }
+
+  return null;
+}
+
 function draftGameEndIfNeeded(
   input: PlanNextDraftInput,
   players: readonly PlayerSnapshot[],
@@ -832,7 +1011,38 @@ function choosePkVoteTarget(
   );
 }
 
-function lastWordsStartedAfterExile(
+function previousGuardTargetId(
+  events: readonly GameEvent[],
+  currentDayNumber: number,
+): PlayerId | null {
+  const previousNightStartIndex = findLastIndex(
+    events,
+    (event) =>
+      event.type === "phase_started" &&
+      event.payload.phase === "night" &&
+      event.payload.dayNumber < currentDayNumber,
+  );
+  if (previousNightStartIndex < 0) {
+    return null;
+  }
+
+  const nextPhaseIndex = events.findIndex(
+    (event, index) =>
+      index > previousNightStartIndex && event.type === "phase_started",
+  );
+  const previousNightEvents = events.slice(
+    previousNightStartIndex + 1,
+    nextPhaseIndex < 0 ? undefined : nextPhaseIndex,
+  );
+  const guardProtect = previousNightEvents.find(
+    (event): event is EventOf<"guard_protect_selected"> =>
+      event.type === "guard_protect_selected",
+  );
+
+  return guardProtect?.payload.targetPlayerId ?? null;
+}
+
+function lastWordsShouldAdvanceToNextNight(
   events: readonly GameEvent[],
   dayNumber: number,
 ): boolean {
@@ -847,7 +1057,17 @@ function lastWordsStartedAfterExile(
     return false;
   }
 
-  return events[lastWordsStartIndex - 1]?.type === "exile_resolved";
+  const previousEvent = events[lastWordsStartIndex - 1];
+  if (previousEvent?.type === "exile_resolved") {
+    return true;
+  }
+
+  return (
+    previousEvent?.type === "hunter_shot_decided" &&
+    previousEvent.actorPlayerId !== undefined &&
+    hunterDeathReason(events.slice(0, lastWordsStartIndex), previousEvent.actorPlayerId) ===
+      "exile"
+  );
 }
 
 function findLastIndex<T>(

@@ -6,6 +6,8 @@ import type { RoleDefinition } from "@/core/role-definition";
 import { seedRoles } from "@/seeds/roles";
 import { RoleEditor } from "./role-editor";
 
+const werewolfRole = seedRoles.find((role) => role.id === "werewolf")!;
+
 const modelBinding = {
   provider: "mock",
   model: "role-model",
@@ -17,7 +19,7 @@ const modelBinding = {
 describe("RoleEditor", () => {
   it("renders role mechanics and prompts", () => {
     const html = renderToStaticMarkup(
-      React.createElement(RoleEditor, { role: seedRoles[0] }),
+      React.createElement(RoleEditor, { role: werewolfRole }),
     );
 
     expect(html).toContain('name="id"');
@@ -30,7 +32,7 @@ describe("RoleEditor", () => {
 
   it("locks built-in role contracts while preserving hidden values", () => {
     const html = renderToStaticMarkup(
-      React.createElement(RoleEditor, { role: seedRoles[0] }),
+      React.createElement(RoleEditor, { role: werewolfRole }),
     );
 
     expect(html).toContain('name="faction"');
@@ -48,7 +50,7 @@ describe("RoleEditor", () => {
 
   it("preserves default model binding in hidden JSON", () => {
     const role: RoleDefinition = {
-      ...seedRoles[0],
+      ...werewolfRole,
       id: "custom_wolf",
       defaultModelBinding: modelBinding,
     };

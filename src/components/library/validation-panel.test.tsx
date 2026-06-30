@@ -12,6 +12,8 @@ import { seedRoles } from "@/seeds/roles";
 import type { LibraryActionsRecord } from "@/server/library-actions";
 import { ValidationPanel } from "./validation-panel";
 
+const werewolfRole = seedRoles.find((role) => role.id === "werewolf")!;
+
 describe("ValidationPanel", () => {
   it("renders role diagnostics and prompt preview", () => {
     const html = renderToStaticMarkup(
@@ -25,23 +27,23 @@ describe("ValidationPanel", () => {
     expect(html).toContain("Validation");
     expect(html).toContain("valid");
     expect(html).toContain("Built-in role contract locked");
-    expect(html).toContain("six_player_standard");
+    expect(html).toContain("twelve_player_standard");
     expect(html).toContain("Prompt preview");
-    expect(html).toContain(seedRoles[0].systemPrompt);
+    expect(html).toContain(werewolfRole.systemPrompt);
   });
 
   it("renders preset create-game diagnostics", () => {
     const html = renderToStaticMarkup(
       React.createElement(ValidationPanel, {
         activeTab: "presets",
-        selectedId: "six_player_standard",
+        selectedId: "twelve_player_standard",
         library: libraryFixture(),
       }),
     );
 
     expect(html).toContain("Can create game");
     expect(html).toContain("yes");
-    expect(html).toContain("model:");
+    expect(html).toContain("模型：");
   });
 
   it("renders an empty diagnostic state for missing selections", () => {

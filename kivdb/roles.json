@@ -1,5 +1,22 @@
 [
   {
+    "id": "guard",
+    "name": "守卫",
+    "faction": "good",
+    "team": "god",
+    "mechanicKey": "guard_protect",
+    "systemPrompt": "你是好人阵营神职角色。夜晚可以守护一名存活玩家，阻止狼人当夜击杀该玩家；不能连续两晚守护同一名玩家。白天需要隐藏或公开身份来保护好人阵营。",
+    "actionPrompt": "夜晚请选择要守护的目标，并给出简短理由。",
+    "visibilityRules": [
+      "own_role"
+    ],
+    "nightOrder": 5,
+    "defaultModelBinding": null,
+    "enabled": true,
+    "createdAt": "2026-06-27T00:00:00.000Z",
+    "updatedAt": "2026-06-27T00:00:00.000Z"
+  },
+  {
     "id": "werewolf",
     "name": "狼人",
     "faction": "wolves",
@@ -47,6 +64,23 @@
       "witch_medicines"
     ],
     "nightOrder": 30,
+    "defaultModelBinding": null,
+    "enabled": true,
+    "createdAt": "2026-06-27T00:00:00.000Z",
+    "updatedAt": "2026-06-27T00:00:00.000Z"
+  },
+  {
+    "id": "hunter",
+    "name": "猎人",
+    "faction": "good",
+    "team": "god",
+    "mechanicKey": "hunter_shot",
+    "systemPrompt": "你是好人阵营神职角色。被狼人击杀或被投票放逐时可以开枪带走一名存活玩家；被女巫毒死时不能开枪。白天通过发言、投票和关键时刻的开枪选择帮助好人阵营找出狼人。",
+    "actionPrompt": "触发开枪时请选择要带走的目标，并给出简短理由。",
+    "visibilityRules": [
+      "own_role"
+    ],
+    "nightOrder": null,
     "defaultModelBinding": null,
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",

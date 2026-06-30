@@ -109,6 +109,8 @@ const PRIVATE_KNOWLEDGE_BY_ROLE = {
   werewolf: ["own_role", "wolf_teammates"],
   seer: ["own_role"],
   witch: ["own_role", "witch_medicines"],
+  hunter: ["own_role"],
+  guard: ["own_role"],
   villager: ["own_role"],
 } satisfies Record<GameRole, readonly PrivateKnowledgeKey[]>;
 
@@ -116,6 +118,8 @@ const ROLE_NAME_BY_ROLE = {
   werewolf: "狼人",
   seer: "预言家",
   witch: "女巫",
+  hunter: "猎人",
+  guard: "守卫",
   villager: "平民",
 } satisfies Record<GameRole, string>;
 
@@ -123,6 +127,8 @@ const TEAM_BY_ROLE = {
   werewolf: "wolf",
   seer: "god",
   witch: "god",
+  hunter: "god",
+  guard: "god",
   villager: "villager",
 } satisfies Record<GameRole, PlayerTeam>;
 
@@ -130,6 +136,8 @@ const MECHANIC_KEY_BY_ROLE = {
   werewolf: "wolf_kill",
   seer: "seer_check",
   witch: "witch_medicine",
+  hunter: "hunter_shot",
+  guard: "guard_protect",
   villager: "none",
 } satisfies Record<GameRole, PlayerMechanicKey>;
 
@@ -177,7 +185,7 @@ function createInitialPrivateKnowledge(
   return [...PRIVATE_KNOWLEDGE_BY_ROLE[role]];
 }
 
-export function validateSixPlayerBoard(
+export function validateBoard(
   players: readonly PlayerSnapshot[],
   ruleset: Ruleset,
 ): BoardValidationResult {
@@ -224,3 +232,5 @@ export function validateSixPlayerBoard(
 
   return { ok: true };
 }
+
+export const validateSixPlayerBoard = validateBoard;

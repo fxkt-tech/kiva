@@ -176,6 +176,8 @@ function isLlmDraft(draft: DraftEvent): boolean {
     draft.type === "pk_speech_given" ||
     draft.type === "wolf_kill_selected" ||
     draft.type === "seer_check_selected" ||
+    draft.type === "guard_protect_selected" ||
+    draft.type === "hunter_shot_decided" ||
     draft.type === "witch_antidote_decided" ||
     draft.type === "witch_poison_decided" ||
     draft.type === "vote_cast"
@@ -226,6 +228,8 @@ function renderDraftPayloadControls(
   switch (draft.type) {
     case "wolf_kill_selected":
     case "seer_check_selected":
+    case "guard_protect_selected":
+    case "hunter_shot_decided":
       return (
         <PlayerTargetField
           label="Target player"

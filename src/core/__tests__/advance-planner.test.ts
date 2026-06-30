@@ -132,7 +132,7 @@ describe("advance planner", () => {
 
     for (
       let index = game.players.length + 2;
-      index <= game.players.length + 9;
+      index <= game.players.length + 10;
       index += 1
     ) {
       const draft = planNextDraft({
@@ -148,6 +148,7 @@ describe("advance planner", () => {
     }
 
     expect(plannedTypes).toEqual([
+      "guard_protect_selected",
       "wolf_kill_selected",
       "seer_check_selected",
       "seer_check_result",
@@ -161,7 +162,7 @@ describe("advance planner", () => {
       planNextDraft({ game, events, draftId: draftId(16), createdAt }),
     ).toMatchObject({
       type: "phase_started",
-      payload: { phase: "last_words", dayNumber: 1 },
+      payload: { phase: "speech", dayNumber: 1 },
     });
   });
 
@@ -203,7 +204,7 @@ describe("advance planner", () => {
     const swappedEvents = events.map((event) => {
       if (
         event.type === "role_assigned" &&
-        event.payload.playerId === game.players[2].playerId
+        event.payload.playerId === game.players[1].playerId
       ) {
         return {
           ...event,
@@ -232,7 +233,7 @@ describe("advance planner", () => {
       return event;
     });
 
-    const wolfKill = requireDraft(
+    const guardProtect = requireDraft(
       planNextDraft({
         game,
         events: swappedEvents,
@@ -240,10 +241,18 @@ describe("advance planner", () => {
         createdAt,
       }),
     );
+    const wolfKill = requireDraft(
+      planNextDraft({
+        game,
+        events: confirmNext(swappedEvents, guardProtect),
+        draftId: draftId(21),
+        createdAt,
+      }),
+    );
     const seerCheck = planNextDraft({
       game,
-      events: confirmNext(swappedEvents, wolfKill),
-      draftId: draftId(21),
+      events: confirmNext(confirmNext(swappedEvents, guardProtect), wolfKill),
+      draftId: draftId(22),
       createdAt,
     });
 
@@ -272,109 +281,127 @@ describe("advance planner", () => {
 
   it("does not resolve night when active witch decisions violate rules", () => {
     const game = createGame();
-    const killedPlayerId = game.players[2].playerId;
+    const wolf = playerByRole(game, "werewolf");
+    const seer = playerByRole(game, "seer");
+    const witch = playerByRole(game, "witch");
+    const guard = playerByRole(game, "guard");
+    const killedPlayerId = game.players[0].playerId;
     const poisonTargetId = game.players[4].playerId;
     const events: readonly GameEvent[] = [
       ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
-      confirmedPhaseStarted("night", 1, 7),
+      confirmedPhaseStarted("night", 1, game.players.length + 1),
       confirmedEvent(
         createDraftEvent({
           id: draftId(8),
           gameId,
-          type: "wolf_kill_selected",
+          type: "guard_protect_selected",
           phase: "night",
-          actorPlayerId: game.players[0].playerId,
-          targetPlayerIds: [killedPlayerId],
-          visibility: { kind: "faction_private", faction: "wolves" },
-          payload: { targetPlayerId: killedPlayerId },
+          actorPlayerId: guard.playerId,
+          targetPlayerIds: [guard.playerId],
+          visibility: { kind: "player_private", playerIds: [guard.playerId] },
+          payload: { targetPlayerId: guard.playerId },
           createdAt,
         }),
-        8,
+        game.players.length + 2,
       ),
       confirmedEvent(
         createDraftEvent({
           id: draftId(9),
           gameId,
-          type: "seer_check_selected",
+          type: "wolf_kill_selected",
           phase: "night",
-          actorPlayerId: game.players[2].playerId,
-          targetPlayerIds: [game.players[0].playerId],
-          visibility: {
-            kind: "player_private",
-            playerIds: [game.players[2].playerId],
-          },
-          payload: { targetPlayerId: game.players[0].playerId },
+          actorPlayerId: wolf.playerId,
+          targetPlayerIds: [killedPlayerId],
+          visibility: { kind: "faction_private", faction: "wolves" },
+          payload: { targetPlayerId: killedPlayerId },
           createdAt,
         }),
-        9,
+        game.players.length + 3,
       ),
       confirmedEvent(
         createDraftEvent({
           id: draftId(10),
           gameId,
-          type: "seer_check_result",
+          type: "seer_check_selected",
           phase: "night",
-          actorPlayerId: game.players[2].playerId,
-          targetPlayerIds: [game.players[0].playerId],
+          actorPlayerId: seer.playerId,
+          targetPlayerIds: [wolf.playerId],
           visibility: {
             kind: "player_private",
-            playerIds: [game.players[2].playerId],
+            playerIds: [seer.playerId],
           },
-          payload: { targetPlayerId: game.players[0].playerId, result: "wolves" },
+          payload: { targetPlayerId: wolf.playerId },
           createdAt,
         }),
-        10,
+        game.players.length + 4,
       ),
       confirmedEvent(
         createDraftEvent({
           id: draftId(11),
           gameId,
-          type: "witch_death_info_shown",
+          type: "seer_check_result",
           phase: "night",
-          actorPlayerId: game.players[3].playerId,
-          targetPlayerIds: [killedPlayerId],
+          actorPlayerId: seer.playerId,
+          targetPlayerIds: [wolf.playerId],
           visibility: {
             kind: "player_private",
-            playerIds: [game.players[3].playerId],
+            playerIds: [seer.playerId],
           },
-          payload: { killedPlayerId },
+          payload: { targetPlayerId: wolf.playerId, result: "wolves" },
           createdAt,
         }),
-        11,
+        game.players.length + 5,
       ),
       confirmedEvent(
         createDraftEvent({
           id: draftId(12),
           gameId,
-          type: "witch_antidote_decided",
+          type: "witch_death_info_shown",
           phase: "night",
-          actorPlayerId: game.players[3].playerId,
+          actorPlayerId: witch.playerId,
           targetPlayerIds: [killedPlayerId],
           visibility: {
             kind: "player_private",
-            playerIds: [game.players[3].playerId],
+            playerIds: [witch.playerId],
           },
-          payload: { used: true, targetPlayerId: killedPlayerId },
+          payload: { killedPlayerId },
           createdAt,
         }),
-        12,
+        game.players.length + 6,
       ),
       confirmedEvent(
         createDraftEvent({
           id: draftId(13),
           gameId,
+          type: "witch_antidote_decided",
+          phase: "night",
+          actorPlayerId: witch.playerId,
+          targetPlayerIds: [killedPlayerId],
+          visibility: {
+            kind: "player_private",
+            playerIds: [witch.playerId],
+          },
+          payload: { used: true, targetPlayerId: killedPlayerId },
+          createdAt,
+        }),
+        game.players.length + 7,
+      ),
+      confirmedEvent(
+        createDraftEvent({
+          id: draftId(14),
+          gameId,
           type: "witch_poison_decided",
           phase: "night",
-          actorPlayerId: game.players[3].playerId,
+          actorPlayerId: witch.playerId,
           targetPlayerIds: [poisonTargetId],
           visibility: {
             kind: "player_private",
-            playerIds: [game.players[3].playerId],
+            playerIds: [witch.playerId],
           },
           payload: { used: true, targetPlayerId: poisonTargetId },
           createdAt,
         }),
-        13,
+        game.players.length + 8,
       ),
     ];
 
@@ -382,7 +409,7 @@ describe("advance planner", () => {
       planNextDraft({
         game,
         events,
-        draftId: draftId(14),
+        draftId: draftId(15),
         createdAt,
       }),
     ).toBeNull();
@@ -395,7 +422,7 @@ describe("complete deterministic game flow", () => {
     let events: readonly GameEvent[] = [];
     const plannedTypes: GameEvent["type"][] = [];
 
-    for (let step = 1; step <= 120; step += 1) {
+    for (let step = 1; step <= 320; step += 1) {
       const draft = planNextDraft({
         game,
         events,
@@ -469,33 +496,36 @@ describe("complete deterministic game flow", () => {
 
   it("plans game end after exile kills the last wolf", () => {
     const game = createGame();
+    const wolfIds = game.players
+      .filter((player) => player.gameRole === "werewolf")
+      .map((player) => player.playerId);
     const events: readonly GameEvent[] = [
       ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
-      confirmedPhaseStarted("night", 1, 7),
+      confirmedPhaseStarted("night", 1, game.players.length + 1),
       confirmedEvent(
         createDraftEvent({
           id: draftId(8),
           gameId,
           type: "night_resolved",
           phase: "night",
-          targetPlayerIds: [game.players[0].playerId],
+          targetPlayerIds: wolfIds.slice(0, -1),
           visibility: { kind: "host_only" },
-          payload: { deadPlayerIds: [game.players[0].playerId] },
+          payload: { deadPlayerIds: wolfIds.slice(0, -1) },
           createdAt,
         }),
-        8,
+        game.players.length + 2,
       ),
-      confirmedPhaseStarted("vote", 1, 9),
+      confirmedPhaseStarted("vote", 1, game.players.length + 3),
       confirmedEvent(
         createDraftEvent({
           id: draftId(10),
           gameId,
           type: "exile_resolved",
           phase: "vote",
-          targetPlayerIds: [game.players[1].playerId],
+          targetPlayerIds: [wolfIds.at(-1)!],
           visibility: { kind: "public" },
           payload: {
-            exiledPlayerId: game.players[1].playerId,
+            exiledPlayerId: wolfIds.at(-1)!,
             tiedPlayerIds: [],
             voteType: "exile",
             voteTable: [],
@@ -505,7 +535,7 @@ describe("complete deterministic game flow", () => {
           },
           createdAt,
         }),
-        10,
+        game.players.length + 4,
       ),
     ];
 
@@ -580,23 +610,26 @@ describe("complete deterministic game flow", () => {
 
   it("plans game end after night resolution kills all wolves", () => {
     const game = createGame();
+    const wolfIds = game.players
+      .filter((player) => player.gameRole === "werewolf")
+      .map((player) => player.playerId);
     const events: readonly GameEvent[] = [
       ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
-      confirmedPhaseStarted("night", 1, 7),
+      confirmedPhaseStarted("night", 1, game.players.length + 1),
       confirmedEvent(
         createDraftEvent({
           id: draftId(8),
           gameId,
           type: "night_resolved",
           phase: "night",
-          targetPlayerIds: [game.players[0].playerId, game.players[1].playerId],
+          targetPlayerIds: wolfIds,
           visibility: { kind: "host_only" },
           payload: {
-            deadPlayerIds: [game.players[0].playerId, game.players[1].playerId],
+            deadPlayerIds: wolfIds,
           },
           createdAt,
         }),
-        8,
+        game.players.length + 2,
       ),
     ];
 
@@ -621,7 +654,7 @@ describe("complete deterministic game flow", () => {
     const game = createGame();
     let events: readonly GameEvent[] = [];
 
-    for (let step = 1; step <= 120; step += 1) {
+    for (let step = 1; step <= 320; step += 1) {
       const draft = requireDraft(
         planNextDraft({
           game,
@@ -743,7 +776,7 @@ function confirmAllUntil(
 ): readonly GameEvent[] {
   let events: readonly GameEvent[] = [];
 
-  for (let step = 1; step <= 120; step += 1) {
+  for (let step = 1; step <= 320; step += 1) {
     const draft = requireDraft(
       planNextDraft({
         game,
@@ -765,7 +798,7 @@ function confirmAllUntil(
 function confirmCompleteGame(game: Game): readonly GameEvent[] {
   let events: readonly GameEvent[] = [];
 
-  for (let step = 1; step <= 120; step += 1) {
+  for (let step = 1; step <= 320; step += 1) {
     const draft = requireDraft(
       planNextDraft({
         game,
@@ -868,4 +901,13 @@ function confirmAllCurrentVotes(
   }
 
   return events;
+}
+
+function playerByRole(game: Game, role: GameRole) {
+  const player = game.players.find((candidate) => candidate.gameRole === role);
+  if (!player) {
+    throw new Error(`Missing player for role ${role}`);
+  }
+
+  return player;
 }

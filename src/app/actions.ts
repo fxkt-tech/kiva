@@ -35,9 +35,9 @@ export async function createGameFromSeatAssignmentsAction(formData: FormData) {
   const seatAssignments = seatAssignmentsFromForm(formData);
   const preset: GamePreset = {
     id: `temporary_${Date.now()}`,
-    name: "随机 6 人狼人杀",
-    rulesetId: "six_player_werewolf",
-    playerCount: 6,
+    name: "随机 12 人狼人杀",
+    rulesetId: "classic_twelve",
+    playerCount: 12,
     roleIds: seatAssignments.map((seat) => seat.roleId),
     characterIds: seatAssignments.map((seat) => seat.characterId),
     seatAssignments,
@@ -103,7 +103,7 @@ function formValue(formData: FormData, key: string): string {
 function seatAssignmentsFromForm(
   formData: FormData,
 ): readonly GamePresetSeatAssignment[] {
-  return Array.from({ length: 6 }, (_, index) => {
+  return Array.from({ length: 12 }, (_, index) => {
     const seatNo = index + 1;
 
     return {

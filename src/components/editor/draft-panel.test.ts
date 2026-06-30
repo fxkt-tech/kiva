@@ -35,7 +35,7 @@ describe("DraftPanel payload controls", () => {
 
     expect(html).toContain('name="targetPlayerId"');
     expect(html).toContain(`value="${players[0].playerId}"`);
-    expect(html).toContain("1 · 秦川");
+    expect(html).toContain(`${players[0].seatNo} · ${players[0].name}`);
     expect(html).toContain("Save action");
     expect(html).toContain("待确认：狼人刀人");
     expect(html).toContain("选择击杀 1 号");
@@ -79,7 +79,7 @@ describe("DraftPanel payload controls", () => {
     expect(html).toContain("visible context");
     expect(html).toContain("Raw output");
     expect(html).toContain("Parsed output");
-    expect(html).toContain("Reasoning");
+    expect(html).toContain("Player reasoning");
   });
 
   it("renders witch used false field and nullable target select", () => {

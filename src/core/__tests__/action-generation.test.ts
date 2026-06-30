@@ -4,12 +4,18 @@ import type { GameEvent } from "../events";
 import { createSeedGame } from "../game";
 import { MockLlmClient } from "../llm";
 import { generateActionDraft } from "../action-generation";
-import type { DraftId, EventId, GameId, PlayerId } from "../types";
+import type { DraftId, EventId, Faction, GameId, GameRole, PlayerId } from "../types";
 
 const gameId = "game_1" as GameId;
 const createdAt = "2026-06-26T00:00:00.000Z";
 const game = createSeedGame({ gameId, createdAt });
-const [wolf, , seer, witch, villager] = game.players;
+const wolf = playerByRole("werewolf");
+const secondWolf = game.players.find(
+  (player) => player.gameRole === "werewolf" && player.playerId !== wolf.playerId,
+)!;
+const seer = playerByRole("seer");
+const witch = playerByRole("witch");
+const villager = playerByRole("villager");
 
 describe("action generation", () => {
   it("applies legal seer target suggestions", async () => {
@@ -69,7 +75,7 @@ describe("action generation", () => {
       "本局规则：",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      "本局没有守卫",
+      "猎人 1、守卫 1",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
       "可选目标",
@@ -165,10 +171,18 @@ describe("action generation", () => {
 
     const content = result.generation?.request?.messages[0]?.content ?? "";
 
-    expect(content).toContain("- 5 号 陈墨发言：我觉得 1 号发言像狼人。");
-    expect(content).toContain("- 投票结算：平票：1 号 秦川、5 号 陈墨。");
-    expect(content).toContain("  - 5 号 陈墨 -> 1 号 秦川");
-    expect(content).toContain("  - 1 号 秦川 -> 5 号 陈墨");
+    expect(content).toContain(
+      `- ${villager.seatNo} 号 ${villager.name}发言：我觉得 1 号发言像狼人。`,
+    );
+    expect(content).toContain(
+      `- 投票结算：平票：${wolf.seatNo} 号 ${wolf.name}、${villager.seatNo} 号 ${villager.name}。`,
+    );
+    expect(content).toContain(
+      `  - ${villager.seatNo} 号 ${villager.name} -> ${wolf.seatNo} 号 ${wolf.name}`,
+    );
+    expect(content).toContain(
+      `  - ${wolf.seatNo} 号 ${wolf.name} -> ${villager.seatNo} 号 ${villager.name}`,
+    );
     expect(content).not.toContain("#6");
     expect(content).not.toContain("#7");
     expect(content).not.toContain("reasoning 是给主理人看的");
@@ -186,10 +200,16 @@ describe("action generation", () => {
 
     const content = result.generation?.request?.messages[0]?.content ?? "";
 
-    expect(content).toContain(`1 秦川 playerId=${wolf.playerId} role=werewolf faction=wolves`);
-    expect(content).toContain(`2 林夏 playerId=${game.players[1]?.playerId} role=werewolf faction=wolves`);
-    expect(content).toContain(`3 周知 playerId=${seer.playerId}`);
-    expect(content).not.toContain(`3 周知 playerId=${seer.playerId} role=seer`);
+    expect(content).toContain(
+      `${wolf.seatNo} ${wolf.name} playerId=${wolf.playerId} role=werewolf faction=wolves`,
+    );
+    expect(content).toContain(
+      `${secondWolf.seatNo} ${secondWolf.name} playerId=${secondWolf.playerId} role=werewolf faction=wolves`,
+    );
+    expect(content).toContain(`${seer.seatNo} ${seer.name} playerId=${seer.playerId}`);
+    expect(content).not.toContain(
+      `${seer.seatNo} ${seer.name} playerId=${seer.playerId} role=seer`,
+    );
   });
 
   it("rejects action drafts whose actor cannot use the draft mechanic", async () => {
@@ -319,11 +339,12 @@ describe("action generation", () => {
 function setupEvents(): readonly GameEvent[] {
   return [
     roleAssigned(1, wolf.playerId, "werewolf", "wolves"),
-    roleAssigned(2, seer.playerId, "seer", "good"),
-    roleAssigned(3, witch.playerId, "witch", "good"),
-    roleAssigned(4, villager.playerId, "villager", "good"),
+    roleAssigned(2, secondWolf.playerId, "werewolf", "wolves"),
+    roleAssigned(3, seer.playerId, "seer", "good"),
+    roleAssigned(4, witch.playerId, "witch", "good"),
+    roleAssigned(5, villager.playerId, "villager", "good"),
     {
-      ...baseEvent(5),
+      ...baseEvent(6),
       type: "phase_started",
       phase: "night",
       visibility: { kind: "public" },
@@ -395,8 +416,8 @@ function draftBase(type: DraftEvent["type"]) {
 function roleAssigned(
   index: number,
   playerId: PlayerId,
-  role: "werewolf" | "seer" | "witch" | "villager",
-  faction: "wolves" | "good",
+  role: GameRole,
+  faction: Faction,
 ): Extract<GameEvent, { type: "role_assigned" }> {
   return {
     ...baseEvent(index),
@@ -406,6 +427,15 @@ function roleAssigned(
     visibility: { kind: "player_private", playerIds: [playerId] },
     payload: { playerId, role, faction },
   };
+}
+
+function playerByRole(role: GameRole) {
+  const player = game.players.find((candidate) => candidate.gameRole === role);
+  if (!player) {
+    throw new Error(`Missing player for role ${role}`);
+  }
+
+  return player;
 }
 
 function baseEvent(index: number) {

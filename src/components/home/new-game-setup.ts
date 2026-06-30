@@ -2,17 +2,21 @@ import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePresetSeatAssignment } from "@/core/game-preset";
 import type { RoleDefinition } from "@/core/role-definition";
 
-export const requiredSixPlayerRoleCounts = {
-  werewolf: 2,
+export const requiredTwelvePlayerRoleCounts = {
+  werewolf: 4,
   seer: 1,
   witch: 1,
-  villager: 2,
+  hunter: 1,
+  guard: 1,
+  villager: 4,
 } as const;
 
 const requiredRoleLabels: Readonly<Record<string, string>> = {
   werewolf: "狼人",
   seer: "预言家",
   witch: "女巫",
+  hunter: "猎人",
+  guard: "守卫",
   villager: "平民",
 };
 
@@ -29,13 +33,13 @@ export function createRandomSeatSetup({
 }: RandomSeatSetupInput): readonly GamePresetSeatAssignment[] {
   const enabledRoleIds = new Set(roles.filter((role) => role.enabled).map((role) => role.id));
   const enabledCharacters = characters.filter((character) => character.enabled);
-  const rolePool = Object.entries(requiredSixPlayerRoleCounts).flatMap(
+  const rolePool = Object.entries(requiredTwelvePlayerRoleCounts).flatMap(
     ([roleId, count]) =>
       enabledRoleIds.has(roleId)
         ? Array.from({ length: count }, () => roleId)
         : [],
   );
-  const characterPool = shuffle(enabledCharacters, random).slice(0, 6);
+  const characterPool = shuffle(enabledCharacters, random).slice(0, 12);
 
   return shuffle(rolePool, random).map((roleId, index) => ({
     seatNo: index + 1,
@@ -63,7 +67,7 @@ export function roleCountMessages(
 ): readonly string[] {
   const messages: string[] = [];
 
-  for (const [roleId, requiredCount] of Object.entries(requiredSixPlayerRoleCounts)) {
+  for (const [roleId, requiredCount] of Object.entries(requiredTwelvePlayerRoleCounts)) {
     const actualCount = seats.filter((seat) => seat.roleId === roleId).length;
     if (actualCount !== requiredCount) {
       messages.push(
@@ -87,8 +91,8 @@ function seatReferenceMessages(
   const characterIds = seats.map((seat) => seat.characterId).filter(Boolean);
   const messages: string[] = [];
 
-  if (seats.length !== 6) {
-    messages.push(`需要 6 个座位，当前 ${seats.length} 个。`);
+  if (seats.length !== 12) {
+    messages.push(`需要 12 个座位，当前 ${seats.length} 个。`);
   }
 
   for (const seat of seats) {

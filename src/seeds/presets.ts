@@ -2,59 +2,33 @@ import type { GamePreset } from "../core/game-preset";
 
 const SEED_TIMESTAMP = "2026-06-27T00:00:00.000Z";
 
+const twelvePlayerSeats = [
+  { seatNo: 1, roleId: "villager", characterId: "zhou_zhi" },
+  { seatNo: 2, roleId: "seer", characterId: "chen_mo" },
+  { seatNo: 3, roleId: "werewolf", characterId: "qin_chuan" },
+  { seatNo: 4, roleId: "witch", characterId: "lin_xia" },
+  { seatNo: 5, roleId: "villager", characterId: "xia_yu" },
+  { seatNo: 6, roleId: "werewolf", characterId: "gu_qingyan" },
+  { seatNo: 7, roleId: "guard", characterId: "shen_lan" },
+  { seatNo: 8, roleId: "hunter", characterId: "xu_yan" },
+  { seatNo: 9, roleId: "werewolf", characterId: "bai_qi" },
+  { seatNo: 10, roleId: "villager", characterId: "tang_tang" },
+  { seatNo: 11, roleId: "werewolf", characterId: "lu_zhao" },
+  { seatNo: 12, roleId: "villager", characterId: "su_jin" },
+] as const;
+
 export const seedPresets: readonly GamePreset[] = [
   {
-    id: "six_player_standard",
-    name: "6人狼人杀试运行",
-    rulesetId: "classic_six",
-    playerCount: 6,
-    roleIds: ["werewolf", "werewolf", "seer", "witch", "villager", "villager"],
-    characterIds: [
-      "qin_chuan",
-      "lin_xia",
-      "zhou_zhi",
-      "xia_yu",
-      "chen_mo",
-      "gu_qingyan",
-    ],
-    seatAssignments: [
-      {
-        seatNo: 1,
-        roleId: "werewolf",
-        characterId: "qin_chuan",
-        modelBindingOverride: null,
-      },
-      {
-        seatNo: 2,
-        roleId: "werewolf",
-        characterId: "lin_xia",
-        modelBindingOverride: null,
-      },
-      {
-        seatNo: 3,
-        roleId: "seer",
-        characterId: "zhou_zhi",
-        modelBindingOverride: null,
-      },
-      {
-        seatNo: 4,
-        roleId: "witch",
-        characterId: "xia_yu",
-        modelBindingOverride: null,
-      },
-      {
-        seatNo: 5,
-        roleId: "villager",
-        characterId: "chen_mo",
-        modelBindingOverride: null,
-      },
-      {
-        seatNo: 6,
-        roleId: "villager",
-        characterId: "gu_qingyan",
-        modelBindingOverride: null,
-      },
-    ],
+    id: "twelve_player_standard",
+    name: "12人狼人杀标准局",
+    rulesetId: "classic_twelve",
+    playerCount: 12,
+    roleIds: twelvePlayerSeats.map((seat) => seat.roleId),
+    characterIds: twelvePlayerSeats.map((seat) => seat.characterId),
+    seatAssignments: twelvePlayerSeats.map((seat) => ({
+      ...seat,
+      modelBindingOverride: null,
+    })),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: SEED_TIMESTAMP,

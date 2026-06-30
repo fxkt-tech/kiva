@@ -7,12 +7,25 @@ import type {
 } from "./events";
 import type { GameRole, PlayerId, PkVoters, Ruleset } from "./types";
 
-export type NightActionKind = "wolf_kill" | "seer_check" | "witch_poison";
+export type NightActionKind =
+  | "wolf_kill"
+  | "seer_check"
+  | "witch_poison"
+  | "guard_protect"
+  | "hunter_shot";
 
-const GOD_ROLES = new Set<GameRole>(["seer", "witch"]);
+const GOD_ROLES = new Set<GameRole>(["seer", "witch", "hunter", "guard"]);
+
+export type NightDeathReason = "wolf_kill" | "witch_poison";
+
+export type NightDeath = {
+  readonly playerId: PlayerId;
+  readonly reason: NightDeathReason;
+};
 
 export type NightResolutionInput = {
   readonly wolfKillTargetId: PlayerId | null;
+  readonly guardTargetId?: PlayerId | null;
   readonly antidoteTargetId: PlayerId | null;
   readonly poisonTargetId: PlayerId | null;
 };
@@ -71,6 +84,8 @@ const ROLE_NAMES = {
   werewolf: "狼人",
   seer: "预言家",
   witch: "女巫",
+  hunter: "猎人",
+  guard: "守卫",
   villager: "平民",
 } satisfies Record<GameRole, string>;
 
@@ -100,7 +115,15 @@ export function getLegalNightTargets(
     return getActorSpecificTargets(players, alive, "seer", actorPlayerId);
   }
 
-  return getActorSpecificTargets(players, alive, "witch", actorPlayerId);
+  if (action === "witch_poison") {
+    return getActorSpecificTargets(players, alive, "witch", actorPlayerId);
+  }
+
+  if (action === "guard_protect") {
+    return getGuardProtectTargets(players, alive, actorPlayerId);
+  }
+
+  return getHunterShotTargets(players, alive, actorPlayerId);
 }
 
 export function validateWitchDecision(
@@ -228,23 +251,79 @@ function getActorSpecificTargets(
     .map((player) => player.playerId);
 }
 
+function getGuardProtectTargets(
+  players: readonly PlayerSnapshot[],
+  alive: ReadonlySet<PlayerId>,
+  actorPlayerId?: PlayerId,
+): readonly PlayerId[] {
+  if (!actorPlayerId) {
+    return [];
+  }
+
+  const actor = players.find((player) => player.playerId === actorPlayerId);
+  if (!actor || !alive.has(actor.playerId) || actor.gameRole !== "guard") {
+    return [];
+  }
+
+  return players
+    .filter((player) => alive.has(player.playerId))
+    .map((player) => player.playerId);
+}
+
+function getHunterShotTargets(
+  players: readonly PlayerSnapshot[],
+  alive: ReadonlySet<PlayerId>,
+  actorPlayerId?: PlayerId,
+): readonly PlayerId[] {
+  if (!actorPlayerId) {
+    return [];
+  }
+
+  const actor = players.find((player) => player.playerId === actorPlayerId);
+  if (!actor || actor.gameRole !== "hunter") {
+    return [];
+  }
+
+  return players
+    .filter((player) => alive.has(player.playerId))
+    .filter((player) => player.playerId !== actorPlayerId)
+    .map((player) => player.playerId);
+}
+
 export function resolveNightDeaths(
   input: NightResolutionInput,
 ): readonly PlayerId[] {
+  return resolveNightDeathDetails(input).map((death) => death.playerId);
+}
+
+export function resolveNightDeathDetails(
+  input: NightResolutionInput,
+): readonly NightDeath[] {
   const dead = new Set<PlayerId>();
+  const deaths: NightDeath[] = [];
+
+  function addDeath(playerId: PlayerId, reason: NightDeathReason): void {
+    if (dead.has(playerId)) {
+      return;
+    }
+
+    dead.add(playerId);
+    deaths.push({ playerId, reason });
+  }
 
   if (
     input.wolfKillTargetId &&
-    input.wolfKillTargetId !== input.antidoteTargetId
+    input.wolfKillTargetId !== input.antidoteTargetId &&
+    input.wolfKillTargetId !== (input.guardTargetId ?? null)
   ) {
-    dead.add(input.wolfKillTargetId);
+    addDeath(input.wolfKillTargetId, "wolf_kill");
   }
 
   if (input.poisonTargetId) {
-    dead.add(input.poisonTargetId);
+    addDeath(input.poisonTargetId, "witch_poison");
   }
 
-  return [...dead];
+  return deaths;
 }
 
 export function checkWinCondition(

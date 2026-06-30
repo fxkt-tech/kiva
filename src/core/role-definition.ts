@@ -9,6 +9,8 @@ const ROLE_MECHANIC_KEYS = [
   "wolf_kill",
   "seer_check",
   "witch_medicine",
+  "hunter_shot",
+  "guard_protect",
   "none",
 ] as const;
 export type RoleMechanicKey = (typeof ROLE_MECHANIC_KEYS)[number];
@@ -42,6 +44,8 @@ const SUPPORTED_ROLE_CONTRACTS = {
   werewolf: { faction: "wolves", team: "wolf", mechanicKey: "wolf_kill" },
   seer: { faction: "good", team: "god", mechanicKey: "seer_check" },
   witch: { faction: "good", team: "god", mechanicKey: "witch_medicine" },
+  hunter: { faction: "good", team: "god", mechanicKey: "hunter_shot" },
+  guard: { faction: "good", team: "god", mechanicKey: "guard_protect" },
   villager: { faction: "good", team: "villager", mechanicKey: "none" },
 } satisfies Record<
   GameRole,

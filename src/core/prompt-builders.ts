@@ -74,8 +74,11 @@ export function rulesetPromptLines(ruleset: Ruleset): readonly string[] {
   return [
     "本局规则：",
     `- 玩家数：${ruleset.playerCount}`,
-    `- 角色配置：狼人 ${ruleset.roleCounts.werewolf}、预言家 ${ruleset.roleCounts.seer}、女巫 ${ruleset.roleCounts.witch}、平民 ${ruleset.roleCounts.villager}`,
-    "- 本局没有守卫、猎人、白痴或其他未列出的身份。",
+    `- 角色配置：狼人 ${ruleset.roleCounts.werewolf}、预言家 ${ruleset.roleCounts.seer}、女巫 ${ruleset.roleCounts.witch}、猎人 ${ruleset.roleCounts.hunter}、守卫 ${ruleset.roleCounts.guard}、平民 ${ruleset.roleCounts.villager}`,
+    "- 本局没有白痴、骑士、狼王、警长或其他未列出的身份。",
+    "- 守卫每晚守护一名存活玩家，可以自守，不能连续两晚守同一人；守中狼刀则该玩家不死亡。",
+    "- 守卫和女巫解药同救同一人时，该玩家仍然不死亡。",
+    "- 猎人被狼人刀死或被投票放逐时可以开枪；被女巫毒死不能开枪。",
     `- 胜利条件：${winConditionLabel(ruleset.winCondition)}`,
     `- 女巫首夜自救：${ruleset.witchFirstNightSelfSave ? "允许" : "不允许"}`,
     `- 女巫同夜使用解药和毒药：${ruleset.witchAllowSameNightAntidoteAndPoison ? "允许" : "不允许"}`,
@@ -138,6 +141,10 @@ function roleLabel(role: string): string {
       return "预言家";
     case "witch":
       return "女巫";
+    case "hunter":
+      return "猎人";
+    case "guard":
+      return "守卫";
     case "villager":
       return "平民";
     default:

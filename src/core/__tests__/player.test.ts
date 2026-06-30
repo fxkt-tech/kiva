@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createDefaultRuleset, type PlayerId } from "../types";
+import { createSixPlayerRuleset, type PlayerId } from "../types";
 import {
   createPlayerSnapshot,
   validateSixPlayerBoard,
@@ -239,7 +239,7 @@ describe("player snapshots", () => {
       player("p6", 6, "villager"),
     ];
 
-    expect(validateSixPlayerBoard(players, createDefaultRuleset())).toEqual({
+    expect(validateSixPlayerBoard(players, createSixPlayerRuleset())).toEqual({
       ok: true,
     });
   });
@@ -253,7 +253,7 @@ describe("player snapshots", () => {
       player("p5", 5, "villager"),
     ];
 
-    expect(validateSixPlayerBoard(players, createDefaultRuleset())).toEqual({
+    expect(validateSixPlayerBoard(players, createSixPlayerRuleset())).toEqual({
       ok: false,
       reason: "invalid_player_count",
       expected: 6,
@@ -271,7 +271,7 @@ describe("player snapshots", () => {
       player("p6", 6, "villager"),
     ];
 
-    expect(validateSixPlayerBoard(players, createDefaultRuleset())).toEqual({
+    expect(validateSixPlayerBoard(players, createSixPlayerRuleset())).toEqual({
       ok: false,
       reason: "duplicate_player_id",
     });
@@ -287,7 +287,7 @@ describe("player snapshots", () => {
       player("p6", 6, "villager"),
     ];
 
-    expect(validateSixPlayerBoard(players, createDefaultRuleset())).toEqual({
+    expect(validateSixPlayerBoard(players, createSixPlayerRuleset())).toEqual({
       ok: false,
       reason: "invalid_seat",
       seatNo: 0,
@@ -304,7 +304,7 @@ describe("player snapshots", () => {
       player("p6", 6, "villager"),
     ];
 
-    expect(validateSixPlayerBoard(players, createDefaultRuleset())).toEqual({
+    expect(validateSixPlayerBoard(players, createSixPlayerRuleset())).toEqual({
       ok: false,
       reason: "invalid_seat",
       seatNo: 1.5,
@@ -321,7 +321,7 @@ describe("player snapshots", () => {
       player("p6", 6, "villager"),
     ];
 
-    expect(validateSixPlayerBoard(players, createDefaultRuleset())).toEqual({
+    expect(validateSixPlayerBoard(players, createSixPlayerRuleset())).toEqual({
       ok: false,
       reason: "duplicate_seat",
     });
@@ -337,7 +337,7 @@ describe("player snapshots", () => {
       player("p6", 6, "villager"),
     ];
 
-    expect(validateSixPlayerBoard(players, createDefaultRuleset())).toEqual({
+    expect(validateSixPlayerBoard(players, createSixPlayerRuleset())).toEqual({
       ok: false,
       reason: "invalid_role_count",
       role: "werewolf",

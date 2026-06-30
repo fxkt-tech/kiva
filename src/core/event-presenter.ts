@@ -104,6 +104,18 @@ function formatEvent(
             : `${actorPrefix(players, event.actorPlayerId)}不使用毒药。`,
       };
 
+    case "guard_protect_selected":
+      return {
+        title: "守卫守护",
+        text: `${actorPrefix(players, event.actorPlayerId)}选择守护 ${playerLabel(players, event.payload.targetPlayerId)}。`,
+      };
+
+    case "hunter_shot_decided":
+      return {
+        title: "猎人开枪",
+        text: `${actorPrefix(players, event.actorPlayerId)}开枪带走 ${playerLabel(players, event.payload.targetPlayerId)}。`,
+      };
+
     case "night_resolved":
       return {
         title: "夜间结算",
@@ -287,6 +299,10 @@ function roleLabel(role: GameRole): string {
       return "预言家";
     case "witch":
       return "女巫";
+    case "hunter":
+      return "猎人";
+    case "guard":
+      return "守卫";
     case "villager":
       return "平民";
   }

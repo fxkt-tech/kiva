@@ -97,7 +97,7 @@ export function createGameActions(
 
   return {
     async createGame(): Promise<GameRecord> {
-      const presetId = options.defaultPresetId ?? "six_player_standard";
+      const presetId = options.defaultPresetId ?? "twelve_player_standard";
       return createGameFromPresetId(presetId);
     },
 

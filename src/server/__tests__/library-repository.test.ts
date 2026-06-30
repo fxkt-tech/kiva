@@ -118,10 +118,10 @@ describe("library repository", () => {
     );
 
     await expect(repository.getPresets()).rejects.toThrow(
-      "references unknown role: werewolf",
+      "references unknown role:",
     );
     await expect(repository.savePresets(seedPresets)).rejects.toThrow(
-      "references unknown role: werewolf",
+      "references unknown role:",
     );
   });
 

@@ -76,9 +76,29 @@ export type WitchPoisonDecidedEvent = GameEventBase<
   { readonly used: boolean; readonly targetPlayerId: PlayerId | null }
 >;
 
+export type GuardProtectSelectedEvent = GameEventBase<
+  "guard_protect_selected",
+  { readonly targetPlayerId: PlayerId }
+>;
+
+export type HunterShotDecidedEvent = GameEventBase<
+  "hunter_shot_decided",
+  { readonly targetPlayerId: PlayerId }
+>;
+
+export type NightDeathReason = "wolf_kill" | "witch_poison";
+
+export type NightDeath = {
+  readonly playerId: PlayerId;
+  readonly reason: NightDeathReason;
+};
+
 export type NightResolvedEvent = GameEventBase<
   "night_resolved",
-  { readonly deadPlayerIds: readonly PlayerId[] }
+  {
+    readonly deadPlayerIds: readonly PlayerId[];
+    readonly deaths?: readonly NightDeath[];
+  }
 >;
 
 export type DeathAnnouncedEvent = GameEventBase<
@@ -181,6 +201,8 @@ export type GameEvent =
   | WitchDeathInfoShownEvent
   | WitchAntidoteDecidedEvent
   | WitchPoisonDecidedEvent
+  | GuardProtectSelectedEvent
+  | HunterShotDecidedEvent
   | NightResolvedEvent
   | DeathAnnouncedEvent
   | LastWordsGivenEvent

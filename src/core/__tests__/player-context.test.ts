@@ -7,7 +7,11 @@ import type { EventId, GameId } from "../types";
 const gameId = "game_1" as GameId;
 const createdAt = "2026-06-26T00:00:00.000Z";
 const game = createSeedGame({ gameId, createdAt });
-const [wolf1, wolf2, seer, witch, villager] = game.players;
+const wolf1 = playerByRole("werewolf");
+const wolf2 = game.players.find(
+  (player) => player.gameRole === "werewolf" && player.playerId !== wolf1.playerId,
+)!;
+const seer = playerByRole("seer");
 
 describe("player LLM context", () => {
   it("includes only events visible to the viewer", () => {
@@ -170,4 +174,13 @@ function baseEvent(index: number) {
     status: "active",
     createdAt: `2026-06-26T00:0${index}:00.000Z`,
   } as const;
+}
+
+function playerByRole(role: typeof game.players[number]["gameRole"]) {
+  const player = game.players.find((candidate) => candidate.gameRole === role);
+  if (player === undefined) {
+    throw new Error(`Missing seeded player for role: ${role}`);
+  }
+
+  return player;
 }

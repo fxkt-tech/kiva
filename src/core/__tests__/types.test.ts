@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   createDefaultRuleset,
+  createSixPlayerRuleset,
   factionForRole,
   GAME_ROLES,
   isWerewolfRole,
@@ -11,7 +12,14 @@ import {
 
 describe("core types", () => {
   it("defines the fixed first-version roles", () => {
-    expect(GAME_ROLES).toEqual(["werewolf", "seer", "witch", "villager"]);
+    expect(GAME_ROLES).toEqual([
+      "werewolf",
+      "seer",
+      "witch",
+      "hunter",
+      "guard",
+      "villager",
+    ]);
   });
 
   it("detects werewolf role", () => {
@@ -21,16 +29,21 @@ describe("core types", () => {
 
   it("creates default ruleset from approved spec", () => {
     expect(createDefaultRuleset()).toEqual({
-      playerCount: 6,
+      playerCount: 12,
       roleCounts: {
-        werewolf: 2,
+        werewolf: 4,
         seer: 1,
         witch: 1,
-        villager: 2,
+        hunter: 1,
+        guard: 1,
+        villager: 4,
       },
       winCondition: "slaughter_side",
       witchFirstNightSelfSave: true,
       witchAllowSameNightAntidoteAndPoison: false,
+      guardCanSelfProtect: true,
+      guardForbidConsecutiveSameTarget: true,
+      guardAndWitchSaveIsSafe: true,
       voteReveal: "after_all_votes",
       deadRoleReveal: "endgame",
       pkVoters: "non_pk_only",
@@ -38,16 +51,32 @@ describe("core types", () => {
     });
   });
 
+  it("keeps an explicit legacy six-player ruleset for existing games", () => {
+    expect(createSixPlayerRuleset()).toMatchObject({
+      playerCount: 6,
+      roleCounts: {
+        werewolf: 2,
+        seer: 1,
+        witch: 1,
+        hunter: 0,
+        guard: 0,
+        villager: 2,
+      },
+    });
+  });
+
   it("maps roles to factions", () => {
     expect(factionForRole("werewolf")).toBe("wolves");
     expect(factionForRole("seer")).toBe("good");
     expect(factionForRole("witch")).toBe("good");
+    expect(factionForRole("hunter")).toBe("good");
+    expect(factionForRole("guard")).toBe("good");
     expect(factionForRole("villager")).toBe("good");
   });
 
   it("keeps GameRole as a narrow union", () => {
     expectTypeOf<GameRole>().toEqualTypeOf<
-      "werewolf" | "seer" | "witch" | "villager"
+      "werewolf" | "seer" | "witch" | "hunter" | "guard" | "villager"
     >();
   });
 

@@ -14,7 +14,8 @@ import type { DraftId, EventId, GameId } from "../types";
 const gameId = "game_1" as GameId;
 const createdAt = "2026-06-26T00:00:00.000Z";
 const game = createSeedGame({ gameId, createdAt });
-const [wolf, , seer, , villager] = game.players;
+const wolf = playerByRole("werewolf");
+const seer = playerByRole("seer");
 
 describe("prompt builders", () => {
   it("builds speech prompts from visibility-safe player context", () => {
@@ -56,20 +57,22 @@ describe("prompt builders", () => {
     expect(prompt.systemPrompt).toContain(seer.characterSystemPromptSnapshot);
     expect(prompt.systemPrompt).toContain(seer.roleSystemPromptSnapshot);
     expect(prompt.systemPrompt).toContain("你只能依据用户消息中列出的可见信息发言");
-    expect(combined).toContain("短句、直接、有推进感");
-    expect(combined).toContain("3 号 周知");
+    expect(combined).toContain(seer.speakingStyle);
+    expect(combined).toContain(`${seer.seatNo} 号 ${seer.name}`);
     expect(combined).toContain(`你的身份：${seer.roleName}`);
     expect(combined).toContain("本局规则：");
-    expect(combined).toContain("角色配置：狼人 2、预言家 1、女巫 1、平民 2");
-    expect(combined).toContain("本局没有守卫");
+    expect(combined).toContain(
+      "角色配置：狼人 4、预言家 1、女巫 1、猎人 1、守卫 1、平民 4",
+    );
+    expect(combined).toContain("守卫每晚守护一名存活玩家");
     expect(combined).toContain("查验结果");
     expect(combined).toContain("speech");
     expect(combined).toContain("必须输出 JSON 对象");
     expect(combined).toContain('"text"');
     expect(combined).not.toContain("#3");
     expect(combined).not.toContain("reasoning 是给主理人看的");
-    expect(combined).not.toContain("1 号 秦川：狼人");
-    expect(combined).not.toContain("5 号 陈墨：平民");
+    expect(combined).not.toContain(`${wolf.seatNo} 号 ${wolf.name}：狼人`);
+    expect(combined).not.toContain("1 号 周知：平民");
   });
 
   it("falls back to legacy viewer system prompt when prompt snapshots are empty", () => {
@@ -163,4 +166,13 @@ function baseEvent(index: number) {
     status: "active",
     createdAt: `2026-06-26T00:0${index}:00.000Z`,
   } as const;
+}
+
+function playerByRole(role: typeof game.players[number]["gameRole"]) {
+  const player = game.players.find((candidate) => candidate.gameRole === role);
+  if (player === undefined) {
+    throw new Error(`Missing seeded player for role: ${role}`);
+  }
+
+  return player;
 }

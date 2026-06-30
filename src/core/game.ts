@@ -2,7 +2,7 @@ import type { CharacterDefinition } from "./character-definition";
 import { validateGamePresets, type GamePreset } from "./game-preset";
 import {
   createPlayerSnapshot,
-  validateSixPlayerBoard,
+  validateBoard,
   type PlayerSnapshot,
 } from "./player";
 import { validateRoleDefinitions, type RoleDefinition } from "./role-definition";
@@ -110,7 +110,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
     updatedAt: input.createdAt,
   };
 
-  const boardValidation = validateSixPlayerBoard(game.players, input.ruleset);
+  const boardValidation = validateBoard(game.players, input.ruleset);
   if (!boardValidation.ok) {
     throw new Error(`Game preset ${input.preset.id} does not match ruleset`);
   }
@@ -121,7 +121,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
 export function createSeedGame(input: CreateSeedGameInput): Game {
   return createGameFromPreset({
     gameId: input.gameId,
-    title: "6人狼人杀试运行",
+    title: "12人狼人杀标准局",
     createdAt: input.createdAt,
     ruleset: input.ruleset ?? createDefaultRuleset(),
     preset: seedPresets[0],

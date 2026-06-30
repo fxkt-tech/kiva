@@ -30,6 +30,8 @@ type ActionDraft = Extract<
   | { type: "vote_cast" }
   | { type: "witch_antidote_decided" }
   | { type: "witch_poison_decided" }
+  | { type: "guard_protect_selected" }
+  | { type: "hunter_shot_decided" }
 >;
 
 const ACTION_PROMPT_VERSION = "action:v1";
@@ -202,6 +204,8 @@ function actionOutputInstruction(draftType: ActionDraft["type"]): string {
       return '输出字段：targetPlayerId、reasoning。弃票用 {"targetPlayerId":null,"reasoning":"简短说明原因"}。';
     case "seer_check_selected":
     case "wolf_kill_selected":
+    case "guard_protect_selected":
+    case "hunter_shot_decided":
       return '输出字段：targetPlayerId、reasoning。必须从可选目标中选择一个 playerId。';
   }
 }
@@ -216,6 +220,10 @@ function legalTargetIdsForDraft(
       return legalNightTargets(game, events, "seer_check", draft.actorPlayerId);
     case "wolf_kill_selected":
       return legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId);
+    case "guard_protect_selected":
+      return legalGuardTargets(game, events, draft.actorPlayerId);
+    case "hunter_shot_decided":
+      return legalNightTargets(game, events, "hunter_shot", draft.actorPlayerId);
     case "witch_antidote_decided":
       return legalAntidoteTargets(events);
     case "witch_poison_decided":
@@ -231,6 +239,8 @@ function isActionDraft(draft: DraftEvent): draft is ActionDraft {
   return (
     draft.type === "seer_check_selected" ||
     draft.type === "wolf_kill_selected" ||
+    draft.type === "guard_protect_selected" ||
+    draft.type === "hunter_shot_decided" ||
     draft.type === "vote_cast" ||
     draft.type === "witch_antidote_decided" ||
     draft.type === "witch_poison_decided"
@@ -267,6 +277,10 @@ function canActorPerformActionDraft(
     case "witch_antidote_decided":
     case "witch_poison_decided":
       return viewer.role === "witch" && viewer.mechanicKey === "witch_medicine";
+    case "guard_protect_selected":
+      return viewer.role === "guard" && viewer.mechanicKey === "guard_protect";
+    case "hunter_shot_decided":
+      return viewer.role === "hunter" && viewer.mechanicKey === "hunter_shot";
     case "vote_cast":
       return deriveGameState(game.players, events).alivePlayerIds.includes(
         viewer.playerId,
@@ -285,6 +299,10 @@ function parseAndValidateActionEdit(
       return targetEdit(draft.type, output, legalNightTargets(game, events, "seer_check", draft.actorPlayerId));
     case "wolf_kill_selected":
       return targetEdit(draft.type, output, legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId));
+    case "guard_protect_selected":
+      return targetEdit(draft.type, output, legalGuardTargets(game, events, draft.actorPlayerId));
+    case "hunter_shot_decided":
+      return targetEdit(draft.type, output, legalNightTargets(game, events, "hunter_shot", draft.actorPlayerId));
     case "vote_cast":
       return voteEdit(game, events, draft, output);
     case "witch_antidote_decided":
@@ -354,11 +372,51 @@ function witchEdit(
 function legalNightTargets(
   game: Game,
   events: readonly GameEvent[],
-  action: "wolf_kill" | "seer_check" | "witch_poison",
+  action: "wolf_kill" | "seer_check" | "witch_poison" | "hunter_shot",
   actorPlayerId: PlayerId | undefined,
 ): readonly PlayerId[] {
   const state = deriveGameState(game.players, events);
   return getLegalNightTargets(action, game.players, state.alivePlayerIds, actorPlayerId);
+}
+
+function legalGuardTargets(
+  game: Game,
+  events: readonly GameEvent[],
+  actorPlayerId: PlayerId | undefined,
+): readonly PlayerId[] {
+  const state = deriveGameState(game.players, events);
+  const previousTargetId = previousGuardTargetId(events, state.dayNumber);
+  return getLegalNightTargets(
+    "guard_protect",
+    game.players,
+    state.alivePlayerIds,
+    actorPlayerId,
+  ).filter((targetPlayerId) =>
+    game.ruleset.guardForbidConsecutiveSameTarget
+      ? targetPlayerId !== previousTargetId
+      : true,
+  );
+}
+
+function previousGuardTargetId(
+  events: readonly GameEvent[],
+  currentDayNumber: number,
+): PlayerId | null {
+  for (const event of [...events].reverse()) {
+    if (
+      event.type === "phase_started" &&
+      event.payload.phase === "night" &&
+      event.payload.dayNumber >= currentDayNumber
+    ) {
+      continue;
+    }
+
+    if (event.type === "guard_protect_selected") {
+      return event.payload.targetPlayerId;
+    }
+  }
+
+  return null;
 }
 
 function legalAntidoteTargets(events: readonly GameEvent[]): readonly PlayerId[] {

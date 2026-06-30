@@ -17,6 +17,8 @@ import {
 import type { LibraryRepository } from "../library-repository";
 
 const tempDirs: string[] = [];
+const defaultPresetId = "twelve_player_standard";
+const zhouCharacter = seedCharacters.find((character) => character.id === "zhou_zhi")!;
 
 afterEach(async () => {
   await Promise.all(
@@ -51,10 +53,9 @@ describe("game actions", () => {
       draft: null,
     });
     expect(created.game.players[0]).toMatchObject({
-      characterSourceId: "qin_chuan",
-      roleSourceId: "werewolf",
-      roleSystemPromptSnapshot: seedRoles[0].systemPrompt,
-      characterSystemPromptSnapshot: seedCharacters[0].systemPrompt,
+      characterSourceId: "zhou_zhi",
+      roleSourceId: "villager",
+      characterSystemPromptSnapshot: zhouCharacter.systemPrompt,
     });
     await expect(repository.get(created.game.id)).resolves.toEqual(created);
     await expect(actions.getGame(created.game.id)).resolves.toEqual(created);
@@ -115,22 +116,27 @@ describe("game actions", () => {
     const created = await actions.createGame();
 
     expect(loadAllCalls).toBe(1);
-    expect(created.game.title).toBe("6人狼人杀试运行");
+    expect(created.game.title).toBe("12人狼人杀标准局");
     expect(created.game.players.map((player) => player.name)).toEqual([
+      "周知",
+      "陈墨",
       "秦川",
       "林夏",
-      "周知",
       "夏宇",
-      "陈墨",
       "顾清妍",
+      "沈岚",
+      "许砚",
+      "白祁",
+      "唐棠",
+      "陆昭",
+      "苏瑾",
     ]);
     expect(created.game.players[0]).toMatchObject({
-      characterSourceId: "qin_chuan",
-      roleSourceId: "werewolf",
-      roleSystemPromptSnapshot: seedRoles[0].systemPrompt,
-      characterSystemPromptSnapshot: seedCharacters[0].systemPrompt,
-      mechanicKey: "wolf_kill",
-      team: "wolf",
+      characterSourceId: "zhou_zhi",
+      roleSourceId: "villager",
+      characterSystemPromptSnapshot: zhouCharacter.systemPrompt,
+      mechanicKey: "none",
+      team: "villager",
     });
     await expect(repository.get(created.game.id)).resolves.toEqual(created);
   });
@@ -165,10 +171,10 @@ describe("game actions", () => {
     });
     const actions = createGameActions(repository, { libraryRepository });
 
-    const created = await actions.createGameFromPresetId("six_player_standard");
+    const created = await actions.createGameFromPresetId(defaultPresetId);
 
-    expect(created.game.title).toBe("6人狼人杀试运行");
-    expect(created.game.players).toHaveLength(6);
+    expect(created.game.title).toBe("12人狼人杀标准局");
+    expect(created.game.players).toHaveLength(12);
     await expect(repository.get(created.game.id)).resolves.toEqual(created);
   });
 
@@ -256,7 +262,7 @@ describe("game actions", () => {
     const { actions } = await createActions();
     const created = await actions.createGame();
 
-    for (let step = 0; step < created.game.players.length + 1; step += 1) {
+    for (let step = 0; step < created.game.players.length + 2; step += 1) {
       await actions.continueGame(created.game.id);
       await actions.confirmDraft(created.game.id);
     }
@@ -465,11 +471,7 @@ describe("game actions", () => {
   it("generates witch medicine action suggestions during regenerate", async () => {
     const repository = createGameRepository(await createTempDir());
     const actions = createGameActions(repository, {
-      llmClient: new MockLlmClient([
-        { targetPlayerId: null },
-        { targetPlayerId: null },
-        { used: false, targetPlayerId: null },
-      ]),
+      llmClient: new MockLlmClient([{ used: false, targetPlayerId: null }]),
     });
     const created = await actions.createGame();
 
@@ -511,7 +513,7 @@ describe("game actions", () => {
     const repository = createDeferredSaveRepository();
     const actions = createGameActions(repository);
     const created = await actions.createGame();
-    for (let step = 0; step < created.game.players.length + 1; step += 1) {
+    for (let step = 0; step < created.game.players.length + 2; step += 1) {
       await actions.continueGame(created.game.id);
       await actions.confirmDraft(created.game.id);
     }

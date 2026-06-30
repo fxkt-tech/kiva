@@ -5,7 +5,9 @@ export type ActionDraftType =
   | "wolf_kill_selected"
   | "vote_cast"
   | "witch_antidote_decided"
-  | "witch_poison_decided";
+  | "witch_poison_decided"
+  | "guard_protect_selected"
+  | "hunter_shot_decided";
 
 const MECHANIC_BY_DRAFT_TYPE = {
   seer_check_selected: "seer_check",
@@ -13,6 +15,8 @@ const MECHANIC_BY_DRAFT_TYPE = {
   vote_cast: "none",
   witch_antidote_decided: "witch_medicine",
   witch_poison_decided: "witch_medicine",
+  guard_protect_selected: "guard_protect",
+  hunter_shot_decided: "hunter_shot",
 } satisfies Record<ActionDraftType, RoleMechanicKey>;
 
 export function mechanicForDraftType(type: ActionDraftType): RoleMechanicKey {

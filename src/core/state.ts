@@ -230,6 +230,15 @@ export function deriveGameState(
       }
     }
 
+    if (event.type === "hunter_shot_decided") {
+      assertKnownPlayerId(event.payload.targetPlayerId, knownPlayerIds, "dead");
+      dead.add(event.payload.targetPlayerId);
+      pendingLastWordsByPlayerId.set(event.payload.targetPlayerId, {
+        playerId: event.payload.targetPlayerId,
+        reason: "hunter_shot",
+      });
+    }
+
     if (event.type === "game_ended") {
       currentPhase = "ended";
       dayNumber = event.payload.dayNumber;

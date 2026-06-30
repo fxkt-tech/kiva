@@ -15,6 +15,9 @@ import {
 
 const tempDirs: string[] = [];
 const NOW = "2026-06-27T12:34:56.000Z";
+const defaultPresetId = "twelve_player_standard";
+const werewolfRole = seedRoles.find((role) => role.id === "werewolf")!;
+const seerRole = seedRoles.find((role) => role.id === "seer")!;
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -62,27 +65,27 @@ describe("library actions", () => {
     expect(library.presets).toEqual(seedPresets);
     expect(library.diagnostics.roles.werewolf).toMatchObject({
       valid: true,
-      references: ["six_player_standard"],
+      references: [defaultPresetId],
       messages: ["Built-in role contract locked"],
-      promptPreview: expect.stringContaining(seedRoles[0].systemPrompt),
+      promptPreview: expect.stringContaining(werewolfRole.systemPrompt),
     });
     expect(library.diagnostics.characters.qin_chuan).toMatchObject({
       valid: true,
-      references: ["six_player_standard"],
+      references: [defaultPresetId],
       promptPreview: expect.stringContaining(seedCharacters[0].systemPrompt),
     });
-    expect(library.diagnostics.presets.six_player_standard).toMatchObject({
+    expect(library.diagnostics.presets[defaultPresetId]).toMatchObject({
       valid: true,
       canCreateGame: true,
       messages: [],
-      promptPreview: expect.stringContaining("model:"),
+      promptPreview: expect.stringContaining("模型："),
     });
   });
 
   it("saves a role prompt while validating dependent presets as a complete library", async () => {
     const { actions, libraryRepository } = await createSeededActions();
     const updatedRole = {
-      ...seedRoles[0],
+      ...werewolfRole,
       systemPrompt: "更新后的狼人系统提示词",
       updatedAt: NOW,
     };
@@ -102,7 +105,7 @@ describe("library actions", () => {
 
     await expect(
       actions.saveRole({
-        ...seedRoles[0],
+        ...werewolfRole,
         team: "god",
         updatedAt: NOW,
       }),
@@ -169,7 +172,7 @@ describe("library actions", () => {
     const { actions, libraryRepository } = await createSeededActions();
     const updatedPreset = {
       ...seedPresets[0],
-      name: "更新后的 6 人预设",
+      name: "更新后的 12 人预设",
       updatedAt: NOW,
     };
 
@@ -177,9 +180,9 @@ describe("library actions", () => {
 
     const saved = await libraryRepository.loadAll();
     expect(
-      saved.presets.find((preset) => preset.id === "six_player_standard"),
+      saved.presets.find((preset) => preset.id === defaultPresetId),
     ).toMatchObject({
-      name: "更新后的 6 人预设",
+      name: "更新后的 12 人预设",
       updatedAt: NOW,
     });
     expect(saved.roles).toEqual(seedRoles);
@@ -193,7 +196,7 @@ describe("library actions", () => {
 
     expect(copy).toMatchObject({
       id: "seer_copy",
-      name: seedRoles[1].name,
+      name: seerRole.name,
       createdAt: NOW,
       updatedAt: NOW,
     });
@@ -208,10 +211,10 @@ describe("library actions", () => {
   it("duplicates a preset with a fresh id and timestamps", async () => {
     const { actions, libraryRepository } = await createSeededActions();
 
-    const copy = await actions.duplicatePreset("six_player_standard");
+    const copy = await actions.duplicatePreset(defaultPresetId);
 
     expect(copy).toMatchObject({
-      id: "six_player_standard_copy",
+      id: "twelve_player_standard_copy",
       name: seedPresets[0].name,
       createdAt: NOW,
       updatedAt: NOW,
@@ -220,8 +223,8 @@ describe("library actions", () => {
     expect(copy.characterIds).toEqual(seedPresets[0].characterIds);
     await expect(libraryRepository.loadAll()).resolves.toMatchObject({
       presets: expect.arrayContaining([
-        expect.objectContaining({ id: "six_player_standard" }),
-        expect.objectContaining({ id: "six_player_standard_copy" }),
+        expect.objectContaining({ id: defaultPresetId }),
+        expect.objectContaining({ id: "twelve_player_standard_copy" }),
       ]),
     });
   });
@@ -247,18 +250,18 @@ describe("library actions", () => {
     const { actions, libraryRepository } = await createSeededActions();
 
     const disabledPreset = await actions.setPresetEnabled(
-      "six_player_standard",
+      defaultPresetId,
       false,
     );
 
     expect(disabledPreset).toMatchObject({
-      id: "six_player_standard",
+      id: defaultPresetId,
       enabled: false,
       updatedAt: NOW,
     });
     const saved = await libraryRepository.loadAll();
     expect(
-      saved.presets.find((preset) => preset.id === "six_player_standard"),
+      saved.presets.find((preset) => preset.id === defaultPresetId),
     ).toMatchObject({
       enabled: false,
       updatedAt: NOW,
@@ -267,13 +270,13 @@ describe("library actions", () => {
     expect(saved.characters).toEqual(seedCharacters);
   });
 
-  it("creates a six player game from a preset id", async () => {
+  it("creates a twelve player game from a preset id", async () => {
     const { actions, gameRepository } = await createSeededActions();
 
-    const record = await actions.createGameFromPreset("six_player_standard");
+    const record = await actions.createGameFromPreset(defaultPresetId);
 
-    expect(record.game.title).toBe("6人狼人杀试运行");
-    expect(record.game.players).toHaveLength(6);
+    expect(record.game.title).toBe("12人狼人杀标准局");
+    expect(record.game.players).toHaveLength(12);
     expect(record.events).toEqual([]);
     await expect(gameRepository.get(record.game.id)).resolves.toEqual(record);
   });
@@ -287,8 +290,8 @@ describe("library actions", () => {
       seatAssignments: seedPresets[0].seatAssignments?.map((seat) =>
         seat.seatNo === 1
           ? { ...seat, characterId: "lin_xia" }
-          : seat.seatNo === 2
-            ? { ...seat, characterId: "qin_chuan" }
+          : seat.seatNo === 4
+            ? { ...seat, characterId: "zhou_zhi" }
             : seat,
       ) ?? null,
     };
@@ -307,7 +310,7 @@ describe("library actions", () => {
     const { actions, libraryRepository } = await createSeededActions();
 
     await expect(actions.setRoleEnabled("werewolf", false)).rejects.toThrow(
-      "Game preset six_player_standard roleIds[0] references disabled role: werewolf",
+      "Game preset twelve_player_standard roleIds[2] references disabled role: werewolf",
     );
 
     await expect(libraryRepository.loadAll()).resolves.toMatchObject({
@@ -322,7 +325,7 @@ describe("library actions", () => {
     await expect(
       actions.setCharacterEnabled("qin_chuan", false),
     ).rejects.toThrow(
-      "Game preset six_player_standard characterIds[0] references disabled character: qin_chuan",
+      "Game preset twelve_player_standard characterIds[2] references disabled character: qin_chuan",
     );
 
     await expect(libraryRepository.loadAll()).resolves.toMatchObject({
@@ -338,7 +341,7 @@ describe("library actions", () => {
 
     await Promise.all([
       actions.saveRole({
-        ...seedRoles[0],
+        ...werewolfRole,
         systemPrompt: "并发更新后的狼人提示词",
         updatedAt: NOW,
       }),
@@ -375,9 +378,9 @@ describe("library actions", () => {
     const gameRepository = createGameRepository(await createTempDir());
     const actions = createLibraryActions({ libraryRepository, gameRepository });
 
-    const record = await actions.createGameFromPreset("six_player_standard");
+    const record = await actions.createGameFromPreset(defaultPresetId);
 
-    expect(record.game.players).toHaveLength(6);
+    expect(record.game.players).toHaveLength(12);
     expect(libraryRepository.lockCalls).toBe(1);
   });
 });

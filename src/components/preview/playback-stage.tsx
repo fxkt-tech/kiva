@@ -7,14 +7,16 @@ import {
   type PlaybackItem,
 } from "@/core/playback";
 import {
-  DEFAULT_SHOW_THEME_ID,
-  getShowTheme,
   type PreviewAvatarImages,
   type PreviewBackgroundImages,
-  renderThemeFrame,
 } from "./show-theme";
 import { systemVoiceSourceForScene } from "./preview-audio";
-import { createSixPlayerStageLayout } from "./stage-layout";
+import {
+  Canvas2DPreviewRenderer,
+  type PreviewRenderFrameInput,
+  type PreviewRendererHandle,
+  type PreviewRendererKind,
+} from "./preview-renderer";
 
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
@@ -29,6 +31,7 @@ type PlaybackStageProps = {
   readonly items: readonly PlaybackItem[];
   readonly controls?: "visible" | "hidden";
   readonly initialPosition?: "start" | "end";
+  readonly renderer?: PreviewRendererKind;
 };
 
 type RecordingStatus = "idle" | "recording" | "ready" | "failed";
@@ -37,13 +40,17 @@ export function PlaybackStage({
   items,
   controls = "visible",
   initialPosition = "start",
+  renderer = "canvas2d",
 }: PlaybackStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pixiHostRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<PreviewRendererHandle | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioSceneKeyRef = useRef<string | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const downloadUrlRef = useRef<string | null>(null);
+  const latestRenderInputRef = useRef<PreviewRenderFrameInput | null>(null);
   const [currentTimeMs, setCurrentTimeMs] = useState(() =>
     initialTimeForItems(items, initialPosition),
   );
@@ -52,6 +59,8 @@ export function PlaybackStage({
     useState<RecordingStatus>("idle");
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [rendererHandle, setRendererHandle] =
+    useState<PreviewRendererHandle | null>(null);
   const [backgroundImages, setBackgroundImages] =
     useState<PreviewBackgroundImages>({ day: null, night: null });
   const [avatarImages, setAvatarImages] = useState<PreviewAvatarImages>({});
@@ -62,20 +71,85 @@ export function PlaybackStage({
   const progress = hasItems ? `${safeIndex + 1} / ${items.length}` : "0 / 0";
   const canPlay = hasItems && safeTimeMs < totalDurationMs;
   const canRecord = hasItems && recordingStatus !== "recording";
+  latestRenderInputRef.current = {
+    items,
+    timeMs: safeTimeMs,
+    backgroundImages,
+    avatarImages,
+  };
 
   useEffect(() => {
     setCurrentTimeMs(initialTimeForItems(items, initialPosition));
   }, [initialPosition, items]);
 
   useEffect(() => {
-    drawPlaybackFrame(
-      canvasRef.current,
-      items,
-      safeTimeMs,
-      backgroundImages,
-      avatarImages,
-    );
-  }, [avatarImages, backgroundImages, items, safeTimeMs]);
+    let cancelled = false;
+    let currentRenderer: PreviewRendererHandle | null = null;
+
+    async function createRenderer() {
+      rendererRef.current?.destroy();
+      rendererRef.current = null;
+      setRendererHandle(null);
+
+      if (renderer === "canvas2d") {
+        if (!canvasRef.current) {
+          return;
+        }
+
+        currentRenderer = new Canvas2DPreviewRenderer(canvasRef.current);
+        rendererRef.current = currentRenderer;
+        renderLatestFrame(currentRenderer, latestRenderInputRef.current);
+        setRendererHandle(currentRenderer);
+        return;
+      }
+
+      if (!pixiHostRef.current) {
+        return;
+      }
+
+      const { createPixiPreviewRenderer } = await import(
+        "./pixi/pixi-preview-renderer"
+      );
+      if (cancelled || !pixiHostRef.current) {
+        return;
+      }
+
+      currentRenderer = await createPixiPreviewRenderer(pixiHostRef.current);
+      if (cancelled) {
+        currentRenderer.destroy();
+        return;
+      }
+
+      rendererRef.current = currentRenderer;
+      renderLatestFrame(currentRenderer, latestRenderInputRef.current);
+      setRendererHandle(currentRenderer);
+    }
+
+    createRenderer().catch((caught) => {
+      if (!cancelled) {
+        setError(caught instanceof Error ? caught.message : String(caught));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      currentRenderer?.destroy();
+      if (rendererRef.current === currentRenderer) {
+        rendererRef.current = null;
+        setRendererHandle(null);
+      }
+    };
+  }, [renderer]);
+
+  useEffect(() => {
+    renderLatestFrame(rendererHandle, latestRenderInputRef.current);
+  }, [
+    avatarImages,
+    backgroundImages,
+    items,
+    rendererHandle,
+    safeTimeMs,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -172,7 +246,7 @@ export function PlaybackStage({
   }
 
   function startRecording() {
-    const canvas = canvasRef.current;
+    const canvas = rendererRef.current?.canvas ?? null;
     setError(null);
 
     if (!canvas || !hasItems) {
@@ -220,7 +294,12 @@ export function PlaybackStage({
         setRecordingStatus("ready");
       };
 
-      drawPlaybackFrame(canvas, items, 0, backgroundImages, avatarImages);
+      rendererRef.current?.renderFrame({
+        items,
+        timeMs: 0,
+        backgroundImages,
+        avatarImages,
+      });
       setCurrentTimeMs(0);
       recorder.start();
       setRecordingStatus("recording");
@@ -279,16 +358,35 @@ export function PlaybackStage({
     audio.currentTime = 0;
   }
 
+  function renderLatestFrame(
+    handle: PreviewRendererHandle | null,
+    input: PreviewRenderFrameInput | null,
+  ) {
+    if (!handle || !input) {
+      return;
+    }
+
+    handle.renderFrame(input);
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black p-4 text-white">
       <section className="aspect-video w-full max-w-6xl overflow-hidden bg-black shadow-2xl shadow-black">
-        <canvas
-          aria-label="Playback canvas"
-          className="h-full w-full bg-black"
-          height={CANVAS_HEIGHT}
-          ref={canvasRef}
-          width={CANVAS_WIDTH}
-        />
+        {renderer === "pixi" ? (
+          <div
+            aria-label="Playback canvas"
+            className="h-full w-full bg-black [&_canvas]:h-full [&_canvas]:w-full"
+            ref={pixiHostRef}
+          />
+        ) : (
+          <canvas
+            aria-label="Playback canvas"
+            className="h-full w-full bg-black"
+            height={CANVAS_HEIGHT}
+            ref={canvasRef}
+            width={CANVAS_WIDTH}
+          />
+        )}
         {!hasItems ? <span className="sr-only">No playable scenes</span> : null}
       </section>
       {controls === "visible" ? (
@@ -375,44 +473,6 @@ function initialTimeForItems(
   }
 
   return playbackTotalDurationMs(items);
-}
-
-function drawPlaybackFrame(
-  canvas: HTMLCanvasElement | null,
-  items: readonly PlaybackItem[],
-  timeMs: number,
-  backgroundImages: PreviewBackgroundImages = { day: null, night: null },
-  avatarImages: PreviewAvatarImages = {},
-): void {
-  if (!canvas) {
-    return;
-  }
-
-  const context = canvas.getContext("2d");
-  if (!context) {
-    return;
-  }
-
-  const scene = items[playbackIndexAtMs(items, timeMs)];
-
-  if (!scene) {
-    context.fillStyle = "#050506";
-    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-    context.fillStyle = "#d4d4d8";
-    context.font = "600 64px sans-serif";
-    context.fillText("No playable scenes", 120, 520);
-    return;
-  }
-
-  renderThemeFrame(context, {
-    theme: getShowTheme(DEFAULT_SHOW_THEME_ID),
-    scene,
-    items,
-    layout: createSixPlayerStageLayout(scene.players),
-    timeMs,
-    backgroundImages,
-    avatarImages,
-  });
 }
 
 async function loadBackgroundImages(): Promise<PreviewBackgroundImages> {

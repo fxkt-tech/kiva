@@ -17,6 +17,8 @@ const p3 = "p3" as PlayerId;
 const p4 = "p4" as PlayerId;
 const p5 = "p5" as PlayerId;
 const p6 = "p6" as PlayerId;
+const p7 = "p7" as PlayerId;
+const p8 = "p8" as PlayerId;
 const unknownPlayerId = "unknown" as PlayerId;
 
 const players = [
@@ -56,6 +58,18 @@ const players = [
     name: "P6",
     gameRole: "villager",
   }),
+  createPlayerSnapshot({
+    playerId: p7,
+    seatNo: 7,
+    name: "P7",
+    gameRole: "guard",
+  }),
+  createPlayerSnapshot({
+    playerId: p8,
+    seatNo: 8,
+    name: "P8",
+    gameRole: "hunter",
+  }),
 ];
 
 describe("rules", () => {
@@ -84,6 +98,18 @@ describe("rules", () => {
     expect(
       getLegalNightTargets("witch_poison", players, [p1, p3, p4, p5], p4),
     ).toEqual([p1, p3, p5]);
+  });
+
+  it("allows guard to protect any living player including self", () => {
+    expect(
+      getLegalNightTargets("guard_protect", players, [p1, p3, p7], p7),
+    ).toEqual([p1, p3, p7]);
+  });
+
+  it("allows a dead hunter to shoot any living player", () => {
+    expect(
+      getLegalNightTargets("hunter_shot", players, [p1, p3, p7], p8),
+    ).toEqual([p1, p3, p7]);
   });
 
   it("returns no seer targets when actor is omitted", () => {
@@ -137,6 +163,7 @@ describe("rules", () => {
     expect(
       resolveNightDeaths({
         wolfKillTargetId: p3,
+        guardTargetId: null,
         antidoteTargetId: null,
         poisonTargetId: null,
       }),
@@ -147,6 +174,7 @@ describe("rules", () => {
     expect(
       resolveNightDeaths({
         wolfKillTargetId: p3,
+        guardTargetId: null,
         antidoteTargetId: p3,
         poisonTargetId: null,
       }),
@@ -157,6 +185,7 @@ describe("rules", () => {
     expect(
       resolveNightDeaths({
         wolfKillTargetId: p3,
+        guardTargetId: null,
         antidoteTargetId: p3,
         poisonTargetId: p5,
       }),
@@ -167,10 +196,22 @@ describe("rules", () => {
     expect(
       resolveNightDeaths({
         wolfKillTargetId: p3,
+        guardTargetId: null,
         antidoteTargetId: null,
         poisonTargetId: p3,
       }),
     ).toEqual([p3]);
+  });
+
+  it("rescues wolf kill with guard protection", () => {
+    expect(
+      resolveNightDeaths({
+        wolfKillTargetId: p3,
+        guardTargetId: p3,
+        antidoteTargetId: null,
+        poisonTargetId: null,
+      }),
+    ).toEqual([]);
   });
 
   it("rejects same-night antidote and poison by default", () => {
@@ -324,7 +365,7 @@ describe("rules", () => {
 
   it("wolves win by slaughter all when all good players are dead", () => {
     expect(
-      checkWinCondition(players, [p3, p4, p5, p6], {
+      checkWinCondition(players, [p3, p4, p5, p6, p7, p8], {
         ...createDefaultRuleset(),
         winCondition: "slaughter_all",
       }),
@@ -336,7 +377,7 @@ describe("rules", () => {
   });
 
   it("wolves win by slaughter side when all gods are dead", () => {
-    expect(checkWinCondition(players, [p3, p4], createDefaultRuleset())).toEqual({
+    expect(checkWinCondition(players, [p3, p4, p7, p8], createDefaultRuleset())).toEqual({
       ended: true,
       winner: "wolves",
       reason: "all_gods_dead",
@@ -483,6 +524,8 @@ describe("rules", () => {
       { playerId: p4, roleId: "witch", roleName: "女巫", faction: "good" },
       { playerId: p5, roleId: "villager", roleName: "平民", faction: "good" },
       { playerId: p6, roleId: "villager", roleName: "平民", faction: "good" },
+      { playerId: p7, roleId: "guard", roleName: "守卫", faction: "good" },
+      { playerId: p8, roleId: "hunter", roleName: "猎人", faction: "good" },
     ]);
   });
 });

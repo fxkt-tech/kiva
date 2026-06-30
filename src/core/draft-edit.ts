@@ -16,6 +16,8 @@ export function applyDraftPayloadEdit(
   switch (draft.type) {
     case "wolf_kill_selected":
     case "seer_check_selected":
+    case "guard_protect_selected":
+    case "hunter_shot_decided":
       assertSupportedEdit(draft.type, edit, ["targetPlayerId"]);
       return editTargetDraft(draft, edit);
 
@@ -40,7 +42,12 @@ export function applyDraftPayloadEdit(
 }
 
 function editTargetDraft(
-  draft: DraftOf<"wolf_kill_selected" | "seer_check_selected">,
+  draft: DraftOf<
+    | "wolf_kill_selected"
+    | "seer_check_selected"
+    | "guard_protect_selected"
+    | "hunter_shot_decided"
+  >,
   edit: DraftPayloadEdit,
 ): DraftEvent {
   if (!hasOwn(edit, "targetPlayerId")) {

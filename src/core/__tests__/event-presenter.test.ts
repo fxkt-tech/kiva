@@ -39,7 +39,7 @@ describe("event presenter", () => {
         },
         players,
       ).text,
-    ).toContain("1 号 秦川 获得身份");
+    ).toContain(`1 号 ${players[0].name} 获得身份`);
 
     expect(
       formatEventForHost(
@@ -50,7 +50,7 @@ describe("event presenter", () => {
           status: "active",
           type: "wolf_kill_selected",
           phase: "night",
-          actorPlayerId: players[0].playerId,
+          actorPlayerId: players[2].playerId,
           targetPlayerIds: [players[4].playerId],
           visibility: { kind: "faction_private", faction: "wolves" },
           payload: { targetPlayerId: players[4].playerId },
@@ -69,7 +69,7 @@ describe("event presenter", () => {
       status: "active",
       type: "wolf_kill_selected",
       phase: "night",
-      actorPlayerId: players[0].playerId,
+      actorPlayerId: players[2].playerId,
       targetPlayerIds: [players[4].playerId],
       visibility: { kind: "faction_private", faction: "wolves" },
       payload: { targetPlayerId: players[4].playerId },

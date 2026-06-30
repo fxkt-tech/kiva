@@ -59,9 +59,9 @@ describe("LibraryWorkspace", () => {
     );
 
     expect(withoutId).toContain("Preset editor");
-    expect(withoutId).toContain("6人狼人杀试运行");
+    expect(withoutId).toContain("12人狼人杀标准局");
     expect(withInvalidId).toContain("Preset editor");
-    expect(withInvalidId).toContain("6人狼人杀试运行");
+    expect(withInvalidId).toContain("12人狼人杀标准局");
   });
 
   it("uses the selected object identity as the editor key", () => {
