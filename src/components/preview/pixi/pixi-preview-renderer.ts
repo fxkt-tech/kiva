@@ -16,9 +16,20 @@ import type {
   PreviewRenderFrameInput,
   PreviewRendererHandle,
 } from "../preview-renderer";
-import { mansionPixiTheme, type PixiPreviewTheme } from "./pixi-theme";
+import {
+  caseBoardContentForFrame,
+  type CaseBoardRow,
+} from "./case-board-content";
+import {
+  mansionPixiTheme,
+  PIXI_PREVIEW_FONT_FAMILY,
+  type PixiPreviewTheme,
+} from "./pixi-theme";
 
 const EMPTY_TEXTURE = Texture.EMPTY;
+const SEAT_NUMBER_FONT_SIZE = 104;
+const SEAT_NUMBER_LINE_HEIGHT = 114;
+const CASE_BOARD_ROW_COUNT = 6;
 
 export async function createPixiPreviewRenderer(
   host: HTMLDivElement,
@@ -90,7 +101,7 @@ class PixiPreviewScene {
   private readonly topBar: TopBar;
   private readonly leftTrack: SeatTrack;
   private readonly rightTrack: SeatTrack;
-  private readonly mainShot: MainShot;
+  private readonly centerStage: CenterStage;
   private readonly subtitle: SubtitleBand;
   private readonly effects: EffectsLayer;
   private readonly mainArea: LayoutContainer;
@@ -101,7 +112,7 @@ class PixiPreviewScene {
     this.topBar = new TopBar(theme);
     this.leftTrack = new SeatTrack(theme, "left");
     this.rightTrack = new SeatTrack(theme, "right");
-    this.mainShot = new MainShot(theme);
+    this.centerStage = new CenterStage(theme);
     this.subtitle = new SubtitleBand(theme);
     this.effects = new EffectsLayer(theme);
     this.mainArea = new LayoutContainer();
@@ -123,7 +134,7 @@ class PixiPreviewScene {
       height: "100%",
     };
     this.mainArea.addChild(this.leftTrack.view, this.centerColumn, this.rightTrack.view);
-    this.centerColumn.addChild(this.mainShot.view, this.subtitle.view);
+    this.centerColumn.addChild(this.centerStage.view, this.subtitle.view);
   }
 
   update(frame: ShotFrame): void {
@@ -131,7 +142,7 @@ class PixiPreviewScene {
     this.topBar.update(frame);
     this.leftTrack.update(frame);
     this.rightTrack.update(frame);
-    this.mainShot.update(frame);
+    this.centerStage.update(frame);
     this.subtitle.update(frame);
     this.effects.update(frame);
   }
@@ -141,7 +152,7 @@ class PixiPreviewScene {
     this.topBar.renderEmpty();
     this.leftTrack.clear();
     this.rightTrack.clear();
-    this.mainShot.renderEmpty();
+    this.centerStage.renderEmpty();
     this.subtitle.renderEmpty();
     this.effects.clear();
   }
@@ -224,13 +235,13 @@ class TopBar {
     this.panel
       .clear()
       .rect(0, 0, this.theme.layout.width, this.theme.layout.topBarHeight)
-      .fill({ color: this.theme.colors.black, alpha: 0.72 })
+      .fill({ color: this.theme.colors.black, alpha: 0.30 })
       .rect(0, this.theme.layout.topBarHeight - 1, this.theme.layout.width, 1)
-      .fill({ color: this.theme.colors.accent, alpha: 0.28 });
+      .fill({ color: this.theme.colors.accent, alpha: 0.14 });
     this.rule
       .clear()
       .rect(0, this.theme.layout.topBarHeight - 2, this.theme.layout.width, 1)
-      .fill({ color: this.theme.colors.brass, alpha: 0.14 });
+      .fill({ color: this.theme.colors.brass, alpha: 0.07 });
   }
 
   renderEmpty(): void {
@@ -321,10 +332,10 @@ class SeatCard {
     this.textColumn = new Container();
     this.seatNo = text("", {
       ...theme.typography.meta,
-      fontFamily: "Georgia, Songti SC, serif",
-      fontSize: 34,
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
+      fontSize: SEAT_NUMBER_FONT_SIZE,
       fontWeight: "900",
-      lineHeight: 42,
+      lineHeight: SEAT_NUMBER_LINE_HEIGHT,
     });
     this.name = text("", theme.typography.playerName);
     this.role = text("", theme.typography.body);
@@ -414,7 +425,7 @@ class SeatCard {
         .fill({ color: this.theme.colors.brass, alpha: 0.70 });
     }
     this.avatar.update(player.name, avatarImage, dead, this.theme);
-    this.seatNo.text = `#${String(player.seatNo).padStart(2, "0")}`;
+    this.seatNo.text = String(player.seatNo).padStart(2, "0");
     this.name.text = player.name;
     this.role.text = `身份：${player.roleName}`;
     this.avatar.view.layout = { width: avatarSize, height: avatarSize };
@@ -430,34 +441,34 @@ class SeatCard {
     };
     this.role.style = {
       ...this.theme.typography.body,
-      fontSize: 16,
-      lineHeight: 24,
+      fontSize: 22,
+      lineHeight: 30,
       align: "center",
       fill: subtleRoleColor(player.roleName, this.theme),
     };
     this.name.style = {
       ...this.theme.typography.playerName,
-      fontSize: active ? 31 : 29,
-      lineHeight: active ? 43 : 40,
+      fontSize: active ? 40 : 38,
+      lineHeight: active ? 50 : 48,
       align: "center",
     };
     this.seatNo.style = {
       ...this.theme.typography.meta,
-      fontFamily: "Georgia, Songti SC, serif",
-      fontSize: 34,
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
+      fontSize: SEAT_NUMBER_FONT_SIZE,
       fontWeight: "900",
-      lineHeight: 42,
+      lineHeight: SEAT_NUMBER_LINE_HEIGHT,
       align: "center",
     };
-    fitText(this.name, 260, active ? 31 : 29, 20);
+    fitText(this.name, 260, active ? 40 : 38, 24);
     this.seatNo.position.set(
       seatNumberCenterX(this.theme, this.side),
       padding + avatarSize / 2,
     );
     this.name.anchor.set(0.5);
     this.role.anchor.set(0.5);
-    this.name.position.set(textColumnWidth(this.theme) / 2, avatarSize / 2 - 18);
-    this.role.position.set(textColumnWidth(this.theme) / 2, avatarSize / 2 + 24);
+    this.name.position.set(textColumnWidth(this.theme) / 2, avatarSize / 2 - 22);
+    this.role.position.set(textColumnWidth(this.theme) / 2, avatarSize / 2 + 31);
     this.deadOverlay
       .clear()
       .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, this.theme.layout.radius)
@@ -469,7 +480,45 @@ class SeatCard {
   }
 }
 
-class MainShot {
+class CenterStage {
+  readonly view = new LayoutContainer();
+  private readonly speechStage: SpeechStage;
+  private readonly caseBoardStage: CaseBoardStage;
+
+  constructor(theme: PixiPreviewTheme) {
+    this.speechStage = new SpeechStage(theme);
+    this.caseBoardStage = new CaseBoardStage(theme);
+    this.view.layout = {
+      position: "absolute",
+      left: 0,
+      top: 0,
+      width: mainStageWidth(theme),
+      height: mainStageHeight(theme),
+    };
+    this.view.addChild(this.speechStage.view, this.caseBoardStage.view);
+  }
+
+  update(frame: ShotFrame): void {
+    const isSpeech = frame.scene.kind === "speech";
+    this.speechStage.view.visible = isSpeech;
+    this.caseBoardStage.view.visible = !isSpeech;
+
+    if (isSpeech) {
+      this.speechStage.update(frame);
+    } else {
+      this.caseBoardStage.update(frame);
+    }
+  }
+
+  renderEmpty(): void {
+    this.speechStage.view.visible = true;
+    this.caseBoardStage.view.visible = false;
+    this.speechStage.renderEmpty();
+    this.caseBoardStage.renderEmpty();
+  }
+}
+
+class SpeechStage {
   readonly view = new LayoutContainer();
   private readonly shell: LayoutContainer;
   private readonly panel = new Graphics();
@@ -477,7 +526,7 @@ class MainShot {
   private readonly portrait: AvatarView;
   private readonly slateTitle: Text;
   private readonly slateMeta: Text;
-  private readonly lensOverlay = new Graphics();
+  private readonly focusOverlay = new Graphics();
 
   constructor(private readonly theme: PixiPreviewTheme) {
     const width = mainStageWidth(theme);
@@ -504,7 +553,7 @@ class MainShot {
     this.slateTitle.anchor.set(0.5);
     this.slateMeta.position.set(width / 2, height / 2 - 34);
     this.slateTitle.position.set(width / 2, height / 2 + 10);
-    this.lensOverlay.layout = {
+    this.focusOverlay.layout = {
       position: "absolute",
       left: 0,
       top: 0,
@@ -540,7 +589,7 @@ class MainShot {
       this.slateRule,
       this.slateMeta,
       this.slateTitle,
-      this.lensOverlay,
+      this.focusOverlay,
     );
     this.view.addChild(this.shell);
   }
@@ -570,15 +619,8 @@ class MainShot {
       .clear()
       .rect(mainStageWidth(this.theme) / 2 - 140, mainStageHeight(this.theme) / 2 - 8, 280, 1)
       .fill({ color: this.theme.colors.brass, alpha: 0.34 });
-    this.lensOverlay
+    this.focusOverlay
       .clear()
-      .rect(
-        mainStageWidth(this.theme) / 2 - 230,
-        mainStageHeight(this.theme) / 2 - 70,
-        460,
-        126,
-      )
-      .fill({ color: this.theme.colors.black, alpha: player ? 0 : 0.34 })
       .rect(0, mainStageHeight(this.theme) - 120, mainStageWidth(this.theme), 120)
       .fill({ color: this.theme.colors.black, alpha: player ? 0.20 : 0 });
     this.shell.alpha = 1;
@@ -591,6 +633,230 @@ class MainShot {
     this.slateTitle.visible = true;
     this.slateRule.visible = true;
     this.slateTitle.text = "等待审讯记录";
+    this.focusOverlay.clear();
+  }
+}
+
+class CaseBoardStage {
+  readonly view = new LayoutContainer();
+  private readonly panel = new Graphics();
+  private readonly accent = new Graphics();
+  private readonly kindLabel: Text;
+  private readonly title: Text;
+  private readonly body: Text;
+  private readonly rowHeader: Text;
+  private readonly rows: CaseBoardRowView[];
+
+  constructor(private readonly theme: PixiPreviewTheme) {
+    this.kindLabel = text("", {
+      ...theme.typography.meta,
+      fill: theme.colors.brass,
+      fontSize: 22,
+      letterSpacing: 0,
+    });
+    this.title = text("", {
+      ...theme.typography.title,
+      fill: theme.colors.text,
+      fontSize: 48,
+      lineHeight: 58,
+      wordWrap: true,
+      wordWrapWidth: caseBoardLeftColumnWidth(theme),
+    });
+    this.body = text("", {
+      ...theme.typography.body,
+      fill: theme.colors.text,
+      fontSize: 30,
+      lineHeight: 42,
+      wordWrap: true,
+      wordWrapWidth: caseBoardLeftColumnWidth(theme),
+    });
+    this.rowHeader = text("CASE NOTES", {
+      ...theme.typography.meta,
+      fill: theme.colors.muted,
+      fontSize: 18,
+      letterSpacing: 0,
+    });
+    this.rows = Array.from({ length: CASE_BOARD_ROW_COUNT }, () => (
+      new CaseBoardRowView(theme)
+    ));
+
+    this.view.layout = {
+      position: "absolute",
+      left: 0,
+      top: 0,
+      width: mainStageWidth(theme),
+      height: mainStageHeight(theme),
+    };
+    this.panel.layout = {
+      position: "absolute",
+      left: 0,
+      top: 0,
+      width: "100%",
+      height: "100%",
+    };
+    this.accent.layout = {
+      position: "absolute",
+      left: 0,
+      top: 0,
+      width: "100%",
+      height: "100%",
+    };
+    this.view.addChild(
+      this.panel,
+      this.accent,
+      this.kindLabel,
+      this.title,
+      this.body,
+      this.rowHeader,
+      ...this.rows.map((row) => row.view),
+    );
+  }
+
+  update(frame: ShotFrame): void {
+    const content = caseBoardContentForFrame(frame);
+    const width = mainStageWidth(this.theme);
+    const height = mainStageHeight(this.theme);
+    const padding = 46;
+    const leftWidth = caseBoardLeftColumnWidth(this.theme);
+    const dividerX = padding + leftWidth + 36;
+    const rightX = dividerX + 36;
+    const rightWidth = width - rightX - padding;
+    const rowHeight = 86;
+    const rowGap = 14;
+
+    this.panel
+      .clear()
+      .roundRect(0, 0, width, height, 28)
+      .fill({ color: this.theme.colors.black, alpha: 0.46 })
+      .roundRect(0, 0, width, height, 28)
+      .stroke({ color: 0xd4c7ad, alpha: 0.18, width: 1 });
+    this.accent
+      .clear()
+      .rect(padding, padding, 92, 2)
+      .fill({ color: this.theme.colors.brass, alpha: 0.62 })
+      .rect(dividerX, padding, 1, height - padding * 2)
+      .fill({ color: 0xd4c7ad, alpha: 0.12 })
+      .rect(padding, height - padding - 2, leftWidth, 1)
+      .fill({ color: this.theme.colors.accent, alpha: 0.18 });
+
+    this.kindLabel.text = content.kindLabel;
+    this.title.text = content.title;
+    this.body.text = content.body;
+    this.rowHeader.text = "CASE NOTES";
+    this.kindLabel.position.set(padding, padding + 24);
+    this.title.position.set(padding, padding + 76);
+    this.body.position.set(padding, padding + 192);
+    this.rowHeader.position.set(rightX, padding + 24);
+    this.title.style = {
+      ...this.title.style,
+      wordWrapWidth: leftWidth,
+    };
+    this.body.style = {
+      ...this.body.style,
+      wordWrapWidth: leftWidth,
+    };
+    fitText(this.title, leftWidth, 48, 32);
+    fitText(this.body, leftWidth, 30, 22);
+
+    this.rows.forEach((rowView, index) => {
+      const row = content.rows[index] ?? null;
+      const y = padding + 72 + index * (rowHeight + rowGap);
+      rowView.update(row, rightX, y, rightWidth, rowHeight);
+    });
+  }
+
+  renderEmpty(): void {
+    this.panel.clear();
+    this.accent.clear();
+    this.kindLabel.text = "";
+    this.title.text = "";
+    this.body.text = "";
+    this.rowHeader.text = "";
+    this.rows.forEach((row) => row.update(null, 0, 0, 0, 0));
+  }
+}
+
+class CaseBoardRowView {
+  readonly view = new Container();
+  private readonly panel = new Graphics();
+  private readonly label: Text;
+  private readonly body: Text;
+  private readonly meta: Text;
+
+  constructor(private readonly theme: PixiPreviewTheme) {
+    this.label = text("", {
+      ...theme.typography.meta,
+      fill: theme.colors.brass,
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
+      fontSize: 26,
+      fontWeight: "900",
+      lineHeight: 34,
+    });
+    this.body = text("", {
+      ...theme.typography.body,
+      fill: theme.colors.text,
+      fontSize: 25,
+      lineHeight: 34,
+      wordWrap: true,
+    });
+    this.meta = text("", {
+      ...theme.typography.meta,
+      fill: theme.colors.muted,
+      fontSize: 17,
+      lineHeight: 24,
+    });
+    this.label.anchor.set(0.5);
+    this.view.addChild(this.panel, this.label, this.body, this.meta);
+  }
+
+  update(
+    row: CaseBoardRow | null,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): void {
+    this.view.visible = Boolean(row);
+    if (!row) {
+      this.panel.clear();
+      this.label.text = "";
+      this.body.text = "";
+      this.meta.text = "";
+      return;
+    }
+
+    const toneColor = colorForCaseBoardTone(row.tone, this.theme);
+    const labelWidth = 92;
+    const textX = labelWidth + 22;
+    const textWidth = width - textX - 22;
+
+    this.view.position.set(x, y);
+    this.panel
+      .clear()
+      .roundRect(0, 0, width, height, 12)
+      .fill({ color: this.theme.colors.panel, alpha: 0.64 })
+      .roundRect(0, 0, width, height, 12)
+      .stroke({ color: toneColor, alpha: 0.26, width: 1 })
+      .rect(0, 0, 4, height)
+      .fill({ color: toneColor, alpha: 0.62 });
+
+    this.label.text = row.label;
+    this.body.text = row.text;
+    this.meta.text = row.meta ?? "";
+    this.label.style = {
+      ...this.label.style,
+      fill: toneColor,
+    };
+    this.body.style = {
+      ...this.body.style,
+      fill: row.tone === "dead-player" ? this.theme.colors.muted : this.theme.colors.text,
+      wordWrapWidth: textWidth,
+    };
+    this.meta.visible = Boolean(row.meta);
+    this.label.position.set(labelWidth / 2, height / 2);
+    this.body.position.set(textX, row.meta ? 14 : 25);
+    this.meta.position.set(textX, 50);
+    fitText(this.body, textWidth, 25, 18);
   }
 }
 
@@ -692,7 +958,7 @@ class AvatarView {
   private readonly clip = new Graphics();
   private readonly label = text("", {
     fill: 0xf4f1ea,
-    fontFamily: "Georgia, serif",
+    fontFamily: PIXI_PREVIEW_FONT_FAMILY,
     fontSize: 82,
     fontWeight: "900",
     letterSpacing: 0,
@@ -828,6 +1094,26 @@ function subtleRoleColor(roleName: string, theme: PixiPreviewTheme): number {
   return theme.colors.muted;
 }
 
+function colorForCaseBoardTone(
+  tone: CaseBoardRow["tone"],
+  theme: PixiPreviewTheme,
+): number {
+  switch (tone) {
+    case "detail":
+      return theme.colors.brass;
+    case "alive-player":
+      return theme.colors.good;
+    case "dead-player":
+      return theme.colors.muted;
+    case "neutral":
+      return theme.colors.accent;
+  }
+}
+
+function caseBoardLeftColumnWidth(theme: PixiPreviewTheme): number {
+  return Math.round(mainStageWidth(theme) * 0.53);
+}
+
 function mainStageWidth(theme: PixiPreviewTheme): number {
   return centerColumnWidth(theme);
 }
@@ -882,7 +1168,7 @@ function seatAvatarSize(theme: PixiPreviewTheme): number {
 }
 
 function seatNumberWidth(theme: PixiPreviewTheme): number {
-  return Math.round(seatAvatarSize(theme) * 0.56);
+  return seatAvatarSize(theme);
 }
 
 function seatNumberCenterX(
