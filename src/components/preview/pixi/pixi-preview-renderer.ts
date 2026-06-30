@@ -511,9 +511,8 @@ class CenterStage {
   }
 
   renderEmpty(): void {
-    this.speechStage.view.visible = true;
-    this.caseBoardStage.view.visible = false;
-    this.speechStage.renderEmpty();
+    this.speechStage.view.visible = false;
+    this.caseBoardStage.view.visible = true;
     this.caseBoardStage.renderEmpty();
   }
 }
@@ -766,13 +765,57 @@ class CaseBoardStage {
   }
 
   renderEmpty(): void {
-    this.panel.clear();
-    this.accent.clear();
-    this.kindLabel.text = "";
-    this.title.text = "";
-    this.body.text = "";
-    this.rowHeader.text = "";
-    this.rows.forEach((row) => row.update(null, 0, 0, 0, 0));
+    const width = mainStageWidth(this.theme);
+    const height = mainStageHeight(this.theme);
+    const padding = 46;
+    const leftWidth = caseBoardLeftColumnWidth(this.theme);
+    const dividerX = padding + leftWidth + 36;
+    const rightX = dividerX + 36;
+    const rightWidth = width - rightX - padding;
+    const rowHeight = 86;
+
+    this.panel
+      .clear()
+      .roundRect(0, 0, width, height, 28)
+      .fill({ color: this.theme.colors.black, alpha: 0.46 })
+      .roundRect(0, 0, width, height, 28)
+      .stroke({ color: 0xd4c7ad, alpha: 0.18, width: 1 });
+    this.accent
+      .clear()
+      .rect(padding, padding, 92, 2)
+      .fill({ color: this.theme.colors.brass, alpha: 0.62 })
+      .rect(dividerX, padding, 1, height - padding * 2)
+      .fill({ color: 0xd4c7ad, alpha: 0.12 })
+      .rect(padding, height - padding - 2, leftWidth, 1)
+      .fill({ color: this.theme.colors.accent, alpha: 0.18 });
+
+    this.kindLabel.text = "PREVIEW";
+    this.title.text = "等待审讯记录";
+    this.body.text = "尚无可播放场景。";
+    this.rowHeader.text = "CASE NOTES";
+    this.kindLabel.position.set(padding, padding + 24);
+    this.title.position.set(padding, padding + 76);
+    this.body.position.set(padding, padding + 192);
+    this.rowHeader.position.set(rightX, padding + 24);
+    this.title.style = {
+      ...this.title.style,
+      wordWrapWidth: leftWidth,
+    };
+    this.body.style = {
+      ...this.body.style,
+      wordWrapWidth: leftWidth,
+    };
+    fitText(this.title, leftWidth, 48, 32);
+    fitText(this.body, leftWidth, 30, 22);
+
+    this.rows[0]?.update(
+      { tone: "neutral", label: "FILE", text: "PUBLIC RECORD" },
+      rightX,
+      padding + 72,
+      rightWidth,
+      rowHeight,
+    );
+    this.rows.slice(1).forEach((row) => row.update(null, 0, 0, 0, 0));
   }
 }
 
