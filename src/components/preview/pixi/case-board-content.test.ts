@@ -96,7 +96,7 @@ describe("caseBoardContentForFrame", () => {
     expect(content.kindLabel).toBe("VOTE");
   });
 
-  it("can still label speech but the renderer should not route speech to case board", () => {
+  it("labels speech scenes", () => {
     const content = caseBoardContentForFrame(
       frame({
         scene: scene({
