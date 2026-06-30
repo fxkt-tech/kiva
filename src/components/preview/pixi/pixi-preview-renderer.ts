@@ -93,8 +93,8 @@ class PixiPreviewScene {
   private readonly mainShot: MainShot;
   private readonly subtitle: SubtitleBand;
   private readonly effects: EffectsLayer;
-  private readonly content: LayoutContainer;
-  private readonly body: LayoutContainer;
+  private readonly mainArea: LayoutContainer;
+  private readonly centerColumn: LayoutContainer;
 
   constructor(private readonly theme: PixiPreviewTheme) {
     this.background = new BackgroundLayer(theme);
@@ -104,28 +104,26 @@ class PixiPreviewScene {
     this.mainShot = new MainShot(theme);
     this.subtitle = new SubtitleBand(theme);
     this.effects = new EffectsLayer(theme);
-    this.content = new LayoutContainer();
-    this.body = new LayoutContainer();
+    this.mainArea = new LayoutContainer();
+    this.centerColumn = new LayoutContainer();
 
-    this.view.addChild(this.background.view, this.content, this.effects.view);
-    this.content.layout = {
-      width: theme.layout.width,
-      height: theme.layout.height,
-      flexDirection: "column",
+    this.view.addChild(this.background.view, this.topBar.view, this.mainArea, this.effects.view);
+    this.mainArea.layout = {
+      position: "absolute",
+      left: theme.layout.outerMargin,
+      top: theme.layout.topBarHeight + theme.layout.outerMargin,
+      width: availableWidth(theme),
+      height: mainAreaHeight(theme),
     };
-    this.body.layout = {
-      width: "100%",
-      flex: 1,
-      flexDirection: "row",
-      gap: theme.layout.gap,
-      alignItems: "stretch",
-      paddingLeft: theme.layout.contentMarginX,
-      paddingRight: theme.layout.contentMarginX,
-      paddingTop: theme.layout.bodyPaddingTop,
-      paddingBottom: theme.layout.bodyPaddingBottom,
+    this.centerColumn.layout = {
+      position: "absolute",
+      left: centerColumnLeft(theme),
+      top: 0,
+      width: centerColumnWidth(theme),
+      height: "100%",
     };
-    this.content.addChild(this.topBar.view, this.body, this.subtitle.view);
-    this.body.addChild(this.leftTrack.view, this.mainShot.view, this.rightTrack.view);
+    this.mainArea.addChild(this.leftTrack.view, this.centerColumn, this.rightTrack.view);
+    this.centerColumn.addChild(this.mainShot.view, this.subtitle.view);
   }
 
   update(frame: ShotFrame): void {
@@ -192,25 +190,13 @@ class BackgroundLayer {
   }
 
   private drawOverlays(): void {
-    const { width, height } = this.theme.layout;
-    this.dim
-      .clear()
-      .rect(0, 0, width, this.theme.layout.topBarHeight)
-      .fill({ color: this.theme.colors.black, alpha: 0.30 })
-      .rect(0, height - this.theme.layout.subtitleHeight - 44, width, this.theme.layout.subtitleHeight + 44)
-      .fill({ color: this.theme.colors.black, alpha: 0.20 });
-
-    this.vignette
-      .clear()
-      .rect(0, 0, width, 72)
-      .fill({ color: this.theme.colors.black, alpha: 0.26 })
-      .rect(0, height - 120, width, 120)
-      .fill({ color: this.theme.colors.black, alpha: 0.24 });
+    this.dim.clear();
+    this.vignette.clear();
   }
 }
 
 class TopBar {
-  readonly view = new LayoutContainer();
+  readonly view = new Container();
   private readonly panel = new Graphics();
   private readonly rule = new Graphics();
   private readonly brand: Text;
@@ -221,33 +207,13 @@ class TopBar {
     this.brand = text("四方诛杀(冷冽审讯档案)", theme.typography.brand);
     this.title = text("", theme.typography.title);
     this.meta = text("", theme.typography.meta);
-    this.rule.layout = {
-      position: "absolute",
-      left: 0,
-      top: theme.layout.topBarHeight - 2,
-      width: "100%",
-      height: 2,
-    };
-    this.panel.layout = {
-      position: "absolute",
-      left: 0,
-      top: 0,
-      width: "100%",
-      height: "100%",
-    };
 
-    this.view.layout = {
-      width: "100%",
-      height: theme.layout.topBarHeight,
-      paddingLeft: 72,
-      paddingRight: 72,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 42,
-    };
-    this.brand.layout = { width: 460 };
-    this.title.layout = { flex: 1 };
-    this.meta.layout = { width: 260 };
+    this.brand.anchor.set(0, 0);
+    this.title.anchor.set(0.5, 0);
+    this.meta.anchor.set(1, 0);
+    this.brand.position.set(204, 27);
+    this.title.position.set(theme.layout.width / 2, 23);
+    this.meta.position.set(theme.layout.width - 204, 31);
     this.view.addChild(this.panel, this.brand, this.title, this.meta, this.rule);
   }
 
@@ -258,13 +224,13 @@ class TopBar {
     this.panel
       .clear()
       .rect(0, 0, this.theme.layout.width, this.theme.layout.topBarHeight)
-      .fill({ color: this.theme.colors.black, alpha: 0.90 })
+      .fill({ color: this.theme.colors.black, alpha: 0.72 })
       .rect(0, this.theme.layout.topBarHeight - 1, this.theme.layout.width, 1)
-      .fill({ color: this.theme.colors.accent, alpha: 0.24 });
+      .fill({ color: this.theme.colors.accent, alpha: 0.28 });
     this.rule
       .clear()
-      .rect(0, this.theme.layout.topBarHeight - 2, this.theme.layout.width, 2)
-      .fill({ color: this.theme.colors.brass, alpha: 0.16 });
+      .rect(0, this.theme.layout.topBarHeight - 2, this.theme.layout.width, 1)
+      .fill({ color: this.theme.colors.brass, alpha: 0.14 });
   }
 
   renderEmpty(): void {
@@ -282,8 +248,11 @@ class SeatTrack {
     private readonly side: "left" | "right",
   ) {
     this.view.layout = {
-      width: theme.layout.sideTrackWidth,
-      height: "100%",
+      position: "absolute",
+      left: side === "left" ? 0 : rightColumnLeft(theme),
+      top: 0,
+      width: sideColumnWidth(theme),
+      height: mainAreaHeight(theme),
       flexDirection: "column",
       justifyContent: "space-between",
     };
@@ -327,42 +296,46 @@ class SeatTrack {
 class SeatCard {
   readonly view = new LayoutContainer();
   private readonly panel = new Graphics();
-  private readonly caseLine = new Graphics();
   private readonly activeMark = new Graphics();
+  private readonly deadOverlay = new Graphics();
   private readonly avatar: AvatarView;
-  private readonly textColumn: LayoutContainer;
+  private readonly seatBox: LayoutContainer;
+  private readonly textColumn: Container;
   private readonly seatNo: Text;
   private readonly name: Text;
   private readonly role: Text;
-  private readonly status: Text;
 
   constructor(
     private readonly theme: PixiPreviewTheme,
     private readonly side: "left" | "right",
   ) {
+    const padding = seatCardPadding(theme);
+    const avatarSize = seatAvatarSize(theme);
     this.avatar = new AvatarView({
-      fallbackFontSize: 48,
-      radius: theme.layout.radius,
-      width: 62,
-      height: 76,
+      fallbackFontSize: 56,
+      radius: theme.layout.radius - 2,
+      width: avatarSize,
+      height: avatarSize,
     });
-    this.textColumn = new LayoutContainer();
-    this.seatNo = text("", theme.typography.meta);
+    this.seatBox = new LayoutContainer();
+    this.textColumn = new Container();
+    this.seatNo = text("", {
+      ...theme.typography.meta,
+      fontFamily: "Georgia, Songti SC, serif",
+      fontSize: 34,
+      fontWeight: "900",
+      lineHeight: 42,
+    });
     this.name = text("", theme.typography.playerName);
     this.role = text("", theme.typography.body);
-    this.status = text("", {
-      ...theme.typography.meta,
-      fontSize: 12,
-      fill: theme.colors.good,
-    });
-    this.caseLine.layout = {
+    this.activeMark.layout = {
       position: "absolute",
       left: 0,
       top: 0,
       width: "100%",
       height: "100%",
     };
-    this.activeMark.layout = {
+    this.deadOverlay.layout = {
       position: "absolute",
       left: 0,
       top: 0,
@@ -380,25 +353,29 @@ class SeatCard {
     this.view.layout = {
       width: "100%",
       height: theme.layout.seatCardHeight,
-      flexDirection: side === "left" ? "row-reverse" : "row",
+      flexDirection: "row",
       alignItems: "center",
-      gap: 10,
-      padding: 12,
+      gap: 12,
+      padding,
     };
-    this.avatar.view.layout = { width: 62, height: 76 };
+    this.avatar.view.layout = { width: avatarSize, height: avatarSize };
+    this.seatBox.layout = {
+      width: seatNumberWidth(theme),
+      height: avatarSize,
+      alignItems: "center",
+      justifyContent: "center",
+    };
     this.textColumn.layout = {
       flex: 1,
-      height: "100%",
-      flexDirection: "column",
-      justifyContent: "center",
-      gap: 2,
+      height: avatarSize,
     };
-    this.seatNo.layout = { width: "100%" };
-    this.name.layout = { width: "100%" };
-    this.role.layout = { width: "100%" };
-    this.status.layout = { width: "100%" };
-    this.textColumn.addChild(this.seatNo, this.name, this.role, this.status);
-    this.view.addChild(this.panel, this.caseLine, this.activeMark, this.avatar.view, this.textColumn);
+    this.seatNo.anchor.set(0.5);
+    this.textColumn.addChild(this.name, this.role);
+    if (side === "left") {
+      this.view.addChild(this.panel, this.activeMark, this.seatBox, this.textColumn, this.avatar.view, this.seatNo, this.deadOverlay);
+    } else {
+      this.view.addChild(this.panel, this.activeMark, this.avatar.view, this.textColumn, this.seatBox, this.seatNo, this.deadOverlay);
+    }
   }
 
   update(player: RenderablePlayer, frame: ShotFrame): void {
@@ -406,70 +383,85 @@ class SeatCard {
     const active = player.emphasis === "active";
     const highlighted = active || player.emphasis === "highlighted";
     const avatarImage = player.avatar ? frame.avatarImages[player.avatar] : null;
+    const padding = seatCardPadding(this.theme);
+    const avatarSize = seatAvatarSize(this.theme);
 
     this.view.layout = {
       ...this.view.layout?.style,
       width: "100%",
       height: this.theme.layout.seatCardHeight,
     };
-    this.view.alpha = dead ? this.theme.alpha.dead : 1;
+    this.view.alpha = 1;
     this.panel
       .clear()
-      .roundRect(0, 0, this.theme.layout.sideTrackWidth, this.theme.layout.seatCardHeight, this.theme.layout.radius)
+      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, this.theme.layout.radius)
       .fill({
         color: this.theme.colors.panel,
         alpha: highlighted ? 0.90 : 0.84,
       })
-      .roundRect(0, 0, this.theme.layout.sideTrackWidth, this.theme.layout.seatCardHeight, this.theme.layout.radius)
+      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, this.theme.layout.radius)
       .stroke({
         color: highlighted ? this.theme.colors.accent : 0xd4c7ad,
         alpha: highlighted ? 0.42 : 0.13,
         width: highlighted ? 2 : 1,
       });
-    this.caseLine
-      .clear()
-      .roundRect(
-        this.side === "left" ? this.theme.layout.sideTrackWidth - 12 : 8,
-        12,
-        4,
-        this.theme.layout.seatCardHeight - 24,
-        2,
-      )
-      .fill({
-        color: roleColor(player.roleName, this.theme),
-        alpha: highlighted ? 0.72 : 0.34,
-      });
     this.activeMark.clear();
     if (active) {
       this.activeMark
-        .rect(12, 12, 30, 2)
+        .rect(padding, padding, 34, 2)
         .fill({ color: this.theme.colors.brass, alpha: 0.70 })
-        .rect(12, 12, 2, 30)
+        .rect(padding, padding, 2, 34)
         .fill({ color: this.theme.colors.brass, alpha: 0.70 });
     }
     this.avatar.update(player.name, avatarImage, dead, this.theme);
-    this.seatNo.text = `Seat ${player.seatNo}`;
+    this.seatNo.text = `#${String(player.seatNo).padStart(2, "0")}`;
     this.name.text = player.name;
     this.role.text = `身份：${player.roleName}`;
-    this.status.text = dead ? "DEAD" : "ALIVE";
-    this.status.style = {
-      ...this.theme.typography.meta,
-      fontSize: 12,
-      fill: dead ? this.theme.colors.danger : 0x7f897f,
+    this.avatar.view.layout = { width: avatarSize, height: avatarSize };
+    this.seatBox.layout = {
+      width: seatNumberWidth(this.theme),
+      height: avatarSize,
+      alignItems: "center",
+      justifyContent: "center",
+    };
+    this.textColumn.layout = {
+      ...this.textColumn.layout?.style,
+      height: avatarSize,
     };
     this.role.style = {
       ...this.theme.typography.body,
-      fontSize: 14,
+      fontSize: 16,
+      lineHeight: 24,
+      align: "center",
       fill: subtleRoleColor(player.roleName, this.theme),
+    };
+    this.name.style = {
+      ...this.theme.typography.playerName,
+      fontSize: active ? 31 : 29,
+      lineHeight: active ? 43 : 40,
+      align: "center",
     };
     this.seatNo.style = {
       ...this.theme.typography.meta,
-      fontSize: 13,
+      fontFamily: "Georgia, Songti SC, serif",
+      fontSize: 34,
+      fontWeight: "900",
+      lineHeight: 42,
+      align: "center",
     };
-    fitText(this.name, 170, active ? 24 : 22, 17);
-    if (this.side === "left") {
-      this.textColumn.scale.x = 1;
-    }
+    fitText(this.name, 260, active ? 31 : 29, 20);
+    this.seatNo.position.set(
+      seatNumberCenterX(this.theme, this.side),
+      padding + avatarSize / 2,
+    );
+    this.name.anchor.set(0.5);
+    this.role.anchor.set(0.5);
+    this.name.position.set(textColumnWidth(this.theme) / 2, avatarSize / 2 - 18);
+    this.role.position.set(textColumnWidth(this.theme) / 2, avatarSize / 2 + 24);
+    this.deadOverlay
+      .clear()
+      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, this.theme.layout.radius)
+      .fill({ color: this.theme.colors.black, alpha: dead ? 0.54 : 0 });
   }
 
   destroy(): void {
@@ -521,8 +513,11 @@ class MainShot {
     };
 
     this.view.layout = {
-      flex: 1,
-      height: "100%",
+      position: "absolute",
+      left: 0,
+      top: 0,
+      width,
+      height,
       alignItems: "stretch",
     };
     this.shell.layout = {
@@ -586,8 +581,8 @@ class MainShot {
       .fill({ color: this.theme.colors.black, alpha: player ? 0 : 0.34 })
       .rect(0, mainStageHeight(this.theme) - 120, mainStageWidth(this.theme), 120)
       .fill({ color: this.theme.colors.black, alpha: player ? 0.20 : 0 });
-    this.shell.alpha = 0.88 + frame.clock.enterProgress * 0.12;
-    this.shell.scale.set(0.985 + frame.clock.enterProgress * 0.015);
+    this.shell.alpha = 1;
+    this.shell.scale.set(1);
   }
 
   renderEmpty(): void {
@@ -629,14 +624,15 @@ class SubtitleBand {
     };
 
     this.view.layout = {
-      width: theme.layout.width - theme.layout.contentMarginX * 2,
+      position: "absolute",
+      left: 0,
+      top: subtitleTop(theme),
+      width: mainStageWidth(theme),
       height: theme.layout.subtitleHeight,
-      marginLeft: theme.layout.contentMarginX,
-      marginRight: theme.layout.contentMarginX,
-      paddingLeft: 220,
-      paddingRight: 220,
-      paddingTop: 22,
-      paddingBottom: 28,
+      paddingLeft: 44,
+      paddingRight: 44,
+      paddingTop: 20,
+      paddingBottom: 24,
       gap: 10,
       flexDirection: "column",
     };
@@ -646,7 +642,7 @@ class SubtitleBand {
   }
 
   update(frame: ShotFrame): void {
-    const width = this.theme.layout.width - this.theme.layout.contentMarginX * 2;
+    const width = mainStageWidth(this.theme);
     this.panel
       .clear()
       .rect(0, 0, width, this.theme.layout.subtitleHeight)
@@ -833,16 +829,83 @@ function subtleRoleColor(roleName: string, theme: PixiPreviewTheme): number {
 }
 
 function mainStageWidth(theme: PixiPreviewTheme): number {
-  return theme.layout.width
-    - theme.layout.contentMarginX * 2
-    - theme.layout.sideTrackWidth * 2
-    - theme.layout.gap * 2;
+  return centerColumnWidth(theme);
 }
 
 function mainStageHeight(theme: PixiPreviewTheme): number {
+  return mainAreaHeight(theme);
+}
+
+function mainAreaHeight(theme: PixiPreviewTheme): number {
   return theme.layout.height
     - theme.layout.topBarHeight
-    - theme.layout.subtitleHeight
-    - theme.layout.bodyPaddingTop
-    - theme.layout.bodyPaddingBottom;
+    - theme.layout.outerMargin * 2;
+}
+
+function availableWidth(theme: PixiPreviewTheme): number {
+  return theme.layout.width
+    - theme.layout.outerMargin * 2;
+}
+
+function contentWidth(theme: PixiPreviewTheme): number {
+  return availableWidth(theme) - theme.layout.columnGap * 2;
+}
+
+function sideColumnWidth(theme: PixiPreviewTheme): number {
+  return contentWidth(theme) * theme.layout.sideColumnRatio;
+}
+
+function centerColumnWidth(theme: PixiPreviewTheme): number {
+  return contentWidth(theme) * theme.layout.centerColumnRatio;
+}
+
+function centerColumnLeft(theme: PixiPreviewTheme): number {
+  return sideColumnWidth(theme) + theme.layout.columnGap;
+}
+
+function rightColumnLeft(theme: PixiPreviewTheme): number {
+  return centerColumnLeft(theme)
+    + centerColumnWidth(theme)
+    + theme.layout.columnGap;
+}
+
+function seatCardWidth(theme: PixiPreviewTheme): number {
+  return sideColumnWidth(theme);
+}
+
+function seatCardPadding(theme: PixiPreviewTheme): number {
+  return Math.round(theme.layout.seatCardHeight * 0.05);
+}
+
+function seatAvatarSize(theme: PixiPreviewTheme): number {
+  return theme.layout.seatCardHeight - seatCardPadding(theme) * 2;
+}
+
+function seatNumberWidth(theme: PixiPreviewTheme): number {
+  return Math.round(seatAvatarSize(theme) * 0.56);
+}
+
+function seatNumberCenterX(
+  theme: PixiPreviewTheme,
+  side: "left" | "right",
+): number {
+  const padding = seatCardPadding(theme);
+  const centerOffset = seatNumberWidth(theme) / 2;
+  if (side === "left") {
+    return padding + centerOffset;
+  }
+
+  return seatCardWidth(theme) - padding - centerOffset;
+}
+
+function textColumnWidth(theme: PixiPreviewTheme): number {
+  return seatCardWidth(theme)
+    - seatCardPadding(theme) * 2
+    - seatAvatarSize(theme)
+    - seatNumberWidth(theme)
+    - 24;
+}
+
+function subtitleTop(theme: PixiPreviewTheme): number {
+  return mainAreaHeight(theme) * theme.layout.subtitleTopRatio;
 }

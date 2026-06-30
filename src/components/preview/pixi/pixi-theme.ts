@@ -26,13 +26,13 @@ export type PixiPreviewTheme = {
     readonly width: number;
     readonly height: number;
     readonly topBarHeight: number;
-    readonly sideTrackWidth: number;
+    readonly outerMargin: number;
+    readonly columnGap: number;
+    readonly sideColumnRatio: number;
+    readonly centerColumnRatio: number;
     readonly subtitleHeight: number;
-    readonly contentMarginX: number;
-    readonly bodyPaddingTop: number;
-    readonly bodyPaddingBottom: number;
+    readonly subtitleTopRatio: number;
     readonly seatCardHeight: number;
-    readonly gap: number;
     readonly radius: number;
   };
   readonly typography: {
@@ -71,13 +71,13 @@ export const mansionPixiTheme: PixiPreviewTheme = {
     width: 1920,
     height: 1080,
     topBarHeight: 88,
-    sideTrackWidth: 370,
+    outerMargin: 24,
+    columnGap: 24,
+    sideColumnRatio: 0.25,
+    centerColumnRatio: 0.50,
     subtitleHeight: 176,
-    contentMarginX: 34,
-    bodyPaddingTop: 18,
-    bodyPaddingBottom: 16,
-    seatCardHeight: 108,
-    gap: 20,
+    subtitleTopRatio: 0.74,
+    seatCardHeight: 126,
     radius: 12,
   },
   typography: {
@@ -86,6 +86,7 @@ export const mansionPixiTheme: PixiPreviewTheme = {
       fontFamily: "Songti SC, STSong, Georgia, serif",
       fontSize: 22,
       fontWeight: "900",
+      lineHeight: 30,
       letterSpacing: 0,
     },
     title: {
@@ -93,6 +94,7 @@ export const mansionPixiTheme: PixiPreviewTheme = {
       fontFamily: "Songti SC, STSong, Georgia, serif",
       fontSize: 32,
       fontWeight: "900",
+      lineHeight: 42,
       letterSpacing: 0,
     },
     meta: {
@@ -100,6 +102,7 @@ export const mansionPixiTheme: PixiPreviewTheme = {
       fontFamily: "PingFang SC, Helvetica, sans-serif",
       fontSize: 16,
       fontWeight: "700",
+      lineHeight: 24,
       letterSpacing: 0,
     },
     playerName: {
@@ -124,7 +127,7 @@ export const mansionPixiTheme: PixiPreviewTheme = {
       letterSpacing: 0,
       lineHeight: 39,
       wordWrap: true,
-      wordWrapWidth: 1180,
+      wordWrapWidth: 860,
     },
   },
 };
