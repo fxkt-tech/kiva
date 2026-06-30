@@ -93,4 +93,20 @@ describe("LLM client boundary", () => {
       ],
     });
   });
+
+  it("includes the endpoint and transport cause when fetch fails", async () => {
+    const client = new OpenAICompatibleLlmClient({
+      baseUrl: "https://llm.example.test/v1",
+      apiKey: "secret",
+      fetch: async () => {
+        throw new TypeError("fetch failed", {
+          cause: new Error("connect ECONNREFUSED 127.0.0.1:11434"),
+        });
+      },
+    });
+
+    await expect(client.generateJson(request)).rejects.toThrow(
+      "LLM request failed before response: POST https://llm.example.test/v1/chat/completions: fetch failed; cause: connect ECONNREFUSED 127.0.0.1:11434",
+    );
+  });
 });

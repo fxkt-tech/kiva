@@ -43,6 +43,7 @@ export default async function PreviewPage({
 
   return (
     <PlaybackStage
+      gameTitle={record.game.title}
       initialPosition={focusCurrent ? "end" : "start"}
       items={compilePublicPlayback(playbackEvents, record.game.players, {
         audience: "director",

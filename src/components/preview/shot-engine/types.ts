@@ -17,6 +17,7 @@ export type RenderablePlayer = PlaybackScenePlayer & {
 };
 
 export type ShotFrame = {
+  readonly gameTitle: string;
   readonly scene: PlaybackItem;
   readonly items: readonly PlaybackItem[];
   readonly layout: ShotLayout;

@@ -80,7 +80,7 @@ export const mansionPixiTheme: PixiPreviewTheme = {
     centerColumnRatio: 0.50,
     subtitleHeight: 176,
     subtitleTopRatio: 0.74,
-    seatCardHeight: 126,
+    seatCardHeight: 148,
     radius: 12,
   },
   typography: {

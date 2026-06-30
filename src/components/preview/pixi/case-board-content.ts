@@ -54,7 +54,7 @@ function playerRow(player: RenderablePlayer): CaseBoardRow {
     tone: player.status === "dead" ? "dead-player" : "alive-player",
     label: formatNumberLabel(player.seatNo),
     text: player.name,
-    meta: `身份：${player.roleName}`,
+    meta: player.roleName,
   };
 }
 

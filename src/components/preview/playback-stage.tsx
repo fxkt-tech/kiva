@@ -33,6 +33,7 @@ const backgroundImageSources = {
 } as const;
 
 type PlaybackStageProps = {
+  readonly gameTitle?: string;
   readonly items: readonly PlaybackItem[];
   readonly initialPosition?: "start" | "end";
 };
@@ -40,6 +41,7 @@ type PlaybackStageProps = {
 type RecordingStatus = "idle" | "recording" | "ready" | "failed";
 
 export function PlaybackStage({
+  gameTitle = "",
   items,
   initialPosition = "start",
 }: PlaybackStageProps) {
@@ -78,6 +80,7 @@ export function PlaybackStage({
   const isRecording = recordingStatus === "recording";
   const recordControlLabel = isRecording ? "Stop recording" : "Start recording";
   latestRenderInputRef.current = {
+    gameTitle,
     items,
     timeMs: safeTimeMs,
     backgroundImages,
@@ -140,6 +143,7 @@ export function PlaybackStage({
   }, [
     avatarImages,
     backgroundImages,
+    gameTitle,
     items,
     rendererHandle,
     safeTimeMs,
@@ -298,6 +302,7 @@ export function PlaybackStage({
       };
 
       rendererRef.current?.renderFrame({
+        gameTitle,
         items,
         timeMs: 0,
         backgroundImages,

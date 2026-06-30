@@ -58,7 +58,7 @@ describe("caseBoardContentForFrame", () => {
         tone: "dead-player",
         label: "09",
         text: "苏瑾",
-        meta: "身份：平民",
+        meta: "平民",
       },
     ]);
   });
@@ -130,6 +130,7 @@ function frame(overrides: Partial<ShotFrame> = {}): ShotFrame {
   const baseScene = overrides.scene ?? scene();
 
   return {
+    gameTitle: overrides.gameTitle ?? "",
     scene: baseScene,
     items: [baseScene],
     layout: {

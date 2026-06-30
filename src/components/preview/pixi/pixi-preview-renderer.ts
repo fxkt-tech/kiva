@@ -27,8 +27,8 @@ import {
 } from "./pixi-theme";
 
 const EMPTY_TEXTURE = Texture.EMPTY;
-const SEAT_NUMBER_FONT_SIZE = 104;
-const SEAT_NUMBER_LINE_HEIGHT = 114;
+const SEAT_NUMBER_FONT_SIZE = 122;
+const SEAT_NUMBER_LINE_HEIGHT = 132;
 const CASE_BOARD_ROW_COUNT = 6;
 
 export async function createPixiPreviewRenderer(
@@ -80,6 +80,7 @@ class PixiPreviewRenderer implements PreviewRendererHandle {
 
     this.scene.update(
       createShotFrame({
+        gameTitle: input.gameTitle,
         scene,
         items: input.items,
         timeMs: input.timeMs,
@@ -121,8 +122,8 @@ class PixiPreviewScene {
     this.view.addChild(this.background.view, this.topBar.view, this.mainArea, this.effects.view);
     this.mainArea.layout = {
       position: "absolute",
-      left: theme.layout.outerMargin,
-      top: theme.layout.topBarHeight + theme.layout.outerMargin,
+      left: contentLeft(theme),
+      top: mainAreaTop(theme),
       width: availableWidth(theme),
       height: mainAreaHeight(theme),
     };
@@ -210,43 +211,41 @@ class TopBar {
   readonly view = new Container();
   private readonly panel = new Graphics();
   private readonly rule = new Graphics();
-  private readonly brand: Text;
   private readonly title: Text;
-  private readonly meta: Text;
 
   constructor(private readonly theme: PixiPreviewTheme) {
-    this.brand = text("四方诛杀(冷冽审讯档案)", theme.typography.brand);
-    this.title = text("", theme.typography.title);
-    this.meta = text("", theme.typography.meta);
+    const stageLeft = mainStageLeft(theme);
+    const top = contentTop(theme);
+    const stageWidth = mainStageWidth(theme);
 
-    this.brand.anchor.set(0, 0);
+    this.title = text("", theme.typography.title);
+
     this.title.anchor.set(0.5, 0);
-    this.meta.anchor.set(1, 0);
-    this.brand.position.set(204, 27);
-    this.title.position.set(theme.layout.width / 2, 23);
-    this.meta.position.set(theme.layout.width - 204, 31);
-    this.view.addChild(this.panel, this.brand, this.title, this.meta, this.rule);
+    this.title.position.set(stageLeft + stageWidth / 2, top + 23);
+    this.view.addChild(this.panel, this.title, this.rule);
   }
 
   update(frame: ShotFrame): void {
-    this.title.text = frame.scene.title;
-    this.meta.text = `CASE #${frame.scene.index} / ${frame.scene.kind.toUpperCase()}`;
-    fitText(this.title, 720, 34, 24);
+    const stageLeft = mainStageLeft(this.theme);
+    const top = contentTop(this.theme);
+    const stageWidth = mainStageWidth(this.theme);
+
+    this.title.text = previewHeaderTitle(frame.gameTitle);
+    fitText(this.title, Math.round(stageWidth * 0.82), 34, 24);
     this.panel
       .clear()
-      .rect(0, 0, this.theme.layout.width, this.theme.layout.topBarHeight)
+      .rect(stageLeft, top, stageWidth, this.theme.layout.topBarHeight)
       .fill({ color: this.theme.colors.black, alpha: 0.30 })
-      .rect(0, this.theme.layout.topBarHeight - 1, this.theme.layout.width, 1)
+      .rect(stageLeft, top + this.theme.layout.topBarHeight - 1, stageWidth, 1)
       .fill({ color: this.theme.colors.accent, alpha: 0.14 });
     this.rule
       .clear()
-      .rect(0, this.theme.layout.topBarHeight - 2, this.theme.layout.width, 1)
+      .rect(stageLeft, top + this.theme.layout.topBarHeight - 2, stageWidth, 1)
       .fill({ color: this.theme.colors.brass, alpha: 0.07 });
   }
 
   renderEmpty(): void {
-    this.title.text = "No playable scenes";
-    this.meta.text = "";
+    this.title.text = previewHeaderTitle("");
   }
 }
 
@@ -261,9 +260,9 @@ class SeatTrack {
     this.view.layout = {
       position: "absolute",
       left: side === "left" ? 0 : rightColumnLeft(theme),
-      top: 0,
+      top: contentTop(theme) - mainAreaTop(theme),
       width: sideColumnWidth(theme),
-      height: mainAreaHeight(theme),
+      height: contentHeight(theme),
       flexDirection: "column",
       justifyContent: "space-between",
     };
@@ -323,7 +322,7 @@ class SeatCard {
     const padding = seatCardPadding(theme);
     const avatarSize = seatAvatarSize(theme);
     this.avatar = new AvatarView({
-      fallbackFontSize: 56,
+      fallbackFontSize: Math.round(avatarSize * 0.52),
       radius: theme.layout.radius - 2,
       width: avatarSize,
       height: avatarSize,
@@ -366,7 +365,7 @@ class SeatCard {
       height: theme.layout.seatCardHeight,
       flexDirection: "row",
       alignItems: "center",
-      gap: 12,
+      gap: seatCardGap(),
       padding,
     };
     this.avatar.view.layout = { width: avatarSize, height: avatarSize };
@@ -418,16 +417,17 @@ class SeatCard {
       });
     this.activeMark.clear();
     if (active) {
+      const markSize = Math.round(avatarSize * 0.30);
       this.activeMark
-        .rect(padding, padding, 34, 2)
+        .rect(padding, padding, markSize, 2)
         .fill({ color: this.theme.colors.brass, alpha: 0.70 })
-        .rect(padding, padding, 2, 34)
+        .rect(padding, padding, 2, markSize)
         .fill({ color: this.theme.colors.brass, alpha: 0.70 });
     }
     this.avatar.update(player.name, avatarImage, dead, this.theme);
     this.seatNo.text = String(player.seatNo).padStart(2, "0");
     this.name.text = player.name;
-    this.role.text = `身份：${player.roleName}`;
+    this.role.text = player.roleName;
     this.avatar.view.layout = { width: avatarSize, height: avatarSize };
     this.seatBox.layout = {
       width: seatNumberWidth(this.theme),
@@ -441,34 +441,41 @@ class SeatCard {
     };
     this.role.style = {
       ...this.theme.typography.body,
-      fontSize: 22,
-      lineHeight: 30,
+      fontSize: 25,
+      lineHeight: 34,
       align: "center",
       fill: subtleRoleColor(player.roleName, this.theme),
     };
     this.name.style = {
       ...this.theme.typography.playerName,
-      fontSize: active ? 40 : 38,
-      lineHeight: active ? 50 : 48,
+      fontSize: active ? 46 : 44,
+      lineHeight: active ? 56 : 54,
       align: "center",
     };
     this.seatNo.style = {
       ...this.theme.typography.meta,
+      fill: highlighted ? this.theme.colors.brass : this.theme.colors.muted,
       fontFamily: PIXI_PREVIEW_FONT_FAMILY,
       fontSize: SEAT_NUMBER_FONT_SIZE,
       fontWeight: "900",
       lineHeight: SEAT_NUMBER_LINE_HEIGHT,
       align: "center",
     };
-    fitText(this.name, 260, active ? 40 : 38, 24);
+    fitText(this.name, textColumnWidth(this.theme), active ? 46 : 44, 26);
     this.seatNo.position.set(
       seatNumberCenterX(this.theme, this.side),
       padding + avatarSize / 2,
     );
     this.name.anchor.set(0.5);
     this.role.anchor.set(0.5);
-    this.name.position.set(textColumnWidth(this.theme) / 2, avatarSize / 2 - 22);
-    this.role.position.set(textColumnWidth(this.theme) / 2, avatarSize / 2 + 31);
+    this.name.position.set(
+      textColumnWidth(this.theme) / 2,
+      avatarSize / 2 - Math.round(avatarSize * 0.21),
+    );
+    this.role.position.set(
+      textColumnWidth(this.theme) / 2,
+      avatarSize / 2 + Math.round(avatarSize * 0.28),
+    );
     this.deadOverlay
       .clear()
       .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, this.theme.layout.radius)
@@ -984,10 +991,13 @@ class EffectsLayer {
   }
 
   update(frame: ShotFrame): void {
+    const stageLeft = mainStageLeft(this.theme);
+    const top = contentTop(this.theme);
+    const stageWidth = mainStageWidth(this.theme);
     const pulse = 0.22 + Math.sin(frame.clock.progress * Math.PI) * 0.18;
     this.rule
       .clear()
-      .rect(0, this.theme.layout.topBarHeight - 2, this.theme.layout.width, 2)
+      .rect(stageLeft, top + this.theme.layout.topBarHeight - 2, stageWidth, 2)
       .fill({ color: this.theme.colors.accent, alpha: pulse * 0.36 });
   }
 
@@ -1147,22 +1157,24 @@ function coverSprite(sprite: Sprite, width: number, height: number): void {
   );
 }
 
-function roleColor(roleName: string, theme: PixiPreviewTheme): number {
-  if (roleName.includes("狼")) {
-    return theme.colors.wolf;
-  }
-  if (roleName.includes("预言") || roleName.includes("女巫") || roleName.includes("猎人")) {
-    return theme.colors.good;
-  }
-  return 0xc9a85a;
-}
-
 function subtleRoleColor(roleName: string, theme: PixiPreviewTheme): number {
   if (roleName.includes("狼")) {
-    return 0xc78984;
+    return 0x8f2f2f;
   }
-  if (roleName.includes("预言") || roleName.includes("女巫") || roleName.includes("猎人")) {
-    return 0x9fbfaf;
+  if (roleName.includes("预言")) {
+    return 0x44e36e;
+  }
+  if (roleName.includes("守卫")) {
+    return 0x4169e1;
+  }
+  if (roleName.includes("猎人")) {
+    return 0xc69b3a;
+  }
+  if (roleName.includes("女巫")) {
+    return 0x9b5de5;
+  }
+  if (roleName.includes("村民") || roleName.includes("平民")) {
+    return 0xd8d6cf;
   }
   return theme.colors.muted;
 }
@@ -1187,27 +1199,58 @@ function caseBoardLeftColumnWidth(theme: PixiPreviewTheme): number {
   return Math.round(mainStageWidth(theme) * 0.53);
 }
 
+function previewHeaderTitle(gameTitle: string): string {
+  const title = gameTitle.trim() || "凌冽审讯档案";
+  return `四方诛杀(${title})`;
+}
+
 function mainStageWidth(theme: PixiPreviewTheme): number {
   return centerColumnWidth(theme);
+}
+
+function mainStageLeft(theme: PixiPreviewTheme): number {
+  return contentLeft(theme) + centerColumnLeft(theme);
 }
 
 function mainStageHeight(theme: PixiPreviewTheme): number {
   return mainAreaHeight(theme);
 }
 
+function mainAreaTop(theme: PixiPreviewTheme): number {
+  return contentTop(theme)
+    + theme.layout.topBarHeight
+    + theme.layout.columnGap;
+}
+
 function mainAreaHeight(theme: PixiPreviewTheme): number {
   return theme.layout.height
     - theme.layout.topBarHeight
+    - theme.layout.columnGap
     - theme.layout.outerMargin * 2;
 }
 
 function availableWidth(theme: PixiPreviewTheme): number {
-  return theme.layout.width
-    - theme.layout.outerMargin * 2;
+  return contentWidthFrame(theme);
 }
 
 function contentWidth(theme: PixiPreviewTheme): number {
   return availableWidth(theme) - theme.layout.columnGap * 2;
+}
+
+function contentLeft(theme: PixiPreviewTheme): number {
+  return theme.layout.outerMargin;
+}
+
+function contentTop(theme: PixiPreviewTheme): number {
+  return theme.layout.outerMargin;
+}
+
+function contentWidthFrame(theme: PixiPreviewTheme): number {
+  return theme.layout.width - theme.layout.outerMargin * 2;
+}
+
+function contentHeight(theme: PixiPreviewTheme): number {
+  return theme.layout.height - theme.layout.outerMargin * 2;
 }
 
 function sideColumnWidth(theme: PixiPreviewTheme): number {
@@ -1262,7 +1305,11 @@ function textColumnWidth(theme: PixiPreviewTheme): number {
     - seatCardPadding(theme) * 2
     - seatAvatarSize(theme)
     - seatNumberWidth(theme)
-    - 24;
+    - seatCardGap() * 2;
+}
+
+function seatCardGap(): number {
+  return 14;
 }
 
 function subtitleTop(theme: PixiPreviewTheme): number {

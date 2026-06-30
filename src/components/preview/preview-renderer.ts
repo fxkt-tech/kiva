@@ -8,6 +8,7 @@ export type PreviewBackgroundImages = {
 export type PreviewAvatarImages = Readonly<Record<string, HTMLImageElement | null>>;
 
 export type PreviewRenderFrameInput = {
+  readonly gameTitle: string;
   readonly items: readonly PlaybackItem[];
   readonly timeMs: number;
   readonly backgroundImages: PreviewBackgroundImages;

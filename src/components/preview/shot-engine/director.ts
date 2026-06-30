@@ -4,6 +4,7 @@ import { subtitleCueForScene } from "./subtitles";
 import type { RenderablePlayer, ShotClock, ShotFrame } from "./types";
 
 export function createShotFrame(input: {
+  readonly gameTitle?: string;
   readonly scene: PlaybackItem;
   readonly items: readonly PlaybackItem[];
   readonly timeMs: number;
@@ -25,6 +26,7 @@ export function createShotFrame(input: {
   );
 
   return {
+    gameTitle: input.gameTitle ?? "",
     scene: input.scene,
     items: input.items,
     layout: createCinematicShotLayout(players),

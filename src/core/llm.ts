@@ -83,29 +83,37 @@ export class OpenAICompatibleLlmClient implements LlmClient {
   async generateJson(
     request: LlmGenerateJsonRequest,
   ): Promise<LlmGenerateJsonResult> {
-    const response = await this.fetchImpl(`${this.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${this.apiKey}`,
-        "content-type": "application/json",
+    const endpoint = `${this.baseUrl}/chat/completions`;
+    const response = await fetchOpenAICompatibleJson(
+      this.fetchImpl,
+      endpoint,
+      {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${this.apiKey}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: request.modelBinding.model,
+          temperature: request.modelBinding.temperature,
+          max_tokens: request.modelBinding.maxTokens,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: request.systemPrompt },
+            ...request.messages,
+          ],
+        }),
       },
-      body: JSON.stringify({
-        model: request.modelBinding.model,
-        temperature: request.modelBinding.temperature,
-        max_tokens: request.modelBinding.maxTokens,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: request.systemPrompt },
-          ...request.messages,
-        ],
-      }),
-    });
+    );
 
-    const body = (await response.json()) as OpenAICompatibleResponse;
+    const responseText = await response.text();
     if (!response.ok) {
-      throw new Error(`LLM request failed: ${response.status}`);
+      throw new Error(
+        `LLM request failed: POST ${endpoint}: ${response.status} ${response.statusText}${responseText ? `: ${truncate(responseText, 500)}` : ""}`,
+      );
     }
 
+    const body = parseOpenAICompatibleResponse(responseText, endpoint);
     const rawText = body.choices?.[0]?.message?.content;
     if (typeof rawText !== "string") {
       throw new Error("LLM response did not include message content");
@@ -118,6 +126,50 @@ export class OpenAICompatibleLlmClient implements LlmClient {
       parsed: parseLlmJsonObject(rawText),
     };
   }
+}
+
+async function fetchOpenAICompatibleJson(
+  fetchImpl: typeof fetch,
+  endpoint: string,
+  init: RequestInit,
+): Promise<Response> {
+  try {
+    return await fetchImpl(endpoint, init);
+  } catch (error) {
+    throw new Error(
+      `LLM request failed before response: ${init.method ?? "GET"} ${endpoint}: ${errorWithCauseMessage(error)}`,
+    );
+  }
+}
+
+function parseOpenAICompatibleResponse(
+  responseText: string,
+  endpoint: string,
+): OpenAICompatibleResponse {
+  try {
+    return JSON.parse(responseText) as OpenAICompatibleResponse;
+  } catch (error) {
+    throw new Error(
+      `LLM response was not valid JSON: POST ${endpoint}: ${errorWithCauseMessage(error)}${responseText ? `: ${truncate(responseText, 500)}` : ""}`,
+    );
+  }
+}
+
+function errorWithCauseMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return String(error);
+  }
+
+  const cause = error.cause;
+  if (cause === undefined) {
+    return error.message;
+  }
+
+  return `${error.message}; cause: ${cause instanceof Error ? cause.message : String(cause)}`;
+}
+
+function truncate(value: string, maxLength: number): string {
+  return value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
 }
 
 type OpenAICompatibleResponse = {
