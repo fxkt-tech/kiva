@@ -897,9 +897,11 @@ class CaseBoardRowView {
     };
     this.meta.visible = Boolean(row.meta);
     this.label.position.set(labelWidth / 2, height / 2);
-    this.body.position.set(textX, row.meta ? 14 : 25);
+    const bodyY = row.meta ? 14 : 20;
+    const bodyHeight = row.meta ? 32 : height - bodyY - 18;
+    this.body.position.set(textX, bodyY);
     this.meta.position.set(textX, 50);
-    fitText(this.body, textWidth, 25, 18);
+    fitTextToBox(this.body, textWidth, bodyHeight, 25, 17);
   }
 }
 
@@ -1103,6 +1105,34 @@ function fitText(
   target.style = {
     ...target.style,
     fontSize: minSize,
+  };
+}
+
+function fitTextToBox(
+  target: Text,
+  maxWidth: number,
+  maxHeight: number,
+  maxSize: number,
+  minSize: number,
+): void {
+  let nextSize = maxSize;
+  while (nextSize > minSize) {
+    target.style = {
+      ...target.style,
+      fontSize: nextSize,
+      lineHeight: Math.round(nextSize * 1.28),
+      wordWrapWidth: maxWidth,
+    };
+    if (target.width <= maxWidth && target.height <= maxHeight) {
+      return;
+    }
+    nextSize -= 1;
+  }
+  target.style = {
+    ...target.style,
+    fontSize: minSize,
+    lineHeight: Math.round(minSize * 1.28),
+    wordWrapWidth: maxWidth,
   };
 }
 

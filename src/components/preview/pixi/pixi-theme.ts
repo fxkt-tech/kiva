@@ -1,5 +1,8 @@
 import type { TextStyleOptions } from "pixi.js";
 
+export const PIXI_PREVIEW_FONT_FAMILY =
+  "DIN Condensed, Bahnschrift, Arial Narrow, Impact, sans-serif";
+
 export type PixiPreviewTheme = {
   readonly colors: {
     readonly background: number;
@@ -83,7 +86,7 @@ export const mansionPixiTheme: PixiPreviewTheme = {
   typography: {
     brand: {
       fill: 0xc2ad72,
-      fontFamily: "Songti SC, STSong, Georgia, serif",
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
       fontSize: 22,
       fontWeight: "900",
       lineHeight: 30,
@@ -91,7 +94,7 @@ export const mansionPixiTheme: PixiPreviewTheme = {
     },
     title: {
       fill: 0xece7da,
-      fontFamily: "Songti SC, STSong, Georgia, serif",
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
       fontSize: 32,
       fontWeight: "900",
       lineHeight: 42,
@@ -99,7 +102,7 @@ export const mansionPixiTheme: PixiPreviewTheme = {
     },
     meta: {
       fill: 0x9a9488,
-      fontFamily: "PingFang SC, Helvetica, sans-serif",
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
       fontSize: 16,
       fontWeight: "700",
       lineHeight: 24,
@@ -107,21 +110,21 @@ export const mansionPixiTheme: PixiPreviewTheme = {
     },
     playerName: {
       fill: 0xece7da,
-      fontFamily: "Songti SC, STSong, Georgia, serif",
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
       fontSize: 24,
       fontWeight: "900",
       letterSpacing: 0,
     },
     body: {
       fill: 0xd9d2c4,
-      fontFamily: "PingFang SC, Helvetica, sans-serif",
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
       fontSize: 16,
       fontWeight: "700",
       letterSpacing: 0,
     },
     subtitle: {
       fill: 0xece7da,
-      fontFamily: "PingFang SC, Helvetica, sans-serif",
+      fontFamily: PIXI_PREVIEW_FONT_FAMILY,
       fontSize: 28,
       fontWeight: "700",
       letterSpacing: 0,
