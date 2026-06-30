@@ -81,6 +81,34 @@ describe("caseBoardContentForFrame", () => {
       { tone: "neutral", label: "FILE", text: "PUBLIC RECORD" },
     ]);
   });
+
+  it("labels vote scenes for the case board", () => {
+    const content = caseBoardContentForFrame(
+      frame({
+        scene: scene({
+          kind: "vote",
+          title: "放逐投票",
+          text: "进入本日放逐投票。",
+        }),
+      }),
+    );
+
+    expect(content.kindLabel).toBe("VOTE");
+  });
+
+  it("can still label speech but the renderer should not route speech to case board", () => {
+    const content = caseBoardContentForFrame(
+      frame({
+        scene: scene({
+          kind: "speech",
+          title: "4 号 林夏发言",
+          text: "我是4号林夏。",
+        }),
+      }),
+    );
+
+    expect(content.kindLabel).toBe("SPEECH");
+  });
 });
 
 function scene(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
