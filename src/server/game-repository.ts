@@ -135,7 +135,14 @@ function normalizeRecord(rawRecord: unknown): GameRecord {
         createPlayerSnapshot(player),
       ),
     },
-    generations: record.generations ?? [],
+    generations: (record.generations ?? []).map(normalizeGenerationRecord),
+  };
+}
+
+function normalizeGenerationRecord(generation: GenerationRecord): GenerationRecord {
+  return {
+    ...generation,
+    tokenUsage: generation.tokenUsage ?? null,
   };
 }
 

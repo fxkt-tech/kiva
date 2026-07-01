@@ -80,6 +80,8 @@ describe("DraftPanel payload controls", () => {
     expect(html).toContain("Raw output");
     expect(html).toContain("Parsed output");
     expect(html).toContain("Player reasoning");
+    expect(html).toContain("Token usage");
+    expect(html).toContain("120 tokens");
   });
 
   it("renders witch used false field and nullable target select", () => {
@@ -218,6 +220,11 @@ function generationRecord(input: {
       schemaName: "werewolf_speech_v1",
       systemPrompt: "system prompt",
       messages: [{ role: "user", content: "visible context" }],
+    },
+    tokenUsage: {
+      promptTokens: 100,
+      completionTokens: 20,
+      totalTokens: 120,
     },
     rawOutput: "{}",
     parsedOutput:

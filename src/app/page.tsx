@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { Eye, SquarePen, Trash2 } from "lucide-react";
 import { deleteGameAction } from "@/app/actions";
+import { GameTokenUsageButton } from "@/components/home/game-token-usage-button";
 import { GameTitleEditor } from "@/components/home/game-title-editor";
 import { NewGameDialog } from "@/components/home/new-game-dialog";
+import type { GenerationRecord } from "@/core/generation-record";
+import { summarizeGenerationTokenUsage } from "@/core/token-usage";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
 import { createLibraryActions } from "@/server/library-actions";
@@ -62,7 +65,7 @@ export default async function HomePage() {
                   <col className="w-auto" />
                   <col className="w-28" />
                   <col className="w-36" />
-                  <col className="w-40" />
+                  <col className="w-52" />
                 </colgroup>
                 <thead>
                   <tr className="border-b border-zinc-800 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
@@ -98,6 +101,16 @@ export default async function HomePage() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex justify-end gap-2">
+                          <GameTokenUsageButton
+                            gameTitle={record.game.title}
+                            total={summarizeGenerationTokenUsage(record.generations)}
+                            speech={summarizeGenerationTokenUsage(
+                              generationsByPurpose(record.generations, "speech"),
+                            )}
+                            action={summarizeGenerationTokenUsage(
+                              generationsByPurpose(record.generations, "action"),
+                            )}
+                          />
                           <Link
                             href={`/games/${record.game.id}/preview`}
                             className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-sky-900/80 text-sky-300 transition hover:border-sky-600 hover:text-sky-200"
@@ -137,6 +150,13 @@ export default async function HomePage() {
       </div>
     </main>
   );
+}
+
+function generationsByPurpose(
+  generations: readonly GenerationRecord[],
+  purpose: GenerationRecord["purpose"],
+): readonly GenerationRecord[] {
+  return generations.filter((generation) => generation.purpose === purpose);
 }
 
 function formatDate(value: string): string {

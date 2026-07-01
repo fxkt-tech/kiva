@@ -138,6 +138,7 @@ export async function generateActionDraft(
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
         request,
+        tokenUsage: output.usage,
         rawOutput: output.rawText,
         parsedOutput: output.parsed,
         createdAt: input.createdAt,

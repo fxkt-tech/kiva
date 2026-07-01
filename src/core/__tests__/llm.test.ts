@@ -28,9 +28,41 @@ describe("LLM client boundary", () => {
       model: "mock-model",
       rawText: '{"text":"hello"}',
       parsed: { text: "hello" },
+      usage: null,
     });
     await expect(client.generateJson(request)).resolves.toMatchObject({
       parsed: { target: "p1" },
+    });
+  });
+
+  it("parses OpenAI-compatible token usage", async () => {
+    const client = new OpenAICompatibleLlmClient({
+      baseUrl: "https://llm.example.test/v1",
+      apiKey: "secret",
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: '{"text":"from api"}' } }],
+            usage: {
+              prompt_tokens: 120,
+              completion_tokens: 30,
+              total_tokens: 150,
+              prompt_tokens_details: { cached_tokens: 24 },
+              completion_tokens_details: { reasoning_tokens: 8 },
+            },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+    });
+
+    await expect(client.generateJson(request)).resolves.toMatchObject({
+      usage: {
+        promptTokens: 120,
+        completionTokens: 30,
+        totalTokens: 150,
+        cachedPromptTokens: 24,
+        reasoningTokens: 8,
+      },
     });
   });
 

@@ -198,6 +198,46 @@ describe("game repository", () => {
     });
   });
 
+  it("normalizes old generation records without token usage", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const gameId = "old-generation-token-usage" as GameId;
+    const oldRecord = {
+      game: game(gameId, "2026-06-26T00:03:00.000Z"),
+      events: [],
+      draft: null,
+      generations: [
+        {
+          id: "generation_1",
+          gameId,
+          draftId: "draft_1",
+          playerId: "player_1",
+          purpose: "speech",
+          status: "success",
+          promptVersion: "speech:v1",
+          provider: "mock",
+          model: "mock-model",
+          inputContextHash: "ctx",
+          request: null,
+          rawOutput: "{}",
+          parsedOutput: {},
+          error: null,
+          createdAt: "2026-06-26T00:02:00.000Z",
+        },
+      ],
+    };
+    await mkdir(join(rootDir, "games"), { recursive: true });
+    await writeFile(
+      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      JSON.stringify(oldRecord),
+      "utf8",
+    );
+
+    await expect(repository.get(gameId)).resolves.toMatchObject({
+      generations: [{ tokenUsage: null }],
+    });
+  });
+
   it("normalizes old player snapshots when loading a game", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);

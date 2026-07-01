@@ -17,6 +17,15 @@ export type LlmGenerateJsonResult = {
   readonly model: string;
   readonly rawText: string;
   readonly parsed: Record<string, unknown>;
+  readonly usage: LlmTokenUsage | null;
+};
+
+export type LlmTokenUsage = {
+  readonly promptTokens: number | null;
+  readonly completionTokens: number | null;
+  readonly totalTokens: number | null;
+  readonly cachedPromptTokens?: number | null;
+  readonly reasoningTokens?: number | null;
 };
 
 export type LlmClient = {
@@ -44,6 +53,7 @@ export class MockLlmClient implements LlmClient {
       model: request.modelBinding.model,
       rawText: JSON.stringify(parsed),
       parsed,
+      usage: null,
     };
   }
 }
@@ -59,6 +69,7 @@ export class LocalHeuristicLlmClient implements LlmClient {
       model: request.modelBinding.model,
       rawText: JSON.stringify(parsed),
       parsed,
+      usage: null,
     };
   }
 }
@@ -124,6 +135,7 @@ export class OpenAICompatibleLlmClient implements LlmClient {
       model: request.modelBinding.model,
       rawText,
       parsed: parseLlmJsonObject(rawText),
+      usage: parseOpenAICompatibleUsage(body.usage),
     };
   }
 }
@@ -178,7 +190,36 @@ type OpenAICompatibleResponse = {
       readonly content?: unknown;
     };
   }[];
+  readonly usage?: unknown;
 };
+
+function parseOpenAICompatibleUsage(usage: unknown): LlmTokenUsage | null {
+  if (usage === null || typeof usage !== "object") {
+    return null;
+  }
+
+  const record = usage as Record<string, unknown>;
+  const promptDetails = objectRecord(record.prompt_tokens_details);
+  const completionDetails = objectRecord(record.completion_tokens_details);
+
+  return {
+    promptTokens: optionalTokenCount(record.prompt_tokens),
+    completionTokens: optionalTokenCount(record.completion_tokens),
+    totalTokens: optionalTokenCount(record.total_tokens),
+    cachedPromptTokens: optionalTokenCount(promptDetails?.cached_tokens),
+    reasoningTokens: optionalTokenCount(completionDetails?.reasoning_tokens),
+  };
+}
+
+function objectRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function optionalTokenCount(value: unknown): number | null {
+  return Number.isFinite(value) ? Number(value) : null;
+}
 
 export function parseLlmJsonObject(rawText: string): Record<string, unknown> {
   const parsed = JSON.parse(stripJsonFence(rawText));

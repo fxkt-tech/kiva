@@ -51,10 +51,43 @@ describe("generation records", () => {
       model: "mock-model",
       inputContextHash: "ctx_hash",
       request,
+      tokenUsage: null,
       rawOutput: '{"text":"hello"}',
       parsedOutput: { text: "hello" },
       error: null,
       createdAt,
+    });
+  });
+
+  it("stores successful token usage", () => {
+    expect(
+      createSuccessfulGenerationRecord({
+        id: "generation_1",
+        gameId,
+        draftId,
+        playerId,
+        purpose: "speech",
+        promptVersion: "speech:v1",
+        modelBinding,
+        inputContextHash: "ctx_hash",
+        request,
+        tokenUsage: {
+          promptTokens: 100,
+          completionTokens: 20,
+          totalTokens: 120,
+          cachedPromptTokens: 10,
+          reasoningTokens: 3,
+        },
+        rawOutput: '{"text":"hello"}',
+        parsedOutput: { text: "hello" },
+        createdAt,
+      }).tokenUsage,
+    ).toEqual({
+      promptTokens: 100,
+      completionTokens: 20,
+      totalTokens: 120,
+      cachedPromptTokens: 10,
+      reasoningTokens: 3,
     });
   });
 
@@ -79,6 +112,7 @@ describe("generation records", () => {
       status: "failed",
       parsedOutput: null,
       request,
+      tokenUsage: null,
       rawOutput: "not json",
       error: "bad output",
     });

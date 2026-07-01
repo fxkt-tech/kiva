@@ -4,6 +4,7 @@ import { FileSearch, X } from "lucide-react";
 import { useId, useRef } from "react";
 import type { ReactNode } from "react";
 import type { GenerationRecord } from "@/core/generation-record";
+import { tokenCount } from "@/core/token-usage";
 
 type LlmGenerationDetailsProps = {
   readonly generation: GenerationRecord;
@@ -37,7 +38,7 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
             </h3>
             <p className="mt-1 text-xs text-zinc-500">
               {generation.status} · {generation.provider}/{generation.model} ·{" "}
-              {generation.promptVersion}
+              {generation.promptVersion} · {formatTokenTotal(generation)}
             </p>
           </div>
           <form method="dialog">
@@ -52,6 +53,38 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
           </form>
         </div>
         <div className="max-h-[calc(82vh-65px)] space-y-4 overflow-y-auto p-4">
+          <GenerationBlock title="Token usage">
+            {generation.tokenUsage ? (
+              <div className="grid gap-2 text-xs sm:grid-cols-2">
+                <KeyValue
+                  label="Prompt"
+                  value={formatTokenCount(generation.tokenUsage.promptTokens)}
+                />
+                <KeyValue
+                  label="Completion"
+                  value={formatTokenCount(generation.tokenUsage.completionTokens)}
+                />
+                <KeyValue
+                  label="Total"
+                  value={formatTokenCount(generation.tokenUsage.totalTokens)}
+                />
+                <KeyValue
+                  label="Cached prompt"
+                  value={formatTokenCount(generation.tokenUsage.cachedPromptTokens)}
+                />
+                <KeyValue
+                  label="Reasoning"
+                  value={formatTokenCount(generation.tokenUsage.reasoningTokens)}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-zinc-500">
+                Token usage was not returned by the provider or this generation
+                was created before token recording.
+              </p>
+            )}
+          </GenerationBlock>
+
           <GenerationBlock title="Request">
             {generation.request ? (
               <div className="space-y-3">
@@ -156,4 +189,24 @@ function reasoningText(parsedOutput: Record<string, unknown> | null): string | n
   }
 
   return null;
+}
+
+function formatTokenTotal(generation: GenerationRecord): string {
+  if (!generation.tokenUsage) {
+    return "tokens not recorded";
+  }
+
+  const total =
+    tokenCount(generation.tokenUsage.totalTokens) ||
+    tokenCount(generation.tokenUsage.promptTokens) +
+      tokenCount(generation.tokenUsage.completionTokens);
+  return `${formatTokenCount(total)} tokens`;
+}
+
+function formatTokenCount(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "not returned";
+  }
+
+  return new Intl.NumberFormat("en-US").format(value);
 }

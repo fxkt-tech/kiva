@@ -1,4 +1,5 @@
 import type { ModelBindingSnapshot } from "./player";
+import type { LlmTokenUsage } from "./llm";
 import type { DraftId, GameId, PlayerId } from "./types";
 
 export type GenerationPurpose = "speech" | "action";
@@ -24,6 +25,7 @@ export type GenerationRecord = {
   readonly model: string;
   readonly inputContextHash: string;
   readonly request: GenerationRequestSnapshot | null;
+  readonly tokenUsage: LlmTokenUsage | null;
   readonly rawOutput: string | null;
   readonly parsedOutput: Record<string, unknown> | null;
   readonly error: string | null;
@@ -40,6 +42,7 @@ export type SuccessfulGenerationRecordInput = {
   readonly modelBinding: ModelBindingSnapshot;
   readonly inputContextHash: string;
   readonly request: GenerationRequestSnapshot;
+  readonly tokenUsage?: LlmTokenUsage | null;
   readonly rawOutput: string;
   readonly parsedOutput: Record<string, unknown>;
   readonly createdAt: string;
@@ -55,6 +58,7 @@ export type FailedGenerationRecordInput = {
   readonly modelBinding: ModelBindingSnapshot;
   readonly inputContextHash: string;
   readonly request: GenerationRequestSnapshot;
+  readonly tokenUsage?: LlmTokenUsage | null;
   readonly rawOutput: string | null;
   readonly error: unknown;
   readonly createdAt: string;
@@ -75,6 +79,7 @@ export function createSuccessfulGenerationRecord(
     model: input.modelBinding.model,
     inputContextHash: input.inputContextHash,
     request: input.request,
+    tokenUsage: input.tokenUsage ?? null,
     rawOutput: input.rawOutput,
     parsedOutput: input.parsedOutput,
     error: null,
@@ -97,6 +102,7 @@ export function createFailedGenerationRecord(
     model: input.modelBinding.model,
     inputContextHash: input.inputContextHash,
     request: input.request,
+    tokenUsage: input.tokenUsage ?? null,
     rawOutput: input.rawOutput,
     parsedOutput: null,
     error: errorMessage(input.error),

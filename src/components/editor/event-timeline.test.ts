@@ -80,6 +80,7 @@ function generationRecord(draftId: DraftId, createdAt: string): GenerationRecord
       systemPrompt: "system",
       messages: [{ role: "user", content: "visible context" }],
     },
+    tokenUsage: null,
     rawOutput: '{"text":"ok"}',
     parsedOutput: { text: "ok" },
     error: null,

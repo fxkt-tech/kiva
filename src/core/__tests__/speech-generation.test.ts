@@ -165,6 +165,7 @@ function invalidTextClient(): LlmClient {
         model: request.modelBinding.model,
         rawText: '{"text":""}',
         parsed: { text: "" },
+        usage: null,
       };
     },
   };
