@@ -229,18 +229,19 @@ class TopBar {
     const stageLeft = mainStageLeft(this.theme);
     const top = contentTop(this.theme);
     const stageWidth = mainStageWidth(this.theme);
+    const radius = cardRadius(this.theme);
 
     this.title.text = previewHeaderTitle(frame.gameTitle);
     fitText(this.title, Math.round(stageWidth * 0.82), 34, 24);
     this.panel
       .clear()
-      .rect(stageLeft, top, stageWidth, this.theme.layout.topBarHeight)
+      .roundRect(stageLeft, top, stageWidth, this.theme.layout.topBarHeight, radius)
       .fill({ color: this.theme.colors.black, alpha: 0.30 })
-      .rect(stageLeft, top + this.theme.layout.topBarHeight - 1, stageWidth, 1)
+      .rect(stageLeft + radius, top + this.theme.layout.topBarHeight - 1, stageWidth - radius * 2, 1)
       .fill({ color: this.theme.colors.accent, alpha: 0.14 });
     this.rule
       .clear()
-      .rect(stageLeft, top + this.theme.layout.topBarHeight - 2, stageWidth, 1)
+      .rect(stageLeft + radius, top + this.theme.layout.topBarHeight - 2, stageWidth - radius * 2, 1)
       .fill({ color: this.theme.colors.brass, alpha: 0.07 });
   }
 
@@ -308,6 +309,15 @@ class SeatCard {
   private readonly panel = new Graphics();
   private readonly activeMark = new Graphics();
   private readonly deadOverlay = new Graphics();
+  private readonly deadMark = new Graphics();
+  private readonly deadStamp = text("已出局", {
+    fill: 0xc56a62,
+    fontFamily: PIXI_PREVIEW_FONT_FAMILY,
+    fontSize: 34,
+    fontWeight: "900",
+    letterSpacing: 0,
+    stroke: { color: 0x110b0b, width: 4 },
+  });
   private readonly avatar: AvatarView;
   private readonly seatBox: LayoutContainer;
   private readonly textColumn: Container;
@@ -352,6 +362,13 @@ class SeatCard {
       width: "100%",
       height: "100%",
     };
+    this.deadMark.layout = {
+      position: "absolute",
+      left: 0,
+      top: 0,
+      width: "100%",
+      height: "100%",
+    };
     this.panel.layout = {
       position: "absolute",
       left: 0,
@@ -380,11 +397,13 @@ class SeatCard {
       height: avatarSize,
     };
     this.seatNo.anchor.set(0.5);
+    this.deadStamp.anchor.set(0.5);
+    this.deadStamp.rotation = -0.14;
     this.textColumn.addChild(this.name, this.role);
     if (side === "left") {
-      this.view.addChild(this.panel, this.activeMark, this.seatBox, this.textColumn, this.avatar.view, this.seatNo, this.deadOverlay);
+      this.view.addChild(this.panel, this.activeMark, this.seatBox, this.textColumn, this.avatar.view, this.seatNo, this.deadOverlay, this.deadMark, this.deadStamp);
     } else {
-      this.view.addChild(this.panel, this.activeMark, this.avatar.view, this.textColumn, this.seatBox, this.seatNo, this.deadOverlay);
+      this.view.addChild(this.panel, this.activeMark, this.avatar.view, this.textColumn, this.seatBox, this.seatNo, this.deadOverlay, this.deadMark, this.deadStamp);
     }
   }
 
@@ -404,19 +423,19 @@ class SeatCard {
     this.view.alpha = 1;
     this.panel
       .clear()
-      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, this.theme.layout.radius)
+      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, cardRadius(this.theme))
       .fill({
-        color: this.theme.colors.panel,
-        alpha: highlighted ? 0.90 : 0.84,
+        color: dead ? 0x090707 : this.theme.colors.panel,
+        alpha: dead ? 0.78 : highlighted ? 0.90 : 0.84,
       })
-      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, this.theme.layout.radius)
+      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, cardRadius(this.theme))
       .stroke({
-        color: highlighted ? this.theme.colors.accent : 0xd4c7ad,
-        alpha: highlighted ? 0.42 : 0.13,
-        width: highlighted ? 2 : 1,
+        color: dead ? this.theme.colors.danger : highlighted ? this.theme.colors.accent : 0xd4c7ad,
+        alpha: dead ? 0.34 : highlighted ? 0.42 : 0.13,
+        width: dead || highlighted ? 2 : 1,
       });
     this.activeMark.clear();
-    if (active) {
+    if (active && !dead) {
       const markSize = Math.round(avatarSize * 0.30);
       this.activeMark
         .rect(padding, padding, markSize, 2)
@@ -444,17 +463,18 @@ class SeatCard {
       fontSize: 25,
       lineHeight: 34,
       align: "center",
-      fill: subtleRoleColor(player.roleName, this.theme),
+      fill: dead ? 0x8e8980 : subtleRoleColor(player.roleName, this.theme),
     };
     this.name.style = {
       ...this.theme.typography.playerName,
       fontSize: active ? 46 : 44,
       lineHeight: active ? 56 : 54,
       align: "center",
+      fill: dead ? 0xc6bdb0 : this.theme.typography.playerName.fill,
     };
     this.seatNo.style = {
       ...this.theme.typography.meta,
-      fill: highlighted ? this.theme.colors.brass : this.theme.colors.muted,
+      fill: dead ? this.theme.colors.danger : highlighted ? this.theme.colors.brass : this.theme.colors.muted,
       fontFamily: PIXI_PREVIEW_FONT_FAMILY,
       fontSize: SEAT_NUMBER_FONT_SIZE,
       fontWeight: "900",
@@ -478,8 +498,37 @@ class SeatCard {
     );
     this.deadOverlay
       .clear()
-      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, this.theme.layout.radius)
-      .fill({ color: this.theme.colors.black, alpha: dead ? 0.54 : 0 });
+      .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, cardRadius(this.theme))
+      .fill({ color: this.theme.colors.black, alpha: dead ? 0.20 : 0 });
+    this.deadMark.clear();
+    this.deadStamp.visible = dead;
+    if (dead) {
+      const cardWidth = seatCardWidth(this.theme);
+      const cardHeight = this.theme.layout.seatCardHeight;
+      const stampWidth = 118;
+      const stampHeight = 38;
+      const stampX = this.side === "left" ? cardWidth - padding - stampWidth : padding;
+      const stampY = padding;
+      const stampCenterX = stampX + stampWidth / 2;
+      const stampCenterY = stampY + stampHeight / 2;
+
+      this.deadMark
+        .moveTo(0, cardHeight - 18)
+        .lineTo(cardWidth, 18)
+        .stroke({ color: this.theme.colors.danger, alpha: 0.24, width: 3 })
+        .moveTo(0, cardHeight - 9)
+        .lineTo(cardWidth, 27)
+        .stroke({ color: 0x1a0d0d, alpha: 0.60, width: 7 })
+        .save()
+        .translateTransform(stampCenterX, stampCenterY)
+        .rotateTransform(this.deadStamp.rotation)
+        .roundRect(-stampWidth / 2, -stampHeight / 2, stampWidth, stampHeight, 8)
+        .fill({ color: 0x170b0b, alpha: 0.76 })
+        .roundRect(-stampWidth / 2, -stampHeight / 2, stampWidth, stampHeight, 8)
+        .stroke({ color: this.theme.colors.danger, alpha: 0.58, width: 2 })
+        .restore();
+      this.deadStamp.position.set(stampCenterX, stampCenterY + 1);
+    }
   }
 
   destroy(): void {
@@ -579,7 +628,7 @@ class SpeechStage {
       width: "100%",
       height: "100%",
       overflow: "hidden",
-      borderRadius: 28,
+      borderRadius: cardRadius(theme),
     };
     this.panel.layout = {
       position: "absolute",
@@ -613,9 +662,9 @@ class SpeechStage {
     }
     this.panel
       .clear()
-      .roundRect(0, 0, mainStageWidth(this.theme), mainStageHeight(this.theme), 28)
+      .roundRect(0, 0, mainStageWidth(this.theme), mainStageHeight(this.theme), cardRadius(this.theme))
       .fill({ color: this.theme.colors.black, alpha: player ? 0.30 : 0.14 })
-      .roundRect(0, 0, mainStageWidth(this.theme), mainStageHeight(this.theme), 28)
+      .roundRect(0, 0, mainStageWidth(this.theme), mainStageHeight(this.theme), cardRadius(this.theme))
       .stroke({
         color: player ? this.theme.colors.accent : this.theme.colors.brass,
         alpha: player ? 0.30 : 0.20,
@@ -732,9 +781,9 @@ class CaseBoardStage {
 
     this.panel
       .clear()
-      .roundRect(0, 0, width, height, 28)
+      .roundRect(0, 0, width, height, cardRadius(this.theme))
       .fill({ color: this.theme.colors.black, alpha: 0.46 })
-      .roundRect(0, 0, width, height, 28)
+      .roundRect(0, 0, width, height, cardRadius(this.theme))
       .stroke({ color: 0xd4c7ad, alpha: 0.18, width: 1 });
     this.accent
       .clear()
@@ -783,9 +832,9 @@ class CaseBoardStage {
 
     this.panel
       .clear()
-      .roundRect(0, 0, width, height, 28)
+      .roundRect(0, 0, width, height, cardRadius(this.theme))
       .fill({ color: this.theme.colors.black, alpha: 0.46 })
-      .roundRect(0, 0, width, height, 28)
+      .roundRect(0, 0, width, height, cardRadius(this.theme))
       .stroke({ color: 0xd4c7ad, alpha: 0.18, width: 1 });
     this.accent
       .clear()
@@ -876,6 +925,7 @@ class CaseBoardRowView {
     }
 
     const toneColor = colorForCaseBoardTone(row.tone, this.theme);
+    const radius = cardRadius(this.theme);
     const labelWidth = 92;
     const textX = labelWidth + 22;
     const textWidth = width - textX - 22;
@@ -883,11 +933,11 @@ class CaseBoardRowView {
     this.view.position.set(x, y);
     this.panel
       .clear()
-      .roundRect(0, 0, width, height, 12)
+      .roundRect(0, 0, width, height, radius)
       .fill({ color: this.theme.colors.panel, alpha: 0.64 })
-      .roundRect(0, 0, width, height, 12)
+      .roundRect(0, 0, width, height, radius)
       .stroke({ color: toneColor, alpha: 0.26, width: 1 })
-      .rect(0, 0, 4, height)
+      .rect(0, radius, 4, height - radius * 2)
       .fill({ color: toneColor, alpha: 0.62 });
 
     this.label.text = row.label;
@@ -960,22 +1010,32 @@ class SubtitleBand {
   }
 
   update(frame: ShotFrame): void {
+    if (frame.scene.kind !== "speech" || !frame.subtitle) {
+      this.renderEmpty();
+      return;
+    }
+
+    this.view.visible = true;
     const width = mainStageWidth(this.theme);
+    const radius = cardRadius(this.theme);
     this.panel
       .clear()
-      .rect(0, 0, width, this.theme.layout.subtitleHeight)
+      .roundRect(0, 0, width, this.theme.layout.subtitleHeight, radius)
       .fill({ color: this.theme.colors.black, alpha: 0.82 })
-      .rect(0, 0, width, this.theme.layout.subtitleHeight)
+      .roundRect(0, 0, width, this.theme.layout.subtitleHeight, radius)
       .stroke({ color: 0xd4c7ad, alpha: 0.18, width: 1 });
     this.rule
       .clear()
-      .rect(0, 0, width, 2)
+      .rect(radius, 0, width - radius * 2, 2)
       .fill({ color: this.theme.colors.accent, alpha: 0.18 });
-    this.speaker.text = frame.subtitle?.speaker ?? frame.scene.title;
-    this.content.text = frame.subtitle?.lines.join("\n") ?? frame.scene.text;
+    this.speaker.text = frame.subtitle.speaker;
+    this.content.text = frame.subtitle.lines.join("\n");
   }
 
   renderEmpty(): void {
+    this.view.visible = false;
+    this.panel.clear();
+    this.rule.clear();
     this.speaker.text = "";
     this.content.text = "";
   }
@@ -1202,6 +1262,10 @@ function caseBoardLeftColumnWidth(theme: PixiPreviewTheme): number {
 function previewHeaderTitle(gameTitle: string): string {
   const title = gameTitle.trim() || "凌冽审讯档案";
   return `四方诛杀(${title})`;
+}
+
+function cardRadius(theme: PixiPreviewTheme): number {
+  return theme.layout.radius;
 }
 
 function mainStageWidth(theme: PixiPreviewTheme): number {

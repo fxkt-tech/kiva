@@ -35,6 +35,7 @@ describe("preview shot director", () => {
 
     expect(frame.activePlayer).toBeNull();
     expect(frame.highlightedPlayers.map((player) => player.seatNo)).toEqual([2]);
+    expect(frame.subtitle).toBeNull();
   });
 
   it("clamps shot clock progress", () => {

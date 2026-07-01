@@ -24,6 +24,9 @@ export function createShotFrame(input: {
   const highlightedPlayers = players.filter(
     (player) => player.emphasis === "active" || player.emphasis === "highlighted",
   );
+  const subtitle = input.scene.kind === "speech"
+    ? subtitleCueForScene(input.scene, clock.progress, activePlayer)
+    : null;
 
   return {
     gameTitle: input.gameTitle ?? "",
@@ -34,7 +37,7 @@ export function createShotFrame(input: {
     players,
     activePlayer,
     highlightedPlayers,
-    subtitle: subtitleCueForScene(input.scene, clock.progress, activePlayer),
+    subtitle,
     backgroundImages: input.backgroundImages,
     avatarImages: input.avatarImages,
   };
