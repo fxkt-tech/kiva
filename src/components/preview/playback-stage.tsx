@@ -10,13 +10,14 @@ import {
   SkipForward,
   Square,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   playbackIndexAtMs,
   playbackTotalDurationMs,
   type PlaybackItem,
 } from "@/core/playback";
+import { Button } from "@/components/ui/button";
 import { iconButtonClassName } from "@/components/ui/button-styles";
 import {
   type PreviewAvatarImages,
@@ -71,6 +72,10 @@ export function PlaybackStage({
   const totalDurationMs = playbackTotalDurationMs(items);
   const safeTimeMs = clamp(currentTimeMs, 0, Math.max(0, totalDurationMs));
   const safeIndex = hasItems ? playbackIndexAtMs(items, safeTimeMs) : 0;
+  const timelineProgressPercent =
+    hasItems && totalDurationMs > 0
+      ? Math.min(100, Math.max(0, (safeTimeMs / totalDurationMs) * 100))
+      : 0;
   const progress = hasItems ? `${safeIndex + 1} / ${items.length}` : "0 / 0";
   const canPlay = hasItems && safeTimeMs < totalDurationMs;
   const canNavigate =
@@ -253,6 +258,50 @@ export function PlaybackStage({
     seekTo(item.startsAtMs);
   }
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (shouldIgnorePlaybackShortcut(event.target)) {
+        return;
+      }
+
+      if (event.key === " ") {
+        if (!hasItems || isRecording) {
+          return;
+        }
+
+        event.preventDefault();
+        if (playing) {
+          pause();
+        } else {
+          play();
+        }
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        if (!canGoPrevious) {
+          return;
+        }
+
+        event.preventDefault();
+        seekToItem(safeIndex - 1);
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        if (!canGoNext) {
+          return;
+        }
+
+        event.preventDefault();
+        seekToItem(safeIndex + 1);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
   function startRecording() {
     const canvas = rendererRef.current?.canvas ?? null;
     setError(null);
@@ -394,24 +443,48 @@ export function PlaybackStage({
         aria-label="Playback controls"
         className="grid w-full max-w-6xl gap-3 border border-border bg-background/95 px-4 py-3 text-sm text-foreground shadow-lg shadow-black/40"
       >
-        <div className="grid gap-2">
+        <div className="grid gap-1.5">
           <div className="flex items-center justify-between gap-4 text-xs text-subtle">
-            <span className="font-mono">{progress}</span>
+            <span className="font-mono text-foreground">{progress}</span>
             <span className="font-mono">
               {formatTime(safeTimeMs)} / {formatTime(totalDurationMs)}
             </span>
           </div>
-          <input
-            aria-label="Timeline"
-            className="h-2 w-full accent-cyan-400"
-            disabled={!hasItems || isRecording}
-            max={Math.max(0, totalDurationMs)}
-            min={0}
-            onChange={(event) => seekTo(Number(event.currentTarget.value))}
-            step={100}
-            type="range"
-            value={safeTimeMs}
-          />
+          <div
+            className={[
+              "relative h-8 rounded-sm",
+              !hasItems || isRecording ? "opacity-45" : "",
+            ].join(" ")}
+          >
+            <div className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-border" />
+            <div
+              className="pointer-events-none absolute left-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-accent"
+              style={
+                {
+                  width: `${timelineProgressPercent}%`,
+                } satisfies CSSProperties
+              }
+            />
+            <div
+              className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-background bg-accent shadow-sm shadow-black/40"
+              style={
+                {
+                  left: `${timelineProgressPercent}%`,
+                } satisfies CSSProperties
+              }
+            />
+            <input
+              aria-label="Timeline"
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+              disabled={!hasItems || isRecording}
+              max={Math.max(0, totalDurationMs)}
+              min={0}
+              onChange={(event) => seekTo(Number(event.currentTarget.value))}
+              step={100}
+              type="range"
+              value={safeTimeMs}
+            />
+          </div>
         </div>
         <div className="grid grid-cols-[minmax(8rem,1fr)_auto_minmax(8rem,1fr)] items-center gap-3">
           <div className="min-w-0 font-mono text-xs text-subtle">
@@ -477,7 +550,7 @@ export function PlaybackStage({
               className={`${iconButtonClassName({
                 size: "lg",
                 variant: "success",
-              })} aria-disabled:pointer-events-none`}
+              })} aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:border-disabled aria-disabled:bg-transparent aria-disabled:text-disabled-foreground aria-disabled:opacity-50`}
               download={downloadUrl ? "kiva-playback.webm" : undefined}
               href={downloadUrl ?? undefined}
               title="Download WebM"
@@ -504,22 +577,30 @@ function IconButton({
   readonly onClick: () => void;
   readonly variant?: "default" | "primary" | "record";
 }) {
-  const className = iconButtonClassName({
-    size: "lg",
-    variant: variant === "record" ? "danger" : "default",
-  });
-
   return (
-    <button
+    <Button
       aria-label={label}
-      className={className}
+      buttonStyle="icon"
       disabled={disabled}
+      iconSize="lg"
       onClick={onClick}
       title={label}
-      type="button"
+      variant={variant === "record" ? "danger" : "default"}
     >
       {children}
-    </button>
+    </Button>
+  );
+}
+
+function shouldIgnorePlaybackShortcut(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      "input, textarea, select, button, a, [contenteditable='true']",
+    ),
   );
 }
 

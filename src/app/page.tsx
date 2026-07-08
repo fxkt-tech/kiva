@@ -5,6 +5,7 @@ import { GameTokenUsageButton } from "@/components/home/game-token-usage-button"
 import { GameTitleEditor } from "@/components/home/game-title-editor";
 import { NewGameDialog } from "@/components/home/new-game-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import { iconButtonClassName, textButtonClassName } from "@/components/ui/button-styles";
 import type { GenerationRecord } from "@/core/generation-record";
 import { summarizeGenerationTokenUsage } from "@/core/token-usage";
@@ -132,17 +133,16 @@ export default async function HomePage() {
                             <SquarePen aria-hidden="true" className="h-4 w-4" />
                           </Link>
                           <form action={deleteGameAction.bind(null, record.game.id)}>
-                            <button
+                            <Button
                               type="submit"
-                              className={iconButtonClassName({
-                                size: "md",
-                                variant: "danger",
-                              })}
+                              buttonStyle="icon"
+                              iconSize="md"
+                              variant="danger"
                               aria-label="Delete game"
                               title="Delete game"
                             >
                               <Trash2 aria-hidden="true" className="h-4 w-4" />
-                            </button>
+                            </Button>
                           </form>
                         </div>
                       </td>

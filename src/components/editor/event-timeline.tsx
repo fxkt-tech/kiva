@@ -4,6 +4,7 @@ import type { GameEvent } from "@/core/events";
 import type { GenerationRecord } from "@/core/generation-record";
 import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
+import { Button } from "@/components/ui/button";
 import { iconButtonClassName } from "@/components/ui/button-styles";
 import { Maximize2, Minimize2, Undo2 } from "lucide-react";
 import Link from "next/link";
@@ -126,14 +127,14 @@ export function EventTimeline({
                       )}
                       className="shrink-0"
                     >
-                      <button
+                      <Button
                         type="submit"
                         aria-label={`Roll back after event ${event.index}`}
                         title={`Roll back after event ${event.index}`}
-                        className={iconButtonClassName()}
+                        buttonStyle="icon"
                       >
                         <Undo2 aria-hidden="true" className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </form>
                   ) : null}
                 </div>

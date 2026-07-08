@@ -1,5 +1,5 @@
-type IconButtonSize = "xs" | "sm" | "md" | "lg" | "custom";
-type IconButtonVariant = "default" | "danger" | "success";
+export type IconButtonSize = "xs" | "sm" | "md" | "lg" | "custom";
+export type IconButtonVariant = "default" | "danger" | "success";
 
 const iconButtonSizes: Record<IconButtonSize, string> = {
   xs: "h-7 w-7",
@@ -11,11 +11,11 @@ const iconButtonSizes: Record<IconButtonSize, string> = {
 
 const iconButtonVariants: Record<IconButtonVariant, string> = {
   default:
-    "text-muted hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground focus-visible:ring-accent/35",
+    "text-muted hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground",
   danger:
-    "text-danger-badge-foreground hover:border-danger-badge-foreground hover:bg-danger-badge focus-visible:ring-danger-badge-foreground/35",
+    "text-danger-badge-foreground hover:border-danger-badge-foreground hover:bg-danger-badge",
   success:
-    "text-good-badge-foreground hover:border-good-badge-foreground hover:bg-good-badge focus-visible:ring-good-badge-foreground/35",
+    "text-good-badge-foreground hover:border-good-badge-foreground hover:bg-good-badge",
 };
 
 export function iconButtonClassName({
@@ -28,7 +28,7 @@ export function iconButtonClassName({
   readonly className?: string;
 } = {}): string {
   return [
-    "inline-flex shrink-0 items-center justify-center rounded-md border border-interactive-border bg-surface/70 shadow-sm shadow-black/[0.03] transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:border-disabled disabled:bg-transparent disabled:text-disabled-foreground disabled:opacity-50",
+    "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border border-interactive-border bg-surface/70 shadow-sm shadow-black/[0.03] transition disabled:cursor-not-allowed disabled:border-disabled disabled:bg-transparent disabled:text-disabled-foreground disabled:opacity-50",
     iconButtonSizes[size],
     iconButtonVariants[variant],
     className,
@@ -39,7 +39,7 @@ export function iconButtonClassName({
 
 export function textButtonClassName(className?: string): string {
   return [
-    "rounded-md border border-interactive-border bg-surface/70 px-4 py-2 text-center text-sm font-medium text-foreground shadow-sm shadow-black/[0.03] transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/35 disabled:cursor-not-allowed disabled:border-disabled disabled:bg-transparent disabled:text-disabled-foreground disabled:opacity-50",
+    "cursor-pointer rounded-md border border-interactive-border bg-surface/70 px-4 py-2 text-center text-sm font-medium text-foreground shadow-sm shadow-black/[0.03] transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground disabled:cursor-not-allowed disabled:border-disabled disabled:bg-transparent disabled:text-disabled-foreground disabled:opacity-50",
     className,
   ]
     .filter(Boolean)

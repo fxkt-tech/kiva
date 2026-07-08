@@ -2,7 +2,7 @@ import {
   createGameFromPresetAction,
   savePresetAction,
 } from "@/app/library/actions";
-import { textButtonClassName } from "@/components/ui/button-styles";
+import { Button } from "@/components/ui/button";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
 import type { ModelBindingSnapshot } from "@/core/player";
@@ -102,7 +102,7 @@ export function PresetEditor({ preset, roles, characters }: PresetEditorProps) {
                 <select
                   name={`seat.${seat.seatNo}.roleId`}
                   defaultValue={seat.roleId}
-                  className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+                  className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
                 >
                   {roles.map((role) => (
                     <option key={role.id} value={role.id}>
@@ -113,7 +113,7 @@ export function PresetEditor({ preset, roles, characters }: PresetEditorProps) {
                 <select
                   name={`seat.${seat.seatNo}.characterId`}
                   defaultValue={seat.characterId}
-                  className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+                  className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
                 >
                   {characters.map((character) => (
                     <option key={character.id} value={character.id}>
@@ -132,12 +132,12 @@ export function PresetEditor({ preset, roles, characters }: PresetEditorProps) {
         </section>
 
         <div className="flex justify-end border-t border-border pt-4">
-          <button
+          <Button
             type="submit"
-            className={textButtonClassName("font-semibold")}
+            className="font-semibold"
           >
             Save preset
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -145,12 +145,12 @@ export function PresetEditor({ preset, roles, characters }: PresetEditorProps) {
         action={createGameFromPresetAction.bind(null, preset.id)}
         className="flex justify-end border-t border-border pt-4"
       >
-        <button
+        <Button
           type="submit"
-          className={textButtonClassName("font-semibold")}
+          className="font-semibold"
         >
           Create game
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -173,7 +173,7 @@ function TextField({
       <input
         name={name}
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-accent"
+        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition"
       />
     </label>
   );

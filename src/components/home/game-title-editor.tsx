@@ -3,7 +3,7 @@
 import { Check, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { renameGameAction } from "@/app/actions";
-import { iconButtonClassName } from "@/components/ui/button-styles";
+import { Button } from "@/components/ui/button";
 import type { GameId } from "@/core/types";
 
 type GameTitleEditorProps = {
@@ -87,28 +87,27 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
             }}
             aria-label="Game name"
             disabled={pending}
-            className="h-8 min-w-0 flex-1 rounded-md border border-interactive-border bg-background px-2.5 text-sm font-medium text-foreground outline-none transition focus:border-interactive-border-hover focus:ring-2 focus:ring-info-badge"
+            className="h-8 min-w-0 flex-1 rounded-md border border-interactive-border bg-background px-2.5 text-sm font-medium text-foreground outline-none transition"
           />
-          <button
-            type="button"
+          <Button
             onClick={saveTitle}
             disabled={pending}
             aria-label="Save game name"
             title="Save game name"
-            className={iconButtonClassName({ variant: "success" })}
+            buttonStyle="icon"
+            variant="success"
           >
             <Check aria-hidden="true" className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={cancelEditing}
             disabled={pending}
             aria-label="Cancel rename"
             title="Cancel rename"
-            className={iconButtonClassName()}
+            buttonStyle="icon"
           >
             <X aria-hidden="true" className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
         {error ? <div className="mt-1 text-xs text-red-300">{error}</div> : null}
       </div>
@@ -120,18 +119,16 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
       <div className="min-w-0 truncate text-sm font-medium text-foreground">
         {currentTitle}
       </div>
-      <button
-        type="button"
+      <Button
         onClick={beginEditing}
         aria-label="Rename game"
         title="Rename game"
-        className={iconButtonClassName({
-          size: "xs",
-          className: "opacity-0 group-hover:opacity-100 focus:opacity-100",
-        })}
+        buttonStyle="icon"
+        className="opacity-0 group-hover:opacity-100"
+        iconSize="xs"
       >
         <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
-      </button>
+      </Button>
     </div>
   );
 }

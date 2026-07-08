@@ -3,7 +3,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { iconButtonClassName } from "@/components/ui/button-styles";
+import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -17,15 +17,13 @@ export function ThemeToggle() {
   const nextTheme = dark ? "light" : "dark";
 
   return (
-    <button
+    <Button
       aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-      className={iconButtonClassName({
-        size: "custom",
-        className: "h-[38px] w-[38px]",
-      })}
+      buttonStyle="icon"
+      className="h-[38px] w-[38px]"
+      iconSize="custom"
       onClick={() => setTheme(nextTheme)}
       title={dark ? "Light theme" : "Dark theme"}
-      type="button"
     >
       <Sun
         aria-hidden="true"
@@ -35,6 +33,6 @@ export function ThemeToggle() {
         aria-hidden="true"
         className={dark ? "hidden h-4 w-4" : "h-4 w-4"}
       />
-    </button>
+    </Button>
   );
 }

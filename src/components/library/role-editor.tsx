@@ -1,5 +1,5 @@
 import { saveRoleAction } from "@/app/library/actions";
-import { textButtonClassName } from "@/components/ui/button-styles";
+import { Button } from "@/components/ui/button";
 import type { ModelBindingSnapshot } from "@/core/player";
 import type {
   RoleDefinition,
@@ -110,12 +110,12 @@ export function RoleEditor({ role }: { readonly role: RoleDefinition }) {
       />
 
       <div className="flex justify-end border-t border-border pt-4">
-        <button
+        <Button
           type="submit"
-          className={textButtonClassName("font-semibold")}
+          className="font-semibold"
         >
           Save role
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -174,7 +174,7 @@ function TextField({
       <input
         name={name}
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-accent"
+        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition"
       />
     </label>
   );
@@ -202,7 +202,7 @@ function SelectField<T extends string>({
         name={name}
         defaultValue={value}
         disabled={disabled}
-        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-accent disabled:cursor-not-allowed disabled:text-subtle"
+        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition disabled:cursor-not-allowed disabled:text-subtle"
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -234,7 +234,7 @@ function TextareaField({
         name={name}
         defaultValue={defaultValue}
         rows={rows}
-        className="mt-1 w-full resize-y rounded border border-interactive-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus:border-accent"
+        className="mt-1 w-full resize-y rounded border border-interactive-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition"
       />
     </label>
   );

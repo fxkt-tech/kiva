@@ -48,7 +48,7 @@ export default async function EditorPage({
   return (
     <main className="h-screen overflow-hidden bg-background p-3 text-foreground sm:p-4">
       <div className="flex h-full min-h-0 flex-col gap-3">
-        <header className="flex h-9 shrink-0 items-center gap-3 border-b border-border pb-2">
+        <header className="-mx-3 flex h-9 shrink-0 items-center gap-3 border-b border-border px-3 pb-2 sm:-mx-4 sm:px-4">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               href="/"

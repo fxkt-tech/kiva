@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { Button } from "@/components/ui/button";
 
 type ThemeOption = {
   readonly name: string;
@@ -197,12 +198,12 @@ function HomeSample() {
           </div>
           <div className="mt-0.5 text-sm font-semibold">Local games</div>
         </div>
-        <button
-          className="rounded-md border border-[var(--preview-border-strong)] bg-[var(--preview-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--preview-foreground)] shadow-sm transition hover:bg-[var(--preview-surface-muted)]"
-          type="button"
+        <Button
+          className="cursor-pointer rounded-md border border-[var(--preview-border-strong)] bg-[var(--preview-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--preview-foreground)] shadow-sm transition hover:bg-[var(--preview-surface-muted)]"
+          unstyled
         >
           New game
-        </button>
+        </Button>
       </div>
       <div className="divide-y divide-[var(--preview-border)] text-sm">
         {["四方诛杀", "月下档案", "夜谈局"].map((title, index) => (

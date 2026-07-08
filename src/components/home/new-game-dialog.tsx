@@ -5,10 +5,10 @@ import {
   createGameFromPresetHomeAction,
   createGameFromSeatAssignmentsAction,
 } from "@/app/actions";
+import { Button } from "@/components/ui/button";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
 import type { RoleDefinition } from "@/core/role-definition";
-import { textButtonClassName } from "@/components/ui/button-styles";
 import {
   createRandomSeatSetup,
   validateSeatSetup,
@@ -70,13 +70,12 @@ export function NewGameDialog({
 
   return (
     <>
-      <button
-        type="button"
+      <Button
         onClick={openDialog}
-        className={textButtonClassName("w-full sm:w-auto")}
+        className="w-full sm:w-auto"
       >
         New game
-      </button>
+      </Button>
 
       {open ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -98,13 +97,12 @@ export function NewGameDialog({
                   New game
                 </h2>
               </div>
-              <button
-                type="button"
+              <Button
                 onClick={() => setOpen(false)}
-                className={textButtonClassName("px-3 py-1.5 text-muted")}
+                className="px-3 py-1.5 text-muted"
               >
                 Close
-              </button>
+              </Button>
             </header>
 
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
@@ -161,18 +159,18 @@ function ModeButton({
   readonly children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Button
       onClick={onClick}
       className={[
-        "rounded px-3 py-1.5 text-sm font-medium transition",
+        "cursor-pointer rounded px-3 py-1.5 text-sm font-medium transition",
         active
           ? "border border-interactive-border bg-surface/90 text-foreground shadow-sm shadow-black/[0.03]"
           : "border border-transparent text-muted hover:bg-surface/70 hover:text-foreground",
       ].join(" ")}
+      unstyled
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -200,16 +198,16 @@ function PresetMode({
           </p>
         ) : (
           presets.map((preset) => (
-            <button
+            <Button
               key={preset.id}
-              type="button"
               onClick={() => onSelectPreset(preset.id)}
               className={[
-                "block w-full rounded border px-3 py-3 text-left transition",
+                "block w-full cursor-pointer rounded border px-3 py-3 text-left transition",
                 preset.id === selectedPresetId
                   ? "border-accent bg-surface-strong text-foreground"
                   : "border-border bg-surface/55 text-muted hover:border-interactive-border-hover",
               ].join(" ")}
+              unstyled
             >
               <span className="block truncate text-sm font-medium">
                 {preset.name}
@@ -217,7 +215,7 @@ function PresetMode({
               <span className="mt-1 block font-mono text-xs text-subtle">
                 {preset.id}
               </span>
-            </button>
+            </Button>
           ))
         )}
       </div>
@@ -232,12 +230,12 @@ function PresetMode({
             />
             <form action={createGameFromPresetHomeAction.bind(null, selectedPreset.id)}>
               <div className="flex justify-end border-t border-border pt-4">
-                <button
+                <Button
                   type="submit"
-                  className={textButtonClassName("font-semibold")}
+                  className="font-semibold"
                 >
                   Create game
-                </button>
+                </Button>
               </div>
             </form>
           </>
@@ -269,13 +267,12 @@ function RandomMode({
   return (
     <form action={createGameFromSeatAssignmentsAction} className="space-y-4">
       <div className="flex justify-end">
-        <button
-          type="button"
+        <Button
           onClick={onReroll}
-          className={textButtonClassName("px-3")}
+          className="px-3"
         >
           Reroll
-        </button>
+        </Button>
       </div>
 
       <EditableSeatTable
@@ -296,13 +293,13 @@ function RandomMode({
       ) : null}
 
       <div className="flex justify-end border-t border-border pt-4">
-        <button
+        <Button
           type="submit"
           disabled={validationMessages.length > 0}
-          className={textButtonClassName("font-semibold")}
+          className="font-semibold"
         >
           Create game
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -362,7 +359,7 @@ function EditableSeatTable({
             onChange={(event) =>
               onUpdateSeat(seat.seatNo, "roleId", event.target.value)
             }
-            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
           >
             {roles.map((role) => (
               <option key={role.id} value={role.id}>
@@ -376,7 +373,7 @@ function EditableSeatTable({
             onChange={(event) =>
               onUpdateSeat(seat.seatNo, "characterId", event.target.value)
             }
-            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
           >
             {characters.map((character) => (
               <option key={character.id} value={character.id}>

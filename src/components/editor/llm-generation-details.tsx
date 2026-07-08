@@ -3,7 +3,7 @@
 import { FileSearch, X } from "lucide-react";
 import { useId, useRef } from "react";
 import type { ReactNode } from "react";
-import { iconButtonClassName } from "@/components/ui/button-styles";
+import { Button } from "@/components/ui/button";
 import type { GenerationRecord } from "@/core/generation-record";
 import { tokenCount } from "@/core/token-usage";
 
@@ -18,15 +18,15 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
 
   return (
     <>
-      <button
-        type="button"
+      <Button
         onClick={() => dialogRef.current?.showModal()}
         aria-label="LLM details"
         title="LLM details"
-        className={iconButtonClassName({ size: "xs" })}
+        buttonStyle="icon"
+        iconSize="xs"
       >
         <FileSearch aria-hidden="true" className="h-3.5 w-3.5" />
-      </button>
+      </Button>
       <dialog
         ref={dialogRef}
         aria-labelledby={titleId}
@@ -43,14 +43,14 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
             </p>
           </div>
           <form method="dialog">
-            <button
+            <Button
               type="submit"
               aria-label="Close"
               title="Close"
-              className={iconButtonClassName()}
+              buttonStyle="icon"
             >
               <X aria-hidden="true" className="h-4 w-4" />
-            </button>
+            </Button>
           </form>
         </div>
         <div className="max-h-[calc(82vh-65px)] space-y-4 overflow-y-auto p-4">

@@ -1,5 +1,5 @@
 import { saveCharacterAction } from "@/app/library/actions";
-import { textButtonClassName } from "@/components/ui/button-styles";
+import { Button } from "@/components/ui/button";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { ModelBindingSnapshot } from "@/core/player";
 import { DirtyFormGuard } from "./dirty-form-guard";
@@ -104,12 +104,12 @@ export function CharacterEditor({
       />
 
       <div className="flex justify-end border-t border-border pt-4">
-        <button
+        <Button
           type="submit"
-          className={textButtonClassName("font-semibold")}
+          className="font-semibold"
         >
           Save character
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -132,7 +132,7 @@ function TextField({
       <input
         name={name}
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-accent"
+        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition"
       />
     </label>
   );
@@ -158,7 +158,7 @@ function TextareaField({
         name={name}
         defaultValue={defaultValue}
         rows={rows}
-        className="mt-1 w-full resize-y rounded border border-interactive-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus:border-accent"
+        className="mt-1 w-full resize-y rounded border border-interactive-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition"
       />
     </label>
   );

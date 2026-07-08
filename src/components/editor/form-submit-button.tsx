@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
 
 type FormSubmitButtonProps = {
   readonly label: ReactNode;
@@ -21,14 +22,15 @@ export function FormSubmitButton({
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
       className={className}
       aria-label={ariaLabel}
       title={title}
+      unstyled
     >
       {pending ? pendingLabel : label}
-    </button>
+    </Button>
   );
 }
