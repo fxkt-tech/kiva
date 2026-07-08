@@ -34,15 +34,15 @@ export function EventTimeline({
   });
 
   return (
-    <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-3 py-2">
-        <h2 className="text-sm font-semibold text-zinc-100">Timeline</h2>
+    <section className="flex min-h-0 flex-col rounded-lg border border-border bg-surface/45">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2">
+        <h2 className="text-sm font-semibold text-foreground">Timeline</h2>
         {togglePreviewHref ? (
           <Link
             href={togglePreviewHref}
             aria-label={previewHidden ? "Show preview" : "Hide preview"}
             title={previewHidden ? "Show preview" : "Hide preview"}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
           >
             {previewHidden ? (
               <Minimize2 aria-hidden="true" className="h-4 w-4" />
@@ -53,11 +53,11 @@ export function EventTimeline({
         ) : null}
       </div>
       {orderedEvents.length === 0 ? (
-        <div className="px-4 py-8 text-sm text-zinc-500">
+        <div className="px-4 py-8 text-sm text-subtle">
           No confirmed events yet.
         </div>
       ) : (
-        <ol className="min-h-0 flex-1 divide-y divide-zinc-800 overflow-y-auto">
+        <ol className="min-h-0 flex-1 divide-y divide-border overflow-y-auto">
           {orderedEvents.map((event) => {
             const active = event.status === "active";
             const presented = formatEventForHost(event, players);
@@ -70,32 +70,32 @@ export function EventTimeline({
                 className={
                   active
                     ? "px-4 py-4"
-                    : "bg-zinc-950/35 px-4 py-4 opacity-45"
+                    : "bg-background/35 px-4 py-4 opacity-45"
                 }
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-subtle">
                       <span>#{event.index}</span>
                       <span>{event.phase}</span>
                       <span>{formatVisibility(event.visibility)}</span>
                       <span>{event.status}</span>
                     </div>
-                    <div className="mt-2 break-words text-sm font-medium text-zinc-100">
+                    <div className="mt-2 break-words text-sm font-medium text-foreground">
                       {presented.title}
                     </div>
-                    <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-400">
+                    <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-muted">
                       {presented.text}
                     </p>
                     {presented.details && presented.details.length > 0 ? (
-                      <ul className="mt-2 space-y-1 text-xs text-zinc-500">
+                      <ul className="mt-2 space-y-1 text-xs text-subtle">
                         {presented.details.map((detail) => (
                           <li key={detail}>{detail}</li>
                         ))}
                       </ul>
                     ) : null}
                     {latestGeneration ? (
-                      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-zinc-800 pt-3 text-xs text-zinc-500">
+                      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3 text-xs text-subtle">
                         <span className="font-medium uppercase tracking-[0.14em]">
                           Generation
                         </span>
@@ -129,7 +129,7 @@ export function EventTimeline({
                         type="submit"
                         aria-label={`Roll back after event ${event.index}`}
                         title={`Roll back after event ${event.index}`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-amber-500 hover:text-amber-200"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent bg-warning-badge text-warning-badge-foreground transition hover:bg-surface-strong"
                       >
                         <Undo2 aria-hidden="true" className="h-4 w-4" />
                       </button>

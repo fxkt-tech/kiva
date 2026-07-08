@@ -33,7 +33,7 @@ export function RoleEditor({ role }: { readonly role: RoleDefinition }) {
         <TextField label="Name" name="name" defaultValue={role.name} />
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-zinc-300">
+      <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
           name="enabled"
@@ -108,10 +108,10 @@ export function RoleEditor({ role }: { readonly role: RoleDefinition }) {
         rows={4}
       />
 
-      <div className="flex justify-end border-t border-zinc-800 pt-4">
+      <div className="flex justify-end border-t border-border pt-4">
         <button
           type="submit"
-          className="rounded bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-white"
+          className="rounded bg-control px-4 py-2 text-sm font-semibold text-control-foreground transition hover:bg-foreground"
         >
           Save role
         </button>
@@ -132,22 +132,22 @@ function EditorHeader({
   readonly enabled: boolean;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-zinc-800 pb-3">
+    <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
       <div className="min-w-0">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
           {eyebrow}
         </p>
-        <h2 className="mt-1 truncate text-xl font-semibold text-zinc-50">
+        <h2 className="mt-1 truncate text-xl font-semibold text-foreground">
           {title}
         </h2>
-        <p className="mt-1 truncate text-xs text-zinc-500">{id}</p>
+        <p className="mt-1 truncate text-xs text-subtle">{id}</p>
       </div>
       <span
         className={[
-          "rounded border px-2 py-1 text-xs font-medium",
+          "rounded-full px-2.5 py-1 text-xs font-medium",
           enabled
-            ? "border-emerald-500/40 text-emerald-300"
-            : "border-zinc-700 text-zinc-500",
+            ? "bg-good-badge text-good-badge-foreground"
+            : "bg-badge text-badge-foreground",
         ].join(" ")}
       >
         {enabled ? "enabled" : "disabled"}
@@ -166,14 +166,14 @@ function TextField({
   readonly defaultValue: string;
 }) {
   return (
-    <label className="block text-sm text-zinc-300">
-      <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+    <label className="block text-sm text-muted">
+      <span className="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
         {label}
       </span>
       <input
         name={name}
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-cyan-300"
+        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-accent"
       />
     </label>
   );
@@ -193,15 +193,15 @@ function SelectField<T extends string>({
   readonly disabled?: boolean;
 }) {
   return (
-    <label className="block text-sm text-zinc-300">
-      <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+    <label className="block text-sm text-muted">
+      <span className="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
         {label}
       </span>
       <select
         name={name}
         defaultValue={value}
         disabled={disabled}
-        className="mt-1 w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-cyan-300 disabled:cursor-not-allowed disabled:text-zinc-500"
+        className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-accent disabled:cursor-not-allowed disabled:text-subtle"
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -225,15 +225,15 @@ function TextareaField({
   readonly rows: number;
 }) {
   return (
-    <label className="block text-sm text-zinc-300">
-      <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+    <label className="block text-sm text-muted">
+      <span className="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
         {label}
       </span>
       <textarea
         name={name}
         defaultValue={defaultValue}
         rows={rows}
-        className="mt-1 w-full resize-y rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm leading-6 text-zinc-100 outline-none transition focus:border-cyan-300"
+        className="mt-1 w-full resize-y rounded border border-interactive-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus:border-accent"
       />
     </label>
   );

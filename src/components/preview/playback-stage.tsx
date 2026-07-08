@@ -380,7 +380,7 @@ export function PlaybackStage({
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black p-4 text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-4 text-foreground">
       <section className="aspect-video w-full max-w-6xl overflow-hidden bg-black shadow-2xl shadow-black">
         <div
           aria-label="Playback canvas"
@@ -391,10 +391,10 @@ export function PlaybackStage({
       </section>
       <section
         aria-label="Playback controls"
-        className="grid w-full max-w-6xl gap-3 border border-zinc-800 bg-zinc-950/95 px-4 py-3 text-sm text-zinc-200 shadow-lg shadow-black/40"
+        className="grid w-full max-w-6xl gap-3 border border-border bg-background/95 px-4 py-3 text-sm text-foreground shadow-lg shadow-black/40"
       >
         <div className="grid gap-2">
-          <div className="flex items-center justify-between gap-4 text-xs text-zinc-500">
+          <div className="flex items-center justify-between gap-4 text-xs text-subtle">
             <span className="font-mono">{progress}</span>
             <span className="font-mono">
               {formatTime(safeTimeMs)} / {formatTime(totalDurationMs)}
@@ -413,7 +413,7 @@ export function PlaybackStage({
           />
         </div>
         <div className="grid grid-cols-[minmax(8rem,1fr)_auto_minmax(8rem,1fr)] items-center gap-3">
-          <div className="min-w-0 font-mono text-xs text-zinc-500">
+          <div className="min-w-0 font-mono text-xs text-subtle">
             {error ? <span className="text-red-300">{error}</span> : null}
           </div>
           <div className="flex items-center justify-center gap-2">
@@ -473,7 +473,7 @@ export function PlaybackStage({
             <a
               aria-disabled={!downloadUrl}
               aria-label="Download WebM"
-              className="inline-flex h-10 w-10 items-center justify-center border border-emerald-900/70 text-emerald-200 transition hover:border-emerald-500 hover:bg-emerald-950/40 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:border-zinc-900 aria-disabled:text-zinc-700"
+              className="inline-flex h-10 w-10 items-center justify-center border border-transparent bg-good-badge text-good-badge-foreground transition hover:bg-surface-strong aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:bg-transparent aria-disabled:text-disabled-foreground"
               download={downloadUrl ? "kiva-playback.webm" : undefined}
               href={downloadUrl ?? undefined}
               title="Download WebM"
@@ -502,11 +502,11 @@ function IconButton({
 }) {
   const className = {
     default:
-      "border-zinc-700 text-zinc-200 hover:border-zinc-500 hover:bg-zinc-900 disabled:border-zinc-900 disabled:text-zinc-700",
+      "border-interactive-border text-foreground hover:border-interactive-border-hover hover:bg-surface-muted disabled:border-disabled disabled:text-disabled-foreground",
     primary:
-      "border-cyan-700 text-cyan-100 hover:border-cyan-400 hover:bg-cyan-950/40 disabled:border-zinc-900 disabled:text-zinc-700",
+      "border-transparent bg-info-badge text-info-badge-foreground hover:bg-surface-strong disabled:border-disabled disabled:bg-transparent disabled:text-disabled-foreground",
     record:
-      "border-red-900/70 text-red-200 hover:border-red-500 hover:bg-red-950/40 disabled:border-zinc-900 disabled:text-zinc-700",
+      "border-transparent bg-danger-badge text-danger-badge-foreground hover:bg-surface-strong disabled:border-disabled disabled:bg-transparent disabled:text-disabled-foreground",
   }[variant];
 
   return (

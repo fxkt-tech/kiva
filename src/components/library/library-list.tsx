@@ -16,14 +16,14 @@ type LibraryListProps = {
 
 export function LibraryList({ tab, selectedId, items }: LibraryListProps) {
   return (
-    <aside className="min-h-0 overflow-y-auto border-r border-zinc-800 bg-zinc-950/45">
-      <div className="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+    <aside className="min-h-0 overflow-y-auto border-r border-border bg-background/45">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/95 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">
         Objects
       </div>
       {items.length === 0 ? (
-        <div className="px-3 py-6 text-sm text-zinc-500">No objects.</div>
+        <div className="px-3 py-6 text-sm text-subtle">No objects.</div>
       ) : (
-        <div className="divide-y divide-zinc-800/80">
+        <div className="divide-y divide-border/80">
           {items.map((item) => {
             const selected = item.id === selectedId;
 
@@ -35,12 +35,12 @@ export function LibraryList({ tab, selectedId, items }: LibraryListProps) {
                 className={[
                   "block border-l-2 px-3 py-3 transition",
                   selected
-                    ? "border-cyan-300 bg-zinc-800/80"
-                    : "border-transparent hover:bg-zinc-900",
+                    ? "border-accent bg-surface-strong/80"
+                    : "border-transparent hover:bg-surface-muted",
                 ].join(" ")}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0 truncate text-sm font-medium text-zinc-100">
+                  <div className="min-w-0 truncate text-sm font-medium text-foreground">
                     {item.name}
                   </div>
                   <span
@@ -50,15 +50,15 @@ export function LibraryList({ tab, selectedId, items }: LibraryListProps) {
                         ? "bg-amber-400"
                         : item.enabled
                           ? "bg-emerald-400"
-                          : "bg-zinc-600",
+                          : "bg-subtle",
                     ].join(" ")}
                     aria-label={statusLabel(item)}
                   />
                 </div>
-                <div className="mt-1 truncate text-xs text-zinc-500">
+                <div className="mt-1 truncate text-xs text-subtle">
                   {item.id}
                 </div>
-                <div className="mt-1 truncate text-xs text-zinc-400">
+                <div className="mt-1 truncate text-xs text-muted">
                   {item.meta}
                 </div>
               </Link>

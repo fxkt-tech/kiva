@@ -12,10 +12,10 @@ export function GameBoard({ game, events }: GameBoardProps) {
   const deadPlayerIds = new Set(state.deadPlayerIds);
 
   return (
-    <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-3 py-2">
-        <h2 className="text-sm font-semibold text-zinc-100">Board</h2>
-        <div className="text-xs text-zinc-500">
+    <section className="flex min-h-0 flex-col rounded-lg border border-border bg-surface/45">
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
+        <h2 className="text-sm font-semibold text-foreground">Board</h2>
+        <div className="text-xs text-subtle">
           {state.currentPhase} · Day {state.dayNumber}
         </div>
       </div>
@@ -28,28 +28,28 @@ export function GameBoard({ game, events }: GameBoardProps) {
             return (
               <article
                 key={player.playerId}
-                className="min-w-0 rounded-md border border-zinc-800 bg-zinc-950/55 px-3 py-2"
+                className="min-w-0 rounded-md border border-border bg-background/55 px-3 py-2"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-xs text-zinc-500">
+                    <div className="text-xs text-subtle">
                       Seat {player.seatNo}
                     </div>
-                    <div className="mt-1 truncate text-sm font-medium text-zinc-100">
+                    <div className="mt-1 truncate text-sm font-medium text-foreground">
                       {player.name}
                     </div>
                   </div>
                   <span
                     className={
                       dead
-                        ? "rounded-full border border-red-900/70 px-2 py-1 text-xs text-red-300"
-                        : "rounded-full border border-emerald-900/70 px-2 py-1 text-xs text-emerald-300"
+                        ? "rounded-full bg-danger-badge px-2.5 py-1 text-xs text-danger-badge-foreground"
+                        : "rounded-full bg-good-badge px-2.5 py-1 text-xs text-good-badge-foreground"
                     }
                   >
                     {dead ? "dead" : "alive"}
                   </span>
                 </div>
-                <div className="mt-2 text-xs uppercase tracking-[0.14em] text-zinc-400">
+                <div className="mt-2 text-xs uppercase tracking-[0.14em] text-muted">
                   {player.gameRole}
                 </div>
               </article>

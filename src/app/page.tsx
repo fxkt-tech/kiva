@@ -4,6 +4,7 @@ import { deleteGameAction } from "@/app/actions";
 import { GameTokenUsageButton } from "@/components/home/game-token-usage-button";
 import { GameTitleEditor } from "@/components/home/game-title-editor";
 import { NewGameDialog } from "@/components/home/new-game-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { GenerationRecord } from "@/core/generation-record";
 import { summarizeGenerationTokenUsage } from "@/core/token-usage";
 import { createGameActions } from "@/server/game-actions";
@@ -27,21 +28,22 @@ export default async function HomePage() {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-6 text-zinc-100 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <header className="flex flex-col gap-4 border-b border-zinc-800 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <header className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-subtle">
               Kiva Director
             </p>
-            <h1 className="mt-2 text-2xl font-semibold text-zinc-50">
+            <h1 className="mt-2 text-2xl font-semibold text-foreground">
               Local games
             </h1>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
+            <ThemeToggle />
             <Link
               href="/library"
-              className="rounded-md border border-zinc-700 px-4 py-2 text-center text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+              className="rounded-md border border-interactive-border bg-surface/70 px-4 py-2 text-center text-sm font-medium text-foreground transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
             >
               Library
             </Link>
@@ -53,9 +55,9 @@ export default async function HomePage() {
           </div>
         </header>
 
-        <section className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/45">
+        <section className="overflow-hidden rounded-lg border border-border bg-surface/45">
           {records.length === 0 ? (
-            <div className="px-4 py-10 text-sm text-zinc-400">
+            <div className="px-4 py-10 text-sm text-muted">
               No local games yet.
             </div>
           ) : (
@@ -68,14 +70,14 @@ export default async function HomePage() {
                   <col className="w-52" />
                 </colgroup>
                 <thead>
-                  <tr className="border-b border-zinc-800 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                  <tr className="border-b border-border text-xs font-medium uppercase tracking-[0.14em] text-subtle">
                     <th className="px-4 py-3 font-medium">Game</th>
                     <th className="px-4 py-3 font-medium">Events</th>
                     <th className="px-4 py-3 font-medium">Updated</th>
                     <th className="px-4 py-3 text-right font-medium">Operate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800">
+                <tbody className="divide-y divide-border">
                   {records.map((record) => (
                     <tr key={record.game.id} className="align-middle">
                       <td className="px-4 py-4">
@@ -84,18 +86,18 @@ export default async function HomePage() {
                             gameId={record.game.id}
                             title={record.game.title}
                           />
-                          <div className="mt-1 truncate text-xs text-zinc-500">
+                          <div className="mt-1 truncate text-xs text-subtle">
                             {record.game.id}
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-zinc-400">
+                      <td className="px-4 py-4 text-muted">
                         {record.events.filter((event) => event.status === "active")
                           .length}
                         {record.draft ? " + draft" : ""}
                       </td>
                       <td className="px-4 py-4">
-                        <time dateTime={record.game.updatedAt} className="text-zinc-500">
+                        <time dateTime={record.game.updatedAt} className="text-subtle">
                           {formatDate(record.game.updatedAt)}
                         </time>
                       </td>
@@ -113,7 +115,7 @@ export default async function HomePage() {
                           />
                           <Link
                             href={`/games/${record.game.id}/preview`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-sky-900/80 text-sky-300 transition hover:border-sky-600 hover:text-sky-200"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-info-badge text-info-badge-foreground transition hover:bg-surface-strong"
                             target="_blank"
                             aria-label="Preview game"
                             title="Preview game"
@@ -122,7 +124,7 @@ export default async function HomePage() {
                           </Link>
                           <Link
                             href={`/games/${record.game.id}/editor`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-700 text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-foreground transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
                             aria-label="Open editor"
                             title="Open editor"
                           >
@@ -131,7 +133,7 @@ export default async function HomePage() {
                           <form action={deleteGameAction.bind(null, record.game.id)}>
                             <button
                               type="submit"
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-900/80 text-red-300 transition hover:border-red-600 hover:text-red-200"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-danger-badge text-danger-badge-foreground transition hover:bg-surface-strong"
                               aria-label="Delete game"
                               title="Delete game"
                             >

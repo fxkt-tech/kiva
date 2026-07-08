@@ -25,7 +25,7 @@ export function GameTokenUsageButton({
       <button
         type="button"
         onClick={() => dialogRef.current?.showModal()}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-amber-900/80 text-amber-300 transition hover:border-amber-600 hover:text-amber-200"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-warning-badge text-warning-badge-foreground transition hover:bg-surface-strong"
         aria-label="Show token usage"
         title="Show token usage"
       >
@@ -34,21 +34,21 @@ export function GameTokenUsageButton({
       <dialog
         ref={dialogRef}
         aria-labelledby={titleId}
-        className="fixed inset-0 m-auto max-h-[82vh] w-[min(560px,calc(100vw-32px))] overflow-hidden rounded-lg border border-zinc-700 bg-zinc-950 p-0 text-zinc-100 backdrop:bg-black/70"
+        className="fixed inset-0 m-auto max-h-[82vh] w-[min(560px,calc(100vw-32px))] overflow-hidden rounded-lg border border-interactive-border bg-background p-0 text-foreground backdrop:bg-black/70"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-zinc-800 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div className="min-w-0">
             <h3 id={titleId} className="truncate text-sm font-semibold">
               Token usage
             </h3>
-            <p className="mt-1 truncate text-xs text-zinc-500">{gameTitle}</p>
+            <p className="mt-1 truncate text-xs text-subtle">{gameTitle}</p>
           </div>
           <form method="dialog">
             <button
               type="submit"
               aria-label="Close"
               title="Close"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
             >
               <X aria-hidden="true" className="h-4 w-4" />
             </button>
@@ -76,8 +76,8 @@ function UsageBlock({
   readonly compact?: boolean;
 }) {
   return (
-    <section className="rounded-md border border-zinc-800 bg-zinc-900/55 p-3">
-      <div className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+    <section className="rounded-md border border-border bg-surface/55 p-3">
+      <div className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-subtle">
         {title}
       </div>
       <div className={compact ? "space-y-1.5" : "grid gap-2 sm:grid-cols-2"}>
@@ -106,8 +106,8 @@ function Metric({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 text-xs">
-      <span className="text-zinc-500">{label}</span>
-      <span className={strong ? "font-semibold text-zinc-100" : "text-zinc-300"}>
+      <span className="text-subtle">{label}</span>
+      <span className={strong ? "font-semibold text-foreground" : "text-muted"}>
         {formatNumber(value)}
       </span>
     </div>

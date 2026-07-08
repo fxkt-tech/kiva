@@ -22,21 +22,21 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
         onClick={() => dialogRef.current?.showModal()}
         aria-label="LLM details"
         title="LLM details"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
       >
         <FileSearch aria-hidden="true" className="h-3.5 w-3.5" />
       </button>
       <dialog
         ref={dialogRef}
         aria-labelledby={titleId}
-        className="fixed inset-0 m-auto max-h-[82vh] w-[min(920px,calc(100vw-32px))] overflow-hidden rounded-lg border border-zinc-700 bg-zinc-950 p-0 text-zinc-100 backdrop:bg-black/70"
+        className="fixed inset-0 m-auto max-h-[82vh] w-[min(920px,calc(100vw-32px))] overflow-hidden rounded-lg border border-interactive-border bg-background p-0 text-foreground backdrop:bg-black/70"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-zinc-800 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div>
             <h3 id={titleId} className="text-sm font-semibold">
               LLM details
             </h3>
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-subtle">
               {generation.status} · {generation.provider}/{generation.model} ·{" "}
               {generation.promptVersion} · {formatTokenTotal(generation)}
             </p>
@@ -46,7 +46,7 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
               type="submit"
               aria-label="Close"
               title="Close"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
             >
               <X aria-hidden="true" className="h-4 w-4" />
             </button>
@@ -78,7 +78,7 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
                 />
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-subtle">
                 Token usage was not returned by the provider or this generation
                 was created before token recording.
               </p>
@@ -99,27 +99,27 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-subtle">
                 This generation was created before request snapshots were recorded.
               </p>
             )}
           </GenerationBlock>
 
           <GenerationBlock title="Player reasoning">
-            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-zinc-300">
+            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
               {reasoning ??
                 "No player reasoning field was returned by the model. Hidden model reasoning is not available."}
             </pre>
           </GenerationBlock>
 
           <GenerationBlock title="Raw output">
-            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-zinc-300">
+            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
               {generation.rawOutput ?? "No raw output was recorded."}
             </pre>
           </GenerationBlock>
 
           <GenerationBlock title="Parsed output">
-            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-zinc-300">
+            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
               {generation.parsedOutput
                 ? JSON.stringify(generation.parsedOutput, null, 2)
                 : "No parsed output was recorded."}
@@ -147,8 +147,8 @@ function GenerationBlock({
   readonly children: ReactNode;
 }) {
   return (
-    <section className="rounded-md border border-zinc-800 bg-zinc-900/55">
-      <div className="border-b border-zinc-800 px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+    <section className="rounded-md border border-border bg-surface/55">
+      <div className="border-b border-border px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-subtle">
         {title}
       </div>
       <div className="p-3">{children}</div>
@@ -159,8 +159,8 @@ function GenerationBlock({
 function KeyValue({ label, value }: { readonly label: string; readonly value: string }) {
   return (
     <div className="grid gap-1 text-xs sm:grid-cols-[120px_minmax(0,1fr)]">
-      <div className="text-zinc-500">{label}</div>
-      <div className="break-words text-zinc-300">{value}</div>
+      <div className="text-subtle">{label}</div>
+      <div className="break-words text-muted">{value}</div>
     </div>
   );
 }
@@ -168,8 +168,8 @@ function KeyValue({ label, value }: { readonly label: string; readonly value: st
 function TextDump({ label, value }: { readonly label: string; readonly value: string }) {
   return (
     <div>
-      <div className="mb-1 text-xs text-zinc-500">{label}</div>
-      <pre className="whitespace-pre-wrap break-words rounded-md bg-zinc-950 p-3 text-xs leading-5 text-zinc-300">
+      <div className="mb-1 text-xs text-subtle">{label}</div>
+      <pre className="whitespace-pre-wrap break-words rounded-md bg-background p-3 text-xs leading-5 text-muted">
         {value}
       </pre>
     </div>

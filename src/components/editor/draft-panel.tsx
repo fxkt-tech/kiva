@@ -29,11 +29,11 @@ export function DraftPanel({
 }: DraftPanelProps) {
   if (!draft) {
     return (
-      <section className="flex h-full min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-        <div className="shrink-0 border-b border-zinc-800 px-3 py-2">
-          <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
+      <section className="flex h-full min-h-0 flex-col rounded-lg border border-border bg-surface/45">
+        <div className="shrink-0 border-b border-border px-3 py-2">
+          <h2 className="text-sm font-semibold text-foreground">Draft</h2>
         </div>
-        <div className="px-3 py-6 text-sm text-zinc-500">
+        <div className="px-3 py-6 text-sm text-subtle">
           No draft.
         </div>
       </section>
@@ -47,32 +47,32 @@ export function DraftPanel({
   return (
     <section
       aria-busy={generatingInitialDraft}
-      className="relative flex h-full min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45"
+      className="relative flex h-full min-h-0 flex-col rounded-lg border border-border bg-surface/45"
     >
-      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-800 px-3 py-2">
+      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-3 py-2">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-100">Draft</h2>
-          <div className="mt-1 text-xs text-zinc-500">
+          <h2 className="text-sm font-semibold text-foreground">Draft</h2>
+          <div className="mt-1 text-xs text-subtle">
             {draft.phase} · {formatVisibility(draft.visibility)}
           </div>
         </div>
-        <span className="rounded-full border border-sky-900/80 px-2 py-1 text-xs text-sky-300">
+        <span className="rounded-full bg-info-badge px-2.5 py-1 text-xs text-info-badge-foreground">
           {draft.type}
         </span>
       </div>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
         <div>
-          <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+          <div className="text-xs font-medium uppercase tracking-[0.14em] text-subtle">
             Summary
           </div>
-          <h3 className="mt-1.5 break-words text-sm font-medium text-zinc-100">
+          <h3 className="mt-1.5 break-words text-sm font-medium text-foreground">
             {presented.title}
           </h3>
-          <p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300">
+          <p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-6 text-muted">
             {presented.text}
           </p>
           {presented.details && presented.details.length > 0 ? (
-            <ul className="mt-1.5 space-y-1 text-xs text-zinc-500">
+            <ul className="mt-1.5 space-y-1 text-xs text-subtle">
               {presented.details.map((detail) => (
                 <li key={detail}>{detail}</li>
               ))}
@@ -82,21 +82,21 @@ export function DraftPanel({
 
         {draft.reason ? (
           <div>
-            <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+            <div className="text-xs font-medium uppercase tracking-[0.14em] text-subtle">
               Reason
             </div>
-            <p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-500">
+            <p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-6 text-subtle">
               {draft.reason}
             </p>
           </div>
         ) : null}
 
         {latestGeneration ? (
-          <div className="border-t border-zinc-800 pt-3">
-            <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+          <div className="border-t border-border pt-3">
+            <div className="text-xs font-medium uppercase tracking-[0.14em] text-subtle">
               Generation
             </div>
-            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
+            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted">
               <span>{latestGeneration.status}</span>
               <span>
                 {latestGeneration.provider}/{latestGeneration.model}
@@ -124,7 +124,7 @@ export function DraftPanel({
                 }
                 ariaLabel="Regenerate"
                 title="Regenerate"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-sky-900/80 text-sky-300 transition hover:border-sky-600 hover:text-sky-200 disabled:opacity-50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent bg-info-badge text-info-badge-foreground transition hover:bg-surface-strong disabled:opacity-50"
               />
             </form>
           ) : null}
@@ -136,7 +136,7 @@ export function DraftPanel({
               }
               ariaLabel="Confirm draft"
               title="Confirm draft"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-zinc-100 text-zinc-950 transition hover:bg-white disabled:opacity-50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-control text-control-foreground transition hover:bg-foreground disabled:opacity-50"
             />
           </form>
           <form action={deleteDraftAction.bind(null, gameId)}>
@@ -147,7 +147,7 @@ export function DraftPanel({
               }
               ariaLabel="Delete draft"
               title="Delete draft"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-red-900/80 text-red-300 transition hover:border-red-600 hover:text-red-200 disabled:opacity-50"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent bg-danger-badge text-danger-badge-foreground transition hover:bg-surface-strong disabled:opacity-50"
             />
           </form>
         </div>
@@ -202,9 +202,9 @@ function DraftPayloadForm({
   return (
     <form
       action={editDraftPayloadAction.bind(null, gameId)}
-      className="space-y-2 border-t border-zinc-800 pt-3"
+      className="space-y-2 border-t border-border pt-3"
     >
-      <div className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+      <div className="text-xs font-medium uppercase tracking-[0.14em] text-subtle">
         Action payload
       </div>
       {controls}
@@ -215,7 +215,7 @@ function DraftPayloadForm({
         }
         ariaLabel="Save action"
         title="Save action"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-700 text-zinc-200 transition hover:border-zinc-500 hover:text-white disabled:opacity-50"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-foreground transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground disabled:opacity-50"
       />
     </form>
   );
@@ -242,13 +242,13 @@ function renderDraftPayloadControls(
     case "witch_poison_decided":
       return (
         <div className="space-y-3">
-          <label className="flex items-center gap-2 text-xs font-medium text-zinc-400">
+          <label className="flex items-center gap-2 text-xs font-medium text-muted">
             <input
               type="checkbox"
               name="used"
               value="true"
               defaultChecked={draft.payload.used}
-              className="h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-zinc-100"
+              className="h-4 w-4 rounded border-interactive-border bg-background text-foreground"
             />
             <span>Use medicine</span>
           </label>
@@ -268,12 +268,12 @@ function renderDraftPayloadControls(
     case "pk_speech_given":
       return (
         <label className="block">
-          <span className="text-xs font-medium text-zinc-400">Text</span>
+          <span className="text-xs font-medium text-muted">Text</span>
           <textarea
             name="text"
             defaultValue={draft.payload.text}
             rows={4}
-            className="mt-1 w-full resize-none rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm leading-6 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-400"
+            className="mt-1 w-full resize-none rounded-md border border-interactive-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition placeholder:text-subtle focus:border-interactive-border-hover"
           />
         </label>
       );
@@ -309,11 +309,11 @@ function PlayerTargetField({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-zinc-400">{label}</span>
+      <span className="text-xs font-medium text-muted">{label}</span>
       <select
         name="targetPlayerId"
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-zinc-400"
+        className="mt-1 w-full rounded-md border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-interactive-border-hover"
       >
         {includeEmptyOption ? <option value="">{emptyLabel}</option> : null}
         {players.map((player) => (

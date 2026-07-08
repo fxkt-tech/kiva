@@ -1,9 +1,104 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-strong: var(--surface-strong);
+  --color-field: var(--field);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-interactive-border: var(--interactive-border);
+  --color-interactive-border-hover: var(--interactive-border-hover);
+  --color-badge: var(--badge);
+  --color-badge-foreground: var(--badge-foreground);
+  --color-good-badge: var(--good-badge);
+  --color-good-badge-foreground: var(--good-badge-foreground);
+  --color-danger-badge: var(--danger-badge);
+  --color-danger-badge-foreground: var(--danger-badge-foreground);
+  --color-info-badge: var(--info-badge);
+  --color-info-badge-foreground: var(--info-badge-foreground);
+  --color-warning-badge: var(--warning-badge);
+  --color-warning-badge-foreground: var(--warning-badge-foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-control: var(--control);
+  --color-control-foreground: var(--control-foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-disabled: var(--disabled);
+  --color-disabled-foreground: var(--disabled-foreground);
+}
+
 :root {
+  color-scheme: light;
+  --background: #f7f7fb;
+  --foreground: #171621;
+  --surface: #ffffff;
+  --surface-muted: #ececf4;
+  --surface-strong: #dadae8;
+  --field: #fdfdff;
+  --border: #dadae8;
+  --border-strong: #bebed0;
+  --interactive-border: #c8c8dc;
+  --interactive-border-hover: #9d9cba;
+  --badge: #efeff8;
+  --badge-foreground: #514f68;
+  --good-badge: #e8f5ef;
+  --good-badge-foreground: #176b4d;
+  --danger-badge: #fbe8ec;
+  --danger-badge-foreground: #9f1239;
+  --info-badge: #e9f0fb;
+  --info-badge-foreground: #315c9a;
+  --warning-badge: #f6efd7;
+  --warning-badge-foreground: #7a5614;
+  --muted: #56546a;
+  --subtle: #7c7a90;
+  --control: #171621;
+  --control-foreground: #f9f9ff;
+  --accent: #315c9a;
+  --accent-hover: #244a82;
+  --accent-foreground: #f8fbff;
+  --disabled: #bebed0;
+  --disabled-foreground: #7c7a90;
+}
+
+html[data-theme="dark"] {
   color-scheme: dark;
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --surface: #18181b;
+  --surface-muted: #27272a;
+  --surface-strong: #3f3f46;
+  --field: #09090b;
+  --border: #27272a;
+  --border-strong: #3f3f46;
+  --interactive-border: #3f3f46;
+  --interactive-border-hover: #71717a;
+  --badge: #24242a;
+  --badge-foreground: #d4d4d8;
+  --good-badge: #062c22;
+  --good-badge-foreground: #6ee7b7;
+  --danger-badge: #3f111b;
+  --danger-badge-foreground: #fda4af;
+  --info-badge: #10223f;
+  --info-badge-foreground: #93c5fd;
+  --warning-badge: #332611;
+  --warning-badge-foreground: #facc15;
+  --muted: #a1a1aa;
+  --subtle: #71717a;
+  --control: #f4f4f5;
+  --control-foreground: #09090b;
+  --accent: #a5f3fc;
+  --accent-hover: #cffafe;
+  --accent-foreground: #083344;
+  --disabled: #3f3f46;
+  --disabled-foreground: #a1a1aa;
 }
 
 body {
   margin: 0;
+  background: var(--background);
 }

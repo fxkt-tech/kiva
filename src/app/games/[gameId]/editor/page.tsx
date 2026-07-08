@@ -45,20 +45,20 @@ export default async function EditorPage({
     : `${editorHref}?timeline=full`;
 
   return (
-    <main className="h-screen overflow-hidden bg-zinc-950 p-3 text-zinc-100 sm:p-4">
+    <main className="h-screen overflow-hidden bg-background p-3 text-foreground sm:p-4">
       <div className="flex h-full min-h-0 flex-col gap-3">
-        <header className="flex h-9 shrink-0 items-center gap-3 border-b border-zinc-800 pb-2">
+        <header className="flex h-9 shrink-0 items-center gap-3 border-b border-border pb-2">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               href="/"
               aria-label="Back"
               title="Back"
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-800 text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-100"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
             >
               <ArrowLeft aria-hidden="true" className="h-4 w-4" />
             </Link>
             <div className="min-w-0">
-              <h1 className="truncate text-base font-semibold text-zinc-50">
+              <h1 className="truncate text-base font-semibold text-foreground">
                 {record.game.title}
               </h1>
             </div>
@@ -74,16 +74,16 @@ export default async function EditorPage({
             }
           >
             {previewHidden ? null : (
-              <section className="flex min-h-0 flex-col rounded-lg border border-zinc-800 bg-zinc-900/45">
-                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-3 py-2">
-                  <h2 className="text-sm font-semibold text-zinc-100">
+              <section className="flex min-h-0 flex-col rounded-lg border border-border bg-surface/45">
+                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2">
+                  <h2 className="text-sm font-semibold text-foreground">
                     Preview
                   </h2>
                   <Link
                     href={previewHref}
                     aria-label="Open preview in new tab"
                     title="Open preview in new tab"
-                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
                     target="_blank"
                   >
                     <ExternalLink aria-hidden="true" className="h-4 w-4" />
@@ -94,7 +94,7 @@ export default async function EditorPage({
                     key={previewHref}
                     title="Public playback preview"
                     src={previewHref}
-                    className="aspect-video w-full rounded-md border border-zinc-800 bg-black"
+                    className="aspect-video w-full rounded-md border border-border bg-black"
                   />
                 </div>
               </section>

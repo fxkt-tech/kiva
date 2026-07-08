@@ -86,7 +86,7 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
             }}
             aria-label="Game name"
             disabled={pending}
-            className="h-8 min-w-0 flex-1 rounded-md border border-sky-800/80 bg-zinc-950 px-2.5 text-sm font-medium text-zinc-50 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-950"
+            className="h-8 min-w-0 flex-1 rounded-md border border-interactive-border bg-background px-2.5 text-sm font-medium text-foreground outline-none transition focus:border-interactive-border-hover focus:ring-2 focus:ring-info-badge"
           />
           <button
             type="button"
@@ -94,7 +94,7 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
             disabled={pending}
             aria-label="Save game name"
             title="Save game name"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-emerald-900/80 text-emerald-300 transition hover:border-emerald-600 hover:text-emerald-200 disabled:opacity-50"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-transparent bg-good-badge text-good-badge-foreground transition hover:bg-surface-strong disabled:opacity-50"
           >
             <Check aria-hidden="true" className="h-4 w-4" />
           </button>
@@ -104,7 +104,7 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
             disabled={pending}
             aria-label="Cancel rename"
             title="Cancel rename"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-700 text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-100 disabled:opacity-50"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground disabled:opacity-50"
           >
             <X aria-hidden="true" className="h-4 w-4" />
           </button>
@@ -116,7 +116,7 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
 
   return (
     <div className="group flex min-w-0 items-center gap-2">
-      <div className="min-w-0 truncate text-sm font-medium text-zinc-100">
+      <div className="min-w-0 truncate text-sm font-medium text-foreground">
         {currentTitle}
       </div>
       <button
@@ -124,7 +124,7 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
         onClick={beginEditing}
         aria-label="Rename game"
         title="Rename game"
-        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-transparent text-zinc-500 opacity-0 transition hover:border-zinc-700 hover:text-zinc-200 group-hover:opacity-100 focus:opacity-100"
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-transparent text-subtle opacity-0 transition hover:border-interactive-border hover:text-foreground group-hover:opacity-100 focus:opacity-100"
       >
         <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
       </button>

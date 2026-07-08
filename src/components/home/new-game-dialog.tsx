@@ -72,7 +72,7 @@ export function NewGameDialog({
       <button
         type="button"
         onClick={openDialog}
-        className="w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-white sm:w-auto"
+        className="w-full rounded-md bg-control px-4 py-2 text-sm font-medium text-control-foreground transition hover:bg-foreground sm:w-auto"
       >
         New game
       </button>
@@ -83,16 +83,16 @@ export function NewGameDialog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="new-game-title"
-            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-2xl"
+            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-border bg-background shadow-2xl"
           >
-            <header className="flex items-center justify-between gap-4 border-b border-zinc-800 px-5 py-4">
+            <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
                   Setup
                 </p>
                 <h2
                   id="new-game-title"
-                  className="mt-1 text-lg font-semibold text-zinc-50"
+                  className="mt-1 text-lg font-semibold text-foreground"
                 >
                   New game
                 </h2>
@@ -100,14 +100,14 @@ export function NewGameDialog({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                className="rounded border border-interactive-border bg-surface/70 px-3 py-1.5 text-sm text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
               >
                 Close
               </button>
             </header>
 
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
-              <div className="mb-4 inline-flex w-fit rounded border border-zinc-800 bg-zinc-900 p-1">
+              <div className="mb-4 inline-flex w-fit rounded border border-border bg-surface-muted p-1">
                 <ModeButton active={mode === "preset"} onClick={() => setMode("preset")}>
                   Preset
                 </ModeButton>
@@ -166,8 +166,8 @@ function ModeButton({
       className={[
         "rounded px-3 py-1.5 text-sm font-medium transition",
         active
-          ? "bg-zinc-100 text-zinc-950"
-          : "text-zinc-400 hover:text-zinc-100",
+          ? "bg-control text-control-foreground"
+          : "text-muted hover:text-foreground",
       ].join(" ")}
     >
       {children}
@@ -194,7 +194,7 @@ function PresetMode({
     <div className="grid min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
       <div className="space-y-2">
         {presets.length === 0 ? (
-          <p className="rounded border border-zinc-800 bg-zinc-900/60 p-3 text-sm text-zinc-500">
+          <p className="rounded border border-border bg-surface-muted/60 p-3 text-sm text-subtle">
             No presets available.
           </p>
         ) : (
@@ -206,14 +206,14 @@ function PresetMode({
               className={[
                 "block w-full rounded border px-3 py-3 text-left transition",
                 preset.id === selectedPresetId
-                  ? "border-cyan-400 bg-zinc-800 text-zinc-50"
-                  : "border-zinc-800 bg-zinc-900/55 text-zinc-300 hover:border-zinc-600",
+                  ? "border-accent bg-surface-strong text-foreground"
+                  : "border-border bg-surface/55 text-muted hover:border-interactive-border-hover",
               ].join(" ")}
             >
               <span className="block truncate text-sm font-medium">
                 {preset.name}
               </span>
-              <span className="mt-1 block font-mono text-xs text-zinc-500">
+              <span className="mt-1 block font-mono text-xs text-subtle">
                 {preset.id}
               </span>
             </button>
@@ -230,10 +230,10 @@ function PresetMode({
               characters={characters}
             />
             <form action={createGameFromPresetHomeAction.bind(null, selectedPreset.id)}>
-              <div className="flex justify-end border-t border-zinc-800 pt-4">
+              <div className="flex justify-end border-t border-border pt-4">
                 <button
                   type="submit"
-                  className="rounded bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-white"
+                  className="rounded bg-control px-4 py-2 text-sm font-semibold text-control-foreground transition hover:bg-foreground"
                 >
                   Create game
                 </button>
@@ -271,7 +271,7 @@ function RandomMode({
         <button
           type="button"
           onClick={onReroll}
-          className="rounded border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+          className="rounded border border-interactive-border bg-surface/70 px-3 py-2 text-sm font-medium text-foreground transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
         >
           Reroll
         </button>
@@ -285,20 +285,20 @@ function RandomMode({
       />
 
       {validationMessages.length > 0 ? (
-        <ul className="space-y-2 text-sm text-amber-300">
+        <ul className="space-y-2 text-sm text-warning-badge-foreground">
           {validationMessages.map((message) => (
-            <li key={message} className="rounded border border-amber-600/30 bg-amber-950/30 px-3 py-2">
+            <li key={message} className="rounded bg-warning-badge px-3 py-2">
               {message}
             </li>
           ))}
         </ul>
       ) : null}
 
-      <div className="flex justify-end border-t border-zinc-800 pt-4">
+      <div className="flex justify-end border-t border-border pt-4">
         <button
           type="submit"
           disabled={validationMessages.length > 0}
-          className="rounded bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+          className="rounded bg-control px-4 py-2 text-sm font-semibold text-control-foreground transition hover:bg-foreground disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted"
         >
           Create game
         </button>
@@ -350,9 +350,9 @@ function EditableSeatTable({
       {seats.map((seat) => (
         <div
           key={seat.seatNo}
-          className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-zinc-800 px-3 py-2 last:border-b-0"
+          className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border px-3 py-2 last:border-b-0"
         >
-          <span className="self-center font-mono text-xs text-zinc-500">
+          <span className="self-center font-mono text-xs text-subtle">
             Seat {seat.seatNo}
           </span>
           <select
@@ -361,7 +361,7 @@ function EditableSeatTable({
             onChange={(event) =>
               onUpdateSeat(seat.seatNo, "roleId", event.target.value)
             }
-            className="min-w-0 rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-100 outline-none focus:border-cyan-300"
+            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-accent"
           >
             {roles.map((role) => (
               <option key={role.id} value={role.id}>
@@ -375,7 +375,7 @@ function EditableSeatTable({
             onChange={(event) =>
               onUpdateSeat(seat.seatNo, "characterId", event.target.value)
             }
-            className="min-w-0 rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-100 outline-none focus:border-cyan-300"
+            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-accent"
           >
             {characters.map((character) => (
               <option key={character.id} value={character.id}>
@@ -391,8 +391,8 @@ function EditableSeatTable({
 
 function SeatTableFrame({ children }: { readonly children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded border border-zinc-800">
-      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-zinc-800 bg-zinc-900/60 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+    <div className="overflow-hidden rounded border border-border">
+      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border bg-surface-muted/60 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">
         <span>Seat</span>
         <span>Role</span>
         <span>Character</span>
@@ -412,10 +412,10 @@ function SeatRow({
   readonly character: string;
 }) {
   return (
-    <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-zinc-800 px-3 py-2 text-sm last:border-b-0">
-      <span className="font-mono text-xs text-zinc-500">Seat {seatNo}</span>
-      <span className="min-w-0 truncate text-zinc-200">{role}</span>
-      <span className="min-w-0 truncate text-zinc-200">{character}</span>
+    <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border px-3 py-2 text-sm last:border-b-0">
+      <span className="font-mono text-xs text-subtle">Seat {seatNo}</span>
+      <span className="min-w-0 truncate text-foreground">{role}</span>
+      <span className="min-w-0 truncate text-foreground">{character}</span>
     </div>
   );
 }
