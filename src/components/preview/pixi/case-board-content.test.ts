@@ -23,12 +23,25 @@ describe("caseBoardContentForFrame", () => {
       }),
     );
 
-    expect(content.kindLabel).toBe("RESOLUTION");
+    expect(content.variant).toBe("vote");
+    expect(content.kindLabel).toBe("Resolution / Vote");
     expect(content.title).toBe("投票结算");
-    expect(content.body).toBe("放逐出局：2 号 林夏。");
+    expect(content.body).toBe("");
     expect(content.rows).toEqual([
-      { tone: "detail", label: "01", text: "1 号 秦川 -> 2 号 林夏" },
-      { tone: "detail", label: "02", text: "3 号 周知 -> 弃票" },
+      {
+        tone: "result",
+        label: "02",
+        text: "2 号 林夏",
+        meta: "01",
+        count: 1,
+      },
+      {
+        tone: "detail",
+        label: "--",
+        text: "弃票",
+        meta: "03",
+        count: 1,
+      },
     ]);
   });
 
@@ -61,6 +74,75 @@ describe("caseBoardContentForFrame", () => {
         meta: "平民",
       },
     ]);
+  });
+
+  it("groups vote detail rows by target", () => {
+    const content = caseBoardContentForFrame(
+      frame({
+        scene: scene({
+          kind: "resolution",
+          title: "投票结算",
+          text: "放逐出局：5 号 唐棠。",
+          details: [
+            "1 号 秦川 -> 5 号 唐棠",
+            "2 号 林夏 -> 5 号 唐棠",
+            "3 号 周知 -> 弃票",
+            "4 号 许砚 -> 8 号 夏宇",
+          ],
+        }),
+      }),
+    );
+
+    expect(content).toMatchObject({
+      variant: "vote",
+      kindLabel: "Resolution / Vote",
+      title: "投票结算",
+      body: "",
+    });
+    expect(content.rows).toEqual([
+      {
+        tone: "result",
+        label: "05",
+        text: "5 号 唐棠",
+        meta: "01  02",
+        count: 2,
+      },
+      {
+        tone: "detail",
+        label: "--",
+        text: "弃票",
+        meta: "03",
+        count: 1,
+      },
+      {
+        tone: "detail",
+        label: "08",
+        text: "8 号 夏宇",
+        meta: "04",
+        count: 1,
+      },
+    ]);
+  });
+
+  it("reduces ending scenes to the winning camp", () => {
+    const content = caseBoardContentForFrame(
+      frame({
+        scene: scene({
+          kind: "resolution",
+          title: "游戏结束：狼人阵营胜利",
+          text: "狼人阵营胜利，原因：所有平民出局。",
+          details: ["1 号 秦川：狼人（狼人阵营）"],
+        }),
+      }),
+    );
+
+    expect(content).toEqual({
+      variant: "ending",
+      kindLabel: "Final / Reveal",
+      title: "狼人阵营胜利",
+      body: "",
+      rows: [],
+    });
   });
 
   it("falls back to a neutral public record row", () => {

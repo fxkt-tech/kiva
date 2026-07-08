@@ -3,6 +3,7 @@ import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset } from "@/core/game-preset";
 import type { RoleDefinition } from "@/core/role-definition";
 import type { LibraryActionsRecord } from "@/server/library-actions";
+import { textButtonClassName } from "@/components/ui/button-styles";
 import { CharacterEditor } from "./character-editor";
 import { LibraryList, type LibraryListItem } from "./library-list";
 import { PresetEditor } from "./preset-editor";
@@ -47,7 +48,7 @@ export function LibraryWorkspace({
           <div className="flex min-w-0 items-center gap-3">
             <Link
               href="/"
-              className="rounded border border-interactive-border bg-surface/70 px-2.5 py-1.5 text-xs font-medium text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+              className={textButtonClassName("px-2.5 py-1.5 text-xs text-muted")}
             >
               Back
             </Link>
@@ -60,7 +61,7 @@ export function LibraryWorkspace({
           </div>
           <Link
             href="/library?tab=presets"
-            className="rounded bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground transition hover:bg-accent-hover"
+            className={textButtonClassName("px-3 py-1.5 text-xs font-semibold")}
           >
             {activeTab === "presets" ? "Presets entry" : "Create game"}
           </Link>

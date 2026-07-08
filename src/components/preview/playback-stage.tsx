@@ -17,6 +17,7 @@ import {
   playbackTotalDurationMs,
   type PlaybackItem,
 } from "@/core/playback";
+import { iconButtonClassName } from "@/components/ui/button-styles";
 import {
   type PreviewAvatarImages,
   type PreviewBackgroundImages,
@@ -473,7 +474,10 @@ export function PlaybackStage({
             <a
               aria-disabled={!downloadUrl}
               aria-label="Download WebM"
-              className="inline-flex h-10 w-10 items-center justify-center border border-transparent bg-good-badge text-good-badge-foreground transition hover:bg-surface-strong aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:bg-transparent aria-disabled:text-disabled-foreground"
+              className={`${iconButtonClassName({
+                size: "lg",
+                variant: "success",
+              })} aria-disabled:pointer-events-none`}
               download={downloadUrl ? "kiva-playback.webm" : undefined}
               href={downloadUrl ?? undefined}
               title="Download WebM"
@@ -500,19 +504,15 @@ function IconButton({
   readonly onClick: () => void;
   readonly variant?: "default" | "primary" | "record";
 }) {
-  const className = {
-    default:
-      "border-interactive-border text-foreground hover:border-interactive-border-hover hover:bg-surface-muted disabled:border-disabled disabled:text-disabled-foreground",
-    primary:
-      "border-transparent bg-info-badge text-info-badge-foreground hover:bg-surface-strong disabled:border-disabled disabled:bg-transparent disabled:text-disabled-foreground",
-    record:
-      "border-transparent bg-danger-badge text-danger-badge-foreground hover:bg-surface-strong disabled:border-disabled disabled:bg-transparent disabled:text-disabled-foreground",
-  }[variant];
+  const className = iconButtonClassName({
+    size: "lg",
+    variant: variant === "record" ? "danger" : "default",
+  });
 
   return (
     <button
       aria-label={label}
-      className={`inline-flex h-10 w-10 items-center justify-center border transition disabled:cursor-not-allowed ${className}`}
+      className={className}
       disabled={disabled}
       onClick={onClick}
       title={label}

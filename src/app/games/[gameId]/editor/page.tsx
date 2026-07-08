@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DraftPanel } from "@/components/editor/draft-panel";
 import { EventTimeline } from "@/components/editor/event-timeline";
+import { iconButtonClassName } from "@/components/ui/button-styles";
 import type { GameId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import {
@@ -53,7 +54,7 @@ export default async function EditorPage({
               href="/"
               aria-label="Back"
               title="Back"
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+              className={iconButtonClassName()}
             >
               <ArrowLeft aria-hidden="true" className="h-4 w-4" />
             </Link>
@@ -83,7 +84,7 @@ export default async function EditorPage({
                     href={previewHref}
                     aria-label="Open preview in new tab"
                     title="Open preview in new tab"
-                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+                    className={iconButtonClassName()}
                     target="_blank"
                   >
                     <ExternalLink aria-hidden="true" className="h-4 w-4" />

@@ -8,6 +8,7 @@ import {
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
 import type { RoleDefinition } from "@/core/role-definition";
+import { textButtonClassName } from "@/components/ui/button-styles";
 import {
   createRandomSeatSetup,
   validateSeatSetup,
@@ -72,7 +73,7 @@ export function NewGameDialog({
       <button
         type="button"
         onClick={openDialog}
-        className="w-full rounded-md bg-control px-4 py-2 text-sm font-medium text-control-foreground transition hover:bg-foreground sm:w-auto"
+        className={textButtonClassName("w-full sm:w-auto")}
       >
         New game
       </button>
@@ -100,7 +101,7 @@ export function NewGameDialog({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded border border-interactive-border bg-surface/70 px-3 py-1.5 text-sm text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+                className={textButtonClassName("px-3 py-1.5 text-muted")}
               >
                 Close
               </button>
@@ -166,8 +167,8 @@ function ModeButton({
       className={[
         "rounded px-3 py-1.5 text-sm font-medium transition",
         active
-          ? "bg-control text-control-foreground"
-          : "text-muted hover:text-foreground",
+          ? "border border-interactive-border bg-surface/90 text-foreground shadow-sm shadow-black/[0.03]"
+          : "border border-transparent text-muted hover:bg-surface/70 hover:text-foreground",
       ].join(" ")}
     >
       {children}
@@ -233,7 +234,7 @@ function PresetMode({
               <div className="flex justify-end border-t border-border pt-4">
                 <button
                   type="submit"
-                  className="rounded bg-control px-4 py-2 text-sm font-semibold text-control-foreground transition hover:bg-foreground"
+                  className={textButtonClassName("font-semibold")}
                 >
                   Create game
                 </button>
@@ -271,7 +272,7 @@ function RandomMode({
         <button
           type="button"
           onClick={onReroll}
-          className="rounded border border-interactive-border bg-surface/70 px-3 py-2 text-sm font-medium text-foreground transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+          className={textButtonClassName("px-3")}
         >
           Reroll
         </button>
@@ -298,7 +299,7 @@ function RandomMode({
         <button
           type="submit"
           disabled={validationMessages.length > 0}
-          className="rounded bg-control px-4 py-2 text-sm font-semibold text-control-foreground transition hover:bg-foreground disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted"
+          className={textButtonClassName("font-semibold")}
         >
           Create game
         </button>

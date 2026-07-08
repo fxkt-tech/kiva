@@ -5,6 +5,7 @@ import { GameTokenUsageButton } from "@/components/home/game-token-usage-button"
 import { GameTitleEditor } from "@/components/home/game-title-editor";
 import { NewGameDialog } from "@/components/home/new-game-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { iconButtonClassName, textButtonClassName } from "@/components/ui/button-styles";
 import type { GenerationRecord } from "@/core/generation-record";
 import { summarizeGenerationTokenUsage } from "@/core/token-usage";
 import { createGameActions } from "@/server/game-actions";
@@ -43,7 +44,7 @@ export default async function HomePage() {
             <ThemeToggle />
             <Link
               href="/library"
-              className="rounded-md border border-interactive-border bg-surface/70 px-4 py-2 text-center text-sm font-medium text-foreground transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+              className={textButtonClassName()}
             >
               Library
             </Link>
@@ -102,7 +103,7 @@ export default async function HomePage() {
                         </time>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-1.5">
                           <GameTokenUsageButton
                             gameTitle={record.game.title}
                             total={summarizeGenerationTokenUsage(record.generations)}
@@ -115,7 +116,7 @@ export default async function HomePage() {
                           />
                           <Link
                             href={`/games/${record.game.id}/preview`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-info-badge text-info-badge-foreground transition hover:bg-surface-strong"
+                            className={iconButtonClassName({ size: "md" })}
                             target="_blank"
                             aria-label="Preview game"
                             title="Preview game"
@@ -124,7 +125,7 @@ export default async function HomePage() {
                           </Link>
                           <Link
                             href={`/games/${record.game.id}/editor`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-foreground transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+                            className={iconButtonClassName({ size: "md" })}
                             aria-label="Open editor"
                             title="Open editor"
                           >
@@ -133,7 +134,10 @@ export default async function HomePage() {
                           <form action={deleteGameAction.bind(null, record.game.id)}>
                             <button
                               type="submit"
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-danger-badge text-danger-badge-foreground transition hover:bg-surface-strong"
+                              className={iconButtonClassName({
+                                size: "md",
+                                variant: "danger",
+                              })}
                               aria-label="Delete game"
                               title="Delete game"
                             >

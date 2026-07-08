@@ -4,6 +4,7 @@ import type { GameEvent } from "@/core/events";
 import type { GenerationRecord } from "@/core/generation-record";
 import type { PlayerSnapshot } from "@/core/player";
 import type { GameId } from "@/core/types";
+import { iconButtonClassName } from "@/components/ui/button-styles";
 import { Maximize2, Minimize2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { LlmGenerationDetails } from "./llm-generation-details";
@@ -42,7 +43,7 @@ export function EventTimeline({
             href={togglePreviewHref}
             aria-label={previewHidden ? "Show preview" : "Hide preview"}
             title={previewHidden ? "Show preview" : "Hide preview"}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+            className={iconButtonClassName()}
           >
             {previewHidden ? (
               <Minimize2 aria-hidden="true" className="h-4 w-4" />
@@ -129,7 +130,7 @@ export function EventTimeline({
                         type="submit"
                         aria-label={`Roll back after event ${event.index}`}
                         title={`Roll back after event ${event.index}`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent bg-warning-badge text-warning-badge-foreground transition hover:bg-surface-strong"
+                        className={iconButtonClassName()}
                       >
                         <Undo2 aria-hidden="true" className="h-4 w-4" />
                       </button>

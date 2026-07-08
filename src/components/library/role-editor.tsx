@@ -1,4 +1,5 @@
 import { saveRoleAction } from "@/app/library/actions";
+import { textButtonClassName } from "@/components/ui/button-styles";
 import type { ModelBindingSnapshot } from "@/core/player";
 import type {
   RoleDefinition,
@@ -111,7 +112,7 @@ export function RoleEditor({ role }: { readonly role: RoleDefinition }) {
       <div className="flex justify-end border-t border-border pt-4">
         <button
           type="submit"
-          className="rounded bg-control px-4 py-2 text-sm font-semibold text-control-foreground transition hover:bg-foreground"
+          className={textButtonClassName("font-semibold")}
         >
           Save role
         </button>

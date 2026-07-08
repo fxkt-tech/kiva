@@ -3,6 +3,7 @@
 import { Check, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { renameGameAction } from "@/app/actions";
+import { iconButtonClassName } from "@/components/ui/button-styles";
 import type { GameId } from "@/core/types";
 
 type GameTitleEditorProps = {
@@ -94,7 +95,7 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
             disabled={pending}
             aria-label="Save game name"
             title="Save game name"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-transparent bg-good-badge text-good-badge-foreground transition hover:bg-surface-strong disabled:opacity-50"
+            className={iconButtonClassName({ variant: "success" })}
           >
             <Check aria-hidden="true" className="h-4 w-4" />
           </button>
@@ -104,7 +105,7 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
             disabled={pending}
             aria-label="Cancel rename"
             title="Cancel rename"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground disabled:opacity-50"
+            className={iconButtonClassName()}
           >
             <X aria-hidden="true" className="h-4 w-4" />
           </button>
@@ -124,7 +125,10 @@ export function GameTitleEditor({ gameId, title }: GameTitleEditorProps) {
         onClick={beginEditing}
         aria-label="Rename game"
         title="Rename game"
-        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-transparent text-subtle opacity-0 transition hover:border-interactive-border hover:text-foreground group-hover:opacity-100 focus:opacity-100"
+        className={iconButtonClassName({
+          size: "xs",
+          className: "opacity-0 group-hover:opacity-100 focus:opacity-100",
+        })}
       >
         <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
       </button>

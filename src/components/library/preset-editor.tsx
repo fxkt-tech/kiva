@@ -2,6 +2,7 @@ import {
   createGameFromPresetAction,
   savePresetAction,
 } from "@/app/library/actions";
+import { textButtonClassName } from "@/components/ui/button-styles";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
 import type { ModelBindingSnapshot } from "@/core/player";
@@ -133,7 +134,7 @@ export function PresetEditor({ preset, roles, characters }: PresetEditorProps) {
         <div className="flex justify-end border-t border-border pt-4">
           <button
             type="submit"
-            className="rounded bg-control px-4 py-2 text-sm font-semibold text-control-foreground transition hover:bg-foreground"
+            className={textButtonClassName("font-semibold")}
           >
             Save preset
           </button>
@@ -146,7 +147,7 @@ export function PresetEditor({ preset, roles, characters }: PresetEditorProps) {
       >
         <button
           type="submit"
-          className="rounded bg-good-badge px-4 py-2 text-sm font-semibold text-good-badge-foreground transition hover:bg-surface-strong"
+          className={textButtonClassName("font-semibold")}
         >
           Create game
         </button>

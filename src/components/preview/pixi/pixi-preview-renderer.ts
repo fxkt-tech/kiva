@@ -29,7 +29,7 @@ import {
 const EMPTY_TEXTURE = Texture.EMPTY;
 const SEAT_NUMBER_FONT_SIZE = 122;
 const SEAT_NUMBER_LINE_HEIGHT = 132;
-const CASE_BOARD_ROW_COUNT = 6;
+const CASE_BOARD_ROW_COUNT = 12;
 
 export async function createPixiPreviewRenderer(
   host: HTMLDivElement,
@@ -699,7 +699,6 @@ class CaseBoardStage {
   private readonly kindLabel: Text;
   private readonly title: Text;
   private readonly body: Text;
-  private readonly rowHeader: Text;
   private readonly rows: CaseBoardRowView[];
 
   constructor(private readonly theme: PixiPreviewTheme) {
@@ -709,28 +708,25 @@ class CaseBoardStage {
       fontSize: 22,
       letterSpacing: 0,
     });
+    this.kindLabel.anchor.set(0.5);
     this.title = text("", {
       ...theme.typography.title,
       fill: theme.colors.text,
-      fontSize: 48,
-      lineHeight: 58,
+      fontSize: 58,
+      lineHeight: 68,
       wordWrap: true,
-      wordWrapWidth: caseBoardLeftColumnWidth(theme),
+      wordWrapWidth: mainStageWidth(theme) - 96,
     });
+    this.title.anchor.set(0.5, 0);
     this.body = text("", {
       ...theme.typography.body,
       fill: theme.colors.text,
-      fontSize: 30,
-      lineHeight: 42,
+      fontSize: 26,
+      lineHeight: 38,
       wordWrap: true,
-      wordWrapWidth: caseBoardLeftColumnWidth(theme),
+      wordWrapWidth: mainStageWidth(theme) - 160,
     });
-    this.rowHeader = text("CASE NOTES", {
-      ...theme.typography.meta,
-      fill: theme.colors.muted,
-      fontSize: 18,
-      letterSpacing: 0,
-    });
+    this.body.anchor.set(0.5, 0);
     this.rows = Array.from({ length: CASE_BOARD_ROW_COUNT }, () => (
       new CaseBoardRowView(theme)
     ));
@@ -762,7 +758,6 @@ class CaseBoardStage {
       this.kindLabel,
       this.title,
       this.body,
-      this.rowHeader,
       ...this.rows.map((row) => row.view),
     );
   }
@@ -771,107 +766,128 @@ class CaseBoardStage {
     const content = caseBoardContentForFrame(frame);
     const width = mainStageWidth(this.theme);
     const height = mainStageHeight(this.theme);
-    const padding = 46;
-    const leftWidth = caseBoardLeftColumnWidth(this.theme);
-    const dividerX = padding + leftWidth + 36;
-    const rightX = dividerX + 36;
-    const rightWidth = width - rightX - padding;
-    const rowHeight = 86;
-    const rowGap = 14;
+    const paddingX = 46;
+    const dividerY = content.variant === "standard"
+      ? 286
+      : content.variant === "vote"
+        ? 168
+        : 98;
 
-    this.panel
-      .clear()
-      .roundRect(0, 0, width, height, cardRadius(this.theme))
-      .fill({ color: this.theme.colors.black, alpha: 0.46 })
-      .roundRect(0, 0, width, height, cardRadius(this.theme))
-      .stroke({ color: 0xd4c7ad, alpha: 0.18, width: 1 });
-    this.accent
-      .clear()
-      .rect(padding, padding, 92, 2)
-      .fill({ color: this.theme.colors.brass, alpha: 0.62 })
-      .rect(dividerX, padding, 1, height - padding * 2)
-      .fill({ color: 0xd4c7ad, alpha: 0.12 })
-      .rect(padding, height - padding - 2, leftWidth, 1)
-      .fill({ color: this.theme.colors.accent, alpha: 0.18 });
+    this.renderShell(width, height, dividerY);
 
     this.kindLabel.text = content.kindLabel;
     this.title.text = content.title;
     this.body.text = content.body;
-    this.rowHeader.text = "CASE NOTES";
-    this.kindLabel.position.set(padding, padding + 24);
-    this.title.position.set(padding, padding + 76);
-    this.body.position.set(padding, padding + 192);
-    this.rowHeader.position.set(rightX, padding + 24);
+
+    this.kindLabel.position.set(
+      width / 2,
+      content.variant === "standard" ? 70 : 48,
+    );
     this.title.style = {
       ...this.title.style,
-      wordWrapWidth: leftWidth,
+      wordWrapWidth: width - paddingX * 2,
     };
     this.body.style = {
       ...this.body.style,
-      wordWrapWidth: leftWidth,
+      wordWrapWidth: width - paddingX * 3,
     };
-    fitText(this.title, leftWidth, 48, 32);
-    fitText(this.body, leftWidth, 30, 22);
 
-    this.rows.forEach((rowView, index) => {
-      const row = content.rows[index] ?? null;
-      const y = padding + 72 + index * (rowHeight + rowGap);
-      rowView.update(row, rightX, y, rightWidth, rowHeight);
-    });
+    if (content.variant === "ending") {
+      this.title.position.set(width / 2, 304);
+      this.title.style = { ...this.title.style, fontSize: 96, lineHeight: 106 };
+      fitText(this.title, width - paddingX * 2, 96, 54);
+      this.body.visible = false;
+      this.rows.forEach((row) => row.update(null, 0, 0, 0, 0));
+      return;
+    }
+
+    this.body.visible = content.variant === "standard" && content.body.length > 0;
+    this.title.style = { ...this.title.style, fontSize: 58, lineHeight: 68 };
+    this.title.position.set(width / 2, content.variant === "vote" ? 86 : 112);
+    fitText(this.title, width - paddingX * 2, 58, 34);
+
+    if (this.body.visible) {
+      this.body.position.set(width / 2, 196);
+      fitText(this.body, width - paddingX * 3, 26, 18);
+    }
+
+    this.renderRows(
+      content.rows,
+      dividerY + 34,
+      width - paddingX * 2,
+      height - dividerY - 68,
+    );
   }
 
   renderEmpty(): void {
     const width = mainStageWidth(this.theme);
     const height = mainStageHeight(this.theme);
-    const padding = 46;
-    const leftWidth = caseBoardLeftColumnWidth(this.theme);
-    const dividerX = padding + leftWidth + 36;
-    const rightX = dividerX + 36;
-    const rightWidth = width - rightX - padding;
-    const rowHeight = 86;
+    const dividerY = 286;
 
-    this.panel
-      .clear()
-      .roundRect(0, 0, width, height, cardRadius(this.theme))
-      .fill({ color: this.theme.colors.black, alpha: 0.46 })
-      .roundRect(0, 0, width, height, cardRadius(this.theme))
-      .stroke({ color: 0xd4c7ad, alpha: 0.18, width: 1 });
-    this.accent
-      .clear()
-      .rect(padding, padding, 92, 2)
-      .fill({ color: this.theme.colors.brass, alpha: 0.62 })
-      .rect(dividerX, padding, 1, height - padding * 2)
-      .fill({ color: 0xd4c7ad, alpha: 0.12 })
-      .rect(padding, height - padding - 2, leftWidth, 1)
-      .fill({ color: this.theme.colors.accent, alpha: 0.18 });
+    this.renderShell(width, height, dividerY);
 
     this.kindLabel.text = "PREVIEW";
     this.title.text = "等待审讯记录";
     this.body.text = "尚无可播放场景。";
-    this.rowHeader.text = "CASE NOTES";
-    this.kindLabel.position.set(padding, padding + 24);
-    this.title.position.set(padding, padding + 76);
-    this.body.position.set(padding, padding + 192);
-    this.rowHeader.position.set(rightX, padding + 24);
+    this.kindLabel.position.set(width / 2, 70);
+    this.title.position.set(width / 2, 112);
+    this.body.position.set(width / 2, 196);
+    this.body.visible = true;
     this.title.style = {
       ...this.title.style,
-      wordWrapWidth: leftWidth,
+      fontSize: 58,
+      lineHeight: 68,
+      wordWrapWidth: width - 92,
     };
     this.body.style = {
       ...this.body.style,
-      wordWrapWidth: leftWidth,
+      wordWrapWidth: width - 138,
     };
-    fitText(this.title, leftWidth, 48, 32);
-    fitText(this.body, leftWidth, 30, 22);
+    fitText(this.title, width - 92, 58, 34);
+    fitText(this.body, width - 138, 26, 18);
 
-    this.rows[0]?.update(
-      { tone: "neutral", label: "FILE", text: "PUBLIC RECORD" },
-      rightX,
-      padding + 72,
-      rightWidth,
-      rowHeight,
+    this.renderRows(
+      [{ tone: "neutral", label: "FILE", text: "PUBLIC RECORD" }],
+      dividerY + 34,
+      width - 92,
+      height - dividerY - 68,
     );
-    this.rows.slice(1).forEach((row) => row.update(null, 0, 0, 0, 0));
+  }
+
+  private renderShell(width: number, height: number, dividerY: number): void {
+    const radius = cardRadius(this.theme);
+    this.panel
+      .clear()
+      .roundRect(0, 0, width, height, radius)
+      .fill({ color: this.theme.colors.black, alpha: 0.46 })
+      .roundRect(0, 0, width, height, radius)
+      .stroke({ color: 0xd4c7ad, alpha: 0.18, width: 1 });
+    this.accent
+      .clear()
+      .rect(46, dividerY, width - 92, 1)
+      .fill({ color: 0xd4c7ad, alpha: 0.16 });
+  }
+
+  private renderRows(
+    rows: readonly CaseBoardRow[],
+    y: number,
+    width: number,
+    availableHeight: number,
+  ): void {
+    const visibleRows = rows.slice(0, CASE_BOARD_ROW_COUNT);
+    const gap = 12;
+    const rowCount = Math.max(1, visibleRows.length);
+    const gapsHeight = gap * Math.max(0, visibleRows.length - 1);
+    const rowHeight = Math.max(
+      54,
+      Math.min(88, Math.floor((availableHeight - gapsHeight) / rowCount)),
+    );
+    const x = (mainStageWidth(this.theme) - width) / 2;
+
+    this.rows.forEach((rowView, index) => {
+      const row = visibleRows[index] ?? null;
+      rowView.update(row, x, y + index * (rowHeight + gap), width, rowHeight);
+    });
   }
 }
 
@@ -881,6 +897,7 @@ class CaseBoardRowView {
   private readonly label: Text;
   private readonly body: Text;
   private readonly meta: Text;
+  private readonly count: Text;
 
   constructor(private readonly theme: PixiPreviewTheme) {
     this.label = text("", {
@@ -904,8 +921,16 @@ class CaseBoardRowView {
       fontSize: 17,
       lineHeight: 24,
     });
+    this.count = text("", {
+      ...theme.typography.meta,
+      fill: theme.colors.text,
+      fontSize: 42,
+      fontWeight: "900",
+      lineHeight: 44,
+    });
+    this.count.anchor.set(1, 0.5);
     this.label.anchor.set(0.5);
-    this.view.addChild(this.panel, this.label, this.body, this.meta);
+    this.view.addChild(this.panel, this.label, this.body, this.meta, this.count);
   }
 
   update(
@@ -921,6 +946,7 @@ class CaseBoardRowView {
       this.label.text = "";
       this.body.text = "";
       this.meta.text = "";
+      this.count.text = "";
       return;
     }
 
@@ -928,7 +954,8 @@ class CaseBoardRowView {
     const radius = cardRadius(this.theme);
     const labelWidth = 92;
     const textX = labelWidth + 22;
-    const textWidth = width - textX - 22;
+    const countWidth = row.count ? 92 : 0;
+    const textWidth = width - textX - countWidth - 22;
 
     this.view.position.set(x, y);
     this.panel
@@ -943,6 +970,7 @@ class CaseBoardRowView {
     this.label.text = row.label;
     this.body.text = row.text;
     this.meta.text = row.meta ?? "";
+    this.count.text = row.count ? `${row.count}票` : "";
     this.label.style = {
       ...this.label.style,
       fill: toneColor,
@@ -952,12 +980,18 @@ class CaseBoardRowView {
       fill: row.tone === "dead-player" ? this.theme.colors.muted : this.theme.colors.text,
       wordWrapWidth: textWidth,
     };
+    this.count.style = {
+      ...this.count.style,
+      fill: toneColor,
+    };
     this.meta.visible = Boolean(row.meta);
+    this.count.visible = Boolean(row.count);
     this.label.position.set(labelWidth / 2, height / 2);
-    const bodyY = row.meta ? 14 : 20;
+    const bodyY = row.meta ? 12 : Math.max(12, height / 2 - 17);
     const bodyHeight = row.meta ? 32 : height - bodyY - 18;
     this.body.position.set(textX, bodyY);
-    this.meta.position.set(textX, 50);
+    this.meta.position.set(textX, Math.min(height - 28, bodyY + 34));
+    this.count.position.set(width - 22, height / 2);
     fitTextToBox(this.body, textWidth, bodyHeight, 25, 17);
   }
 }
@@ -1252,11 +1286,9 @@ function colorForCaseBoardTone(
       return theme.colors.muted;
     case "neutral":
       return theme.colors.accent;
+    case "result":
+      return theme.colors.danger;
   }
-}
-
-function caseBoardLeftColumnWidth(theme: PixiPreviewTheme): number {
-  return Math.round(mainStageWidth(theme) * 0.53);
 }
 
 function previewHeaderTitle(gameTitle: string): string {

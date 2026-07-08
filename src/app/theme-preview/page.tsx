@@ -198,7 +198,7 @@ function HomeSample() {
           <div className="mt-0.5 text-sm font-semibold">Local games</div>
         </div>
         <button
-          className="rounded bg-[var(--preview-control)] px-3 py-1.5 text-xs font-semibold text-[var(--preview-control-foreground)]"
+          className="rounded-md border border-[var(--preview-border-strong)] bg-[var(--preview-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--preview-foreground)] shadow-sm transition hover:bg-[var(--preview-surface-muted)]"
           type="button"
         >
           New game

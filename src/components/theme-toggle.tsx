@@ -3,6 +3,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { iconButtonClassName } from "@/components/ui/button-styles";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -18,7 +19,10 @@ export function ThemeToggle() {
   return (
     <button
       aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-      className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+      className={iconButtonClassName({
+        size: "custom",
+        className: "h-[38px] w-[38px]",
+      })}
       onClick={() => setTheme(nextTheme)}
       title={dark ? "Light theme" : "Dark theme"}
       type="button"

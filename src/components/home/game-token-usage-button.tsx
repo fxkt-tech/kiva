@@ -2,6 +2,7 @@
 
 import { BarChart3, X } from "lucide-react";
 import { useId, useRef } from "react";
+import { iconButtonClassName } from "@/components/ui/button-styles";
 import type { TokenUsageSummary } from "@/core/token-usage";
 
 type GameTokenUsageButtonProps = {
@@ -25,7 +26,7 @@ export function GameTokenUsageButton({
       <button
         type="button"
         onClick={() => dialogRef.current?.showModal()}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-warning-badge text-warning-badge-foreground transition hover:bg-surface-strong"
+        className={iconButtonClassName({ size: "md" })}
         aria-label="Show token usage"
         title="Show token usage"
       >
@@ -48,7 +49,7 @@ export function GameTokenUsageButton({
               type="submit"
               aria-label="Close"
               title="Close"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-interactive-border bg-surface/70 text-muted transition hover:border-interactive-border-hover hover:bg-surface-muted hover:text-foreground"
+              className={iconButtonClassName()}
             >
               <X aria-hidden="true" className="h-4 w-4" />
             </button>

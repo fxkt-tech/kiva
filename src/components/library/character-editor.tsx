@@ -1,4 +1,5 @@
 import { saveCharacterAction } from "@/app/library/actions";
+import { textButtonClassName } from "@/components/ui/button-styles";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { ModelBindingSnapshot } from "@/core/player";
 import { DirtyFormGuard } from "./dirty-form-guard";
@@ -105,7 +106,7 @@ export function CharacterEditor({
       <div className="flex justify-end border-t border-border pt-4">
         <button
           type="submit"
-          className="rounded bg-control px-4 py-2 text-sm font-semibold text-control-foreground transition hover:bg-foreground"
+          className={textButtonClassName("font-semibold")}
         >
           Save character
         </button>

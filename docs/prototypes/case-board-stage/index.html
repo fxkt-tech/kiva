@@ -101,37 +101,11 @@
         position: absolute;
         inset: 9.5% 22.7% 13.5%;
         z-index: 3;
-        perspective: 1400px;
       }
 
-      .dossier-shadow,
-      .dossier-back,
-      .dossier-mid,
       .case-stage {
         position: absolute;
         inset: 0;
-      }
-
-      .dossier-shadow {
-        filter: blur(26px);
-        transform: translate(1.4%, 3.4%) scale(0.98);
-        background: rgba(0, 0, 0, 0.62);
-      }
-
-      .dossier-back {
-        transform: translate(-2.7%, -2.1%) rotate(-1.8deg);
-        border: 1px solid rgba(216, 201, 170, 0.13);
-        background:
-          linear-gradient(115deg, rgba(152, 124, 82, 0.16), transparent 36%),
-          rgba(17, 16, 13, 0.58);
-      }
-
-      .dossier-mid {
-        transform: translate(2.3%, 1.7%) rotate(1.1deg);
-        border: 1px solid rgba(141, 38, 38, 0.28);
-        background:
-          linear-gradient(180deg, rgba(141, 38, 38, 0.18), transparent 42%),
-          rgba(9, 11, 12, 0.66);
       }
 
       .case-stage {
@@ -162,14 +136,6 @@
 
       .case-stage.is-vote-compact::after {
         top: 24%;
-      }
-
-      .case-stage::before {
-        content: "";
-        position: absolute;
-        inset: 3.2%;
-        border: 1px solid rgba(216, 201, 170, 0.085);
-        pointer-events: none;
       }
 
       .case-stage::after {
@@ -578,10 +544,6 @@
       <div class="throwaway-label">Throwaway Prototype / CaseBoardStage visual direction</div>
 
       <section class="stage-wrap" aria-live="polite">
-        <div class="dossier-shadow"></div>
-        <div class="dossier-back"></div>
-        <div class="dossier-mid"></div>
-
         <article class="case-stage stage-mode is-active is-minimal" data-mode="chapter">
           <div class="chapter-pane">
             <div>
