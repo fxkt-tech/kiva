@@ -1,7 +1,7 @@
 import type { TextStyleOptions } from "pixi.js";
 
 export const PIXI_PREVIEW_FONT_FAMILY =
-  "DIN Condensed, Bahnschrift, Arial Narrow, Impact, sans-serif";
+  "'Kiva Noto Sans SC', 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif";
 
 export type PixiPreviewTheme = {
   readonly colors: {

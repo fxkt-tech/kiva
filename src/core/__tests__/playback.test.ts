@@ -50,7 +50,7 @@ describe("playback compiler", () => {
         phase: "night",
         kind: "phase",
         title: "第 1 夜开始",
-        text: "夜晚开始。",
+        text: "",
         details: [],
         durationMs: 1600,
         startsAtMs: 0,
@@ -68,7 +68,7 @@ describe("playback compiler", () => {
         phase: "night",
         kind: "phase",
         title: "第 1 夜开始",
-        text: "夜晚开始。",
+        text: "",
         details: [],
         durationMs: 1600,
         startsAtMs: 1600,
@@ -240,6 +240,29 @@ describe("playback compiler", () => {
       .toMatchObject({ status: "dead", highlighted: true });
   });
 
+  it("plays night deaths only as the daytime death announcement", () => {
+    const killedPlayerId = players[0].playerId;
+
+    const playback = compilePublicPlayback([
+      event(1, { kind: "public" }, {
+        type: "night_resolved",
+        phase: "night",
+        payload: { deadPlayerIds: [killedPlayerId] },
+      }),
+      event(2, { kind: "public" }, {
+        type: "death_announced",
+        phase: "day",
+        payload: { deadPlayerIds: [killedPlayerId] },
+      }),
+    ], players, { audience: "director" });
+
+    expect(playback.map((item) => item.title)).toEqual(["昨夜死讯"]);
+    expect(playback[0]).toMatchObject({
+      phase: "day",
+      text: expect.stringContaining("昨夜死亡"),
+    });
+  });
+
   it("carries presenter details into playback scenes", () => {
     const playback = compilePublicPlayback([
       event(1, { kind: "public" }, {
@@ -353,7 +376,14 @@ describe("playback compiler", () => {
         targetPlayerIds: [players[0].playerId],
         payload: { targetPlayerId: players[0].playerId },
       }),
-      event(4, { kind: "player_private", playerIds: [players[3].playerId] }, {
+      event(4, { kind: "player_private", playerIds: [players[2].playerId] }, {
+        type: "seer_check_result",
+        phase: "night",
+        actorPlayerId: players[2].playerId,
+        targetPlayerIds: [players[0].playerId],
+        payload: { targetPlayerId: players[0].playerId, result: "wolves" },
+      }),
+      event(5, { kind: "player_private", playerIds: [players[3].playerId] }, {
         type: "witch_antidote_decided",
         phase: "night",
         actorPlayerId: players[3].playerId,
@@ -366,8 +396,17 @@ describe("playback compiler", () => {
       "第 1 夜开始",
       "狼人刀人",
       "预言家查验",
+      "查验结果",
       "女巫解药",
     ]);
+    expect(playback[2]).toMatchObject({
+      title: "预言家查验",
+      text: expect.stringContaining("选择查验"),
+    });
+    expect(playback[3]).toMatchObject({
+      title: "查验结果",
+      text: expect.stringContaining("结果：狼人"),
+    });
   });
 
   it("resolves total duration and scene index from timeline milliseconds", () => {

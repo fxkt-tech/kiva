@@ -70,12 +70,11 @@ export function compilePublicPlayback(
   players: readonly PlayerSnapshot[],
   options: CompilePublicPlaybackOptions = {},
 ): readonly PlaybackItem[] {
-  let startsAtMs = 0;
   const publiclyDeadPlayerIds = new Set<PlayerId>();
   const rhythm = { ...defaultRhythm, ...options.rhythm };
   const audience = options.audience ?? "public";
 
-  return getActiveEvents(events)
+  const scenes = getActiveEvents(events)
     .filter((event) => shouldIncludeEvent(event, audience))
     .flatMap((event) => {
       const presented = audience === "director"
@@ -92,26 +91,42 @@ export function compilePublicPlayback(
         phase: event.phase,
         kind: kindForEvent(event),
         title: presented.title,
-        text: presented.text,
+        text: event.type === "phase_started" ? "" : presented.text,
         details: presented.details ?? [],
         durationMs: durationForEvent(event, presented.text, rhythm),
-        startsAtMs,
+        startsAtMs: 0,
         players: playersForScene(players, publiclyDeadPlayerIds, event),
       };
       const durationMs =
         options.durationForScene?.(scene, event) ?? scene.durationMs;
-      const sceneWithDuration = { ...scene, durationMs };
-      startsAtMs += durationMs;
 
-      return [sceneWithDuration];
+      return [{ ...scene, durationMs }];
     });
+
+  return withTimelineStarts(scenes);
+}
+
+function withTimelineStarts(
+  scenes: readonly PlaybackItem[],
+): readonly PlaybackItem[] {
+  let startsAtMs = 0;
+
+  return scenes.map((scene) => {
+    const item = { ...scene, startsAtMs };
+    startsAtMs += scene.durationMs;
+    return item;
+  });
 }
 
 function shouldIncludeEvent(
   event: GameEvent,
   audience: NonNullable<CompilePublicPlaybackOptions["audience"]>,
 ): boolean {
-  if (event.type === "vote_cast" || event.type === "role_assigned") {
+  if (
+    event.type === "vote_cast" ||
+    event.type === "role_assigned" ||
+    event.type === "night_resolved"
+  ) {
     return false;
   }
 
