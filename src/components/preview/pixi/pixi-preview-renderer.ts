@@ -453,17 +453,19 @@ class SeatCard {
       height: this.theme.layout.seatCardHeight,
     };
     this.view.alpha = 1;
+    const panelFill = seatCardPanelFill(frame.scene.phase, dead, highlighted);
+    const panelStroke = seatCardPanelStroke(frame.scene.phase, dead, highlighted, this.theme);
     this.panel
       .clear()
       .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, cardRadius(this.theme))
       .fill({
-        color: dead ? 0x090707 : this.theme.colors.panel,
-        alpha: dead ? 0.78 : highlighted ? 0.90 : 0.84,
+        color: panelFill.color,
+        alpha: panelFill.alpha,
       })
       .roundRect(0, 0, seatCardWidth(this.theme), this.theme.layout.seatCardHeight, cardRadius(this.theme))
       .stroke({
-        color: dead ? this.theme.colors.danger : highlighted ? this.theme.colors.accent : 0xd4c7ad,
-        alpha: dead ? 0.34 : highlighted ? 0.42 : 0.13,
+        color: panelStroke.color,
+        alpha: panelStroke.alpha,
         width: dead || highlighted ? 2 : 1,
       });
     this.activeMark.clear();
@@ -1669,6 +1671,51 @@ function subtleRoleColor(roleName: string, theme: PixiPreviewTheme): number {
     return 0xd8d6cf;
   }
   return theme.colors.muted;
+}
+
+function seatCardPanelFill(
+  phase: ShotFrame["scene"]["phase"],
+  dead: boolean,
+  highlighted: boolean,
+): { readonly color: number; readonly alpha: number } {
+  if (isDaytimePreviewPhase(phase)) {
+    return {
+      color: dead ? 0x150c0b : 0x16120d,
+      alpha: dead ? 0.68 : highlighted ? 0.78 : 0.66,
+    };
+  }
+
+  return {
+    color: dead ? 0x090707 : 0x05090d,
+    alpha: dead ? 0.78 : highlighted ? 0.90 : 0.84,
+  };
+}
+
+function seatCardPanelStroke(
+  phase: ShotFrame["scene"]["phase"],
+  dead: boolean,
+  highlighted: boolean,
+  theme: PixiPreviewTheme,
+): { readonly color: number; readonly alpha: number } {
+  if (dead) {
+    return { color: theme.colors.danger, alpha: isDaytimePreviewPhase(phase) ? 0.38 : 0.34 };
+  }
+
+  if (highlighted) {
+    return {
+      color: isDaytimePreviewPhase(phase) ? theme.colors.brass : theme.colors.accent,
+      alpha: isDaytimePreviewPhase(phase) ? 0.46 : 0.42,
+    };
+  }
+
+  return {
+    color: isDaytimePreviewPhase(phase) ? theme.colors.brass : 0xd4c7ad,
+    alpha: isDaytimePreviewPhase(phase) ? 0.18 : 0.13,
+  };
+}
+
+function isDaytimePreviewPhase(phase: ShotFrame["scene"]["phase"]): boolean {
+  return phase !== "night" && phase !== "setup";
 }
 
 function colorForCaseBoardTone(
