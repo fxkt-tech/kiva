@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, Video } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DraftPanel } from "@/components/editor/draft-panel";
@@ -80,15 +80,26 @@ export default async function EditorPage({
                   <h2 className="text-sm font-semibold text-foreground">
                     Preview
                   </h2>
-                  <Link
-                    href={previewHref}
-                    aria-label="Open preview in new tab"
-                    title="Open preview in new tab"
-                    className={iconButtonClassName()}
-                    target="_blank"
-                  >
-                    <ExternalLink aria-hidden="true" className="h-4 w-4" />
-                  </Link>
+                  <div className="flex gap-1.5">
+                    <Link
+                      href={`/games/${record.game.id}/preview_v2?focus=current`}
+                      aria-label="Open Preview v2"
+                      title="Open Preview v2"
+                      className={iconButtonClassName()}
+                      target="_blank"
+                    >
+                      <Video aria-hidden="true" className="h-4 w-4" />
+                    </Link>
+                    <Link
+                      href={previewHref}
+                      aria-label="Open preview in new tab"
+                      title="Open preview in new tab"
+                      className={iconButtonClassName()}
+                      target="_blank"
+                    >
+                      <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </div>
                 <div className="p-2">
                   <iframe

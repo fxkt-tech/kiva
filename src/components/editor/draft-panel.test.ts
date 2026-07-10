@@ -42,13 +42,19 @@ describe("DraftPanel payload controls", () => {
   });
 
   it("renders regenerate control for speech drafts", () => {
-    const html = renderPanel(daySpeechDraft());
+    const draft = daySpeechDraft();
+    const html = renderPanel(draft, [
+      generationRecord({ draftId: draft.id, status: "success", error: null }),
+    ]);
 
     expect(html).toContain("Regenerate");
   });
 
   it("renders regenerate control for action drafts", () => {
-    const html = renderPanel(wolfKillDraft(players[0].playerId));
+    const draft = wolfKillDraft(players[0].playerId);
+    const html = renderPanel(draft, [
+      generationRecord({ draftId: draft.id, status: "success", error: null }),
+    ]);
 
     expect(html).toContain("Regenerate");
   });

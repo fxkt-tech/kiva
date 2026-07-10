@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
 import { PlaybackStage } from "@/components/preview/playback-stage";
 import { systemVoiceSourceForScene } from "@/components/preview/preview-audio";
-import { confirmDraftEvent, type DraftEvent } from "@/core/drafts";
-import { getActiveEvents } from "@/core/event-log";
-import type { GameEvent } from "@/core/events";
+import { eventsWithDraftPreview } from "@/components/preview/preview-events";
 import { compilePublicPlayback } from "@/core/playback";
-import type { EventId, GameId } from "@/core/types";
+import type { GameId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
 import { loadSystemVoiceDurations } from "@/server/preview-voice-assets";
@@ -54,24 +52,4 @@ export default async function PreviewPage({
       })}
     />
   );
-}
-
-function eventsWithDraftPreview(
-  events: readonly GameEvent[],
-  draft: DraftEvent | null,
-): readonly GameEvent[] {
-  if (!draft) {
-    return events;
-  }
-
-  const nextIndex = getActiveEvents(events).length + 1;
-  return [
-    ...events,
-    confirmDraftEvent({
-      draft,
-      eventId: `preview_${draft.id}` as EventId,
-      index: nextIndex,
-      createdAt: draft.createdAt,
-    }),
-  ];
 }

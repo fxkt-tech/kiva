@@ -10,3 +10,5 @@ pnpm-debug.log*
 .DS_Store
 .superpowers/
 .codegraph/
+.tmp/
+kivdb/exports/
