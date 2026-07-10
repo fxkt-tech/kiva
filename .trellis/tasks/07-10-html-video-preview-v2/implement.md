@@ -144,14 +144,16 @@ unchanged.
 
 - [ ] Implement day/night background treatment and investigation/mansion visual
       tokens.
-- [ ] Implement stable six-slot seat tracks and redesigned seat cards.
-- [ ] Implement speech scene with active portrait/dossier hierarchy.
-- [ ] Implement case-board variants for phase, announcement, vote, and
-      resolution.
-- [ ] Reuse or extract existing pure case-board content projection instead of
-      duplicating event interpretation. Preserve v1 behavior through a
-      compatibility import if an extraction is necessary.
-- [ ] Implement deterministic subtitles and frame-derived enter/exit motion.
+- [ ] Implement stable full-height six-slot seat tracks and redesigned seat
+      cards.
+- [ ] Implement independent equal-width title, empty visual-stage, and
+      transcript cards in the center column.
+- [ ] Keep readable event content out of the visual stage until a later visual
+      direction is approved.
+- [ ] Implement deterministic presenter/player transcript attribution and
+      semantic narration for every scene kind.
+- [ ] Implement deterministic subtitle windows and frame-derived enter/exit
+      motion.
 - [ ] Encode explicit limits/fallbacks for long names, titles, bodies, detail
       rows, missing avatars, dead players, and dense content.
 - [ ] Build fixed visual fixtures covering each scene kind, day/night,

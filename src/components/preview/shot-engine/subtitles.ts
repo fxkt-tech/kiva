@@ -39,14 +39,20 @@ export function subtitleCueForScene(
   };
 }
 
-export function subtitleWindows(text: string): readonly (readonly string[])[] {
+export function subtitleWindows(
+  text: string,
+  maxLineChars = MAX_LINE_CHARS,
+): readonly (readonly string[])[] {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (!normalized) {
     return [];
   }
 
+  const lineWidth = Number.isFinite(maxLineChars)
+    ? Math.max(1, Math.floor(maxLineChars))
+    : MAX_LINE_CHARS;
   const phrases = splitByPunctuation(normalized);
-  const lines = phrases.flatMap((phrase) => splitByLength(phrase, MAX_LINE_CHARS));
+  const lines = phrases.flatMap((phrase) => splitByLength(phrase, lineWidth));
   const windows: string[][] = [];
 
   for (let index = 0; index < lines.length; index += MAX_LINES) {

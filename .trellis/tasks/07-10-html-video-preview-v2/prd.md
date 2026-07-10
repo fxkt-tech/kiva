@@ -31,12 +31,13 @@ system exports.
 - Render the 16:9 stage with semantic React components and Tailwind/CSS, using a
   fixed 1920x1080 design coordinate space that scales uniformly for browser
   display.
-- Preserve the current narrative composition—left/right seat tracks, top title,
-  central stage, subtitle band, and distinct speech/case-board responsibilities—
-  but redesign the visual system for HTML rather than reproducing Pixi geometry
-  pixel-for-pixel. Retain the existing investigative/mansion tone, background
-  assets, and recognizable palette while using CSS layout, typography, depth,
-  and responsive text flow deliberately.
+- Preserve the left/right seat tracks and a centered title, visual stage, and
+  transcript stack, but redesign their responsibilities for video. The title,
+  empty visual stage, and transcript are three independent equal-width cards.
+  Both seat tracks span their combined full height. The visual stage contains
+  only the environment background until a later visual direction is chosen;
+  it does not render speech portraits, case boards, or event copy. Retain the
+  investigative/mansion tone, background assets, and recognizable palette.
 - Treat adverse content as a design input: long player names, multi-line titles
   and details, missing avatars, dense rows, and dead-player states must have
   explicit layout behavior rather than corrective coordinate patches.
@@ -146,6 +147,11 @@ system exports.
 - [ ] Long names, long titles/details, missing avatars, eliminated players, and
   empty playback are covered by tests or explicit visual fixtures without
   overlap or clipping outside defined overflow rules.
+- [ ] The title card contains only the current scene title; speech transcripts
+  are attributed to the active player, while phase changes, night actions,
+  announcements, votes, and resolutions are attributed to the presenter.
+- [ ] The two six-card seat tracks align with the title card at the top and the
+  transcript card at the bottom, while all three center cards share one width.
 - [ ] Type checking, automated tests, and a production build pass.
 
 ## Out of Scope

@@ -116,25 +116,25 @@ Create feature-scoped components under
 'src/components/preview-v2/stage/':
 
 - 'html-playback-stage.tsx': fixed 1920x1080 root and scene dispatch.
-- 'stage-header.tsx': game title and scene metadata.
+- 'stage-header.tsx': current scene title only.
 - 'seat-track.tsx' and 'seat-card.tsx': six stable slots per side.
-- 'speech-scene.tsx': active-player portrait and dossier treatment.
-- 'case-board-scene.tsx': phase, announcement, vote, and resolution variants.
-- 'subtitle-band.tsx': current deterministic subtitle cue.
+- 'subtitle-band.tsx': narrator avatar, identity, and deterministic narration.
+- 'stage-copy.ts': exhaustive presenter/player attribution and semantic fallback
+  narration for scenes without text.
 - 'stage-background.tsx': day/night image and CSS overlays.
 - 'stage-theme.ts': renderer-neutral design tokens.
 
 The root uses a fixed grid:
 
 ~~~text
-+-------------------------------------------------------------+
-| Header                                                      |
 +-----------+-------------------------------------+-----------+
-| Seats 1-6 | Speech scene or Case Board          | Seats 7-12|
-|           |                                     |           |
+|           | Current scene title                 |           |
+|           +-------------------------------------+           |
+| Seats 1-6 | Empty visual stage                  | Seats 7-12|
+| full      | Background atmosphere only          | full      |
+| height    +-------------------------------------+ height    |
+|           | Avatar | narrator + narration       |           |
 +-----------+-------------------------------------+-----------+
-|                         Subtitle                            |
-+-------------------------------------------------------------+
 ~~~
 
 Internal dimensions are always 1920x1080. The page scales the Player as a
@@ -145,11 +145,13 @@ Content rules:
 - Seat name: at most two lines; deterministic font-size tier based on string
   class/length, not post-render coordinate correction.
 - Role: one line with ellipsis.
-- Main title: at most two lines.
-- Body: bounded line count; semantic content projection decides which rows are
-  shown and emits a final '+N more' row when necessary.
-- Details and participants: fixed maximum count by scene variant; never scroll
-  inside a video frame.
+- Main title: one line with deterministic truncation.
+- The visual stage has no readable content. New visual concepts must mount in
+  that reserved slot without changing the surrounding grid.
+- Transcript narration is at most three lines per deterministic window.
+- Speech uses the active player as narrator. Every non-speech kind uses the
+  presenter, including private night actions and resolutions. Empty phase text
+  uses explicit phase narration rather than falling back to the title.
 - Missing avatar: initials/fallback mark in the same box geometry.
 - Eliminated player: reduced saturation/contrast plus explicit status marker;
   never represented by opacity alone.

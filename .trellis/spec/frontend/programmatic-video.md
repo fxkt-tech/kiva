@@ -29,8 +29,19 @@ timing behavior.
   `data-theme`. The composition owns its cinematic palette and must not inherit
   light/dark application theme decisions.
 - Atmospheric darkness (background gradient and vignette) belongs inside the
-  background layer. It must render before seats, case board, header, and
+  background layer. It must render before seats, title, visual stage, and
   subtitles; full-frame texture overlays above content must remain low-opacity.
+- Stage copy has one semantic owner: the title card owns only
+  `scene.title`; the visual-stage card owns no readable content; the transcript
+  card owns narrator identity and narration. Speech uses the active player as
+  narrator. `phase`, `announcement`, `vote`, and `resolution` use the presenter,
+  including director-only night actions.
+- Never use `scene.title` as transcript fallback. Scenes with empty narration
+  use an exhaustive semantic projection: explicit copy for every phase, then
+  event details or a kind-specific neutral message for other scene kinds.
+- Title, visual stage, and transcript are independent equal-width cards in the
+  center column. Each six-card seat track spans their combined full height; its
+  top aligns with the title and its bottom aligns with the transcript.
 - Video profile is 1920x1080, 30 FPS, H.264, `yuv420p`, with AAC when cues exist.
 - Export creation reloads authoritative game state and snapshots confirmed
   active events plus all mutable assets. A preview draft is never exported.
@@ -75,6 +86,12 @@ timing behavior.
   the stage root and rendered frame remain identical.
 - Layer order: at a mid-scene frame, root opacity is `1` and no high-opacity
   vignette is a later sibling of the content grid.
+- Copy ownership: cover `phase`, `announcement`, `speech`, `vote`, and
+  `resolution`; only speech resolves to a player, every other kind resolves to
+  the presenter, and empty narration never falls back to the title.
+- Grid geometry: title, empty visual stage, and transcript have identical x and
+  width; both seat tracks align to the title top and transcript bottom and each
+  contains exactly six equal-height slots.
 - Audio lifecycle regression: seek across the complete Player timeline and
   assert that the shared `<Html5Audio>` tag limit is never exceeded.
 - Integration: a second request stays queued while one render is active;
@@ -92,7 +109,10 @@ the composition. Use semantic application tokens outside the Player instead of
 duplicating its hard-coded cinematic colors. Bound each system-voice cue to its
 playback scene instead of increasing `numberOfSharedAudioTags` to hide
 unbounded mounts. Keep dark vignettes inside the background instead of placing
-them over information content. Remotion's Webpack disk cache stays disabled
+them over information content. Do not put temporary event UI into the reserved
+visual stage or let transcript content independently fall back to
+`scene.title`; resolve narrator and narration once by semantic ownership.
+Remotion's Webpack disk cache stays disabled
 because the application already caches the completed bundle per process; this
 avoids corrupted cache packs during local
 concurrent builds.

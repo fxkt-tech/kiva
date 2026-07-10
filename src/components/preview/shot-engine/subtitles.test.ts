@@ -14,6 +14,18 @@ describe("preview subtitle cues", () => {
     expect(windows[0]!.length).toBeLessThanOrEqual(3);
   });
 
+  it("supports a narrower deterministic line width", () => {
+    const windows = subtitleWindows("一二三四五六七八九十。十一十二十三十四十五。", 6);
+
+    expect(windows.flat().every((line) => Array.from(line).length <= 6)).toBe(
+      true,
+    );
+  });
+
+  it("clamps an invalid line width instead of stalling", () => {
+    expect(subtitleWindows("测试", 0)).toEqual([["测", "试"]]);
+  });
+
   it("selects the active subtitle window from scene progress", () => {
     const scene = playbackScene({
       text: "第一句很长很长很长很长很长很长很长。第二句也很长很长很长很长很长很长很长。第三句继续推进。",
