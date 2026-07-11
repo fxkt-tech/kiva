@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 4
+- **Total Sessions**: 5
 - **Last Active**: 2026-07-12
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~140 | Active |
+| `journal-1.md` | ~173 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 5 | 2026-07-12 | Replace legacy preview | `07b4614` | `main` |
 | 4 | 2026-07-12 | Redesign prompts and automate editor drafts | `a971095` | `main` |
 | 3 | 2026-07-11 | Collaborative wolf night strategy and voting | `d847b75` | `main` |
 | 2 | 2026-07-11 | Centralize presenters and redesign Preview v2 | `14899a4` | `main` |

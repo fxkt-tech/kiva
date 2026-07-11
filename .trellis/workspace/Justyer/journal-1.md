@@ -138,3 +138,36 @@ Committed the prompt workflow redesign and editor improvements, including browse
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: Replace legacy preview
+
+**Date**: 2026-07-12
+**Task**: Replace legacy preview
+**Branch**: `main`
+
+### Summary
+
+Removed the legacy Pixi preview and dependencies, promoted the HTML/Remotion preview to /preview, simplified preview navigation and sidebar metadata, and updated links and programmatic-video specs.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `07b4614` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
