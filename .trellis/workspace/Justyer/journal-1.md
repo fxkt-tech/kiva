@@ -39,3 +39,36 @@ Delivered deterministic React/Remotion preview and MP4 export, then redesigned t
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: Centralize presenters and redesign Preview v2
+
+**Date**: 2026-07-11
+**Task**: Centralize presenters and redesign Preview v2
+**Branch**: `main`
+
+### Summary
+
+Centralized selectable presenter definitions and copy in KivDB, added Library configuration and immutable game snapshots, refined Preview v2 navigation, transcript ownership, responsive identity palette, seat cards, raw backgrounds, and current-frame clipboard capture.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `14899a4` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
