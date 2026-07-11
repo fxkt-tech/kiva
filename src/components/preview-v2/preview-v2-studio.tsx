@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -12,11 +11,9 @@ import {
 } from "lucide-react";
 import { Player, type PlayerRef } from "@remotion/player";
 import { toBlob } from "html-to-image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { playbackIndexAtMs } from "@/core/playback";
 import { Button } from "@/components/ui/button";
-import { iconButtonClassName } from "@/components/ui/button-styles";
 import { KivaVideoComposition } from "./composition/kiva-video-composition";
 import {
   compositionDurationInFrames,
@@ -140,28 +137,6 @@ export function PreviewV2Studio({
   return (
     <main className="min-h-dvh overflow-auto bg-background p-3 text-foreground lg:h-dvh lg:overflow-hidden">
       <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-[1800px] flex-col gap-3 lg:h-full lg:min-h-0">
-        <header className="-mx-3 flex min-h-12 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border px-3 pb-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link
-              aria-label="Back to editor"
-              className={iconButtonClassName()}
-              href={`/games/${composition.gameId}/editor`}
-              title="Back to editor"
-            >
-              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-            </Link>
-            <h1 className="truncate text-base font-semibold text-foreground">
-              {composition.gameTitle}
-            </h1>
-            <span className="hidden shrink-0 rounded-full border border-border bg-badge px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-badge-foreground sm:inline-flex">
-              HTML video master
-            </span>
-          </div>
-          <div className="font-mono text-[11px] tracking-[0.1em] text-subtle">
-            1920×1080 · 30 FPS · {composition.items.length} records
-          </div>
-        </header>
-
         {includesDraft ? (
           <div className="shrink-0 rounded-md border border-warning-badge-foreground/30 bg-warning-badge px-3 py-2 text-xs text-warning-badge-foreground">
             当前预览包含未确认草稿；正式导出只使用已确认事件。
@@ -269,7 +244,15 @@ export function PreviewV2Studio({
               </div>
             </section>
           </div>
-          <div className="min-h-0">
+          <div className="grid min-h-0 gap-3 lg:grid-rows-[auto_minmax(0,1fr)]">
+            <section className="rounded-lg border border-border bg-surface/45 p-4">
+              <h1 className="truncate text-base font-semibold text-foreground">
+                {composition.gameTitle}
+              </h1>
+              <div className="mt-2 font-mono text-[11px] tracking-[0.1em] text-subtle">
+                1920×1080 · 30 FPS · {composition.items.length} records
+              </div>
+            </section>
             <ExportPanel
               canExport={canExport}
               gameId={composition.gameId}

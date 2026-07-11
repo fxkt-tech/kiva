@@ -9,7 +9,7 @@ timing behavior.
 
 ## 2. Signatures
 
-- Route: `GET /games/:gameId/preview_v2?focus=current`
+- Route: `GET /games/:gameId/preview?focus=current`
 - Create/list: `POST|GET /api/games/:gameId/preview-v2/exports`
 - Status: `GET /api/preview-v2/exports/:jobId`
 - Actions: `POST /api/preview-v2/exports/:jobId/{cancel|retry}`

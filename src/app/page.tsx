@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Eye, SquarePen, Trash2, Video } from "lucide-react";
+import { Eye, SquarePen, Trash2 } from "lucide-react";
 import { deleteGameAction } from "@/app/actions";
 import { GameTokenUsageButton } from "@/components/home/game-token-usage-button";
 import { GameTitleEditor } from "@/components/home/game-title-editor";
@@ -124,15 +124,6 @@ export default async function HomePage() {
                             title="Preview game"
                           >
                             <Eye aria-hidden="true" className="h-4 w-4" />
-                          </Link>
-                          <Link
-                            href={`/games/${record.game.id}/preview_v2`}
-                            className={iconButtonClassName({ size: "md" })}
-                            target="_blank"
-                            aria-label="Preview game v2"
-                            title="Preview game v2"
-                          >
-                            <Video aria-hidden="true" className="h-4 w-4" />
                           </Link>
                           <Link
                             href={`/games/${record.game.id}/editor`}

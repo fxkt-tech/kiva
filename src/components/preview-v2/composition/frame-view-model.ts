@@ -28,8 +28,6 @@ export function createHtmlFrameViewModel(input: {
       scene,
       items: input.items,
       timeMs: input.timeMs,
-      backgroundImages: { day: null, night: null },
-      avatarImages: {},
     }),
     assets: input.assets,
   };

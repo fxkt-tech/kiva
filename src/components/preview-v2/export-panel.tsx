@@ -96,9 +96,6 @@ export function ExportPanel({
           <div className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground">
             Render archive
           </div>
-          <div className="mt-1 text-sm text-muted">
-            已确认事件 · MP4 / H.264 · 所有产物永久保留
-          </div>
         </div>
         <div className="flex gap-2">
           <Button

@@ -12,8 +12,6 @@ describe("preview shot director", () => {
       }),
       items: [],
       timeMs: 500,
-      backgroundImages: { day: null, night: null },
-      avatarImages: {},
     });
 
     expect(frame.activePlayer?.seatNo).toBe(4);
@@ -29,8 +27,6 @@ describe("preview shot director", () => {
       }),
       items: [],
       timeMs: 1000,
-      backgroundImages: { day: null, night: null },
-      avatarImages: {},
     });
 
     expect(frame.activePlayer).toBeNull();

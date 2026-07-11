@@ -1,5 +1,4 @@
 import type { PlaybackItem, PlaybackScenePlayer } from "@/core/playback";
-import type { PreviewAvatarImages, PreviewBackgroundImages } from "../preview-renderer";
 import type { ShotLayout } from "./shot-layout";
 import type { SubtitleCue } from "./subtitles";
 
@@ -26,6 +25,4 @@ export type ShotFrame = {
   readonly activePlayer: RenderablePlayer | null;
   readonly highlightedPlayers: readonly RenderablePlayer[];
   readonly subtitle: SubtitleCue | null;
-  readonly backgroundImages: PreviewBackgroundImages;
-  readonly avatarImages: PreviewAvatarImages;
 };

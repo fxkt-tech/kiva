@@ -8,8 +8,6 @@ export function createShotFrame(input: {
   readonly scene: PlaybackItem;
   readonly items: readonly PlaybackItem[];
   readonly timeMs: number;
-  readonly backgroundImages: ShotFrame["backgroundImages"];
-  readonly avatarImages: ShotFrame["avatarImages"];
 }): ShotFrame {
   const clock = createShotClock(input.scene, input.timeMs);
   const activePlayerId = activePlayerIdForScene(input.scene);
@@ -38,8 +36,6 @@ export function createShotFrame(input: {
     activePlayer,
     highlightedPlayers,
     subtitle,
-    backgroundImages: input.backgroundImages,
-    avatarImages: input.avatarImages,
   };
 }
 
