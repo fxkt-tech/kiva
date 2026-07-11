@@ -11,9 +11,14 @@ import {
   rollbackAfterIndex,
 } from "@/core/event-log";
 import { createGameFromPreset } from "@/core/game";
-import { createDefaultRuleset, type GameId } from "@/core/types";
+import {
+  createDefaultRuleset,
+  type DraftId,
+  type GameId,
+} from "@/core/types";
 import { createDraftId, createEventId, createGameId } from "@/core/id";
 import type { LlmClient } from "@/core/llm";
+import type { LlmPromptMode } from "@/core/prompt-builders";
 import { generateSpeechDraft } from "@/core/speech-generation";
 import { generateActionDraft } from "@/core/action-generation";
 import { getLegalNightTargets } from "@/core/rules";
@@ -31,6 +36,7 @@ export type CreateGameActionsOptions = {
   readonly llmClient?: LlmClient;
   readonly libraryRepository?: LibraryRepository;
   readonly defaultPresetId?: string;
+  readonly promptMode?: LlmPromptMode;
 };
 
 export function createGameActions(
@@ -192,10 +198,16 @@ export function createGameActions(
       });
     },
 
-    async confirmDraft(gameId: GameId): Promise<GameRecord> {
+    async confirmDraft(
+      gameId: GameId,
+      expectedDraftId?: DraftId,
+    ): Promise<GameRecord> {
       return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);
-        if (!record.draft) {
+        if (
+          !record.draft ||
+          (expectedDraftId !== undefined && record.draft.id !== expectedDraftId)
+        ) {
           return record;
         }
 
@@ -259,6 +271,7 @@ export function createGameActions(
           draft: record.draft,
           llmClient: options.llmClient,
           createdAt: updatedAt,
+          promptMode: options.promptMode,
         });
         if (!generatedDraft.generation) {
           return record;
@@ -395,6 +408,7 @@ async function maybeGenerateDraft(input: {
   readonly draft: NonNullable<GameRecord["draft"]>;
   readonly llmClient: LlmClient | undefined;
   readonly createdAt: string;
+  readonly promptMode?: LlmPromptMode;
 }) {
   if (!input.llmClient) {
     return { draft: input.draft, generation: null };
@@ -407,6 +421,7 @@ async function maybeGenerateDraft(input: {
     llmClient: input.llmClient,
     generationId: createGenerationId(),
     createdAt: input.createdAt,
+    promptMode: input.promptMode,
   });
   if (speechResult.generation) {
     return speechResult;
@@ -419,6 +434,7 @@ async function maybeGenerateDraft(input: {
     llmClient: input.llmClient,
     generationId: createGenerationId(),
     createdAt: input.createdAt,
+    promptMode: input.promptMode,
   });
 }
 

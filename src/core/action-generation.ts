@@ -7,34 +7,21 @@ import {
   createSuccessfulGenerationRecord,
   type GenerationRecord,
 } from "./generation-record";
+import {
+  canActorUseActionOptions,
+  legalActionOptions,
+  type LegalActionOptions,
+  type LlmActionDraft,
+} from "./llm-action-options";
 import type { LlmClient } from "./llm";
+import { isLlmActionDraft } from "./llm-task-specs";
 import { buildPlayerLlmContext } from "./player-context";
-import type { PlayerContextRosterEntry } from "./player-context";
-import {
-  baseViewerSystemPrompts,
-  firstNonEmpty,
-  rulesetPromptLines,
-  uniqueNonEmptyPrompts,
-} from "./prompt-builders";
-import { mechanicForDraftType } from "./role-mechanics";
-import {
-  getLegalNightTargets,
-} from "./rules";
-import { deriveGameState } from "./state";
+import { buildActionPrompt, type LlmPromptMode } from "./prompt-builders";
 import type { PlayerId } from "./types";
-
-type ActionDraft = Extract<
-  DraftEvent,
-  | { type: "seer_check_selected" }
-  | { type: "wolf_vote_cast" }
-  | { type: "vote_cast" }
-  | { type: "witch_antidote_decided" }
-  | { type: "witch_poison_decided" }
-  | { type: "guard_protect_selected" }
-  | { type: "hunter_shot_decided" }
->;
-
-const ACTION_PROMPT_VERSION = "action:v1";
+import {
+  generateValidatedJson,
+  ValidatedGenerationError,
+} from "./validated-generation";
 
 export type GenerateActionDraftInput = {
   readonly game: Game;
@@ -43,6 +30,7 @@ export type GenerateActionDraftInput = {
   readonly llmClient: LlmClient;
   readonly generationId: string;
   readonly createdAt: string;
+  readonly promptMode?: LlmPromptMode;
 };
 
 export type GenerateActionDraftResult = {
@@ -53,202 +41,143 @@ export type GenerateActionDraftResult = {
 export async function generateActionDraft(
   input: GenerateActionDraftInput,
 ): Promise<GenerateActionDraftResult> {
-  if (!isActionDraft(input.draft)) {
+  if (!isLlmActionDraft(input.draft)) {
     return { draft: input.draft, generation: null };
   }
 
-  const playerId = actionActorId(input.draft);
+  const draft = input.draft;
+  const playerId = actionActorId(draft);
   const context = buildPlayerLlmContext({
     game: input.game,
     events: input.events,
     viewerPlayerId: playerId,
   });
-  const legalTargetIds = legalTargetIdsForDraft(input.game, input.events, input.draft);
-  const mechanicKey = mechanicForDraftType(input.draft.type);
+  const options = legalActionOptions({
+    game: input.game,
+    events: input.events,
+    draft,
+  });
+  const prompt = buildActionPrompt({
+    context,
+    draft,
+    options,
+  }, input.promptMode);
   const request = {
-    systemPrompt: [
-      ...uniqueNonEmptyPrompts([
-        ...baseViewerSystemPrompts(context.viewer),
-        firstNonEmpty(context.viewer.roleActionPromptSnapshot ?? ""),
-      ]),
-      "你只能根据可见信息给出狼人杀行动建议。",
-      "必须输出 JSON 对象，不要输出 Markdown。",
-    ].join("\n"),
-    messages: [
-      {
-        role: "user" as const,
-        content: [
-          `draft=${input.draft.type}`,
-          `mechanic=${mechanicKey}`,
-          `你是：${context.viewer.seatNo} 号 ${context.viewer.name}`,
-          `你的身份：${context.viewer.roleName}`,
-          ...rulesetPromptLines(context.ruleset),
-          "玩家名单：",
-          ...context.roster.map((player) => rosterPromptLine(player)),
-          "可选目标：",
-          ...legalTargetIds.map((targetPlayerId) => `playerId=${targetPlayerId}`),
-          "可见事件：",
-          ...context.timeline.flatMap((item) => timelinePromptLines(item)),
-          actionOutputInstruction(input.draft.type),
-          "reasoning 是玩家的简短思考过程，只能引用以上可见信息。",
-        ].join("\n"),
-      },
-    ],
-    schemaName: "werewolf_action_v1",
+    systemPrompt: prompt.systemPrompt,
+    messages: prompt.messages,
+    schemaName: prompt.schemaName,
   };
 
   if (
-    !canActorPerformActionDraft(input.game, input.events, input.draft, context.viewer)
+    !canActorUseActionOptions({
+      game: input.game,
+      events: input.events,
+      draft,
+    })
   ) {
     return {
       draft: input.draft,
       generation: createFailedGenerationRecord({
         id: input.generationId,
         gameId: input.game.id,
-        draftId: input.draft.id,
+        draftId: draft.id,
         playerId,
         purpose: "action",
-        promptVersion: ACTION_PROMPT_VERSION,
+        promptVersion: prompt.promptVersion,
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
         request,
         rawOutput: null,
-        error: new Error(`Player cannot perform ${input.draft.type}`),
+        error: new Error(`Player cannot perform ${draft.type}`),
         createdAt: input.createdAt,
       }),
     };
   }
 
   try {
-    const output = await input.llmClient.generateJson({
+    const result = await generateValidatedJson({
+      llmClient: input.llmClient,
       modelBinding: context.viewer.modelBindingSnapshot,
-      ...request,
+      request,
+      validate: (parsed) =>
+        parseAndValidateActionEdit(draft, parsed, options),
+      repair: {
+        outputContract: actionRepairContract(draft, options),
+        legalTargetPlayerIds: options.targetPlayerIds,
+      },
     });
-    const edit = parseAndValidateActionEdit(input.game, input.events, input.draft, output.parsed);
 
     return {
-      draft: applyDraftPayloadEdit(input.draft, edit),
+      draft: applyDraftPayloadEdit(draft, result.value),
       generation: createSuccessfulGenerationRecord({
         id: input.generationId,
         gameId: input.game.id,
-        draftId: input.draft.id,
+        draftId: draft.id,
         playerId,
         purpose: "action",
-        promptVersion: ACTION_PROMPT_VERSION,
+        promptVersion: prompt.promptVersion,
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
         request,
-        tokenUsage: output.usage,
-        rawOutput: output.rawText,
-        parsedOutput: output.parsed,
+        tokenUsage: result.tokenUsage,
+        rawOutput: result.output.rawText,
+        parsedOutput: result.output.parsed,
+        attempts: result.attempts,
         createdAt: input.createdAt,
       }),
     };
   } catch (error) {
+    const failure =
+      error instanceof ValidatedGenerationError ? error : null;
     return {
-      draft: input.draft,
+      draft,
       generation: createFailedGenerationRecord({
         id: input.generationId,
         gameId: input.game.id,
-        draftId: input.draft.id,
+        draftId: draft.id,
         playerId,
         purpose: "action",
-        promptVersion: ACTION_PROMPT_VERSION,
+        promptVersion: prompt.promptVersion,
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
         request,
-        rawOutput: null,
+        tokenUsage: failure?.tokenUsage,
+        rawOutput: failure?.rawOutput ?? null,
         error,
         createdAt: input.createdAt,
+        attempts: failure?.attempts,
       }),
     };
   }
 }
 
-function rosterPromptLine(player: PlayerContextRosterEntry): string {
-  return [
-    `${player.seatNo} ${player.name}`,
-    `playerId=${player.playerId}`,
-    player.role ? `role=${player.role}` : null,
-    player.faction ? `faction=${player.faction}` : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(" ");
-}
+function actionRepairContract(
+  draft: LlmActionDraft,
+  options: LegalActionOptions,
+): readonly string[] {
+  if (
+    draft.type === "witch_antidote_decided" ||
+    draft.type === "witch_poison_decided"
+  ) {
+    return [
+      "used 必须是布尔值",
+      "used=false 时 targetPlayerId 必须为 null",
+      options.canUse === false
+        ? "本次规则禁止使用，used 必须为 false"
+        : "used=true 时 targetPlayerId 必须来自合法候选",
+      "decisionSummary 应是最多两句的简短字符串",
+    ];
+  }
 
-function timelinePromptLines(item: {
-  readonly title: string;
-  readonly text: string;
-  readonly details?: readonly string[];
-}): string[] {
   return [
-    `- ${item.title}：${item.text}`,
-    ...(item.details ?? []).map((detail) => `  - ${detail}`),
+    options.allowNoTarget
+      ? "targetPlayerId 必须是合法候选之一或 null"
+      : "targetPlayerId 必须是合法候选之一，不能是 null",
+    "decisionSummary 应是最多两句的简短字符串",
   ];
 }
 
-function actionOutputInstruction(draftType: ActionDraft["type"]): string {
-  switch (draftType) {
-    case "witch_antidote_decided":
-      return [
-        "输出字段：used、targetPlayerId、reasoning。",
-        'used 是必填布尔值。使用解药输出 {"used":true,"targetPlayerId":"从可选目标中选择的 playerId","reasoning":"简短说明原因"}。',
-        '不使用解药输出 {"used":false,"targetPlayerId":null,"reasoning":"简短说明原因"}。',
-      ].join("\n");
-    case "witch_poison_decided":
-      return [
-        "输出字段：used、targetPlayerId、reasoning。",
-        'used 是必填布尔值。使用毒药输出 {"used":true,"targetPlayerId":"从可选目标中选择的 playerId","reasoning":"简短说明原因"}。',
-        '不使用毒药输出 {"used":false,"targetPlayerId":null,"reasoning":"简短说明原因"}。',
-      ].join("\n");
-    case "vote_cast":
-      return '输出字段：targetPlayerId、reasoning。弃票用 {"targetPlayerId":null,"reasoning":"简短说明原因"}。';
-    case "seer_check_selected":
-    case "wolf_vote_cast":
-    case "guard_protect_selected":
-    case "hunter_shot_decided":
-      return '输出字段：targetPlayerId、reasoning。必须从可选目标中选择一个 playerId。';
-  }
-}
-
-function legalTargetIdsForDraft(
-  game: Game,
-  events: readonly GameEvent[],
-  draft: ActionDraft,
-): readonly PlayerId[] {
-  switch (draft.type) {
-    case "seer_check_selected":
-      return legalNightTargets(game, events, "seer_check", draft.actorPlayerId);
-    case "wolf_vote_cast":
-      return legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId);
-    case "guard_protect_selected":
-      return legalGuardTargets(game, events, draft.actorPlayerId);
-    case "hunter_shot_decided":
-      return legalNightTargets(game, events, "hunter_shot", draft.actorPlayerId);
-    case "witch_antidote_decided":
-      return legalAntidoteTargets(events);
-    case "witch_poison_decided":
-      return legalNightTargets(game, events, "witch_poison", draft.actorPlayerId);
-    case "vote_cast":
-      return deriveGameState(game.players, events).alivePlayerIds.filter(
-        (playerId) => playerId !== draft.payload.voterPlayerId,
-      );
-  }
-}
-
-function isActionDraft(draft: DraftEvent): draft is ActionDraft {
-  return (
-    draft.type === "seer_check_selected" ||
-    draft.type === "wolf_vote_cast" ||
-    draft.type === "guard_protect_selected" ||
-    draft.type === "hunter_shot_decided" ||
-    draft.type === "vote_cast" ||
-    draft.type === "witch_antidote_decided" ||
-    draft.type === "witch_poison_decided"
-  );
-}
-
-function actionActorId(draft: ActionDraft): PlayerId {
+function actionActorId(draft: LlmActionDraft): PlayerId {
   switch (draft.type) {
     case "vote_cast":
       return draft.payload.voterPlayerId;
@@ -260,61 +189,27 @@ function actionActorId(draft: ActionDraft): PlayerId {
   }
 }
 
-function canActorPerformActionDraft(
-  game: Game,
-  events: readonly GameEvent[],
-  draft: ActionDraft,
-  viewer: {
-    readonly playerId: PlayerId;
-    readonly role: Game["players"][number]["gameRole"];
-    readonly mechanicKey: Game["players"][number]["mechanicKey"];
-  },
-): boolean {
-  switch (draft.type) {
-    case "wolf_vote_cast":
-      return viewer.role === "werewolf" && viewer.mechanicKey === "wolf_kill";
-    case "seer_check_selected":
-      return viewer.role === "seer" && viewer.mechanicKey === "seer_check";
-    case "witch_antidote_decided":
-    case "witch_poison_decided":
-      return viewer.role === "witch" && viewer.mechanicKey === "witch_medicine";
-    case "guard_protect_selected":
-      return viewer.role === "guard" && viewer.mechanicKey === "guard_protect";
-    case "hunter_shot_decided":
-      return viewer.role === "hunter" && viewer.mechanicKey === "hunter_shot";
-    case "vote_cast":
-      return deriveGameState(game.players, events).alivePlayerIds.includes(
-        viewer.playerId,
-      );
-  }
-}
-
 function parseAndValidateActionEdit(
-  game: Game,
-  events: readonly GameEvent[],
-  draft: ActionDraft,
+  draft: LlmActionDraft,
   output: Record<string, unknown>,
+  options: LegalActionOptions,
 ): DraftPayloadEdit {
   switch (draft.type) {
     case "seer_check_selected":
-      return targetEdit(draft.type, output, legalNightTargets(game, events, "seer_check", draft.actorPlayerId));
     case "wolf_vote_cast":
-      return targetEdit(draft.type, output, legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId));
     case "guard_protect_selected":
-      return targetEdit(draft.type, output, legalGuardTargets(game, events, draft.actorPlayerId));
     case "hunter_shot_decided":
-      return targetEdit(draft.type, output, legalNightTargets(game, events, "hunter_shot", draft.actorPlayerId));
+      return targetEdit(draft.type, output, options.targetPlayerIds);
     case "vote_cast":
-      return voteEdit(game, events, draft, output);
+      return voteEdit(output, options);
     case "witch_antidote_decided":
-      return witchEdit(draft.type, output, legalAntidoteTargets(events));
     case "witch_poison_decided":
-      return witchEdit(draft.type, output, legalNightTargets(game, events, "witch_poison", draft.actorPlayerId));
+      return witchEdit(draft.type, output, options.targetPlayerIds);
   }
 }
 
 function targetEdit(
-  draftType: ActionDraft["type"],
+  draftType: LlmActionDraft["type"],
   output: Record<string, unknown>,
   legalTargets: readonly PlayerId[],
 ): DraftPayloadEdit {
@@ -327,21 +222,25 @@ function targetEdit(
 }
 
 function voteEdit(
-  game: Game,
-  events: readonly GameEvent[],
-  draft: Extract<ActionDraft, { type: "vote_cast" }>,
   output: Record<string, unknown>,
+  options: LegalActionOptions,
 ): DraftPayloadEdit {
-  const targetPlayerId = output.targetPlayerId ?? null;
+  if (!("targetPlayerId" in output)) {
+    throw new Error("targetPlayerId is required for vote_cast");
+  }
+
+  const targetPlayerId = output.targetPlayerId;
   if (targetPlayerId === null) {
+    if (!options.allowNoTarget) {
+      throw new Error("Abstain is not allowed for vote_cast");
+    }
     return { targetPlayerId: null };
   }
 
-  const state = deriveGameState(game.players, events);
-  const legalTargets = state.alivePlayerIds.filter(
-    (playerId) => playerId !== draft.payload.voterPlayerId,
-  );
-  if (typeof targetPlayerId !== "string" || !legalTargets.includes(targetPlayerId as PlayerId)) {
+  if (
+    typeof targetPlayerId !== "string" ||
+    !options.targetPlayerIds.includes(targetPlayerId as PlayerId)
+  ) {
     throw new Error("Illegal targetPlayerId for vote_cast");
   }
 
@@ -359,6 +258,9 @@ function witchEdit(
 
   const used = output.used;
   if (!used) {
+    if (output.targetPlayerId !== null) {
+      throw new Error(`targetPlayerId must be null when used=false for ${draftType}`);
+    }
     return { used: false, targetPlayerId: null };
   }
 
@@ -368,66 +270,6 @@ function witchEdit(
   }
 
   return { used: true, targetPlayerId: targetPlayerId as PlayerId };
-}
-
-function legalNightTargets(
-  game: Game,
-  events: readonly GameEvent[],
-  action: "wolf_kill" | "seer_check" | "witch_poison" | "hunter_shot",
-  actorPlayerId: PlayerId | undefined,
-): readonly PlayerId[] {
-  const state = deriveGameState(game.players, events);
-  return getLegalNightTargets(action, game.players, state.alivePlayerIds, actorPlayerId);
-}
-
-function legalGuardTargets(
-  game: Game,
-  events: readonly GameEvent[],
-  actorPlayerId: PlayerId | undefined,
-): readonly PlayerId[] {
-  const state = deriveGameState(game.players, events);
-  const previousTargetId = previousGuardTargetId(events, state.dayNumber);
-  return getLegalNightTargets(
-    "guard_protect",
-    game.players,
-    state.alivePlayerIds,
-    actorPlayerId,
-  ).filter((targetPlayerId) =>
-    game.ruleset.guardForbidConsecutiveSameTarget
-      ? targetPlayerId !== previousTargetId
-      : true,
-  );
-}
-
-function previousGuardTargetId(
-  events: readonly GameEvent[],
-  currentDayNumber: number,
-): PlayerId | null {
-  for (const event of [...events].reverse()) {
-    if (
-      event.type === "phase_started" &&
-      event.payload.phase === "night" &&
-      event.payload.dayNumber >= currentDayNumber
-    ) {
-      continue;
-    }
-
-    if (event.type === "guard_protect_selected") {
-      return event.payload.targetPlayerId;
-    }
-  }
-
-  return null;
-}
-
-function legalAntidoteTargets(events: readonly GameEvent[]): readonly PlayerId[] {
-  const wolfKill = [...events]
-    .reverse()
-    .find((event): event is Extract<GameEvent, { type: "wolf_vote_resolved" }> =>
-      event.type === "wolf_vote_resolved" && event.payload.targetPlayerId !== null,
-    );
-
-  return wolfKill?.payload.targetPlayerId ? [wolfKill.payload.targetPlayerId] : [];
 }
 
 function contextHash(context: unknown): string {

@@ -34,6 +34,16 @@ export type LlmClient = {
   ) => Promise<LlmGenerateJsonResult>;
 };
 
+export class LlmOutputParseError extends Error {
+  readonly rawText: string;
+
+  constructor(message: string, rawText: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "LlmOutputParseError";
+    this.rawText = rawText;
+  }
+}
+
 export class MockLlmClient implements LlmClient {
   private readonly queuedOutputs: Record<string, unknown>[];
   private nextIndex = 0;
@@ -130,11 +140,22 @@ export class OpenAICompatibleLlmClient implements LlmClient {
       throw new Error("LLM response did not include message content");
     }
 
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = parseLlmJsonObject(rawText);
+    } catch (error) {
+      throw new LlmOutputParseError(
+        `LLM message content was not a valid JSON object: ${errorWithCauseMessage(error)}`,
+        rawText,
+        { cause: error },
+      );
+    }
+
     return {
       provider: request.modelBinding.provider,
       model: request.modelBinding.model,
       rawText,
-      parsed: parseLlmJsonObject(rawText),
+      parsed,
       usage: parseOpenAICompatibleUsage(body.usage),
     };
   }
@@ -249,11 +270,52 @@ function localOutputForRequest(
     .map((message) => message.content)
     .join("\n");
 
-  if (request.schemaName === "werewolf_speech_v1") {
-    return { text: "我先根据目前能看到的信息给出自己的判断。" };
+  if (
+    request.schemaName === "werewolf_speech_v1" ||
+    request.schemaName === "werewolf_speech_v2"
+  ) {
+    return {
+      ...(request.schemaName === "werewolf_speech_v2" &&
+      userContent.includes('"disclosure"')
+        ? { disclosure: "conceal" }
+        : {}),
+      text: "我先根据目前能看到的信息给出自己的判断。",
+      decisionSummary: "当前信息有限，先给出可继续验证的方向。",
+    };
   }
 
-  if (request.schemaName === "werewolf_action_v1") {
+  if (
+    request.schemaName === "werewolf_action_v1" ||
+    request.schemaName === "werewolf_target_action_v2" ||
+    request.schemaName === "werewolf_optional_action_v2"
+  ) {
+    if (request.schemaName === "werewolf_optional_action_v2") {
+      return {
+        used: false,
+        targetPlayerId: null,
+        decisionSummary: "当前不消耗一次性资源。",
+      };
+    }
+
+    if (request.schemaName === "werewolf_target_action_v2") {
+      if (userContent.includes("弃票时输出")) {
+        return {
+          targetPlayerId: null,
+          decisionSummary: "当前选择合法弃票。",
+        };
+      }
+
+      const targetPlayerId = /【合法候选】[\s\S]*?-\s+([^\s|]+)\s+\|/.exec(
+        userContent,
+      )?.[1];
+      return {
+        targetPlayerId: targetPlayerId ?? null,
+        decisionSummary: targetPlayerId
+          ? "从本次合法候选中选择一个目标。"
+          : "当前没有合法候选。",
+      };
+    }
+
     if (
       userContent.includes("witch_antidote_decided") ||
       userContent.includes("witch_poison_decided")

@@ -1,7 +1,7 @@
 "use client";
 
-import { FileSearch, X } from "lucide-react";
-import { useId, useRef } from "react";
+import { Check, Copy, FileSearch, X } from "lucide-react";
+import { useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import type { GenerationRecord } from "@/core/generation-record";
@@ -14,7 +14,17 @@ type LlmGenerationDetailsProps = {
 export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const reasoning = reasoningText(generation.parsedOutput);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const decisionSummary = decisionSummaryText(generation.parsedOutput);
+
+  async function copyMarkdown() {
+    try {
+      await navigator.clipboard.writeText(generationMarkdown(generation));
+      setCopyStatus("copied");
+    } catch {
+      setCopyStatus("error");
+    }
+  }
 
   return (
     <>
@@ -42,16 +52,37 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
               {generation.promptVersion} · {formatTokenTotal(generation)}
             </p>
           </div>
-          <form method="dialog">
+          <div className="flex items-center gap-2">
             <Button
-              type="submit"
-              aria-label="Close"
-              title="Close"
+              type="button"
+              onClick={copyMarkdown}
+              aria-label="Copy LLM details as Markdown"
+              title={
+                copyStatus === "copied"
+                  ? "Copied"
+                  : copyStatus === "error"
+                    ? "Copy failed"
+                    : "Copy as Markdown"
+              }
               buttonStyle="icon"
             >
-              <X aria-hidden="true" className="h-4 w-4" />
+              {copyStatus === "copied" ? (
+                <Check aria-hidden="true" className="h-4 w-4" />
+              ) : (
+                <Copy aria-hidden="true" className="h-4 w-4" />
+              )}
             </Button>
-          </form>
+            <form method="dialog">
+              <Button
+                type="submit"
+                aria-label="Close"
+                title="Close"
+                buttonStyle="icon"
+              >
+                <X aria-hidden="true" className="h-4 w-4" />
+              </Button>
+            </form>
+          </div>
         </div>
         <div className="max-h-[calc(82vh-65px)] space-y-4 overflow-y-auto p-4">
           <GenerationBlock title="Token usage">
@@ -106,10 +137,46 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
             )}
           </GenerationBlock>
 
-          <GenerationBlock title="Player reasoning">
+          {generation.attempts && generation.attempts.length > 0 ? (
+            <GenerationBlock title={`Generation attempts (${generation.attempts.length})`}>
+              <div className="space-y-4">
+                {generation.attempts.map((attempt, index) => (
+                  <div
+                    key={`${attempt.request.schemaName}-${index}`}
+                    className="space-y-2 rounded-md border border-border p-3"
+                  >
+                    <KeyValue
+                      label={`Attempt ${index + 1}`}
+                      value={attempt.error ? "invalid" : "accepted"}
+                    />
+                    <TextDump
+                      label="System prompt"
+                      value={attempt.request.systemPrompt}
+                    />
+                    {attempt.request.messages.map((message, messageIndex) => (
+                      <TextDump
+                        key={`${message.role}-${messageIndex}`}
+                        label={`${message.role} message ${messageIndex + 1}`}
+                        value={message.content}
+                      />
+                    ))}
+                    <TextDump
+                      label="Raw output"
+                      value={attempt.rawOutput ?? "No raw output was recorded."}
+                    />
+                    {attempt.error ? (
+                      <TextDump label="Error" value={attempt.error} />
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </GenerationBlock>
+          ) : null}
+
+          <GenerationBlock title="Player reasoning / decision summary">
             <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
-              {reasoning ??
-                "No player reasoning field was returned by the model. Hidden model reasoning is not available."}
+              {decisionSummary ??
+                "No decision summary or legacy reasoning field was returned by the model. Hidden model reasoning is not available."}
             </pre>
           </GenerationBlock>
 
@@ -138,6 +205,36 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
       </dialog>
     </>
   );
+}
+
+export function generationMarkdown(
+  generation: Pick<GenerationRecord, "request" | "rawOutput"> &
+    Pick<Partial<GenerationRecord>, "attempts">,
+): string {
+  const sections: string[] = [];
+
+  if (generation.request) {
+    sections.push(`## Schema\n\n${generation.request.schemaName}`);
+    sections.push(`## System prompt\n\n${generation.request.systemPrompt}`);
+
+    for (const message of generation.request.messages) {
+      if (message.role === "user") {
+        sections.push(`## User message\n\n${message.content}`);
+      }
+    }
+  } else {
+    sections.push("## Schema\n\nNot recorded.");
+    sections.push("## System prompt\n\nNot recorded.");
+    sections.push("## User message\n\nNot recorded.");
+  }
+
+  sections.push(`## Raw response\n\n${generation.rawOutput ?? "Not recorded."}`);
+  for (const [index, attempt] of (generation.attempts ?? []).entries()) {
+    sections.push(
+      `## Attempt ${index + 1}\n\nStatus: ${attempt.error ? "invalid" : "accepted"}\n\nRaw response:\n\n${attempt.rawOutput ?? "Not recorded."}${attempt.error ? `\n\nError: ${attempt.error}` : ""}`,
+    );
+  }
+  return `${sections.join("\n\n")}\n`;
 }
 
 function GenerationBlock({
@@ -177,12 +274,20 @@ function TextDump({ label, value }: { readonly label: string; readonly value: st
   );
 }
 
-function reasoningText(parsedOutput: Record<string, unknown> | null): string | null {
+function decisionSummaryText(
+  parsedOutput: Record<string, unknown> | null,
+): string | null {
   if (!parsedOutput) {
     return null;
   }
 
-  for (const key of ["reasoning", "reason", "thought", "analysis"]) {
+  for (const key of [
+    "decisionSummary",
+    "reasoning",
+    "reason",
+    "thought",
+    "analysis",
+  ]) {
     const value = parsedOutput[key];
     if (typeof value === "string" && value.trim().length > 0) {
       return value.trim();

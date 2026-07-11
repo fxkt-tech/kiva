@@ -2,6 +2,7 @@ import type { GameEvent } from "./events";
 import { formatEventForHost, type PresentedEvent } from "./event-presenter";
 import type { Game } from "./game";
 import type { ModelBindingSnapshot, PlayerSnapshot } from "./player";
+import { deriveGameState } from "./state";
 import type { Faction, GameRole, PlayerId, Ruleset } from "./types";
 import { projectVisibleEvents, type VisibilityContext } from "./visibility";
 
@@ -18,6 +19,26 @@ export type PlayerContextTimelineItem = PresentedEvent & {
   readonly index: number;
   readonly type: GameEvent["type"];
   readonly phase: GameEvent["phase"];
+  readonly dayNumber: number | null;
+};
+
+export type PlayerPromptKnowledge = {
+  readonly publicFacts: readonly PlayerContextTimelineItem[];
+  readonly publicClaims: readonly PlayerContextTimelineItem[];
+  readonly privateFacts: readonly PlayerContextTimelineItem[];
+  readonly factionDiscussion: readonly PlayerContextTimelineItem[];
+};
+
+export type PlayerPromptState = {
+  readonly currentPhase: GameEvent["phase"];
+  readonly dayNumber: number;
+  readonly alivePlayerIds: readonly PlayerId[];
+  readonly deadPlayerIds: readonly PlayerId[];
+  readonly pkPlayerIds: readonly PlayerId[];
+  readonly witchResources: {
+    readonly antidoteAvailable: boolean;
+    readonly poisonAvailable: boolean;
+  } | null;
 };
 
 export type PlayerLlmContext = {
@@ -45,6 +66,8 @@ export type PlayerLlmContext = {
   readonly roster: readonly PlayerContextRosterEntry[];
   readonly visibleEvents: readonly GameEvent[];
   readonly timeline: readonly PlayerContextTimelineItem[];
+  readonly knowledge: PlayerPromptKnowledge;
+  readonly state: PlayerPromptState;
 };
 
 export type BuildPlayerLlmContextInput = {
@@ -70,6 +93,14 @@ export function buildPlayerLlmContext(
     viewer.playerId,
     visibilityContext,
   );
+  const state = deriveGameState(input.game.players, input.events);
+  const timeline = visibleEvents.map((event) => ({
+    index: event.index,
+    type: event.type,
+    phase: event.phase,
+    dayNumber: eventDayNumber(event),
+    ...formatEventForHost(event, input.game.players),
+  }));
 
   return {
     gameId: input.game.id,
@@ -95,13 +126,77 @@ export function buildPlayerLlmContext(
     },
     roster: input.game.players.map((player) => rosterEntryForViewer(player, viewer)),
     visibleEvents,
-    timeline: visibleEvents.map((event) => ({
-      index: event.index,
-      type: event.type,
-      phase: event.phase,
-      ...formatEventForHost(event, input.game.players),
-    })),
+    timeline,
+    knowledge: classifyPromptKnowledge(visibleEvents, timeline),
+    state: {
+      currentPhase: state.currentPhase,
+      dayNumber: state.dayNumber,
+      alivePlayerIds: state.alivePlayerIds,
+      deadPlayerIds: state.deadPlayerIds,
+      pkPlayerIds: state.pk.status === "pending" ? state.pk.tiedPlayerIds : [],
+      witchResources:
+        viewer.gameRole === "witch"
+          ? {
+              antidoteAvailable: state.witch.antidoteAvailable,
+              poisonAvailable: state.witch.poisonAvailable,
+            }
+          : null,
+    },
   };
+}
+
+function eventDayNumber(event: GameEvent): number | null {
+  if ("dayNumber" in event.payload) {
+    return event.payload.dayNumber;
+  }
+
+  return null;
+}
+
+function classifyPromptKnowledge(
+  events: readonly GameEvent[],
+  timeline: readonly PlayerContextTimelineItem[],
+): PlayerPromptKnowledge {
+  const publicFacts: PlayerContextTimelineItem[] = [];
+  const publicClaims: PlayerContextTimelineItem[] = [];
+  const privateFacts: PlayerContextTimelineItem[] = [];
+  const factionDiscussion: PlayerContextTimelineItem[] = [];
+
+  for (let index = 0; index < events.length; index += 1) {
+    const event = events[index];
+    const item = timeline[index];
+    if (!event || !item) continue;
+
+    if (event.type === "role_assigned" || event.type === "phase_started") {
+      continue;
+    }
+
+    if (
+      event.type === "wolf_strategy_given" ||
+      event.type === "wolf_opinion_given"
+    ) {
+      factionDiscussion.push(item);
+      continue;
+    }
+
+    if (
+      event.type === "day_speech_given" ||
+      event.type === "pk_speech_given" ||
+      event.type === "last_words_given"
+    ) {
+      publicClaims.push(item);
+      continue;
+    }
+
+    if (event.visibility.kind === "public") {
+      publicFacts.push(item);
+      continue;
+    }
+
+    privateFacts.push(item);
+  }
+
+  return { publicFacts, publicClaims, privateFacts, factionDiscussion };
 }
 
 function createVisibilityContext(

@@ -222,6 +222,28 @@ describe("game actions", () => {
     });
   });
 
+  it("does not confirm a newly planned draft with a stale expected draft id", async () => {
+    const { actions } = await createActions();
+    const created = await actions.createGame();
+    const firstDraft = await actions.continueGame(created.game.id);
+    if (!firstDraft.draft) throw new Error("Expected the first draft");
+
+    const confirmed = await actions.confirmDraft(
+      created.game.id,
+      firstDraft.draft.id,
+    );
+    const nextDraft = await actions.continueGame(created.game.id);
+    if (!nextDraft.draft) throw new Error("Expected the next draft");
+
+    const staleConfirmation = await actions.confirmDraft(
+      created.game.id,
+      firstDraft.draft.id,
+    );
+
+    expect(staleConfirmation.draft?.id).toBe(nextDraft.draft?.id);
+    expect(staleConfirmation.events).toEqual(confirmed.events);
+  });
+
   it("does not overwrite an existing draft when continuing again", async () => {
     const { actions } = await createActions();
     const created = await actions.createGame();
@@ -342,6 +364,29 @@ describe("game actions", () => {
         text: "我这里先报信息，1 号查杀。",
         reasoning: "根据可见信息推进发言。",
       },
+    });
+  });
+
+  it("passes the configured v1 prompt rollback through regeneration", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const created = await createGameActions(repository).createGame();
+    const actions = createGameActions(repository, {
+      promptMode: "v1",
+      llmClient: new MockLlmClient([
+        {
+          text: "使用旧版提示词生成。",
+          reasoning: "验证单点回滚。",
+        },
+      ]),
+    });
+    await continueUntilDraftType(actions, created.game.id, "day_speech_given");
+
+    const generated = await actions.regenerateDraft(created.game.id);
+
+    expect(generated.generations.at(-1)).toMatchObject({
+      status: "success",
+      promptVersion: "speech:v1",
+      request: { schemaName: "werewolf_speech_v1" },
     });
   });
 

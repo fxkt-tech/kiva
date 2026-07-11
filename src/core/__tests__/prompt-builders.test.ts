@@ -2,159 +2,467 @@ import { describe, expect, it } from "vitest";
 import type { DraftEvent } from "../drafts";
 import type { GameEvent } from "../events";
 import { createSeedGame } from "../game";
+import { legalActionOptions } from "../llm-action-options";
 import { buildPlayerLlmContext } from "../player-context";
 import {
-  baseViewerSystemPrompts,
+  ACTION_PROMPT_VERSION,
+  buildActionPrompt,
   buildSpeechPrompt,
   SPEECH_PROMPT_VERSION,
-  uniqueNonEmptyPrompts,
 } from "../prompt-builders";
-import type { DraftId, EventId, GameId } from "../types";
+import type {
+  DraftId,
+  EventId,
+  Faction,
+  GameId,
+  GameRole,
+  PlayerId,
+} from "../types";
 
 const gameId = "game_1" as GameId;
 const createdAt = "2026-06-26T00:00:00.000Z";
 const game = createSeedGame({ gameId, createdAt });
 const wolf = playerByRole("werewolf");
+const secondWolf = game.players.find(
+  (player) => player.gameRole === "werewolf" && player.playerId !== wolf.playerId,
+)!;
 const seer = playerByRole("seer");
+const witch = playerByRole("witch");
+const villager = playerByRole("villager");
 
-describe("prompt builders", () => {
-  it("builds speech prompts from visibility-safe player context", () => {
+describe("prompt builders v2", () => {
+  it("puts scene and task before semantically separated player knowledge", () => {
+    const checkedWolfId = wolf.playerId;
+    const events = [
+      roleAssigned(1, seer.playerId, "seer", "good"),
+      phaseStarted(2, "night", 1),
+      {
+        ...baseEvent(3),
+        type: "seer_check_result",
+        phase: "night",
+        actorPlayerId: seer.playerId,
+        targetPlayerIds: [checkedWolfId],
+        visibility: { kind: "player_private", playerIds: [seer.playerId] },
+        payload: { targetPlayerId: checkedWolfId, result: "wolves" },
+      },
+      {
+        ...baseEvent(4),
+        type: "death_announced",
+        phase: "day",
+        targetPlayerIds: [],
+        visibility: { kind: "public" },
+        payload: { deadPlayerIds: [] },
+      },
+      phaseStarted(5, "speech", 1),
+      daySpeech(6, villager.playerId, "我觉得昨夜平安需要继续观察。"),
+    ] satisfies readonly GameEvent[];
     const context = buildPlayerLlmContext({
       game,
-      events: [
-        roleAssigned(1, seer),
-        {
-          ...baseEvent(2),
-          type: "phase_started",
-          phase: "night",
-          visibility: { kind: "public" },
-          payload: { phase: "night", dayNumber: 1 },
-        },
-        {
-          ...baseEvent(3),
-          type: "seer_check_result",
-          phase: "night",
-          actorPlayerId: seer.playerId,
-          targetPlayerIds: [wolf.playerId],
-          visibility: { kind: "player_private", playerIds: [seer.playerId] },
-          payload: { targetPlayerId: wolf.playerId, result: "wolves" },
-        },
-      ] satisfies readonly GameEvent[],
+      events,
       viewerPlayerId: seer.playerId,
     });
-
     const prompt = buildSpeechPrompt({
       context,
-      draft: speechDraft(),
+      draft: daySpeechDraft(seer.playerId),
     });
-    const combined = [
-      prompt.systemPrompt,
-      ...prompt.messages.map((message) => message.content),
-    ].join("\n");
+    const content = prompt.messages[0]!.content;
 
     expect(prompt.promptVersion).toBe(SPEECH_PROMPT_VERSION);
-    expect(prompt.schemaName).toBe("werewolf_speech_v1");
-    expect(prompt.systemPrompt).toContain(seer.characterSystemPromptSnapshot);
+    expect(prompt.promptVersion).toBe("speech:v2");
+    expect(prompt.schemaName).toBe("werewolf_speech_v2");
+    expect(prompt.systemPrompt).toContain("【执行优先级】");
     expect(prompt.systemPrompt).toContain(seer.roleSystemPromptSnapshot);
-    expect(prompt.systemPrompt).toContain("你只能依据用户消息中列出的可见信息发言");
-    expect(combined).toContain(seer.speakingStyle);
-    expect(combined).toContain(`${seer.seatNo} 号 ${seer.name}`);
-    expect(combined).toContain(`你的身份：${seer.roleName}`);
-    expect(combined).toContain("本局规则：");
-    expect(combined).toContain(
-      "角色配置：狼人 4、预言家 1、女巫 1、猎人 1、守卫 1、平民 4",
+    expect(prompt.systemPrompt).toContain(seer.persona);
+    expect(prompt.systemPrompt).toContain("人物信息只是倾向，不是固定台词模板");
+    expect(content.startsWith("【当前场景——本轮最高优先级】")).toBe(true);
+    expect(content.indexOf("【本轮唯一任务】")).toBeLessThan(
+      content.indexOf("【已确认的公开事实】"),
     );
-    expect(combined).toContain("守卫每晚守护一名存活玩家");
-    expect(combined).toContain("查验结果");
-    expect(combined).toContain("speech");
-    expect(combined).toContain("必须输出 JSON 对象");
-    expect(combined).toContain('"text"');
-    expect(combined).not.toContain("#3");
-    expect(combined).not.toContain("reasoning 是给主理人看的");
-    expect(combined).not.toContain(`${wolf.seatNo} 号 ${wolf.name}：狼人`);
-    expect(combined).not.toContain("1 号 周知：平民");
+    expect(content).toContain("【其他玩家的公开主张——可能真实、误判或撒谎】");
+    expect(content).toContain("【未知信息——没有提供就不得推断为事实】");
+    expect(content).toContain("我觉得昨夜平安需要继续观察。");
+    expect(content).toContain("【你的私有事实——默认不可公开");
+    expect(content).toContain("查验结果");
+    expect(content).toContain("disclosure");
+    expect(content).toContain("decisionSummary");
+    expect(content).not.toContain('"reasoning"');
+    expect(content).not.toContain(
+      `${wolf.playerId} | ${wolf.seatNo} 号 | ${wolf.name} | 狼人`,
+    );
   });
 
-  it("falls back to legacy viewer system prompt when prompt snapshots are empty", () => {
-    const legacySystemPrompt = "旧局人设 prompt 仍要保留";
+  it("makes wolf opinions an explicit faction-private response task", () => {
+    const events = [
+      roleAssigned(1, wolf.playerId, "werewolf", "wolves"),
+      roleAssigned(2, secondWolf.playerId, "werewolf", "wolves"),
+      phaseStarted(3, "night", 1),
+      {
+        ...baseEvent(4),
+        type: "wolf_strategy_given",
+        phase: "night",
+        actorPlayerId: wolf.playerId,
+        visibility: { kind: "faction_private", faction: "wolves" },
+        payload: {
+          playerId: wolf.playerId,
+          text: "主刀 8 号，备选 9 号，但目前没有行为信息。",
+          dayNumber: 1,
+        },
+      },
+    ] satisfies readonly GameEvent[];
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: secondWolf.playerId,
+    });
+    const content = buildSpeechPrompt({
+      context,
+      draft: wolfOpinionDraft(secondWolf.playerId),
+    }).messages[0]!.content;
+
+    expect(content).toContain("频道：狼人私聊");
+    expect(content).toContain("不需要隐藏自己或队友的狼人身份");
+    expect(content).toContain("狼队尚未密票，本夜尚未结算");
+    expect(content).toContain("明确赞成、反对或修正已有主方案");
+    expect(content).toContain("主刀 8 号，备选 9 号");
+    expect(content).toContain("【合法候选】");
+    expect(content).not.toContain("现在是第一天白天");
+  });
+
+  it("gives the first day speaker a useful no-information objective", () => {
+    const events = [
+      roleAssigned(1, villager.playerId, "villager", "good"),
+      phaseStarted(2, "speech", 1),
+    ];
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: villager.playerId,
+    });
+    const content = buildSpeechPrompt({
+      context,
+      draft: daySpeechDraft(villager.playerId),
+    }).messages[0]!.content;
+
+    expect(content).toContain("你是本日第一位发言者");
+    expect(content).toContain("观察框架、关注点或暂定策略");
+    expect(content).toContain("不得只复述昨夜结果后直接过麦");
+  });
+
+  it("renders action candidates with stable id, seat, and name", () => {
+    const events = [
+      roleAssigned(1, seer.playerId, "seer", "good"),
+      phaseStarted(2, "night", 1),
+    ];
+    const draft = seerDraft(villager.playerId);
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: seer.playerId,
+    });
+    const options = legalActionOptions({ game, events, draft });
+    const prompt = buildActionPrompt({ context, draft, options });
+    const content = prompt.messages[0]!.content;
+
+    expect(prompt.promptVersion).toBe(ACTION_PROMPT_VERSION);
+    expect(prompt.promptVersion).toBe("action:v2");
+    expect(prompt.schemaName).toBe("werewolf_target_action_v2");
+    expect(content).toContain("频道：玩家私有行动");
+    expect(content).toContain("候选完全对称则明确这是中立选择");
+    expect(content).toContain(
+      `${villager.playerId} | ${villager.seatNo} 号 | ${villager.name}`,
+    );
+    expect(content).toContain("decisionSummary");
+    expect(content).not.toContain("PK 投票者");
+  });
+
+  it("does not inject a night action prompt into exile voting", () => {
+    const strictGame = {
+      ...game,
+      ruleset: { ...game.ruleset, allowAbstainVote: false },
+    };
+    const events = [
+      roleAssigned(1, wolf.playerId, "werewolf", "wolves"),
+      phaseStarted(2, "vote", 1),
+    ];
+    const draft = voteDraft(wolf.playerId, "exile");
+    const context = buildPlayerLlmContext({
+      game: strictGame,
+      events,
+      viewerPlayerId: wolf.playerId,
+    });
+    const options = legalActionOptions({ game: strictGame, events, draft });
+    const prompt = buildActionPrompt({ context, draft, options });
+    const combined = `${prompt.systemPrompt}\n${prompt.messages[0]!.content}`;
+
+    expect(combined).toContain("第 1 天放逐投票");
+    expect(combined).toContain("本局不允许弃票");
+    expect(combined).not.toContain(wolf.roleActionPromptSnapshot ?? "missing");
+    expect(combined).not.toContain('"targetPlayerId":null');
+  });
+
+  it("shows witch resources and forced no-use when dual use is forbidden", () => {
+    const rescuedPlayerId = game.players[0]!.playerId;
+    const events = [
+      roleAssigned(1, witch.playerId, "witch", "good"),
+      phaseStarted(2, "night", 1),
+      {
+        ...baseEvent(3),
+        type: "witch_antidote_decided",
+        phase: "night",
+        actorPlayerId: witch.playerId,
+        targetPlayerIds: [rescuedPlayerId],
+        visibility: { kind: "player_private", playerIds: [witch.playerId] },
+        payload: { used: true, targetPlayerId: rescuedPlayerId },
+      },
+    ] satisfies readonly GameEvent[];
+    const draft = witchPoisonDraft();
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: witch.playerId,
+    });
+    const options = legalActionOptions({ game, events, draft });
+    const prompt = buildActionPrompt({ context, draft, options });
+    const content = prompt.messages[0]!.content;
+
+    expect(prompt.schemaName).toBe("werewolf_optional_action_v2");
+    expect(content).toContain("解药：已用完");
+    expect(content).toContain("本夜解药决定：已使用");
+    expect(content).toContain("本夜毒药决定：当前正在决定");
+    expect(content).toContain("本次行动允许使用：否");
+    expect(content).toContain(
+      '{"used":false,"targetPlayerId":null,"decisionSummary"',
+    );
+  });
+
+  it("falls back to a legacy character prompt when structured profile fields are empty", () => {
+    const legacyPrompt = "旧游戏人物提示仍需保留";
     const legacyGame = {
       ...game,
       players: game.players.map((player) =>
-        player.playerId === seer.playerId
+        player.playerId === villager.playerId
           ? {
               ...player,
+              persona: "",
+              speakingStyle: "",
+              reasoningStyle: "",
               characterSystemPromptSnapshot: "",
-              roleSystemPromptSnapshot: "",
-              roleActionPromptSnapshot: null,
-              systemPrompt: legacySystemPrompt,
+              systemPrompt: legacyPrompt,
             }
           : player,
       ),
     };
     const context = buildPlayerLlmContext({
       game: legacyGame,
-      events: [roleAssigned(1, seer)],
-      viewerPlayerId: seer.playerId,
+      events: [roleAssigned(1, villager.playerId, "villager", "good")],
+      viewerPlayerId: villager.playerId,
     });
 
-    const prompt = buildSpeechPrompt({
-      context,
-      draft: speechDraft(),
-    });
-
-    expect(prompt.systemPrompt).toContain(legacySystemPrompt);
-    expect(prompt.systemPrompt).toContain("你只能依据用户消息中列出的可见信息发言");
+    expect(
+      buildSpeechPrompt({ context, draft: daySpeechDraft(villager.playerId) })
+        .systemPrompt,
+    ).toContain(legacyPrompt);
   });
 
-  it("normalizes empty and duplicate viewer system prompt fragments", () => {
-    expect(
-      baseViewerSystemPrompts({
-        characterSystemPromptSnapshot: "  共同 prompt  ",
-        roleSystemPromptSnapshot: "共同 prompt",
-        systemPrompt: "fallback prompt",
-      }),
-    ).toEqual(["共同 prompt"]);
-    expect(uniqueNonEmptyPrompts(["  a  ", "", "a", " b "])).toEqual([
-      "a",
-      "b",
-    ]);
+  it("does not inject another role's action advice into an invalid draft", () => {
+    const events = [
+      roleAssigned(1, seer.playerId, "seer", "good"),
+      phaseStarted(2, "night", 1),
+    ];
+    const draft = {
+      ...wolfVoteDraft(villager.playerId),
+      actorPlayerId: seer.playerId,
+    };
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: seer.playerId,
+    });
+    const prompt = buildActionPrompt({
+      context,
+      draft,
+      options: { targetPlayerIds: [], allowNoTarget: false },
+    });
+
+    expect(prompt.systemPrompt).not.toContain(
+      seer.roleActionPromptSnapshot ?? "missing role action prompt",
+    );
+  });
+
+  it("keeps isolated v1 builders available for a runtime rollback", () => {
+    const events = [
+      roleAssigned(1, seer.playerId, "seer", "good"),
+      phaseStarted(2, "night", 1),
+    ];
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: seer.playerId,
+    });
+    const speech = buildSpeechPrompt(
+      { context, draft: daySpeechDraft(seer.playerId) },
+      "v1",
+    );
+    const actionDraft = seerDraft(villager.playerId);
+    const action = buildActionPrompt(
+      {
+        context,
+        draft: actionDraft,
+        options: legalActionOptions({ game, events, draft: actionDraft }),
+      },
+      "v1",
+    );
+
+    expect(speech).toMatchObject({
+      promptVersion: "speech:v1",
+      schemaName: "werewolf_speech_v1",
+    });
+    expect(speech.messages[0]?.content).toContain("draft=day_speech_given");
+    expect(action).toMatchObject({
+      promptVersion: "action:v1",
+      schemaName: "werewolf_action_v1",
+    });
+    expect(action.messages[0]?.content).toContain("mechanic=seer_check");
   });
 });
 
-function speechDraft(): Extract<DraftEvent, { type: "day_speech_given" }> {
+function daySpeechDraft(
+  playerId: PlayerId,
+): Extract<DraftEvent, { type: "day_speech_given" }> {
   return {
-    id: "draft_1" as DraftId,
-    gameId,
-    status: "draft",
+    ...draftBase("day_speech_given"),
+    phase: "speech",
+    actorPlayerId: playerId,
+    visibility: { kind: "public" },
+    payload: { playerId, text: "", dayNumber: 1, round: 1 },
+  };
+}
+
+function wolfOpinionDraft(
+  playerId: PlayerId,
+): Extract<DraftEvent, { type: "wolf_opinion_given" }> {
+  return {
+    ...draftBase("wolf_opinion_given"),
+    phase: "night",
+    actorPlayerId: playerId,
+    visibility: { kind: "faction_private", faction: "wolves" },
+    payload: { playerId, text: "", dayNumber: 1 },
+  };
+}
+
+function seerDraft(
+  targetPlayerId: PlayerId,
+): Extract<DraftEvent, { type: "seer_check_selected" }> {
+  return {
+    ...draftBase("seer_check_selected"),
+    phase: "night",
+    actorPlayerId: seer.playerId,
+    targetPlayerIds: [targetPlayerId],
+    visibility: { kind: "player_private", playerIds: [seer.playerId] },
+    payload: { targetPlayerId },
+  };
+}
+
+function wolfVoteDraft(
+  targetPlayerId: PlayerId,
+): Extract<DraftEvent, { type: "wolf_vote_cast" }> {
+  return {
+    ...draftBase("wolf_vote_cast"),
+    phase: "night",
+    actorPlayerId: wolf.playerId,
+    visibility: { kind: "host_only" },
+    payload: {
+      voterPlayerId: wolf.playerId,
+      targetPlayerId,
+      dayNumber: 1,
+    },
+  };
+}
+
+function voteDraft(
+  voterPlayerId: PlayerId,
+  voteType: "exile" | "pk",
+): Extract<DraftEvent, { type: "vote_cast" }> {
+  return {
+    ...draftBase("vote_cast"),
+    phase: "vote",
+    actorPlayerId: voterPlayerId,
+    visibility: { kind: "host_only" },
+    payload: {
+      voterPlayerId,
+      targetPlayerId: null,
+      dayNumber: 1,
+      round: voteType === "pk" ? 2 : 1,
+      voteType,
+    },
+  };
+}
+
+function witchPoisonDraft(): Extract<
+  DraftEvent,
+  { type: "witch_poison_decided" }
+> {
+  return {
+    ...draftBase("witch_poison_decided"),
+    phase: "night",
+    actorPlayerId: witch.playerId,
+    visibility: { kind: "player_private", playerIds: [witch.playerId] },
+    payload: { used: false, targetPlayerId: null },
+  };
+}
+
+function daySpeech(
+  index: number,
+  playerId: PlayerId,
+  text: string,
+): Extract<GameEvent, { type: "day_speech_given" }> {
+  return {
+    ...baseEvent(index),
     type: "day_speech_given",
     phase: "speech",
-    actorPlayerId: seer.playerId,
+    actorPlayerId: playerId,
     visibility: { kind: "public" },
-    payload: {
-      playerId: seer.playerId,
-      text: "默认发言",
-      dayNumber: 1,
-      round: 1,
-    },
-    createdAt,
+    payload: { playerId, text, dayNumber: 1, round: 1 },
   };
 }
 
 function roleAssigned(
   index: number,
-  player: typeof game.players[number],
+  playerId: PlayerId,
+  role: GameRole,
+  faction: Faction,
 ): Extract<GameEvent, { type: "role_assigned" }> {
   return {
     ...baseEvent(index),
     type: "role_assigned",
     phase: "setup",
-    targetPlayerIds: [player.playerId],
-    visibility: { kind: "player_private", playerIds: [player.playerId] },
-    payload: {
-      playerId: player.playerId,
-      role: player.gameRole,
-      faction: player.faction,
-    },
+    targetPlayerIds: [playerId],
+    visibility: { kind: "player_private", playerIds: [playerId] },
+    payload: { playerId, role, faction },
+  };
+}
+
+function phaseStarted(
+  index: number,
+  phase: Extract<GameEvent, { type: "phase_started" }>["payload"]["phase"],
+  dayNumber: number,
+): Extract<GameEvent, { type: "phase_started" }> {
+  return {
+    ...baseEvent(index),
+    type: "phase_started",
+    phase,
+    visibility: { kind: "public" },
+    payload: { phase, dayNumber },
+  };
+}
+
+function draftBase<Type extends DraftEvent["type"]>(type: Type) {
+  return {
+    id: `draft_${type}` as DraftId,
+    gameId,
+    status: "draft" as const,
+    type,
+    createdAt,
   };
 }
 
@@ -163,16 +471,13 @@ function baseEvent(index: number) {
     id: `event_${index}` as EventId,
     gameId,
     index,
-    status: "active",
-    createdAt: `2026-06-26T00:0${index}:00.000Z`,
-  } as const;
+    status: "active" as const,
+    createdAt,
+  };
 }
 
-function playerByRole(role: typeof game.players[number]["gameRole"]) {
+function playerByRole(role: GameRole) {
   const player = game.players.find((candidate) => candidate.gameRole === role);
-  if (player === undefined) {
-    throw new Error(`Missing seeded player for role: ${role}`);
-  }
-
+  if (!player) throw new Error(`Missing player for role ${role}`);
   return player;
 }

@@ -8,13 +8,20 @@ import {
   type GenerationRecord,
 } from "./generation-record";
 import type { LlmClient } from "./llm";
+import {
+  isLlmSpeechDraft,
+  type LlmSpeechDraft,
+} from "./llm-task-specs";
 import { buildPlayerLlmContext } from "./player-context";
-import { buildSpeechPrompt } from "./prompt-builders";
-
-type SpeechDraft = Extract<
-  DraftEvent,
-  { type: "day_speech_given" | "last_words_given" | "pk_speech_given" | "wolf_strategy_given" | "wolf_opinion_given" }
->;
+import {
+  buildSpeechPrompt,
+  SPEECH_PROMPT_VERSION,
+  type LlmPromptMode,
+} from "./prompt-builders";
+import {
+  generateValidatedJson,
+  ValidatedGenerationError,
+} from "./validated-generation";
 
 export type GenerateSpeechDraftInput = {
   readonly game: Game;
@@ -23,6 +30,7 @@ export type GenerateSpeechDraftInput = {
   readonly llmClient: LlmClient;
   readonly generationId: string;
   readonly createdAt: string;
+  readonly promptMode?: LlmPromptMode;
 };
 
 export type GenerateSpeechDraftResult = {
@@ -33,32 +41,44 @@ export type GenerateSpeechDraftResult = {
 export async function generateSpeechDraft(
   input: GenerateSpeechDraftInput,
 ): Promise<GenerateSpeechDraftResult> {
-  if (!isSpeechDraft(input.draft)) {
+  if (!isLlmSpeechDraft(input.draft)) {
     return { draft: input.draft, generation: null };
   }
 
-  const playerId = input.draft.payload.playerId;
+  const draft = input.draft;
+  const playerId = draft.payload.playerId;
   const context = buildPlayerLlmContext({
     game: input.game,
     events: input.events,
     viewerPlayerId: playerId,
   });
-  const prompt = buildSpeechPrompt({ context, draft: input.draft });
+  const prompt = buildSpeechPrompt(
+    { context, draft },
+    input.promptMode,
+  );
   const request = {
     systemPrompt: prompt.systemPrompt,
     messages: prompt.messages,
     schemaName: prompt.schemaName,
   };
+  const requireDisclosure =
+    prompt.promptVersion === SPEECH_PROMPT_VERSION &&
+    requiresDisclosure(draft, context.viewer.role);
 
   try {
-    const output = await input.llmClient.generateJson({
+    const result = await generateValidatedJson({
+      llmClient: input.llmClient,
       modelBinding: context.viewer.modelBindingSnapshot,
-      ...request,
+      request,
+      validate: (parsed) =>
+        parseAndValidateSpeechText(parsed, requireDisclosure),
+      repair: {
+        outputContract: speechRepairContract(requireDisclosure),
+      },
     });
-    const text = parseSpeechText(output.parsed);
 
     return {
-      draft: applyDraftPayloadEdit(input.draft, { text }),
+      draft: applyDraftPayloadEdit(input.draft, { text: result.value }),
       generation: createSuccessfulGenerationRecord({
         id: input.generationId,
         gameId: input.game.id,
@@ -69,13 +89,16 @@ export async function generateSpeechDraft(
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
         request,
-        tokenUsage: output.usage,
-        rawOutput: output.rawText,
-        parsedOutput: output.parsed,
+        tokenUsage: result.tokenUsage,
+        rawOutput: result.output.rawText,
+        parsedOutput: result.output.parsed,
+        attempts: result.attempts,
         createdAt: input.createdAt,
       }),
     };
   } catch (error) {
+    const failure =
+      error instanceof ValidatedGenerationError ? error : null;
     return {
       draft: input.draft,
       generation: createFailedGenerationRecord({
@@ -88,31 +111,65 @@ export async function generateSpeechDraft(
         modelBinding: context.viewer.modelBindingSnapshot,
         inputContextHash: contextHash(context),
         request,
-        rawOutput: null,
+        tokenUsage: failure?.tokenUsage,
+        rawOutput: failure?.rawOutput ?? null,
         error,
         createdAt: input.createdAt,
+        attempts: failure?.attempts,
       }),
     };
   }
 }
 
-function isSpeechDraft(draft: DraftEvent): draft is SpeechDraft {
-  return (
-    draft.type === "day_speech_given" ||
-    draft.type === "last_words_given" ||
-    draft.type === "pk_speech_given" ||
-    draft.type === "wolf_strategy_given" ||
-    draft.type === "wolf_opinion_given"
-  );
-}
-
-function parseSpeechText(output: Record<string, unknown>): string {
+function parseAndValidateSpeechText(
+  output: Record<string, unknown>,
+  requireDisclosure: boolean,
+): string {
   const text = output.text;
   if (typeof text !== "string" || text.trim().length === 0) {
     throw new Error("LLM speech output must include non-empty text");
   }
 
+  if (
+    requireDisclosure &&
+    output.disclosure !== "conceal" &&
+    output.disclosure !== "claim"
+  ) {
+    throw new Error(
+      "Public special-role speech must include disclosure=conceal or claim",
+    );
+  }
+
   return text.trim();
+}
+
+function speechRepairContract(requireDisclosure: boolean): readonly string[] {
+  return [
+    "text 必须是非空字符串",
+    "decisionSummary 应是最多两句的简短字符串",
+    ...(requireDisclosure
+      ? ["disclosure 必须是 conceal 或 claim"]
+      : []),
+    "只返回 JSON 对象",
+  ];
+}
+
+function isPublicSpeechDraft(draft: LlmSpeechDraft): boolean {
+  return (
+    draft.type !== "wolf_strategy_given" &&
+    draft.type !== "wolf_opinion_given"
+  );
+}
+
+function requiresDisclosure(
+  draft: LlmSpeechDraft,
+  role: Game["players"][number]["gameRole"],
+): boolean {
+  return (
+    isPublicSpeechDraft(draft) &&
+    role !== "werewolf" &&
+    role !== "villager"
+  );
 }
 
 function contextHash(context: unknown): string {

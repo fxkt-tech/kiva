@@ -30,6 +30,13 @@ describe("player LLM context", () => {
     expect(context.timeline.map((item) => item.title)).toContain("查验结果");
     expect(context.timeline.map((item) => item.title)).not.toContain("狼人刀人");
     expect(context.timeline.map((item) => item.title)).not.toContain("夜间结算");
+    expect(context.knowledge.publicFacts.map((item) => item.title)).toContain(
+      "昨夜死讯",
+    );
+    expect(context.knowledge.privateFacts.map((item) => item.title)).toContain(
+      "查验结果",
+    );
+    expect(context.knowledge.publicClaims).toEqual([]);
   });
 
   it("exposes viewer role and prompt snapshots", () => {
@@ -90,6 +97,47 @@ describe("player LLM context", () => {
     expect(
       context.roster.find((player) => player.playerId === seer.playerId),
     ).not.toHaveProperty("role");
+    expect(
+      context.knowledge.factionDiscussion.map((item) => item.text),
+    ).toContain("首夜优先统一行动方向。");
+  });
+
+  it("does not expose a delayed-reveal individual vote to the next voter", () => {
+    const events = [
+      {
+        ...baseEvent(1),
+        type: "phase_started",
+        phase: "vote",
+        visibility: { kind: "public" },
+        payload: { phase: "vote", dayNumber: 1 },
+      },
+      {
+        ...baseEvent(2),
+        type: "vote_cast",
+        phase: "vote",
+        actorPlayerId: wolf1.playerId,
+        targetPlayerIds: [seer.playerId],
+        visibility: { kind: "host_only" },
+        payload: {
+          voterPlayerId: wolf1.playerId,
+          targetPlayerId: seer.playerId,
+          voteType: "exile",
+          dayNumber: 1,
+          round: 1,
+        },
+      },
+    ] satisfies readonly GameEvent[];
+
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: seer.playerId,
+    });
+
+    expect(context.visibleEvents.map((event) => event.type)).toEqual([
+      "phase_started",
+    ]);
+    expect(context.knowledge.publicFacts).toEqual([]);
   });
 
   it("rejects unknown viewers", () => {
@@ -116,6 +164,18 @@ function sampleEvents(): readonly GameEvent[] {
     },
     {
       ...baseEvent(4),
+      type: "wolf_strategy_given",
+      phase: "night",
+      actorPlayerId: wolf1.playerId,
+      visibility: { kind: "faction_private", faction: "wolves" },
+      payload: {
+        playerId: wolf1.playerId,
+        text: "首夜优先统一行动方向。",
+        dayNumber: 1,
+      },
+    },
+    {
+      ...baseEvent(5),
       type: "wolf_vote_cast",
       phase: "night",
       actorPlayerId: wolf1.playerId,
@@ -124,7 +184,7 @@ function sampleEvents(): readonly GameEvent[] {
       payload: { voterPlayerId: wolf1.playerId, targetPlayerId: seer.playerId, dayNumber: 1 },
     },
     {
-      ...baseEvent(5),
+      ...baseEvent(6),
       type: "seer_check_result",
       phase: "night",
       actorPlayerId: seer.playerId,
@@ -133,7 +193,7 @@ function sampleEvents(): readonly GameEvent[] {
       payload: { targetPlayerId: wolf1.playerId, result: "wolves" },
     },
     {
-      ...baseEvent(6),
+      ...baseEvent(7),
       type: "night_resolved",
       phase: "night",
       targetPlayerIds: [seer.playerId],
@@ -141,7 +201,7 @@ function sampleEvents(): readonly GameEvent[] {
       payload: { deadPlayerIds: [seer.playerId] },
     },
     {
-      ...baseEvent(7),
+      ...baseEvent(8),
       type: "death_announced",
       phase: "day",
       targetPlayerIds: [seer.playerId],

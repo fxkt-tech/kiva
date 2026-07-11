@@ -701,7 +701,10 @@ function planDailyVoteDraft(
       phase: "vote",
       actorPlayerId: voter,
       targetPlayerIds: target ? [target] : [],
-      visibility: { kind: "public" },
+      visibility:
+        input.game.ruleset.voteReveal === "immediate"
+          ? { kind: "public" }
+          : { kind: "host_only" },
       payload: {
         voterPlayerId: voter,
         targetPlayerId: target,
@@ -783,7 +786,10 @@ function planPkDraft(
       phase: "vote",
       actorPlayerId: voter,
       targetPlayerIds: target ? [target] : [],
-      visibility: { kind: "public" },
+      visibility:
+        input.game.ruleset.voteReveal === "immediate"
+          ? { kind: "public" }
+          : { kind: "host_only" },
       payload: {
         voterPlayerId: voter,
         targetPlayerId: target,

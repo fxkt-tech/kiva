@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  LocalHeuristicLlmClient,
+  LlmOutputParseError,
   MockLlmClient,
   OpenAICompatibleLlmClient,
   parseLlmJsonObject,
@@ -35,6 +37,30 @@ describe("LLM client boundary", () => {
     });
   });
 
+  it("returns a conceal disclosure for local Prompt v2 special-role speech", async () => {
+    const client = new LocalHeuristicLlmClient();
+
+    await expect(
+      client.generateJson({
+        ...request,
+        schemaName: "werewolf_speech_v2",
+        messages: [
+          {
+            role: "user",
+            content:
+              '只输出 {"disclosure":"conceal 或 claim","text":"...","decisionSummary":"..."}',
+          },
+        ],
+      }),
+    ).resolves.toMatchObject({
+      parsed: {
+        disclosure: "conceal",
+        text: expect.any(String),
+        decisionSummary: expect.any(String),
+      },
+    });
+  });
+
   it("parses OpenAI-compatible token usage", async () => {
     const client = new OpenAICompatibleLlmClient({
       baseUrl: "https://llm.example.test/v1",
@@ -63,6 +89,27 @@ describe("LLM client boundary", () => {
         cachedPromptTokens: 24,
         reasoningTokens: 8,
       },
+    });
+  });
+
+  it("preserves invalid assistant content for a bounded repair attempt", async () => {
+    const client = new OpenAICompatibleLlmClient({
+      baseUrl: "https://llm.example.test/v1",
+      apiKey: "secret",
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: "not json" } }],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+    });
+
+    const error = await client.generateJson(request).catch((caught) => caught);
+
+    expect(error).toBeInstanceOf(LlmOutputParseError);
+    expect(error).toMatchObject({
+      rawText: "not json",
     });
   });
 

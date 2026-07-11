@@ -4,17 +4,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { DraftPayloadEdit } from "@/core/draft-edit";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
-import type { GameId, PlayerId } from "@/core/types";
+import type { DraftId, GameId, PlayerId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
 import { createLibraryActions } from "@/server/library-actions";
 import { createLibraryRepository } from "@/server/library-repository";
-import { createRuntimeLlmClient } from "@/server/llm-runtime";
+import {
+  createRuntimeLlmClient,
+  resolveRuntimePromptMode,
+} from "@/server/llm-runtime";
 
 const dataDir = process.env.KIVA_DATA_DIR;
 
 const gameActions = createGameActions(createGameRepository(dataDir), {
   llmClient: createRuntimeLlmClient(),
+  promptMode: resolveRuntimePromptMode(),
 });
 const libraryActions = createLibraryActions({
   libraryRepository: createLibraryRepository(dataDir),
@@ -71,8 +75,8 @@ export async function renameGameAction(gameId: GameId, formData: FormData) {
   revalidatePath(previewPath(gameId));
 }
 
-export async function confirmDraftAction(gameId: GameId) {
-  await gameActions.confirmDraft(gameId);
+export async function confirmDraftAction(gameId: GameId, draftId: DraftId) {
+  await gameActions.confirmDraft(gameId, draftId);
   await gameActions.continueGame(gameId);
   revalidatePath(editorPath(gameId));
   revalidatePath(previewPath(gameId));

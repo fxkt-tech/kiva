@@ -127,7 +127,9 @@ export default async function EditorPage({
               gameId={typedGameId}
               draft={record.draft}
               players={record.game.players}
-              alivePlayerIds={deriveGameState(record.game.players, record.events).alivePlayerIds}
+              alivePlayerIds={
+                deriveGameState(record.game.players, record.events).alivePlayerIds
+              }
               generations={record.generations}
             />
           </div>
@@ -149,5 +151,5 @@ function currentPreviewHref(record: GameRecord): string {
     ].join("|"),
   });
 
-  return `/games/${record.game.id}/preview?${params.toString()}`;
+  return `/games/${record.game.id}/preview_v2?${params.toString()}`;
 }

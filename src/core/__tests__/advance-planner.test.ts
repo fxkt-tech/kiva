@@ -639,6 +639,30 @@ describe("complete deterministic game flow", () => {
     });
   });
 
+  it("keeps individual votes sealed until the configured reveal point", () => {
+    const game = createGame();
+    const events = confirmAllUntil(game, "vote_cast");
+
+    expect(events.at(-1)).toMatchObject({
+      type: "vote_cast",
+      visibility: { kind: "host_only" },
+    });
+  });
+
+  it("reveals individual votes immediately when configured", () => {
+    const baseGame = createGame();
+    const game = {
+      ...baseGame,
+      ruleset: { ...baseGame.ruleset, voteReveal: "immediate" as const },
+    };
+    const events = confirmAllUntil(game, "vote_cast");
+
+    expect(events.at(-1)).toMatchObject({
+      type: "vote_cast",
+      visibility: { kind: "public" },
+    });
+  });
+
   it("plans game end after night resolution kills all wolves", () => {
     const game = createGame();
     const wolfIds = game.players

@@ -42,12 +42,12 @@ describe("action generation", () => {
       status: "success",
       purpose: "action",
       request: {
-        schemaName: "werewolf_action_v1",
-        systemPrompt: expect.stringContaining("行动建议"),
+        schemaName: "werewolf_target_action_v2",
+        systemPrompt: expect.stringContaining("【执行优先级】"),
         messages: expect.arrayContaining([
           expect.objectContaining({
             role: "user",
-            content: expect.stringContaining("可选目标"),
+            content: expect.stringContaining("【合法候选】"),
           }),
         ]),
       },
@@ -57,7 +57,7 @@ describe("action generation", () => {
       },
     });
     expect(result.generation?.request?.systemPrompt).toContain(
-      seer.characterSystemPromptSnapshot,
+      seer.persona,
     );
     expect(result.generation?.request?.systemPrompt).toContain(
       seer.roleSystemPromptSnapshot,
@@ -66,25 +66,25 @@ describe("action generation", () => {
       seer.roleActionPromptSnapshot,
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      `你的身份：${seer.roleName}`,
+      `你的身份是 ${seer.roleName}`,
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      "mechanic=seer_check",
+      "预言家选择本夜查验目标",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      "本局规则：",
+      "【仅与本轮有关的规则】",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      "猎人 1、守卫 1",
+      "预言家每夜查验一名其他存活玩家",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      "可选目标",
+      "【合法候选】",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      "可见事件",
+      "【已确认的公开事实】",
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      "reasoning",
+      "decisionSummary",
     );
   });
 
@@ -96,6 +96,9 @@ describe("action generation", () => {
         player.playerId === seer.playerId
           ? {
               ...player,
+              persona: "",
+              speakingStyle: "",
+              reasoningStyle: "",
               characterSystemPromptSnapshot: "",
               roleSystemPromptSnapshot: "",
               roleActionPromptSnapshot: null,
@@ -115,7 +118,7 @@ describe("action generation", () => {
     });
 
     expect(result.generation?.request?.systemPrompt).toContain(legacySystemPrompt);
-    expect(result.generation?.request?.systemPrompt).toContain("行动建议");
+    expect(result.generation?.request?.systemPrompt).toContain("【执行优先级】");
   });
 
   it("includes visible event text and details in action prompts", async () => {
@@ -172,10 +175,10 @@ describe("action generation", () => {
     const content = result.generation?.request?.messages[0]?.content ?? "";
 
     expect(content).toContain(
-      `- ${villager.seatNo} 号 ${villager.name}发言：我觉得 1 号发言像狼人。`,
+      `${villager.seatNo} 号 ${villager.name}发言：我觉得 1 号发言像狼人。`,
     );
     expect(content).toContain(
-      `- 投票结算：平票：${wolf.seatNo} 号 ${wolf.name}、${villager.seatNo} 号 ${villager.name}。`,
+      `投票结算：平票：${wolf.seatNo} 号 ${wolf.name}、${villager.seatNo} 号 ${villager.name}。`,
     );
     expect(content).toContain(
       `  - ${villager.seatNo} 号 ${villager.name} -> ${wolf.seatNo} 号 ${wolf.name}`,
@@ -201,14 +204,14 @@ describe("action generation", () => {
     const content = result.generation?.request?.messages[0]?.content ?? "";
 
     expect(content).toContain(
-      `${wolf.seatNo} ${wolf.name} playerId=${wolf.playerId} role=werewolf faction=wolves`,
+      `${wolf.playerId} | ${wolf.seatNo} 号 | ${wolf.name} | 你；狼人，狼人阵营`,
     );
     expect(content).toContain(
-      `${secondWolf.seatNo} ${secondWolf.name} playerId=${secondWolf.playerId} role=werewolf faction=wolves`,
+      `${secondWolf.playerId} | ${secondWolf.seatNo} 号 | ${secondWolf.name} | 已知狼人队友；狼人，狼人阵营`,
     );
-    expect(content).toContain(`${seer.seatNo} ${seer.name} playerId=${seer.playerId}`);
+    expect(content).toContain(`${seer.playerId} | ${seer.seatNo} 号 | ${seer.name}`);
     expect(content).not.toContain(
-      `${seer.seatNo} ${seer.name} playerId=${seer.playerId} role=seer`,
+      `${seer.playerId} | ${seer.seatNo} 号 | ${seer.name} | 预言家`,
     );
   });
 
@@ -251,10 +254,53 @@ describe("action generation", () => {
       status: "failed",
       purpose: "action",
       request: {
-        schemaName: "werewolf_action_v1",
+        schemaName: "werewolf_target_action_v2",
         messages: expect.any(Array),
       },
       error: "Illegal targetPlayerId for wolf_vote_cast",
+      attempts: [
+        { error: "Illegal targetPlayerId for wolf_vote_cast" },
+        { error: "Illegal targetPlayerId for wolf_vote_cast" },
+      ],
+    });
+  });
+
+  it("repairs one illegal action target using the shared legal options", async () => {
+    const draft = wolfDraft(villager.playerId);
+    const result = await generateActionDraft({
+      game,
+      events: setupEvents(),
+      draft,
+      llmClient: new MockLlmClient([
+        { targetPlayerId: "missing" },
+        {
+          targetPlayerId: villager.playerId,
+          decisionSummary: "改为合法候选。",
+        },
+      ]),
+      generationId: "generation_repaired",
+      createdAt,
+    });
+
+    expect(result.draft).toMatchObject({
+      type: "wolf_vote_cast",
+      payload: { targetPlayerId: villager.playerId },
+    });
+    expect(result.generation).toMatchObject({
+      status: "success",
+      attempts: [
+        { error: "Illegal targetPlayerId for wolf_vote_cast" },
+        {
+          request: {
+            messages: [
+              {
+                content: expect.stringContaining(villager.playerId),
+              },
+            ],
+          },
+          error: null,
+        },
+      ],
     });
   });
 
@@ -275,6 +321,29 @@ describe("action generation", () => {
     });
   });
 
+  it("repairs a vote response that omits the required target field", async () => {
+    const draft = voteDraft(villager.playerId);
+    const invalidOutput = { decisionSummary: "想弃票但漏掉了字段。" };
+    const result = await generateActionDraft({
+      game,
+      events: setupEvents(),
+      draft,
+      llmClient: new MockLlmClient([invalidOutput, invalidOutput]),
+      generationId: "generation_missing_vote_target",
+      createdAt,
+    });
+
+    expect(result.draft).toEqual(draft);
+    expect(result.generation).toMatchObject({
+      status: "failed",
+      error: "targetPlayerId is required for vote_cast",
+      attempts: [
+        { error: "targetPlayerId is required for vote_cast" },
+        { error: "targetPlayerId is required for vote_cast" },
+      ],
+    });
+  });
+
   it("applies witch medicine suggestions", async () => {
     const result = await generateActionDraft({
       game,
@@ -292,6 +361,61 @@ describe("action generation", () => {
       targetPlayerIds: [wolf.playerId],
       payload: { used: true, targetPlayerId: wolf.playerId },
     });
+  });
+
+  it("accepts an antidote summary that describes the attacked player as good", async () => {
+    const rescuedPlayerId = villager.playerId;
+    const events = [
+      ...setupEvents(),
+      {
+        ...baseEvent(7),
+        type: "wolf_vote_resolved",
+        phase: "night",
+        targetPlayerIds: [rescuedPlayerId],
+        visibility: { kind: "faction_private", faction: "wolves" },
+        payload: {
+          votes: [],
+          tallies: [],
+          tiedTargetPlayerIds: [rescuedPlayerId],
+          targetPlayerId: rescuedPlayerId,
+          resolution: "majority",
+          dayNumber: 1,
+        },
+      },
+      {
+        ...baseEvent(8),
+        type: "witch_death_info_shown",
+        phase: "night",
+        actorPlayerId: witch.playerId,
+        targetPlayerIds: [rescuedPlayerId],
+        visibility: { kind: "player_private", playerIds: [witch.playerId] },
+        payload: { killedPlayerId: rescuedPlayerId },
+      },
+    ] satisfies readonly GameEvent[];
+    const result = await generateActionDraft({
+      game,
+      events,
+      draft: witchAntidoteDraft(rescuedPlayerId),
+      llmClient: new MockLlmClient([
+        {
+          used: true,
+          targetPlayerId: rescuedPlayerId,
+          decisionSummary:
+            "首夜确认8号唐棠被袭击，为避免好人阵营潜在损失，决定使用解药救其性命。",
+        },
+      ]),
+      generationId: "generation_antidote_fact_repair",
+      createdAt,
+    });
+
+    expect(result.draft).toMatchObject({
+      type: "witch_antidote_decided",
+      payload: { used: true, targetPlayerId: rescuedPlayerId },
+    });
+    expect(result.generation).toMatchObject({
+      status: "success",
+    });
+    expect(result.generation).not.toHaveProperty("attempts");
   });
 
   it("requires explicit used output for witch medicine suggestions", async () => {
@@ -315,6 +439,30 @@ describe("action generation", () => {
     });
   });
 
+  it("rejects a target when witch output says the medicine was not used", async () => {
+    const draft = witchPoisonDraft();
+    const invalidOutput = {
+      used: false,
+      targetPlayerId: wolf.playerId,
+      decisionSummary: "字段互相矛盾。",
+    };
+    const result = await generateActionDraft({
+      game,
+      events: setupEvents(),
+      draft,
+      llmClient: new MockLlmClient([invalidOutput, invalidOutput]),
+      generationId: "generation_conflicting_witch_output",
+      createdAt,
+    });
+
+    expect(result.draft).toEqual(draft);
+    expect(result.generation).toMatchObject({
+      status: "failed",
+      error:
+        "targetPlayerId must be null when used=false for witch_poison_decided",
+    });
+  });
+
   it("tells witch medicine drafts to output used explicitly", async () => {
     const result = await generateActionDraft({
       game,
@@ -332,7 +480,7 @@ describe("action generation", () => {
     expect(content).toContain("used");
     expect(content).toContain('"used":true');
     expect(content).toContain('"used":false');
-    expect(content).toContain("used 是必填布尔值");
+    expect(content).toContain("decisionSummary");
   });
 
   it("generates a sealed wolf ballot from discussion without exposing earlier ballots", async () => {
@@ -371,6 +519,45 @@ describe("action generation", () => {
     });
     expect(content).toContain("优先寻找神职");
     expect(content).not.toContain("狼人密票");
+  });
+
+  it("accepts wolf ballot wording without semantic keyword validation", async () => {
+    const events = [
+      ...setupEvents(),
+      {
+        ...baseEvent(7),
+        type: "wolf_strategy_given",
+        phase: "night",
+        actorPlayerId: wolf.playerId,
+        visibility: { kind: "faction_private", faction: "wolves" },
+        payload: {
+          playerId: wolf.playerId,
+          text: "先统一投 8 号，但关于其身份的理由没有证据。",
+          dayNumber: 1,
+        },
+      },
+    ] satisfies readonly GameEvent[];
+    const result = await generateActionDraft({
+      game,
+      events,
+      draft: wolfVoteDraft(villager.playerId),
+      llmClient: new MockLlmClient([
+        {
+          targetPlayerId: villager.playerId,
+          decisionSummary: "8 号一直沉默，是疑似神职。",
+        },
+      ]),
+      generationId: "generation_wolf_ballot_fact_repair",
+      createdAt,
+    });
+
+    expect(result.draft).toMatchObject({
+      payload: { targetPlayerId: villager.playerId },
+    });
+    expect(result.generation).toMatchObject({
+      status: "success",
+    });
+    expect(result.generation).not.toHaveProperty("attempts");
   });
 });
 
@@ -447,6 +634,17 @@ function witchPoisonDraft(): DraftEvent {
     phase: "night",
     actorPlayerId: witch.playerId,
     targetPlayerIds: [],
+    visibility: { kind: "player_private", playerIds: [witch.playerId] },
+    payload: { used: false, targetPlayerId: null },
+  } as DraftEvent;
+}
+
+function witchAntidoteDraft(targetPlayerId: PlayerId): DraftEvent {
+  return {
+    ...draftBase("witch_antidote_decided"),
+    phase: "night",
+    actorPlayerId: witch.playerId,
+    targetPlayerIds: [targetPlayerId],
     visibility: { kind: "player_private", playerIds: [witch.playerId] },
     payload: { used: false, targetPlayerId: null },
   } as DraftEvent;

@@ -3,6 +3,10 @@
 import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import {
+  markLlmGenerationPending,
+  requestLlmNotificationPermission,
+} from "./llm-generation-notification";
 
 type FormSubmitButtonProps = {
   readonly label: ReactNode;
@@ -10,6 +14,12 @@ type FormSubmitButtonProps = {
   readonly className: string;
   readonly ariaLabel?: string;
   readonly title?: string;
+  readonly forcePending?: boolean;
+  readonly llmGenerationNotification?: {
+    readonly gameId: string;
+    readonly draftId: string;
+    readonly previousGenerationId: string | null;
+  };
 };
 
 export function FormSubmitButton({
@@ -18,8 +28,11 @@ export function FormSubmitButton({
   className,
   ariaLabel,
   title,
+  forcePending = false,
+  llmGenerationNotification,
 }: FormSubmitButtonProps) {
-  const { pending } = useFormStatus();
+  const { pending: formPending } = useFormStatus();
+  const pending = forcePending || formPending;
 
   return (
     <Button
@@ -28,6 +41,15 @@ export function FormSubmitButton({
       className={className}
       aria-label={ariaLabel}
       title={title}
+      onClick={() => {
+        if (!llmGenerationNotification) return;
+        markLlmGenerationPending(
+          llmGenerationNotification.gameId,
+          llmGenerationNotification.draftId,
+          llmGenerationNotification.previousGenerationId,
+        );
+        requestLlmNotificationPermission();
+      }}
       unstyled
     >
       {pending ? pendingLabel : label}

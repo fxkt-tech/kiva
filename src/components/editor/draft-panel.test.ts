@@ -22,10 +22,13 @@ describe("DraftPanel payload controls", () => {
     expect(html).not.toContain("Generate next draft");
   });
 
-  it("renders a whole-draft LLM loading overlay before the first generation returns", () => {
+  it("shows initial LLM generation on the generation button without an overlay", () => {
     const html = renderPanel(wolfKillDraft(players[0].playerId));
 
-    expect(html).toContain("Generating LLM draft");
+    expect(html).not.toContain("Generating LLM draft...");
+    expect(html).toContain('aria-label="Generating draft"');
+    expect(html).toContain("animate-spin");
+    expect(html).toContain('aria-label="Enable auto-confirm draft"');
     expect(html).toContain("待确认：狼人密票");
     expect(html).toContain("aria-busy=\"true\"");
   });
@@ -80,6 +83,7 @@ describe("DraftPanel payload controls", () => {
     ]);
 
     expect(html).toContain("LLM details");
+    expect(html).toContain('aria-label="Copy LLM details as Markdown"');
     expect(html).toContain("Request");
     expect(html).toContain("system prompt");
     expect(html).toContain("visible context");

@@ -13,6 +13,14 @@ export type GenerationRequestSnapshot = {
   }[];
 };
 
+export type GenerationAttemptSnapshot = {
+  readonly request: GenerationRequestSnapshot;
+  readonly tokenUsage: LlmTokenUsage | null;
+  readonly rawOutput: string | null;
+  readonly parsedOutput: Record<string, unknown> | null;
+  readonly error: string | null;
+};
+
 export type GenerationRecord = {
   readonly id: string;
   readonly gameId: GameId;
@@ -30,6 +38,7 @@ export type GenerationRecord = {
   readonly parsedOutput: Record<string, unknown> | null;
   readonly error: string | null;
   readonly createdAt: string;
+  readonly attempts?: readonly GenerationAttemptSnapshot[];
 };
 
 export type SuccessfulGenerationRecordInput = {
@@ -46,6 +55,7 @@ export type SuccessfulGenerationRecordInput = {
   readonly rawOutput: string;
   readonly parsedOutput: Record<string, unknown>;
   readonly createdAt: string;
+  readonly attempts?: readonly GenerationAttemptSnapshot[];
 };
 
 export type FailedGenerationRecordInput = {
@@ -62,6 +72,7 @@ export type FailedGenerationRecordInput = {
   readonly rawOutput: string | null;
   readonly error: unknown;
   readonly createdAt: string;
+  readonly attempts?: readonly GenerationAttemptSnapshot[];
 };
 
 export function createSuccessfulGenerationRecord(
@@ -84,6 +95,7 @@ export function createSuccessfulGenerationRecord(
     parsedOutput: input.parsedOutput,
     error: null,
     createdAt: input.createdAt,
+    ...(input.attempts ? { attempts: input.attempts } : {}),
   };
 }
 
@@ -107,6 +119,7 @@ export function createFailedGenerationRecord(
     parsedOutput: null,
     error: errorMessage(input.error),
     createdAt: input.createdAt,
+    ...(input.attempts ? { attempts: input.attempts } : {}),
   };
 }
 

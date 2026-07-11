@@ -22,6 +22,7 @@ This directory contains guidelines for frontend development. Fill in each file w
 | [Type Safety](./type-safety.md) | Type patterns, validation | To fill |
 | [Programmatic Video](./programmatic-video.md) | Shared HTML preview and deterministic MP4 export contract | Active |
 | [Private Event Workflows](./private-event-workflows.md) | Event, Editor, LLM visibility, and Preview contracts for private staged actions | Active |
+| [LLM Prompt Workflows](./llm-prompt-workflows.md) | Task registry, semantic context, legal actions, output repair, and prompt rollback contracts | Active |
 
 ---
 
