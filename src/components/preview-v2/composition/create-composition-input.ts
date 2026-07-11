@@ -13,11 +13,12 @@ export function createCompositionInput(input: {
   readonly items: readonly PlaybackItem[];
 }): VideoCompositionInput {
   const avatarUrls = Object.fromEntries(
-    input.items
-      .flatMap((item) => item.players)
-      .flatMap((player) =>
-        player.avatar ? [[player.avatar, player.avatar] as const] : [],
-      ),
+    [
+      ...input.items.flatMap((item) => item.players.map((player) => player.avatar)),
+      ...input.items.map((item) => item.presenterAvatar),
+    ].flatMap((avatar) =>
+      avatar ? [[avatar, avatar] as const] : [],
+    ),
   );
 
   return {

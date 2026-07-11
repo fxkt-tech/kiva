@@ -53,6 +53,7 @@ export default async function HomePage() {
               presets={creatablePresets}
               roles={library.roles.filter((role) => role.enabled)}
               characters={library.characters.filter((character) => character.enabled)}
+              presenters={library.presenters.filter((presenter) => presenter.enabled)}
             />
           </div>
         </header>

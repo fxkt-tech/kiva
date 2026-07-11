@@ -16,6 +16,10 @@ import {
 } from "@/core/character-definition";
 import { validateGamePresets, type GamePreset } from "@/core/game-preset";
 import {
+  validatePresenterDefinitions,
+  type PresenterDefinition,
+} from "@/core/presenter-definition";
+import {
   validateRoleDefinitions,
   type RoleDefinition,
 } from "@/core/role-definition";
@@ -24,12 +28,14 @@ export type LibraryRecord = {
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
   readonly presets: readonly GamePreset[];
+  readonly presenters: readonly PresenterDefinition[];
 };
 
 export type LibraryRepository = {
   readonly getRoles: () => Promise<readonly RoleDefinition[]>;
   readonly getCharacters: () => Promise<readonly CharacterDefinition[]>;
   readonly getPresets: () => Promise<readonly GamePreset[]>;
+  readonly getPresenters: () => Promise<readonly PresenterDefinition[]>;
   readonly getAll: () => Promise<LibraryRecord>;
   readonly loadAll: () => Promise<LibraryRecord>;
   readonly saveRoles: (roles: readonly RoleDefinition[]) => Promise<void>;
@@ -37,6 +43,9 @@ export type LibraryRepository = {
     characters: readonly CharacterDefinition[],
   ) => Promise<void>;
   readonly savePresets: (presets: readonly GamePreset[]) => Promise<void>;
+  readonly savePresenters: (
+    presenters: readonly PresenterDefinition[],
+  ) => Promise<void>;
   readonly saveAll: (record: LibraryRecord) => Promise<void>;
   readonly withLibraryLock: <T>(operation: () => Promise<T>) => Promise<T>;
 };
@@ -45,6 +54,7 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
   const rolesPath = join(rootDir, "roles.json");
   const charactersPath = join(rootDir, "characters.json");
   const presetsPath = join(rootDir, "presets.json");
+  const presentersPath = join(rootDir, "presenters.json");
   const locksDir = join(rootDir, "locks");
   const libraryLockPath = join(locksDir, "library.lock");
 
@@ -74,6 +84,10 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
 
   async function readCharacters(): Promise<readonly CharacterDefinition[]> {
     return validateCharacterDefinitions(await readJson(charactersPath));
+  }
+
+  async function readPresenters(): Promise<readonly PresenterDefinition[]> {
+    return validatePresenterDefinitions(await readJson(presentersPath));
   }
 
   async function readPresets(
@@ -158,18 +172,24 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
       return readPresets({ roles, characters });
     },
 
+    async getPresenters() {
+      return readPresenters();
+    },
+
     async getAll() {
       const roles = await readRoles();
       const characters = await readCharacters();
       const presets = await readPresets({ roles, characters });
-      return { roles, characters, presets };
+      const presenters = await readPresenters();
+      return { roles, characters, presets, presenters };
     },
 
     async loadAll() {
       const roles = await readRoles();
       const characters = await readCharacters();
       const presets = await readPresets({ roles, characters });
-      return { roles, characters, presets };
+      const presenters = await readPresenters();
+      return { roles, characters, presets, presenters };
     },
 
     async saveRoles(roles) {
@@ -189,15 +209,21 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
       await writeJson(presetsPath, validatedPresets);
     },
 
+    async savePresenters(presenters) {
+      await writeJson(presentersPath, validatePresenterDefinitions(presenters));
+    },
+
     async saveAll(record) {
       const roles = validateRoleDefinitions(record.roles);
       const characters = validateCharacterDefinitions(record.characters);
       const presets = validateGamePresets(record.presets, { roles, characters });
+      const presenters = validatePresenterDefinitions(record.presenters);
 
       await writeJsonBatch([
         { path: rolesPath, data: roles },
         { path: charactersPath, data: characters },
         { path: presetsPath, data: presets },
+        { path: presentersPath, data: presenters },
       ]);
     },
 

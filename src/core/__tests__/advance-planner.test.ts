@@ -469,7 +469,9 @@ describe("complete deterministic game flow", () => {
   it("renders public playback from structured facts with speakers, deaths, and winner", () => {
     const game = createGame();
     const events = confirmCompleteGame(game);
-    const playback = compilePublicPlayback(events, game.players);
+    const playback = compilePublicPlayback(events, game.players, {
+      presenter: game.presenter,
+    });
 
     expect(
       playback.some(
@@ -482,7 +484,7 @@ describe("complete deterministic game flow", () => {
       playback.some(
         (item) =>
           item.title.includes("死讯") &&
-          /死亡：\d+ 号/.test(`${item.title} ${item.text}`),
+          /倒下的是：\d+号/.test(`${item.title} ${item.text}`),
       ),
     ).toBe(true);
     expect(

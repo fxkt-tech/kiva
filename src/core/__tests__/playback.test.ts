@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createSeedGame } from "../game";
 import {
-  compilePublicPlayback,
+  compilePublicPlayback as compilePlayback,
+  type CompilePublicPlaybackOptions,
   playbackTotalDurationMs,
   playbackIndexAtMs,
 } from "../playback";
@@ -12,6 +13,17 @@ const gameId = "g1" as GameId;
 const playerId = "p1" as PlayerId;
 const game = createSeedGame({ gameId, createdAt: "2026-06-26T00:00:00.000Z" });
 const players = game.players;
+
+function compilePublicPlayback(
+  events: Parameters<typeof compilePlayback>[0],
+  scenePlayers: Parameters<typeof compilePlayback>[1],
+  options: Omit<CompilePublicPlaybackOptions, "presenter"> = {},
+) {
+  return compilePlayback(events, scenePlayers, {
+    presenter: game.presenter,
+    ...options,
+  });
+}
 
 function event(
   index: number,
@@ -45,12 +57,12 @@ describe("playback compiler", () => {
     ];
 
     expect(compilePublicPlayback(events, players)).toEqual([
-      {
+      expect.objectContaining({
         index: 1,
         phase: "night",
         kind: "phase",
         title: "第 1 夜开始",
-        text: "",
+        text: "天黑请闭眼。所有玩家保持安静，夜间行动开始。",
         details: [],
         durationMs: 1600,
         startsAtMs: 0,
@@ -62,13 +74,16 @@ describe("playback compiler", () => {
             status: "alive",
           }),
         ]),
-      },
-      {
+        presenterName: "守夜人",
+        transcriptSpeaker: "presenter",
+        presenterCue: expect.objectContaining({ copyKey: "phase.night" }),
+      }),
+      expect.objectContaining({
         index: 7,
         phase: "night",
         kind: "phase",
         title: "第 1 夜开始",
-        text: "",
+        text: "天黑请闭眼。所有玩家保持安静，夜间行动开始。",
         details: [],
         durationMs: 1600,
         startsAtMs: 1600,
@@ -79,7 +94,10 @@ describe("playback compiler", () => {
             status: "alive",
           }),
         ]),
-      },
+        presenterName: "守夜人",
+        transcriptSpeaker: "presenter",
+        presenterCue: expect.objectContaining({ copyKey: "phase.night" }),
+      }),
     ]);
   });
 
@@ -259,7 +277,7 @@ describe("playback compiler", () => {
     expect(playback.map((item) => item.title)).toEqual(["昨夜死讯"]);
     expect(playback[0]).toMatchObject({
       phase: "day",
-      text: expect.stringContaining("昨夜死亡"),
+      text: expect.stringContaining("昨夜倒下的是"),
     });
   });
 
@@ -405,7 +423,7 @@ describe("playback compiler", () => {
     });
     expect(playback[3]).toMatchObject({
       title: "查验结果",
-      text: expect.stringContaining("结果：狼人"),
+      text: expect.stringContaining("属于狼人阵营"),
     });
   });
 
@@ -442,5 +460,9 @@ function playbackItem(
     durationMs,
     startsAtMs,
     players: [],
+    presenterName: "守夜人",
+    presenterAvatar: null,
+    transcriptSpeaker: "presenter",
+    presenterCue: { copyKey: "fallback.announcement", text: "", voiceFile: null },
   };
 }

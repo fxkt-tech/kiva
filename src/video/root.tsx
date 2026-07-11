@@ -18,6 +18,14 @@ const defaultItem: PlaybackItem = {
   durationMs: 1200,
   startsAtMs: 0,
   players: [],
+  presenterName: "守夜人",
+  presenterAvatar: null,
+  transcriptSpeaker: "presenter",
+  presenterCue: {
+    copyKey: "phase.night",
+    text: "夜幕已经落下，所有玩家请确认自己的身份。",
+    voiceFile: null,
+  },
 };
 
 export const defaultCompositionInput: VideoCompositionInput = {

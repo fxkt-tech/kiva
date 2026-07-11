@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
+import type { PresenterDefinition } from "@/core/presenter-definition";
 import type { RoleDefinition } from "@/core/role-definition";
 import {
   createRandomSeatSetup,
@@ -18,6 +19,7 @@ type NewGameDialogProps = {
   readonly presets: readonly GamePreset[];
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
+  readonly presenters: readonly PresenterDefinition[];
 };
 
 type Mode = "preset" | "random";
@@ -26,11 +28,15 @@ export function NewGameDialog({
   presets,
   roles,
   characters,
+  presenters,
 }: NewGameDialogProps) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("preset");
   const [selectedPresetId, setSelectedPresetId] = useState(
     presets[0]?.id ?? "",
+  );
+  const [selectedPresenterId, setSelectedPresenterId] = useState(
+    presenters[0]?.id ?? "",
   );
   const [randomSeats, setRandomSeats] = useState<readonly GamePresetSeatAssignment[]>(
     () => createRandomSeatSetup({ roles, characters, random: () => 0 }),
@@ -115,6 +121,12 @@ export function NewGameDialog({
                 </ModeButton>
               </div>
 
+              <PresenterPicker
+                presenters={presenters}
+                selectedPresenterId={selectedPresenterId}
+                onSelectPresenter={setSelectedPresenterId}
+              />
+
               {mode === "preset" ? (
                 <PresetMode
                   presets={presets}
@@ -123,6 +135,7 @@ export function NewGameDialog({
                   selectedPreset={selectedPreset}
                   selectedPresetId={selectedPresetId}
                   onSelectPreset={setSelectedPresetId}
+                  selectedPresenterId={selectedPresenterId}
                 />
               ) : (
                 <RandomMode
@@ -139,6 +152,7 @@ export function NewGameDialog({
                     )
                   }
                   onUpdateSeat={updateRandomSeat}
+                  selectedPresenterId={selectedPresenterId}
                 />
               )}
             </div>
@@ -146,6 +160,35 @@ export function NewGameDialog({
         </div>
       ) : null}
     </>
+  );
+}
+
+export function PresenterPicker({
+  presenters,
+  selectedPresenterId,
+  onSelectPresenter,
+}: {
+  readonly presenters: readonly PresenterDefinition[];
+  readonly selectedPresenterId: string;
+  readonly onSelectPresenter: (presenterId: string) => void;
+}) {
+  return (
+    <label className="mb-5 block max-w-sm text-sm text-muted">
+      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
+        主理人
+      </span>
+      <select
+        value={selectedPresenterId}
+        onChange={(event) => onSelectPresenter(event.target.value)}
+        className="w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none"
+      >
+        {presenters.map((presenter) => (
+          <option key={presenter.id} value={presenter.id}>
+            {presenter.name} · {presenter.id}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -181,6 +224,7 @@ function PresetMode({
   selectedPreset,
   selectedPresetId,
   onSelectPreset,
+  selectedPresenterId,
 }: {
   readonly presets: readonly GamePreset[];
   readonly roles: readonly RoleDefinition[];
@@ -188,6 +232,7 @@ function PresetMode({
   readonly selectedPreset: GamePreset | null;
   readonly selectedPresetId: string;
   readonly onSelectPreset: (presetId: string) => void;
+  readonly selectedPresenterId: string;
 }) {
   return (
     <div className="grid min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -229,6 +274,7 @@ function PresetMode({
               characters={characters}
             />
             <form action={createGameFromPresetHomeAction.bind(null, selectedPreset.id)}>
+              <input type="hidden" name="presenterId" value={selectedPresenterId} />
               <div className="flex justify-end border-t border-border pt-4">
                 <Button
                   type="submit"
@@ -252,6 +298,7 @@ function RandomMode({
   validationMessages,
   onReroll,
   onUpdateSeat,
+  selectedPresenterId,
 }: {
   readonly seats: readonly GamePresetSeatAssignment[];
   readonly roles: readonly RoleDefinition[];
@@ -263,9 +310,11 @@ function RandomMode({
     field: "roleId" | "characterId",
     value: string,
   ) => void;
+  readonly selectedPresenterId: string;
 }) {
   return (
     <form action={createGameFromSeatAssignmentsAction} className="space-y-4">
+      <input type="hidden" name="presenterId" value={selectedPresenterId} />
       <div className="flex justify-end">
         <Button
           onClick={onReroll}

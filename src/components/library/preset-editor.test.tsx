@@ -6,6 +6,7 @@ import type { ModelBindingSnapshot } from "@/core/player";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
+import { seedPresenters } from "@/seeds/presenters";
 import { PresetEditor } from "./preset-editor";
 
 const modelBinding = {
@@ -25,6 +26,7 @@ describe("PresetEditor", () => {
     expect(html).toContain('name="seat.1.characterId"');
     expect(html).toContain("Save preset");
     expect(html).toContain("Create game");
+    expect(html).toContain('name="presenterId"');
   });
 
   it("preserves seat model binding overrides in hidden JSON", () => {
@@ -67,6 +69,7 @@ function renderEditor(preset: GamePreset): string {
       preset,
       roles: seedRoles,
       characters: seedCharacters,
+      presenters: seedPresenters,
     }),
   );
 }

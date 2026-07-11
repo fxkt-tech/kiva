@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { ModelBindingSnapshot } from "@/core/player";
+import { seedPresenters } from "@/seeds/presenters";
 import {
   characterFromFormData,
+  presenterFromFormData,
   presetFromFormData,
   roleFromFormData,
 } from "./form-parsers";
@@ -104,6 +106,40 @@ describe("library form parsers", () => {
     );
   });
 
+  it("parses a complete presenter catalog with standard and per-seat voices", () => {
+    const source = seedPresenters[0]!;
+    const form = presenterForm(source);
+    form.set("name", "新的守夜人");
+    form.set("line.phase.night.template", "夜幕降临，所有玩家闭眼。");
+    form.set("line.phase.night.voice.file", "new_night.mp3");
+    form.set("line.phase.night.voice.status", "ready");
+    form.set("line.prompt.speech.voice.1.file", "new_seat_1.mp3");
+    form.set("line.prompt.speech.voice.1.status", "pending");
+
+    const presenter = presenterFromFormData(form, timestamp);
+
+    expect(presenter).toMatchObject({
+      id: "night_watch",
+      name: "新的守夜人",
+      avatar: null,
+      enabled: true,
+      createdAt: source.createdAt,
+      updatedAt: timestamp,
+    });
+    expect(presenter.lines["phase.night"]).toEqual({
+      template: "夜幕降临，所有玩家闭眼。",
+      variables: [],
+      voice: { file: "new_night.mp3", status: "ready" },
+    });
+    expect(presenter.lines["prompt.speech"]).toMatchObject({
+      variables: ["seatNo"],
+      voiceBySeat: {
+        "1": { file: "new_seat_1.mp3", status: "pending" },
+        "12": null,
+      },
+    });
+  });
+
   it("preserves role and character default model bindings from hidden JSON", () => {
     const roleFormData = roleForm();
     roleFormData.set("defaultModelBinding", JSON.stringify(modelBinding));
@@ -194,5 +230,33 @@ function presetForm(options: { readonly enabled?: boolean } = {}): FormData {
   form.set("seat.1.characterId", "qin");
   form.set("seat.2.roleId", "seer");
   form.set("seat.2.characterId", "lin");
+  return form;
+}
+
+function presenterForm(source: (typeof seedPresenters)[number]): FormData {
+  const form = new FormData();
+  form.set("id", source.id);
+  form.set("name", source.name);
+  form.set("avatar", source.avatar ?? "");
+  form.set("enabled", "on");
+  form.set("createdAt", source.createdAt);
+
+  for (const [key, line] of Object.entries(source.lines)) {
+    form.set(`line.${key}.template`, line.template);
+    if ("voice" in line) {
+      form.set(`line.${key}.voice.file`, line.voice?.file ?? "");
+      form.set(`line.${key}.voice.status`, line.voice?.status ?? "pending");
+      continue;
+    }
+    for (let seatNo = 1; seatNo <= 12; seatNo += 1) {
+      const voice = line.voiceBySeat[String(seatNo)];
+      form.set(`line.${key}.voice.${seatNo}.file`, voice?.file ?? "");
+      form.set(
+        `line.${key}.voice.${seatNo}.status`,
+        voice?.status ?? "pending",
+      );
+    }
+  }
+
   return form;
 }

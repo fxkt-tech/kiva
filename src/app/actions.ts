@@ -25,8 +25,14 @@ export async function createGameAction() {
   redirect("/library?tab=presets");
 }
 
-export async function createGameFromPresetHomeAction(presetId: string) {
-  const record = await libraryActions.createGameFromPreset(presetId);
+export async function createGameFromPresetHomeAction(
+  presetId: string,
+  formData: FormData,
+) {
+  const record = await libraryActions.createGameFromPreset(
+    presetId,
+    formValue(formData, "presenterId"),
+  );
   revalidatePath("/");
   redirect(`/games/${record.game.id}/editor`);
 }
@@ -45,7 +51,10 @@ export async function createGameFromSeatAssignmentsAction(formData: FormData) {
     createdAt: now(),
     updatedAt: now(),
   };
-  const record = await libraryActions.createGameFromTemporaryPreset(preset);
+  const record = await libraryActions.createGameFromTemporaryPreset(
+    preset,
+    formValue(formData, "presenterId"),
+  );
   revalidatePath("/");
   redirect(`/games/${record.game.id}/editor`);
 }

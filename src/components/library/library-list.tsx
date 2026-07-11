@@ -9,7 +9,7 @@ export type LibraryListItem = {
 };
 
 type LibraryListProps = {
-  readonly tab: "roles" | "characters" | "presets";
+  readonly tab: "roles" | "characters" | "presenters" | "presets";
   readonly selectedId: string | null;
   readonly items: readonly LibraryListItem[];
 };

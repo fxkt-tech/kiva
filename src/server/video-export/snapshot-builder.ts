@@ -27,6 +27,7 @@ export async function buildExportSnapshot(input: {
     input.record.events,
     input.record.game.players,
     {
+      presenter: input.record.game.presenter,
       audience: "director",
       durationForScene: (scene) => {
         const source = systemVoiceSourceForScene(scene);

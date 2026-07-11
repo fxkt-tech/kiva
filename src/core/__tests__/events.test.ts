@@ -203,6 +203,10 @@ describe("full game event model", () => {
       type: "vote_cast",
       payload: { targetPlayerId: null, voteType: "pk" },
     });
-    expect(compilePublicPlayback([event], game.players)).toEqual([]);
+    expect(
+      compilePublicPlayback([event], game.players, {
+        presenter: game.presenter,
+      }),
+    ).toEqual([]);
   });
 });

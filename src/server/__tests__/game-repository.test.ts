@@ -198,6 +198,31 @@ describe("game repository", () => {
     });
   });
 
+  it("rejects game records without a presenter snapshot", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const gameId = "missing-presenter" as GameId;
+    const gameWithoutPresenter = {
+      ...game(gameId, "2026-06-26T00:03:00.000Z"),
+      presenter: undefined,
+    };
+    await mkdir(join(rootDir, "games"), { recursive: true });
+    await writeFile(
+      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      JSON.stringify({
+        game: gameWithoutPresenter,
+        events: [],
+        draft: null,
+        generations: [],
+      }),
+      "utf8",
+    );
+
+    await expect(repository.get(gameId)).rejects.toThrow(
+      "Game presenter snapshot must be an object",
+    );
+  });
+
   it("normalizes old generation records without token usage", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);

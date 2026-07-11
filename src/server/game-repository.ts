@@ -14,6 +14,7 @@ import type { DraftEvent } from "@/core/drafts";
 import type { GameEvent } from "@/core/events";
 import type { Game } from "@/core/game";
 import type { GenerationRecord } from "@/core/generation-record";
+import { validateGamePresenterSnapshot } from "@/core/presenter-definition";
 import { createPlayerSnapshot } from "@/core/player";
 import {
   createDefaultRuleset,
@@ -130,6 +131,7 @@ function normalizeRecord(rawRecord: unknown): GameRecord {
     ...record,
     game: {
       ...record.game,
+      presenter: validateGamePresenterSnapshot(record.game.presenter),
       ruleset: normalizeRuleset(record.game.ruleset),
       players: record.game.players.map((player) =>
         createPlayerSnapshot(player),

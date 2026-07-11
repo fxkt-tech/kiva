@@ -47,6 +47,7 @@ describe("LLM integration", () => {
     const playback = compilePublicPlayback(
       confirmed.events,
       confirmed.game.players,
+      { presenter: confirmed.game.presenter },
     );
 
     expect(

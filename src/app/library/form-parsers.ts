@@ -5,6 +5,14 @@ import {
 } from "@/core/game-preset";
 import { validateModelBindingSnapshot } from "@/core/model-binding";
 import type { ModelBindingSnapshot } from "@/core/player";
+import {
+  isPresenterSeatCopyKey,
+  PRESENTER_LINE_VARIABLES,
+  type PresenterCopyKey,
+  type PresenterDefinition,
+  type PresenterLineCatalog,
+  type PresenterVoice,
+} from "@/core/presenter-definition";
 import type {
   RoleDefinition,
   RoleKnowledgeRule,
@@ -71,6 +79,76 @@ export function presetFromFormData(formData: FormData, now: string): GamePreset 
     enabled: checkbox(formData, "enabled"),
     createdAt: textOrDefault(formData, "createdAt", now),
     updatedAt: now,
+  };
+}
+
+export function presenterFromFormData(
+  formData: FormData,
+  now: string,
+): PresenterDefinition {
+  return {
+    id: text(formData, "id"),
+    name: text(formData, "name"),
+    avatar: nullableText(formData, "avatar"),
+    lines: presenterLinesFromFormData(formData),
+    enabled: checkbox(formData, "enabled"),
+    createdAt: textOrDefault(formData, "createdAt", now),
+    updatedAt: now,
+  };
+}
+
+function presenterLinesFromFormData(formData: FormData): PresenterLineCatalog {
+  const entries = (Object.keys(PRESENTER_LINE_VARIABLES) as PresenterCopyKey[])
+    .map((key) => {
+      const template = text(formData, `line.${key}.template`);
+      const variables = PRESENTER_LINE_VARIABLES[key];
+      if (isPresenterSeatCopyKey(key)) {
+        return [
+          key,
+          {
+            template,
+            variables,
+            voiceBySeat: Object.fromEntries(
+              Array.from({ length: 12 }, (_, index) => {
+                const seatNo = index + 1;
+                return [
+                  String(seatNo),
+                  presenterVoiceFromFormData(
+                    formData,
+                    `line.${key}.voice.${seatNo}`,
+                  ),
+                ];
+              }),
+            ),
+          },
+        ] as const;
+      }
+
+      return [
+        key,
+        {
+          template,
+          variables,
+          voice: presenterVoiceFromFormData(formData, `line.${key}.voice`),
+        },
+      ] as const;
+    });
+
+  return Object.fromEntries(entries) as PresenterLineCatalog;
+}
+
+function presenterVoiceFromFormData(
+  formData: FormData,
+  prefix: string,
+): PresenterVoice | null {
+  const file = text(formData, `${prefix}.file`);
+  if (file === "") {
+    return null;
+  }
+
+  return {
+    file,
+    status: text(formData, `${prefix}.status`) as PresenterVoice["status"],
   };
 }
 

@@ -4,6 +4,10 @@ import {
 } from "./character-definition";
 import { validateGamePresets, type GamePreset } from "./game-preset";
 import {
+  validatePresenterDefinitions,
+  type PresenterDefinition,
+} from "./presenter-definition";
+import {
   createPlayerSnapshot,
   validateSixPlayerBoard,
   type ModelBindingSnapshot,
@@ -119,6 +123,32 @@ export function diagnosePreset(
       roles: input.roles,
       characters: input.characters,
     }),
+  };
+}
+
+export function diagnosePresenter(input: {
+  readonly presenters: readonly PresenterDefinition[];
+  readonly presenter: PresenterDefinition;
+}): LibraryDiagnostic {
+  const collectionMessages = validateCollection(() =>
+    validatePresenterDefinitions(input.presenters),
+  );
+  const presenterMessages = validateCollection(() =>
+    validatePresenterDefinitions([input.presenter]),
+  );
+  const messages = uniqueMessages([
+    ...collectionMessages,
+    ...presenterMessages,
+    ...(input.presenter.enabled ? [] : ["Presenter is disabled"]),
+  ]);
+
+  return {
+    valid: messages.length === 0,
+    references: [],
+    messages,
+    promptPreview: Object.entries(input.presenter.lines)
+      .map(([key, line]) => `${key}\n${line.template}`)
+      .join("\n\n"),
   };
 }
 

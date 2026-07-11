@@ -7,6 +7,7 @@ import { createLibraryActions } from "@/server/library-actions";
 import { createLibraryRepository } from "@/server/library-repository";
 import {
   characterFromFormData,
+  presenterFromFormData,
   presetFromFormData,
   roleFromFormData,
 } from "./form-parsers";
@@ -31,6 +32,12 @@ export async function saveCharacterAction(formData: FormData) {
 export async function savePresetAction(formData: FormData) {
   await libraryActions.savePreset(presetFromFormData(formData, now()));
   revalidatePath("/library");
+}
+
+export async function savePresenterAction(formData: FormData) {
+  await libraryActions.savePresenter(presenterFromFormData(formData, now()));
+  revalidatePath("/library");
+  revalidatePath("/");
 }
 
 export async function duplicateRoleAction(roleId: string) {
@@ -66,8 +73,15 @@ export async function setPresetEnabledAction(presetId: string, enabled: boolean)
   revalidatePath("/library");
 }
 
-export async function createGameFromPresetAction(presetId: string) {
-  const record = await libraryActions.createGameFromPreset(presetId);
+export async function createGameFromPresetAction(
+  presetId: string,
+  formData: FormData,
+) {
+  const presenterId = formData.get("presenterId");
+  const record = await libraryActions.createGameFromPreset(
+    presetId,
+    typeof presenterId === "string" ? presenterId : "",
+  );
   revalidatePath("/");
   revalidatePath("/library");
   redirect(`/games/${record.game.id}/editor`);

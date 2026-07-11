@@ -1,6 +1,11 @@
 import type { CharacterDefinition } from "./character-definition";
 import { validateGamePresets, type GamePreset } from "./game-preset";
 import {
+  createGamePresenterSnapshot,
+  type GamePresenterSnapshot,
+  type PresenterDefinition,
+} from "./presenter-definition";
+import {
   createPlayerSnapshot,
   validateBoard,
   type PlayerSnapshot,
@@ -8,6 +13,7 @@ import {
 import { validateRoleDefinitions, type RoleDefinition } from "./role-definition";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
+import { seedPresenters } from "@/seeds/presenters";
 import { seedRoles } from "@/seeds/roles";
 import {
   createDefaultRuleset,
@@ -25,6 +31,7 @@ export type Game = {
   readonly title: string;
   readonly status: GameStatus;
   readonly ruleset: Ruleset;
+  readonly presenter: GamePresenterSnapshot;
   readonly players: readonly PlayerSnapshot[];
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -42,6 +49,7 @@ export type CreateGameFromPresetInput = {
   readonly createdAt: string;
   readonly ruleset: Ruleset;
   readonly preset: GamePreset;
+  readonly presenter: PresenterDefinition;
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
 };
@@ -105,6 +113,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
     title: input.title,
     status: "drafting",
     ruleset: input.ruleset,
+    presenter: createGamePresenterSnapshot(input.presenter),
     players,
     createdAt: input.createdAt,
     updatedAt: input.createdAt,
@@ -125,6 +134,7 @@ export function createSeedGame(input: CreateSeedGameInput): Game {
     createdAt: input.createdAt,
     ruleset: input.ruleset ?? createDefaultRuleset(),
     preset: seedPresets[0],
+    presenter: seedPresenters[0]!,
     roles: seedRoles,
     characters: seedCharacters,
   });

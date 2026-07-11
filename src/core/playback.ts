@@ -2,6 +2,8 @@ import { getActiveEvents } from "./event-log";
 import { formatEventForHost, formatEventForPublic } from "./event-presenter";
 import type { GameEvent } from "./events";
 import type { PlayerSnapshot } from "./player";
+import type { GamePresenterSnapshot } from "./presenter-definition";
+import { resolvePresenter } from "./presenter";
 import type { Phase, PlayerId } from "./types";
 
 export type PlaybackSceneKind =
@@ -35,6 +37,7 @@ export type PlaybackRhythmConfig = {
 };
 
 export type CompilePublicPlaybackOptions = {
+  readonly presenter: GamePresenterSnapshot;
   readonly rhythm?: Partial<PlaybackRhythmConfig>;
   readonly audience?: "public" | "director";
   readonly durationForScene?: (scene: PlaybackItem, event: GameEvent) => number | null;
@@ -50,6 +53,14 @@ export type PlaybackItem = {
   readonly durationMs: number;
   readonly startsAtMs: number;
   readonly players: readonly PlaybackScenePlayer[];
+  readonly presenterName: string;
+  readonly presenterAvatar: string | null;
+  readonly transcriptSpeaker: "presenter" | "player";
+  readonly presenterCue: {
+    readonly copyKey: string;
+    readonly text: string;
+    readonly voiceFile: string | null;
+  };
 };
 
 const defaultRhythm: PlaybackRhythmConfig = {
@@ -68,7 +79,7 @@ const defaultRhythm: PlaybackRhythmConfig = {
 export function compilePublicPlayback(
   events: readonly GameEvent[],
   players: readonly PlayerSnapshot[],
-  options: CompilePublicPlaybackOptions = {},
+  options: CompilePublicPlaybackOptions,
 ): readonly PlaybackItem[] {
   const publiclyDeadPlayerIds = new Set<PlayerId>();
   const rhythm = { ...defaultRhythm, ...options.rhythm };
@@ -83,6 +94,7 @@ export function compilePublicPlayback(
       if (!presented) {
         return [];
       }
+      const presenter = resolvePresenter(options.presenter, event, players);
 
       updatePublicDeaths(publiclyDeadPlayerIds, event);
 
@@ -91,11 +103,15 @@ export function compilePublicPlayback(
         phase: event.phase,
         kind: kindForEvent(event),
         title: presented.title,
-        text: event.type === "phase_started" ? "" : presented.text,
+        text: presenter.transcriptText,
         details: presented.details ?? [],
-        durationMs: durationForEvent(event, presented.text, rhythm),
+        durationMs: durationForEvent(event, presenter.transcriptText, rhythm),
         startsAtMs: 0,
         players: playersForScene(players, publiclyDeadPlayerIds, event),
+        presenterName: presenter.presenterName,
+        presenterAvatar: presenter.presenterAvatar,
+        transcriptSpeaker: presenter.transcriptSpeaker,
+        presenterCue: presenter.cue,
       };
       const durationMs =
         options.durationForScene?.(scene, event) ?? scene.durationMs;

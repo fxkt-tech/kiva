@@ -315,6 +315,10 @@ function scene(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     durationMs: 2000,
     startsAtMs: 0,
     players: [],
+    presenterName: "守夜人",
+    presenterAvatar: null,
+    transcriptSpeaker: "presenter",
+    presenterCue: { copyKey: "phase.night", text: "夜晚开始。", voiceFile: null },
     ...overrides,
   };
 }

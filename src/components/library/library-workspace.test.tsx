@@ -1,10 +1,16 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { diagnoseCharacter, diagnosePreset, diagnoseRole } from "@/core/library-diagnostics";
+import {
+  diagnoseCharacter,
+  diagnosePresenter,
+  diagnosePreset,
+  diagnoseRole,
+} from "@/core/library-diagnostics";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
+import { seedPresenters } from "@/seeds/presenters";
 import type { LibraryActionsRecord } from "@/server/library-actions";
 import { LibraryList } from "./library-list";
 import { LibraryWorkspace, selectedEditorKey } from "./library-workspace";
@@ -23,6 +29,7 @@ describe("LibraryWorkspace", () => {
     expect(html).toContain("Roles");
     expect(html).toContain("Characters");
     expect(html).toContain("Presets");
+    expect(html).toContain("Presenters");
     expect(html).toContain("狼人");
     expect(html).toContain("Role editor");
     expect(html).toContain("Validation");
@@ -62,6 +69,21 @@ describe("LibraryWorkspace", () => {
     expect(withoutId).toContain("12人狼人杀标准局");
     expect(withInvalidId).toContain("Preset editor");
     expect(withInvalidId).toContain("12人狼人杀标准局");
+  });
+
+  it("renders a presenter as a configurable library object", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(LibraryWorkspace, {
+        activeTab: "presenters",
+        selectedId: "judge",
+        library: libraryFixture(),
+      }),
+    );
+
+    expect(html).toContain("Presenter editor");
+    expect(html).toContain("法官");
+    expect(html).toContain("主持文案与录音");
+    expect(html).toContain('name="line.phase.night.template"');
   });
 
   it("uses the selected object identity as the editor key", () => {
@@ -104,6 +126,7 @@ function libraryFixture(): LibraryActionsRecord {
     roles: seedRoles,
     characters: seedCharacters,
     presets: seedPresets,
+    presenters: seedPresenters,
     diagnostics: {
       roles: Object.fromEntries(
         seedRoles.map((role) => [
@@ -136,6 +159,12 @@ function libraryFixture(): LibraryActionsRecord {
             presets: seedPresets,
             preset,
           }),
+        ]),
+      ),
+      presenters: Object.fromEntries(
+        seedPresenters.map((presenter) => [
+          presenter.id,
+          diagnosePresenter({ presenters: seedPresenters, presenter }),
         ]),
       ),
     },

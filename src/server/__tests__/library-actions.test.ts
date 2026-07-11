@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
+import { seedPresenters } from "@/seeds/presenters";
 import { createGameRepository } from "../game-repository";
 import { createLibraryActions } from "../library-actions";
 import {
@@ -45,6 +46,7 @@ async function createSeededActions() {
     roles: seedRoles,
     characters: seedCharacters,
     presets: seedPresets,
+    presenters: seedPresenters,
   });
 
   return {
@@ -63,6 +65,7 @@ describe("library actions", () => {
     expect(library.roles).toEqual(seedRoles);
     expect(library.characters).toEqual(seedCharacters);
     expect(library.presets).toEqual(seedPresets);
+    expect(library.presenters).toEqual(seedPresenters);
     expect(library.diagnostics.roles.werewolf).toMatchObject({
       valid: true,
       references: [defaultPresetId],
@@ -79,6 +82,12 @@ describe("library actions", () => {
       canCreateGame: true,
       messages: [],
       promptPreview: expect.stringContaining("模型："),
+    });
+    expect(library.diagnostics.presenters.night_watch).toMatchObject({
+      valid: true,
+      references: [],
+      messages: [],
+      promptPreview: expect.stringContaining("phase.night"),
     });
   });
 
@@ -189,6 +198,39 @@ describe("library actions", () => {
     expect(saved.characters).toEqual(seedCharacters);
   });
 
+  it("saves presenter identity, copy, and voice configuration", async () => {
+    const { actions, libraryRepository } = await createSeededActions();
+    const source = seedPresenters[0]!;
+    const updatedPresenter = {
+      ...source,
+      name: "新守夜人",
+      lines: {
+        ...source.lines,
+        "phase.night": {
+          ...source.lines["phase.night"],
+          template: "夜幕降临，所有玩家闭眼。",
+          voice: { file: "new_night.mp3", status: "ready" as const },
+        },
+      },
+      updatedAt: NOW,
+    };
+
+    await actions.savePresenter(updatedPresenter);
+
+    const saved = await libraryRepository.loadAll();
+    expect(saved.presenters.find((presenter) => presenter.id === source.id))
+      .toMatchObject({
+        name: "新守夜人",
+        lines: {
+          "phase.night": {
+            template: "夜幕降临，所有玩家闭眼。",
+            voice: { file: "new_night.mp3", status: "ready" },
+          },
+        },
+        updatedAt: NOW,
+      });
+  });
+
   it("duplicates a role with a fresh id and timestamps", async () => {
     const { actions, libraryRepository } = await createSeededActions();
 
@@ -273,10 +315,17 @@ describe("library actions", () => {
   it("creates a twelve player game from a preset id", async () => {
     const { actions, gameRepository } = await createSeededActions();
 
-    const record = await actions.createGameFromPreset(defaultPresetId);
+    const record = await actions.createGameFromPreset(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+    );
 
     expect(record.game.title).toBe("12人狼人杀标准局");
     expect(record.game.players).toHaveLength(12);
+    expect(record.game.presenter).toMatchObject({
+      presenterSourceId: "night_watch",
+      name: "守夜人",
+    });
     expect(record.events).toEqual([]);
     await expect(gameRepository.get(record.game.id)).resolves.toEqual(record);
   });
@@ -296,10 +345,17 @@ describe("library actions", () => {
       ) ?? null,
     };
 
-    const record = await actions.createGameFromTemporaryPreset(temporaryPreset);
+    const record = await actions.createGameFromTemporaryPreset(
+      temporaryPreset,
+      seedPresenters[1]!.id,
+    );
 
     expect(record.game.title).toBe("临时随机局");
     expect(record.game.players[0]?.name).toBe("林夏");
+    expect(record.game.presenter).toMatchObject({
+      presenterSourceId: "judge",
+      name: "法官",
+    });
     await expect(gameRepository.get(record.game.id)).resolves.toEqual(record);
     await expect(libraryRepository.loadAll()).resolves.toMatchObject({
       presets: seedPresets,
@@ -378,7 +434,10 @@ describe("library actions", () => {
     const gameRepository = createGameRepository(await createTempDir());
     const actions = createLibraryActions({ libraryRepository, gameRepository });
 
-    const record = await actions.createGameFromPreset(defaultPresetId);
+    const record = await actions.createGameFromPreset(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+    );
 
     expect(record.game.players).toHaveLength(12);
     expect(libraryRepository.lockCalls).toBe(1);
@@ -390,6 +449,7 @@ function createRaceDetectingLibraryRepository(): LibraryRepository {
     roles: seedRoles,
     characters: seedCharacters,
     presets: seedPresets,
+    presenters: seedPresenters,
   });
   let lockTail: Promise<void> = Promise.resolve();
   let inLock = false;
@@ -424,6 +484,9 @@ function createRaceDetectingLibraryRepository(): LibraryRepository {
     async getPresets() {
       return (await loadAll()).presets;
     },
+    async getPresenters() {
+      return (await loadAll()).presenters;
+    },
     async getAll() {
       return loadAll();
     },
@@ -436,6 +499,9 @@ function createRaceDetectingLibraryRepository(): LibraryRepository {
     },
     async savePresets(presets) {
       record = { ...record, presets: [...presets] };
+    },
+    async savePresenters(presenters) {
+      record = { ...record, presenters: [...presenters] };
     },
     async saveAll(nextRecord) {
       record = cloneLibraryRecord(nextRecord);
@@ -482,6 +548,7 @@ function createMemoryLibraryRepository(): LibraryRepository {
     roles: seedRoles,
     characters: seedCharacters,
     presets: seedPresets,
+    presenters: seedPresenters,
   });
 
   return {
@@ -493,6 +560,9 @@ function createMemoryLibraryRepository(): LibraryRepository {
     },
     async getPresets() {
       return cloneLibraryRecord(record).presets;
+    },
+    async getPresenters() {
+      return cloneLibraryRecord(record).presenters;
     },
     async getAll() {
       return cloneLibraryRecord(record);
@@ -508,6 +578,9 @@ function createMemoryLibraryRepository(): LibraryRepository {
     },
     async savePresets(presets) {
       record = { ...record, presets: [...presets] };
+    },
+    async savePresenters(presenters) {
+      record = { ...record, presenters: [...presenters] };
     },
     async saveAll(nextRecord) {
       record = cloneLibraryRecord(nextRecord);

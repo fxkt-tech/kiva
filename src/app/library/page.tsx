@@ -34,7 +34,11 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 }
 
 function parseTab(value: string | undefined): LibraryTab {
-  if (value === "characters" || value === "presets") {
+  if (
+    value === "characters" ||
+    value === "presenters" ||
+    value === "presets"
+  ) {
     return value;
   }
 

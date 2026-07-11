@@ -1,22 +1,31 @@
 import type { PlaybackItem, PlaybackScenePlayer } from "@/core/playback";
 
-export const PRESENTER_NAME = "主理人";
-
 export type TranscriptPresentation = {
   readonly speaker: {
     readonly kind: "player" | "presenter";
     readonly name: string;
     readonly seatNo: number | null;
     readonly avatar: string | null;
+    readonly roleName: string | null;
   };
   readonly content: string;
+};
+
+export type TranscriptSpeakerIdentity = {
+  readonly kind: "presenter" | "role";
+  readonly label: string;
+};
+
+export type TranscriptTextSegment = {
+  readonly text: string;
+  readonly roleName: string | null;
 };
 
 export function transcriptPresentationForScene(
   scene: PlaybackItem,
   activePlayer: PlaybackScenePlayer | null,
 ): TranscriptPresentation {
-  const player = scene.kind === "speech" ? activePlayer : null;
+  const player = scene.transcriptSpeaker === "player" ? activePlayer : null;
 
   return {
     speaker: player
@@ -25,61 +34,101 @@ export function transcriptPresentationForScene(
           name: player.name,
           seatNo: player.seatNo,
           avatar: player.avatar,
+          roleName: player.roleName,
         }
       : {
           kind: "presenter",
-          name: PRESENTER_NAME,
+          name: scene.presenterName,
           seatNo: null,
-          avatar: null,
+          avatar: scene.presenterAvatar,
+          roleName: null,
         },
-    content: narrationTextForScene(scene),
+    content: scene.text,
   };
 }
 
-export function narrationTextForScene(scene: PlaybackItem): string {
-  const narration = scene.text.trim();
-  if (narration) {
-    return narration;
+export function transcriptSpeakerIdentity(
+  presentation: TranscriptPresentation,
+): TranscriptSpeakerIdentity {
+  if (presentation.speaker.kind === "player") {
+    return {
+      kind: "role",
+      label: presentation.speaker.roleName ?? "未知身份",
+    };
   }
 
-  if (scene.kind === "phase") {
-    return phaseNarration(scene.phase);
-  }
-
-  const details = scene.details.map((detail) => detail.trim()).filter(Boolean);
-  if (details.length > 0) {
-    return details.join("；");
-  }
-
-  switch (scene.kind) {
-    case "announcement":
-      return "本环节信息已确认。";
-    case "speech":
-      return "该玩家本轮没有留下发言内容。";
-    case "vote":
-      return "本轮投票信息已记录。";
-    case "resolution":
-      return "本轮结算已经完成。";
-  }
+  return { kind: "presenter", label: "主理人" };
 }
 
-function phaseNarration(phase: PlaybackItem["phase"]): string {
-  switch (phase) {
-    case "setup":
-      return "对局准备开始。";
-    case "night":
-      return "进入夜晚阶段，请所有玩家确认夜间行动。";
-    case "day":
-      return "天亮了，主理人将公布昨夜信息。";
-    case "speech":
-      return "进入依次发言阶段。";
-    case "vote":
-      return "进入本日放逐投票阶段。";
-    case "pk":
-      return "进入 PK 发言阶段。";
-    case "last_words":
-      return "进入遗言阶段。";
-    case "ended":
-      return "本局游戏已经结束。";
+export function transcriptTextSegments(
+  text: string,
+  speakerKind: TranscriptPresentation["speaker"]["kind"],
+  players: readonly PlaybackScenePlayer[],
+): readonly TranscriptTextSegment[] {
+  if (speakerKind === "player") {
+    return [{ text, roleName: null }];
   }
+
+  const mentions = playerMentions(players);
+  if (!text || mentions.size === 0) {
+    return [{ text, roleName: null }];
+  }
+
+  const pattern = [...mentions.keys()]
+    .sort((left, right) => right.length - left.length)
+    .map(escapeRegExp)
+    .join("|");
+  const matcher = new RegExp(pattern, "gu");
+  const segments: TranscriptTextSegment[] = [];
+  let cursor = 0;
+
+  for (const match of text.matchAll(matcher)) {
+    const mention = match[0];
+    const index = match.index;
+    if (/^\d/u.test(mention) && index > 0 && /\d/u.test(text[index - 1]!)) {
+      continue;
+    }
+    if (index > cursor) {
+      segments.push({ text: text.slice(cursor, index), roleName: null });
+    }
+    segments.push({ text: mention, roleName: mentions.get(mention) ?? null });
+    cursor = index + mention.length;
+  }
+
+  if (cursor < text.length) {
+    segments.push({ text: text.slice(cursor), roleName: null });
+  }
+
+  return segments.length > 0 ? segments : [{ text, roleName: null }];
+}
+
+function playerMentions(
+  players: readonly PlaybackScenePlayer[],
+): ReadonlyMap<string, string> {
+  const mentions = new Map<string, string>();
+  for (const player of players) {
+    const seat = String(player.seatNo);
+    for (const mention of [
+      `${seat}号${player.name}`,
+      `${seat}号 ${player.name}`,
+      `${seat} 号${player.name}`,
+      `${seat} 号 ${player.name}`,
+      player.name,
+      `${seat}号`,
+      `${seat} 号`,
+    ]) {
+      if (mention.trim()) {
+        mentions.set(mention, player.roleName);
+      }
+    }
+  }
+  return mentions;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function narrationTextForScene(scene: PlaybackItem): string {
+  return scene.text;
 }

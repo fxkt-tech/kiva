@@ -392,7 +392,476 @@
       }
     ],
     "createdAt": "2026-06-30T08:42:40.219Z",
-    "updatedAt": "2026-07-01T22:49:10.413Z"
+    "updatedAt": "2026-07-01T22:49:10.413Z",
+    "presenter": {
+      "presenterSourceId": "night_watch",
+      "name": "守夜人",
+      "avatar": null,
+      "lines": {
+        "phase.setup": {
+          "template": "所有玩家请确认身份。好戏，即将开场。",
+          "variables": [],
+          "voice": {
+            "file": "phase_setup_start.mp3",
+            "status": "pending"
+          }
+        },
+        "phase.night": {
+          "template": "天黑请闭眼。所有玩家保持安静，夜间行动开始。",
+          "variables": [],
+          "voice": {
+            "file": "phase_night_start.mp3",
+            "status": "pending"
+          }
+        },
+        "phase.day": {
+          "template": "天亮了，所有玩家请睁眼。昨夜的结果，即将揭晓。",
+          "variables": [],
+          "voice": {
+            "file": "phase_day_start.mp3",
+            "status": "pending"
+          }
+        },
+        "phase.speech": {
+          "template": "现在进入发言环节。听清每一句话，也别轻信任何一个人。",
+          "variables": [],
+          "voice": {
+            "file": "phase_speech_start.mp3",
+            "status": "pending"
+          }
+        },
+        "phase.vote": {
+          "template": "发言结束。请投出你认为最像狼人的那一票。",
+          "variables": [],
+          "voice": {
+            "file": "phase_vote_start.mp3",
+            "status": "pending"
+          }
+        },
+        "phase.pk": {
+          "template": "票型持平。平票玩家进入 PK 发言，请为自己争取最后的信任。",
+          "variables": [],
+          "voice": {
+            "file": "phase_pk_start.mp3",
+            "status": "pending"
+          }
+        },
+        "phase.last_words": {
+          "template": "请留下你的遗言。你说的每一句话，都可能改变场上的判断。",
+          "variables": [],
+          "voice": {
+            "file": "phase_last_words_start.mp3",
+            "status": "pending"
+          }
+        },
+        "phase.ended": {
+          "template": "尘埃落定。本局游戏结束，所有身份即将揭晓。",
+          "variables": [],
+          "voice": {
+            "file": "phase_game_ended.mp3",
+            "status": "pending"
+          }
+        },
+        "action.role_assigned": {
+          "template": "{player}，请确认你的身份牌：{role}。从现在开始，隐藏好你的秘密。",
+          "variables": [
+            "player",
+            "role"
+          ],
+          "voice": {
+            "file": "role_card.mp3",
+            "status": "pending"
+          }
+        },
+        "action.wolf_kill": {
+          "template": "狼人请睁眼。今晚，你们选择袭击{target}。",
+          "variables": [
+            "target"
+          ],
+          "voice": {
+            "file": "action_wolf_kill.mp3",
+            "status": "pending"
+          }
+        },
+        "action.seer_check": {
+          "template": "预言家请睁眼。今晚，你选择查验{target}。",
+          "variables": [
+            "target"
+          ],
+          "voice": {
+            "file": "action_seer_check.mp3",
+            "status": "pending"
+          }
+        },
+        "action.seer_result.wolves": {
+          "template": "查验结果：{target}属于狼人阵营。请记住这个答案。",
+          "variables": [
+            "target"
+          ],
+          "voice": {
+            "file": "action_seer_result.mp3",
+            "status": "pending"
+          }
+        },
+        "action.seer_result.good": {
+          "template": "查验结果：{target}属于好人阵营。请记住这个答案。",
+          "variables": [
+            "target"
+          ],
+          "voice": {
+            "file": "action_seer_result.mp3",
+            "status": "pending"
+          }
+        },
+        "action.witch_death_info.killed": {
+          "template": "女巫请睁眼。今晚倒下的是{target}，你要使用解药吗？",
+          "variables": [
+            "target"
+          ],
+          "voice": {
+            "file": "action_witch_death_info.mp3",
+            "status": "pending"
+          }
+        },
+        "action.witch_death_info.safe": {
+          "template": "女巫请睁眼。今晚无人中刀。",
+          "variables": [],
+          "voice": {
+            "file": "action_witch_death_info.mp3",
+            "status": "pending"
+          }
+        },
+        "action.witch_antidote.used": {
+          "template": "女巫使用了解药，{target}从死亡边缘被救回。",
+          "variables": [
+            "target"
+          ],
+          "voice": {
+            "file": "action_witch_antidote.mp3",
+            "status": "pending"
+          }
+        },
+        "action.witch_antidote.skipped": {
+          "template": "女巫选择保留解药。",
+          "variables": [],
+          "voice": {
+            "file": "action_witch_antidote.mp3",
+            "status": "pending"
+          }
+        },
+        "action.witch_poison.used": {
+          "template": "女巫使用了毒药，{target}今夜将无法醒来。",
+          "variables": [
+            "target"
+          ],
+          "voice": {
+            "file": "action_witch_poison.mp3",
+            "status": "pending"
+          }
+        },
+        "action.witch_poison.skipped": {
+          "template": "女巫选择保留毒药。",
+          "variables": [],
+          "voice": {
+            "file": "action_witch_poison.mp3",
+            "status": "pending"
+          }
+        },
+        "action.guard_protect": {
+          "template": "守卫请睁眼。今晚，你选择守护{target}。",
+          "variables": [
+            "target"
+          ],
+          "voice": null
+        },
+        "action.hunter_shot": {
+          "template": "枪声响起。猎人选择带走{target}。",
+          "variables": [
+            "target"
+          ],
+          "voice": null
+        },
+        "resolution.night.deaths": {
+          "template": "夜间行动结束。{players}将在天亮后倒下。",
+          "variables": [
+            "players"
+          ],
+          "voice": {
+            "file": "resolution_night.mp3",
+            "status": "pending"
+          }
+        },
+        "resolution.night.safe": {
+          "template": "夜间行动结束。今晚，没有人倒下。",
+          "variables": [],
+          "voice": {
+            "file": "resolution_night.mp3",
+            "status": "pending"
+          }
+        },
+        "announcement.deaths": {
+          "template": "昨夜倒下的是：{players}。请记住他们留下的最后线索。",
+          "variables": [
+            "players"
+          ],
+          "voice": {
+            "file": "announcement_death.mp3",
+            "status": "pending"
+          }
+        },
+        "announcement.safe": {
+          "template": "昨夜是平安夜。没有人倒下，但危险从未离开。",
+          "variables": [],
+          "voice": {
+            "file": "announcement_safe_night.mp3",
+            "status": "pending"
+          }
+        },
+        "prompt.last_words": {
+          "template": "请{seatNo}号玩家发表遗言。",
+          "variables": [
+            "seatNo"
+          ],
+          "voiceBySeat": {
+            "1": {
+              "file": "player_1_last_words_prompt.mp3",
+              "status": "ready"
+            },
+            "2": {
+              "file": "player_2_last_words_prompt.mp3",
+              "status": "ready"
+            },
+            "3": {
+              "file": "player_3_last_words_prompt.mp3",
+              "status": "ready"
+            },
+            "4": {
+              "file": "player_4_last_words_prompt.mp3",
+              "status": "ready"
+            },
+            "5": {
+              "file": "player_5_last_words_prompt.mp3",
+              "status": "ready"
+            },
+            "6": {
+              "file": "player_6_last_words_prompt.mp3",
+              "status": "ready"
+            },
+            "7": null,
+            "8": null,
+            "9": null,
+            "10": null,
+            "11": null,
+            "12": null
+          }
+        },
+        "prompt.speech": {
+          "template": "请{seatNo}号玩家开始发言。",
+          "variables": [
+            "seatNo"
+          ],
+          "voiceBySeat": {
+            "1": {
+              "file": "player_1_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "2": {
+              "file": "player_2_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "3": {
+              "file": "player_3_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "4": {
+              "file": "player_4_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "5": {
+              "file": "player_5_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "6": {
+              "file": "player_6_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "7": null,
+            "8": null,
+            "9": null,
+            "10": null,
+            "11": null,
+            "12": null
+          }
+        },
+        "prompt.pk": {
+          "template": "请{seatNo}号玩家进行 PK 发言。",
+          "variables": [
+            "seatNo"
+          ],
+          "voiceBySeat": {
+            "1": {
+              "file": "player_1_pk_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "2": {
+              "file": "player_2_pk_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "3": {
+              "file": "player_3_pk_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "4": {
+              "file": "player_4_pk_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "5": {
+              "file": "player_5_pk_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "6": {
+              "file": "player_6_pk_speech_prompt.mp3",
+              "status": "ready"
+            },
+            "7": null,
+            "8": null,
+            "9": null,
+            "10": null,
+            "11": null,
+            "12": null
+          }
+        },
+        "vote.cast": {
+          "template": "{voter}把票投给了{target}。",
+          "variables": [
+            "voter",
+            "target"
+          ],
+          "voice": {
+            "file": "vote_exile.mp3",
+            "status": "pending"
+          }
+        },
+        "vote.abstain": {
+          "template": "{voter}选择弃票。",
+          "variables": [
+            "voter"
+          ],
+          "voice": {
+            "file": "vote_abstain.mp3",
+            "status": "pending"
+          }
+        },
+        "resolution.exile.exiled": {
+          "template": "票型已定。{player}被放逐出局，请留下最后的遗言。",
+          "variables": [
+            "player"
+          ],
+          "voice": {
+            "file": "resolution_vote.mp3",
+            "status": "pending"
+          }
+        },
+        "resolution.exile.tied": {
+          "template": "票型持平：{players}。平票玩家进入 PK 发言。",
+          "variables": [
+            "players"
+          ],
+          "voice": {
+            "file": "resolution_vote.mp3",
+            "status": "pending"
+          }
+        },
+        "resolution.exile.none": {
+          "template": "投票结束，本轮无人被放逐。狼人，仍藏在人群之中。",
+          "variables": [],
+          "voice": {
+            "file": "resolution_vote.mp3",
+            "status": "pending"
+          }
+        },
+        "resolution.pk.exiled": {
+          "template": "PK 票型已定。{player}被放逐出局，请留下最后的遗言。",
+          "variables": [
+            "player"
+          ],
+          "voice": {
+            "file": "resolution_pk.mp3",
+            "status": "pending"
+          }
+        },
+        "resolution.pk.tied": {
+          "template": "PK 再次平票：{players}。本轮无人被放逐。",
+          "variables": [
+            "players"
+          ],
+          "voice": {
+            "file": "resolution_pk.mp3",
+            "status": "pending"
+          }
+        },
+        "resolution.pk.none": {
+          "template": "PK 投票结束，本轮无人被放逐。",
+          "variables": [],
+          "voice": {
+            "file": "resolution_pk.mp3",
+            "status": "pending"
+          }
+        },
+        "game_end.all_wolves_dead": {
+          "template": "最后一匹狼人已经倒下。好人阵营获胜，长夜结束。",
+          "variables": [],
+          "voice": {
+            "file": "game_end_good_win.mp3",
+            "status": "pending"
+          }
+        },
+        "game_end.all_gods_dead": {
+          "template": "所有神职均已出局。狼人阵营获胜，黑夜吞没了村庄。",
+          "variables": [],
+          "voice": {
+            "file": "game_end_wolves_win.mp3",
+            "status": "pending"
+          }
+        },
+        "game_end.all_villagers_dead": {
+          "template": "所有平民均已出局。狼人阵营获胜，村庄再无天明。",
+          "variables": [],
+          "voice": {
+            "file": "game_end_wolves_win.mp3",
+            "status": "pending"
+          }
+        },
+        "game_end.all_good_dead": {
+          "template": "最后一位好人倒下。狼人阵营获胜，猎杀结束。",
+          "variables": [],
+          "voice": {
+            "file": "game_end_wolves_win.mp3",
+            "status": "pending"
+          }
+        },
+        "fallback.announcement": {
+          "template": "新的线索已经出现。真相，往往藏在细节里。",
+          "variables": [],
+          "voice": null
+        },
+        "fallback.speech": {
+          "template": "该玩家选择沉默。沉默，有时也是一种答案。",
+          "variables": [],
+          "voice": null
+        },
+        "fallback.vote": {
+          "template": "票型已经记录。每一票，都可能暴露立场。",
+          "variables": [],
+          "voice": null
+        },
+        "fallback.resolution": {
+          "template": "本轮结算完毕。场上的局势，已经悄然改变。",
+          "variables": [],
+          "voice": null
+        }
+      }
+    }
   },
   "events": [
     {

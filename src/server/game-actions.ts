@@ -18,6 +18,7 @@ import { generateSpeechDraft } from "@/core/speech-generation";
 import { generateActionDraft } from "@/core/action-generation";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
+import { seedPresenters } from "@/seeds/presenters";
 import { seedRoles } from "@/seeds/roles";
 import type { GameRecord, GameRepository } from "./game-repository";
 import type { LibraryRecord, LibraryRepository } from "./library-repository";
@@ -43,19 +44,24 @@ export function createGameActions(
     return record;
   }
 
-  async function createGameFromPresetId(presetId: string): Promise<GameRecord> {
+  async function createGameFromPresetId(
+    presetId: string,
+    presenterId: string,
+  ): Promise<GameRecord> {
     const createdAt = now();
     const library = await loadGameLibrary(options.libraryRepository);
     const preset = library.presets.find((item) => item.id === presetId);
     if (!preset) {
       throw new Error(`Game preset not found: ${presetId}`);
     }
+    const presenter = requireEnabledPresenter(library, presenterId);
     const game = createGameFromPreset({
       gameId: createGameId(),
       title: preset.name,
       createdAt,
       ruleset: createDefaultRuleset(),
       preset,
+      presenter,
       roles: library.roles,
       characters: library.characters,
     });
@@ -72,15 +78,18 @@ export function createGameActions(
 
   async function createGameFromPresetRecord(
     preset: LibraryRecord["presets"][number],
-    library: Pick<LibraryRecord, "roles" | "characters">,
+    library: Pick<LibraryRecord, "roles" | "characters" | "presenters">,
+    presenterId: string,
   ): Promise<GameRecord> {
     const createdAt = now();
+    const presenter = requireEnabledPresenter(library, presenterId);
     const game = createGameFromPreset({
       gameId: createGameId(),
       title: preset.name,
       createdAt,
       ruleset: createDefaultRuleset(),
       preset,
+      presenter,
       roles: library.roles,
       characters: library.characters,
     });
@@ -98,18 +107,31 @@ export function createGameActions(
   return {
     async createGame(): Promise<GameRecord> {
       const presetId = options.defaultPresetId ?? "twelve_player_standard";
-      return createGameFromPresetId(presetId);
+      const library = await loadGameLibrary(options.libraryRepository);
+      const preset = library.presets.find((candidate) => candidate.id === presetId);
+      if (!preset) {
+        throw new Error(`Game preset not found: ${presetId}`);
+      }
+      const presenterId = library.presenters[0]?.id;
+      if (!presenterId) {
+        throw new Error("No presenter definitions available");
+      }
+      return createGameFromPresetRecord(preset, library, presenterId);
     },
 
-    async createGameFromPresetId(presetId: string): Promise<GameRecord> {
-      return createGameFromPresetId(presetId);
+    async createGameFromPresetId(
+      presetId: string,
+      presenterId: string,
+    ): Promise<GameRecord> {
+      return createGameFromPresetId(presetId, presenterId);
     },
 
     async createGameFromPresetRecord(
       preset: LibraryRecord["presets"][number],
-      library: Pick<LibraryRecord, "roles" | "characters">,
+      library: Pick<LibraryRecord, "roles" | "characters" | "presenters">,
+      presenterId: string,
     ): Promise<GameRecord> {
-      return createGameFromPresetRecord(preset, library);
+      return createGameFromPresetRecord(preset, library, presenterId);
     },
 
     async getGame(gameId: GameId): Promise<GameRecord | null> {
@@ -300,7 +322,24 @@ async function loadGameLibrary(
     roles: seedRoles,
     characters: seedCharacters,
     presets: seedPresets,
+    presenters: seedPresenters,
   };
+}
+
+function requireEnabledPresenter(
+  library: Pick<LibraryRecord, "presenters">,
+  presenterId: string,
+): LibraryRecord["presenters"][number] {
+  const presenter = library.presenters.find(
+    (candidate) => candidate.id === presenterId,
+  );
+  if (!presenter) {
+    throw new Error(`Presenter not found: ${presenterId}`);
+  }
+  if (!presenter.enabled) {
+    throw new Error(`Presenter is disabled: ${presenterId}`);
+  }
+  return presenter;
 }
 
 async function maybeGenerateDraft(input: {

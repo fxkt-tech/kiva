@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PlaybackItem } from "@/core/playback";
+import { playbackIndexAtMs, type PlaybackItem } from "@/core/playback";
 import {
   buildAudioTimeline,
   systemVoiceCueForItem,
@@ -12,6 +12,7 @@ import {
   compositionDurationInFrames,
   frameToMilliseconds,
   millisecondsToFrame,
+  sceneStartFrame,
 } from "./timing";
 
 describe("preview v2 composition contracts", () => {
@@ -22,6 +23,19 @@ describe("preview v2 composition contracts", () => {
       compositionDurationInFrames([item({ durationMs: 1001 })], 30),
     ).toBe(31);
     expect(compositionDurationInFrames([], 30)).toBe(1);
+  });
+
+  it("seeks inside a scene whose start is not aligned to a video frame", () => {
+    const items = [
+      item({ index: 0, startsAtMs: 0, durationMs: 23513 }),
+      item({ index: 1, startsAtMs: 23513, durationMs: 2761 }),
+    ];
+
+    const targetFrame = sceneStartFrame(items[1]!.startsAtMs, 30);
+    const landedAtMs = frameToMilliseconds(targetFrame, 30);
+
+    expect(targetFrame).toBe(706);
+    expect(playbackIndexAtMs(items, landedAtMs)).toBe(1);
   });
 
   it("builds sorted optional audio cues", () => {
@@ -47,6 +61,11 @@ describe("preview v2 composition contracts", () => {
     const scene = item({
       title: "第 1 夜开始",
       durationMs: 2160,
+      presenterCue: {
+        copyKey: "phase.night",
+        text: "天黑请闭眼。",
+        voiceFile: "phase_night_start.mp3",
+      },
     });
 
     expect(systemVoiceCueForItem(scene)?.durationMs).toBe(2160);
@@ -86,6 +105,10 @@ function item(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     durationMs: 1000,
     startsAtMs: 0,
     players: [],
+    presenterName: "守夜人",
+    presenterAvatar: null,
+    transcriptSpeaker: "presenter",
+    presenterCue: { copyKey: "fallback.announcement", text: "", voiceFile: null },
     ...overrides,
   };
 }

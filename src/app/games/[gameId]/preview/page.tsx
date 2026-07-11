@@ -44,6 +44,7 @@ export default async function PreviewPage({
       gameTitle={record.game.title}
       initialPosition={focusCurrent ? "end" : "start"}
       items={compilePublicPlayback(playbackEvents, record.game.players, {
+        presenter: record.game.presenter,
         audience: "director",
         durationForScene: (scene) => {
           const source = systemVoiceSourceForScene(scene);

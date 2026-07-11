@@ -6,7 +6,22 @@ import type {
   ShotFrame,
 } from "@/components/preview/shot-engine/types";
 import type { HtmlFrameViewModel } from "../composition/frame-view-model";
-import { transcriptPresentationForScene } from "./stage-copy";
+import {
+  identityTextStyle,
+  presenterIdentityTone,
+  roleIdentityTone,
+} from "./identity-palette";
+import {
+  stagePaletteForPhase,
+  type StagePalette,
+  type StageVisualPhase,
+} from "./stage-palette";
+import {
+  transcriptPresentationForScene,
+  transcriptSpeakerIdentity,
+  transcriptTextSegments,
+  type TranscriptSpeakerIdentity,
+} from "./stage-copy";
 
 export function HtmlPlaybackStage({
   viewModel,
@@ -24,6 +39,10 @@ export function HtmlPlaybackStage({
       : assets.dayBackgroundUrl;
   const enter = easeOutCubic(shot.clock.enterProgress);
   const exit = easeOutCubic(shot.clock.exitProgress);
+  const opacity = stageOpacity(shot, enter, exit);
+  const visualPhase: StageVisualPhase =
+    shot.scene.phase === "night" ? "night" : "day";
+  const palette = stagePaletteForPhase(visualPhase);
   const leftPlayers = shot.players.filter((player) => player.seatNo <= 6);
   const rightPlayers = shot.players.filter((player) => player.seatNo > 6);
 
@@ -32,31 +51,62 @@ export function HtmlPlaybackStage({
       className="relative h-[1080px] w-[1920px] overflow-hidden bg-[#080a09] text-[#eee8dc]"
       style={{
         fontFamily: '"Kiva Noto Sans SC", sans-serif',
-        opacity: 0.16 + Math.min(enter, exit) * 0.84,
+        opacity,
+        color: palette.text,
       }}
     >
       <StageBackground backgroundUrl={backgroundUrl} />
-      <div className="absolute inset-0 grid grid-cols-[430px_minmax(0,1fr)_430px] grid-rows-[88px_minmax(0,1fr)_196px] gap-x-6 gap-y-4 px-10 pb-8 pt-7">
-        <StageHeader shot={shot} />
+      <div className="absolute inset-0 grid grid-cols-[480px_minmax(0,1fr)_480px] grid-rows-[112px_minmax(0,1fr)_212px] gap-x-6 gap-y-4 px-10 pb-8 pt-7">
+        <StageHeader palette={palette} shot={shot} />
         <SeatTrack
           avatarUrls={assets.avatarUrls}
+          palette={palette}
+          phase={visualPhase}
           players={leftPlayers}
           side="left"
         />
         <section
           aria-label="视觉舞台"
-          className="relative col-start-2 row-start-2 min-h-0 overflow-hidden border border-[#9d8052]/35 bg-[#0b0e0c]/28 shadow-[0_26px_80px_rgba(0,0,0,0.38)]"
-          style={{ translate: "0 " + (1 - enter) * 14 + "px" }}
+          className="col-start-2 row-start-2 min-h-0"
         />
         <SeatTrack
           avatarUrls={assets.avatarUrls}
+          palette={palette}
+          phase={visualPhase}
           players={rightPlayers}
           side="right"
         />
-        <SubtitleBand avatarUrls={assets.avatarUrls} shot={shot} />
+        <SubtitleBand
+          avatarUrls={assets.avatarUrls}
+          palette={palette}
+          phase={visualPhase}
+          shot={shot}
+        />
       </div>
-      <div className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:repeating-linear-gradient(0deg,transparent,transparent_3px,#d6b171_4px)]" />
     </main>
+  );
+}
+
+export function stageOpacity(
+  shot: Pick<ShotFrame, "scene" | "items">,
+  enter: number,
+  exit: number,
+): number {
+  const sceneIndex = shot.items.indexOf(shot.scene);
+  const previousScene = shot.items[sceneIndex - 1];
+  const nextScene = shot.items[sceneIndex + 1];
+  const enterOpacity = switchesDayNight(previousScene, shot.scene) ? enter : 1;
+  const exitOpacity = switchesDayNight(shot.scene, nextScene) ? exit : 1;
+
+  return 0.16 + Math.min(enterOpacity, exitOpacity) * 0.84;
+}
+
+function switchesDayNight(
+  from: ShotFrame["scene"] | undefined,
+  to: ShotFrame["scene"] | undefined,
+): boolean {
+  return Boolean(
+    from && to && (from.phase === "night") !== (to.phase === "night"),
   );
 }
 
@@ -79,41 +129,102 @@ function StageBackground({
     <div className="absolute inset-0">
       {backgroundUrl ? (
         <Img
-          className="h-full w-full object-cover opacity-70 saturate-[0.72]"
+          className={STAGE_BACKGROUND_IMAGE_CLASS_NAME}
           src={backgroundUrl}
         />
       ) : (
         <div className="h-full w-full bg-[radial-gradient(circle_at_50%_20%,#273229,#0b0e0c_62%,#050606)]" />
       )}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,7,5,0.18),rgba(5,7,6,0.58))]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_0%,rgba(2,4,3,0.08)_58%,rgba(1,2,2,0.5)_100%)]" />
     </div>
   );
 }
 
-function StageHeader({ shot }: { readonly shot: ShotFrame }) {
+export const STAGE_BACKGROUND_IMAGE_CLASS_NAME =
+  "h-full w-full object-cover";
+
+function StageHeader({
+  palette,
+  shot,
+}: {
+  readonly palette: StagePalette;
+  readonly shot: ShotFrame;
+}) {
   return (
-    <header className="col-start-2 row-start-1 flex min-w-0 items-center border border-[#9d8052]/35 bg-[#090c0a]/78 px-8 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
-      <h1 className="truncate text-[44px] font-black leading-none tracking-[0.04em] text-[#f0e7d4]">
-        {shot.scene.title || "等待下一环节"}
-      </h1>
+    <header
+      className="relative col-start-2 row-start-1 flex min-w-0 items-center justify-center overflow-hidden border px-12 py-3"
+      style={{
+        background: palette.majorSurface,
+        borderColor: palette.majorBorder,
+        boxShadow: palette.majorShadow,
+      }}
+    >
+      <div className="flex w-full min-w-0 items-center gap-7">
+        <HeaderRule palette={palette} side="left" />
+        <div className="min-w-0 shrink-0 text-center">
+          <h1
+            className="max-w-[760px] truncate text-[42px] font-black leading-[1.25] tracking-[0.08em]"
+            style={{ color: palette.text, textShadow: palette.titleShadow }}
+          >
+            {stageHeaderTitle(shot.gameTitle)}
+          </h1>
+        </div>
+        <HeaderRule palette={palette} side="right" />
+      </div>
     </header>
   );
 }
 
+function HeaderRule({
+  palette,
+  side,
+}: {
+  readonly palette: StagePalette;
+  readonly side: "left" | "right";
+}) {
+  const line = (
+    <div
+      className="h-px min-w-0 flex-1"
+      style={{
+        background: `linear-gradient(${side === "left" ? "90deg" : "270deg"}, transparent, ${palette.rule})`,
+      }}
+    />
+  );
+  const diamond = (
+    <div
+      className="h-2.5 w-2.5 shrink-0 rotate-45 border"
+      style={{ borderColor: palette.accent }}
+    />
+  );
+
+  return (
+    <div aria-hidden="true" className="flex min-w-0 flex-1 items-center gap-3">
+      {side === "left" ? line : diamond}
+      {side === "left" ? diamond : line}
+    </div>
+  );
+}
+
+export function stageHeaderTitle(gameTitle: string): string {
+  return gameTitle || "未命名游戏";
+}
+
 function SeatTrack({
   avatarUrls,
+  palette,
+  phase,
   players,
   side,
 }: {
   readonly avatarUrls: Readonly<Record<string, string>>;
+  readonly palette: StagePalette;
+  readonly phase: StageVisualPhase;
   readonly players: readonly RenderablePlayer[];
   readonly side: "left" | "right";
 }) {
   return (
     <aside
       className={[
-        "row-span-3 grid min-h-0 grid-rows-6 gap-3",
+        "row-span-3 grid min-h-0 content-between grid-rows-[repeat(6,148px)] gap-3",
         side === "left"
           ? "col-start-1 row-start-1"
           : "col-start-3 row-start-1",
@@ -131,6 +242,8 @@ function SeatTrack({
           <SeatCard
             avatarUrl={avatarUrl}
             key={player?.playerId ?? side + "-empty-" + index}
+            palette={palette}
+            phase={phase}
             player={player}
             side={side}
           />
@@ -142,81 +255,171 @@ function SeatTrack({
 
 function SeatCard({
   avatarUrl,
+  palette,
+  phase,
   player,
   side,
 }: {
   readonly avatarUrl: string | null;
+  readonly palette: StagePalette;
+  readonly phase: StageVisualPhase;
   readonly player: RenderablePlayer | null;
   readonly side: "left" | "right";
 }) {
   if (!player) {
-    return <div className="border border-[#78684c]/10 bg-[#0a0d0b]/25" />;
+    return <div />;
   }
 
   const dead = player.status === "dead";
   const active = player.emphasis === "active";
   const highlighted = player.emphasis === "highlighted";
-  const textAlign = side === "left" ? "text-left" : "text-right";
+  const layout = seatCardLayout(side);
+  const surface = dead
+    ? phase === "night"
+      ? "rgba(4,7,10,0.40)"
+      : "rgba(10,12,10,0.46)"
+    : active
+      ? palette.activeCard
+      : palette.cardSurface;
 
   return (
     <article
       className={[
-        "relative grid min-h-0 grid-cols-[116px_1fr_72px] items-center gap-4 overflow-hidden border px-3 py-3",
-        active
-          ? "border-[#d9b36c]/80 bg-[#201a11]/90 shadow-[0_0_34px_rgba(205,164,89,0.2)]"
-          : highlighted
-            ? "border-[#a99062]/55 bg-[#141510]/82"
-            : "border-[#7d6b4b]/24 bg-[#0b0e0c]/72",
-        dead ? "grayscale-[0.78]" : "",
+        "relative grid min-h-0 items-center gap-4 overflow-hidden border px-3 py-2.5",
+        layout.grid,
       ].join(" ")}
+      style={{
+        background: surface,
+        borderColor: dead
+          ? palette.ruleSoft
+          : active
+            ? palette.activeBorder
+            : highlighted
+              ? palette.rule
+              : palette.cardBorder,
+        boxShadow: active ? palette.activeShadow : palette.cardShadow,
+      }}
     >
-      <div className={side === "right" ? "order-3" : ""}>
-        <Avatar avatarUrl={avatarUrl} name={player.name} />
+      <div className={["relative z-10", layout.avatar].join(" ")}>
+        <Avatar
+          avatarUrl={avatarUrl}
+          borderColor={palette.avatarBorder}
+          muted={dead}
+          name={player.name}
+        />
       </div>
-      <div className={["min-w-0", textAlign].join(" ")}>
+      <div
+        className={["relative z-10 col-start-2 min-w-0", layout.text].join(" ")}
+      >
         <div
           className={[
-            "line-clamp-2 font-black leading-[1.04] text-[#eee4d1]",
+            "line-clamp-2 font-black leading-[1.08]",
             nameSizeClass(player.name),
-            dead ? "line-through decoration-[#9e4c44]/60" : "",
+            dead
+              ? "text-[#77736c] line-through decoration-[#76665d]/45"
+              : "",
           ].join(" ")}
+          style={{
+            color: dead ? "#77736C" : palette.text,
+            textShadow: dead ? "none" : palette.textShadow,
+          }}
         >
           {player.name}
         </div>
-        <div className="mt-2 truncate text-[17px] font-bold tracking-[0.12em] text-[#a89b83]">
+        <div
+          className="mt-2 truncate text-[27px] font-black leading-[1.15] tracking-[0.04em]"
+          style={{
+            ...identityTextStyle(roleIdentityTone(player.roleName, phase)),
+            opacity: dead ? 0.45 : 1,
+          }}
+        >
           {player.roleName}
         </div>
       </div>
-      <div className={side === "right" ? "order-1 text-left" : "text-right"}>
-        <div className="font-mono text-[35px] font-black leading-none text-[#b59b69]">
+      <div className={["relative z-10 self-center", layout.seat].join(" ")}>
+        <div
+          className="font-mono text-[80px] font-black leading-none tracking-[-0.08em]"
+          style={{
+            color: dead ? "#6D6557" : active ? palette.active : palette.number,
+            opacity: dead ? 0.45 : 1,
+            textShadow: dead ? "none" : palette.numberShadow,
+          }}
+        >
           {String(player.seatNo).padStart(2, "0")}
         </div>
-        <div className="mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#7f755f]">
-          {dead ? "OUT" : active ? "LIVE" : "SEAT"}
-        </div>
       </div>
-      {dead ? (
-        <div className="absolute right-2 top-2 border border-[#a9574d]/60 bg-[#230e0c]/80 px-2 py-1 text-[10px] font-black tracking-[0.2em] text-[#d98a7f]">
-          已出局
-        </div>
+      {active && !dead ? (
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 w-[180px] ${side === "left" ? "right-0" : "left-0"}`}
+          style={{
+            background: `linear-gradient(${side === "left" ? "270deg" : "90deg"}, ${palette.activeField}, transparent)`,
+          }}
+        />
       ) : null}
+      <div
+        aria-hidden="true"
+        className={[
+          active && !dead
+            ? "absolute inset-y-2 w-[9px]"
+            : "absolute inset-y-4 w-[4px]",
+          layout.accent,
+        ].join(" ")}
+        style={{
+          background: dead ? palette.ruleSoft : active ? palette.active : palette.edge,
+          boxShadow: dead
+            ? "none"
+            : active
+              ? palette.activeEdgeShadow
+              : palette.edgeShadow,
+          opacity: dead ? 0.35 : highlighted ? 0.9 : 1,
+        }}
+      />
     </article>
   );
 }
 
+export function seatCardLayout(side: "left" | "right") {
+  return side === "left"
+    ? {
+        grid: "grid-cols-[104px_minmax(0,1fr)_112px]",
+        avatar: "col-start-3 row-start-1",
+        text: "row-start-1 text-center",
+        seat: "col-start-1 row-start-1 flex h-[112px] items-center justify-start",
+        accent: "right-0",
+      }
+    : {
+        grid: "grid-cols-[112px_minmax(0,1fr)_104px]",
+        avatar: "col-start-1 row-start-1",
+        text: "row-start-1 text-center",
+        seat: "col-start-3 row-start-1 flex h-[112px] items-center justify-end",
+        accent: "left-0",
+      };
+}
+
 function Avatar({
   avatarUrl,
+  borderColor,
+  muted,
   name,
 }: {
   readonly avatarUrl: string | null;
+  readonly borderColor: string;
+  readonly muted: boolean;
   readonly name: string;
 }) {
   return (
-    <div className="grid h-[112px] w-[112px] place-items-center overflow-hidden border border-[#aa9165]/42 bg-[#171b17]">
+    <div
+      className={[
+        "grid h-[112px] w-[112px] place-items-center overflow-hidden border bg-[#171b17] shadow-[inset_0_0_0_3px_rgba(7,9,7,0.7)]",
+        muted ? "grayscale-[0.92] opacity-35" : "",
+      ].join(" ")}
+      style={{ borderColor }}
+    >
       {avatarUrl ? (
         <Img className="h-full w-full object-cover" src={avatarUrl} />
       ) : (
-        <span className="text-[42px] font-black text-[#c9b48c]">
+        <span className="text-[46px] font-black text-[#c9b48c]">
           {Array.from(name.trim())[0] ?? "?"}
         </span>
       )}
@@ -226,9 +429,13 @@ function Avatar({
 
 function SubtitleBand({
   avatarUrls,
+  palette,
+  phase,
   shot,
 }: {
   readonly avatarUrls: Readonly<Record<string, string>>;
+  readonly palette: StagePalette;
+  readonly phase: StageVisualPhase;
   readonly shot: ShotFrame;
 }) {
   const presentation = transcriptPresentationForScene(
@@ -247,39 +454,133 @@ function SubtitleBand({
   const speakerName = presentation.speaker.seatNo
     ? `${String(presentation.speaker.seatNo).padStart(2, "0")}号 ${presentation.speaker.name}`
     : presentation.speaker.name;
+  const identity = transcriptSpeakerIdentity(presentation);
+  const identityTone =
+    identity.kind === "presenter"
+      ? presenterIdentityTone(phase)
+      : roleIdentityTone(identity.label, phase);
+  const transcriptSegments = transcriptTextSegments(
+    lines.join("\n"),
+    presentation.speaker.kind,
+    shot.scene.players,
+  );
 
   return (
-    <footer className="col-start-2 row-start-3 grid min-w-0 grid-cols-[132px_minmax(0,1fr)] items-center gap-7 border border-[#9d8052]/36 bg-[#080b09]/92 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
-      <div className="grid h-[132px] w-[132px] place-items-center overflow-hidden border border-[#aa9165]/42 bg-[#151914]">
+    <footer
+      className="relative col-start-2 row-start-3 grid min-w-0 grid-cols-[148px_minmax(0,1fr)] items-center gap-6 overflow-hidden border px-5 py-4"
+      style={{
+        background: palette.majorSurface,
+        borderColor: palette.majorBorder,
+        boxShadow: palette.majorShadow,
+      }}
+    >
+      <div
+        className="grid h-[148px] w-[148px] place-items-center overflow-hidden border bg-[#151914]"
+        style={{
+          borderColor: identityTone.foreground,
+          boxShadow: `inset 0 0 0 3px rgba(6,8,6,0.7), 0 0 24px ${identityTone.glow}`,
+        }}
+      >
         {avatarUrl ? (
           <Img className="h-full w-full object-cover" src={avatarUrl} />
         ) : (
-          <span className="text-[48px] font-black text-[#c9b48c]">
-            {presentation.speaker.kind === "presenter"
-              ? "主"
-              : Array.from(presentation.speaker.name.trim())[0] ?? "?"}
+          <span
+            className="text-[48px] font-black"
+            style={identityTextStyle(identityTone)}
+          >
+            {Array.from(presentation.speaker.name.trim())[0] ?? "?"}
           </span>
         )}
       </div>
-      <div className="min-w-0 self-stretch py-1">
-        <div className="truncate text-[25px] font-black tracking-[0.08em] text-[#c7aa74]">
-          {speakerName}
+      <div className="grid min-w-0 self-stretch grid-rows-[auto_minmax(0,1fr)] content-center py-0.5">
+        <div
+          aria-label="说话者信息"
+          className="flex min-w-0 items-center gap-3"
+        >
+          <div
+            className="truncate text-[29px] font-black tracking-[0.07em]"
+            style={{ color: palette.text, textShadow: palette.textShadow }}
+          >
+            {speakerName}
+          </div>
+          <div
+            className="h-5 w-px shrink-0"
+            style={{ background: palette.rule }}
+          />
+          <IdentityBadge identity={identity} phase={phase} />
+          <div
+            className="h-px min-w-8 flex-1"
+            style={{
+              background: `linear-gradient(90deg, ${palette.rule}, transparent)`,
+            }}
+          />
         </div>
-        <div className="mt-2 line-clamp-3 whitespace-pre-line text-[30px] font-bold leading-[1.2] tracking-[0.01em] text-[#f0e9dc]">
-          {lines.join("\n")}
+        <div
+          className="mt-2 line-clamp-3 whitespace-pre-line border-t pt-2 text-[29px] font-bold leading-[1.18] tracking-[0.01em]"
+          style={{
+            borderColor: palette.ruleSoft,
+            color: palette.text,
+            textShadow: palette.textShadow,
+          }}
+        >
+          {transcriptSegments.map((segment, index) => (
+            <span
+              className={segment.roleName ? "font-black" : undefined}
+              key={`${index}:${segment.text}`}
+              style={
+                segment.roleName
+                  ? identityTextStyle(roleIdentityTone(segment.roleName, phase))
+                  : undefined
+              }
+            >
+              {segment.text}
+            </span>
+          ))}
         </div>
       </div>
     </footer>
   );
 }
 
+function IdentityBadge({
+  identity,
+  phase,
+}: {
+  readonly identity: TranscriptSpeakerIdentity;
+  readonly phase: StageVisualPhase;
+}) {
+  const tone =
+    identity.kind === "presenter"
+      ? presenterIdentityTone(phase)
+      : roleIdentityTone(identity.label, phase);
+
+  return (
+    <span className="inline-flex min-w-0 items-center gap-2">
+      <span
+        aria-hidden="true"
+        className="h-2.5 w-2.5 shrink-0 rotate-45"
+        style={{
+          backgroundColor: tone.foreground,
+          boxShadow: `0 0 12px ${tone.glow}`,
+        }}
+      />
+      <span
+        className="truncate text-[21px] font-black tracking-[0.05em]"
+        style={identityTextStyle(tone)}
+      >
+        {identity.label}
+      </span>
+    </span>
+  );
+}
+
 function nameSizeClass(name: string): string {
   const length = Array.from(name).length;
   if (length <= 4) {
-    return "text-[28px]";
+    return "text-[39px]";
   }
   if (length <= 7) {
-    return "text-[23px]";
+    return "text-[33px]";
   }
-  return "text-[19px]";
+  return "text-[28px]";
 }

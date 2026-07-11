@@ -1,16 +1,18 @@
 import Link from "next/link";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset } from "@/core/game-preset";
+import type { PresenterDefinition } from "@/core/presenter-definition";
 import type { RoleDefinition } from "@/core/role-definition";
 import type { LibraryActionsRecord } from "@/server/library-actions";
 import { textButtonClassName } from "@/components/ui/button-styles";
 import { CharacterEditor } from "./character-editor";
 import { LibraryList, type LibraryListItem } from "./library-list";
 import { PresetEditor } from "./preset-editor";
+import { PresenterEditor } from "./presenter-editor";
 import { RoleEditor } from "./role-editor";
 import { ValidationPanel } from "./validation-panel";
 
-export type LibraryTab = "roles" | "characters" | "presets";
+export type LibraryTab = "roles" | "characters" | "presenters" | "presets";
 
 type LibraryWorkspaceProps = {
   readonly activeTab: LibraryTab;
@@ -29,9 +31,19 @@ type SelectedItem =
       readonly kind: "preset";
       readonly id: string;
       readonly item: GamePreset;
+    }
+  | {
+      readonly kind: "presenter";
+      readonly id: string;
+      readonly item: PresenterDefinition;
     };
 
-const tabs: readonly LibraryTab[] = ["roles", "characters", "presets"];
+const tabs: readonly LibraryTab[] = [
+  "roles",
+  "characters",
+  "presenters",
+  "presets",
+];
 
 export function LibraryWorkspace({
   activeTab,
@@ -116,12 +128,20 @@ export function LibraryWorkspace({
                 key={selectedEditorKey(selected)}
                 character={selected.item}
               />
+            ) : selected.kind === "presenter" ? (
+              <PresenterEditor
+                key={selectedEditorKey(selected)}
+                presenter={selected.item}
+              />
             ) : (
               <PresetEditor
                 key={selectedEditorKey(selected)}
                 preset={selected.item}
                 roles={library.roles}
                 characters={library.characters}
+                presenters={library.presenters.filter(
+                  (presenter) => presenter.enabled,
+                )}
               />
             )}
           </section>
@@ -160,6 +180,10 @@ function labelForTab(tab: LibraryTab): string {
     return "Presets";
   }
 
+  if (tab === "presenters") {
+    return "Presenters";
+  }
+
   return "Roles";
 }
 
@@ -191,6 +215,16 @@ function listItemsForTab(
     }));
   }
 
+  if (tab === "presenters") {
+    return library.presenters.map((presenter) => ({
+      id: presenter.id,
+      name: presenter.name,
+      enabled: presenter.enabled,
+      valid: library.diagnostics.presenters[presenter.id]?.valid,
+      meta: `${Object.keys(presenter.lines).length} lines`,
+    }));
+  }
+
   return library.roles.map((role) => ({
     id: role.id,
     name: role.name,
@@ -207,6 +241,10 @@ function itemsForTab(library: LibraryActionsRecord, tab: LibraryTab) {
 
   if (tab === "presets") {
     return library.presets;
+  }
+
+  if (tab === "presenters") {
+    return library.presenters;
   }
 
   return library.roles;
@@ -237,6 +275,14 @@ function selectItem(
       kind: "preset",
       id: item.id,
       item: item as GamePreset,
+    };
+  }
+
+  if (tab === "presenters") {
+    return {
+      kind: "presenter",
+      id: item.id,
+      item: item as PresenterDefinition,
     };
   }
 

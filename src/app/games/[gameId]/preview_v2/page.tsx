@@ -36,6 +36,7 @@ export default async function PreviewV2Page({
   const includesDraft = focus === "current" && record.draft !== null;
   const voiceDurations = await loadSystemVoiceDurations(dataDir);
   const playbackOptions = {
+    presenter: record.game.presenter,
     audience: "director",
     durationForScene: (scene) => {
       const source = systemVoiceSourceForScene(scene);

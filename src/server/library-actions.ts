@@ -1,11 +1,13 @@
 import {
   diagnoseCharacter,
+  diagnosePresenter,
   diagnosePreset,
   diagnoseRole,
   type LibraryDiagnostic,
 } from "@/core/library-diagnostics";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset } from "@/core/game-preset";
+import type { PresenterDefinition } from "@/core/presenter-definition";
 import type { RoleDefinition } from "@/core/role-definition";
 import { createGameActions } from "./game-actions";
 import type { GameRecord, GameRepository } from "./game-repository";
@@ -15,6 +17,7 @@ export type LibraryDiagnostics = {
   readonly roles: Readonly<Record<string, LibraryDiagnostic>>;
   readonly characters: Readonly<Record<string, LibraryDiagnostic>>;
   readonly presets: Readonly<Record<string, LibraryDiagnostic>>;
+  readonly presenters: Readonly<Record<string, LibraryDiagnostic>>;
 };
 
 export type LibraryActionsRecord = LibraryRecord & {
@@ -79,6 +82,17 @@ export function createLibraryActions({
         const presets = upsertById(library.presets, preset);
         await saveLibrary({ ...library, presets });
         return preset;
+      });
+    },
+
+    async savePresenter(
+      presenter: PresenterDefinition,
+    ): Promise<PresenterDefinition> {
+      return libraryRepository.withLibraryLock(async () => {
+        const library = await loadLibrary();
+        const presenters = upsertById(library.presenters, presenter);
+        await saveLibrary({ ...library, presenters });
+        return presenter;
       });
     },
 
@@ -181,16 +195,26 @@ export function createLibraryActions({
       });
     },
 
-    async createGameFromPreset(presetId: string): Promise<GameRecord> {
+    async createGameFromPreset(
+      presetId: string,
+      presenterId: string,
+    ): Promise<GameRecord> {
       return libraryRepository.withLibraryLock(async () =>
-        gameActions.createGameFromPresetId(presetId),
+        gameActions.createGameFromPresetId(presetId, presenterId),
       );
     },
 
-    async createGameFromTemporaryPreset(preset: GamePreset): Promise<GameRecord> {
+    async createGameFromTemporaryPreset(
+      preset: GamePreset,
+      presenterId: string,
+    ): Promise<GameRecord> {
       return libraryRepository.withLibraryLock(async () => {
         const library = await loadLibrary();
-        return gameActions.createGameFromPresetRecord(preset, library);
+        return gameActions.createGameFromPresetRecord(
+          preset,
+          library,
+          presenterId,
+        );
       });
     },
   };
@@ -214,6 +238,12 @@ function diagnosticsForLibrary(library: LibraryRecord): LibraryDiagnostics {
       library.presets.map((preset) => [
         preset.id,
         diagnosePreset({ ...library, preset }),
+      ]),
+    ),
+    presenters: Object.fromEntries(
+      library.presenters.map((presenter) => [
+        presenter.id,
+        diagnosePresenter({ presenters: library.presenters, presenter }),
       ]),
     ),
   };

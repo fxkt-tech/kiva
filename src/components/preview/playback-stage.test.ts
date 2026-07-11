@@ -98,6 +98,10 @@ function item(
     text: "",
     details: [],
     players: [],
+    presenterName: "守夜人",
+    presenterAvatar: null,
+    transcriptSpeaker: "presenter",
+    presenterCue: { copyKey: "fallback.announcement", text: "", voiceFile: null },
     ...overrides,
   };
 }

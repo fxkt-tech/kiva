@@ -8,6 +8,7 @@ import type { GameId } from "@/core/types";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
+import { seedPresenters } from "@/seeds/presenters";
 import { createGameActions } from "../game-actions";
 import {
   createGameRepository,
@@ -108,6 +109,7 @@ describe("game actions", () => {
           roles: seedRoles,
           characters: seedCharacters,
           presets: seedPresets,
+          presenters: seedPresenters,
         };
       },
     });
@@ -148,6 +150,7 @@ describe("game actions", () => {
         roles: seedRoles,
         characters: seedCharacters,
         presets: seedPresets,
+          presenters: seedPresenters,
       }),
     });
     const actions = createGameActions(repository, {
@@ -167,11 +170,15 @@ describe("game actions", () => {
         roles: seedRoles,
         characters: seedCharacters,
         presets: seedPresets,
+          presenters: seedPresenters,
       }),
     });
     const actions = createGameActions(repository, { libraryRepository });
 
-    const created = await actions.createGameFromPresetId(defaultPresetId);
+    const created = await actions.createGameFromPresetId(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+    );
 
     expect(created.game.title).toBe("12人狼人杀标准局");
     expect(created.game.players).toHaveLength(12);
@@ -595,15 +602,19 @@ function fakeLibraryRepository(
     async getPresets() {
       return seedPresets;
     },
+    async getPresenters() {
+      return seedPresenters;
+    },
     async getAll() {
-      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets };
+      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets, presenters: seedPresenters };
     },
     async loadAll() {
-      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets };
+      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets, presenters: seedPresenters };
     },
     async saveRoles() {},
     async saveCharacters() {},
     async savePresets() {},
+    async savePresenters() {},
     async saveAll() {},
     async withLibraryLock(operation) {
       return operation();

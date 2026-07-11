@@ -5,9 +5,11 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset } from "@/core/game-preset";
 import type { RoleDefinition } from "@/core/role-definition";
+import type { PresenterDefinition } from "@/core/presenter-definition";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
+import { seedPresenters } from "@/seeds/presenters";
 import { createLibraryRepository } from "../library-repository";
 
 const tempDirs: string[] = [];
@@ -36,6 +38,7 @@ describe("library repository", () => {
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
+      presenters: seedPresenters,
     });
 
     const savedFile = await stat(join(rootDir, "kivdb", "roles.json"));
@@ -48,10 +51,12 @@ describe("library repository", () => {
     await expect(repository.getRoles()).resolves.toEqual([]);
     await expect(repository.getCharacters()).resolves.toEqual([]);
     await expect(repository.getPresets()).resolves.toEqual([]);
+    await expect(repository.getPresenters()).resolves.toEqual([]);
     await expect(repository.getAll()).resolves.toEqual({
       roles: [],
       characters: [],
       presets: [],
+      presenters: [],
     });
   });
 
@@ -62,17 +67,20 @@ describe("library repository", () => {
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
+      presenters: seedPresenters,
     });
 
     await expect(repository.getAll()).resolves.toEqual({
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
+      presenters: seedPresenters,
     });
     await expect(repository.loadAll()).resolves.toEqual({
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
+      presenters: seedPresenters,
     });
   });
 
@@ -84,9 +92,15 @@ describe("library repository", () => {
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
+      presenters: seedPresenters,
     });
 
-    for (const filename of ["roles.json", "characters.json", "presets.json"]) {
+    for (const filename of [
+      "roles.json",
+      "characters.json",
+      "presets.json",
+      "presenters.json",
+    ]) {
       const content = await readFile(join(rootDir, filename), "utf8");
       expect(content).toContain('\n  {');
       expect(content.endsWith("\n")).toBe(true);
@@ -105,6 +119,11 @@ describe("library repository", () => {
     await expect(
       repository.savePresets({} as unknown as readonly GamePreset[]),
     ).rejects.toThrow("Game presets must be an array");
+    await expect(
+      repository.savePresenters(
+        {} as unknown as readonly PresenterDefinition[],
+      ),
+    ).rejects.toThrow("Presenter definitions must be an array");
   });
 
   it("rejects preset references that are missing while reading or saving", async () => {
@@ -143,11 +162,13 @@ describe("library repository", () => {
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
+      presenters: seedPresenters,
     });
 
     const filenames = await readdir(rootDir);
     expect([...filenames].sort()).toEqual([
       "characters.json",
+      "presenters.json",
       "presets.json",
       "roles.json",
     ]);
@@ -175,12 +196,14 @@ describe("library repository", () => {
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
+      presenters: seedPresenters,
     });
 
     await expect(repository.getAll()).resolves.toEqual({
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
+      presenters: seedPresenters,
     });
     const filenames = await readdir(rootDir);
     expect(filenames.some((filename) => filename.endsWith(".tmp"))).toBe(false);

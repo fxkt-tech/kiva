@@ -5,6 +5,7 @@ import type { RoleDefinition } from "../role-definition";
 import { createDefaultRuleset, type GameId } from "../types";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
+import { seedPresenters } from "@/seeds/presenters";
 import { seedRoles } from "@/seeds/roles";
 
 const gameId = "game_creation" as GameId;
@@ -18,6 +19,8 @@ describe("game creation", () => {
       createdAt,
       ruleset: createDefaultRuleset(),
       preset: seedPresets[0]!,
+      presenter: seedPresenters[0]!,
+
       roles: seedRoles,
       characters: seedCharacters,
     });
@@ -126,6 +129,8 @@ describe("game creation", () => {
         createdAt,
         ruleset: createDefaultRuleset(),
         preset,
+        presenter: seedPresenters[0]!,
+
         roles: seedRoles,
         characters: seedCharacters,
       }),
@@ -153,6 +158,8 @@ describe("game creation", () => {
         createdAt,
         ruleset: createDefaultRuleset(),
         preset,
+        presenter: seedPresenters[0]!,
+
         roles: [unsupportedRole, ...seedRoles],
         characters: seedCharacters,
       }),
@@ -173,6 +180,8 @@ describe("game creation", () => {
         createdAt,
         ruleset: createDefaultRuleset(),
         preset: seedPresets[0]!,
+        presenter: seedPresenters[0]!,
+
         roles: [mismatchedRole, ...seedRoles.slice(1)],
         characters: seedCharacters,
       }),
@@ -195,6 +204,8 @@ describe("game creation", () => {
         createdAt,
         ruleset: createDefaultRuleset(),
         preset,
+        presenter: seedPresenters[0]!,
+
         roles: seedRoles,
         characters: seedCharacters,
       }),
@@ -220,6 +231,8 @@ describe("game creation", () => {
         createdAt,
         ruleset: createDefaultRuleset(),
         preset,
+        presenter: seedPresenters[0]!,
+
         roles: seedRoles,
         characters: seedCharacters,
       }),

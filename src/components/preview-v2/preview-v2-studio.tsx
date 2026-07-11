@@ -2,13 +2,16 @@
 
 import {
   ArrowLeft,
+  Check,
   ChevronLeft,
   ChevronRight,
+  Copy,
   Pause,
   Play,
   RotateCcw,
 } from "lucide-react";
 import { Player, type PlayerRef } from "@remotion/player";
+import { toBlob } from "html-to-image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { playbackIndexAtMs } from "@/core/playback";
@@ -18,11 +21,14 @@ import { KivaVideoComposition } from "./composition/kiva-video-composition";
 import {
   compositionDurationInFrames,
   frameToMilliseconds,
-  millisecondsToFrame,
+  sceneStartFrame,
 } from "./composition/timing";
 import type { VideoCompositionInput } from "./composition/types";
 import { VIDEO_SPEC } from "./composition/video-spec";
 import { ExportPanel } from "./export-panel";
+import { copyCurrentFrame } from "./copy-current-frame";
+
+type CopyFrameStatus = "idle" | "copying" | "copied" | "error";
 
 export function PreviewV2Studio({
   composition,
@@ -40,6 +46,8 @@ export function PreviewV2Studio({
   );
   const [frame, setFrame] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [copyFrameStatus, setCopyFrameStatus] =
+    useState<CopyFrameStatus>("idle");
   const timeMs = frameToMilliseconds(frame, VIDEO_SPEC.fps);
   const sceneIndex =
     composition.items.length > 0
@@ -87,14 +95,46 @@ export function PreviewV2Studio({
     return () => window.removeEventListener("keydown", onKeyDown);
   });
 
+  useEffect(() => {
+    if (copyFrameStatus !== "copied" && copyFrameStatus !== "error") {
+      return;
+    }
+    const timeout = window.setTimeout(() => setCopyFrameStatus("idle"), 1800);
+    return () => window.clearTimeout(timeout);
+  }, [copyFrameStatus]);
+
   function seekScene(index: number) {
     const scene = composition.items[index];
     if (!scene) {
       return;
     }
     playerRef.current?.seekTo(
-      millisecondsToFrame(scene.startsAtMs, VIDEO_SPEC.fps),
+      sceneStartFrame(scene.startsAtMs, VIDEO_SPEC.fps),
     );
+  }
+
+  async function handleCopyCurrentFrame() {
+    const container = playerRef.current?.getContainerNode();
+    if (
+      !container ||
+      !navigator.clipboard?.write ||
+      typeof ClipboardItem === "undefined"
+    ) {
+      setCopyFrameStatus("error");
+      return;
+    }
+
+    setCopyFrameStatus("copying");
+    try {
+      await copyCurrentFrame(container, {
+        createClipboardItem: (items) => new ClipboardItem(items),
+        toBlob,
+        write: (items) => navigator.clipboard.write([...items]),
+      });
+      setCopyFrameStatus("copied");
+    } catch {
+      setCopyFrameStatus("error");
+    }
   }
 
   return (
@@ -176,6 +216,27 @@ export function PreviewV2Studio({
                   {composition.items[sceneIndex]?.title ?? "No playback records"}
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button
+                    className="inline-flex h-9 items-center gap-2 px-3 py-0"
+                    disabled={
+                      durationInFrames === 0 || copyFrameStatus === "copying"
+                    }
+                    onClick={handleCopyCurrentFrame}
+                    title="将当前视频帧以 PNG 图片复制到剪贴板"
+                  >
+                    {copyFrameStatus === "copied" ? (
+                      <Check aria-hidden="true" size={16} />
+                    ) : (
+                      <Copy aria-hidden="true" size={16} />
+                    )}
+                    {copyFrameStatus === "copying"
+                      ? "复制中"
+                      : copyFrameStatus === "copied"
+                        ? "已复制"
+                        : copyFrameStatus === "error"
+                          ? "复制失败"
+                          : "复制当前帧"}
+                  </Button>
                   <ControlButton
                     disabled={sceneIndex <= 0}
                     label="Previous scene"

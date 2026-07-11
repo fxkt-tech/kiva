@@ -1,6 +1,6 @@
 import type { PlaybackItem } from "@/core/playback";
 
-export const VIDEO_COMPOSITION_SCHEMA_VERSION = 1 as const;
+export const VIDEO_COMPOSITION_SCHEMA_VERSION = 2 as const;
 
 export type AudioCueKind =
   | "system-voice"
@@ -71,7 +71,21 @@ function isPlaybackItem(value: unknown): value is PlaybackItem {
     isFiniteNonNegative(value.durationMs) &&
     isFiniteNonNegative(value.startsAtMs) &&
     Array.isArray(value.players) &&
-    value.players.every(isPlaybackPlayer)
+    value.players.every(isPlaybackPlayer) &&
+    typeof value.presenterName === "string" &&
+    isNullableString(value.presenterAvatar) &&
+    (value.transcriptSpeaker === "presenter" ||
+      value.transcriptSpeaker === "player") &&
+    isPresenterCue(value.presenterCue)
+  );
+}
+
+function isPresenterCue(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.copyKey === "string" &&
+    typeof value.text === "string" &&
+    isNullableString(value.voiceFile)
   );
 }
 

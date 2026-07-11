@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
 import type { ModelBindingSnapshot } from "@/core/player";
+import type { PresenterDefinition } from "@/core/presenter-definition";
 import type { RoleDefinition } from "@/core/role-definition";
 import { DirtyFormGuard } from "./dirty-form-guard";
 
@@ -13,9 +14,15 @@ type PresetEditorProps = {
   readonly preset: GamePreset;
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
+  readonly presenters: readonly PresenterDefinition[];
 };
 
-export function PresetEditor({ preset, roles, characters }: PresetEditorProps) {
+export function PresetEditor({
+  preset,
+  roles,
+  characters,
+  presenters,
+}: PresetEditorProps) {
   const seats = seatsForPreset(preset);
 
   return (
@@ -143,8 +150,24 @@ export function PresetEditor({ preset, roles, characters }: PresetEditorProps) {
 
       <form
         action={createGameFromPresetAction.bind(null, preset.id)}
-        className="flex justify-end border-t border-border pt-4"
+        className="flex items-end justify-between gap-4 border-t border-border pt-4"
       >
+        <label className="block min-w-64 text-sm text-muted">
+          <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+            主理人
+          </span>
+          <select
+            name="presenterId"
+            required
+            className="w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none"
+          >
+            {presenters.map((presenter) => (
+              <option key={presenter.id} value={presenter.id}>
+                {presenter.name} · {presenter.id}
+              </option>
+            ))}
+          </select>
+        </label>
         <Button
           type="submit"
           className="font-semibold"

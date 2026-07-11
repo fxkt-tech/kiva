@@ -55,6 +55,10 @@ function playbackScene(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     durationMs: 2000,
     startsAtMs: 0,
     players: [player()],
+    presenterName: "守夜人",
+    presenterAvatar: null,
+    transcriptSpeaker: "player",
+    presenterCue: { copyKey: "prompt.speech", text: "请4号玩家发言。", voiceFile: null },
     ...overrides,
   };
 }

@@ -3,12 +3,14 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
   diagnoseCharacter,
+  diagnosePresenter,
   diagnosePreset,
   diagnoseRole,
 } from "@/core/library-diagnostics";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
+import { seedPresenters } from "@/seeds/presenters";
 import type { LibraryActionsRecord } from "@/server/library-actions";
 import { ValidationPanel } from "./validation-panel";
 
@@ -64,6 +66,7 @@ function libraryFixture(): LibraryActionsRecord {
     roles: seedRoles,
     characters: seedCharacters,
     presets: seedPresets,
+    presenters: seedPresenters,
     diagnostics: {
       roles: Object.fromEntries(
         seedRoles.map((role) => [
@@ -96,6 +99,12 @@ function libraryFixture(): LibraryActionsRecord {
             presets: seedPresets,
             preset,
           }),
+        ]),
+      ),
+      presenters: Object.fromEntries(
+        seedPresenters.map((presenter) => [
+          presenter.id,
+          diagnosePresenter({ presenters: seedPresenters, presenter }),
         ]),
       ),
     },
