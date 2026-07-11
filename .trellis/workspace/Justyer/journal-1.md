@@ -72,3 +72,36 @@ Centralized selectable presenter definitions and copy in KivDB, added Library co
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: Collaborative wolf night strategy and voting
+
+**Date**: 2026-07-11
+**Task**: Collaborative wolf night strategy and voting
+**Branch**: `main`
+
+### Summary
+
+Replaced single-wolf night kills with first-night host-selected strategy leadership, shared wolf discussion, sealed equal voting, host-resolved ties, Editor validation, and director Preview tally scenes. Added cross-layer private event workflow specs and tests; typecheck, 529 tests, and production build pass. Remotion smoke remains environment-blocked by missing libnspr4.so.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d847b75` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
