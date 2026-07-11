@@ -231,7 +231,7 @@ describe("action generation", () => {
     expect(result.generation).toMatchObject({
       status: "failed",
       purpose: "action",
-      error: "Player cannot perform wolf_kill_selected",
+      error: "Player cannot perform wolf_vote_cast",
     });
   });
 
@@ -254,7 +254,7 @@ describe("action generation", () => {
         schemaName: "werewolf_action_v1",
         messages: expect.any(Array),
       },
-      error: "Illegal targetPlayerId for wolf_kill_selected",
+      error: "Illegal targetPlayerId for wolf_vote_cast",
     });
   });
 
@@ -334,6 +334,44 @@ describe("action generation", () => {
     expect(content).toContain('"used":false');
     expect(content).toContain("used 是必填布尔值");
   });
+
+  it("generates a sealed wolf ballot from discussion without exposing earlier ballots", async () => {
+    const events = [
+      ...setupEvents(),
+      {
+        ...baseEvent(7),
+        type: "wolf_strategy_given",
+        phase: "night",
+        actorPlayerId: wolf.playerId,
+        visibility: { kind: "faction_private", faction: "wolves" },
+        payload: { playerId: wolf.playerId, text: "优先寻找神职。", dayNumber: 1 },
+      },
+      {
+        ...baseEvent(8),
+        type: "wolf_vote_cast",
+        phase: "night",
+        actorPlayerId: wolf.playerId,
+        visibility: { kind: "host_only" },
+        payload: { voterPlayerId: wolf.playerId, targetPlayerId: seer.playerId, dayNumber: 1 },
+      },
+    ] satisfies readonly GameEvent[];
+    const result = await generateActionDraft({
+      game,
+      events,
+      draft: wolfVoteDraft(villager.playerId),
+      llmClient: new MockLlmClient([{ targetPlayerId: seer.playerId }]),
+      generationId: "generation_wolf_vote",
+      createdAt,
+    });
+    const content = result.generation?.request?.messages[0]?.content ?? "";
+
+    expect(result.draft).toMatchObject({
+      type: "wolf_vote_cast",
+      payload: { targetPlayerId: seer.playerId },
+    });
+    expect(content).toContain("优先寻找神职");
+    expect(content).not.toContain("狼人密票");
+  });
 });
 
 function setupEvents(): readonly GameEvent[] {
@@ -366,12 +404,23 @@ function seerDraft(targetPlayerId: PlayerId): DraftEvent {
 
 function wolfDraft(targetPlayerId: PlayerId): DraftEvent {
   return {
-    ...draftBase("wolf_kill_selected"),
+    ...draftBase("wolf_vote_cast"),
     phase: "night",
     actorPlayerId: wolf.playerId,
     targetPlayerIds: [targetPlayerId],
-    visibility: { kind: "faction_private", faction: "wolves" },
-    payload: { targetPlayerId },
+    visibility: { kind: "host_only" },
+    payload: { voterPlayerId: wolf.playerId, targetPlayerId, dayNumber: 1 },
+  } as DraftEvent;
+}
+
+function wolfVoteDraft(targetPlayerId: PlayerId): DraftEvent {
+  return {
+    ...draftBase("wolf_vote_cast"),
+    phase: "night",
+    actorPlayerId: secondWolf.playerId,
+    targetPlayerIds: [targetPlayerId],
+    visibility: { kind: "host_only" },
+    payload: { voterPlayerId: secondWolf.playerId, targetPlayerId, dayNumber: 1 },
   } as DraftEvent;
 }
 

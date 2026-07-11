@@ -5,6 +5,7 @@ import { DraftPanel } from "@/components/editor/draft-panel";
 import { EventTimeline } from "@/components/editor/event-timeline";
 import { iconButtonClassName } from "@/components/ui/button-styles";
 import type { GameId } from "@/core/types";
+import { deriveGameState } from "@/core/state";
 import { createGameActions } from "@/server/game-actions";
 import {
   createGameRepository,
@@ -126,6 +127,7 @@ export default async function EditorPage({
               gameId={typedGameId}
               draft={record.draft}
               players={record.game.players}
+              alivePlayerIds={deriveGameState(record.game.players, record.events).alivePlayerIds}
               generations={record.generations}
             />
           </div>

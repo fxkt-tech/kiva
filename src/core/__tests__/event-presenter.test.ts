@@ -48,17 +48,17 @@ describe("event presenter", () => {
           gameId,
           index: 2,
           status: "active",
-          type: "wolf_kill_selected",
+          type: "wolf_vote_cast",
           phase: "night",
           actorPlayerId: players[2].playerId,
           targetPlayerIds: [players[4].playerId],
-          visibility: { kind: "faction_private", faction: "wolves" },
-          payload: { targetPlayerId: players[4].playerId },
+          visibility: { kind: "host_only" },
+          payload: { voterPlayerId: players[2].playerId, targetPlayerId: players[4].playerId, dayNumber: 1 },
           createdAt,
         },
         players,
       ).text,
-    ).toContain("选择击杀 5 号");
+    ).toContain("投给 5 号");
   });
 
   it("renders public events but hides non-public events", () => {
@@ -67,12 +67,12 @@ describe("event presenter", () => {
       gameId,
       index: 1,
       status: "active",
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
       phase: "night",
       actorPlayerId: players[2].playerId,
       targetPlayerIds: [players[4].playerId],
-      visibility: { kind: "faction_private", faction: "wolves" },
-      payload: { targetPlayerId: players[4].playerId },
+      visibility: { kind: "host_only" },
+      payload: { voterPlayerId: players[2].playerId, targetPlayerId: players[4].playerId, dayNumber: 1 },
       createdAt,
     };
     const publicEvent: GameEvent = {

@@ -10,6 +10,7 @@ import {
   getLegalNightTargets,
   resolveVote,
   resolveNightDeathDetails,
+  resolveWolfVote,
   validateWitchDecision,
 } from "./rules";
 import { deriveGameState, type DerivedGameState } from "./state";
@@ -179,45 +180,130 @@ function planNightDraft(
     }
   }
 
-  const wolfKill = findEvent(phaseEvents, "wolf_kill_selected");
-  if (!wolfKill) {
-    const wolf = firstAlivePlayerIdByRole(
-      players,
-      state.alivePlayerIds,
-      "werewolf",
-    );
-    if (!wolf) {
-      return draftGameEndIfNeeded(
-        input,
-        players,
-        state.deadPlayerIds,
-        state.dayNumber,
-      );
-    }
+  const wolves = players
+    .filter((player) => player.gameRole === "werewolf")
+    .filter((player) => state.alivePlayerIds.includes(player.playerId));
+  if (wolves.length === 0) {
+    return draftGameEndIfNeeded(input, players, state.deadPlayerIds, state.dayNumber);
+  }
 
-    const target = getLegalNightTargets(
-      "wolf_kill",
-      players,
-      state.alivePlayerIds,
-      wolf,
-    )[0];
-
-    if (!target) {
-      return null;
-    }
-
+  const leaderSelection = events.find(
+    (event): event is EventOf<"wolf_leader_selected"> =>
+      event.type === "wolf_leader_selected",
+  );
+  if (state.dayNumber === 1 && !leaderSelection) {
+    const leaderPlayerId = wolves[0]!.playerId;
     return createDraftEvent({
       id: input.draftId,
       gameId: input.game.id,
-      type: "wolf_kill_selected",
+      type: "wolf_leader_selected",
       phase: "night",
-      actorPlayerId: wolf,
-      targetPlayerIds: [target],
-      visibility: { kind: "faction_private", faction: "wolves" },
-      payload: { targetPlayerId: target },
+      actorPlayerId: leaderPlayerId,
+      targetPlayerIds: [leaderPlayerId],
+      visibility: { kind: "host_only" },
+      payload: { leaderPlayerId },
       createdAt: input.createdAt,
     });
   }
+
+  const leaderPlayerId = leaderSelection?.payload.leaderPlayerId;
+  if (state.dayNumber === 1 && !hasEvent(phaseEvents, "wolf_strategy_given")) {
+    if (!leaderPlayerId) return null;
+    return createDraftEvent({
+      id: input.draftId,
+      gameId: input.game.id,
+      type: "wolf_strategy_given",
+      phase: "night",
+      actorPlayerId: leaderPlayerId,
+      visibility: { kind: "faction_private", faction: "wolves" },
+      payload: {
+        playerId: leaderPlayerId,
+        text: "今晚先建立狼队的整体战术。",
+        dayNumber: 1,
+      },
+      createdAt: input.createdAt,
+    });
+  }
+
+  const opinionWolves = state.dayNumber === 1
+    ? wolves.filter((wolf) => wolf.playerId !== leaderPlayerId)
+    : wolves;
+  const opinionActors = new Set(
+    phaseEvents
+      .filter((event): event is EventOf<"wolf_opinion_given"> =>
+        event.type === "wolf_opinion_given",
+      )
+      .map((event) => event.actorPlayerId),
+  );
+  const opinionWolf = opinionWolves.find(
+    (wolf) => !opinionActors.has(wolf.playerId),
+  );
+  if (opinionWolf) {
+    return createDraftEvent({
+      id: input.draftId,
+      gameId: input.game.id,
+      type: "wolf_opinion_given",
+      phase: "night",
+      actorPlayerId: opinionWolf.playerId,
+      visibility: { kind: "faction_private", faction: "wolves" },
+      payload: {
+        playerId: opinionWolf.playerId,
+        text: "我结合当前局势提出自己的刀人意见。",
+        dayNumber: state.dayNumber,
+      },
+      createdAt: input.createdAt,
+    });
+  }
+
+  const wolfVotes = phaseEvents.filter(
+    (event): event is EventOf<"wolf_vote_cast"> => event.type === "wolf_vote_cast",
+  );
+  const votedWolfIds = new Set(wolfVotes.map((event) => event.payload.voterPlayerId));
+  const votingWolf = wolves.find((wolf) => !votedWolfIds.has(wolf.playerId));
+  if (votingWolf) {
+    const targetPlayerId = getLegalNightTargets(
+      "wolf_kill",
+      players,
+      state.alivePlayerIds,
+      votingWolf.playerId,
+    )[0];
+    if (!targetPlayerId) return null;
+    return createDraftEvent({
+      id: input.draftId,
+      gameId: input.game.id,
+      type: "wolf_vote_cast",
+      phase: "night",
+      actorPlayerId: votingWolf.playerId,
+      targetPlayerIds: [targetPlayerId],
+      visibility: { kind: "host_only" },
+      payload: {
+        voterPlayerId: votingWolf.playerId,
+        targetPlayerId,
+        dayNumber: state.dayNumber,
+      },
+      createdAt: input.createdAt,
+    });
+  }
+
+  const wolfResolution = findEvent(phaseEvents, "wolf_vote_resolved");
+  if (!wolfResolution) {
+    const vote = resolveWolfVote(wolfVotes.map((event) => event.payload));
+    return createDraftEvent({
+      id: input.draftId,
+      gameId: input.game.id,
+      type: "wolf_vote_resolved",
+      phase: "night",
+      targetPlayerIds: vote.targetPlayerId ? [vote.targetPlayerId] : [],
+      visibility: { kind: "faction_private", faction: "wolves" },
+      payload: {
+        ...vote,
+        resolution: vote.targetPlayerId ? "majority" : null,
+        dayNumber: state.dayNumber,
+      },
+      createdAt: input.createdAt,
+    });
+  }
+  if (!wolfResolution.payload.targetPlayerId) return null;
 
   const seer = firstAlivePlayerIdByRole(players, state.alivePlayerIds, "seer");
   const seerCheck = findEvent(phaseEvents, "seer_check_selected");
@@ -285,9 +371,9 @@ function planNightDraft(
       type: "witch_death_info_shown",
       phase: "night",
       actorPlayerId: witch,
-      targetPlayerIds: [wolfKill.payload.targetPlayerId],
+      targetPlayerIds: [wolfResolution.payload.targetPlayerId],
       visibility: { kind: "player_private", playerIds: [witch] },
-      payload: { killedPlayerId: wolfKill.payload.targetPlayerId },
+      payload: { killedPlayerId: wolfResolution.payload.targetPlayerId },
       createdAt: input.createdAt,
     });
   }
@@ -334,12 +420,12 @@ function planNightDraft(
     const poison = findEvent(phaseEvents, "witch_poison_decided");
     if (
       !isLegalTarget(
-        wolfKill.payload.targetPlayerId,
+        wolfResolution.payload.targetPlayerId,
         getLegalNightTargets(
           "wolf_kill",
           players,
           state.alivePlayerIds,
-          wolfKill.actorPlayerId,
+          wolves[0]?.playerId,
         ),
       )
     ) {
@@ -397,7 +483,7 @@ function planNightDraft(
         {
           nightNumber: state.dayNumber,
           witchPlayerId: witch,
-          killedPlayerId: wolfKill.payload.targetPlayerId,
+          killedPlayerId: wolfResolution.payload.targetPlayerId,
           antidoteTargetId,
           poisonTargetId,
         },
@@ -409,7 +495,7 @@ function planNightDraft(
     }
 
     const deaths = resolveNightDeathDetails({
-      wolfKillTargetId: wolfKill.payload.targetPlayerId,
+      wolfKillTargetId: wolfResolution.payload.targetPlayerId,
       guardTargetId,
       antidoteTargetId,
       poisonTargetId,

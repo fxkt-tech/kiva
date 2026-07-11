@@ -46,9 +46,50 @@ export type RoleAssignedEvent = GameEventBase<
   }
 >;
 
-export type WolfKillSelectedEvent = GameEventBase<
-  "wolf_kill_selected",
-  { readonly targetPlayerId: PlayerId }
+export type WolfLeaderSelectedEvent = GameEventBase<
+  "wolf_leader_selected",
+  { readonly leaderPlayerId: PlayerId }
+>;
+
+export type WolfStrategyGivenEvent = GameEventBase<
+  "wolf_strategy_given",
+  { readonly playerId: PlayerId; readonly text: string; readonly dayNumber: number }
+>;
+
+export type WolfOpinionGivenEvent = GameEventBase<
+  "wolf_opinion_given",
+  { readonly playerId: PlayerId; readonly text: string; readonly dayNumber: number }
+>;
+
+export type WolfVoteCastEvent = GameEventBase<
+  "wolf_vote_cast",
+  {
+    readonly voterPlayerId: PlayerId;
+    readonly targetPlayerId: PlayerId;
+    readonly dayNumber: number;
+  }
+>;
+
+export type WolfVoteEntry = {
+  readonly voterPlayerId: PlayerId;
+  readonly targetPlayerId: PlayerId;
+};
+
+export type WolfVoteTally = {
+  readonly targetPlayerId: PlayerId;
+  readonly count: number;
+};
+
+export type WolfVoteResolvedEvent = GameEventBase<
+  "wolf_vote_resolved",
+  {
+    readonly votes: readonly WolfVoteEntry[];
+    readonly tallies: readonly WolfVoteTally[];
+    readonly tiedTargetPlayerIds: readonly PlayerId[];
+    readonly targetPlayerId: PlayerId | null;
+    readonly resolution: "majority" | "host_tiebreak" | null;
+    readonly dayNumber: number;
+  }
 >;
 
 export type SeerCheckSelectedEvent = GameEventBase<
@@ -195,7 +236,11 @@ export type GameEndedEvent = GameEventBase<
 export type GameEvent =
   | PhaseStartedEvent
   | RoleAssignedEvent
-  | WolfKillSelectedEvent
+  | WolfLeaderSelectedEvent
+  | WolfStrategyGivenEvent
+  | WolfOpinionGivenEvent
+  | WolfVoteCastEvent
+  | WolfVoteResolvedEvent
   | SeerCheckSelectedEvent
   | SeerCheckResultEvent
   | WitchDeathInfoShownEvent

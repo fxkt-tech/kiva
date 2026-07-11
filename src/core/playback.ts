@@ -140,6 +140,8 @@ function shouldIncludeEvent(
 ): boolean {
   if (
     event.type === "vote_cast" ||
+    event.type === "wolf_leader_selected" ||
+    event.type === "wolf_vote_cast" ||
     event.type === "role_assigned" ||
     event.type === "night_resolved"
   ) {
@@ -181,12 +183,15 @@ function kindForEvent(event: GameEvent): PlaybackSceneKind {
     case "last_words_given":
     case "day_speech_given":
     case "pk_speech_given":
+    case "wolf_strategy_given":
+    case "wolf_opinion_given":
       return "speech";
     case "vote_cast":
       return "vote";
     case "exile_resolved":
     case "game_ended":
     case "night_resolved":
+    case "wolf_vote_resolved":
       return "resolution";
     case "death_announced":
       return "announcement";

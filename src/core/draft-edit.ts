@@ -2,6 +2,7 @@ import type { DraftEvent } from "./drafts";
 import type { PlayerId } from "./types";
 
 export type DraftPayloadEdit = {
+  leaderPlayerId?: PlayerId;
   targetPlayerId?: PlayerId | null;
   used?: boolean;
   text?: string;
@@ -14,7 +15,19 @@ export function applyDraftPayloadEdit(
   edit: DraftPayloadEdit,
 ): DraftEvent {
   switch (draft.type) {
-    case "wolf_kill_selected":
+    case "wolf_leader_selected":
+      assertSupportedEdit(draft.type, edit, ["leaderPlayerId"]);
+      return editLeaderDraft(draft, edit);
+    case "wolf_strategy_given":
+    case "wolf_opinion_given":
+      assertSupportedEdit(draft.type, edit, ["text"]);
+      return editTextDraft(draft, edit);
+    case "wolf_vote_cast":
+      assertSupportedEdit(draft.type, edit, ["targetPlayerId"]);
+      return editTargetDraft(draft, edit);
+    case "wolf_vote_resolved":
+      assertSupportedEdit(draft.type, edit, ["targetPlayerId"]);
+      return editWolfResolutionDraft(draft, edit);
     case "seer_check_selected":
     case "guard_protect_selected":
     case "hunter_shot_decided":
@@ -43,7 +56,7 @@ export function applyDraftPayloadEdit(
 
 function editTargetDraft(
   draft: DraftOf<
-    | "wolf_kill_selected"
+    | "wolf_vote_cast"
     | "seer_check_selected"
     | "guard_protect_selected"
     | "hunter_shot_decided"
@@ -66,7 +79,7 @@ function editTargetDraft(
       ...draft.payload,
       targetPlayerId,
     },
-  };
+  } as DraftEvent;
 }
 
 function editWitchMedicineDraft(
@@ -110,7 +123,13 @@ function editWitchMedicineDraft(
 }
 
 function editTextDraft(
-  draft: DraftOf<"last_words_given" | "day_speech_given" | "pk_speech_given">,
+  draft: DraftOf<
+    | "wolf_strategy_given"
+    | "wolf_opinion_given"
+    | "last_words_given"
+    | "day_speech_given"
+    | "pk_speech_given"
+  >,
   edit: DraftPayloadEdit,
 ): DraftEvent {
   if (!hasOwn(edit, "text")) {
@@ -124,6 +143,36 @@ function editTextDraft(
       text: String(edit.text ?? "").trim(),
     },
   } as DraftEvent;
+}
+
+function editLeaderDraft(
+  draft: DraftOf<"wolf_leader_selected">,
+  edit: DraftPayloadEdit,
+): DraftEvent {
+  const leaderPlayerId = edit.leaderPlayerId;
+  if (!leaderPlayerId) throw new Error("leaderPlayerId is required");
+  return {
+    ...draft,
+    actorPlayerId: leaderPlayerId,
+    targetPlayerIds: [leaderPlayerId],
+    payload: { leaderPlayerId },
+  };
+}
+
+function editWolfResolutionDraft(
+  draft: DraftOf<"wolf_vote_resolved">,
+  edit: DraftPayloadEdit,
+): DraftEvent {
+  if (!hasOwn(edit, "targetPlayerId")) return draft;
+  const targetPlayerId = edit.targetPlayerId;
+  if (!targetPlayerId || !draft.payload.tiedTargetPlayerIds.includes(targetPlayerId)) {
+    throw new Error("Wolf vote tiebreak target must be tied for the highest vote");
+  }
+  return {
+    ...draft,
+    targetPlayerIds: [targetPlayerId],
+    payload: { ...draft.payload, targetPlayerId, resolution: "host_tiebreak" },
+  };
 }
 
 function editVoteDraft(

@@ -26,7 +26,7 @@ describe("DraftPanel payload controls", () => {
     const html = renderPanel(wolfKillDraft(players[0].playerId));
 
     expect(html).toContain("Generating LLM draft");
-    expect(html).toContain("待确认：狼人刀人");
+    expect(html).toContain("待确认：狼人密票");
     expect(html).toContain("aria-busy=\"true\"");
   });
 
@@ -37,8 +37,8 @@ describe("DraftPanel payload controls", () => {
     expect(html).toContain(`value="${players[0].playerId}"`);
     expect(html).toContain(`${players[0].seatNo} · ${players[0].name}`);
     expect(html).toContain("Save action");
-    expect(html).toContain("待确认：狼人刀人");
-    expect(html).toContain("选择击杀 1 号");
+    expect(html).toContain("待确认：狼人密票");
+    expect(html).toContain("投给 1 号");
   });
 
   it("renders regenerate control for speech drafts", () => {
@@ -120,7 +120,13 @@ function renderPanel(
   generations: readonly GenerationRecord[] = [],
 ): string {
   return renderToStaticMarkup(
-    React.createElement(DraftPanel, { gameId, draft, players, generations }),
+    React.createElement(DraftPanel, {
+      gameId,
+      draft,
+      players,
+      alivePlayerIds: players.map((player) => player.playerId),
+      generations,
+    }),
   );
 }
 
@@ -129,11 +135,12 @@ function wolfKillDraft(targetPlayerId: PlayerId): DraftEvent {
     id: draftId,
     gameId,
     status: "draft",
-    type: "wolf_kill_selected",
+    type: "wolf_vote_cast",
     phase: "night",
+    actorPlayerId: players[0].playerId,
     targetPlayerIds: [targetPlayerId],
-    visibility: { kind: "faction_private", faction: "wolves" },
-    payload: { targetPlayerId },
+    visibility: { kind: "host_only" },
+    payload: { voterPlayerId: players[0].playerId, targetPlayerId, dayNumber: 1 },
     createdAt,
   } as DraftEvent;
 }

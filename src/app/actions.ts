@@ -131,6 +131,10 @@ function now(): string {
 function draftPayloadEditFromForm(formData: FormData): DraftPayloadEdit {
   const edit: DraftPayloadEdit = {};
 
+  if (formData.has("leaderPlayerId")) {
+    edit.leaderPlayerId = formValue(formData, "leaderPlayerId").trim() as PlayerId;
+  }
+
   if (formData.has("targetPlayerId")) {
     const targetPlayerId = formValue(formData, "targetPlayerId").trim();
     edit.targetPlayerId =

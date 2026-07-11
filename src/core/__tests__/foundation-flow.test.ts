@@ -86,13 +86,13 @@ describe("foundation flow", () => {
       } satisfies EventOf<"phase_started">,
       {
         ...eventBase(2),
-        type: "wolf_kill_selected",
+        type: "wolf_vote_cast",
         phase: "night",
         actorPlayerId: wolf1,
         targetPlayerIds: [seer],
-        visibility: { kind: "faction_private", faction: "wolves" },
-        payload: { targetPlayerId: seer },
-      } satisfies EventOf<"wolf_kill_selected">,
+        visibility: { kind: "host_only" },
+        payload: { voterPlayerId: wolf1, targetPlayerId: seer, dayNumber: 1 },
+      } satisfies EventOf<"wolf_vote_cast">,
       {
         ...eventBase(3),
         type: "seer_check_result",
@@ -139,16 +139,16 @@ describe("foundation flow", () => {
       "phase_started",
       "death_announced",
     ]);
-    expect(villagerEventTypes).not.toContain("wolf_kill_selected");
+    expect(villagerEventTypes).not.toContain("wolf_vote_cast");
     expect(villagerEventTypes).not.toContain("seer_check_result");
     expect(villagerEventTypes).not.toContain("night_resolved");
 
-    expect(wolfEventTypes).toContain("wolf_kill_selected");
+    expect(wolfEventTypes).not.toContain("wolf_vote_cast");
     expect(wolfEventTypes).not.toContain("seer_check_result");
     expect(wolfEventTypes).not.toContain("night_resolved");
 
     expect(seerEventTypes).toContain("seer_check_result");
-    expect(seerEventTypes).not.toContain("wolf_kill_selected");
+    expect(seerEventTypes).not.toContain("wolf_vote_cast");
     expect(seerEventTypes).not.toContain("night_resolved");
 
     expect(state.deadPlayerIds).toEqual([seer]);

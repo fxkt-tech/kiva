@@ -16,7 +16,11 @@ describe("applyDraftPayloadEdit", () => {
       targetPlayerId: player2,
     });
 
-    expect(edited.payload).toEqual({ targetPlayerId: player2 });
+    expect(edited.payload).toEqual({
+      voterPlayerId: player1,
+      targetPlayerId: player2,
+      dayNumber: 1,
+    });
     expect(edited.targetPlayerIds).toEqual([player2]);
     expect(edited.actorPlayerId).toBe(player1);
   });
@@ -110,10 +114,10 @@ function baseDraft(overrides: Partial<DraftEvent>): DraftEvent {
 
 function wolfKillDraft(actorPlayerId: PlayerId): DraftEvent {
   return baseDraft({
-    type: "wolf_kill_selected",
+    type: "wolf_vote_cast",
     actorPlayerId,
     targetPlayerIds: [player2],
-    payload: { targetPlayerId: player2 },
+    payload: { voterPlayerId: actorPlayerId, targetPlayerId: player2, dayNumber: 1 },
   });
 }
 

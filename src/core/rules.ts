@@ -4,6 +4,8 @@ import type {
   RevealedRole,
   VoteTableEntry,
   VoteType,
+  WolfVoteEntry,
+  WolfVoteTally,
 } from "./events";
 import type { GameRole, PlayerId, PkVoters, Ruleset } from "./types";
 
@@ -22,6 +24,37 @@ export type NightDeath = {
   readonly playerId: PlayerId;
   readonly reason: NightDeathReason;
 };
+
+export type WolfVoteResult = {
+  readonly votes: readonly WolfVoteEntry[];
+  readonly tallies: readonly WolfVoteTally[];
+  readonly tiedTargetPlayerIds: readonly PlayerId[];
+  readonly targetPlayerId: PlayerId | null;
+};
+
+export function resolveWolfVote(
+  votes: readonly WolfVoteEntry[],
+): WolfVoteResult {
+  const counts = new Map<PlayerId, number>();
+  for (const vote of votes) {
+    counts.set(vote.targetPlayerId, (counts.get(vote.targetPlayerId) ?? 0) + 1);
+  }
+  const tallies = [...counts.entries()]
+    .map(([targetPlayerId, count]) => ({ targetPlayerId, count }))
+    .sort((left, right) => right.count - left.count);
+  const highest = tallies[0]?.count ?? 0;
+  const tiedTargetPlayerIds = tallies
+    .filter((tally) => tally.count === highest)
+    .map((tally) => tally.targetPlayerId);
+
+  return {
+    votes,
+    tallies,
+    tiedTargetPlayerIds,
+    targetPlayerId:
+      tiedTargetPlayerIds.length === 1 ? tiedTargetPlayerIds[0] ?? null : null,
+  };
+}
 
 export type NightResolutionInput = {
   readonly wolfKillTargetId: PlayerId | null;

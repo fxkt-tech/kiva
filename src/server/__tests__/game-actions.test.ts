@@ -269,16 +269,15 @@ describe("game actions", () => {
     const { actions } = await createActions();
     const created = await actions.createGame();
 
-    for (let step = 0; step < created.game.players.length + 2; step += 1) {
-      await actions.continueGame(created.game.id);
-      await actions.confirmDraft(created.game.id);
-    }
-
-    const withWolfKillDraft = await actions.continueGame(created.game.id);
+    const withWolfKillDraft = await continueUntilDraftType(
+      actions,
+      created.game.id,
+      "wolf_vote_cast",
+    );
     const editedTarget = created.game.players[4]?.playerId;
     expect(editedTarget).toBeDefined();
     expect(withWolfKillDraft.draft).toMatchObject({
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
     });
     expect(withWolfKillDraft.draft?.payload).not.toMatchObject({
       targetPlayerId: editedTarget,
@@ -289,18 +288,18 @@ describe("game actions", () => {
     });
 
     expect(edited.draft).toMatchObject({
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
       targetPlayerIds: [editedTarget],
       payload: { targetPlayerId: editedTarget },
     });
 
     const confirmed = await actions.confirmDraft(created.game.id);
     const wolfKillEvent = confirmed.events.find(
-      (event) => event.type === "wolf_kill_selected",
+      (event) => event.type === "wolf_vote_cast",
     );
 
     expect(wolfKillEvent).toMatchObject({
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
       targetPlayerIds: [editedTarget],
       payload: { targetPlayerId: editedTarget },
     });
@@ -445,15 +444,15 @@ describe("game actions", () => {
     const withWolfKill = await continueUntilDraftType(
       generatedActions,
       created.game.id,
-      "wolf_kill_selected",
+      "wolf_vote_cast",
     );
     expect(withWolfKill.draft).toMatchObject({
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
     });
 
     const generatedWolfKill = await generatedActions.regenerateDraft(created.game.id);
     expect(generatedWolfKill.draft).toMatchObject({
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
       payload: { targetPlayerId: realWolfTarget },
     });
     await generatedActions.confirmDraft(created.game.id);
@@ -520,15 +519,15 @@ describe("game actions", () => {
     const repository = createDeferredSaveRepository();
     const actions = createGameActions(repository);
     const created = await actions.createGame();
-    for (let step = 0; step < created.game.players.length + 2; step += 1) {
-      await actions.continueGame(created.game.id);
-      await actions.confirmDraft(created.game.id);
-    }
-    const withWolfKillDraft = await actions.continueGame(created.game.id);
+    const withWolfKillDraft = await continueUntilDraftType(
+      actions,
+      created.game.id,
+      "wolf_vote_cast",
+    );
     const editedTarget = created.game.players[4]?.playerId;
     expect(editedTarget).toBeDefined();
     expect(withWolfKillDraft.draft).toMatchObject({
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
     });
 
     const editPromise = actions.editDraftPayload(created.game.id, {
@@ -543,7 +542,7 @@ describe("game actions", () => {
 
     expect(confirmed.draft).toBeNull();
     expect(confirmed.events.at(-1)).toMatchObject({
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
       targetPlayerIds: [editedTarget],
       payload: { targetPlayerId: editedTarget },
     });
@@ -551,7 +550,7 @@ describe("game actions", () => {
 
     const withNextDraft = await actions.continueGame(created.game.id);
     expect(withNextDraft.draft).toMatchObject({
-      type: "seer_check_selected",
+      type: "wolf_vote_cast",
     });
   });
 
@@ -653,7 +652,7 @@ function createDeferredSaveRepository(): GameRepository & {
 
     async save(nextRecord) {
       if (
-        nextRecord.draft?.type === "wolf_kill_selected" &&
+        nextRecord.draft?.type === "wolf_vote_cast" &&
         nextRecord.draft.payload.targetPlayerId ===
           record?.game.players[4]?.playerId
       ) {

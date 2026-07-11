@@ -26,7 +26,7 @@ import type { PlayerId } from "./types";
 type ActionDraft = Extract<
   DraftEvent,
   | { type: "seer_check_selected" }
-  | { type: "wolf_kill_selected" }
+  | { type: "wolf_vote_cast" }
   | { type: "vote_cast" }
   | { type: "witch_antidote_decided" }
   | { type: "witch_poison_decided" }
@@ -204,7 +204,7 @@ function actionOutputInstruction(draftType: ActionDraft["type"]): string {
     case "vote_cast":
       return '输出字段：targetPlayerId、reasoning。弃票用 {"targetPlayerId":null,"reasoning":"简短说明原因"}。';
     case "seer_check_selected":
-    case "wolf_kill_selected":
+    case "wolf_vote_cast":
     case "guard_protect_selected":
     case "hunter_shot_decided":
       return '输出字段：targetPlayerId、reasoning。必须从可选目标中选择一个 playerId。';
@@ -219,7 +219,7 @@ function legalTargetIdsForDraft(
   switch (draft.type) {
     case "seer_check_selected":
       return legalNightTargets(game, events, "seer_check", draft.actorPlayerId);
-    case "wolf_kill_selected":
+    case "wolf_vote_cast":
       return legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId);
     case "guard_protect_selected":
       return legalGuardTargets(game, events, draft.actorPlayerId);
@@ -239,7 +239,7 @@ function legalTargetIdsForDraft(
 function isActionDraft(draft: DraftEvent): draft is ActionDraft {
   return (
     draft.type === "seer_check_selected" ||
-    draft.type === "wolf_kill_selected" ||
+    draft.type === "wolf_vote_cast" ||
     draft.type === "guard_protect_selected" ||
     draft.type === "hunter_shot_decided" ||
     draft.type === "vote_cast" ||
@@ -271,7 +271,7 @@ function canActorPerformActionDraft(
   },
 ): boolean {
   switch (draft.type) {
-    case "wolf_kill_selected":
+    case "wolf_vote_cast":
       return viewer.role === "werewolf" && viewer.mechanicKey === "wolf_kill";
     case "seer_check_selected":
       return viewer.role === "seer" && viewer.mechanicKey === "seer_check";
@@ -298,7 +298,7 @@ function parseAndValidateActionEdit(
   switch (draft.type) {
     case "seer_check_selected":
       return targetEdit(draft.type, output, legalNightTargets(game, events, "seer_check", draft.actorPlayerId));
-    case "wolf_kill_selected":
+    case "wolf_vote_cast":
       return targetEdit(draft.type, output, legalNightTargets(game, events, "wolf_kill", draft.actorPlayerId));
     case "guard_protect_selected":
       return targetEdit(draft.type, output, legalGuardTargets(game, events, draft.actorPlayerId));
@@ -423,11 +423,11 @@ function previousGuardTargetId(
 function legalAntidoteTargets(events: readonly GameEvent[]): readonly PlayerId[] {
   const wolfKill = [...events]
     .reverse()
-    .find((event): event is Extract<GameEvent, { type: "wolf_kill_selected" }> =>
-      event.type === "wolf_kill_selected",
+    .find((event): event is Extract<GameEvent, { type: "wolf_vote_resolved" }> =>
+      event.type === "wolf_vote_resolved" && event.payload.targetPlayerId !== null,
     );
 
-  return wolfKill ? [wolfKill.payload.targetPlayerId] : [];
+  return wolfKill?.payload.targetPlayerId ? [wolfKill.payload.targetPlayerId] : [];
 }
 
 function contextHash(context: unknown): string {

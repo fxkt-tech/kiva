@@ -16,6 +16,8 @@ import { createDraftId, createEventId, createGameId } from "@/core/id";
 import type { LlmClient } from "@/core/llm";
 import { generateSpeechDraft } from "@/core/speech-generation";
 import { generateActionDraft } from "@/core/action-generation";
+import { getLegalNightTargets } from "@/core/rules";
+import { deriveGameState } from "@/core/state";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedPresenters } from "@/seeds/presenters";
@@ -197,6 +199,8 @@ export function createGameActions(
           return record;
         }
 
+        validateWolfDraft(record, record.draft);
+
         const updatedAt = now();
         const nextIndex = getActiveEvents(record.events).length + 1;
         const nextEvent = confirmDraftEvent({
@@ -229,10 +233,12 @@ export function createGameActions(
         }
 
         const updatedAt = now();
+        const editedDraft = applyDraftPayloadEdit(record.draft, edit);
+        validateWolfDraft(record, editedDraft);
         const nextRecord: GameRecord = {
           ...record,
           game: { ...record.game, updatedAt },
-          draft: applyDraftPayloadEdit(record.draft, edit),
+          draft: editedDraft,
         };
 
         await repository.save(nextRecord);
@@ -309,6 +315,48 @@ export function createGameActions(
       });
     },
   };
+}
+
+function validateWolfDraft(
+  record: GameRecord,
+  draft: NonNullable<GameRecord["draft"]>,
+): void {
+  const state = deriveGameState(record.game.players, record.events);
+  if (draft.type === "wolf_leader_selected") {
+    const leader = record.game.players.find(
+      (player) => player.playerId === draft.payload.leaderPlayerId,
+    );
+    if (
+      state.dayNumber !== 1 ||
+      !leader ||
+      leader.gameRole !== "werewolf" ||
+      !state.alivePlayerIds.includes(leader.playerId)
+    ) {
+      throw new Error("Wolf leader must be an alive werewolf on the first night");
+    }
+  }
+  if (draft.type === "wolf_vote_cast") {
+    const legalTargets = getLegalNightTargets(
+      "wolf_kill",
+      record.game.players,
+      state.alivePlayerIds,
+      draft.actorPlayerId,
+    );
+    if (!legalTargets.includes(draft.payload.targetPlayerId)) {
+      throw new Error("Wolf vote target must be an alive non-werewolf");
+    }
+  }
+  if (draft.type === "wolf_vote_resolved") {
+    if (!draft.payload.targetPlayerId) {
+      throw new Error("Wolf vote tiebreak requires a host-selected target");
+    }
+    if (
+      draft.payload.resolution === "host_tiebreak" &&
+      !draft.payload.tiedTargetPlayerIds.includes(draft.payload.targetPlayerId)
+    ) {
+      throw new Error("Wolf vote tiebreak target must be tied for the highest vote");
+    }
+  }
 }
 
 async function loadGameLibrary(

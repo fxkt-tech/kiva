@@ -132,7 +132,7 @@ describe("advance planner", () => {
 
     for (
       let index = game.players.length + 2;
-      index <= game.players.length + 10;
+      index <= game.players.length + 19;
       index += 1
     ) {
       const draft = planNextDraft({
@@ -149,7 +149,16 @@ describe("advance planner", () => {
 
     expect(plannedTypes).toEqual([
       "guard_protect_selected",
-      "wolf_kill_selected",
+      "wolf_leader_selected",
+      "wolf_strategy_given",
+      "wolf_opinion_given",
+      "wolf_opinion_given",
+      "wolf_opinion_given",
+      "wolf_vote_cast",
+      "wolf_vote_cast",
+      "wolf_vote_cast",
+      "wolf_vote_cast",
+      "wolf_vote_resolved",
       "seer_check_selected",
       "seer_check_result",
       "witch_death_info_shown",
@@ -159,7 +168,7 @@ describe("advance planner", () => {
       "death_announced",
     ]);
     expect(
-      planNextDraft({ game, events, draftId: draftId(16), createdAt }),
+      planNextDraft({ game, events, draftId: draftId(26), createdAt }),
     ).toMatchObject({
       type: "phase_started",
       payload: { phase: "speech", dayNumber: 1 },
@@ -241,20 +250,21 @@ describe("advance planner", () => {
         createdAt,
       }),
     );
-    const wolfKill = requireDraft(
-      planNextDraft({
+    let actionEvents = confirmNext(swappedEvents, guardProtect);
+    let seerCheck: DraftEvent | null = null;
+    for (let step = 0; step < 20; step += 1) {
+      const draft = planNextDraft({
         game,
-        events: confirmNext(swappedEvents, guardProtect),
-        draftId: draftId(21),
+        events: actionEvents,
+        draftId: draftId(21 + step),
         createdAt,
-      }),
-    );
-    const seerCheck = planNextDraft({
-      game,
-      events: confirmNext(confirmNext(swappedEvents, guardProtect), wolfKill),
-      draftId: draftId(22),
-      createdAt,
-    });
+      });
+      if (draft?.type === "seer_check_selected") {
+        seerCheck = draft;
+        break;
+      }
+      actionEvents = confirmNext(actionEvents, requireDraft(draft));
+    }
 
     expect(seerCheck).toMatchObject({
       type: "seer_check_selected",
@@ -285,6 +295,7 @@ describe("advance planner", () => {
     const seer = playerByRole(game, "seer");
     const witch = playerByRole(game, "witch");
     const guard = playerByRole(game, "guard");
+    const wolves = game.players.filter((player) => player.gameRole === "werewolf");
     const killedPlayerId = game.players[0].playerId;
     const poisonTargetId = game.players[4].playerId;
     const events: readonly GameEvent[] = [
@@ -304,20 +315,38 @@ describe("advance planner", () => {
         }),
         game.players.length + 2,
       ),
-      confirmedEvent(
-        createDraftEvent({
-          id: draftId(9),
-          gameId,
-          type: "wolf_kill_selected",
-          phase: "night",
-          actorPlayerId: wolf.playerId,
-          targetPlayerIds: [killedPlayerId],
-          visibility: { kind: "faction_private", faction: "wolves" },
-          payload: { targetPlayerId: killedPlayerId },
-          createdAt,
-        }),
-        game.players.length + 3,
+      confirmedEvent(createDraftEvent({
+        id: draftId(9), gameId, type: "wolf_leader_selected", phase: "night",
+        actorPlayerId: wolf.playerId, targetPlayerIds: [wolf.playerId],
+        visibility: { kind: "host_only" }, payload: { leaderPlayerId: wolf.playerId }, createdAt,
+      }), game.players.length + 3),
+      confirmedEvent(createDraftEvent({
+        id: draftId(90), gameId, type: "wolf_strategy_given", phase: "night",
+        actorPlayerId: wolf.playerId, visibility: { kind: "faction_private", faction: "wolves" },
+        payload: { playerId: wolf.playerId, text: "strategy", dayNumber: 1 }, createdAt,
+      }), game.players.length + 30),
+      ...wolves.filter((player) => player.playerId !== wolf.playerId).map((player, index) =>
+        confirmedEvent(createDraftEvent({
+          id: draftId(91 + index), gameId, type: "wolf_opinion_given", phase: "night",
+          actorPlayerId: player.playerId, visibility: { kind: "faction_private", faction: "wolves" },
+          payload: { playerId: player.playerId, text: "opinion", dayNumber: 1 }, createdAt,
+        }), game.players.length + 31 + index),
       ),
+      ...wolves.map((player, index) => confirmedEvent(createDraftEvent({
+        id: draftId(95 + index), gameId, type: "wolf_vote_cast", phase: "night",
+        actorPlayerId: player.playerId, targetPlayerIds: [killedPlayerId], visibility: { kind: "host_only" },
+        payload: { voterPlayerId: player.playerId, targetPlayerId: killedPlayerId, dayNumber: 1 }, createdAt,
+      }), game.players.length + 35 + index)),
+      confirmedEvent(createDraftEvent({
+        id: draftId(99), gameId, type: "wolf_vote_resolved", phase: "night",
+        targetPlayerIds: [killedPlayerId], visibility: { kind: "faction_private", faction: "wolves" },
+        payload: {
+          votes: wolves.map((player) => ({ voterPlayerId: player.playerId, targetPlayerId: killedPlayerId })),
+          tallies: [{ targetPlayerId: killedPlayerId, count: wolves.length }],
+          tiedTargetPlayerIds: [killedPlayerId], targetPlayerId: killedPlayerId,
+          resolution: "majority", dayNumber: 1,
+        }, createdAt,
+      }), game.players.length + 40),
       confirmedEvent(
         createDraftEvent({
           id: draftId(10),
@@ -667,15 +696,15 @@ describe("complete deterministic game flow", () => {
       );
 
       if (draft.type === "witch_antidote_decided") {
-        const wolfKill = events.find(
-          (event): event is Extract<GameEvent, { type: "wolf_kill_selected" }> =>
-            event.type === "wolf_kill_selected",
+        const wolfKill = [...events].reverse().find(
+          (event): event is Extract<GameEvent, { type: "wolf_vote_resolved" }> =>
+            event.type === "wolf_vote_resolved" && event.payload.targetPlayerId !== null,
         );
         if (!wolfKill) {
           throw new Error("Expected wolf kill before witch antidote");
         }
 
-        const killedPlayerId = wolfKill.payload.targetPlayerId;
+        const killedPlayerId = wolfKill.payload.targetPlayerId!;
         events = confirmNext(events, {
           ...draft,
           targetPlayerIds: [killedPlayerId],
@@ -696,7 +725,7 @@ describe("complete deterministic game flow", () => {
     }
 
     const nightTwoDraftTypes: GameEvent["type"][] = [];
-    for (let step = 1; step <= 10; step += 1) {
+    for (let step = 1; step <= 20; step += 1) {
       const draft = planNextDraft({
         game,
         events,

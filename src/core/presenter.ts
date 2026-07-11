@@ -34,7 +34,9 @@ export function resolvePresenter(
   if (
     event.type === "last_words_given" ||
     event.type === "day_speech_given" ||
-    event.type === "pk_speech_given"
+    event.type === "pk_speech_given" ||
+    event.type === "wolf_strategy_given" ||
+    event.type === "wolf_opinion_given"
   ) {
     return resolveSpeech(presenter, event, players);
   }
@@ -76,7 +78,7 @@ function resolveSpeech(
   presenter: GamePresenterSnapshot,
   event: Extract<
     EventLike,
-    { readonly type: "last_words_given" | "day_speech_given" | "pk_speech_given" }
+    { readonly type: "last_words_given" | "day_speech_given" | "pk_speech_given" | "wolf_strategy_given" | "wolf_opinion_given" }
   >,
   players: readonly PlayerSnapshot[],
 ): PresenterResolution {
@@ -118,7 +120,7 @@ function resolveSpeech(
 function presenterRequest(
   event: Exclude<
     EventLike,
-    { readonly type: "last_words_given" | "day_speech_given" | "pk_speech_given" }
+    { readonly type: "last_words_given" | "day_speech_given" | "pk_speech_given" | "wolf_strategy_given" | "wolf_opinion_given" }
   >,
   players: readonly PlayerSnapshot[],
 ): {
@@ -136,8 +138,13 @@ function presenterRequest(
           role: roleLabel(event.payload.role),
         },
       };
-    case "wolf_kill_selected":
-      return targetRequest("action.wolf_kill", players, event.payload.targetPlayerId);
+    case "wolf_vote_resolved":
+      return event.payload.targetPlayerId
+        ? targetRequest("action.wolf_kill", players, event.payload.targetPlayerId)
+        : { key: "fallback.resolution", values: {} };
+    case "wolf_leader_selected":
+    case "wolf_vote_cast":
+      return { key: "fallback.announcement", values: {} };
     case "seer_check_selected":
       return targetRequest("action.seer_check", players, event.payload.targetPlayerId);
     case "seer_check_result":

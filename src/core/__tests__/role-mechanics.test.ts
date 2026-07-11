@@ -4,7 +4,7 @@ import type { RoleMechanicKey } from "../role-definition";
 
 describe("role mechanics", () => {
   it.each([
-    ["wolf_kill_selected", "wolf_kill"],
+    ["wolf_vote_cast", "wolf_kill"],
     ["seer_check_selected", "seer_check"],
     ["witch_antidote_decided", "witch_medicine"],
     ["witch_poison_decided", "witch_medicine"],

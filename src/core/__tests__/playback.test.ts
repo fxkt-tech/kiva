@@ -381,11 +381,10 @@ describe("playback compiler", () => {
     const playback = compilePublicPlayback([
       event(1, { kind: "public" }),
       event(2, { kind: "faction_private", faction: "wolves" }, {
-        type: "wolf_kill_selected",
+        type: "wolf_strategy_given",
         phase: "night",
         actorPlayerId: players[0].playerId,
-        targetPlayerIds: [players[2].playerId],
-        payload: { targetPlayerId: players[2].playerId },
+        payload: { playerId: players[0].playerId, text: "首夜先建立倒钩战术。", dayNumber: 1 },
       }),
       event(3, { kind: "player_private", playerIds: [players[2].playerId] }, {
         type: "seer_check_selected",
@@ -412,7 +411,7 @@ describe("playback compiler", () => {
 
     expect(playback.map((item) => item.title)).toEqual([
       "第 1 夜开始",
-      "狼人刀人",
+      expect.stringContaining("制定战术"),
       "预言家查验",
       "查验结果",
       "女巫解药",
@@ -424,6 +423,54 @@ describe("playback compiler", () => {
     expect(playback[3]).toMatchObject({
       title: "查验结果",
       text: expect.stringContaining("属于狼人阵营"),
+    });
+  });
+
+  it("hides leader selection and sealed ballots while showing discussion and tally", () => {
+    const leader = players[0];
+    const teammate = players[1];
+    const target = players[4];
+    const playback = compilePublicPlayback([
+      event(1, { kind: "host_only" }, {
+        type: "wolf_leader_selected",
+        actorPlayerId: leader.playerId,
+        payload: { leaderPlayerId: leader.playerId },
+      }),
+      event(2, { kind: "faction_private", faction: "wolves" }, {
+        type: "wolf_strategy_given",
+        actorPlayerId: leader.playerId,
+        payload: { playerId: leader.playerId, text: "先藏身份，再找神职。", dayNumber: 1 },
+      }),
+      event(3, { kind: "faction_private", faction: "wolves" }, {
+        type: "wolf_opinion_given",
+        actorPlayerId: teammate.playerId,
+        payload: { playerId: teammate.playerId, text: "赞同，今晚优先找神。", dayNumber: 1 },
+      }),
+      event(4, { kind: "host_only" }, {
+        type: "wolf_vote_cast",
+        actorPlayerId: leader.playerId,
+        payload: { voterPlayerId: leader.playerId, targetPlayerId: target.playerId, dayNumber: 1 },
+      }),
+      event(5, { kind: "faction_private", faction: "wolves" }, {
+        type: "wolf_vote_resolved",
+        targetPlayerIds: [target.playerId],
+        payload: {
+          votes: [{ voterPlayerId: leader.playerId, targetPlayerId: target.playerId }],
+          tallies: [{ targetPlayerId: target.playerId, count: 1 }],
+          tiedTargetPlayerIds: [target.playerId],
+          targetPlayerId: target.playerId,
+          resolution: "majority",
+          dayNumber: 1,
+        },
+      }),
+    ], players, { audience: "director" });
+
+    expect(playback.map((scene) => scene.index)).toEqual([2, 3, 5]);
+    expect(playback[0]).toMatchObject({ kind: "speech", text: "先藏身份，再找神职。" });
+    expect(playback[2]).toMatchObject({
+      kind: "resolution",
+      title: "狼队结票",
+      details: expect.arrayContaining([expect.stringContaining("->")]),
     });
   });
 

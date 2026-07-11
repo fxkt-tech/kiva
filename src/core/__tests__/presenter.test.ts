@@ -32,8 +32,11 @@ describe("presenter resolution", () => {
 
   it("renders typed player labels into action templates", () => {
     const action = event({
-      type: "wolf_kill_selected",
-      payload: { targetPlayerId: "p4" as PlayerId },
+      type: "wolf_vote_resolved",
+      payload: {
+        votes: [], tallies: [], tiedTargetPlayerIds: ["p4" as PlayerId],
+        targetPlayerId: "p4" as PlayerId, resolution: "majority", dayNumber: 1,
+      },
     });
 
     expect(resolvePresenter(nightWatch, action, game.players).transcriptText)

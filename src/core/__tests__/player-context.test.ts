@@ -75,8 +75,8 @@ describe("player LLM context", () => {
       viewerPlayerId: wolf1.playerId,
     });
 
-    expect(context.visibleEvents.map((event) => event.type)).toContain(
-      "wolf_kill_selected",
+    expect(context.visibleEvents.map((event) => event.type)).not.toContain(
+      "wolf_vote_cast",
     );
     expect(context.visibleEvents.map((event) => event.type)).not.toContain(
       "seer_check_result",
@@ -116,12 +116,12 @@ function sampleEvents(): readonly GameEvent[] {
     },
     {
       ...baseEvent(4),
-      type: "wolf_kill_selected",
+      type: "wolf_vote_cast",
       phase: "night",
       actorPlayerId: wolf1.playerId,
       targetPlayerIds: [seer.playerId],
-      visibility: { kind: "faction_private", faction: "wolves" },
-      payload: { targetPlayerId: seer.playerId },
+      visibility: { kind: "host_only" },
+      payload: { voterPlayerId: wolf1.playerId, targetPlayerId: seer.playerId, dayNumber: 1 },
     },
     {
       ...baseEvent(5),

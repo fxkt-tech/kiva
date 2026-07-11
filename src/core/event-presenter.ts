@@ -60,10 +60,44 @@ function formatEvent(
         text: `${playerLabel(players, event.payload.playerId)} 获得身份：${roleLabel(event.payload.role)}。`,
       };
 
-    case "wolf_kill_selected":
+    case "wolf_leader_selected":
       return {
-        title: "狼人刀人",
-        text: `${actorPrefix(players, event.actorPlayerId)}选择击杀 ${playerLabel(players, event.payload.targetPlayerId)}。`,
+        title: "指定狼队领头人",
+        text: `${playerLabel(players, event.payload.leaderPlayerId)} 被指定为首夜战术制定者。`,
+      };
+
+    case "wolf_strategy_given":
+      return {
+        title: `${playerLabel(players, event.payload.playerId)}制定战术`,
+        text: event.payload.text,
+      };
+
+    case "wolf_opinion_given":
+      return {
+        title: `${playerLabel(players, event.payload.playerId)}狼队意见`,
+        text: event.payload.text,
+      };
+
+    case "wolf_vote_cast":
+      return {
+        title: "狼人密票",
+        text: `${playerLabel(players, event.payload.voterPlayerId)} 投给 ${playerLabel(players, event.payload.targetPlayerId)}。`,
+      };
+
+    case "wolf_vote_resolved":
+      return {
+        title: "狼队结票",
+        text: event.payload.targetPlayerId
+          ? `狼队最终选择袭击 ${playerLabel(players, event.payload.targetPlayerId)}${event.payload.resolution === "host_tiebreak" ? "（主理人裁定）" : ""}。`
+          : "狼队投票出现平票，等待主理人裁定。",
+        details: [
+          ...event.payload.votes.map(
+            (vote) => `${playerLabel(players, vote.voterPlayerId)} -> ${playerLabel(players, vote.targetPlayerId)}`,
+          ),
+          ...event.payload.tallies.map(
+            (tally) => `${playerLabel(players, tally.targetPlayerId)}：${tally.count} 票`,
+          ),
+        ],
       };
 
     case "seer_check_selected":

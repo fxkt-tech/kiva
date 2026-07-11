@@ -9,7 +9,7 @@ export type SpeechPromptInput = {
   readonly context: PlayerLlmContext;
   readonly draft: Extract<
     DraftEvent,
-    { type: "day_speech_given" | "last_words_given" | "pk_speech_given" }
+    { type: "day_speech_given" | "last_words_given" | "pk_speech_given" | "wolf_strategy_given" | "wolf_opinion_given" }
   >;
 };
 
@@ -59,6 +59,11 @@ export function buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt {
           `round=${"round" in input.draft.payload ? input.draft.payload.round : 0}`,
           "",
           "要求：",
+          ...(input.draft.type === "wolf_strategy_given"
+            ? ["- 你是首夜战术制定者，先提出狼队整体打法、身份伪装与当夜行动方向。"]
+            : input.draft.type === "wolf_opinion_given"
+              ? ["- 结合已经发布的狼队战术与意见，提出你的分析和建议，不要直接声称已完成投票。"]
+              : []),
           "- 只根据以上可见信息分析。",
           "- 发言要像真实玩家，不要解释你是 AI。",
           "- 不要编造未发生的事件。",

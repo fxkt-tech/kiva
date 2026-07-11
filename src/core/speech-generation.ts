@@ -13,7 +13,7 @@ import { buildSpeechPrompt } from "./prompt-builders";
 
 type SpeechDraft = Extract<
   DraftEvent,
-  { type: "day_speech_given" | "last_words_given" | "pk_speech_given" }
+  { type: "day_speech_given" | "last_words_given" | "pk_speech_given" | "wolf_strategy_given" | "wolf_opinion_given" }
 >;
 
 export type GenerateSpeechDraftInput = {
@@ -100,7 +100,9 @@ function isSpeechDraft(draft: DraftEvent): draft is SpeechDraft {
   return (
     draft.type === "day_speech_given" ||
     draft.type === "last_words_given" ||
-    draft.type === "pk_speech_given"
+    draft.type === "pk_speech_given" ||
+    draft.type === "wolf_strategy_given" ||
+    draft.type === "wolf_opinion_given"
   );
 }
 

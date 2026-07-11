@@ -6,6 +6,7 @@ import {
   getEligibleVoters,
   getLegalNightTargets,
   resolveNightDeaths,
+  resolveWolfVote,
   resolveVote,
   validateWitchDecision,
 } from "../rules";
@@ -20,6 +21,33 @@ const p6 = "p6" as PlayerId;
 const p7 = "p7" as PlayerId;
 const p8 = "p8" as PlayerId;
 const unknownPlayerId = "unknown" as PlayerId;
+
+describe("wolf vote resolution", () => {
+  it("uses one equal vote per wolf for a unique majority", () => {
+    expect(resolveWolfVote([
+      { voterPlayerId: p1, targetPlayerId: p3 },
+      { voterPlayerId: p2, targetPlayerId: p3 },
+      { voterPlayerId: p4, targetPlayerId: p5 },
+    ])).toMatchObject({
+      targetPlayerId: p3,
+      tiedTargetPlayerIds: [p3],
+      tallies: [
+        { targetPlayerId: p3, count: 2 },
+        { targetPlayerId: p5, count: 1 },
+      ],
+    });
+  });
+
+  it("requires host resolution when top targets tie", () => {
+    expect(resolveWolfVote([
+      { voterPlayerId: p1, targetPlayerId: p3 },
+      { voterPlayerId: p2, targetPlayerId: p4 },
+    ])).toMatchObject({
+      targetPlayerId: null,
+      tiedTargetPlayerIds: [p3, p4],
+    });
+  });
+});
 
 const players = [
   createPlayerSnapshot({
