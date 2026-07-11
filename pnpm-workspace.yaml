@@ -25,3 +25,5 @@ minimumReleaseAgeExclude:
   - '@remotion/web-renderer@4.0.487'
   - '@remotion/zod-types@4.0.487'
   - remotion@4.0.487
+patchedDependencies:
+  next-themes@0.4.6: patches/next-themes@0.4.6.patch
