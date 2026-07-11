@@ -105,3 +105,36 @@ Replaced single-wolf night kills with first-night host-selected strategy leaders
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Redesign prompts and automate editor drafts
+
+**Date**: 2026-07-12
+**Task**: Redesign prompts and automate editor drafts
+**Branch**: `main`
+
+### Summary
+
+Committed the prompt workflow redesign and editor improvements, including browser notifications, persistent one-second auto-confirm for every ready draft, draft-id concurrency protection, and button-level LLM generation feedback; all tests and type checking passed.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a971095` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
