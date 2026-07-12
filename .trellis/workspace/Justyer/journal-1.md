@@ -171,3 +171,36 @@ Removed the legacy Pixi preview and dependencies, promoted the HTML/Remotion pre
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: 完成配音与字幕同步系统
+
+**Date**: 2026-07-12
+**Task**: 完成配音与字幕同步系统
+**Branch**: `main`
+
+### Summary
+
+重做主理人与玩家配音体系，加入短句级字幕同步、Edge TTS 生成、角色音色、后台音频与视频任务、Presenter 音频预览、Game 内语音资产及相关迁移与验证。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `459fc67` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
