@@ -1,4 +1,8 @@
 import type { CharacterDefinition } from "./character-definition";
+import {
+  normalizeGameRunMode,
+  type GameRunMode,
+} from "./game-run-mode";
 import { validateGamePresets, type GamePreset } from "./game-preset";
 import {
   createGameScriptSnapshot,
@@ -36,6 +40,7 @@ export type Game = {
   readonly id: GameId;
   readonly title: string;
   readonly status: GameStatus;
+  readonly runMode: GameRunMode;
   readonly ruleset: Ruleset;
   readonly presenter: GamePresenterSnapshot;
   readonly script: GameScriptSnapshot;
@@ -60,6 +65,7 @@ export type CreateGameFromPresetInput = {
   readonly script: GameScriptDefinition;
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
+  readonly runMode?: GameRunMode;
 };
 
 export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
@@ -117,6 +123,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
     id: input.gameId,
     title: input.title,
     status: "drafting",
+    runMode: normalizeGameRunMode(input.runMode),
     ruleset: input.ruleset,
     presenter: createGamePresenterSnapshot(input.presenter),
     script: createGameScriptSnapshot(input.script),

@@ -26,7 +26,7 @@ export function subtitleCueForScene(
     const cue = scene.playerVoice.cues[cueIndex]!;
     return {
       speaker: speaker ? `${speaker.seatNo} 号 ${speaker.name}` : scene.title,
-      lines: subtitleWindows(cue.text).flat(),
+      lines: [cue.text],
       windowIndex: cueIndex,
       windowCount: scene.playerVoice.cues.length,
     };

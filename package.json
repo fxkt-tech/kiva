@@ -16,6 +16,7 @@
     "seed:presets": "tsx src/scripts/seed-library.ts presets",
     "seed:library": "tsx src/scripts/seed-library.ts all",
     "video:smoke": "tsx src/scripts/render-preview-v2-smoke.ts",
+    "game:duration": "tsx src/scripts/analyze-game-duration.ts",
     "voice:build-presenter": "tsx src/scripts/build-presenter-voice.ts",
     "worker:voice": "tsx src/scripts/run-voice-worker.ts",
     "worker:video": "tsx src/scripts/run-video-worker.ts",

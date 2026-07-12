@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
+import type { GameRunMode } from "@/core/game-run-mode";
 import type { GameScriptDefinition } from "@/core/game-script";
 import type { RoleDefinition } from "@/core/role-definition";
 import {
@@ -22,7 +23,8 @@ type NewGameDialogProps = {
   readonly scripts: readonly GameScriptDefinition[];
 };
 
-type Mode = "preset" | "random";
+type SeatMode = "preset" | "random";
+type SetupStep = "experience" | "lineup";
 
 export function NewGameDialog({
   presets,
@@ -31,7 +33,9 @@ export function NewGameDialog({
   scripts,
 }: NewGameDialogProps) {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<Mode>("preset");
+  const [setupStep, setSetupStep] = useState<SetupStep>("experience");
+  const [runMode, setRunMode] = useState<GameRunMode>("game");
+  const [seatMode, setSeatMode] = useState<SeatMode>("preset");
   const [selectedPresetId, setSelectedPresetId] = useState(
     presets[0]?.id ?? "",
   );
@@ -59,6 +63,7 @@ export function NewGameDialog({
 
   function openDialog() {
     setRandomSeats(createRandomSeatSetup({ roles: enabledRoles, characters: enabledCharacters }));
+    setSetupStep("experience");
     setOpen(true);
   }
 
@@ -89,12 +94,12 @@ export function NewGameDialog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="new-game-title"
-            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-border bg-background shadow-2xl"
+            className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
           >
-            <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
+            <header className="grid gap-4 border-b border-border px-5 py-4 sm:grid-cols-[1fr_auto_auto] sm:items-center">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
-                  Setup
+                  Create a game
                 </p>
                 <h2
                   id="new-game-title"
@@ -103,63 +108,214 @@ export function NewGameDialog({
                   New game
                 </h2>
               </div>
+              <StepIndicator current={setupStep} />
               <Button
                 onClick={() => setOpen(false)}
-                className="px-3 py-1.5 text-muted"
+                unstyled
+                className="rounded-md border border-border px-3 py-2 text-xs text-muted transition hover:bg-surface hover:text-foreground"
               >
                 Close
               </Button>
             </header>
 
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
-              <ScriptPicker
-                scripts={scripts}
-                selectedScriptId={selectedScriptId}
-                onSelectScript={setSelectedScriptId}
-              />
-
-              <div className="mb-4 inline-flex w-fit rounded border border-border bg-surface-muted p-1">
-                <ModeButton active={mode === "preset"} onClick={() => setMode("preset")}>
-                  Preset
-                </ModeButton>
-                <ModeButton active={mode === "random"} onClick={() => setMode("random")}>
-                  Random
-                </ModeButton>
-              </div>
-
-              {mode === "preset" ? (
-                <PresetMode
-                  presets={presets}
-                  roles={roles}
-                  characters={characters}
-                  selectedPreset={selectedPreset}
-                  selectedPresetId={selectedPresetId}
-                  onSelectPreset={setSelectedPresetId}
-                  selectedScriptId={selectedScriptId}
-                />
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {setupStep === "experience" ? (
+                <div className="mx-auto flex max-w-4xl flex-col gap-7 px-5 py-6">
+                  <RunModePicker runMode={runMode} onSelectRunMode={setRunMode} />
+                  <ScriptPicker
+                    scripts={scripts}
+                    selectedScriptId={selectedScriptId}
+                    onSelectScript={setSelectedScriptId}
+                  />
+                  <div className="flex justify-end border-t border-border pt-4">
+                    <Button
+                      type="button"
+                      disabled={!selectedScriptId}
+                      onClick={() => setSetupStep("lineup")}
+                      className="min-w-28 font-semibold"
+                    >
+                      下一步
+                    </Button>
+                  </div>
+                </div>
               ) : (
-                <RandomMode
-                  seats={randomSeats}
-                  roles={enabledRoles}
-                  characters={enabledCharacters}
-                  validationMessages={validationMessages}
-                  onReroll={() =>
-                    setRandomSeats(
-                      createRandomSeatSetup({
-                        roles: enabledRoles,
-                        characters: enabledCharacters,
-                      }),
-                    )
-                  }
-                  onUpdateSeat={updateRandomSeat}
-                  selectedScriptId={selectedScriptId}
-                />
+                <div className="p-5">
+                  <SelectionSummary
+                    runMode={runMode}
+                    script={scripts.find((script) => script.id === selectedScriptId) ?? null}
+                  />
+                  <div className="mb-4 mt-5 flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-300">Lineup</p>
+                      <h3 className="mt-1 text-base font-semibold text-foreground">配置本局阵容</h3>
+                    </div>
+                    <div className="inline-flex rounded-lg border border-border bg-surface-muted p-1">
+                      <ModeButton active={seatMode === "preset"} onClick={() => setSeatMode("preset")}>
+                        使用预设
+                      </ModeButton>
+                      <ModeButton active={seatMode === "random"} onClick={() => setSeatMode("random")}>
+                        随机阵容
+                      </ModeButton>
+                    </div>
+                  </div>
+
+                  {seatMode === "preset" ? (
+                    <PresetMode
+                      presets={presets}
+                      roles={roles}
+                      characters={characters}
+                      selectedPreset={selectedPreset}
+                      selectedPresetId={selectedPresetId}
+                      onSelectPreset={setSelectedPresetId}
+                      selectedScriptId={selectedScriptId}
+                      runMode={runMode}
+                      onBack={() => setSetupStep("experience")}
+                    />
+                  ) : (
+                    <RandomMode
+                      seats={randomSeats}
+                      roles={enabledRoles}
+                      characters={enabledCharacters}
+                      validationMessages={validationMessages}
+                      onReroll={() =>
+                        setRandomSeats(
+                          createRandomSeatSetup({
+                            roles: enabledRoles,
+                            characters: enabledCharacters,
+                          }),
+                        )
+                      }
+                      onUpdateSeat={updateRandomSeat}
+                      selectedScriptId={selectedScriptId}
+                      runMode={runMode}
+                      onBack={() => setSetupStep("experience")}
+                    />
+                  )}
+                </div>
               )}
             </div>
           </div>
         </div>
       ) : null}
     </>
+  );
+}
+
+function StepIndicator({ current }: { readonly current: SetupStep }) {
+  return (
+    <div className="flex items-center gap-2 text-xs" aria-label="创建进度">
+      <span className={current === "experience" ? "text-cyan-300" : "text-muted"}>
+        <span className="mr-1.5 inline-grid h-6 w-6 place-items-center rounded-full border border-current">1</span>
+        玩法与主题
+      </span>
+      <span className="h-px w-8 bg-border" aria-hidden="true" />
+      <span className={current === "lineup" ? "text-cyan-300" : "text-subtle"}>
+        <span className="mr-1.5 inline-grid h-6 w-6 place-items-center rounded-full border border-current">2</span>
+        阵容与创建
+      </span>
+    </div>
+  );
+}
+
+function SelectionSummary({
+  runMode,
+  script,
+}: {
+  readonly runMode: GameRunMode;
+  readonly script: GameScriptDefinition | null;
+}) {
+  return (
+    <section className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface/55 px-4 py-3">
+      <span className="text-xs font-medium text-subtle">本局方案</span>
+      <span className="rounded-full border border-cyan-800/70 bg-cyan-950/30 px-2.5 py-1 text-xs text-cyan-100">
+        {runMode === "scripted" ? "剧本模式" : "游戏模式"}
+      </span>
+      <span className="rounded-full border border-border bg-background/60 px-2.5 py-1 text-xs text-muted">
+        {script?.name ?? "未选择主题"}
+      </span>
+      <span className="ml-auto text-xs text-subtle">
+        {runMode === "scripted" ? "创建后进入剧本准备" : "创建后直接进入 Editor"}
+      </span>
+    </section>
+  );
+}
+
+export function RunModePicker({
+  runMode,
+  onSelectRunMode,
+}: {
+  readonly runMode: GameRunMode;
+  readonly onSelectRunMode: (runMode: GameRunMode) => void;
+}) {
+  return (
+    <section aria-label="选择运行模式">
+      <div className="mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-300">
+          Run mode
+        </p>
+        <h3 className="mt-1 text-base font-semibold text-foreground">
+          这局游戏如何进行？
+        </h3>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <RunModeCard
+          active={runMode === "game"}
+          title="游戏模式"
+          description="玩家根据可见信息自主发言、投票和行动；发言受时长预算约束。"
+          flow="直接开局 · 目标约 30 分钟"
+          onClick={() => onSelectRunMode("game")}
+        />
+        <RunModeCard
+          active={runMode === "scripted"}
+          title="剧本模式"
+          description="先生成整局结构剧本，经导演审核批准后，再让玩家按剧情节拍执行。"
+          flow="生成剧本 → 审核 → 批准 → 开局"
+          onClick={() => onSelectRunMode("scripted")}
+        />
+      </div>
+      {runMode === "scripted" ? (
+        <p className="mt-2 rounded border border-warning-badge/60 bg-warning-badge/35 px-3 py-2 text-xs leading-5 text-warning-badge-foreground">
+          创建后将进入剧本准备页；剧本批准前不会推进游戏、生成配音或导出视频。
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function RunModeCard({
+  active,
+  title,
+  description,
+  flow,
+  onClick,
+}: {
+  readonly active: boolean;
+  readonly title: string;
+  readonly description: string;
+  readonly flow: string;
+  readonly onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      onClick={onClick}
+      unstyled
+      className={[
+        "rounded border p-4 text-left transition",
+        active
+          ? "border-accent bg-surface-strong shadow-sm"
+          : "border-border bg-surface/60 hover:border-interactive-border-hover",
+      ].join(" ")}
+    >
+      <span className="flex items-center justify-between gap-3">
+        <span className="text-base font-semibold text-foreground">{title}</span>
+        <span className={active ? "text-xs text-cyan-300" : "text-xs text-subtle"}>
+          {active ? "已选择" : "选择"}
+        </span>
+      </span>
+      <span className="mt-2 block text-xs leading-5 text-muted">{description}</span>
+      <span className="mt-3 block text-xs font-medium text-cyan-200/80">{flow}</span>
+    </Button>
   );
 }
 
@@ -173,13 +329,13 @@ export function ScriptPicker({
   readonly onSelectScript: (scriptId: string) => void;
 }) {
   return (
-    <section className="mb-5" aria-label="选择剧本">
+    <section aria-label="选择主题模板">
       <div className="mb-2 flex items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-300">Script</p>
-          <h3 className="mt-1 text-base font-semibold text-foreground">选择本局剧本</h3>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-300">Theme</p>
+          <h3 className="mt-1 text-base font-semibold text-foreground">选择主题模板</h3>
         </div>
-        <p className="text-xs text-subtle">角色固定，剧本决定共同背景与视觉包装</p>
+        <p className="text-xs text-subtle">主题决定共同背景与视觉包装，不等于单局剧情</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {scripts.map((script) => {
@@ -191,20 +347,20 @@ export function ScriptPicker({
               unstyled
               className={[
                 "group overflow-hidden rounded border text-left transition",
-                active ? "border-cyan-300 bg-[#0b191a] shadow-lg shadow-cyan-950/30" : "border-border bg-surface/60 hover:border-interactive-border-hover",
+                active ? "border-accent bg-surface-strong shadow-sm" : "border-border bg-surface/60 hover:border-interactive-border-hover",
               ].join(" ")}
             >
-              <div className="grid min-h-32 grid-cols-[132px_1fr]">
-                <img className="h-full min-h-32 w-full object-cover" src={script.presentation.coverImage} alt="" />
-                <div className="p-3.5">
+              <div className="grid min-h-24 grid-cols-[96px_1fr]">
+                <img className="h-full min-h-24 w-full object-cover" src={script.presentation.coverImage} alt="" />
+                <div className="p-3">
                   <div className="flex items-start justify-between gap-3">
-                    <span className="text-lg font-semibold text-foreground">{script.name}</span>
+                    <span className="text-sm font-semibold text-foreground">{script.name}</span>
                     <span className={active ? "text-cyan-300" : "text-subtle"}>{active ? "已选择" : "选择"}</span>
                   </div>
                   <p className="mt-1 text-xs font-medium text-cyan-200/80">{script.theme}</p>
-                  <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted">{script.background}</p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {script.atmosphere.slice(0, 4).map((item) => (
+                  <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-muted">{script.background}</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {script.atmosphere.slice(0, 3).map((item) => (
                       <span key={item} className="rounded-sm border border-cyan-800/60 px-1.5 py-0.5 text-[10px] text-cyan-100/70">{item}</span>
                     ))}
                   </div>
@@ -251,6 +407,8 @@ function PresetMode({
   selectedPresetId,
   onSelectPreset,
   selectedScriptId,
+  runMode,
+  onBack,
 }: {
   readonly presets: readonly GamePreset[];
   readonly roles: readonly RoleDefinition[];
@@ -259,6 +417,8 @@ function PresetMode({
   readonly selectedPresetId: string;
   readonly onSelectPreset: (presetId: string) => void;
   readonly selectedScriptId: string;
+  readonly runMode: GameRunMode;
+  readonly onBack: () => void;
 }) {
   return (
     <div className="grid min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -301,12 +461,16 @@ function PresetMode({
             />
             <form action={createGameFromPresetHomeAction.bind(null, selectedPreset.id)}>
               <input type="hidden" name="scriptId" value={selectedScriptId} />
-              <div className="flex justify-end border-t border-border pt-4">
+              <input type="hidden" name="runMode" value={runMode} />
+              <div className="flex justify-between border-t border-border pt-4">
+                <Button type="button" onClick={onBack} unstyled className="rounded-md border border-border px-4 py-2 text-sm text-muted hover:bg-surface">
+                  上一步
+                </Button>
                 <Button
                   type="submit"
                   className="font-semibold"
                 >
-                  Create game
+                  {createButtonLabel(runMode)}
                 </Button>
               </div>
             </form>
@@ -325,6 +489,8 @@ function RandomMode({
   onReroll,
   onUpdateSeat,
   selectedScriptId,
+  runMode,
+  onBack,
 }: {
   readonly seats: readonly GamePresetSeatAssignment[];
   readonly roles: readonly RoleDefinition[];
@@ -337,12 +503,16 @@ function RandomMode({
     value: string,
   ) => void;
   readonly selectedScriptId: string;
+  readonly runMode: GameRunMode;
+  readonly onBack: () => void;
 }) {
   return (
     <form action={createGameFromSeatAssignmentsAction} className="space-y-4">
       <input type="hidden" name="scriptId" value={selectedScriptId} />
+      <input type="hidden" name="runMode" value={runMode} />
       <div className="flex justify-end">
         <Button
+          type="button"
           onClick={onReroll}
           className="px-3"
         >
@@ -367,13 +537,16 @@ function RandomMode({
         </ul>
       ) : null}
 
-      <div className="flex justify-end border-t border-border pt-4">
+      <div className="flex justify-between border-t border-border pt-4">
+        <Button type="button" onClick={onBack} unstyled className="rounded-md border border-border px-4 py-2 text-sm text-muted hover:bg-surface">
+          上一步
+        </Button>
         <Button
           type="submit"
           disabled={validationMessages.length > 0}
           className="font-semibold"
         >
-          Create game
+          {createButtonLabel(runMode)}
         </Button>
       </div>
     </form>
@@ -509,6 +682,10 @@ function seatsForPreset(preset: GamePreset): readonly GamePresetSeatAssignment[]
 function roleLabel(roles: readonly RoleDefinition[], roleId: string): string {
   const role = roles.find((item) => item.id === roleId);
   return role ? `${role.name} · ${role.id}` : roleId;
+}
+
+function createButtonLabel(runMode: GameRunMode): string {
+  return runMode === "scripted" ? "创建并准备剧本" : "创建并进入游戏";
 }
 
 function characterLabel(

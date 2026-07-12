@@ -11,6 +11,15 @@ import {
   rollbackAfterIndex,
 } from "@/core/event-log";
 import { createGameFromPreset } from "@/core/game";
+import type { GameRunMode } from "@/core/game-run-mode";
+import {
+  actorBriefForStep,
+  assertEpisodeDraftMatchesStep,
+  episodeInputHash,
+  episodeScriptReport,
+  planNextEpisodeDraft,
+} from "@/core/episode-script";
+import { authorEpisodeScript } from "@/core/episode-author";
 import {
   createDefaultRuleset,
   type DraftId,
@@ -18,8 +27,10 @@ import {
 } from "@/core/types";
 import { createDraftId, createEventId, createGameId } from "@/core/id";
 import type { LlmClient } from "@/core/llm";
+import { isLlmSpeechDraft } from "@/core/llm-task-specs";
 import type { LlmPromptMode } from "@/core/prompt-builders";
 import { generateSpeechDraft } from "@/core/speech-generation";
+import { evaluateSpeech, speechBudgetForDraft } from "@/core/speech-budget";
 import { generateActionDraft } from "@/core/action-generation";
 import { getLegalNightTargets } from "@/core/rules";
 import { deriveGameState } from "@/core/state";
@@ -57,6 +68,7 @@ export function createGameActions(
     presetId: string,
     presenterId: string,
     scriptId?: string,
+    runMode: GameRunMode = "game",
   ): Promise<GameRecord> {
     const createdAt = now();
     const library = await loadGameLibrary(options.libraryRepository);
@@ -76,6 +88,7 @@ export function createGameActions(
       script,
       roles: library.roles,
       characters: library.characters,
+      runMode,
     });
     const record: GameRecord = {
       game,
@@ -83,6 +96,7 @@ export function createGameActions(
       draft: null,
       generations: [],
       voiceArtifactsByEventId: {},
+      episodeScript: runMode === "scripted" ? { status: "idle" } : null,
     };
 
     await repository.save(record);
@@ -94,6 +108,7 @@ export function createGameActions(
     library: Pick<LibraryRecord, "roles" | "characters" | "presenters" | "scripts">,
     presenterId: string,
     scriptId?: string,
+    runMode: GameRunMode = "game",
   ): Promise<GameRecord> {
     const createdAt = now();
     const presenter = requireEnabledPresenter(library, presenterId);
@@ -108,6 +123,7 @@ export function createGameActions(
       script,
       roles: library.roles,
       characters: library.characters,
+      runMode,
     });
     const record: GameRecord = {
       game,
@@ -115,6 +131,7 @@ export function createGameActions(
       draft: null,
       generations: [],
       voiceArtifactsByEventId: {},
+      episodeScript: runMode === "scripted" ? { status: "idle" } : null,
     };
 
     await repository.save(record);
@@ -133,15 +150,16 @@ export function createGameActions(
       if (!presenterId) {
         throw new Error("No presenter definitions available");
       }
-      return createGameFromPresetRecord(preset, library, presenterId);
+      return createGameFromPresetRecord(preset, library, presenterId, undefined, "game");
     },
 
     async createGameFromPresetId(
       presetId: string,
       presenterId: string,
       scriptId?: string,
+      runMode: GameRunMode = "game",
     ): Promise<GameRecord> {
-      return createGameFromPresetId(presetId, presenterId, scriptId);
+      return createGameFromPresetId(presetId, presenterId, scriptId, runMode);
     },
 
     async createGameFromPresetRecord(
@@ -149,8 +167,15 @@ export function createGameActions(
       library: Pick<LibraryRecord, "roles" | "characters" | "presenters" | "scripts">,
       presenterId: string,
       scriptId?: string,
+      runMode: GameRunMode = "game",
     ): Promise<GameRecord> {
-      return createGameFromPresetRecord(preset, library, presenterId, scriptId);
+      return createGameFromPresetRecord(
+        preset,
+        library,
+        presenterId,
+        scriptId,
+        runMode,
+      );
     },
 
     async getGame(gameId: GameId): Promise<GameRecord | null> {
@@ -186,17 +211,25 @@ export function createGameActions(
     async continueGame(gameId: GameId): Promise<GameRecord> {
       return repository.withGameLock(gameId, async () => {
         const record = await loadGame(gameId);
+        if (
+          record.game.runMode === "scripted" &&
+          record.episodeScript?.status !== "approved"
+        ) {
+          throw new Error("Scripted game cannot advance before script approval");
+        }
         if (record.draft) {
           return record;
         }
 
         const updatedAt = now();
-        const plannedDraft = planNextDraft({
-          game: record.game,
-          events: record.events,
-          draftId: createDraftId(),
-          createdAt: updatedAt,
-        });
+        const plannedDraft = record.game.runMode === "scripted"
+          ? planScriptedDraft(record, updatedAt)
+          : planNextDraft({
+              game: record.game,
+              events: record.events,
+              draftId: createDraftId(),
+              createdAt: updatedAt,
+            });
         const nextRecord: GameRecord = {
           ...record,
           game: { ...record.game, updatedAt },
@@ -204,6 +237,124 @@ export function createGameActions(
           generations: record.generations,
         };
 
+        await repository.save(nextRecord);
+        return nextRecord;
+      });
+    },
+
+    async generateEpisodeScript(gameId: GameId): Promise<GameRecord> {
+      const jobId = `episode_job_${randomUUID()}`;
+      const startedAt = now();
+      const generating = await repository.withGameLock(gameId, async () => {
+        const record = await loadGame(gameId);
+        if (record.game.runMode !== "scripted") {
+          throw new Error("Episode scripts are only available in scripted mode");
+        }
+        if (getActiveEvents(record.events).length > 0 || record.draft) {
+          throw new Error("Cannot generate an episode script after game execution starts");
+        }
+        if (record.episodeScript?.status === "approved") {
+          throw new Error("Approved episode script cannot be regenerated");
+        }
+        const nextRecord: GameRecord = {
+          ...record,
+          game: { ...record.game, updatedAt: startedAt },
+          episodeScript: { status: "generating", jobId, startedAt },
+        };
+        await repository.save(nextRecord);
+        return nextRecord;
+      });
+
+      try {
+        if (!options.llmClient) throw new Error("Script Author LLM is not configured");
+        const authored = await authorEpisodeScript({
+          game: generating.game,
+          llmClient: options.llmClient,
+          createdAt: now(),
+        });
+        return repository.withGameLock(gameId, async () => {
+          const current = await loadGame(gameId);
+          if (
+            current.episodeScript?.status !== "generating" ||
+            current.episodeScript.jobId !== jobId
+          ) {
+            return current;
+          }
+          const report = episodeScriptReport(authored.script);
+          const nextRecord: GameRecord = {
+            ...current,
+            game: { ...current.game, updatedAt: now() },
+            episodeScript: {
+              status: "review",
+              jobId,
+              candidate: authored.script,
+              report,
+            },
+          };
+          await repository.save(nextRecord);
+          return nextRecord;
+        });
+      } catch (error) {
+        return repository.withGameLock(gameId, async () => {
+          const current = await loadGame(gameId);
+          if (
+            current.episodeScript?.status !== "generating" ||
+            current.episodeScript.jobId !== jobId
+          ) {
+            return current;
+          }
+          const nextRecord: GameRecord = {
+            ...current,
+            game: { ...current.game, updatedAt: now() },
+            episodeScript: {
+              status: "failed",
+              jobId,
+              error: error instanceof Error ? error.message : String(error),
+              failedAt: now(),
+            },
+          };
+          await repository.save(nextRecord);
+          return nextRecord;
+        });
+      }
+    },
+
+    async approveEpisodeScript(
+      gameId: GameId,
+      expectedJobId: string,
+      expectedScriptId: string,
+    ): Promise<GameRecord> {
+      return repository.withGameLock(gameId, async () => {
+        const record = await loadGame(gameId);
+        const state = record.episodeScript;
+        if (
+          state?.status !== "review" ||
+          state.jobId !== expectedJobId ||
+          state.candidate.id !== expectedScriptId
+        ) {
+          throw new Error("Episode script candidate changed before approval");
+        }
+        if (getActiveEvents(record.events).length > 0 || record.draft) {
+          throw new Error("Cannot approve an episode script after execution starts");
+        }
+        if (state.candidate.inputHash !== episodeInputHash(record.game)) {
+          throw new Error("Episode script input changed before approval");
+        }
+        if (!state.report.valid) {
+          throw new Error("Episode script validation report did not pass");
+        }
+        const approvedAt = now();
+        const nextRecord: GameRecord = {
+          ...record,
+          game: { ...record.game, updatedAt: approvedAt },
+          episodeScript: {
+            status: "approved",
+            jobId: state.jobId,
+            script: structuredClone(state.candidate),
+            report: structuredClone(state.report),
+            approvedAt,
+          },
+        };
         await repository.save(nextRecord);
         return nextRecord;
       });
@@ -222,6 +373,8 @@ export function createGameActions(
           return record;
         }
 
+        validateSpeechDraft(record, record.draft);
+        validateEpisodeDraft(record, record.draft);
         validateWolfDraft(record, record.draft);
 
         const updatedAt = now();
@@ -240,6 +393,7 @@ export function createGameActions(
           draft: null,
           generations: record.generations,
           voiceArtifactsByEventId: record.voiceArtifactsByEventId,
+          episodeScript: record.episodeScript,
         };
         await repository.save(confirmedRecord);
         return confirmedRecord;
@@ -257,7 +411,9 @@ export function createGameActions(
         }
 
         const updatedAt = now();
+        validateScriptedEdit(record, edit);
         const editedDraft = applyDraftPayloadEdit(record.draft, edit);
+        validateSpeechDraft(record, editedDraft);
         validateWolfDraft(record, editedDraft);
         const nextRecord: GameRecord = {
           ...record,
@@ -276,6 +432,12 @@ export function createGameActions(
         if (!record.draft || !options.llmClient) {
           return record;
         }
+        if (
+          record.game.runMode === "scripted" &&
+          !isLlmSpeechDraft(record.draft)
+        ) {
+          return record;
+        }
 
         const updatedAt = now();
         const generatedDraft = await maybeGenerateDraft({
@@ -284,6 +446,13 @@ export function createGameActions(
           llmClient: options.llmClient,
           createdAt: updatedAt,
           promptMode: options.promptMode,
+          actorBrief:
+            record.episodeScript?.status === "approved"
+              ? actorBriefForStep(
+                  record.episodeScript.script,
+                  getActiveEvents(record.events).length + 1,
+                )
+              : null,
         });
         if (!generatedDraft.generation) {
           return record;
@@ -340,6 +509,7 @@ export function createGameActions(
               ),
             ),
           ),
+          episodeScript: record.episodeScript,
         };
 
         await repository.save(nextRecord);
@@ -347,6 +517,78 @@ export function createGameActions(
       });
     },
   };
+}
+
+function validateSpeechDraft(
+  record: GameRecord,
+  draft: NonNullable<GameRecord["draft"]>,
+): void {
+  if (!isLlmSpeechDraft(draft)) return;
+
+  const hasPriorDaySpeech =
+    draft.type === "day_speech_given" &&
+    getActiveEvents(record.events).some(
+      (event) =>
+        event.type === "day_speech_given" &&
+        event.payload.dayNumber === draft.payload.dayNumber,
+    );
+  const scriptedBudget =
+    record.episodeScript?.status === "approved"
+      ? actorBriefForStep(
+          record.episodeScript.script,
+          getActiveEvents(record.events).length + 1,
+        )?.budget
+      : null;
+  const budget =
+    scriptedBudget ?? speechBudgetForDraft({ draft, hasPriorDaySpeech });
+  const evaluation = evaluateSpeech(draft.payload.text, budget);
+  if (!evaluation.withinHardLimit) {
+    throw new Error(
+      `Speech text exceeds hard limit: ${evaluation.characterCount} > ${budget.hardMaxCharacters} non-whitespace characters`,
+    );
+  }
+}
+
+function validateScriptedEdit(record: GameRecord, edit: DraftPayloadEdit): void {
+  if (record.game.runMode !== "scripted") return;
+  if (
+    !record.draft ||
+    !isLlmSpeechDraft(record.draft) ||
+    Object.keys(edit).some((key) => key !== "text")
+  ) {
+    throw new Error("Scripted game structure is locked; only speech text can be edited");
+  }
+}
+
+function validateEpisodeDraft(
+  record: GameRecord,
+  draft: NonNullable<GameRecord["draft"]>,
+): void {
+  if (record.game.runMode !== "scripted") return;
+  if (record.episodeScript?.status !== "approved") {
+    throw new Error("Scripted game cannot confirm before script approval");
+  }
+  assertEpisodeDraftMatchesStep({
+    script: record.episodeScript.script,
+    activeEventCount: getActiveEvents(record.events).length,
+    draft,
+  });
+}
+
+function planScriptedDraft(
+  record: GameRecord,
+  createdAt: string,
+): NonNullable<GameRecord["draft"]> | null {
+  if (record.episodeScript?.status !== "approved") {
+    throw new Error("Scripted game cannot advance before script approval");
+  }
+  return planNextEpisodeDraft({
+    game: record.game,
+    events: record.events,
+    script: record.episodeScript.script,
+    draftId: createDraftId(),
+    createdAt,
+  }).draft;
 }
 
 function validateWolfDraft(
@@ -440,6 +682,7 @@ async function maybeGenerateDraft(input: {
   readonly llmClient: LlmClient | undefined;
   readonly createdAt: string;
   readonly promptMode?: LlmPromptMode;
+  readonly actorBrief?: import("@/core/episode-script").EpisodeActorBrief | null;
 }) {
   if (!input.llmClient) {
     return { draft: input.draft, generation: null };
@@ -453,6 +696,7 @@ async function maybeGenerateDraft(input: {
     generationId: createGenerationId(),
     createdAt: input.createdAt,
     promptMode: input.promptMode,
+    actorBrief: input.actorBrief,
   });
   if (speechResult.generation) {
     return speechResult;

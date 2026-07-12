@@ -11,7 +11,8 @@ import {
 type FormSubmitButtonProps = {
   readonly label: ReactNode;
   readonly pendingLabel: ReactNode;
-  readonly className: string;
+  readonly className?: string;
+  readonly disabled?: boolean;
   readonly ariaLabel?: string;
   readonly title?: string;
   readonly forcePending?: boolean;
@@ -26,6 +27,7 @@ export function FormSubmitButton({
   label,
   pendingLabel,
   className,
+  disabled = false,
   ariaLabel,
   title,
   forcePending = false,
@@ -37,7 +39,7 @@ export function FormSubmitButton({
   return (
     <Button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       className={className}
       aria-label={ariaLabel}
       title={title}

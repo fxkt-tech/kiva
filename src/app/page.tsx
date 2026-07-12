@@ -11,6 +11,7 @@ import type { GenerationRecord } from "@/core/generation-record";
 import { summarizeGenerationTokenUsage } from "@/core/token-usage";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
+import type { GameRecord } from "@/server/game-repository";
 import { createLibraryActions } from "@/server/library-actions";
 import { createLibraryRepository } from "@/server/library-repository";
 
@@ -100,7 +101,7 @@ export default async function HomePage() {
                             title={record.game.title}
                           />
                           <div className="mt-1 truncate text-xs text-subtle">
-                            {record.game.script.name} · {record.game.id}
+                            {modeLabel(record)} · {record.game.script.name} · {record.game.id}
                           </div>
                           </div>
                         </div>
@@ -137,7 +138,7 @@ export default async function HomePage() {
                             <Eye aria-hidden="true" className="h-4 w-4" />
                           </Link>
                           <Link
-                            href={`/games/${record.game.id}/editor`}
+                            href={gameWorkspaceHref(record)}
                             className={iconButtonClassName({ size: "md" })}
                             aria-label="Open editor"
                             title="Open editor"
@@ -184,4 +185,16 @@ function formatDate(value: string): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function modeLabel(record: GameRecord): string {
+  if (record.game.runMode === "game") return "游戏模式";
+  return `剧本模式 · ${record.episodeScript?.status ?? "idle"}`;
+}
+
+function gameWorkspaceHref(record: GameRecord): string {
+  return record.game.runMode === "scripted" &&
+    record.episodeScript?.status !== "approved"
+    ? `/games/${record.game.id}/script`
+    : `/games/${record.game.id}/editor`;
 }

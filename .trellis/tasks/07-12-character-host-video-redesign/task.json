@@ -18,7 +18,9 @@
   "commit": null,
   "pr_url": null,
   "subtasks": [],
-  "children": [],
+  "children": [
+    "07-12-game-duration-theme-integration"
+  ],
   "parent": null,
   "relatedFiles": [],
   "notes": "",

@@ -1,0 +1,31 @@
+{
+  "id": "game-duration-theme-integration",
+  "name": "game-duration-theme-integration",
+  "title": "单局时长预算与主题融合优化",
+  "description": "",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "Justyer",
+  "assignee": "Justyer",
+  "createdAt": "2026-07-12",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "07-12-game-mode-speech-budget",
+    "07-12-episode-script-core",
+    "07-12-scripted-mode-product-video",
+    "07-12-dual-mode-new-game"
+  ],
+  "parent": "07-12-character-host-video-redesign",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

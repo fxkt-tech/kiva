@@ -23,6 +23,8 @@ This directory contains guidelines for frontend development. Fill in each file w
 | [Programmatic Video](./programmatic-video.md) | Shared HTML preview and deterministic MP4 export contract | Active |
 | [Private Event Workflows](./private-event-workflows.md) | Event, Editor, LLM visibility, and Preview contracts for private staged actions | Active |
 | [LLM Prompt Workflows](./llm-prompt-workflows.md) | Task registry, semantic context, legal actions, output repair, and prompt rollback contracts | Active |
+| [Game Creation Workflows](./game-creation-workflows.md) | Persisted game/scripted run mode, New Game routing, and historical compatibility | Active |
+| [Episode Script Workflows](./episode-script-workflows.md) | Script Author, deterministic dry-run, Review/Approve, Actor Brief, and locked execution | Active |
 
 ---
 

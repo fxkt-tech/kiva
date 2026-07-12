@@ -67,6 +67,12 @@ describe("preview v2 stage header", () => {
   });
 });
 
+describe("preview v2 script decoration", () => {
+  it("does not render the midnight archive side stamp", () => {
+    expect(renderStage(item())).not.toContain("未明档案");
+  });
+});
+
 describe("preview v2 visual stage placeholder", () => {
   it("keeps only its grid slot without visual treatment or displacement", () => {
     const html = renderStage(item());

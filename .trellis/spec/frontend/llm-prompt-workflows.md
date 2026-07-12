@@ -1,5 +1,55 @@
 # LLM Prompt Workflows
 
+## Scenario: Speech Length Is a Structural Output Contract
+
+### 1. Scope / Trigger
+
+- Trigger: generating, repairing, manually editing, confirming, or projecting the duration of any LLM speech Draft.
+
+### 2. Signatures
+
+- `speechBudgetForDraft({ draft, hasPriorDaySpeech, tier? }): SpeechBudget`
+- `evaluateSpeech(text, budget): SpeechEvaluation`
+- `projectDirectorDuration({ events, playback }): DirectorDurationProjection`
+
+### 3. Contracts
+
+- `speech-budget.ts` is the single owner of target ranges, hard limits, Unicode non-whitespace character counting, pacing tiers, and estimated voice duration.
+- Prompt v2 renders the target range and hard limit. Character style may change rhythm inside that range but may not increase the limit.
+- A speech keeps one conclusion, one key basis, and one follow-up verification point. It does not repeat the full timeline, vote table, earlier positions, stage directions, or camera directions.
+- Knowledge compression happens only after `projectVisibleEvents()`; `visibleEvents` remains complete for game mechanics while prompt knowledge keeps current-day claims, each player's latest earlier stance, last words, durable outcomes, and valid private facts.
+- Manual edit and confirmation paths evaluate the same budget as generation. Never truncate text, clip audio, speed up video, or use output-token limits as a speech-length substitute.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+|---|---|
+| Speech is within the hard limit | Accept it even when shorter or longer than the target range. |
+| First output exceeds the hard limit | Use the existing single repair attempt with the compression contract. |
+| Repair still exceeds the hard limit | Preserve the Draft unchanged and record both failed attempts. |
+| Manual edit or confirmation exceeds the hard limit | Reject before persistence or event confirmation. |
+| Semantic wording seems repetitive or weak | Observe as quality only; do not add keyword or regular-expression rejection. |
+
+### 5. Good / Base / Bad Cases
+
+- Good: a 160-character response states a position, cites one visible claim, and leaves one verification question.
+- Base: a 90-character response is marked short but remains valid because it is not empty and does not exceed the hard limit.
+- Bad: truncate a 400-character model response to 220 characters, producing a broken sentence while hiding the generation failure.
+
+### 6. Tests Required
+
+- Budget matrix, tier ordering, Unicode code-point counting, whitespace, boundary values, and duration calibration.
+- Prompt target/hard-limit rendering for first and responding day speakers.
+- One repair on over-limit output, unchanged Draft after a second failure, and edit/confirmation rejection.
+- Visibility-negative coverage proving compressed knowledge cannot contain host-only ballots or another player's private events.
+- Read-only duration replay of the sample game without modifying record, voice jobs, or MP3 files.
+
+### 7. Wrong vs Correct
+
+Wrong: `text.slice(0, hardMax)` or `max_tokens` as the only length control.
+
+Correct: generate complete JSON against `SpeechBudget`, validate the full `text`, repair once for semantic compression, and otherwise retain the prior Draft.
+
 ## Scenario: Shared Script Background Is Not Game Evidence
 
 ### 1. Scope / Trigger
@@ -176,7 +226,7 @@ Natural-language quality, credibility framing, disclosure consistency, and factu
 | `vote_cast.voteType === "sheriff"` reaches the LLM path | Throw the explicit unsupported-task error; never fall back to exile semantics. |
 | Character model binding is absent | Use the code-owned default binding for compatibility; never fall back to role or seat configuration. |
 
-Prose content never enters this error matrix. In particular, disclosure/text agreement, public-wolf leaks, claim framing, quotation attribution, first-night reasoning, ballot summaries, and medicine summaries are not runtime validators.
+Semantic prose content never enters this error matrix. Speech length is the one structural text contract and follows the dedicated scenario above; disclosure/text agreement, public-wolf leaks, claim framing, quotation attribution, first-night reasoning, ballot summaries, and medicine summaries are not runtime validators.
 
 Repair requests contain only the invalid output, validation error, output contract, and legal IDs. They do not resend the timeline or ask the model to re-analyze the game.
 

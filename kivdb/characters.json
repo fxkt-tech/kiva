@@ -22,8 +22,8 @@
       "adapterVersion": 1,
       "voice": "zh-CN-YunxiNeural",
       "lang": "zh-CN",
-      "pitch": "-2Hz",
-      "rate": "+8%",
+      "pitch": "-4Hz",
+      "rate": "+20%",
       "volume": "+0%"
     },
     "enabled": true,
@@ -53,9 +53,9 @@
       "adapterVersion": 1,
       "voice": "zh-CN-XiaoyiNeural",
       "lang": "zh-CN",
-      "pitch": "+4Hz",
-      "rate": "+14%",
-      "volume": "+1%"
+      "pitch": "-4Hz",
+      "rate": "+20%",
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -85,8 +85,8 @@
       "voice": "zh-CN-YunyangNeural",
       "lang": "zh-CN",
       "pitch": "-4Hz",
-      "rate": "+3%",
-      "volume": "-1%"
+      "rate": "+20%",
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -115,9 +115,9 @@
       "adapterVersion": 1,
       "voice": "zh-CN-XiaoxiaoNeural",
       "lang": "zh-CN",
-      "pitch": "+2Hz",
-      "rate": "+18%",
-      "volume": "+2%"
+      "pitch": "-4Hz",
+      "rate": "+20%",
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -146,9 +146,9 @@
       "adapterVersion": 1,
       "voice": "zh-CN-YunjianNeural",
       "lang": "zh-CN",
-      "pitch": "-5Hz",
-      "rate": "+10%",
-      "volume": "+3%"
+      "pitch": "-4Hz",
+      "rate": "+20%",
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -177,9 +177,9 @@
       "adapterVersion": 1,
       "voice": "zh-CN-XiaoyiNeural",
       "lang": "zh-CN",
-      "pitch": "-6Hz",
-      "rate": "+5%",
-      "volume": "+2%"
+      "pitch": "-4Hz",
+      "rate": "+20%",
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -209,8 +209,8 @@
       "voice": "zh-CN-XiaoxiaoNeural",
       "lang": "zh-CN",
       "pitch": "-4Hz",
-      "rate": "+0%",
-      "volume": "-1%"
+      "rate": "+20%",
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -239,8 +239,8 @@
       "adapterVersion": 1,
       "voice": "zh-CN-YunxiaNeural",
       "lang": "zh-CN",
-      "pitch": "+1Hz",
-      "rate": "+12%",
+      "pitch": "-4Hz",
+      "rate": "+20%",
       "volume": "+0%"
     },
     "enabled": true,
@@ -270,9 +270,9 @@
       "adapterVersion": 1,
       "voice": "zh-CN-YunxiNeural",
       "lang": "zh-CN",
-      "pitch": "-1Hz",
-      "rate": "-2%",
-      "volume": "-4%"
+      "pitch": "-4Hz",
+      "rate": "+20%",
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -301,9 +301,9 @@
       "adapterVersion": 1,
       "voice": "zh-CN-XiaoyiNeural",
       "lang": "zh-CN",
-      "pitch": "+5Hz",
-      "rate": "+16%",
-      "volume": "+1%"
+      "pitch": "-4Hz",
+      "rate": "+20%",
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -332,9 +332,9 @@
       "adapterVersion": 1,
       "voice": "zh-CN-YunjianNeural",
       "lang": "zh-CN",
-      "pitch": "+0Hz",
+      "pitch": "-4Hz",
       "rate": "+20%",
-      "volume": "+5%"
+      "volume": "+0%"
     },
     "enabled": true,
     "createdAt": "2026-07-12T00:00:00.000Z",
@@ -363,8 +363,8 @@
       "adapterVersion": 1,
       "voice": "zh-CN-XiaoxiaoNeural",
       "lang": "zh-CN",
-      "pitch": "-1Hz",
-      "rate": "+7%",
+      "pitch": "-4Hz",
+      "rate": "+20%",
       "volume": "+0%"
     },
     "enabled": true,

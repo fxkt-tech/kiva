@@ -2,6 +2,7 @@ import { applyDraftPayloadEdit } from "./draft-edit";
 import type { DraftEvent } from "./drafts";
 import type { GameEvent } from "./events";
 import type { Game } from "./game";
+import type { EpisodeActorBrief } from "./episode-script";
 import {
   createFailedGenerationRecord,
   createSuccessfulGenerationRecord,
@@ -19,6 +20,10 @@ import {
   type LlmPromptMode,
 } from "./prompt-builders";
 import {
+  evaluateSpeech,
+  type SpeechBudget,
+} from "./speech-budget";
+import {
   generateValidatedJson,
   ValidatedGenerationError,
 } from "./validated-generation";
@@ -31,6 +36,7 @@ export type GenerateSpeechDraftInput = {
   readonly generationId: string;
   readonly createdAt: string;
   readonly promptMode?: LlmPromptMode;
+  readonly actorBrief?: EpisodeActorBrief | null;
 };
 
 export type GenerateSpeechDraftResult = {
@@ -53,7 +59,7 @@ export async function generateSpeechDraft(
     viewerPlayerId: playerId,
   });
   const prompt = buildSpeechPrompt(
-    { context, draft },
+    { context, draft, actorBrief: input.actorBrief },
     input.promptMode,
   );
   const request = {
@@ -71,9 +77,16 @@ export async function generateSpeechDraft(
       modelBinding: context.viewer.modelBindingSnapshot,
       request,
       validate: (parsed) =>
-        parseAndValidateSpeechText(parsed, requireDisclosure),
+        parseAndValidateSpeechText(
+          parsed,
+          requireDisclosure,
+          prompt.speechBudget,
+        ),
       repair: {
-        outputContract: speechRepairContract(requireDisclosure),
+        outputContract: speechRepairContract(
+          requireDisclosure,
+          prompt.speechBudget,
+        ),
       },
     });
 
@@ -124,6 +137,7 @@ export async function generateSpeechDraft(
 function parseAndValidateSpeechText(
   output: Record<string, unknown>,
   requireDisclosure: boolean,
+  budget?: SpeechBudget,
 ): string {
   const text = output.text;
   if (typeof text !== "string" || text.trim().length === 0) {
@@ -140,12 +154,31 @@ function parseAndValidateSpeechText(
     );
   }
 
-  return text.trim();
+  const normalizedText = text.trim();
+  if (budget) {
+    const evaluation = evaluateSpeech(normalizedText, budget);
+    if (!evaluation.withinHardLimit) {
+      throw new Error(
+        `LLM speech text exceeds hard limit: ${evaluation.characterCount} > ${budget.hardMaxCharacters} non-whitespace characters`,
+      );
+    }
+  }
+
+  return normalizedText;
 }
 
-function speechRepairContract(requireDisclosure: boolean): readonly string[] {
+function speechRepairContract(
+  requireDisclosure: boolean,
+  budget?: SpeechBudget,
+): readonly string[] {
   return [
     "text 必须是非空字符串",
+    ...(budget
+      ? [
+          `text 必须不超过 ${budget.hardMaxCharacters} 个非空白字符；压缩时只保留本轮结论、一个关键依据和一个后续可验证点`,
+          "删除完整时间线、完整票型、重复前置观点、括号舞台动作和镜头说明",
+        ]
+      : []),
     "decisionSummary 应是最多两句的简短字符串",
     ...(requireDisclosure
       ? ["disclosure 必须是 conceal 或 claim"]

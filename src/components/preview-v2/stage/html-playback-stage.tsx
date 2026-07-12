@@ -58,19 +58,6 @@ export function HtmlPlaybackStage({
       }}
     >
       <StageBackground backgroundUrl={backgroundUrl} />
-      {viewModel.script.presentation.styleKey === "midnight_archive_v1" ? (
-        <div
-          aria-hidden="true"
-          className="absolute left-5 top-1/2 z-10 -translate-y-1/2 border px-2 py-5 text-[16px] font-black tracking-[0.35em]"
-          style={{
-            borderColor: viewModel.script.presentation.colors.signal,
-            color: viewModel.script.presentation.colors.signal,
-            writingMode: "vertical-rl",
-          }}
-        >
-          未明档案
-        </div>
-      ) : null}
       <div className="absolute inset-0 grid grid-cols-[480px_minmax(0,1fr)_480px] grid-rows-[112px_minmax(0,1fr)_212px] gap-x-6 gap-y-4 px-10 pb-8 pt-7">
         <StageHeader palette={palette} shot={shot} />
         <SeatTrack

@@ -116,6 +116,7 @@ describe("game repository", () => {
       draft: draft(gameId),
       generations: [],
     voiceArtifactsByEventId: {},
+      episodeScript: null,
     };
 
     await repository.save(record);
@@ -196,11 +197,32 @@ describe("game repository", () => {
     );
 
     await expect(repository.get(gameId)).resolves.toMatchObject({
-      game: { id: gameId },
+      game: { id: gameId, runMode: "game" },
       events: [],
       draft: null,
       generations: [],
     voiceArtifactsByEventId: {},
+    });
+  });
+
+  it("normalizes a scripted record without episode state to idle", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const gameId = "old-scripted-game" as GameId;
+    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
+    await writeFile(
+      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
+      JSON.stringify({
+        game: { ...game(gameId, "2026-06-26T00:03:00.000Z"), runMode: "scripted" },
+        events: [],
+        draft: null,
+      }),
+      "utf8",
+    );
+
+    await expect(repository.get(gameId)).resolves.toMatchObject({
+      game: { runMode: "scripted" },
+      episodeScript: { status: "idle" },
     });
   });
 

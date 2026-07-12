@@ -1,4 +1,5 @@
 import type { LlmMessage } from "./llm";
+import type { EpisodeActorBrief } from "./episode-script";
 import type { LegalActionOptions } from "./llm-action-options";
 import {
   isLlmActionDraft,
@@ -14,6 +15,10 @@ import type {
   PlayerContextTimelineItem,
   PlayerLlmContext,
 } from "./player-context";
+import {
+  speechBudgetForDraft,
+  type SpeechBudget,
+} from "./speech-budget";
 import {
   buildActionPromptV1,
   buildSpeechPromptV1,
@@ -32,11 +37,13 @@ export type BuiltPrompt = {
   readonly schemaName: string;
   readonly systemPrompt: string;
   readonly messages: readonly LlmMessage[];
+  readonly speechBudget?: SpeechBudget;
 };
 
 export type SpeechPromptInput = {
   readonly context: PlayerLlmContext;
   readonly draft: LlmSpeechDraft;
+  readonly actorBrief?: EpisodeActorBrief | null;
 };
 
 export type ActionPromptInput = {
@@ -59,11 +66,14 @@ export function buildSpeechPrompt(
         event.payload.dayNumber === input.draft.payload.dayNumber,
     );
   const spec = taskSpecForDraft(input.draft, { hasPriorDaySpeech });
+  const speechBudget = input.actorBrief?.budget ??
+    speechBudgetForDraft({ draft: input.draft, hasPriorDaySpeech });
 
   return {
     promptVersion: SPEECH_PROMPT_VERSION,
     schemaName: "werewolf_speech_v2",
     systemPrompt: buildSystemPrompt(input.context, input.draft, spec),
+    speechBudget,
     messages: [
       {
         role: "user",
@@ -73,6 +83,8 @@ export function buildSpeechPrompt(
           spec,
           candidatePlayerIds: speechCandidatePlayerIds(input),
           options: null,
+          speechBudget,
+          actorBrief: input.actorBrief ?? null,
         }),
       },
     ],
@@ -103,6 +115,8 @@ export function buildActionPrompt(
           spec,
           candidatePlayerIds: input.options.targetPlayerIds,
           options: input.options,
+          speechBudget: null,
+          actorBrief: null,
         }),
       },
     ],
@@ -194,6 +208,8 @@ function buildUserMessage(input: {
   readonly spec: PromptTaskSpec;
   readonly candidatePlayerIds: readonly PlayerId[];
   readonly options: LegalActionOptions | null;
+  readonly speechBudget: SpeechBudget | null;
+  readonly actorBrief: EpisodeActorBrief | null;
 }): string {
   const { context, draft, spec } = input;
   const lines: string[] = [];
@@ -225,6 +241,16 @@ function buildUserMessage(input: {
     "- 可以偶尔使用背景中的意象或类比，但不必复述剧本名称。",
     "- 剧本不提供任何玩家身份、行为、关系或可信度证据。",
   ]);
+  if (input.actorBrief) {
+    appendSection(lines, "本场剧本指引——只执行当前场，不得推断未来", [
+      `- 场景：${input.actorBrief.scene}`,
+      `- 本场目标：${input.actorBrief.objective}`,
+      `- 计划立场：${input.actorBrief.stance}`,
+      `- 披露策略：${input.actorBrief.disclosure}`,
+      `- 主题因果：${input.actorBrief.themeHook}`,
+      "- 你看不到完整剧本；只能结合下方可见事实完成当前指引。若指引与可见事实冲突，以可见事实和规则为准。",
+    ]);
+  }
   appendSection(lines, "玩家名单", rosterLines(context));
   appendSection(
     lines,
@@ -285,6 +311,13 @@ function buildUserMessage(input: {
     "仅与本轮有关的规则",
     selectedRuleLines(context.ruleset, spec.ruleKeys),
   );
+  if (input.speechBudget) {
+    appendSection(
+      lines,
+      "表达长度——正文必须遵守",
+      speechBudgetLines(input.speechBudget),
+    );
+  }
   appendSection(lines, "提交前自检——只在内部执行，不要输出检查过程", [
     "- 场景、频道和听众是否正确？",
     "- 每个身份、行为和结论是否有明确来源？他人的身份/查验说法是否仍明确标为声称，而不是事实？",
@@ -293,6 +326,16 @@ function buildUserMessage(input: {
   appendSection(lines, "输出", outputInstruction(context, spec, input.options));
 
   return lines.join("\n");
+}
+
+function speechBudgetLines(budget: SpeechBudget): readonly string[] {
+  return [
+    `- text 目标长度：${budget.targetMinCharacters}–${budget.targetMaxCharacters} 个非空白字符。`,
+    `- text 硬上限：${budget.hardMaxCharacters} 个非空白字符；超过上限属于无效输出。`,
+    "- 只保留本轮结论、一个关键依据和一个后续可验证点；任务不需要的项可以省略。",
+    "- 不得复述完整时间线、完整票型、所有前置观点或自己的既往发言。",
+    "- text 只写真正说出口的话；不要写括号舞台动作、动作描写或镜头说明。",
+  ];
 }
 
 function appendSection(

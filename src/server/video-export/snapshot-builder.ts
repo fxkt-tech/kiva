@@ -16,6 +16,12 @@ export async function buildExportSnapshot(input: {
   readonly composition: VideoCompositionInput;
   readonly warnings: readonly string[];
 }> {
+  if (
+    input.record.game.runMode === "scripted" &&
+    input.record.episodeScript?.status !== "approved"
+  ) {
+    throw new Error("Episode script must be approved before video export");
+  }
   const warnings: string[] = [];
   const assetsDir = join(input.jobDir, "assets");
   await mkdir(join(assetsDir, "avatars"), { recursive: true });

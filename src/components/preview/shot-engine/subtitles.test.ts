@@ -38,6 +38,25 @@ describe("preview subtitle cues", () => {
     expect(late?.windowIndex).toBe((late?.windowCount ?? 1) - 1);
   });
 
+  it("lets voiced cue text wrap at the rendered subtitle width", () => {
+    const text =
+      "1号迟木提出首夜主刀候选为8号苏弦，备选10号任野，明确首夜无行为信息时主备为中立取舍，";
+    const scene = playbackScene({
+      playerVoice: {
+        eventId: "event_voice" as never,
+        playerId: "p4" as never,
+        file: "event_voice.mp3",
+        durationMs: 10_000,
+        startsAtOffsetMs: 0,
+        cues: [{ text, startMs: 0, endMs: 10_000 }],
+      },
+    });
+
+    expect(subtitleCueForScene(scene, 0.5, player(), 5_000)?.lines).toEqual([
+      text,
+    ]);
+  });
+
   it("returns null for empty subtitle text", () => {
     expect(subtitleCueForScene(playbackScene({ title: "", text: "" }), 0, null))
       .toBeNull();

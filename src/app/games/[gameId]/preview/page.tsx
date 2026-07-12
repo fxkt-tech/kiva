@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { eventsWithDraftPreview } from "@/components/preview/preview-events";
 import { createCompositionInput } from "@/components/preview-v2/composition/create-composition-input";
 import { PreviewV2Studio } from "@/components/preview-v2/preview-v2-studio";
@@ -6,6 +6,8 @@ import {
   compilePublicPlayback,
   type CompilePublicPlaybackOptions,
 } from "@/core/playback";
+import { projectDirectorDuration } from "@/core/duration-projection";
+import { getActiveEvents } from "@/core/event-log";
 import type { GameId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
@@ -30,6 +32,12 @@ export default async function PreviewPage({
   );
   if (!record) {
     notFound();
+  }
+  if (
+    record.game.runMode === "scripted" &&
+    record.episodeScript?.status !== "approved"
+  ) {
+    redirect(`/games/${record.game.id}/script`);
   }
 
   const includesDraft = focus === "current" && record.draft !== null;
@@ -81,6 +89,10 @@ export default async function PreviewPage({
       }
       missingVoiceCount={missingVoiceCount}
       exportBlocker={exportBlocker}
+      durationProjection={projectDirectorDuration({
+        events: getActiveEvents(record.events),
+        playback: confirmedItems,
+      })}
     />
   );
 }

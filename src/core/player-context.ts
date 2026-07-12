@@ -130,7 +130,7 @@ export function buildPlayerLlmContext(
     roster: input.game.players.map((player) => rosterEntryForViewer(player, viewer)),
     visibleEvents,
     timeline,
-    knowledge: classifyPromptKnowledge(visibleEvents, timeline),
+    knowledge: classifyPromptKnowledge(visibleEvents, timeline, state.dayNumber),
     state: {
       currentPhase: state.currentPhase,
       dayNumber: state.dayNumber,
@@ -159,6 +159,7 @@ function eventDayNumber(event: GameEvent): number | null {
 function classifyPromptKnowledge(
   events: readonly GameEvent[],
   timeline: readonly PlayerContextTimelineItem[],
+  currentDayNumber: number,
 ): PlayerPromptKnowledge {
   const publicFacts: PlayerContextTimelineItem[] = [];
   const publicClaims: PlayerContextTimelineItem[] = [];
@@ -199,7 +200,81 @@ function classifyPromptKnowledge(
     privateFacts.push(item);
   }
 
-  return { publicFacts, publicClaims, privateFacts, factionDiscussion };
+  return {
+    publicFacts: selectPublicFacts(publicFacts, currentDayNumber),
+    publicClaims: selectPublicClaims(events, publicClaims, currentDayNumber),
+    privateFacts,
+    factionDiscussion: selectCurrentFactionDiscussion(
+      factionDiscussion,
+      currentDayNumber,
+    ),
+  };
+}
+
+function selectPublicFacts(
+  facts: readonly PlayerContextTimelineItem[],
+  currentDayNumber: number,
+): readonly PlayerContextTimelineItem[] {
+  return facts.filter(
+    (item) =>
+      item.dayNumber === null ||
+      item.dayNumber >= currentDayNumber - 1 ||
+      item.type === "death_announced" ||
+      item.type === "exile_resolved" ||
+      item.type === "game_ended",
+  );
+}
+
+function selectPublicClaims(
+  events: readonly GameEvent[],
+  claims: readonly PlayerContextTimelineItem[],
+  currentDayNumber: number,
+): readonly PlayerContextTimelineItem[] {
+  const currentDay = claims.filter(
+    (item) => item.dayNumber === currentDayNumber,
+  );
+  const lastWords = claims.filter((item) => item.type === "last_words_given");
+  const latestEarlierClaimByPlayer = new Map<PlayerId, PlayerContextTimelineItem>();
+  const claimByIndex = new Map(claims.map((item) => [item.index, item]));
+
+  for (const event of events) {
+    if (
+      (event.type !== "day_speech_given" &&
+        event.type !== "pk_speech_given") ||
+      event.payload.dayNumber >= currentDayNumber
+    ) {
+      continue;
+    }
+    const item = claimByIndex.get(event.index);
+    if (item) latestEarlierClaimByPlayer.set(event.payload.playerId, item);
+  }
+
+  return uniqueTimelineItems([
+    ...latestEarlierClaimByPlayer.values(),
+    ...lastWords,
+    ...currentDay,
+  ]);
+}
+
+function selectCurrentFactionDiscussion(
+  items: readonly PlayerContextTimelineItem[],
+  currentDayNumber: number,
+): readonly PlayerContextTimelineItem[] {
+  const current = items.filter((item) => item.dayNumber === currentDayNumber);
+  if (current.length > 0) return current;
+  const latestDay = items.reduce(
+    (day, item) => Math.max(day, item.dayNumber ?? 0),
+    0,
+  );
+  return items.filter((item) => item.dayNumber === latestDay);
+}
+
+function uniqueTimelineItems(
+  items: readonly PlayerContextTimelineItem[],
+): readonly PlayerContextTimelineItem[] {
+  return [...new Map(items.map((item) => [item.index, item])).values()].sort(
+    (left, right) => left.index - right.index,
+  );
 }
 
 function createVisibilityContext(

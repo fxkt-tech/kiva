@@ -10,6 +10,7 @@ import type { GamePreset } from "@/core/game-preset";
 import type { PresenterDefinition } from "@/core/presenter-definition";
 import type { RoleDefinition } from "@/core/role-definition";
 import { createGameActions } from "./game-actions";
+import type { GameRunMode } from "@/core/game-run-mode";
 import type { GameRecord, GameRepository } from "./game-repository";
 import type { LibraryRecord, LibraryRepository } from "./library-repository";
 
@@ -199,9 +200,15 @@ export function createLibraryActions({
       presetId: string,
       presenterId: string,
       scriptId?: string,
+      runMode: GameRunMode = "game",
     ): Promise<GameRecord> {
       return libraryRepository.withLibraryLock(async () =>
-        gameActions.createGameFromPresetId(presetId, presenterId, scriptId),
+        gameActions.createGameFromPresetId(
+          presetId,
+          presenterId,
+          scriptId,
+          runMode,
+        ),
       );
     },
 
@@ -209,6 +216,7 @@ export function createLibraryActions({
       preset: GamePreset,
       presenterId: string,
       scriptId?: string,
+      runMode: GameRunMode = "game",
     ): Promise<GameRecord> {
       return libraryRepository.withLibraryLock(async () => {
         const library = await loadLibrary();
@@ -217,6 +225,7 @@ export function createLibraryActions({
           library,
           presenterId,
           scriptId,
+          runMode,
         );
       });
     },

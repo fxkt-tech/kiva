@@ -13,6 +13,22 @@ const gameId = "game_creation" as GameId;
 const createdAt = "2026-06-27T12:00:00.000Z";
 
 describe("game creation", () => {
+  it("snapshots the selected run mode", () => {
+    const scripted = createGameFromPreset({
+      gameId,
+      title: "Scripted game",
+      createdAt,
+      ruleset: createDefaultRuleset(),
+      preset: seedPresets[0]!,
+      presenter: seedPresenters[0]!,
+      script: seedScripts[0]!,
+      roles: seedRoles,
+      characters: seedCharacters,
+      runMode: "scripted",
+    });
+
+    expect(scripted.runMode).toBe("scripted");
+  });
   it("creates immutable player snapshots from a preset seat assignment", () => {
     const game = createGameFromPreset({
       gameId,

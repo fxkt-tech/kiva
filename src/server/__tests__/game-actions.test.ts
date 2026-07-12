@@ -3,7 +3,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { getActiveEvents } from "@/core/event-log";
-import { MockLlmClient, type LlmClient } from "@/core/llm";
+import {
+  LocalHeuristicLlmClient,
+  MockLlmClient,
+  type LlmClient,
+} from "@/core/llm";
 import type { GameId } from "@/core/types";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
@@ -189,6 +193,125 @@ describe("game actions", () => {
     await expect(repository.get(created.game.id)).resolves.toEqual(created);
   });
 
+  it("persists scripted mode and blocks ordinary advancement", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const actions = createGameActions(repository);
+    const created = await actions.createGameFromPresetId(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+
+    expect(created.game.runMode).toBe("scripted");
+    await expect(actions.continueGame(created.game.id)).rejects.toThrow(
+      "Scripted game cannot advance before script approval",
+    );
+    await expect(repository.get(created.game.id)).resolves.toMatchObject({
+      game: { runMode: "scripted" },
+      events: [],
+      draft: null,
+    });
+  });
+
+  it("authors, approves, and starts an executable scripted game", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const actions = createGameActions(repository, {
+      llmClient: new LocalHeuristicLlmClient(),
+    });
+    const created = await actions.createGameFromPresetId(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+
+    const review = await actions.generateEpisodeScript(created.game.id);
+    expect(review.episodeScript).toMatchObject({
+      status: "review",
+      report: { valid: true },
+      candidate: { title: expect.stringContaining("未明档案") },
+    });
+    if (review.episodeScript?.status !== "review") {
+      throw new Error("Expected episode review");
+    }
+
+    const approved = await actions.approveEpisodeScript(
+      created.game.id,
+      review.episodeScript.jobId,
+      review.episodeScript.candidate.id,
+    );
+    expect(approved.episodeScript?.status).toBe("approved");
+
+    const started = await actions.continueGame(created.game.id);
+    expect(started.draft?.type).toBe(
+      approved.episodeScript?.status === "approved"
+        ? approved.episodeScript.script.steps[0]?.slot.type
+        : undefined,
+    );
+    await expect(
+      actions.editDraftPayload(created.game.id, { text: "试图修改结构" }),
+    ).rejects.toThrow("structure is locked");
+
+    let current = started;
+    for (let step = 0; step < 240 && current.draft; step += 1) {
+      await actions.confirmDraft(created.game.id, current.draft.id);
+      current = await actions.continueGame(created.game.id);
+    }
+    expect(getActiveEvents(current.events).at(-1)?.type).toBe("game_ended");
+    expect(current.draft).toBeNull();
+  });
+
+  it("persists authoring failure and allows a full retry", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const failingActions = createGameActions(repository, {
+      llmClient: failingLlmClient(),
+    });
+    const created = await failingActions.createGameFromPresetId(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+
+    const failed = await failingActions.generateEpisodeScript(created.game.id);
+    expect(failed.episodeScript).toMatchObject({
+      status: "failed",
+      error: "model unavailable",
+    });
+
+    const retryActions = createGameActions(repository, {
+      llmClient: new LocalHeuristicLlmClient(),
+    });
+    const review = await retryActions.generateEpisodeScript(created.game.id);
+    expect(review.episodeScript?.status).toBe("review");
+  });
+
+  it("rejects approval for a stale candidate identity", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const actions = createGameActions(repository, {
+      llmClient: new LocalHeuristicLlmClient(),
+    });
+    const created = await actions.createGameFromPresetId(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+    const review = await actions.generateEpisodeScript(created.game.id);
+    if (review.episodeScript?.status !== "review") {
+      throw new Error("Expected episode review");
+    }
+
+    await expect(
+      actions.approveEpisodeScript(
+        created.game.id,
+        review.episodeScript.jobId,
+        "stale_script",
+      ),
+    ).rejects.toThrow("candidate changed before approval");
+  });
+
   it("confirms the current draft into one official event without planning the next draft", async () => {
     const { actions, repository } = await createActions();
     const created = await actions.createGame();
@@ -369,6 +492,35 @@ describe("game actions", () => {
         reasoning: "根据可见信息推进发言。",
       },
     });
+  });
+
+  it("rejects over-limit speech in both edit and confirmation paths", async () => {
+    const { actions, repository } = await createActions();
+    const created = await actions.createGame();
+    const withSpeech = await continueUntilDraftType(
+      actions,
+      created.game.id,
+      "day_speech_given",
+    );
+    if (withSpeech.draft?.type !== "day_speech_given") {
+      throw new Error("Expected a day speech draft");
+    }
+    const overLimitText = "长".repeat(171);
+
+    await expect(
+      actions.editDraftPayload(created.game.id, { text: overLimitText }),
+    ).rejects.toThrow("Speech text exceeds hard limit: 171 > 170");
+
+    await repository.save({
+      ...withSpeech,
+      draft: {
+        ...withSpeech.draft,
+        payload: { ...withSpeech.draft.payload, text: overLimitText },
+      },
+    });
+    await expect(actions.confirmDraft(created.game.id)).rejects.toThrow(
+      "Speech text exceeds hard limit: 171 > 170",
+    );
   });
 
   it("passes the configured v1 prompt rollback through regeneration", async () => {

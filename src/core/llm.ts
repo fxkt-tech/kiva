@@ -269,6 +269,38 @@ function localOutputForRequest(
     .join("\n");
 
   if (
+    request.schemaName === "werewolf_episode_narrative_v1" ||
+    request.schemaName === "werewolf_episode_outline_v1" ||
+    request.schemaName === "werewolf_episode_beats_v1"
+  ) {
+    const stepIndexes = [...userContent.matchAll(/SPEECH_STEP\s+(\d+)/g)].map(
+      (match) => Number(match[1]),
+    );
+    const outline = {
+      title: "未明档案：被改写的终局",
+      logline: "众人在一份持续被改写的档案中追索矛盾，最终让每次选择都成为结局的证词。",
+      acts: [
+        { title: "雨夜开卷", summary: "身份与第一处异常被同时封入档案。" },
+        { title: "证词交锋", summary: "公开判断和暗中行动不断改写彼此的可信度。" },
+        { title: "终局归档", summary: "幸存者用最后的选择确认档案的真实版本。" },
+      ],
+    };
+    const beats = stepIndexes.map((stepIndex) => ({
+      stepIndex,
+      objective: "让当前立场推动一条可在后续事件中验证的冲突线。",
+      stance: "明确选择一项当前判断，并指出它与前序证词的矛盾。",
+      disclosure: "conceal",
+      themeHook: "把本场选择写成对档案版本的争夺，并让后续投票或行动完成验证。",
+    }));
+    if (request.schemaName === "werewolf_episode_outline_v1") return outline;
+    if (request.schemaName === "werewolf_episode_beats_v1") return { beats };
+    return {
+      ...outline,
+      beats,
+    };
+  }
+
+  if (
     request.schemaName === "werewolf_speech_v1" ||
     request.schemaName === "werewolf_speech_v2"
   ) {

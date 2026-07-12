@@ -1,9 +1,13 @@
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DraftPanel } from "@/components/editor/draft-panel";
 import { EventTimeline } from "@/components/editor/event-timeline";
 import { iconButtonClassName } from "@/components/ui/button-styles";
+import { getActiveEvents } from "@/core/event-log";
+import { actorBriefForStep } from "@/core/episode-script";
+import { isLlmSpeechDraft } from "@/core/llm-task-specs";
+import { speechBudgetForDraft } from "@/core/speech-budget";
 import type { GameId } from "@/core/types";
 import { deriveGameState } from "@/core/state";
 import { createGameActions } from "@/server/game-actions";
@@ -34,6 +38,12 @@ export default async function EditorPage({
 
   if (!loadedRecord) {
     notFound();
+  }
+  if (
+    loadedRecord.game.runMode === "scripted" &&
+    loadedRecord.episodeScript?.status !== "approved"
+  ) {
+    redirect(`/games/${loadedRecord.game.id}/script`);
   }
 
   const record = loadedRecord.draft
@@ -116,11 +126,41 @@ export default async function EditorPage({
               deriveGameState(record.game.players, record.events).alivePlayerIds
             }
             generations={record.generations}
+            speechBudget={speechBudgetForRecord(record)}
+            actorBrief={actorBriefForRecord(record)}
+            scriptedStructureLocked={record.episodeScript?.status === "approved"}
           />
         </div>
       </div>
     </main>
   );
+}
+
+function actorBriefForRecord(record: GameRecord) {
+  if (record.episodeScript?.status !== "approved") return null;
+  return actorBriefForStep(
+    record.episodeScript.script,
+    getActiveEvents(record.events).length + 1,
+  );
+}
+
+function speechBudgetForRecord(record: GameRecord) {
+  const draft = record.draft;
+  if (!draft || !isLlmSpeechDraft(draft)) return undefined;
+  if (record.episodeScript?.status === "approved") {
+    return actorBriefForStep(
+      record.episodeScript.script,
+      getActiveEvents(record.events).length + 1,
+    )?.budget;
+  }
+  const hasPriorDaySpeech =
+    draft.type === "day_speech_given" &&
+    getActiveEvents(record.events).some(
+      (event) =>
+        event.type === "day_speech_given" &&
+        event.payload.dayNumber === draft.payload.dayNumber,
+    );
+  return speechBudgetForDraft({ draft, hasPriorDaySpeech });
 }
 
 function currentPreviewHref(record: GameRecord): string {

@@ -16,6 +16,28 @@ afterEach(async () => {
 });
 
 describe("voice jobs", () => {
+  it("blocks scripted voice generation before episode approval", async () => {
+    const root = await mkdtemp(join(tmpdir(), "kiva-voice-episode-lock-"));
+    roots.push(root);
+    const gameId = "locked_scripted_game" as GameId;
+    const game = {
+      ...createSeedGame({ gameId, createdAt: "2026-07-12T00:00:00.000Z" }),
+      runMode: "scripted" as const,
+    };
+    await createGameRepository(root).save({
+      game,
+      events: [],
+      draft: null,
+      generations: [],
+      voiceArtifactsByEventId: {},
+      episodeScript: { status: "idle" },
+    });
+
+    await expect(new VoiceJobService(root).create(gameId)).rejects.toMatchObject({
+      code: "episode_not_approved",
+    });
+  });
+
   it("keeps API-created jobs queued until a worker claims them", async () => {
     const root = await mkdtemp(join(tmpdir(), "kiva-voice-worker-"));
     roots.push(root);

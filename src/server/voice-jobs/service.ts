@@ -3,7 +3,10 @@ import { rm } from "node:fs/promises";
 import { compilePublicPlayback } from "@/core/playback";
 import type { EventId, GameId, PlayerId } from "@/core/types";
 import type { PlayerVoiceArtifact } from "@/core/voice";
-import { createGameRepository } from "@/server/game-repository";
+import {
+  createGameRepository,
+  type GameRecord,
+} from "@/server/game-repository";
 import { createEdgeVoiceAdapter } from "@/server/voice-synthesis/edge-adapter";
 import { aggregateSpeechCues } from "@/server/voice-synthesis/speech-cues";
 import type { VoiceSynthesisAdapter } from "@/server/voice-synthesis/types";
@@ -41,6 +44,7 @@ export class VoiceJobService {
     await this.initialize(gameId);
     const record = await this.games.get(gameId as GameId);
     if (!record) throw new VoiceJobError("game_not_found", "Game not found", 404);
+    assertEpisodeReadyForMedia(record);
     const targets = eligibleTargets(record);
     const missing = targets.filter(
       (target) => !(target.eventId in record.voiceArtifactsByEventId),
@@ -91,6 +95,7 @@ export class VoiceJobService {
     }
     const record = await this.games.get(gameId as GameId);
     if (!record) throw new VoiceJobError("game_not_found", "Game not found", 404);
+    assertEpisodeReadyForMedia(record);
     const remaining = source.items.filter(
       (item) => !(item.eventId in record.voiceArtifactsByEventId),
     );
@@ -273,6 +278,21 @@ export class VoiceJobService {
     const job = await this.jobs.get(gameId, jobId);
     if (!job) throw new VoiceJobError("job_not_found", "Voice job not found", 404);
     return job;
+  }
+}
+
+function assertEpisodeReadyForMedia(
+  record: GameRecord,
+): void {
+  if (
+    record?.game.runMode === "scripted" &&
+    record.episodeScript?.status !== "approved"
+  ) {
+    throw new VoiceJobError(
+      "episode_not_approved",
+      "Episode script must be approved before voice generation",
+      409,
+    );
   }
 }
 

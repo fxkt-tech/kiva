@@ -13,6 +13,7 @@ import { Player, type PlayerRef } from "@remotion/player";
 import { toBlob } from "html-to-image";
 import { useEffect, useRef, useState } from "react";
 import { playbackIndexAtMs } from "@/core/playback";
+import type { DirectorDurationProjection } from "@/core/duration-projection";
 import { Button } from "@/components/ui/button";
 import { KivaVideoComposition } from "./composition/kiva-video-composition";
 import {
@@ -33,11 +34,13 @@ export function PreviewV2Studio({
   canExport,
   missingVoiceCount,
   exportBlocker,
+  durationProjection,
 }: {
   readonly composition: VideoCompositionInput;
   readonly canExport: boolean;
   readonly missingVoiceCount: number;
   readonly exportBlocker: string | null;
+  readonly durationProjection: DirectorDurationProjection;
 }) {
   const playerRef = useRef<PlayerRef>(null);
   const durationInFrames = compositionDurationInFrames(
@@ -49,6 +52,9 @@ export function PreviewV2Studio({
   const [copyFrameStatus, setCopyFrameStatus] =
     useState<CopyFrameStatus>("idle");
   const timeMs = frameToMilliseconds(frame, VIDEO_SPEC.fps);
+  const totalMs = composition.items.at(-1)
+    ? composition.items.at(-1)!.startsAtMs + composition.items.at(-1)!.durationMs
+    : 0;
   const sceneIndex =
     composition.items.length > 0
       ? playbackIndexAtMs(composition.items, timeMs)
@@ -162,6 +168,18 @@ export function PreviewV2Studio({
             </div>
 
             <section className="grid shrink-0 gap-3 rounded-lg border border-border bg-surface/45 px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-subtle">
+                <span>
+                  已确认 {formatTime(durationProjection.committedDurationMs)} ·
+                  发言预算重放 {formatTime(durationProjection.projectedMinDurationMs)}–
+                  {formatTime(durationProjection.projectedMaxDurationMs)}
+                </span>
+                {durationProjection.projectedMaxDurationMs > 35 * 60_000 ? (
+                  <span className="text-danger-badge-foreground">
+                    预计超过 35 分钟，请压缩后续发言
+                  </span>
+                ) : null}
+              </div>
               <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
                 <span className="font-mono text-xs text-muted">
                   {composition.items.length > 0
@@ -180,7 +198,7 @@ export function PreviewV2Studio({
                   value={frame}
                 />
                 <span className="font-mono text-xs text-subtle">
-                  {formatTime(timeMs)}
+                  {formatTime(timeMs)} / {formatTime(totalMs)}
                 </span>
               </div>
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">

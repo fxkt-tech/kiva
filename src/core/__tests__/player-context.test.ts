@@ -140,6 +140,51 @@ describe("player LLM context", () => {
     expect(context.knowledge.publicFacts).toEqual([]);
   });
 
+  it("keeps the current day, each player's latest earlier stance, and last words", () => {
+    const other = game.players.find(
+      (player) => player.playerId !== seer.playerId,
+    )!;
+    const events = [
+      publicDaySpeech(1, seer.playerId, 1, "第一天旧观点"),
+      publicDaySpeech(2, seer.playerId, 2, "第二天最新观点"),
+      publicDaySpeech(3, other.playerId, 1, "另一人的旧观点"),
+      {
+        ...baseEvent(4),
+        type: "last_words_given",
+        phase: "day",
+        actorPlayerId: other.playerId,
+        visibility: { kind: "public" },
+        payload: {
+          playerId: other.playerId,
+          text: "必须保留的遗言",
+          dayNumber: 2,
+          reason: "exile",
+        },
+      },
+      {
+        ...baseEvent(5),
+        type: "phase_started",
+        phase: "day",
+        visibility: { kind: "public" },
+        payload: { phase: "day", dayNumber: 3 },
+      },
+      publicDaySpeech(6, other.playerId, 3, "第三天当前观点"),
+    ] satisfies readonly GameEvent[];
+
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: seer.playerId,
+    });
+
+    expect(context.knowledge.publicClaims.map((item) => item.index)).toEqual([
+      2, 3, 4, 6,
+    ]);
+    expect(context.visibleEvents.map((event) => event.index)).toEqual([
+      1, 2, 3, 4, 5, 6,
+    ]);
+  });
+
   it("rejects unknown viewers", () => {
     expect(() =>
       buildPlayerLlmContext({
@@ -224,6 +269,22 @@ function roleAssigned(index: number, player: typeof game.players[number]) {
       faction: player.faction,
     },
   } satisfies Extract<GameEvent, { type: "role_assigned" }>;
+}
+
+function publicDaySpeech(
+  index: number,
+  playerId: typeof seer.playerId,
+  dayNumber: number,
+  text: string,
+) {
+  return {
+    ...baseEvent(index),
+    type: "day_speech_given",
+    phase: "speech",
+    actorPlayerId: playerId,
+    visibility: { kind: "public" },
+    payload: { playerId, text, dayNumber, round: 1 },
+  } satisfies Extract<GameEvent, { type: "day_speech_given" }>;
 }
 
 function baseEvent(index: number) {

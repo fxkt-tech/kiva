@@ -13,6 +13,11 @@ import { join } from "node:path";
 import type { DraftEvent } from "@/core/drafts";
 import type { GameEvent } from "@/core/events";
 import type { Game } from "@/core/game";
+import { normalizeGameRunMode } from "@/core/game-run-mode";
+import {
+  normalizeEpisodeScriptState,
+  type EpisodeScriptState,
+} from "@/core/episode-script";
 import type { GenerationRecord } from "@/core/generation-record";
 import {
   validatePlayerVoiceArtifact,
@@ -37,6 +42,7 @@ export type GameRecord = {
   readonly draft: DraftEvent | null;
   readonly generations: readonly GenerationRecord[];
   readonly voiceArtifactsByEventId: Readonly<Record<string, PlayerVoiceArtifact>>;
+  readonly episodeScript?: EpisodeScriptState | null;
 };
 
 export type GameRepository = {
@@ -165,10 +171,11 @@ export function createGameRepository(rootDir = "kivdb"): GameRepository {
 function normalizeRecord(rawRecord: unknown): GameRecord {
   const record = rawRecord as Omit<
     GameRecord,
-    "generations" | "voiceArtifactsByEventId"
+    "generations" | "voiceArtifactsByEventId" | "episodeScript"
   > & {
     readonly generations?: readonly GenerationRecord[];
     readonly voiceArtifactsByEventId?: Readonly<Record<string, PlayerVoiceArtifact>>;
+    readonly episodeScript?: EpisodeScriptState | null;
   };
 
   const voiceArtifactsByEventId = Object.fromEntries(
@@ -178,10 +185,12 @@ function normalizeRecord(rawRecord: unknown): GameRecord {
     ]),
   );
 
+  const runMode = normalizeGameRunMode(record.game.runMode);
   return {
     ...record,
     game: {
       ...record.game,
+      runMode,
       presenter: validateGamePresenterSnapshot(record.game.presenter),
       script: record.game.script
         ? validateGameScriptSnapshot(record.game.script)
@@ -193,6 +202,7 @@ function normalizeRecord(rawRecord: unknown): GameRecord {
     },
     generations: (record.generations ?? []).map(normalizeGenerationRecord),
     voiceArtifactsByEventId,
+    episodeScript: normalizeEpisodeScriptState(record.episodeScript, runMode),
   };
 }
 

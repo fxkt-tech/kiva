@@ -4,6 +4,7 @@ import type { GameEvent } from "../events";
 import { createSeedGame } from "../game";
 import { legalActionOptions } from "../llm-action-options";
 import { buildPlayerLlmContext } from "../player-context";
+import { speechBudgetForKey } from "../speech-budget";
 import {
   ACTION_PROMPT_VERSION,
   buildActionPrompt,
@@ -141,14 +142,93 @@ describe("prompt builders v2", () => {
       events,
       viewerPlayerId: villager.playerId,
     });
-    const content = buildSpeechPrompt({
+    const prompt = buildSpeechPrompt({
       context,
       draft: daySpeechDraft(villager.playerId),
-    }).messages[0]!.content;
+    });
+    const content = prompt.messages[0]!.content;
 
     expect(content).toContain("你是本日第一位发言者");
     expect(content).toContain("观察框架、关注点或暂定策略");
     expect(content).toContain("不得只复述昨夜结果后直接过麦");
+    expect(prompt.speechBudget).toMatchObject({
+      key: "day_first",
+      targetMinCharacters: 100,
+      targetMaxCharacters: 140,
+      hardMaxCharacters: 170,
+    });
+    expect(content).toContain("【表达长度——正文必须遵守】");
+    expect(content).toContain("text 目标长度：100–140 个非空白字符");
+    expect(content).toContain("text 硬上限：170 个非空白字符");
+    expect(content).toContain("不得复述完整时间线、完整票型");
+    expect(content).toContain("不要写括号舞台动作");
+  });
+
+  it("uses the responding day-speech budget after a prior speaker", () => {
+    const source = game.players.find(
+      (player) => player.playerId !== villager.playerId,
+    )!;
+    const events = [
+      roleAssigned(1, villager.playerId, "villager", "good"),
+      phaseStarted(2, "speech", 1),
+      {
+        ...baseEvent(3),
+        type: "day_speech_given",
+        phase: "speech",
+        actorPlayerId: source.playerId,
+        visibility: { kind: "public" },
+        payload: {
+          playerId: source.playerId,
+          text: "先听后面的发言。",
+          dayNumber: 1,
+          round: 1,
+        },
+      },
+    ] satisfies readonly GameEvent[];
+    const context = buildPlayerLlmContext({
+      game,
+      events,
+      viewerPlayerId: villager.playerId,
+    });
+
+    expect(
+      buildSpeechPrompt({
+        context,
+        draft: daySpeechDraft(villager.playerId),
+      }).speechBudget,
+    ).toMatchObject({
+      key: "day_response",
+      targetMinCharacters: 140,
+      targetMaxCharacters: 180,
+      hardMaxCharacters: 220,
+    });
+  });
+
+  it("renders only the current scripted actor brief", () => {
+    const context = buildPlayerLlmContext({
+      game,
+      events: [roleAssigned(1, villager.playerId, "villager", "good")],
+      viewerPlayerId: villager.playerId,
+    });
+    const content = buildSpeechPrompt({
+      context,
+      draft: daySpeechDraft(villager.playerId),
+      actorBrief: {
+        stepIndex: 18,
+        scene: "红印存根第一次出现矛盾",
+        objective: "迫使上一位发言者解释证词差异",
+        stance: "暂时质疑三号，但保留复核空间",
+        disclosure: "conceal",
+        themeHook: "让本轮质疑成为下一次投票验证的档案版本冲突",
+        budget: speechBudgetForKey("day_first", "critical"),
+      },
+    }).messages[0]!.content;
+
+    expect(content).toContain("【本场剧本指引——只执行当前场，不得推断未来】");
+    expect(content).toContain("红印存根第一次出现矛盾");
+    expect(content).toContain("你看不到完整剧本");
+    expect(content).not.toContain("计划胜方");
+    expect(content).toContain("text 硬上限：136 个非空白字符");
   });
 
   it("renders action candidates with stable id, seat, and name", () => {

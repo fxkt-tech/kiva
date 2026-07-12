@@ -143,6 +143,84 @@ describe("speech generation", () => {
     });
   });
 
+  it("repairs an over-limit speech without truncating it", async () => {
+    const result = await generateSpeechDraft({
+      game,
+      events: [roleAssigned(1)],
+      draft: speechDraft("默认发言"),
+      llmClient: new MockLlmClient([
+        {
+          disclosure: "claim",
+          text: "长".repeat(171),
+          decisionSummary: "第一次输出超过长度合同。",
+        },
+        {
+          disclosure: "claim",
+          text: "我公开查验结论，并只保留一个关键依据和后续验证方向。",
+          decisionSummary: "压缩为本轮必要信息。",
+        },
+      ]),
+      generationId: "generation_length_repaired",
+      createdAt,
+    });
+
+    expect(result.draft.payload).toMatchObject({
+      text: "我公开查验结论，并只保留一个关键依据和后续验证方向。",
+    });
+    expect(result.generation).toMatchObject({
+      status: "success",
+      attempts: [
+        {
+          error:
+            "LLM speech text exceeds hard limit: 171 > 170 non-whitespace characters",
+        },
+        { error: null },
+      ],
+    });
+    expect(
+      result.generation?.attempts?.[1]?.request.messages[0]?.content,
+    ).toContain("不超过 170 个非空白字符");
+  });
+
+  it("preserves the draft when the repaired speech remains over limit", async () => {
+    const result = await generateSpeechDraft({
+      game,
+      events: [roleAssigned(1)],
+      draft: speechDraft("默认发言"),
+      llmClient: new MockLlmClient([
+        {
+          disclosure: "claim",
+          text: "长".repeat(171),
+          decisionSummary: "第一次超长。",
+        },
+        {
+          disclosure: "claim",
+          text: "仍".repeat(172),
+          decisionSummary: "第二次仍然超长。",
+        },
+      ]),
+      generationId: "generation_length_failed",
+      createdAt,
+    });
+
+    expect(result.draft.payload).toMatchObject({ text: "默认发言" });
+    expect(result.generation).toMatchObject({
+      status: "failed",
+      error:
+        "LLM speech text exceeds hard limit: 172 > 170 non-whitespace characters",
+      attempts: [
+        {
+          error:
+            "LLM speech text exceeds hard limit: 171 > 170 non-whitespace characters",
+        },
+        {
+          error:
+            "LLM speech text exceeds hard limit: 172 > 170 non-whitespace characters",
+        },
+      ],
+    });
+  });
+
   it("does not reject first-night wolf discussion based on wording", async () => {
     const events = [
       roleAssignedFor(1, wolf),

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { DraftPayloadEdit } from "@/core/draft-edit";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
+import { parseGameRunMode, type GameRunMode } from "@/core/game-run-mode";
 import type { DraftId, GameId, PlayerId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
@@ -37,9 +38,13 @@ export async function createGameFromPresetHomeAction(
     presetId,
     "",
     formValue(formData, "scriptId"),
+    runModeFromForm(formData),
   );
+  if (record.game.runMode === "scripted") {
+    await gameActions.generateEpisodeScript(record.game.id);
+  }
   revalidatePath("/");
-  redirect(`/games/${record.game.id}/editor`);
+  redirect(createdGamePath(record.game.id, record.game.runMode));
 }
 
 export async function createGameFromSeatAssignmentsAction(formData: FormData) {
@@ -60,9 +65,35 @@ export async function createGameFromSeatAssignmentsAction(formData: FormData) {
     preset,
     "",
     formValue(formData, "scriptId"),
+    runModeFromForm(formData),
   );
+  if (record.game.runMode === "scripted") {
+    await gameActions.generateEpisodeScript(record.game.id);
+  }
   revalidatePath("/");
-  redirect(`/games/${record.game.id}/editor`);
+  redirect(createdGamePath(record.game.id, record.game.runMode));
+}
+
+export async function generateEpisodeScriptAction(gameId: GameId) {
+  await gameActions.generateEpisodeScript(gameId);
+  revalidatePath(`/games/${gameId}/script`);
+  revalidatePath("/");
+}
+
+export async function approveEpisodeScriptAction(
+  gameId: GameId,
+  expectedJobId: string,
+  expectedScriptId: string,
+) {
+  await gameActions.approveEpisodeScript(
+    gameId,
+    expectedJobId,
+    expectedScriptId,
+  );
+  revalidatePath(`/games/${gameId}/script`);
+  revalidatePath(`/games/${gameId}/editor`);
+  revalidatePath("/");
+  redirect(`/games/${gameId}/editor`);
 }
 
 export async function deleteGameAction(gameId: GameId) {
@@ -113,6 +144,16 @@ export async function rollbackAfterAction(gameId: GameId, index: number) {
 function formValue(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
+}
+
+function runModeFromForm(formData: FormData): GameRunMode {
+  return parseGameRunMode(formValue(formData, "runMode"));
+}
+
+function createdGamePath(gameId: GameId, runMode: GameRunMode): string {
+  return runMode === "scripted"
+    ? `/games/${gameId}/script`
+    : `/games/${gameId}/editor`;
 }
 
 function seatAssignmentsFromForm(

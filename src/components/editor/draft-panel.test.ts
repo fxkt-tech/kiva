@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { DraftEvent } from "@/core/drafts";
 import type { GenerationRecord } from "@/core/generation-record";
 import { createSeedGame } from "@/core/game";
+import { speechBudgetForKey } from "@/core/speech-budget";
 import type { DraftId, GameId, PlayerId } from "@/core/types";
 import { DraftPanel } from "./draft-panel";
 
@@ -53,6 +54,21 @@ describe("DraftPanel payload controls", () => {
     expect(html).toContain("Regenerate");
   });
 
+  it("shows the current speech budget and character count", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(DraftPanel, {
+        gameId,
+        draft: daySpeechDraft(),
+        players,
+        alivePlayerIds: players.map((player) => player.playerId),
+        generations: [],
+        speechBudget: speechBudgetForKey("day_first"),
+      }),
+    );
+
+    expect(html).toContain("normal · 4/170 字");
+  });
+
   it("renders regenerate control for action drafts", () => {
     const draft = wolfKillDraft(players[0].playerId);
     const html = renderPanel(draft, [
@@ -60,6 +76,23 @@ describe("DraftPanel payload controls", () => {
     ]);
 
     expect(html).toContain("Regenerate");
+  });
+
+  it("renders approved scripted actions as read-only structure", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(DraftPanel, {
+        gameId,
+        draft: wolfKillDraft(players[0].playerId),
+        players,
+        alivePlayerIds: players.map((player) => player.playerId),
+        generations: [],
+        scriptedStructureLocked: true,
+      }),
+    );
+
+    expect(html).toContain("此行动由已批准剧本锁定");
+    expect(html).not.toContain("Regenerate");
+    expect(html).not.toContain('name="targetPlayerId"');
   });
 
   it("renders latest generation summary for current draft", () => {
