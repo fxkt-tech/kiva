@@ -14,6 +14,10 @@ timing behavior.
 - Status: `GET /api/preview-v2/exports/:jobId`
 - Actions: `POST /api/preview-v2/exports/:jobId/{cancel|retry}`
 - Files: `GET /api/preview-v2/exports/:jobId/{download|assets/*}`
+- Player voice jobs: `POST|GET /api/games/:gameId/voice-jobs`
+- Voice job actions: `POST /api/games/:gameId/voice-jobs/:jobId/{cancel|retry}`
+- Voice assets: `GET /api/games/:gameId/voice/:eventId`
+- Presenter clips: `GET /api/presenters/:presenterId/voice/:file`
 - Composition: `KivaVideoComposition(input: VideoCompositionInput)`
 - Timeline: `AudioCue {kind, src, startsAtMs, durationMs, trimStartMs, volume}`
 - Scene navigation: `sceneStartFrame(startsAtMs, fps) -> integer frame`
@@ -56,12 +60,15 @@ timing behavior.
   complete `Game.presenter` snapshot; preview and export must consume that
   snapshot, never reload current library wording for an existing game.
 - Presenter Definitions are first-class Library objects. The Presenters editor
-  may change `id`, `name`, `avatar`, `enabled`, every semantic template, and
-  every standard/per-seat voice mapping. It must derive keys, variables, and
-  the required 1–12 seat shape from `PRESENTER_LINE_VARIABLES`, then submit a
-  complete catalog through the same `validatePresenterDefinitions()` boundary
-  used for direct KivDB loads. Blank voice filenames decode to null; a
-  non-blank filename carries `ready` or `pending`.
+  may change `id`, `name`, `avatar`, `enabled`, and every semantic template.
+  Voice is built separately into a versioned presenter manifest; template
+  edits do not silently reuse stale per-line audio mappings.
+- The Presenter editor loads the selected manifest and renders one audio
+  preview control for every semantic line. Single-seat variants expose a 1–12
+  selector; multi-clip examples play their declared clips serially with the
+  canonical 80ms gap. Starting one preview stops the previous preview, and
+  preview-only selectors are excluded from the dirty-form guard. Missing
+  manifests disable playback without blocking copy editing.
 - A Presenter Definition is not a Player Character. It has no seat, role,
   faction, action, vote, private knowledge, or win-condition participation.
 - Presenter templates use stable semantic keys and validated named
@@ -72,14 +79,36 @@ timing behavior.
   transcript ownership, transcript text, and the presenter cue. Player-authored
   speech remains player-owned while its player-addressed prompt remains a
   presenter cue.
-- Voice mappings are `ready`, `pending`, or absent. Only `ready` mappings emit
-  cues. `pending` exists to document a stale/unrecorded asset without allowing
-  subtitle/audio wording drift; switching a verified KivDB mapping to `ready`
-  enables it without a source change.
-- System voice files are selected from `presenterCue.voiceFile`; never match
-  rendered Chinese titles or prose. The asset route authorizes safe basenames
-  declared by the Presenter Definition collection rather than maintaining a
-  second filename allowlist.
+- Presenter voice files are selected from the built manifest clip plan, never
+  from rendered Chinese titles or prose. Dynamic player variables expand to
+  fixed seat/role clips. The asset route serves only files declared by that
+  manifest.
+- Every MP3 route consumed by Remotion (`presenters`, Game player voice, and
+  export snapshot assets) supports a single HTTP byte range: valid Range ->
+  `206` with `Accept-Ranges`, `Content-Range`, and exact `Content-Length`;
+  unsatisfiable Range -> `416` with `bytes */<size>`. A full GET still advertises
+  `Accept-Ranges: bytes`.
+- Presenter MP3 filenames contain a SHA-256 fingerprint of the complete voice
+  profile and synthesized text. Never replace bytes behind the same immutable
+  URL; profile, speed, or copy changes must produce a new filename, update the
+  manifest atomically, then remove obsolete files.
+- Edge MVP voice identities are centralized constants: Presenter
+  `zh-CN-YunjianNeural`, male Player `zh-CN-YunxiNeural`, and female Player
+  `zh-CN-XiaoxiaoNeural`; every profile uses `rate: "+20%"` (1.2x).
+  Every template with exactly one scalar seat variable resolves to one of 12
+  complete utterance clips and must never concatenate a seat-number clip.
+  Multi-player/list templates retain reusable clip composition. Presenter clip
+  reuse requires the complete manifest
+  profile—not only clip text and filename—to match the current definition.
+- Player voice artifacts are immutable and keyed by confirmed `eventId` inside
+  the Game directory. Generation is a persisted server job; retry skips
+  successful artifacts. Preview may use a silent fallback, but export requires
+  every player-authored playback item to have an artifact.
+- Player subtitle cues come from real TTS word boundaries aggregated into
+  sentence windows. Never switch subtitle windows by `scene progress * count`.
+- The canonical speech rhythm is presenter clips, 250 ms handoff silence,
+  player audio, and 350 ms tail silence. Presenter clip gaps are 80 ms, and
+  voice segments never overlap.
 - Never use `scene.title` as transcript fallback. Scenes with empty narration
   use an exhaustive semantic projection: explicit copy for every phase, then
   event details or a kind-specific neutral message for other scene kinds.
@@ -133,7 +162,7 @@ timing behavior.
   active events plus all mutable assets. A preview draft is never exported.
 - Jobs are stored under `KIVA_DATA_DIR/exports/<gameId>/<jobId>` and retained.
 - `KIVA_RENDER_ORIGIN` optionally overrides the trusted render origin; default
-  is `http://127.0.0.1:3000`.
+  is `http://127.0.0.1:9090`, matching the fixed `pnpm dev` port.
 - Exactly one process-global renderer runs at a time. Later jobs remain queued.
 - Every finite audio cue must set `durationMs`. A Remotion `Sequence` without a
   duration remains mounted until the composition ends, so completed
@@ -230,17 +259,16 @@ timing behavior.
   `resolution`; only speech resolves to a player, every other kind resolves to
   the presenter, the header displays `gameTitle` for every scene, and empty
   narration never falls back to `scene.title`.
-- Presenter definitions: validate unique IDs, complete semantic key sets, exact
-  placeholder contracts, safe filenames, ready/pending status, and explicit
-  prompt mappings for seats 1–12. Prove two definitions can render one event to
-  different copy.
+- Presenter definitions: validate unique IDs, complete semantic key sets, and
+  exact placeholder contracts. Presenter manifests validate declared clip
+  files, durations, fixed seats 1–12, and runtime clip plans.
 - Game presenter selection: both preset and random creation require an enabled
   presenter ID; the created snapshot remains unchanged after its library
   definition is edited, disabled, or removed.
 - Library presenter configuration: assert the tab/list/editor renders both
-  definitions; form parsing reconstructs all semantic keys and seats 1–12;
-  identity, template, ready/pending, and null mappings survive repository
-  round-trip; invalid catalogs do not replace the stored collection.
+  definitions; form parsing reconstructs all semantic keys; identity and
+  templates survive repository round-trip; invalid catalogs do not replace the
+  stored collection.
 - Presenter resolution: cover every event and result variant, player speech
   ownership, empty-speech fallback, pending silence, ready prompt audio, and
   missing optional files.
@@ -330,3 +358,130 @@ Remotion's Webpack disk cache stays disabled
 because the application already caches the completed bundle per process; this
 avoids corrupted cache packs during local
 concurrent builds.
+
+## Scenario: Export History Across Composition Schema Changes
+
+### 1. Scope / Trigger
+
+- Trigger: `VideoCompositionInput.schemaVersion` changes while persisted export
+  directories from an earlier version still exist.
+
+### 2. Signatures
+
+- `ExportRepository.list(gameId): Promise<readonly ExportJob[]>` reads and
+  validates `job.json` only.
+- `ExportRepository.get(gameId, jobId): Promise<ExportJobSnapshot | null>`
+  reads both `job.json` and `input.json` and requires the current composition
+  schema.
+
+### 3. Contracts
+
+- Export history and restart reconciliation depend only on job metadata.
+- Rendering, retrying, and serving snapshot-owned assets require a fully valid
+  current-version `input.json`.
+- A schema bump does not migrate or reinterpret an old composition snapshot.
+
+### 4. Validation & Error Matrix
+
+- Missing `job.json` -> repository entry is absent.
+- Invalid `job.json` -> reject as `Invalid export job record`.
+- Stale `input.json` during `list()` -> ignore it and return valid job metadata.
+- Stale `input.json` during `get()` -> reject as unsupported composition schema.
+
+### 5. Good / Base / Bad Cases
+
+- Good: current job and composition schemas list and load normally.
+- Base: a v2 composition remains visible in history after the runtime moves to
+  v3.
+- Bad: one old composition makes the entire game export-history API return 500.
+
+### 6. Tests Required
+
+- Repository regression: create a valid job, replace only `input.json` with an
+  older schema, and assert `list()` returns the job unchanged.
+- Decoder regression: direct snapshot loading must continue rejecting the old
+  schema so history resilience does not become rendering compatibility.
+
+### 7. Wrong vs Correct
+
+Wrong: implement history by calling the full snapshot decoder for every job.
+
+Correct: decode the smallest contract needed by each operation—job metadata
+for listing/reconciliation, full composition only for snapshot consumers.
+
+## Scenario: Isolated Voice and Video Workers
+
+### 1. Scope / Trigger
+
+- Trigger: Edge TTS, Remotion, or FFmpeg work is initiated from Preview while
+  the Next.js server must remain responsive.
+
+### 2. Signatures
+
+- `pnpm worker:voice` runs `VoiceJobService.processQueuedOnce()` in a loop.
+- `pnpm worker:video` runs `VideoExportService.processQueuedOnce()` in a loop.
+- `pnpm dev:all` starts Web, Voice Worker, and Video Worker as separate processes.
+
+### 3. Contracts
+
+- API-owned service singletons use `executeInline: false`; POST persists a
+  `queued` job and returns HTTP 202 without executing it.
+- Each Worker processes the oldest queued job serially and owns a per-kind PID
+  lock under `<KIVA_DATA_DIR>/workers/`.
+- Restart keeps `queued` jobs queued. Voice `preparing/generating` and video
+  `preparing/rendering` jobs become `interrupted`.
+- Cancellation is a persisted state transition observed by the Worker; an
+  in-memory cancellation flag is only a same-process optimization.
+- Voice status polling updates panel-local state. It calls `router.refresh()`
+  only when the same job's completed/skipped item count increases; queued
+  and executing statuses poll every 30 seconds and must not cause repeated
+  Preview RSC requests or Editor iframe remounts.
+- Active video-export statuses also poll every 30 seconds; manual refresh
+  remains immediate.
+- A Game lock contains PID/token ownership and recovers dead-process or old
+  ownerless lock directories. Network synthesis runs outside this lock; only
+  the final re-read, immutable-artifact check, publish, and record save belong
+  inside the critical section.
+
+### 4. Validation & Error Matrix
+
+- Worker absent -> task remains `queued`; Web remains available.
+- Second live Worker of the same kind -> startup fails with the owning PID.
+- Stale PID lock -> new Worker replaces it.
+- Worker exits during active work -> next initialization marks the job
+  `interrupted`; user retries manually.
+- Worker dies while holding a Game lock -> the next lock acquisition verifies
+  the PID, removes the stale lock, and proceeds.
+
+### 5. Good / Base / Bad Cases
+
+- Good: Web, Voice Worker, and Video Worker run as three processes; rendering
+  does not occupy the Next.js event loop.
+- Base: only Web runs; users can create and inspect queued tasks.
+- Bad: an API route calls Edge TTS or `renderVideo()` after returning 202.
+
+### 6. Tests Required
+
+- Voice integration: persist-only service creates `queued`; one Worker pass
+  completes it; a second pass reports no work.
+- Lock regression: repository instances serialize live owners, recover a dead
+  PID owner, and voice synthesis can independently acquire the Game lock while
+  the Edge request is running.
+- Video persistence: API-mode initialization leaves a queued export unchanged.
+- Full suite must prove existing inline test adapters remain deterministic.
+
+### 7. Wrong vs Correct
+
+Wrong: use promises, timers, or an in-memory queue inside Next.js and call it
+background work.
+
+Correct: persist the command in Next.js and execute CPU/network-heavy work in
+a separately started process with filesystem-visible state transitions.
+
+Wrong: hold the Game lock around an external TTS request. This makes Editor
+state planning wait for network latency and turns a crashed Worker into a
+permanent page hang when the lock has no owner metadata.
+
+Correct: synthesize to a unique temporary file without the Game lock, then
+acquire the lock briefly, re-read the Game, skip an existing immutable
+artifact, and atomically publish the new artifact.

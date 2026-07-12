@@ -438,16 +438,32 @@ function SubtitleBand({
   readonly phase: StageVisualPhase;
   readonly shot: ShotFrame;
 }) {
+  const playerVoiceStarted =
+    shot.scene.playerVoice !== null &&
+    shot.scene.playerVoice !== undefined &&
+    shot.clock.sceneMs >= shot.scene.playerVoice.startsAtOffsetMs;
+  const presentationScene =
+    shot.scene.playerVoice && !playerVoiceStarted
+      ? {
+          ...shot.scene,
+          transcriptSpeaker: "presenter" as const,
+          text: shot.scene.presenterCue.text,
+        }
+      : shot.scene;
   const presentation = transcriptPresentationForScene(
-    shot.scene,
+    presentationScene,
     shot.activePlayer,
   );
-  const windows = subtitleWindows(presentation.content, 22);
-  const windowIndex = Math.min(
-    Math.max(0, windows.length - 1),
-    Math.floor(shot.clock.progress * windows.length),
-  );
-  const lines = windows[windowIndex] ?? [];
+  const lines = shot.scene.playerVoice && playerVoiceStarted
+    ? shot.subtitle?.lines ?? []
+    : (() => {
+        const windows = subtitleWindows(presentation.content, 22);
+        const windowIndex = Math.min(
+          Math.max(0, windows.length - 1),
+          Math.floor(shot.clock.progress * windows.length),
+        );
+        return windows[windowIndex] ?? [];
+      })();
   const avatarUrl = presentation.speaker.avatar
     ? avatarUrls[presentation.speaker.avatar] ?? presentation.speaker.avatar
     : null;

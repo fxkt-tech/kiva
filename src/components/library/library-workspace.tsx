@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset } from "@/core/game-preset";
 import type { PresenterDefinition } from "@/core/presenter-definition";
+import type { PresenterVoiceManifest } from "@/core/presenter-voice";
 import type { RoleDefinition } from "@/core/role-definition";
 import type { LibraryActionsRecord } from "@/server/library-actions";
 import { textButtonClassName } from "@/components/ui/button-styles";
@@ -18,6 +19,7 @@ type LibraryWorkspaceProps = {
   readonly activeTab: LibraryTab;
   readonly selectedId: string | null;
   readonly library: LibraryActionsRecord;
+  readonly presenterVoiceManifests?: Readonly<Record<string, PresenterVoiceManifest>>;
 };
 
 type SelectedItem =
@@ -49,6 +51,7 @@ export function LibraryWorkspace({
   activeTab,
   selectedId,
   library,
+  presenterVoiceManifests = {},
 }: LibraryWorkspaceProps) {
   const selected = selectItem(library, activeTab, selectedId);
   const effectiveSelectedId = selected?.id ?? null;
@@ -132,6 +135,7 @@ export function LibraryWorkspace({
               <PresenterEditor
                 key={selectedEditorKey(selected)}
                 presenter={selected.item}
+                voiceManifest={presenterVoiceManifests[selected.item.id]}
               />
             ) : (
               <PresetEditor

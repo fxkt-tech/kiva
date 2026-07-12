@@ -35,35 +35,12 @@ describe("presenter definitions", () => {
     );
   });
 
-  it("rejects placeholder drift and unsafe voice files", () => {
+  it("rejects placeholder drift", () => {
     const placeholderDrift = structuredClone(presenterDefinitionsJson);
     placeholderDrift[0]!.lines["action.wolf_kill"].template =
       "狼人选择了{player}。";
     expect(() => validatePresenterDefinitions(placeholderDrift)).toThrow(
       "template placeholders must equal [target]",
-    );
-
-    const unsafeVoice = structuredClone(presenterDefinitionsJson);
-    unsafeVoice[0]!.lines["phase.night"].voice!.file = "../night.mp3";
-    expect(() => validatePresenterDefinitions(unsafeVoice)).toThrow(
-      "safe mp3 basename",
-    );
-  });
-
-  it("requires an explicit voice mapping decision for seats 1 through 12", () => {
-    const missingSeat = structuredClone(presenterDefinitionsJson) as unknown as {
-      0: {
-        lines: {
-          "prompt.speech": {
-            voiceBySeat: Record<string, unknown>;
-          };
-        };
-      };
-    };
-    delete missingSeat[0].lines["prompt.speech"].voiceBySeat["12"];
-
-    expect(() => validatePresenterDefinitions(missingSeat)).toThrow(
-      "exactly seats 1 through 12",
     );
   });
 

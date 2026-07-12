@@ -10,7 +10,7 @@ export function createShotFrame(input: {
   readonly timeMs: number;
 }): ShotFrame {
   const clock = createShotClock(input.scene, input.timeMs);
-  const activePlayerId = activePlayerIdForScene(input.scene);
+  const activePlayerId = activePlayerIdForScene(input.scene, clock.sceneMs);
   const players = input.scene.players.map<RenderablePlayer>((player) => ({
     ...player,
     emphasis: player.playerId === activePlayerId
@@ -23,7 +23,7 @@ export function createShotFrame(input: {
     (player) => player.emphasis === "active" || player.emphasis === "highlighted",
   );
   const subtitle = input.scene.kind === "speech"
-    ? subtitleCueForScene(input.scene, clock.progress, activePlayer)
+    ? subtitleCueForScene(input.scene, clock.progress, activePlayer, clock.sceneMs)
     : null;
 
   return {
@@ -57,8 +57,11 @@ export function createShotClock(
   };
 }
 
-function activePlayerIdForScene(scene: PlaybackItem): string | null {
+function activePlayerIdForScene(scene: PlaybackItem, sceneMs: number): string | null {
   if (scene.kind !== "speech") {
+    return null;
+  }
+  if (scene.playerVoice && sceneMs < scene.playerVoice.startsAtOffsetMs) {
     return null;
   }
 

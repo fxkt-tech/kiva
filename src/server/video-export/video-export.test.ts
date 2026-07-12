@@ -7,7 +7,7 @@ import {
   type VideoCompositionInput,
 } from "@/components/preview-v2/composition/types";
 import { ExportRepository } from "./export-repository";
-import { getVideoExportService } from "./export-service";
+import { getVideoExportService, VideoExportService } from "./export-service";
 import {
   transitionExportJob,
   updateExportProgress,
@@ -70,6 +70,61 @@ describe("video export persistence", () => {
     expect((await repository.list(initialJob.gameId))[0]?.status).toBe(
       "preparing",
     );
+  });
+
+  it("lists job metadata without decoding a stale composition snapshot", async () => {
+    const root = await mkdtemp(join(tmpdir(), "kiva-export-"));
+    directories.push(root);
+    const repository = new ExportRepository(root);
+    const initialJob = job();
+    await repository.create({
+      job: initialJob,
+      composition: fixtureComposition(),
+    });
+    await writeFile(
+      join(repository.jobDir(initialJob.gameId, initialJob.jobId), "input.json"),
+      JSON.stringify({ ...fixtureComposition(), schemaVersion: 2 }),
+      "utf8",
+    );
+
+    await expect(repository.list(initialJob.gameId)).resolves.toEqual([
+      initialJob,
+    ]);
+    await expect(
+      repository.get(initialJob.gameId, initialJob.jobId),
+    ).rejects.toThrow("Unsupported video composition schema version");
+  });
+
+  it("keeps queued exports queued when the API service initializes", async () => {
+    const root = await mkdtemp(join(tmpdir(), "kiva-export-worker-"));
+    directories.push(root);
+    const repository = new ExportRepository(root);
+    const initialJob = job();
+    await repository.create({ job: initialJob, composition: fixtureComposition() });
+
+    const service = new VideoExportService(root, { executeInline: false });
+    expect((await service.list(initialJob.gameId))[0]?.status).toBe("queued");
+    expect((await repository.list(initialJob.gameId))[0]?.status).toBe("queued");
+  });
+
+  it("fails a stale queued snapshot without crashing the video worker", async () => {
+    const root = await mkdtemp(join(tmpdir(), "kiva-export-stale-worker-"));
+    directories.push(root);
+    const repository = new ExportRepository(root);
+    const initialJob = job();
+    await repository.create({ job: initialJob, composition: fixtureComposition() });
+    await writeFile(
+      join(repository.jobDir(initialJob.gameId, initialJob.jobId), "input.json"),
+      JSON.stringify({ ...fixtureComposition(), schemaVersion: 2 }),
+      "utf8",
+    );
+
+    const service = new VideoExportService(root, { executeInline: false });
+    expect(await service.processQueuedOnce()).toBe(true);
+    expect((await repository.list(initialJob.gameId))[0]).toMatchObject({
+      status: "failed",
+      error: { code: "snapshot_invalid" },
+    });
   });
 
   it("rejects path traversal identifiers", async () => {

@@ -5,6 +5,7 @@ import {
 import { createGameRepository } from "@/server/game-repository";
 import { createLibraryActions } from "@/server/library-actions";
 import { createLibraryRepository } from "@/server/library-repository";
+import { loadPresenterVoiceManifest } from "@/server/presenter-voice-manifest";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +24,24 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
     libraryRepository: createLibraryRepository(dataDir),
     gameRepository: createGameRepository(dataDir),
   }).getLibrary();
+  const presenterVoiceManifests = Object.fromEntries(
+    (await Promise.all(
+      library.presenters.map(async (presenter) => {
+        const manifest = await loadPresenterVoiceManifest(
+          dataDir ?? "kivdb",
+          presenter.id,
+        ).catch(() => null);
+        return manifest ? [presenter.id, manifest] as const : null;
+      }),
+    )).filter((entry) => entry !== null),
+  );
 
   return (
     <LibraryWorkspace
       activeTab={activeTab}
       selectedId={params.id ?? null}
       library={library}
+      presenterVoiceManifests={presenterVoiceManifests}
     />
   );
 }

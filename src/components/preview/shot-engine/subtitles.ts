@@ -15,7 +15,22 @@ export function subtitleCueForScene(
   scene: PlaybackItem,
   progress: number,
   speaker: PlaybackScenePlayer | null,
+  sceneMs?: number,
 ): SubtitleCue | null {
+  if (scene.playerVoice && sceneMs !== undefined) {
+    const voiceMs = sceneMs - scene.playerVoice.startsAtOffsetMs;
+    const cueIndex = scene.playerVoice.cues.findIndex(
+      (cue) => voiceMs >= cue.startMs && voiceMs < cue.endMs,
+    );
+    if (cueIndex < 0) return null;
+    const cue = scene.playerVoice.cues[cueIndex]!;
+    return {
+      speaker: speaker ? `${speaker.seatNo} 号 ${speaker.name}` : scene.title,
+      lines: subtitleWindows(cue.text).flat(),
+      windowIndex: cueIndex,
+      windowCount: scene.playerVoice.cues.length,
+    };
+  }
   const sourceText = scene.text || scene.title;
   if (!sourceText.trim()) {
     return null;

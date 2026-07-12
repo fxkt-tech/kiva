@@ -5,6 +5,12 @@ import type { PlayerSnapshot } from "./player";
 import type { GamePresenterSnapshot } from "./presenter-definition";
 import { resolvePresenter } from "./presenter";
 import type { Phase, PlayerId } from "./types";
+import type { PlayerVoiceArtifact, SpeechCue } from "./voice";
+import {
+  resolvePresenterVoiceClips,
+  type PresenterVoiceManifest,
+  type ResolvedPresenterVoiceClip,
+} from "./presenter-voice";
 
 export type PlaybackSceneKind =
   | "phase"
@@ -41,6 +47,8 @@ export type CompilePublicPlaybackOptions = {
   readonly rhythm?: Partial<PlaybackRhythmConfig>;
   readonly audience?: "public" | "director";
   readonly durationForScene?: (scene: PlaybackItem, event: GameEvent) => number | null;
+  readonly voiceArtifactsByEventId?: Readonly<Record<string, PlayerVoiceArtifact>>;
+  readonly presenterVoiceManifest?: PresenterVoiceManifest;
 };
 
 export type PlaybackItem = {
@@ -59,9 +67,24 @@ export type PlaybackItem = {
   readonly presenterCue: {
     readonly copyKey: string;
     readonly text: string;
-    readonly voiceFile: string | null;
   };
+  readonly playerVoice?: {
+    readonly eventId: string;
+    readonly playerId: PlayerId;
+    readonly file: string;
+    readonly durationMs: number;
+    readonly startsAtOffsetMs: number;
+    readonly cues: readonly SpeechCue[];
+  } | null;
+  readonly presenterVoiceClips?: readonly ResolvedPresenterVoiceClip[];
+  readonly presenterSourceId?: string;
 };
+
+export const VOICE_TIMING = {
+  presenterToPlayerMs: 250,
+  playerTailMs: 350,
+  presenterClipGapMs: 80,
+} as const;
 
 const defaultRhythm: PlaybackRhythmConfig = {
   phaseMs: 1600,
@@ -95,6 +118,28 @@ export function compilePublicPlayback(
         return [];
       }
       const presenter = resolvePresenter(options.presenter, event, players);
+      const artifact = options.voiceArtifactsByEventId?.[event.id] ?? null;
+      const presenterVoiceClips = options.presenterVoiceManifest
+        ? resolvePresenterVoiceClips(options.presenterVoiceManifest, presenter.cue)
+        : [];
+      const presenterPlanDurationMs = presenterVoiceClips.reduce(
+        (total, clip, index) =>
+          total + clip.durationMs + (index === 0 ? 0 : VOICE_TIMING.presenterClipGapMs),
+        0,
+      );
+      const playerVoice =
+        presenter.transcriptSpeaker === "player" && artifact
+          ? {
+              eventId: event.id,
+              playerId: artifact.playerId,
+              file: artifact.audio.file,
+              durationMs: artifact.audio.durationMs,
+              startsAtOffsetMs:
+                presenterPlanDurationMs +
+                VOICE_TIMING.presenterToPlayerMs,
+              cues: artifact.cues,
+            }
+          : null;
 
       updatePublicDeaths(publiclyDeadPlayerIds, event);
 
@@ -112,9 +157,16 @@ export function compilePublicPlayback(
         presenterAvatar: presenter.presenterAvatar,
         transcriptSpeaker: presenter.transcriptSpeaker,
         presenterCue: presenter.cue,
+        playerVoice,
+        presenterVoiceClips,
+        presenterSourceId: options.presenter.presenterSourceId,
       };
-      const durationMs =
-        options.durationForScene?.(scene, event) ?? scene.durationMs;
+      const durationMs = playerVoice
+        ? playerVoice.startsAtOffsetMs +
+          playerVoice.durationMs +
+          VOICE_TIMING.playerTailMs
+        : options.durationForScene?.(scene, event) ??
+          (presenterPlanDurationMs || scene.durationMs);
 
       return [{ ...scene, durationMs }];
     });

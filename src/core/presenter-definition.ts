@@ -1,4 +1,8 @@
 import { isPlainObject } from "./model-binding";
+import {
+  validateVoiceProfileSnapshot,
+  type VoiceProfileSnapshot,
+} from "./voice";
 
 export const PRESENTER_LINE_VARIABLES = {
   "phase.setup": [],
@@ -49,24 +53,13 @@ export const PRESENTER_LINE_VARIABLES = {
 
 export type PresenterCopyKey = keyof typeof PRESENTER_LINE_VARIABLES;
 
-export type PresenterVoice = {
-  readonly file: string;
-  readonly status: "ready" | "pending";
-};
-
-export type PresenterStandardLine = {
+export type PresenterLine = {
   readonly template: string;
   readonly variables: readonly string[];
-  readonly voice: PresenterVoice | null;
 };
 
-export type PresenterSeatLine = {
-  readonly template: string;
-  readonly variables: readonly string[];
-  readonly voiceBySeat: Readonly<Record<string, PresenterVoice | null>>;
-};
-
-export type PresenterLine = PresenterStandardLine | PresenterSeatLine;
+export type PresenterStandardLine = PresenterLine;
+export type PresenterSeatLine = PresenterLine;
 
 export type PresenterLineCatalog = {
   readonly [Key in PresenterCopyKey]: PresenterLine;
@@ -76,6 +69,7 @@ export type PresenterDefinition = {
   readonly id: string;
   readonly name: string;
   readonly avatar: string | null;
+  readonly voiceProfile: VoiceProfileSnapshot;
   readonly lines: PresenterLineCatalog;
   readonly enabled: boolean;
   readonly createdAt: string;
@@ -96,7 +90,6 @@ export const PRESENTER_SEAT_COPY_KEYS = [
 ] as const satisfies readonly PresenterCopyKey[];
 
 const PLAYER_PROMPT_KEYS = new Set<PresenterCopyKey>(PRESENTER_SEAT_COPY_KEYS);
-const SAFE_MP3_FILE = /^[a-zA-Z0-9_-]+\.mp3$/;
 
 export function isPresenterSeatCopyKey(
   key: PresenterCopyKey,
@@ -125,6 +118,10 @@ export function validatePresenterDefinitions(
     ids.add(id);
 
     validateIdentity(definition, `Presenter ${id}`);
+    validateVoiceProfileSnapshot(
+      definition.voiceProfile,
+      `Presenter ${id} voiceProfile`,
+    );
     validatePresenterLines(definition.lines, `Presenter ${id} lines`);
 
     if (typeof definition.enabled !== "boolean") {
@@ -225,18 +222,6 @@ function validatePresenterLine(
   }
   validateTemplatePlaceholders(value.template, expectedVariables, path);
 
-  if (PLAYER_PROMPT_KEYS.has(key)) {
-    if ("voice" in value || !isPlainObject(value.voiceBySeat)) {
-      throw new Error(`${path} must define voiceBySeat and not voice`);
-    }
-    validateSeatVoices(value.voiceBySeat, `${path}.voiceBySeat`);
-    return;
-  }
-
-  if ("voiceBySeat" in value || !("voice" in value)) {
-    throw new Error(`${path} must define voice and not voiceBySeat`);
-  }
-  validateVoice(value.voice, `${path}.voice`);
 }
 
 function validateTemplatePlaceholders(
@@ -261,35 +246,6 @@ function validateTemplatePlaceholders(
     throw new Error(
       `${path}.template placeholders must equal [${expected.join(", ")}]`,
     );
-  }
-}
-
-function validateSeatVoices(
-  value: Record<string, unknown>,
-  path: string,
-): void {
-  const expectedSeats = Array.from({ length: 12 }, (_, index) => String(index + 1));
-  const actualSeats = Object.keys(value).sort((a, b) => Number(a) - Number(b));
-  if (actualSeats.join("\0") !== expectedSeats.join("\0")) {
-    throw new Error(`${path} must contain exactly seats 1 through 12`);
-  }
-  for (const seat of expectedSeats) {
-    validateVoice(value[seat], `${path}.${seat}`);
-  }
-}
-
-function validateVoice(value: unknown, path: string): void {
-  if (value === null) {
-    return;
-  }
-  if (!isPlainObject(value)) {
-    throw new Error(`${path} must be an object or null`);
-  }
-  if (typeof value.file !== "string" || !SAFE_MP3_FILE.test(value.file)) {
-    throw new Error(`${path}.file must be a safe mp3 basename`);
-  }
-  if (value.status !== "ready" && value.status !== "pending") {
-    throw new Error(`${path}.status must be ready or pending`);
   }
 }
 

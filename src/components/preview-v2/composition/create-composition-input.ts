@@ -30,6 +30,6 @@ export function createCompositionInput(input: {
       ...DEFAULT_COMPOSITION_ASSETS,
       avatarUrls,
     },
-    audioCues: buildAudioTimeline(input.items),
+    audioCues: buildAudioTimeline(input.items, input.gameId),
   };
 }

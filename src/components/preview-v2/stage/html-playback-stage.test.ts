@@ -206,7 +206,7 @@ function item(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     presenterName: "守夜人",
     presenterAvatar: null,
     transcriptSpeaker: "presenter",
-    presenterCue: { copyKey: "fallback.announcement", text: "", voiceFile: null },
+    presenterCue: { copyKey: "fallback.announcement", text: "" },
     ...overrides,
   };
 }

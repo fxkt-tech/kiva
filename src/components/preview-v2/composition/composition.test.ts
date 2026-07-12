@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { playbackIndexAtMs, type PlaybackItem } from "@/core/playback";
-import {
-  buildAudioTimeline,
-  systemVoiceCueForItem,
-} from "../audio/audio-timeline";
+import { buildAudioTimeline } from "../audio/audio-timeline";
 import {
   decodeVideoCompositionInput,
   VIDEO_COMPOSITION_SCHEMA_VERSION,
@@ -38,37 +35,26 @@ describe("preview v2 composition contracts", () => {
     expect(playbackIndexAtMs(items, landedAtMs)).toBe(1);
   });
 
-  it("builds sorted optional audio cues", () => {
+  it("builds sorted presenter clip cues", () => {
     const items = [
-      item({ index: 2, startsAtMs: 2000 }),
-      item({ index: 1, startsAtMs: 0 }),
+      item({
+        index: 2,
+        startsAtMs: 2000,
+        presenterSourceId: "host",
+        presenterVoiceClips: [{ clipId: "b", file: "b.mp3", durationMs: 500 }],
+      }),
+      item({
+        index: 1,
+        startsAtMs: 0,
+        presenterSourceId: "host",
+        presenterVoiceClips: [{ clipId: "a", file: "a.mp3", durationMs: 500 }],
+      }),
     ];
-    const cues = buildAudioTimeline(items, (scene) => ({
-      kind: "effect",
-      src: "/effect.mp3",
-      startsAtMs: scene.startsAtMs,
-      durationMs: 500,
-      trimStartMs: 0,
-      volume: 0.5,
-    }));
+    const cues = buildAudioTimeline(items);
 
     expect(cues.map((cue) => cue.startsAtMs)).toEqual([0, 2000]);
-    expect(cues[0]?.id).toBe("effect:1:0");
-    expect(buildAudioTimeline(items, () => null)).toEqual([]);
-  });
-
-  it("bounds system voice cues to their playback scene", () => {
-    const scene = item({
-      title: "第 1 夜开始",
-      durationMs: 2160,
-      presenterCue: {
-        copyKey: "phase.night",
-        text: "天黑请闭眼。",
-        voiceFile: "phase_night_start.mp3",
-      },
-    });
-
-    expect(systemVoiceCueForItem(scene)?.durationMs).toBe(2160);
+    expect(cues[0]?.id).toBe("presenter-voice:1:0:a");
+    expect(buildAudioTimeline(items.map((entry) => ({ ...entry, presenterVoiceClips: [] })))).toEqual([]);
   });
 
   it("rejects unknown persisted schemas", () => {
@@ -108,7 +94,7 @@ function item(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     presenterName: "守夜人",
     presenterAvatar: null,
     transcriptSpeaker: "presenter",
-    presenterCue: { copyKey: "fallback.announcement", text: "", voiceFile: null },
+    presenterCue: { copyKey: "fallback.announcement", text: "" },
     ...overrides,
   };
 }

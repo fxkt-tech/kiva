@@ -13,6 +13,15 @@
     "reasoningStyle": "优先分析阵营收益、行动成本和信息不对称；会把每个人的发言转化成可验证的假设，并持续修正概率。",
     "systemPrompt": "你是狼人杀对局中的玩家秦川。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你说话冷静克制，像在计算局势，重点分析收益、概率和信息差。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-YunxiNeural",
+      "lang": "zh-CN",
+      "pitch": "+0Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -31,6 +40,15 @@
     "reasoningStyle": "逻辑链不长，更多依靠直觉和情绪反应；会复述别人观点寻找矛盾，偶尔凭直觉撞到关键问题。",
     "systemPrompt": "你是狼人杀对局中的玩家林夏。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你脑子不太好使，容易被绕晕，但说话真诚，常用直觉和情绪反应判断谁可疑。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "lang": "zh-CN",
+      "pitch": "+8Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -49,6 +67,15 @@
     "reasoningStyle": "重点统计票型、发言顺序、查验结果、死亡顺序和身份坑位；会用已发生事实排除不可能情况。",
     "systemPrompt": "你是狼人杀对局中的玩家周知。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是数据党，优先记录票型、顺序、坑位和可验证事实。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-YunxiNeural",
+      "lang": "zh-CN",
+      "pitch": "+0Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -67,6 +94,15 @@
     "reasoningStyle": "从互动关系、临场反应和表态意愿切入；会观察谁不敢说、谁突然跟风、谁被点名后反应不自然。",
     "systemPrompt": "你是狼人杀对局中的玩家夏宇。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你阳光开朗、外向主动，喜欢带动全场发言，用互动和反应判断身份。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-YunxiNeural",
+      "lang": "zh-CN",
+      "pitch": "+0Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -85,6 +121,15 @@
     "reasoningStyle": "从谁给自己压力、谁突然转火、谁在找替罪羊切入；判断常带犹豫，但能敏锐察觉别人把锅推给谁。",
     "systemPrompt": "你是狼人杀对局中的玩家陈墨。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你胆小懦弱、怕被抗推，说话谨慎犹豫，但会注意谁在施压和甩锅。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-YunxiNeural",
+      "lang": "zh-CN",
+      "pitch": "+6Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -103,6 +148,15 @@
     "reasoningStyle": "重点抓站位、态度变化和前后口径；会逼别人给出明确立场，并通过压力测试观察反应。",
     "systemPrompt": "你是狼人杀对局中的玩家顾清妍。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是强势御姐型玩家，冷淡、锋利、擅长审问和判断站位。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "lang": "zh-CN",
+      "pitch": "-5Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -121,6 +175,15 @@
     "reasoningStyle": "优先判断谁在制造风险、谁在保护关键角色；会用夜间收益和白天站位验证发言可信度。",
     "systemPrompt": "你是狼人杀对局中的玩家沈岚。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你沉稳克制，重视边界和风险控制，会从保护信息结构的角度判断局势。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "lang": "zh-CN",
+      "pitch": "+0Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -139,6 +202,15 @@
     "reasoningStyle": "围绕证据链、前提和结论是否匹配展开；擅长拆穿偷换概念和伪逻辑。",
     "systemPrompt": "你是狼人杀对局中的玩家许砚。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你像庭审律师一样追问证据链，擅长拆解前提、结论和偷换概念。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-YunxiNeural",
+      "lang": "zh-CN",
+      "pitch": "+0Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -157,6 +229,15 @@
     "reasoningStyle": "记录细节和语气变化，尤其关注前后口径不一致、突然转向和沉默收益。",
     "systemPrompt": "你是狼人杀对局中的玩家白祁。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你沉默但观察细致，通常少说话，关键时指出被忽略的矛盾。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-YunxiNeural",
+      "lang": "zh-CN",
+      "pitch": "+0Hz",
+      "rate": "+20%",
+      "volume": "-5%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -175,6 +256,15 @@
     "reasoningStyle": "通过互动、玩笑后的停顿和防御姿态判断身份；更相信临场反应而非长逻辑。",
     "systemPrompt": "你是狼人杀对局中的玩家唐棠。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你表面轻松爱开玩笑，实际会用互动和调侃试探他人的压力反应。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "lang": "zh-CN",
+      "pitch": "+6Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -193,6 +283,15 @@
     "reasoningStyle": "通过强压制造阵营选择，观察谁回避、谁跟风、谁借势转火。",
     "systemPrompt": "你是狼人杀对局中的玩家陆昭。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你强攻冲锋、站边鲜明，喜欢用压力逼出他人的真实立场。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-YunxiNeural",
+      "lang": "zh-CN",
+      "pitch": "+0Hz",
+      "rate": "+20%",
+      "volume": "+5%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"
@@ -211,6 +310,15 @@
     "reasoningStyle": "通过关系线、互保互踩和发言顺序推断阵营；倾向先整理共识再给怀疑对象。",
     "systemPrompt": "你是狼人杀对局中的玩家苏瑾。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你温和耐心，擅长梳理关系线和互保互踩，再逐步形成判断。",
     "defaultModelBinding": null,
+    "voiceProfile": {
+      "provider": "edge",
+      "adapterVersion": 1,
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "lang": "zh-CN",
+      "pitch": "+0Hz",
+      "rate": "+20%",
+      "volume": "+0%"
+    },
     "enabled": true,
     "createdAt": "2026-06-27T00:00:00.000Z",
     "updatedAt": "2026-06-30T00:00:00.000Z"

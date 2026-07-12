@@ -27,10 +27,15 @@ export class VideoExportService {
   private activeHandle: VideoRenderHandle | null = null;
   private readonly cancellationRequests = new Set<string>();
   private initialized: Promise<void> | null = null;
+  private readonly executeInline: boolean;
 
-  constructor(private readonly dataDir = "kivdb") {
+  constructor(
+    private readonly dataDir = "kivdb",
+    options: { readonly executeInline?: boolean } = {},
+  ) {
     this.repository = new ExportRepository(dataDir);
     this.gameRepository = createGameRepository(dataDir);
+    this.executeInline = options.executeInline ?? false;
   }
 
   async create(gameId: string): Promise<ExportJobProjection> {
@@ -76,7 +81,7 @@ export class VideoExportService {
       job: snapshotJob,
       composition: built.composition,
     });
-    this.enqueue(jobId);
+    if (this.executeInline) this.enqueue(jobId);
     return projectExportJob(snapshotJob);
   }
 
@@ -151,8 +156,44 @@ export class VideoExportService {
         nextId,
       ),
     });
-    this.enqueue(nextId);
+    if (this.executeInline) this.enqueue(nextId);
     return projectExportJob(nextJob);
+  }
+
+  async processQueuedOnce(): Promise<boolean> {
+    await this.initialize();
+    const candidates: ExportJob[] = [];
+    let gameIds: string[];
+    try {
+      gameIds = await (await import("node:fs/promises")).readdir(
+        this.repository.exportsRoot,
+      );
+    } catch {
+      return false;
+    }
+    for (const gameId of gameIds) {
+      if (!/^[a-zA-Z0-9_-]{1,128}$/.test(gameId)) continue;
+      candidates.push(
+        ...(await this.repository.list(gameId)).filter(
+          (job) => job.status === "queued",
+        ),
+      );
+    }
+    candidates.sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+    const next = candidates[0];
+    if (!next) return false;
+    try {
+      await this.run(next.jobId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      await this.repository.save(
+        transitionExportJob(next, {
+          status: "failed",
+          error: { code: "snapshot_invalid", message: sanitizeError(message) },
+        }),
+      );
+    }
+    return true;
   }
 
   async outputPath(jobId: string): Promise<{
@@ -218,7 +259,6 @@ export class VideoExportService {
       }
       for (const job of await this.repository.list(gameId)) {
         if (
-          job.status === "queued" ||
           job.status === "preparing" ||
           job.status === "rendering"
         ) {
@@ -264,6 +304,7 @@ export class VideoExportService {
     const partial = join(jobDir, "output.partial.mp4");
     const output = join(jobDir, "output.mp4");
     await rm(partial, { force: true });
+    let progressWrite = Promise.resolve();
 
     try {
       current = transitionExportJob(current, {
@@ -276,7 +317,6 @@ export class VideoExportService {
         renderOrigin(),
       );
       let lastSavedAt = 0;
-      let progressWrite = Promise.resolve();
       this.activeHandle = renderVideo({
         composition,
         outputPath: partial,
@@ -298,8 +338,22 @@ export class VideoExportService {
       if (this.cancellationRequests.has(jobId)) {
         this.activeHandle.cancel();
       }
-      await this.activeHandle.promise;
+      const cancellationPoll = setInterval(() => {
+        void this.repository.find(jobId).then((latest) => {
+          if (latest?.job.status === "canceled") this.activeHandle?.cancel();
+        });
+      }, 500);
+      try {
+        await this.activeHandle.promise;
+      } finally {
+        clearInterval(cancellationPoll);
+      }
       await progressWrite;
+      const persisted = await this.repository.find(jobId);
+      if (persisted?.job.status === "canceled") {
+        await rm(partial, { force: true });
+        return;
+      }
       const verified = await verifyVideoOutput(partial, {
         expectAudio: composition.audioCues.length > 0,
       });
@@ -316,6 +370,7 @@ export class VideoExportService {
       await this.repository.save(current);
     } catch (error) {
       await rm(partial, { force: true });
+      await progressWrite;
       snapshot = await this.requireJob(jobId);
       if (snapshot.job.status === "canceled") {
         return;
@@ -364,14 +419,14 @@ export function getVideoExportService(
 ): VideoExportService {
   let service = services.get(dataDir);
   if (!service) {
-    service = new VideoExportService(dataDir);
+    service = new VideoExportService(dataDir, { executeInline: false });
     services.set(dataDir, service);
   }
   return service;
 }
 
 function renderOrigin(): string {
-  return (process.env.KIVA_RENDER_ORIGIN ?? "http://127.0.0.1:3000").replace(
+  return (process.env.KIVA_RENDER_ORIGIN ?? "http://127.0.0.1:9090").replace(
     /\/+$/,
     "",
   );

@@ -1,0 +1,1499 @@
+{
+  "schemaVersion": 1,
+  "presenterId": "judge",
+  "profile": {
+    "provider": "edge",
+    "adapterVersion": 1,
+    "voice": "zh-CN-YunjianNeural",
+    "lang": "zh-CN",
+    "pitch": "+0Hz",
+    "rate": "+20%",
+    "volume": "+0%"
+  },
+  "clips": {
+    "line.phase_setup.0": {
+      "file": "line.phase_setup.0-f0ed7fe34130.mp3",
+      "text": "请确认身份，游戏开始。",
+      "durationMs": 2665
+    },
+    "line.phase_night.0": {
+      "file": "line.phase_night.0-e6dd1bc59069.mp3",
+      "text": "天黑请闭眼。",
+      "durationMs": 1849
+    },
+    "line.phase_day.0": {
+      "file": "line.phase_day.0-278c5d11b6e0.mp3",
+      "text": "天亮了，所有玩家请睁眼。",
+      "durationMs": 2809
+    },
+    "line.phase_speech.0": {
+      "file": "line.phase_speech.0-60867c4f9898.mp3",
+      "text": "进入发言阶段，请按顺序发言。",
+      "durationMs": 2977
+    },
+    "line.phase_vote.0": {
+      "file": "line.phase_vote.0-cc7a7a683354.mp3",
+      "text": "发言结束，开始放逐投票。",
+      "durationMs": 2737
+    },
+    "line.phase_pk.0": {
+      "file": "line.phase_pk.0-fe79131c1cda.mp3",
+      "text": "出现平票，平票玩家进行 PK 发言。",
+      "durationMs": 3385
+    },
+    "line.phase_last_words.0": {
+      "file": "line.phase_last_words.0-7143545b21a6.mp3",
+      "text": "出局玩家请发表遗言。",
+      "durationMs": 2329
+    },
+    "line.phase_ended.0": {
+      "file": "line.phase_ended.0-015d2ca1b685.mp3",
+      "text": "本局游戏结束。",
+      "durationMs": 1825
+    },
+    "line.action_role_assigned.0": {
+      "file": "line.action_role_assigned.0-ca1005989e39.mp3",
+      "text": "的身份是",
+      "durationMs": 1561
+    },
+    "line.action_role_assigned.1": {
+      "file": "line.action_role_assigned.1-29177ec12666.mp3",
+      "text": "，请确认。",
+      "durationMs": 1417
+    },
+    "line.action_wolf_kill.seat.1": {
+      "file": "line.action_wolf_kill.seat.1-a95c3a1fd663.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：1号。",
+      "durationMs": 3601
+    },
+    "line.action_wolf_kill.seat.2": {
+      "file": "line.action_wolf_kill.seat.2-5b2deacb0058.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：2号。",
+      "durationMs": 3721
+    },
+    "line.action_wolf_kill.seat.3": {
+      "file": "line.action_wolf_kill.seat.3-457ff22251dd.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：3号。",
+      "durationMs": 3697
+    },
+    "line.action_wolf_kill.seat.4": {
+      "file": "line.action_wolf_kill.seat.4-96287e5d581b.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：4号。",
+      "durationMs": 3697
+    },
+    "line.action_wolf_kill.seat.5": {
+      "file": "line.action_wolf_kill.seat.5-d8d75e30a2f3.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：5号。",
+      "durationMs": 3649
+    },
+    "line.action_wolf_kill.seat.6": {
+      "file": "line.action_wolf_kill.seat.6-06245b644bac.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：6号。",
+      "durationMs": 3673
+    },
+    "line.action_wolf_kill.seat.7": {
+      "file": "line.action_wolf_kill.seat.7-6d9761eaf150.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：7号。",
+      "durationMs": 3745
+    },
+    "line.action_wolf_kill.seat.8": {
+      "file": "line.action_wolf_kill.seat.8-b4482c114be4.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：8号。",
+      "durationMs": 3697
+    },
+    "line.action_wolf_kill.seat.9": {
+      "file": "line.action_wolf_kill.seat.9-0282ac601618.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：9号。",
+      "durationMs": 3745
+    },
+    "line.action_wolf_kill.seat.10": {
+      "file": "line.action_wolf_kill.seat.10-ec30fe99aa92.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：10号。",
+      "durationMs": 3745
+    },
+    "line.action_wolf_kill.seat.11": {
+      "file": "line.action_wolf_kill.seat.11-e5c41b1eacb7.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：11号。",
+      "durationMs": 3841
+    },
+    "line.action_wolf_kill.seat.12": {
+      "file": "line.action_wolf_kill.seat.12-ef400e178166.mp3",
+      "text": "狼人请睁眼，请选择击杀目标：12号。",
+      "durationMs": 3841
+    },
+    "line.action_seer_check.seat.1": {
+      "file": "line.action_seer_check.seat.1-af90ba8ec2f0.mp3",
+      "text": "预言家请睁眼，请确认查验1号。",
+      "durationMs": 3193
+    },
+    "line.action_seer_check.seat.2": {
+      "file": "line.action_seer_check.seat.2-a165d4d361f6.mp3",
+      "text": "预言家请睁眼，请确认查验2号。",
+      "durationMs": 3241
+    },
+    "line.action_seer_check.seat.3": {
+      "file": "line.action_seer_check.seat.3-72659572f2d0.mp3",
+      "text": "预言家请睁眼，请确认查验3号。",
+      "durationMs": 3217
+    },
+    "line.action_seer_check.seat.4": {
+      "file": "line.action_seer_check.seat.4-72c30a7fa630.mp3",
+      "text": "预言家请睁眼，请确认查验4号。",
+      "durationMs": 3217
+    },
+    "line.action_seer_check.seat.5": {
+      "file": "line.action_seer_check.seat.5-eca82d02dd4d.mp3",
+      "text": "预言家请睁眼，请确认查验5号。",
+      "durationMs": 3289
+    },
+    "line.action_seer_check.seat.6": {
+      "file": "line.action_seer_check.seat.6-f4ff924fd91c.mp3",
+      "text": "预言家请睁眼，请确认查验6号。",
+      "durationMs": 3313
+    },
+    "line.action_seer_check.seat.7": {
+      "file": "line.action_seer_check.seat.7-b953556dc72d.mp3",
+      "text": "预言家请睁眼，请确认查验7号。",
+      "durationMs": 3217
+    },
+    "line.action_seer_check.seat.8": {
+      "file": "line.action_seer_check.seat.8-7d0ac892644d.mp3",
+      "text": "预言家请睁眼，请确认查验8号。",
+      "durationMs": 3217
+    },
+    "line.action_seer_check.seat.9": {
+      "file": "line.action_seer_check.seat.9-b026cd2c4f49.mp3",
+      "text": "预言家请睁眼，请确认查验9号。",
+      "durationMs": 3289
+    },
+    "line.action_seer_check.seat.10": {
+      "file": "line.action_seer_check.seat.10-ec1047db7616.mp3",
+      "text": "预言家请睁眼，请确认查验10号。",
+      "durationMs": 3145
+    },
+    "line.action_seer_check.seat.11": {
+      "file": "line.action_seer_check.seat.11-abfb612e9845.mp3",
+      "text": "预言家请睁眼，请确认查验11号。",
+      "durationMs": 3241
+    },
+    "line.action_seer_check.seat.12": {
+      "file": "line.action_seer_check.seat.12-39b47779d1d6.mp3",
+      "text": "预言家请睁眼，请确认查验12号。",
+      "durationMs": 3361
+    },
+    "line.action_seer_result_wolves.seat.1": {
+      "file": "line.action_seer_result_wolves.seat.1-39804f488cb3.mp3",
+      "text": "1号的查验结果为狼人。",
+      "durationMs": 2641
+    },
+    "line.action_seer_result_wolves.seat.2": {
+      "file": "line.action_seer_result_wolves.seat.2-78d6504cf5e2.mp3",
+      "text": "2号的查验结果为狼人。",
+      "durationMs": 2617
+    },
+    "line.action_seer_result_wolves.seat.3": {
+      "file": "line.action_seer_result_wolves.seat.3-85d204c4ea49.mp3",
+      "text": "3号的查验结果为狼人。",
+      "durationMs": 2689
+    },
+    "line.action_seer_result_wolves.seat.4": {
+      "file": "line.action_seer_result_wolves.seat.4-77f9cc05ea73.mp3",
+      "text": "4号的查验结果为狼人。",
+      "durationMs": 2641
+    },
+    "line.action_seer_result_wolves.seat.5": {
+      "file": "line.action_seer_result_wolves.seat.5-f655daa8411d.mp3",
+      "text": "5号的查验结果为狼人。",
+      "durationMs": 2593
+    },
+    "line.action_seer_result_wolves.seat.6": {
+      "file": "line.action_seer_result_wolves.seat.6-13817b99ad23.mp3",
+      "text": "6号的查验结果为狼人。",
+      "durationMs": 2617
+    },
+    "line.action_seer_result_wolves.seat.7": {
+      "file": "line.action_seer_result_wolves.seat.7-0583452aa776.mp3",
+      "text": "7号的查验结果为狼人。",
+      "durationMs": 2689
+    },
+    "line.action_seer_result_wolves.seat.8": {
+      "file": "line.action_seer_result_wolves.seat.8-914d98286c02.mp3",
+      "text": "8号的查验结果为狼人。",
+      "durationMs": 2593
+    },
+    "line.action_seer_result_wolves.seat.9": {
+      "file": "line.action_seer_result_wolves.seat.9-3cbe74bcb8ce.mp3",
+      "text": "9号的查验结果为狼人。",
+      "durationMs": 2641
+    },
+    "line.action_seer_result_wolves.seat.10": {
+      "file": "line.action_seer_result_wolves.seat.10-dda1ef70420c.mp3",
+      "text": "10号的查验结果为狼人。",
+      "durationMs": 2713
+    },
+    "line.action_seer_result_wolves.seat.11": {
+      "file": "line.action_seer_result_wolves.seat.11-03c24dc27e65.mp3",
+      "text": "11号的查验结果为狼人。",
+      "durationMs": 2785
+    },
+    "line.action_seer_result_wolves.seat.12": {
+      "file": "line.action_seer_result_wolves.seat.12-13d100163ee4.mp3",
+      "text": "12号的查验结果为狼人。",
+      "durationMs": 2737
+    },
+    "line.action_seer_result_good.seat.1": {
+      "file": "line.action_seer_result_good.seat.1-47e9488f1833.mp3",
+      "text": "1号的查验结果为好人。",
+      "durationMs": 2545
+    },
+    "line.action_seer_result_good.seat.2": {
+      "file": "line.action_seer_result_good.seat.2-43a35417091b.mp3",
+      "text": "2号的查验结果为好人。",
+      "durationMs": 2497
+    },
+    "line.action_seer_result_good.seat.3": {
+      "file": "line.action_seer_result_good.seat.3-1fc58dd3aaff.mp3",
+      "text": "3号的查验结果为好人。",
+      "durationMs": 2521
+    },
+    "line.action_seer_result_good.seat.4": {
+      "file": "line.action_seer_result_good.seat.4-6bfd11890aca.mp3",
+      "text": "4号的查验结果为好人。",
+      "durationMs": 2545
+    },
+    "line.action_seer_result_good.seat.5": {
+      "file": "line.action_seer_result_good.seat.5-6c7dc8c2ffa6.mp3",
+      "text": "5号的查验结果为好人。",
+      "durationMs": 2449
+    },
+    "line.action_seer_result_good.seat.6": {
+      "file": "line.action_seer_result_good.seat.6-35b66718ad21.mp3",
+      "text": "6号的查验结果为好人。",
+      "durationMs": 2497
+    },
+    "line.action_seer_result_good.seat.7": {
+      "file": "line.action_seer_result_good.seat.7-5c8acf9f950f.mp3",
+      "text": "7号的查验结果为好人。",
+      "durationMs": 2569
+    },
+    "line.action_seer_result_good.seat.8": {
+      "file": "line.action_seer_result_good.seat.8-10c59898b42f.mp3",
+      "text": "8号的查验结果为好人。",
+      "durationMs": 2473
+    },
+    "line.action_seer_result_good.seat.9": {
+      "file": "line.action_seer_result_good.seat.9-2ae69bc40494.mp3",
+      "text": "9号的查验结果为好人。",
+      "durationMs": 2521
+    },
+    "line.action_seer_result_good.seat.10": {
+      "file": "line.action_seer_result_good.seat.10-aba95edc9add.mp3",
+      "text": "10号的查验结果为好人。",
+      "durationMs": 2641
+    },
+    "line.action_seer_result_good.seat.11": {
+      "file": "line.action_seer_result_good.seat.11-6c6f96129026.mp3",
+      "text": "11号的查验结果为好人。",
+      "durationMs": 2665
+    },
+    "line.action_seer_result_good.seat.12": {
+      "file": "line.action_seer_result_good.seat.12-81624d576924.mp3",
+      "text": "12号的查验结果为好人。",
+      "durationMs": 2593
+    },
+    "line.action_witch_death_info_killed.seat.1": {
+      "file": "line.action_witch_death_info_killed.seat.1-b549198c36fa.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是1号。",
+      "durationMs": 3217
+    },
+    "line.action_witch_death_info_killed.seat.2": {
+      "file": "line.action_witch_death_info_killed.seat.2-699da8c19676.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是2号。",
+      "durationMs": 3265
+    },
+    "line.action_witch_death_info_killed.seat.3": {
+      "file": "line.action_witch_death_info_killed.seat.3-e36d8ec1f9c2.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是3号。",
+      "durationMs": 3241
+    },
+    "line.action_witch_death_info_killed.seat.4": {
+      "file": "line.action_witch_death_info_killed.seat.4-55a8a1c92189.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是4号。",
+      "durationMs": 3241
+    },
+    "line.action_witch_death_info_killed.seat.5": {
+      "file": "line.action_witch_death_info_killed.seat.5-744613564ebd.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是5号。",
+      "durationMs": 3241
+    },
+    "line.action_witch_death_info_killed.seat.6": {
+      "file": "line.action_witch_death_info_killed.seat.6-d6b57f130fe8.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是6号。",
+      "durationMs": 3217
+    },
+    "line.action_witch_death_info_killed.seat.7": {
+      "file": "line.action_witch_death_info_killed.seat.7-91c5fc56a06a.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是7号。",
+      "durationMs": 3217
+    },
+    "line.action_witch_death_info_killed.seat.8": {
+      "file": "line.action_witch_death_info_killed.seat.8-837aa57c82df.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是8号。",
+      "durationMs": 3217
+    },
+    "line.action_witch_death_info_killed.seat.9": {
+      "file": "line.action_witch_death_info_killed.seat.9-8d69cc76f9ab.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是9号。",
+      "durationMs": 3313
+    },
+    "line.action_witch_death_info_killed.seat.10": {
+      "file": "line.action_witch_death_info_killed.seat.10-97dcc775a1a5.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是10号。",
+      "durationMs": 3217
+    },
+    "line.action_witch_death_info_killed.seat.11": {
+      "file": "line.action_witch_death_info_killed.seat.11-f770805daebd.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是11号。",
+      "durationMs": 3265
+    },
+    "line.action_witch_death_info_killed.seat.12": {
+      "file": "line.action_witch_death_info_killed.seat.12-8bed6f63c446.mp3",
+      "text": "女巫请睁眼，今晚被袭击的是12号。",
+      "durationMs": 3313
+    },
+    "line.action_witch_death_info_safe.0": {
+      "file": "line.action_witch_death_info_safe.0-c6ebb841e821.mp3",
+      "text": "女巫请睁眼，今晚无人被袭击。",
+      "durationMs": 3025
+    },
+    "line.action_witch_antidote_used.seat.1": {
+      "file": "line.action_witch_antidote_used.seat.1-eac02e3354c8.mp3",
+      "text": "女巫对1号使用解药。",
+      "durationMs": 2257
+    },
+    "line.action_witch_antidote_used.seat.2": {
+      "file": "line.action_witch_antidote_used.seat.2-c842346fd5bc.mp3",
+      "text": "女巫对2号使用解药。",
+      "durationMs": 2209
+    },
+    "line.action_witch_antidote_used.seat.3": {
+      "file": "line.action_witch_antidote_used.seat.3-1ac5ffcac483.mp3",
+      "text": "女巫对3号使用解药。",
+      "durationMs": 2329
+    },
+    "line.action_witch_antidote_used.seat.4": {
+      "file": "line.action_witch_antidote_used.seat.4-46eb2d617faf.mp3",
+      "text": "女巫对4号使用解药。",
+      "durationMs": 2257
+    },
+    "line.action_witch_antidote_used.seat.5": {
+      "file": "line.action_witch_antidote_used.seat.5-e8d14a36874e.mp3",
+      "text": "女巫对5号使用解药。",
+      "durationMs": 2257
+    },
+    "line.action_witch_antidote_used.seat.6": {
+      "file": "line.action_witch_antidote_used.seat.6-abb33c347b1f.mp3",
+      "text": "女巫对6号使用解药。",
+      "durationMs": 2305
+    },
+    "line.action_witch_antidote_used.seat.7": {
+      "file": "line.action_witch_antidote_used.seat.7-83c4b7904228.mp3",
+      "text": "女巫对7号使用解药。",
+      "durationMs": 2305
+    },
+    "line.action_witch_antidote_used.seat.8": {
+      "file": "line.action_witch_antidote_used.seat.8-c93a526481a1.mp3",
+      "text": "女巫对8号使用解药。",
+      "durationMs": 2257
+    },
+    "line.action_witch_antidote_used.seat.9": {
+      "file": "line.action_witch_antidote_used.seat.9-8f71de614a2e.mp3",
+      "text": "女巫对9号使用解药。",
+      "durationMs": 2281
+    },
+    "line.action_witch_antidote_used.seat.10": {
+      "file": "line.action_witch_antidote_used.seat.10-21317d6f7f07.mp3",
+      "text": "女巫对10号使用解药。",
+      "durationMs": 2257
+    },
+    "line.action_witch_antidote_used.seat.11": {
+      "file": "line.action_witch_antidote_used.seat.11-c4b90eb93121.mp3",
+      "text": "女巫对11号使用解药。",
+      "durationMs": 2401
+    },
+    "line.action_witch_antidote_used.seat.12": {
+      "file": "line.action_witch_antidote_used.seat.12-ca59414fef2c.mp3",
+      "text": "女巫对12号使用解药。",
+      "durationMs": 2425
+    },
+    "line.action_witch_antidote_skipped.0": {
+      "file": "line.action_witch_antidote_skipped.0-c176266705be.mp3",
+      "text": "女巫不使用解药。",
+      "durationMs": 1945
+    },
+    "line.action_witch_poison_used.seat.1": {
+      "file": "line.action_witch_poison_used.seat.1-e874f7fded0c.mp3",
+      "text": "女巫对1号使用毒药。",
+      "durationMs": 2233
+    },
+    "line.action_witch_poison_used.seat.2": {
+      "file": "line.action_witch_poison_used.seat.2-ab1675a26b35.mp3",
+      "text": "女巫对2号使用毒药。",
+      "durationMs": 2209
+    },
+    "line.action_witch_poison_used.seat.3": {
+      "file": "line.action_witch_poison_used.seat.3-5c24db508c69.mp3",
+      "text": "女巫对3号使用毒药。",
+      "durationMs": 2353
+    },
+    "line.action_witch_poison_used.seat.4": {
+      "file": "line.action_witch_poison_used.seat.4-252f9769b276.mp3",
+      "text": "女巫对4号使用毒药。",
+      "durationMs": 2233
+    },
+    "line.action_witch_poison_used.seat.5": {
+      "file": "line.action_witch_poison_used.seat.5-5d5f03f0b9b4.mp3",
+      "text": "女巫对5号使用毒药。",
+      "durationMs": 2257
+    },
+    "line.action_witch_poison_used.seat.6": {
+      "file": "line.action_witch_poison_used.seat.6-bd80879cd0c6.mp3",
+      "text": "女巫对6号使用毒药。",
+      "durationMs": 2257
+    },
+    "line.action_witch_poison_used.seat.7": {
+      "file": "line.action_witch_poison_used.seat.7-738449436881.mp3",
+      "text": "女巫对7号使用毒药。",
+      "durationMs": 2281
+    },
+    "line.action_witch_poison_used.seat.8": {
+      "file": "line.action_witch_poison_used.seat.8-58799c1f61f2.mp3",
+      "text": "女巫对8号使用毒药。",
+      "durationMs": 2257
+    },
+    "line.action_witch_poison_used.seat.9": {
+      "file": "line.action_witch_poison_used.seat.9-fecb9386d276.mp3",
+      "text": "女巫对9号使用毒药。",
+      "durationMs": 2233
+    },
+    "line.action_witch_poison_used.seat.10": {
+      "file": "line.action_witch_poison_used.seat.10-f2e9a7655041.mp3",
+      "text": "女巫对10号使用毒药。",
+      "durationMs": 2281
+    },
+    "line.action_witch_poison_used.seat.11": {
+      "file": "line.action_witch_poison_used.seat.11-557d2a07b2e1.mp3",
+      "text": "女巫对11号使用毒药。",
+      "durationMs": 2353
+    },
+    "line.action_witch_poison_used.seat.12": {
+      "file": "line.action_witch_poison_used.seat.12-4a782deef09a.mp3",
+      "text": "女巫对12号使用毒药。",
+      "durationMs": 2401
+    },
+    "line.action_witch_poison_skipped.0": {
+      "file": "line.action_witch_poison_skipped.0-7ab7c3f44a67.mp3",
+      "text": "女巫不使用毒药。",
+      "durationMs": 1945
+    },
+    "line.action_guard_protect.seat.1": {
+      "file": "line.action_guard_protect.seat.1-175734747ccd.mp3",
+      "text": "守卫请睁眼，今晚守护1号。",
+      "durationMs": 3145
+    },
+    "line.action_guard_protect.seat.2": {
+      "file": "line.action_guard_protect.seat.2-09689ee0a95c.mp3",
+      "text": "守卫请睁眼，今晚守护2号。",
+      "durationMs": 3097
+    },
+    "line.action_guard_protect.seat.3": {
+      "file": "line.action_guard_protect.seat.3-ad503618b70a.mp3",
+      "text": "守卫请睁眼，今晚守护3号。",
+      "durationMs": 3097
+    },
+    "line.action_guard_protect.seat.4": {
+      "file": "line.action_guard_protect.seat.4-36d44b29b264.mp3",
+      "text": "守卫请睁眼，今晚守护4号。",
+      "durationMs": 3145
+    },
+    "line.action_guard_protect.seat.5": {
+      "file": "line.action_guard_protect.seat.5-4406ee06a3ca.mp3",
+      "text": "守卫请睁眼，今晚守护5号。",
+      "durationMs": 3145
+    },
+    "line.action_guard_protect.seat.6": {
+      "file": "line.action_guard_protect.seat.6-021e4305e9b0.mp3",
+      "text": "守卫请睁眼，今晚守护6号。",
+      "durationMs": 3169
+    },
+    "line.action_guard_protect.seat.7": {
+      "file": "line.action_guard_protect.seat.7-515b56a31363.mp3",
+      "text": "守卫请睁眼，今晚守护7号。",
+      "durationMs": 3145
+    },
+    "line.action_guard_protect.seat.8": {
+      "file": "line.action_guard_protect.seat.8-930eff2f309a.mp3",
+      "text": "守卫请睁眼，今晚守护8号。",
+      "durationMs": 3097
+    },
+    "line.action_guard_protect.seat.9": {
+      "file": "line.action_guard_protect.seat.9-91c193ccdd5b.mp3",
+      "text": "守卫请睁眼，今晚守护9号。",
+      "durationMs": 3241
+    },
+    "line.action_guard_protect.seat.10": {
+      "file": "line.action_guard_protect.seat.10-88cf0d1cc120.mp3",
+      "text": "守卫请睁眼，今晚守护10号。",
+      "durationMs": 3097
+    },
+    "line.action_guard_protect.seat.11": {
+      "file": "line.action_guard_protect.seat.11-8f82422bf811.mp3",
+      "text": "守卫请睁眼，今晚守护11号。",
+      "durationMs": 3001
+    },
+    "line.action_guard_protect.seat.12": {
+      "file": "line.action_guard_protect.seat.12-a199262b82fb.mp3",
+      "text": "守卫请睁眼，今晚守护12号。",
+      "durationMs": 3145
+    },
+    "line.action_hunter_shot.seat.1": {
+      "file": "line.action_hunter_shot.seat.1-8ebb18cd8dd8.mp3",
+      "text": "猎人发动技能，带走1号。",
+      "durationMs": 2833
+    },
+    "line.action_hunter_shot.seat.2": {
+      "file": "line.action_hunter_shot.seat.2-42cb1b5db543.mp3",
+      "text": "猎人发动技能，带走2号。",
+      "durationMs": 2761
+    },
+    "line.action_hunter_shot.seat.3": {
+      "file": "line.action_hunter_shot.seat.3-02db204d22a2.mp3",
+      "text": "猎人发动技能，带走3号。",
+      "durationMs": 2905
+    },
+    "line.action_hunter_shot.seat.4": {
+      "file": "line.action_hunter_shot.seat.4-24adb5ced2fb.mp3",
+      "text": "猎人发动技能，带走4号。",
+      "durationMs": 2809
+    },
+    "line.action_hunter_shot.seat.5": {
+      "file": "line.action_hunter_shot.seat.5-ffe66e707485.mp3",
+      "text": "猎人发动技能，带走5号。",
+      "durationMs": 2761
+    },
+    "line.action_hunter_shot.seat.6": {
+      "file": "line.action_hunter_shot.seat.6-af24c58cb125.mp3",
+      "text": "猎人发动技能，带走6号。",
+      "durationMs": 2809
+    },
+    "line.action_hunter_shot.seat.7": {
+      "file": "line.action_hunter_shot.seat.7-ce35f92f4672.mp3",
+      "text": "猎人发动技能，带走7号。",
+      "durationMs": 2833
+    },
+    "line.action_hunter_shot.seat.8": {
+      "file": "line.action_hunter_shot.seat.8-e2f578e4d004.mp3",
+      "text": "猎人发动技能，带走8号。",
+      "durationMs": 2809
+    },
+    "line.action_hunter_shot.seat.9": {
+      "file": "line.action_hunter_shot.seat.9-bd489602f02b.mp3",
+      "text": "猎人发动技能，带走9号。",
+      "durationMs": 2833
+    },
+    "line.action_hunter_shot.seat.10": {
+      "file": "line.action_hunter_shot.seat.10-33ac8dcff6fe.mp3",
+      "text": "猎人发动技能，带走10号。",
+      "durationMs": 2833
+    },
+    "line.action_hunter_shot.seat.11": {
+      "file": "line.action_hunter_shot.seat.11-a7dbcb5edf6f.mp3",
+      "text": "猎人发动技能，带走11号。",
+      "durationMs": 2881
+    },
+    "line.action_hunter_shot.seat.12": {
+      "file": "line.action_hunter_shot.seat.12-dd4b4ac5a014.mp3",
+      "text": "猎人发动技能，带走12号。",
+      "durationMs": 2905
+    },
+    "line.resolution_night_deaths.0": {
+      "file": "line.resolution_night_deaths.0-ee09ecb990ce.mp3",
+      "text": "夜间结算：",
+      "durationMs": 1561
+    },
+    "line.resolution_night_deaths.1": {
+      "file": "line.resolution_night_deaths.1-b87a83cfa5ba.mp3",
+      "text": "死亡。",
+      "durationMs": 1321
+    },
+    "line.resolution_night_safe.0": {
+      "file": "line.resolution_night_safe.0-d0e430ce414c.mp3",
+      "text": "夜间结算：无人死亡。",
+      "durationMs": 2689
+    },
+    "line.announcement_deaths.0": {
+      "file": "line.announcement_deaths.0-5dc157019fbe.mp3",
+      "text": "昨夜死亡玩家为：",
+      "durationMs": 2113
+    },
+    "line.announcement_safe.0": {
+      "file": "line.announcement_safe.0-f848b01f2b39.mp3",
+      "text": "昨夜是平安夜，无人死亡。",
+      "durationMs": 2929
+    },
+    "line.prompt_last_words.seat.1": {
+      "file": "line.prompt_last_words.seat.1-0bd4eaa6f664.mp3",
+      "text": "请1号玩家发表遗言。",
+      "durationMs": 2305
+    },
+    "line.prompt_last_words.seat.2": {
+      "file": "line.prompt_last_words.seat.2-a92d133e90c8.mp3",
+      "text": "请2号玩家发表遗言。",
+      "durationMs": 2329
+    },
+    "line.prompt_last_words.seat.3": {
+      "file": "line.prompt_last_words.seat.3-940faf2872e5.mp3",
+      "text": "请3号玩家发表遗言。",
+      "durationMs": 2329
+    },
+    "line.prompt_last_words.seat.4": {
+      "file": "line.prompt_last_words.seat.4-b7e793eb4a42.mp3",
+      "text": "请4号玩家发表遗言。",
+      "durationMs": 2257
+    },
+    "line.prompt_last_words.seat.5": {
+      "file": "line.prompt_last_words.seat.5-ef2471ef8d5d.mp3",
+      "text": "请5号玩家发表遗言。",
+      "durationMs": 2257
+    },
+    "line.prompt_last_words.seat.6": {
+      "file": "line.prompt_last_words.seat.6-6e6443536bb3.mp3",
+      "text": "请6号玩家发表遗言。",
+      "durationMs": 2329
+    },
+    "line.prompt_last_words.seat.7": {
+      "file": "line.prompt_last_words.seat.7-27043a295b2e.mp3",
+      "text": "请7号玩家发表遗言。",
+      "durationMs": 2305
+    },
+    "line.prompt_last_words.seat.8": {
+      "file": "line.prompt_last_words.seat.8-13d5901b1863.mp3",
+      "text": "请8号玩家发表遗言。",
+      "durationMs": 2257
+    },
+    "line.prompt_last_words.seat.9": {
+      "file": "line.prompt_last_words.seat.9-b70b1a07add6.mp3",
+      "text": "请9号玩家发表遗言。",
+      "durationMs": 2353
+    },
+    "line.prompt_last_words.seat.10": {
+      "file": "line.prompt_last_words.seat.10-b91cbf13fadd.mp3",
+      "text": "请10号玩家发表遗言。",
+      "durationMs": 2329
+    },
+    "line.prompt_last_words.seat.11": {
+      "file": "line.prompt_last_words.seat.11-b1d066d6e07b.mp3",
+      "text": "请11号玩家发表遗言。",
+      "durationMs": 2401
+    },
+    "line.prompt_last_words.seat.12": {
+      "file": "line.prompt_last_words.seat.12-cbd1be12263c.mp3",
+      "text": "请12号玩家发表遗言。",
+      "durationMs": 2401
+    },
+    "line.prompt_speech.seat.1": {
+      "file": "line.prompt_speech.seat.1-747bf9d8080e.mp3",
+      "text": "请1号玩家发言。",
+      "durationMs": 1897
+    },
+    "line.prompt_speech.seat.2": {
+      "file": "line.prompt_speech.seat.2-4b30df4fe76e.mp3",
+      "text": "请2号玩家发言。",
+      "durationMs": 2017
+    },
+    "line.prompt_speech.seat.3": {
+      "file": "line.prompt_speech.seat.3-58c9f55eacaa.mp3",
+      "text": "请3号玩家发言。",
+      "durationMs": 2017
+    },
+    "line.prompt_speech.seat.4": {
+      "file": "line.prompt_speech.seat.4-b347d1fadf53.mp3",
+      "text": "请4号玩家发言。",
+      "durationMs": 1969
+    },
+    "line.prompt_speech.seat.5": {
+      "file": "line.prompt_speech.seat.5-22d75ab1cbce.mp3",
+      "text": "请5号玩家发言。",
+      "durationMs": 1969
+    },
+    "line.prompt_speech.seat.6": {
+      "file": "line.prompt_speech.seat.6-3ae712248326.mp3",
+      "text": "请6号玩家发言。",
+      "durationMs": 2041
+    },
+    "line.prompt_speech.seat.7": {
+      "file": "line.prompt_speech.seat.7-46b1910a7ccd.mp3",
+      "text": "请7号玩家发言。",
+      "durationMs": 1969
+    },
+    "line.prompt_speech.seat.8": {
+      "file": "line.prompt_speech.seat.8-40034f4e8cc2.mp3",
+      "text": "请8号玩家发言。",
+      "durationMs": 1945
+    },
+    "line.prompt_speech.seat.9": {
+      "file": "line.prompt_speech.seat.9-2f92b01b5224.mp3",
+      "text": "请9号玩家发言。",
+      "durationMs": 2041
+    },
+    "line.prompt_speech.seat.10": {
+      "file": "line.prompt_speech.seat.10-2d20c132b97e.mp3",
+      "text": "请10号玩家发言。",
+      "durationMs": 2017
+    },
+    "line.prompt_speech.seat.11": {
+      "file": "line.prompt_speech.seat.11-772407dfe2ac.mp3",
+      "text": "请11号玩家发言。",
+      "durationMs": 2065
+    },
+    "line.prompt_speech.seat.12": {
+      "file": "line.prompt_speech.seat.12-cdde768ff28b.mp3",
+      "text": "请12号玩家发言。",
+      "durationMs": 2089
+    },
+    "line.prompt_pk.seat.1": {
+      "file": "line.prompt_pk.seat.1-a9cc699f2775.mp3",
+      "text": "请1号玩家进行 PK 发言。",
+      "durationMs": 2809
+    },
+    "line.prompt_pk.seat.2": {
+      "file": "line.prompt_pk.seat.2-fc4749693702.mp3",
+      "text": "请2号玩家进行 PK 发言。",
+      "durationMs": 2761
+    },
+    "line.prompt_pk.seat.3": {
+      "file": "line.prompt_pk.seat.3-a27dc6a6842a.mp3",
+      "text": "请3号玩家进行 PK 发言。",
+      "durationMs": 2785
+    },
+    "line.prompt_pk.seat.4": {
+      "file": "line.prompt_pk.seat.4-4da1f1af3df1.mp3",
+      "text": "请4号玩家进行 PK 发言。",
+      "durationMs": 2737
+    },
+    "line.prompt_pk.seat.5": {
+      "file": "line.prompt_pk.seat.5-49cb3a1e632f.mp3",
+      "text": "请5号玩家进行 PK 发言。",
+      "durationMs": 2713
+    },
+    "line.prompt_pk.seat.6": {
+      "file": "line.prompt_pk.seat.6-070f0712992d.mp3",
+      "text": "请6号玩家进行 PK 发言。",
+      "durationMs": 2785
+    },
+    "line.prompt_pk.seat.7": {
+      "file": "line.prompt_pk.seat.7-f79bd369768c.mp3",
+      "text": "请7号玩家进行 PK 发言。",
+      "durationMs": 2665
+    },
+    "line.prompt_pk.seat.8": {
+      "file": "line.prompt_pk.seat.8-7c290f9fc27a.mp3",
+      "text": "请8号玩家进行 PK 发言。",
+      "durationMs": 2689
+    },
+    "line.prompt_pk.seat.9": {
+      "file": "line.prompt_pk.seat.9-225fe557f791.mp3",
+      "text": "请9号玩家进行 PK 发言。",
+      "durationMs": 2785
+    },
+    "line.prompt_pk.seat.10": {
+      "file": "line.prompt_pk.seat.10-4e28b3ccc373.mp3",
+      "text": "请10号玩家进行 PK 发言。",
+      "durationMs": 2809
+    },
+    "line.prompt_pk.seat.11": {
+      "file": "line.prompt_pk.seat.11-d66fc7e28c4a.mp3",
+      "text": "请11号玩家进行 PK 发言。",
+      "durationMs": 2857
+    },
+    "line.prompt_pk.seat.12": {
+      "file": "line.prompt_pk.seat.12-8c3cb71da579.mp3",
+      "text": "请12号玩家进行 PK 发言。",
+      "durationMs": 2809
+    },
+    "line.vote_cast.0": {
+      "file": "line.vote_cast.0-75c10d796205.mp3",
+      "text": "投票给",
+      "durationMs": 1417
+    },
+    "line.vote_abstain.seat.1": {
+      "file": "line.vote_abstain.seat.1-c65c2256d6a1.mp3",
+      "text": "1号选择弃票。",
+      "durationMs": 1945
+    },
+    "line.vote_abstain.seat.2": {
+      "file": "line.vote_abstain.seat.2-d3b53c1e75a7.mp3",
+      "text": "2号选择弃票。",
+      "durationMs": 1945
+    },
+    "line.vote_abstain.seat.3": {
+      "file": "line.vote_abstain.seat.3-9c20d402949e.mp3",
+      "text": "3号选择弃票。",
+      "durationMs": 2017
+    },
+    "line.vote_abstain.seat.4": {
+      "file": "line.vote_abstain.seat.4-ecdb701ec558.mp3",
+      "text": "4号选择弃票。",
+      "durationMs": 1945
+    },
+    "line.vote_abstain.seat.5": {
+      "file": "line.vote_abstain.seat.5-fc68000795dd.mp3",
+      "text": "5号选择弃票。",
+      "durationMs": 1873
+    },
+    "line.vote_abstain.seat.6": {
+      "file": "line.vote_abstain.seat.6-0f4f0963df1c.mp3",
+      "text": "6号选择弃票。",
+      "durationMs": 1945
+    },
+    "line.vote_abstain.seat.7": {
+      "file": "line.vote_abstain.seat.7-63e979aab372.mp3",
+      "text": "7号选择弃票。",
+      "durationMs": 1921
+    },
+    "line.vote_abstain.seat.8": {
+      "file": "line.vote_abstain.seat.8-8a8b8c5bcf2b.mp3",
+      "text": "8号选择弃票。",
+      "durationMs": 1945
+    },
+    "line.vote_abstain.seat.9": {
+      "file": "line.vote_abstain.seat.9-ff2cafcb434e.mp3",
+      "text": "9号选择弃票。",
+      "durationMs": 1921
+    },
+    "line.vote_abstain.seat.10": {
+      "file": "line.vote_abstain.seat.10-c31b8b034bcb.mp3",
+      "text": "10号选择弃票。",
+      "durationMs": 1969
+    },
+    "line.vote_abstain.seat.11": {
+      "file": "line.vote_abstain.seat.11-12f6ec6f11de.mp3",
+      "text": "11号选择弃票。",
+      "durationMs": 2041
+    },
+    "line.vote_abstain.seat.12": {
+      "file": "line.vote_abstain.seat.12-6ca1f7365497.mp3",
+      "text": "12号选择弃票。",
+      "durationMs": 2065
+    },
+    "line.resolution_exile_exiled.seat.1": {
+      "file": "line.resolution_exile_exiled.seat.1-b45da2cabbfa.mp3",
+      "text": "投票结束，1号被放逐出局。",
+      "durationMs": 3073
+    },
+    "line.resolution_exile_exiled.seat.2": {
+      "file": "line.resolution_exile_exiled.seat.2-82c98cbba892.mp3",
+      "text": "投票结束，2号被放逐出局。",
+      "durationMs": 2977
+    },
+    "line.resolution_exile_exiled.seat.3": {
+      "file": "line.resolution_exile_exiled.seat.3-5cd749ad8f74.mp3",
+      "text": "投票结束，3号被放逐出局。",
+      "durationMs": 3049
+    },
+    "line.resolution_exile_exiled.seat.4": {
+      "file": "line.resolution_exile_exiled.seat.4-8906d4006ed5.mp3",
+      "text": "投票结束，4号被放逐出局。",
+      "durationMs": 2977
+    },
+    "line.resolution_exile_exiled.seat.5": {
+      "file": "line.resolution_exile_exiled.seat.5-58bbcae5ac6e.mp3",
+      "text": "投票结束，5号被放逐出局。",
+      "durationMs": 2977
+    },
+    "line.resolution_exile_exiled.seat.6": {
+      "file": "line.resolution_exile_exiled.seat.6-e2741794fc99.mp3",
+      "text": "投票结束，6号被放逐出局。",
+      "durationMs": 2977
+    },
+    "line.resolution_exile_exiled.seat.7": {
+      "file": "line.resolution_exile_exiled.seat.7-a5f557b02ed4.mp3",
+      "text": "投票结束，7号被放逐出局。",
+      "durationMs": 2929
+    },
+    "line.resolution_exile_exiled.seat.8": {
+      "file": "line.resolution_exile_exiled.seat.8-7f7e0411a4c4.mp3",
+      "text": "投票结束，8号被放逐出局。",
+      "durationMs": 2953
+    },
+    "line.resolution_exile_exiled.seat.9": {
+      "file": "line.resolution_exile_exiled.seat.9-ebc49858eca7.mp3",
+      "text": "投票结束，9号被放逐出局。",
+      "durationMs": 3049
+    },
+    "line.resolution_exile_exiled.seat.10": {
+      "file": "line.resolution_exile_exiled.seat.10-0f1aa6457dd4.mp3",
+      "text": "投票结束，10号被放逐出局。",
+      "durationMs": 3001
+    },
+    "line.resolution_exile_exiled.seat.11": {
+      "file": "line.resolution_exile_exiled.seat.11-991521478a31.mp3",
+      "text": "投票结束，11号被放逐出局。",
+      "durationMs": 3145
+    },
+    "line.resolution_exile_exiled.seat.12": {
+      "file": "line.resolution_exile_exiled.seat.12-639ef68fb6c0.mp3",
+      "text": "投票结束，12号被放逐出局。",
+      "durationMs": 3145
+    },
+    "line.resolution_exile_tied.0": {
+      "file": "line.resolution_exile_tied.0-e63aea1a957e.mp3",
+      "text": "投票平票：",
+      "durationMs": 1729
+    },
+    "line.resolution_exile_tied.1": {
+      "file": "line.resolution_exile_tied.1-e194956baf23.mp3",
+      "text": "，进入 PK。",
+      "durationMs": 1513
+    },
+    "line.resolution_exile_none.0": {
+      "file": "line.resolution_exile_none.0-b037f3d8334e.mp3",
+      "text": "投票结束，本轮无人被放逐。",
+      "durationMs": 3025
+    },
+    "line.resolution_pk_exiled.seat.1": {
+      "file": "line.resolution_pk_exiled.seat.1-bb2a69fb97aa.mp3",
+      "text": "PK 投票结束，1号被放逐出局。",
+      "durationMs": 3313
+    },
+    "line.resolution_pk_exiled.seat.2": {
+      "file": "line.resolution_pk_exiled.seat.2-601ec4cde351.mp3",
+      "text": "PK 投票结束，2号被放逐出局。",
+      "durationMs": 3289
+    },
+    "line.resolution_pk_exiled.seat.3": {
+      "file": "line.resolution_pk_exiled.seat.3-1119bb5d754f.mp3",
+      "text": "PK 投票结束，3号被放逐出局。",
+      "durationMs": 3241
+    },
+    "line.resolution_pk_exiled.seat.4": {
+      "file": "line.resolution_pk_exiled.seat.4-6f8942c10198.mp3",
+      "text": "PK 投票结束，4号被放逐出局。",
+      "durationMs": 3241
+    },
+    "line.resolution_pk_exiled.seat.5": {
+      "file": "line.resolution_pk_exiled.seat.5-d3048a40889f.mp3",
+      "text": "PK 投票结束，5号被放逐出局。",
+      "durationMs": 3265
+    },
+    "line.resolution_pk_exiled.seat.6": {
+      "file": "line.resolution_pk_exiled.seat.6-9db00bca4c4f.mp3",
+      "text": "PK 投票结束，6号被放逐出局。",
+      "durationMs": 3289
+    },
+    "line.resolution_pk_exiled.seat.7": {
+      "file": "line.resolution_pk_exiled.seat.7-26bf7a668f1a.mp3",
+      "text": "PK 投票结束，7号被放逐出局。",
+      "durationMs": 3217
+    },
+    "line.resolution_pk_exiled.seat.8": {
+      "file": "line.resolution_pk_exiled.seat.8-320ae45f251e.mp3",
+      "text": "PK 投票结束，8号被放逐出局。",
+      "durationMs": 3241
+    },
+    "line.resolution_pk_exiled.seat.9": {
+      "file": "line.resolution_pk_exiled.seat.9-98cfa8543f72.mp3",
+      "text": "PK 投票结束，9号被放逐出局。",
+      "durationMs": 3289
+    },
+    "line.resolution_pk_exiled.seat.10": {
+      "file": "line.resolution_pk_exiled.seat.10-8271d6fc8701.mp3",
+      "text": "PK 投票结束，10号被放逐出局。",
+      "durationMs": 3265
+    },
+    "line.resolution_pk_exiled.seat.11": {
+      "file": "line.resolution_pk_exiled.seat.11-7c5139cd0535.mp3",
+      "text": "PK 投票结束，11号被放逐出局。",
+      "durationMs": 3361
+    },
+    "line.resolution_pk_exiled.seat.12": {
+      "file": "line.resolution_pk_exiled.seat.12-3ad13c223a69.mp3",
+      "text": "PK 投票结束，12号被放逐出局。",
+      "durationMs": 3361
+    },
+    "line.resolution_pk_tied.0": {
+      "file": "line.resolution_pk_tied.0-a41e297b392d.mp3",
+      "text": "PK 投票平票：",
+      "durationMs": 2017
+    },
+    "line.resolution_pk_tied.1": {
+      "file": "line.resolution_pk_tied.1-13aa4872f6ba.mp3",
+      "text": "，本轮无人出局。",
+      "durationMs": 1945
+    },
+    "line.resolution_pk_none.0": {
+      "file": "line.resolution_pk_none.0-cf689865870d.mp3",
+      "text": "PK 投票结束，本轮无人被放逐。",
+      "durationMs": 3217
+    },
+    "line.game_end_all_wolves_dead.0": {
+      "file": "line.game_end_all_wolves_dead.0-714b084963d9.mp3",
+      "text": "所有狼人出局，好人阵营获胜。",
+      "durationMs": 3217
+    },
+    "line.game_end_all_gods_dead.0": {
+      "file": "line.game_end_all_gods_dead.0-f6699d2b900f.mp3",
+      "text": "所有神职出局，狼人阵营获胜。",
+      "durationMs": 3169
+    },
+    "line.game_end_all_villagers_dead.0": {
+      "file": "line.game_end_all_villagers_dead.0-7cac50a72cab.mp3",
+      "text": "所有平民出局，狼人阵营获胜。",
+      "durationMs": 3193
+    },
+    "line.game_end_all_good_dead.0": {
+      "file": "line.game_end_all_good_dead.0-f653cd1ec5ad.mp3",
+      "text": "所有好人出局，狼人阵营获胜。",
+      "durationMs": 3145
+    },
+    "line.fallback_announcement.0": {
+      "file": "line.fallback_announcement.0-ecd5757cccae.mp3",
+      "text": "本环节信息已确认。",
+      "durationMs": 2257
+    },
+    "line.fallback_speech.0": {
+      "file": "line.fallback_speech.0-1172d1d0aa9a.mp3",
+      "text": "该玩家本轮没有发言。",
+      "durationMs": 2257
+    },
+    "line.fallback_vote.0": {
+      "file": "line.fallback_vote.0-2a63f7698547.mp3",
+      "text": "本轮投票信息已记录。",
+      "durationMs": 2425
+    },
+    "line.fallback_resolution.0": {
+      "file": "line.fallback_resolution.0-570a08cfbc0e.mp3",
+      "text": "本轮结算完成。",
+      "durationMs": 1849
+    },
+    "seat.1": {
+      "file": "seat.1-77cfad89dd08.mp3",
+      "text": "1号",
+      "durationMs": 1249
+    },
+    "seat.2": {
+      "file": "seat.2-5329761ff5d7.mp3",
+      "text": "2号",
+      "durationMs": 1201
+    },
+    "seat.3": {
+      "file": "seat.3-ae59b2f4e89d.mp3",
+      "text": "3号",
+      "durationMs": 1321
+    },
+    "seat.4": {
+      "file": "seat.4-55fe8558e7d6.mp3",
+      "text": "4号",
+      "durationMs": 1321
+    },
+    "seat.5": {
+      "file": "seat.5-95681f75a0b9.mp3",
+      "text": "5号",
+      "durationMs": 1249
+    },
+    "seat.6": {
+      "file": "seat.6-50638eca745e.mp3",
+      "text": "6号",
+      "durationMs": 1273
+    },
+    "seat.7": {
+      "file": "seat.7-cbd7a47f8d59.mp3",
+      "text": "7号",
+      "durationMs": 1249
+    },
+    "seat.8": {
+      "file": "seat.8-79a5347462f2.mp3",
+      "text": "8号",
+      "durationMs": 1249
+    },
+    "seat.9": {
+      "file": "seat.9-f22e8db4daf2.mp3",
+      "text": "9号",
+      "durationMs": 1321
+    },
+    "seat.10": {
+      "file": "seat.10-f9c063181821.mp3",
+      "text": "10号",
+      "durationMs": 1297
+    },
+    "seat.11": {
+      "file": "seat.11-c078dcb46f24.mp3",
+      "text": "11号",
+      "durationMs": 1489
+    },
+    "seat.12": {
+      "file": "seat.12-fa43905bb829.mp3",
+      "text": "12号",
+      "durationMs": 1417
+    },
+    "role.狼人": {
+      "file": "clip-da367e6fce58f88e8d00-3a9705e8af74.mp3",
+      "text": "狼人",
+      "durationMs": 1249
+    },
+    "role.预言家": {
+      "file": "clip-21ad4fb7a65e534f7922-da7785711541.mp3",
+      "text": "预言家",
+      "durationMs": 1345
+    },
+    "role.女巫": {
+      "file": "clip-8c0b2b037537243638cb-61bcd00588bd.mp3",
+      "text": "女巫",
+      "durationMs": 1321
+    },
+    "role.猎人": {
+      "file": "clip-8904766558f699f01519-0a6da552bd00.mp3",
+      "text": "猎人",
+      "durationMs": 1225
+    },
+    "role.守卫": {
+      "file": "clip-dc7ce6991863492c7307-e9a1329c5016.mp3",
+      "text": "守卫",
+      "durationMs": 1249
+    },
+    "role.平民": {
+      "file": "clip-ce1261236e6937ec65f5-c113f09998f3.mp3",
+      "text": "平民",
+      "durationMs": 1249
+    }
+  },
+  "plans": {
+    "phase.setup": [
+      {
+        "kind": "clip",
+        "clipId": "line.phase_setup.0"
+      }
+    ],
+    "phase.night": [
+      {
+        "kind": "clip",
+        "clipId": "line.phase_night.0"
+      }
+    ],
+    "phase.day": [
+      {
+        "kind": "clip",
+        "clipId": "line.phase_day.0"
+      }
+    ],
+    "phase.speech": [
+      {
+        "kind": "clip",
+        "clipId": "line.phase_speech.0"
+      }
+    ],
+    "phase.vote": [
+      {
+        "kind": "clip",
+        "clipId": "line.phase_vote.0"
+      }
+    ],
+    "phase.pk": [
+      {
+        "kind": "clip",
+        "clipId": "line.phase_pk.0"
+      }
+    ],
+    "phase.last_words": [
+      {
+        "kind": "clip",
+        "clipId": "line.phase_last_words.0"
+      }
+    ],
+    "phase.ended": [
+      {
+        "kind": "clip",
+        "clipId": "line.phase_ended.0"
+      }
+    ],
+    "action.role_assigned": [
+      {
+        "kind": "variable",
+        "name": "player"
+      },
+      {
+        "kind": "clip",
+        "clipId": "line.action_role_assigned.0"
+      },
+      {
+        "kind": "variable",
+        "name": "role"
+      },
+      {
+        "kind": "clip",
+        "clipId": "line.action_role_assigned.1"
+      }
+    ],
+    "action.wolf_kill": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_wolf_kill.seat",
+        "variableName": "target"
+      }
+    ],
+    "action.seer_check": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_seer_check.seat",
+        "variableName": "target"
+      }
+    ],
+    "action.seer_result.wolves": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_seer_result_wolves.seat",
+        "variableName": "target"
+      }
+    ],
+    "action.seer_result.good": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_seer_result_good.seat",
+        "variableName": "target"
+      }
+    ],
+    "action.witch_death_info.killed": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_witch_death_info_killed.seat",
+        "variableName": "target"
+      }
+    ],
+    "action.witch_death_info.safe": [
+      {
+        "kind": "clip",
+        "clipId": "line.action_witch_death_info_safe.0"
+      }
+    ],
+    "action.witch_antidote.used": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_witch_antidote_used.seat",
+        "variableName": "target"
+      }
+    ],
+    "action.witch_antidote.skipped": [
+      {
+        "kind": "clip",
+        "clipId": "line.action_witch_antidote_skipped.0"
+      }
+    ],
+    "action.witch_poison.used": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_witch_poison_used.seat",
+        "variableName": "target"
+      }
+    ],
+    "action.witch_poison.skipped": [
+      {
+        "kind": "clip",
+        "clipId": "line.action_witch_poison_skipped.0"
+      }
+    ],
+    "action.guard_protect": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_guard_protect.seat",
+        "variableName": "target"
+      }
+    ],
+    "action.hunter_shot": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.action_hunter_shot.seat",
+        "variableName": "target"
+      }
+    ],
+    "resolution.night.deaths": [
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_night_deaths.0"
+      },
+      {
+        "kind": "variable",
+        "name": "players"
+      },
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_night_deaths.1"
+      }
+    ],
+    "resolution.night.safe": [
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_night_safe.0"
+      }
+    ],
+    "announcement.deaths": [
+      {
+        "kind": "clip",
+        "clipId": "line.announcement_deaths.0"
+      },
+      {
+        "kind": "variable",
+        "name": "players"
+      }
+    ],
+    "announcement.safe": [
+      {
+        "kind": "clip",
+        "clipId": "line.announcement_safe.0"
+      }
+    ],
+    "prompt.last_words": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.prompt_last_words.seat",
+        "variableName": "seatNo"
+      }
+    ],
+    "prompt.speech": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.prompt_speech.seat",
+        "variableName": "seatNo"
+      }
+    ],
+    "prompt.pk": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.prompt_pk.seat",
+        "variableName": "seatNo"
+      }
+    ],
+    "vote.cast": [
+      {
+        "kind": "variable",
+        "name": "voter"
+      },
+      {
+        "kind": "clip",
+        "clipId": "line.vote_cast.0"
+      },
+      {
+        "kind": "variable",
+        "name": "target"
+      }
+    ],
+    "vote.abstain": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.vote_abstain.seat",
+        "variableName": "voter"
+      }
+    ],
+    "resolution.exile.exiled": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.resolution_exile_exiled.seat",
+        "variableName": "player"
+      }
+    ],
+    "resolution.exile.tied": [
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_exile_tied.0"
+      },
+      {
+        "kind": "variable",
+        "name": "players"
+      },
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_exile_tied.1"
+      }
+    ],
+    "resolution.exile.none": [
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_exile_none.0"
+      }
+    ],
+    "resolution.pk.exiled": [
+      {
+        "kind": "seat-variant",
+        "clipIdPrefix": "line.resolution_pk_exiled.seat",
+        "variableName": "player"
+      }
+    ],
+    "resolution.pk.tied": [
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_pk_tied.0"
+      },
+      {
+        "kind": "variable",
+        "name": "players"
+      },
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_pk_tied.1"
+      }
+    ],
+    "resolution.pk.none": [
+      {
+        "kind": "clip",
+        "clipId": "line.resolution_pk_none.0"
+      }
+    ],
+    "game_end.all_wolves_dead": [
+      {
+        "kind": "clip",
+        "clipId": "line.game_end_all_wolves_dead.0"
+      }
+    ],
+    "game_end.all_gods_dead": [
+      {
+        "kind": "clip",
+        "clipId": "line.game_end_all_gods_dead.0"
+      }
+    ],
+    "game_end.all_villagers_dead": [
+      {
+        "kind": "clip",
+        "clipId": "line.game_end_all_villagers_dead.0"
+      }
+    ],
+    "game_end.all_good_dead": [
+      {
+        "kind": "clip",
+        "clipId": "line.game_end_all_good_dead.0"
+      }
+    ],
+    "fallback.announcement": [
+      {
+        "kind": "clip",
+        "clipId": "line.fallback_announcement.0"
+      }
+    ],
+    "fallback.speech": [
+      {
+        "kind": "clip",
+        "clipId": "line.fallback_speech.0"
+      }
+    ],
+    "fallback.vote": [
+      {
+        "kind": "clip",
+        "clipId": "line.fallback_vote.0"
+      }
+    ],
+    "fallback.resolution": [
+      {
+        "kind": "clip",
+        "clipId": "line.fallback_resolution.0"
+      }
+    ]
+  }
+}

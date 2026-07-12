@@ -16,9 +16,11 @@ import type { ExportJobProjection } from "@/server/video-export/types";
 export function ExportPanel({
   gameId,
   canExport,
+  blockerMessage,
 }: {
   readonly gameId: string;
   readonly canExport: boolean;
+  readonly blockerMessage: string | null;
 }) {
   const [jobs, setJobs] = useState<readonly ExportJobProjection[]>([]);
   const [busy, setBusy] = useState(false);
@@ -52,7 +54,7 @@ export function ExportPanel({
     }
     const timer = window.setInterval(() => {
       refresh().catch((caught: unknown) => setError(messageOf(caught)));
-    }, 1000);
+    }, 30_000);
     return () => window.clearInterval(timer);
   }, [hasActive, refresh]);
 
@@ -133,7 +135,7 @@ export function ExportPanel({
       ) : null}
       {!canExport ? (
         <div className="text-sm text-muted">
-          没有已确认的播放记录，暂时无法生成视频。
+          {blockerMessage ?? "当前状态暂时无法生成视频。"}
         </div>
       ) : null}
       {jobs.length > 0 ? (

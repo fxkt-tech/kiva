@@ -78,6 +78,7 @@ export function createGameActions(
       events: [],
       draft: null,
       generations: [],
+      voiceArtifactsByEventId: {},
     };
 
     await repository.save(record);
@@ -106,6 +107,7 @@ export function createGameActions(
       events: [],
       draft: null,
       generations: [],
+      voiceArtifactsByEventId: {},
     };
 
     await repository.save(record);
@@ -228,6 +230,7 @@ export function createGameActions(
           events: nextEvents,
           draft: null,
           generations: record.generations,
+          voiceArtifactsByEventId: record.voiceArtifactsByEventId,
         };
         await repository.save(confirmedRecord);
         return confirmedRecord;
@@ -321,6 +324,13 @@ export function createGameActions(
           events: rollbackAfterIndex(record.events, index),
           draft: null,
           generations: record.generations,
+          voiceArtifactsByEventId: Object.fromEntries(
+            Object.entries(record.voiceArtifactsByEventId).filter(([eventId]) =>
+              rollbackAfterIndex(record.events, index).some(
+                (event) => event.id === eventId,
+              ),
+            ),
+          ),
         };
 
         await repository.save(nextRecord);

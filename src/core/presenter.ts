@@ -13,7 +13,7 @@ import type { GameRole, PlayerId } from "./types";
 export type PresenterCue = {
   readonly copyKey: PresenterCopyKey;
   readonly text: string;
-  readonly voiceFile: string | null;
+  readonly values?: Readonly<Record<string, string>>;
 };
 
 export type PresenterResolution = {
@@ -50,28 +50,6 @@ export function resolvePresenter(
     transcriptText: cue.text,
     cue,
   };
-}
-
-export function declaredPresenterVoiceFiles(
-  definitions: readonly PresenterDefinition[],
-): ReadonlySet<string> {
-  const files = new Set<string>();
-  for (const definition of definitions) {
-    for (const line of Object.values(definition.lines)) {
-      if ("voice" in line) {
-        if (line.voice) {
-          files.add(line.voice.file);
-        }
-        continue;
-      }
-      Object.values(line.voiceBySeat).forEach((voice) => {
-        if (voice) {
-          files.add(voice.file);
-        }
-      });
-    }
-  }
-  return files;
 }
 
 function resolveSpeech(
@@ -271,21 +249,11 @@ function resolveCue(
   seatNo?: number,
 ): PresenterCue {
   const line = presenter.lines[key];
-  const voice = voiceForLine(line, seatNo);
   return {
     copyKey: key,
     text: renderTemplate(line.template, values),
-    voiceFile: voice?.status === "ready" ? voice.file : null,
+    values,
   };
-}
-
-function voiceForLine(line: PresenterLine, seatNo?: number) {
-  if ("voice" in line) {
-    return line.voice;
-  }
-  return seatNo === undefined
-    ? null
-    : (line as PresenterSeatLine).voiceBySeat[String(seatNo)] ?? null;
 }
 
 function renderTemplate(

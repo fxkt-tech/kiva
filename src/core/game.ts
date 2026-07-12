@@ -101,6 +101,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
         character.defaultModelBinding ??
         role.defaultModelBinding ??
         undefined,
+      voiceProfileSnapshot: character.voiceProfile,
       roleName: role.name,
       faction: role.faction,
       team: role.team,

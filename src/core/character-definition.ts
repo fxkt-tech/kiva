@@ -1,5 +1,9 @@
 import { isPlainObject, validateModelBindingSnapshot } from "./model-binding";
 import type { ModelBindingSnapshot } from "./player";
+import {
+  validateVoiceProfileSnapshot,
+  type VoiceProfileSnapshot,
+} from "./voice";
 
 export type CharacterDefinition = {
   readonly id: string;
@@ -11,6 +15,7 @@ export type CharacterDefinition = {
   readonly reasoningStyle: string;
   readonly systemPrompt: string;
   readonly defaultModelBinding: ModelBindingSnapshot | null;
+  readonly voiceProfile: VoiceProfileSnapshot;
   readonly enabled: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -78,6 +83,10 @@ export function validateCharacterDefinitions(
     validateModelBindingSnapshot(
       character.defaultModelBinding,
       `Character ${characterId} defaultModelBinding`,
+    );
+    validateVoiceProfileSnapshot(
+      character.voiceProfile,
+      `Character ${characterId} voiceProfile`,
     );
     requireIsoTimestamp(
       character.createdAt,

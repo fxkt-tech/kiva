@@ -1,6 +1,6 @@
 import type { PlaybackItem } from "@/core/playback";
 
-export const VIDEO_COMPOSITION_SCHEMA_VERSION = 2 as const;
+export const VIDEO_COMPOSITION_SCHEMA_VERSION = 3 as const;
 
 export type AudioCueKind =
   | "system-voice"
@@ -76,7 +76,29 @@ function isPlaybackItem(value: unknown): value is PlaybackItem {
     isNullableString(value.presenterAvatar) &&
     (value.transcriptSpeaker === "presenter" ||
       value.transcriptSpeaker === "player") &&
-    isPresenterCue(value.presenterCue)
+    isPresenterCue(value.presenterCue) &&
+    (value.playerVoice === undefined || isPlayerVoice(value.playerVoice))
+  );
+}
+
+function isPlayerVoice(value: unknown): boolean {
+  return (
+    value === null ||
+    (isRecord(value) &&
+      typeof value.eventId === "string" &&
+      typeof value.playerId === "string" &&
+      typeof value.file === "string" &&
+      isFiniteNonNegative(value.durationMs) &&
+      isFiniteNonNegative(value.startsAtOffsetMs) &&
+      Array.isArray(value.cues) &&
+      value.cues.every(
+        (cue) =>
+          isRecord(cue) &&
+          typeof cue.text === "string" &&
+          isFiniteNonNegative(cue.startMs) &&
+          isFiniteNonNegative(cue.endMs) &&
+          cue.endMs > cue.startMs,
+      ))
   );
 }
 
@@ -84,8 +106,7 @@ function isPresenterCue(value: unknown): boolean {
   return (
     isRecord(value) &&
     typeof value.copyKey === "string" &&
-    typeof value.text === "string" &&
-    isNullableString(value.voiceFile)
+    typeof value.text === "string"
   );
 }
 

@@ -3,6 +3,7 @@ import {
   validateCharacterDefinitions,
   type CharacterDefinition,
 } from "../character-definition";
+import { edgeVoiceProfile } from "../voice";
 
 function validCharacter(
   overrides: Partial<CharacterDefinition> = {},
@@ -17,6 +18,7 @@ function validCharacter(
     reasoningStyle: "先列事实，再排除低概率解释。",
     systemPrompt: "你是一名冷静分析师，需要以稳定、理性的方式参与发言。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile("zh-CN-XiaoxiaoNeural"),
     enabled: true,
     createdAt: "2026-06-27T00:00:00.000Z",
     updatedAt: "2026-06-27T00:00:00.000Z",

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { GameEvent } from "../events";
 import { createSeedGame } from "../game";
 import { createGamePresenterSnapshot } from "../presenter-definition";
-import { declaredPresenterVoiceFiles, resolvePresenter } from "../presenter";
+import { resolvePresenter } from "../presenter";
 import type { EventId, GameId, PlayerId } from "../types";
 import { seedPresenters } from "@/seeds/presenters";
 
@@ -27,7 +27,6 @@ describe("presenter resolution", () => {
     expect(atmospheric.transcriptText).toContain("所有玩家保持安静");
     expect(directive.transcriptText).toBe("天黑请闭眼。");
     expect(atmospheric.cue.copyKey).toBe("phase.night");
-    expect(atmospheric.cue.voiceFile).toBeNull();
   });
 
   it("renders typed player labels into action templates", () => {
@@ -61,8 +60,7 @@ describe("presenter resolution", () => {
       transcriptText: "我认为三号的发言有问题。",
       cue: {
         copyKey: "prompt.speech",
-        text: "请4号玩家开始发言。",
-        voiceFile: "player_4_speech_prompt.mp3",
+        text: "4号玩家请发言。",
       },
     });
   });
@@ -85,29 +83,6 @@ describe("presenter resolution", () => {
     });
   });
 
-  it("keeps unavailable seat prompts silent", () => {
-    const speech = event({
-      type: "day_speech_given",
-      phase: "speech",
-      payload: {
-        playerId: "p7" as PlayerId,
-        text: "七号发言。",
-        dayNumber: 1,
-        round: 1,
-      },
-    });
-
-    expect(resolvePresenter(nightWatch, speech, game.players).cue.voiceFile)
-      .toBeNull();
-  });
-
-  it("enumerates every declared ready or pending voice file for asset routing", () => {
-    const files = declaredPresenterVoiceFiles(seedPresenters);
-
-    expect(files.has("phase_night_start.mp3")).toBe(true);
-    expect(files.has("player_6_pk_speech_prompt.mp3")).toBe(true);
-    expect(files.has("../unsafe.mp3")).toBe(false);
-  });
 });
 
 function event(overrides: Partial<GameEvent>): GameEvent {

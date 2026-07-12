@@ -1,7 +1,7 @@
-import { readFile } from "node:fs/promises";
 import { extname } from "node:path";
 import { exportErrorResponse } from "@/server/video-export/http";
 import { getVideoExportService } from "@/server/video-export/export-service";
+import { rangedFileResponse } from "@/server/http/ranged-file-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,11 +13,13 @@ type RouteProps = {
   }>;
 };
 
-export async function GET(_request: Request, { params }: RouteProps) {
+export async function GET(request: Request, { params }: RouteProps) {
   try {
     const { jobId, path } = await params;
     const file = await getVideoExportService().assetPath(jobId, path);
-    return new Response(await readFile(file), {
+    return await rangedFileResponse({
+      request,
+      path: file,
       headers: {
         "access-control-allow-origin": "*",
         "cache-control": "private, max-age=31536000, immutable",

@@ -13,7 +13,11 @@ export function DirtyFormGuard() {
 
     let dirty = false;
 
-    function markDirty() {
+    function markDirty(event: Event) {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-ignore-dirty]")
+      ) return;
       dirty = true;
     }
 

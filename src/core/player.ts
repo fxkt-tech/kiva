@@ -7,6 +7,7 @@ import {
   type Ruleset,
 } from "./types";
 import type { RoleMechanicKey, RoleTeam } from "./role-definition";
+import { edgeVoiceProfile, type VoiceProfileSnapshot } from "./voice";
 
 export type ModelBindingSnapshot = {
   readonly provider: string;
@@ -42,6 +43,7 @@ export type PlayerSnapshot = {
   readonly roleActionPromptSnapshot: string | null;
   readonly systemPrompt: string;
   readonly modelBindingSnapshot: ModelBindingSnapshot;
+  readonly voiceProfileSnapshot: VoiceProfileSnapshot;
   readonly gameRole: GameRole;
   readonly roleName: string;
   readonly faction: Faction;
@@ -67,6 +69,7 @@ export type CreatePlayerSnapshotInput = {
   readonly roleActionPromptSnapshot?: string | null;
   readonly systemPrompt?: string;
   readonly modelBindingSnapshot?: ModelBindingSnapshot;
+  readonly voiceProfileSnapshot?: VoiceProfileSnapshot;
   readonly roleName?: string;
   readonly faction?: Faction;
   readonly team?: PlayerTeam;
@@ -167,6 +170,8 @@ export function createPlayerSnapshot(
     modelBindingSnapshot: {
       ...(input.modelBindingSnapshot ?? defaultModelBinding),
     },
+    voiceProfileSnapshot:
+      input.voiceProfileSnapshot ?? edgeVoiceProfile("zh-CN-XiaoxiaoNeural"),
     gameRole: input.gameRole,
     roleName: input.roleName ?? ROLE_NAME_BY_ROLE[input.gameRole],
     faction: input.faction ?? factionForRole(input.gameRole),

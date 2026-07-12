@@ -7,6 +7,7 @@ import {
 } from "../game-preset";
 import type { ModelBindingSnapshot } from "../player";
 import type { RoleDefinition } from "../role-definition";
+import { edgeVoiceProfile } from "../voice";
 
 const timestamp = "2026-06-27T00:00:00.000Z";
 
@@ -42,6 +43,7 @@ function validCharacter(
     reasoningStyle: "先列事实，再排除低概率解释。",
     systemPrompt: "你是一名冷静分析师，需要以稳定、理性的方式参与发言。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile("zh-CN-XiaoxiaoNeural"),
     enabled: true,
     createdAt: timestamp,
     updatedAt: timestamp,

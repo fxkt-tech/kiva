@@ -68,6 +68,20 @@ export function CharacterEditor({
         />
       </div>
 
+      <section className="rounded border border-border bg-surface/35 p-3">
+        <h3 className="text-sm font-semibold text-foreground">Edge voice</h3>
+        <p className="mt-1 text-xs text-subtle">
+          创建 Game 时会复制这份音色配置；已有 Game 不会随之改变。
+        </p>
+        <input type="hidden" name="voiceProfile.lang" value={character.voiceProfile.lang} />
+        <div className="mt-3 grid gap-3 md:grid-cols-4">
+          <TextField label="Voice" name="voiceProfile.voice" defaultValue={character.voiceProfile.voice} />
+          <TextField label="Pitch" name="voiceProfile.pitch" defaultValue={character.voiceProfile.pitch} />
+          <TextField label="Rate" name="voiceProfile.rate" defaultValue={character.voiceProfile.rate} />
+          <TextField label="Volume" name="voiceProfile.volume" defaultValue={character.voiceProfile.volume} />
+        </div>
+      </section>
+
       <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"

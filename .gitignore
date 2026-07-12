@@ -12,3 +12,4 @@ pnpm-debug.log*
 .codegraph/
 .tmp/
 kivdb/exports/
+kivdb/workers/

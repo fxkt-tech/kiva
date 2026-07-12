@@ -3,8 +3,8 @@ import {
   readdir,
   readFile,
   rename,
-  rmdir,
-  unlink,
+  rm,
+  stat,
   writeFile,
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
@@ -14,6 +14,10 @@ import type { DraftEvent } from "@/core/drafts";
 import type { GameEvent } from "@/core/events";
 import type { Game } from "@/core/game";
 import type { GenerationRecord } from "@/core/generation-record";
+import {
+  validatePlayerVoiceArtifact,
+  type PlayerVoiceArtifact,
+} from "@/core/voice";
 import { validateGamePresenterSnapshot } from "@/core/presenter-definition";
 import { createPlayerSnapshot } from "@/core/player";
 import {
@@ -28,6 +32,7 @@ export type GameRecord = {
   readonly events: readonly GameEvent[];
   readonly draft: DraftEvent | null;
   readonly generations: readonly GenerationRecord[];
+  readonly voiceArtifactsByEventId: Readonly<Record<string, PlayerVoiceArtifact>>;
 };
 
 export type GameRepository = {
@@ -35,6 +40,13 @@ export type GameRepository = {
   readonly list: () => Promise<readonly GameRecord[]>;
   readonly save: (record: GameRecord) => Promise<void>;
   readonly delete: (gameId: GameId) => Promise<void>;
+  readonly voicePath: (gameId: GameId, eventId: string) => string;
+  readonly voiceTempPath: (gameId: GameId, eventId: string) => Promise<string>;
+  readonly publishVoice: (
+    gameId: GameId,
+    eventId: string,
+    tempPath: string,
+  ) => Promise<string>;
   readonly withGameLock: <T>(
     gameId: GameId,
     operation: () => Promise<T>,
@@ -53,12 +65,23 @@ export function createGameRepository(rootDir = "kivdb"): GameRepository {
     await mkdir(locksDir, { recursive: true });
   }
 
+  function gameDir(gameId: GameId): string {
+    return join(gamesDir, encodeURIComponent(gameId));
+  }
+
   function recordPath(gameId: GameId): string {
-    return join(gamesDir, `${encodeURIComponent(gameId)}.json`);
+    return join(gameDir(gameId), "record.json");
   }
 
   function lockPath(gameId: GameId): string {
     return join(locksDir, `${encodeURIComponent(gameId)}.lock`);
+  }
+
+  function voiceFileName(eventId: string): string {
+    if (!/^[a-zA-Z0-9_-]{1,160}$/.test(eventId)) {
+      throw new Error("Invalid voice event identifier");
+    }
+    return `${eventId}.mp3`;
   }
 
   return {
@@ -76,12 +99,15 @@ export function createGameRepository(rootDir = "kivdb"): GameRepository {
 
     async list() {
       await ensureGamesDir();
-      const filenames = await readdir(gamesDir);
+      const entries = await readdir(gamesDir, { withFileTypes: true });
       const records = await Promise.all(
-        filenames
-          .filter((filename) => filename.endsWith(".json"))
-          .map(async (filename) => {
-            const content = await readFile(join(gamesDir, filename), "utf8");
+        entries
+          .filter((entry) => entry.isDirectory())
+          .map(async (entry) => {
+            const content = await readFile(
+              join(gamesDir, entry.name, "record.json"),
+              "utf8",
+            );
             return normalizeRecord(JSON.parse(content));
           }),
       );
@@ -94,21 +120,31 @@ export function createGameRepository(rootDir = "kivdb"): GameRepository {
     async save(record) {
       await ensureGamesDir();
       const targetPath = recordPath(record.game.id);
+      await mkdir(gameDir(record.game.id), { recursive: true });
       const tempPath = `${targetPath}.${randomUUID()}.tmp`;
       await writeFile(tempPath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
       await rename(tempPath, targetPath);
     },
 
     async delete(gameId) {
-      try {
-        await unlink(recordPath(gameId));
-      } catch (error) {
-        if (isNodeError(error) && error.code === "ENOENT") {
-          return;
-        }
+      await rm(gameDir(gameId), { recursive: true, force: true });
+    },
 
-        throw error;
-      }
+    voicePath(gameId, eventId) {
+      return join(gameDir(gameId), "voice", voiceFileName(eventId));
+    },
+
+    async voiceTempPath(gameId, eventId) {
+      const directory = join(gameDir(gameId), "voice", ".tmp");
+      await mkdir(directory, { recursive: true });
+      return join(directory, `${voiceFileName(eventId)}.${randomUUID()}.tmp`);
+    },
+
+    async publishVoice(gameId, eventId, tempPath) {
+      const target = join(gameDir(gameId), "voice", voiceFileName(eventId));
+      await mkdir(join(gameDir(gameId), "voice"), { recursive: true });
+      await rename(tempPath, target);
+      return voiceFileName(eventId);
     },
 
     async withGameLock(gameId, operation) {
@@ -123,9 +159,20 @@ export function createGameRepository(rootDir = "kivdb"): GameRepository {
 }
 
 function normalizeRecord(rawRecord: unknown): GameRecord {
-  const record = rawRecord as Omit<GameRecord, "generations"> & {
+  const record = rawRecord as Omit<
+    GameRecord,
+    "generations" | "voiceArtifactsByEventId"
+  > & {
     readonly generations?: readonly GenerationRecord[];
+    readonly voiceArtifactsByEventId?: Readonly<Record<string, PlayerVoiceArtifact>>;
   };
+
+  const voiceArtifactsByEventId = Object.fromEntries(
+    Object.entries(record.voiceArtifactsByEventId ?? {}).map(([eventId, artifact]) => [
+      eventId,
+      validatePlayerVoiceArtifact(artifact, eventId),
+    ]),
+  );
 
   return {
     ...record,
@@ -138,6 +185,7 @@ function normalizeRecord(rawRecord: unknown): GameRecord {
       ),
     },
     generations: (record.generations ?? []).map(normalizeGenerationRecord),
+    voiceArtifactsByEventId,
   };
 }
 
@@ -171,18 +219,64 @@ async function acquireLock(
   ensureParentDir: () => Promise<void>,
 ): Promise<() => Promise<void>> {
   await ensureParentDir();
+  const token = randomUUID();
+  const ownerPath = join(path, "owner.json");
 
   while (true) {
     try {
       await mkdir(path);
-      return () => rmdir(path);
+      await writeFile(
+        ownerPath,
+        JSON.stringify({ pid: process.pid, token, createdAt: Date.now() }),
+        "utf8",
+      );
+      return async () => {
+        const owner = await readLockOwner(ownerPath);
+        if (owner?.token === token) await rm(path, { recursive: true, force: true });
+      };
     } catch (error) {
       if (isNodeError(error) && error.code === "EEXIST") {
+        if (await lockIsStale(path, ownerPath)) {
+          await rm(path, { recursive: true, force: true });
+          continue;
+        }
         await setTimeout(10);
         continue;
       }
 
       throw error;
     }
+  }
+}
+
+type LockOwner = { readonly pid: number; readonly token: string };
+
+async function readLockOwner(path: string): Promise<LockOwner | null> {
+  try {
+    const value = JSON.parse(await readFile(path, "utf8")) as Partial<LockOwner>;
+    return Number.isInteger(value.pid) && typeof value.token === "string"
+      ? value as LockOwner
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function lockIsStale(path: string, ownerPath: string): Promise<boolean> {
+  const owner = await readLockOwner(ownerPath);
+  if (owner) return !processIsAlive(owner.pid);
+  try {
+    return Date.now() - (await stat(path)).mtimeMs > 5_000;
+  } catch (error) {
+    return isNodeError(error) && error.code === "ENOENT";
+  }
+}
+
+function processIsAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
   }
 }

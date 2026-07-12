@@ -714,6 +714,18 @@ function createDeferredSaveRepository(): GameRepository & {
       }
     },
 
+    voicePath() {
+      throw new Error("not used");
+    },
+
+    async voiceTempPath() {
+      throw new Error("not used");
+    },
+
+    async publishVoice() {
+      throw new Error("not used");
+    },
+
     async withGameLock(_gameId, operation) {
       const previous = lockTail;
       let releaseCurrent!: () => void;

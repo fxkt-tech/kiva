@@ -97,10 +97,11 @@ describe("game repository", () => {
       events: [],
       draft: null,
       generations: [],
+    voiceArtifactsByEventId: {},
     });
 
     const savedFile = await stat(
-      join(rootDir, "kivdb", "games", `${encodeURIComponent(gameId)}.json`),
+      join(rootDir, "kivdb", "games", encodeURIComponent(gameId), "record.json"),
     );
     expect(savedFile.isFile()).toBe(true);
   });
@@ -114,6 +115,7 @@ describe("game repository", () => {
       events: [event(gameId)],
       draft: draft(gameId),
       generations: [],
+    voiceArtifactsByEventId: {},
     };
 
     await repository.save(record);
@@ -131,13 +133,14 @@ describe("game repository", () => {
       events: [],
       draft: null,
       generations: [],
+    voiceArtifactsByEventId: {},
     });
 
     await repository.delete(gameId);
 
     await expect(repository.get(gameId)).resolves.toBeNull();
     await expect(
-      stat(join(rootDir, "games", `${encodeURIComponent(gameId)}.json`)),
+      stat(join(rootDir, "games", encodeURIComponent(gameId), "record.json")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -158,12 +161,14 @@ describe("game repository", () => {
       events: [],
       draft: null,
       generations: [],
+    voiceArtifactsByEventId: {},
     });
     await repository.save({
       game: game(newerGameId, "2026-06-26T00:04:00.000Z"),
       events: [],
       draft: null,
       generations: [],
+    voiceArtifactsByEventId: {},
     });
 
     const records = await repository.list();
@@ -183,9 +188,9 @@ describe("game repository", () => {
       events: [],
       draft: null,
     };
-    await mkdir(join(rootDir, "games"), { recursive: true });
+    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
     await writeFile(
-      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
       JSON.stringify(oldRecord),
       "utf8",
     );
@@ -195,6 +200,7 @@ describe("game repository", () => {
       events: [],
       draft: null,
       generations: [],
+    voiceArtifactsByEventId: {},
     });
   });
 
@@ -206,14 +212,15 @@ describe("game repository", () => {
       ...game(gameId, "2026-06-26T00:03:00.000Z"),
       presenter: undefined,
     };
-    await mkdir(join(rootDir, "games"), { recursive: true });
+    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
     await writeFile(
-      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
       JSON.stringify({
         game: gameWithoutPresenter,
         events: [],
         draft: null,
         generations: [],
+      voiceArtifactsByEventId: {},
       }),
       "utf8",
     );
@@ -251,9 +258,9 @@ describe("game repository", () => {
         },
       ],
     };
-    await mkdir(join(rootDir, "games"), { recursive: true });
+    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
     await writeFile(
-      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
       JSON.stringify(oldRecord),
       "utf8",
     );
@@ -275,9 +282,9 @@ describe("game repository", () => {
       events: [],
       draft: null,
     };
-    await mkdir(join(rootDir, "games"), { recursive: true });
+    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
     await writeFile(
-      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
       JSON.stringify(oldRecord),
       "utf8",
     );
@@ -303,9 +310,9 @@ describe("game repository", () => {
     const repository = createGameRepository(rootDir);
     const olderGameId = "older-old-player-snapshots" as GameId;
     const newerGameId = "newer-old-player-snapshots" as GameId;
-    await mkdir(join(rootDir, "games"), { recursive: true });
+    await mkdir(join(rootDir, "games", encodeURIComponent(olderGameId)), { recursive: true });
     await writeFile(
-      join(rootDir, "games", `${encodeURIComponent(olderGameId)}.json`),
+      join(rootDir, "games", encodeURIComponent(olderGameId), "record.json"),
       JSON.stringify({
         game: legacyGameWithoutPlayerLibrarySnapshots(
           olderGameId,
@@ -316,8 +323,9 @@ describe("game repository", () => {
       }),
       "utf8",
     );
+    await mkdir(join(rootDir, "games", encodeURIComponent(newerGameId)), { recursive: true });
     await writeFile(
-      join(rootDir, "games", `${encodeURIComponent(newerGameId)}.json`),
+      join(rootDir, "games", encodeURIComponent(newerGameId), "record.json"),
       JSON.stringify({
         game: legacyGameWithoutPlayerLibrarySnapshots(
           newerGameId,
@@ -359,10 +367,11 @@ describe("game repository", () => {
       events: [],
       draft: null,
       generations: [],
+    voiceArtifactsByEventId: {},
     });
 
     await expect(
-      stat(join(rootDir, "games", `${encodeURIComponent(gameId)}.json`)),
+      stat(join(rootDir, "games", encodeURIComponent(gameId), "record.json")),
     ).resolves.toMatchObject({ isFile: expect.any(Function) });
     await expect(stat(join(rootDir, "escaped"))).rejects.toMatchObject({
       code: "ENOENT",
@@ -382,10 +391,11 @@ describe("game repository", () => {
       events: [],
       draft: null,
       generations: [],
+    voiceArtifactsByEventId: {},
     });
 
     const content = await readFile(
-      join(rootDir, "games", `${encodeURIComponent(gameId)}.json`),
+      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
       "utf8",
     );
 
@@ -424,5 +434,25 @@ describe("game repository", () => {
     await secondLock;
 
     expect(order).toEqual(["first-start", "first-end", "second"]);
+  });
+
+  it("recovers a lock owned by a dead process", async () => {
+    const rootDir = await createTempDir();
+    const gameId = "stale-lock" as GameId;
+    const lockDir = join(rootDir, "locks", `${gameId}.lock`);
+    await mkdir(lockDir, { recursive: true });
+    await writeFile(
+      join(lockDir, "owner.json"),
+      JSON.stringify({ pid: 999_999_999, token: "dead", createdAt: 0 }),
+      "utf8",
+    );
+
+    let entered = false;
+    await createGameRepository(rootDir).withGameLock(gameId, async () => {
+      entered = true;
+    });
+
+    expect(entered).toBe(true);
+    await expect(stat(lockDir)).rejects.toMatchObject({ code: "ENOENT" });
   });
 });

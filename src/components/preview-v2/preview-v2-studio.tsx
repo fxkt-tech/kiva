@@ -24,6 +24,7 @@ import type { VideoCompositionInput } from "./composition/types";
 import { VIDEO_SPEC } from "./composition/video-spec";
 import { ExportPanel } from "./export-panel";
 import { copyCurrentFrame } from "./copy-current-frame";
+import { VoicePanel } from "./voice-panel";
 
 type CopyFrameStatus = "idle" | "copying" | "copied" | "error";
 
@@ -31,10 +32,14 @@ export function PreviewV2Studio({
   composition,
   includesDraft,
   canExport,
+  missingVoiceCount,
+  exportBlocker,
 }: {
   readonly composition: VideoCompositionInput;
   readonly includesDraft: boolean;
   readonly canExport: boolean;
+  readonly missingVoiceCount: number;
+  readonly exportBlocker: string | null;
 }) {
   const playerRef = useRef<PlayerRef>(null);
   const durationInFrames = compositionDurationInFrames(
@@ -244,7 +249,7 @@ export function PreviewV2Studio({
               </div>
             </section>
           </div>
-          <div className="grid min-h-0 gap-3 lg:grid-rows-[auto_minmax(0,1fr)]">
+          <div className="grid min-h-0 gap-3 lg:grid-rows-[auto_auto_minmax(0,1fr)]">
             <section className="rounded-lg border border-border bg-surface/45 p-4">
               <h1 className="truncate text-base font-semibold text-foreground">
                 {composition.gameTitle}
@@ -253,8 +258,13 @@ export function PreviewV2Studio({
                 1920×1080 · 30 FPS · {composition.items.length} records
               </div>
             </section>
+            <VoicePanel
+              gameId={composition.gameId}
+              missingCount={missingVoiceCount}
+            />
             <ExportPanel
               canExport={canExport}
+              blockerMessage={exportBlocker}
               gameId={composition.gameId}
             />
           </div>

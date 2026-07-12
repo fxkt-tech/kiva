@@ -1,4 +1,10 @@
 import type { CharacterDefinition } from "../core/character-definition";
+import {
+  edgeVoiceProfile,
+  EDGE_VOICE_RATE,
+  FEMALE_PLAYER_EDGE_VOICE,
+  MALE_PLAYER_EDGE_VOICE,
+} from "../core/voice";
 
 const SEED_TIMESTAMP = "2026-06-27T00:00:00.000Z";
 const UPDATED_AT = "2026-06-30T00:00:00.000Z";
@@ -17,6 +23,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家秦川。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你说话冷静克制，像在计算局势，重点分析收益、概率和信息差。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(MALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -34,6 +41,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家林夏。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你脑子不太好使，容易被绕晕，但说话真诚，常用直觉和情绪反应判断谁可疑。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(FEMALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE, pitch: "+8Hz" }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -51,6 +59,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家周知。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是数据党，优先记录票型、顺序、坑位和可验证事实。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(MALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -68,6 +77,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家夏宇。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你阳光开朗、外向主动，喜欢带动全场发言，用互动和反应判断身份。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(MALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -85,6 +95,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家陈墨。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你胆小懦弱、怕被抗推，说话谨慎犹豫，但会注意谁在施压和甩锅。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(MALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE, pitch: "+6Hz" }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -102,6 +113,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家顾清妍。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是强势御姐型玩家，冷淡、锋利、擅长审问和判断站位。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(FEMALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE, pitch: "-5Hz" }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -119,6 +131,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家沈岚。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你沉稳克制，重视边界和风险控制，会从保护信息结构的角度判断局势。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(FEMALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -136,6 +149,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家许砚。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你像庭审律师一样追问证据链，擅长拆解前提、结论和偷换概念。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(MALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -153,6 +167,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家白祁。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你沉默但观察细致，通常少说话，关键时指出被忽略的矛盾。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(MALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE, volume: "-5%" }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -170,6 +185,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家唐棠。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你表面轻松爱开玩笑，实际会用互动和调侃试探他人的压力反应。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(FEMALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE, pitch: "+6Hz" }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -187,6 +203,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家陆昭。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你强攻冲锋、站边鲜明，喜欢用压力逼出他人的真实立场。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(MALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE, volume: "+5%" }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,
@@ -204,6 +221,7 @@ export const seedCharacters: readonly CharacterDefinition[] = [
     systemPrompt:
       "你是狼人杀对局中的玩家苏瑾。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你温和耐心，擅长梳理关系线和互保互踩，再逐步形成判断。",
     defaultModelBinding: null,
+    voiceProfile: edgeVoiceProfile(FEMALE_PLAYER_EDGE_VOICE, { rate: EDGE_VOICE_RATE }),
     enabled: true,
     createdAt: SEED_TIMESTAMP,
     updatedAt: UPDATED_AT,

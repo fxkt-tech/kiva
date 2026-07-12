@@ -24,7 +24,6 @@ const defaultItem: PlaybackItem = {
   presenterCue: {
     copyKey: "phase.night",
     text: "夜幕已经落下，所有玩家请确认自己的身份。",
-    voiceFile: null,
   },
 };
 

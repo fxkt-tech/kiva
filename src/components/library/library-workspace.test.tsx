@@ -82,7 +82,7 @@ describe("LibraryWorkspace", () => {
 
     expect(html).toContain("Presenter editor");
     expect(html).toContain("法官");
-    expect(html).toContain("主持文案与录音");
+    expect(html).toContain("主持文案");
     expect(html).toContain('name="line.phase.night.template"');
   });
 

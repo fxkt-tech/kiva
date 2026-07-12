@@ -1,11 +1,10 @@
 import { copyFile, mkdir } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { compilePublicPlayback } from "@/core/playback";
-import { systemVoiceSourceForScene } from "@/components/preview/preview-audio";
 import { createCompositionInput } from "@/components/preview-v2/composition/create-composition-input";
 import type { VideoCompositionInput } from "@/components/preview-v2/composition/types";
 import type { GameRecord } from "@/server/game-repository";
-import { loadSystemVoiceDurations } from "@/server/preview-voice-assets";
+import { loadPresenterVoiceManifest } from "@/server/presenter-voice-manifest";
 import type { ExportJob } from "./types";
 
 export async function buildExportSnapshot(input: {
@@ -22,17 +21,18 @@ export async function buildExportSnapshot(input: {
   await mkdir(join(assetsDir, "avatars"), { recursive: true });
   await mkdir(join(assetsDir, "audio"), { recursive: true });
 
-  const voiceDurations = await loadSystemVoiceDurations(input.dataDir);
+  const presenterVoiceManifest = await loadPresenterVoiceManifest(
+    input.dataDir,
+    input.record.game.presenter.presenterSourceId,
+  );
   const items = compilePublicPlayback(
     input.record.events,
     input.record.game.players,
     {
       presenter: input.record.game.presenter,
       audience: "director",
-      durationForScene: (scene) => {
-        const source = systemVoiceSourceForScene(scene);
-        return source ? voiceDurations.get(source) ?? null : null;
-      },
+      voiceArtifactsByEventId: input.record.voiceArtifactsByEventId,
+      presenterVoiceManifest,
     },
   );
   const composition = createCompositionInput({
@@ -40,6 +40,14 @@ export async function buildExportSnapshot(input: {
     gameTitle: input.record.game.title,
     items,
   });
+  const missingPlayerVoice = items.find(
+    (item) => item.transcriptSpeaker === "player" && !item.playerVoice,
+  );
+  if (missingPlayerVoice) {
+    throw new Error(
+      `Player voice is missing for playback event ${missingPlayerVoice.index}`,
+    );
+  }
   const assetBase =
     "/api/preview-v2/exports/" + input.job.jobId + "/assets/";
 
@@ -78,23 +86,47 @@ export async function buildExportSnapshot(input: {
 
   const audioCues = [];
   for (const cue of composition.audioCues) {
-    const file = internalAssetFile(cue.src, "/kivdb-assets/voice/system/");
-    if (!file || !isSafeAssetFile(file)) {
-      warnings.push("Audio cue was not snapshot-compatible: " + cue.src);
-      continue;
-    }
-    try {
+    if (cue.kind === "player-voice") {
+      const eventId = cue.id.slice("player-voice:".length);
+      const artifact = input.record.voiceArtifactsByEventId[eventId];
+      if (!artifact || !isSafeAssetFile(artifact.audio.file)) {
+        throw new Error(`Player voice artifact is invalid: ${eventId}`);
+      }
       await copyFile(
-        join(input.dataDir, "assets", "voice", "system", file),
-        join(assetsDir, "audio", file),
+        join(
+          input.dataDir,
+          "games",
+          input.record.game.id,
+          "voice",
+          artifact.audio.file,
+        ),
+        join(assetsDir, "audio", artifact.audio.file),
       );
       audioCues.push({
         ...cue,
-        src: assetBase + "audio/" + encodeURIComponent(file),
+        src: assetBase + "audio/" + encodeURIComponent(artifact.audio.file),
       });
-    } catch {
-      warnings.push("Optional audio cue was unavailable: " + file);
+      continue;
     }
+    if (cue.src.startsWith("/api/presenters/")) {
+      const file = decodeURIComponent(cue.src.split("/").at(-1) ?? "");
+      if (!isSafeAssetFile(file)) {
+        throw new Error(`Presenter voice artifact is invalid: ${cue.src}`);
+      }
+      await copyFile(
+        join(
+          input.dataDir,
+          "presenters",
+          input.record.game.presenter.presenterSourceId,
+          "voice",
+          file,
+        ),
+        join(assetsDir, "audio", file),
+      );
+      audioCues.push({ ...cue, src: assetBase + "audio/" + encodeURIComponent(file) });
+      continue;
+    }
+    throw new Error(`Audio cue was not snapshot-compatible: ${cue.src}`);
   }
 
   return {

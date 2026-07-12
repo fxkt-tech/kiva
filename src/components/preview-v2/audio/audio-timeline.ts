@@ -1,50 +1,50 @@
 import type { PlaybackItem } from "@/core/playback";
-import { systemVoiceSourceForScene } from "@/components/preview/preview-audio";
 import type { AudioCue } from "../composition/types";
-
-export type AudioCueCandidate = Omit<AudioCue, "id">;
-export type AudioCueResolver = (
-  item: PlaybackItem,
-) => AudioCueCandidate | null;
+import { VOICE_TIMING } from "@/core/playback";
 
 export function buildAudioTimeline(
   items: readonly PlaybackItem[],
-  resolver: AudioCueResolver = systemVoiceCueForItem,
+  gameId?: string,
 ): readonly AudioCue[] {
-  return items
+  const system = items
     .flatMap((item) => {
-      const candidate = resolver(item);
-      return candidate
-        ? [{
-            ...candidate,
-            id: [
-              candidate.kind,
-              item.index,
-              candidate.startsAtMs,
-            ].join(":"),
-          }]
-        : [];
+      if (item.presenterVoiceClips?.length && item.presenterSourceId) {
+        let offsetMs = 0;
+        return item.presenterVoiceClips.map<AudioCue>((clip, index) => {
+          if (index > 0) offsetMs += VOICE_TIMING.presenterClipGapMs;
+          const cue: AudioCue = {
+            id: `presenter-voice:${item.index}:${index}:${clip.clipId}`,
+            kind: "system-voice",
+            src: `/api/presenters/${encodeURIComponent(item.presenterSourceId!)}/voice/${encodeURIComponent(clip.file)}`,
+            startsAtMs: item.startsAtMs + offsetMs,
+            durationMs: clip.durationMs,
+            trimStartMs: 0,
+            volume: 1,
+          };
+          offsetMs += clip.durationMs;
+          return cue;
+        });
+      }
+      return [];
     })
     .sort(
       (left, right) =>
         left.startsAtMs - right.startsAtMs || left.id.localeCompare(right.id),
     );
-}
-
-export function systemVoiceCueForItem(
-  item: PlaybackItem,
-): AudioCueCandidate | null {
-  const src = systemVoiceSourceForScene(item);
-  if (!src) {
-    return null;
-  }
-
-  return {
-    kind: "system-voice",
-    src,
-    startsAtMs: item.startsAtMs,
-    durationMs: item.durationMs,
-    trimStartMs: 0,
-    volume: 1,
-  };
+  const players = items.flatMap<AudioCue>((item) =>
+    item.playerVoice && gameId
+      ? [{
+          id: `player-voice:${item.playerVoice.eventId}`,
+          kind: "player-voice",
+          src: `/api/games/${encodeURIComponent(gameId)}/voice/${encodeURIComponent(item.playerVoice.eventId)}`,
+          startsAtMs: item.startsAtMs + item.playerVoice.startsAtOffsetMs,
+          durationMs: item.playerVoice.durationMs,
+          trimStartMs: 0,
+          volume: 1,
+        }]
+      : [],
+  );
+  return [...system, ...players].sort(
+    (left, right) => left.startsAtMs - right.startsAtMs || left.id.localeCompare(right.id),
+  );
 }

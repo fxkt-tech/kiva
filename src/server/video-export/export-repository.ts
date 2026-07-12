@@ -59,6 +59,20 @@ export class ExportRepository {
     }
   }
 
+  private async getJob(gameId: string, jobId: string): Promise<ExportJob | null> {
+    const directory = this.jobDir(gameId, jobId);
+    try {
+      return decodeJob(
+        JSON.parse(await readFile(join(directory, "job.json"), "utf8")),
+      );
+    } catch (error) {
+      if (isNotFound(error)) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
   async find(jobId: string): Promise<ExportJobSnapshot | null> {
     assertIdentifier(jobId);
     let gameDirs: string[];
@@ -97,7 +111,7 @@ export class ExportRepository {
     const jobs = await Promise.all(
       entries
         .filter(isIdentifier)
-        .map(async (jobId) => (await this.get(gameId, jobId))?.job ?? null),
+        .map((jobId) => this.getJob(gameId, jobId)),
     );
     return jobs
       .filter((job): job is ExportJob => job !== null)

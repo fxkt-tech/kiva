@@ -4,17 +4,23 @@ import {
   PRESENTER_LINE_VARIABLES,
   type PresenterCopyKey,
   type PresenterDefinition,
-  type PresenterSeatLine,
-  type PresenterStandardLine,
-  type PresenterVoice,
 } from "@/core/presenter-definition";
+import {
+  resolvePresenterVoiceClips,
+  type PresenterVoiceManifest,
+} from "@/core/presenter-voice";
 import { DirtyFormGuard } from "./dirty-form-guard";
+import {
+  PresenterAudioPreview,
+  type PresenterAudioPreviewOption,
+} from "./presenter-audio-preview";
 
 type PresenterEditorProps = {
   readonly presenter: PresenterDefinition;
+  readonly voiceManifest?: PresenterVoiceManifest;
 };
 
-export function PresenterEditor({ presenter }: PresenterEditorProps) {
+export function PresenterEditor({ presenter, voiceManifest }: PresenterEditorProps) {
   const groups = groupedCopyKeys();
 
   return (
@@ -57,6 +63,28 @@ export function PresenterEditor({ presenter }: PresenterEditorProps) {
         defaultValue={presenter.avatar ?? ""}
         placeholder="留空时显示名称首字"
       />
+      <div className="grid gap-3 md:grid-cols-4">
+        <TextField
+          label="Edge voice"
+          name="voiceProfile.voice"
+          defaultValue={presenter.voiceProfile.voice}
+        />
+        <TextField
+          label="Rate"
+          name="voiceProfile.rate"
+          defaultValue={presenter.voiceProfile.rate}
+        />
+        <TextField
+          label="Pitch"
+          name="voiceProfile.pitch"
+          defaultValue={presenter.voiceProfile.pitch}
+        />
+        <TextField
+          label="Volume"
+          name="voiceProfile.volume"
+          defaultValue={presenter.voiceProfile.volume}
+        />
+      </div>
       <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
@@ -70,9 +98,9 @@ export function PresenterEditor({ presenter }: PresenterEditorProps) {
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3 border-b border-border pb-2">
           <div>
-            <h3 className="text-sm font-semibold text-foreground">主持文案与录音</h3>
+            <h3 className="text-sm font-semibold text-foreground">主持文案</h3>
             <p className="mt-1 text-xs text-subtle">
-              模板变量由事件契约固定；录音留空即静音，pending 不会进入播放。
+              模板变量由事件契约固定；配音由预制 manifest 构建命令统一生成。
             </p>
           </div>
           <span className="font-mono text-xs text-subtle">
@@ -98,6 +126,7 @@ export function PresenterEditor({ presenter }: PresenterEditorProps) {
                   key={key}
                   copyKey={key}
                   line={presenter.lines[key]}
+                  previewOptions={previewOptions(presenter.id, voiceManifest, key)}
                 />
               ))}
             </div>
@@ -135,17 +164,22 @@ function PresenterAvatar({ presenter }: PresenterEditorProps) {
 function LineEditor({
   copyKey,
   line,
+  previewOptions,
 }: {
   readonly copyKey: PresenterCopyKey;
   readonly line: PresenterDefinition["lines"][PresenterCopyKey];
+  readonly previewOptions: readonly PresenterAudioPreviewOption[];
 }) {
   return (
     <article className="rounded border border-border bg-background/65 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <code className="text-xs font-semibold text-cyan-200">{copyKey}</code>
-        <span className="text-xs text-subtle">
-          variables: {line.variables.length ? line.variables.join(", ") : "none"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-subtle">
+            variables: {line.variables.length ? line.variables.join(", ") : "none"}
+          </span>
+          <PresenterAudioPreview options={previewOptions} />
+        </div>
       </div>
       <label className="mt-2 block text-sm text-muted">
         <span className="text-xs font-medium text-subtle">文案模板</span>
@@ -157,98 +191,43 @@ function LineEditor({
           className="mt-1 w-full resize-y rounded border border-interactive-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none"
         />
       </label>
-      {"voiceBySeat" in line ? (
-        <SeatVoiceEditor copyKey={copyKey} line={line as PresenterSeatLine} />
-      ) : (
-        <VoiceEditor
-          prefix={`line.${copyKey}.voice`}
-          voice={(line as PresenterStandardLine).voice}
-        />
-      )}
     </article>
   );
 }
 
-function SeatVoiceEditor({
-  copyKey,
-  line,
-}: {
-  readonly copyKey: PresenterCopyKey;
-  readonly line: PresenterSeatLine;
-}) {
-  return (
-    <div className="mt-3 overflow-hidden rounded border border-border">
-      <div className="grid grid-cols-[48px_minmax(0,1fr)_110px] gap-2 border-b border-border bg-surface-muted/60 px-2 py-1.5 text-[11px] font-semibold text-subtle">
-        <span>座位</span>
-        <span>录音文件</span>
-        <span>状态</span>
-      </div>
-      {Array.from({ length: 12 }, (_, index) => {
-        const seatNo = index + 1;
-        const voice = line.voiceBySeat[String(seatNo)] ?? null;
-        return (
-          <div
-            key={seatNo}
-            className="grid grid-cols-[48px_minmax(0,1fr)_110px] gap-2 border-b border-border px-2 py-1.5 last:border-b-0"
-          >
-            <span className="self-center font-mono text-xs text-subtle">{seatNo}</span>
-            <input
-              name={`line.${copyKey}.voice.${seatNo}.file`}
-              defaultValue={voice?.file ?? ""}
-              placeholder="留空"
-              className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1 text-xs text-foreground outline-none"
-            />
-            <VoiceStatusSelect
-              name={`line.${copyKey}.voice.${seatNo}.status`}
-              status={voice?.status}
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function VoiceEditor({
-  prefix,
-  voice,
-}: {
-  readonly prefix: string;
-  readonly voice: PresenterVoice | null;
-}) {
-  return (
-    <div className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_140px]">
-      <TextField
-        label="录音文件"
-        name={`${prefix}.file`}
-        defaultValue={voice?.file ?? ""}
-        placeholder="留空即静音，例如 phase_night.mp3"
-      />
-      <label className="block text-sm text-muted">
-        <span className="text-xs font-medium text-subtle">录音状态</span>
-        <VoiceStatusSelect name={`${prefix}.status`} status={voice?.status} />
-      </label>
-    </div>
-  );
-}
-
-function VoiceStatusSelect({
-  name,
-  status,
-}: {
-  readonly name: string;
-  readonly status: PresenterVoice["status"] | undefined;
-}) {
-  return (
-    <select
-      name={name}
-      defaultValue={status ?? "pending"}
-      className="mt-1 w-full rounded border border-interactive-border bg-background px-2 py-1 text-xs text-foreground outline-none"
-    >
-      <option value="pending">pending</option>
-      <option value="ready">ready</option>
-    </select>
-  );
+function previewOptions(
+  presenterId: string,
+  manifest: PresenterVoiceManifest | undefined,
+  copyKey: PresenterCopyKey,
+): readonly PresenterAudioPreviewOption[] {
+  if (!manifest) return [];
+  const plan = manifest.plans[copyKey] ?? [];
+  const seatVariant = plan.length === 1 && plan[0]?.kind === "seat-variant"
+    ? plan[0]
+    : null;
+  const values = {
+    seatNo: "1",
+    player: "1号",
+    target: "1号",
+    voter: "1号",
+    players: "1号、2号",
+    role: "平民",
+  };
+  const optionValues = seatVariant
+    ? Array.from({ length: 12 }, (_, index) => ({
+        label: `${index + 1}号`,
+        values: { ...values, [seatVariant.variableName]: seatVariant.variableName === "seatNo" ? String(index + 1) : `${index + 1}号` },
+      }))
+    : [{ label: "示例", values }];
+  return optionValues.map((option) => ({
+    label: option.label,
+    sources: resolvePresenterVoiceClips(manifest, {
+      copyKey,
+      text: "",
+      values: option.values,
+    }).map((clip) =>
+      `/api/presenters/${encodeURIComponent(presenterId)}/voice/${encodeURIComponent(clip.file)}`),
+  }));
 }
 
 function TextField({

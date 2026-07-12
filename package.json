@@ -7,7 +7,8 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 9090",
+    "dev:all": "concurrently -k -n web,voice,video \"next dev -p 9090\" \"pnpm worker:voice\" \"pnpm worker:video\"",
     "build": "next build",
     "start": "next start",
     "seed:roles": "tsx src/scripts/seed-library.ts roles",
@@ -15,6 +16,9 @@
     "seed:presets": "tsx src/scripts/seed-library.ts presets",
     "seed:library": "tsx src/scripts/seed-library.ts all",
     "video:smoke": "tsx src/scripts/render-preview-v2-smoke.ts",
+    "voice:build-presenter": "tsx src/scripts/build-presenter-voice.ts",
+    "worker:voice": "tsx src/scripts/run-voice-worker.ts",
+    "worker:video": "tsx src/scripts/run-video-worker.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -32,6 +36,7 @@
     "lucide-react": "^1.21.0",
     "next": "^16.2.9",
     "next-themes": "^0.4.6",
+    "node-edge-tts": "1.2.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "remotion": "4.0.487",
@@ -43,6 +48,7 @@
     "@types/node": "^20.19.43",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "concurrently": "^10.0.3",
     "postcss": "^8.5.15",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
