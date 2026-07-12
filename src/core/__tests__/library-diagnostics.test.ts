@@ -721,7 +721,7 @@ describe("library diagnostics", () => {
         roles: [role({ ...werewolf, defaultModelBinding: null }), seer],
         characters: [character({ ...qin, defaultModelBinding: null }), lin],
       }),
-    ).toContain("模型：volcengine/doubao-seed-1-6-flash-250828");
+    ).toContain("模型：volcengine/doubao-seed-2-1-turbo-260628");
   });
 
   it("keeps diagnostics independent from game seed helpers", () => {
@@ -748,8 +748,6 @@ function role(overrides: Partial<RoleDefinition> = {}): RoleDefinition {
     defaultModelBinding: {
       provider: "mock",
       model: "mock-model",
-      temperature: 0.7,
-      maxTokens: 1000,
       responseFormat: "json",
     },
     enabled: true,
@@ -859,8 +857,6 @@ function modelBinding(
   return {
     provider: "mock",
     model: "mock-model",
-    temperature: 0.7,
-    maxTokens: 1000,
     responseFormat: "json",
     ...overrides,
   };

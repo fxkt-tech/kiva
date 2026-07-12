@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { CharacterDefinition } from "@/core/character-definition";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
-import type { PresenterDefinition } from "@/core/presenter-definition";
+import type { GameScriptDefinition } from "@/core/game-script";
 import type { RoleDefinition } from "@/core/role-definition";
 import {
   createRandomSeatSetup,
@@ -19,7 +19,7 @@ type NewGameDialogProps = {
   readonly presets: readonly GamePreset[];
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
-  readonly presenters: readonly PresenterDefinition[];
+  readonly scripts: readonly GameScriptDefinition[];
 };
 
 type Mode = "preset" | "random";
@@ -28,15 +28,15 @@ export function NewGameDialog({
   presets,
   roles,
   characters,
-  presenters,
+  scripts,
 }: NewGameDialogProps) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("preset");
   const [selectedPresetId, setSelectedPresetId] = useState(
     presets[0]?.id ?? "",
   );
-  const [selectedPresenterId, setSelectedPresenterId] = useState(
-    presenters[0]?.id ?? "",
+  const [selectedScriptId, setSelectedScriptId] = useState(
+    scripts[0]?.id ?? "",
   );
   const [randomSeats, setRandomSeats] = useState<readonly GamePresetSeatAssignment[]>(
     () => createRandomSeatSetup({ roles, characters, random: () => 0 }),
@@ -112,6 +112,12 @@ export function NewGameDialog({
             </header>
 
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
+              <ScriptPicker
+                scripts={scripts}
+                selectedScriptId={selectedScriptId}
+                onSelectScript={setSelectedScriptId}
+              />
+
               <div className="mb-4 inline-flex w-fit rounded border border-border bg-surface-muted p-1">
                 <ModeButton active={mode === "preset"} onClick={() => setMode("preset")}>
                   Preset
@@ -121,12 +127,6 @@ export function NewGameDialog({
                 </ModeButton>
               </div>
 
-              <PresenterPicker
-                presenters={presenters}
-                selectedPresenterId={selectedPresenterId}
-                onSelectPresenter={setSelectedPresenterId}
-              />
-
               {mode === "preset" ? (
                 <PresetMode
                   presets={presets}
@@ -135,7 +135,7 @@ export function NewGameDialog({
                   selectedPreset={selectedPreset}
                   selectedPresetId={selectedPresetId}
                   onSelectPreset={setSelectedPresetId}
-                  selectedPresenterId={selectedPresenterId}
+                  selectedScriptId={selectedScriptId}
                 />
               ) : (
                 <RandomMode
@@ -152,7 +152,7 @@ export function NewGameDialog({
                     )
                   }
                   onUpdateSeat={updateRandomSeat}
-                  selectedPresenterId={selectedPresenterId}
+                  selectedScriptId={selectedScriptId}
                 />
               )}
             </div>
@@ -163,32 +163,58 @@ export function NewGameDialog({
   );
 }
 
-export function PresenterPicker({
-  presenters,
-  selectedPresenterId,
-  onSelectPresenter,
+export function ScriptPicker({
+  scripts,
+  selectedScriptId,
+  onSelectScript,
 }: {
-  readonly presenters: readonly PresenterDefinition[];
-  readonly selectedPresenterId: string;
-  readonly onSelectPresenter: (presenterId: string) => void;
+  readonly scripts: readonly GameScriptDefinition[];
+  readonly selectedScriptId: string;
+  readonly onSelectScript: (scriptId: string) => void;
 }) {
   return (
-    <label className="mb-5 block max-w-sm text-sm text-muted">
-      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
-        主理人
-      </span>
-      <select
-        value={selectedPresenterId}
-        onChange={(event) => onSelectPresenter(event.target.value)}
-        className="w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none"
-      >
-        {presenters.map((presenter) => (
-          <option key={presenter.id} value={presenter.id}>
-            {presenter.name} · {presenter.id}
-          </option>
-        ))}
-      </select>
-    </label>
+    <section className="mb-5" aria-label="选择剧本">
+      <div className="mb-2 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-300">Script</p>
+          <h3 className="mt-1 text-base font-semibold text-foreground">选择本局剧本</h3>
+        </div>
+        <p className="text-xs text-subtle">角色固定，剧本决定共同背景与视觉包装</p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {scripts.map((script) => {
+          const active = script.id === selectedScriptId;
+          return (
+            <Button
+              key={script.id}
+              onClick={() => onSelectScript(script.id)}
+              unstyled
+              className={[
+                "group overflow-hidden rounded border text-left transition",
+                active ? "border-cyan-300 bg-[#0b191a] shadow-lg shadow-cyan-950/30" : "border-border bg-surface/60 hover:border-interactive-border-hover",
+              ].join(" ")}
+            >
+              <div className="grid min-h-32 grid-cols-[132px_1fr]">
+                <img className="h-full min-h-32 w-full object-cover" src={script.presentation.coverImage} alt="" />
+                <div className="p-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-lg font-semibold text-foreground">{script.name}</span>
+                    <span className={active ? "text-cyan-300" : "text-subtle"}>{active ? "已选择" : "选择"}</span>
+                  </div>
+                  <p className="mt-1 text-xs font-medium text-cyan-200/80">{script.theme}</p>
+                  <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted">{script.background}</p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {script.atmosphere.slice(0, 4).map((item) => (
+                      <span key={item} className="rounded-sm border border-cyan-800/60 px-1.5 py-0.5 text-[10px] text-cyan-100/70">{item}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -224,7 +250,7 @@ function PresetMode({
   selectedPreset,
   selectedPresetId,
   onSelectPreset,
-  selectedPresenterId,
+  selectedScriptId,
 }: {
   readonly presets: readonly GamePreset[];
   readonly roles: readonly RoleDefinition[];
@@ -232,7 +258,7 @@ function PresetMode({
   readonly selectedPreset: GamePreset | null;
   readonly selectedPresetId: string;
   readonly onSelectPreset: (presetId: string) => void;
-  readonly selectedPresenterId: string;
+  readonly selectedScriptId: string;
 }) {
   return (
     <div className="grid min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -274,7 +300,7 @@ function PresetMode({
               characters={characters}
             />
             <form action={createGameFromPresetHomeAction.bind(null, selectedPreset.id)}>
-              <input type="hidden" name="presenterId" value={selectedPresenterId} />
+              <input type="hidden" name="scriptId" value={selectedScriptId} />
               <div className="flex justify-end border-t border-border pt-4">
                 <Button
                   type="submit"
@@ -298,7 +324,7 @@ function RandomMode({
   validationMessages,
   onReroll,
   onUpdateSeat,
-  selectedPresenterId,
+  selectedScriptId,
 }: {
   readonly seats: readonly GamePresetSeatAssignment[];
   readonly roles: readonly RoleDefinition[];
@@ -310,11 +336,11 @@ function RandomMode({
     field: "roleId" | "characterId",
     value: string,
   ) => void;
-  readonly selectedPresenterId: string;
+  readonly selectedScriptId: string;
 }) {
   return (
     <form action={createGameFromSeatAssignmentsAction} className="space-y-4">
-      <input type="hidden" name="presenterId" value={selectedPresenterId} />
+      <input type="hidden" name="scriptId" value={selectedScriptId} />
       <div className="flex justify-end">
         <Button
           onClick={onReroll}

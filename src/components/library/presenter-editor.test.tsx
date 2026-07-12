@@ -14,7 +14,7 @@ describe("PresenterEditor", () => {
     );
 
     expect(html).toContain("Presenter editor");
-    expect(html).toContain("守夜人");
+    expect(html).toContain("闻舟");
     expect(html).toContain("44 lines");
     expect(html).toContain('name="avatar"');
     expect(html).toContain('name="line.phase.night.template"');
@@ -25,10 +25,12 @@ describe("PresenterEditor", () => {
 
   it("uses the presenter name glyph when no avatar is configured", () => {
     const html = renderToStaticMarkup(
-      React.createElement(PresenterEditor, { presenter: seedPresenters[1]! }),
+      React.createElement(PresenterEditor, {
+        presenter: { ...seedPresenters[0]!, avatar: null },
+      }),
     );
 
-    expect(html).toContain(">法</div>");
+    expect(html).toContain(">闻</div>");
   });
 
   it("renders an audio preview for every line and seat selectors for variants", () => {

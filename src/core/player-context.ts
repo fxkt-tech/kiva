@@ -1,6 +1,7 @@
 import type { GameEvent } from "./events";
 import { formatEventForHost, type PresentedEvent } from "./event-presenter";
 import type { Game } from "./game";
+import type { GameScriptSnapshot } from "./game-script";
 import type { ModelBindingSnapshot, PlayerSnapshot } from "./player";
 import { deriveGameState } from "./state";
 import type { Faction, GameRole, PlayerId, Ruleset } from "./types";
@@ -44,6 +45,7 @@ export type PlayerPromptState = {
 export type PlayerLlmContext = {
   readonly gameId: Game["id"];
   readonly gameTitle: string;
+  readonly script: GameScriptSnapshot;
   readonly ruleset: Ruleset;
   readonly viewer: {
     readonly playerId: PlayerId;
@@ -105,6 +107,7 @@ export function buildPlayerLlmContext(
   return {
     gameId: input.game.id,
     gameTitle: input.game.title,
+    script: input.game.script,
     ruleset: input.game.ruleset,
     viewer: {
       playerId: viewer.playerId,

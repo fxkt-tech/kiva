@@ -1,6 +1,11 @@
 import type { PlaybackItem } from "@/core/playback";
+import {
+  legacyGameScriptSnapshot,
+  validateGameScriptSnapshot,
+  type GameScriptSnapshot,
+} from "@/core/game-script";
 
-export const VIDEO_COMPOSITION_SCHEMA_VERSION = 3 as const;
+export const VIDEO_COMPOSITION_SCHEMA_VERSION = 4 as const;
 
 export type AudioCueKind =
   | "system-voice"
@@ -29,6 +34,7 @@ export type VideoCompositionInput = {
   readonly schemaVersion: typeof VIDEO_COMPOSITION_SCHEMA_VERSION;
   readonly gameId: string;
   readonly gameTitle: string;
+  readonly script: GameScriptSnapshot;
   readonly items: readonly PlaybackItem[];
   readonly assets: CompositionAssets;
   readonly audioCues: readonly AudioCue[];
@@ -40,22 +46,40 @@ export function decodeVideoCompositionInput(
   if (!isRecord(value)) {
     throw new Error("Video composition input must be an object.");
   }
-  if (value.schemaVersion !== VIDEO_COMPOSITION_SCHEMA_VERSION) {
+  const normalized =
+    value.schemaVersion === 3
+      ? {
+          ...value,
+          schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
+          script: legacyGameScriptSnapshot(),
+        }
+      : value;
+  if (normalized.schemaVersion !== VIDEO_COMPOSITION_SCHEMA_VERSION) {
     throw new Error("Unsupported video composition schema version.");
   }
   if (
-    typeof value.gameId !== "string" ||
-    typeof value.gameTitle !== "string" ||
-    !Array.isArray(value.items) ||
-    !value.items.every(isPlaybackItem) ||
-    !isCompositionAssets(value.assets) ||
-    !Array.isArray(value.audioCues) ||
-    !value.audioCues.every(isAudioCue)
+    typeof normalized.gameId !== "string" ||
+    typeof normalized.gameTitle !== "string" ||
+    !isGameScriptSnapshot(normalized.script) ||
+    !Array.isArray(normalized.items) ||
+    !normalized.items.every(isPlaybackItem) ||
+    !isCompositionAssets(normalized.assets) ||
+    !Array.isArray(normalized.audioCues) ||
+    !normalized.audioCues.every(isAudioCue)
   ) {
     throw new Error("Invalid video composition input.");
   }
 
-  return value as VideoCompositionInput;
+  return normalized as VideoCompositionInput;
+}
+
+function isGameScriptSnapshot(value: unknown): value is GameScriptSnapshot {
+  try {
+    validateGameScriptSnapshot(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function isPlaybackItem(value: unknown): value is PlaybackItem {

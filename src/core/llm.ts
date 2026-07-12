@@ -116,8 +116,6 @@ export class OpenAICompatibleLlmClient implements LlmClient {
         },
         body: JSON.stringify({
           model: request.modelBinding.model,
-          temperature: request.modelBinding.temperature,
-          max_tokens: request.modelBinding.maxTokens,
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: request.systemPrompt },

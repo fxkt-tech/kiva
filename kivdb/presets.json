@@ -19,30 +19,30 @@
       "villager"
     ],
     "characterIds": [
-      "zhou_zhi",
-      "chen_mo",
+      "zhou_xu",
+      "qiao_ke",
       "qin_chuan",
-      "lin_xia",
-      "xia_yu",
-      "gu_qingyan",
-      "shen_lan",
-      "xu_yan",
-      "bai_qi",
-      "tang_tang",
-      "lu_zhao",
-      "su_jin"
+      "xia_mi",
+      "ren_ye",
+      "gu_ling",
+      "cheng_wu",
+      "ye_chen",
+      "chi_mu",
+      "tang_li",
+      "lu_ran",
+      "su_xian"
     ],
     "seatAssignments": [
       {
         "seatNo": 1,
         "roleId": "villager",
-        "characterId": "zhou_zhi",
+        "characterId": "zhou_xu",
         "modelBindingOverride": null
       },
       {
         "seatNo": 2,
         "roleId": "seer",
-        "characterId": "chen_mo",
+        "characterId": "qiao_ke",
         "modelBindingOverride": null
       },
       {
@@ -54,55 +54,55 @@
       {
         "seatNo": 4,
         "roleId": "witch",
-        "characterId": "lin_xia",
+        "characterId": "xia_mi",
         "modelBindingOverride": null
       },
       {
         "seatNo": 5,
         "roleId": "villager",
-        "characterId": "xia_yu",
+        "characterId": "ren_ye",
         "modelBindingOverride": null
       },
       {
         "seatNo": 6,
         "roleId": "werewolf",
-        "characterId": "gu_qingyan",
+        "characterId": "gu_ling",
         "modelBindingOverride": null
       },
       {
         "seatNo": 7,
         "roleId": "guard",
-        "characterId": "shen_lan",
+        "characterId": "cheng_wu",
         "modelBindingOverride": null
       },
       {
         "seatNo": 8,
         "roleId": "hunter",
-        "characterId": "xu_yan",
+        "characterId": "ye_chen",
         "modelBindingOverride": null
       },
       {
         "seatNo": 9,
         "roleId": "werewolf",
-        "characterId": "bai_qi",
+        "characterId": "chi_mu",
         "modelBindingOverride": null
       },
       {
         "seatNo": 10,
         "roleId": "villager",
-        "characterId": "tang_tang",
+        "characterId": "tang_li",
         "modelBindingOverride": null
       },
       {
         "seatNo": 11,
         "roleId": "werewolf",
-        "characterId": "lu_zhao",
+        "characterId": "lu_ran",
         "modelBindingOverride": null
       },
       {
         "seatNo": 12,
         "roleId": "villager",
-        "characterId": "su_jin",
+        "characterId": "su_xian",
         "modelBindingOverride": null
       }
     ],

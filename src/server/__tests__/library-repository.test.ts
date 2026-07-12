@@ -10,6 +10,7 @@ import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import { seedPresenters } from "@/seeds/presenters";
+import { seedScripts } from "@/seeds/scripts";
 import { createLibraryRepository } from "../library-repository";
 
 const tempDirs: string[] = [];
@@ -39,6 +40,7 @@ describe("library repository", () => {
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
 
     const savedFile = await stat(join(rootDir, "kivdb", "roles.json"));
@@ -52,11 +54,13 @@ describe("library repository", () => {
     await expect(repository.getCharacters()).resolves.toEqual([]);
     await expect(repository.getPresets()).resolves.toEqual([]);
     await expect(repository.getPresenters()).resolves.toEqual([]);
+    await expect(repository.getScripts()).resolves.toEqual([]);
     await expect(repository.getAll()).resolves.toEqual({
       roles: [],
       characters: [],
       presets: [],
       presenters: [],
+      scripts: [],
     });
   });
 
@@ -68,6 +72,7 @@ describe("library repository", () => {
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
 
     await expect(repository.getAll()).resolves.toEqual({
@@ -75,12 +80,14 @@ describe("library repository", () => {
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
     await expect(repository.loadAll()).resolves.toEqual({
       roles: seedRoles,
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
   });
 
@@ -93,6 +100,7 @@ describe("library repository", () => {
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
 
     for (const filename of [
@@ -100,6 +108,7 @@ describe("library repository", () => {
       "characters.json",
       "presets.json",
       "presenters.json",
+      "scripts.json",
     ]) {
       const content = await readFile(join(rootDir, filename), "utf8");
       expect(content).toContain('\n  {');
@@ -163,6 +172,7 @@ describe("library repository", () => {
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
 
     const filenames = await readdir(rootDir);
@@ -171,6 +181,7 @@ describe("library repository", () => {
       "presenters.json",
       "presets.json",
       "roles.json",
+      "scripts.json",
     ]);
   });
 
@@ -197,6 +208,7 @@ describe("library repository", () => {
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
 
     await expect(repository.getAll()).resolves.toEqual({
@@ -204,6 +216,7 @@ describe("library repository", () => {
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
     const filenames = await readdir(rootDir);
     expect(filenames.some((filename) => filename.endsWith(".tmp"))).toBe(false);

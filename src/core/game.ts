@@ -1,6 +1,11 @@
 import type { CharacterDefinition } from "./character-definition";
 import { validateGamePresets, type GamePreset } from "./game-preset";
 import {
+  createGameScriptSnapshot,
+  type GameScriptDefinition,
+  type GameScriptSnapshot,
+} from "./game-script";
+import {
   createGamePresenterSnapshot,
   type GamePresenterSnapshot,
   type PresenterDefinition,
@@ -15,6 +20,7 @@ import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedPresenters } from "@/seeds/presenters";
 import { seedRoles } from "@/seeds/roles";
+import { seedScripts } from "@/seeds/scripts";
 import {
   createDefaultRuleset,
   GAME_ROLES,
@@ -32,6 +38,7 @@ export type Game = {
   readonly status: GameStatus;
   readonly ruleset: Ruleset;
   readonly presenter: GamePresenterSnapshot;
+  readonly script: GameScriptSnapshot;
   readonly players: readonly PlayerSnapshot[];
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -50,6 +57,7 @@ export type CreateGameFromPresetInput = {
   readonly ruleset: Ruleset;
   readonly preset: GamePreset;
   readonly presenter: PresenterDefinition;
+  readonly script: GameScriptDefinition;
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
 };
@@ -96,11 +104,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
       roleSystemPromptSnapshot: role.systemPrompt,
       roleActionPromptSnapshot: role.actionPrompt,
       systemPrompt: character.systemPrompt,
-      modelBindingSnapshot:
-        seat.modelBindingOverride ??
-        character.defaultModelBinding ??
-        role.defaultModelBinding ??
-        undefined,
+      modelBindingSnapshot: character.defaultModelBinding ?? undefined,
       voiceProfileSnapshot: character.voiceProfile,
       roleName: role.name,
       faction: role.faction,
@@ -115,6 +119,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
     status: "drafting",
     ruleset: input.ruleset,
     presenter: createGamePresenterSnapshot(input.presenter),
+    script: createGameScriptSnapshot(input.script),
     players,
     createdAt: input.createdAt,
     updatedAt: input.createdAt,
@@ -136,6 +141,7 @@ export function createSeedGame(input: CreateSeedGameInput): Game {
     ruleset: input.ruleset ?? createDefaultRuleset(),
     preset: seedPresets[0],
     presenter: seedPresenters[0]!,
+    script: seedScripts[0]!,
     roles: seedRoles,
     characters: seedCharacters,
   });

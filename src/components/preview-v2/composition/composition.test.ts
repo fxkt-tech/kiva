@@ -11,6 +11,7 @@ import {
   millisecondsToFrame,
   sceneStartFrame,
 } from "./timing";
+import { legacyGameScriptSnapshot } from "@/core/game-script";
 
 describe("preview v2 composition contracts", () => {
   it("converts time and rounds the duration deterministically", () => {
@@ -67,6 +68,7 @@ describe("preview v2 composition contracts", () => {
         schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
         gameId: "game-1",
         gameTitle: "Test",
+        script: legacyGameScriptSnapshot(),
         items: [],
         assets: {
           fontUrl: "/font.ttf",
@@ -79,11 +81,31 @@ describe("preview v2 composition contracts", () => {
     ).toBe("game-1");
   });
 
+  it("loads schema v3 compositions with the legacy script presentation", () => {
+    const decoded = decodeVideoCompositionInput({
+      schemaVersion: 3,
+      gameId: "historical-game",
+      gameTitle: "Historical",
+      items: [],
+      assets: {
+        fontUrl: "/font.ttf",
+        dayBackgroundUrl: null,
+        nightBackgroundUrl: null,
+        avatarUrls: {},
+      },
+      audioCues: [],
+    });
+
+    expect(decoded.schemaVersion).toBe(VIDEO_COMPOSITION_SCHEMA_VERSION);
+    expect(decoded.script.presentation.styleKey).toBe("legacy_v1");
+  });
+
   it("validates optional structured stage presentations", () => {
     const base = {
       schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
       gameId: "game-1",
       gameTitle: "Test",
+      script: legacyGameScriptSnapshot(),
       items: [item({
         stage: {
           kind: "action" as const,

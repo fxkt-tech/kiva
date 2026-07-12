@@ -1,7 +1,6 @@
 import { saveCharacterAction } from "@/app/library/actions";
 import { Button } from "@/components/ui/button";
 import type { CharacterDefinition } from "@/core/character-definition";
-import type { ModelBindingSnapshot } from "@/core/player";
 import { DirtyFormGuard } from "./dirty-form-guard";
 
 export function CharacterEditor({
@@ -13,11 +12,6 @@ export function CharacterEditor({
     <form action={saveCharacterAction} className="space-y-5">
       <DirtyFormGuard />
       <input type="hidden" name="createdAt" value={character.createdAt} />
-      <input
-        type="hidden"
-        name="defaultModelBinding"
-        value={modelBindingValue(character.defaultModelBinding)}
-      />
 
       <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -67,6 +61,31 @@ export function CharacterEditor({
           defaultValue={character.tags.join(",")}
         />
       </div>
+
+      <section className="rounded border border-border bg-surface/35 p-3">
+        <h3 className="text-sm font-semibold text-foreground">LLM model</h3>
+        <p className="mt-1 text-xs text-subtle">
+          角色发言与行动使用这份模型配置；创建 Game 后会保存到玩家快照。
+        </p>
+        <input type="hidden" name="modelBinding.responseFormat" value="json" />
+        <div className="mt-3 grid gap-3 md:grid-cols-3">
+          <TextField
+            label="Provider"
+            name="modelBinding.provider"
+            defaultValue={character.defaultModelBinding?.provider ?? ""}
+          />
+          <TextField
+            label="Model"
+            name="modelBinding.model"
+            defaultValue={character.defaultModelBinding?.model ?? ""}
+          />
+          <TextField
+            label="Fallback model (optional)"
+            name="modelBinding.fallbackModel"
+            defaultValue={character.defaultModelBinding?.fallbackModel ?? ""}
+          />
+        </div>
+      </section>
 
       <section className="rounded border border-border bg-surface/35 p-3">
         <h3 className="text-sm font-semibold text-foreground">Edge voice</h3>
@@ -176,8 +195,4 @@ function TextareaField({
       />
     </label>
   );
-}
-
-function modelBindingValue(value: ModelBindingSnapshot | null): string {
-  return value === null ? "" : JSON.stringify(value);
 }

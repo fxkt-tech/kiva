@@ -11,22 +11,18 @@ const game = createSeedGame({
   gameId,
   createdAt: "2026-07-11T00:00:00.000Z",
 });
-const nightWatch = createGamePresenterSnapshot(seedPresenters[0]!);
-const judge = createGamePresenterSnapshot(seedPresenters[1]!);
+const wenZhou = createGamePresenterSnapshot(seedPresenters[0]!);
 
 describe("presenter resolution", () => {
-  it("resolves one event through distinct presenter-owned scripts", () => {
+  it("resolves one event through the single presenter script", () => {
     const phase = event({
       type: "phase_started",
       payload: { phase: "night", dayNumber: 1 },
     });
 
-    const atmospheric = resolvePresenter(nightWatch, phase, game.players);
-    const directive = resolvePresenter(judge, phase, game.players);
-
-    expect(atmospheric.transcriptText).toContain("所有玩家保持安静");
-    expect(directive.transcriptText).toBe("天黑请闭眼。");
-    expect(atmospheric.cue.copyKey).toBe("phase.night");
+    const resolution = resolvePresenter(wenZhou, phase, game.players);
+    expect(resolution.transcriptText).toContain("灯灭了");
+    expect(resolution.cue.copyKey).toBe("phase.night");
   });
 
   it("renders typed player labels into action templates", () => {
@@ -38,8 +34,8 @@ describe("presenter resolution", () => {
       },
     });
 
-    expect(resolvePresenter(nightWatch, action, game.players).transcriptText)
-      .toContain("4号林夏");
+    expect(resolvePresenter(wenZhou, action, game.players).transcriptText)
+      .toContain("4号夏弥");
   });
 
   it("keeps authored speech player-owned while resolving a ready presenter prompt", () => {
@@ -54,8 +50,8 @@ describe("presenter resolution", () => {
       },
     });
 
-    expect(resolvePresenter(nightWatch, speech, game.players)).toMatchObject({
-      presenterName: "守夜人",
+    expect(resolvePresenter(wenZhou, speech, game.players)).toMatchObject({
+      presenterName: "闻舟",
       transcriptSpeaker: "player",
       transcriptText: "我认为三号的发言有问题。",
       cue: {
@@ -77,7 +73,7 @@ describe("presenter resolution", () => {
       },
     });
 
-    expect(resolvePresenter(nightWatch, speech, game.players)).toMatchObject({
+    expect(resolvePresenter(wenZhou, speech, game.players)).toMatchObject({
       transcriptSpeaker: "presenter",
       transcriptText: "该玩家选择沉默。沉默，有时也是一种答案。",
     });

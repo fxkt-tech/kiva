@@ -13,8 +13,6 @@ const timestamp = "2026-06-27T00:00:00.000Z";
 const modelBinding = {
   provider: "mock",
   model: "mock-model",
-  temperature: 0.4,
-  maxTokens: 800,
   responseFormat: "json",
 } satisfies ModelBindingSnapshot;
 
@@ -115,9 +113,9 @@ describe("library form parsers", () => {
     const presenter = presenterFromFormData(form, timestamp);
 
     expect(presenter).toMatchObject({
-      id: "night_watch",
+      id: "wen_zhou",
       name: "新的守夜人",
-      avatar: null,
+      avatar: "/kivdb-assets/presenters/presenter_wen_zhou_v1.png",
       enabled: true,
       createdAt: source.createdAt,
       updatedAt: timestamp,
@@ -141,6 +139,21 @@ describe("library form parsers", () => {
     expect(
       characterFromFormData(characterFormData, timestamp).defaultModelBinding,
     ).toEqual(modelBinding);
+  });
+
+  it("parses editable character model fields without sampling parameters", () => {
+    const form = characterForm();
+    form.set("modelBinding.provider", "volcengine");
+    form.set("modelBinding.model", "doubao-character-model");
+    form.set("modelBinding.responseFormat", "json");
+    form.set("modelBinding.fallbackModel", "doubao-fallback");
+
+    expect(characterFromFormData(form, timestamp).defaultModelBinding).toEqual({
+      provider: "volcengine",
+      model: "doubao-character-model",
+      responseFormat: "json",
+      fallbackModel: "doubao-fallback",
+    });
   });
 
   it("preserves preset seat model binding overrides from hidden JSON", () => {

@@ -11,6 +11,7 @@ import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import { seedPresenters } from "@/seeds/presenters";
+import { seedScripts } from "@/seeds/scripts";
 import type { LibraryActionsRecord } from "@/server/library-actions";
 import { LibraryList } from "./library-list";
 import { LibraryWorkspace, selectedEditorKey } from "./library-workspace";
@@ -45,7 +46,7 @@ describe("LibraryWorkspace", () => {
     );
 
     expect(html).toContain('aria-current="page"');
-    expect(html).toContain("林夏");
+    expect(html).toContain("乔可");
     expect(html).toContain("Character editor");
   });
 
@@ -81,7 +82,7 @@ describe("LibraryWorkspace", () => {
     );
 
     expect(html).toContain("Presenter editor");
-    expect(html).toContain("法官");
+    expect(html).toContain("闻舟");
     expect(html).toContain("主持文案");
     expect(html).toContain('name="line.phase.night.template"');
   });
@@ -127,6 +128,7 @@ function libraryFixture(): LibraryActionsRecord {
     characters: seedCharacters,
     presets: seedPresets,
     presenters: seedPresenters,
+    scripts: seedScripts,
     diagnostics: {
       roles: Object.fromEntries(
         seedRoles.map((role) => [

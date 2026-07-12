@@ -4,6 +4,7 @@ import { Check, Copy, FileSearch, X } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { TokenCostCalculator } from "@/components/token-cost-calculator";
 import type { GenerationRecord } from "@/core/generation-record";
 import { tokenCount } from "@/core/token-usage";
 
@@ -108,6 +109,17 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
                   label="Reasoning"
                   value={formatTokenCount(generation.tokenUsage.reasoningTokens)}
                 />
+                <div className="sm:col-span-2">
+                  <TokenCostCalculator
+                    promptTokens={tokenCount(generation.tokenUsage.promptTokens)}
+                    reasoningTokens={tokenCount(
+                      generation.tokenUsage.reasoningTokens,
+                    )}
+                    completionTokens={tokenCount(
+                      generation.tokenUsage.completionTokens,
+                    )}
+                  />
+                </div>
               </div>
             ) : (
               <p className="text-sm text-subtle">

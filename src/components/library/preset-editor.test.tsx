@@ -12,8 +12,6 @@ import { PresetEditor } from "./preset-editor";
 const modelBinding = {
   provider: "mock",
   model: "seat-model",
-  temperature: 0.3,
-  maxTokens: 600,
   responseFormat: "json",
 } satisfies ModelBindingSnapshot;
 

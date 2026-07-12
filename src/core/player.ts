@@ -12,8 +12,6 @@ import { edgeVoiceProfile, type VoiceProfileSnapshot } from "./voice";
 export type ModelBindingSnapshot = {
   readonly provider: string;
   readonly model: string;
-  readonly temperature: number;
-  readonly maxTokens: number;
   readonly responseFormat: "json";
   readonly fallbackModel?: string;
 };
@@ -102,9 +100,7 @@ export type BoardValidationResult =
 
 const defaultModelBinding: ModelBindingSnapshot = {
   provider: "volcengine",
-  model: "doubao-seed-1-6-flash-250828",
-  temperature: 0.7,
-  maxTokens: 1200,
+  model: "doubao-seed-2-1-turbo-260628",
   responseFormat: "json",
 };
 

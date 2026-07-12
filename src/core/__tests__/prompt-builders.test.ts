@@ -78,6 +78,9 @@ describe("prompt builders v2", () => {
     expect(content.indexOf("【本轮唯一任务】")).toBeLessThan(
       content.indexOf("【已确认的公开事实】"),
     );
+    expect(content).toContain("【本局剧本背景——只用于自然表达，不是身份事实】");
+    expect(content).toContain("剧本：未明档案");
+    expect(content).toContain("剧本不提供任何玩家身份、行为、关系或可信度证据");
     expect(content).toContain("【其他玩家的公开主张——可能真实、误判或撒谎】");
     expect(content).toContain("【未知信息——没有提供就不得推断为事实】");
     expect(content).toContain("我觉得昨夜平安需要继续观察。");

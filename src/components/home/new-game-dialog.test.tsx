@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
-import { seedPresenters } from "@/seeds/presenters";
-import { NewGameDialog, PresenterPicker } from "./new-game-dialog";
+import { seedScripts } from "@/seeds/scripts";
+import { NewGameDialog, ScriptPicker } from "./new-game-dialog";
 
 describe("NewGameDialog", () => {
   it("renders a dialog trigger without immediately rendering setup forms", () => {
@@ -14,7 +14,7 @@ describe("NewGameDialog", () => {
         presets: seedPresets,
         roles: seedRoles,
         characters: seedCharacters,
-        presenters: seedPresenters,
+        scripts: seedScripts,
       }),
     );
 
@@ -23,16 +23,17 @@ describe("NewGameDialog", () => {
     expect(html).not.toContain('name="seat.1.roleId"');
   });
 
-  it("renders every enabled presenter choice", () => {
+  it("renders the selected script with narrative context", () => {
     const html = renderToStaticMarkup(
-      React.createElement(PresenterPicker, {
-        presenters: seedPresenters,
-        selectedPresenterId: seedPresenters[0]!.id,
-        onSelectPresenter: () => {},
+      React.createElement(ScriptPicker, {
+        scripts: seedScripts,
+        selectedScriptId: seedScripts[0]!.id,
+        onSelectScript: () => {},
       }),
     );
 
-    expect(html).toContain("守夜人 · night_watch");
-    expect(html).toContain("法官 · judge");
+    expect(html).toContain("未明档案");
+    expect(html).toContain("东方都市异闻");
+    expect(html).toContain("已选择");
   });
 });

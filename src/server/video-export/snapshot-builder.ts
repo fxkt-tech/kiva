@@ -38,6 +38,7 @@ export async function buildExportSnapshot(input: {
   const composition = createCompositionInput({
     gameId: input.record.game.id,
     gameTitle: input.record.game.title,
+    script: input.record.game.script,
     items,
   });
   const missingPlayerVoice = items.find(
@@ -57,30 +58,30 @@ export async function buildExportSnapshot(input: {
       join(assetsDir, "font.ttf"),
     ),
     copyFile(
-      join(input.dataDir, "assets", "preview", "day-background.png"),
+      compositionBackgroundPath(input.dataDir, composition.assets.dayBackgroundUrl, "day"),
       join(assetsDir, "day-background.png"),
     ),
     copyFile(
-      join(input.dataDir, "assets", "preview", "night-background.png"),
+      compositionBackgroundPath(input.dataDir, composition.assets.nightBackgroundUrl, "night"),
       join(assetsDir, "night-background.png"),
     ),
   ]);
 
   const avatarUrls: Record<string, string> = {};
   for (const source of Object.keys(composition.assets.avatarUrls)) {
-    const file = internalAssetFile(source, "/kivdb-assets/characters/");
-    if (!file || !isSafeAssetFile(file)) {
+    const asset = internalAvatarAsset(source);
+    if (!asset || !isSafeAssetFile(asset.file)) {
       warnings.push("Avatar was not snapshot-compatible: " + source);
       continue;
     }
     try {
       await copyFile(
-        join(input.dataDir, "assets", "characters", file),
-        join(assetsDir, "avatars", file),
+        join(input.dataDir, "assets", asset.directory, asset.file),
+        join(assetsDir, "avatars", asset.file),
       );
-      avatarUrls[source] = assetBase + "avatars/" + encodeURIComponent(file);
+      avatarUrls[source] = assetBase + "avatars/" + encodeURIComponent(asset.file);
     } catch {
-      warnings.push("Avatar was unavailable: " + file);
+      warnings.push("Avatar was unavailable: " + asset.file);
     }
   }
 
@@ -155,6 +156,31 @@ function internalAssetFile(source: string, prefix: string): string | null {
     return null;
   }
   return basename(pathname.slice(prefix.length));
+}
+
+function internalAvatarAsset(
+  source: string,
+): { readonly directory: "characters" | "presenters"; readonly file: string } | null {
+  const character = internalAssetFile(source, "/kivdb-assets/characters/");
+  if (character) return { directory: "characters", file: character };
+  const presenter = internalAssetFile(source, "/kivdb-assets/presenters/");
+  return presenter ? { directory: "presenters", file: presenter } : null;
+}
+
+function compositionBackgroundPath(
+  dataDir: string,
+  source: string | null,
+  phase: "day" | "night",
+): string {
+  const script = source ? internalAssetFile(source, "/kivdb-assets/scripts/") : null;
+  if (script && isSafeAssetFile(script)) {
+    return join(dataDir, "assets", "scripts", script);
+  }
+  const preview = source ? internalAssetFile(source, "/kivdb-assets/preview/") : null;
+  if (preview && isSafeAssetFile(preview)) {
+    return join(dataDir, "assets", "preview", preview);
+  }
+  return join(dataDir, "assets", "preview", `${phase}-background.png`);
 }
 
 function isSafeAssetFile(file: string): boolean {

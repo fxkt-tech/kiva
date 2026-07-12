@@ -48,9 +48,54 @@ export default async function EditorPage({
 
   return (
     <main className="h-screen overflow-hidden bg-background p-3 text-foreground sm:p-4">
-      <div className="flex h-full min-h-0 flex-col gap-3">
-        <header className="-mx-3 flex h-9 shrink-0 items-center gap-3 border-b border-border px-3 pb-2 sm:-mx-4 sm:px-4">
-          <div className="flex min-w-0 items-center gap-3">
+      <div className="grid h-full min-h-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(520px,0.9fr)]">
+        <div
+          className={
+            previewHidden
+              ? "grid min-h-0 grid-rows-[minmax(0,1fr)] gap-3"
+              : "grid min-h-0 gap-3 lg:grid-rows-[minmax(0,0.56fr)_minmax(0,0.44fr)]"
+          }
+        >
+          {previewHidden ? null : (
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
+              <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2">
+                <h2 className="text-sm font-semibold text-foreground">
+                  Preview
+                </h2>
+                <div className="flex gap-1.5">
+                  <Link
+                    href={previewHref}
+                    aria-label="Open preview in new tab"
+                    title="Open preview in new tab"
+                    className={iconButtonClassName()}
+                    target="_blank"
+                  >
+                    <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+              <div className="grid min-h-0 flex-1 place-items-center p-2 [container-type:size]">
+                <iframe
+                  key={previewHref}
+                  title="Public playback preview"
+                  src={previewHref}
+                  className="aspect-video rounded-md border border-border bg-black [width:min(100cqw,calc(100cqh*16/9))]"
+                />
+              </div>
+            </section>
+          )}
+          <EventTimeline
+            gameId={typedGameId}
+            events={record.events}
+            players={record.game.players}
+            generations={record.generations}
+            previewHidden={previewHidden}
+            togglePreviewHref={togglePreviewHref}
+          />
+        </div>
+
+        <div className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
+          <header className="flex h-9 shrink-0 items-center gap-3 border-b border-border pb-2">
             <Link
               href="/"
               aria-label="Back"
@@ -59,71 +104,19 @@ export default async function EditorPage({
             >
               <ArrowLeft aria-hidden="true" className="h-4 w-4" />
             </Link>
-            <div className="min-w-0">
-              <h1 className="truncate text-base font-semibold text-foreground">
-                {record.game.title}
-              </h1>
-            </div>
-          </div>
-        </header>
-
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(520px,0.9fr)]">
-          <div
-            className={
-              previewHidden
-                ? "grid min-h-0 grid-rows-[minmax(0,1fr)] gap-3"
-                : "grid min-h-0 gap-3 lg:grid-rows-[auto_minmax(0,1fr)]"
+            <h1 className="min-w-0 truncate text-base font-semibold text-foreground">
+              {record.game.title}
+            </h1>
+          </header>
+          <DraftPanel
+            gameId={typedGameId}
+            draft={record.draft}
+            players={record.game.players}
+            alivePlayerIds={
+              deriveGameState(record.game.players, record.events).alivePlayerIds
             }
-          >
-            {previewHidden ? null : (
-              <section className="flex min-h-0 flex-col rounded-lg border border-border bg-surface/45">
-                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2">
-                  <h2 className="text-sm font-semibold text-foreground">
-                    Preview
-                  </h2>
-                  <div className="flex gap-1.5">
-                    <Link
-                      href={previewHref}
-                      aria-label="Open preview in new tab"
-                      title="Open preview in new tab"
-                      className={iconButtonClassName()}
-                      target="_blank"
-                    >
-                      <ExternalLink aria-hidden="true" className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
-                <div className="p-2">
-                  <iframe
-                    key={previewHref}
-                    title="Public playback preview"
-                    src={previewHref}
-                    className="aspect-video w-full rounded-md border border-border bg-black"
-                  />
-                </div>
-              </section>
-            )}
-            <EventTimeline
-              gameId={typedGameId}
-              events={record.events}
-              players={record.game.players}
-              generations={record.generations}
-              previewHidden={previewHidden}
-              togglePreviewHref={togglePreviewHref}
-            />
-          </div>
-
-          <div className="min-h-0">
-            <DraftPanel
-              gameId={typedGameId}
-              draft={record.draft}
-              players={record.game.players}
-              alivePlayerIds={
-                deriveGameState(record.game.players, record.events).alivePlayerIds
-              }
-              generations={record.generations}
-            />
-          </div>
+            generations={record.generations}
+          />
         </div>
       </div>
     </main>

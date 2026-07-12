@@ -43,13 +43,14 @@ export function HtmlPlaybackStage({
   const opacity = stageOpacity(shot, enter, exit);
   const visualPhase: StageVisualPhase =
     shot.scene.phase === "night" ? "night" : "day";
-  const palette = stagePaletteForPhase(visualPhase);
+  const palette = stagePaletteForPhase(visualPhase, viewModel.script.presentation);
   const leftPlayers = shot.players.filter((player) => player.seatNo <= 6);
   const rightPlayers = shot.players.filter((player) => player.seatNo > 6);
 
   return (
     <main
       className="relative h-[1080px] w-[1920px] overflow-hidden bg-[#080a09] text-[#eee8dc]"
+      data-script-style={viewModel.script.presentation.styleKey}
       style={{
         fontFamily: '"Kiva Noto Sans SC", sans-serif',
         opacity,
@@ -57,6 +58,19 @@ export function HtmlPlaybackStage({
       }}
     >
       <StageBackground backgroundUrl={backgroundUrl} />
+      {viewModel.script.presentation.styleKey === "midnight_archive_v1" ? (
+        <div
+          aria-hidden="true"
+          className="absolute left-5 top-1/2 z-10 -translate-y-1/2 border px-2 py-5 text-[16px] font-black tracking-[0.35em]"
+          style={{
+            borderColor: viewModel.script.presentation.colors.signal,
+            color: viewModel.script.presentation.colors.signal,
+            writingMode: "vertical-rl",
+          }}
+        >
+          未明档案
+        </div>
+      ) : null}
       <div className="absolute inset-0 grid grid-cols-[480px_minmax(0,1fr)_480px] grid-rows-[112px_minmax(0,1fr)_212px] gap-x-6 gap-y-4 px-10 pb-8 pt-7">
         <StageHeader palette={palette} shot={shot} />
         <SeatTrack

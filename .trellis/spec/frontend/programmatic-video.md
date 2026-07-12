@@ -1,5 +1,54 @@
 # Programmatic Video Preview and Export
 
+## Scenario: Immutable Game Script Presentation
+
+### 1. Scope / Trigger
+
+- Trigger: a New Game script changes the game shell, Preview, or exported MP4.
+
+### 2. Signatures
+
+- `Game.script: GameScriptSnapshot`
+- `createCompositionInput({script, ...}): VideoCompositionInput`
+- `VideoCompositionInput.schemaVersion: 4`
+- `stagePaletteForPhase(phase, script.presentation.styleKey): StagePalette`
+
+### 3. Contracts
+
+- New games resolve one enabled script and deep-snapshot its narrative and presentation fields. Existing games never reload current library styling by `scriptSourceId`.
+- Preview and export receive the same snapshot. Export copies allow-listed character, presenter, and script assets into the immutable job asset directory and rewrites their URLs once.
+- Supported styles are the exhaustive `legacy_v1 | midnight_archive_v1` union. Historical games without `script` normalize to the code-owned legacy snapshot; schema-v3 composition input decodes with that same fallback.
+- Versioned script image filenames are immutable. Revised art requires a new filename and new snapshot.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+|---|---|
+| New Game omits/unknown/disabled script ID | Reject creation; do not save a partial game. |
+| Stored Game lacks `script` | Read with `legacy_v1`; do not eagerly rewrite the record. |
+| Snapshot has an unknown style or unsafe asset path | Reject the snapshot as invalid. |
+| Export asset is outside an allow-listed internal prefix | Reject export snapshot creation. |
+| Composition schema is v3 | Decode with a legacy script snapshot. |
+
+### 5. Good / Base / Bad Cases
+
+- Good: a `midnight_archive_v1` game keeps its original colors and backgrounds after the script library is edited.
+- Base: a historical game without script renders with legacy backgrounds.
+- Bad: Preview looks up `scripts.json` during render and silently changes an existing game's appearance.
+
+### 6. Tests Required
+
+- Unit: script definition validation, deep snapshot isolation, style dispatch, and v3 composition fallback.
+- Repository: historical Game load does not mutate disk; new Game round-trips its full script snapshot.
+- Export: script backgrounds and both avatar prefix families are copied and rewritten.
+- Browser/render: the selected script appears in New Game, Editor, Preview, and a 1920x1080 MP4 frame without console errors.
+
+### 7. Wrong vs Correct
+
+Wrong: store only `scriptId` and reload mutable presentation data for Preview/export.
+
+Correct: save `GameScriptSnapshot` on Game creation and pass that same value through both rendering paths.
+
 ## 1. Scope / Trigger
 
 Use this contract when adding or changing an HTML playback preview, Remotion

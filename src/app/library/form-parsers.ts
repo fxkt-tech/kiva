@@ -48,7 +48,7 @@ export function characterFromFormData(
     speakingStyle: text(formData, "speakingStyle"),
     reasoningStyle: text(formData, "reasoningStyle"),
     systemPrompt: text(formData, "systemPrompt"),
-    defaultModelBinding: nullableModelBinding(formData, "defaultModelBinding"),
+    defaultModelBinding: characterModelBindingFromFormData(formData),
     voiceProfile: edgeVoiceProfile(
       textOrDefault(formData, "voiceProfile.voice", "zh-CN-XiaoxiaoNeural"),
       {
@@ -240,6 +240,30 @@ function nullableModelBinding(
   }
 
   return modelBindingFromUnknown(JSON.parse(text(formData, key)), key);
+}
+
+function characterModelBindingFromFormData(
+  formData: FormData,
+): ModelBindingSnapshot | null {
+  if (
+    formData.has("modelBinding.provider") ||
+    formData.has("modelBinding.model") ||
+    formData.has("modelBinding.responseFormat")
+  ) {
+    return modelBindingFromUnknown(
+      {
+        provider: text(formData, "modelBinding.provider"),
+        model: text(formData, "modelBinding.model"),
+        responseFormat: text(formData, "modelBinding.responseFormat"),
+        ...(hasText(formData, "modelBinding.fallbackModel")
+          ? { fallbackModel: text(formData, "modelBinding.fallbackModel") }
+          : {}),
+      },
+      "modelBinding",
+    );
+  }
+
+  return nullableModelBinding(formData, "defaultModelBinding");
 }
 
 function modelBindingFromUnknown(

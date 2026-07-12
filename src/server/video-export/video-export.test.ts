@@ -6,6 +6,7 @@ import {
   VIDEO_COMPOSITION_SCHEMA_VERSION,
   type VideoCompositionInput,
 } from "@/components/preview-v2/composition/types";
+import { legacyGameScriptSnapshot } from "@/core/game-script";
 import { ExportRepository } from "./export-repository";
 import { getVideoExportService, VideoExportService } from "./export-service";
 import {
@@ -188,6 +189,7 @@ function fixtureComposition(): VideoCompositionInput {
     schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
     gameId: "game-1",
     gameTitle: "Test Game",
+    script: legacyGameScriptSnapshot(),
     items: [],
     assets: {
       fontUrl: "/font.ttf",

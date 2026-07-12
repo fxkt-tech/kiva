@@ -19,6 +19,10 @@ import {
   type PlayerVoiceArtifact,
 } from "@/core/voice";
 import { validateGamePresenterSnapshot } from "@/core/presenter-definition";
+import {
+  legacyGameScriptSnapshot,
+  validateGameScriptSnapshot,
+} from "@/core/game-script";
 import { createPlayerSnapshot } from "@/core/player";
 import {
   createDefaultRuleset,
@@ -179,6 +183,9 @@ function normalizeRecord(rawRecord: unknown): GameRecord {
     game: {
       ...record.game,
       presenter: validateGamePresenterSnapshot(record.game.presenter),
+      script: record.game.script
+        ? validateGameScriptSnapshot(record.game.script)
+        : legacyGameScriptSnapshot(),
       ruleset: normalizeRuleset(record.game.ruleset),
       players: record.game.players.map((player) =>
         createPlayerSnapshot(player),

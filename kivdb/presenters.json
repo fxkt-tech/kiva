@@ -1,8 +1,8 @@
 [
   {
-    "id": "night_watch",
-    "name": "守夜人",
-    "avatar": null,
+    "id": "wen_zhou",
+    "name": "闻舟",
+    "avatar": "/kivdb-assets/presenters/presenter_wen_zhou_v1.png",
     "voiceProfile": {
       "provider": "edge",
       "adapterVersion": 1,
@@ -14,23 +14,23 @@
     },
     "lines": {
       "phase.setup": {
-        "template": "所有玩家请确认身份。好戏，即将开场。",
+        "template": "请确认身份。档案启封，记录从现在开始。",
         "variables": []
       },
       "phase.night": {
-        "template": "天黑请闭眼。所有玩家保持安静，夜间行动开始。",
+        "template": "灯灭了。所有人闭眼，夜间记录开始。",
         "variables": []
       },
       "phase.day": {
-        "template": "天亮了，所有玩家请睁眼。昨夜的结果，即将揭晓。",
+        "template": "天亮了。请睁眼，昨夜记录即将公开。",
         "variables": []
       },
       "phase.speech": {
-        "template": "现在进入发言环节。听清每一句话，也别轻信任何一个人。",
+        "template": "进入公开发言。只说你能证明的，也听清别人回避的。",
         "variables": []
       },
       "phase.vote": {
-        "template": "发言结束。请投出你认为最像狼人的那一票。",
+        "template": "记录封存。现在，投出你愿意承担的一票。",
         "variables": []
       },
       "phase.pk": {
@@ -42,7 +42,7 @@
         "variables": []
       },
       "phase.ended": {
-        "template": "尘埃落定。本局游戏结束，所有身份即将揭晓。",
+        "template": "最后一页已经写完。本局结束，所有身份公开。",
         "variables": []
       },
       "action.role_assigned": {
@@ -235,246 +235,7 @@
       }
     },
     "enabled": true,
-    "createdAt": "2026-07-11T00:00:00.000Z",
-    "updatedAt": "2026-07-11T23:05:09.227Z"
-  },
-  {
-    "id": "judge",
-    "name": "法官",
-    "avatar": null,
-    "lines": {
-      "phase.setup": {
-        "template": "请确认身份，游戏开始。",
-        "variables": []
-      },
-      "phase.night": {
-        "template": "天黑请闭眼。",
-        "variables": []
-      },
-      "phase.day": {
-        "template": "天亮了，所有玩家请睁眼。",
-        "variables": []
-      },
-      "phase.speech": {
-        "template": "进入发言阶段，请按顺序发言。",
-        "variables": []
-      },
-      "phase.vote": {
-        "template": "发言结束，开始放逐投票。",
-        "variables": []
-      },
-      "phase.pk": {
-        "template": "出现平票，平票玩家进行 PK 发言。",
-        "variables": []
-      },
-      "phase.last_words": {
-        "template": "出局玩家请发表遗言。",
-        "variables": []
-      },
-      "phase.ended": {
-        "template": "本局游戏结束。",
-        "variables": []
-      },
-      "action.role_assigned": {
-        "template": "{player}的身份是{role}，请确认。",
-        "variables": [
-          "player",
-          "role"
-        ]
-      },
-      "action.wolf_kill": {
-        "template": "狼人请睁眼，请选择击杀目标：{target}。",
-        "variables": [
-          "target"
-        ]
-      },
-      "action.seer_check": {
-        "template": "预言家请睁眼，请确认查验{target}。",
-        "variables": [
-          "target"
-        ]
-      },
-      "action.seer_result.wolves": {
-        "template": "{target}的查验结果为狼人。",
-        "variables": [
-          "target"
-        ]
-      },
-      "action.seer_result.good": {
-        "template": "{target}的查验结果为好人。",
-        "variables": [
-          "target"
-        ]
-      },
-      "action.witch_death_info.killed": {
-        "template": "女巫请睁眼，今晚被袭击的是{target}。",
-        "variables": [
-          "target"
-        ]
-      },
-      "action.witch_death_info.safe": {
-        "template": "女巫请睁眼，今晚无人被袭击。",
-        "variables": []
-      },
-      "action.witch_antidote.used": {
-        "template": "女巫对{target}使用解药。",
-        "variables": [
-          "target"
-        ]
-      },
-      "action.witch_antidote.skipped": {
-        "template": "女巫不使用解药。",
-        "variables": []
-      },
-      "action.witch_poison.used": {
-        "template": "女巫对{target}使用毒药。",
-        "variables": [
-          "target"
-        ]
-      },
-      "action.witch_poison.skipped": {
-        "template": "女巫不使用毒药。",
-        "variables": []
-      },
-      "action.guard_protect": {
-        "template": "守卫请睁眼，今晚守护{target}。",
-        "variables": [
-          "target"
-        ]
-      },
-      "action.hunter_shot": {
-        "template": "猎人发动技能，带走{target}。",
-        "variables": [
-          "target"
-        ]
-      },
-      "resolution.night.deaths": {
-        "template": "夜间结算：{players}死亡。",
-        "variables": [
-          "players"
-        ]
-      },
-      "resolution.night.safe": {
-        "template": "夜间结算：无人死亡。",
-        "variables": []
-      },
-      "announcement.deaths": {
-        "template": "昨夜死亡玩家为：{players}。",
-        "variables": [
-          "players"
-        ]
-      },
-      "announcement.safe": {
-        "template": "昨夜是平安夜，无人死亡。",
-        "variables": []
-      },
-      "prompt.last_words": {
-        "template": "请{seatNo}号玩家发表遗言。",
-        "variables": [
-          "seatNo"
-        ]
-      },
-      "prompt.speech": {
-        "template": "请{seatNo}号玩家发言。",
-        "variables": [
-          "seatNo"
-        ]
-      },
-      "prompt.pk": {
-        "template": "请{seatNo}号玩家进行 PK 发言。",
-        "variables": [
-          "seatNo"
-        ]
-      },
-      "vote.cast": {
-        "template": "{voter}投票给{target}。",
-        "variables": [
-          "voter",
-          "target"
-        ]
-      },
-      "vote.abstain": {
-        "template": "{voter}选择弃票。",
-        "variables": [
-          "voter"
-        ]
-      },
-      "resolution.exile.exiled": {
-        "template": "投票结束，{player}被放逐出局。",
-        "variables": [
-          "player"
-        ]
-      },
-      "resolution.exile.tied": {
-        "template": "投票平票：{players}，进入 PK。",
-        "variables": [
-          "players"
-        ]
-      },
-      "resolution.exile.none": {
-        "template": "投票结束，本轮无人被放逐。",
-        "variables": []
-      },
-      "resolution.pk.exiled": {
-        "template": "PK 投票结束，{player}被放逐出局。",
-        "variables": [
-          "player"
-        ]
-      },
-      "resolution.pk.tied": {
-        "template": "PK 投票平票：{players}，本轮无人出局。",
-        "variables": [
-          "players"
-        ]
-      },
-      "resolution.pk.none": {
-        "template": "PK 投票结束，本轮无人被放逐。",
-        "variables": []
-      },
-      "game_end.all_wolves_dead": {
-        "template": "所有狼人出局，好人阵营获胜。",
-        "variables": []
-      },
-      "game_end.all_gods_dead": {
-        "template": "所有神职出局，狼人阵营获胜。",
-        "variables": []
-      },
-      "game_end.all_villagers_dead": {
-        "template": "所有平民出局，狼人阵营获胜。",
-        "variables": []
-      },
-      "game_end.all_good_dead": {
-        "template": "所有好人出局，狼人阵营获胜。",
-        "variables": []
-      },
-      "fallback.announcement": {
-        "template": "本环节信息已确认。",
-        "variables": []
-      },
-      "fallback.speech": {
-        "template": "该玩家本轮没有发言。",
-        "variables": []
-      },
-      "fallback.vote": {
-        "template": "本轮投票信息已记录。",
-        "variables": []
-      },
-      "fallback.resolution": {
-        "template": "本轮结算完成。",
-        "variables": []
-      }
-    },
-    "enabled": true,
-    "createdAt": "2026-07-11T00:00:00.000Z",
-    "updatedAt": "2026-07-11T00:00:00.000Z",
-    "voiceProfile": {
-      "provider": "edge",
-      "adapterVersion": 1,
-      "voice": "zh-CN-YunjianNeural",
-      "lang": "zh-CN",
-      "pitch": "+0Hz",
-      "rate": "+20%",
-      "volume": "+0%"
-    }
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "updatedAt": "2026-07-12T00:00:00.000Z"
   }
 ]

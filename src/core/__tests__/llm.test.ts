@@ -12,8 +12,6 @@ const request = {
   modelBinding: {
     provider: "mock",
     model: "mock-model",
-    temperature: 0.4,
-    maxTokens: 300,
     responseFormat: "json",
   },
   systemPrompt: "You are a test model.",
@@ -163,8 +161,6 @@ describe("LLM client boundary", () => {
     });
     expect(JSON.parse(String((calls[0] as { init: RequestInit }).init.body))).toEqual({
       model: "mock-model",
-      temperature: 0.4,
-      max_tokens: 300,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: "You are a test model." },

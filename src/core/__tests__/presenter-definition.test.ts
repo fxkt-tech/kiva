@@ -10,18 +10,15 @@ describe("presenter definitions", () => {
   it("validates the complete KivDB presenter collection", () => {
     const definitions = validatePresenterDefinitions(presenterDefinitionsJson);
 
-    expect(definitions.map((definition) => definition.name)).toEqual([
-      "守夜人",
-      "法官",
-    ]);
-    expect(definitions[0]?.lines["phase.night"].template).not.toBe(
-      definitions[1]?.lines["phase.night"].template,
-    );
+    expect(definitions.map((definition) => definition.name)).toEqual(["闻舟"]);
+    expect(definitions[0]?.lines["phase.night"].template).toContain("灯灭了");
   });
 
   it("rejects duplicate IDs and incomplete line catalogs", () => {
-    const duplicate = structuredClone(presenterDefinitionsJson);
-    duplicate[1]!.id = duplicate[0]!.id;
+    const duplicate = [
+      structuredClone(presenterDefinitionsJson[0]!),
+      structuredClone(presenterDefinitionsJson[0]!),
+    ];
     expect(() => validatePresenterDefinitions(duplicate)).toThrow(
       "Duplicate presenter definition id",
     );
@@ -49,9 +46,9 @@ describe("presenter definitions", () => {
     const snapshot = createGamePresenterSnapshot(definition!);
 
     expect(snapshot).toMatchObject({
-      presenterSourceId: "night_watch",
-      name: "守夜人",
-      avatar: null,
+      presenterSourceId: "wen_zhou",
+      name: "闻舟",
+      avatar: "/kivdb-assets/presenters/presenter_wen_zhou_v1.png",
     });
     expect(snapshot.lines).not.toBe(definition!.lines);
     expect(validateGamePresenterSnapshot(snapshot)).toBe(snapshot);

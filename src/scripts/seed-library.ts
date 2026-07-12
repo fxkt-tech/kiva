@@ -3,8 +3,9 @@ import { seedCharacters } from "../seeds/characters";
 import { seedPresets } from "../seeds/presets";
 import { seedRoles } from "../seeds/roles";
 import { seedPresenters } from "../seeds/presenters";
+import { seedScripts } from "../seeds/scripts";
 
-type SeedTarget = "all" | "roles" | "characters" | "presets" | "presenters";
+type SeedTarget = "all" | "roles" | "characters" | "presets" | "presenters" | "scripts";
 
 const VALID_TARGETS = new Set<SeedTarget>([
   "all",
@@ -12,6 +13,7 @@ const VALID_TARGETS = new Set<SeedTarget>([
   "characters",
   "presets",
   "presenters",
+  "scripts",
 ]);
 
 async function main(): Promise<void> {
@@ -24,9 +26,10 @@ async function main(): Promise<void> {
       characters: seedCharacters,
       presets: seedPresets,
       presenters: seedPresenters,
+      scripts: seedScripts,
     });
     console.log(
-      `Seeded library: ${seedRoles.length} roles, ${seedCharacters.length} characters, ${seedPresets.length} presets, ${seedPresenters.length} presenters`,
+      `Seeded library: ${seedRoles.length} roles, ${seedCharacters.length} characters, ${seedPresets.length} presets, ${seedPresenters.length} presenters, ${seedScripts.length} scripts`,
     );
     return;
   }
@@ -49,6 +52,12 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (target === "scripts") {
+    await repository.saveScripts(seedScripts);
+    console.log(`Seeded script library: ${seedScripts.length} scripts`);
+    return;
+  }
+
   await repository.savePresets(seedPresets);
   console.log(`Seeded role library: ${seedPresets.length} presets`);
 }
@@ -60,7 +69,7 @@ function parseTarget(args: readonly string[]): SeedTarget {
 
   if (args.length !== 1 || !VALID_TARGETS.has(args[0] as SeedTarget)) {
     throw new Error(
-      "Usage: seed-library.ts [all|roles|characters|presets|presenters]",
+      "Usage: seed-library.ts [all|roles|characters|presets|presenters|scripts]",
     );
   }
 

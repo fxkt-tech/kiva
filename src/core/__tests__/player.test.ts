@@ -59,9 +59,7 @@ describe("player snapshots", () => {
     });
     expect(first.modelBindingSnapshot).toEqual({
       provider: "volcengine",
-      model: "doubao-seed-1-6-flash-250828",
-      temperature: 0.7,
-      maxTokens: 1200,
+      model: "doubao-seed-2-1-turbo-260628",
       responseFormat: "json",
     });
     expect(first.modelBindingSnapshot).not.toBe(second.modelBindingSnapshot);
@@ -185,8 +183,6 @@ describe("player snapshots", () => {
     const modelBinding = {
       provider: "test-provider",
       model: "test-model",
-      temperature: 0.2,
-      maxTokens: 800,
       responseFormat: "json" as const,
     };
 
@@ -200,14 +196,10 @@ describe("player snapshots", () => {
 
     modelBinding.provider = "mutated-provider";
     modelBinding.model = "mutated-model";
-    modelBinding.temperature = 1;
-    modelBinding.maxTokens = 10;
 
     expect(snapshot.modelBindingSnapshot).toEqual({
       provider: "test-provider",
       model: "test-model",
-      temperature: 0.2,
-      maxTokens: 800,
       responseFormat: "json",
     });
   });

@@ -25,6 +25,7 @@ export function KivaVideoComposition(input: VideoCompositionInput) {
     items: input.items,
     timeMs,
     assets,
+    script: input.script,
   });
 
   return (

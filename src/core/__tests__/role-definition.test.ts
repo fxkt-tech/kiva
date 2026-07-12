@@ -185,8 +185,6 @@ describe("role definitions", () => {
       {
         provider: "",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
       },
       "Role seer defaultModelBinding.provider must be set",
@@ -196,8 +194,6 @@ describe("role definitions", () => {
       {
         provider: " mock",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
       },
       "Role seer defaultModelBinding.provider must be set",
@@ -207,8 +203,6 @@ describe("role definitions", () => {
       {
         provider: "mock",
         model: "",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
       },
       "Role seer defaultModelBinding.model must be set",
@@ -218,41 +212,15 @@ describe("role definitions", () => {
       {
         provider: "mock",
         model: "mock-model ",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
       },
       "Role seer defaultModelBinding.model must be set",
-    ],
-    [
-      "temperature",
-      {
-        provider: "mock",
-        model: "mock-model",
-        temperature: Infinity,
-        maxTokens: 1000,
-        responseFormat: "json",
-      },
-      "Role seer defaultModelBinding.temperature must be a finite number",
-    ],
-    [
-      "maxTokens",
-      {
-        provider: "mock",
-        model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 0,
-        responseFormat: "json",
-      },
-      "Role seer defaultModelBinding.maxTokens must be a positive integer",
     ],
     [
       "responseFormat",
       {
         provider: "mock",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "text",
       },
       "Role seer defaultModelBinding.responseFormat must be json",
@@ -262,8 +230,6 @@ describe("role definitions", () => {
       {
         provider: "mock",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
         fallbackModel: "",
       },
@@ -274,8 +240,6 @@ describe("role definitions", () => {
       {
         provider: "mock",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
         fallbackModel: " mock-fallback",
       },

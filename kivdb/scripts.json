@@ -1,0 +1,25 @@
+[
+  {
+    "id": "midnight_archive",
+    "name": "未明档案",
+    "theme": "东方都市异闻 × 深夜推理秀",
+    "background": "闭馆后的城市档案馆突然停电，十二名记录参与者留在封存区完成一轮公开推理。冷雨、旧纸和红色校印只是共同叙事氛围，所有身份与行动事实仍以本局事件记录为准。",
+    "atmosphere": ["冷雨", "停电余光", "旧纸", "封存编号", "红色校印", "凌晨记录"],
+    "presentation": {
+      "styleKey": "midnight_archive_v1",
+      "coverImage": "/kivdb-assets/scripts/script_midnight_archive_cover_v1.png",
+      "dayBackground": "/kivdb-assets/scripts/script_midnight_archive_day_v1.png",
+      "nightBackground": "/kivdb-assets/scripts/script_midnight_archive_night_v1.png",
+      "colors": {
+        "ink": "#071315",
+        "paper": "#D8C9A7",
+        "accent": "#70A4A7",
+        "signal": "#C54335",
+        "night": "#041012"
+      }
+    },
+    "enabled": true,
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "updatedAt": "2026-07-12T00:00:00.000Z"
+  }
+]

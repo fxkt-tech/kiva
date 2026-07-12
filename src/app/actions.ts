@@ -35,7 +35,8 @@ export async function createGameFromPresetHomeAction(
 ) {
   const record = await libraryActions.createGameFromPreset(
     presetId,
-    formValue(formData, "presenterId"),
+    "",
+    formValue(formData, "scriptId"),
   );
   revalidatePath("/");
   redirect(`/games/${record.game.id}/editor`);
@@ -57,7 +58,8 @@ export async function createGameFromSeatAssignmentsAction(formData: FormData) {
   };
   const record = await libraryActions.createGameFromTemporaryPreset(
     preset,
-    formValue(formData, "presenterId"),
+    "",
+    formValue(formData, "scriptId"),
   );
   revalidatePath("/");
   redirect(`/games/${record.game.id}/editor`);

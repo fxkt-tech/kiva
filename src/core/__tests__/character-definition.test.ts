@@ -42,8 +42,6 @@ describe("character definitions", () => {
         defaultModelBinding: {
           provider: "mock",
           model: "mock-model",
-          temperature: 0.7,
-          maxTokens: 1000,
           responseFormat: "json",
           fallbackModel: "mock-fallback",
         },
@@ -172,8 +170,6 @@ describe("character definitions", () => {
       {
         provider: "",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
       },
       "Character calm-analyst defaultModelBinding.provider must be set",
@@ -183,8 +179,6 @@ describe("character definitions", () => {
       {
         provider: " mock",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
       },
       "Character calm-analyst defaultModelBinding.provider must be set",
@@ -194,8 +188,6 @@ describe("character definitions", () => {
       {
         provider: "mock",
         model: "",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
       },
       "Character calm-analyst defaultModelBinding.model must be set",
@@ -205,74 +197,34 @@ describe("character definitions", () => {
       {
         provider: "mock",
         model: "mock-model ",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
       },
       "Character calm-analyst defaultModelBinding.model must be set",
-    ],
-    [
-      "temperature",
-      {
-        provider: "mock",
-        model: "mock-model",
-        temperature: Infinity,
-        maxTokens: 1000,
-        responseFormat: "json",
-      },
-      "Character calm-analyst defaultModelBinding.temperature must be a finite number",
-    ],
-    [
-      "temperature NaN",
-      {
-        provider: "mock",
-        model: "mock-model",
-        temperature: NaN,
-        maxTokens: 1000,
-        responseFormat: "json",
-      },
-      "Character calm-analyst defaultModelBinding.temperature must be a finite number",
-    ],
-    [
-      "maxTokens",
-      {
-        provider: "mock",
-        model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 0,
-        responseFormat: "json",
-      },
-      "Character calm-analyst defaultModelBinding.maxTokens must be a positive integer",
-    ],
-    [
-      "maxTokens decimal",
-      {
-        provider: "mock",
-        model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000.5,
-        responseFormat: "json",
-      },
-      "Character calm-analyst defaultModelBinding.maxTokens must be a positive integer",
     ],
     [
       "responseFormat",
       {
         provider: "mock",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "text",
       },
       "Character calm-analyst defaultModelBinding.responseFormat must be json",
+    ],
+    [
+      "deprecated sampling fields",
+      {
+        provider: "mock",
+        model: "mock-model",
+        responseFormat: "json",
+        temperature: 0.7,
+      },
+      "Character calm-analyst defaultModelBinding must not configure temperature or maxTokens",
     ],
     [
       "fallbackModel",
       {
         provider: "mock",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
         fallbackModel: "",
       },
@@ -283,8 +235,6 @@ describe("character definitions", () => {
       {
         provider: "mock",
         model: "mock-model",
-        temperature: 0.7,
-        maxTokens: 1000,
         responseFormat: "json",
         fallbackModel: " mock-fallback",
       },

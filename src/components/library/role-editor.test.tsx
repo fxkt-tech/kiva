@@ -11,8 +11,6 @@ const werewolfRole = seedRoles.find((role) => role.id === "werewolf")!;
 const modelBinding = {
   provider: "mock",
   model: "role-model",
-  temperature: 0.4,
-  maxTokens: 900,
   responseFormat: "json",
 } satisfies ModelBindingSnapshot;
 

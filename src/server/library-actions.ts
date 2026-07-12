@@ -198,15 +198,17 @@ export function createLibraryActions({
     async createGameFromPreset(
       presetId: string,
       presenterId: string,
+      scriptId?: string,
     ): Promise<GameRecord> {
       return libraryRepository.withLibraryLock(async () =>
-        gameActions.createGameFromPresetId(presetId, presenterId),
+        gameActions.createGameFromPresetId(presetId, presenterId, scriptId),
       );
     },
 
     async createGameFromTemporaryPreset(
       preset: GamePreset,
       presenterId: string,
+      scriptId?: string,
     ): Promise<GameRecord> {
       return libraryRepository.withLibraryLock(async () => {
         const library = await loadLibrary();
@@ -214,6 +216,7 @@ export function createLibraryActions({
           preset,
           library,
           presenterId,
+          scriptId,
         );
       });
     },

@@ -27,6 +27,7 @@ import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedPresenters } from "@/seeds/presenters";
 import { seedRoles } from "@/seeds/roles";
+import { seedScripts } from "@/seeds/scripts";
 import type { GameRecord, GameRepository } from "./game-repository";
 import type { LibraryRecord, LibraryRepository } from "./library-repository";
 
@@ -55,6 +56,7 @@ export function createGameActions(
   async function createGameFromPresetId(
     presetId: string,
     presenterId: string,
+    scriptId?: string,
   ): Promise<GameRecord> {
     const createdAt = now();
     const library = await loadGameLibrary(options.libraryRepository);
@@ -63,6 +65,7 @@ export function createGameActions(
       throw new Error(`Game preset not found: ${presetId}`);
     }
     const presenter = requireEnabledPresenter(library, presenterId);
+    const script = requireEnabledScript(library, scriptId);
     const game = createGameFromPreset({
       gameId: createGameId(),
       title: preset.name,
@@ -70,6 +73,7 @@ export function createGameActions(
       ruleset: createDefaultRuleset(),
       preset,
       presenter,
+      script,
       roles: library.roles,
       characters: library.characters,
     });
@@ -87,11 +91,13 @@ export function createGameActions(
 
   async function createGameFromPresetRecord(
     preset: LibraryRecord["presets"][number],
-    library: Pick<LibraryRecord, "roles" | "characters" | "presenters">,
+    library: Pick<LibraryRecord, "roles" | "characters" | "presenters" | "scripts">,
     presenterId: string,
+    scriptId?: string,
   ): Promise<GameRecord> {
     const createdAt = now();
     const presenter = requireEnabledPresenter(library, presenterId);
+    const script = requireEnabledScript(library, scriptId);
     const game = createGameFromPreset({
       gameId: createGameId(),
       title: preset.name,
@@ -99,6 +105,7 @@ export function createGameActions(
       ruleset: createDefaultRuleset(),
       preset,
       presenter,
+      script,
       roles: library.roles,
       characters: library.characters,
     });
@@ -132,16 +139,18 @@ export function createGameActions(
     async createGameFromPresetId(
       presetId: string,
       presenterId: string,
+      scriptId?: string,
     ): Promise<GameRecord> {
-      return createGameFromPresetId(presetId, presenterId);
+      return createGameFromPresetId(presetId, presenterId, scriptId);
     },
 
     async createGameFromPresetRecord(
       preset: LibraryRecord["presets"][number],
-      library: Pick<LibraryRecord, "roles" | "characters" | "presenters">,
+      library: Pick<LibraryRecord, "roles" | "characters" | "presenters" | "scripts">,
       presenterId: string,
+      scriptId?: string,
     ): Promise<GameRecord> {
-      return createGameFromPresetRecord(preset, library, presenterId);
+      return createGameFromPresetRecord(preset, library, presenterId, scriptId);
     },
 
     async getGame(gameId: GameId): Promise<GameRecord | null> {
@@ -394,6 +403,7 @@ async function loadGameLibrary(
     characters: seedCharacters,
     presets: seedPresets,
     presenters: seedPresenters,
+    scripts: seedScripts,
   };
 }
 
@@ -401,16 +411,27 @@ function requireEnabledPresenter(
   library: Pick<LibraryRecord, "presenters">,
   presenterId: string,
 ): LibraryRecord["presenters"][number] {
-  const presenter = library.presenters.find(
-    (candidate) => candidate.id === presenterId,
-  );
-  if (!presenter) {
-    throw new Error(`Presenter not found: ${presenterId}`);
+  const enabled = library.presenters.filter((candidate) => candidate.enabled);
+  if (enabled.length !== 1) {
+    throw new Error(`Exactly one enabled presenter is required; found ${enabled.length}`);
   }
-  if (!presenter.enabled) {
-    throw new Error(`Presenter is disabled: ${presenterId}`);
+  const presenter = enabled[0]!;
+  if (presenterId && presenter.id !== presenterId) {
+    throw new Error(`Presenter not found or disabled: ${presenterId}`);
   }
   return presenter;
+}
+
+function requireEnabledScript(
+  library: Pick<LibraryRecord, "scripts">,
+  scriptId?: string,
+): LibraryRecord["scripts"][number] {
+  const enabled = library.scripts.filter((script) => script.enabled);
+  const script = scriptId
+    ? enabled.find((candidate) => candidate.id === scriptId)
+    : enabled[0];
+  if (!script) throw new Error(`Game script not found or disabled: ${scriptId ?? "default"}`);
+  return script;
 }
 
 async function maybeGenerateDraft(input: {

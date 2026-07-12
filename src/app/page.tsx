@@ -53,7 +53,7 @@ export default async function HomePage() {
               presets={creatablePresets}
               roles={library.roles.filter((role) => role.enabled)}
               characters={library.characters.filter((character) => character.enabled)}
-              presenters={library.presenters.filter((presenter) => presenter.enabled)}
+              scripts={library.scripts.filter((script) => script.enabled)}
             />
           </div>
         </header>
@@ -82,15 +82,26 @@ export default async function HomePage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {records.map((record) => (
-                    <tr key={record.game.id} className="align-middle">
+                    <tr
+                      key={record.game.id}
+                      className="align-middle"
+                      style={{ borderLeft: `3px solid ${record.game.script.presentation.colors.accent}` }}
+                    >
                       <td className="px-4 py-4">
-                        <div className="min-w-0">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <img
+                            src={record.game.script.presentation.coverImage}
+                            alt=""
+                            className="h-12 w-12 shrink-0 rounded-sm object-cover"
+                          />
+                          <div className="min-w-0">
                           <GameTitleEditor
                             gameId={record.game.id}
                             title={record.game.title}
                           />
                           <div className="mt-1 truncate text-xs text-subtle">
-                            {record.game.id}
+                            {record.game.script.name} · {record.game.id}
+                          </div>
                           </div>
                         </div>
                       </td>

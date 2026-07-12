@@ -3,6 +3,7 @@
 import { BarChart3, X } from "lucide-react";
 import { useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { TokenCostCalculator } from "@/components/token-cost-calculator";
 import type { TokenUsageSummary } from "@/core/token-usage";
 
 type GameTokenUsageButtonProps = {
@@ -56,6 +57,11 @@ export function GameTokenUsageButton({
           </form>
         </div>
         <div className="space-y-3 p-4">
+          <TokenCostCalculator
+            promptTokens={total.promptTokens}
+            reasoningTokens={total.reasoningTokens}
+            completionTokens={total.completionTokens}
+          />
           <UsageBlock title="Total" summary={total} />
           <div className="grid gap-3 sm:grid-cols-2">
             <UsageBlock title="Speech" summary={speech} compact />

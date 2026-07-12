@@ -9,8 +9,6 @@ import { CharacterEditor } from "./character-editor";
 const modelBinding = {
   provider: "mock",
   model: "character-model",
-  temperature: 0.5,
-  maxTokens: 700,
   responseFormat: "json",
 } satisfies ModelBindingSnapshot;
 
@@ -37,7 +35,7 @@ describe("CharacterEditor", () => {
     expect(html).not.toContain('name="team"');
   });
 
-  it("preserves default model binding in hidden JSON", () => {
+  it("renders the character model binding as editable fields", () => {
     const character: CharacterDefinition = {
       ...seedCharacters[0],
       defaultModelBinding: modelBinding,
@@ -47,11 +45,12 @@ describe("CharacterEditor", () => {
       React.createElement(CharacterEditor, { character }),
     );
 
-    expect(html).toContain('name="defaultModelBinding"');
-    expect(decodeHtml(html)).toContain(JSON.stringify(modelBinding));
+    expect(html).toContain('name="modelBinding.provider"');
+    expect(html).toContain('value="mock"');
+    expect(html).toContain('name="modelBinding.model"');
+    expect(html).toContain('value="character-model"');
+    expect(html).toContain('name="modelBinding.fallbackModel"');
+    expect(html).not.toContain("temperature");
+    expect(html).not.toContain("maxTokens");
   });
 });
-
-function decodeHtml(value: string): string {
-  return value.replaceAll("&quot;", "\"");
-}

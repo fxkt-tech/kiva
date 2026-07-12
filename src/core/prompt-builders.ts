@@ -217,6 +217,14 @@ function buildUserMessage(input: {
     "禁止行为",
     spec.mustNot.map((item) => `- ${item}`),
   );
+  appendSection(lines, "本局剧本背景——只用于自然表达，不是身份事实", [
+    `- 剧本：${context.script.name}`,
+    `- 主题：${context.script.theme}`,
+    `- 共同背景：${context.script.background}`,
+    `- 氛围：${context.script.atmosphere.join("、")}`,
+    "- 可以偶尔使用背景中的意象或类比，但不必复述剧本名称。",
+    "- 剧本不提供任何玩家身份、行为、关系或可信度证据。",
+  ]);
   appendSection(lines, "玩家名单", rosterLines(context));
   appendSection(
     lines,

@@ -5,10 +5,15 @@ import {
 import { createShotFrame } from "@/components/preview/shot-engine/director";
 import type { ShotFrame } from "@/components/preview/shot-engine/types";
 import type { CompositionAssets } from "./types";
+import {
+  legacyGameScriptSnapshot,
+  type GameScriptSnapshot,
+} from "@/core/game-script";
 
 export type HtmlFrameViewModel = {
   readonly shot: ShotFrame;
   readonly assets: CompositionAssets;
+  readonly script: GameScriptSnapshot;
 };
 
 export function createHtmlFrameViewModel(input: {
@@ -16,6 +21,7 @@ export function createHtmlFrameViewModel(input: {
   readonly items: readonly PlaybackItem[];
   readonly timeMs: number;
   readonly assets: CompositionAssets;
+  readonly script?: GameScriptSnapshot;
 }): HtmlFrameViewModel | null {
   const scene = input.items[playbackIndexAtMs(input.items, input.timeMs)];
   if (!scene) {
@@ -30,5 +36,6 @@ export function createHtmlFrameViewModel(input: {
       timeMs: input.timeMs,
     }),
     assets: input.assets,
+    script: input.script ?? legacyGameScriptSnapshot(),
   };
 }

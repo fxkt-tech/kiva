@@ -7,6 +7,7 @@ import {
   type VideoCompositionInput,
 } from "@/components/preview-v2/composition/types";
 import { VIDEO_SPEC } from "@/components/preview-v2/composition/video-spec";
+import { legacyGameScriptSnapshot } from "@/core/game-script";
 
 const defaultItem: PlaybackItem = {
   index: 1,
@@ -31,6 +32,7 @@ export const defaultCompositionInput: VideoCompositionInput = {
   schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
   gameId: "fixture",
   gameTitle: "Kiva Render Fixture",
+  script: legacyGameScriptSnapshot(),
   items: [defaultItem],
   assets: {
     fontUrl: "remotion-static:preview/noto-sans-sc-900.ttf",

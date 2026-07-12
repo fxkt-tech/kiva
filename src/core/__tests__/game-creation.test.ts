@@ -6,6 +6,7 @@ import { createDefaultRuleset, type GameId } from "../types";
 import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedPresenters } from "@/seeds/presenters";
+import { seedScripts } from "@/seeds/scripts";
 import { seedRoles } from "@/seeds/roles";
 
 const gameId = "game_creation" as GameId;
@@ -20,6 +21,7 @@ describe("game creation", () => {
       ruleset: createDefaultRuleset(),
       preset: seedPresets[0]!,
       presenter: seedPresenters[0]!,
+      script: seedScripts[0]!,
 
       roles: seedRoles,
       characters: seedCharacters,
@@ -33,18 +35,18 @@ describe("game creation", () => {
       updatedAt: createdAt,
     });
     expect(game.players.map((player) => player.name)).toEqual([
-      "周知",
-      "陈墨",
+      "周序",
+      "乔可",
       "秦川",
-      "林夏",
-      "夏宇",
-      "顾清妍",
-      "沈岚",
-      "许砚",
-      "白祁",
-      "唐棠",
-      "陆昭",
-      "苏瑾",
+      "夏弥",
+      "任野",
+      "顾绫",
+      "程雾",
+      "叶忱",
+      "迟木",
+      "唐梨",
+      "陆燃",
+      "苏弦",
     ]);
     expect(game.players.map((player) => player.gameRole)).toEqual([
       "villager",
@@ -76,20 +78,24 @@ describe("game creation", () => {
     ]);
 
     expect(game.players[0]).toMatchObject({
-      characterSourceId: "zhou_zhi",
+      characterSourceId: "zhou_xu",
       roleSourceId: "villager",
       roleName: "平民",
       roleSystemPromptSnapshot: seedRoles.find((role) => role.id === "villager")!
         .systemPrompt,
       characterSystemPromptSnapshot: seedCharacters.find(
-        (character) => character.id === "zhou_zhi",
+        (character) => character.id === "zhou_xu",
       )!.systemPrompt,
       mechanicKey: "none",
       team: "villager",
     });
     expect(game.players[0]?.systemPrompt).toBe(
-      seedCharacters.find((character) => character.id === "zhou_zhi")!
+      seedCharacters.find((character) => character.id === "zhou_xu")!
         .systemPrompt,
+    );
+    expect(game.players[0]?.modelBindingSnapshot).toEqual(
+      seedCharacters.find((character) => character.id === "zhou_xu")!
+        .defaultModelBinding,
     );
   });
 
@@ -104,18 +110,18 @@ describe("game creation", () => {
         gameRole: player.gameRole,
       })),
     ).toEqual([
-      { playerId: "p1", seatNo: 1, name: "周知", gameRole: "villager" },
-      { playerId: "p2", seatNo: 2, name: "陈墨", gameRole: "seer" },
+      { playerId: "p1", seatNo: 1, name: "周序", gameRole: "villager" },
+      { playerId: "p2", seatNo: 2, name: "乔可", gameRole: "seer" },
       { playerId: "p3", seatNo: 3, name: "秦川", gameRole: "werewolf" },
-      { playerId: "p4", seatNo: 4, name: "林夏", gameRole: "witch" },
-      { playerId: "p5", seatNo: 5, name: "夏宇", gameRole: "villager" },
-      { playerId: "p6", seatNo: 6, name: "顾清妍", gameRole: "werewolf" },
-      { playerId: "p7", seatNo: 7, name: "沈岚", gameRole: "guard" },
-      { playerId: "p8", seatNo: 8, name: "许砚", gameRole: "hunter" },
-      { playerId: "p9", seatNo: 9, name: "白祁", gameRole: "werewolf" },
-      { playerId: "p10", seatNo: 10, name: "唐棠", gameRole: "villager" },
-      { playerId: "p11", seatNo: 11, name: "陆昭", gameRole: "werewolf" },
-      { playerId: "p12", seatNo: 12, name: "苏瑾", gameRole: "villager" },
+      { playerId: "p4", seatNo: 4, name: "夏弥", gameRole: "witch" },
+      { playerId: "p5", seatNo: 5, name: "任野", gameRole: "villager" },
+      { playerId: "p6", seatNo: 6, name: "顾绫", gameRole: "werewolf" },
+      { playerId: "p7", seatNo: 7, name: "程雾", gameRole: "guard" },
+      { playerId: "p8", seatNo: 8, name: "叶忱", gameRole: "hunter" },
+      { playerId: "p9", seatNo: 9, name: "迟木", gameRole: "werewolf" },
+      { playerId: "p10", seatNo: 10, name: "唐梨", gameRole: "villager" },
+      { playerId: "p11", seatNo: 11, name: "陆燃", gameRole: "werewolf" },
+      { playerId: "p12", seatNo: 12, name: "苏弦", gameRole: "villager" },
     ]);
   });
 
@@ -130,6 +136,7 @@ describe("game creation", () => {
         ruleset: createDefaultRuleset(),
         preset,
         presenter: seedPresenters[0]!,
+        script: seedScripts[0]!,
 
         roles: seedRoles,
         characters: seedCharacters,
@@ -159,6 +166,7 @@ describe("game creation", () => {
         ruleset: createDefaultRuleset(),
         preset,
         presenter: seedPresenters[0]!,
+        script: seedScripts[0]!,
 
         roles: [unsupportedRole, ...seedRoles],
         characters: seedCharacters,
@@ -181,6 +189,7 @@ describe("game creation", () => {
         ruleset: createDefaultRuleset(),
         preset: seedPresets[0]!,
         presenter: seedPresenters[0]!,
+        script: seedScripts[0]!,
 
         roles: [mismatchedRole, ...seedRoles.slice(1)],
         characters: seedCharacters,
@@ -205,6 +214,7 @@ describe("game creation", () => {
         ruleset: createDefaultRuleset(),
         preset,
         presenter: seedPresenters[0]!,
+        script: seedScripts[0]!,
 
         roles: seedRoles,
         characters: seedCharacters,
@@ -232,6 +242,7 @@ describe("game creation", () => {
         ruleset: createDefaultRuleset(),
         preset,
         presenter: seedPresenters[0]!,
+        script: seedScripts[0]!,
 
         roles: seedRoles,
         characters: seedCharacters,

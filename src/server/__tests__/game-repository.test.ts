@@ -298,7 +298,7 @@ describe("game repository", () => {
       team: "villager",
       mechanicKey: "none",
       characterSystemPromptSnapshot:
-        "你是狼人杀对局中的玩家周知。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是数据党，优先记录票型、顺序、坑位和可验证事实。",
+        "你是狼人杀玩家周序。你负责维护事实账本，优先票型、顺序和可验证记录。不要把他人主张记成事实，也不要为数字编造含义。",
       roleSystemPromptSnapshot: "",
       roleActionPromptSnapshot: null,
       avatar: null,
@@ -350,7 +350,7 @@ describe("game repository", () => {
       team: "villager",
       mechanicKey: "none",
       characterSystemPromptSnapshot:
-        "你是狼人杀对局中的玩家周知。你只能依据自己可见的信息行动。不要泄露不可见信息，不要替其他玩家知道他们的身份。你是数据党，优先记录票型、顺序、坑位和可验证事实。",
+        "你是狼人杀玩家周序。你负责维护事实账本，优先票型、顺序和可验证记录。不要把他人主张记成事实，也不要为数字编造含义。",
       roleSystemPromptSnapshot: "",
       roleActionPromptSnapshot: null,
       avatar: null,

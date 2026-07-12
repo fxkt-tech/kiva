@@ -16,6 +16,10 @@ import {
 } from "@/core/character-definition";
 import { validateGamePresets, type GamePreset } from "@/core/game-preset";
 import {
+  validateGameScriptDefinitions,
+  type GameScriptDefinition,
+} from "@/core/game-script";
+import {
   validatePresenterDefinitions,
   type PresenterDefinition,
 } from "@/core/presenter-definition";
@@ -29,6 +33,7 @@ export type LibraryRecord = {
   readonly characters: readonly CharacterDefinition[];
   readonly presets: readonly GamePreset[];
   readonly presenters: readonly PresenterDefinition[];
+  readonly scripts: readonly GameScriptDefinition[];
 };
 
 export type LibraryRepository = {
@@ -36,6 +41,7 @@ export type LibraryRepository = {
   readonly getCharacters: () => Promise<readonly CharacterDefinition[]>;
   readonly getPresets: () => Promise<readonly GamePreset[]>;
   readonly getPresenters: () => Promise<readonly PresenterDefinition[]>;
+  readonly getScripts: () => Promise<readonly GameScriptDefinition[]>;
   readonly getAll: () => Promise<LibraryRecord>;
   readonly loadAll: () => Promise<LibraryRecord>;
   readonly saveRoles: (roles: readonly RoleDefinition[]) => Promise<void>;
@@ -46,6 +52,7 @@ export type LibraryRepository = {
   readonly savePresenters: (
     presenters: readonly PresenterDefinition[],
   ) => Promise<void>;
+  readonly saveScripts: (scripts: readonly GameScriptDefinition[]) => Promise<void>;
   readonly saveAll: (record: LibraryRecord) => Promise<void>;
   readonly withLibraryLock: <T>(operation: () => Promise<T>) => Promise<T>;
 };
@@ -55,6 +62,7 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
   const charactersPath = join(rootDir, "characters.json");
   const presetsPath = join(rootDir, "presets.json");
   const presentersPath = join(rootDir, "presenters.json");
+  const scriptsPath = join(rootDir, "scripts.json");
   const locksDir = join(rootDir, "locks");
   const libraryLockPath = join(locksDir, "library.lock");
 
@@ -88,6 +96,10 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
 
   async function readPresenters(): Promise<readonly PresenterDefinition[]> {
     return validatePresenterDefinitions(await readJson(presentersPath));
+  }
+
+  async function readScripts(): Promise<readonly GameScriptDefinition[]> {
+    return validateGameScriptDefinitions(await readJson(scriptsPath));
   }
 
   async function readPresets(
@@ -176,12 +188,17 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
       return readPresenters();
     },
 
+    async getScripts() {
+      return readScripts();
+    },
+
     async getAll() {
       const roles = await readRoles();
       const characters = await readCharacters();
       const presets = await readPresets({ roles, characters });
       const presenters = await readPresenters();
-      return { roles, characters, presets, presenters };
+      const scripts = await readScripts();
+      return { roles, characters, presets, presenters, scripts };
     },
 
     async loadAll() {
@@ -189,7 +206,8 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
       const characters = await readCharacters();
       const presets = await readPresets({ roles, characters });
       const presenters = await readPresenters();
-      return { roles, characters, presets, presenters };
+      const scripts = await readScripts();
+      return { roles, characters, presets, presenters, scripts };
     },
 
     async saveRoles(roles) {
@@ -213,17 +231,23 @@ export function createLibraryRepository(rootDir = "kivdb"): LibraryRepository {
       await writeJson(presentersPath, validatePresenterDefinitions(presenters));
     },
 
+    async saveScripts(scripts) {
+      await writeJson(scriptsPath, validateGameScriptDefinitions(scripts));
+    },
+
     async saveAll(record) {
       const roles = validateRoleDefinitions(record.roles);
       const characters = validateCharacterDefinitions(record.characters);
       const presets = validateGamePresets(record.presets, { roles, characters });
       const presenters = validatePresenterDefinitions(record.presenters);
+      const scripts = validateGameScriptDefinitions(record.scripts);
 
       await writeJsonBatch([
         { path: rolesPath, data: roles },
         { path: charactersPath, data: characters },
         { path: presetsPath, data: presets },
         { path: presentersPath, data: presenters },
+        { path: scriptsPath, data: scripts },
       ]);
     },
 

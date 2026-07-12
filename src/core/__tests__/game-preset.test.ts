@@ -105,8 +105,6 @@ function validModelBinding(
   return {
     provider: "mock",
     model: "mock-model",
-    temperature: 0.7,
-    maxTokens: 1000,
     responseFormat: "json",
     ...overrides,
   };
@@ -562,34 +560,6 @@ describe("game presets", () => {
       ),
     ).toThrow(
       "Game preset six-player-standard seatAssignments[1] characterId references unknown character: quiet-observer",
-    );
-  });
-
-  it("rejects invalid modelBindingOverride", () => {
-    expect(() =>
-      validateGamePresets(
-        [
-          validPreset({
-            seatAssignments: [
-              validSeatAssignment({ seatNo: 1, roleId: "werewolf" }),
-              validSeatAssignment({
-                seatNo: 2,
-                roleId: "seer",
-                characterId: "warm-mediator",
-                modelBindingOverride: validModelBinding({ maxTokens: 0 }),
-              }),
-              validSeatAssignment({
-                seatNo: 3,
-                roleId: "villager",
-                characterId: "direct-skeptic",
-              }),
-            ],
-          }),
-        ],
-        libraries(),
-      ),
-    ).toThrow(
-      "Game preset six-player-standard seatAssignments[1] modelBindingOverride.maxTokens must be a positive integer",
     );
   });
 

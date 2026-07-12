@@ -11,6 +11,7 @@ import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import { seedPresenters } from "@/seeds/presenters";
+import { seedScripts } from "@/seeds/scripts";
 import type { LibraryActionsRecord } from "@/server/library-actions";
 import { ValidationPanel } from "./validation-panel";
 
@@ -67,6 +68,7 @@ function libraryFixture(): LibraryActionsRecord {
     characters: seedCharacters,
     presets: seedPresets,
     presenters: seedPresenters,
+    scripts: seedScripts,
     diagnostics: {
       roles: Object.fromEntries(
         seedRoles.map((role) => [

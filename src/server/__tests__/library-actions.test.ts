@@ -6,6 +6,7 @@ import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import { seedPresenters } from "@/seeds/presenters";
+import { seedScripts } from "@/seeds/scripts";
 import { createGameRepository } from "../game-repository";
 import { createLibraryActions } from "../library-actions";
 import {
@@ -47,6 +48,7 @@ async function createSeededActions() {
     characters: seedCharacters,
     presets: seedPresets,
     presenters: seedPresenters,
+    scripts: seedScripts,
   });
 
   return {
@@ -66,6 +68,7 @@ describe("library actions", () => {
     expect(library.characters).toEqual(seedCharacters);
     expect(library.presets).toEqual(seedPresets);
     expect(library.presenters).toEqual(seedPresenters);
+    expect(library.scripts).toEqual(seedScripts);
     expect(library.diagnostics.roles.werewolf).toMatchObject({
       valid: true,
       references: [defaultPresetId],
@@ -83,7 +86,7 @@ describe("library actions", () => {
       messages: [],
       promptPreview: expect.stringContaining("模型："),
     });
-    expect(library.diagnostics.presenters.night_watch).toMatchObject({
+    expect(library.diagnostics.presenters.wen_zhou).toMatchObject({
       valid: true,
       references: [],
       messages: [],
@@ -323,8 +326,8 @@ describe("library actions", () => {
     expect(record.game.title).toBe("12人狼人杀标准局");
     expect(record.game.players).toHaveLength(12);
     expect(record.game.presenter).toMatchObject({
-      presenterSourceId: "night_watch",
-      name: "守夜人",
+      presenterSourceId: "wen_zhou",
+      name: "闻舟",
     });
     expect(record.events).toEqual([]);
     await expect(gameRepository.get(record.game.id)).resolves.toEqual(record);
@@ -338,23 +341,23 @@ describe("library actions", () => {
       name: "临时随机局",
       seatAssignments: seedPresets[0].seatAssignments?.map((seat) =>
         seat.seatNo === 1
-          ? { ...seat, characterId: "lin_xia" }
-          : seat.seatNo === 4
-            ? { ...seat, characterId: "zhou_zhi" }
+          ? { ...seat, characterId: "qiao_ke" }
+          : seat.seatNo === 2
+            ? { ...seat, characterId: "zhou_xu" }
             : seat,
       ) ?? null,
     };
 
     const record = await actions.createGameFromTemporaryPreset(
       temporaryPreset,
-      seedPresenters[1]!.id,
+      seedPresenters[0]!.id,
     );
 
     expect(record.game.title).toBe("临时随机局");
-    expect(record.game.players[0]?.name).toBe("林夏");
+    expect(record.game.players[0]?.name).toBe("乔可");
     expect(record.game.presenter).toMatchObject({
-      presenterSourceId: "judge",
-      name: "法官",
+      presenterSourceId: "wen_zhou",
+      name: "闻舟",
     });
     await expect(gameRepository.get(record.game.id)).resolves.toEqual(record);
     await expect(libraryRepository.loadAll()).resolves.toMatchObject({
@@ -450,6 +453,7 @@ function createRaceDetectingLibraryRepository(): LibraryRepository {
     characters: seedCharacters,
     presets: seedPresets,
     presenters: seedPresenters,
+    scripts: seedScripts,
   });
   let lockTail: Promise<void> = Promise.resolve();
   let inLock = false;
@@ -487,6 +491,9 @@ function createRaceDetectingLibraryRepository(): LibraryRepository {
     async getPresenters() {
       return (await loadAll()).presenters;
     },
+    async getScripts() {
+      return (await loadAll()).scripts;
+    },
     async getAll() {
       return loadAll();
     },
@@ -502,6 +509,9 @@ function createRaceDetectingLibraryRepository(): LibraryRepository {
     },
     async savePresenters(presenters) {
       record = { ...record, presenters: [...presenters] };
+    },
+    async saveScripts(scripts) {
+      record = { ...record, scripts: [...scripts] };
     },
     async saveAll(nextRecord) {
       record = cloneLibraryRecord(nextRecord);
@@ -549,6 +559,7 @@ function createMemoryLibraryRepository(): LibraryRepository {
     characters: seedCharacters,
     presets: seedPresets,
     presenters: seedPresenters,
+    scripts: seedScripts,
   });
 
   return {
@@ -563,6 +574,9 @@ function createMemoryLibraryRepository(): LibraryRepository {
     },
     async getPresenters() {
       return cloneLibraryRecord(record).presenters;
+    },
+    async getScripts() {
+      return cloneLibraryRecord(record).scripts;
     },
     async getAll() {
       return cloneLibraryRecord(record);
@@ -581,6 +595,9 @@ function createMemoryLibraryRepository(): LibraryRepository {
     },
     async savePresenters(presenters) {
       record = { ...record, presenters: [...presenters] };
+    },
+    async saveScripts(scripts) {
+      record = { ...record, scripts: [...scripts] };
     },
     async saveAll(nextRecord) {
       record = cloneLibraryRecord(nextRecord);

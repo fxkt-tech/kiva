@@ -1,28 +1,21 @@
 import { describe, expect, it } from "vitest";
-import {
-  EDGE_VOICE_RATE,
-  FEMALE_PLAYER_EDGE_VOICE,
-  MALE_PLAYER_EDGE_VOICE,
-} from "@/core/voice";
 import { seedCharacters } from "./characters";
 
-const FEMALE_CHARACTER_IDS = new Set([
-  "lin_xia",
-  "gu_qingyan",
-  "shen_lan",
-  "tang_tang",
-  "su_jin",
-]);
-
 describe("seed character voices", () => {
-  it("uses one verified voice for each player gender", () => {
+  it("uses a diverse, complete voice palette", () => {
+    expect(seedCharacters).toHaveLength(12);
+    expect(new Set(seedCharacters.map((character) => character.voiceProfile.voice)).size)
+      .toBeGreaterThanOrEqual(6);
     for (const character of seedCharacters) {
-      expect(character.voiceProfile.voice).toBe(
-        FEMALE_CHARACTER_IDS.has(character.id)
-          ? FEMALE_PLAYER_EDGE_VOICE
-          : MALE_PLAYER_EDGE_VOICE,
-      );
-      expect(character.voiceProfile.rate).toBe(EDGE_VOICE_RATE);
+      expect(character.voiceProfile.voice).toMatch(/^zh-CN-/);
+      expect(character.voiceProfile.rate).toMatch(/^[+-]\d+%$/);
     }
+  });
+
+  it("keeps Qin Chuan as the constrained high-intelligence protagonist", () => {
+    const qinChuan = seedCharacters.find((character) => character.id === "qin_chuan");
+    expect(qinChuan?.name).toBe("秦川");
+    expect(`${qinChuan?.persona}${qinChuan?.systemPrompt}`).toContain("高智商主角");
+    expect(qinChuan?.systemPrompt).toContain("不能拥有上帝视角");
   });
 });

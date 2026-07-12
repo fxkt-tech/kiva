@@ -12,8 +12,6 @@ const createdAt = "2026-06-27T00:00:00.000Z";
 const modelBinding = {
   provider: "mock",
   model: "mock-model",
-  temperature: 0.7,
-  maxTokens: 500,
   responseFormat: "json",
 } as const;
 const request = {

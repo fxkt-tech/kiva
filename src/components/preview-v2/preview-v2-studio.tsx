@@ -30,13 +30,11 @@ type CopyFrameStatus = "idle" | "copying" | "copied" | "error";
 
 export function PreviewV2Studio({
   composition,
-  includesDraft,
   canExport,
   missingVoiceCount,
   exportBlocker,
 }: {
   readonly composition: VideoCompositionInput;
-  readonly includesDraft: boolean;
   readonly canExport: boolean;
   readonly missingVoiceCount: number;
   readonly exportBlocker: string | null;
@@ -142,12 +140,6 @@ export function PreviewV2Studio({
   return (
     <main className="min-h-dvh overflow-auto bg-background p-3 text-foreground lg:h-dvh lg:overflow-hidden">
       <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-[1800px] flex-col gap-3 lg:h-full lg:min-h-0">
-        {includesDraft ? (
-          <div className="shrink-0 rounded-md border border-warning-badge-foreground/30 bg-warning-badge px-3 py-2 text-xs text-warning-badge-foreground">
-            当前预览包含未确认草稿；正式导出只使用已确认事件。
-          </div>
-        ) : null}
-
         <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="flex min-h-0 flex-col gap-3">
             <div className="grid min-h-[280px] flex-1 place-items-center [container-type:size] lg:min-h-0">

@@ -11,6 +11,28 @@ export type TokenUsageSummary = {
   readonly unrecordedGenerations: number;
 };
 
+export const DEFAULT_TOKEN_PRICING_CNY = {
+  promptPerMillion: 6,
+  completionPerMillion: 30,
+} as const;
+
+export function calculateTokenCostCny(input: {
+  readonly promptTokens: number;
+  readonly reasoningTokens: number;
+  readonly completionTokens: number;
+  readonly promptPerMillion: number;
+  readonly completionPerMillion: number;
+}): number {
+  return (
+    ((nonNegativeNumber(input.promptTokens) +
+      nonNegativeNumber(input.reasoningTokens)) *
+      nonNegativeNumber(input.promptPerMillion) +
+      nonNegativeNumber(input.completionTokens) *
+        nonNegativeNumber(input.completionPerMillion)) /
+    1_000_000
+  );
+}
+
 export function summarizeGenerationTokenUsage(
   generations: readonly GenerationRecord[],
 ): TokenUsageSummary {
@@ -51,6 +73,10 @@ export function summarizeGenerationTokenUsage(
 
 export function tokenCount(value: number | null | undefined): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function nonNegativeNumber(value: number): number {
+  return Number.isFinite(value) && value >= 0 ? value : 0;
 }
 
 function totalTokenCount(usage: LlmTokenUsage): number {

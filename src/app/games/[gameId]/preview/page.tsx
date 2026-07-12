@@ -71,9 +71,9 @@ export default async function PreviewPage({
       composition={createCompositionInput({
         gameId: record.game.id,
         gameTitle: record.game.title,
+        script: record.game.script,
         items,
       })}
-      includesDraft={includesDraft}
       canExport={
         confirmedItems.length > 0 &&
         missingVoiceCount === 0 &&

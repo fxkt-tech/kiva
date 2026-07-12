@@ -15,8 +15,6 @@ describe("LLM runtime factory", () => {
         modelBinding: {
           provider: "mock",
           model: "mock-model",
-          temperature: 0.7,
-          maxTokens: 500,
           responseFormat: "json",
         },
         systemPrompt: "test",
@@ -36,8 +34,6 @@ describe("LLM runtime factory", () => {
         modelBinding: {
           provider: "mock",
           model: "mock-model",
-          temperature: 0.7,
-          maxTokens: 1200,
           responseFormat: "json",
         },
         systemPrompt: "test",

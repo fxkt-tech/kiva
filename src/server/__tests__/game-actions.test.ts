@@ -9,6 +9,7 @@ import { seedCharacters } from "@/seeds/characters";
 import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import { seedPresenters } from "@/seeds/presenters";
+import { seedScripts } from "@/seeds/scripts";
 import { createGameActions } from "../game-actions";
 import {
   createGameRepository,
@@ -19,7 +20,7 @@ import type { LibraryRepository } from "../library-repository";
 
 const tempDirs: string[] = [];
 const defaultPresetId = "twelve_player_standard";
-const zhouCharacter = seedCharacters.find((character) => character.id === "zhou_zhi")!;
+const zhouCharacter = seedCharacters.find((character) => character.id === "zhou_xu")!;
 
 afterEach(async () => {
   await Promise.all(
@@ -54,7 +55,7 @@ describe("game actions", () => {
       draft: null,
     });
     expect(created.game.players[0]).toMatchObject({
-      characterSourceId: "zhou_zhi",
+      characterSourceId: "zhou_xu",
       roleSourceId: "villager",
       characterSystemPromptSnapshot: zhouCharacter.systemPrompt,
     });
@@ -110,6 +111,7 @@ describe("game actions", () => {
           characters: seedCharacters,
           presets: seedPresets,
           presenters: seedPresenters,
+          scripts: seedScripts,
         };
       },
     });
@@ -120,21 +122,21 @@ describe("game actions", () => {
     expect(loadAllCalls).toBe(1);
     expect(created.game.title).toBe("12人狼人杀标准局");
     expect(created.game.players.map((player) => player.name)).toEqual([
-      "周知",
-      "陈墨",
+      "周序",
+      "乔可",
       "秦川",
-      "林夏",
-      "夏宇",
-      "顾清妍",
-      "沈岚",
-      "许砚",
-      "白祁",
-      "唐棠",
-      "陆昭",
-      "苏瑾",
+      "夏弥",
+      "任野",
+      "顾绫",
+      "程雾",
+      "叶忱",
+      "迟木",
+      "唐梨",
+      "陆燃",
+      "苏弦",
     ]);
     expect(created.game.players[0]).toMatchObject({
-      characterSourceId: "zhou_zhi",
+      characterSourceId: "zhou_xu",
       roleSourceId: "villager",
       characterSystemPromptSnapshot: zhouCharacter.systemPrompt,
       mechanicKey: "none",
@@ -151,6 +153,7 @@ describe("game actions", () => {
         characters: seedCharacters,
         presets: seedPresets,
           presenters: seedPresenters,
+        scripts: seedScripts,
       }),
     });
     const actions = createGameActions(repository, {
@@ -171,6 +174,7 @@ describe("game actions", () => {
         characters: seedCharacters,
         presets: seedPresets,
           presenters: seedPresenters,
+        scripts: seedScripts,
       }),
     });
     const actions = createGameActions(repository, { libraryRepository });
@@ -649,16 +653,20 @@ function fakeLibraryRepository(
     async getPresenters() {
       return seedPresenters;
     },
+    async getScripts() {
+      return seedScripts;
+    },
     async getAll() {
-      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets, presenters: seedPresenters };
+      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets, presenters: seedPresenters, scripts: seedScripts };
     },
     async loadAll() {
-      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets, presenters: seedPresenters };
+      return { roles: seedRoles, characters: seedCharacters, presets: seedPresets, presenters: seedPresenters, scripts: seedScripts };
     },
     async saveRoles() {},
     async saveCharacters() {},
     async savePresets() {},
     async savePresenters() {},
+    async saveScripts() {},
     async saveAll() {},
     async withLibraryLock(operation) {
       return operation();

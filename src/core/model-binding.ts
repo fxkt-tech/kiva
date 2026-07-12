@@ -22,19 +22,8 @@ export function validateModelBindingSnapshot(
     throw new Error(`${path}.model must be set`);
   }
 
-  if (
-    typeof binding.temperature !== "number" ||
-    !Number.isFinite(binding.temperature)
-  ) {
-    throw new Error(`${path}.temperature must be a finite number`);
-  }
-
-  if (
-    typeof binding.maxTokens !== "number" ||
-    !Number.isInteger(binding.maxTokens) ||
-    binding.maxTokens <= 0
-  ) {
-    throw new Error(`${path}.maxTokens must be a positive integer`);
+  if ("temperature" in binding || "maxTokens" in binding) {
+    throw new Error(`${path} must not configure temperature or maxTokens`);
   }
 
   if (binding.responseFormat !== "json") {
