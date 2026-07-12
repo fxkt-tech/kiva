@@ -5,6 +5,7 @@ import {
   type CompilePublicPlaybackOptions,
   playbackTotalDurationMs,
   playbackIndexAtMs,
+  stagePresentationForEvent,
 } from "../playback";
 import type { EventVisibility, GameEvent } from "../events";
 import type { EventId, GameId, PlayerId } from "../types";
@@ -258,10 +259,10 @@ describe("playback compiler", () => {
       .toMatchObject({ status: "dead", highlighted: true });
   });
 
-  it("plays night deaths only as the daytime death announcement", () => {
+  it("shows night resolution to the director but only daytime news publicly", () => {
     const killedPlayerId = players[0].playerId;
 
-    const playback = compilePublicPlayback([
+    const events = [
       event(1, { kind: "public" }, {
         type: "night_resolved",
         phase: "night",
@@ -272,13 +273,16 @@ describe("playback compiler", () => {
         phase: "day",
         payload: { deadPlayerIds: [killedPlayerId] },
       }),
-    ], players, { audience: "director" });
+    ];
+    const playback = compilePublicPlayback(events, players, { audience: "director" });
+    const publicPlayback = compilePublicPlayback(events, players);
 
-    expect(playback.map((item) => item.title)).toEqual(["昨夜死讯"]);
-    expect(playback[0]).toMatchObject({
+    expect(playback.map((item) => item.title)).toEqual(["夜间结算", "昨夜死讯"]);
+    expect(playback[1]).toMatchObject({
       phase: "day",
       text: expect.stringContaining("昨夜倒下的是"),
     });
+    expect(publicPlayback.map((item) => item.title)).toEqual(["昨夜死讯"]);
   });
 
   it("carries presenter details into playback scenes", () => {
@@ -426,6 +430,81 @@ describe("playback compiler", () => {
     });
   });
 
+  it("projects structured stage events while preserving audience privacy", () => {
+    const guard = players[0];
+    const target = players[1];
+    const privateEvents = [
+      event(1, { kind: "player_private", playerIds: [guard.playerId] }, {
+        type: "guard_protect_selected",
+        actorPlayerId: guard.playerId,
+        targetPlayerIds: [target.playerId],
+        payload: { targetPlayerId: target.playerId },
+      }),
+      event(2, { kind: "host_only" }, {
+        type: "night_resolved",
+        payload: {
+          deadPlayerIds: [target.playerId],
+          deaths: [{ playerId: target.playerId, reason: "wolf_kill" }],
+        },
+      }),
+    ];
+
+    expect(compilePublicPlayback(privateEvents, players)).toEqual([]);
+    expect(
+      compilePublicPlayback(privateEvents, players, { audience: "director" })
+        .map((scene) => scene.stage),
+    ).toEqual([
+      {
+        kind: "action",
+        action: "protect",
+        actor: { kind: "player", playerId: guard.playerId },
+        targetPlayerId: target.playerId,
+        result: "selected",
+      },
+      {
+        kind: "night_result",
+        deaths: [{ playerId: target.playerId, reason: "wolf_kill" }],
+      },
+    ]);
+  });
+
+  it("aggregates exile votes and abstentions for the stage", () => {
+    const exiled = players[1];
+    const other = players[2];
+    const playback = compilePublicPlayback([
+      event(1, { kind: "public" }, {
+        type: "exile_resolved",
+        phase: "vote",
+        payload: {
+          exiledPlayerId: exiled.playerId,
+          tiedPlayerIds: [],
+          voteType: "exile",
+          voteTable: [
+            { voterPlayerId: players[0].playerId, targetPlayerId: exiled.playerId },
+            { voterPlayerId: players[2].playerId, targetPlayerId: exiled.playerId },
+            { voterPlayerId: players[3].playerId, targetPlayerId: other.playerId },
+            { voterPlayerId: players[4].playerId, targetPlayerId: null },
+          ],
+          dayNumber: 1,
+          round: 1,
+          revealedRoles: [],
+        },
+      }),
+    ], players);
+
+    expect(playback[0]?.stage).toEqual({
+      kind: "vote_result",
+      voteType: "exile",
+      outcome: "exiled",
+      exiledPlayerId: exiled.playerId,
+      candidates: [
+        { playerId: exiled.playerId, votes: 2 },
+        { playerId: other.playerId, votes: 1 },
+      ],
+      abstentions: 1,
+    });
+  });
+
   it("hides leader selection and sealed ballots while showing discussion and tally", () => {
     const leader = players[0];
     const teammate = players[1];
@@ -489,6 +568,57 @@ describe("playback compiler", () => {
     expect(playbackIndexAtMs(playback, 3999)).toBe(2);
     expect(playbackIndexAtMs(playback, 9999)).toBe(2);
     expect(playbackIndexAtMs([], 0)).toBe(0);
+  });
+});
+
+describe("stage presentation projection", () => {
+  it("covers wolf, seer, witch, and game outcomes", () => {
+    const actor = players[0].playerId;
+    const target = players[1].playerId;
+
+    expect(stagePresentationForEvent(event(1, { kind: "host_only" }, {
+      type: "wolf_vote_resolved",
+      targetPlayerIds: [],
+      payload: {
+        votes: [],
+        tallies: [],
+        tiedTargetPlayerIds: [],
+        targetPlayerId: null,
+        resolution: null,
+        dayNumber: 1,
+      },
+    }))).toMatchObject({ action: "attack", targetPlayerId: null, result: "unresolved" });
+
+    expect(stagePresentationForEvent(event(2, { kind: "player_private", playerIds: [actor] }, {
+      type: "seer_check_result",
+      actorPlayerId: actor,
+      targetPlayerIds: [target],
+      payload: { targetPlayerId: target, result: "wolves" },
+    }))).toMatchObject({ action: "inspect", targetPlayerId: target, result: "wolves" });
+
+    expect(stagePresentationForEvent(event(3, { kind: "player_private", playerIds: [actor] }, {
+      type: "witch_antidote_decided",
+      actorPlayerId: actor,
+      payload: { used: false, targetPlayerId: null },
+    }))).toMatchObject({ action: "antidote", targetPlayerId: null, result: "skipped" });
+
+    expect(stagePresentationForEvent(event(4, { kind: "player_private", playerIds: [actor] }, {
+      type: "witch_poison_decided",
+      actorPlayerId: actor,
+      targetPlayerIds: [target],
+      payload: { used: true, targetPlayerId: target },
+    }))).toMatchObject({ action: "poison", targetPlayerId: target, result: "used" });
+
+    expect(stagePresentationForEvent(event(5, { kind: "public" }, {
+      type: "game_ended",
+      phase: "ended",
+      payload: {
+        winner: "good",
+        reason: "all_wolves_dead",
+        dayNumber: 2,
+        revealedRoles: [],
+      },
+    }))).toEqual({ kind: "game_result", winner: "good", reason: "all_wolves_dead" });
   });
 });
 

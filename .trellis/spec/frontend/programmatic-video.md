@@ -45,13 +45,14 @@ timing behavior.
   color using only `object-cover`. Do not add darkening gradients, vignettes,
   scanlines, or venetian-blind textures above it. The fallback gradient is used
   only when the selected background asset is absent.
-- Stage copy has one semantic owner: the header always owns `gameTitle` and
-  never displays `scene.title`. The game title is the header's only readable
-  line; do not add an English eyebrow or decorative product label above it. The
+- Stage copy has one semantic owner: the header always owns `gameTitle` as its
+  primary line and displays `scene.title` only as the current-stage subtitle;
+  do not add an English eyebrow or decorative product label above it. The
   game title is horizontally centered and uses enough line height and vertical
   padding to preserve complete CJK glyphs.
-  The empty visual-stage slot owns no readable content or visual treatment; the transcript card owns
-  narrator identity and narration. Speech uses the active player as narrator.
+  The visual-stage slot owns structured event actions and outcomes from
+  `PlaybackItem.stage`; the transcript card owns narrator identity and narration.
+  Speech uses the active player as narrator.
   `phase`, `announcement`, `vote`, and `resolution` use the presenter, including
   director-only night actions.
 - Presenter copy has one data owner: `kivdb/presenters.json` stores reusable
@@ -112,10 +113,10 @@ timing behavior.
 - Never use `scene.title` as transcript fallback. Scenes with empty narration
   use an exhaustive semantic projection: explicit copy for every phase, then
   event details or a kind-specific neutral message for other scene kinds.
-- Header, empty visual-stage slot, and transcript occupy equal-width grid regions
-  in the center column. Only the header and transcript render card treatments.
-  The empty stage has no border, background, shadow, texture, or translation;
-  the shared grid gap is its only spacing source. Each six-card seat track spans
+- Header, visual-stage slot, and transcript occupy equal-width grid regions
+  in the center column. The stage renders a card treatment only when the current
+  `PlaybackItem.stage` is non-null; ordinary narration and speech retain an empty
+  slot. Each six-card seat track spans
   their combined full height; its top aligns with the header and its bottom
   aligns with the transcript.
 - Seat cards are designed for a 1920x1080 composition viewed after phone-scale
@@ -275,9 +276,10 @@ timing behavior.
 - Header geometry: the game title remains horizontally centered, and CJK glyph
   bounds are not clipped at the top or bottom at native 1920x1080 resolution;
   rendered markup contains no secondary English eyebrow.
-- Grid geometry: header, empty visual-stage slot, and transcript have identical
-  x and width; the stage section has only grid-positioning classes and no style
-  attribute. Both seat tracks align to the header top and transcript bottom and
+- Grid geometry: header, visual-stage slot, and transcript have identical
+  x and width. A scene without `PlaybackItem.stage` renders the bare empty slot;
+  a structured stage scene may add deterministic inline animation styles. Both
+  seat tracks align to the header top and transcript bottom and
   each contains exactly six equal-height slots.
 - Seat-card geometry: assert the left/right grid columns, avatar position, text
   alignment, outer seat-number position, inner avatar position, and emphasis
@@ -311,10 +313,12 @@ timing behavior.
 ## 7. Wrong vs Correct
 
 Wrong: update visual state from `setTimeout`, CSS animation time, or live audio
-progress, then implement a separate export-only layout.
+progress, parse Chinese presenter copy into a visual action, then implement a
+separate export-only layout.
 
-Correct: derive `timeMs` from the Remotion frame, create a renderer-neutral view
-model, and render the same `HtmlPlaybackStage` in Player and Renderer. Fit the
+Correct: derive `timeMs` from the Remotion frame, project typed GameEvent payloads
+into `PlaybackItem.stage`, create a renderer-neutral view model, and render the
+same `HtmlPlaybackStage` in Player and Renderer. Fit the
 outer Player with container-query units rather than adding responsive rules to
 the composition. Use semantic application tokens outside the Player instead of
 duplicating its hard-coded cinematic colors. Bound each system-voice cue to its
@@ -485,3 +489,74 @@ permanent page hang when the lock has no owner metadata.
 Correct: synthesize to a unique temporary file without the Game lock, then
 acquire the lock briefly, re-read the Game, skip an existing immutable
 artifact, and atomically publish the new artifact.
+
+## Scenario: Structured Event Visuals on the Preview Stage
+
+### 1. Scope / Trigger
+
+- Trigger: a confirmed action or resolution must render in the center stage in
+  both director Preview and exported video.
+
+### 2. Signatures
+
+- `PlaybackItem.stage?: StagePresentation | null`.
+- `stagePresentationForEvent(event: GameEvent): StagePresentation | null`.
+- `StageEventVisual({shot, assets, palette, phase})` renders the shared stage.
+- `StagePresentation.kind` is one of `action`, `night_result`, `vote_result`,
+  or `game_result`.
+
+### 3. Contracts
+
+- Audience filtering runs before stage projection. Renderer code never decides
+  whether a private GameEvent is safe to show.
+- Director playback includes `night_resolved`; public playback excludes it and
+  receives only the later public `death_announced` result.
+- Sealed wolf ballots remain excluded. `wolf_vote_resolved` projects one team
+  action with a synthetic wolves actor.
+- `exile_resolved.voteTable` is deterministically aggregated into candidate
+  totals and an abstention count. The stage does not render every ballot line.
+- Game result renders only winner and reason; player identities remain owned by
+  the persistent seat tracks in director Preview.
+- Stage animation is a pure function of `ShotClock.sceneMs/durationMs`. No CSS
+  keyframes, timers, randomness, DOM measurement, or live audio state is used.
+- Missing `stage` remains valid for old composition snapshots and renders the
+  original empty center slot without a schema-version bump.
+
+### 4. Validation & Error Matrix
+
+- Missing or null `stage` -> valid composition; empty center slot.
+- Unknown `stage.kind`, action, result, winner, or reason -> reject composition
+  input as `Invalid video composition input`.
+- Player reference absent from the scene snapshot -> render a safe fallback
+  participant instead of throwing.
+- Empty night deaths -> render `平安夜`.
+- Null medicine target with `skipped` -> render `未使用`.
+- Null wolf target -> render `未确定`.
+
+### 5. Good / Base / Bad Cases
+
+- Good: a director-only seer result renders actor, target, and the typed
+  `good|wolves` result in Preview and MP4 at the same frame.
+- Base: ordinary speech has `stage: null` and keeps the center visually empty.
+- Bad: public playback contains a guard, wolf, seer, witch, or night-resolution
+  stage projected from a private event.
+
+### 6. Tests Required
+
+- Playback unit tests cover guard, wolf resolution, seer selection/result,
+  witch used/skipped, night death/peace, exile/PK aggregation, and both winners.
+- Privacy tests assert private night stages are absent publicly, present for the
+  director, and sealed ballots are absent for both.
+- Decoder tests accept missing and valid stage data and reject unknown variants.
+- Shared-stage render tests cover action, night, vote, and game variants plus
+  the no-stage placeholder.
+- Production build and browser Preview must show no type or console errors.
+
+### 7. Wrong vs Correct
+
+Wrong: infer player IDs, action kinds, or outcomes from `title`, `text`, or
+localized presenter templates inside React.
+
+Correct: project typed GameEvent payloads once during playback compilation,
+carry the closed `StagePresentation` union through the immutable composition,
+and resolve player display data from the scene snapshot.

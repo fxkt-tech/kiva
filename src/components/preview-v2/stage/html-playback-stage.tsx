@@ -22,6 +22,7 @@ import {
   transcriptTextSegments,
   type TranscriptSpeakerIdentity,
 } from "./stage-copy";
+import { StageEventVisual } from "./stage-event-visual";
 
 export function HtmlPlaybackStage({
   viewModel,
@@ -65,9 +66,11 @@ export function HtmlPlaybackStage({
           players={leftPlayers}
           side="left"
         />
-        <section
-          aria-label="视觉舞台"
-          className="col-start-2 row-start-2 min-h-0"
+        <StageEventVisual
+          avatarUrls={assets.avatarUrls}
+          palette={palette}
+          phase={visualPhase}
+          shot={shot}
         />
         <SeatTrack
           avatarUrls={assets.avatarUrls}
@@ -162,11 +165,17 @@ function StageHeader({
         <HeaderRule palette={palette} side="left" />
         <div className="min-w-0 shrink-0 text-center">
           <h1
-            className="max-w-[760px] truncate text-[42px] font-black leading-[1.25] tracking-[0.08em]"
+            className="max-w-[760px] truncate text-[38px] font-black leading-[1.15] tracking-[0.08em]"
             style={{ color: palette.text, textShadow: palette.titleShadow }}
           >
             {stageHeaderTitle(shot.gameTitle)}
           </h1>
+          <p
+            className="mt-1 max-w-[760px] truncate text-[20px] font-medium leading-none tracking-[0.16em]"
+            style={{ color: palette.accent, opacity: 0.82 }}
+          >
+            {shot.scene.title}
+          </p>
         </div>
         <HeaderRule palette={palette} side="right" />
       </div>

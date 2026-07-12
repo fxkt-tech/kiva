@@ -77,7 +77,92 @@ function isPlaybackItem(value: unknown): value is PlaybackItem {
     (value.transcriptSpeaker === "presenter" ||
       value.transcriptSpeaker === "player") &&
     isPresenterCue(value.presenterCue) &&
-    (value.playerVoice === undefined || isPlayerVoice(value.playerVoice))
+    (value.playerVoice === undefined || isPlayerVoice(value.playerVoice)) &&
+    (value.stage === undefined || value.stage === null || isStagePresentation(value.stage))
+  );
+}
+
+function isStagePresentation(value: unknown): boolean {
+  if (!isRecord(value)) {
+    return false;
+  }
+  switch (value.kind) {
+    case "action":
+      return (
+        isStageAction(value.action) &&
+        isStageActor(value.actor) &&
+        isNullableString(value.targetPlayerId) &&
+        isStageActionResult(value.result)
+      );
+    case "night_result":
+      return (
+        Array.isArray(value.deaths) &&
+        value.deaths.every(
+          (death) =>
+            isRecord(death) &&
+            typeof death.playerId === "string" &&
+            (death.reason === null ||
+              death.reason === "wolf_kill" ||
+              death.reason === "witch_poison"),
+        )
+      );
+    case "vote_result":
+      return (
+        (value.voteType === "exile" || value.voteType === "pk") &&
+        (value.outcome === "exiled" ||
+          value.outcome === "tied" ||
+          value.outcome === "no_exile") &&
+        isNullableString(value.exiledPlayerId) &&
+        Array.isArray(value.candidates) &&
+        value.candidates.every(
+          (candidate) =>
+            isRecord(candidate) &&
+            typeof candidate.playerId === "string" &&
+            Number.isInteger(candidate.votes) &&
+            (candidate.votes as number) >= 0,
+        ) &&
+        Number.isInteger(value.abstentions) &&
+        (value.abstentions as number) >= 0
+      );
+    case "game_result":
+      return (
+        (value.winner === "wolves" || value.winner === "good") &&
+        (value.reason === "all_wolves_dead" ||
+          value.reason === "all_gods_dead" ||
+          value.reason === "all_villagers_dead" ||
+          value.reason === "all_good_dead")
+      );
+    default:
+      return false;
+  }
+}
+
+function isStageAction(value: unknown): boolean {
+  return (
+    value === "protect" ||
+    value === "attack" ||
+    value === "inspect" ||
+    value === "antidote" ||
+    value === "poison"
+  );
+}
+
+function isStageActor(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    (value.kind === "wolves" ||
+      (value.kind === "player" && typeof value.playerId === "string"))
+  );
+}
+
+function isStageActionResult(value: unknown): boolean {
+  return (
+    value === "selected" ||
+    value === "good" ||
+    value === "wolves" ||
+    value === "used" ||
+    value === "skipped" ||
+    value === "unresolved"
   );
 }
 

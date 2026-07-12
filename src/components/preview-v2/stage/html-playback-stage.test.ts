@@ -52,8 +52,14 @@ describe("preview v2 stage background", () => {
 });
 
 describe("preview v2 stage header", () => {
-  it("shows the game title instead of the current scene title", () => {
+  it("shows the game title", () => {
     expect(stageHeaderTitle("周五欢乐局")).toBe("周五欢乐局");
+  });
+
+  it("shows the current scene title as the subtitle", () => {
+    const html = renderStage(item({ title: "第 1 夜开始" }));
+
+    expect(html).toContain("第 1 夜开始");
   });
 
   it("uses a neutral fallback when the game title is empty", () => {
@@ -70,6 +76,61 @@ describe("preview v2 visual stage placeholder", () => {
       '<section aria-label="视觉舞台" class="col-start-2 row-start-2 min-h-0"></section>',
     );
     expect(html).toContain("gap-x-6 gap-y-4");
+  });
+
+  it("renders a structured action in the shared visual stage", () => {
+    const players = [player(1, "守卫"), player(2, "村民")];
+    const html = renderStage(item({
+      players,
+      stage: {
+        kind: "action",
+        action: "protect",
+        actor: { kind: "player", playerId: players[0]!.playerId },
+        targetPlayerId: players[1]!.playerId,
+        result: "selected",
+      },
+    }));
+
+    expect(html).toContain("守护");
+    expect(html).toContain("已守护");
+    expect(html).toContain("1号 玩家1");
+    expect(html).toContain("2号 玩家2");
+  });
+
+  it("renders night, vote, and game resolution variants", () => {
+    const players = [player(1, "狼人"), player(2, "村民")];
+    const night = renderStage(item({
+      players,
+      stage: { kind: "night_result", deaths: [] },
+    }));
+    const vote = renderStage(item({
+      players,
+      stage: {
+        kind: "vote_result",
+        voteType: "pk",
+        outcome: "tied",
+        exiledPlayerId: null,
+        candidates: [
+          { playerId: players[0]!.playerId, votes: 4 },
+          { playerId: players[1]!.playerId, votes: 4 },
+        ],
+        abstentions: 1,
+      },
+    }));
+    const game = renderStage(item({
+      players,
+      stage: {
+        kind: "game_result",
+        winner: "wolves",
+        reason: "all_gods_dead",
+      },
+    }));
+
+    expect(night).toContain("平安夜");
+    expect(vote).toContain("PK 结算");
+    expect(vote).toContain("弃票 1");
+    expect(game).toContain("狼人阵营胜利");
+    expect(game).toContain("所有神职出局");
   });
 });
 

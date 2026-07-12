@@ -78,6 +78,38 @@ describe("preview v2 composition contracts", () => {
       }).gameId,
     ).toBe("game-1");
   });
+
+  it("validates optional structured stage presentations", () => {
+    const base = {
+      schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
+      gameId: "game-1",
+      gameTitle: "Test",
+      items: [item({
+        stage: {
+          kind: "action" as const,
+          action: "inspect" as const,
+          actor: { kind: "wolves" as const },
+          targetPlayerId: null,
+          result: "unresolved" as const,
+        },
+      })],
+      assets: {
+        fontUrl: "/font.ttf",
+        dayBackgroundUrl: null,
+        nightBackgroundUrl: null,
+        avatarUrls: {},
+      },
+      audioCues: [],
+    };
+
+    expect(decodeVideoCompositionInput(base).items[0]?.stage?.kind).toBe("action");
+    expect(() =>
+      decodeVideoCompositionInput({
+        ...base,
+        items: [{ ...base.items[0], stage: { kind: "action", action: "unknown" } }],
+      }),
+    ).toThrow("Invalid video composition input");
+  });
 });
 
 function item(overrides: Partial<PlaybackItem> = {}): PlaybackItem {

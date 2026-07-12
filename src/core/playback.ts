@@ -1,6 +1,6 @@
 import { getActiveEvents } from "./event-log";
 import { formatEventForHost, formatEventForPublic } from "./event-presenter";
-import type { GameEvent } from "./events";
+import type { GameEndReason, GameEvent, NightDeathReason } from "./events";
 import type { PlayerSnapshot } from "./player";
 import type { GamePresenterSnapshot } from "./presenter-definition";
 import { resolvePresenter } from "./presenter";
@@ -28,6 +28,55 @@ export type PlaybackScenePlayer = {
   readonly status: "alive" | "dead";
   readonly highlighted: boolean;
 };
+
+export type StageAction =
+  | "protect"
+  | "attack"
+  | "inspect"
+  | "antidote"
+  | "poison";
+
+export type StageActionResult =
+  | "selected"
+  | "good"
+  | "wolves"
+  | "used"
+  | "skipped"
+  | "unresolved";
+
+export type StagePresentation =
+  | {
+      readonly kind: "action";
+      readonly action: StageAction;
+      readonly actor:
+        | { readonly kind: "player"; readonly playerId: PlayerId }
+        | { readonly kind: "wolves" };
+      readonly targetPlayerId: PlayerId | null;
+      readonly result: StageActionResult;
+    }
+  | {
+      readonly kind: "night_result";
+      readonly deaths: readonly {
+        readonly playerId: PlayerId;
+        readonly reason: NightDeathReason | null;
+      }[];
+    }
+  | {
+      readonly kind: "vote_result";
+      readonly voteType: "exile" | "pk";
+      readonly outcome: "exiled" | "tied" | "no_exile";
+      readonly exiledPlayerId: PlayerId | null;
+      readonly candidates: readonly {
+        readonly playerId: PlayerId;
+        readonly votes: number;
+      }[];
+      readonly abstentions: number;
+    }
+  | {
+      readonly kind: "game_result";
+      readonly winner: "wolves" | "good";
+      readonly reason: GameEndReason;
+    };
 
 export type PlaybackRhythmConfig = {
   readonly phaseMs: number;
@@ -78,6 +127,7 @@ export type PlaybackItem = {
   } | null;
   readonly presenterVoiceClips?: readonly ResolvedPresenterVoiceClip[];
   readonly presenterSourceId?: string;
+  readonly stage?: StagePresentation | null;
 };
 
 export const VOICE_TIMING = {
@@ -160,6 +210,7 @@ export function compilePublicPlayback(
         playerVoice,
         presenterVoiceClips,
         presenterSourceId: options.presenter.presenterSourceId,
+        stage: stagePresentationForEvent(event),
       };
       const durationMs = playerVoice
         ? playerVoice.startsAtOffsetMs +
@@ -194,13 +245,130 @@ function shouldIncludeEvent(
     event.type === "vote_cast" ||
     event.type === "wolf_leader_selected" ||
     event.type === "wolf_vote_cast" ||
-    event.type === "role_assigned" ||
-    event.type === "night_resolved"
+    event.type === "role_assigned"
   ) {
     return false;
   }
 
+  if (event.type === "night_resolved") {
+    return audience === "director";
+  }
+
   return audience === "director" || event.visibility.kind === "public";
+}
+
+export function stagePresentationForEvent(
+  event: GameEvent,
+): StagePresentation | null {
+  switch (event.type) {
+    case "guard_protect_selected":
+      return playerAction(event, "protect", event.payload.targetPlayerId, "selected");
+    case "wolf_vote_resolved":
+      return {
+        kind: "action",
+        action: "attack",
+        actor: { kind: "wolves" },
+        targetPlayerId: event.payload.targetPlayerId,
+        result: event.payload.targetPlayerId ? "selected" : "unresolved",
+      };
+    case "seer_check_selected":
+      return playerAction(event, "inspect", event.payload.targetPlayerId, "selected");
+    case "seer_check_result":
+      return playerAction(
+        event,
+        "inspect",
+        event.payload.targetPlayerId,
+        event.payload.result,
+      );
+    case "witch_antidote_decided":
+      return playerAction(
+        event,
+        "antidote",
+        event.payload.targetPlayerId,
+        event.payload.used ? "used" : "skipped",
+      );
+    case "witch_poison_decided":
+      return playerAction(
+        event,
+        "poison",
+        event.payload.targetPlayerId,
+        event.payload.used ? "used" : "skipped",
+      );
+    case "night_resolved": {
+      const reasons = new Map(
+        event.payload.deaths?.map((death) => [death.playerId, death.reason]),
+      );
+      return {
+        kind: "night_result",
+        deaths: event.payload.deadPlayerIds.map((playerId) => ({
+          playerId,
+          reason: reasons.get(playerId) ?? null,
+        })),
+      };
+    }
+    case "death_announced":
+      return {
+        kind: "night_result",
+        deaths: event.payload.deadPlayerIds.map((playerId) => ({
+          playerId,
+          reason: null,
+        })),
+      };
+    case "exile_resolved": {
+      const tallies = new Map<PlayerId, number>();
+      let abstentions = 0;
+      for (const vote of event.payload.voteTable) {
+        if (vote.targetPlayerId) {
+          tallies.set(
+            vote.targetPlayerId,
+            (tallies.get(vote.targetPlayerId) ?? 0) + 1,
+          );
+        } else {
+          abstentions += 1;
+        }
+      }
+      const candidates = [...tallies.entries()]
+        .map(([playerId, votes]) => ({ playerId, votes }))
+        .sort((left, right) =>
+          right.votes - left.votes || left.playerId.localeCompare(right.playerId),
+        );
+      return {
+        kind: "vote_result",
+        voteType: event.payload.voteType === "pk" ? "pk" : "exile",
+        outcome: event.payload.exiledPlayerId
+          ? "exiled"
+          : event.payload.tiedPlayerIds.length > 0 ? "tied" : "no_exile",
+        exiledPlayerId: event.payload.exiledPlayerId,
+        candidates,
+        abstentions,
+      };
+    }
+    case "game_ended":
+      return {
+        kind: "game_result",
+        winner: event.payload.winner,
+        reason: event.payload.reason,
+      };
+    default:
+      return null;
+  }
+}
+
+function playerAction(
+  event: GameEvent,
+  action: StageAction,
+  targetPlayerId: PlayerId | null,
+  result: StageActionResult,
+): StagePresentation | null {
+  return event.actorPlayerId
+    ? {
+        kind: "action",
+        action,
+        actor: { kind: "player", playerId: event.actorPlayerId },
+        targetPlayerId,
+        result,
+      }
+    : null;
 }
 
 export function playbackTotalDurationMs(
