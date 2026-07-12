@@ -204,3 +204,36 @@ Removed the legacy Pixi preview and dependencies, promoted the HTML/Remotion pre
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: 完成 Preview 舞台事件结果可视化
+
+**Date**: 2026-07-12
+**Task**: 完成 Preview 舞台事件结果可视化
+**Branch**: `main`
+
+### Summary
+
+为守卫、狼刀、预言家、女巫、夜间、放逐、PK 和对局结算加入结构化中央舞台展示，保持 director/public 隐私边界及 Preview/Remotion 一致性。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `790f758` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
