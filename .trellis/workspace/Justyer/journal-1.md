@@ -270,3 +270,36 @@ Added schema-v2 ensemble direction, persona-aware outline and beat authoring, cu
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: 最新版数据模型与剧本 Preview 收尾
+
+**Date**: 2026-07-14
+**Task**: 最新版数据模型与剧本 Preview 收尾
+**Branch**: `main`
+
+### Summary
+
+完成 Preview 舞台全文与刷新、角色驱动剧本生成、最新版单轨持久化契约；移除旧兼容代码、素材和对局派生数据，并通过类型检查、612 项测试与生产构建。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ccbced6` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
