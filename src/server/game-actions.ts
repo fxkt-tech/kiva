@@ -14,8 +14,8 @@ import { createGameFromPreset } from "@/core/game";
 import type { GameRunMode } from "@/core/game-run-mode";
 import {
   actorBriefForStep,
+  assertEpisodeScriptMatchesGame,
   assertEpisodeDraftMatchesStep,
-  episodeInputHash,
   episodeScriptReport,
   planNextEpisodeDraft,
 } from "@/core/episode-script";
@@ -337,9 +337,10 @@ export function createGameActions(
         if (getActiveEvents(record.events).length > 0 || record.draft) {
           throw new Error("Cannot approve an episode script after execution starts");
         }
-        if (state.candidate.inputHash !== episodeInputHash(record.game)) {
-          throw new Error("Episode script input changed before approval");
-        }
+        assertEpisodeScriptMatchesGame({
+          game: record.game,
+          script: state.candidate,
+        });
         if (!state.report.valid) {
           throw new Error("Episode script validation report did not pass");
         }

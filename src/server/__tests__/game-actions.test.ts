@@ -230,7 +230,14 @@ describe("game actions", () => {
     expect(review.episodeScript).toMatchObject({
       status: "review",
       report: { valid: true },
-      candidate: { title: expect.stringContaining("未明档案") },
+      candidate: {
+        schemaVersion: 2,
+        title: expect.stringContaining("未明档案"),
+        castDirections: expect.arrayContaining([
+          expect.objectContaining({ playerId: created.game.players[0]!.playerId }),
+        ]),
+        relationships: expect.any(Array),
+      },
     });
     if (review.episodeScript?.status !== "review") {
       throw new Error("Expected episode review");
@@ -310,6 +317,43 @@ describe("game actions", () => {
         "stale_script",
       ),
     ).rejects.toThrow("candidate changed before approval");
+  });
+
+  it("rejects approval after an authoring-relevant character profile changes", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const actions = createGameActions(repository, {
+      llmClient: new LocalHeuristicLlmClient(),
+    });
+    const created = await actions.createGameFromPresetId(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+    const review = await actions.generateEpisodeScript(created.game.id);
+    if (review.episodeScript?.status !== "review") {
+      throw new Error("Expected episode review");
+    }
+    const firstPlayer = review.game.players[0]!;
+    await repository.save({
+      ...review,
+      game: {
+        ...review.game,
+        players: review.game.players.map((player) =>
+          player.playerId === firstPlayer.playerId
+            ? { ...player, persona: `${player.persona}，现在更容易冒险` }
+            : player,
+        ),
+      },
+    });
+
+    await expect(
+      actions.approveEpisodeScript(
+        created.game.id,
+        review.episodeScript.jobId,
+        review.episodeScript.candidate.id,
+      ),
+    ).rejects.toThrow("input no longer matches game");
   });
 
   it("confirms the current draft into one official event without planning the next draft", async () => {

@@ -248,6 +248,18 @@ function buildUserMessage(input: {
       `- 计划立场：${input.actorBrief.stance}`,
       `- 披露策略：${input.actorBrief.disclosure}`,
       `- 主题因果：${input.actorBrief.themeHook}`,
+      ...nonEmptyLines([
+        input.actorBrief.characterHook
+          ? `- 人物表达抓手：${input.actorBrief.characterHook}`
+          : "",
+        input.actorBrief.arcMove
+          ? `- 当前弧线推进：${input.actorBrief.arcMove}`
+          : "",
+        input.actorBrief.relationshipMove
+          ? `- 当前关系推进：${input.actorBrief.relationshipMove}`
+          : "",
+      ]),
+      "- 人物、弧线和关系内容只是本场表演方向，不是游戏事实、身份线索或可信度证据。",
       "- 你看不到完整剧本；只能结合下方可见事实完成当前指引。若指引与可见事实冲突，以可见事实和规则为准。",
     ]);
   }

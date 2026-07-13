@@ -9,11 +9,51 @@ import {
   speechBudgetForDraft,
   type SpeechBudget,
 } from "./speech-budget";
+import type { PlayerSnapshot } from "./player";
 import type { DraftId, EventId, Phase, PlayerId } from "./types";
 
-export const EPISODE_SCRIPT_SCHEMA_VERSION = 1;
+export const EPISODE_SCRIPT_SCHEMA_VERSION = 2;
 export const EPISODE_COMPILER_VERSION = "episode-compiler:v1";
 const MAX_EPISODE_STEPS = 240;
+
+export type EpisodeCharacterProfile = {
+  readonly playerId: PlayerId;
+  readonly seatNo: number;
+  readonly name: string;
+  readonly gameRole: PlayerSnapshot["gameRole"];
+  readonly persona: string;
+  readonly speakingStyle: string;
+  readonly reasoningStyle: string;
+  readonly legacyCharacterPrompt: string | null;
+};
+
+export type EpisodeCastDirection = {
+  readonly playerId: PlayerId;
+  readonly dramaticWeight: "primary" | "supporting";
+  readonly dramaticFunction: string;
+  readonly baseline: string;
+  readonly pressure: string;
+  readonly change: string;
+  readonly payoff: string;
+  readonly signatureMoment: {
+    readonly stepIndex: number;
+    readonly description: string;
+  };
+};
+
+export type EpisodeRelationshipKind =
+  | "rivalry"
+  | "alliance"
+  | "contrast"
+  | "trust_shift";
+
+export type EpisodeRelationshipDirection = {
+  readonly playerIds: readonly [PlayerId, PlayerId];
+  readonly kind: EpisodeRelationshipKind;
+  readonly setup: string;
+  readonly development: string;
+  readonly payoff: string;
+};
 
 export type DraftSlot = {
   readonly type: DraftEvent["type"];
@@ -30,6 +70,9 @@ export type EpisodeSpeechBeat = {
   readonly stance: string;
   readonly disclosure: "conceal" | "claim" | "not_applicable";
   readonly themeHook: string;
+  readonly characterHook: string | null;
+  readonly arcMove: string | null;
+  readonly relationshipMove: string | null;
   readonly budget: SpeechBudget;
 };
 
@@ -47,7 +90,7 @@ export type EpisodeAct = {
 };
 
 export type EpisodeScriptSnapshot = {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 1 | 2;
   readonly id: string;
   readonly gameId: Game["id"];
   readonly compilerVersion: string;
@@ -58,6 +101,8 @@ export type EpisodeScriptSnapshot = {
   readonly plannedDayCount: number;
   readonly targetDurationMs: number;
   readonly acts: readonly EpisodeAct[];
+  readonly castDirections: readonly EpisodeCastDirection[];
+  readonly relationships: readonly EpisodeRelationshipDirection[];
   readonly steps: readonly EpisodePlanStep[];
   readonly createdAt: string;
   readonly author: {
@@ -117,10 +162,43 @@ export type EpisodeActorBrief = {
   readonly stance: string;
   readonly disclosure: EpisodeSpeechBeat["disclosure"];
   readonly themeHook: string;
+  readonly characterHook: string | null;
+  readonly arcMove: string | null;
+  readonly relationshipMove: string | null;
   readonly budget: SpeechBudget;
 };
 
+export function episodeCharacterProfile(
+  player: PlayerSnapshot,
+): EpisodeCharacterProfile {
+  const hasStructuredProfile = [
+    player.persona,
+    player.speakingStyle,
+    player.reasoningStyle,
+  ].some((value) => value.trim().length > 0);
+
+  return {
+    playerId: player.playerId,
+    seatNo: player.seatNo,
+    name: player.name,
+    gameRole: player.gameRole,
+    persona: player.persona,
+    speakingStyle: player.speakingStyle,
+    reasoningStyle: player.reasoningStyle,
+    legacyCharacterPrompt: hasStructuredProfile
+      ? null
+      : firstNonEmpty(
+          player.characterSystemPromptSnapshot,
+          player.systemPrompt,
+        ),
+  };
+}
+
 export function episodeInputHash(game: Game): string {
+  return characterDrivenEpisodeInputHash(game);
+}
+
+export function legacyEpisodeInputHash(game: Game): string {
   return stableHash(
     JSON.stringify({
       players: game.players.map((player) => ({
@@ -128,6 +206,25 @@ export function episodeInputHash(game: Game): string {
         role: player.gameRole,
         characterSourceId: player.characterSourceId,
       })),
+      ruleset: game.ruleset,
+      script: game.script,
+    }),
+  );
+}
+
+export function episodeInputHashForScript(
+  game: Game,
+  script: Pick<EpisodeScriptSnapshot, "schemaVersion">,
+): string {
+  return script.schemaVersion === 1
+    ? legacyEpisodeInputHash(game)
+    : characterDrivenEpisodeInputHash(game);
+}
+
+function characterDrivenEpisodeInputHash(game: Game): string {
+  return stableHash(
+    JSON.stringify({
+      players: game.players.map(episodeCharacterProfile),
       ruleset: game.ruleset,
       script: game.script,
     }),
@@ -215,7 +312,9 @@ export function createEpisodeScriptSnapshot(input: {
   readonly title: string;
   readonly logline: string;
   readonly acts: readonly EpisodeAct[];
-  readonly beats?: readonly Omit<EpisodeSpeechBeat, "budget">[];
+  readonly castDirections: readonly EpisodeCastDirection[];
+  readonly relationships: readonly EpisodeRelationshipDirection[];
+  readonly beats: readonly Omit<EpisodeSpeechBeat, "budget">[];
   readonly createdAt: string;
   readonly provider: string;
   readonly model: string;
@@ -224,7 +323,7 @@ export function createEpisodeScriptSnapshot(input: {
     throw new Error("Episode plan input hash does not match game");
   }
   const authoredBeats = new Map(
-    (input.beats ?? []).map((beat) => [beat.stepIndex, beat]),
+    input.beats.map((beat) => [beat.stepIndex, beat]),
   );
   const steps = input.plan.steps.map((step) => {
     if (!step.speechBeat) return step;
@@ -235,6 +334,13 @@ export function createEpisodeScriptSnapshot(input: {
           speechBeat: { ...authored, budget: step.speechBeat.budget },
         }
       : step;
+  });
+
+  assertEpisodeDramaturgy({
+    game: input.game,
+    plan: input.plan,
+    castDirections: input.castDirections,
+    relationships: input.relationships,
   });
 
   return validateEpisodeScriptSnapshot({
@@ -251,6 +357,8 @@ export function createEpisodeScriptSnapshot(input: {
     acts: input.acts.length > 0
       ? input.acts
       : [{ title: "序幕", summary: input.logline }],
+    castDirections: input.castDirections,
+    relationships: input.relationships,
     steps,
     createdAt: input.createdAt,
     author: { provider: input.provider, model: input.model },
@@ -263,9 +371,14 @@ export function validateEpisodeScriptSnapshot(
   if (!value || typeof value !== "object") {
     throw new Error("Episode script must be an object");
   }
-  const snapshot = value as EpisodeScriptSnapshot;
-  if (snapshot.schemaVersion !== 1) {
-    throw new Error(`Unsupported episode script schema: ${String(snapshot.schemaVersion)}`);
+  const snapshot = value as EpisodeScriptSnapshot & {
+    readonly castDirections?: unknown;
+    readonly relationships?: unknown;
+  };
+  if (snapshot.schemaVersion !== 1 && snapshot.schemaVersion !== 2) {
+    throw new Error(
+      `Unsupported episode script schema: ${String(snapshot.schemaVersion)}`,
+    );
   }
   if (snapshot.compilerVersion !== EPISODE_COMPILER_VERSION) {
     throw new Error(`Unsupported episode compiler: ${snapshot.compilerVersion}`);
@@ -273,7 +386,7 @@ export function validateEpisodeScriptSnapshot(
   if (!Array.isArray(snapshot.steps) || snapshot.steps.length === 0) {
     throw new Error("Episode script must include steps");
   }
-  snapshot.steps.forEach((step, offset) => {
+  const steps = snapshot.steps.map((step, offset) => {
     if (step.index !== offset + 1) {
       throw new Error(`Episode step index mismatch at ${offset + 1}`);
     }
@@ -286,6 +399,20 @@ export function validateEpisodeScriptSnapshot(
     if (step.speechBeat && step.speechBeat.stepIndex !== step.index) {
       throw new Error(`Episode speech beat mismatch at step ${step.index}`);
     }
+    if (step.speechBeat) {
+      validateSpeechBeat(step.speechBeat, snapshot.schemaVersion, step.index);
+    }
+    return {
+      ...step,
+      speechBeat: step.speechBeat
+        ? {
+            ...step.speechBeat,
+            characterHook: step.speechBeat.characterHook ?? null,
+            arcMove: step.speechBeat.arcMove ?? null,
+            relationshipMove: step.speechBeat.relationshipMove ?? null,
+          }
+        : null,
+    };
   });
   const last = snapshot.steps.at(-1);
   if (last?.slot.type !== "game_ended") {
@@ -293,7 +420,18 @@ export function validateEpisodeScriptSnapshot(
   }
   nonEmpty(snapshot.title, "Episode title");
   nonEmpty(snapshot.logline, "Episode logline");
-  return structuredClone(snapshot);
+  const castDirections = snapshot.schemaVersion === 1
+    ? []
+    : validateCastDirectionShapes(snapshot.castDirections);
+  const relationships = snapshot.schemaVersion === 1
+    ? []
+    : validateRelationshipShapes(snapshot.relationships);
+  return structuredClone({
+    ...snapshot,
+    castDirections,
+    relationships,
+    steps,
+  });
 }
 
 export function episodeScriptReport(
@@ -313,6 +451,55 @@ export function episodeScriptReport(
   };
 }
 
+export function assertEpisodeScriptMatchesGame(input: {
+  readonly game: Game;
+  readonly script: EpisodeScriptSnapshot;
+}): void {
+  const { game, script } = input;
+  if (script.gameId !== game.id) {
+    throw new Error("Episode script belongs to another game");
+  }
+  if (script.inputHash !== episodeInputHashForScript(game, script)) {
+    throw new Error("Episode script input no longer matches game");
+  }
+
+  const plan = compileEpisodePlan(game);
+  if (
+    script.plannedWinner !== plan.plannedWinner ||
+    script.plannedDayCount !== plan.plannedDayCount ||
+    script.targetDurationMs !== plan.targetDurationMs ||
+    script.steps.length !== plan.steps.length
+  ) {
+    throw new Error("Episode script does not match the compiled episode plan");
+  }
+
+  for (const [offset, expected] of plan.steps.entries()) {
+    const actual = script.steps[offset];
+    if (
+      !actual ||
+      actual.index !== expected.index ||
+      JSON.stringify(actual.slot) !== JSON.stringify(expected.slot) ||
+      JSON.stringify(actual.plannedPayload) !==
+        JSON.stringify(expected.plannedPayload) ||
+      JSON.stringify(actual.speechBeat?.budget ?? null) !==
+        JSON.stringify(expected.speechBeat?.budget ?? null)
+    ) {
+      throw new Error(
+        `Episode script changed compiler-owned step ${expected.index}`,
+      );
+    }
+  }
+
+  if (script.schemaVersion === 2) {
+    assertEpisodeDramaturgy({
+      game,
+      plan,
+      castDirections: script.castDirections,
+      relationships: script.relationships,
+    });
+  }
+}
+
 export function normalizeEpisodeScriptState(
   value: unknown,
   runMode: Game["runMode"],
@@ -327,7 +514,10 @@ export function normalizeEpisodeScriptState(
     case "failed":
       return structuredClone(state);
     case "review":
-      return { ...structuredClone(state), candidate: validateEpisodeScriptSnapshot(state.candidate) };
+      return {
+        ...structuredClone(state),
+        candidate: validateEpisodeScriptSnapshot(state.candidate),
+      };
     case "approved":
       return { ...structuredClone(state), script: validateEpisodeScriptSnapshot(state.script) };
     default:
@@ -348,6 +538,9 @@ export function actorBriefForStep(
     stance: step.speechBeat.stance,
     disclosure: step.speechBeat.disclosure,
     themeHook: step.speechBeat.themeHook,
+    characterHook: step.speechBeat.characterHook,
+    arcMove: step.speechBeat.arcMove,
+    relationshipMove: step.speechBeat.relationshipMove,
     budget: step.speechBeat.budget,
   };
 }
@@ -397,7 +590,9 @@ export function planNextEpisodeDraft(input: {
   readonly draftId: DraftId;
   readonly createdAt: string;
 }): { readonly draft: DraftEvent | null; readonly actorBrief: EpisodeActorBrief | null } {
-  if (input.script.inputHash !== episodeInputHash(input.game)) {
+  if (
+    input.script.inputHash !== episodeInputHashForScript(input.game, input.script)
+  ) {
     throw new Error("Approved episode script no longer matches game input");
   }
   const nextIndex = input.events.filter((event) => event.status === "active").length + 1;
@@ -423,6 +618,9 @@ export function planNextEpisodeDraft(input: {
           stance: step.speechBeat.stance,
           disclosure: step.speechBeat.disclosure,
           themeHook: step.speechBeat.themeHook,
+          characterHook: step.speechBeat.characterHook,
+          arcMove: step.speechBeat.arcMove,
+          relationshipMove: step.speechBeat.relationshipMove,
           budget: step.speechBeat.budget,
         }
       : null,
@@ -464,8 +662,268 @@ function defaultSpeechBeat(
     stance: "围绕当前可见事实给出明确立场，并留下后续可验证点",
     disclosure: draft.phase === "night" ? "not_applicable" : "conceal",
     themeHook: `把本轮冲突自然映射到“${game.script.theme}”，不要只重复主题词`,
+    characterHook: null,
+    arcMove: null,
+    relationshipMove: null,
     budget,
   };
+}
+
+export function episodePerformanceOpportunities(
+  game: Game,
+  plan: CompiledEpisodePlan,
+): ReadonlyMap<PlayerId, readonly number[]> {
+  const playerIds = new Set(game.players.map((player) => player.playerId));
+  const opportunities = new Map(
+    game.players.map((player) => [player.playerId, [] as number[]]),
+  );
+
+  for (const step of plan.steps) {
+    if (step.slot.type === "role_assigned" || step.slot.type === "phase_started") {
+      continue;
+    }
+    const involved = new Set<PlayerId>();
+    if (step.slot.actorPlayerId && playerIds.has(step.slot.actorPlayerId)) {
+      involved.add(step.slot.actorPlayerId);
+    }
+    collectPlayerIds(step.plannedPayload, playerIds, involved);
+    for (const playerId of involved) {
+      opportunities.get(playerId)?.push(step.index);
+    }
+  }
+
+  return opportunities;
+}
+
+export function assertEpisodeDramaturgy(input: {
+  readonly game: Game;
+  readonly plan: CompiledEpisodePlan;
+  readonly castDirections: readonly EpisodeCastDirection[];
+  readonly relationships: readonly EpisodeRelationshipDirection[];
+}): void {
+  const expectedPlayerIds = [...input.game.players]
+    .map((player) => player.playerId)
+    .sort();
+  const actualPlayerIds = input.castDirections
+    .map((direction) => direction.playerId)
+    .sort();
+  if (JSON.stringify(actualPlayerIds) !== JSON.stringify(expectedPlayerIds)) {
+    throw new Error(
+      "Episode cast directions must cover every player exactly once",
+    );
+  }
+
+  const opportunities = episodePerformanceOpportunities(input.game, input.plan);
+  for (const direction of input.castDirections) {
+    if (!(opportunities.get(direction.playerId) ?? []).includes(
+      direction.signatureMoment.stepIndex,
+    )) {
+      throw new Error(
+        `Episode cast direction ${direction.playerId} has an invalid signature step`,
+      );
+    }
+  }
+
+  const playerIds = new Set(expectedPlayerIds);
+  const pairs = new Set<string>();
+  for (const relationship of input.relationships) {
+    const [left, right] = relationship.playerIds;
+    if (!playerIds.has(left) || !playerIds.has(right) || left === right) {
+      throw new Error("Episode relationship references invalid players");
+    }
+    const pair = [left, right].sort().join(":");
+    if (pairs.has(pair)) {
+      throw new Error(`Duplicate episode relationship: ${pair}`);
+    }
+    pairs.add(pair);
+  }
+}
+
+function validateCastDirectionShapes(
+  value: unknown,
+): readonly EpisodeCastDirection[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error("Episode script v2 must include cast directions");
+  }
+  const playerIds = new Set<string>();
+  return value.map((raw, index) => {
+    const direction = objectRecord(raw, `castDirections[${index}]`);
+    const playerId = requiredString(
+      direction.playerId,
+      `castDirections[${index}].playerId`,
+    ) as PlayerId;
+    if (playerIds.has(playerId)) {
+      throw new Error(`Duplicate episode cast direction: ${playerId}`);
+    }
+    playerIds.add(playerId);
+    if (
+      direction.dramaticWeight !== "primary" &&
+      direction.dramaticWeight !== "supporting"
+    ) {
+      throw new Error(`castDirections[${index}].dramaticWeight is invalid`);
+    }
+    const signatureMoment = objectRecord(
+      direction.signatureMoment,
+      `castDirections[${index}].signatureMoment`,
+    );
+    if (!Number.isInteger(signatureMoment.stepIndex)) {
+      throw new Error(
+        `castDirections[${index}].signatureMoment.stepIndex must be an integer`,
+      );
+    }
+    return {
+      playerId,
+      dramaticWeight: direction.dramaticWeight,
+      dramaticFunction: requiredString(
+        direction.dramaticFunction,
+        `castDirections[${index}].dramaticFunction`,
+      ),
+      baseline: requiredString(
+        direction.baseline,
+        `castDirections[${index}].baseline`,
+      ),
+      pressure: requiredString(
+        direction.pressure,
+        `castDirections[${index}].pressure`,
+      ),
+      change: requiredString(
+        direction.change,
+        `castDirections[${index}].change`,
+      ),
+      payoff: requiredString(
+        direction.payoff,
+        `castDirections[${index}].payoff`,
+      ),
+      signatureMoment: {
+        stepIndex: signatureMoment.stepIndex as number,
+        description: requiredString(
+          signatureMoment.description,
+          `castDirections[${index}].signatureMoment.description`,
+        ),
+      },
+    };
+  });
+}
+
+function validateRelationshipShapes(
+  value: unknown,
+): readonly EpisodeRelationshipDirection[] {
+  if (!Array.isArray(value)) {
+    throw new Error("Episode script v2 relationships must be an array");
+  }
+  return value.map((raw, index) => {
+    const relationship = objectRecord(raw, `relationships[${index}]`);
+    if (
+      !Array.isArray(relationship.playerIds) ||
+      relationship.playerIds.length !== 2 ||
+      relationship.playerIds.some((playerId) => typeof playerId !== "string")
+    ) {
+      throw new Error(
+        `relationships[${index}].playerIds must contain two players`,
+      );
+    }
+    if (!isRelationshipKind(relationship.kind)) {
+      throw new Error(`relationships[${index}].kind is invalid`);
+    }
+    return {
+      playerIds: relationship.playerIds as unknown as readonly [
+        PlayerId,
+        PlayerId,
+      ],
+      kind: relationship.kind,
+      setup: requiredString(
+        relationship.setup,
+        `relationships[${index}].setup`,
+      ),
+      development: requiredString(
+        relationship.development,
+        `relationships[${index}].development`,
+      ),
+      payoff: requiredString(
+        relationship.payoff,
+        `relationships[${index}].payoff`,
+      ),
+    };
+  });
+}
+
+function validateSpeechBeat(
+  beat: EpisodeSpeechBeat,
+  schemaVersion: 1 | 2,
+  stepIndex: number,
+): void {
+  nonEmpty(beat.objective, `Episode step ${stepIndex} objective`);
+  nonEmpty(beat.stance, `Episode step ${stepIndex} stance`);
+  nonEmpty(beat.themeHook, `Episode step ${stepIndex} theme hook`);
+  if (
+    beat.disclosure !== "conceal" &&
+    beat.disclosure !== "claim" &&
+    beat.disclosure !== "not_applicable"
+  ) {
+    throw new Error(`Episode step ${stepIndex} disclosure is invalid`);
+  }
+  if (schemaVersion === 2) {
+    nonEmpty(
+      beat.characterHook ?? "",
+      `Episode step ${stepIndex} character hook`,
+    );
+    nonEmpty(beat.arcMove ?? "", `Episode step ${stepIndex} arc move`);
+    if (
+      beat.relationshipMove !== null &&
+      typeof beat.relationshipMove !== "string"
+    ) {
+      throw new Error(`Episode step ${stepIndex} relationship move is invalid`);
+    }
+    if (typeof beat.relationshipMove === "string") {
+      nonEmpty(
+        beat.relationshipMove,
+        `Episode step ${stepIndex} relationship move`,
+      );
+    }
+  }
+}
+
+function collectPlayerIds(
+  value: unknown,
+  playerIds: ReadonlySet<PlayerId>,
+  result: Set<PlayerId>,
+): void {
+  if (typeof value === "string") {
+    if (playerIds.has(value as PlayerId)) result.add(value as PlayerId);
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((entry) => collectPlayerIds(entry, playerIds, result));
+    return;
+  }
+  if (value && typeof value === "object") {
+    Object.values(value).forEach((entry) =>
+      collectPlayerIds(entry, playerIds, result),
+    );
+  }
+}
+
+function isRelationshipKind(value: unknown): value is EpisodeRelationshipKind {
+  return (
+    value === "rivalry" ||
+    value === "alliance" ||
+    value === "contrast" ||
+    value === "trust_shift"
+  );
+}
+
+function objectRecord(value: unknown, label: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object`);
+  }
+  return value as Record<string, unknown>;
+}
+
+function requiredString(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`${label} must be a non-empty string`);
+  }
+  return value.trim();
 }
 
 function draftSummary(draft: DraftEvent): string {
@@ -495,6 +953,10 @@ function nonEmpty(value: string, label: string): string {
     throw new Error(`${label} cannot be blank`);
   }
   return value.trim();
+}
+
+function firstNonEmpty(...values: readonly string[]): string | null {
+  return values.find((value) => value.trim().length > 0)?.trim() ?? null;
 }
 
 function stableHash(value: string): string {

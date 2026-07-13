@@ -6,6 +6,7 @@ import {
   generateEpisodeScriptAction,
 } from "@/app/actions";
 import { FormSubmitButton } from "@/components/editor/form-submit-button";
+import { EpisodeEnsembleReview } from "@/components/script/episode-ensemble-review";
 import { EpisodeGeneratingRefresh } from "@/components/script/episode-generating-refresh";
 import { iconButtonClassName } from "@/components/ui/button-styles";
 import type { GameId } from "@/core/types";
@@ -125,6 +126,11 @@ function EpisodeWorkspace({
             ))}
           </div>
         </section>
+
+        <EpisodeEnsembleReview
+          script={script}
+          players={record.game.players}
+        />
 
         <details className="mt-5 rounded border border-border bg-background/40">
           <summary className="cursor-pointer px-4 py-3 text-sm font-medium">查看完整结构与发言节拍</summary>

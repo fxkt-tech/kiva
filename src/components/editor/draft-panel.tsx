@@ -142,6 +142,15 @@ export function DraftPanel({
               <div><dt className="inline text-subtle">目标：</dt><dd className="inline">{actorBrief.objective}</dd></div>
               <div><dt className="inline text-subtle">立场：</dt><dd className="inline">{actorBrief.stance}</dd></div>
               <div><dt className="inline text-subtle">主题因果：</dt><dd className="inline">{actorBrief.themeHook}</dd></div>
+              {actorBrief.characterHook ? (
+                <div><dt className="inline text-subtle">人物抓手：</dt><dd className="inline">{actorBrief.characterHook}</dd></div>
+              ) : null}
+              {actorBrief.arcMove ? (
+                <div><dt className="inline text-subtle">弧线推进：</dt><dd className="inline">{actorBrief.arcMove}</dd></div>
+              ) : null}
+              {actorBrief.relationshipMove ? (
+                <div><dt className="inline text-subtle">关系推进：</dt><dd className="inline">{actorBrief.relationshipMove}</dd></div>
+              ) : null}
             </dl>
           </section>
         ) : null}

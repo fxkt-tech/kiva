@@ -268,6 +268,117 @@ function localOutputForRequest(
     .map((message) => message.content)
     .join("\n");
 
+  const episodeOutline = {
+    title: "未明档案：被改写的终局",
+    logline: "众人在一份持续被改写的档案中追索矛盾，最终让每次选择都成为结局的证词。",
+    acts: [
+      { title: "雨夜开卷", summary: "身份与第一处异常被同时封入档案。" },
+      { title: "证词交锋", summary: "公开判断和暗中行动不断改写彼此的可信度。" },
+      { title: "终局归档", summary: "幸存者用最后的选择确认档案的真实版本。" },
+    ],
+  };
+
+  if (request.schemaName === "werewolf_episode_outline_v2") {
+    const profiles = prefixedJsonObjects(userContent, "CHARACTER_PROFILE");
+    const relationshipKinds = [
+      "rivalry",
+      "alliance",
+      "contrast",
+      "trust_shift",
+    ] as const;
+    const castDirections = profiles.map((profile, index) => {
+      const playerId = localString(profile.playerId, `p${index + 1}`);
+      const name = localString(profile.name, playerId);
+      const persona = localCharacterTrait(profile);
+      const opportunities = Array.isArray(profile.performanceStepIndexes)
+        ? profile.performanceStepIndexes.filter(
+            (value): value is number => Number.isInteger(value),
+          )
+        : [];
+      const signatureStep =
+        opportunities[index % Math.max(1, opportunities.length)] ?? 1;
+      return {
+        playerId,
+        dramaticWeight: index < Math.max(2, Math.ceil(profiles.length / 3))
+          ? "primary"
+          : "supporting",
+        dramaticFunction: `${name}以${persona}成为第${index + 1}条判断线的推动者`,
+        baseline: `${name}先按${persona}观察局面并建立自己的判断标准`,
+        pressure: "公开冲突迫使其在坚持原有方法与承认盲点之间作出选择",
+        change: "保留核心判断方式，同时学会把不确定性转化为可验证的下一步",
+        payoff: "在关键节点用一次清晰选择兑现此前建立的判断标准",
+        signatureMoment: {
+          stepIndex: signatureStep,
+          description: `${name}在真实可用的第 ${signatureStep} 步让个人判断方式成为局面转折点`,
+        },
+      };
+    });
+    const relationships = profiles.flatMap((profile, index) => {
+      if (index % 2 !== 0 || index + 1 >= profiles.length) return [];
+      const leftId = localString(profile.playerId, `p${index + 1}`);
+      const rightId = localString(
+        profiles[index + 1]?.playerId,
+        `p${index + 2}`,
+      );
+      const kind = relationshipKinds[(index / 2) % relationshipKinds.length]!;
+      return [
+        {
+          playerIds: [leftId, rightId],
+          kind,
+          setup: "两人的判断方法在一次公开选择中首次形成可见差异",
+          development: "后续公开发言让差异升级为互相检验或有限协作",
+          payoff: "最终选择回应此前累积的分歧，并完成一次可信的关系变化",
+        },
+      ];
+    });
+    return { ...episodeOutline, castDirections, relationships };
+  }
+
+  if (request.schemaName === "werewolf_episode_beats_v2") {
+    const actorContexts = new Map(
+      prefixedJsonObjects(userContent, "ACTOR_CONTEXT").map((context) => {
+        const profile = localObject(context.profile);
+        return [localString(profile?.playerId, "unknown"), context] as const;
+      }),
+    );
+    const speechSteps = [...userContent.matchAll(
+      /SPEECH_STEP\s+(\d+)[^\n]*?\|\s*actor=([^\s|]+)/g,
+    )].map((match) => ({
+      stepIndex: Number(match[1]),
+      playerId: match[2]!,
+    }));
+    return {
+      beats: speechSteps.map(({ stepIndex, playerId }) => {
+        const context = actorContexts.get(playerId);
+        const profile = localObject(context?.profile);
+        const direction = localObject(context?.direction);
+        const relationships = Array.isArray(context?.relationships)
+          ? context.relationships
+          : [];
+        const name = localString(profile?.name, playerId);
+        const trait = profile
+          ? localCharacterTrait(profile)
+          : "自己的稳定判断方式";
+        const relationship = localObject(relationships[0]);
+        return {
+          stepIndex,
+          objective: "让当前立场推动一条可由后续公开事件验证的冲突线。",
+          stance: "明确选择一项当前判断，并指出它与前序证词的差异。",
+          disclosure: "conceal",
+          themeHook: "把本场选择写成对档案版本的争夺，并由后续公开结果完成验证。",
+          characterHook: `${name}以${trait}组织本场表达，不机械重复口头禅`,
+          arcMove: localString(
+            direction?.change,
+            "在压力下保留人物核心，同时显露一个可继续发展的次要侧面",
+          ),
+          relationshipMove: relationship
+            ? `只在当前公开互动中推进与${localRelationshipPartner(relationship, playerId)}的${localString(relationship.kind, "关系变化")}`
+            : null,
+        };
+      }),
+    };
+  }
+
   if (
     request.schemaName === "werewolf_episode_narrative_v1" ||
     request.schemaName === "werewolf_episode_outline_v1" ||
@@ -276,15 +387,6 @@ function localOutputForRequest(
     const stepIndexes = [...userContent.matchAll(/SPEECH_STEP\s+(\d+)/g)].map(
       (match) => Number(match[1]),
     );
-    const outline = {
-      title: "未明档案：被改写的终局",
-      logline: "众人在一份持续被改写的档案中追索矛盾，最终让每次选择都成为结局的证词。",
-      acts: [
-        { title: "雨夜开卷", summary: "身份与第一处异常被同时封入档案。" },
-        { title: "证词交锋", summary: "公开判断和暗中行动不断改写彼此的可信度。" },
-        { title: "终局归档", summary: "幸存者用最后的选择确认档案的真实版本。" },
-      ],
-    };
     const beats = stepIndexes.map((stepIndex) => ({
       stepIndex,
       objective: "让当前立场推动一条可在后续事件中验证的冲突线。",
@@ -292,10 +394,12 @@ function localOutputForRequest(
       disclosure: "conceal",
       themeHook: "把本场选择写成对档案版本的争夺，并让后续投票或行动完成验证。",
     }));
-    if (request.schemaName === "werewolf_episode_outline_v1") return outline;
+    if (request.schemaName === "werewolf_episode_outline_v1") {
+      return episodeOutline;
+    }
     if (request.schemaName === "werewolf_episode_beats_v1") return { beats };
     return {
-      ...outline,
+      ...episodeOutline,
       beats,
     };
   }
@@ -364,4 +468,60 @@ function localOutputForRequest(
   }
 
   return {};
+}
+
+function prefixedJsonObjects(
+  content: string,
+  prefix: string,
+): readonly Record<string, unknown>[] {
+  return content
+    .split("\n")
+    .filter((line) => line.startsWith(`${prefix} `))
+    .flatMap((line) => {
+      try {
+        const parsed = JSON.parse(line.slice(prefix.length + 1)) as unknown;
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+          ? [parsed as Record<string, unknown>]
+          : [];
+      } catch {
+        return [];
+      }
+    });
+}
+
+function localObject(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function localString(value: unknown, fallback: string): string {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : fallback;
+}
+
+function localCharacterTrait(profile: Record<string, unknown>): string {
+  return localString(
+    profile.persona,
+    localString(
+      profile.reasoningStyle,
+      localString(
+        profile.speakingStyle,
+        localString(profile.legacyCharacterPrompt, "自然克制的真人表达"),
+      ),
+    ),
+  );
+}
+
+function localRelationshipPartner(
+  relationship: Record<string, unknown>,
+  playerId: string,
+): string {
+  const playerIds = Array.isArray(relationship.playerIds)
+    ? relationship.playerIds.filter(
+        (value): value is string => typeof value === "string",
+      )
+    : [];
+  return playerIds.find((candidate) => candidate !== playerId) ?? "另一位玩家";
 }

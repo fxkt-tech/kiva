@@ -1,13 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { createSeedGame } from "../game";
 import { authorEpisodeScript } from "../episode-author";
-import { LocalHeuristicLlmClient } from "../llm";
-import type { LlmClient } from "../llm";
+import { createSeedGame, type Game } from "../game";
 import {
+  LocalHeuristicLlmClient,
+  MockLlmClient,
+  type LlmClient,
+  type LlmGenerateJsonRequest,
+} from "../llm";
+import {
+  actorBriefForStep,
+  assertEpisodeScriptMatchesGame,
   compileEpisodePlan,
   createEpisodeScriptSnapshot,
   episodeInputHash,
+  episodePerformanceOpportunities,
+  legacyEpisodeInputHash,
   planNextEpisodeDraft,
+  validateEpisodeScriptSnapshot,
+  type CompiledEpisodePlan,
+  type EpisodeCastDirection,
+  type EpisodeRelationshipDirection,
+  type EpisodeSpeechBeat,
 } from "../episode-script";
 import type { DraftId, GameId } from "../types";
 
@@ -17,20 +30,125 @@ const game = createSeedGame({
 });
 
 describe("episode script", () => {
-  it("authors narrative beats for every compiled speech step", async () => {
+  it("authors ensemble direction and character progression for every speech", async () => {
     const result = await authorEpisodeScript({
       game,
       llmClient: new LocalHeuristicLlmClient(),
       createdAt: "2026-07-12T00:00:00.000Z",
     });
+    const plan = compileEpisodePlan(game);
     const speechSteps = result.script.steps.filter(
       (step) => step.speechBeat !== null,
     );
 
+    expect(result.script.schemaVersion).toBe(2);
     expect(result.script.title).toContain("未明档案");
     expect(result.script.acts).toHaveLength(3);
+    expect(result.script.castDirections).toHaveLength(game.players.length);
+    expect(result.script.castDirections.map((direction) => direction.playerId))
+      .toEqual(game.players.map((player) => player.playerId));
+    expect(result.script.castDirections.some(
+      (direction) => direction.dramaticWeight === "primary",
+    )).toBe(true);
+    expect(result.script.castDirections.some(
+      (direction) => direction.dramaticWeight === "supporting",
+    )).toBe(true);
+    expect(result.script.relationships.length).toBeGreaterThan(0);
     expect(speechSteps.length).toBeGreaterThan(0);
     expect(speechSteps.every((step) => step.speechBeat?.themeHook)).toBe(true);
+    expect(speechSteps.every((step) => step.speechBeat?.characterHook)).toBe(true);
+    expect(speechSteps.every((step) => step.speechBeat?.arcMove)).toBe(true);
+
+    expect(result.script.plannedWinner).toBe(plan.plannedWinner);
+    expect(result.script.steps.map(compilerOwnedStepFields)).toEqual(
+      plan.steps.map(compilerOwnedStepFields),
+    );
+    expect(() =>
+      assertEpisodeScriptMatchesGame({ game, script: result.script }),
+    ).not.toThrow();
+  });
+
+  it("sends every concise character profile to the outline and scoped actor context to beat batches", async () => {
+    const requests: LlmGenerateJsonRequest[] = [];
+    const local = new LocalHeuristicLlmClient();
+    const capturingClient: LlmClient = {
+      async generateJson(request) {
+        requests.push(request);
+        return local.generateJson(request);
+      },
+    };
+
+    await authorEpisodeScript({
+      game,
+      llmClient: capturingClient,
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    const outline = requests.find(
+      (request) => request.schemaName === "werewolf_episode_outline_v2",
+    );
+    expect(outline).toBeDefined();
+    const profileCards = prefixedJsonObjects(
+      requestContent(outline!),
+      "CHARACTER_PROFILE",
+    );
+    expect(profileCards).toHaveLength(game.players.length);
+    for (const player of game.players) {
+      expect(profileCards).toContainEqual(
+        expect.objectContaining({
+          playerId: player.playerId,
+          name: player.name,
+          gameRole: player.gameRole,
+          persona: player.persona,
+          speakingStyle: player.speakingStyle,
+          reasoningStyle: player.reasoningStyle,
+          performanceStepIndexes: expect.any(Array),
+        }),
+      );
+      const profile = profileCards.find(
+        (candidate) => candidate.playerId === player.playerId,
+      );
+      expect(profile?.performanceStepIndexes).toEqual(
+        expect.arrayContaining([expect.any(Number)]),
+      );
+    }
+    expect(outline?.systemPrompt).toContain("人物鲜明");
+    expect(outline?.systemPrompt).toContain("不得虚构开局前关系");
+    expect(outline?.systemPrompt).toContain("不写最终台词");
+
+    const beatRequests = requests.filter(
+      (request) => request.schemaName === "werewolf_episode_beats_v2",
+    );
+    expect(beatRequests.length).toBeGreaterThan(1);
+    for (const request of beatRequests) {
+      const content = requestContent(request);
+      const speechActors = [...content.matchAll(
+        /SPEECH_STEP\s+\d+[^\n]*?\|\s*actor=([^\s|]+)/g,
+      )].map((match) => match[1]);
+      const actorContexts = prefixedJsonObjects(content, "ACTOR_CONTEXT");
+      expect(new Set(actorContexts.map((context) =>
+        objectValue(context.profile)?.playerId,
+      ))).toEqual(new Set(speechActors));
+      for (const context of actorContexts) {
+        const profile = objectValue(context.profile);
+        const direction = objectValue(context.direction);
+        const player = game.players.find(
+          (candidate) => candidate.playerId === profile?.playerId,
+        );
+        expect(profile).toMatchObject({
+          persona: player?.persona,
+          speakingStyle: player?.speakingStyle,
+          reasoningStyle: player?.reasoningStyle,
+        });
+        expect(direction).toMatchObject({ playerId: player?.playerId });
+      }
+
+      const priorMoves = prefixedJsonObjects(content, "PRIOR_MOVE");
+      for (const actorId of new Set(priorMoves.map((move) => move.playerId))) {
+        expect(priorMoves.filter((move) => move.playerId === actorId).length)
+          .toBeLessThanOrEqual(2);
+      }
+    }
   });
 
   it("keeps each author request below the provider timeout-sized beat batch", async () => {
@@ -59,7 +177,25 @@ describe("episode script", () => {
     ).resolves.toMatchObject({ script: { title: expect.any(String) } });
   });
 
-  it("compiles a deterministic legal trace to game end", () => {
+  it("rejects objectively incomplete ensemble output after repair", async () => {
+    const invalidOutline = {
+      title: "无效群像",
+      logline: "遗漏角色的群像不能进入导演审核。",
+      acts: [{ title: "第一幕", summary: "仍然遗漏角色。" }],
+      castDirections: [],
+      relationships: [],
+    };
+
+    await expect(
+      authorEpisodeScript({
+        game,
+        llmClient: new MockLlmClient([invalidOutline, invalidOutline]),
+        createdAt: "2026-07-12T00:00:00.000Z",
+      }),
+    ).rejects.toThrow("cover every player exactly once");
+  });
+
+  it("compiles a deterministic character-aware legal trace to game end", () => {
     const first = compileEpisodePlan(game);
     const second = compileEpisodePlan(game);
 
@@ -68,21 +204,24 @@ describe("episode script", () => {
     expect(first.simulatedEvents.at(-1)?.type).toBe("game_ended");
     expect(first.inputHash).toBe(episodeInputHash(game));
     expect(first.targetDurationMs).toBeGreaterThan(0);
+    expect(episodeInputHash(game)).toBe(episodeInputHash(structuredClone(game)));
+
+    const changedGame = {
+      ...game,
+      players: game.players.map((player, index) =>
+        index === 0
+          ? { ...player, persona: `${player.persona}，但压力下会主动冒险` }
+          : player,
+      ),
+    };
+    expect(episodeInputHash(changedGame)).not.toBe(episodeInputHash(game));
   });
 
   it("binds the next runtime draft to the approved first step", () => {
     const plan = compileEpisodePlan(game);
-    const script = createEpisodeScriptSnapshot({
-      id: "episode_1",
-      game,
-      plan,
-      title: "未明档案：第一卷",
-      logline: "一份被篡改的档案迫使众人互相审视。",
-      acts: [{ title: "开卷", summary: "身份被封入档案。" }],
-      createdAt: "2026-07-12T00:00:00.000Z",
-      provider: "test",
-      model: "test",
-    });
+    const script = createEpisodeScriptSnapshot(
+      validSnapshotInput(game, plan, "episode_1"),
+    );
 
     const result = planNextEpisodeDraft({
       game,
@@ -97,19 +236,157 @@ describe("episode script", () => {
     expect(result.actorBrief).toBeNull();
   });
 
-  it("rejects a script when the game input changes", () => {
+  it("projects only the current speech move into the runtime actor brief", () => {
     const plan = compileEpisodePlan(game);
+    const input = validSnapshotInput(game, plan, "episode_current_brief");
     const script = createEpisodeScriptSnapshot({
-      id: "episode_2",
-      game,
-      plan,
-      title: "未明档案：第二卷",
-      logline: "第二份存根暴露了新的冲突。",
-      acts: [],
-      createdAt: "2026-07-12T00:00:00.000Z",
-      provider: "test",
-      model: "test",
+      ...input,
+      castDirections: input.castDirections.map((direction, index) =>
+        index === 0
+          ? { ...direction, payoff: "未来群像兑现不应进入当前演员提示" }
+          : direction,
+      ),
     });
+    const speechStep = script.steps.find((step) => step.speechBeat)!;
+    const brief = actorBriefForStep(script, speechStep.index);
+
+    expect(brief).toMatchObject({
+      stepIndex: speechStep.index,
+      characterHook: speechStep.speechBeat?.characterHook,
+      arcMove: speechStep.speechBeat?.arcMove,
+      relationshipMove: speechStep.speechBeat?.relationshipMove,
+    });
+    expect(JSON.stringify(brief)).not.toContain(script.logline);
+    expect(JSON.stringify(brief)).not.toContain(script.plannedWinner);
+    expect(JSON.stringify(brief)).not.toContain(
+      "未来群像兑现不应进入当前演员提示",
+    );
+  });
+
+  it("rejects missing cast, invalid signature steps, and invalid relationships", () => {
+    const plan = compileEpisodePlan(game);
+    const input = validSnapshotInput(game, plan, "episode_invalid");
+
+    expect(() =>
+      createEpisodeScriptSnapshot({
+        ...input,
+        castDirections: input.castDirections.slice(1),
+      }),
+    ).toThrow("cover every player exactly once");
+
+    expect(() =>
+      createEpisodeScriptSnapshot({
+        ...input,
+        castDirections: [
+          input.castDirections[0]!,
+          input.castDirections[0]!,
+          ...input.castDirections.slice(2),
+        ],
+      }),
+    ).toThrow("cover every player exactly once");
+
+    expect(() =>
+      createEpisodeScriptSnapshot({
+        ...input,
+        castDirections: input.castDirections.map((direction, index) =>
+          index === 0
+            ? {
+                ...direction,
+                signatureMoment: {
+                  ...direction.signatureMoment,
+                  stepIndex: plan.steps.length + 100,
+                },
+              }
+            : direction,
+        ),
+      }),
+    ).toThrow("invalid signature step");
+
+    expect(() =>
+      createEpisodeScriptSnapshot({
+        ...input,
+        relationships: [
+          {
+            playerIds: [
+              game.players[0]!.playerId,
+              "unknown_player" as Game["players"][number]["playerId"],
+            ],
+            kind: "rivalry",
+            setup: "建立分歧",
+            development: "公开升级",
+            payoff: "选择兑现",
+          },
+        ],
+      }),
+    ).toThrow("references invalid players");
+
+    const pair: EpisodeRelationshipDirection = {
+      playerIds: [
+        game.players[0]!.playerId,
+        game.players[1]!.playerId,
+      ],
+      kind: "contrast",
+      setup: "建立反差",
+      development: "公开检验",
+      payoff: "形成互补",
+    };
+    expect(() =>
+      createEpisodeScriptSnapshot({
+        ...input,
+        relationships: [
+          pair,
+          { ...pair, playerIds: [pair.playerIds[1], pair.playerIds[0]] },
+        ],
+      }),
+    ).toThrow("Duplicate episode relationship");
+  });
+
+  it("keeps historical schema-v1 snapshots readable and executable", () => {
+    const plan = compileEpisodePlan(game);
+    const current = createEpisodeScriptSnapshot(
+      validSnapshotInput(game, plan, "episode_legacy_source"),
+    );
+    const legacy = validateEpisodeScriptSnapshot({
+      ...current,
+      schemaVersion: 1,
+      inputHash: legacyEpisodeInputHash(game),
+      castDirections: undefined,
+      relationships: undefined,
+      steps: current.steps.map((step) => ({
+        ...step,
+        speechBeat: step.speechBeat
+          ? legacySpeechBeat(step.speechBeat)
+          : null,
+      })),
+    });
+
+    expect(legacy.schemaVersion).toBe(1);
+    expect(legacy.castDirections).toEqual([]);
+    expect(legacy.relationships).toEqual([]);
+    expect(legacy.steps.find((step) => step.speechBeat)?.speechBeat)
+      .toMatchObject({
+        characterHook: null,
+        arcMove: null,
+        relationshipMove: null,
+      });
+    expect(() => assertEpisodeScriptMatchesGame({ game, script: legacy }))
+      .not.toThrow();
+    expect(() =>
+      planNextEpisodeDraft({
+        game,
+        events: [],
+        script: legacy,
+        draftId: "legacy_runtime_draft" as DraftId,
+        createdAt: "2026-07-12T00:01:00.000Z",
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects a v2 script when character or script input changes", () => {
+    const plan = compileEpisodePlan(game);
+    const script = createEpisodeScriptSnapshot(
+      validSnapshotInput(game, plan, "episode_2"),
+    );
 
     expect(() =>
       planNextEpisodeDraft({
@@ -122,3 +399,102 @@ describe("episode script", () => {
     ).toThrow("no longer matches game input");
   });
 });
+
+function validSnapshotInput(
+  sourceGame: Game,
+  plan: CompiledEpisodePlan,
+  id: string,
+) {
+  return {
+    id,
+    game: sourceGame,
+    plan,
+    title: "未明档案：第一卷",
+    logline: "一份被篡改的档案迫使众人互相审视。",
+    acts: [{ title: "开卷", summary: "身份被封入档案。" }],
+    castDirections: validCastDirections(sourceGame, plan),
+    relationships: [] as readonly EpisodeRelationshipDirection[],
+    beats: validBeats(plan),
+    createdAt: "2026-07-12T00:00:00.000Z",
+    provider: "test",
+    model: "test",
+  };
+}
+
+function validCastDirections(
+  sourceGame: Game,
+  plan: CompiledEpisodePlan,
+): readonly EpisodeCastDirection[] {
+  const opportunities = episodePerformanceOpportunities(sourceGame, plan);
+  return sourceGame.players.map((player, index) => ({
+    playerId: player.playerId,
+    dramaticWeight: index < 3 ? "primary" : "supporting",
+    dramaticFunction: `${player.name}负责推动一条独立判断线`,
+    baseline: "按稳定的人物方法观察局面",
+    pressure: "公开冲突放大其方法的盲点",
+    change: "保留核心但学会修正一次判断",
+    payoff: "用关键选择兑现修正后的判断",
+    signatureMoment: {
+      stepIndex: opportunities.get(player.playerId)?.[0] ?? -1,
+      description: "在真实事件节点留下可识别的个人选择",
+    },
+  }));
+}
+
+function validBeats(
+  plan: CompiledEpisodePlan,
+): readonly Omit<EpisodeSpeechBeat, "budget">[] {
+  return plan.steps.flatMap((step) =>
+    step.speechBeat
+      ? [{
+          stepIndex: step.index,
+          objective: "推动当前可见冲突",
+          stance: "根据可见事实给出明确判断",
+          disclosure: step.speechBeat.disclosure,
+          themeHook: "让当前选择成为后续可验证的主题因果",
+          characterHook: "用演员稳定的人物方法组织表达",
+          arcMove: "在压力下推进一个有根据的次要侧面",
+          relationshipMove: null,
+        }]
+      : [],
+  );
+}
+
+function compilerOwnedStepFields(step: CompiledEpisodePlan["steps"][number]) {
+  return {
+    index: step.index,
+    slot: step.slot,
+    plannedPayload: step.plannedPayload,
+    budget: step.speechBeat?.budget ?? null,
+  };
+}
+
+function legacySpeechBeat(beat: EpisodeSpeechBeat) {
+  const {
+    characterHook: _characterHook,
+    arcMove: _arcMove,
+    relationshipMove: _relationshipMove,
+    ...legacy
+  } = beat;
+  return legacy;
+}
+
+function requestContent(request: LlmGenerateJsonRequest): string {
+  return request.messages.map((message) => message.content).join("\n");
+}
+
+function prefixedJsonObjects(
+  content: string,
+  prefix: string,
+): readonly Record<string, unknown>[] {
+  return content
+    .split("\n")
+    .filter((line) => line.startsWith(`${prefix} `))
+    .map((line) => JSON.parse(line.slice(prefix.length + 1)) as Record<string, unknown>);
+}
+
+function objectValue(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}

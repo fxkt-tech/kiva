@@ -210,7 +210,7 @@ describe("prompt builders v2", () => {
       events: [roleAssigned(1, villager.playerId, "villager", "good")],
       viewerPlayerId: villager.playerId,
     });
-    const content = buildSpeechPrompt({
+    const prompt = buildSpeechPrompt({
       context,
       draft: daySpeechDraft(villager.playerId),
       actorBrief: {
@@ -220,15 +220,30 @@ describe("prompt builders v2", () => {
         stance: "暂时质疑三号，但保留复核空间",
         disclosure: "conceal",
         themeHook: "让本轮质疑成为下一次投票验证的档案版本冲突",
+        characterHook: "用谨慎拆词的习惯追问，不突然变成咄咄逼人",
+        arcMove: "第一次让谨慎从旁观转为承担一次明确判断",
+        relationshipMove: "把与三号的礼貌分歧推进为可公开复核的竞争",
         budget: speechBudgetForKey("day_first", "critical"),
       },
-    }).messages[0]!.content;
+    });
+    const content = prompt.messages[0]!.content;
+    const combined = `${prompt.systemPrompt}\n${content}`;
+    const otherPlayer = game.players.find(
+      (player) => player.playerId !== villager.playerId,
+    )!;
 
     expect(content).toContain("【本场剧本指引——只执行当前场，不得推断未来】");
     expect(content).toContain("红印存根第一次出现矛盾");
+    expect(content).toContain("用谨慎拆词的习惯追问");
+    expect(content).toContain("谨慎从旁观转为承担一次明确判断");
+    expect(content).toContain("礼貌分歧推进为可公开复核的竞争");
+    expect(content).toContain("不是游戏事实、身份线索或可信度证据");
     expect(content).toContain("你看不到完整剧本");
     expect(content).not.toContain("计划胜方");
     expect(content).toContain("text 硬上限：136 个非空白字符");
+    expect(combined).toContain(villager.persona);
+    expect(combined).not.toContain(otherPlayer.persona);
+    expect(combined).not.toContain("另一位演员的未来弧线");
   });
 
   it("renders action candidates with stable id, seat, and name", () => {
