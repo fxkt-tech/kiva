@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 7
-- **Last Active**: 2026-07-12
+- **Total Sessions**: 8
+- **Last Active**: 2026-07-13
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~239 | Active |
+| `journal-1.md` | ~272 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 8 | 2026-07-13 | Character-driven episode authoring | `215672b` | `main` |
 | 7 | 2026-07-12 | 完成 Preview 舞台事件结果可视化 | `790f758` | `main` |
 | 6 | 2026-07-12 | 完成配音与字幕同步系统 | `459fc67` | `main` |
 | 5 | 2026-07-12 | Replace legacy preview | `07b4614` | `main` |

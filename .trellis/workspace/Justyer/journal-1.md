@@ -237,3 +237,36 @@ Removed the legacy Pixi preview and dependencies, promoted the HTML/Remotion pre
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: Character-driven episode authoring
+
+**Date**: 2026-07-13
+**Task**: Character-driven episode authoring
+**Branch**: `main`
+
+### Summary
+
+Added schema-v2 ensemble direction, persona-aware outline and beat authoring, current-only runtime projection, approval validation, Director Review UI, v1 compatibility, and full regression coverage.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `215672b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
