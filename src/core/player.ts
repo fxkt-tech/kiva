@@ -6,8 +6,17 @@ import {
   type PlayerId,
   type Ruleset,
 } from "./types";
+import {
+  assertExactObjectKeys,
+  isPlainObject,
+  validateModelBindingSnapshot,
+} from "./model-binding";
 import type { RoleMechanicKey, RoleTeam } from "./role-definition";
-import { edgeVoiceProfile, type VoiceProfileSnapshot } from "./voice";
+import {
+  edgeVoiceProfile,
+  validateVoiceProfileSnapshot,
+  type VoiceProfileSnapshot,
+} from "./voice";
 
 export type ModelBindingSnapshot = {
   readonly provider: string;
@@ -29,7 +38,6 @@ export type PlayerSnapshot = {
   readonly playerId: PlayerId;
   readonly seatNo: number;
   readonly characterSourceId: string | null;
-  readonly profileSourceId?: string;
   readonly name: string;
   readonly roleSourceId: string;
   readonly avatar: string | null;
@@ -39,7 +47,6 @@ export type PlayerSnapshot = {
   readonly characterSystemPromptSnapshot: string;
   readonly roleSystemPromptSnapshot: string;
   readonly roleActionPromptSnapshot: string | null;
-  readonly systemPrompt: string;
   readonly modelBindingSnapshot: ModelBindingSnapshot;
   readonly voiceProfileSnapshot: VoiceProfileSnapshot;
   readonly gameRole: GameRole;
@@ -56,7 +63,6 @@ export type CreatePlayerSnapshotInput = {
   readonly name: string;
   readonly gameRole: GameRole;
   readonly characterSourceId?: string | null;
-  readonly profileSourceId?: string;
   readonly roleSourceId?: string;
   readonly avatar?: string | null;
   readonly persona?: string;
@@ -65,7 +71,6 @@ export type CreatePlayerSnapshotInput = {
   readonly characterSystemPromptSnapshot?: string;
   readonly roleSystemPromptSnapshot?: string;
   readonly roleActionPromptSnapshot?: string | null;
-  readonly systemPrompt?: string;
   readonly modelBindingSnapshot?: ModelBindingSnapshot;
   readonly voiceProfileSnapshot?: VoiceProfileSnapshot;
   readonly roleName?: string;
@@ -143,26 +148,19 @@ const MECHANIC_KEY_BY_ROLE = {
 export function createPlayerSnapshot(
   input: CreatePlayerSnapshotInput,
 ): PlayerSnapshot {
-  const characterSystemPromptSnapshot =
-    input.characterSystemPromptSnapshot ?? input.systemPrompt ?? "";
-
   return {
     playerId: input.playerId,
     seatNo: input.seatNo,
-    characterSourceId: input.characterSourceId ?? input.profileSourceId ?? null,
-    ...(input.profileSourceId === undefined
-      ? {}
-      : { profileSourceId: input.profileSourceId }),
+    characterSourceId: input.characterSourceId ?? null,
     name: input.name,
     roleSourceId: input.roleSourceId ?? input.gameRole,
     avatar: input.avatar ?? null,
     persona: input.persona ?? "",
     speakingStyle: input.speakingStyle ?? "",
     reasoningStyle: input.reasoningStyle ?? "",
-    characterSystemPromptSnapshot,
+    characterSystemPromptSnapshot: input.characterSystemPromptSnapshot ?? "",
     roleSystemPromptSnapshot: input.roleSystemPromptSnapshot ?? "",
     roleActionPromptSnapshot: input.roleActionPromptSnapshot ?? null,
-    systemPrompt: input.systemPrompt ?? input.characterSystemPromptSnapshot ?? "",
     modelBindingSnapshot: {
       ...(input.modelBindingSnapshot ?? defaultModelBinding),
     },
@@ -178,6 +176,102 @@ export function createPlayerSnapshot(
         ? [...input.initialPrivateKnowledge]
         : createInitialPrivateKnowledge(input.gameRole),
   };
+}
+
+export function validatePlayerSnapshot(input: unknown): PlayerSnapshot {
+  if (!isPlainObject(input)) {
+    throw new Error("Player snapshot must be an object");
+  }
+  assertExactObjectKeys(input, "Player snapshot", [
+    "playerId",
+    "seatNo",
+    "characterSourceId",
+    "name",
+    "roleSourceId",
+    "avatar",
+    "persona",
+    "speakingStyle",
+    "reasoningStyle",
+    "characterSystemPromptSnapshot",
+    "roleSystemPromptSnapshot",
+    "roleActionPromptSnapshot",
+    "modelBindingSnapshot",
+    "voiceProfileSnapshot",
+    "gameRole",
+    "roleName",
+    "faction",
+    "team",
+    "mechanicKey",
+    "initialPrivateKnowledge",
+  ]);
+  if (!isNonBlankString(input.playerId)) {
+    throw new Error("Player snapshot playerId must be set");
+  }
+  if (!Number.isInteger(input.seatNo) || (input.seatNo as number) < 1) {
+    throw new Error("Player snapshot seatNo must be a positive integer");
+  }
+  if (!isNonBlankString(input.characterSourceId)) {
+    throw new Error("Player snapshot characterSourceId must be set");
+  }
+  for (const field of [
+    "name",
+    "roleSourceId",
+    "persona",
+    "speakingStyle",
+    "reasoningStyle",
+    "characterSystemPromptSnapshot",
+    "roleSystemPromptSnapshot",
+    "roleName",
+  ] as const) {
+    if (!isNonBlankString(input[field])) {
+      throw new Error(`Player snapshot ${field} must be set`);
+    }
+  }
+  if (
+    input.avatar !== null &&
+    (typeof input.avatar !== "string" || input.avatar.trim().length === 0)
+  ) {
+    throw new Error("Player snapshot avatar must be null or a non-blank string");
+  }
+  if (
+    input.roleActionPromptSnapshot !== null &&
+    !isNonBlankString(input.roleActionPromptSnapshot)
+  ) {
+    throw new Error(
+      "Player snapshot roleActionPromptSnapshot must be null or a non-blank string",
+    );
+  }
+  if (!isGameRole(input.gameRole)) {
+    throw new Error("Player snapshot gameRole is invalid");
+  }
+  if (input.faction !== "wolves" && input.faction !== "good") {
+    throw new Error("Player snapshot faction is invalid");
+  }
+  if (input.team !== "wolf" && input.team !== "god" && input.team !== "villager") {
+    throw new Error("Player snapshot team is invalid");
+  }
+  if (!isMechanicKey(input.mechanicKey)) {
+    throw new Error("Player snapshot mechanicKey is invalid");
+  }
+  if (
+    !Array.isArray(input.initialPrivateKnowledge) ||
+    input.initialPrivateKnowledge.some((key) => !isPrivateKnowledgeKey(key))
+  ) {
+    throw new Error("Player snapshot initialPrivateKnowledge is invalid");
+  }
+  if (input.modelBindingSnapshot === null) {
+    throw new Error("Player snapshot modelBindingSnapshot must be set");
+  }
+  validateModelBindingSnapshot(
+    input.modelBindingSnapshot,
+    "Player snapshot modelBindingSnapshot",
+  );
+  validateVoiceProfileSnapshot(
+    input.voiceProfileSnapshot,
+    "Player snapshot voiceProfileSnapshot",
+  );
+
+  return structuredClone(input) as PlayerSnapshot;
 }
 
 function createInitialPrivateKnowledge(
@@ -234,4 +328,29 @@ export function validateBoard(
   return { ok: true };
 }
 
-export const validateSixPlayerBoard = validateBoard;
+function isNonBlankString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isGameRole(value: unknown): value is GameRole {
+  return (GAME_ROLES as readonly unknown[]).includes(value);
+}
+
+function isMechanicKey(value: unknown): value is PlayerMechanicKey {
+  return (
+    value === "wolf_kill" ||
+    value === "seer_check" ||
+    value === "witch_medicine" ||
+    value === "hunter_shot" ||
+    value === "guard_protect" ||
+    value === "none"
+  );
+}
+
+function isPrivateKnowledgeKey(value: unknown): value is PrivateKnowledgeKey {
+  return (
+    value === "own_role" ||
+    value === "wolf_teammates" ||
+    value === "witch_medicines"
+  );
+}

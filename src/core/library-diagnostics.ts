@@ -9,17 +9,12 @@ import {
 } from "./presenter-definition";
 import {
   createPlayerSnapshot,
-  validateSixPlayerBoard,
+  validateBoard,
   type ModelBindingSnapshot,
   type PlayerSnapshot,
 } from "./player";
 import { validateRoleDefinitions, type RoleDefinition } from "./role-definition";
-import {
-  createDefaultRuleset,
-  createSixPlayerRuleset,
-  type GameRole,
-  type PlayerId,
-} from "./types";
+import { createDefaultRuleset, type GameRole, type PlayerId } from "./types";
 
 export type LibraryDiagnostic = {
   readonly valid: boolean;
@@ -375,7 +370,6 @@ function gameCreationDiagnostic(
         characterSystemPromptSnapshot: character.systemPrompt,
         roleSystemPromptSnapshot: role.systemPrompt,
         roleActionPromptSnapshot: role.actionPrompt,
-        systemPrompt: character.systemPrompt,
         modelBindingSnapshot:
           seat.modelBindingOverride ??
           character.defaultModelBinding ??
@@ -390,11 +384,7 @@ function gameCreationDiagnostic(
   }
 
   if (messages.length === 0) {
-    const ruleset =
-      input.preset.playerCount === 6
-        ? createSixPlayerRuleset()
-        : createDefaultRuleset();
-    const boardValidation = validateSixPlayerBoard(players, ruleset);
+    const boardValidation = validateBoard(players, createDefaultRuleset());
     if (!boardValidation.ok) {
       messages.push(`Game preset ${input.preset.id} does not match ruleset`);
     }
@@ -473,7 +463,6 @@ function defaultModelBindingForSupportedRole(input: {
     characterSystemPromptSnapshot: input.character.systemPrompt,
     roleSystemPromptSnapshot: input.role.systemPrompt,
     roleActionPromptSnapshot: input.role.actionPrompt,
-    systemPrompt: input.character.systemPrompt,
     roleName: input.role.name,
     faction: input.role.faction,
     team: input.role.team,

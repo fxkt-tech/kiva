@@ -207,12 +207,15 @@ describe("library actions", () => {
     const updatedPresenter = {
       ...source,
       name: "新守夜人",
+      voiceProfile: {
+        ...source.voiceProfile,
+        voice: "zh-CN-XiaoyiNeural",
+      },
       lines: {
         ...source.lines,
         "phase.night": {
           ...source.lines["phase.night"],
           template: "夜幕降临，所有玩家闭眼。",
-          voice: { file: "new_night.mp3", status: "ready" as const },
         },
       },
       updatedAt: NOW,
@@ -224,10 +227,10 @@ describe("library actions", () => {
     expect(saved.presenters.find((presenter) => presenter.id === source.id))
       .toMatchObject({
         name: "新守夜人",
+        voiceProfile: { voice: "zh-CN-XiaoyiNeural" },
         lines: {
           "phase.night": {
             template: "夜幕降临，所有玩家闭眼。",
-            voice: { file: "new_night.mp3", status: "ready" },
           },
         },
         updatedAt: NOW,

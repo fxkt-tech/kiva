@@ -10,16 +10,12 @@ import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
 import { createLibraryActions } from "@/server/library-actions";
 import { createLibraryRepository } from "@/server/library-repository";
-import {
-  createRuntimeLlmClient,
-  resolveRuntimePromptMode,
-} from "@/server/llm-runtime";
+import { createRuntimeLlmClient } from "@/server/llm-runtime";
 
 const dataDir = process.env.KIVA_DATA_DIR;
 
 const gameActions = createGameActions(createGameRepository(dataDir), {
   llmClient: createRuntimeLlmClient(),
-  promptMode: resolveRuntimePromptMode(),
 });
 const libraryActions = createLibraryActions({
   libraryRepository: createLibraryRepository(dataDir),

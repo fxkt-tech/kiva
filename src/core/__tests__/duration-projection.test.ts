@@ -56,7 +56,7 @@ function playbackItem(): PlaybackItem {
     presenterName: "主理人",
     presenterAvatar: null,
     transcriptSpeaker: "player",
-    presenterCue: { copyKey: "speech", text: "请发言" },
+    presenterCue: { copyKey: "speech", text: "请发言", values: {} },
     playerVoice: {
       eventId: "duration_event",
       playerId,
@@ -65,5 +65,8 @@ function playbackItem(): PlaybackItem {
       startsAtOffsetMs: 650,
       cues: [],
     },
+    presenterVoiceClips: [],
+    presenterSourceId: "host",
+    stage: null,
   };
 }

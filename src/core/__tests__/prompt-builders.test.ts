@@ -333,35 +333,6 @@ describe("prompt builders v2", () => {
     );
   });
 
-  it("falls back to a legacy character prompt when structured profile fields are empty", () => {
-    const legacyPrompt = "旧游戏人物提示仍需保留";
-    const legacyGame = {
-      ...game,
-      players: game.players.map((player) =>
-        player.playerId === villager.playerId
-          ? {
-              ...player,
-              persona: "",
-              speakingStyle: "",
-              reasoningStyle: "",
-              characterSystemPromptSnapshot: "",
-              systemPrompt: legacyPrompt,
-            }
-          : player,
-      ),
-    };
-    const context = buildPlayerLlmContext({
-      game: legacyGame,
-      events: [roleAssigned(1, villager.playerId, "villager", "good")],
-      viewerPlayerId: villager.playerId,
-    });
-
-    expect(
-      buildSpeechPrompt({ context, draft: daySpeechDraft(villager.playerId) })
-        .systemPrompt,
-    ).toContain(legacyPrompt);
-  });
-
   it("does not inject another role's action advice into an invalid draft", () => {
     const events = [
       roleAssigned(1, seer.playerId, "seer", "good"),
@@ -387,41 +358,6 @@ describe("prompt builders v2", () => {
     );
   });
 
-  it("keeps isolated v1 builders available for a runtime rollback", () => {
-    const events = [
-      roleAssigned(1, seer.playerId, "seer", "good"),
-      phaseStarted(2, "night", 1),
-    ];
-    const context = buildPlayerLlmContext({
-      game,
-      events,
-      viewerPlayerId: seer.playerId,
-    });
-    const speech = buildSpeechPrompt(
-      { context, draft: daySpeechDraft(seer.playerId) },
-      "v1",
-    );
-    const actionDraft = seerDraft(villager.playerId);
-    const action = buildActionPrompt(
-      {
-        context,
-        draft: actionDraft,
-        options: legalActionOptions({ game, events, draft: actionDraft }),
-      },
-      "v1",
-    );
-
-    expect(speech).toMatchObject({
-      promptVersion: "speech:v1",
-      schemaName: "werewolf_speech_v1",
-    });
-    expect(speech.messages[0]?.content).toContain("draft=day_speech_given");
-    expect(action).toMatchObject({
-      promptVersion: "action:v1",
-      schemaName: "werewolf_action_v1",
-    });
-    expect(action.messages[0]?.content).toContain("mechanic=seer_check");
-  });
 });
 
 function daySpeechDraft(

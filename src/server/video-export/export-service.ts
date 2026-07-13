@@ -442,12 +442,8 @@ function absolutizeComposition(
     ...composition,
     assets: {
       fontUrl: absolute(composition.assets.fontUrl),
-      dayBackgroundUrl: composition.assets.dayBackgroundUrl
-        ? absolute(composition.assets.dayBackgroundUrl)
-        : null,
-      nightBackgroundUrl: composition.assets.nightBackgroundUrl
-        ? absolute(composition.assets.nightBackgroundUrl)
-        : null,
+      dayBackgroundUrl: absolute(composition.assets.dayBackgroundUrl),
+      nightBackgroundUrl: absolute(composition.assets.nightBackgroundUrl),
       avatarUrls: Object.fromEntries(
         Object.entries(composition.assets.avatarUrls).map(([key, value]) => [
           key,
@@ -472,12 +468,8 @@ function replaceJobAssetId(
     ...composition,
     assets: {
       fontUrl: replace(composition.assets.fontUrl),
-      dayBackgroundUrl: composition.assets.dayBackgroundUrl
-        ? replace(composition.assets.dayBackgroundUrl)
-        : null,
-      nightBackgroundUrl: composition.assets.nightBackgroundUrl
-        ? replace(composition.assets.nightBackgroundUrl)
-        : null,
+      dayBackgroundUrl: replace(composition.assets.dayBackgroundUrl),
+      nightBackgroundUrl: replace(composition.assets.nightBackgroundUrl),
       avatarUrls: Object.fromEntries(
         Object.entries(composition.assets.avatarUrls).map(([key, value]) => [
           key,

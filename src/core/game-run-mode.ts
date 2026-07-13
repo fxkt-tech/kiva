@@ -6,7 +6,3 @@ export function parseGameRunMode(value: unknown): GameRunMode {
   if (value === "game" || value === "scripted") return value;
   throw new Error(`Invalid game run mode: ${String(value)}`);
 }
-
-export function normalizeGameRunMode(value: unknown): GameRunMode {
-  return value === undefined ? "game" : parseGameRunMode(value);
-}

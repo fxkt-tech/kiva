@@ -5,7 +5,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import { createSeedGame } from "@/core/game";
 import type { GameEvent } from "@/core/events";
 import type { EventId, GameId, PlayerId } from "@/core/types";
-import { createGameRepository } from "@/server/game-repository";
+import {
+  createGameRepository,
+  GAME_RECORD_SCHEMA_VERSION,
+} from "@/server/game-repository";
 import type { VoiceSynthesisAdapter } from "@/server/voice-synthesis/types";
 import { VoiceJobService } from "./service";
 
@@ -25,6 +28,7 @@ describe("voice jobs", () => {
       runMode: "scripted" as const,
     };
     await createGameRepository(root).save({
+      schemaVersion: GAME_RECORD_SCHEMA_VERSION,
       game,
       events: [],
       draft: null,
@@ -56,11 +60,13 @@ describe("voice jobs", () => {
       createdAt: "2026-07-12T00:01:00.000Z",
     };
     await createGameRepository(root).save({
+      schemaVersion: GAME_RECORD_SCHEMA_VERSION,
       game,
       events: [speech],
       draft: null,
       generations: [],
       voiceArtifactsByEventId: {},
+      episodeScript: null,
     });
     const adapter: VoiceSynthesisAdapter = {
       async synthesize(request) {
@@ -109,11 +115,13 @@ describe("voice jobs", () => {
     };
     const repository = createGameRepository(root);
     await repository.save({
+      schemaVersion: GAME_RECORD_SCHEMA_VERSION,
       game,
       events: [speech],
       draft: null,
       generations: [],
       voiceArtifactsByEventId: {},
+      episodeScript: null,
     });
 
     let calls = 0;

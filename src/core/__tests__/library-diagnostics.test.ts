@@ -10,6 +10,9 @@ import {
 } from "../library-diagnostics";
 import type { ModelBindingSnapshot } from "../player";
 import type { RoleDefinition } from "../role-definition";
+import { seedCharacters } from "@/seeds/characters";
+import { seedPresets } from "@/seeds/presets";
+import { seedRoles } from "@/seeds/roles";
 
 const timestamp = "2026-06-27T00:00:00.000Z";
 
@@ -229,14 +232,14 @@ describe("library diagnostics", () => {
     });
   });
 
-  it("marks complete presets valid and creatable", () => {
-    const preset = sixPlayerPreset();
+  it("marks the complete current preset valid and creatable", () => {
+    const preset = seedPresets[0]!;
 
     expect(
       diagnosePreset({
         preset,
-        roles: [werewolf, seer, witch, villager],
-        characters: [qin, lin, zhou, xu, chen, shen],
+        roles: seedRoles,
+        characters: seedCharacters,
         presets: [preset],
       }),
     ).toMatchObject({
@@ -246,14 +249,14 @@ describe("library diagnostics", () => {
     });
   });
 
-  it("marks disabled presets invalid while preserving structural create-game readiness", () => {
-    const preset = sixPlayerPreset({ enabled: false });
+  it("marks a disabled current preset invalid while preserving structural readiness", () => {
+    const preset = { ...seedPresets[0]!, enabled: false };
 
     expect(
       diagnosePreset({
         preset,
-        roles: [werewolf, seer, witch, villager],
-        characters: [qin, lin, zhou, xu, chen, shen],
+        roles: seedRoles,
+        characters: seedCharacters,
         presets: [preset],
       }),
     ).toMatchObject({

@@ -1,6 +1,11 @@
 import type { ModelBindingSnapshot } from "./player";
 import type { LlmTokenUsage } from "./llm";
 import type { DraftId, GameId, PlayerId } from "./types";
+import { assertExactObjectKeys, isPlainObject } from "./model-binding";
+import {
+  ACTION_PROMPT_VERSION,
+  SPEECH_PROMPT_VERSION,
+} from "./prompt-builders";
 
 export type GenerationPurpose = "speech" | "action";
 export type GenerationStatus = "success" | "failed";
@@ -32,7 +37,7 @@ export type GenerationRecord = {
   readonly provider: string;
   readonly model: string;
   readonly inputContextHash: string;
-  readonly request: GenerationRequestSnapshot | null;
+  readonly request: GenerationRequestSnapshot;
   readonly tokenUsage: LlmTokenUsage | null;
   readonly rawOutput: string | null;
   readonly parsedOutput: Record<string, unknown> | null;
@@ -121,6 +126,200 @@ export function createFailedGenerationRecord(
     createdAt: input.createdAt,
     ...(input.attempts ? { attempts: input.attempts } : {}),
   };
+}
+
+export function validateGenerationRecord(
+  value: unknown,
+  expectedGameId?: GameId,
+): GenerationRecord {
+  if (!isPlainObject(value)) {
+    throw new Error("Generation record must be an object");
+  }
+  assertExactObjectKeys(
+    value,
+    "Generation record",
+    [
+      "id",
+      "gameId",
+      "draftId",
+      "playerId",
+      "purpose",
+      "status",
+      "promptVersion",
+      "provider",
+      "model",
+      "inputContextHash",
+      "request",
+      "tokenUsage",
+      "rawOutput",
+      "parsedOutput",
+      "error",
+      "createdAt",
+    ],
+    ["attempts"],
+  );
+  for (const field of [
+    "id",
+    "gameId",
+    "draftId",
+    "playerId",
+    "provider",
+    "model",
+    "inputContextHash",
+    "createdAt",
+  ] as const) {
+    if (!isNonBlankString(value[field])) {
+      throw new Error(`Generation record ${field} must be set`);
+    }
+  }
+  if (expectedGameId !== undefined && value.gameId !== expectedGameId) {
+    throw new Error("Generation record belongs to another game");
+  }
+  if (value.purpose !== "speech" && value.purpose !== "action") {
+    throw new Error("Generation record purpose is invalid");
+  }
+  const purpose = value.purpose;
+  if (value.status !== "success" && value.status !== "failed") {
+    throw new Error("Generation record status is invalid");
+  }
+  const expectedPromptVersion =
+    purpose === "speech" ? SPEECH_PROMPT_VERSION : ACTION_PROMPT_VERSION;
+  if (value.promptVersion !== expectedPromptVersion) {
+    throw new Error(`Unsupported generation prompt version: ${String(value.promptVersion)}`);
+  }
+  validateGenerationRequest(value.request, purpose);
+  if (!isTokenUsage(value.tokenUsage)) {
+    throw new Error("Generation record tokenUsage is invalid");
+  }
+  if (value.rawOutput !== null && typeof value.rawOutput !== "string") {
+    throw new Error("Generation record rawOutput is invalid");
+  }
+  if (
+    value.parsedOutput !== null &&
+    !isPlainObject(value.parsedOutput)
+  ) {
+    throw new Error("Generation record parsedOutput is invalid");
+  }
+  if (value.error !== null && typeof value.error !== "string") {
+    throw new Error("Generation record error is invalid");
+  }
+  if (
+    (value.status === "success" &&
+      (value.parsedOutput === null || value.error !== null)) ||
+    (value.status === "failed" &&
+      (value.parsedOutput !== null || typeof value.error !== "string"))
+  ) {
+    throw new Error("Generation record status payload is inconsistent");
+  }
+  if (
+    value.attempts !== undefined &&
+    (!Array.isArray(value.attempts) ||
+      value.attempts.some((attempt) => !isGenerationAttempt(attempt, purpose)))
+  ) {
+    throw new Error("Generation record attempts are invalid");
+  }
+
+  return structuredClone(value) as GenerationRecord;
+}
+
+function validateGenerationRequest(
+  value: unknown,
+  purpose: GenerationPurpose,
+): asserts value is GenerationRequestSnapshot {
+  if (!isPlainObject(value)) {
+    throw new Error("Generation request snapshot is invalid");
+  }
+  try {
+    assertExactObjectKeys(value, "Generation request snapshot", [
+      "schemaName",
+      "systemPrompt",
+      "messages",
+    ]);
+  } catch {
+    throw new Error("Generation request snapshot is invalid");
+  }
+  if (
+    !isNonBlankString(value.schemaName) ||
+    typeof value.systemPrompt !== "string" ||
+    !Array.isArray(value.messages) ||
+    value.messages.some(
+      (message) =>
+        !isPlainObject(message) ||
+        (message.role !== "system" &&
+          message.role !== "user" &&
+          message.role !== "assistant") ||
+        typeof message.content !== "string" ||
+        Object.keys(message).some(
+          (key) => key !== "role" && key !== "content",
+        ),
+    )
+  ) {
+    throw new Error("Generation request snapshot is invalid");
+  }
+  const validSchema =
+    purpose === "speech"
+      ? value.schemaName === "werewolf_speech_v2"
+      : value.schemaName === "werewolf_target_action_v2" ||
+        value.schemaName === "werewolf_optional_action_v2";
+  if (!validSchema) {
+    throw new Error(`Unsupported generation request schema: ${value.schemaName}`);
+  }
+}
+
+function isGenerationAttempt(
+  value: unknown,
+  purpose: GenerationPurpose,
+): value is GenerationAttemptSnapshot {
+  if (!isPlainObject(value)) return false;
+  try {
+    assertExactObjectKeys(value, "Generation attempt", [
+      "request",
+      "tokenUsage",
+      "rawOutput",
+      "parsedOutput",
+      "error",
+    ]);
+    validateGenerationRequest(value.request, purpose);
+  } catch {
+    return false;
+  }
+  return (
+    isTokenUsage(value.tokenUsage) &&
+    (value.rawOutput === null || typeof value.rawOutput === "string") &&
+    (value.parsedOutput === null || isPlainObject(value.parsedOutput)) &&
+    (value.error === null || typeof value.error === "string")
+  );
+}
+
+function isTokenUsage(value: unknown): value is LlmTokenUsage | null {
+  if (value === null) return true;
+  if (!isPlainObject(value)) return false;
+  try {
+    assertExactObjectKeys(
+      value,
+      "Token usage",
+      ["promptTokens", "completionTokens", "totalTokens"],
+      ["cachedPromptTokens", "reasoningTokens"],
+    );
+  } catch {
+    return false;
+  }
+  return [
+    value.promptTokens,
+    value.completionTokens,
+    value.totalTokens,
+    value.cachedPromptTokens,
+    value.reasoningTokens,
+  ].every(
+    (count, index) =>
+      (index >= 3 && count === undefined) ||
+      count === null ||
+      (typeof count === "number" && Number.isFinite(count) && count >= 0),
+  );
+}
+
+function isNonBlankString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function errorMessage(error: unknown): string {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeGameRunMode, parseGameRunMode } from "../game-run-mode";
+import { parseGameRunMode } from "../game-run-mode";
 
 describe("game run mode", () => {
   it("accepts the two supported modes", () => {
@@ -7,9 +7,11 @@ describe("game run mode", () => {
     expect(parseGameRunMode("scripted")).toBe("scripted");
   });
 
-  it("defaults only missing historical values to game mode", () => {
-    expect(normalizeGameRunMode(undefined)).toBe("game");
-    expect(() => normalizeGameRunMode("story")).toThrow(
+  it("rejects missing and unsupported modes", () => {
+    expect(() => parseGameRunMode(undefined)).toThrow(
+      "Invalid game run mode: undefined",
+    );
+    expect(() => parseGameRunMode("story")).toThrow(
       "Invalid game run mode: story",
     );
   });

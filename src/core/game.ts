@@ -1,8 +1,5 @@
 import type { CharacterDefinition } from "./character-definition";
-import {
-  normalizeGameRunMode,
-  type GameRunMode,
-} from "./game-run-mode";
+import type { GameRunMode } from "./game-run-mode";
 import { validateGamePresets, type GamePreset } from "./game-preset";
 import {
   createGameScriptSnapshot,
@@ -65,7 +62,7 @@ export type CreateGameFromPresetInput = {
   readonly script: GameScriptDefinition;
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
-  readonly runMode?: GameRunMode;
+  readonly runMode: GameRunMode;
 };
 
 export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
@@ -109,7 +106,6 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
       characterSystemPromptSnapshot: character.systemPrompt,
       roleSystemPromptSnapshot: role.systemPrompt,
       roleActionPromptSnapshot: role.actionPrompt,
-      systemPrompt: character.systemPrompt,
       modelBindingSnapshot: character.defaultModelBinding ?? undefined,
       voiceProfileSnapshot: character.voiceProfile,
       roleName: role.name,
@@ -123,7 +119,7 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
     id: input.gameId,
     title: input.title,
     status: "drafting",
-    runMode: normalizeGameRunMode(input.runMode),
+    runMode: input.runMode,
     ruleset: input.ruleset,
     presenter: createGamePresenterSnapshot(input.presenter),
     script: createGameScriptSnapshot(input.script),
@@ -151,6 +147,7 @@ export function createSeedGame(input: CreateSeedGameInput): Game {
     script: seedScripts[0]!,
     roles: seedRoles,
     characters: seedCharacters,
+    runMode: "game",
   });
 }
 

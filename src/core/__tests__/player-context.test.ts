@@ -53,7 +53,6 @@ describe("player LLM context", () => {
       characterSystemPromptSnapshot: seer.characterSystemPromptSnapshot,
       roleSystemPromptSnapshot: seer.roleSystemPromptSnapshot,
       roleActionPromptSnapshot: seer.roleActionPromptSnapshot,
-      systemPrompt: seer.systemPrompt,
     });
   });
 
@@ -243,7 +242,10 @@ function sampleEvents(): readonly GameEvent[] {
       phase: "night",
       targetPlayerIds: [seer.playerId],
       visibility: { kind: "host_only" },
-      payload: { deadPlayerIds: [seer.playerId] },
+      payload: {
+        deadPlayerIds: [seer.playerId],
+        deaths: [{ playerId: seer.playerId, reason: "wolf_kill" }],
+      },
     },
     {
       ...baseEvent(8),

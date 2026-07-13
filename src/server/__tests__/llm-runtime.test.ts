@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LocalHeuristicLlmClient, OpenAICompatibleLlmClient } from "@/core/llm";
-import {
-  createRuntimeLlmClient,
-  resolveRuntimePromptMode,
-} from "../llm-runtime";
+import { createRuntimeLlmClient } from "../llm-runtime";
 
 describe("LLM runtime factory", () => {
   it("uses a local heuristic client when OpenAI-compatible env is absent", async () => {
@@ -19,7 +16,7 @@ describe("LLM runtime factory", () => {
         },
         systemPrompt: "test",
         messages: [{ role: "user", content: "draft=day_speech_given" }],
-        schemaName: "werewolf_speech_v1",
+        schemaName: "werewolf_speech_v2",
       }),
     ).resolves.toMatchObject({
       parsed: { text: expect.stringContaining("我先") },
@@ -70,17 +67,4 @@ describe("LLM runtime factory", () => {
     expect(client).toBeInstanceOf(OpenAICompatibleLlmClient);
   });
 
-  it("defaults to Prompt v2 and supports an explicit v1 rollback", () => {
-    expect(resolveRuntimePromptMode({ env: {} })).toBe("v2");
-    expect(
-      resolveRuntimePromptMode({
-        env: { KIVA_LLM_PROMPT_VERSION: "v1" },
-      }),
-    ).toBe("v1");
-    expect(() =>
-      resolveRuntimePromptMode({
-        env: { KIVA_LLM_PROMPT_VERSION: "v3" },
-      }),
-    ).toThrow("expected v1 or v2");
-  });
 });

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   createGameScriptSnapshot,
-  legacyGameScriptSnapshot,
   validateGameScriptDefinitions,
   validateGameScriptSnapshot,
 } from "../game-script";
@@ -32,9 +31,22 @@ describe("game script definitions", () => {
     ).toThrow(/safe internal PNG/);
   });
 
-  it("provides a validated legacy compatibility snapshot", () => {
-    const legacy = legacyGameScriptSnapshot();
-    expect(legacy.presentation.styleKey).toBe("legacy_v1");
-    expect(validateGameScriptSnapshot(legacy)).toEqual(legacy);
+  it("rejects Preview assets and removed visual styles", () => {
+    const snapshot = createGameScriptSnapshot(seedScripts[0]!);
+    expect(() =>
+      validateGameScriptSnapshot({
+        ...snapshot,
+        presentation: {
+          ...snapshot.presentation,
+          dayBackground: "/kivdb-assets/preview/day-background.png",
+        },
+      }),
+    ).toThrow("safe internal PNG asset");
+    expect(() =>
+      validateGameScriptSnapshot({
+        ...snapshot,
+        presentation: { ...snapshot.presentation, styleKey: "legacy_v1" },
+      }),
+    ).toThrow("styleKey is invalid");
   });
 });

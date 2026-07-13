@@ -75,7 +75,7 @@ Correct: generate complete JSON against `SpeechBudget`, validate the full `text`
 | Condition | Required behavior |
 |---|---|
 | Script is present | Render name, shared background, atmosphere, and the explicit non-evidence warning. |
-| Historical Game lacks script | Repository injects the neutral legacy snapshot before context construction. |
+| Persisted Game lacks the current script snapshot | Reject the GameRecord before context construction. |
 | Script language implies a role or relationship | Treat it only as atmosphere; never promote it into facts or legality. |
 | Model repeats theme excessively | Evaluate as expression quality; do not create a prose keyword validator. |
 
@@ -127,8 +127,8 @@ legalActionOptions(input: {
   draft: LlmActionDraft;
 }): LegalActionOptions
 
-buildSpeechPrompt(input: SpeechPromptInput, mode?: "v1" | "v2"): BuiltPrompt
-buildActionPrompt(input: ActionPromptInput, mode?: "v1" | "v2"): BuiltPrompt
+buildSpeechPrompt(input: SpeechPromptInput): BuiltPrompt
+buildActionPrompt(input: ActionPromptInput): BuiltPrompt
 
 generateValidatedJson<Value>(input: {
   llmClient: LlmClient;
@@ -146,7 +146,7 @@ type ModelBindingSnapshot = {
 }
 ```
 
-Runtime selection is `KIVA_LLM_PROMPT_VERSION=v1|v2`. Missing values select v2; any other value is rejected. Keep v1 isolated in `prompt-builders-v1.ts` until real replay coverage is sufficient to remove the rollback.
+Prompt v2 is the only builder and output contract. There is no runtime prompt-version selector or rollback builder.
 
 ## 3. Contracts
 
@@ -201,7 +201,7 @@ Natural-language quality, credibility framing, disclosure consistency, and factu
 - Required-target action v2 schema: `werewolf_target_action_v2`, with `targetPlayerId` and `decisionSummary`.
 - Optional action v2 schema: `werewolf_optional_action_v2`, with `used`, `targetPlayerId`, and `decisionSummary`.
 - Only speech `text` and validated action fields enter the Draft. `decisionSummary`, `disclosure`, request snapshots, and attempts remain debug metadata.
-- A repaired GenerationRecord stores both attempts in optional `attempts`; legacy v1 records without attempts or token usage remain readable.
+- Every GenerationRecord stores the exact current shape and a required Prompt-v2 request snapshot. `attempts` remains optional because a successful first response has no repair attempt; provider token usage may be `null` when the provider does not report it.
 
 ### Editor completion notifications
 
@@ -224,7 +224,8 @@ Natural-language quality, credibility framing, disclosure consistency, and factu
 | Public special-role disclosure is absent/invalid | Repair once; accept only `conceal` or `claim`. |
 | Repair output is still invalid | Preserve the original Draft and store both failed attempts. |
 | `vote_cast.voteType === "sheriff"` reaches the LLM path | Throw the explicit unsupported-task error; never fall back to exile semantics. |
-| Character model binding is absent | Use the code-owned default binding for compatibility; never fall back to role or seat configuration. |
+| A new Character has no explicit model binding | The Player snapshot factory writes the code-owned current default; persisted Player snapshots must still contain a complete binding. |
+| Generation request is absent, uses Prompt v1, or contains an old reasoning alias | Reject the persisted GenerationRecord. |
 
 Semantic prose content never enters this error matrix. Speech length is the one structural text contract and follows the dedicated scenario above; disclosure/text agreement, public-wolf leaks, claim framing, quotation attribution, first-night reasoning, ballot summaries, and medicine summaries are not runtime validators.
 
@@ -248,7 +249,7 @@ Repair requests contain only the invalid output, validation error, output contra
 - Legal-option tests: PK targets, abstention, prior seer checks, guard history, witch dual-use, and actor eligibility.
 - Generation tests: valid output, wrong actor, invalid target, missing field, contradictory medicine fields, disclosure enum, one-repair failure, unchanged Draft on failure, and regression cases proving semantic wording does not trigger repair.
 - Editor notification tests: a matching Draft with a new GenerationRecord ID is recognized as complete; unchanged IDs, unrelated Drafts, malformed markers, unsupported APIs, and denied permission do not affect generation.
-- Compatibility tests: v1 builder selection, legacy snapshot fallback, old GenerationRecord loading, and details UI fallback from `decisionSummary` to legacy reasoning keys.
+- Current-contract tests: Prompt v2 is the only builder, Game Script/request snapshots are required, old Prompt versions and reasoning aliases are rejected, and details UI renders only `decisionSummary`.
 - Model binding tests: Game creation snapshots the Character binding, and the HTTP request body omits `temperature` and `max_tokens`.
 - Token pricing tests: default and custom per-million prices calculate reasoning at the input rate, completion at the output rate, while invalid or negative values contribute zero.
 - Quality gates: `pnpm typecheck`, `pnpm test`, `pnpm build`, and `git diff --check` (there is currently no project lint script).
@@ -287,6 +288,12 @@ const edit = validateModelOutput(output, options);
 
 Wrong: select an LLM from the player's temporary rule role or preset seat, or
 send character-authored `temperature` / `max_tokens` values.
+
+Wrong: select a prompt builder from an environment variable or fill missing
+persisted request/profile fields while loading a record.
+
+Correct: create one complete current Player and Generation snapshot, then use
+Prompt v2 for every speech and action request.
 
 Correct: snapshot the fixed Character's provider/model binding and let the
 model service own sampling and output-token defaults.

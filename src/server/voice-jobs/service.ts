@@ -62,7 +62,13 @@ export class VoiceJobService {
       startedAt: null,
       completedAt: null,
       retryOfJobId: null,
-      items: missing.map((target) => ({ ...target, status: "queued", error: null })),
+      items: missing.map((target) => ({
+        eventId: target.eventId,
+        playerId: target.playerId,
+        label: target.label,
+        status: "queued",
+        error: null,
+      })),
       error: null,
     };
     await this.jobs.create(job);

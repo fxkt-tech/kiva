@@ -1,9 +1,6 @@
-import { isPlainObject } from "./model-binding";
+import { assertExactObjectKeys, isPlainObject } from "./model-binding";
 
-export const GAME_SCRIPT_VISUAL_STYLE_KEYS = [
-  "legacy_v1",
-  "midnight_archive_v1",
-] as const;
+export const GAME_SCRIPT_VISUAL_STYLE_KEYS = ["midnight_archive_v1"] as const;
 
 export type GameScriptVisualStyleKey =
   (typeof GAME_SCRIPT_VISUAL_STYLE_KEYS)[number];
@@ -56,11 +53,22 @@ export function validateGameScriptDefinitions(
   for (const [index, definition] of input.entries()) {
     const path = `Game script definition[${index}]`;
     if (!isPlainObject(definition)) throw new Error(`${path} must be an object`);
+    assertExactObjectKeys(definition, path, [
+      "id",
+      "name",
+      "theme",
+      "background",
+      "atmosphere",
+      "presentation",
+      "enabled",
+      "createdAt",
+      "updatedAt",
+    ]);
     const id = requireStableId(definition.id, `${path} id`);
     if (ids.has(id)) throw new Error(`Duplicate game script definition id: ${id}`);
     ids.add(id);
     validateIdentityAndNarrative(definition, `Game script ${id}`);
-    validatePresentation(definition.presentation, `Game script ${id} presentation`, false);
+    validatePresentation(definition.presentation, `Game script ${id} presentation`);
     if (typeof definition.enabled !== "boolean") {
       throw new Error(`Game script ${id} enabled must be a boolean`);
     }
@@ -87,37 +95,18 @@ export function createGameScriptSnapshot(
 
 export function validateGameScriptSnapshot(input: unknown): GameScriptSnapshot {
   if (!isPlainObject(input)) throw new Error("Game script snapshot must be an object");
+  assertExactObjectKeys(input, "Game script snapshot", [
+    "scriptSourceId",
+    "name",
+    "theme",
+    "background",
+    "atmosphere",
+    "presentation",
+  ]);
   const sourceId = requireStableId(input.scriptSourceId, "Game script snapshot source id");
   validateIdentityAndNarrative(input, `Game script snapshot ${sourceId}`);
-  validatePresentation(
-    input.presentation,
-    `Game script snapshot ${sourceId} presentation`,
-    true,
-  );
+  validatePresentation(input.presentation, `Game script snapshot ${sourceId} presentation`);
   return input as GameScriptSnapshot;
-}
-
-export function legacyGameScriptSnapshot(): GameScriptSnapshot {
-  return {
-    scriptSourceId: "legacy",
-    name: "经典回放",
-    theme: "传统狼人杀记录",
-    background: "一场按标准流程进行的狼人杀对局。",
-    atmosphere: ["月夜", "庄园", "案卷记录"],
-    presentation: {
-      styleKey: "legacy_v1",
-      coverImage: "/kivdb-assets/preview/night-background.png",
-      dayBackground: "/kivdb-assets/preview/day-background.png",
-      nightBackground: "/kivdb-assets/preview/night-background.png",
-      colors: {
-        ink: "#080A09",
-        paper: "#FFF7E7",
-        accent: "#F0D084",
-        signal: "#FF767B",
-        night: "#071015",
-      },
-    },
-  };
 }
 
 function validateIdentityAndNarrative(
@@ -139,19 +128,26 @@ function validateIdentityAndNarrative(
 function validatePresentation(
   input: unknown,
   path: string,
-  allowLegacyAssets: boolean,
 ): void {
   if (!isPlainObject(input)) throw new Error(`${path} must be an object`);
+  assertExactObjectKeys(input, path, [
+    "styleKey",
+    "coverImage",
+    "dayBackground",
+    "nightBackground",
+    "colors",
+  ]);
   if (!(GAME_SCRIPT_VISUAL_STYLE_KEYS as readonly unknown[]).includes(input.styleKey)) {
     throw new Error(`${path} styleKey is invalid`);
   }
   for (const field of ["coverImage", "dayBackground", "nightBackground"] as const) {
     const value = input[field];
-    if (typeof value !== "string" || !isScriptAsset(value, allowLegacyAssets)) {
+    if (typeof value !== "string" || !isScriptAsset(value)) {
       throw new Error(`${path} ${field} must be a safe internal PNG asset`);
     }
   }
   if (!isPlainObject(input.colors)) throw new Error(`${path} colors must be an object`);
+  assertExactObjectKeys(input.colors, `${path} colors`, COLOR_KEYS);
   for (const key of COLOR_KEYS) {
     if (typeof input.colors[key] !== "string" || !/^#[0-9A-F]{6}$/i.test(input.colors[key])) {
       throw new Error(`${path} colors.${key} must be #RRGGBB`);
@@ -159,11 +155,8 @@ function validatePresentation(
   }
 }
 
-function isScriptAsset(value: string, allowLegacy: boolean): boolean {
-  return (
-    /^\/kivdb-assets\/scripts\/[a-zA-Z0-9_-]+\.png$/.test(value) ||
-    (allowLegacy && /^\/kivdb-assets\/preview\/[a-zA-Z0-9_-]+\.png$/.test(value))
-  );
+function isScriptAsset(value: string): boolean {
+  return /^\/kivdb-assets\/scripts\/[a-zA-Z0-9_-]+\.png$/.test(value);
 }
 
 function requireStableId(value: unknown, path: string): string {

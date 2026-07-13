@@ -105,7 +105,7 @@ describe("DraftPanel payload controls", () => {
     expect(html).toContain("Generation");
     expect(html).toContain("success");
     expect(html).toContain("mock/mock-model");
-    expect(html).toContain("speech:v1");
+    expect(html).toContain("speech:v2");
     expect(html).not.toContain("old error");
   });
 
@@ -262,12 +262,12 @@ function generationRecord(input: {
     playerId: players[0].playerId,
     purpose: "speech",
     status: input.status,
-    promptVersion: "speech:v1",
+    promptVersion: "speech:v2",
     provider: "mock",
     model: "mock-model",
     inputContextHash: "ctx",
     request: {
-      schemaName: "werewolf_speech_v1",
+      schemaName: "werewolf_speech_v2",
       systemPrompt: "system prompt",
       messages: [{ role: "user", content: "visible context" }],
     },

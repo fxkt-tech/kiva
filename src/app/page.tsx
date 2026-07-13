@@ -189,12 +189,20 @@ function formatDate(value: string): string {
 
 function modeLabel(record: GameRecord): string {
   if (record.game.runMode === "game") return "游戏模式";
-  return `剧本模式 · ${record.episodeScript?.status ?? "idle"}`;
+  if (!record.episodeScript) {
+    throw new Error("Scripted game is missing its episode script state");
+  }
+  return `剧本模式 · ${record.episodeScript.status}`;
 }
 
 function gameWorkspaceHref(record: GameRecord): string {
-  return record.game.runMode === "scripted" &&
-    record.episodeScript?.status !== "approved"
-    ? `/games/${record.game.id}/script`
-    : `/games/${record.game.id}/editor`;
+  if (record.game.runMode === "game") {
+    return `/games/${record.game.id}/editor`;
+  }
+  if (!record.episodeScript) {
+    throw new Error("Scripted game is missing its episode script state");
+  }
+  return record.episodeScript.status === "approved"
+    ? `/games/${record.game.id}/editor`
+    : `/games/${record.game.id}/script`;
 }

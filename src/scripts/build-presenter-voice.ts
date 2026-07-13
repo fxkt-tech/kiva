@@ -10,6 +10,7 @@ import { PRESENTER_EDGE_VOICE } from "@/core/voice";
 import { createEdgeVoiceAdapter } from "@/server/voice-synthesis/edge-adapter";
 import { createLibraryRepository } from "@/server/library-repository";
 import { mp3DurationMs } from "@/server/voice-synthesis/mp3-duration";
+import { loadPresenterVoiceManifest } from "@/server/presenter-voice-manifest";
 
 const ROLE_NAMES = ["狼人", "预言家", "女巫", "猎人", "守卫", "平民"];
 
@@ -22,7 +23,7 @@ async function main(): Promise<void> {
     const root = join(dataDir, "presenters", presenter.id);
     const voiceDir = join(root, "voice");
     await mkdir(voiceDir, { recursive: true });
-    const previousManifest = await readExistingManifest(join(root, "manifest.json"));
+    const previousManifest = await readExistingManifest(dataDir, presenter.id);
     if (profile.voice !== PRESENTER_EDGE_VOICE) {
       throw new Error(`Presenter ${presenter.id} must use ${PRESENTER_EDGE_VOICE}`);
     }
@@ -124,11 +125,11 @@ async function main(): Promise<void> {
   }
 
   async function readExistingManifest(
-    path: string,
+    rootDir: string,
+    presenterId: string,
   ): Promise<PresenterVoiceManifest | null> {
     try {
-      const parsed = JSON.parse(await readFile(path, "utf8")) as PresenterVoiceManifest;
-      return parsed.schemaVersion === 1 ? parsed : null;
+      return await loadPresenterVoiceManifest(rootDir, presenterId);
     } catch {
       return null;
     }

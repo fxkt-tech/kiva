@@ -83,36 +83,33 @@ const DAY_PALETTE: StagePalette = {
 
 export function stagePaletteForPhase(
   phase: StageVisualPhase,
-  presentation?: GameScriptPresentation,
+  presentation: GameScriptPresentation,
 ): StagePalette {
-  if (presentation?.styleKey === "midnight_archive_v1") {
-    const { colors } = presentation;
-    return {
-      ...(phase === "night" ? NIGHT_PALETTE : DAY_PALETTE),
-      majorSurface: phase === "night" ? "rgba(3,15,17,0.78)" : "rgba(16,24,23,0.82)",
-      majorBorder: `${colors.paper}66`,
-      cardSurface: phase === "night" ? "rgba(4,18,20,0.74)" : "rgba(20,28,25,0.76)",
-      cardBorder: `${colors.accent}66`,
-      text: colors.paper,
-      number: colors.paper,
-      accent: colors.accent,
-      rule: `${colors.accent}99`,
-      ruleSoft: `${colors.accent}44`,
-      edge: colors.signal,
-      avatarBorder: colors.accent,
-      activeCard: "rgba(28,39,35,0.92)",
-      activeBorder: colors.paper,
-      active: colors.paper,
-      activeField: `${colors.signal}28`,
-      activeShadow: `0 0 42px ${colors.accent}45`,
-      activeEdgeShadow: `0 0 28px ${colors.signal}66`,
-      accentGlow: `${colors.accent}45`,
-      edgeShadow: `0 0 18px ${colors.signal}44`,
-      titleShadow: "0 3px 14px rgba(0,0,0,0.92)",
-      textShadow: "0 3px 10px rgba(0,0,0,0.92)",
-      numberShadow: `0 0 22px ${colors.accent}44`,
-    };
-  }
-  return phase === "night" ? NIGHT_PALETTE : DAY_PALETTE;
+  const { colors } = presentation;
+  return {
+    ...(phase === "night" ? NIGHT_PALETTE : DAY_PALETTE),
+    majorSurface: phase === "night" ? "rgba(3,15,17,0.78)" : "rgba(16,24,23,0.82)",
+    majorBorder: `${colors.paper}66`,
+    cardSurface: phase === "night" ? "rgba(4,18,20,0.74)" : "rgba(20,28,25,0.76)",
+    cardBorder: `${colors.accent}66`,
+    text: colors.paper,
+    number: colors.paper,
+    accent: colors.accent,
+    rule: `${colors.accent}99`,
+    ruleSoft: `${colors.accent}44`,
+    edge: colors.signal,
+    avatarBorder: colors.accent,
+    activeCard: "rgba(28,39,35,0.92)",
+    activeBorder: colors.paper,
+    active: colors.paper,
+    activeField: `${colors.signal}28`,
+    activeShadow: `0 0 42px ${colors.accent}45`,
+    activeEdgeShadow: `0 0 28px ${colors.signal}66`,
+    accentGlow: `${colors.accent}45`,
+    edgeShadow: `0 0 18px ${colors.signal}44`,
+    titleShadow: "0 3px 14px rgba(0,0,0,0.92)",
+    textShadow: "0 3px 10px rgba(0,0,0,0.92)",
+    numberShadow: `0 0 22px ${colors.accent}44`,
+  };
 }
 import type { GameScriptPresentation } from "@/core/game-script";

@@ -138,7 +138,7 @@ export type NightResolvedEvent = GameEventBase<
   "night_resolved",
   {
     readonly deadPlayerIds: readonly PlayerId[];
-    readonly deaths?: readonly NightDeath[];
+    readonly deaths: readonly NightDeath[];
   }
 >;
 

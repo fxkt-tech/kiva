@@ -244,7 +244,10 @@ describe("playback compiler", () => {
       event(2, { kind: "host_only" }, {
         type: "night_resolved",
         phase: "night",
-        payload: { deadPlayerIds: [killedPlayerId] },
+        payload: {
+          deadPlayerIds: [killedPlayerId],
+          deaths: [{ playerId: killedPlayerId, reason: "wolf_kill" }],
+        },
       }),
       event(3, { kind: "public" }, {
         type: "death_announced",
@@ -266,7 +269,10 @@ describe("playback compiler", () => {
       event(1, { kind: "public" }, {
         type: "night_resolved",
         phase: "night",
-        payload: { deadPlayerIds: [killedPlayerId] },
+        payload: {
+          deadPlayerIds: [killedPlayerId],
+          deaths: [{ playerId: killedPlayerId, reason: "wolf_kill" }],
+        },
       }),
       event(2, { kind: "public" }, {
         type: "death_announced",
@@ -640,6 +646,10 @@ function playbackItem(
     presenterName: "守夜人",
     presenterAvatar: null,
     transcriptSpeaker: "presenter",
-    presenterCue: { copyKey: "fallback.announcement", text: "" },
+    presenterCue: { copyKey: "fallback.announcement", text: "", values: {} },
+    playerVoice: null,
+    presenterVoiceClips: [],
+    presenterSourceId: "host",
+    stage: null,
   };
 }

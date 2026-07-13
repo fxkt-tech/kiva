@@ -567,29 +567,6 @@ describe("game actions", () => {
     );
   });
 
-  it("passes the configured v1 prompt rollback through regeneration", async () => {
-    const repository = createGameRepository(await createTempDir());
-    const created = await createGameActions(repository).createGame();
-    const actions = createGameActions(repository, {
-      promptMode: "v1",
-      llmClient: new MockLlmClient([
-        {
-          text: "使用旧版提示词生成。",
-          reasoning: "验证单点回滚。",
-        },
-      ]),
-    });
-    await continueUntilDraftType(actions, created.game.id, "day_speech_given");
-
-    const generated = await actions.regenerateDraft(created.game.id);
-
-    expect(generated.generations.at(-1)).toMatchObject({
-      status: "success",
-      promptVersion: "speech:v1",
-      request: { schemaName: "werewolf_speech_v1" },
-    });
-  });
-
   it("keeps default speech draft and records failure when regeneration fails", async () => {
     const repository = createGameRepository(await createTempDir());
     const actions = createGameActions(repository, {

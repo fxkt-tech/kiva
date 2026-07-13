@@ -107,7 +107,13 @@ describe("foundation flow", () => {
         type: "night_resolved",
         phase: "night",
         visibility: { kind: "host_only" },
-        payload: { deadPlayerIds: dead },
+        payload: {
+          deadPlayerIds: dead,
+          deaths: dead.map((playerId) => ({
+            playerId,
+            reason: "wolf_kill" as const,
+          })),
+        },
       } satisfies EventOf<"night_resolved">,
       {
         ...eventBase(5),

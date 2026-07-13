@@ -88,39 +88,6 @@ describe("action generation", () => {
     );
   });
 
-  it("falls back to legacy system prompt for action prompts when snapshots are empty", async () => {
-    const legacySystemPrompt = "旧局行动人设 prompt";
-    const legacyGame = {
-      ...game,
-      players: game.players.map((player) =>
-        player.playerId === seer.playerId
-          ? {
-              ...player,
-              persona: "",
-              speakingStyle: "",
-              reasoningStyle: "",
-              characterSystemPromptSnapshot: "",
-              roleSystemPromptSnapshot: "",
-              roleActionPromptSnapshot: null,
-              systemPrompt: legacySystemPrompt,
-            }
-          : player,
-      ),
-    };
-
-    const result = await generateActionDraft({
-      game: legacyGame,
-      events: setupEvents(),
-      draft: seerDraft(villager.playerId),
-      llmClient: new MockLlmClient([{ targetPlayerId: wolf.playerId }]),
-      generationId: "generation_legacy",
-      createdAt,
-    });
-
-    expect(result.generation?.request?.systemPrompt).toContain(legacySystemPrompt);
-    expect(result.generation?.request?.systemPrompt).toContain("【执行优先级】");
-  });
-
   it("includes visible event text and details in action prompts", async () => {
     const result = await generateActionDraft({
       game,

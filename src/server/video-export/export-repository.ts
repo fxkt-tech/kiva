@@ -11,6 +11,7 @@ import {
   decodeVideoCompositionInput,
   type VideoCompositionInput,
 } from "@/components/preview-v2/composition/types";
+import { assertExactObjectKeys } from "@/core/model-binding";
 import type { ExportJob, ExportJobSnapshot } from "./types";
 
 export class ExportRepository {
@@ -27,16 +28,19 @@ export class ExportRepository {
   }
 
   async create(snapshot: ExportJobSnapshot): Promise<void> {
-    const directory = this.jobDir(snapshot.job.gameId, snapshot.job.jobId);
+    const job = decodeJob(snapshot.job);
+    const composition = decodeVideoCompositionInput(snapshot.composition);
+    const directory = this.jobDir(job.gameId, job.jobId);
     await mkdir(join(directory, "assets"), { recursive: true });
-    await atomicJson(join(directory, "input.json"), snapshot.composition);
-    await atomicJson(join(directory, "job.json"), snapshot.job);
+    await atomicJson(join(directory, "input.json"), composition);
+    await atomicJson(join(directory, "job.json"), job);
   }
 
   async save(job: ExportJob): Promise<void> {
+    const validated = decodeJob(job);
     await atomicJson(
-      join(this.jobDir(job.gameId, job.jobId), "job.json"),
-      job,
+      join(this.jobDir(validated.gameId, validated.jobId), "job.json"),
+      validated,
     );
   }
 
@@ -137,9 +141,29 @@ function isIdentifier(value: string): boolean {
 }
 
 function decodeJob(value: unknown): ExportJob {
+  if (!isRecord(value)) {
+    throw new Error("Invalid export job record.");
+  }
+  if (value.schemaVersion !== 1) {
+    throw new Error("Unsupported export job schema version.");
+  }
+  assertExactObjectKeys(value, "Export job", [
+    "schemaVersion",
+    "jobId",
+    "gameId",
+    "gameTitle",
+    "status",
+    "stage",
+    "progress",
+    "createdAt",
+    "startedAt",
+    "completedAt",
+    "retryOfJobId",
+    "warnings",
+    "error",
+    "output",
+  ]);
   if (
-    !isRecord(value) ||
-    value.schemaVersion !== 1 ||
     typeof value.jobId !== "string" ||
     !isIdentifier(value.jobId) ||
     typeof value.gameId !== "string" ||
@@ -195,6 +219,7 @@ function isJobError(value: unknown): boolean {
   return (
     value === null ||
     (isRecord(value) &&
+      hasExactKeys(value, ["code", "message"]) &&
       typeof value.code === "string" &&
       typeof value.message === "string")
   );
@@ -204,6 +229,7 @@ function isJobOutput(value: unknown): boolean {
   return (
     value === null ||
     (isRecord(value) &&
+      hasExactKeys(value, ["fileName", "sizeBytes", "durationMs"]) &&
       typeof value.fileName === "string" &&
       typeof value.sizeBytes === "number" &&
       Number.isFinite(value.sizeBytes) &&
@@ -220,6 +246,13 @@ function isNullableString(value: unknown): value is string | null {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasExactKeys(
+  value: Record<string, unknown>,
+  keys: readonly string[],
+): boolean {
+  return Object.keys(value).length === keys.length && keys.every((key) => key in value);
 }
 
 async function atomicJson(path: string, value: unknown): Promise<void> {

@@ -7,11 +7,13 @@ import {
   Copy,
   Pause,
   Play,
+  RefreshCw,
   RotateCcw,
 } from "lucide-react";
 import { Player, type PlayerRef } from "@remotion/player";
 import { toBlob } from "html-to-image";
-import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { playbackIndexAtMs } from "@/core/playback";
 import type { DirectorDurationProjection } from "@/core/duration-projection";
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,7 @@ export function PreviewV2Studio({
   readonly exportBlocker: string | null;
   readonly durationProjection: DirectorDurationProjection;
 }) {
+  const router = useRouter();
   const playerRef = useRef<PlayerRef>(null);
   const durationInFrames = compositionDurationInFrames(
     composition.items,
@@ -51,6 +54,7 @@ export function PreviewV2Studio({
   const [playing, setPlaying] = useState(false);
   const [copyFrameStatus, setCopyFrameStatus] =
     useState<CopyFrameStatus>("idle");
+  const [isRefreshingGame, startGameRefresh] = useTransition();
   const timeMs = frameToMilliseconds(frame, VIDEO_SPEC.fps);
   const totalMs = composition.items.at(-1)
     ? composition.items.at(-1)!.startsAtMs + composition.items.at(-1)!.durationMs
@@ -208,6 +212,19 @@ export function PreviewV2Studio({
                 <div className="flex items-center gap-2">
                   <Button
                     className="inline-flex h-9 items-center gap-2 px-3 py-0"
+                    disabled={isRefreshingGame}
+                    onClick={() => startGameRefresh(() => router.refresh())}
+                    title="重新读取最新游戏数据"
+                  >
+                    <RefreshCw
+                      aria-hidden="true"
+                      className={isRefreshingGame ? "animate-spin" : undefined}
+                      size={16}
+                    />
+                    {isRefreshingGame ? "刷新中" : "刷新 Game"}
+                  </Button>
+                  <Button
+                    className="inline-flex h-9 items-center gap-2 px-3 py-0"
                     disabled={
                       durationInFrames === 0 || copyFrameStatus === "copying"
                     }
@@ -250,7 +267,7 @@ export function PreviewV2Studio({
                   </ControlButton>
                   <ControlButton
                     disabled={frame === 0}
-                    label="Reset"
+                    label="回到开头"
                     onClick={() => playerRef.current?.seekTo(0)}
                   >
                     <RotateCcw size={17} />

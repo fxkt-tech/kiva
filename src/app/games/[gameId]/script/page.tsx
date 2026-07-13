@@ -91,7 +91,10 @@ function EpisodeWorkspace({
 }: {
   readonly record: GameRecord;
 }) {
-  const state = record.episodeScript ?? { status: "idle" as const };
+  const state = record.episodeScript;
+  if (!state) {
+    throw new Error("Scripted game is missing its episode script state");
+  }
   if (state.status === "review") {
     const script = state.candidate;
     const speechSteps = script.steps.filter((step) => step.speechBeat);

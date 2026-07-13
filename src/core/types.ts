@@ -1,3 +1,5 @@
+import { assertExactObjectKeys } from "./model-binding";
+
 export type Brand<T, Name extends string> = T & { readonly __brand: Name };
 
 export type GameId = Brand<string, "GameId">;
@@ -40,8 +42,6 @@ export type RoleCounts = {
   readonly villager: number;
 };
 
-export type SixPlayerRoleCounts = RoleCounts;
-
 export type Ruleset = {
   readonly playerCount: number;
   readonly roleCounts: RoleCounts;
@@ -78,16 +78,16 @@ export function createDefaultRuleset(): Ruleset {
   return createTwelvePlayerRuleset();
 }
 
-export function createSixPlayerRuleset(): Ruleset {
+export function createTwelvePlayerRuleset(): Ruleset {
   return {
-    playerCount: 6,
+    playerCount: 12,
     roleCounts: {
-      werewolf: 2,
+      werewolf: 4,
       seer: 1,
       witch: 1,
-      hunter: 0,
-      guard: 0,
-      villager: 2,
+      hunter: 1,
+      guard: 1,
+      villager: 4,
     },
     winCondition: "slaughter_side",
     witchFirstNightSelfSave: true,
@@ -102,17 +102,86 @@ export function createSixPlayerRuleset(): Ruleset {
   };
 }
 
-export function createTwelvePlayerRuleset(): Ruleset {
-  return {
-    ...createSixPlayerRuleset(),
-    playerCount: 12,
-    roleCounts: {
-      werewolf: 4,
-      seer: 1,
-      witch: 1,
-      hunter: 1,
-      guard: 1,
-      villager: 4,
-    },
-  };
+export function validateRuleset(value: unknown): Ruleset {
+  if (!isRecord(value)) {
+    throw new Error("Ruleset must be an object");
+  }
+  const roleCounts = value.roleCounts;
+  if (!isRecord(roleCounts)) {
+    throw new Error("Ruleset must be an object");
+  }
+  assertExactObjectKeys(value, "Ruleset", [
+    "playerCount",
+    "roleCounts",
+    "winCondition",
+    "witchFirstNightSelfSave",
+    "witchAllowSameNightAntidoteAndPoison",
+    "guardCanSelfProtect",
+    "guardForbidConsecutiveSameTarget",
+    "guardAndWitchSaveIsSafe",
+    "voteReveal",
+    "deadRoleReveal",
+    "pkVoters",
+    "allowAbstainVote",
+  ]);
+  assertExactObjectKeys(roleCounts, "Ruleset roleCounts", GAME_ROLES);
+  if (!Number.isInteger(value.playerCount) || (value.playerCount as number) < 1) {
+    throw new Error("Ruleset playerCount must be a positive integer");
+  }
+  let roleCountTotal = 0;
+  for (const role of GAME_ROLES) {
+    const count = roleCounts[role];
+    if (!Number.isInteger(count) || (count as number) < 0) {
+      throw new Error(`Ruleset roleCounts.${role} must be a non-negative integer`);
+    }
+    roleCountTotal += count as number;
+  }
+  if (roleCountTotal !== value.playerCount) {
+    throw new Error("Ruleset role counts must sum to playerCount");
+  }
+  const currentBoard = createTwelvePlayerRuleset();
+  if (
+    value.playerCount !== currentBoard.playerCount ||
+    GAME_ROLES.some(
+      (role) => roleCounts[role] !== currentBoard.roleCounts[role],
+    )
+  ) {
+    throw new Error("Unsupported ruleset board; expected the current 12-player board");
+  }
+  if (
+    value.winCondition !== "slaughter_side" &&
+    value.winCondition !== "slaughter_all"
+  ) {
+    throw new Error("Ruleset winCondition is invalid");
+  }
+  if (value.voteReveal !== "after_all_votes" && value.voteReveal !== "immediate") {
+    throw new Error("Ruleset voteReveal is invalid");
+  }
+  if (value.deadRoleReveal !== "endgame" && value.deadRoleReveal !== "on_death") {
+    throw new Error("Ruleset deadRoleReveal is invalid");
+  }
+  if (
+    value.pkVoters !== "non_pk_only" &&
+    value.pkVoters !== "all_living_non_self"
+  ) {
+    throw new Error("Ruleset pkVoters is invalid");
+  }
+  for (const field of [
+    "witchFirstNightSelfSave",
+    "witchAllowSameNightAntidoteAndPoison",
+    "guardCanSelfProtect",
+    "guardForbidConsecutiveSameTarget",
+    "guardAndWitchSaveIsSafe",
+    "allowAbstainVote",
+  ] as const) {
+    if (typeof value[field] !== "boolean") {
+      throw new Error(`Ruleset ${field} must be a boolean`);
+    }
+  }
+
+  return structuredClone(value) as Ruleset;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }

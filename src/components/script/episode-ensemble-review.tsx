@@ -8,17 +8,6 @@ export function EpisodeEnsembleReview({
   readonly script: EpisodeScriptSnapshot;
   readonly players: readonly PlayerSnapshot[];
 }) {
-  if (script.schemaVersion === 1 || script.castDirections.length === 0) {
-    return (
-      <section className="mt-5 rounded border border-border bg-background/40 p-4">
-        <h3 className="text-sm font-semibold">群像与人物弧线</h3>
-        <p className="mt-2 text-xs leading-5 text-muted">
-          这是兼容载入的旧版剧本，未保存群像方向；原有逐场节拍仍可正常执行。
-        </p>
-      </section>
-    );
-  }
-
   const playersById = new Map(
     players.map((player) => [player.playerId, player]),
   );

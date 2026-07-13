@@ -17,7 +17,7 @@
 
 - New games resolve one enabled script and deep-snapshot its narrative and presentation fields. Existing games never reload current library styling by `scriptSourceId`.
 - Preview and export receive the same snapshot. Export copies allow-listed character, presenter, and script assets into the immutable job asset directory and rewrites their URLs once.
-- Supported styles are the exhaustive `legacy_v1 | midnight_archive_v1` union. Historical games without `script` normalize to the code-owned legacy snapshot; schema-v3 composition input decodes with that same fallback.
+- `midnight_archive_v1` is the sole supported style identifier. A stored Game without its complete script snapshot and a composition outside schema v4 are rejected rather than normalized.
 - Versioned script image filenames are immutable. Revised art requires a new filename and new snapshot.
 
 ### 4. Validation & Error Matrix
@@ -25,21 +25,21 @@
 | Condition | Required behavior |
 |---|---|
 | New Game omits/unknown/disabled script ID | Reject creation; do not save a partial game. |
-| Stored Game lacks `script` | Read with `legacy_v1`; do not eagerly rewrite the record. |
+| Stored Game lacks `script` or contains extra/old presentation keys | Reject the GameRecord. |
 | Snapshot has an unknown style or unsafe asset path | Reject the snapshot as invalid. |
 | Export asset is outside an allow-listed internal prefix | Reject export snapshot creation. |
-| Composition schema is v3 | Decode with a legacy script snapshot. |
+| Composition schema is not v4 or omits an explicit Playback field | Reject the composition input. |
 
 ### 5. Good / Base / Bad Cases
 
 - Good: a `midnight_archive_v1` game keeps its original colors and backgrounds after the script library is edited.
-- Base: a historical game without script renders with legacy backgrounds.
-- Bad: Preview looks up `scripts.json` during render and silently changes an existing game's appearance.
+- Base: a complete current Game uses its snapshotted script for Preview and export.
+- Bad: Preview fills a missing script, accepts a Preview background path, or looks up `scripts.json` during render.
 
 ### 6. Tests Required
 
-- Unit: script definition validation, deep snapshot isolation, style dispatch, and v3 composition fallback.
-- Repository: historical Game load does not mutate disk; new Game round-trips its full script snapshot.
+- Unit: script definition validation, deep snapshot isolation, single-style dispatch, schema-v3 rejection, and exact Playback-item validation.
+- Repository: a new Game round-trips its full script snapshot; incomplete or old snapshots are rejected without rewriting disk.
 - Export: script backgrounds and both avatar prefix families are copied and rewritten.
 - Browser/render: the selected script appears in New Game, Editor, Preview, and a 1920x1080 MP4 frame without console errors.
 
@@ -101,6 +101,9 @@ timing behavior.
   padding to preserve complete CJK glyphs.
   The visual-stage slot owns structured event actions and outcomes from
   `PlaybackItem.stage`; the transcript card owns narrator identity and narration.
+  For player speech, the visual-stage slot also shows the complete
+  `PlaybackItem.text`, while the transcript card continues showing the current
+  timed subtitle window.
   Speech uses the active player as narrator.
   `phase`, `announcement`, `vote`, and `resolution` use the presenter, including
   director-only night actions.
@@ -164,8 +167,9 @@ timing behavior.
   event details or a kind-specific neutral message for other scene kinds.
 - Header, visual-stage slot, and transcript occupy equal-width grid regions
   in the center column. The stage renders a card treatment only when the current
-  `PlaybackItem.stage` is non-null; ordinary narration and speech retain an empty
-  slot. Each six-card seat track spans
+  `PlaybackItem.stage` is non-null or the current item is player speech with
+  non-empty text; ordinary narration retains an empty slot. Each six-card seat
+  track spans
   their combined full height; its top aligns with the header and its bottom
   aligns with the transcript.
 - Seat cards are designed for a 1920x1080 composition viewed after phone-scale
@@ -224,6 +228,10 @@ timing behavior.
   rounds up so the selected frame is inside the target record. Generic audio
   timing keeps `millisecondsToFrame()` and its floor semantics; do not change
   that shared conversion to repair scene navigation.
+- Preview exposes separate playback and data controls. `回到开头` seeks only to
+  frame zero and never reloads or mutates the Game. `刷新游戏数据` calls the
+  Next router refresh so the dynamic Preview route reloads the current Game and
+  rebuilds its composition from authoritative repository state.
 - The Preview v2 `复制当前帧` control rasterizes only the Player container and
   writes one `image/png` ClipboardItem at 1920×1080. It does not seek, pause,
   resume, or otherwise mutate playback. Missing Clipboard API support, a null
@@ -326,8 +334,10 @@ timing behavior.
   bounds are not clipped at the top or bottom at native 1920x1080 resolution;
   rendered markup contains no secondary English eyebrow.
 - Grid geometry: header, visual-stage slot, and transcript have identical
-  x and width. A scene without `PlaybackItem.stage` renders the bare empty slot;
-  a structured stage scene may add deterministic inline animation styles. Both
+  x and width. A non-speech scene without `PlaybackItem.stage` renders the bare
+  empty slot; player speech renders its complete text without line clamping,
+  while the transcript retains the current subtitle window.
+  A structured stage scene may add deterministic inline animation styles. Both
   seat tracks align to the header top and transcript bottom and
   each contains exactly six equal-height slots.
 - Seat-card geometry: assert the left/right grid columns, avatar position, text
@@ -412,12 +422,12 @@ because the application already caches the completed bundle per process; this
 avoids corrupted cache packs during local
 concurrent builds.
 
-## Scenario: Export History Across Composition Schema Changes
+## Scenario: Export Operations Validate Only Their Current Inputs
 
 ### 1. Scope / Trigger
 
-- Trigger: `VideoCompositionInput.schemaVersion` changes while persisted export
-  directories from an earlier version still exist.
+- Trigger: export metadata is listed/reconciled, or a composition snapshot is
+  loaded for rendering, retry, download, or asset serving.
 
 ### 2. Signatures
 
@@ -432,32 +442,35 @@ concurrent builds.
 - Export history and restart reconciliation depend only on job metadata.
 - Rendering, retrying, and serving snapshot-owned assets require a fully valid
   current-version `input.json`.
-- A schema bump does not migrate or reinterpret an old composition snapshot.
+- No operation migrates, fills, or reinterprets an invalid composition snapshot.
 
 ### 4. Validation & Error Matrix
 
 - Missing `job.json` -> repository entry is absent.
 - Invalid `job.json` -> reject as `Invalid export job record`.
-- Stale `input.json` during `list()` -> ignore it and return valid job metadata.
-- Stale `input.json` during `get()` -> reject as unsupported composition schema.
+- Missing or invalid `input.json` during `list()` -> do not read it; return valid current job metadata.
+- Missing `input.json` during `get()` -> entry is absent; malformed, incomplete,
+  extra-key, or non-v4 input -> reject it.
 
 ### 5. Good / Base / Bad Cases
 
 - Good: current job and composition schemas list and load normally.
-- Base: a v2 composition remains visible in history after the runtime moves to
-  v3.
-- Bad: one old composition makes the entire game export-history API return 500.
+- Base: a valid job metadata record can be listed while its render input is
+  unavailable; no composition data is consumed by that operation.
+- Bad: `list()` partially decodes composition input or `get()` fills missing
+  composition fields.
 
 ### 6. Tests Required
 
-- Repository regression: create a valid job, replace only `input.json` with an
-  older schema, and assert `list()` returns the job unchanged.
-- Decoder regression: direct snapshot loading must continue rejecting the old
-  schema so history resilience does not become rendering compatibility.
+- Repository regression: create a valid job, make only `input.json` unavailable,
+  and assert `list()` returns the current job metadata unchanged.
+- Decoder regression: direct snapshot loading rejects malformed, incomplete,
+  extra-key, and non-v4 input.
 
 ### 7. Wrong vs Correct
 
-Wrong: implement history by calling the full snapshot decoder for every job.
+Wrong: implement metadata listing by calling the full composition decoder for
+every job, or turn a composition decoder failure into field injection.
 
 Correct: decode the smallest contract needed by each operation—job metadata
 for listing/reconciliation, full composition only for snapshot consumers.
@@ -548,7 +561,7 @@ artifact, and atomically publish the new artifact.
 
 ### 2. Signatures
 
-- `PlaybackItem.stage?: StagePresentation | null`.
+- `PlaybackItem.stage: StagePresentation | null`.
 - `stagePresentationForEvent(event: GameEvent): StagePresentation | null`.
 - `StageEventVisual({shot, assets, palette, phase})` renders the shared stage.
 - `StagePresentation.kind` is one of `action`, `night_result`, `vote_result`,
@@ -568,12 +581,14 @@ artifact, and atomically publish the new artifact.
   the persistent seat tracks in director Preview.
 - Stage animation is a pure function of `ShotClock.sceneMs/durationMs`. No CSS
   keyframes, timers, randomness, DOM measurement, or live audio state is used.
-- Missing `stage` remains valid for old composition snapshots and renders the
-  original empty center slot without a schema-version bump.
+- Every Playback item carries `stage` explicitly. `stage: null` is the current
+  representation for no structured event visual; player speech still renders
+  its complete `text`, while other null-stage items render an empty center slot.
 
 ### 4. Validation & Error Matrix
 
-- Missing or null `stage` -> valid composition; empty center slot.
+- Missing `stage` -> reject composition input; `stage: null` is valid, with
+  complete player speech in the center and an empty center slot for other items.
 - Unknown `stage.kind`, action, result, winner, or reason -> reject composition
   input as `Invalid video composition input`.
 - Player reference absent from the scene snapshot -> render a safe fallback
@@ -586,7 +601,8 @@ artifact, and atomically publish the new artifact.
 
 - Good: a director-only seer result renders actor, target, and the typed
   `good|wolves` result in Preview and MP4 at the same frame.
-- Base: ordinary speech has `stage: null` and keeps the center visually empty.
+- Base: ordinary speech has `stage: null`, shows its complete text in the center,
+  and keeps the timed subtitle window in the transcript band.
 - Bad: public playback contains a guard, wolf, seer, witch, or night-resolution
   stage projected from a private event.
 

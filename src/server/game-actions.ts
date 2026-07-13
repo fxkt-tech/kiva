@@ -28,7 +28,6 @@ import {
 import { createDraftId, createEventId, createGameId } from "@/core/id";
 import type { LlmClient } from "@/core/llm";
 import { isLlmSpeechDraft } from "@/core/llm-task-specs";
-import type { LlmPromptMode } from "@/core/prompt-builders";
 import { generateSpeechDraft } from "@/core/speech-generation";
 import { evaluateSpeech, speechBudgetForDraft } from "@/core/speech-budget";
 import { generateActionDraft } from "@/core/action-generation";
@@ -39,7 +38,11 @@ import { seedPresets } from "@/seeds/presets";
 import { seedPresenters } from "@/seeds/presenters";
 import { seedRoles } from "@/seeds/roles";
 import { seedScripts } from "@/seeds/scripts";
-import type { GameRecord, GameRepository } from "./game-repository";
+import {
+  GAME_RECORD_SCHEMA_VERSION,
+  type GameRecord,
+  type GameRepository,
+} from "./game-repository";
 import type { LibraryRecord, LibraryRepository } from "./library-repository";
 
 export type GameActions = ReturnType<typeof createGameActions>;
@@ -48,7 +51,6 @@ export type CreateGameActionsOptions = {
   readonly llmClient?: LlmClient;
   readonly libraryRepository?: LibraryRepository;
   readonly defaultPresetId?: string;
-  readonly promptMode?: LlmPromptMode;
 };
 
 export function createGameActions(
@@ -91,6 +93,7 @@ export function createGameActions(
       runMode,
     });
     const record: GameRecord = {
+      schemaVersion: GAME_RECORD_SCHEMA_VERSION,
       game,
       events: [],
       draft: null,
@@ -126,6 +129,7 @@ export function createGameActions(
       runMode,
     });
     const record: GameRecord = {
+      schemaVersion: GAME_RECORD_SCHEMA_VERSION,
       game,
       events: [],
       draft: null,
@@ -389,6 +393,7 @@ export function createGameActions(
         const nextEvents = appendEvent(record.events, nextEvent);
         const updatedGame = { ...record.game, updatedAt };
         const confirmedRecord: GameRecord = {
+          schemaVersion: GAME_RECORD_SCHEMA_VERSION,
           game: updatedGame,
           events: nextEvents,
           draft: null,
@@ -446,7 +451,6 @@ export function createGameActions(
           draft: record.draft,
           llmClient: options.llmClient,
           createdAt: updatedAt,
-          promptMode: options.promptMode,
           actorBrief:
             record.episodeScript?.status === "approved"
               ? actorBriefForStep(
@@ -499,6 +503,7 @@ export function createGameActions(
         const record = await loadGame(gameId);
         const updatedAt = now();
         const nextRecord: GameRecord = {
+          schemaVersion: GAME_RECORD_SCHEMA_VERSION,
           game: { ...record.game, updatedAt },
           events: rollbackAfterIndex(record.events, index),
           draft: null,
@@ -682,7 +687,6 @@ async function maybeGenerateDraft(input: {
   readonly draft: NonNullable<GameRecord["draft"]>;
   readonly llmClient: LlmClient | undefined;
   readonly createdAt: string;
-  readonly promptMode?: LlmPromptMode;
   readonly actorBrief?: import("@/core/episode-script").EpisodeActorBrief | null;
 }) {
   if (!input.llmClient) {
@@ -696,7 +700,6 @@ async function maybeGenerateDraft(input: {
     llmClient: input.llmClient,
     generationId: createGenerationId(),
     createdAt: input.createdAt,
-    promptMode: input.promptMode,
     actorBrief: input.actorBrief,
   });
   if (speechResult.generation) {
@@ -710,7 +713,6 @@ async function maybeGenerateDraft(input: {
     llmClient: input.llmClient,
     generationId: createGenerationId(),
     createdAt: input.createdAt,
-    promptMode: input.promptMode,
   });
 }
 

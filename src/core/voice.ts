@@ -1,4 +1,4 @@
-import { isPlainObject } from "./model-binding";
+import { assertExactObjectKeys, isPlainObject } from "./model-binding";
 import type { EventId, PlayerId } from "./types";
 
 export const PRESENTER_EDGE_VOICE = "zh-CN-YunjianNeural";
@@ -61,8 +61,19 @@ export function validateVoiceProfileSnapshot(
   value: unknown,
   path: string,
 ): VoiceProfileSnapshot {
+  if (!isPlainObject(value)) {
+    throw new Error(`${path} must be a valid Edge voice profile`);
+  }
+  assertExactObjectKeys(value, path, [
+    "provider",
+    "adapterVersion",
+    "voice",
+    "lang",
+    "pitch",
+    "rate",
+    "volume",
+  ]);
   if (
-    !isPlainObject(value) ||
     value.provider !== "edge" ||
     value.adapterVersion !== 1 ||
     !isNonBlank(value.voice) ||
@@ -81,8 +92,21 @@ export function validatePlayerVoiceArtifact(
   eventId: string,
 ): PlayerVoiceArtifact {
   const path = `Voice artifact ${eventId}`;
+  if (!isPlainObject(value)) {
+    throw new Error(`${path} is invalid`);
+  }
+  assertExactObjectKeys(value, path, [
+    "eventId",
+    "playerId",
+    "sourceTextHash",
+    "synthesizedText",
+    "voiceProfile",
+    "generator",
+    "audio",
+    "cues",
+    "createdAt",
+  ]);
   if (
-    !isPlainObject(value) ||
     value.eventId !== eventId ||
     !isNonBlank(value.playerId) ||
     !isNonBlank(value.sourceTextHash) ||
@@ -99,13 +123,23 @@ export function validatePlayerVoiceArtifact(
   ) {
     throw new Error(`${path} is invalid`);
   }
+  assertExactObjectKeys(value.generator, `${path} generator`, [
+    "adapter",
+    "packageVersion",
+  ]);
+  assertExactObjectKeys(value.audio, `${path} audio`, ["file", "durationMs"]);
   validateVoiceProfileSnapshot(value.voiceProfile, `${path} voiceProfile`);
   return value as PlayerVoiceArtifact;
 }
 
 function isSpeechCue(value: unknown): value is SpeechCue {
+  if (!isPlainObject(value)) return false;
+  try {
+    assertExactObjectKeys(value, "Speech cue", ["text", "startMs", "endMs"]);
+  } catch {
+    return false;
+  }
   return (
-    isPlainObject(value) &&
     isNonBlank(value.text) &&
     isNonNegativeFinite(value.startMs) &&
     isPositiveFinite(value.endMs) &&

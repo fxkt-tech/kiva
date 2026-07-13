@@ -2,11 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { notFound } from "next/navigation";
 
-const allowedFiles = new Set([
-  "day-background.png",
-  "night-background.png",
-  "noto-sans-sc-900.ttf",
-]);
+const allowedFiles = new Set(["noto-sans-sc-900.ttf"]);
 
 type PreviewAssetRouteProps = {
   readonly params: Promise<{
@@ -31,10 +27,6 @@ export async function GET(_request: Request, { params }: PreviewAssetRouteProps)
   });
 }
 
-function contentTypeForFile(file: string): string {
-  if (file.endsWith(".ttf")) {
-    return "font/ttf";
-  }
-
-  return "image/png";
+function contentTypeForFile(_file: string): string {
+  return "font/ttf";
 }

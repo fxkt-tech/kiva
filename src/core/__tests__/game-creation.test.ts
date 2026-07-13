@@ -38,7 +38,7 @@ describe("game creation", () => {
       preset: seedPresets[0]!,
       presenter: seedPresenters[0]!,
       script: seedScripts[0]!,
-
+      runMode: "game",
       roles: seedRoles,
       characters: seedCharacters,
     });
@@ -105,17 +105,13 @@ describe("game creation", () => {
       mechanicKey: "none",
       team: "villager",
     });
-    expect(game.players[0]?.systemPrompt).toBe(
-      seedCharacters.find((character) => character.id === "zhou_xu")!
-        .systemPrompt,
-    );
     expect(game.players[0]?.modelBindingSnapshot).toEqual(
       seedCharacters.find((character) => character.id === "zhou_xu")!
         .defaultModelBinding,
     );
   });
 
-  it("keeps createSeedGame compatible with the seat, name, role, and playerId format", () => {
+  it("creates the seeded game with the current seat and identity format", () => {
     const game = createSeedGame({ gameId, createdAt });
 
     expect(
@@ -153,7 +149,7 @@ describe("game creation", () => {
         preset,
         presenter: seedPresenters[0]!,
         script: seedScripts[0]!,
-
+        runMode: "game",
         roles: seedRoles,
         characters: seedCharacters,
       }),
@@ -183,7 +179,7 @@ describe("game creation", () => {
         preset,
         presenter: seedPresenters[0]!,
         script: seedScripts[0]!,
-
+        runMode: "game",
         roles: [unsupportedRole, ...seedRoles],
         characters: seedCharacters,
       }),
@@ -206,7 +202,7 @@ describe("game creation", () => {
         preset: seedPresets[0]!,
         presenter: seedPresenters[0]!,
         script: seedScripts[0]!,
-
+        runMode: "game",
         roles: [mismatchedRole, ...seedRoles.slice(1)],
         characters: seedCharacters,
       }),
@@ -231,7 +227,7 @@ describe("game creation", () => {
         preset,
         presenter: seedPresenters[0]!,
         script: seedScripts[0]!,
-
+        runMode: "game",
         roles: seedRoles,
         characters: seedCharacters,
       }),
@@ -259,7 +255,7 @@ describe("game creation", () => {
         preset,
         presenter: seedPresenters[0]!,
         script: seedScripts[0]!,
-
+        runMode: "game",
         roles: seedRoles,
         characters: seedCharacters,
       }),

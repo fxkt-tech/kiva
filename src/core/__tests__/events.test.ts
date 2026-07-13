@@ -172,7 +172,7 @@ describe("full game event model", () => {
     });
   });
 
-  it("keeps draft confirmation compatible while public playback suppresses single vote casts", () => {
+  it("keeps draft confirmation intact while public playback suppresses single vote casts", () => {
     const draft = createDraftEvent({
       id: "draft_1" as DraftId,
       gameId,

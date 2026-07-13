@@ -1,4 +1,4 @@
-import { isPlainObject } from "./model-binding";
+import { assertExactObjectKeys, isPlainObject } from "./model-binding";
 import {
   validateVoiceProfileSnapshot,
   type VoiceProfileSnapshot,
@@ -110,6 +110,16 @@ export function validatePresenterDefinitions(
     if (!isPlainObject(definition)) {
       throw new Error(`${path} must be an object`);
     }
+    assertExactObjectKeys(definition, path, [
+      "id",
+      "name",
+      "avatar",
+      "voiceProfile",
+      "lines",
+      "enabled",
+      "createdAt",
+      "updatedAt",
+    ]);
 
     const id = requireStableId(definition.id, `${path} id`);
     if (ids.has(id)) {
@@ -140,6 +150,12 @@ export function validateGamePresenterSnapshot(
   if (!isPlainObject(snapshot)) {
     throw new Error("Game presenter snapshot must be an object");
   }
+  assertExactObjectKeys(snapshot, "Game presenter snapshot", [
+    "presenterSourceId",
+    "name",
+    "avatar",
+    "lines",
+  ]);
 
   const sourceId = requireStableId(
     snapshot.presenterSourceId,
@@ -180,7 +196,6 @@ function validatePresenterLines(value: unknown, path: string): void {
   if (!isPlainObject(value)) {
     throw new Error(`${path} must be an object`);
   }
-
   const expectedKeys = Object.keys(PRESENTER_LINE_VARIABLES).sort();
   const actualKeys = Object.keys(value).sort();
   if (actualKeys.join("\0") !== expectedKeys.join("\0")) {
@@ -206,6 +221,7 @@ function validatePresenterLine(
   if (!isPlainObject(value)) {
     throw new Error(`${path} must be an object`);
   }
+  assertExactObjectKeys(value, path, ["template", "variables"]);
   if (!isNonBlankString(value.template)) {
     throw new Error(`${path}.template must be a non-blank string`);
   }

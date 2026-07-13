@@ -146,7 +146,11 @@ function item(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     presenterName: "守夜人",
     presenterAvatar: null,
     transcriptSpeaker: "presenter",
-    presenterCue: { copyKey: "fallback.announcement", text: "Narration" },
+    presenterCue: { copyKey: "fallback.announcement", text: "Narration", values: {} },
+    playerVoice: null,
+    presenterVoiceClips: [],
+    presenterSourceId: "host",
+    stage: null,
     ...overrides,
   };
 }

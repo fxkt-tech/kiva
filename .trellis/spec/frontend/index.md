@@ -22,8 +22,8 @@ This directory contains guidelines for frontend development. Fill in each file w
 | [Type Safety](./type-safety.md) | Type patterns, validation | To fill |
 | [Programmatic Video](./programmatic-video.md) | Shared HTML preview and deterministic MP4 export contract | Active |
 | [Private Event Workflows](./private-event-workflows.md) | Event, Editor, LLM visibility, and Preview contracts for private staged actions | Active |
-| [LLM Prompt Workflows](./llm-prompt-workflows.md) | Task registry, semantic context, legal actions, output repair, and prompt rollback contracts | Active |
-| [Game Creation Workflows](./game-creation-workflows.md) | Persisted game/scripted run mode, New Game routing, and historical compatibility | Active |
+| [LLM Prompt Workflows](./llm-prompt-workflows.md) | Task registry, semantic context, legal actions, output repair, and current Prompt-v2 contracts | Active |
+| [Game Creation Workflows](./game-creation-workflows.md) | Exact current GameRecord contract, persisted run mode, and New Game routing | Active |
 | [Episode Script Workflows](./episode-script-workflows.md) | Script Author, deterministic dry-run, Review/Approve, Actor Brief, and locked execution | Active |
 
 ---

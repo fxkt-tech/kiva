@@ -11,7 +11,10 @@ import {
   millisecondsToFrame,
   sceneStartFrame,
 } from "./timing";
-import { legacyGameScriptSnapshot } from "@/core/game-script";
+import { createGameScriptSnapshot } from "@/core/game-script";
+import { seedScripts } from "@/seeds/scripts";
+
+const currentScript = createGameScriptSnapshot(seedScripts[0]!);
 
 describe("preview v2 composition contracts", () => {
   it("converts time and rounds the duration deterministically", () => {
@@ -68,12 +71,12 @@ describe("preview v2 composition contracts", () => {
         schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
         gameId: "game-1",
         gameTitle: "Test",
-        script: legacyGameScriptSnapshot(),
+        script: currentScript,
         items: [],
         assets: {
           fontUrl: "/font.ttf",
-          dayBackgroundUrl: null,
-          nightBackgroundUrl: null,
+          dayBackgroundUrl: currentScript.presentation.dayBackground,
+          nightBackgroundUrl: currentScript.presentation.nightBackground,
           avatarUrls: {},
         },
         audioCues: [],
@@ -81,31 +84,28 @@ describe("preview v2 composition contracts", () => {
     ).toBe("game-1");
   });
 
-  it("loads schema v3 compositions with the legacy script presentation", () => {
-    const decoded = decodeVideoCompositionInput({
+  it("rejects schema v3 compositions", () => {
+    expect(() => decodeVideoCompositionInput({
       schemaVersion: 3,
       gameId: "historical-game",
       gameTitle: "Historical",
       items: [],
       assets: {
         fontUrl: "/font.ttf",
-        dayBackgroundUrl: null,
-        nightBackgroundUrl: null,
+        dayBackgroundUrl: currentScript.presentation.dayBackground,
+        nightBackgroundUrl: currentScript.presentation.nightBackground,
         avatarUrls: {},
       },
       audioCues: [],
-    });
-
-    expect(decoded.schemaVersion).toBe(VIDEO_COMPOSITION_SCHEMA_VERSION);
-    expect(decoded.script.presentation.styleKey).toBe("legacy_v1");
+    })).toThrow("Unsupported");
   });
 
-  it("validates optional structured stage presentations", () => {
+  it("requires and validates structured stage presentations", () => {
     const base = {
       schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
       gameId: "game-1",
       gameTitle: "Test",
-      script: legacyGameScriptSnapshot(),
+      script: currentScript,
       items: [item({
         stage: {
           kind: "action" as const,
@@ -117,8 +117,8 @@ describe("preview v2 composition contracts", () => {
       })],
       assets: {
         fontUrl: "/font.ttf",
-        dayBackgroundUrl: null,
-        nightBackgroundUrl: null,
+        dayBackgroundUrl: currentScript.presentation.dayBackground,
+        nightBackgroundUrl: currentScript.presentation.nightBackground,
         avatarUrls: {},
       },
       audioCues: [],
@@ -128,7 +128,34 @@ describe("preview v2 composition contracts", () => {
     expect(() =>
       decodeVideoCompositionInput({
         ...base,
+        items: [{ ...base.items[0], stage: undefined }],
+      }),
+    ).toThrow("Invalid video composition input");
+    expect(() =>
+      decodeVideoCompositionInput({
+        ...base,
         items: [{ ...base.items[0], stage: { kind: "action", action: "unknown" } }],
+      }),
+    ).toThrow("Invalid video composition input");
+    expect(() =>
+      decodeVideoCompositionInput({
+        ...base,
+        items: [{
+          ...base.items[0],
+          presenterCue: {
+            ...base.items[0].presenterCue,
+            legacyText: "removed",
+          },
+        }],
+      }),
+    ).toThrow("Invalid video composition input");
+    expect(() =>
+      decodeVideoCompositionInput({
+        ...base,
+        items: [{
+          ...base.items[0],
+          stage: { ...base.items[0].stage, legacyResult: true },
+        }],
       }),
     ).toThrow("Invalid video composition input");
   });
@@ -148,7 +175,11 @@ function item(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     presenterName: "守夜人",
     presenterAvatar: null,
     transcriptSpeaker: "presenter",
-    presenterCue: { copyKey: "fallback.announcement", text: "" },
+    presenterCue: { copyKey: "fallback.announcement", text: "", values: {} },
+    playerVoice: null,
+    presenterVoiceClips: [],
+    presenterSourceId: "host",
+    stage: null,
     ...overrides,
   };
 }

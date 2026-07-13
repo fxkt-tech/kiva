@@ -16,7 +16,7 @@ import {
 import type { LlmClient } from "./llm";
 import { isLlmActionDraft } from "./llm-task-specs";
 import { buildPlayerLlmContext } from "./player-context";
-import { buildActionPrompt, type LlmPromptMode } from "./prompt-builders";
+import { buildActionPrompt } from "./prompt-builders";
 import type { PlayerId } from "./types";
 import {
   generateValidatedJson,
@@ -30,7 +30,6 @@ export type GenerateActionDraftInput = {
   readonly llmClient: LlmClient;
   readonly generationId: string;
   readonly createdAt: string;
-  readonly promptMode?: LlmPromptMode;
 };
 
 export type GenerateActionDraftResult = {
@@ -57,11 +56,7 @@ export async function generateActionDraft(
     events: input.events,
     draft,
   });
-  const prompt = buildActionPrompt({
-    context,
-    draft,
-    options,
-  }, input.promptMode);
+  const prompt = buildActionPrompt({ context, draft, options });
   const request = {
     systemPrompt: prompt.systemPrompt,
     messages: prompt.messages,

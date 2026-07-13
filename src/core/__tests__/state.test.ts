@@ -86,7 +86,10 @@ describe("deriveGameState", () => {
     const state = deriveGameState(players, [
       event(1, {
         type: "night_resolved",
-        payload: { deadPlayerIds: [p3] },
+        payload: {
+          deadPlayerIds: [p3],
+          deaths: [{ playerId: p3, reason: "wolf_kill" }],
+        },
       }),
     ]);
 
@@ -98,7 +101,10 @@ describe("deriveGameState", () => {
     const state = deriveGameState(players, [
       event(1, {
         type: "night_resolved",
-        payload: { deadPlayerIds: [p3] },
+        payload: {
+          deadPlayerIds: [p3],
+          deaths: [{ playerId: p3, reason: "wolf_kill" }],
+        },
       }),
       event(2, {
         type: "death_announced",
@@ -125,7 +131,10 @@ describe("deriveGameState", () => {
     const state = deriveGameState(players, [
       event(1, {
         type: "night_resolved",
-        payload: { deadPlayerIds: [p3] },
+        payload: {
+          deadPlayerIds: [p3],
+          deaths: [{ playerId: p3, reason: "wolf_kill" }],
+        },
       }),
     ]);
 
@@ -137,7 +146,10 @@ describe("deriveGameState", () => {
     const state = deriveGameState(players, [
       event(1, {
         type: "night_resolved",
-        payload: { deadPlayerIds: [p3] },
+        payload: {
+          deadPlayerIds: [p3],
+          deaths: [{ playerId: p3, reason: "wolf_kill" }],
+        },
       }),
       event(2, {
         type: "death_announced",
@@ -459,7 +471,10 @@ describe("deriveGameState", () => {
       }),
       event(1, {
         type: "night_resolved",
-        payload: { deadPlayerIds: [p3] },
+        payload: {
+          deadPlayerIds: [p3],
+          deaths: [{ playerId: p3, reason: "wolf_kill" }],
+        },
       }),
       event(2, {
         status: "superseded",
@@ -523,7 +538,10 @@ describe("deriveGameState", () => {
       event(1, {
         status: "superseded",
         type: "night_resolved",
-        payload: { deadPlayerIds: [p3] },
+        payload: {
+          deadPlayerIds: [p3],
+          deaths: [{ playerId: p3, reason: "wolf_kill" }],
+        },
       }),
       event(2, {
         status: "superseded",
@@ -543,7 +561,10 @@ describe("deriveGameState", () => {
       deriveGameState(players, [
         event(1, {
           type: "night_resolved",
-          payload: { deadPlayerIds: [unknownPlayerId] },
+          payload: {
+            deadPlayerIds: [unknownPlayerId],
+            deaths: [{ playerId: unknownPlayerId, reason: "wolf_kill" }],
+          },
         }),
       ]),
     ).toThrow("Unknown dead player id unknown");
@@ -573,7 +594,13 @@ describe("deriveGameState", () => {
     const state = deriveGameState(players, [
       event(1, {
         type: "night_resolved",
-        payload: { deadPlayerIds: [p3, p3] },
+        payload: {
+          deadPlayerIds: [p3, p3],
+          deaths: [
+            { playerId: p3, reason: "wolf_kill" },
+            { playerId: p3, reason: "wolf_kill" },
+          ],
+        },
       }),
     ]);
 

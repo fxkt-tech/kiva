@@ -19,15 +19,10 @@ import {
   speechBudgetForDraft,
   type SpeechBudget,
 } from "./speech-budget";
-import {
-  buildActionPromptV1,
-  buildSpeechPromptV1,
-} from "./prompt-builders-v1";
 import type { PlayerId, Ruleset } from "./types";
 
 export const SPEECH_PROMPT_VERSION = "speech:v2";
 export const ACTION_PROMPT_VERSION = "action:v2";
-export type LlmPromptMode = "v1" | "v2";
 
 const MAX_KNOWLEDGE_ITEMS_PER_SECTION = 40;
 const MAX_EVENT_TEXT_LENGTH = 800;
@@ -54,10 +49,7 @@ export type ActionPromptInput = {
 
 export function buildSpeechPrompt(
   input: SpeechPromptInput,
-  mode: LlmPromptMode = "v2",
 ): BuiltPrompt {
-  if (mode === "v1") return buildSpeechPromptV1(input);
-
   const hasPriorDaySpeech =
     input.draft.type === "day_speech_given" &&
     input.context.visibleEvents.some(
@@ -93,10 +85,7 @@ export function buildSpeechPrompt(
 
 export function buildActionPrompt(
   input: ActionPromptInput,
-  mode: LlmPromptMode = "v2",
 ): BuiltPrompt {
-  if (mode === "v1") return buildActionPromptV1(input);
-
   const spec = taskSpecForDraft(input.draft);
 
   return {
@@ -188,18 +177,15 @@ function shouldIncludeRoleActionPrompt(
 
 function structuredCharacterLines(context: PlayerLlmContext): readonly string[] {
   const viewer = context.viewer;
-  const structured = nonEmptyLines([
+  const structured = [
     viewer.persona ? `- 性格倾向：${viewer.persona}` : "",
     viewer.speakingStyle ? `- 表达风格：${viewer.speakingStyle}` : "",
     viewer.reasoningStyle ? `- 判断偏好：${viewer.reasoningStyle}` : "",
-  ]);
-  if (structured.length > 0) return structured;
-
-  const legacy = firstNonEmpty(
-    viewer.characterSystemPromptSnapshot,
-    viewer.systemPrompt,
-  );
-  return legacy ? [`- ${legacy}`] : ["- 使用自然、简洁的真人玩家表达。"];
+  ];
+  if (structured.some((line) => line.length === 0)) {
+    throw new Error("Current character profile must include all structured fields");
+  }
+  return structured;
 }
 
 function buildUserMessage(input: {
@@ -691,10 +677,6 @@ function stableHash(value: string): number {
 
 function truncate(value: string, maxLength: number): string {
   return value.length <= maxLength ? value : `${value.slice(0, maxLength)}…`;
-}
-
-export function firstNonEmpty(...values: readonly string[]): string {
-  return values.map((value) => value.trim()).find((value) => value.length > 0) ?? "";
 }
 
 export function uniqueNonEmptyPrompts(values: readonly string[]): string[] {

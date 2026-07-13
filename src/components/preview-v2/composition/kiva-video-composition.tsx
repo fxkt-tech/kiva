@@ -62,12 +62,8 @@ function resolveAssets(
 ): VideoCompositionInput["assets"] {
   return {
     fontUrl: resolveAssetUrl(assets.fontUrl),
-    dayBackgroundUrl: assets.dayBackgroundUrl
-      ? resolveAssetUrl(assets.dayBackgroundUrl)
-      : null,
-    nightBackgroundUrl: assets.nightBackgroundUrl
-      ? resolveAssetUrl(assets.nightBackgroundUrl)
-      : null,
+    dayBackgroundUrl: resolveAssetUrl(assets.dayBackgroundUrl),
+    nightBackgroundUrl: resolveAssetUrl(assets.nightBackgroundUrl),
     avatarUrls: Object.fromEntries(
       Object.entries(assets.avatarUrls).map(([key, value]) => [
         key,

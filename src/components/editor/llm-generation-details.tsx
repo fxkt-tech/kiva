@@ -123,30 +123,23 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
               </div>
             ) : (
               <p className="text-sm text-subtle">
-                Token usage was not returned by the provider or this generation
-                was created before token recording.
+                Token usage was not returned by the provider.
               </p>
             )}
           </GenerationBlock>
 
           <GenerationBlock title="Request">
-            {generation.request ? (
-              <div className="space-y-3">
-                <KeyValue label="Schema" value={generation.request.schemaName} />
-                <TextDump label="System prompt" value={generation.request.systemPrompt} />
-                {generation.request.messages.map((message, index) => (
-                  <TextDump
-                    key={`${message.role}-${index}`}
-                    label={`${message.role} message ${index + 1}`}
-                    value={message.content}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-subtle">
-                This generation was created before request snapshots were recorded.
-              </p>
-            )}
+            <div className="space-y-3">
+              <KeyValue label="Schema" value={generation.request.schemaName} />
+              <TextDump label="System prompt" value={generation.request.systemPrompt} />
+              {generation.request.messages.map((message, index) => (
+                <TextDump
+                  key={`${message.role}-${index}`}
+                  label={`${message.role} message ${index + 1}`}
+                  value={message.content}
+                />
+              ))}
+            </div>
           </GenerationBlock>
 
           {generation.attempts && generation.attempts.length > 0 ? (
@@ -188,7 +181,7 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
           <GenerationBlock title="Player reasoning / decision summary">
             <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
               {decisionSummary ??
-                "No decision summary or legacy reasoning field was returned by the model. Hidden model reasoning is not available."}
+                "No decision summary was returned by the model. Hidden model reasoning is not available."}
             </pre>
           </GenerationBlock>
 
@@ -225,19 +218,13 @@ export function generationMarkdown(
 ): string {
   const sections: string[] = [];
 
-  if (generation.request) {
-    sections.push(`## Schema\n\n${generation.request.schemaName}`);
-    sections.push(`## System prompt\n\n${generation.request.systemPrompt}`);
+  sections.push(`## Schema\n\n${generation.request.schemaName}`);
+  sections.push(`## System prompt\n\n${generation.request.systemPrompt}`);
 
-    for (const message of generation.request.messages) {
-      if (message.role === "user") {
-        sections.push(`## User message\n\n${message.content}`);
-      }
+  for (const message of generation.request.messages) {
+    if (message.role === "user") {
+      sections.push(`## User message\n\n${message.content}`);
     }
-  } else {
-    sections.push("## Schema\n\nNot recorded.");
-    sections.push("## System prompt\n\nNot recorded.");
-    sections.push("## User message\n\nNot recorded.");
   }
 
   sections.push(`## Raw response\n\n${generation.rawOutput ?? "Not recorded."}`);
@@ -293,17 +280,9 @@ function decisionSummaryText(
     return null;
   }
 
-  for (const key of [
-    "decisionSummary",
-    "reasoning",
-    "reason",
-    "thought",
-    "analysis",
-  ]) {
-    const value = parsedOutput[key];
-    if (typeof value === "string" && value.trim().length > 0) {
-      return value.trim();
-    }
+  const value = parsedOutput.decisionSummary;
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
   }
 
   return null;

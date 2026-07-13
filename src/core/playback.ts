@@ -116,8 +116,9 @@ export type PlaybackItem = {
   readonly presenterCue: {
     readonly copyKey: string;
     readonly text: string;
+    readonly values: Readonly<Record<string, string>>;
   };
-  readonly playerVoice?: {
+  readonly playerVoice: {
     readonly eventId: string;
     readonly playerId: PlayerId;
     readonly file: string;
@@ -125,9 +126,9 @@ export type PlaybackItem = {
     readonly startsAtOffsetMs: number;
     readonly cues: readonly SpeechCue[];
   } | null;
-  readonly presenterVoiceClips?: readonly ResolvedPresenterVoiceClip[];
-  readonly presenterSourceId?: string;
-  readonly stage?: StagePresentation | null;
+  readonly presenterVoiceClips: readonly ResolvedPresenterVoiceClip[];
+  readonly presenterSourceId: string;
+  readonly stage: StagePresentation | null;
 };
 
 export const VOICE_TIMING = {
@@ -206,7 +207,11 @@ export function compilePublicPlayback(
         presenterName: presenter.presenterName,
         presenterAvatar: presenter.presenterAvatar,
         transcriptSpeaker: presenter.transcriptSpeaker,
-        presenterCue: presenter.cue,
+        presenterCue: {
+          copyKey: presenter.cue.copyKey,
+          text: presenter.cue.text,
+          values: presenter.cue.values ?? {},
+        },
         playerVoice,
         presenterVoiceClips,
         presenterSourceId: options.presenter.presenterSourceId,
@@ -295,15 +300,9 @@ export function stagePresentationForEvent(
         event.payload.used ? "used" : "skipped",
       );
     case "night_resolved": {
-      const reasons = new Map(
-        event.payload.deaths?.map((death) => [death.playerId, death.reason]),
-      );
       return {
         kind: "night_result",
-        deaths: event.payload.deadPlayerIds.map((playerId) => ({
-          playerId,
-          reason: reasons.get(playerId) ?? null,
-        })),
+        deaths: event.payload.deaths,
       };
     }
     case "death_announced":

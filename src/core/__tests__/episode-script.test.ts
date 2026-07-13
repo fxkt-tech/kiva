@@ -14,7 +14,6 @@ import {
   createEpisodeScriptSnapshot,
   episodeInputHash,
   episodePerformanceOpportunities,
-  legacyEpisodeInputHash,
   planNextEpisodeDraft,
   validateEpisodeScriptSnapshot,
   type CompiledEpisodePlan,
@@ -341,45 +340,15 @@ describe("episode script", () => {
     ).toThrow("Duplicate episode relationship");
   });
 
-  it("keeps historical schema-v1 snapshots readable and executable", () => {
+  it("rejects schema-v1 snapshots", () => {
     const plan = compileEpisodePlan(game);
     const current = createEpisodeScriptSnapshot(
-      validSnapshotInput(game, plan, "episode_legacy_source"),
+      validSnapshotInput(game, plan, "episode_current_source"),
     );
-    const legacy = validateEpisodeScriptSnapshot({
-      ...current,
-      schemaVersion: 1,
-      inputHash: legacyEpisodeInputHash(game),
-      castDirections: undefined,
-      relationships: undefined,
-      steps: current.steps.map((step) => ({
-        ...step,
-        speechBeat: step.speechBeat
-          ? legacySpeechBeat(step.speechBeat)
-          : null,
-      })),
-    });
 
-    expect(legacy.schemaVersion).toBe(1);
-    expect(legacy.castDirections).toEqual([]);
-    expect(legacy.relationships).toEqual([]);
-    expect(legacy.steps.find((step) => step.speechBeat)?.speechBeat)
-      .toMatchObject({
-        characterHook: null,
-        arcMove: null,
-        relationshipMove: null,
-      });
-    expect(() => assertEpisodeScriptMatchesGame({ game, script: legacy }))
-      .not.toThrow();
     expect(() =>
-      planNextEpisodeDraft({
-        game,
-        events: [],
-        script: legacy,
-        draftId: "legacy_runtime_draft" as DraftId,
-        createdAt: "2026-07-12T00:01:00.000Z",
-      }),
-    ).not.toThrow();
+      validateEpisodeScriptSnapshot({ ...current, schemaVersion: 1 }),
+    ).toThrow("Unsupported episode script schema: 1");
   });
 
   it("rejects a v2 script when character or script input changes", () => {
@@ -467,16 +436,6 @@ function compilerOwnedStepFields(step: CompiledEpisodePlan["steps"][number]) {
     plannedPayload: step.plannedPayload,
     budget: step.speechBeat?.budget ?? null,
   };
-}
-
-function legacySpeechBeat(beat: EpisodeSpeechBeat) {
-  const {
-    characterHook: _characterHook,
-    arcMove: _arcMove,
-    relationshipMove: _relationshipMove,
-    ...legacy
-  } = beat;
-  return legacy;
 }
 
 function requestContent(request: LlmGenerateJsonRequest): string {

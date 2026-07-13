@@ -17,7 +17,6 @@ import { buildPlayerLlmContext } from "./player-context";
 import {
   buildSpeechPrompt,
   SPEECH_PROMPT_VERSION,
-  type LlmPromptMode,
 } from "./prompt-builders";
 import {
   evaluateSpeech,
@@ -35,7 +34,6 @@ export type GenerateSpeechDraftInput = {
   readonly llmClient: LlmClient;
   readonly generationId: string;
   readonly createdAt: string;
-  readonly promptMode?: LlmPromptMode;
   readonly actorBrief?: EpisodeActorBrief | null;
 };
 
@@ -58,10 +56,11 @@ export async function generateSpeechDraft(
     events: input.events,
     viewerPlayerId: playerId,
   });
-  const prompt = buildSpeechPrompt(
-    { context, draft, actorBrief: input.actorBrief },
-    input.promptMode,
-  );
+  const prompt = buildSpeechPrompt({
+    context,
+    draft,
+    actorBrief: input.actorBrief,
+  });
   const request = {
     systemPrompt: prompt.systemPrompt,
     messages: prompt.messages,

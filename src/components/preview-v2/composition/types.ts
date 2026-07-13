@@ -1,9 +1,6 @@
 import type { PlaybackItem } from "@/core/playback";
-import {
-  legacyGameScriptSnapshot,
-  validateGameScriptSnapshot,
-  type GameScriptSnapshot,
-} from "@/core/game-script";
+import { validateGameScriptSnapshot, type GameScriptSnapshot } from "@/core/game-script";
+import { assertExactObjectKeys } from "@/core/model-binding";
 
 export const VIDEO_COMPOSITION_SCHEMA_VERSION = 4 as const;
 
@@ -25,8 +22,8 @@ export type AudioCue = {
 
 export type CompositionAssets = {
   readonly fontUrl: string;
-  readonly dayBackgroundUrl: string | null;
-  readonly nightBackgroundUrl: string | null;
+  readonly dayBackgroundUrl: string;
+  readonly nightBackgroundUrl: string;
   readonly avatarUrls: Readonly<Record<string, string>>;
 };
 
@@ -46,31 +43,32 @@ export function decodeVideoCompositionInput(
   if (!isRecord(value)) {
     throw new Error("Video composition input must be an object.");
   }
-  const normalized =
-    value.schemaVersion === 3
-      ? {
-          ...value,
-          schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
-          script: legacyGameScriptSnapshot(),
-        }
-      : value;
-  if (normalized.schemaVersion !== VIDEO_COMPOSITION_SCHEMA_VERSION) {
+  if (value.schemaVersion !== VIDEO_COMPOSITION_SCHEMA_VERSION) {
     throw new Error("Unsupported video composition schema version.");
   }
+  assertExactObjectKeys(value, "Video composition input", [
+    "schemaVersion",
+    "gameId",
+    "gameTitle",
+    "script",
+    "items",
+    "assets",
+    "audioCues",
+  ]);
   if (
-    typeof normalized.gameId !== "string" ||
-    typeof normalized.gameTitle !== "string" ||
-    !isGameScriptSnapshot(normalized.script) ||
-    !Array.isArray(normalized.items) ||
-    !normalized.items.every(isPlaybackItem) ||
-    !isCompositionAssets(normalized.assets) ||
-    !Array.isArray(normalized.audioCues) ||
-    !normalized.audioCues.every(isAudioCue)
+    typeof value.gameId !== "string" ||
+    typeof value.gameTitle !== "string" ||
+    !isGameScriptSnapshot(value.script) ||
+    !Array.isArray(value.items) ||
+    !value.items.every(isPlaybackItem) ||
+    !isCompositionAssets(value.assets) ||
+    !Array.isArray(value.audioCues) ||
+    !value.audioCues.every(isAudioCue)
   ) {
     throw new Error("Invalid video composition input.");
   }
 
-  return normalized as VideoCompositionInput;
+  return value as VideoCompositionInput;
 }
 
 function isGameScriptSnapshot(value: unknown): value is GameScriptSnapshot {
@@ -85,8 +83,27 @@ function isGameScriptSnapshot(value: unknown): value is GameScriptSnapshot {
 function isPlaybackItem(value: unknown): value is PlaybackItem {
   return (
     isRecord(value) &&
+    hasExactKeys(value, [
+      "index",
+      "phase",
+      "kind",
+      "title",
+      "text",
+      "details",
+      "durationMs",
+      "startsAtMs",
+      "players",
+      "presenterName",
+      "presenterAvatar",
+      "transcriptSpeaker",
+      "presenterCue",
+      "playerVoice",
+      "presenterVoiceClips",
+      "presenterSourceId",
+      "stage",
+    ]) &&
     Number.isInteger(value.index) &&
-    typeof value.phase === "string" &&
+    isPhase(value.phase) &&
     isPlaybackKind(value.kind) &&
     typeof value.title === "string" &&
     typeof value.text === "string" &&
@@ -101,8 +118,21 @@ function isPlaybackItem(value: unknown): value is PlaybackItem {
     (value.transcriptSpeaker === "presenter" ||
       value.transcriptSpeaker === "player") &&
     isPresenterCue(value.presenterCue) &&
-    (value.playerVoice === undefined || isPlayerVoice(value.playerVoice)) &&
-    (value.stage === undefined || value.stage === null || isStagePresentation(value.stage))
+    isPlayerVoice(value.playerVoice) &&
+    Array.isArray(value.presenterVoiceClips) &&
+    value.presenterVoiceClips.every(isPresenterVoiceClip) &&
+    typeof value.presenterSourceId === "string" &&
+    (value.stage === null || isStagePresentation(value.stage))
+  );
+}
+
+function isPresenterVoiceClip(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["clipId", "file", "durationMs"]) &&
+    typeof value.clipId === "string" &&
+    typeof value.file === "string" &&
+    isFiniteNonNegative(value.durationMs)
   );
 }
 
@@ -113,6 +143,13 @@ function isStagePresentation(value: unknown): boolean {
   switch (value.kind) {
     case "action":
       return (
+        hasExactKeys(value, [
+          "kind",
+          "action",
+          "actor",
+          "targetPlayerId",
+          "result",
+        ]) &&
         isStageAction(value.action) &&
         isStageActor(value.actor) &&
         isNullableString(value.targetPlayerId) &&
@@ -120,10 +157,12 @@ function isStagePresentation(value: unknown): boolean {
       );
     case "night_result":
       return (
+        hasExactKeys(value, ["kind", "deaths"]) &&
         Array.isArray(value.deaths) &&
         value.deaths.every(
           (death) =>
             isRecord(death) &&
+            hasExactKeys(death, ["playerId", "reason"]) &&
             typeof death.playerId === "string" &&
             (death.reason === null ||
               death.reason === "wolf_kill" ||
@@ -132,6 +171,14 @@ function isStagePresentation(value: unknown): boolean {
       );
     case "vote_result":
       return (
+        hasExactKeys(value, [
+          "kind",
+          "voteType",
+          "outcome",
+          "exiledPlayerId",
+          "candidates",
+          "abstentions",
+        ]) &&
         (value.voteType === "exile" || value.voteType === "pk") &&
         (value.outcome === "exiled" ||
           value.outcome === "tied" ||
@@ -141,6 +188,7 @@ function isStagePresentation(value: unknown): boolean {
         value.candidates.every(
           (candidate) =>
             isRecord(candidate) &&
+            hasExactKeys(candidate, ["playerId", "votes"]) &&
             typeof candidate.playerId === "string" &&
             Number.isInteger(candidate.votes) &&
             (candidate.votes as number) >= 0,
@@ -150,6 +198,7 @@ function isStagePresentation(value: unknown): boolean {
       );
     case "game_result":
       return (
+        hasExactKeys(value, ["kind", "winner", "reason"]) &&
         (value.winner === "wolves" || value.winner === "good") &&
         (value.reason === "all_wolves_dead" ||
           value.reason === "all_gods_dead" ||
@@ -172,10 +221,12 @@ function isStageAction(value: unknown): boolean {
 }
 
 function isStageActor(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  if (value.kind === "wolves") return hasExactKeys(value, ["kind"]);
   return (
-    isRecord(value) &&
-    (value.kind === "wolves" ||
-      (value.kind === "player" && typeof value.playerId === "string"))
+    value.kind === "player" &&
+    hasExactKeys(value, ["kind", "playerId"]) &&
+    typeof value.playerId === "string"
   );
 }
 
@@ -194,6 +245,14 @@ function isPlayerVoice(value: unknown): boolean {
   return (
     value === null ||
     (isRecord(value) &&
+      hasExactKeys(value, [
+        "eventId",
+        "playerId",
+        "file",
+        "durationMs",
+        "startsAtOffsetMs",
+        "cues",
+      ]) &&
       typeof value.eventId === "string" &&
       typeof value.playerId === "string" &&
       typeof value.file === "string" &&
@@ -203,6 +262,7 @@ function isPlayerVoice(value: unknown): boolean {
       value.cues.every(
         (cue) =>
           isRecord(cue) &&
+          hasExactKeys(cue, ["text", "startMs", "endMs"]) &&
           typeof cue.text === "string" &&
           isFiniteNonNegative(cue.startMs) &&
           isFiniteNonNegative(cue.endMs) &&
@@ -214,8 +274,10 @@ function isPlayerVoice(value: unknown): boolean {
 function isPresenterCue(value: unknown): boolean {
   return (
     isRecord(value) &&
+    hasExactKeys(value, ["copyKey", "text", "values"]) &&
     typeof value.copyKey === "string" &&
-    typeof value.text === "string"
+    typeof value.text === "string" &&
+    isStringRecord(value.values)
   );
 }
 
@@ -229,9 +291,31 @@ function isPlaybackKind(value: unknown): boolean {
   );
 }
 
+function isPhase(value: unknown): boolean {
+  return (
+    value === "setup" ||
+    value === "night" ||
+    value === "day" ||
+    value === "last_words" ||
+    value === "speech" ||
+    value === "vote" ||
+    value === "pk" ||
+    value === "ended"
+  );
+}
+
 function isPlaybackPlayer(value: unknown): boolean {
   return (
     isRecord(value) &&
+    hasExactKeys(value, [
+      "playerId",
+      "seatNo",
+      "name",
+      "avatar",
+      "roleName",
+      "status",
+      "highlighted",
+    ]) &&
     typeof value.playerId === "string" &&
     Number.isInteger(value.seatNo) &&
     typeof value.name === "string" &&
@@ -245,9 +329,15 @@ function isPlaybackPlayer(value: unknown): boolean {
 function isCompositionAssets(value: unknown): value is CompositionAssets {
   return (
     isRecord(value) &&
+    hasExactKeys(value, [
+      "fontUrl",
+      "dayBackgroundUrl",
+      "nightBackgroundUrl",
+      "avatarUrls",
+    ]) &&
     typeof value.fontUrl === "string" &&
-    isNullableString(value.dayBackgroundUrl) &&
-    isNullableString(value.nightBackgroundUrl) &&
+    typeof value.dayBackgroundUrl === "string" &&
+    typeof value.nightBackgroundUrl === "string" &&
     isStringRecord(value.avatarUrls)
   );
 }
@@ -255,6 +345,15 @@ function isCompositionAssets(value: unknown): value is CompositionAssets {
 function isAudioCue(value: unknown): value is AudioCue {
   return (
     isRecord(value) &&
+    hasExactKeys(value, [
+      "id",
+      "kind",
+      "src",
+      "startsAtMs",
+      "durationMs",
+      "trimStartMs",
+      "volume",
+    ]) &&
     typeof value.id === "string" &&
     isAudioCueKind(value.kind) &&
     typeof value.src === "string" &&
@@ -294,4 +393,14 @@ function isFiniteNonNegative(value: unknown): value is number {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasExactKeys(
+  value: Record<string, unknown>,
+  keys: readonly string[],
+): boolean {
+  return (
+    Object.keys(value).length === keys.length &&
+    keys.every((key) => key in value)
+  );
 }

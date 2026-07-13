@@ -44,7 +44,7 @@ describe("EventTimeline", () => {
     expect(html).toContain("LLM details");
     expect(html).toContain("success");
     expect(html).toContain("openai-compatible/test-model");
-    expect(html).toContain("speech:v1");
+    expect(html).toContain("speech:v2");
   });
 });
 
@@ -71,12 +71,12 @@ function generationRecord(draftId: DraftId, createdAt: string): GenerationRecord
     playerId: game.players[0]!.playerId as PlayerId,
     purpose: "speech",
     status: "success",
-    promptVersion: "speech:v1",
+    promptVersion: "speech:v2",
     provider: "openai-compatible",
     model: "test-model",
     inputContextHash: "hash_1",
     request: {
-      schemaName: "speech",
+      schemaName: "werewolf_speech_v2",
       systemPrompt: "system",
       messages: [{ role: "user", content: "visible context" }],
     },

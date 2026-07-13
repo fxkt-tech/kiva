@@ -379,38 +379,9 @@ function localOutputForRequest(
     };
   }
 
-  if (
-    request.schemaName === "werewolf_episode_narrative_v1" ||
-    request.schemaName === "werewolf_episode_outline_v1" ||
-    request.schemaName === "werewolf_episode_beats_v1"
-  ) {
-    const stepIndexes = [...userContent.matchAll(/SPEECH_STEP\s+(\d+)/g)].map(
-      (match) => Number(match[1]),
-    );
-    const beats = stepIndexes.map((stepIndex) => ({
-      stepIndex,
-      objective: "让当前立场推动一条可在后续事件中验证的冲突线。",
-      stance: "明确选择一项当前判断，并指出它与前序证词的矛盾。",
-      disclosure: "conceal",
-      themeHook: "把本场选择写成对档案版本的争夺，并让后续投票或行动完成验证。",
-    }));
-    if (request.schemaName === "werewolf_episode_outline_v1") {
-      return episodeOutline;
-    }
-    if (request.schemaName === "werewolf_episode_beats_v1") return { beats };
+  if (request.schemaName === "werewolf_speech_v2") {
     return {
-      ...episodeOutline,
-      beats,
-    };
-  }
-
-  if (
-    request.schemaName === "werewolf_speech_v1" ||
-    request.schemaName === "werewolf_speech_v2"
-  ) {
-    return {
-      ...(request.schemaName === "werewolf_speech_v2" &&
-      userContent.includes('"disclosure"')
+      ...(userContent.includes('"disclosure"')
         ? { disclosure: "conceal" }
         : {}),
       text: "我先根据目前能看到的信息给出自己的判断。",
@@ -419,7 +390,6 @@ function localOutputForRequest(
   }
 
   if (
-    request.schemaName === "werewolf_action_v1" ||
     request.schemaName === "werewolf_target_action_v2" ||
     request.schemaName === "werewolf_optional_action_v2"
   ) {
@@ -431,40 +401,22 @@ function localOutputForRequest(
       };
     }
 
-    if (request.schemaName === "werewolf_target_action_v2") {
-      if (userContent.includes("弃票时输出")) {
-        return {
-          targetPlayerId: null,
-          decisionSummary: "当前选择合法弃票。",
-        };
-      }
-
-      const targetPlayerId = /【合法候选】[\s\S]*?-\s+([^\s|]+)\s+\|/.exec(
-        userContent,
-      )?.[1];
+    if (userContent.includes("弃票时输出")) {
       return {
-        targetPlayerId: targetPlayerId ?? null,
-        decisionSummary: targetPlayerId
-          ? "从本次合法候选中选择一个目标。"
-          : "当前没有合法候选。",
+        targetPlayerId: null,
+        decisionSummary: "当前选择合法弃票。",
       };
     }
 
-    if (
-      userContent.includes("witch_antidote_decided") ||
-      userContent.includes("witch_poison_decided")
-    ) {
-      return { used: false, targetPlayerId: null };
-    }
-
-    if (userContent.includes("vote_cast")) {
-      return { targetPlayerId: null };
-    }
-
-    const targetPlayerId = /可选目标：[\s\S]*?playerId=([^\s]+)/.exec(
+    const targetPlayerId = /【合法候选】[\s\S]*?-\s+([^\s|]+)\s+\|/.exec(
       userContent,
     )?.[1];
-    return { targetPlayerId: targetPlayerId ?? null };
+    return {
+      targetPlayerId: targetPlayerId ?? null,
+      decisionSummary: targetPlayerId
+        ? "从本次合法候选中选择一个目标。"
+        : "当前没有合法候选。",
+    };
   }
 
   return {};
@@ -506,10 +458,7 @@ function localCharacterTrait(profile: Record<string, unknown>): string {
     profile.persona,
     localString(
       profile.reasoningStyle,
-      localString(
-        profile.speakingStyle,
-        localString(profile.legacyCharacterPrompt, "自然克制的真人表达"),
-      ),
+      localString(profile.speakingStyle, "自然克制的真人表达"),
     ),
   );
 }

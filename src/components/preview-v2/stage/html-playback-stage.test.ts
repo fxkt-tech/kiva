@@ -1,7 +1,9 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { createGameScriptSnapshot } from "@/core/game-script";
 import type { PlaybackItem, PlaybackScenePlayer } from "@/core/playback";
+import { seedScripts } from "@/seeds/scripts";
 import { createHtmlFrameViewModel } from "../composition/frame-view-model";
 import {
   HtmlPlaybackStage,
@@ -10,6 +12,11 @@ import {
   stageHeaderTitle,
   stageOpacity,
 } from "./html-playback-stage";
+import { speechTextFontSize } from "./stage-event-visual";
+
+const currentScript = createGameScriptSnapshot(seedScripts[0]!);
+
+vi.mock("remotion", () => ({ Img: "img" }));
 
 describe("preview v2 stage transitions", () => {
   it("stays fully opaque between scenes using the same background", () => {
@@ -103,6 +110,28 @@ describe("preview v2 visual stage placeholder", () => {
     expect(html).toContain("2号 玩家2");
   });
 
+  it("shows the complete speech on stage while keeping the subtitle band", () => {
+    const text = "这是完整发言。".repeat(20);
+    const html = renderStage(item({
+      kind: "speech",
+      transcriptSpeaker: "player",
+      text,
+      players: [player(1, "村民", { highlighted: true })],
+    }));
+
+    expect(html).toContain('aria-label="完整发言"');
+    expect(html).toContain(text);
+    expect(html).toContain('aria-label="说话者信息"');
+    expect(html).toContain("whitespace-pre-wrap break-words");
+    expect(html).not.toContain("完整发言\" class=\"line-clamp");
+  });
+
+  it("reduces the full-speech font size for longer scripts", () => {
+    expect(speechTextFontSize("发".repeat(120))).toBe(48);
+    expect(speechTextFontSize("发".repeat(121))).toBe(42);
+    expect(speechTextFontSize("发".repeat(181))).toBe(36);
+  });
+
   it("renders night, vote, and game resolution variants", () => {
     const players = [player(1, "狼人"), player(2, "村民")];
     const night = renderStage(item({
@@ -187,10 +216,11 @@ describe("preview v2 seat cards", () => {
       gameTitle: "身份色板测试",
       items: [scene],
       timeMs: 500,
+      script: currentScript,
       assets: {
         fontUrl: "font.ttf",
-        dayBackgroundUrl: null,
-        nightBackgroundUrl: null,
+        dayBackgroundUrl: currentScript.presentation.dayBackground,
+        nightBackgroundUrl: currentScript.presentation.nightBackground,
         avatarUrls: {},
       },
     });
@@ -202,7 +232,7 @@ describe("preview v2 seat cards", () => {
     expect(html).toContain('aria-label="说话者信息"');
     expect(html).not.toContain(">身份</span>");
     expect(html).toContain(">主理人</span>");
-    expect(html).toMatch(/style="color:#FFFAF0;[^"]*">守夜人<\/div>/u);
+    expect(html).toMatch(/style="color:#D8C9A7;[^"]*">守夜人<\/div>/u);
     expect(html).toContain("mt-2 line-clamp-3 whitespace-pre-line border-t");
     expect(html).not.toContain("line-clamp-3 self-center whitespace-pre-line");
     expect(html).not.toContain('aria-label="身份信息"');
@@ -235,10 +265,11 @@ describe("preview v2 seat cards", () => {
       gameTitle: "发言状态测试",
       items: [scene],
       timeMs: 500,
+      script: currentScript,
       assets: {
         fontUrl: "font.ttf",
-        dayBackgroundUrl: null,
-        nightBackgroundUrl: null,
+        dayBackgroundUrl: currentScript.presentation.dayBackground,
+        nightBackgroundUrl: currentScript.presentation.nightBackground,
         avatarUrls: {},
       },
     });
@@ -246,9 +277,9 @@ describe("preview v2 seat cards", () => {
       React.createElement(HtmlPlaybackStage, { viewModel }),
     );
 
-    expect(html).toContain("box-shadow:0 0 38px rgba(66,42,6,0.45)");
+    expect(html).toContain("box-shadow:0 0 42px #70A4A745");
     expect(html).toContain("absolute inset-y-2 w-[9px]");
-    expect(html).toContain("rgba(246,197,83,0.22)");
+    expect(html).toContain("#C5433528");
   });
 });
 
@@ -273,7 +304,11 @@ function item(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     presenterName: "守夜人",
     presenterAvatar: null,
     transcriptSpeaker: "presenter",
-    presenterCue: { copyKey: "fallback.announcement", text: "" },
+    presenterCue: { copyKey: "fallback.announcement", text: "", values: {} },
+    playerVoice: null,
+    presenterVoiceClips: [],
+    presenterSourceId: "host",
+    stage: null,
     ...overrides,
   };
 }
@@ -300,10 +335,11 @@ function renderStage(scene: PlaybackItem): string {
     gameTitle: "布局测试",
     items: [scene],
     timeMs: 500,
+    script: currentScript,
     assets: {
       fontUrl: "font.ttf",
-      dayBackgroundUrl: null,
-      nightBackgroundUrl: null,
+      dayBackgroundUrl: currentScript.presentation.dayBackground,
+      nightBackgroundUrl: currentScript.presentation.nightBackground,
       avatarUrls: {},
     },
   });

@@ -1,13 +1,13 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   createDefaultRuleset,
-  createSixPlayerRuleset,
   factionForRole,
   GAME_ROLES,
   isWerewolfRole,
   type GameRole,
+  type RoleCounts,
   type Ruleset,
-  type SixPlayerRoleCounts,
+  validateRuleset,
 } from "../types";
 
 describe("core types", () => {
@@ -51,18 +51,26 @@ describe("core types", () => {
     });
   });
 
-  it("keeps an explicit legacy six-player ruleset for existing games", () => {
-    expect(createSixPlayerRuleset()).toMatchObject({
-      playerCount: 6,
-      roleCounts: {
-        werewolf: 2,
-        seer: 1,
-        witch: 1,
-        hunter: 0,
-        guard: 0,
-        villager: 2,
-      },
-    });
+  it("validates the complete current ruleset", () => {
+    const ruleset = createDefaultRuleset();
+    expect(validateRuleset(ruleset)).toEqual(ruleset);
+    expect(() =>
+      validateRuleset({ ...ruleset, roleCounts: { ...ruleset.roleCounts, guard: 0 } }),
+    ).toThrow("sum to playerCount");
+    expect(() =>
+      validateRuleset({
+        ...ruleset,
+        playerCount: 6,
+        roleCounts: {
+          werewolf: 2,
+          seer: 1,
+          witch: 1,
+          hunter: 0,
+          guard: 0,
+          villager: 2,
+        },
+      }),
+    ).toThrow("expected the current 12-player board");
   });
 
   it("maps roles to factions", () => {
@@ -81,6 +89,6 @@ describe("core types", () => {
   });
 
   it("keeps ruleset role counts fixed for the first-version board", () => {
-    expectTypeOf<Ruleset["roleCounts"]>().toEqualTypeOf<SixPlayerRoleCounts>();
+    expectTypeOf<Ruleset["roleCounts"]>().toEqualTypeOf<RoleCounts>();
   });
 });

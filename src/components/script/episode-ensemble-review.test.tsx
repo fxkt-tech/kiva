@@ -16,7 +16,6 @@ describe("EpisodeEnsembleReview", () => {
     const html = renderToStaticMarkup(
       <EpisodeEnsembleReview
         script={scriptWith({
-          schemaVersion: 2,
           castDirections: [
             {
               playerId: first!.playerId,
@@ -72,31 +71,17 @@ describe("EpisodeEnsembleReview", () => {
     expect(html).not.toContain("<button");
   });
 
-  it("shows a neutral compatibility note for schema v1", () => {
-    const html = renderToStaticMarkup(
-      <EpisodeEnsembleReview
-        script={scriptWith({
-          schemaVersion: 1,
-          castDirections: [],
-          relationships: [],
-        })}
-        players={game.players}
-      />,
-    );
-
-    expect(html).toContain("兼容载入的旧版剧本");
-    expect(html).not.toContain("主要角色");
-  });
 });
 
 function scriptWith(
   fields: Pick<
     EpisodeScriptSnapshot,
-    "schemaVersion" | "castDirections" | "relationships"
+    "castDirections" | "relationships"
   >,
 ): EpisodeScriptSnapshot {
   return {
     ...fields,
+    schemaVersion: 2,
     id: "episode_review",
     gameId: game.id,
     compilerVersion: "episode-compiler:v1",

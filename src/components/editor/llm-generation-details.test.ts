@@ -21,14 +21,6 @@ describe("generationMarkdown", () => {
     );
   });
 
-  it("marks unavailable snapshots as not recorded", () => {
-    const generation = { request: null, rawOutput: null };
-
-    expect(generationMarkdown(generation)).toBe(
-      "## Schema\n\nNot recorded.\n\n## System prompt\n\nNot recorded.\n\n## User message\n\nNot recorded.\n\n## Raw response\n\nNot recorded.\n",
-    );
-  });
-
   it("includes invalid and accepted repair attempts", () => {
     const generation = {
       request: {

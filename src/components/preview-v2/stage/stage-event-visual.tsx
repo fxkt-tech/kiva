@@ -33,6 +33,10 @@ export function StageEventVisual({
 }: StageEventVisualProps) {
   const stage = shot.scene.stage;
   if (!stage) {
+    if (shot.scene.kind === "speech" && shot.scene.text.trim()) {
+      return <SpeechTextVisual palette={palette} shot={shot} />;
+    }
+
     return <section aria-label="视觉舞台" className="col-start-2 row-start-2 min-h-0" />;
   }
 
@@ -104,6 +108,46 @@ export function StageEventVisual({
       </div>
     </section>
   );
+}
+
+function SpeechTextVisual({
+  palette,
+  shot,
+}: {
+  readonly palette: StagePalette;
+  readonly shot: ShotFrame;
+}) {
+  return (
+    <section
+      aria-label="完整发言"
+      className="col-start-2 row-start-2 flex min-h-0 items-center justify-center"
+    >
+      <div
+        className="w-full whitespace-pre-wrap break-words border px-10 py-8 text-center font-bold tracking-[0.02em]"
+        style={{
+          background: palette.majorSurface,
+          borderColor: palette.majorBorder,
+          boxShadow: palette.majorShadow,
+          color: palette.text,
+          fontSize: speechTextFontSize(shot.scene.text),
+          lineHeight: 1.42,
+          textShadow: palette.textShadow,
+        }}
+      >
+        {shot.scene.text}
+      </div>
+    </section>
+  );
+}
+
+export function speechTextFontSize(text: string): number {
+  const characterCount = Array.from(text).filter(
+    (character) => !/\s/u.test(character),
+  ).length;
+
+  if (characterCount <= 120) return 48;
+  if (characterCount <= 180) return 42;
+  return 36;
 }
 
 function ActionVisual({

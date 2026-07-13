@@ -1,9 +1,6 @@
 import type { GameId } from "@/core/types";
 import type { PlaybackItem } from "@/core/playback";
-import {
-  legacyGameScriptSnapshot,
-  type GameScriptSnapshot,
-} from "@/core/game-script";
+import type { GameScriptSnapshot } from "@/core/game-script";
 import { buildAudioTimeline } from "../audio/audio-timeline";
 import {
   VIDEO_COMPOSITION_SCHEMA_VERSION,
@@ -15,9 +12,8 @@ export function createCompositionInput(input: {
   readonly gameId: GameId | string;
   readonly gameTitle: string;
   readonly items: readonly PlaybackItem[];
-  readonly script?: GameScriptSnapshot;
+  readonly script: GameScriptSnapshot;
 }): VideoCompositionInput {
-  const script = input.script ?? legacyGameScriptSnapshot();
   const avatarUrls = Object.fromEntries(
     [
       ...input.items.flatMap((item) => item.players.map((player) => player.avatar)),
@@ -31,12 +27,12 @@ export function createCompositionInput(input: {
     schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
     gameId: input.gameId,
     gameTitle: input.gameTitle,
-    script,
+    script: input.script,
     items: input.items,
     assets: {
       ...DEFAULT_COMPOSITION_ASSETS,
-      dayBackgroundUrl: script.presentation.dayBackground,
-      nightBackgroundUrl: script.presentation.nightBackground,
+      dayBackgroundUrl: input.script.presentation.dayBackground,
+      nightBackgroundUrl: input.script.presentation.nightBackground,
       avatarUrls,
     },
     audioCues: buildAudioTimeline(input.items, input.gameId),

@@ -7,7 +7,10 @@ import {
   type VideoCompositionInput,
 } from "@/components/preview-v2/composition/types";
 import { VIDEO_SPEC } from "@/components/preview-v2/composition/video-spec";
-import { legacyGameScriptSnapshot } from "@/core/game-script";
+import { createGameScriptSnapshot } from "@/core/game-script";
+import { seedScripts } from "@/seeds/scripts";
+
+const defaultScript = createGameScriptSnapshot(seedScripts[0]!);
 
 const defaultItem: PlaybackItem = {
   index: 1,
@@ -25,19 +28,24 @@ const defaultItem: PlaybackItem = {
   presenterCue: {
     copyKey: "phase.night",
     text: "夜幕已经落下，所有玩家请确认自己的身份。",
+    values: {},
   },
+  playerVoice: null,
+  presenterVoiceClips: [],
+  presenterSourceId: "wen_zhou",
+  stage: null,
 };
 
 export const defaultCompositionInput: VideoCompositionInput = {
   schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
   gameId: "fixture",
   gameTitle: "Kiva Render Fixture",
-  script: legacyGameScriptSnapshot(),
+  script: defaultScript,
   items: [defaultItem],
   assets: {
     fontUrl: "remotion-static:preview/noto-sans-sc-900.ttf",
-    dayBackgroundUrl: "remotion-static:preview/day-background.png",
-    nightBackgroundUrl: "remotion-static:preview/night-background.png",
+    dayBackgroundUrl: defaultScript.presentation.dayBackground,
+    nightBackgroundUrl: defaultScript.presentation.nightBackground,
     avatarUrls: {},
   },
   audioCues: [],

@@ -56,7 +56,11 @@ function scene(overrides: Partial<PlaybackItem> = {}): PlaybackItem {
     presenterName: "守夜人",
     presenterAvatar: null,
     transcriptSpeaker: "presenter",
-    presenterCue: { copyKey: "fallback.announcement", text: "Text" },
+    presenterCue: { copyKey: "fallback.announcement", text: "Text", values: {} },
+    playerVoice: null,
+    presenterVoiceClips: [],
+    presenterSourceId: "host",
+    stage: null,
     ...overrides,
   };
 }

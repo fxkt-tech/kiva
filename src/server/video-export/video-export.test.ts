@@ -6,7 +6,8 @@ import {
   VIDEO_COMPOSITION_SCHEMA_VERSION,
   type VideoCompositionInput,
 } from "@/components/preview-v2/composition/types";
-import { legacyGameScriptSnapshot } from "@/core/game-script";
+import { createGameScriptSnapshot } from "@/core/game-script";
+import { seedScripts } from "@/seeds/scripts";
 import { ExportRepository } from "./export-repository";
 import { getVideoExportService, VideoExportService } from "./export-service";
 import {
@@ -73,7 +74,7 @@ describe("video export persistence", () => {
     );
   });
 
-  it("lists job metadata without decoding a stale composition snapshot", async () => {
+  it("lists job metadata without decoding an invalid render input", async () => {
     const root = await mkdtemp(join(tmpdir(), "kiva-export-"));
     directories.push(root);
     const repository = new ExportRepository(root);
@@ -84,7 +85,7 @@ describe("video export persistence", () => {
     });
     await writeFile(
       join(repository.jobDir(initialJob.gameId, initialJob.jobId), "input.json"),
-      JSON.stringify({ ...fixtureComposition(), schemaVersion: 2 }),
+      JSON.stringify({ ...fixtureComposition(), unexpected: true }),
       "utf8",
     );
 
@@ -93,7 +94,7 @@ describe("video export persistence", () => {
     ]);
     await expect(
       repository.get(initialJob.gameId, initialJob.jobId),
-    ).rejects.toThrow("Unsupported video composition schema version");
+    ).rejects.toThrow("keys are invalid");
   });
 
   it("keeps queued exports queued when the API service initializes", async () => {
@@ -108,7 +109,7 @@ describe("video export persistence", () => {
     expect((await repository.list(initialJob.gameId))[0]?.status).toBe("queued");
   });
 
-  it("fails a stale queued snapshot without crashing the video worker", async () => {
+  it("fails an invalid queued snapshot without crashing the video worker", async () => {
     const root = await mkdtemp(join(tmpdir(), "kiva-export-stale-worker-"));
     directories.push(root);
     const repository = new ExportRepository(root);
@@ -116,7 +117,7 @@ describe("video export persistence", () => {
     await repository.create({ job: initialJob, composition: fixtureComposition() });
     await writeFile(
       join(repository.jobDir(initialJob.gameId, initialJob.jobId), "input.json"),
-      JSON.stringify({ ...fixtureComposition(), schemaVersion: 2 }),
+      JSON.stringify({ ...fixtureComposition(), unexpected: true }),
       "utf8",
     );
 
@@ -185,16 +186,17 @@ function job(): ExportJob {
 }
 
 function fixtureComposition(): VideoCompositionInput {
+  const script = createGameScriptSnapshot(seedScripts[0]!);
   return {
     schemaVersion: VIDEO_COMPOSITION_SCHEMA_VERSION,
     gameId: "game-1",
     gameTitle: "Test Game",
-    script: legacyGameScriptSnapshot(),
+    script,
     items: [],
     assets: {
       fontUrl: "/font.ttf",
-      dayBackgroundUrl: null,
-      nightBackgroundUrl: null,
+      dayBackgroundUrl: script.presentation.dayBackground,
+      nightBackgroundUrl: script.presentation.nightBackground,
       avatarUrls: {},
     },
     audioCues: [],

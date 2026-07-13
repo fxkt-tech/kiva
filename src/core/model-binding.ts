@@ -11,8 +11,18 @@ export function validateModelBindingSnapshot(
   if (!isPlainObject(value)) {
     throw new Error(`${path} must be an object or null`);
   }
-
   const binding = value as Partial<ModelBindingSnapshot>;
+
+  if ("temperature" in binding || "maxTokens" in binding) {
+    throw new Error(`${path} must not configure temperature or maxTokens`);
+  }
+
+  assertExactObjectKeys(
+    value,
+    path,
+    ["provider", "model", "responseFormat"],
+    ["fallbackModel"],
+  );
 
   if (!isStableString(binding.provider)) {
     throw new Error(`${path}.provider must be set`);
@@ -20,10 +30,6 @@ export function validateModelBindingSnapshot(
 
   if (!isStableString(binding.model)) {
     throw new Error(`${path}.model must be set`);
-  }
-
-  if ("temperature" in binding || "maxTokens" in binding) {
-    throw new Error(`${path} must not configure temperature or maxTokens`);
   }
 
   if (binding.responseFormat !== "json") {
@@ -40,6 +46,22 @@ export function validateModelBindingSnapshot(
 
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+export function assertExactObjectKeys(
+  value: Record<string, unknown>,
+  path: string,
+  required: readonly string[],
+  optional: readonly string[] = [],
+): void {
+  const missing = required.filter((key) => !(key in value));
+  const allowed = new Set([...required, ...optional]);
+  const unknown = Object.keys(value).filter((key) => !allowed.has(key));
+  if (missing.length > 0 || unknown.length > 0) {
+    throw new Error(
+      `${path} keys are invalid (missing: ${missing.join(", ") || "none"}; unknown: ${unknown.join(", ") || "none"})`,
+    );
+  }
 }
 
 function isStableString(value: unknown): value is string {

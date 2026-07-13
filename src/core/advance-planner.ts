@@ -901,15 +901,11 @@ function hunterDeathReason(
     }
 
     if (event.type === "night_resolved") {
-      const matchingDeath = event.payload.deaths?.find(
+      const matchingDeath = event.payload.deaths.find(
         (death) => death.playerId === hunterPlayerId,
       );
       if (matchingDeath) {
         return matchingDeath.reason;
-      }
-
-      if (event.payload.deadPlayerIds.includes(hunterPlayerId)) {
-        return "wolf_kill";
       }
     }
   }

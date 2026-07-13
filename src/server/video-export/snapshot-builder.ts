@@ -64,11 +64,11 @@ export async function buildExportSnapshot(input: {
       join(assetsDir, "font.ttf"),
     ),
     copyFile(
-      compositionBackgroundPath(input.dataDir, composition.assets.dayBackgroundUrl, "day"),
+      compositionBackgroundPath(input.dataDir, composition.assets.dayBackgroundUrl),
       join(assetsDir, "day-background.png"),
     ),
     copyFile(
-      compositionBackgroundPath(input.dataDir, composition.assets.nightBackgroundUrl, "night"),
+      compositionBackgroundPath(input.dataDir, composition.assets.nightBackgroundUrl),
       join(assetsDir, "night-background.png"),
     ),
   ]);
@@ -77,7 +77,7 @@ export async function buildExportSnapshot(input: {
   for (const source of Object.keys(composition.assets.avatarUrls)) {
     const asset = internalAvatarAsset(source);
     if (!asset || !isSafeAssetFile(asset.file)) {
-      warnings.push("Avatar was not snapshot-compatible: " + source);
+      warnings.push("Avatar cannot be copied into the export snapshot: " + source);
       continue;
     }
     try {
@@ -133,7 +133,7 @@ export async function buildExportSnapshot(input: {
       audioCues.push({ ...cue, src: assetBase + "audio/" + encodeURIComponent(file) });
       continue;
     }
-    throw new Error(`Audio cue was not snapshot-compatible: ${cue.src}`);
+    throw new Error(`Audio cue cannot be copied into the export snapshot: ${cue.src}`);
   }
 
   return {
@@ -175,18 +175,13 @@ function internalAvatarAsset(
 
 function compositionBackgroundPath(
   dataDir: string,
-  source: string | null,
-  phase: "day" | "night",
+  source: string,
 ): string {
-  const script = source ? internalAssetFile(source, "/kivdb-assets/scripts/") : null;
+  const script = internalAssetFile(source, "/kivdb-assets/scripts/");
   if (script && isSafeAssetFile(script)) {
     return join(dataDir, "assets", "scripts", script);
   }
-  const preview = source ? internalAssetFile(source, "/kivdb-assets/preview/") : null;
-  if (preview && isSafeAssetFile(preview)) {
-    return join(dataDir, "assets", "preview", preview);
-  }
-  return join(dataDir, "assets", "preview", `${phase}-background.png`);
+  throw new Error(`Script background asset is invalid: ${source}`);
 }
 
 function isSafeAssetFile(file: string): boolean {

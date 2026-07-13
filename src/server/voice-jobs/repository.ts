@@ -1,5 +1,6 @@
 import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { assertExactObjectKeys, isPlainObject } from "@/core/model-binding";
 import type { VoiceJob, VoiceJobStatus } from "./types";
 
 export class VoiceJobRepository {
@@ -16,18 +17,23 @@ export class VoiceJobRepository {
   }
 
   async create(job: VoiceJob): Promise<void> {
-    const path = this.path(job.gameId, job.jobId);
+    const validated = decodeVoiceJob(job);
+    const path = this.path(validated.gameId, validated.jobId);
     try {
       await readFile(path);
       throw new Error(`Voice job already exists: ${job.jobId}`);
     } catch (error) {
       if (!isNotFound(error)) throw error;
     }
-    await atomicJson(path, job);
+    await atomicJson(path, validated);
   }
 
   async save(job: VoiceJob): Promise<void> {
-    await atomicJson(this.path(job.gameId, job.jobId), job);
+    const validated = decodeVoiceJob(job);
+    await atomicJson(
+      this.path(validated.gameId, validated.jobId),
+      validated,
+    );
   }
 
   async get(gameId: string, jobId: string): Promise<VoiceJob | null> {
@@ -61,19 +67,76 @@ export class VoiceJobRepository {
 }
 
 function decodeVoiceJob(value: unknown): VoiceJob {
+  if (!isPlainObject(value)) {
+    throw new Error("Invalid voice job record");
+  }
+  if (value.schemaVersion !== 1) {
+    throw new Error("Unsupported voice job schema version");
+  }
+  assertExactObjectKeys(value, "Voice job", [
+    "schemaVersion",
+    "jobId",
+    "gameId",
+    "status",
+    "progress",
+    "createdAt",
+    "startedAt",
+    "completedAt",
+    "retryOfJobId",
+    "items",
+    "error",
+  ]);
   const job = value as VoiceJob;
   if (
-    !value ||
-    typeof value !== "object" ||
-    job.schemaVersion !== 1 ||
     !isIdentifier(job.jobId) ||
     !isIdentifier(job.gameId) ||
     !isStatus(job.status) ||
-    !Array.isArray(job.items)
+    !isProgress(job.progress) ||
+    typeof job.createdAt !== "string" ||
+    !isNullableString(job.startedAt) ||
+    !isNullableString(job.completedAt) ||
+    !isNullableString(job.retryOfJobId) ||
+    !Array.isArray(job.items) ||
+    !job.items.every(isVoiceJobItem) ||
+    !isNullableString(job.error)
   ) {
     throw new Error("Invalid voice job record");
   }
   return job;
+}
+
+function isVoiceJobItem(value: unknown): boolean {
+  return (
+    isPlainObject(value) &&
+    hasExactKeys(value, ["eventId", "playerId", "label", "status", "error"]) &&
+    isIdentifier(value.eventId) &&
+    isIdentifier(value.playerId) &&
+    typeof value.label === "string" &&
+    ["queued", "generating", "completed", "failed", "skipped"].includes(
+      String(value.status),
+    ) &&
+    isNullableString(value.error)
+  );
+}
+
+function isProgress(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= 1
+  );
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function hasExactKeys(
+  value: Record<string, unknown>,
+  keys: readonly string[],
+): boolean {
+  return Object.keys(value).length === keys.length && keys.every((key) => key in value);
 }
 
 function isStatus(value: unknown): value is VoiceJobStatus {

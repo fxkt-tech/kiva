@@ -1,6 +1,6 @@
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { createDraftEvent, type DraftEvent } from "@/core/drafts";
 import type { GameEvent } from "@/core/events";
@@ -8,6 +8,7 @@ import { createSeedGame, type Game } from "@/core/game";
 import type { DraftId, EventId, GameId } from "@/core/types";
 import {
   createGameRepository,
+  GAME_RECORD_SCHEMA_VERSION,
   type GameRecord,
 } from "../game-repository";
 
@@ -34,28 +35,18 @@ function game(gameId: GameId, updatedAt: string): Game {
   };
 }
 
-function legacyGameWithoutPlayerLibrarySnapshots(
+function record(
   gameId: GameId,
-  updatedAt: string,
-): unknown {
-  const currentGame = game(gameId, updatedAt);
-
+  updatedAt = "2026-06-26T00:03:00.000Z",
+): GameRecord {
   return {
-    ...currentGame,
-    players: currentGame.players.map((player) => ({
-      playerId: player.playerId,
-      seatNo: player.seatNo,
-      profileSourceId: player.profileSourceId,
-      name: player.name,
-      persona: player.persona,
-      speakingStyle: player.speakingStyle,
-      reasoningStyle: player.reasoningStyle,
-      systemPrompt: player.systemPrompt,
-      modelBindingSnapshot: player.modelBindingSnapshot,
-      gameRole: player.gameRole,
-      faction: player.faction,
-      initialPrivateKnowledge: player.initialPrivateKnowledge,
-    })),
+    schemaVersion: GAME_RECORD_SCHEMA_VERSION,
+    game: game(gameId, updatedAt),
+    events: [],
+    draft: null,
+    generations: [],
+    voiceArtifactsByEventId: {},
+    episodeScript: null,
   };
 }
 
@@ -85,6 +76,16 @@ function draft(gameId: GameId): DraftEvent {
   });
 }
 
+async function writePersistedRecord(
+  rootDir: string,
+  gameId: GameId,
+  value: unknown,
+): Promise<void> {
+  const directory = join(rootDir, "games", encodeURIComponent(gameId));
+  await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, "record.json"), JSON.stringify(value), "utf8");
+}
+
 describe("game repository", () => {
   it("uses kivdb as the default data directory", async () => {
     const rootDir = await createTempDir();
@@ -92,13 +93,7 @@ describe("game repository", () => {
     const repository = createGameRepository();
     const gameId = "game-1" as GameId;
 
-    await repository.save({
-      game: game(gameId, "2026-06-26T00:03:00.000Z"),
-      events: [],
-      draft: null,
-      generations: [],
-    voiceArtifactsByEventId: {},
-    });
+    await repository.save(record(gameId));
 
     const savedFile = await stat(
       join(rootDir, "kivdb", "games", encodeURIComponent(gameId), "record.json"),
@@ -106,291 +101,158 @@ describe("game repository", () => {
     expect(savedFile.isFile()).toBe(true);
   });
 
-  it("returns a saved game record with game, events, and draft", async () => {
-    const rootDir = await createTempDir();
-    const repository = createGameRepository(rootDir);
-    const gameId = "game-1" as GameId;
-    const record: GameRecord = {
-      game: game(gameId, "2026-06-26T00:03:00.000Z"),
+  it("round-trips a complete current game record", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const gameId = "game-round-trip" as GameId;
+    const current: GameRecord = {
+      ...record(gameId),
       events: [event(gameId)],
       draft: draft(gameId),
-      generations: [],
-    voiceArtifactsByEventId: {},
-      episodeScript: null,
     };
 
-    await repository.save(record);
+    await repository.save(current);
 
-    await expect(repository.get(gameId)).resolves.toEqual(record);
+    await expect(repository.get(gameId)).resolves.toEqual(current);
   });
 
-  it("deletes a saved game record", async () => {
+  it("deletes records and treats a missing record as a no-op", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);
     const gameId = "game-delete" as GameId;
-
-    await repository.save({
-      game: game(gameId, "2026-06-26T00:03:00.000Z"),
-      events: [],
-      draft: null,
-      generations: [],
-    voiceArtifactsByEventId: {},
-    });
+    await repository.save(record(gameId));
 
     await repository.delete(gameId);
 
     await expect(repository.get(gameId)).resolves.toBeNull();
+    await expect(repository.delete(gameId)).resolves.toBeUndefined();
     await expect(
       stat(join(rootDir, "games", encodeURIComponent(gameId), "record.json")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
-  it("treats deleting a missing game as a no-op", async () => {
+  it("lists saved records newest first", async () => {
     const repository = createGameRepository(await createTempDir());
-
-    await expect(repository.delete("missing-game" as GameId)).resolves.toBeUndefined();
-  });
-
-  it("lists saved records newest first by game updated time", async () => {
-    const rootDir = await createTempDir();
-    const repository = createGameRepository(rootDir);
     const olderGameId = "older-game" as GameId;
     const newerGameId = "newer-game" as GameId;
-
-    await repository.save({
-      game: game(olderGameId, "2026-06-26T00:03:00.000Z"),
-      events: [],
-      draft: null,
-      generations: [],
-    voiceArtifactsByEventId: {},
-    });
-    await repository.save({
-      game: game(newerGameId, "2026-06-26T00:04:00.000Z"),
-      events: [],
-      draft: null,
-      generations: [],
-    voiceArtifactsByEventId: {},
-    });
+    await repository.save(record(olderGameId, "2026-06-26T00:03:00.000Z"));
+    await repository.save(record(newerGameId, "2026-06-26T00:04:00.000Z"));
 
     const records = await repository.list();
-    expect(records.map((record) => record.game.id)).toEqual([
+
+    expect(records.map((item) => item.game.id)).toEqual([
       newerGameId,
       olderGameId,
     ]);
-    expect(records.map((record) => record.generations)).toEqual([[], []]);
   });
 
-  it("normalizes old records without generations", async () => {
+  it("rejects records without the current record schema", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);
-    const gameId = "old-game" as GameId;
-    const oldRecord = {
-      game: game(gameId, "2026-06-26T00:03:00.000Z"),
-      events: [],
-      draft: null,
-    };
-    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
-    await writeFile(
-      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
-      JSON.stringify(oldRecord),
-      "utf8",
-    );
-
-    await expect(repository.get(gameId)).resolves.toMatchObject({
-      game: { id: gameId, runMode: "game" },
-      events: [],
-      draft: null,
-      generations: [],
-    voiceArtifactsByEventId: {},
-    });
-  });
-
-  it("normalizes a scripted record without episode state to idle", async () => {
-    const rootDir = await createTempDir();
-    const repository = createGameRepository(rootDir);
-    const gameId = "old-scripted-game" as GameId;
-    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
-    await writeFile(
-      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
-      JSON.stringify({
-        game: { ...game(gameId, "2026-06-26T00:03:00.000Z"), runMode: "scripted" },
-        events: [],
-        draft: null,
-      }),
-      "utf8",
-    );
-
-    await expect(repository.get(gameId)).resolves.toMatchObject({
-      game: { runMode: "scripted" },
-      episodeScript: { status: "idle" },
-    });
-  });
-
-  it("rejects game records without a presenter snapshot", async () => {
-    const rootDir = await createTempDir();
-    const repository = createGameRepository(rootDir);
-    const gameId = "missing-presenter" as GameId;
-    const gameWithoutPresenter = {
-      ...game(gameId, "2026-06-26T00:03:00.000Z"),
-      presenter: undefined,
-    };
-    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
-    await writeFile(
-      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
-      JSON.stringify({
-        game: gameWithoutPresenter,
-        events: [],
-        draft: null,
-        generations: [],
-      voiceArtifactsByEventId: {},
-      }),
-      "utf8",
-    );
+    const gameId = "missing-schema" as GameId;
+    const { schemaVersion: _schemaVersion, ...oldRecord } = record(gameId);
+    await writePersistedRecord(rootDir, gameId, oldRecord);
 
     await expect(repository.get(gameId)).rejects.toThrow(
-      "Game presenter snapshot must be an object",
+      "Unsupported game record schema: undefined",
     );
   });
 
-  it("normalizes old generation records without token usage", async () => {
+  it("rejects records with missing run mode or episode state", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);
-    const gameId = "old-generation-token-usage" as GameId;
-    const oldRecord = {
-      game: game(gameId, "2026-06-26T00:03:00.000Z"),
-      events: [],
-      draft: null,
+    const missingModeId = "missing-run-mode" as GameId;
+    const current = record(missingModeId);
+    const { runMode: _runMode, ...gameWithoutMode } = current.game;
+    await writePersistedRecord(rootDir, missingModeId, {
+      ...current,
+      game: gameWithoutMode,
+    });
+    await expect(repository.get(missingModeId)).rejects.toThrow(
+      "Game keys are invalid",
+    );
+
+    const scriptedId = "missing-episode-state" as GameId;
+    const scripted = record(scriptedId);
+    await writePersistedRecord(rootDir, scriptedId, {
+      ...scripted,
+      game: { ...scripted.game, runMode: "scripted" },
+      episodeScript: null,
+    });
+    await expect(repository.get(scriptedId)).rejects.toThrow(
+      "Episode script state must be an object",
+    );
+  });
+
+  it("rejects removed player aliases and incomplete presenter snapshots", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const aliasId = "removed-player-alias" as GameId;
+    const aliased = record(aliasId);
+    await writePersistedRecord(rootDir, aliasId, {
+      ...aliased,
+      game: {
+        ...aliased.game,
+        players: aliased.game.players.map((player, index) =>
+          index === 0 ? { ...player, systemPrompt: "removed" } : player,
+        ),
+      },
+    });
+    await expect(repository.get(aliasId)).rejects.toThrow("keys are invalid");
+
+    const presenterId = "missing-presenter" as GameId;
+    const noPresenter = record(presenterId);
+    await writePersistedRecord(rootDir, presenterId, {
+      ...noPresenter,
+      game: { ...noPresenter.game, presenter: undefined },
+    });
+    await expect(repository.get(presenterId)).rejects.toThrow(
+      "Game keys are invalid",
+    );
+  });
+
+  it("rejects old prompt generations instead of normalizing them", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const gameId = "old-prompt" as GameId;
+    const current = record(gameId);
+    await writePersistedRecord(rootDir, gameId, {
+      ...current,
       generations: [
         {
-          id: "generation_1",
+          id: "generation-1",
           gameId,
-          draftId: "draft_1",
-          playerId: "player_1",
+          draftId: "draft-1",
+          playerId: current.game.players[0]!.playerId,
           purpose: "speech",
           status: "success",
           promptVersion: "speech:v1",
           provider: "mock",
           model: "mock-model",
           inputContextHash: "ctx",
-          request: null,
+          request: {
+            schemaName: "werewolf_speech_v1",
+            systemPrompt: "old",
+            messages: [],
+          },
+          tokenUsage: null,
           rawOutput: "{}",
           parsedOutput: {},
           error: null,
           createdAt: "2026-06-26T00:02:00.000Z",
         },
       ],
-    };
-    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
-    await writeFile(
-      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
-      JSON.stringify(oldRecord),
-      "utf8",
-    );
-
-    await expect(repository.get(gameId)).resolves.toMatchObject({
-      generations: [{ tokenUsage: null }],
     });
+
+    await expect(repository.get(gameId)).rejects.toThrow(
+      "Unsupported generation prompt version: speech:v1",
+    );
   });
 
-  it("normalizes old player snapshots when loading a game", async () => {
-    const rootDir = await createTempDir();
-    const repository = createGameRepository(rootDir);
-    const gameId = "old-player-snapshots" as GameId;
-    const oldRecord = {
-      game: legacyGameWithoutPlayerLibrarySnapshots(
-        gameId,
-        "2026-06-26T00:03:00.000Z",
-      ),
-      events: [],
-      draft: null,
-    };
-    await mkdir(join(rootDir, "games", encodeURIComponent(gameId)), { recursive: true });
-    await writeFile(
-      join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
-      JSON.stringify(oldRecord),
-      "utf8",
-    );
-
-    const loaded = await repository.get(gameId);
-
-    expect(loaded?.game.players[0]).toMatchObject({
-      characterSourceId: null,
-      roleSourceId: "villager",
-      roleName: "平民",
-      team: "villager",
-      mechanicKey: "none",
-      characterSystemPromptSnapshot:
-        "你是狼人杀玩家周序。你负责维护事实账本，优先票型、顺序和可验证记录。不要把他人主张记成事实，也不要为数字编造含义。",
-      roleSystemPromptSnapshot: "",
-      roleActionPromptSnapshot: null,
-      avatar: null,
-    });
-  });
-
-  it("normalizes old player snapshots when listing games", async () => {
-    const rootDir = await createTempDir();
-    const repository = createGameRepository(rootDir);
-    const olderGameId = "older-old-player-snapshots" as GameId;
-    const newerGameId = "newer-old-player-snapshots" as GameId;
-    await mkdir(join(rootDir, "games", encodeURIComponent(olderGameId)), { recursive: true });
-    await writeFile(
-      join(rootDir, "games", encodeURIComponent(olderGameId), "record.json"),
-      JSON.stringify({
-        game: legacyGameWithoutPlayerLibrarySnapshots(
-          olderGameId,
-          "2026-06-26T00:03:00.000Z",
-        ),
-        events: [],
-        draft: null,
-      }),
-      "utf8",
-    );
-    await mkdir(join(rootDir, "games", encodeURIComponent(newerGameId)), { recursive: true });
-    await writeFile(
-      join(rootDir, "games", encodeURIComponent(newerGameId), "record.json"),
-      JSON.stringify({
-        game: legacyGameWithoutPlayerLibrarySnapshots(
-          newerGameId,
-          "2026-06-26T00:04:00.000Z",
-        ),
-        events: [],
-        draft: null,
-      }),
-      "utf8",
-    );
-
-    const records = await repository.list();
-
-    expect(records.map((record) => record.game.id)).toEqual([
-      newerGameId,
-      olderGameId,
-    ]);
-    expect(records[0].game.players[0]).toMatchObject({
-      characterSourceId: null,
-      roleSourceId: "villager",
-      roleName: "平民",
-      team: "villager",
-      mechanicKey: "none",
-      characterSystemPromptSnapshot:
-        "你是狼人杀玩家周序。你负责维护事实账本，优先票型、顺序和可验证记录。不要把他人主张记成事实，也不要为数字编造含义。",
-      roleSystemPromptSnapshot: "",
-      roleActionPromptSnapshot: null,
-      avatar: null,
-    });
-  });
-
-  it("stores game ids as one safe filename segment under games", async () => {
+  it("stores game ids as one safe path segment", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);
     const gameId = "../escaped/game" as GameId;
-
-    await repository.save({
-      game: game(gameId, "2026-06-26T00:03:00.000Z"),
-      events: [],
-      draft: null,
-      generations: [],
-    voiceArtifactsByEventId: {},
-    });
+    await repository.save(record(gameId));
 
     await expect(
       stat(join(rootDir, "games", encodeURIComponent(gameId), "record.json")),
@@ -398,29 +260,18 @@ describe("game repository", () => {
     await expect(stat(join(rootDir, "escaped"))).rejects.toMatchObject({
       code: "ENOENT",
     });
-    await expect(repository.get(gameId)).resolves.toMatchObject({
-      game: { id: gameId },
-    });
   });
 
   it("writes pretty JSON with a trailing newline", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);
     const gameId = "game-format" as GameId;
-
-    await repository.save({
-      game: game(gameId, "2026-06-26T00:03:00.000Z"),
-      events: [],
-      draft: null,
-      generations: [],
-    voiceArtifactsByEventId: {},
-    });
+    await repository.save(record(gameId));
 
     const content = await readFile(
       join(rootDir, "games", encodeURIComponent(gameId), "record.json"),
       "utf8",
     );
-
     expect(content).toContain('\n  "game":');
     expect(content.endsWith("\n")).toBe(true);
   });
@@ -433,7 +284,7 @@ describe("game repository", () => {
     const order: string[] = [];
     let releaseFirstLock: () => void = () => {};
     const firstLockStarted = new Promise<void>((resolve) => {
-      const firstLock = firstRepository.withGameLock(gameId, async () => {
+      void firstRepository.withGameLock(gameId, async () => {
         order.push("first-start");
         resolve();
         await new Promise<void>((release) => {
@@ -441,20 +292,17 @@ describe("game repository", () => {
         });
         order.push("first-end");
       });
-      void firstLock;
     });
 
     await firstLockStarted;
     const secondLock = secondRepository.withGameLock(gameId, async () => {
       order.push("second");
     });
-
     await new Promise((resolve) => setTimeout(resolve, 25));
     expect(order).toEqual(["first-start"]);
 
     releaseFirstLock();
     await secondLock;
-
     expect(order).toEqual(["first-start", "first-end", "second"]);
   });
 

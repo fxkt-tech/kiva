@@ -62,7 +62,6 @@ export type PlayerLlmContext = {
     readonly characterSystemPromptSnapshot: string;
     readonly roleSystemPromptSnapshot: string;
     readonly roleActionPromptSnapshot: string | null;
-    readonly systemPrompt: string;
     readonly modelBindingSnapshot: ModelBindingSnapshot;
   };
   readonly roster: readonly PlayerContextRosterEntry[];
@@ -124,7 +123,6 @@ export function buildPlayerLlmContext(
       characterSystemPromptSnapshot: viewer.characterSystemPromptSnapshot,
       roleSystemPromptSnapshot: viewer.roleSystemPromptSnapshot,
       roleActionPromptSnapshot: viewer.roleActionPromptSnapshot,
-      systemPrompt: viewer.systemPrompt,
       modelBindingSnapshot: viewer.modelBindingSnapshot,
     },
     roster: input.game.players.map((player) => rosterEntryForViewer(player, viewer)),

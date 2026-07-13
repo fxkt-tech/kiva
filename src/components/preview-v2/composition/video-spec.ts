@@ -10,6 +10,4 @@ export const VIDEO_SPEC = {
 
 export const DEFAULT_COMPOSITION_ASSETS = {
   fontUrl: "/kivdb-assets/preview/noto-sans-sc-900.ttf",
-  dayBackgroundUrl: "/kivdb-assets/preview/day-background.png",
-  nightBackgroundUrl: "/kivdb-assets/preview/night-background.png",
 } as const;
