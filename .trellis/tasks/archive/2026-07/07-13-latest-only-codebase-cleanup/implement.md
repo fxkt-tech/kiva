@@ -100,7 +100,7 @@ Destructive data deletion is forbidden until every item in this gate passes.
 
 - [x] Run `trellis-update-spec` for the learned latest-only persistence contract.
 - [x] Review deletion and dirty-work status with the user-visible handoff.
-- [ ] Commit only after explicit commit confirmation, then run the Trellis finish workflow.
+- [x] Commit only after explicit commit confirmation, then run the Trellis finish workflow.
 
 ## Verification
 
