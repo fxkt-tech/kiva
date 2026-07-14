@@ -50,6 +50,16 @@ export type AuthorEpisodeScriptResult = {
   readonly repaired: boolean;
 };
 
+export type AdvanceEpisodeAuthorResult =
+  | {
+      readonly status: "ready";
+      readonly workspace: EpisodeAuthorWorkspace;
+      readonly requests: readonly EpisodeAuthorRequestRecord[];
+      readonly tokenUsage: LlmTokenUsage | null;
+      readonly repaired: boolean;
+    }
+  | ({ readonly status: "complete" } & AuthorEpisodeScriptResult);
+
 export type EpisodeAuthorCheckpoint = {
   readonly workspace: EpisodeAuthorWorkspace;
   readonly request: EpisodeAuthorRequestRecord;
@@ -91,6 +101,8 @@ const MAX_PRIOR_MOVES_PER_ACTOR = 1;
 const MAX_AUTHOR_FIELD_CHARACTERS = 80;
 const CONCISE_AUTHOR_OUTPUT_INSTRUCTION =
   `每个字符串字段最多 ${MAX_AUTHOR_FIELD_CHARACTERS} 个字符，使用完整短句，不要扩写。`;
+const EPISODE_DRAMATIC_WEIGHT_CONTRACT =
+  'dramaticWeight 只能是字符串 "primary" 或 "supporting"。';
 
 export function createEpisodeAuthorWorkspace(input: {
   readonly game: Game;
@@ -140,7 +152,7 @@ export function episodeAuthorProgress(workspace: EpisodeAuthorWorkspace): {
   };
 }
 
-export async function authorEpisodeScript(input: {
+type AuthorEpisodeScriptInput = {
   readonly game: Game;
   readonly llmClient: LlmClient;
   readonly createdAt: string;
@@ -149,7 +161,34 @@ export async function authorEpisodeScript(input: {
   readonly onCheckpoint?: (
     checkpoint: EpisodeAuthorCheckpoint,
   ) => Promise<void>;
-}): Promise<AuthorEpisodeScriptResult> {
+};
+
+export async function authorEpisodeScript(
+  input: AuthorEpisodeScriptInput,
+): Promise<AuthorEpisodeScriptResult> {
+  const result = await runEpisodeAuthor(input, false);
+  if (result.status !== "complete") {
+    throw new Error("Full Episode authoring stopped before completion");
+  }
+  return {
+    script: result.script,
+    workspace: result.workspace,
+    requests: result.requests,
+    tokenUsage: result.tokenUsage,
+    repaired: result.repaired,
+  };
+}
+
+export function advanceEpisodeAuthor(
+  input: AuthorEpisodeScriptInput,
+): Promise<AdvanceEpisodeAuthorResult> {
+  return runEpisodeAuthor(input, true);
+}
+
+async function runEpisodeAuthor(
+  input: AuthorEpisodeScriptInput,
+  stopAfterTask: boolean,
+): Promise<AdvanceEpisodeAuthorResult> {
   const plan = compileEpisodePlan(input.game);
   const profiles = input.game.players.map(episodeActorProfile);
   const opportunities = episodePerformanceOpportunities(input.game, plan);
@@ -309,6 +348,7 @@ export async function authorEpisodeScript(input: {
           outputContract: [
             `castAssignments 必须恰好覆盖：${profiles.map((profile) => profile.playerId).join(", ")}`,
             "每项只包含 playerId、dramaticWeight、dramaticFunction、signatureStepIndex",
+            EPISODE_DRAMATIC_WEIGHT_CONTRACT,
             `relationshipSeeds 必须为 1 到 ${MAX_EPISODE_RELATIONSHIP_SEEDS} 项；每项只包含两个不同 playerId 和约定 kind`,
             "不要展开 baseline、pressure、change、payoff 或关系长文",
           ],
@@ -382,6 +422,23 @@ export async function authorEpisodeScript(input: {
         await completeBeatTask(task);
         break;
     }
+
+    if (stopAfterTask) {
+      const nextTask = nextEpisodeAuthorTask({
+        game: input.game,
+        plan,
+        workspace,
+      });
+      if (nextTask) {
+        return {
+          status: "ready",
+          workspace,
+          requests,
+          ...episodeAuthorRequestSummary(requests),
+        };
+      }
+      break;
+    }
   }
 
   const story = requiredWorkspaceValue(workspace.story, "story");
@@ -401,9 +458,18 @@ export async function authorEpisodeScript(input: {
   });
 
   return {
+    status: "complete",
     script,
     workspace,
     requests,
+    ...episodeAuthorRequestSummary(requests),
+  };
+}
+
+function episodeAuthorRequestSummary(
+  requests: readonly EpisodeAuthorRequestRecord[],
+): Pick<AdvanceEpisodeAuthorResult, "tokenUsage" | "repaired"> {
+  return {
     tokenUsage: requests.reduce<LlmTokenUsage | null>(
       (usage, request) => mergeUsage(usage, request.tokenUsage),
       null,
@@ -528,6 +594,7 @@ function buildEnsembleRequest(input: {
           ),
           "",
           "输出 castAssignments[{playerId,dramaticWeight,dramaticFunction,signatureStepIndex}]。",
+          EPISODE_DRAMATIC_WEIGHT_CONTRACT,
           "输出 relationshipSeeds[{playerIds,kind}]，kind 为 rivalry/alliance/contrast/trust_shift。",
           `castAssignments 恰好覆盖所有演员；relationshipSeeds 必须为 1 到 ${MAX_EPISODE_RELATIONSHIP_SEEDS} 项，同一无向玩家对不得重复。`,
           "不要输出 baseline、pressure、change、payoff、setup、development 或关系 payoff。",

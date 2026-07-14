@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { RULE_ROLES } from "@/core/rule-role";
-import { LocalHeuristicLlmClient } from "@/core/llm";
+import { LocalHeuristicLlmClient, type LlmClient } from "@/core/llm";
 import { seedActors } from "@/seeds/actors";
 import { seedLineups } from "@/seeds/lineups";
 import { seedPresenters } from "@/seeds/presenters";
@@ -80,6 +80,83 @@ describe("game actions with Content Catalog", () => {
     expect(authorInput).toContain("bai_qi");
     expect(authorInput).not.toContain("qin_chuan");
   }, 20_000);
+
+  it("runs one guarded Script Author task per background job", async () => {
+    const repository = memoryGameRepository();
+    const local = new LocalHeuristicLlmClient();
+    let providerCalls = 0;
+    const llmClient: LlmClient = {
+      async generateJson(request) {
+        providerCalls += 1;
+        return local.generateJson(request);
+      },
+    };
+    const actions = createGameActions(repository, {
+      contentCatalog: memoryCatalog(),
+      llmClient,
+    });
+    const created = await actions.createGameFromLineupId(
+      seedLineups[0]!.id,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+
+    const storyJobId = await actions.startEpisodeScriptGeneration(
+      created.game.id,
+      null,
+    );
+    expect(storyJobId).toEqual(expect.any(String));
+    expect(
+      await actions.startEpisodeScriptGeneration(created.game.id, null),
+    ).toBeNull();
+    if (!storyJobId) return;
+
+    const story = await actions.runEpisodeScriptGeneration(
+      created.game.id,
+      storyJobId,
+    );
+    expect(story.episodeScript?.status).toBe("ready");
+    if (story.episodeScript?.status !== "ready") return;
+    expect(story.episodeScript.workspace.story).not.toBeNull();
+    expect(story.episodeScript.workspace.ensemble).toBeNull();
+    expect(providerCalls).toBe(1);
+
+    expect(
+      await actions.startEpisodeScriptGeneration(
+        created.game.id,
+        "stale_job",
+      ),
+    ).toBeNull();
+    const ensembleJobId = await actions.startEpisodeScriptGeneration(
+      created.game.id,
+      story.episodeScript.jobId,
+    );
+    expect(ensembleJobId).toEqual(expect.any(String));
+    expect(
+      await actions.startEpisodeScriptGeneration(
+        created.game.id,
+        story.episodeScript.jobId,
+      ),
+    ).toBeNull();
+    if (!ensembleJobId) return;
+
+    await actions.runEpisodeScriptGeneration(created.game.id, storyJobId);
+    expect(providerCalls).toBe(1);
+
+    const ensemble = await actions.runEpisodeScriptGeneration(
+      created.game.id,
+      ensembleJobId,
+    );
+    expect(ensemble.episodeScript?.status).toBe("ready");
+    if (ensemble.episodeScript?.status !== "ready") return;
+    expect(ensemble.episodeScript.workspace.ensemble).not.toBeNull();
+    expect(ensemble.episodeScript.workspace.castDirections).toHaveLength(0);
+    expect(
+      ensemble.episodeScript.requests.map((request) => request.task.kind),
+    ).toEqual(["story", "ensemble"]);
+    expect(providerCalls).toBe(2);
+  });
 });
 
 function memoryCatalog(

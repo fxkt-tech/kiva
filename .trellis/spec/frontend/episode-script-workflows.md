@@ -11,6 +11,7 @@
 - `compileEpisodePlan(game): CompiledEpisodePlan`
 - `createEpisodeAuthorWorkspace({ game, modelBinding? }): EpisodeAuthorWorkspace`
 - `episodeAuthorProgress(workspace): { label, completed, total }`
+- `advanceEpisodeAuthor({ game, llmClient, createdAt, modelBinding?, workspace?, onCheckpoint? }): Promise<AdvanceEpisodeAuthorResult>`
 - `authorEpisodeScript({ game, llmClient, createdAt, modelBinding?, workspace?, onCheckpoint? }): Promise<AuthorEpisodeScriptResult>`
 - `episodeActorProfile(player): EpisodeActorProfile`
 - `episodeInputHashForScript(game, script): string`
@@ -19,9 +20,10 @@
 - `planNextEpisodeDraft({ game, events, script, draftId, createdAt })`
 - `actorBriefForStep(script, stepIndex): EpisodeActorBrief | null`
 - `<EpisodeEnsembleReview script={script} players={players} />`
-- `gameActions.startEpisodeScriptGeneration(gameId): Promise<string>`
+- `<EpisodeAutoContinueButton gameId={gameId} expectedJobId={jobId} ready={ready} />`
+- `gameActions.startEpisodeScriptGeneration(gameId, expectedJobId): Promise<string | null>`
 - `gameActions.runEpisodeScriptGeneration(gameId, jobId): Promise<GameRecord>`
-- `generateEpisodeScriptAction(gameId)` submitted manually from `/games/:id/script`
+- `generateEpisodeScriptAction(gameId, expectedJobId)` submitted manually or automatically from `/games/:id/script`
 - `gameActions.approveEpisodeScript(gameId, expectedJobId, expectedScriptId)`
 
 ```ts
@@ -60,9 +62,26 @@ type EpisodeAuthorRequestRecord = {
   createdAt: string;
   attempts?: readonly GenerationAttemptSnapshot[];
 };
+
+type AdvanceEpisodeAuthorResult =
+  | {
+      status: "ready";
+      workspace: EpisodeAuthorWorkspace;
+      requests: readonly EpisodeAuthorRequestRecord[];
+      tokenUsage: LlmTokenUsage | null;
+      repaired: boolean;
+    }
+  | ({ status: "complete" } & AuthorEpisodeScriptResult);
+
+type EpisodeScriptReadyState = {
+  status: "ready";
+  jobId: string;
+  workspace: EpisodeAuthorWorkspace;
+  requests: readonly EpisodeAuthorRequestRecord[];
+};
 ```
 
-`generating` and `failed` Episode states require both `workspace` and `requests`. `review` and `approved` require `requests`. Pre-v4 Author requests and old workspace shapes are not decoded or migrated.
+`generating`, `ready`, and `failed` Episode states require both `workspace` and `requests`. `review` and `approved` require `requests`. Pre-v4 Author requests and old workspace shapes are not decoded or migrated.
 
 ### 3. Contracts
 
@@ -80,8 +99,11 @@ type EpisodeAuthorRequestRecord = {
 
 - Script Author is one durable application Agent represented by `EpisodeAuthorWorkspace`. It owns task ordering, partial results, retries, resume, and final assembly; it is not one giant LLM request and does not use accumulated chat history.
 - The deterministic task order is `story -> ensemble -> one actor_arc per player -> one relationship per selected pair -> local scene beats -> final validation`.
+- `advanceEpisodeAuthor()` executes at most the first incomplete semantic task, then returns `ready` if another task remains or assembles the final snapshot and returns `complete`. A length-truncated beat batch may split into bounded child requests inside that same semantic advance.
+- `authorEpisodeScript()` is the full-run compatibility API and loops the same internal task boundary to completion; it must not maintain a second task implementation.
 - `story` produces only the title, logline, and a spine of one to four acts.
 - `ensemble` sees all concise profiles and performance opportunities, but produces only compact player assignments and one to six relationship seeds. It does not write full arcs.
+- `EpisodeCastAssignment.dramaticWeight` is exactly the string `"primary" | "supporting"`. The OpenAI-compatible client requests JSON-object mode rather than a provider-enforced field schema, so both the initial Ensemble prompt and its structural-repair output contract must spell out those two literals from one shared instruction. Localized labels, ordinal numbers, and extra tiers remain invalid.
 - Each `actor_arc` request sees one Actor profile with its real Rule Role, its assignment, the story spine, and only relationship seeds touching that player. It produces one complete cast direction.
 - Each `relationship` request sees one selected pair, their completed directions, and the structural opportunities relevant to that pair. It produces one complete relationship direction.
 - `beats` requests are grouped by local phase/scene and contain at most five speech steps. They receive only current actors, their completed direction, touching completed relationships, local structural context, and at most one earlier authored move per actor.
@@ -91,13 +113,19 @@ type EpisodeAuthorRequestRecord = {
 
 #### Persistence, recovery, and observability
 
-- Before the first provider call, generation persists a new `jobId`, input-bound workspace, and empty request list.
+- Before each provider call, a guarded start persists a fresh `jobId`, input-bound workspace, and retained request list. `expectedJobId === null` matches only `idle`; every other authorable state requires its exact current job ID under the Game lock. A stale or duplicate start returns `null` and schedules no runner.
 - After every successful or failed child request, `onCheckpoint` persists the validated workspace and appended request under the Game lock. A process exit can lose at most the in-flight provider call, never earlier completed tasks.
-- Retrying a `generating` or `failed` job with the same input hash resumes from the first incomplete deterministic task. It must not rerun completed story, ensemble, actor arc, relationship, or beat work.
+- One deferred `runEpisodeScriptGeneration()` invocation advances at most one semantic task. It persists `ready` when another task remains, or `review` only after the last task and deterministic assembly succeed.
+- Starting from `ready`, or retrying `generating`/`failed`, with the same input hash resumes from the first incomplete deterministic task. It must not rerun completed story, ensemble, actor arc, relationship, or beat work.
 - Every child call persists an `EpisodeAuthorRequestRecord` containing its semantic task, exact request, raw/parsed output, attempts, provider/model, status, provider finish reason, and provider-returned token usage.
 - Request history is append-only across failures, resumes, and whole-candidate regeneration. Game token totals include every retained Script Author request separately from player speech/action requests.
 - The Script page renders current Agent phase/progress plus persisted request details while generating, and shows preserved partial-result counts plus a resume action when failed.
+- The Script page renders `ready` without a spinner, shows the next deterministic phase and a manual “生成下一步” action, and does not silently advance when the browser preference is off.
+- The Script page generating-state root explicitly uses `text-left` so progress copy and request history cannot inherit centered text. The loading spinner centers itself independently with `mx-auto`; centering the spinner must not center the surrounding text.
 - Completion updates state only when `jobId` is still current. The deferred runner checks before its first provider call and again under the Game lock before every checkpoint or final state write.
+- Manual and automatic next-step submissions call the same guarded Server Action. Browser timers are advisory; the expected job ID is the correctness boundary for duplicate clicks, timers, refreshes, and tabs.
+- Script auto-continue uses the independent browser-global key `kiva:auto-continue-episode-author`. Only `"true"` enables it; missing/unknown values default off. An enabled `ready` snapshot waits one second before submission, and dependency changes or disabling clear the timer.
+- Auto-continue never starts `idle`, retries `failed`, or regenerates `review`. Disabling during `generating` does not cancel the in-flight provider call; it prevents a timer after the resulting checkpoint becomes `ready`.
 
 #### Provider truncation and repair
 
@@ -110,9 +138,9 @@ type EpisodeAuthorRequestRecord = {
 
 #### Review and execution
 
-- `GameRecord.episodeScript` is `idle | generating | review | approved | failed` for scripted games and `null` for game mode. Every state-specific key is required and validated exactly.
+- `GameRecord.episodeScript` is `idle | generating | ready | review | approved | failed` for scripted games and `null` for game mode. Every state-specific key is required and validated exactly.
 - New Game creation stops at `idle`; only the explicit Generate form on the Script page starts authoring.
-- The browser Server Action persists `generating`, registers `runEpisodeScriptGeneration()` with Next `after(() => ...)`, and returns without awaiting the multi-request run. The synchronous wrapper remains for tests and non-HTTP callers.
+- The browser Server Action compare-and-swaps the rendered expected job ID to `generating`, registers one-task `runEpisodeScriptGeneration()` with Next `after(() => ...)` only after a successful transition, and returns without awaiting the provider call. The synchronous wrapper repeats guarded start/run cycles for tests and non-HTTP callers.
 - Approved execution derives the cursor from active-event count, calls the normal planner, compares the Draft slot, binds the approved payload, and validates it before confirmation.
 - Structural Drafts are read-only in Editor and never call the player action model. Speech text remains editable/generatable within the approved step budget.
 - Runtime player prompts receive only their own `ActorRuntimeCard` plus the current `EpisodeActorBrief.actorHook`, `arcMove`, and `relationshipMove`. They never receive the full ensemble, planned winner, future steps, or another Actor profile. Visible facts and rules outrank all dramatic direction.
@@ -126,6 +154,7 @@ type EpisodeAuthorRequestRecord = {
 | Workspace input hash or plan/speech count differs | Reject resume; do not mix partial work from another plan. |
 | Story has more than four acts, ensemble has more than six relationship seeds, or a free-text field exceeds 80 characters | Reject as unbounded output and use the one minimal structural repair. |
 | Story/ensemble/actor_arc/relationship output is incomplete or otherwise invalid | Use one minimal structural repair for complete JSON; otherwise fail the bounded task. |
+| Ensemble `dramaticWeight` is localized, numeric, or neither `"primary"` nor `"supporting"` | Repair once with the exact two-value string contract; fail the bounded task if the repaired value is still invalid. |
 | Cast direction omits/duplicates a player or has an invalid signature step | Fail before Review. |
 | Relationship references an unknown/same player or duplicates an undirected pair | Fail before Review. |
 | Beat output omits/duplicates a requested speech step | Repair complete JSON once; fail if still invalid. |
@@ -133,8 +162,13 @@ type EpisodeAuthorRequestRecord = {
 | Provider returns malformed JSON with `finishReason=length` | Do not repair the whole JSON; split beats or do one concise original-input retry. |
 | Provider omits token usage or finish reason | Persist `null`; never estimate or invent provider metadata. |
 | Checkpoint belongs to an obsolete job | Abort without writing the workspace or final state. |
+| Submitted expected job ID is stale, duplicated, or null outside `idle` | Return `null`, do not mutate state, and do not register a deferred runner. |
 | Process exits after a checkpoint | Retry resumes from persisted workspace and skips completed tasks. |
 | Author transport/output fails after bounded retry | Persist failed state with workspace and actionable error; allow resume. |
+| One semantic task succeeds and more work remains | Persist exact `ready` state with its producing job ID, workspace, and append-only requests. |
+| Auto-continue preference is absent, false, or invalid | Remain in `ready` until the manual next-step action is submitted. |
+| Auto-continue is disabled while a task is in flight | Let the current task reach `ready`, `review`, or `failed`; never submit the following task. |
+| Script generating-state text inherits center alignment | Regression failure; keep the state root left-aligned and center only the loading spinner. |
 | Approval identity/profile/hash changed, compiler-owned field differs, or events exist | Reject approval. |
 | Episode snapshot is not schema v3 | Reject; do not normalize or upgrade. |
 | Episode author request is not v4 or workspace has an old shape | Reject; no compatibility path exists. |
@@ -144,23 +178,32 @@ type EpisodeAuthorRequestRecord = {
 
 - Good: Agent authors a compact story, assigns all 12 players, completes one arc at a time, writes local scene beats, checkpoints each result, and assembles the unchanged legal plan.
 - Base: local deterministic author produces the same complete schema-v3 Episode snapshot through the same v4 task pipeline without external credentials.
+- Good controlled progression: one guarded browser job completes story and persists `ready`; a manual click or enabled timer submits the matching job ID and advances ensemble exactly once.
+- Base preference: a browser with no Script preference stops after every successful task and keeps initial start, failure retry, and candidate regeneration manual.
 - Good recovery: the provider truncates a five-beat response; the Agent records that request, splits it into smaller batches, and continues without resending the truncated document.
 - Bad: ask for the whole script, 12 full arcs, all relationships, and all beats in one response; append the malformed 8 KB output to a repair request; or restart all prior work after one late failure.
 - Bad: bind Script Author to seat 1's Actor model, keep only aggregate token counts, or replace request history when generating another candidate.
 - Bad: await the Agent run inside the browser Server Action or treat an in-memory promise as durable job state.
+- Bad: let the timer call a separate unguarded endpoint, store auto-continue in the Game record, share the Editor auto-confirm key, or use `generating` to mean both in-flight and waiting.
 
 ### 6. Tests Required
 
 - Two compilations of one Game yield identical slots/payloads and end in `game_ended`.
 - Task-capture tests assert one bounded story request, one compact ensemble request, one actor_arc request per player, one relationship request per seed, and local beat batches of at most five.
+- An Ensemble contract regression makes the first response use localized weights and makes repair fall back to numeric weights unless the request contains both exact string literals; assert the initial and repair requests share the contract and the repaired task succeeds.
 - Cardinality tests reject more than four acts, more than six relationship seeds, or a free-text field longer than 80 characters before that output can enter later prompts.
 - Prompt-scope tests assert every child request has only the profiles/directions/local history required by its task and at most one prior move per actor.
 - Binding tests prove Script Author uses its dedicated snapshot and does not inherit any player's provider/model.
 - Truncation tests preserve raw output, finish reason, and usage; skip whole-JSON repair; split beat batches; and perform only one concise original-input retry for non-beat tasks.
 - Checkpoint integration tests fail after partial actor-arc completion, persist workspace/request history, resume the same job, and skip every completed task.
+- One-step core tests prove story and ensemble advance separately, while a complete workspace assembles without another provider call and the full-run API remains compatible.
+- Ready-state decoder tests round-trip only the exact `status`, `jobId`, `workspace`, and `requests` keys.
+- Guarded action tests prove duplicate/stale starts return `null`, old runners make zero provider calls when already stale, request history appends across ready steps, and the synchronous wrapper still reaches review.
 - Request records round-trip exact tasks, prompts, outputs, attempts, finish reasons, and token usage; failure plus resume retains all spend.
 - Local author covers every cast member and speech step; invalid cast IDs, pairs, signature indexes, hash/schema/identity fail deterministically.
 - Script page tests render Agent progress, per-task request details, preserved partial-result counts, and resume copy.
+- Auto-continue tests assert only stored `"true"` enables the control and scheduling requires enabled + ready + a current job ID. Script rendering tests assert the off-state accessibility label and the durable manual ready action.
+- A generating-state rendering test asserts the `EpisodeWorkspace` root uses `text-left`, excludes `text-center`, and retains the spinner's independent `mx-auto` class.
 - Creation/action tests require idle creation, deferred execution, stale-job zero-call exit, and approval identity checks.
 - Prompt tests assert only the current Actor Brief reaches player generation and future/full ensemble data does not.
 - Full `pnpm typecheck`, `pnpm test`, `pnpm build`, and `git diff --check` pass.
@@ -178,3 +221,19 @@ Correct: validate the structured workspace against the current plan hash, find t
 Wrong: treat every malformed assistant response as repairable JSON.
 
 Correct: branch on provider finish reason. Repair a complete but structurally invalid object once; split or concisely regenerate when the provider reports length truncation.
+
+Wrong: name `dramaticWeight` in the Ensemble shape and assume `schemaName` or JSON-object mode tells the provider which values are legal.
+
+Correct: render the shared `dramaticWeight` instruction with the exact strings `"primary"` and `"supporting"` in both the initial request and structural-repair contract, while keeping runtime validation strict.
+
+Wrong: put `text-center` on the whole Script generating-state container to center its spinner, which also centers every descendant text block.
+
+Correct: keep the generating-state container `text-left` and center the spinner itself with `mx-auto`.
+
+Wrong: let one deferred browser job loop through every remaining `EpisodeAuthorTask`, then attempt to stop that server-side loop with a browser-local toggle.
+
+Correct: persist `ready` after one semantic task and let the browser choose whether to submit the same expected-job guarded action for the next task.
+
+Wrong: trust timer cleanup alone to prevent two tabs or a manual/automatic race from advancing twice.
+
+Correct: compare the rendered expected job ID under the Game lock, return `null` for stale submissions, and schedule a runner only after a fresh `generating` state is persisted.

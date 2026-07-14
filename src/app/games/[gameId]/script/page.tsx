@@ -7,6 +7,7 @@ import {
 } from "@/app/actions";
 import { FormSubmitButton } from "@/components/editor/form-submit-button";
 import { LlmGenerationDetails } from "@/components/editor/llm-generation-details";
+import { EpisodeAutoContinueButton } from "@/components/script/episode-auto-continue";
 import { EpisodeEnsembleReview } from "@/components/script/episode-ensemble-review";
 import { EpisodeGeneratingRefresh } from "@/components/script/episode-generating-refresh";
 import { iconButtonClassName } from "@/components/ui/button-styles";
@@ -102,11 +103,22 @@ export function EpisodeWorkspace({
   if (!state) {
     throw new Error("Scripted game is missing its episode script state");
   }
+  const automationControl = (
+    <div className="mb-4 flex items-center justify-end gap-2 border-b border-border pb-3">
+      <span className="text-xs text-subtle">自动生成下一步</span>
+      <EpisodeAutoContinueButton
+        gameId={record.game.id}
+        expectedJobId={"jobId" in state ? state.jobId : null}
+        ready={state.status === "ready"}
+      />
+    </div>
+  );
   if (state.status === "review") {
     const script = state.candidate;
     const speechSteps = script.steps.filter((step) => step.speechBeat);
     return (
       <div>
+        {automationControl}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-cyan-300">Director review</p>
@@ -168,7 +180,13 @@ export function EpisodeWorkspace({
         ) : null}
 
         <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-          <form action={generateEpisodeScriptAction.bind(null, record.game.id)}>
+          <form
+            action={generateEpisodeScriptAction.bind(
+              null,
+              record.game.id,
+              state.jobId,
+            )}
+          >
             <FormSubmitButton label={<><RefreshCw className="h-4 w-4" /> 重新生成</>} pendingLabel="重新生成中…" className={secondaryActionClass} />
           </form>
           <form action={approveEpisodeScriptAction.bind(null, record.game.id, state.jobId, script.id)}>
@@ -182,6 +200,7 @@ export function EpisodeWorkspace({
   if (state.status === "failed") {
     return (
       <div>
+        {automationControl}
         <h2 className="text-base font-semibold text-danger-badge-foreground">剧本生成失败</h2>
         <p className="mt-2 rounded border border-danger-badge/60 bg-danger-badge/25 px-3 py-2 text-sm text-danger-badge-foreground">{state.error}</p>
         <p className="mt-2 text-xs text-muted">
@@ -189,8 +208,46 @@ export function EpisodeWorkspace({
           {state.workspace.beats.length} 个场景节拍；重试将从当前任务继续。
         </p>
         <EpisodeAuthorRequests requests={state.requests} />
-        <form className="mt-4" action={generateEpisodeScriptAction.bind(null, record.game.id)}>
+        <form
+          className="mt-4"
+          action={generateEpisodeScriptAction.bind(
+            null,
+            record.game.id,
+            state.jobId,
+          )}
+        >
           <FormSubmitButton label="重试生成" pendingLabel="正在重试…" className={primaryActionClass} />
+        </form>
+      </div>
+    );
+  }
+
+  if (state.status === "ready") {
+    const progress = episodeAuthorProgress(state.workspace);
+    return (
+      <div className="text-left">
+        {automationControl}
+        <h2 className="text-base font-semibold">当前步骤已完成</h2>
+        <p className="mt-2 text-sm text-muted">
+          下一步：{progress.label} · {progress.completed}/{progress.total}
+        </p>
+        <p className="mt-2 text-xs leading-5 text-subtle">
+          自动生成下一步默认关闭。你可以手动继续，或开启上方开关连续推进。
+        </p>
+        <EpisodeAuthorRequests requests={state.requests} />
+        <form
+          className="mt-5 flex justify-end"
+          action={generateEpisodeScriptAction.bind(
+            null,
+            record.game.id,
+            state.jobId,
+          )}
+        >
+          <FormSubmitButton
+            label="生成下一步"
+            pendingLabel="正在开始下一步…"
+            className={primaryActionClass}
+          />
         </form>
       </div>
     );
@@ -198,12 +255,20 @@ export function EpisodeWorkspace({
 
   if (state.status === "generating") {
     return (
-      <div className="py-10 text-center">
+      <div className="py-10 text-left">
+        {automationControl}
         <EpisodeGeneratingRefresh />
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-border border-t-cyan-300" />
         <EpisodeAuthorGeneratingStatus workspace={state.workspace} />
         <EpisodeAuthorRequests requests={state.requests} />
-        <form className="mt-5" action={generateEpisodeScriptAction.bind(null, record.game.id)}>
+        <form
+          className="mt-5"
+          action={generateEpisodeScriptAction.bind(
+            null,
+            record.game.id,
+            state.jobId,
+          )}
+        >
           <FormSubmitButton
             label="任务长时间无响应？重新开始"
             pendingLabel="正在重新开始…"
@@ -220,6 +285,7 @@ export function EpisodeWorkspace({
 
   return (
     <div>
+      {automationControl}
       <div className="flex items-start gap-3">
         <Film aria-hidden="true" className="mt-0.5 h-5 w-5 text-cyan-300" />
         <div>
@@ -234,7 +300,10 @@ export function EpisodeWorkspace({
           <li key={step} className="rounded border border-border bg-background/50 px-3 py-3">{step}</li>
         ))}
       </ol>
-      <form className="mt-5 flex justify-end" action={generateEpisodeScriptAction.bind(null, record.game.id)}>
+      <form
+        className="mt-5 flex justify-end"
+        action={generateEpisodeScriptAction.bind(null, record.game.id, null)}
+      >
         <FormSubmitButton label="开始生成剧本" pendingLabel="正在生成并模拟…" className={primaryActionClass} />
       </form>
     </div>

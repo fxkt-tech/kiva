@@ -23,7 +23,7 @@ import {
   type EpisodeScriptState,
 } from "@/core/episode-script";
 import {
-  authorEpisodeScript,
+  advanceEpisodeAuthor,
   createEpisodeAuthorWorkspace,
   EpisodeAuthoringError,
 } from "@/core/episode-author";
@@ -156,10 +156,13 @@ export function createGameActions(
     return record;
   }
 
-  async function startEpisodeScriptGeneration(gameId: GameId): Promise<string> {
+  async function startEpisodeScriptGeneration(
+    gameId: GameId,
+    expectedJobId: string | null,
+  ): Promise<string | null> {
     const jobId = `episode_job_${randomUUID()}`;
     const startedAt = now();
-    await repository.withGameLock(gameId, async () => {
+    return repository.withGameLock(gameId, async () => {
       const record = await loadGame(gameId);
       if (record.game.runMode !== "scripted") {
         throw new Error("Episode scripts are only available in scripted mode");
@@ -169,6 +172,9 @@ export function createGameActions(
       }
       if (record.episodeScript?.status === "approved") {
         throw new Error("Approved episode script cannot be regenerated");
+      }
+      if (!matchesEpisodeScriptJob(record.episodeScript, expectedJobId)) {
+        return null;
       }
       const nextRecord: GameRecord = {
         ...record,
@@ -189,8 +195,8 @@ export function createGameActions(
         },
       };
       await repository.save(nextRecord);
+      return jobId;
     });
-    return jobId;
   }
 
   async function runEpisodeScriptGeneration(
@@ -209,7 +215,7 @@ export function createGameActions(
       if (!options.llmClient) {
         throw new Error("Script Author LLM is not configured");
       }
-      const authored = await authorEpisodeScript({
+      const authored = await advanceEpisodeAuthor({
         game: generating.game,
         llmClient: options.llmClient,
         createdAt: now(),
@@ -242,6 +248,20 @@ export function createGameActions(
           current.episodeScript.jobId !== jobId
         ) {
           return current;
+        }
+        if (authored.status === "ready") {
+          const nextRecord: GameRecord = {
+            ...current,
+            game: { ...current.game, updatedAt: now() },
+            episodeScript: {
+              status: "ready",
+              jobId,
+              workspace: authored.workspace,
+              requests: current.episodeScript.requests,
+            },
+          };
+          await repository.save(nextRecord);
+          return nextRecord;
         }
         const report = episodeScriptReport(authored.script);
         const nextRecord: GameRecord = {
@@ -292,8 +312,22 @@ export function createGameActions(
   }
 
   async function generateEpisodeScript(gameId: GameId): Promise<GameRecord> {
-    const jobId = await startEpisodeScriptGeneration(gameId);
-    return runEpisodeScriptGeneration(gameId, jobId);
+    let current = await loadGame(gameId);
+    let jobId = await startEpisodeScriptGeneration(
+      gameId,
+      episodeScriptJobId(current.episodeScript),
+    );
+    if (!jobId) return loadGame(gameId);
+
+    while (true) {
+      current = await runEpisodeScriptGeneration(gameId, jobId);
+      if (current.episodeScript?.status !== "ready") return current;
+      jobId = await startEpisodeScriptGeneration(
+        gameId,
+        current.episodeScript.jobId,
+      );
+      if (!jobId) return loadGame(gameId);
+    }
   }
 
   return {
@@ -832,12 +866,27 @@ function resumableEpisodeAuthorWorkspace(
   inputHash: string,
 ): EpisodeAuthorWorkspace | null {
   if (
-    (state?.status === "generating" || state?.status === "failed") &&
+    (state?.status === "generating" ||
+      state?.status === "ready" ||
+      state?.status === "failed") &&
     state.workspace.inputHash === inputHash
   ) {
     return structuredClone(state.workspace);
   }
   return null;
+}
+
+function matchesEpisodeScriptJob(
+  state: EpisodeScriptState | null,
+  expectedJobId: string | null,
+): boolean {
+  return state?.status === "idle"
+    ? expectedJobId === null
+    : state !== null && "jobId" in state && state.jobId === expectedJobId;
+}
+
+function episodeScriptJobId(state: EpisodeScriptState | null): string | null {
+  return state !== null && "jobId" in state ? state.jobId : null;
 }
 
 class StaleEpisodeAuthorJobError extends Error {}

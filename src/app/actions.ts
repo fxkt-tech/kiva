@@ -62,9 +62,17 @@ export async function createGameFromCustomLineupHomeAction(formData: FormData) {
   redirect(createdGamePath(record.game.id, record.game.runMode));
 }
 
-export async function generateEpisodeScriptAction(gameId: GameId) {
-  const jobId = await gameActions.startEpisodeScriptGeneration(gameId);
-  after(() => gameActions.runEpisodeScriptGeneration(gameId, jobId));
+export async function generateEpisodeScriptAction(
+  gameId: GameId,
+  expectedJobId: string | null,
+) {
+  const jobId = await gameActions.startEpisodeScriptGeneration(
+    gameId,
+    expectedJobId,
+  );
+  if (jobId) {
+    after(() => gameActions.runEpisodeScriptGeneration(gameId, jobId));
+  }
   revalidatePath(`/games/${gameId}/script`);
   revalidatePath("/");
 }

@@ -209,6 +209,12 @@ export type EpisodeScriptState =
       readonly requests: readonly EpisodeAuthorRequestRecord[];
     }
   | {
+      readonly status: "ready";
+      readonly jobId: string;
+      readonly workspace: EpisodeAuthorWorkspace;
+      readonly requests: readonly EpisodeAuthorRequestRecord[];
+    }
+  | {
       readonly status: "review";
       readonly jobId: string;
       readonly candidate: EpisodeScriptSnapshot;
@@ -623,6 +629,18 @@ export function validateEpisodeScriptState(
           state.startedAt,
           "Episode script state startedAt",
         ),
+        workspace: validateEpisodeAuthorWorkspace(state.workspace),
+        requests: validateEpisodeAuthorRequests(state.requests),
+      };
+    case "ready":
+      assertExactObjectKeys(
+        state,
+        "Episode script state",
+        ["status", "jobId", "workspace", "requests"],
+      );
+      return {
+        status: "ready",
+        jobId: requiredString(state.jobId, "Episode script state jobId"),
         workspace: validateEpisodeAuthorWorkspace(state.workspace),
         requests: validateEpisodeAuthorRequests(state.requests),
       };

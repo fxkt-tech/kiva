@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  advanceEpisodeAuthor,
   authorEpisodeScript,
   createEpisodeAuthorWorkspace,
 } from "../episode-author";
@@ -34,6 +35,75 @@ const game = createSeedGame({
 });
 
 describe("episode script", () => {
+  it("advances exactly one semantic author task at a time", async () => {
+    const requests: LlmGenerateJsonRequest[] = [];
+    const local = new LocalHeuristicLlmClient();
+    const llmClient: LlmClient = {
+      async generateJson(request) {
+        requests.push(request);
+        return local.generateJson(request);
+      },
+    };
+
+    const story = await advanceEpisodeAuthor({
+      game,
+      llmClient,
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    expect(story.status).toBe("ready");
+    expect(story.workspace.story).not.toBeNull();
+    expect(story.workspace.ensemble).toBeNull();
+    expect(story.requests.map((request) => request.task.kind)).toEqual([
+      "story",
+    ]);
+    expect(requests).toHaveLength(1);
+
+    const ensemble = await advanceEpisodeAuthor({
+      game,
+      llmClient,
+      createdAt: "2026-07-12T00:01:00.000Z",
+      workspace: story.workspace,
+    });
+
+    expect(ensemble.status).toBe("ready");
+    expect(ensemble.workspace.ensemble).not.toBeNull();
+    expect(ensemble.workspace.castDirections).toHaveLength(0);
+    expect(ensemble.requests.map((request) => request.task.kind)).toEqual([
+      "ensemble",
+    ]);
+    expect(requests).toHaveLength(2);
+  });
+
+  it("assembles a complete workspace without another provider call", async () => {
+    const authored = await authorEpisodeScript({
+      game,
+      llmClient: new LocalHeuristicLlmClient(),
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+    let providerCalls = 0;
+
+    const result = await advanceEpisodeAuthor({
+      game,
+      llmClient: {
+        async generateJson(request) {
+          providerCalls += 1;
+          return new LocalHeuristicLlmClient().generateJson(request);
+        },
+      },
+      createdAt: "2026-07-12T00:01:00.000Z",
+      workspace: authored.workspace,
+    });
+
+    expect(result.status).toBe("complete");
+    expect(providerCalls).toBe(0);
+    expect(result.requests).toEqual([]);
+    if (result.status !== "complete") return;
+    expect(result.script.steps).toHaveLength(
+      compileEpisodePlan(game).steps.length,
+    );
+  });
+
   it("authors ensemble direction and character progression for every speech", async () => {
     const result = await authorEpisodeScript({
       game,
@@ -351,6 +421,76 @@ describe("episode script", () => {
     ]));
   });
 
+  it("repairs dramaticWeight with the exact two-value contract", async () => {
+    const local = new LocalHeuristicLlmClient();
+    const ensembleRequests: LlmGenerateJsonRequest[] = [];
+    let validEnsembleOutput: Awaited<
+      ReturnType<LlmClient["generateJson"]>
+    > | null = null;
+    const contract =
+      'dramaticWeight 只能是字符串 "primary" 或 "supporting"';
+    const contractSensitiveClient: LlmClient = {
+      async generateJson(request) {
+        if (request.schemaName !== "werewolf_episode_ensemble_v4") {
+          return local.generateJson(request);
+        }
+
+        ensembleRequests.push(request);
+        if (validEnsembleOutput === null) {
+          validEnsembleOutput = await local.generateJson(request);
+          const castAssignments = validEnsembleOutput.parsed
+            .castAssignments as readonly Record<string, unknown>[];
+          const localizedWeights = ["功能演员", "主要演员", "核心主演"];
+          const parsed = {
+            ...validEnsembleOutput.parsed,
+            castAssignments: castAssignments.map((assignment, index) => ({
+              ...assignment,
+              dramaticWeight: localizedWeights[index % localizedWeights.length],
+            })),
+          };
+          return {
+            ...validEnsembleOutput,
+            parsed,
+            rawText: JSON.stringify(parsed),
+          };
+        }
+
+        if (requestContent(request).includes(contract)) {
+          return validEnsembleOutput;
+        }
+        const castAssignments = validEnsembleOutput.parsed
+          .castAssignments as readonly Record<string, unknown>[];
+        const parsed = {
+          ...validEnsembleOutput.parsed,
+          castAssignments: castAssignments.map((assignment, index) => ({
+            ...assignment,
+            dramaticWeight: index % 3 + 1,
+          })),
+        };
+        return {
+          ...validEnsembleOutput,
+          parsed,
+          rawText: JSON.stringify(parsed),
+        };
+      },
+    };
+
+    const result = await authorEpisodeScript({
+      game,
+      llmClient: contractSensitiveClient,
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    expect(ensembleRequests).toHaveLength(2);
+    expect(ensembleRequests.every((request) =>
+      requestContent(request).includes(contract)
+    )).toBe(true);
+    expect(
+      result.requests.find((request) => request.task.kind === "ensemble")
+        ?.attempts,
+    ).toHaveLength(2);
+  });
+
   it("rejects objectively incomplete ensemble output after repair", async () => {
     const story = {
       title: "待分配群像",
@@ -606,6 +746,20 @@ describe("episode script", () => {
         }],
       }, "scripted"),
     ).toThrow("Episode author request 1");
+  });
+
+  it("round-trips only the exact ready Script Author state", () => {
+    const ready = {
+      status: "ready",
+      jobId: "ready_job",
+      workspace: createEpisodeAuthorWorkspace({ game }),
+      requests: [],
+    } as const;
+
+    expect(validateEpisodeScriptState(ready, "scripted")).toEqual(ready);
+    expect(() =>
+      validateEpisodeScriptState({ ...ready, unexpected: true }, "scripted")
+    ).toThrow("unknown: unexpected");
   });
 
   it("rejects a v2 script when character or script input changes", () => {
