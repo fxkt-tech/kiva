@@ -21,6 +21,7 @@ export type GenerationRequestSnapshot = {
 export type GenerationAttemptSnapshot = {
   readonly request: GenerationRequestSnapshot;
   readonly tokenUsage: LlmTokenUsage | null;
+  readonly finishReason?: string | null;
   readonly rawOutput: string | null;
   readonly parsedOutput: Record<string, unknown> | null;
   readonly error: string | null;
@@ -275,19 +276,21 @@ export function isGenerationAttemptSnapshot(
 ): value is GenerationAttemptSnapshot {
   if (!isPlainObject(value)) return false;
   try {
-    assertExactObjectKeys(value, "Generation attempt", [
-      "request",
-      "tokenUsage",
-      "rawOutput",
-      "parsedOutput",
-      "error",
-    ]);
+    assertExactObjectKeys(
+      value,
+      "Generation attempt",
+      ["request", "tokenUsage", "rawOutput", "parsedOutput", "error"],
+      ["finishReason"],
+    );
     validateGenerationRequestSnapshot(value.request, allowedSchemaNames);
   } catch {
     return false;
   }
   return (
     isLlmTokenUsage(value.tokenUsage) &&
+    (value.finishReason === undefined ||
+      value.finishReason === null ||
+      typeof value.finishReason === "string") &&
     (value.rawOutput === null || typeof value.rawOutput === "string") &&
     (value.parsedOutput === null || isPlainObject(value.parsedOutput)) &&
     (value.error === null || typeof value.error === "string")

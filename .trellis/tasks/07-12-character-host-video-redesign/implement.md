@@ -105,6 +105,27 @@ Validation checkpoint:
 pnpm vitest run src/core/__tests__/player-context.test.ts src/core/__tests__/prompt-builders.test.ts src/core/__tests__/llm-task-specs.test.ts
 ```
 
+## 6.5 — Script Author Agent v3
+
+- [x] Replace outline/large-batch authoring with one durable `EpisodeAuthorWorkspace` and deterministic `story -> ensemble -> character -> relationship -> beats -> assembly` task routing.
+- [x] Give Script Author a dedicated model binding snapshot independent of all Player character bindings.
+- [x] Bound the story to four acts, ensemble selection to six relationship seeds, every free-text field to 80 characters, one character or relationship per request, and one local scene beat batch to at most five steps with one prior move per current actor.
+- [x] Persist validated workspace and an append-only request record after every successful or failed child task under the Game job lock.
+- [x] Resume matching `generating`/`failed` jobs from the first incomplete task without rerunning completed story, ensemble, character, relationship, or beat work.
+- [x] Preserve provider finish reason and usage through JSON parse errors; bypass whole-document repair for length truncation, split beats, and retry non-beat tasks once from their original compact input.
+- [x] Render live Agent phase/progress, per-task request details, and preserved partial-result counts on the Script page.
+- [x] Reject v2 Author request/workspace shapes without migration while keeping the final executable Episode snapshot on schema v2.
+- [x] Add unit, integration, resume, binding, truncation, and Script-page progress coverage.
+
+Validation checkpoint completed:
+
+```sh
+pnpm typecheck
+pnpm test       # 77 files, 627 tests
+pnpm build
+git diff --check
+```
+
 ## 7 — shared preview and Remotion styling
 
 - [ ] Read the Remotion best-practices skill before touching composition code.

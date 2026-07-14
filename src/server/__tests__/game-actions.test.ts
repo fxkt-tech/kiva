@@ -243,17 +243,20 @@ describe("game actions", () => {
     if (review.episodeScript?.status !== "review") {
       throw new Error("Expected episode review");
     }
-    expect(review.episodeScript.requests?.[0]).toMatchObject({
-      kind: "outline",
+    expect(review.episodeScript.requests[0]).toMatchObject({
+      task: { kind: "story" },
       status: "success",
-      request: { schemaName: "werewolf_episode_outline_v2" },
+      request: { schemaName: "werewolf_episode_story_v3" },
     });
     await expect(repository.get(created.game.id)).resolves.toMatchObject({
       episodeScript: {
         status: "review",
         requests: expect.arrayContaining([
-          expect.objectContaining({ kind: "outline", status: "success" }),
-          expect.objectContaining({ kind: "beats", status: "success" }),
+          expect.objectContaining({ task: { kind: "story" }, status: "success" }),
+          expect.objectContaining({
+            task: expect.objectContaining({ kind: "beats" }),
+            status: "success",
+          }),
         ]),
       },
     });
@@ -266,9 +269,9 @@ describe("game actions", () => {
     expect(approved.episodeScript?.status).toBe("approved");
     expect(
       approved.episodeScript?.status === "approved"
-        ? approved.episodeScript.requests?.length
+        ? approved.episodeScript.requests.length
         : 0,
-    ).toBe(review.episodeScript.requests?.length);
+    ).toBe(review.episodeScript.requests.length);
 
     const started = await actions.continueGame(created.game.id);
     expect(started.draft?.type).toBe(
@@ -349,10 +352,22 @@ describe("game actions", () => {
     });
   });
 
-  it("persists authoring failure and allows a full retry", async () => {
+  it("persists agent checkpoints and resumes from the failed task", async () => {
     const repository = createGameRepository(await createTempDir());
+    const local = new LocalHeuristicLlmClient();
+    let characterCalls = 0;
     const failingActions = createGameActions(repository, {
-      llmClient: failingLlmClient(),
+      llmClient: {
+        async generateJson(request) {
+          if (
+            request.schemaName === "werewolf_episode_character_v3" &&
+            ++characterCalls === 4
+          ) {
+            throw new Error("model unavailable");
+          }
+          return local.generateJson(request);
+        },
+      },
     });
     const created = await failingActions.createGameFromPresetId(
       defaultPresetId,
@@ -365,23 +380,43 @@ describe("game actions", () => {
     expect(failed.episodeScript).toMatchObject({
       status: "failed",
       error: "model unavailable",
-      requests: [
+      workspace: {
+        story: expect.any(Object),
+        ensemble: expect.any(Object),
+        castDirections: expect.any(Array),
+      },
+      requests: expect.arrayContaining([
         expect.objectContaining({
-          kind: "outline",
+          task: expect.objectContaining({ kind: "character" }),
           status: "failed",
           error: "model unavailable",
         }),
-      ],
+      ]),
     });
+    if (failed.episodeScript?.status !== "failed") {
+      throw new Error("Expected failed episode author state");
+    }
+    expect(failed.episodeScript.workspace.castDirections).toHaveLength(3);
 
+    const retriedSchemas: string[] = [];
     const retryActions = createGameActions(repository, {
-      llmClient: new LocalHeuristicLlmClient(),
+      llmClient: {
+        async generateJson(request) {
+          retriedSchemas.push(request.schemaName);
+          return local.generateJson(request);
+        },
+      },
     });
     const review = await retryActions.generateEpisodeScript(created.game.id);
     expect(review.episodeScript?.status).toBe("review");
+    expect(retriedSchemas).not.toContain("werewolf_episode_story_v3");
+    expect(retriedSchemas).not.toContain("werewolf_episode_ensemble_v3");
+    expect(retriedSchemas.filter(
+      (schema) => schema === "werewolf_episode_character_v3",
+    )).toHaveLength(created.game.players.length - 3);
     expect(
       review.episodeScript?.status === "review"
-        ? review.episodeScript.requests?.map((request) => request.status)
+        ? review.episodeScript.requests.map((request) => request.status)
         : [],
     ).toEqual(expect.arrayContaining(["failed", "success"]));
   });

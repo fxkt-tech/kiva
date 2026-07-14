@@ -16,14 +16,18 @@ import {
   actorBriefForStep,
   assertEpisodeScriptMatchesGame,
   assertEpisodeDraftMatchesStep,
+  episodeInputHash,
   episodeScriptReport,
   planNextEpisodeDraft,
+  type EpisodeAuthorWorkspace,
   type EpisodeScriptState,
 } from "@/core/episode-script";
 import {
   authorEpisodeScript,
+  createEpisodeAuthorWorkspace,
   EpisodeAuthoringError,
 } from "@/core/episode-author";
+import type { ModelBindingSnapshot } from "@/core/player";
 import {
   createDefaultRuleset,
   type DraftId,
@@ -53,6 +57,7 @@ export type GameActions = ReturnType<typeof createGameActions>;
 
 export type CreateGameActionsOptions = {
   readonly llmClient?: LlmClient;
+  readonly episodeAuthorModelBinding?: ModelBindingSnapshot;
   readonly libraryRepository?: LibraryRepository;
   readonly defaultPresetId?: string;
 };
@@ -167,6 +172,14 @@ export function createGameActions(
           status: "generating",
           jobId,
           startedAt,
+          workspace: resumableEpisodeAuthorWorkspace(
+            record.episodeScript,
+            episodeInputHash(record.game),
+          ) ??
+            createEpisodeAuthorWorkspace({
+              game: record.game,
+              modelBinding: options.episodeAuthorModelBinding,
+            }),
           requests: episodeAuthorRequests(record.episodeScript),
         },
       };
@@ -195,6 +208,27 @@ export function createGameActions(
         game: generating.game,
         llmClient: options.llmClient,
         createdAt: now(),
+        workspace: generating.episodeScript.workspace,
+        onCheckpoint: async ({ workspace, request }) => {
+          await repository.withGameLock(gameId, async () => {
+            const current = await loadGame(gameId);
+            if (
+              current.episodeScript?.status !== "generating" ||
+              current.episodeScript.jobId !== jobId
+            ) {
+              throw new StaleEpisodeAuthorJobError();
+            }
+            await repository.save({
+              ...current,
+              game: { ...current.game, updatedAt: now() },
+              episodeScript: {
+                ...current.episodeScript,
+                workspace,
+                requests: [...current.episodeScript.requests, request],
+              },
+            });
+          });
+        },
       });
       return repository.withGameLock(gameId, async () => {
         const current = await loadGame(gameId);
@@ -213,16 +247,16 @@ export function createGameActions(
             jobId,
             candidate: authored.script,
             report,
-            requests: [
-              ...(current.episodeScript.requests ?? []),
-              ...authored.requests,
-            ],
+            requests: current.episodeScript.requests,
           },
         };
         await repository.save(nextRecord);
         return nextRecord;
       });
     } catch (error) {
+      if (error instanceof StaleEpisodeAuthorJobError) {
+        return loadGame(gameId);
+      }
       return repository.withGameLock(gameId, async () => {
         const current = await loadGame(gameId);
         if (
@@ -239,10 +273,11 @@ export function createGameActions(
             jobId,
             error: error instanceof Error ? error.message : String(error),
             failedAt: now(),
-            requests: [
-              ...(current.episodeScript.requests ?? []),
-              ...(error instanceof EpisodeAuthoringError ? error.requests : []),
-            ],
+            workspace:
+              error instanceof EpisodeAuthoringError
+                ? error.workspace
+                : current.episodeScript.workspace,
+            requests: current.episodeScript.requests,
           },
         };
         await repository.save(nextRecord);
@@ -398,7 +433,7 @@ export function createGameActions(
             script: structuredClone(state.candidate),
             report: structuredClone(state.report),
             approvedAt,
-            requests: structuredClone(state.requests ?? []),
+            requests: structuredClone(state.requests),
           },
         };
         await repository.save(nextRecord);
@@ -762,8 +797,23 @@ function createGenerationId(): string {
 }
 
 function episodeAuthorRequests(state: EpisodeScriptState | null) {
-  return state && "requests" in state ? state.requests ?? [] : [];
+  return state && "requests" in state ? state.requests : [];
 }
+
+function resumableEpisodeAuthorWorkspace(
+  state: EpisodeScriptState | null,
+  inputHash: string,
+): EpisodeAuthorWorkspace | null {
+  if (
+    (state?.status === "generating" || state?.status === "failed") &&
+    state.workspace.inputHash === inputHash
+  ) {
+    return structuredClone(state.workspace);
+  }
+  return null;
+}
+
+class StaleEpisodeAuthorJobError extends Error {}
 
 function now(): string {
   return new Date().toISOString();

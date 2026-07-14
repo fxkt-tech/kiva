@@ -11,19 +11,25 @@ import {
   type GenerationRequestSnapshot,
 } from "./generation-record";
 import type { LlmTokenUsage } from "./llm";
-import { assertExactObjectKeys, isPlainObject } from "./model-binding";
+import {
+  assertExactObjectKeys,
+  isPlainObject,
+  validateModelBindingSnapshot,
+} from "./model-binding";
 import { isLlmSpeechDraft, type LlmSpeechDraft } from "./llm-task-specs";
 import {
   estimateSpeechDurationMs,
   speechBudgetForDraft,
   type SpeechBudget,
 } from "./speech-budget";
-import type { PlayerSnapshot } from "./player";
+import type { ModelBindingSnapshot, PlayerSnapshot } from "./player";
 import type { DraftId, EventId, Phase, PlayerId } from "./types";
 
 export const EPISODE_SCRIPT_SCHEMA_VERSION = 2;
 export const EPISODE_COMPILER_VERSION = "episode-compiler:v1";
-export const EPISODE_AUTHOR_PROMPT_VERSION = "episode-author:v2" as const;
+export const EPISODE_AUTHOR_PROMPT_VERSION = "episode-author:v3" as const;
+export const MAX_EPISODE_STORY_ACTS = 4;
+export const MAX_EPISODE_RELATIONSHIP_SEEDS = 6;
 const MAX_EPISODE_STEPS = 240;
 
 export type EpisodeCharacterProfile = {
@@ -128,16 +134,61 @@ export type EpisodeScriptReport = {
   readonly warnings: readonly string[];
 };
 
+export type EpisodeStorySpine = {
+  readonly title: string;
+  readonly logline: string;
+  readonly acts: readonly EpisodeAct[];
+};
+
+export type EpisodeCastAssignment = {
+  readonly playerId: PlayerId;
+  readonly dramaticWeight: EpisodeCastDirection["dramaticWeight"];
+  readonly dramaticFunction: string;
+  readonly signatureStepIndex: number;
+};
+
+export type EpisodeRelationshipSeed = {
+  readonly playerIds: readonly [PlayerId, PlayerId];
+  readonly kind: EpisodeRelationshipKind;
+};
+
+export type EpisodeEnsembleMap = {
+  readonly castAssignments: readonly EpisodeCastAssignment[];
+  readonly relationshipSeeds: readonly EpisodeRelationshipSeed[];
+};
+
+export type EpisodeAuthorWorkspace = {
+  readonly inputHash: string;
+  readonly modelBinding: ModelBindingSnapshot;
+  readonly planStepCount: number;
+  readonly speechStepCount: number;
+  readonly story: EpisodeStorySpine | null;
+  readonly ensemble: EpisodeEnsembleMap | null;
+  readonly castDirections: readonly EpisodeCastDirection[];
+  readonly relationships: readonly EpisodeRelationshipDirection[];
+  readonly beats: readonly Omit<EpisodeSpeechBeat, "budget">[];
+};
+
+export type EpisodeAuthorTask =
+  | { readonly kind: "story" }
+  | { readonly kind: "ensemble" }
+  | { readonly kind: "character"; readonly playerId: PlayerId }
+  | {
+      readonly kind: "relationship";
+      readonly playerIds: readonly [PlayerId, PlayerId];
+    }
+  | { readonly kind: "beats"; readonly stepIndexes: readonly number[] };
+
 export type EpisodeAuthorRequestRecord = {
   readonly id: string;
-  readonly kind: "outline" | "beats";
-  readonly stepIndexes: readonly number[];
+  readonly task: EpisodeAuthorTask;
   readonly status: "success" | "failed";
   readonly promptVersion: typeof EPISODE_AUTHOR_PROMPT_VERSION;
   readonly provider: string;
   readonly model: string;
   readonly request: GenerationRequestSnapshot;
   readonly tokenUsage: LlmTokenUsage | null;
+  readonly finishReason: string | null;
   readonly rawOutput: string | null;
   readonly parsedOutput: Record<string, unknown> | null;
   readonly error: string | null;
@@ -151,14 +202,15 @@ export type EpisodeScriptState =
       readonly status: "generating";
       readonly jobId: string;
       readonly startedAt: string;
-      readonly requests?: readonly EpisodeAuthorRequestRecord[];
+      readonly workspace: EpisodeAuthorWorkspace;
+      readonly requests: readonly EpisodeAuthorRequestRecord[];
     }
   | {
       readonly status: "review";
       readonly jobId: string;
       readonly candidate: EpisodeScriptSnapshot;
       readonly report: EpisodeScriptReport;
-      readonly requests?: readonly EpisodeAuthorRequestRecord[];
+      readonly requests: readonly EpisodeAuthorRequestRecord[];
     }
   | {
       readonly status: "approved";
@@ -166,14 +218,15 @@ export type EpisodeScriptState =
       readonly script: EpisodeScriptSnapshot;
       readonly report: EpisodeScriptReport;
       readonly approvedAt: string;
-      readonly requests?: readonly EpisodeAuthorRequestRecord[];
+      readonly requests: readonly EpisodeAuthorRequestRecord[];
     }
   | {
       readonly status: "failed";
       readonly jobId: string;
       readonly error: string;
       readonly failedAt: string;
-      readonly requests?: readonly EpisodeAuthorRequestRecord[];
+      readonly workspace: EpisodeAuthorWorkspace;
+      readonly requests: readonly EpisodeAuthorRequestRecord[];
     };
 
 export type CompiledEpisodePlan = {
@@ -561,8 +614,7 @@ export function validateEpisodeScriptState(
       assertExactObjectKeys(
         state,
         "Episode script state",
-        ["status", "jobId", "startedAt"],
-        ["requests"],
+        ["status", "jobId", "startedAt", "workspace", "requests"],
       );
       return {
         status: "generating",
@@ -571,32 +623,27 @@ export function validateEpisodeScriptState(
           state.startedAt,
           "Episode script state startedAt",
         ),
-        ...(state.requests === undefined
-          ? {}
-          : { requests: validateEpisodeAuthorRequests(state.requests) }),
+        workspace: validateEpisodeAuthorWorkspace(state.workspace),
+        requests: validateEpisodeAuthorRequests(state.requests),
       };
     case "review":
       assertExactObjectKeys(
         state,
         "Episode script state",
-        ["status", "jobId", "candidate", "report"],
-        ["requests"],
+        ["status", "jobId", "candidate", "report", "requests"],
       );
       return {
         status: "review",
         jobId: requiredString(state.jobId, "Episode script state jobId"),
         candidate: validateEpisodeScriptSnapshot(state.candidate),
         report: validateEpisodeScriptReport(state.report),
-        ...(state.requests === undefined
-          ? {}
-          : { requests: validateEpisodeAuthorRequests(state.requests) }),
+        requests: validateEpisodeAuthorRequests(state.requests),
       };
     case "approved":
       assertExactObjectKeys(
         state,
         "Episode script state",
-        ["status", "jobId", "script", "report", "approvedAt"],
-        ["requests"],
+        ["status", "jobId", "script", "report", "approvedAt", "requests"],
       );
       return {
         status: "approved",
@@ -607,16 +654,20 @@ export function validateEpisodeScriptState(
           state.approvedAt,
           "Episode script state approvedAt",
         ),
-        ...(state.requests === undefined
-          ? {}
-          : { requests: validateEpisodeAuthorRequests(state.requests) }),
+        requests: validateEpisodeAuthorRequests(state.requests),
       };
     case "failed":
       assertExactObjectKeys(
         state,
         "Episode script state",
-        ["status", "jobId", "error", "failedAt"],
-        ["requests"],
+        [
+          "status",
+          "jobId",
+          "error",
+          "failedAt",
+          "workspace",
+          "requests",
+        ],
       );
       return {
         status: "failed",
@@ -626,13 +677,259 @@ export function validateEpisodeScriptState(
           state.failedAt,
           "Episode script state failedAt",
         ),
-        ...(state.requests === undefined
-          ? {}
-          : { requests: validateEpisodeAuthorRequests(state.requests) }),
+        workspace: validateEpisodeAuthorWorkspace(state.workspace),
+        requests: validateEpisodeAuthorRequests(state.requests),
       };
     default:
       throw new Error("Episode script state has invalid status");
   }
+}
+
+export function validateEpisodeAuthorWorkspace(
+  value: unknown,
+): EpisodeAuthorWorkspace {
+  const workspace = objectRecord(value, "Episode author workspace");
+  assertExactObjectKeys(workspace, "Episode author workspace", [
+    "inputHash",
+    "modelBinding",
+    "planStepCount",
+    "speechStepCount",
+    "story",
+    "ensemble",
+    "castDirections",
+    "relationships",
+    "beats",
+  ]);
+  if (!isPlainObject(workspace.modelBinding)) {
+    throw new Error("Episode author workspace modelBinding must be an object");
+  }
+  validateModelBindingSnapshot(
+    workspace.modelBinding,
+    "Episode author workspace modelBinding",
+  );
+  if (
+    !Number.isInteger(workspace.planStepCount) ||
+    (workspace.planStepCount as number) < 1 ||
+    !Number.isInteger(workspace.speechStepCount) ||
+    (workspace.speechStepCount as number) < 1
+  ) {
+    throw new Error("Episode author workspace plan counts are invalid");
+  }
+  if (!Array.isArray(workspace.castDirections)) {
+    throw new Error("Episode author workspace castDirections must be an array");
+  }
+  if (!Array.isArray(workspace.beats)) {
+    throw new Error("Episode author workspace beats must be an array");
+  }
+  return {
+    inputHash: requiredString(
+      workspace.inputHash,
+      "Episode author workspace inputHash",
+    ),
+    modelBinding: structuredClone(workspace.modelBinding) as ModelBindingSnapshot,
+    planStepCount: workspace.planStepCount as number,
+    speechStepCount: workspace.speechStepCount as number,
+    story:
+      workspace.story === null
+        ? null
+        : validateEpisodeStorySpine(workspace.story),
+    ensemble:
+      workspace.ensemble === null
+        ? null
+        : validateEpisodeEnsembleMap(workspace.ensemble),
+    castDirections:
+      workspace.castDirections.length === 0
+        ? []
+        : validateCastDirectionShapes(workspace.castDirections),
+    relationships: validateRelationshipShapes(workspace.relationships),
+    beats: workspace.beats.map(validateWorkspaceBeat),
+  };
+}
+
+function validateEpisodeStorySpine(value: unknown): EpisodeStorySpine {
+  const story = objectRecord(value, "Episode author story");
+  assertExactObjectKeys(story, "Episode author story", [
+    "title",
+    "logline",
+    "acts",
+  ]);
+  if (
+    !Array.isArray(story.acts) ||
+    story.acts.length === 0 ||
+    story.acts.length > MAX_EPISODE_STORY_ACTS
+  ) {
+    throw new Error(
+      `Episode author story acts must contain between 1 and ${MAX_EPISODE_STORY_ACTS} items`,
+    );
+  }
+  return {
+    title: requiredString(story.title, "Episode author story title"),
+    logline: requiredString(story.logline, "Episode author story logline"),
+    acts: story.acts.map((value, index) => {
+      const act = objectRecord(value, `Episode author story act ${index + 1}`);
+      assertExactObjectKeys(act, `Episode author story act ${index + 1}`, [
+        "title",
+        "summary",
+      ]);
+      return {
+        title: requiredString(
+          act.title,
+          `Episode author story act ${index + 1} title`,
+        ),
+        summary: requiredString(
+          act.summary,
+          `Episode author story act ${index + 1} summary`,
+        ),
+      };
+    }),
+  };
+}
+
+function validateEpisodeEnsembleMap(value: unknown): EpisodeEnsembleMap {
+  const ensemble = objectRecord(value, "Episode author ensemble");
+  assertExactObjectKeys(ensemble, "Episode author ensemble", [
+    "castAssignments",
+    "relationshipSeeds",
+  ]);
+  if (!Array.isArray(ensemble.castAssignments)) {
+    throw new Error("Episode author castAssignments must be an array");
+  }
+  if (!Array.isArray(ensemble.relationshipSeeds)) {
+    throw new Error("Episode author relationshipSeeds must be an array");
+  }
+  if (
+    ensemble.relationshipSeeds.length === 0 ||
+    ensemble.relationshipSeeds.length > MAX_EPISODE_RELATIONSHIP_SEEDS
+  ) {
+    throw new Error(
+      `Episode author relationshipSeeds must contain between 1 and ${MAX_EPISODE_RELATIONSHIP_SEEDS} items`,
+    );
+  }
+  const assigned = new Set<string>();
+  const castAssignments = ensemble.castAssignments.map(
+    (value, index): EpisodeCastAssignment => {
+      const assignment = objectRecord(
+        value,
+        `Episode author cast assignment ${index + 1}`,
+      );
+      assertExactObjectKeys(
+        assignment,
+        `Episode author cast assignment ${index + 1}`,
+        [
+          "playerId",
+          "dramaticWeight",
+          "dramaticFunction",
+          "signatureStepIndex",
+        ],
+      );
+      const playerId = requiredString(
+        assignment.playerId,
+        `Episode author cast assignment ${index + 1} playerId`,
+      ) as PlayerId;
+      if (assigned.has(playerId)) {
+        throw new Error(
+          `Duplicate episode author cast assignment: ${playerId}`,
+        );
+      }
+      assigned.add(playerId);
+      if (
+        assignment.dramaticWeight !== "primary" &&
+        assignment.dramaticWeight !== "supporting"
+      ) {
+        throw new Error(
+          `Episode author cast assignment ${index + 1} dramaticWeight is invalid`,
+        );
+      }
+      if (!Number.isInteger(assignment.signatureStepIndex)) {
+        throw new Error(
+          `Episode author cast assignment ${index + 1} signatureStepIndex is invalid`,
+        );
+      }
+      return {
+        playerId,
+        dramaticWeight: assignment.dramaticWeight,
+        dramaticFunction: requiredString(
+          assignment.dramaticFunction,
+          `Episode author cast assignment ${index + 1} dramaticFunction`,
+        ),
+        signatureStepIndex: assignment.signatureStepIndex as number,
+      };
+    },
+  );
+  const pairs = new Set<string>();
+  const relationshipSeeds = ensemble.relationshipSeeds.map((value, index) => {
+    const seed = objectRecord(
+      value,
+      `Episode author relationship seed ${index + 1}`,
+    );
+    assertExactObjectKeys(
+      seed,
+      `Episode author relationship seed ${index + 1}`,
+      ["playerIds", "kind"],
+    );
+    const playerIds = requiredPlayerPair(
+      seed.playerIds,
+      `Episode author relationship seed ${index + 1} playerIds`,
+    );
+    const pairKey = [...playerIds].sort().join(":");
+    if (pairs.has(pairKey)) {
+      throw new Error(`Duplicate episode author relationship seed: ${pairKey}`);
+    }
+    pairs.add(pairKey);
+    if (!isRelationshipKind(seed.kind)) {
+      throw new Error(
+        `Episode author relationship seed ${index + 1} kind is invalid`,
+      );
+    }
+    return { playerIds, kind: seed.kind };
+  });
+  return { castAssignments, relationshipSeeds };
+}
+
+function validateWorkspaceBeat(
+  value: unknown,
+  index: number,
+): Omit<EpisodeSpeechBeat, "budget"> {
+  const beat = objectRecord(value, `Episode author beat ${index + 1}`);
+  assertExactObjectKeys(beat, `Episode author beat ${index + 1}`, [
+    "stepIndex",
+    "objective",
+    "stance",
+    "disclosure",
+    "themeHook",
+    "characterHook",
+    "arcMove",
+    "relationshipMove",
+  ]);
+  if (!Number.isInteger(beat.stepIndex) || (beat.stepIndex as number) < 1) {
+    throw new Error(`Episode author beat ${index + 1} stepIndex is invalid`);
+  }
+  if (
+    beat.disclosure !== "conceal" &&
+    beat.disclosure !== "claim" &&
+    beat.disclosure !== "not_applicable"
+  ) {
+    throw new Error(`Episode author beat ${index + 1} disclosure is invalid`);
+  }
+  return {
+    stepIndex: beat.stepIndex as number,
+    objective: requiredString(beat.objective, `Episode author beat ${index + 1} objective`),
+    stance: requiredString(beat.stance, `Episode author beat ${index + 1} stance`),
+    disclosure: beat.disclosure,
+    themeHook: requiredString(beat.themeHook, `Episode author beat ${index + 1} themeHook`),
+    characterHook: nullableWorkspaceString(
+      beat.characterHook,
+      `Episode author beat ${index + 1} characterHook`,
+    ),
+    arcMove: nullableWorkspaceString(
+      beat.arcMove,
+      `Episode author beat ${index + 1} arcMove`,
+    ),
+    relationshipMove: nullableWorkspaceString(
+      beat.relationshipMove,
+      `Episode author beat ${index + 1} relationshipMove`,
+    ),
+  };
 }
 
 function validateEpisodeAuthorRequests(
@@ -657,14 +954,14 @@ function validateEpisodeAuthorRequest(
     label,
     [
       "id",
-      "kind",
-      "stepIndexes",
+      "task",
       "status",
       "promptVersion",
       "provider",
       "model",
       "request",
       "tokenUsage",
+      "finishReason",
       "rawOutput",
       "parsedOutput",
       "error",
@@ -672,25 +969,13 @@ function validateEpisodeAuthorRequest(
     ],
     ["attempts"],
   );
-  if (request.kind !== "outline" && request.kind !== "beats") {
-    throw new Error(`${label} kind is invalid`);
-  }
-  const schemaName =
-    request.kind === "outline"
-      ? "werewolf_episode_outline_v2"
-      : "werewolf_episode_beats_v2";
+  const { task, schemaName } = validateEpisodeAuthorTask(request.task, label);
   validateGenerationRequestSnapshot(request.request, [schemaName]);
   if (
-    !requiredIntegerArray(request.stepIndexes) ||
-    (request.kind === "outline" && request.stepIndexes.length !== 0) ||
-    (request.kind === "beats" && request.stepIndexes.length === 0)
-  ) {
-    throw new Error(`${label} stepIndexes are invalid`);
-  }
-  if (
     (request.status !== "success" && request.status !== "failed") ||
-    request.promptVersion !== "episode-author:v2" ||
+    request.promptVersion !== EPISODE_AUTHOR_PROMPT_VERSION ||
     !isLlmTokenUsage(request.tokenUsage) ||
+    (request.finishReason !== null && typeof request.finishReason !== "string") ||
     (request.rawOutput !== null && typeof request.rawOutput !== "string") ||
     (request.parsedOutput !== null && !isPlainObject(request.parsedOutput)) ||
     (request.error !== null && typeof request.error !== "string") ||
@@ -713,7 +998,53 @@ function validateEpisodeAuthorRequest(
   ) {
     throw new Error(`${label} attempts are invalid`);
   }
-  return structuredClone(request) as EpisodeAuthorRequestRecord;
+  return structuredClone({ ...request, task }) as EpisodeAuthorRequestRecord;
+}
+
+function validateEpisodeAuthorTask(
+  value: unknown,
+  label: string,
+): { readonly task: EpisodeAuthorTask; readonly schemaName: string } {
+  const task = objectRecord(value, `${label} task`);
+  switch (task.kind) {
+    case "story":
+      assertExactObjectKeys(task, `${label} task`, ["kind"]);
+      return { task: { kind: "story" }, schemaName: "werewolf_episode_story_v3" };
+    case "ensemble":
+      assertExactObjectKeys(task, `${label} task`, ["kind"]);
+      return {
+        task: { kind: "ensemble" },
+        schemaName: "werewolf_episode_ensemble_v3",
+      };
+    case "character":
+      assertExactObjectKeys(task, `${label} task`, ["kind", "playerId"]);
+      return {
+        task: {
+          kind: "character",
+          playerId: requiredString(task.playerId, `${label} task playerId`) as PlayerId,
+        },
+        schemaName: "werewolf_episode_character_v3",
+      };
+    case "relationship": {
+      assertExactObjectKeys(task, `${label} task`, ["kind", "playerIds"]);
+      const playerIds = requiredPlayerPair(task.playerIds, `${label} task playerIds`);
+      return {
+        task: { kind: "relationship", playerIds },
+        schemaName: "werewolf_episode_relationship_v3",
+      };
+    }
+    case "beats":
+      assertExactObjectKeys(task, `${label} task`, ["kind", "stepIndexes"]);
+      if (!requiredIntegerArray(task.stepIndexes) || task.stepIndexes.length === 0) {
+        throw new Error(`${label} task stepIndexes are invalid`);
+      }
+      return {
+        task: { kind: "beats", stepIndexes: [...task.stepIndexes] },
+        schemaName: "werewolf_episode_beats_v3",
+      };
+    default:
+      throw new Error(`${label} task kind is invalid`);
+  }
 }
 
 function requiredIntegerArray(value: unknown): value is readonly number[] {
@@ -722,6 +1053,25 @@ function requiredIntegerArray(value: unknown): value is readonly number[] {
     value.every((item) => Number.isInteger(item) && item > 0) &&
     new Set(value).size === value.length
   );
+}
+
+function requiredPlayerPair(
+  value: unknown,
+  label: string,
+): readonly [PlayerId, PlayerId] {
+  if (
+    !Array.isArray(value) ||
+    value.length !== 2 ||
+    value.some((playerId) => typeof playerId !== "string" || playerId.length === 0) ||
+    value[0] === value[1]
+  ) {
+    throw new Error(`${label} must contain two different player IDs`);
+  }
+  return [value[0] as PlayerId, value[1] as PlayerId];
+}
+
+function nullableWorkspaceString(value: unknown, label: string): string | null {
+  return value === null ? null : requiredString(value, label);
 }
 
 function validateEpisodeScriptReport(value: unknown): EpisodeScriptReport {

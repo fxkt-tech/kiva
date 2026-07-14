@@ -10,7 +10,11 @@ import { LlmGenerationDetails } from "@/components/editor/llm-generation-details
 import { EpisodeEnsembleReview } from "@/components/script/episode-ensemble-review";
 import { EpisodeGeneratingRefresh } from "@/components/script/episode-generating-refresh";
 import { iconButtonClassName } from "@/components/ui/button-styles";
-import type { EpisodeAuthorRequestRecord } from "@/core/episode-script";
+import { episodeAuthorProgress } from "@/core/episode-author";
+import type {
+  EpisodeAuthorRequestRecord,
+  EpisodeAuthorWorkspace,
+} from "@/core/episode-script";
 import { tokenCount } from "@/core/token-usage";
 import type { GameId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
@@ -121,7 +125,7 @@ export function EpisodeWorkspace({
           <Metric label="结构规模" value={`${script.steps.length} 步 / ${speechSteps.length} 段发言`} />
         </div>
 
-        <EpisodeAuthorRequests requests={state.requests ?? []} />
+        <EpisodeAuthorRequests requests={state.requests} />
 
         <section className="mt-5">
           <h3 className="text-sm font-semibold">剧情幕</h3>
@@ -180,7 +184,11 @@ export function EpisodeWorkspace({
       <div>
         <h2 className="text-base font-semibold text-danger-badge-foreground">剧本生成失败</h2>
         <p className="mt-2 rounded border border-danger-badge/60 bg-danger-badge/25 px-3 py-2 text-sm text-danger-badge-foreground">{state.error}</p>
-        <EpisodeAuthorRequests requests={state.requests ?? []} />
+        <p className="mt-2 text-xs text-muted">
+          已保留 {state.workspace.castDirections.length} 个角色弧线和{" "}
+          {state.workspace.beats.length} 个场景节拍；重试将从当前任务继续。
+        </p>
+        <EpisodeAuthorRequests requests={state.requests} />
         <form className="mt-4" action={generateEpisodeScriptAction.bind(null, record.game.id)}>
           <FormSubmitButton label="重试生成" pendingLabel="正在重试…" className={primaryActionClass} />
         </form>
@@ -193,8 +201,8 @@ export function EpisodeWorkspace({
       <div className="py-10 text-center">
         <EpisodeGeneratingRefresh />
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-border border-t-cyan-300" />
-        <h2 className="mt-4 text-base font-semibold">正在生成并模拟整局剧本</h2>
-        <p className="mt-2 text-sm text-muted">规则 dry-run 与主题编写完成后会进入导演审核。</p>
+        <EpisodeAuthorGeneratingStatus workspace={state.workspace} />
+        <EpisodeAuthorRequests requests={state.requests} />
         <form className="mt-5" action={generateEpisodeScriptAction.bind(null, record.game.id)}>
           <FormSubmitButton
             label="任务长时间无响应？重新开始"
@@ -233,6 +241,24 @@ export function EpisodeWorkspace({
   );
 }
 
+export function EpisodeAuthorGeneratingStatus({
+  workspace,
+}: {
+  readonly workspace: EpisodeAuthorWorkspace;
+}) {
+  const progress = episodeAuthorProgress(workspace);
+  return (
+    <>
+      <h2 className="mt-4 text-base font-semibold">
+        正在由 Script Author Agent 细化剧本
+      </h2>
+      <p className="mt-2 text-sm text-muted">
+        {progress.label} · {progress.completed}/{progress.total}
+      </p>
+    </>
+  );
+}
+
 export function EpisodeAuthorRequests({
   requests,
 }: {
@@ -260,9 +286,9 @@ export function EpisodeAuthorRequests({
               </div>
               <div className="mt-0.5 truncate text-subtle">
                 {request.provider}/{request.model} · {request.status} ·{" "}
-                {request.stepIndexes.length > 0
-                  ? `steps ${request.stepIndexes.join(", ")}`
-                  : "full cast"}
+                {request.task.kind === "beats"
+                  ? `steps ${request.task.stepIndexes.join(", ")}`
+                  : request.task.kind}
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -286,15 +312,24 @@ function episodeAuthorRequestLabels(
   let run = 0;
   let beatBatch = 0;
   return requests.map((request) => {
-    if (request.kind === "outline") {
+    if (request.task.kind === "story") {
       run += 1;
       beatBatch = 0;
-      return run === 1 ? "Outline" : `Outline · run ${run}`;
+      return run === 1 ? "Story spine" : `Story spine · run ${run}`;
     }
-    beatBatch += 1;
-    return run <= 1
-      ? `Beat batch ${beatBatch}`
-      : `Beat batch ${beatBatch} · run ${run}`;
+    switch (request.task.kind) {
+      case "ensemble":
+        return "Ensemble map";
+      case "character":
+        return `Character · ${request.task.playerId}`;
+      case "relationship":
+        return `Relationship · ${request.task.playerIds.join("/")}`;
+      case "beats":
+        beatBatch += 1;
+        return run <= 1
+          ? `Scene beats ${beatBatch}`
+          : `Scene beats ${beatBatch} · run ${run}`;
+    }
   });
 }
 

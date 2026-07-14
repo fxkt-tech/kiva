@@ -202,6 +202,8 @@ Natural-language quality, credibility framing, disclosure consistency, and factu
 - Optional action v2 schema: `werewolf_optional_action_v2`, with `used`, `targetPlayerId`, and `decisionSummary`.
 - Only speech `text` and validated action fields enter the Draft. `decisionSummary`, `disclosure`, request snapshots, and attempts remain debug metadata.
 - Every GenerationRecord stores the exact current shape and a required Prompt-v2 request snapshot. `attempts` remains optional because a successful first response has no repair attempt; provider token usage may be `null` when the provider does not report it.
+- JSON generation preserves provider `finishReason` and usage before parsing assistant content. A parse error therefore remains observable as a provider-completed, provider-truncated, or metadata-unknown attempt instead of collapsing into one generic syntax error.
+- `finishReason === "length"` proves the JSON document is incomplete. `generateValidatedJson()` must return that structured failure to the owning workflow and must not append the truncated document to a repair prompt. The owning workflow may split a bounded task or retry once from its original compact input.
 
 ### Editor completion notifications
 
@@ -217,7 +219,8 @@ Natural-language quality, credibility framing, disclosure consistency, and factu
 | Draft type is not in either LLM registry | Return the Draft unchanged and no GenerationRecord. |
 | Actor is missing, dead, wrong role, or wrong mechanic | Do not call the model; record a failed generation. |
 | Transport/provider request fails | Do not retry as output repair; preserve the Draft and record failure. |
-| Assistant message is not a JSON object | Preserve raw assistant text and send exactly one minimal repair request. |
+| Assistant message is not a JSON object and provider did not report length truncation | Preserve raw assistant text and send exactly one minimal repair request. |
+| Assistant message is malformed and `finishReason === "length"` | Preserve raw text, finish reason, and usage; skip whole-document repair and return the failure to the owning workflow. |
 | Required gameplay field is missing or has the wrong type | Send exactly one minimal repair request. |
 | Target is outside the shared `LegalActionOptions` set | Send exactly one repair containing the legal IDs. |
 | `used=false` carries a target | Reject as contradictory output and repair once. |
@@ -229,7 +232,7 @@ Natural-language quality, credibility framing, disclosure consistency, and factu
 
 Semantic prose content never enters this error matrix. Speech length is the one structural text contract and follows the dedicated scenario above; disclosure/text agreement, public-wolf leaks, claim framing, quotation attribution, first-night reasoning, ballot summaries, and medicine summaries are not runtime validators.
 
-Repair requests contain only the invalid output, validation error, output contract, and legal IDs. They do not resend the timeline or ask the model to re-analyze the game.
+Repair requests contain only the complete invalid output, validation error, output contract, and legal IDs. They do not resend the timeline or ask the model to re-analyze the game. Provider-truncated output is never repair input.
 
 ## 5. Good / Base / Bad Cases
 
@@ -247,7 +250,7 @@ Repair requests contain only the invalid output, validation error, output contra
 - Prompt structure tests: scene and one task precede semantic knowledge; unknown information and output contracts are present; only selected rules are included.
 - Visibility tests: host-only wolf ballots and delayed votes are absent from later player contexts; faction discussion is only available to wolves.
 - Legal-option tests: PK targets, abstention, prior seer checks, guard history, witch dual-use, and actor eligibility.
-- Generation tests: valid output, wrong actor, invalid target, missing field, contradictory medicine fields, disclosure enum, one-repair failure, unchanged Draft on failure, and regression cases proving semantic wording does not trigger repair.
+- Generation tests: valid output, wrong actor, invalid target, missing field, contradictory medicine fields, disclosure enum, one-repair failure, unchanged Draft on failure, finish-reason/usage preservation on malformed output, no repair after length truncation, and regression cases proving semantic wording does not trigger repair.
 - Editor notification tests: a matching Draft with a new GenerationRecord ID is recognized as complete; unchanged IDs, unrelated Drafts, malformed markers, unsupported APIs, and denied permission do not affect generation.
 - Current-contract tests: Prompt v2 is the only builder, Game Script/request snapshots are required, old Prompt versions and reasoning aliases are rejected, and details UI renders only `decisionSummary`.
 - Model binding tests: Game creation snapshots the Character binding, and the HTTP request body omits `temperature` and `max_tokens`.

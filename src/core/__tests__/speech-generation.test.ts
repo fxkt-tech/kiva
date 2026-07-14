@@ -545,6 +545,7 @@ function invalidTextClient(): LlmClient {
         rawText: '{"text":""}',
         parsed: { text: "" },
         usage: null,
+        finishReason: "stop",
       };
     },
   };

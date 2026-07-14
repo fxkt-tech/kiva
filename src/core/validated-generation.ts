@@ -22,18 +22,21 @@ export class ValidatedGenerationError extends Error {
   readonly attempts: readonly GenerationAttemptSnapshot[];
   readonly rawOutput: string | null;
   readonly tokenUsage: LlmTokenUsage | null;
+  readonly finishReason: string | null;
 
   constructor(input: {
     readonly error: unknown;
     readonly attempts: readonly GenerationAttemptSnapshot[];
     readonly rawOutput: string | null;
     readonly tokenUsage: LlmTokenUsage | null;
+    readonly finishReason?: string | null;
   }) {
     super(errorMessage(input.error), { cause: input.error });
     this.name = "ValidatedGenerationError";
     this.attempts = input.attempts;
     this.rawOutput = input.rawOutput;
     this.tokenUsage = input.tokenUsage;
+    this.finishReason = input.finishReason ?? null;
   }
 }
 
@@ -55,11 +58,20 @@ export async function generateValidatedJson<Value>(input: {
     });
   } catch (error) {
     if (!(error instanceof LlmOutputParseError)) throw error;
+    if (error.finishReason === "length") {
+      throw new ValidatedGenerationError({
+        error,
+        attempts: [attemptFromError(input.request, error)],
+        rawOutput: error.rawText,
+        tokenUsage: error.usage,
+        finishReason: error.finishReason,
+      });
+    }
     return repairAfterInvalidAttempt({
       ...input,
       firstAttempt: attemptFromError(input.request, error),
       firstRawOutput: error.rawText,
-      firstUsage: null,
+      firstUsage: error.usage,
       firstError: error,
     });
   }
@@ -120,7 +132,12 @@ async function repairAfterInvalidAttempt<Value>(input: {
       error,
       attempts,
       rawOutput,
-      tokenUsage: input.firstUsage,
+      tokenUsage: mergeTokenUsage(
+        input.firstUsage,
+        error instanceof LlmOutputParseError ? error.usage : null,
+      ),
+      finishReason:
+        error instanceof LlmOutputParseError ? error.finishReason : null,
     });
   }
 
@@ -145,6 +162,7 @@ async function repairAfterInvalidAttempt<Value>(input: {
       attempts,
       rawOutput: repairedOutput.rawText,
       tokenUsage: mergeTokenUsage(input.firstUsage, repairedOutput.usage),
+      finishReason: repairedOutput.finishReason,
     });
   }
 }
@@ -195,6 +213,7 @@ function attemptFromOutput(
   return {
     request,
     tokenUsage: output.usage,
+    finishReason: output.finishReason,
     rawOutput: output.rawText,
     parsedOutput: output.parsed,
     error: error === null ? null : errorMessage(error),
@@ -207,7 +226,9 @@ function attemptFromError(
 ): GenerationAttemptSnapshot {
   return {
     request,
-    tokenUsage: null,
+    tokenUsage: error instanceof LlmOutputParseError ? error.usage : null,
+    finishReason:
+      error instanceof LlmOutputParseError ? error.finishReason : null,
     rawOutput: error instanceof LlmOutputParseError ? error.rawText : null,
     parsedOutput: null,
     error: errorMessage(error),

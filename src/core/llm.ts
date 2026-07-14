@@ -18,6 +18,7 @@ export type LlmGenerateJsonResult = {
   readonly rawText: string;
   readonly parsed: Record<string, unknown>;
   readonly usage: LlmTokenUsage | null;
+  readonly finishReason: string | null;
 };
 
 export type LlmTokenUsage = {
@@ -36,11 +37,22 @@ export type LlmClient = {
 
 export class LlmOutputParseError extends Error {
   readonly rawText: string;
+  readonly finishReason: string | null;
+  readonly usage: LlmTokenUsage | null;
 
-  constructor(message: string, rawText: string, options?: ErrorOptions) {
+  constructor(
+    message: string,
+    rawText: string,
+    options: ErrorOptions & {
+      readonly finishReason?: string | null;
+      readonly usage?: LlmTokenUsage | null;
+    } = {},
+  ) {
     super(message, options);
     this.name = "LlmOutputParseError";
     this.rawText = rawText;
+    this.finishReason = options.finishReason ?? null;
+    this.usage = options.usage ?? null;
   }
 }
 
@@ -64,6 +76,7 @@ export class MockLlmClient implements LlmClient {
       rawText: JSON.stringify(parsed),
       parsed,
       usage: null,
+      finishReason: "stop",
     };
   }
 }
@@ -80,6 +93,7 @@ export class LocalHeuristicLlmClient implements LlmClient {
       rawText: JSON.stringify(parsed),
       parsed,
       usage: null,
+      finishReason: "stop",
     };
   }
 }
@@ -134,6 +148,8 @@ export class OpenAICompatibleLlmClient implements LlmClient {
 
     const body = parseOpenAICompatibleResponse(responseText, endpoint);
     const rawText = body.choices?.[0]?.message?.content;
+    const finishReason = optionalString(body.choices?.[0]?.finish_reason);
+    const usage = parseOpenAICompatibleUsage(body.usage);
     if (typeof rawText !== "string") {
       throw new Error("LLM response did not include message content");
     }
@@ -145,7 +161,7 @@ export class OpenAICompatibleLlmClient implements LlmClient {
       throw new LlmOutputParseError(
         `LLM message content was not a valid JSON object: ${errorWithCauseMessage(error)}`,
         rawText,
-        { cause: error },
+        { cause: error, finishReason, usage },
       );
     }
 
@@ -154,7 +170,8 @@ export class OpenAICompatibleLlmClient implements LlmClient {
       model: request.modelBinding.model,
       rawText,
       parsed,
-      usage: parseOpenAICompatibleUsage(body.usage),
+      usage,
+      finishReason,
     };
   }
 }
@@ -205,6 +222,7 @@ function truncate(value: string, maxLength: number): string {
 
 type OpenAICompatibleResponse = {
   readonly choices?: readonly {
+    readonly finish_reason?: unknown;
     readonly message?: {
       readonly content?: unknown;
     };
@@ -238,6 +256,12 @@ function objectRecord(value: unknown): Record<string, unknown> | null {
 
 function optionalTokenCount(value: unknown): number | null {
   return Number.isFinite(value) ? Number(value) : null;
+}
+
+function optionalString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
 }
 
 export function parseLlmJsonObject(rawText: string): Record<string, unknown> {
@@ -278,7 +302,11 @@ function localOutputForRequest(
     ],
   };
 
-  if (request.schemaName === "werewolf_episode_outline_v2") {
+  if (request.schemaName === "werewolf_episode_story_v3") {
+    return episodeOutline;
+  }
+
+  if (request.schemaName === "werewolf_episode_ensemble_v3") {
     const profiles = prefixedJsonObjects(userContent, "CHARACTER_PROFILE");
     const relationshipKinds = [
       "rivalry",
@@ -286,7 +314,7 @@ function localOutputForRequest(
       "contrast",
       "trust_shift",
     ] as const;
-    const castDirections = profiles.map((profile, index) => {
+    const castAssignments = profiles.map((profile, index) => {
       const playerId = localString(profile.playerId, `p${index + 1}`);
       const name = localString(profile.name, playerId);
       const persona = localCharacterTrait(profile);
@@ -303,17 +331,10 @@ function localOutputForRequest(
           ? "primary"
           : "supporting",
         dramaticFunction: `${name}以${persona}成为第${index + 1}条判断线的推动者`,
-        baseline: `${name}先按${persona}观察局面并建立自己的判断标准`,
-        pressure: "公开冲突迫使其在坚持原有方法与承认盲点之间作出选择",
-        change: "保留核心判断方式，同时学会把不确定性转化为可验证的下一步",
-        payoff: "在关键节点用一次清晰选择兑现此前建立的判断标准",
-        signatureMoment: {
-          stepIndex: signatureStep,
-          description: `${name}在真实可用的第 ${signatureStep} 步让个人判断方式成为局面转折点`,
-        },
+        signatureStepIndex: signatureStep,
       };
     });
-    const relationships = profiles.flatMap((profile, index) => {
+    const relationshipSeeds = profiles.flatMap((profile, index) => {
       if (index % 2 !== 0 || index + 1 >= profiles.length) return [];
       const leftId = localString(profile.playerId, `p${index + 1}`);
       const rightId = localString(
@@ -325,16 +346,42 @@ function localOutputForRequest(
         {
           playerIds: [leftId, rightId],
           kind,
-          setup: "两人的判断方法在一次公开选择中首次形成可见差异",
-          development: "后续公开发言让差异升级为互相检验或有限协作",
-          payoff: "最终选择回应此前累积的分歧，并完成一次可信的关系变化",
         },
       ];
     });
-    return { ...episodeOutline, castDirections, relationships };
+    return { castAssignments, relationshipSeeds };
   }
 
-  if (request.schemaName === "werewolf_episode_beats_v2") {
+  if (request.schemaName === "werewolf_episode_character_v3") {
+    const profile = prefixedJsonObjects(userContent, "CHARACTER_PROFILE")[0] ?? {};
+    const assignment = prefixedJsonObjects(userContent, "CAST_ASSIGNMENT")[0] ?? {};
+    const playerId = localString(assignment.playerId, localString(profile.playerId, "unknown"));
+    const name = localString(profile.name, playerId);
+    const persona = localCharacterTrait(profile);
+    const signatureStepIndex = Number.isInteger(assignment.signatureStepIndex)
+      ? Number(assignment.signatureStepIndex)
+      : 1;
+    return {
+      playerId,
+      baseline: `${name}先按${persona}观察局面并建立自己的判断标准`,
+      pressure: "公开冲突迫使其在坚持原有方法与承认盲点之间作出选择",
+      change: "保留核心判断方式，同时学会把不确定性转化为可验证的下一步",
+      payoff: "在关键节点用一次清晰选择兑现此前建立的判断标准",
+      signatureDescription: `${name}在真实可用的第 ${signatureStepIndex} 步让个人判断方式成为局面转折点`,
+    };
+  }
+
+  if (request.schemaName === "werewolf_episode_relationship_v3") {
+    const seed = prefixedJsonObjects(userContent, "RELATIONSHIP_SEED")[0] ?? {};
+    return {
+      playerIds: Array.isArray(seed.playerIds) ? seed.playerIds : [],
+      setup: "两人的判断方法在一次公开选择中首次形成可见差异",
+      development: "后续公开发言让差异升级为互相检验或有限协作",
+      payoff: "最终选择回应此前累积的分歧，并完成一次可信的关系变化",
+    };
+  }
+
+  if (request.schemaName === "werewolf_episode_beats_v3") {
     const actorContexts = new Map(
       prefixedJsonObjects(userContent, "ACTOR_CONTEXT").map((context) => {
         const profile = localObject(context.profile);

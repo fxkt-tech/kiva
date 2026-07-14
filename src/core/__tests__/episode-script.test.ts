@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { authorEpisodeScript } from "../episode-author";
+import {
+  authorEpisodeScript,
+  createEpisodeAuthorWorkspace,
+} from "../episode-author";
 import { createSeedGame, type Game } from "../game";
 import {
   LocalHeuristicLlmClient,
+  LlmOutputParseError,
   MockLlmClient,
   type LlmClient,
   type LlmGenerateJsonRequest,
@@ -15,6 +19,7 @@ import {
   episodeInputHash,
   episodePerformanceOpportunities,
   planNextEpisodeDraft,
+  validateEpisodeScriptState,
   validateEpisodeScriptSnapshot,
   type CompiledEpisodePlan,
   type EpisodeCastDirection,
@@ -66,18 +71,25 @@ describe("episode script", () => {
       assertEpisodeScriptMatchesGame({ game, script: result.script }),
     ).not.toThrow();
     expect(result.requests[0]).toMatchObject({
-      kind: "outline",
+      task: { kind: "story" },
       status: "success",
-      promptVersion: "episode-author:v2",
-      request: { schemaName: "werewolf_episode_outline_v2" },
+      promptVersion: "episode-author:v3",
+      request: { schemaName: "werewolf_episode_story_v3" },
     });
-    expect(result.requests.slice(1)).not.toHaveLength(0);
+    expect(result.requests).toEqual(expect.arrayContaining([
+      expect.objectContaining({ task: { kind: "ensemble" } }),
+      expect.objectContaining({ task: expect.objectContaining({ kind: "character" }) }),
+      expect.objectContaining({ task: expect.objectContaining({ kind: "relationship" }) }),
+      expect.objectContaining({ task: expect.objectContaining({ kind: "beats" }) }),
+    ]));
     expect(
-      result.requests.slice(1).every(
+      result.requests
+        .filter((request) => request.task.kind === "beats")
+        .every(
         (request) =>
-          request.kind === "beats" &&
-          request.stepIndexes.length > 0 &&
-          request.request.schemaName === "werewolf_episode_beats_v2",
+          request.task.kind === "beats" &&
+          request.task.stepIndexes.length > 0 &&
+          request.request.schemaName === "werewolf_episode_beats_v3",
       ),
     ).toBe(true);
   });
@@ -117,7 +129,48 @@ describe("episode script", () => {
     });
   });
 
-  it("sends every concise character profile to the outline and scoped actor context to beat batches", async () => {
+  it("uses the dedicated Script Author binding instead of an actor model", async () => {
+    const bindings: LlmGenerateJsonRequest["modelBinding"][] = [];
+    const local = new LocalHeuristicLlmClient();
+    const gameWithActorModel = {
+      ...game,
+      players: game.players.map((player, index) =>
+        index === 0
+          ? {
+              ...player,
+              modelBindingSnapshot: {
+                provider: "actor-provider",
+                model: "actor-model",
+                responseFormat: "json" as const,
+              },
+            }
+          : player,
+      ),
+    };
+
+    await authorEpisodeScript({
+      game: gameWithActorModel,
+      llmClient: {
+        async generateJson(request) {
+          bindings.push(request.modelBinding);
+          return local.generateJson(request);
+        },
+      },
+      modelBinding: {
+        provider: "author-provider",
+        model: "author-model",
+        responseFormat: "json",
+      },
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    expect(bindings.length).toBeGreaterThan(0);
+    expect(bindings.every((binding) =>
+      binding.provider === "author-provider" && binding.model === "author-model"
+    )).toBe(true);
+  });
+
+  it("keeps global allocation compact, then authors one character and one local scene at a time", async () => {
     const requests: LlmGenerateJsonRequest[] = [];
     const local = new LocalHeuristicLlmClient();
     const capturingClient: LlmClient = {
@@ -133,12 +186,12 @@ describe("episode script", () => {
       createdAt: "2026-07-12T00:00:00.000Z",
     });
 
-    const outline = requests.find(
-      (request) => request.schemaName === "werewolf_episode_outline_v2",
+    const ensemble = requests.find(
+      (request) => request.schemaName === "werewolf_episode_ensemble_v3",
     );
-    expect(outline).toBeDefined();
+    expect(ensemble).toBeDefined();
     const profileCards = prefixedJsonObjects(
-      requestContent(outline!),
+      requestContent(ensemble!),
       "CHARACTER_PROFILE",
     );
     expect(profileCards).toHaveLength(game.players.length);
@@ -161,16 +214,37 @@ describe("episode script", () => {
         expect.arrayContaining([expect.any(Number)]),
       );
     }
-    expect(outline?.systemPrompt).toContain("人物鲜明");
-    expect(outline?.systemPrompt).toContain("不得虚构开局前关系");
-    expect(outline?.systemPrompt).toContain("不写最终台词");
+    expect(ensemble?.systemPrompt).toContain("群像分工");
+    expect(ensemble?.systemPrompt).toContain("不要展开长篇人物弧线");
+
+    const characterRequests = requests.filter(
+      (request) => request.schemaName === "werewolf_episode_character_v3",
+    );
+    expect(characterRequests).toHaveLength(game.players.length);
+    expect(characterRequests.every((request) =>
+      prefixedJsonObjects(requestContent(request), "CHARACTER_PROFILE").length === 1
+    )).toBe(true);
+
+    const relationshipRequests = requests.filter(
+      (request) => request.schemaName === "werewolf_episode_relationship_v3",
+    );
+    expect(relationshipRequests.length).toBeGreaterThan(0);
+    for (const request of relationshipRequests) {
+      const milestones = requestContent(request).match(
+        /RELATIONSHIP_STEP\s+\d+/g,
+      ) ?? [];
+      expect(milestones.length).toBeGreaterThan(0);
+      expect(milestones.length).toBeLessThanOrEqual(5);
+    }
 
     const beatRequests = requests.filter(
-      (request) => request.schemaName === "werewolf_episode_beats_v2",
+      (request) => request.schemaName === "werewolf_episode_beats_v3",
     );
     expect(beatRequests.length).toBeGreaterThan(1);
     for (const request of beatRequests) {
       const content = requestContent(request);
+      expect(content.match(/SPEECH_STEP\s+\d+/g)?.length ?? 0)
+        .toBeLessThanOrEqual(5);
       const speechActors = [...content.matchAll(
         /SPEECH_STEP\s+\d+[^\n]*?\|\s*actor=([^\s|]+)/g,
       )].map((match) => match[1]);
@@ -195,53 +269,150 @@ describe("episode script", () => {
       const priorMoves = prefixedJsonObjects(content, "PRIOR_MOVE");
       for (const actorId of new Set(priorMoves.map((move) => move.playerId))) {
         expect(priorMoves.filter((move) => move.playerId === actorId).length)
-          .toBeLessThanOrEqual(2);
+          .toBeLessThanOrEqual(1);
       }
     }
   });
 
-  it("keeps each author request below the provider timeout-sized beat batch", async () => {
+  it("enforces the concise field contract before later tasks reuse author output", async () => {
     const local = new LocalHeuristicLlmClient();
-    const timeoutOnLargeRequest: LlmClient = {
+    let storyAttempts = 0;
+    const conciseClient: LlmClient = {
+      async generateJson(request) {
+        const result = await local.generateJson(request);
+        if (
+          request.schemaName === "werewolf_episode_story_v3" &&
+          storyAttempts++ === 0
+        ) {
+          const parsed = { ...result.parsed, title: "长".repeat(81) };
+          return { ...result, parsed, rawText: JSON.stringify(parsed) };
+        }
+        return result;
+      },
+    };
+
+    const result = await authorEpisodeScript({
+      game,
+      llmClient: conciseClient,
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    expect(storyAttempts).toBe(2);
+    expect(Array.from(result.script.title).length).toBeLessThanOrEqual(80);
+    expect(result.requests[0]?.attempts).toHaveLength(2);
+    expect(result.requests[0]?.request.systemPrompt).toContain("80");
+  });
+
+  it("splits only a truncated beat task instead of repairing the incomplete JSON as a whole", async () => {
+    const local = new LocalHeuristicLlmClient();
+    const truncateLargeBeatOutput: LlmClient = {
       async generateJson(request) {
         const beatCount = request.messages
           .map((message) => message.content)
           .join("\n")
           .match(/SPEECH_STEP\s+\d+/g)?.length ?? 0;
-        if (beatCount > 12) {
-          throw new Error(
-            "LLM request failed before response: POST https://ark.example/chat/completions: fetch failed; cause: Headers Timeout Error",
+        if (beatCount > 2) {
+          throw new LlmOutputParseError(
+            "LLM message content was not a valid JSON object: Unterminated string",
+            '{"beats":[{"stepIndex":1,"objective":"truncated',
+            { finishReason: "length", usage: null },
           );
         }
         return local.generateJson(request);
       },
     };
 
-    await expect(
-      authorEpisodeScript({
-        game,
-        llmClient: timeoutOnLargeRequest,
-        createdAt: "2026-07-12T00:00:00.000Z",
+    const result = await authorEpisodeScript({
+      game,
+      llmClient: truncateLargeBeatOutput,
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    expect(result.script.title).toEqual(expect.any(String));
+    expect(result.requests).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        task: expect.objectContaining({ kind: "beats" }),
+        status: "failed",
+        finishReason: "length",
       }),
-    ).resolves.toMatchObject({ script: { title: expect.any(String) } });
+      expect.objectContaining({
+        task: expect.objectContaining({ kind: "beats" }),
+        status: "success",
+      }),
+    ]));
   });
 
   it("rejects objectively incomplete ensemble output after repair", async () => {
-    const invalidOutline = {
-      title: "无效群像",
-      logline: "遗漏角色的群像不能进入导演审核。",
-      acts: [{ title: "第一幕", summary: "仍然遗漏角色。" }],
-      castDirections: [],
-      relationships: [],
+    const story = {
+      title: "待分配群像",
+      logline: "合法轨迹仍需要完整群像分工。",
+      acts: [{ title: "第一幕", summary: "先建立故事主轴。" }],
+    };
+    const invalidEnsemble = {
+      castAssignments: [],
+      relationshipSeeds: [],
     };
 
     await expect(
       authorEpisodeScript({
         game,
-        llmClient: new MockLlmClient([invalidOutline, invalidOutline]),
+        llmClient: new MockLlmClient([
+          story,
+          invalidEnsemble,
+          invalidEnsemble,
+        ]),
         createdAt: "2026-07-12T00:00:00.000Z",
       }),
     ).rejects.toThrow("cover every player exactly once");
+  });
+
+  it("bounds story acts and relationship seeds so later task context stays finite", async () => {
+    const oversizedStory = {
+      title: "过长分幕",
+      logline: "分幕数量必须有明确上限。",
+      acts: Array.from({ length: 5 }, (_, index) => ({
+        title: `第${index + 1}幕`,
+        summary: "推进一段主轴。",
+      })),
+    };
+    await expect(
+      authorEpisodeScript({
+        game,
+        llmClient: new MockLlmClient([oversizedStory, oversizedStory]),
+        createdAt: "2026-07-12T00:00:00.000Z",
+      }),
+    ).rejects.toThrow("between 1 and 4");
+
+    const local = new LocalHeuristicLlmClient();
+    let validEnsemble: Record<string, unknown> | null = null;
+    const oversizedRelationships: LlmClient = {
+      async generateJson(request) {
+        const result = await local.generateJson(request);
+        if (request.schemaName !== "werewolf_episode_ensemble_v3") {
+          return result;
+        }
+        validEnsemble ??= result.parsed;
+        const relationshipSeeds = [
+          ...validEnsemble.relationshipSeeds as Record<string, unknown>[],
+          {
+            playerIds: [
+              game.players[0]!.playerId,
+              game.players[2]!.playerId,
+            ],
+            kind: "contrast",
+          },
+        ];
+        const parsed = { ...validEnsemble, relationshipSeeds };
+        return { ...result, parsed, rawText: JSON.stringify(parsed) };
+      },
+    };
+    await expect(
+      authorEpisodeScript({
+        game,
+        llmClient: oversizedRelationships,
+        createdAt: "2026-07-12T00:00:00.000Z",
+      }),
+    ).rejects.toThrow("between 1 and 6");
   });
 
   it("compiles a deterministic character-aware legal trace to game end", () => {
@@ -399,6 +570,24 @@ describe("episode script", () => {
     expect(() =>
       validateEpisodeScriptSnapshot({ ...current, schemaVersion: 1 }),
     ).toThrow("Unsupported episode script schema: 1");
+  });
+
+  it("rejects v2 Script Author intermediate state instead of migrating it", () => {
+    expect(() =>
+      validateEpisodeScriptState({
+        status: "generating",
+        jobId: "old_job",
+        startedAt: "2026-07-12T00:00:00.000Z",
+        workspace: createEpisodeAuthorWorkspace({ game }),
+        requests: [{
+          id: "old_request",
+          kind: "outline",
+          stepIndexes: [],
+          status: "success",
+          promptVersion: "episode-author:v2",
+        }],
+      }, "scripted"),
+    ).toThrow("Episode author request 1");
   });
 
   it("rejects a v2 script when character or script input changes", () => {

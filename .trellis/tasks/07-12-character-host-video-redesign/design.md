@@ -237,6 +237,33 @@ Game.script snapshot
 
 Preview and Remotion continue to share one stage component. Script style is input data, not viewport state. Export copies script background assets and both avatar-prefix families into the job directory, then rewrites URLs once.
 
+### 6.4 Script Author Agent v3
+
+Script Author 是一个由应用层持久化状态驱动的逻辑 Agent，不是一次巨型 Prompt，也不是把所有历史消息不断追加的聊天会话：
+
+```text
+compileEpisodePlan(Game)
+  -> EpisodeAuthorWorkspace(inputHash, dedicated model binding)
+  -> story
+  -> compact ensemble assignments
+  -> character × 12
+  -> relationship × selected pairs
+  -> local scene beats (<= 5 speech steps)
+  -> deterministic assembly + dramaturgy validation
+  -> EpisodeScriptSnapshot schema v2
+```
+
+- `EpisodeAuthorWorkspace` 是恢复真相源，包含故事、群像分工、已完成角色弧线、关系弧线和节拍；请求日志只负责审计，不用于猜测下一任务。
+- 每个子任务从工作区投影最小上下文，并在成功或失败后通过 `onCheckpoint` 在 Game lock 内落盘。相同 input hash 的 `generating`/`failed` 状态从首个缺口继续。
+- 工作区增长有硬边界：故事 1–4 幕、群像 1–6 对关系、所有创作字符串不超过 80 字符、单个场景最多 5 个发言节拍，并且每名当前演员只携带 1 个先前 move。
+- Script Author 的 model binding 独立于 Player 快照。固定角色的模型只负责该角色在运行时的行动和最终台词。
+- provider 在 JSON 解析前提供的 `finishReason`/usage 必须被保存。`length` 截断走任务级降级：场景节拍递归拆分，其他小任务仅从原始紧凑输入再生成一次；截断文本不进入修复 Prompt。
+- 完整但 schema 错误的 JSON 仍可做一次最小结构修复。这样把“输出没写完”和“输出写完但形状错了”分成两个根因，不使用同一种补丁。
+- Author 中间态不做兼容：只接受 `episode-author:v3` 的 task/workspace/request。最终 Episode 快照继续使用 schema v2，因为其锁定的是合法执行结构，而不是 Agent 实现细节。
+- Script 页面读取落盘 workspace 展示当前阶段和进度；失败重试保留所有历史成本与已经完成的创作结果。
+
+运行时玩家台词生成仍使用当前 Actor Brief + 可见事实链。本阶段不重构它，但后续重构应沿用同一原则：按局部目标拆任务、把工作状态与模型对话分离、按 provider 失败原因选择恢复策略。
+
 ## 7. Migration and rollback
 
 - Old Game records: inject `legacy_v1` snapshot at read time; do not rewrite files eagerly.
@@ -249,6 +276,6 @@ Preview and Remotion continue to share one stage component. Script style is inpu
 
 - No generic no-code theme editor.
 - No per-script character variants, relationships, secrets, or role bindings.
-- No new LLM call for story generation or game summarization.
+- No independent game-summary or narrator LLM chain outside the bounded Script Author Agent.
 - No face animation, lip sync, 3D stage, or sound-effects/music system.
 - No implementation of the B/C visual directions in this task.

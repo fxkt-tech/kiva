@@ -29,6 +29,7 @@ describe("LLM client boundary", () => {
       rawText: '{"text":"hello"}',
       parsed: { text: "hello" },
       usage: null,
+      finishReason: "stop",
     });
     await expect(client.generateJson(request)).resolves.toMatchObject({
       parsed: { target: "p1" },
@@ -90,14 +91,24 @@ describe("LLM client boundary", () => {
     });
   });
 
-  it("preserves invalid assistant content for a bounded repair attempt", async () => {
+  it("preserves finish reason and usage when assistant JSON is truncated", async () => {
     const client = new OpenAICompatibleLlmClient({
       baseUrl: "https://llm.example.test/v1",
       apiKey: "secret",
       fetch: async () =>
         new Response(
           JSON.stringify({
-            choices: [{ message: { content: "not json" } }],
+            choices: [
+              {
+                finish_reason: "length",
+                message: { content: '{"text":"not finished' },
+              },
+            ],
+            usage: {
+              prompt_tokens: 100,
+              completion_tokens: 4096,
+              total_tokens: 4196,
+            },
           }),
           { status: 200, headers: { "content-type": "application/json" } },
         ),
@@ -107,7 +118,13 @@ describe("LLM client boundary", () => {
 
     expect(error).toBeInstanceOf(LlmOutputParseError);
     expect(error).toMatchObject({
-      rawText: "not json",
+      rawText: '{"text":"not finished',
+      finishReason: "length",
+      usage: {
+        promptTokens: 100,
+        completionTokens: 4096,
+        totalTokens: 4196,
+      },
     });
   });
 
