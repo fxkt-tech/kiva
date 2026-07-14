@@ -16,7 +16,7 @@
 ### 3. Contracts
 
 - New games resolve one enabled script and deep-snapshot its narrative and presentation fields. Existing games never reload current library styling by `scriptSourceId`.
-- Preview and export receive the same snapshot. Export copies allow-listed character, presenter, and script assets into the immutable job asset directory and rewrites their URLs once.
+- Preview and export receive the same snapshot. Export copies allow-listed Actor, Presenter, and Script assets into the immutable job asset directory and rewrites their URLs once.
 - `midnight_archive_v1` is the sole supported style identifier. A stored Game without its complete script snapshot and a composition outside schema v4 are rejected rather than normalized.
 - Versioned script image filenames are immutable. Revised art requires a new filename and new snapshot.
 
@@ -112,8 +112,9 @@ timing behavior.
   and voice map. Every Game selects exactly one enabled definition and stores a
   complete `Game.presenter` snapshot; preview and export must consume that
   snapshot, never reload current library wording for an existing game.
-- Presenter Definitions are first-class Library objects. The Presenters editor
-  may change `id`, `name`, `avatar`, `enabled`, and every semantic template.
+- Presenter Definitions are first-class Library objects. The Presenter editor
+  keeps stable `id` immutable and may change `name`, `avatar`, `enabled`, and
+  every semantic template.
   Voice is built separately into a versioned presenter manifest; template
   edits do not silently reuse stale per-line audio mappings.
 - The Presenter editor loads the selected manifest and renders one audio
@@ -122,7 +123,7 @@ timing behavior.
   canonical 80ms gap. Starting one preview stops the previous preview, and
   preview-only selectors are excluded from the dirty-form guard. Missing
   manifests disable playback without blocking copy editing.
-- A Presenter Definition is not a Player Character. It has no seat, role,
+- A Presenter Definition is not a game Actor. It has no seat, Rule Role,
   faction, action, vote, private knowledge, or win-condition participation.
 - Presenter templates use stable semantic keys and validated named
   placeholders. Event-to-key selection and typed placeholder values belong to
@@ -320,11 +321,11 @@ timing behavior.
 - Presenter definitions: validate unique IDs, complete semantic key sets, and
   exact placeholder contracts. Presenter manifests validate declared clip
   files, durations, fixed seats 1–12, and runtime clip plans.
-- Game presenter selection: both preset and random creation require an enabled
-  presenter ID; the created snapshot remains unchanged after its library
+- Game presenter selection: both saved-Lineup and custom-Lineup creation resolve
+  the sole enabled Presenter; the created snapshot remains unchanged after its library
   definition is edited, disabled, or removed.
-- Library presenter configuration: assert the tab/list/editor renders both
-  definitions; form parsing reconstructs all semantic keys; identity and
+- Library presenter configuration: assert the tab/list/editor renders the
+  definition; form parsing reconstructs all semantic keys; identity and
   templates survive repository round-trip; invalid catalogs do not replace the
   stored collection.
 - Presenter resolution: cover every event and result variant, player speech

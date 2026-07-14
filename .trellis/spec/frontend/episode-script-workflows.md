@@ -12,7 +12,7 @@
 - `createEpisodeAuthorWorkspace({ game, modelBinding? }): EpisodeAuthorWorkspace`
 - `episodeAuthorProgress(workspace): { label, completed, total }`
 - `authorEpisodeScript({ game, llmClient, createdAt, modelBinding?, workspace?, onCheckpoint? }): Promise<AuthorEpisodeScriptResult>`
-- `episodeCharacterProfile(player): EpisodeCharacterProfile`
+- `episodeActorProfile(player): EpisodeActorProfile`
 - `episodeInputHashForScript(game, script): string`
 - `assertEpisodeDramaturgy({ game, plan, castDirections, relationships }): void`
 - `assertEpisodeScriptMatchesGame({ game, script }): void`
@@ -28,7 +28,7 @@
 type EpisodeAuthorTask =
   | { kind: "story" }
   | { kind: "ensemble" }
-  | { kind: "character"; playerId: PlayerId }
+  | { kind: "actor_arc"; playerId: PlayerId }
   | { kind: "relationship"; playerIds: readonly [PlayerId, PlayerId] }
   | { kind: "beats"; stepIndexes: readonly number[] };
 
@@ -48,7 +48,7 @@ type EpisodeAuthorRequestRecord = {
   id: string;
   task: EpisodeAuthorTask;
   status: "success" | "failed";
-  promptVersion: "episode-author:v3";
+  promptVersion: "episode-author:v4";
   provider: string;
   model: string;
   request: GenerationRequestSnapshot;
@@ -62,38 +62,38 @@ type EpisodeAuthorRequestRecord = {
 };
 ```
 
-`generating` and `failed` Episode states require both `workspace` and `requests`. `review` and `approved` require `requests`. Author request/workspace v2 is not decoded or migrated.
+`generating` and `failed` Episode states require both `workspace` and `requests`. `review` and `approved` require `requests`. Pre-v4 Author requests and old workspace shapes are not decoded or migrated.
 
 ### 3. Contracts
 
 #### Legal plan and final snapshot
 
 - The compiler loops through the existing `planNextDraft()` and `confirmDraftEvent()` path from an empty event log to `game_ended`; it does not implement a second rules engine.
-- Script Author receives the already-legal structural trace. The final Episode snapshot remains schema v2 and contains `title`, `logline`, `acts`, exactly one `EpisodeCastDirection` per player, unique-pair relationship directions, and exactly one beat per speech step.
+- Script Author receives the already-legal structural trace. The final Episode snapshot is schema v3 and contains `title`, `logline`, `acts`, exactly one `EpisodeCastDirection` per player, unique-pair relationship directions, and exactly one beat per speech step.
 - Script Author cannot change actions, votes, deaths, winner, planned payloads, speech budgets, or stable step indexes. Final deterministic assembly attaches compiler-owned budgets and validates all dramaturgy before Review.
-- Snapshot identity includes schema version, compiler version, character/rules/script input hash, stable step indexes, planned payloads, speech budgets, and author metadata. Random Draft/Event IDs never enter the plan.
-- `episodeCharacterProfile()` projects only `playerId`, seat, name, role, `persona`, `speakingStyle`, and `reasoningStyle`. Avatar, voice, system prompt, and player model metadata do not enter authoring.
+- Snapshot identity includes schema version, compiler version, exact Actor/Rule Role/rules/script input hash, stable step indexes, planned payloads, speech budgets, and author metadata. Random Draft/Event IDs never enter the plan.
+- `episodeActorProfile()` projects `playerId`, seat, the compiled `ActorAuthorCard`, and the exact code-owned Rule Role snapshot. Portrait, voice, system-prompt text, and player model metadata do not enter authoring.
 - Every cast direction contains `dramaticWeight`, `dramaticFunction`, `baseline`, `pressure`, `change`, `payoff`, and a signature moment whose step belongs to that player's deterministic `episodePerformanceOpportunities()` set.
 - Relationships may describe `rivalry | alliance | contrast | trust_shift`, but never pre-game history, private deals, evidence, or facts visible to runtime actors.
 
 #### One logical Agent, bounded child tasks
 
 - Script Author is one durable application Agent represented by `EpisodeAuthorWorkspace`. It owns task ordering, partial results, retries, resume, and final assembly; it is not one giant LLM request and does not use accumulated chat history.
-- The deterministic task order is `story -> ensemble -> one character per player -> one relationship per selected pair -> local scene beats -> final validation`.
+- The deterministic task order is `story -> ensemble -> one actor_arc per player -> one relationship per selected pair -> local scene beats -> final validation`.
 - `story` produces only the title, logline, and a spine of one to four acts.
 - `ensemble` sees all concise profiles and performance opportunities, but produces only compact player assignments and one to six relationship seeds. It does not write full arcs.
-- Each `character` request sees one profile, its assignment, the story spine, and only the relationship seeds touching that player. It produces one complete character direction.
+- Each `actor_arc` request sees one Actor profile with its real Rule Role, its assignment, the story spine, and only relationship seeds touching that player. It produces one complete cast direction.
 - Each `relationship` request sees one selected pair, their completed directions, and the structural opportunities relevant to that pair. It produces one complete relationship direction.
 - `beats` requests are grouped by local phase/scene and contain at most five speech steps. They receive only current actors, their completed direction, touching completed relationships, local structural context, and at most one earlier authored move per actor.
 - A child prompt never embeds the full previous assistant output or the entire workspace. The workspace is structured application state; each prompt projects only the fields needed for its task.
 - Every authored free-text field is instructed to stay within 80 Chinese characters. Structural validators, not output-token caps, decide whether a complete response is accepted.
-- The Script Author model binding is snapshotted in the workspace from a dedicated code-owned default or an explicit author override. It is independent of every player's character model binding.
+- The Script Author model binding is snapshotted in the workspace from a dedicated code-owned default or an explicit author override. It is independent of every player's Actor model binding.
 
 #### Persistence, recovery, and observability
 
 - Before the first provider call, generation persists a new `jobId`, input-bound workspace, and empty request list.
 - After every successful or failed child request, `onCheckpoint` persists the validated workspace and appended request under the Game lock. A process exit can lose at most the in-flight provider call, never earlier completed tasks.
-- Retrying a `generating` or `failed` job with the same input hash resumes from the first incomplete deterministic task. It must not rerun completed story, ensemble, character, relationship, or beat work.
+- Retrying a `generating` or `failed` job with the same input hash resumes from the first incomplete deterministic task. It must not rerun completed story, ensemble, actor arc, relationship, or beat work.
 - Every child call persists an `EpisodeAuthorRequestRecord` containing its semantic task, exact request, raw/parsed output, attempts, provider/model, status, provider finish reason, and provider-returned token usage.
 - Request history is append-only across failures, resumes, and whole-candidate regeneration. Game token totals include every retained Script Author request separately from player speech/action requests.
 - The Script page renders current Agent phase/progress plus persisted request details while generating, and shows preserved partial-result counts plus a resume action when failed.
@@ -115,7 +115,7 @@ type EpisodeAuthorRequestRecord = {
 - The browser Server Action persists `generating`, registers `runEpisodeScriptGeneration()` with Next `after(() => ...)`, and returns without awaiting the multi-request run. The synchronous wrapper remains for tests and non-HTTP callers.
 - Approved execution derives the cursor from active-event count, calls the normal planner, compares the Draft slot, binds the approved payload, and validates it before confirmation.
 - Structural Drafts are read-only in Editor and never call the player action model. Speech text remains editable/generatable within the approved step budget.
-- Runtime player prompts receive only the player's own snapshotted profile plus the current `EpisodeActorBrief.characterHook`, `arcMove`, and `relationshipMove`. They never receive the full ensemble, planned winner, future steps, or another player's profile. Visible facts and rules outrank all dramatic direction.
+- Runtime player prompts receive only their own `ActorRuntimeCard` plus the current `EpisodeActorBrief.actorHook`, `arcMove`, and `relationshipMove`. They never receive the full ensemble, planned winner, future steps, or another Actor profile. Visible facts and rules outrank all dramatic direction.
 - Script Review renders cast arcs, signature moments, and relationship setup/development/payoff read-only. MVP correction is whole-candidate regeneration, not field-level dramaturgy editing.
 
 ### 4. Validation & Error Matrix
@@ -125,7 +125,7 @@ type EpisodeAuthorRequestRecord = {
 | Dry-run does not reach `game_ended` within 240 steps | Fail before the first author request. |
 | Workspace input hash or plan/speech count differs | Reject resume; do not mix partial work from another plan. |
 | Story has more than four acts, ensemble has more than six relationship seeds, or a free-text field exceeds 80 characters | Reject as unbounded output and use the one minimal structural repair. |
-| Story/ensemble/character/relationship output is incomplete or otherwise invalid | Use one minimal structural repair for complete JSON; otherwise fail the bounded task. |
+| Story/ensemble/actor_arc/relationship output is incomplete or otherwise invalid | Use one minimal structural repair for complete JSON; otherwise fail the bounded task. |
 | Cast direction omits/duplicates a player or has an invalid signature step | Fail before Review. |
 | Relationship references an unknown/same player or duplicates an undirected pair | Fail before Review. |
 | Beat output omits/duplicates a requested speech step | Repair complete JSON once; fail if still invalid. |
@@ -136,28 +136,28 @@ type EpisodeAuthorRequestRecord = {
 | Process exits after a checkpoint | Retry resumes from persisted workspace and skips completed tasks. |
 | Author transport/output fails after bounded retry | Persist failed state with workspace and actionable error; allow resume. |
 | Approval identity/profile/hash changed, compiler-owned field differs, or events exist | Reject approval. |
-| Episode snapshot is not schema v2 | Reject; do not normalize or upgrade. |
-| Episode author request/workspace is v2-shaped | Reject; no compatibility path exists. |
+| Episode snapshot is not schema v3 | Reject; do not normalize or upgrade. |
+| Episode author request is not v4 or workspace has an old shape | Reject; no compatibility path exists. |
 | Runtime slot or planned payload differs | Stop with episode divergence; do not choose an alternative. |
 
 ### 5. Good / Base / Bad Cases
 
 - Good: Agent authors a compact story, assigns all 12 players, completes one arc at a time, writes local scene beats, checkpoints each result, and assembles the unchanged legal plan.
-- Base: local deterministic author produces the same complete schema-v2 Episode snapshot through the same v3 task pipeline without external credentials.
+- Base: local deterministic author produces the same complete schema-v3 Episode snapshot through the same v4 task pipeline without external credentials.
 - Good recovery: the provider truncates a five-beat response; the Agent records that request, splits it into smaller batches, and continues without resending the truncated document.
 - Bad: ask for the whole script, 12 full arcs, all relationships, and all beats in one response; append the malformed 8 KB output to a repair request; or restart all prior work after one late failure.
-- Bad: bind Script Author to seat 1's character model, keep only aggregate token counts, or replace request history when generating another candidate.
+- Bad: bind Script Author to seat 1's Actor model, keep only aggregate token counts, or replace request history when generating another candidate.
 - Bad: await the Agent run inside the browser Server Action or treat an in-memory promise as durable job state.
 
 ### 6. Tests Required
 
 - Two compilations of one Game yield identical slots/payloads and end in `game_ended`.
-- Task-capture tests assert one bounded story request, one compact ensemble request, one character request per player, one relationship request per seed, and local beat batches of at most five.
+- Task-capture tests assert one bounded story request, one compact ensemble request, one actor_arc request per player, one relationship request per seed, and local beat batches of at most five.
 - Cardinality tests reject more than four acts, more than six relationship seeds, or a free-text field longer than 80 characters before that output can enter later prompts.
 - Prompt-scope tests assert every child request has only the profiles/directions/local history required by its task and at most one prior move per actor.
 - Binding tests prove Script Author uses its dedicated snapshot and does not inherit any player's provider/model.
 - Truncation tests preserve raw output, finish reason, and usage; skip whole-JSON repair; split beat batches; and perform only one concise original-input retry for non-beat tasks.
-- Checkpoint integration tests fail after partial character completion, persist workspace/request history, resume the same job, and skip every completed task.
+- Checkpoint integration tests fail after partial actor-arc completion, persist workspace/request history, resume the same job, and skip every completed task.
 - Request records round-trip exact tasks, prompts, outputs, attempts, finish reasons, and token usage; failure plus resume retains all spend.
 - Local author covers every cast member and speech step; invalid cast IDs, pairs, signature indexes, hash/schema/identity fail deterministically.
 - Script page tests render Agent progress, per-task request details, preserved partial-result counts, and resume copy.

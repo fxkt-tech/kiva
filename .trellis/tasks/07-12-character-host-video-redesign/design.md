@@ -2,18 +2,19 @@
 
 ## 1. Design thesis
 
-Kiva 的稳定资产分为三层，只有第三层按局变化：
+Kiva 把三类职责分开定义，并在创建 Game 时统一解析为不可变快照：
 
 1. **规则身份**：狼人、预言家等，决定能力、信息和胜负；本任务不修改。
-2. **固定演员**：12 名玩家角色与主理人闻舟，决定外形、声音、思考入口和表达节奏；跨局不变。
-3. **剧本**：创建游戏时选择的共同叙事和制作包装，决定主题背景、氛围和页面/视频视觉；不改变规则或演员。
+2. **演员池与节目包装**：Actor Library 可持续新增演员；每个 Actor 的外形、声音、思考入口和表达节奏跨局稳定。每局从启用演员池选择 12 人，并使用主理人闻舟。
+3. **剧本**：基于当前 Game 已选中的 12 个 Actor、Rule Role 配置和共同主题生成本局叙事包装；不修改规则、席位或演员定义。
 
 ```text
-Script Library ──select──┐
-Preset / Random seats ──┼──> Game snapshot ──> Prompt context
-Single Presenter ────────┤          │
-Fixed Character Cast ────┘          ├──> Home cards
-                                    └──> Preview / Remotion export
+Actor Library ──select exactly 12──┐
+Rule Role setup ───────────────────┼──> immutable Game snapshot
+Script Library ──select────────────┤              │
+Single Presenter ──────────────────┘              ├──> Script Author input
+                                                  ├──> Runtime prompt context
+                                                  └──> Preview / Remotion export
 ```
 
 剧本是制作包，不是带个人秘密的剧情本。模型可以把剧本背景用于语气、类比和气氛，但不能把它当作判断身份的证据。
@@ -25,7 +26,7 @@ Fixed Character Cast ────┘          ├──> Home cards
 新增 `src/core/game-script.ts`，作为剧本未知数据的唯一校验入口。
 
 ```ts
-type GameScriptVisualStyleKey = "legacy_v1" | "midnight_archive_v1";
+type GameScriptVisualStyleKey = "midnight_archive_v1";
 
 type GameScriptPresentation = {
   readonly styleKey: GameScriptVisualStyleKey;
@@ -67,28 +68,22 @@ Rules:
 
 - `validateGameScriptDefinitions(unknown)` owns unknown-input validation, unique IDs, safe internal asset paths, non-empty narrative fields, allowed style keys, valid `#RRGGBB` colors and ISO timestamps.
 - `createGameScriptSnapshot(definition)` performs a deep clone. Existing games never reread current script wording/tokens.
-- `legacyGameScriptSnapshot()` is a code-owned compatibility snapshot using current legacy assets and `legacy_v1`. It is used only when loading a historical Game without `script`; it is not exposed in New Game.
+- There is no legacy fallback snapshot. A current Game without a complete Script snapshot is invalid.
 - Asset files use immutable, versioned filenames. Snapshotting a path is sufficient only if bytes behind that path are never replaced; revised art receives a new filename.
 
 ### 2.2 Library and seed ownership
 
 - Add `kivdb/scripts.json` as the runtime script library and `src/seeds/scripts.ts` as its validated seed projection.
-- Extend `LibraryRecord`/`LibraryRepository` with `scripts`, `getScripts`, `saveScripts`, and batch handling.
+- `ContentCatalog` owns Actors, Lineups, Presenters, and Scripts behind one validated `load/save/update` boundary.
 - First definition: `midnight_archive`, name `未明档案`.
-- No script-authoring Library UI in this task. The library is validated data consumed by New Game. This avoids building a generic theme editor before a second real script proves the contract.
-- Character and presenter JSON remain the runtime source. `src/seeds/characters.ts` should import and validate `kivdb/characters.json`, matching the existing presenter pattern, so permanent biographies and voice values have one owner.
+- Script is a first-class Library Studio workspace and uses the production definition/snapshot validator.
+- Actor and presenter JSON remain the runtime source. `src/seeds/actors.ts` should import and validate `kivdb/actors.json`, matching the existing presenter pattern, so stable biographies and voice values have one owner.
 
-### 2.3 Game snapshot and compatibility
+### 2.3 Game snapshot and clean break
 
 `Game` gains a required `script: GameScriptSnapshot`. All new creation paths require an enabled `scriptId`, resolve it once, and store the snapshot.
 
-`GameRepository.normalizeRecord` performs compatibility normalization:
-
-1. validate an existing script snapshot;
-2. if absent, inject `legacyGameScriptSnapshot()`;
-3. retain the existing presenter/rules/player normalization.
-
-No events or old players are rewritten. Historical presenter snapshots remain readable even after the presenter library is reduced to one definition.
+`GameRepository` accepts only GameRecord schema 2 with exact current Game, Script, Presenter, Actor/Rule Role Player, generation-stage, voice, and Episode-state fields. Missing/extra/legacy keys are rejected; no Character/Role/Preset normalization or migration exists.
 
 ### 2.4 Presenter selection
 
@@ -97,13 +92,15 @@ No events or old players are rewritten. Historical presenter snapshots remain re
 - Existing `Game.presenter` remains a complete snapshot and continues to own its exhaustive semantic line catalog.
 - Script does not override presenter lines in v1. 闻舟的措辞设计为可跨剧本使用；剧本背景由标题、画面和玩家上下文承担。这样不会在尚无真实需求时，把不可变的主理人语音清单按剧本成倍扩张。
 
-## 3. Permanent cast bible
+## 3. Initial actor-pool bible
+
+The following 12 Actors are the first production-ready pool, not the only Actors the product may ever contain. A Game always snapshots exactly 12 selected enabled Actors; future Actors must satisfy the same definition and quality contracts.
 
 All portraits share a semi-realistic Chinese graphic-novel style: square head-and-shoulders composition, modern urban-gothic wardrobe, subtle paper grain, restrained archive geometry, face centered in the 60% safe area, strong rim light, no text, no role/faction symbols, and no scene-specific clues. Each character owns one dominant accent visible at 120 px.
 
 | ID / name | Narrative function | Visual anchor | Speech rhythm | Reasoning entrance | Constructive limitation |
 |---|---|---|---|---|---|
-| `qin_chuan` 秦川 | High-IQ protagonist / global model | Black high-collar coat, deep teal rim, one silver temple streak, thin metal glasses | Slow, compressed, conclusion after conditions | Rebuilds the whole table as hypotheses and information flow | Can over-model sparse evidence; must mark uncertainty and can be wrong |
+| `qin_chuan` 秦川 | Systems mapper / information synthesis | Black high-collar coat, deep teal rim, one silver temple streak, thin metal glasses | Slow, compressed, conclusion after conditions | Rebuilds the whole table as hypotheses and information flow | Can over-model sparse evidence; must mark uncertainty and can be wrong |
 | `qiao_ke` 乔可 | Audience proxy / honest reaction | Amber bob, mustard raincoat, round expressive eyes | Short, quick questions; openly admits confusion | Notices emotional discontinuity and asks others to explain plainly | Short logic chain; intuition is a lead, not a fact |
 | `zhou_xu` 周序 | Fact ledger / continuity keeper | Square glasses, olive utility vest, pocket notebook | Numbered, clipped, low emotion | Votes, order, confirmed facts, impossible combinations | Weak at reading performance and spontaneous motive |
 | `xia_mi` 夏弥 | Social ignition / interaction driver | Short curls, cyan scarf, forward-leaning posture | Fast, warm, calls names directly | Silence, response latency, willingness to take a position | Can create noise and overvalue immediate reactions |
@@ -116,7 +113,7 @@ All portraits share a semi-realistic Chinese graphic-novel style: square head-an
 | `lu_ran` 陆燃 | Charger / forced alignment | Athletic build, shaved sides, burnt-orange jacket | Loud, fast, binary calls to action | Avoidance, follow behavior, willingness to commit | Speed can harden a weak first read |
 | `su_xian` 苏弦 | Relationship mapper / social synthesis | Dark green blouse, jade earrings, open posture | Calm restatement followed by one relationship claim | Mutual defense, attacks, distancing, conversational sequence | Harmony bias can soften necessary confrontation |
 
-Permanent friction axes create watchable scenes without encoding alliances:
+Initial friction axes demonstrate possible pairings without encoding permanent alliances or named runtime dependencies:
 
 - 秦川 models the table; 叶忱 attacks the model's hidden assumptions.
 - 顾绫 increases pressure; 任野 exposes how pressure can manufacture behavior.
@@ -135,10 +132,129 @@ Permanent friction axes create watchable scenes without encoding alliances:
 
 ### 3.2 LLM binding ownership
 
-- Each fixed Character Definition owns its `provider`, `model`, JSON response format, and optional fallback model.
-- Game creation copies only the Character binding into `Player.modelBindingSnapshot`; rule roles and preset seats do not select or override an LLM.
-- `temperature` and `maxTokens` are not character configuration. OpenAI-compatible requests omit both fields and use provider/model defaults.
+- Each Actor Definition owns its `provider`, `model`, JSON response format, and optional fallback model.
+- Game creation copies the complete selected Actor snapshot into `Player.actor`; runtime model selection reads `Player.actor.production.modelBinding`. Rule Roles and Lineup seats do not select or override an LLM.
+- `temperature` and `maxTokens` are not Actor configuration. OpenAI-compatible requests omit both fields and use provider/model defaults.
 - Token usage views include a non-persisted cost calculator. Default prices are ¥6 per million input tokens and ¥30 per million output tokens; input billing combines Prompt + Reasoning, while output billing uses Completion. Users may edit either price for immediate local recalculation.
+
+### 3.3 Actor Definition v2
+
+The current `CharacterDefinition` mixes duplicated prose, production configuration, and a `systemPrompt` that the production prompt builder does not consume. Replace it instead of adding more free-text boxes.
+
+```ts
+type ActorDefinition = {
+  readonly id: string;
+  readonly identity: {
+    readonly name: string;
+    readonly portrait: string;
+    readonly tags: readonly string[];
+    readonly visualAnchor: string;
+  };
+  readonly core: {
+    readonly stableCore: string;
+    readonly drive: string;
+    readonly blindSpot: string;
+    readonly changeBoundary: string;
+  };
+  readonly cognition: {
+    readonly attention: string;
+    readonly evidencePolicy: string;
+    readonly decisionPolicy: string;
+    readonly correctionTrigger: string;
+  };
+  readonly interaction: {
+    readonly tableFunction: string;
+    readonly socialStrategy: string;
+    readonly pressureResponse: string;
+    readonly conflictAxes: readonly string[];
+  };
+  readonly expression: {
+    readonly cadence: string;
+    readonly diction: string;
+    readonly rhetoricalMoves: readonly string[];
+    readonly avoid: readonly string[];
+  };
+  readonly production: {
+    readonly modelBinding: ModelBindingSnapshot;
+    readonly voice: VoiceProfileSnapshot;
+  };
+  readonly enabled: boolean;
+  readonly revision: number;
+};
+```
+
+Constraints:
+
+- This is content data, not a prompt. A code-owned compiler decides headings, priority, safety language and field selection.
+- Every clause is concise and behavioral: it must describe an observable decision or expression tendency, not an adjective pile or a guaranteed outcome.
+- `stableCore` and `changeBoundary` define what Script Author may not rewrite. `blindSpot`, `pressureResponse`, and `correctionTrigger` create change without replacing the actor.
+- `conflictAxes` describe reusable tensions such as `model-vs-counterexample` or `pressure-vs-defence`; they do not name permanent allies, enemies, factions or pre-game history.
+- No Actor field may reference another Actor ID. A cast compiler matches complementary table functions and conflict axes only after the Game has selected its 12 Actors, so adding or omitting an Actor never invalidates another definition.
+- Model and voice remain production fields on the Actor. Rule Role and Lineup do not override them.
+- Delete `persona`, `speakingStyle`, `reasoningStyle`, `systemPrompt`, Character-level aliases, and silent fallback values. The new decoder accepts only the exact v2 shape.
+
+### 3.4 One definition, two compiled cards
+
+```text
+ActorDefinition
+  ├── compileActorRuntimeCard() -> Player decision + performance
+  └── compileActorAuthorCard()  -> Script Author ensemble + arc design
+```
+
+`ActorRuntimeCard` contains stable core, drive, attention/evidence/decision policy, correction trigger, interaction/pressure response, and expression rules. It excludes ensemble labels, conflict suggestions, model, voice and any future arc.
+
+`ActorAuthorCard` contains identity, stable core, table function, blind spot, pressure response, correction trigger, change boundary and conflict axes. It excludes model/voice details and low-level Prompt instructions.
+
+Both cards are bounded compiler outputs with deterministic ordering and character limits. Library previews, Script Author, Game creation and runtime prompts must import these compilers; no caller rebuilds a private projection.
+
+Script Author compiles cards from the exact 12 Actor snapshots selected for the current Game. It never reads a hard-coded first cast or silently fills missing seats from the global Actor pool. Author receives the real seat-to-Rule Role assignments and complete legal plan because it writes a concrete episode; the runtime projection separately limits each Actor to its own Rule Role and visible facts.
+
+### 3.5 Game cast snapshot and dynamic ensemble
+
+Game creation validates exactly 12 distinct enabled Actor IDs before any script generation, then snapshots their complete definitions with seat numbers. No Actor ID is globally required. The snapshot—not the live Actor Library—is the only cast source for Script Author, runtime players, preview and export.
+
+```text
+select Actor IDs[12] + Rule Role setup + Script
+  -> validate references, uniqueness and Rule Role composition
+  -> snapshot Game cast
+  -> compile 12 ActorAuthorCards
+  -> match table functions and conflict axes inside this cast
+  -> Script Author assigns local arcs and at most 6 core relationships
+```
+
+The matcher may recommend tensions, complements and missing ensemble functions, but it does not rewrite Actor definitions or reject a valid rules game solely for weak dramaturgy. Studio exposes those issues before creation; Script Author works with the confirmed cast instead of replacing it.
+
+`qin_chuan` has one migration invariant only: its display name remains 「秦川」 and its ID remains `qin_chuan`. It has no required-cast flag and receives the same matching, Rule Role, information and narrative treatment as every other Actor when selected.
+
+### 3.6 Rule Role is a code-owned mechanics registry
+
+The existing editable `RoleDefinition` is false flexibility: current mechanics support exactly six role IDs, while faction, mechanic keys, private knowledge and action legality are already code-owned. Free-text role prompts can only duplicate or contradict those rules.
+
+- Rename the concept to `RuleRole` in types and UI.
+- One code-owned registry projects display name, faction/team, mechanic key, initial knowledge and night order from the actual rules implementation.
+- Remove `roles.json`, `systemPrompt`, `actionPrompt`, `defaultModelBinding`, duplicate supported-role contracts and editable mechanic controls.
+- The Library Rules workspace is read-only and shows mechanic/task/visibility diagnostics. Adding a new Rule Role means implementing a real mechanic and Task Spec first, not duplicating a JSON row.
+
+### 3.7 Player Intent and performance rendering
+
+One model response currently decides what the player believes and writes the final performance at the same time. Style can therefore distort legality and a script beat can accidentally prescribe a future-aware stance. Separate the responsibilities:
+
+```text
+visible facts + legal options + Rule Role + ActorRuntimeCard
+  -> decidePlayerIntent()
+  -> validated PlayerIntent
+  -> renderPlayerSpeech(intent, selected evidence, expression, brief?)
+  -> final bounded speech
+```
+
+`PlayerIntent` is a discriminated structure for speech, required-target action and optional action. A speech intent carries a thesis, up to three visible event references, uncertainty, disclosure plan, audience goal and optional challenge/question. Action intents carry the legal target/use decision and visible evidence references.
+
+- The decision stage owns facts, legality, role goals and disclosure. Actor cognition is a soft attention/decision preference after those constraints.
+- The performance stage receives only the validated intent, referenced safe evidence excerpts, expression fields, speech budget and optional current `EpisodeActorBrief`; it does not receive the entire private timeline or legal option set.
+- Game mode passes no Episode brief. Scripted mode passes only the current dramatic objective/pressure/arc/relationship move.
+- Replace future-aware `EpisodeSpeechBeat.stance` with a dramatic objective or treat it as non-binding performance direction. Script Author cannot choose a factual conclusion for the player.
+- Night actions stop after the decision stage. Public speech/last words/PK receive the performance stage.
+- Complete outputs may receive one structural repair. Provider length truncation follows the same finish-reason split established by Script Author.
 
 ## 4. Presenter bible
 
@@ -202,11 +318,11 @@ New immutable assets:
 ### 6.1 Create game
 
 ```text
-NewGameDialog(scriptId, preset/random seats)
+NewGameDialog(scriptId, saved/custom Lineup)
   -> server action
-  -> LibraryRepository.getAll()
+  -> ContentCatalog.load()
   -> require one enabled presenter + selected enabled script
-  -> createGameFromPreset(..., presenter, script)
+  -> createGameFromLineup(..., actors, presenter, script)
   -> Game { presenter snapshot, script snapshot, player snapshots }
   -> GameRepository.save()
 ```
@@ -237,7 +353,7 @@ Game.script snapshot
 
 Preview and Remotion continue to share one stage component. Script style is input data, not viewport state. Export copies script background assets and both avatar-prefix families into the job directory, then rewrites URLs once.
 
-### 6.4 Script Author Agent v3
+### 6.4 Script Author Agent v4
 
 Script Author 是一个由应用层持久化状态驱动的逻辑 Agent，不是一次巨型 Prompt，也不是把所有历史消息不断追加的聊天会话：
 
@@ -246,31 +362,60 @@ compileEpisodePlan(Game)
   -> EpisodeAuthorWorkspace(inputHash, dedicated model binding)
   -> story
   -> compact ensemble assignments
-  -> character × 12
+  -> actor_arc × 12
   -> relationship × selected pairs
   -> local scene beats (<= 5 speech steps)
   -> deterministic assembly + dramaturgy validation
-  -> EpisodeScriptSnapshot schema v2
+  -> EpisodeScriptSnapshot schema 3
 ```
 
 - `EpisodeAuthorWorkspace` 是恢复真相源，包含故事、群像分工、已完成角色弧线、关系弧线和节拍；请求日志只负责审计，不用于猜测下一任务。
 - 每个子任务从工作区投影最小上下文，并在成功或失败后通过 `onCheckpoint` 在 Game lock 内落盘。相同 input hash 的 `generating`/`failed` 状态从首个缺口继续。
 - 工作区增长有硬边界：故事 1–4 幕、群像 1–6 对关系、所有创作字符串不超过 80 字符、单个场景最多 5 个发言节拍，并且每名当前演员只携带 1 个先前 move。
-- Script Author 的 model binding 独立于 Player 快照。固定角色的模型只负责该角色在运行时的行动和最终台词。
+- Script Author 的 model binding 独立于 Player 快照。Actor 的模型只负责该 Actor 在运行时的行动和最终台词。
 - provider 在 JSON 解析前提供的 `finishReason`/usage 必须被保存。`length` 截断走任务级降级：场景节拍递归拆分，其他小任务仅从原始紧凑输入再生成一次；截断文本不进入修复 Prompt。
 - 完整但 schema 错误的 JSON 仍可做一次最小结构修复。这样把“输出没写完”和“输出写完但形状错了”分成两个根因，不使用同一种补丁。
-- Author 中间态不做兼容：只接受 `episode-author:v3` 的 task/workspace/request。最终 Episode 快照继续使用 schema v2，因为其锁定的是合法执行结构，而不是 Agent 实现细节。
+- Author 中间态不做兼容：只接受 `episode-author:v4` 请求和当前工作区结构。最终 Episode 快照使用 schema 3，并把实际 Actor/Rule Role 输入纳入身份哈希。
 - Script 页面读取落盘 workspace 展示当前阶段和进度；失败重试保留所有历史成本与已经完成的创作结果。
 
-运行时玩家台词生成仍使用当前 Actor Brief + 可见事实链。本阶段不重构它，但后续重构应沿用同一原则：按局部目标拆任务、把工作状态与模型对话分离、按 provider 失败原因选择恢复策略。
+运行时玩家台词生成在下一实现阶段切换到 3.7 的 Intent/Performance 设计，并复用 Script Author 已建立的局部上下文、finish-reason 分流和逐请求审计原则。
 
-## 7. Migration and rollback
+### 6.5 Library Studio v2
 
-- Old Game records: inject `legacy_v1` snapshot at read time; do not rewrite files eagerly.
-- Old exports: retained and untouched.
-- Old presenter directories/manifests: may remain on disk for retained exports and old games, but `presenters.json` exposes only 闻舟. Runtime paths continue to load old presenter manifests by snapshot source ID when an old game is replayed.
-- New library data can be rolled back by restoring JSON files and assets. New Game records remain readable because they carry snapshots; removing `midnight_archive_v1` renderer is not a valid rollback while such records exist.
-- Visual renderer dispatch must retain `legacy_v1` and `midnight_archive_v1` exhaustively.
+Library Studio grows the Actor pool and production content but cannot invent unsupported Rule Roles. Every preview consumes the same compilers/diagnostics as runtime and Script Author.
+
+```text
+ContentCatalog
+  -> Cast workspace
+  -> Scripts workspace
+  -> Show workspace (Presenter + voice)
+  -> Lineups workspace
+  -> Rules workspace (read-only)
+  -> compileGameContent({ actorIds: exactly12, ruleRoleSetup, scriptId })
+```
+
+The external `ContentCatalog` seam stays small: `load()` returns one validated snapshot, `save()` atomically replaces a complete validated catalog, and `update()` serializes read-modify-write plus revision checks. JSON layout, directory locking, backup/rename rollback, cross-reference validation and diagnostics remain implementation details. There is only one storage implementation today, so do not add a hypothetical repository adapter hierarchy.
+
+The local JSON storage shape is owned exclusively by `ContentCatalog`: `actors.json`, `scripts.json`, `presenters.json`, and `lineups.json`. Removing `roles.json` matters; splitting every Actor into a separate file does not yet solve a user problem.
+
+Studio workspaces:
+
+- **Cast:** create/duplicate/edit/disable Actors, inspect actual Runtime/Author card previews, test model and voice, and view per-actor quality diagnostics.
+- **Cast matrix:** compare the complete enabled Actor pool and the current selected 12 across attention, decision, pressure, expression, conflict and voice; flag near-duplicates and missing dimensions.
+- **Scenario lab:** select Actor × Rule Role × game/script mode, compile the production inputs, run or inspect the exact decision/performance requests, and verify information boundaries.
+- **Scripts:** edit narrative/presentation plus inspect the bounded Script Author projection.
+- **Show:** Presenter identity, semantic line coverage, voice manifest and smoke status.
+- **Lineups:** one seat list containing `{seatNo, ruleRoleId, actorId}`. Remove duplicated `roleIds`, `characterIds`, `seatAssignments` and model overrides.
+- **Rules:** read-only mechanic, knowledge, task and visibility coverage from code.
+
+Saving content validates the entire catalog and returns structured issues with owning paths. Preview and diagnostics always call production compilers; the UI never concatenates prompts or re-implements fallback resolution.
+
+## 7. Clean break and rollback
+
+- GameRecord schema 2, Episode schema 3, Prompt v3, and Actor/Rule Role/Lineup structures are current-only. Old records are not normalized, migrated, or rewritten.
+- Old export files may remain on disk, but their obsolete input schemas are not accepted by current render/retry paths.
+- Catalog writes stage all four validated collections, preserve backups during replacement, and restore them on an in-process failure. Revision conflicts fail before overwrite.
+- New Library data can be rolled back by restoring the four JSON files and immutable assets; existing current Games remain stable because they carry complete snapshots.
 
 ## 8. Explicit non-goals
 

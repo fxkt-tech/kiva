@@ -22,6 +22,7 @@ Use this contract when an action spans the event log, LLM generation, Editor rev
 ## 3. Contracts
 
 - Shared discussion events use faction/player visibility and may enter director Preview.
+- `Game.players[].ruleRole` is immutable role truth. `role_assigned` events are private delivery records and must match that snapshot exactly; reducers and planners never reconstruct roles from notification events.
 - Sealed intermediate choices use `host_only`; player LLM contexts must consume the normal visibility projection.
 - Internal Editor control events may be persisted for state derivation but must be explicitly excluded by `shouldIncludeEvent` when they have no Preview scene.
 - Resolution events carry structured source choices, tallies, final result, and resolution method. Renderers format this structure; they do not re-parse display text.
@@ -37,7 +38,7 @@ Use this contract when an action spans the event log, LLM generation, Editor rev
 
 ## 4. Validation & Error Matrix
 
-- Actor is dead or has the wrong role → reject in the server action.
+- Executing Player is dead or has the wrong Rule Role → reject in the server action.
 - Target is dead or forbidden by the role mechanic → reject in the server action.
 - Required human tiebreak is empty → reject confirmation.
 - Human tiebreak is outside the tied candidates → reject the edit/confirmation.
@@ -71,6 +72,7 @@ Use this contract when an action spans the event log, LLM generation, Editor rev
 - Planner chain test asserts every draft/event transition in order.
 - Pure resolution test covers unique result and ties.
 - Negative LLM-context test asserts sealed choices are absent.
+- Repository regression asserts a `role_assigned` payload that differs from the immutable Player Rule Role is rejected.
 - Editor/server tests assert legal candidates and reject invalid human edits.
 - Server tests assert a stale expected Draft ID cannot confirm a newly planned
   Draft; UI tests assert manual and automatic paths pass the displayed ID.
