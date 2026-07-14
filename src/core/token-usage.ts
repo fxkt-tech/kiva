@@ -1,4 +1,3 @@
-import type { GenerationRecord } from "./generation-record";
 import type { LlmTokenUsage } from "./llm";
 
 export type TokenUsageSummary = {
@@ -34,7 +33,7 @@ export function calculateTokenCostCny(input: {
 }
 
 export function summarizeGenerationTokenUsage(
-  generations: readonly GenerationRecord[],
+  generations: readonly { readonly tokenUsage: LlmTokenUsage | null }[],
 ): TokenUsageSummary {
   return generations.reduce<TokenUsageSummary>(
     (summary, generation) => {

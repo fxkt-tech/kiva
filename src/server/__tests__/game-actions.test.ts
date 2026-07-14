@@ -243,6 +243,20 @@ describe("game actions", () => {
     if (review.episodeScript?.status !== "review") {
       throw new Error("Expected episode review");
     }
+    expect(review.episodeScript.requests?.[0]).toMatchObject({
+      kind: "outline",
+      status: "success",
+      request: { schemaName: "werewolf_episode_outline_v2" },
+    });
+    await expect(repository.get(created.game.id)).resolves.toMatchObject({
+      episodeScript: {
+        status: "review",
+        requests: expect.arrayContaining([
+          expect.objectContaining({ kind: "outline", status: "success" }),
+          expect.objectContaining({ kind: "beats", status: "success" }),
+        ]),
+      },
+    });
 
     const approved = await actions.approveEpisodeScript(
       created.game.id,
@@ -250,6 +264,11 @@ describe("game actions", () => {
       review.episodeScript.candidate.id,
     );
     expect(approved.episodeScript?.status).toBe("approved");
+    expect(
+      approved.episodeScript?.status === "approved"
+        ? approved.episodeScript.requests?.length
+        : 0,
+    ).toBe(review.episodeScript.requests?.length);
 
     const started = await actions.continueGame(created.game.id);
     expect(started.draft?.type).toBe(
@@ -286,6 +305,13 @@ describe("game actions", () => {
     expect(failed.episodeScript).toMatchObject({
       status: "failed",
       error: "model unavailable",
+      requests: [
+        expect.objectContaining({
+          kind: "outline",
+          status: "failed",
+          error: "model unavailable",
+        }),
+      ],
     });
 
     const retryActions = createGameActions(repository, {
@@ -293,6 +319,11 @@ describe("game actions", () => {
     });
     const review = await retryActions.generateEpisodeScript(created.game.id);
     expect(review.episodeScript?.status).toBe("review");
+    expect(
+      review.episodeScript?.status === "review"
+        ? review.episodeScript.requests?.map((request) => request.status)
+        : [],
+    ).toEqual(expect.arrayContaining(["failed", "success"]));
   });
 
   it("rejects approval for a stale candidate identity", async () => {

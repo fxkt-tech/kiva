@@ -3,6 +3,14 @@ import { planNextDraft } from "./advance-planner";
 import { confirmDraftEvent, type DraftEvent } from "./drafts";
 import type { GameEvent, VoteType } from "./events";
 import type { Game } from "./game";
+import {
+  isGenerationAttemptSnapshot,
+  isLlmTokenUsage,
+  validateGenerationRequestSnapshot,
+  type GenerationAttemptSnapshot,
+  type GenerationRequestSnapshot,
+} from "./generation-record";
+import type { LlmTokenUsage } from "./llm";
 import { assertExactObjectKeys, isPlainObject } from "./model-binding";
 import { isLlmSpeechDraft, type LlmSpeechDraft } from "./llm-task-specs";
 import {
@@ -15,6 +23,7 @@ import type { DraftId, EventId, Phase, PlayerId } from "./types";
 
 export const EPISODE_SCRIPT_SCHEMA_VERSION = 2;
 export const EPISODE_COMPILER_VERSION = "episode-compiler:v1";
+export const EPISODE_AUTHOR_PROMPT_VERSION = "episode-author:v2" as const;
 const MAX_EPISODE_STEPS = 240;
 
 export type EpisodeCharacterProfile = {
@@ -119,18 +128,37 @@ export type EpisodeScriptReport = {
   readonly warnings: readonly string[];
 };
 
+export type EpisodeAuthorRequestRecord = {
+  readonly id: string;
+  readonly kind: "outline" | "beats";
+  readonly stepIndexes: readonly number[];
+  readonly status: "success" | "failed";
+  readonly promptVersion: typeof EPISODE_AUTHOR_PROMPT_VERSION;
+  readonly provider: string;
+  readonly model: string;
+  readonly request: GenerationRequestSnapshot;
+  readonly tokenUsage: LlmTokenUsage | null;
+  readonly rawOutput: string | null;
+  readonly parsedOutput: Record<string, unknown> | null;
+  readonly error: string | null;
+  readonly createdAt: string;
+  readonly attempts?: readonly GenerationAttemptSnapshot[];
+};
+
 export type EpisodeScriptState =
   | { readonly status: "idle" }
   | {
       readonly status: "generating";
       readonly jobId: string;
       readonly startedAt: string;
+      readonly requests?: readonly EpisodeAuthorRequestRecord[];
     }
   | {
       readonly status: "review";
       readonly jobId: string;
       readonly candidate: EpisodeScriptSnapshot;
       readonly report: EpisodeScriptReport;
+      readonly requests?: readonly EpisodeAuthorRequestRecord[];
     }
   | {
       readonly status: "approved";
@@ -138,12 +166,14 @@ export type EpisodeScriptState =
       readonly script: EpisodeScriptSnapshot;
       readonly report: EpisodeScriptReport;
       readonly approvedAt: string;
+      readonly requests?: readonly EpisodeAuthorRequestRecord[];
     }
   | {
       readonly status: "failed";
       readonly jobId: string;
       readonly error: string;
       readonly failedAt: string;
+      readonly requests?: readonly EpisodeAuthorRequestRecord[];
     };
 
 export type CompiledEpisodePlan = {
@@ -528,11 +558,12 @@ export function validateEpisodeScriptState(
       assertExactObjectKeys(state, "Episode script state", ["status"]);
       return { status: "idle" };
     case "generating":
-      assertExactObjectKeys(state, "Episode script state", [
-        "status",
-        "jobId",
-        "startedAt",
-      ]);
+      assertExactObjectKeys(
+        state,
+        "Episode script state",
+        ["status", "jobId", "startedAt"],
+        ["requests"],
+      );
       return {
         status: "generating",
         jobId: requiredString(state.jobId, "Episode script state jobId"),
@@ -540,28 +571,33 @@ export function validateEpisodeScriptState(
           state.startedAt,
           "Episode script state startedAt",
         ),
+        ...(state.requests === undefined
+          ? {}
+          : { requests: validateEpisodeAuthorRequests(state.requests) }),
       };
     case "review":
-      assertExactObjectKeys(state, "Episode script state", [
-        "status",
-        "jobId",
-        "candidate",
-        "report",
-      ]);
+      assertExactObjectKeys(
+        state,
+        "Episode script state",
+        ["status", "jobId", "candidate", "report"],
+        ["requests"],
+      );
       return {
         status: "review",
         jobId: requiredString(state.jobId, "Episode script state jobId"),
         candidate: validateEpisodeScriptSnapshot(state.candidate),
         report: validateEpisodeScriptReport(state.report),
+        ...(state.requests === undefined
+          ? {}
+          : { requests: validateEpisodeAuthorRequests(state.requests) }),
       };
     case "approved":
-      assertExactObjectKeys(state, "Episode script state", [
-        "status",
-        "jobId",
-        "script",
-        "report",
-        "approvedAt",
-      ]);
+      assertExactObjectKeys(
+        state,
+        "Episode script state",
+        ["status", "jobId", "script", "report", "approvedAt"],
+        ["requests"],
+      );
       return {
         status: "approved",
         jobId: requiredString(state.jobId, "Episode script state jobId"),
@@ -571,14 +607,17 @@ export function validateEpisodeScriptState(
           state.approvedAt,
           "Episode script state approvedAt",
         ),
+        ...(state.requests === undefined
+          ? {}
+          : { requests: validateEpisodeAuthorRequests(state.requests) }),
       };
     case "failed":
-      assertExactObjectKeys(state, "Episode script state", [
-        "status",
-        "jobId",
-        "error",
-        "failedAt",
-      ]);
+      assertExactObjectKeys(
+        state,
+        "Episode script state",
+        ["status", "jobId", "error", "failedAt"],
+        ["requests"],
+      );
       return {
         status: "failed",
         jobId: requiredString(state.jobId, "Episode script state jobId"),
@@ -587,10 +626,102 @@ export function validateEpisodeScriptState(
           state.failedAt,
           "Episode script state failedAt",
         ),
+        ...(state.requests === undefined
+          ? {}
+          : { requests: validateEpisodeAuthorRequests(state.requests) }),
       };
     default:
       throw new Error("Episode script state has invalid status");
   }
+}
+
+function validateEpisodeAuthorRequests(
+  value: unknown,
+): readonly EpisodeAuthorRequestRecord[] {
+  if (!Array.isArray(value)) {
+    throw new Error("Episode author requests must be an array");
+  }
+  return value.map((request, index) =>
+    validateEpisodeAuthorRequest(request, index),
+  );
+}
+
+function validateEpisodeAuthorRequest(
+  value: unknown,
+  index: number,
+): EpisodeAuthorRequestRecord {
+  const label = `Episode author request ${index + 1}`;
+  const request = objectRecord(value, label);
+  assertExactObjectKeys(
+    request,
+    label,
+    [
+      "id",
+      "kind",
+      "stepIndexes",
+      "status",
+      "promptVersion",
+      "provider",
+      "model",
+      "request",
+      "tokenUsage",
+      "rawOutput",
+      "parsedOutput",
+      "error",
+      "createdAt",
+    ],
+    ["attempts"],
+  );
+  if (request.kind !== "outline" && request.kind !== "beats") {
+    throw new Error(`${label} kind is invalid`);
+  }
+  const schemaName =
+    request.kind === "outline"
+      ? "werewolf_episode_outline_v2"
+      : "werewolf_episode_beats_v2";
+  validateGenerationRequestSnapshot(request.request, [schemaName]);
+  if (
+    !requiredIntegerArray(request.stepIndexes) ||
+    (request.kind === "outline" && request.stepIndexes.length !== 0) ||
+    (request.kind === "beats" && request.stepIndexes.length === 0)
+  ) {
+    throw new Error(`${label} stepIndexes are invalid`);
+  }
+  if (
+    (request.status !== "success" && request.status !== "failed") ||
+    request.promptVersion !== "episode-author:v2" ||
+    !isLlmTokenUsage(request.tokenUsage) ||
+    (request.rawOutput !== null && typeof request.rawOutput !== "string") ||
+    (request.parsedOutput !== null && !isPlainObject(request.parsedOutput)) ||
+    (request.error !== null && typeof request.error !== "string") ||
+    (request.status === "success" &&
+      (request.parsedOutput === null || request.error !== null)) ||
+    (request.status === "failed" &&
+      (request.parsedOutput !== null || typeof request.error !== "string"))
+  ) {
+    throw new Error(`${label} payload is invalid`);
+  }
+  for (const field of ["id", "provider", "model", "createdAt"] as const) {
+    requiredString(request[field], `${label} ${field}`);
+  }
+  if (
+    request.attempts !== undefined &&
+    (!Array.isArray(request.attempts) ||
+      request.attempts.some(
+        (attempt) => !isGenerationAttemptSnapshot(attempt, [schemaName]),
+      ))
+  ) {
+    throw new Error(`${label} attempts are invalid`);
+  }
+  return structuredClone(request) as EpisodeAuthorRequestRecord;
+}
+
+function requiredIntegerArray(value: unknown): value is readonly number[] {
+  return (
+    Array.isArray(value) &&
+    value.every((item) => Number.isInteger(item) && item > 0) &&
+    new Set(value).size === value.length
+  );
 }
 
 function validateEpisodeScriptReport(value: unknown): EpisodeScriptReport {

@@ -11,6 +11,7 @@ type GameTokenUsageButtonProps = {
   readonly total: TokenUsageSummary;
   readonly speech: TokenUsageSummary;
   readonly action: TokenUsageSummary;
+  readonly script: TokenUsageSummary;
 };
 
 export function GameTokenUsageButton({
@@ -18,6 +19,7 @@ export function GameTokenUsageButton({
   total,
   speech,
   action,
+  script,
 }: GameTokenUsageButtonProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -63,9 +65,10 @@ export function GameTokenUsageButton({
             completionTokens={total.completionTokens}
           />
           <UsageBlock title="Total" summary={total} />
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <UsageBlock title="Speech" summary={speech} compact />
             <UsageBlock title="Action" summary={action} compact />
+            <UsageBlock title="Script Author" summary={script} compact />
           </div>
         </div>
       </dialog>

@@ -9,10 +9,30 @@ import type { GenerationRecord } from "@/core/generation-record";
 import { tokenCount } from "@/core/token-usage";
 
 type LlmGenerationDetailsProps = {
-  readonly generation: GenerationRecord;
+  readonly generation: LlmDetailsRecord;
+  readonly label?: string;
+  readonly showDecisionSummary?: boolean;
 };
 
-export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) {
+export type LlmDetailsRecord = Pick<
+  GenerationRecord,
+  | "status"
+  | "promptVersion"
+  | "provider"
+  | "model"
+  | "request"
+  | "tokenUsage"
+  | "rawOutput"
+  | "parsedOutput"
+  | "error"
+  | "attempts"
+>;
+
+export function LlmGenerationDetails({
+  generation,
+  label = "LLM details",
+  showDecisionSummary = true,
+}: LlmGenerationDetailsProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
@@ -31,8 +51,8 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
     <>
       <Button
         onClick={() => dialogRef.current?.showModal()}
-        aria-label="LLM details"
-        title="LLM details"
+        aria-label={label}
+        title={label}
         buttonStyle="icon"
         iconSize="xs"
       >
@@ -46,7 +66,7 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div>
             <h3 id={titleId} className="text-sm font-semibold">
-              LLM details
+              {label}
             </h3>
             <p className="mt-1 text-xs text-subtle">
               {generation.status} · {generation.provider}/{generation.model} ·{" "}
@@ -178,12 +198,14 @@ export function LlmGenerationDetails({ generation }: LlmGenerationDetailsProps) 
             </GenerationBlock>
           ) : null}
 
-          <GenerationBlock title="Player reasoning / decision summary">
-            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
-              {decisionSummary ??
-                "No decision summary was returned by the model. Hidden model reasoning is not available."}
-            </pre>
-          </GenerationBlock>
+          {showDecisionSummary ? (
+            <GenerationBlock title="Player reasoning / decision summary">
+              <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
+                {decisionSummary ??
+                  "No decision summary was returned by the model. Hidden model reasoning is not available."}
+              </pre>
+            </GenerationBlock>
+          ) : null}
 
           <GenerationBlock title="Raw output">
             <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
@@ -288,7 +310,7 @@ function decisionSummaryText(
   return null;
 }
 
-function formatTokenTotal(generation: GenerationRecord): string {
+function formatTokenTotal(generation: LlmDetailsRecord): string {
   if (!generation.tokenUsage) {
     return "tokens not recorded";
   }

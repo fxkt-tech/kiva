@@ -6,9 +6,12 @@ import {
   generateEpisodeScriptAction,
 } from "@/app/actions";
 import { FormSubmitButton } from "@/components/editor/form-submit-button";
+import { LlmGenerationDetails } from "@/components/editor/llm-generation-details";
 import { EpisodeEnsembleReview } from "@/components/script/episode-ensemble-review";
 import { EpisodeGeneratingRefresh } from "@/components/script/episode-generating-refresh";
 import { iconButtonClassName } from "@/components/ui/button-styles";
+import type { EpisodeAuthorRequestRecord } from "@/core/episode-script";
+import { tokenCount } from "@/core/token-usage";
 import type { GameId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
@@ -118,6 +121,8 @@ export function EpisodeWorkspace({
           <Metric label="结构规模" value={`${script.steps.length} 步 / ${speechSteps.length} 段发言`} />
         </div>
 
+        <EpisodeAuthorRequests requests={state.requests ?? []} />
+
         <section className="mt-5">
           <h3 className="text-sm font-semibold">剧情幕</h3>
           <div className="mt-2 grid gap-2 sm:grid-cols-3">
@@ -175,6 +180,7 @@ export function EpisodeWorkspace({
       <div>
         <h2 className="text-base font-semibold text-danger-badge-foreground">剧本生成失败</h2>
         <p className="mt-2 rounded border border-danger-badge/60 bg-danger-badge/25 px-3 py-2 text-sm text-danger-badge-foreground">{state.error}</p>
+        <EpisodeAuthorRequests requests={state.requests ?? []} />
         <form className="mt-4" action={generateEpisodeScriptAction.bind(null, record.game.id)}>
           <FormSubmitButton label="重试生成" pendingLabel="正在重试…" className={primaryActionClass} />
         </form>
@@ -225,6 +231,86 @@ export function EpisodeWorkspace({
       </form>
     </div>
   );
+}
+
+export function EpisodeAuthorRequests({
+  requests,
+}: {
+  readonly requests: readonly EpisodeAuthorRequestRecord[];
+}) {
+  if (requests.length === 0) return null;
+  const labels = episodeAuthorRequestLabels(requests);
+  return (
+    <section className="mt-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="text-sm font-semibold">LLM requests</h3>
+        <span className="text-xs text-subtle">
+          {requests.length} requests · {formatRequestTokens(requests)} tokens
+        </span>
+      </div>
+      <div className="mt-2 divide-y divide-border overflow-hidden rounded border border-border bg-background/40">
+        {requests.map((request, index) => (
+          <div
+            key={request.id}
+            className="flex items-center justify-between gap-3 px-3 py-2 text-xs"
+          >
+            <div className="min-w-0">
+              <div className="font-medium text-foreground">
+                {labels[index]}
+              </div>
+              <div className="mt-0.5 truncate text-subtle">
+                {request.provider}/{request.model} · {request.status} ·{" "}
+                {request.stepIndexes.length > 0
+                  ? `steps ${request.stepIndexes.join(", ")}`
+                  : "full cast"}
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="text-muted">{formatRequestTokens([request])}</span>
+              <LlmGenerationDetails
+                generation={request}
+                label={`${labels[index]} LLM details`}
+                showDecisionSummary={false}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function episodeAuthorRequestLabels(
+  requests: readonly EpisodeAuthorRequestRecord[],
+): readonly string[] {
+  let run = 0;
+  let beatBatch = 0;
+  return requests.map((request) => {
+    if (request.kind === "outline") {
+      run += 1;
+      beatBatch = 0;
+      return run === 1 ? "Outline" : `Outline · run ${run}`;
+    }
+    beatBatch += 1;
+    return run <= 1
+      ? `Beat batch ${beatBatch}`
+      : `Beat batch ${beatBatch} · run ${run}`;
+  });
+}
+
+function formatRequestTokens(
+  requests: readonly EpisodeAuthorRequestRecord[],
+): string {
+  const total = requests.reduce((sum, request) => {
+    if (!request.tokenUsage) return sum;
+    return (
+      sum +
+      (tokenCount(request.tokenUsage.totalTokens) ||
+        tokenCount(request.tokenUsage.promptTokens) +
+          tokenCount(request.tokenUsage.completionTokens))
+    );
+  }, 0);
+  return new Intl.NumberFormat("en-US").format(total);
 }
 
 function Metric({ label, value }: { readonly label: string; readonly value: string }) {

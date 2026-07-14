@@ -187,8 +187,12 @@ export function validateGenerationRecord(
   if (value.promptVersion !== expectedPromptVersion) {
     throw new Error(`Unsupported generation prompt version: ${String(value.promptVersion)}`);
   }
-  validateGenerationRequest(value.request, purpose);
-  if (!isTokenUsage(value.tokenUsage)) {
+  const allowedSchemaNames =
+    purpose === "speech"
+      ? ["werewolf_speech_v2"]
+      : ["werewolf_target_action_v2", "werewolf_optional_action_v2"];
+  validateGenerationRequestSnapshot(value.request, allowedSchemaNames);
+  if (!isLlmTokenUsage(value.tokenUsage)) {
     throw new Error("Generation record tokenUsage is invalid");
   }
   if (value.rawOutput !== null && typeof value.rawOutput !== "string") {
@@ -214,7 +218,10 @@ export function validateGenerationRecord(
   if (
     value.attempts !== undefined &&
     (!Array.isArray(value.attempts) ||
-      value.attempts.some((attempt) => !isGenerationAttempt(attempt, purpose)))
+      value.attempts.some(
+        (attempt) =>
+          !isGenerationAttemptSnapshot(attempt, allowedSchemaNames),
+      ))
   ) {
     throw new Error("Generation record attempts are invalid");
   }
@@ -222,10 +229,10 @@ export function validateGenerationRecord(
   return structuredClone(value) as GenerationRecord;
 }
 
-function validateGenerationRequest(
+export function validateGenerationRequestSnapshot(
   value: unknown,
-  purpose: GenerationPurpose,
-): asserts value is GenerationRequestSnapshot {
+  allowedSchemaNames?: readonly string[],
+): GenerationRequestSnapshot {
   if (!isPlainObject(value)) {
     throw new Error("Generation request snapshot is invalid");
   }
@@ -256,19 +263,15 @@ function validateGenerationRequest(
   ) {
     throw new Error("Generation request snapshot is invalid");
   }
-  const validSchema =
-    purpose === "speech"
-      ? value.schemaName === "werewolf_speech_v2"
-      : value.schemaName === "werewolf_target_action_v2" ||
-        value.schemaName === "werewolf_optional_action_v2";
-  if (!validSchema) {
+  if (allowedSchemaNames && !allowedSchemaNames.includes(value.schemaName)) {
     throw new Error(`Unsupported generation request schema: ${value.schemaName}`);
   }
+  return structuredClone(value) as GenerationRequestSnapshot;
 }
 
-function isGenerationAttempt(
+export function isGenerationAttemptSnapshot(
   value: unknown,
-  purpose: GenerationPurpose,
+  allowedSchemaNames?: readonly string[],
 ): value is GenerationAttemptSnapshot {
   if (!isPlainObject(value)) return false;
   try {
@@ -279,19 +282,19 @@ function isGenerationAttempt(
       "parsedOutput",
       "error",
     ]);
-    validateGenerationRequest(value.request, purpose);
+    validateGenerationRequestSnapshot(value.request, allowedSchemaNames);
   } catch {
     return false;
   }
   return (
-    isTokenUsage(value.tokenUsage) &&
+    isLlmTokenUsage(value.tokenUsage) &&
     (value.rawOutput === null || typeof value.rawOutput === "string") &&
     (value.parsedOutput === null || isPlainObject(value.parsedOutput)) &&
     (value.error === null || typeof value.error === "string")
   );
 }
 
-function isTokenUsage(value: unknown): value is LlmTokenUsage | null {
+export function isLlmTokenUsage(value: unknown): value is LlmTokenUsage | null {
   if (value === null) return true;
   if (!isPlainObject(value)) return false;
   try {

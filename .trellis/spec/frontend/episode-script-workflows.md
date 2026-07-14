@@ -21,6 +21,27 @@
 - `generateEpisodeScriptAction(gameId)` submitted manually from `/games/:id/script`
 - `gameActions.approveEpisodeScript(gameId, expectedJobId, expectedScriptId)`
 
+```ts
+type EpisodeAuthorRequestRecord = {
+  id: string;
+  kind: "outline" | "beats";
+  stepIndexes: readonly number[]; // empty only for outline
+  status: "success" | "failed";
+  promptVersion: "episode-author:v2";
+  provider: string;
+  model: string;
+  request: GenerationRequestSnapshot;
+  tokenUsage: LlmTokenUsage | null;
+  rawOutput: string | null;
+  parsedOutput: Record<string, unknown> | null;
+  error: string | null;
+  createdAt: string;
+  attempts?: readonly GenerationAttemptSnapshot[];
+};
+```
+
+`generating`, `review`, `approved`, and `failed` Episode states may carry `requests`; old persisted states without it remain readable as an empty history.
+
 ### 3. Contracts
 
 - The compiler loops through the existing `planNextDraft()` and `confirmDraftEvent()` path from an empty event log to `game_ended`; it does not implement a second rules engine.
@@ -31,6 +52,8 @@
 - Authoring is never one giant output request. It generates one compact outline from all concise profiles plus structural milestones, then requests speech beats in batches of at most 12 using a bounded local trace window. Each beat batch receives only current-batch actor profiles/directions, touching relationships, and at most the latest two earlier moves per actor.
 - Schema-v2 speech beats add nonblank `characterHook` and `arcMove` plus nullable `relationshipMove`. These are current performance direction, not final dialogue; final speech still uses the actor's then-visible facts at runtime.
 - Each bounded request may retry one provider `Headers Timeout Error`. A second timeout persists failed state; retrying the job starts a new candidate identity.
+- Every logical outline and beat-batch request persists an `EpisodeAuthorRequestRecord` with its exact request snapshot, accepted/raw output, parsed output, repair attempts, provider/model, status, and provider-returned token usage. Review and failure pages expose these records through the shared Editor `LLM details` viewer.
+- Episode author request history is append-only across failed jobs and whole-candidate regeneration. The Game token summary includes every retained Script Author request and shows Script Author separately from player speech/action requests; replacing a candidate must not erase earlier token cost.
 - Episode snapshots use exactly schema v2. Their input hash includes the exact projected character profiles, rules, and Game Script; no earlier schema or alternate hash recipe is decoded.
 - Snapshot identity includes schema version, compiler version, cast/rules/theme input hash, stable step indexes, planned payloads, speech budgets, and author metadata. Random Draft/Event IDs never enter the plan.
 - `GameRecord.episodeScript` is `idle | generating | review | approved | failed` for scripted games and `null` for game mode. The field and every state-specific key are required and validated exactly.
@@ -65,6 +88,7 @@ type EpisodeSpeechBeatV2 = {
 | Target duration exceeds 35 minutes | Report invalid; Approve rejects. |
 | Author transport/output fails | Persist failed state with actionable error; allow full retry. |
 | A request asks for more than 12 speech beats | Regression failure; split the batch before calling the provider. |
+| Provider omits token usage | Persist the request with `tokenUsage: null` and show it as unrecorded; never estimate provider billing tokens from prompt text. |
 | Old job finishes after a newer job starts | Return current state; never overwrite it. |
 | Approval identity/profile/hash changed, compiler-owned field differs, or events already exist | Reject approval. |
 | Snapshot schema is not v2 or lacks a current direction/hash field | Reject it; do not normalize, upgrade, or execute it. |
@@ -80,6 +104,7 @@ type EpisodeSpeechBeatV2 = {
 - Good: New Game lands on an idle Script page; after the director clicks Generate, Script Author assigns complementary primary/supporting functions from all 12 profiles, gives everyone a valid signature moment, develops central relationships across beats, and executes the unchanged legal plan after director approval.
 - Base: no external LLM credentials are present, so the local Script Author deterministically produces structurally complete v2 ensemble direction over the same legal trace.
 - Bad: trigger authoring as a side effect of New Game creation, mention an actor ID without its profile in a beat batch, restart its arc in every batch, expose a future payoff to the runtime actor, or alter the trace to manufacture equal screen time.
+- Bad: keep only one aggregate token count on the candidate or replace `requests` on regeneration, because this makes provider cost unauditable and erases failed-job spend.
 
 ### 6. Tests Required
 
@@ -89,6 +114,8 @@ type EpisodeSpeechBeatV2 = {
 - Authored output preserves every compiled slot, planned payload, winner, and speech budget byte-for-byte.
 - Provider-shaped regression throws the exact Headers Timeout error when a request exceeds 12 beats and proves the author completes without producing such a request.
 - Beat-request capture asserts all current actors have profiles/directions and no actor has more than two prior moves in one request.
+- Request-record tests assert outline and every beat batch round-trip through the repository with exact prompts/outputs/attempts and provider token usage; failure followed by retry retains both jobs in the token total.
+- Script-page render tests assert one shared `LLM details` control per request and per-request plus aggregate token totals.
 - Server integration round-trips v2 through repository state, rejects stale approval, character-profile changes, and structural edits, and executes the entire approved trace to terminal state.
 - Creation-action tests spy on `generateEpisodeScript()` and require zero calls for both scripted preset and random-seat creation; idle Script-page tests require a manual Generate form.
 - Decoder tests reject schema-v1, missing current direction fields, extra keys, and mismatched current character hashes.
@@ -103,3 +130,7 @@ type EpisodeSpeechBeatV2 = {
 Wrong: call Script Author from a New Game creation action, ask the LLM to invent a hundred-event game, fall back from blank structured profiles to an opaque old prompt, or place the whole future arc in every actor prompt.
 
 Correct: persist scripted creation as idle, let the director explicitly start generation on the Script page, validate the resulting schema-v2 snapshot against complete immutable profiles, compile a legal trace with the existing planner, project only the current move into runtime, and derive position from active events.
+
+Wrong: store only the latest candidate's author request details and token total.
+
+Correct: append each bounded request record to Episode state history, retain prior jobs through regeneration, and derive both Script-page and Home token totals from those records.

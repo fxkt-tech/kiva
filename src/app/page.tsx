@@ -120,12 +120,18 @@ export default async function HomePage() {
                         <div className="flex justify-end gap-1.5">
                           <GameTokenUsageButton
                             gameTitle={record.game.title}
-                            total={summarizeGenerationTokenUsage(record.generations)}
+                            total={summarizeGenerationTokenUsage([
+                              ...record.generations,
+                              ...episodeAuthorRequests(record),
+                            ])}
                             speech={summarizeGenerationTokenUsage(
                               generationsByPurpose(record.generations, "speech"),
                             )}
                             action={summarizeGenerationTokenUsage(
                               generationsByPurpose(record.generations, "action"),
+                            )}
+                            script={summarizeGenerationTokenUsage(
+                              episodeAuthorRequests(record),
                             )}
                           />
                           <Link
@@ -176,6 +182,11 @@ function generationsByPurpose(
   purpose: GenerationRecord["purpose"],
 ): readonly GenerationRecord[] {
   return generations.filter((generation) => generation.purpose === purpose);
+}
+
+function episodeAuthorRequests(record: GameRecord) {
+  const state = record.episodeScript;
+  return state && "requests" in state ? state.requests ?? [] : [];
 }
 
 function formatDate(value: string): string {

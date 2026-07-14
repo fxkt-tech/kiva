@@ -65,6 +65,56 @@ describe("episode script", () => {
     expect(() =>
       assertEpisodeScriptMatchesGame({ game, script: result.script }),
     ).not.toThrow();
+    expect(result.requests[0]).toMatchObject({
+      kind: "outline",
+      status: "success",
+      promptVersion: "episode-author:v2",
+      request: { schemaName: "werewolf_episode_outline_v2" },
+    });
+    expect(result.requests.slice(1)).not.toHaveLength(0);
+    expect(
+      result.requests.slice(1).every(
+        (request) =>
+          request.kind === "beats" &&
+          request.stepIndexes.length > 0 &&
+          request.request.schemaName === "werewolf_episode_beats_v2",
+      ),
+    ).toBe(true);
+  });
+
+  it("records and aggregates provider token usage for every author request", async () => {
+    const local = new LocalHeuristicLlmClient();
+    const usageClient: LlmClient = {
+      async generateJson(request) {
+        const result = await local.generateJson(request);
+        return {
+          ...result,
+          usage: {
+            promptTokens: 100,
+            completionTokens: 20,
+            totalTokens: 120,
+            cachedPromptTokens: 10,
+            reasoningTokens: 5,
+          },
+        };
+      },
+    };
+
+    const result = await authorEpisodeScript({
+      game,
+      llmClient: usageClient,
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    expect(result.requests.every((request) => request.tokenUsage?.totalTokens === 120))
+      .toBe(true);
+    expect(result.tokenUsage).toMatchObject({
+      promptTokens: result.requests.length * 100,
+      completionTokens: result.requests.length * 20,
+      totalTokens: result.requests.length * 120,
+      cachedPromptTokens: result.requests.length * 10,
+      reasoningTokens: result.requests.length * 5,
+    });
   });
 
   it("sends every concise character profile to the outline and scoped actor context to beat batches", async () => {

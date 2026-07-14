@@ -1,14 +1,17 @@
 import { randomUUID } from "node:crypto";
 import type { Game } from "./game";
+import type { GenerationRequestSnapshot } from "./generation-record";
 import type { LlmClient, LlmTokenUsage } from "./llm";
 import {
   assertEpisodeDramaturgy,
   compileEpisodePlan,
   createEpisodeScriptSnapshot,
+  EPISODE_AUTHOR_PROMPT_VERSION,
   episodeCharacterProfile,
   episodePerformanceOpportunities,
   type CompiledEpisodePlan,
   type EpisodeAct,
+  type EpisodeAuthorRequestRecord,
   type EpisodeCastDirection,
   type EpisodeCharacterProfile,
   type EpisodeRelationshipDirection,
@@ -16,16 +19,32 @@ import {
   type EpisodeScriptSnapshot,
   type EpisodeSpeechBeat,
 } from "./episode-script";
+import type { ModelBindingSnapshot } from "./player";
 import type { PlayerId } from "./types";
-import { generateValidatedJson } from "./validated-generation";
-
-export const EPISODE_AUTHOR_PROMPT_VERSION = "episode-author:v2";
+import {
+  generateValidatedJson,
+  ValidatedGenerationError,
+  type ValidatedGenerationResult,
+} from "./validated-generation";
 
 export type AuthorEpisodeScriptResult = {
   readonly script: EpisodeScriptSnapshot;
+  readonly requests: readonly EpisodeAuthorRequestRecord[];
   readonly tokenUsage: LlmTokenUsage | null;
   readonly repaired: boolean;
 };
+
+export class EpisodeAuthoringError extends Error {
+  readonly requests: readonly EpisodeAuthorRequestRecord[];
+
+  constructor(error: unknown, requests: readonly EpisodeAuthorRequestRecord[]) {
+    super(error instanceof Error ? error.message : String(error), {
+      cause: error,
+    });
+    this.name = "EpisodeAuthoringError";
+    this.requests = structuredClone(requests);
+  }
+}
 
 type EpisodeNarrative = {
   readonly title: string;
@@ -57,74 +76,83 @@ export async function authorEpisodeScript(input: {
   );
   const modelBinding = input.game.players[0]?.modelBindingSnapshot;
   if (!modelBinding) throw new Error("Episode author model binding is missing");
+  const requests: EpisodeAuthorRequestRecord[] = [];
 
   const profiles = input.game.players.map(episodeCharacterProfile);
   const opportunities = episodePerformanceOpportunities(input.game, plan);
   assertPerformanceOpportunities(profiles, opportunities);
-  const outlineResult = await retryHeadersTimeout(() =>
-    generateValidatedJson({
-      llmClient: input.llmClient,
-      modelBinding,
-      request: {
-        schemaName: "werewolf_episode_outline_v2",
-        systemPrompt: [
-          "你是狼人杀节目的全局 Script Author。",
-          "规则引擎已经确定完整、合法的事件轨迹。你负责群像设计和主题化因果，绝不能改变行动、票型、死亡、身份、预算或胜方。",
-          "让人物鲜明来自稳定性格在压力下的选择、失误、适应与兑现，不要把人设写成重复口头禅，也不要突然替换人物核心。",
-          "你可以设计仅在本局互动中逐步形成的竞争、联盟、反差与信任变化；不得虚构开局前关系、私下交易或任何游戏事实，戏剧方向也不能作为身份或可信度证据。",
-          "只写标题、logline、幕结构、群像方向和关系方向，不写最终台词。只返回 JSON 对象。",
-        ].join("\n"),
-        messages: [
-          {
-            role: "user",
-            content: [
-              `提示词版本：${EPISODE_AUTHOR_PROMPT_VERSION}`,
-              `主题：${input.game.script.name}｜${input.game.script.theme}`,
-              `共同背景：${input.game.script.background}`,
-              `氛围：${input.game.script.atmosphere.join("、")}`,
-              `计划胜方：${plan.plannedWinner}`,
-              `计划天数：${plan.plannedDayCount}`,
-              "",
-              "角色资料与真实可用的标志性时刻（每行 JSON）：",
-              ...profiles.map((profile) =>
-                characterProfileLine(
-                  profile,
-                  opportunities.get(profile.playerId) ?? [],
-                ),
-              ),
-              "",
-              "合法轨迹里程碑：",
-              ...outlineSteps.map(
-                (step) =>
-                  `STEP ${step.index} | ${step.slot.phase} | ${step.slot.type} | actor=${step.slot.actorPlayerId ?? "host"} | ${step.summary}`,
-              ),
-              "",
-              "输出字段：",
-              "- title、logline、acts[{title,summary}]（acts 建议 3 项）",
-              "- castDirections：每位玩家恰好一项，字段为 playerId、dramaticWeight(primary/supporting)、dramaticFunction、baseline、pressure、change、payoff、signatureMoment{stepIndex,description}",
-              "- relationships：字段为 playerIds[恰好两个不同玩家]、kind(rivalry/alliance/contrast/trust_shift)、setup、development、payoff",
-              "每个 signatureMoment.stepIndex 必须取自该玩家 CHARACTER_PROFILE 的 performanceStepIndexes。",
-              "主次可以不均，但每个人都要有清晰功能与标志性时刻；变化必须保留人物核心，并由压力与公开互动逐步挣得。",
-              "relationships 只描述本局将如何铺垫、发展和兑现，不得把它写成已知事实或提前透露给演员。",
-            ].join("\n"),
-          },
-        ],
-      },
-      validate: (parsed) => parseOutline(parsed, input.game, plan),
-      repair: {
-        outputContract: [
-          "title 和 logline 必须是非空字符串，acts 必须是至少一项的 {title,summary} 数组",
-          `castDirections 必须恰好覆盖这些 playerId 且不重复：${profiles.map((profile) => profile.playerId).join(", ")}`,
-          ...profiles.map(
-            (profile) =>
-              `${profile.playerId} 的 signatureMoment.stepIndex 只能是：${(opportunities.get(profile.playerId) ?? []).join(", ")}`,
+  const outlineRequest: GenerationRequestSnapshot = {
+    schemaName: "werewolf_episode_outline_v2",
+    systemPrompt: [
+      "你是狼人杀节目的全局 Script Author。",
+      "规则引擎已经确定完整、合法的事件轨迹。你负责群像设计和主题化因果，绝不能改变行动、票型、死亡、身份、预算或胜方。",
+      "让人物鲜明来自稳定性格在压力下的选择、失误、适应与兑现，不要把人设写成重复口头禅，也不要突然替换人物核心。",
+      "你可以设计仅在本局互动中逐步形成的竞争、联盟、反差与信任变化；不得虚构开局前关系、私下交易或任何游戏事实，戏剧方向也不能作为身份或可信度证据。",
+      "只写标题、logline、幕结构、群像方向和关系方向，不写最终台词。只返回 JSON 对象。",
+    ].join("\n"),
+    messages: [
+      {
+        role: "user",
+        content: [
+          `提示词版本：${EPISODE_AUTHOR_PROMPT_VERSION}`,
+          `主题：${input.game.script.name}｜${input.game.script.theme}`,
+          `共同背景：${input.game.script.background}`,
+          `氛围：${input.game.script.atmosphere.join("、")}`,
+          `计划胜方：${plan.plannedWinner}`,
+          `计划天数：${plan.plannedDayCount}`,
+          "",
+          "角色资料与真实可用的标志性时刻（每行 JSON）：",
+          ...profiles.map((profile) =>
+            characterProfileLine(
+              profile,
+              opportunities.get(profile.playerId) ?? [],
+            ),
           ),
-          "relationship 的 playerIds 必须是两个不同的已知玩家，同一无向玩家对只能出现一次",
-          "dramaticWeight 和 kind 只能使用约定枚举，所有说明字段都必须非空",
-        ],
+          "",
+          "合法轨迹里程碑：",
+          ...outlineSteps.map(
+            (step) =>
+              `STEP ${step.index} | ${step.slot.phase} | ${step.slot.type} | actor=${step.slot.actorPlayerId ?? "host"} | ${step.summary}`,
+          ),
+          "",
+          "输出字段：",
+          "- title、logline、acts[{title,summary}]（acts 建议 3 项）",
+          "- castDirections：每位玩家恰好一项，字段为 playerId、dramaticWeight(primary/supporting)、dramaticFunction、baseline、pressure、change、payoff、signatureMoment{stepIndex,description}",
+          "- relationships：字段为 playerIds[恰好两个不同玩家]、kind(rivalry/alliance/contrast/trust_shift)、setup、development、payoff",
+          "每个 signatureMoment.stepIndex 必须取自该玩家 CHARACTER_PROFILE 的 performanceStepIndexes。",
+          "主次可以不均，但每个人都要有清晰功能与标志性时刻；变化必须保留人物核心，并由压力与公开互动逐步挣得。",
+          "relationships 只描述本局将如何铺垫、发展和兑现，不得把它写成已知事实或提前透露给演员。",
+        ].join("\n"),
       },
-    }),
-  );
+    ],
+  };
+  const outlineResult = await runAuthorRequest({
+    kind: "outline",
+    stepIndexes: [],
+    request: outlineRequest,
+    requests,
+    modelBinding,
+    createdAt: input.createdAt,
+    operation: () =>
+      generateValidatedJson({
+        llmClient: input.llmClient,
+        modelBinding,
+        request: outlineRequest,
+        validate: (parsed) => parseOutline(parsed, input.game, plan),
+        repair: {
+          outputContract: [
+            "title 和 logline 必须是非空字符串，acts 必须是至少一项的 {title,summary} 数组",
+            `castDirections 必须恰好覆盖这些 playerId 且不重复：${profiles.map((profile) => profile.playerId).join(", ")}`,
+            ...profiles.map(
+              (profile) =>
+                `${profile.playerId} 的 signatureMoment.stepIndex 只能是：${(opportunities.get(profile.playerId) ?? []).join(", ")}`,
+            ),
+            "relationship 的 playerIds 必须是两个不同的已知玩家，同一无向玩家对只能出现一次",
+            "dramaticWeight 和 kind 只能使用约定枚举，所有说明字段都必须非空",
+          ],
+        },
+      }),
+  });
 
   const authoredBeats: Omit<EpisodeSpeechBeat, "budget">[] = [];
   let tokenUsage = outlineResult.tokenUsage;
@@ -152,85 +180,93 @@ export async function authorEpisodeScript(input: {
       plan,
       actorPlayerIds,
     );
-    const beatResult = await retryHeadersTimeout(() =>
-      generateValidatedJson({
-        llmClient: input.llmClient,
-        modelBinding,
-        request: {
-          schemaName: "werewolf_episode_beats_v2",
-          systemPrompt: [
-            "你是狼人杀节目 Script Author，正在分批编写人物驱动的逐场发言节拍。",
-            "只能为本批 SPEECH_STEP 生成方向，不得修改合法轨迹、planned payload 或编译器预算，也不得向演员泄露未来事件。",
-            "人物核心保持稳定；让压力暴露次要侧面、造成失误或促成有根据的适应。不要生成最终台词，只返回 JSON 对象。",
+    const beatRequest: GenerationRequestSnapshot = {
+      schemaName: "werewolf_episode_beats_v2",
+      systemPrompt: [
+        "你是狼人杀节目 Script Author，正在分批编写人物驱动的逐场发言节拍。",
+        "只能为本批 SPEECH_STEP 生成方向，不得修改合法轨迹、planned payload 或编译器预算，也不得向演员泄露未来事件。",
+        "人物核心保持稳定；让压力暴露次要侧面、造成失误或促成有根据的适应。不要生成最终台词，只返回 JSON 对象。",
+      ].join("\n"),
+      messages: [
+        {
+          role: "user",
+          content: [
+            `提示词版本：${EPISODE_AUTHOR_PROMPT_VERSION}`,
+            `剧名：${outlineResult.value.title}`,
+            `Logline：${outlineResult.value.logline}`,
+            `主题：${input.game.script.name}｜${input.game.script.theme}`,
+            "",
+            "本批演员资料、全局方向与相关关系（每行 JSON）：",
+            ...actorPlayerIds.map((playerId) =>
+              actorContextLine({
+                profile: requiredMapValue(
+                  profileByPlayerId,
+                  playerId,
+                  "character profile",
+                ),
+                direction: requiredMapValue(
+                  directionByPlayerId,
+                  playerId,
+                  "cast direction",
+                ),
+                relationships: outlineResult.value.relationships.filter(
+                  (relationship) =>
+                    relationship.playerIds.includes(playerId),
+                ),
+              }),
+            ),
+            ...(priorMoves.length > 0
+              ? [
+                  "",
+                  `这些是同一演员此前最多 ${MAX_PRIOR_MOVES_PER_ACTOR} 个已写方向，用于延续而非重置弧线：`,
+                  ...priorMoves.map(
+                    (move) => `PRIOR_MOVE ${JSON.stringify(move)}`,
+                  ),
+                ]
+              : []),
+            "",
+            "本批附近的合法轨迹（只用于作者规划；不得在 beat 中把未来写成演员已知事实）：",
+            ...localTrace.map(
+              (step) =>
+                `STEP ${step.index} | ${step.slot.phase} | ${step.slot.type} | actor=${step.slot.actorPlayerId ?? "host"} | ${step.summary}`,
+            ),
+            "",
+            "本批必须生成：",
+            ...batch.map(
+              (step) =>
+                `SPEECH_STEP ${step.index} | ${step.slot.type} | actor=${step.slot.actorPlayerId} | budget=${JSON.stringify(step.speechBeat?.budget ?? null)}`,
+            ),
+            "",
+            "输出 beats[{stepIndex,objective,stance,disclosure,themeHook,characterHook,arcMove,relationshipMove}]。",
+            "beats 必须且只能覆盖本批 SPEECH_STEP；disclosure 只能是 conceal、claim、not_applicable；relationshipMove 没有适用关系时为 null。",
+            "characterHook 说明本场如何由演员稳定性格与表达/判断倾向驱动；arcMove 说明本场是铺垫、受压、适应还是兑现；relationshipMove 只描述当前互动推进。",
+            "所有方向都必须由演员届时可见事实执行；不得写最终台词、未来答案、隐藏身份提示或把关系方向当证据。",
           ].join("\n"),
-          messages: [
-            {
-              role: "user",
-              content: [
-                `提示词版本：${EPISODE_AUTHOR_PROMPT_VERSION}`,
-                `剧名：${outlineResult.value.title}`,
-                `Logline：${outlineResult.value.logline}`,
-                `主题：${input.game.script.name}｜${input.game.script.theme}`,
-                "",
-                "本批演员资料、全局方向与相关关系（每行 JSON）：",
-                ...actorPlayerIds.map((playerId) =>
-                  actorContextLine({
-                    profile: requiredMapValue(
-                      profileByPlayerId,
-                      playerId,
-                      "character profile",
-                    ),
-                    direction: requiredMapValue(
-                      directionByPlayerId,
-                      playerId,
-                      "cast direction",
-                    ),
-                    relationships: outlineResult.value.relationships.filter(
-                      (relationship) =>
-                        relationship.playerIds.includes(playerId),
-                    ),
-                  }),
-                ),
-                ...(priorMoves.length > 0
-                  ? [
-                      "",
-                      `这些是同一演员此前最多 ${MAX_PRIOR_MOVES_PER_ACTOR} 个已写方向，用于延续而非重置弧线：`,
-                      ...priorMoves.map(
-                        (move) => `PRIOR_MOVE ${JSON.stringify(move)}`,
-                      ),
-                    ]
-                  : []),
-                "",
-                "本批附近的合法轨迹（只用于作者规划；不得在 beat 中把未来写成演员已知事实）：",
-                ...localTrace.map(
-                  (step) =>
-                    `STEP ${step.index} | ${step.slot.phase} | ${step.slot.type} | actor=${step.slot.actorPlayerId ?? "host"} | ${step.summary}`,
-                ),
-                "",
-                "本批必须生成：",
-                ...batch.map(
-                  (step) =>
-                    `SPEECH_STEP ${step.index} | ${step.slot.type} | actor=${step.slot.actorPlayerId} | budget=${JSON.stringify(step.speechBeat?.budget ?? null)}`,
-                ),
-                "",
-                "输出 beats[{stepIndex,objective,stance,disclosure,themeHook,characterHook,arcMove,relationshipMove}]。",
-                "beats 必须且只能覆盖本批 SPEECH_STEP；disclosure 只能是 conceal、claim、not_applicable；relationshipMove 没有适用关系时为 null。",
-                "characterHook 说明本场如何由演员稳定性格与表达/判断倾向驱动；arcMove 说明本场是铺垫、受压、适应还是兑现；relationshipMove 只描述当前互动推进。",
-                "所有方向都必须由演员届时可见事实执行；不得写最终台词、未来答案、隐藏身份提示或把关系方向当证据。",
-              ].join("\n"),
-            },
-          ],
         },
-        validate: (parsed) => parseBeats(parsed, batchIndexes),
-        repair: {
-          outputContract: [
-            `beats 必须恰好覆盖 stepIndex：${batchIndexes.join(", ")}`,
-            "每个 beat 包含非空 objective、stance、themeHook、characterHook、arcMove",
-            "disclosure 只能是 conceal、claim、not_applicable；relationshipMove 必须是非空字符串或 null",
-          ],
-        },
-      }),
-    );
+      ],
+    };
+    const beatResult = await runAuthorRequest({
+      kind: "beats",
+      stepIndexes: batchIndexes,
+      request: beatRequest,
+      requests,
+      modelBinding,
+      createdAt: input.createdAt,
+      operation: () =>
+        generateValidatedJson({
+          llmClient: input.llmClient,
+          modelBinding,
+          request: beatRequest,
+          validate: (parsed) => parseBeats(parsed, batchIndexes),
+          repair: {
+            outputContract: [
+              `beats 必须恰好覆盖 stepIndex：${batchIndexes.join(", ")}`,
+              "每个 beat 包含非空 objective、stance、themeHook、characterHook、arcMove",
+              "disclosure 只能是 conceal、claim、not_applicable；relationshipMove 必须是非空字符串或 null",
+            ],
+          },
+        }),
+    });
     authoredBeats.push(...beatResult.value);
     tokenUsage = mergeUsage(tokenUsage, beatResult.tokenUsage);
     repaired ||= Boolean(beatResult.attempts);
@@ -247,6 +283,7 @@ export async function authorEpisodeScript(input: {
       provider: outlineResult.output.provider,
       model: outlineResult.output.model,
     }),
+    requests,
     tokenUsage,
     repaired,
   };
@@ -529,6 +566,57 @@ function add(
     : right === null || right === undefined
       ? left
       : left + right;
+}
+
+async function runAuthorRequest<Value>(input: {
+  readonly kind: EpisodeAuthorRequestRecord["kind"];
+  readonly stepIndexes: readonly number[];
+  readonly request: GenerationRequestSnapshot;
+  readonly requests: EpisodeAuthorRequestRecord[];
+  readonly modelBinding: ModelBindingSnapshot;
+  readonly createdAt: string;
+  readonly operation: () => Promise<ValidatedGenerationResult<Value>>;
+}): Promise<ValidatedGenerationResult<Value>> {
+  try {
+    const result = await retryHeadersTimeout(input.operation);
+    input.requests.push({
+      id: `episode_request_${randomUUID()}`,
+      kind: input.kind,
+      stepIndexes: [...input.stepIndexes],
+      status: "success",
+      promptVersion: EPISODE_AUTHOR_PROMPT_VERSION,
+      provider: result.output.provider,
+      model: result.output.model,
+      request: input.request,
+      tokenUsage: result.tokenUsage,
+      rawOutput: result.output.rawText,
+      parsedOutput: result.output.parsed,
+      error: null,
+      createdAt: input.createdAt,
+      ...(result.attempts ? { attempts: result.attempts } : {}),
+    });
+    return result;
+  } catch (error) {
+    const failure =
+      error instanceof ValidatedGenerationError ? error : null;
+    input.requests.push({
+      id: `episode_request_${randomUUID()}`,
+      kind: input.kind,
+      stepIndexes: [...input.stepIndexes],
+      status: "failed",
+      promptVersion: EPISODE_AUTHOR_PROMPT_VERSION,
+      provider: input.modelBinding.provider,
+      model: input.modelBinding.model,
+      request: input.request,
+      tokenUsage: failure?.tokenUsage ?? null,
+      rawOutput: failure?.rawOutput ?? null,
+      parsedOutput: null,
+      error: error instanceof Error ? error.message : String(error),
+      createdAt: input.createdAt,
+      ...(failure?.attempts ? { attempts: failure.attempts } : {}),
+    });
+    throw new EpisodeAuthoringError(error, input.requests);
+  }
 }
 
 async function retryHeadersTimeout<Value>(

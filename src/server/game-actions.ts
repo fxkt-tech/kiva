@@ -18,8 +18,12 @@ import {
   assertEpisodeDraftMatchesStep,
   episodeScriptReport,
   planNextEpisodeDraft,
+  type EpisodeScriptState,
 } from "@/core/episode-script";
-import { authorEpisodeScript } from "@/core/episode-author";
+import {
+  authorEpisodeScript,
+  EpisodeAuthoringError,
+} from "@/core/episode-author";
 import {
   createDefaultRuleset,
   type DraftId,
@@ -263,7 +267,12 @@ export function createGameActions(
         const nextRecord: GameRecord = {
           ...record,
           game: { ...record.game, updatedAt: startedAt },
-          episodeScript: { status: "generating", jobId, startedAt },
+          episodeScript: {
+            status: "generating",
+            jobId,
+            startedAt,
+            requests: episodeAuthorRequests(record.episodeScript),
+          },
         };
         await repository.save(nextRecord);
         return nextRecord;
@@ -293,6 +302,10 @@ export function createGameActions(
               jobId,
               candidate: authored.script,
               report,
+              requests: [
+                ...(current.episodeScript.requests ?? []),
+                ...authored.requests,
+              ],
             },
           };
           await repository.save(nextRecord);
@@ -315,6 +328,12 @@ export function createGameActions(
               jobId,
               error: error instanceof Error ? error.message : String(error),
               failedAt: now(),
+              requests: [
+                ...(current.episodeScript.requests ?? []),
+                ...(error instanceof EpisodeAuthoringError
+                  ? error.requests
+                  : []),
+              ],
             },
           };
           await repository.save(nextRecord);
@@ -358,6 +377,7 @@ export function createGameActions(
             script: structuredClone(state.candidate),
             report: structuredClone(state.report),
             approvedAt,
+            requests: structuredClone(state.requests ?? []),
           },
         };
         await repository.save(nextRecord);
@@ -718,6 +738,10 @@ async function maybeGenerateDraft(input: {
 
 function createGenerationId(): string {
   return `generation_${randomUUID()}`;
+}
+
+function episodeAuthorRequests(state: EpisodeScriptState | null) {
+  return state && "requests" in state ? state.requests ?? [] : [];
 }
 
 function now(): string {
