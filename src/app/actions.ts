@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import type { DraftPayloadEdit } from "@/core/draft-edit";
 import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
 import { parseGameRunMode, type GameRunMode } from "@/core/game-run-mode";
@@ -65,7 +66,8 @@ export async function createGameFromSeatAssignmentsAction(formData: FormData) {
 }
 
 export async function generateEpisodeScriptAction(gameId: GameId) {
-  await gameActions.generateEpisodeScript(gameId);
+  const jobId = await gameActions.startEpisodeScriptGeneration(gameId);
+  after(() => gameActions.runEpisodeScriptGeneration(gameId, jobId));
   revalidatePath(`/games/${gameId}/script`);
   revalidatePath("/");
 }

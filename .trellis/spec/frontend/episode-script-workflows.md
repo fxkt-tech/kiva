@@ -18,6 +18,8 @@
 - `actorBriefForStep(script, stepIndex): EpisodeActorBrief | null`
 - `<EpisodeEnsembleReview script={script} players={players} />`
 - `gameActions.generateEpisodeScript(gameId)`
+- `gameActions.startEpisodeScriptGeneration(gameId): Promise<string>`
+- `gameActions.runEpisodeScriptGeneration(gameId, jobId): Promise<GameRecord>`
 - `generateEpisodeScriptAction(gameId)` submitted manually from `/games/:id/script`
 - `gameActions.approveEpisodeScript(gameId, expectedJobId, expectedScriptId)`
 
@@ -59,6 +61,8 @@ type EpisodeAuthorRequestRecord = {
 - `GameRecord.episodeScript` is `idle | generating | review | approved | failed` for scripted games and `null` for game mode. The field and every state-specific key are required and validated exactly.
 - New Game creation stops at `idle`: neither preset nor random-seat creation may invoke Script Author or an LLM. The idle Script preparation page owns the explicit Generate form, and only that submission starts authoring.
 - Authoring writes a new job identity before the LLM call. Completion updates state only when that job is still current. Approval carries both job ID and candidate script ID.
+- The browser Server Action must not await the multi-request authoring run. It awaits `startEpisodeScriptGeneration()` so `generating` is durable, registers `runEpisodeScriptGeneration()` with Next `after(() => ...)`, revalidates, and returns the HTTP response. The synchronous `generateEpisodeScript()` wrapper remains for tests and non-HTTP callers only.
+- `runEpisodeScriptGeneration()` reloads and compares the current `jobId` before the first LLM request. An obsolete deferred callback exits without provider calls; completion repeats the same comparison under the Game lock before writing review/failed state.
 - Approved execution derives the cursor from active-event count, calls the normal planner, compares the Draft slot, binds the approved payload, and validates it again before confirmation.
 - Structural Drafts are read-only in Editor and never call the player action model. Speech text remains editable/generatable within the approved step budget.
 - Approval calls `assertEpisodeScriptMatchesGame()`, which recompiles the legal trace and checks winner, day count, duration, every slot/payload/budget, schema-aware input identity, cast coverage, relationship references, and signature opportunities.
@@ -95,6 +99,9 @@ type EpisodeSpeechBeatV2 = {
 | Scripted Game omits Episode state, or Game mode stores a non-null state | Reject the GameRecord. |
 | Scripted Game has just been created | Persist `idle`, redirect to `/script`, and make no authoring request. |
 | Director submits Generate from the idle Script page | Start a new authoring job and transition through `generating`. |
+| Server Action schedules authoring | Persist `generating`, register a callback with `after`, and return without awaiting any LLM request. |
+| Deferred callback belongs to an obsolete job | Return the current record before calling the provider. |
+| Process stops after `generating` is persisted | The record remains recoverable through the existing restart control; never hold the browser POST open as a substitute for a durable job boundary. |
 | Runtime slot or planned payload differs | Stop with episode divergence; do not select an alternative. |
 | Structural edit is submitted in scripted mode | Reject; only speech `text` may be edited. |
 | Voice/Preview/export requested before approval | Reject or route back to Script Review. |
@@ -105,6 +112,7 @@ type EpisodeSpeechBeatV2 = {
 - Base: no external LLM credentials are present, so the local Script Author deterministically produces structurally complete v2 ensemble direction over the same legal trace.
 - Bad: trigger authoring as a side effect of New Game creation, mention an actor ID without its profile in a beat batch, restart its arc in every batch, expose a future payoff to the runtime actor, or alter the trace to manufacture equal screen time.
 - Bad: keep only one aggregate token count on the candidate or replace `requests` on regeneration, because this makes provider cost unauditable and erases failed-job spend.
+- Bad: await outline plus every beat batch inside the Server Action. A server restart then surfaces as browser `Failed to fetch` and leaves a valid but unfinished `generating` record.
 
 ### 6. Tests Required
 
@@ -118,6 +126,8 @@ type EpisodeSpeechBeatV2 = {
 - Script-page render tests assert one shared `LLM details` control per request and per-request plus aggregate token totals.
 - Server integration round-trips v2 through repository state, rejects stale approval, character-profile changes, and structural edits, and executes the entire approved trace to terminal state.
 - Creation-action tests spy on `generateEpisodeScript()` and require zero calls for both scripted preset and random-seat creation; idle Script-page tests require a manual Generate form.
+- Generate-action tests mock Next `after` and assert the action awaits start, returns before run, and the scheduled callback carries the exact `gameId`/`jobId`.
+- Service tests assert start persists `generating` with zero LLM calls, run reaches review/failed, and an obsolete job exits with zero LLM calls.
 - Decoder tests reject schema-v1, missing current direction fields, extra keys, and mismatched current character hashes.
 - Prompt tests assert own profile plus current Actor Brief direction and absence of planned winner/full script/another player's profile.
 - Review render tests assert all cast/relationship direction is visible and no input, textarea, or field-level button exists.
@@ -134,3 +144,7 @@ Correct: persist scripted creation as idle, let the director explicitly start ge
 Wrong: store only the latest candidate's author request details and token total.
 
 Correct: append each bounded request record to Episode state history, retain prior jobs through regeneration, and derive both Script-page and Home token totals from those records.
+
+Wrong: `await gameActions.generateEpisodeScript(gameId)` inside a browser Server Action.
+
+Correct: `const jobId = await gameActions.startEpisodeScriptGeneration(gameId); after(() => gameActions.runEpisodeScriptGeneration(gameId, jobId));` so the response is independent of provider latency.

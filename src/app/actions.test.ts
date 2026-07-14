@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { GameId } from "@/core/types";
 
 const actionMocks = vi.hoisted(() => ({
   createGameFromPreset: vi.fn(),
   createGameFromTemporaryPreset: vi.fn(),
   generateEpisodeScript: vi.fn(),
+  startEpisodeScriptGeneration: vi.fn(),
+  runEpisodeScriptGeneration: vi.fn(),
+  after: vi.fn(),
   redirect: vi.fn(),
   revalidatePath: vi.fn(),
 }));
@@ -16,9 +20,15 @@ vi.mock("next/navigation", () => ({
   redirect: actionMocks.redirect,
 }));
 
+vi.mock("next/server", () => ({
+  after: actionMocks.after,
+}));
+
 vi.mock("@/server/game-actions", () => ({
   createGameActions: () => ({
     generateEpisodeScript: actionMocks.generateEpisodeScript,
+    startEpisodeScriptGeneration: actionMocks.startEpisodeScriptGeneration,
+    runEpisodeScriptGeneration: actionMocks.runEpisodeScriptGeneration,
   }),
 }));
 
@@ -44,6 +54,7 @@ vi.mock("@/server/llm-runtime", () => ({
 import {
   createGameFromPresetHomeAction,
   createGameFromSeatAssignmentsAction,
+  generateEpisodeScriptAction,
 } from "./actions";
 
 const scriptedRecord = {
@@ -57,6 +68,28 @@ beforeEach(() => {
   vi.clearAllMocks();
   actionMocks.createGameFromPreset.mockResolvedValue(scriptedRecord);
   actionMocks.createGameFromTemporaryPreset.mockResolvedValue(scriptedRecord);
+  actionMocks.startEpisodeScriptGeneration.mockResolvedValue("episode_job_1");
+  actionMocks.runEpisodeScriptGeneration.mockResolvedValue(scriptedRecord);
+});
+
+describe("Episode Script server actions", () => {
+  it("returns after persisting the job and schedules long authoring after the response", async () => {
+    await generateEpisodeScriptAction("scripted-game-1" as GameId);
+
+    expect(actionMocks.startEpisodeScriptGeneration).toHaveBeenCalledWith(
+      "scripted-game-1",
+    );
+    expect(actionMocks.runEpisodeScriptGeneration).not.toHaveBeenCalled();
+    expect(actionMocks.after).toHaveBeenCalledOnce();
+
+    const scheduled = actionMocks.after.mock.calls[0]?.[0];
+    expect(scheduled).toBeTypeOf("function");
+    await scheduled();
+    expect(actionMocks.runEpisodeScriptGeneration).toHaveBeenCalledWith(
+      "scripted-game-1",
+      "episode_job_1",
+    );
+  });
 });
 
 describe("New Game server actions", () => {

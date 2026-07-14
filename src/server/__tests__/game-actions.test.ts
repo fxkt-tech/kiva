@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { getActiveEvents } from "@/core/event-log";
 import {
   LocalHeuristicLlmClient,
@@ -287,6 +287,66 @@ describe("game actions", () => {
     }
     expect(getActiveEvents(current.events).at(-1)?.type).toBe("game_ended");
     expect(current.draft).toBeNull();
+  }, 15_000);
+
+  it("persists a generation job before running any Script Author request", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const local = new LocalHeuristicLlmClient();
+    const generateJson = vi.fn(local.generateJson.bind(local));
+    const actions = createGameActions(repository, {
+      llmClient: { generateJson },
+    });
+    const created = await actions.createGameFromPresetId(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+
+    const jobId = await actions.startEpisodeScriptGeneration(created.game.id);
+
+    expect(generateJson).not.toHaveBeenCalled();
+    await expect(repository.get(created.game.id)).resolves.toMatchObject({
+      episodeScript: { status: "generating", jobId },
+    });
+
+    const review = await actions.runEpisodeScriptGeneration(
+      created.game.id,
+      jobId,
+    );
+    expect(generateJson).toHaveBeenCalled();
+    expect(review.episodeScript?.status).toBe("review");
+  });
+
+  it("does not run an obsolete Script Author job after a restart", async () => {
+    const repository = createGameRepository(await createTempDir());
+    const generateJson = vi.fn();
+    const actions = createGameActions(repository, {
+      llmClient: { generateJson },
+    });
+    const created = await actions.createGameFromPresetId(
+      defaultPresetId,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+
+    const obsoleteJobId = await actions.startEpisodeScriptGeneration(
+      created.game.id,
+    );
+    const currentJobId = await actions.startEpisodeScriptGeneration(
+      created.game.id,
+    );
+    const current = await actions.runEpisodeScriptGeneration(
+      created.game.id,
+      obsoleteJobId,
+    );
+
+    expect(generateJson).not.toHaveBeenCalled();
+    expect(current.episodeScript).toMatchObject({
+      status: "generating",
+      jobId: currentJobId,
+    });
   });
 
   it("persists authoring failure and allows a full retry", async () => {

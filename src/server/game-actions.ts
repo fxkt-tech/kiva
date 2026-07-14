@@ -146,7 +146,120 @@ export function createGameActions(
     return record;
   }
 
+  async function startEpisodeScriptGeneration(gameId: GameId): Promise<string> {
+    const jobId = `episode_job_${randomUUID()}`;
+    const startedAt = now();
+    await repository.withGameLock(gameId, async () => {
+      const record = await loadGame(gameId);
+      if (record.game.runMode !== "scripted") {
+        throw new Error("Episode scripts are only available in scripted mode");
+      }
+      if (getActiveEvents(record.events).length > 0 || record.draft) {
+        throw new Error("Cannot generate an episode script after game execution starts");
+      }
+      if (record.episodeScript?.status === "approved") {
+        throw new Error("Approved episode script cannot be regenerated");
+      }
+      const nextRecord: GameRecord = {
+        ...record,
+        game: { ...record.game, updatedAt: startedAt },
+        episodeScript: {
+          status: "generating",
+          jobId,
+          startedAt,
+          requests: episodeAuthorRequests(record.episodeScript),
+        },
+      };
+      await repository.save(nextRecord);
+    });
+    return jobId;
+  }
+
+  async function runEpisodeScriptGeneration(
+    gameId: GameId,
+    jobId: string,
+  ): Promise<GameRecord> {
+    const generating = await loadGame(gameId);
+    if (
+      generating.episodeScript?.status !== "generating" ||
+      generating.episodeScript.jobId !== jobId
+    ) {
+      return generating;
+    }
+
+    try {
+      if (!options.llmClient) {
+        throw new Error("Script Author LLM is not configured");
+      }
+      const authored = await authorEpisodeScript({
+        game: generating.game,
+        llmClient: options.llmClient,
+        createdAt: now(),
+      });
+      return repository.withGameLock(gameId, async () => {
+        const current = await loadGame(gameId);
+        if (
+          current.episodeScript?.status !== "generating" ||
+          current.episodeScript.jobId !== jobId
+        ) {
+          return current;
+        }
+        const report = episodeScriptReport(authored.script);
+        const nextRecord: GameRecord = {
+          ...current,
+          game: { ...current.game, updatedAt: now() },
+          episodeScript: {
+            status: "review",
+            jobId,
+            candidate: authored.script,
+            report,
+            requests: [
+              ...(current.episodeScript.requests ?? []),
+              ...authored.requests,
+            ],
+          },
+        };
+        await repository.save(nextRecord);
+        return nextRecord;
+      });
+    } catch (error) {
+      return repository.withGameLock(gameId, async () => {
+        const current = await loadGame(gameId);
+        if (
+          current.episodeScript?.status !== "generating" ||
+          current.episodeScript.jobId !== jobId
+        ) {
+          return current;
+        }
+        const nextRecord: GameRecord = {
+          ...current,
+          game: { ...current.game, updatedAt: now() },
+          episodeScript: {
+            status: "failed",
+            jobId,
+            error: error instanceof Error ? error.message : String(error),
+            failedAt: now(),
+            requests: [
+              ...(current.episodeScript.requests ?? []),
+              ...(error instanceof EpisodeAuthoringError ? error.requests : []),
+            ],
+          },
+        };
+        await repository.save(nextRecord);
+        return nextRecord;
+      });
+    }
+  }
+
+  async function generateEpisodeScript(gameId: GameId): Promise<GameRecord> {
+    const jobId = await startEpisodeScriptGeneration(gameId);
+    return runEpisodeScriptGeneration(gameId, jobId);
+  }
+
   return {
+    startEpisodeScriptGeneration,
+    runEpisodeScriptGeneration,
+    generateEpisodeScript,
     async createGame(): Promise<GameRecord> {
       const presetId = options.defaultPresetId ?? "twelve_player_standard";
       const library = await loadGameLibrary(options.libraryRepository);
@@ -248,98 +361,6 @@ export function createGameActions(
         await repository.save(nextRecord);
         return nextRecord;
       });
-    },
-
-    async generateEpisodeScript(gameId: GameId): Promise<GameRecord> {
-      const jobId = `episode_job_${randomUUID()}`;
-      const startedAt = now();
-      const generating = await repository.withGameLock(gameId, async () => {
-        const record = await loadGame(gameId);
-        if (record.game.runMode !== "scripted") {
-          throw new Error("Episode scripts are only available in scripted mode");
-        }
-        if (getActiveEvents(record.events).length > 0 || record.draft) {
-          throw new Error("Cannot generate an episode script after game execution starts");
-        }
-        if (record.episodeScript?.status === "approved") {
-          throw new Error("Approved episode script cannot be regenerated");
-        }
-        const nextRecord: GameRecord = {
-          ...record,
-          game: { ...record.game, updatedAt: startedAt },
-          episodeScript: {
-            status: "generating",
-            jobId,
-            startedAt,
-            requests: episodeAuthorRequests(record.episodeScript),
-          },
-        };
-        await repository.save(nextRecord);
-        return nextRecord;
-      });
-
-      try {
-        if (!options.llmClient) throw new Error("Script Author LLM is not configured");
-        const authored = await authorEpisodeScript({
-          game: generating.game,
-          llmClient: options.llmClient,
-          createdAt: now(),
-        });
-        return repository.withGameLock(gameId, async () => {
-          const current = await loadGame(gameId);
-          if (
-            current.episodeScript?.status !== "generating" ||
-            current.episodeScript.jobId !== jobId
-          ) {
-            return current;
-          }
-          const report = episodeScriptReport(authored.script);
-          const nextRecord: GameRecord = {
-            ...current,
-            game: { ...current.game, updatedAt: now() },
-            episodeScript: {
-              status: "review",
-              jobId,
-              candidate: authored.script,
-              report,
-              requests: [
-                ...(current.episodeScript.requests ?? []),
-                ...authored.requests,
-              ],
-            },
-          };
-          await repository.save(nextRecord);
-          return nextRecord;
-        });
-      } catch (error) {
-        return repository.withGameLock(gameId, async () => {
-          const current = await loadGame(gameId);
-          if (
-            current.episodeScript?.status !== "generating" ||
-            current.episodeScript.jobId !== jobId
-          ) {
-            return current;
-          }
-          const nextRecord: GameRecord = {
-            ...current,
-            game: { ...current.game, updatedAt: now() },
-            episodeScript: {
-              status: "failed",
-              jobId,
-              error: error instanceof Error ? error.message : String(error),
-              failedAt: now(),
-              requests: [
-                ...(current.episodeScript.requests ?? []),
-                ...(error instanceof EpisodeAuthoringError
-                  ? error.requests
-                  : []),
-              ],
-            },
-          };
-          await repository.save(nextRecord);
-          return nextRecord;
-        });
-      }
     },
 
     async approveEpisodeScript(
