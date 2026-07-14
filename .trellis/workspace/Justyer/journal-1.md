@@ -303,3 +303,36 @@ Added schema-v2 ensemble direction, persona-aware outline and beat authoring, cu
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: Script Author Agent v3
+
+**Date**: 2026-07-14
+**Task**: Script Author Agent v3
+**Branch**: `main`
+
+### Summary
+
+将整集剧本创作重构为可断点续跑的细粒度 Agent，按故事、群像、角色、关系和局部场景持久化检查点；按 finish reason 分流截断恢复，并补齐 Script 页面进度、严格边界、规范与全量测试。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ebf5e09` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
