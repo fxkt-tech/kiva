@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mechanicForDraftType, type ActionDraftType } from "../role-mechanics";
-import type { RoleMechanicKey } from "../role-definition";
+import type { RuleRoleMechanicKey } from "../rule-role";
 
 describe("role mechanics", () => {
   it.each([
@@ -11,7 +11,7 @@ describe("role mechanics", () => {
     ["guard_protect_selected", "guard_protect"],
     ["hunter_shot_decided", "hunter_shot"],
     ["vote_cast", "none"],
-  ] satisfies readonly (readonly [ActionDraftType, RoleMechanicKey])[])(
+  ] satisfies readonly (readonly [ActionDraftType, RuleRoleMechanicKey])[])(
     "maps %s to %s",
     (draftType, mechanicKey) => {
       expect(mechanicForDraftType(draftType)).toBe(mechanicKey);

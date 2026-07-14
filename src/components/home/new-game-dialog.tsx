@@ -2,78 +2,75 @@
 
 import { useMemo, useState } from "react";
 import {
-  createGameFromPresetHomeAction,
-  createGameFromSeatAssignmentsAction,
+  createGameFromCustomLineupHomeAction,
+  createGameFromLineupHomeAction,
 } from "@/app/actions";
 import { Button } from "@/components/ui/button";
-import type { CharacterDefinition } from "@/core/character-definition";
-import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
+import type { ActorDefinition } from "@/core/actor-definition";
+import type { Lineup, LineupSeat } from "@/core/lineup";
 import type { GameRunMode } from "@/core/game-run-mode";
 import type { GameScriptDefinition } from "@/core/game-script";
-import type { RoleDefinition } from "@/core/role-definition";
+import type { RuleRole } from "@/core/rule-role";
 import {
-  createRandomSeatSetup,
-  validateSeatSetup,
+  createRandomLineupSeats,
+  validateLineupSeats,
 } from "./new-game-setup";
 import { roleIdentityColor } from "./role-identity-color";
 
 type NewGameDialogProps = {
-  readonly presets: readonly GamePreset[];
-  readonly roles: readonly RoleDefinition[];
-  readonly characters: readonly CharacterDefinition[];
+  readonly lineups: readonly Lineup[];
+  readonly ruleRoles: readonly RuleRole[];
+  readonly actors: readonly ActorDefinition[];
   readonly scripts: readonly GameScriptDefinition[];
 };
 
-type SeatMode = "preset" | "random";
+type SeatMode = "lineup" | "random";
 type SetupStep = "experience" | "lineup";
 
 const SEAT_GRID_CLASS =
   "grid grid-cols-[52px_minmax(0,0.9fr)_minmax(0,1.1fr)] items-center gap-2";
 
 export function NewGameDialog({
-  presets,
-  roles,
-  characters,
+  lineups,
+  ruleRoles,
+  actors,
   scripts,
 }: NewGameDialogProps) {
   const [open, setOpen] = useState(false);
   const [setupStep, setSetupStep] = useState<SetupStep>("experience");
   const [runMode, setRunMode] = useState<GameRunMode>("game");
-  const [seatMode, setSeatMode] = useState<SeatMode>("preset");
-  const [selectedPresetId, setSelectedPresetId] = useState(
-    presets[0]?.id ?? "",
+  const [seatMode, setSeatMode] = useState<SeatMode>("lineup");
+  const [selectedLineupId, setSelectedLineupId] = useState(
+    lineups[0]?.id ?? "",
   );
   const [selectedScriptId, setSelectedScriptId] = useState(
     scripts[0]?.id ?? "",
   );
-  const [randomSeats, setRandomSeats] = useState<readonly GamePresetSeatAssignment[]>(
-    () => createRandomSeatSetup({ roles, characters, random: () => 0 }),
+  const [randomSeats, setRandomSeats] = useState<readonly LineupSeat[]>(
+    () => createRandomLineupSeats({ ruleRoles, actors, random: () => 0 }),
   );
-  const enabledRoles = useMemo(
-    () => roles.filter((role) => role.enabled),
-    [roles],
+  const enabledRuleRoles = ruleRoles;
+  const enabledActors = useMemo(
+    () => actors.filter((actor) => actor.enabled),
+    [actors],
   );
-  const enabledCharacters = useMemo(
-    () => characters.filter((character) => character.enabled),
-    [characters],
-  );
-  const selectedPreset =
-    presets.find((preset) => preset.id === selectedPresetId) ?? presets[0] ?? null;
-  const validationMessages = validateSeatSetup(
+  const selectedLineup =
+    lineups.find((lineup) => lineup.id === selectedLineupId) ?? lineups[0] ?? null;
+  const validationMessages = validateLineupSeats(
     randomSeats,
-    enabledRoles,
-    enabledCharacters,
+    enabledRuleRoles,
+    enabledActors,
   );
 
   function openDialog() {
-    setRandomSeats(createRandomSeatSetup({ roles: enabledRoles, characters: enabledCharacters }));
+    setRandomSeats(createRandomLineupSeats({ ruleRoles: enabledRuleRoles, actors: enabledActors }));
     setSetupStep("experience");
     setOpen(true);
   }
 
   function updateRandomSeat(
     seatNo: number,
-    field: "roleId" | "characterId",
+    field: "ruleRoleId" | "actorId",
     value: string,
   ) {
     setRandomSeats((currentSeats) =>
@@ -85,9 +82,9 @@ export function NewGameDialog({
 
   function rerollRandomSeats() {
     setRandomSeats(
-      createRandomSeatSetup({
-        roles: enabledRoles,
-        characters: enabledCharacters,
+      createRandomLineupSeats({
+        ruleRoles: enabledRuleRoles,
+        actors: enabledActors,
       }),
     );
   }
@@ -167,7 +164,7 @@ export function NewGameDialog({
                     />
                     <div className="flex flex-wrap items-center justify-between gap-2 lg:justify-end">
                       <div className="inline-flex rounded-lg border border-border bg-surface-muted p-1">
-                        <ModeButton active={seatMode === "preset"} onClick={() => setSeatMode("preset")}>
+                        <ModeButton active={seatMode === "lineup"} onClick={() => setSeatMode("lineup")}>
                           使用预设
                         </ModeButton>
                         <ModeButton active={seatMode === "random"} onClick={() => setSeatMode("random")}>
@@ -186,14 +183,14 @@ export function NewGameDialog({
                     </div>
                   </div>
 
-                  {seatMode === "preset" ? (
-                    <PresetMode
-                      presets={presets}
-                      roles={roles}
-                      characters={characters}
-                      selectedPreset={selectedPreset}
-                      selectedPresetId={selectedPresetId}
-                      onSelectPreset={setSelectedPresetId}
+                  {seatMode === "lineup" ? (
+                    <LineupMode
+                      lineups={lineups}
+                      ruleRoles={ruleRoles}
+                      actors={actors}
+                      selectedLineup={selectedLineup}
+                      selectedLineupId={selectedLineupId}
+                      onSelectLineup={setSelectedLineupId}
                       selectedScriptId={selectedScriptId}
                       runMode={runMode}
                       onBack={() => setSetupStep("experience")}
@@ -201,8 +198,8 @@ export function NewGameDialog({
                   ) : (
                     <RandomMode
                       seats={randomSeats}
-                      roles={enabledRoles}
-                      characters={enabledCharacters}
+                      ruleRoles={enabledRuleRoles}
+                      actors={enabledActors}
                       validationMessages={validationMessages}
                       onUpdateSeat={updateRandomSeat}
                       selectedScriptId={selectedScriptId}
@@ -418,23 +415,23 @@ function ModeButton({
   );
 }
 
-function PresetMode({
-  presets,
-  roles,
-  characters,
-  selectedPreset,
-  selectedPresetId,
-  onSelectPreset,
+function LineupMode({
+  lineups,
+  ruleRoles,
+  actors,
+  selectedLineup,
+  selectedLineupId,
+  onSelectLineup,
   selectedScriptId,
   runMode,
   onBack,
 }: {
-  readonly presets: readonly GamePreset[];
-  readonly roles: readonly RoleDefinition[];
-  readonly characters: readonly CharacterDefinition[];
-  readonly selectedPreset: GamePreset | null;
-  readonly selectedPresetId: string;
-  readonly onSelectPreset: (presetId: string) => void;
+  readonly lineups: readonly Lineup[];
+  readonly ruleRoles: readonly RuleRole[];
+  readonly actors: readonly ActorDefinition[];
+  readonly selectedLineup: Lineup | null;
+  readonly selectedLineupId: string;
+  readonly onSelectLineup: (lineupId: string) => void;
   readonly selectedScriptId: string;
   readonly runMode: GameRunMode;
   readonly onBack: () => void;
@@ -442,28 +439,28 @@ function PresetMode({
   return (
     <div className="grid min-h-0 gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
       <div className="space-y-2">
-        {presets.length === 0 ? (
+        {lineups.length === 0 ? (
           <p className="rounded border border-border bg-surface-muted/60 p-3 text-sm text-subtle">
-            No presets available.
+            No lineups available.
           </p>
         ) : (
-          presets.map((preset) => (
+          lineups.map((lineup) => (
             <Button
-              key={preset.id}
-              onClick={() => onSelectPreset(preset.id)}
+              key={lineup.id}
+              onClick={() => onSelectLineup(lineup.id)}
               className={[
                 "block w-full cursor-pointer rounded border px-3 py-3 text-left transition",
-                preset.id === selectedPresetId
+                lineup.id === selectedLineupId
                   ? "border-accent bg-surface-strong text-foreground"
                   : "border-border bg-surface/55 text-muted hover:border-interactive-border-hover",
               ].join(" ")}
               unstyled
             >
               <span className="block truncate text-sm font-medium">
-                {preset.name}
+                {lineup.name}
               </span>
               <span className="mt-1 block font-mono text-xs text-subtle">
-                {preset.id}
+                {lineup.id}
               </span>
             </Button>
           ))
@@ -471,14 +468,14 @@ function PresetMode({
       </div>
 
       <div className="space-y-3">
-        {selectedPreset ? (
+        {selectedLineup ? (
           <>
             <ReadOnlySeatTable
-              seats={seatsForPreset(selectedPreset)}
-              roles={roles}
-              characters={characters}
+              seats={seatsForLineup(selectedLineup)}
+              ruleRoles={ruleRoles}
+              actors={actors}
             />
-            <form action={createGameFromPresetHomeAction.bind(null, selectedPreset.id)}>
+            <form action={createGameFromLineupHomeAction.bind(null, selectedLineup.id)}>
               <input type="hidden" name="scriptId" value={selectedScriptId} />
               <input type="hidden" name="runMode" value={runMode} />
               <div className="flex justify-between border-t border-border pt-3">
@@ -502,21 +499,21 @@ function PresetMode({
 
 function RandomMode({
   seats,
-  roles,
-  characters,
+  ruleRoles,
+  actors,
   validationMessages,
   onUpdateSeat,
   selectedScriptId,
   runMode,
   onBack,
 }: {
-  readonly seats: readonly GamePresetSeatAssignment[];
-  readonly roles: readonly RoleDefinition[];
-  readonly characters: readonly CharacterDefinition[];
+  readonly seats: readonly LineupSeat[];
+  readonly ruleRoles: readonly RuleRole[];
+  readonly actors: readonly ActorDefinition[];
   readonly validationMessages: readonly string[];
   readonly onUpdateSeat: (
     seatNo: number,
-    field: "roleId" | "characterId",
+    field: "ruleRoleId" | "actorId",
     value: string,
   ) => void;
   readonly selectedScriptId: string;
@@ -524,14 +521,14 @@ function RandomMode({
   readonly onBack: () => void;
 }) {
   return (
-    <form action={createGameFromSeatAssignmentsAction} className="space-y-3">
+    <form action={createGameFromCustomLineupHomeAction} className="space-y-3">
       <input type="hidden" name="scriptId" value={selectedScriptId} />
       <input type="hidden" name="runMode" value={runMode} />
 
       <EditableSeatTable
         seats={seats}
-        roles={roles}
-        characters={characters}
+        ruleRoles={ruleRoles}
+        actors={actors}
         onUpdateSeat={onUpdateSeat}
       />
 
@@ -563,12 +560,12 @@ function RandomMode({
 
 export function ReadOnlySeatTable({
   seats,
-  roles,
-  characters,
+  ruleRoles,
+  actors,
 }: {
-  readonly seats: readonly GamePresetSeatAssignment[];
-  readonly roles: readonly RoleDefinition[];
-  readonly characters: readonly CharacterDefinition[];
+  readonly seats: readonly LineupSeat[];
+  readonly ruleRoles: readonly RuleRole[];
+  readonly actors: readonly ActorDefinition[];
 }) {
   return (
     <SeatTableFrame
@@ -577,9 +574,9 @@ export function ReadOnlySeatTable({
         <SeatRow
           key={seat.seatNo}
           seatNo={seat.seatNo}
-          roleId={seat.roleId}
-          role={roleLabel(roles, seat.roleId)}
-          character={characterLabel(characters, seat.characterId)}
+          ruleRoleId={seat.ruleRoleId}
+          role={ruleRoleLabel(ruleRoles, seat.ruleRoleId)}
+          actor={actorLabel(actors, seat.actorId)}
         />
       )}
     />
@@ -588,16 +585,16 @@ export function ReadOnlySeatTable({
 
 export function EditableSeatTable({
   seats,
-  roles,
-  characters,
+  ruleRoles,
+  actors,
   onUpdateSeat,
 }: {
-  readonly seats: readonly GamePresetSeatAssignment[];
-  readonly roles: readonly RoleDefinition[];
-  readonly characters: readonly CharacterDefinition[];
+  readonly seats: readonly LineupSeat[];
+  readonly ruleRoles: readonly RuleRole[];
+  readonly actors: readonly ActorDefinition[];
   readonly onUpdateSeat: (
     seatNo: number,
-    field: "roleId" | "characterId",
+    field: "ruleRoleId" | "actorId",
     value: string,
   ) => void;
 }) {
@@ -614,16 +611,16 @@ export function EditableSeatTable({
             Seat {seat.seatNo}
           </span>
           <select
-            name={`seat.${seat.seatNo}.roleId`}
-            value={seat.roleId}
-            data-selected-role-id={seat.roleId}
+            name={`seat.${seat.seatNo}.ruleRoleId`}
+            value={seat.ruleRoleId}
+            data-selected-role-id={seat.ruleRoleId}
             onChange={(event) =>
-              onUpdateSeat(seat.seatNo, "roleId", event.target.value)
+              onUpdateSeat(seat.seatNo, "ruleRoleId", event.target.value)
             }
             className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-xs font-semibold outline-none"
-            style={{ color: roleIdentityColor(seat.roleId) }}
+            style={{ color: roleIdentityColor(seat.ruleRoleId) }}
           >
-            {roles.map((role) => (
+            {ruleRoles.map((role) => (
               <option
                 key={role.id}
                 value={role.id}
@@ -635,16 +632,16 @@ export function EditableSeatTable({
             ))}
           </select>
           <select
-            name={`seat.${seat.seatNo}.characterId`}
-            value={seat.characterId}
+            name={`seat.${seat.seatNo}.actorId`}
+            value={seat.actorId}
             onChange={(event) =>
-              onUpdateSeat(seat.seatNo, "characterId", event.target.value)
+              onUpdateSeat(seat.seatNo, "actorId", event.target.value)
             }
             className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-xs text-foreground outline-none"
           >
-            {characters.map((character) => (
-              <option key={character.id} value={character.id}>
-                {character.name} · {character.id}
+            {actors.map((actor) => (
+              <option key={actor.id} value={actor.id}>
+                {actor.identity.name} · {actor.id}
               </option>
             ))}
           </select>
@@ -658,8 +655,8 @@ function SeatTableFrame({
   seats,
   renderSeat,
 }: {
-  readonly seats: readonly GamePresetSeatAssignment[];
-  readonly renderSeat: (seat: GamePresetSeatAssignment) => React.ReactNode;
+  readonly seats: readonly LineupSeat[];
+  readonly renderSeat: (seat: LineupSeat) => React.ReactNode;
 }) {
   const columnSize = Math.ceil(seats.length / 2);
   const columns = [seats.slice(0, columnSize), seats.slice(columnSize)];
@@ -682,8 +679,8 @@ function SeatTableFrame({
         >
           <div className={`${SEAT_GRID_CLASS} border-b border-border bg-surface-muted/60 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-subtle`}>
             <span>Seat</span>
-            <span>Role</span>
-            <span>Character</span>
+            <span>Rule Role</span>
+            <span>Actor</span>
           </div>
           {column.map(renderSeat)}
         </div>
@@ -694,14 +691,14 @@ function SeatTableFrame({
 
 function SeatRow({
   seatNo,
-  roleId,
+  ruleRoleId,
   role,
-  character,
+  actor,
 }: {
   readonly seatNo: number;
-  readonly roleId: string;
+  readonly ruleRoleId: string;
   readonly role: string;
-  readonly character: string;
+  readonly actor: string;
 }) {
   return (
     <div
@@ -711,42 +708,33 @@ function SeatRow({
       <span className="font-mono text-xs text-subtle">Seat {seatNo}</span>
       <span
         className="min-w-0 truncate font-semibold"
-        data-role-id={roleId}
-        style={{ color: roleIdentityColor(roleId) }}
+        data-role-id={ruleRoleId}
+        style={{ color: roleIdentityColor(ruleRoleId) }}
       >
         {role}
       </span>
-      <span className="min-w-0 truncate text-foreground">{character}</span>
+      <span className="min-w-0 truncate text-foreground">{actor}</span>
     </div>
   );
 }
 
-function seatsForPreset(preset: GamePreset): readonly GamePresetSeatAssignment[] {
-  if (preset.seatAssignments !== null) {
-    return preset.seatAssignments;
-  }
-
-  return Array.from({ length: preset.playerCount }, (_, index) => ({
-    seatNo: index + 1,
-    roleId: preset.roleIds[index] ?? "",
-    characterId: preset.characterIds[index] ?? "",
-    modelBindingOverride: null,
-  }));
+function seatsForLineup(lineup: Lineup): readonly LineupSeat[] {
+  return lineup.seats;
 }
 
-function roleLabel(roles: readonly RoleDefinition[], roleId: string): string {
-  const role = roles.find((item) => item.id === roleId);
-  return role ? `${role.name} · ${role.id}` : roleId;
+function ruleRoleLabel(ruleRoles: readonly RuleRole[], ruleRoleId: string): string {
+  const role = ruleRoles.find((item) => item.id === ruleRoleId);
+  return role ? `${role.name} · ${role.id}` : ruleRoleId;
 }
 
 function createButtonLabel(runMode: GameRunMode): string {
   return runMode === "scripted" ? "创建并进入剧本页" : "创建并进入游戏";
 }
 
-function characterLabel(
-  characters: readonly CharacterDefinition[],
-  characterId: string,
+function actorLabel(
+  actors: readonly ActorDefinition[],
+  actorId: string,
 ): string {
-  const character = characters.find((item) => item.id === characterId);
-  return character ? `${character.name} · ${character.id}` : characterId;
+  const actor = actors.find((item) => item.id === actorId);
+  return actor ? `${actor.identity.name} · ${actor.id}` : actorId;
 }

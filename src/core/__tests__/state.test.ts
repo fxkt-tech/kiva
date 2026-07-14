@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createPlayerSnapshot } from "../player";
 import { deriveGameState } from "../state";
 import type { GameEvent } from "../events";
 import type { EventId, GameId, PlayerId } from "../types";
+import { testPlayer } from "./test-player";
 
 const gameId = "g1" as GameId;
 const p1 = "p1" as PlayerId;
@@ -27,24 +27,9 @@ function event(index: number, event: Partial<GameEvent>): GameEvent {
 
 describe("deriveGameState", () => {
   const players = [
-    createPlayerSnapshot({
-      playerId: p1,
-      seatNo: 1,
-      name: "P1",
-      gameRole: "werewolf",
-    }),
-    createPlayerSnapshot({
-      playerId: p2,
-      seatNo: 2,
-      name: "P2",
-      gameRole: "werewolf",
-    }),
-    createPlayerSnapshot({
-      playerId: p3,
-      seatNo: 3,
-      name: "P3",
-      gameRole: "seer",
-    }),
+    testPlayer(p1, 1, "werewolf"),
+    testPlayer(p2, 2, "werewolf"),
+    testPlayer(p3, 3, "seer"),
   ];
 
   it("derives default state when there are no events", () => {

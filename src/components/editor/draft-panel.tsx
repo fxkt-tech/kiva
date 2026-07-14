@@ -140,10 +140,10 @@ export function DraftPanel({
             <p className="mt-2 text-sm font-medium text-foreground">{actorBrief.scene}</p>
             <dl className="mt-3 space-y-2 text-xs leading-5 text-muted">
               <div><dt className="inline text-subtle">目标：</dt><dd className="inline">{actorBrief.objective}</dd></div>
-              <div><dt className="inline text-subtle">立场：</dt><dd className="inline">{actorBrief.stance}</dd></div>
+              <div><dt className="inline text-subtle">表演推进：</dt><dd className="inline">{actorBrief.performanceMove}</dd></div>
               <div><dt className="inline text-subtle">主题因果：</dt><dd className="inline">{actorBrief.themeHook}</dd></div>
-              {actorBrief.characterHook ? (
-                <div><dt className="inline text-subtle">人物抓手：</dt><dd className="inline">{actorBrief.characterHook}</dd></div>
+              {actorBrief.actorHook ? (
+                <div><dt className="inline text-subtle">Actor 抓手：</dt><dd className="inline">{actorBrief.actorHook}</dd></div>
               ) : null}
               {actorBrief.arcMove ? (
                 <div><dt className="inline text-subtle">弧线推进：</dt><dd className="inline">{actorBrief.arcMove}</dd></div>
@@ -351,7 +351,7 @@ function renderDraftPayloadControls(
           label="首夜战术制定者"
           name="leaderPlayerId"
           players={players.filter((player) =>
-            player.gameRole === "werewolf" && alivePlayerIds.includes(player.playerId),
+            player.ruleRole.id === "werewolf" && alivePlayerIds.includes(player.playerId),
           )}
           defaultValue={draft.payload.leaderPlayerId}
         />
@@ -361,7 +361,7 @@ function renderDraftPayloadControls(
         <PlayerTargetField
           label="狼人密票目标"
           players={players.filter((player) =>
-            player.gameRole !== "werewolf" && alivePlayerIds.includes(player.playerId),
+            player.ruleRole.id !== "werewolf" && alivePlayerIds.includes(player.playerId),
           )}
           defaultValue={draft.payload.targetPlayerId}
         />
@@ -472,7 +472,7 @@ function PlayerTargetField({
         {includeEmptyOption ? <option value="">{emptyLabel}</option> : null}
         {players.map((player) => (
           <option key={player.playerId} value={player.playerId}>
-            {player.seatNo} · {player.name}
+            {player.seatNo} · {player.actor.identity.name}
           </option>
         ))}
       </select>

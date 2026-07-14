@@ -8,7 +8,7 @@ import {
 import type { VoiceProfileSnapshot } from "@/core/voice";
 import { PRESENTER_EDGE_VOICE } from "@/core/voice";
 import { createEdgeVoiceAdapter } from "@/server/voice-synthesis/edge-adapter";
-import { createLibraryRepository } from "@/server/library-repository";
+import { createContentCatalog } from "@/server/content-catalog";
 import { mp3DurationMs } from "@/server/voice-synthesis/mp3-duration";
 import { loadPresenterVoiceManifest } from "@/server/presenter-voice-manifest";
 
@@ -18,7 +18,8 @@ async function main(): Promise<void> {
   const dataDir = process.env.KIVA_DATA_DIR ?? "kivdb";
   const adapter = createEdgeVoiceAdapter({ proxy: process.env.EDGE_TTS_PROXY });
 
-  for (const presenter of await createLibraryRepository(dataDir).getPresenters()) {
+  const catalog = await createContentCatalog(dataDir).load();
+  for (const presenter of catalog.presenters) {
     const profile = presenter.voiceProfile;
     const root = join(dataDir, "presenters", presenter.id);
     const voiceDir = join(root, "voice");

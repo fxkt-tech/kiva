@@ -2,88 +2,91 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createContentActions } from "@/server/content-actions";
+import { createContentCatalog } from "@/server/content-catalog";
 import { createGameRepository } from "@/server/game-repository";
-import { createLibraryActions } from "@/server/library-actions";
-import { createLibraryRepository } from "@/server/library-repository";
 import {
-  characterFromFormData,
+  actorFromFormData,
+  lineupFromFormData,
   presenterFromFormData,
-  presetFromFormData,
-  roleFromFormData,
+  scriptFromFormData,
 } from "./form-parsers";
 
 const dataDir = process.env.KIVA_DATA_DIR;
-
-const libraryActions = createLibraryActions({
-  libraryRepository: createLibraryRepository(dataDir),
+const actions = createContentActions({
+  catalog: createContentCatalog(dataDir),
   gameRepository: createGameRepository(dataDir),
 });
 
-export async function saveRoleAction(formData: FormData) {
-  await libraryActions.saveRole(roleFromFormData(formData, now()));
+export async function saveActorAction(formData: FormData) {
+  await actions.saveActor(actorFromFormData(formData));
   revalidatePath("/library");
 }
 
-export async function saveCharacterAction(formData: FormData) {
-  await libraryActions.saveCharacter(characterFromFormData(formData, now()));
+export async function createActorAction(formData: FormData) {
+  const actor = actorFromFormData(formData);
+  await actions.saveActor(actor);
   revalidatePath("/library");
+  redirect(`/library?tab=actors&id=${encodeURIComponent(actor.id)}`);
 }
 
-export async function savePresetAction(formData: FormData) {
-  await libraryActions.savePreset(presetFromFormData(formData, now()));
+export async function saveLineupAction(formData: FormData) {
+  await actions.saveLineup(lineupFromFormData(formData));
   revalidatePath("/library");
+  revalidatePath("/");
 }
 
 export async function savePresenterAction(formData: FormData) {
-  await libraryActions.savePresenter(presenterFromFormData(formData, now()));
+  await actions.savePresenter(presenterFromFormData(formData, now()));
   revalidatePath("/library");
   revalidatePath("/");
 }
 
-export async function duplicateRoleAction(roleId: string) {
-  await libraryActions.duplicateRole(roleId);
+export async function saveScriptAction(formData: FormData) {
+  await actions.saveScript(scriptFromFormData(formData, now()));
+  revalidatePath("/library");
+  revalidatePath("/");
+}
+
+export async function duplicateActorAction(actorId: string) {
+  await actions.duplicateActor(actorId);
   revalidatePath("/library");
 }
 
-export async function duplicateCharacterAction(characterId: string) {
-  await libraryActions.duplicateCharacter(characterId);
+export async function duplicateLineupAction(lineupId: string) {
+  await actions.duplicateLineup(lineupId);
   revalidatePath("/library");
 }
 
-export async function duplicatePresetAction(presetId: string) {
-  await libraryActions.duplicatePreset(presetId);
+export async function duplicateScriptAction(scriptId: string) {
+  await actions.duplicateScript(scriptId);
+  revalidatePath("/library");
+  revalidatePath("/");
+}
+
+export async function setActorEnabledAction(id: string, enabled: boolean) {
+  await actions.setActorEnabled(id, enabled);
   revalidatePath("/library");
 }
 
-export async function setRoleEnabledAction(roleId: string, enabled: boolean) {
-  await libraryActions.setRoleEnabled(roleId, enabled);
+export async function setLineupEnabledAction(id: string, enabled: boolean) {
+  await actions.setLineupEnabled(id, enabled);
   revalidatePath("/library");
+  revalidatePath("/");
 }
 
-export async function setCharacterEnabledAction(
-  characterId: string,
-  enabled: boolean,
-) {
-  await libraryActions.setCharacterEnabled(characterId, enabled);
-  revalidatePath("/library");
-}
-
-export async function setPresetEnabledAction(presetId: string, enabled: boolean) {
-  await libraryActions.setPresetEnabled(presetId, enabled);
-  revalidatePath("/library");
-}
-
-export async function createGameFromPresetAction(
-  presetId: string,
+export async function createGameFromLineupAction(
+  lineupId: string,
   formData: FormData,
 ) {
   const presenterId = formData.get("presenterId");
-  const record = await libraryActions.createGameFromPreset(
-    presetId,
+  const scriptId = formData.get("scriptId");
+  const record = await actions.createGameFromLineup(
+    lineupId,
     typeof presenterId === "string" ? presenterId : "",
+    typeof scriptId === "string" ? scriptId : undefined,
   );
   revalidatePath("/");
-  revalidatePath("/library");
   redirect(`/games/${record.game.id}/editor`);
 }
 

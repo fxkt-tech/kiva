@@ -26,7 +26,7 @@ export type LlmDetailsRecord = Pick<
   | "parsedOutput"
   | "error"
   | "attempts"
->;
+> & Pick<Partial<GenerationRecord>, "stages">;
 
 export function LlmGenerationDetails({
   generation,
@@ -148,6 +148,36 @@ export function LlmGenerationDetails({
             )}
           </GenerationBlock>
 
+          {generation.stages && generation.stages.length > 0 ? (
+          <GenerationBlock title={`Pipeline stages (${generation.stages.length})`}>
+            <div className="space-y-4">
+              {generation.stages.map((stage, index) => (
+                <div key={`${stage.stage}-${index}`} className="space-y-3 rounded-md border border-border p-3">
+                  <KeyValue
+                    label={`Stage ${index + 1}`}
+                    value={`${stage.stage} · ${stage.promptVersion} · ${stage.provider}/${stage.model}`}
+                  />
+                  <KeyValue label="Schema" value={stage.request.schemaName} />
+                  <TextDump label="System prompt" value={stage.request.systemPrompt} />
+                  {stage.request.messages.map((message, messageIndex) => (
+                    <TextDump
+                      key={`${message.role}-${messageIndex}`}
+                      label={`${message.role} message ${messageIndex + 1}`}
+                      value={message.content}
+                    />
+                  ))}
+                  <TextDump label="Raw output" value={stage.rawOutput ?? "No raw output was recorded."} />
+                  <TextDump
+                    label="Parsed output"
+                    value={stage.parsedOutput ? JSON.stringify(stage.parsedOutput, null, 2) : "No parsed output was recorded."}
+                  />
+                  {stage.error ? <TextDump label="Error" value={stage.error} /> : null}
+                </div>
+              ))}
+            </div>
+          </GenerationBlock>
+          ) : null}
+
           <GenerationBlock title="Request">
             <div className="space-y-3">
               <KeyValue label="Schema" value={generation.request.schemaName} />
@@ -236,7 +266,7 @@ export function LlmGenerationDetails({
 
 export function generationMarkdown(
   generation: Pick<GenerationRecord, "request" | "rawOutput"> &
-    Pick<Partial<GenerationRecord>, "attempts">,
+    Pick<Partial<GenerationRecord>, "attempts" | "stages">,
 ): string {
   const sections: string[] = [];
 
@@ -250,6 +280,11 @@ export function generationMarkdown(
   }
 
   sections.push(`## Raw response\n\n${generation.rawOutput ?? "Not recorded."}`);
+  for (const [index, stage] of (generation.stages ?? []).entries()) {
+    sections.push(
+      `## Pipeline stage ${index + 1}: ${stage.stage}\n\nSchema: ${stage.request.schemaName}\n\nRaw response:\n\n${stage.rawOutput ?? "Not recorded."}`,
+    );
+  }
   for (const [index, attempt] of (generation.attempts ?? []).entries()) {
     sections.push(
       `## Attempt ${index + 1}\n\nStatus: ${attempt.error ? "invalid" : "accepted"}\n\nRaw response:\n\n${attempt.rawOutput ?? "Not recorded."}${attempt.error ? `\n\nError: ${attempt.error}` : ""}`,
@@ -302,6 +337,10 @@ function decisionSummaryText(
     return null;
   }
 
+  const intent = parsedOutput.intent;
+  if (intent && typeof intent === "object" && !Array.isArray(intent)) {
+    return JSON.stringify(intent, null, 2);
+  }
   const value = parsedOutput.decisionSummary;
   if (typeof value === "string" && value.trim().length > 0) {
     return value.trim();

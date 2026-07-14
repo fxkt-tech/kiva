@@ -1,4 +1,15 @@
 import { assertExactObjectKeys } from "./model-binding";
+import {
+  RULE_ROLE_IDS,
+  type RuleRoleId,
+} from "./rule-role";
+
+export {
+  RULE_ROLE_IDS,
+  factionForRuleRole,
+  type Faction,
+  type RuleRoleId,
+} from "./rule-role";
 
 export type Brand<T, Name extends string> = T & { readonly __brand: Name };
 
@@ -7,17 +18,6 @@ export type PlayerId = Brand<string, "PlayerId">;
 export type EventId = Brand<string, "EventId">;
 export type DraftId = Brand<string, "DraftId">;
 
-export const GAME_ROLES = [
-  "werewolf",
-  "seer",
-  "witch",
-  "hunter",
-  "guard",
-  "villager",
-] as const;
-export type GameRole = (typeof GAME_ROLES)[number];
-
-export type Faction = "wolves" | "good";
 export type Phase =
   | "setup"
   | "night"
@@ -33,7 +33,7 @@ export type VoteReveal = "after_all_votes" | "immediate";
 export type DeadRoleReveal = "endgame" | "on_death";
 export type PkVoters = "non_pk_only" | "all_living_non_self";
 
-export type RoleCounts = {
+export type RuleRoleCounts = {
   readonly werewolf: number;
   readonly seer: number;
   readonly witch: number;
@@ -42,9 +42,18 @@ export type RoleCounts = {
   readonly villager: number;
 };
 
+export const TWELVE_PLAYER_RULE_ROLE_COUNTS = {
+  werewolf: 4,
+  seer: 1,
+  witch: 1,
+  hunter: 1,
+  guard: 1,
+  villager: 4,
+} as const satisfies RuleRoleCounts;
+
 export type Ruleset = {
   readonly playerCount: number;
-  readonly roleCounts: RoleCounts;
+  readonly roleCounts: RuleRoleCounts;
   readonly winCondition: WinCondition;
   readonly witchFirstNightSelfSave: boolean;
   readonly witchAllowSameNightAntidoteAndPoison: boolean;
@@ -57,21 +66,8 @@ export type Ruleset = {
   readonly allowAbstainVote: boolean;
 };
 
-export function isWerewolfRole(role: GameRole): role is "werewolf" {
+export function isWerewolfRole(role: RuleRoleId): role is "werewolf" {
   return role === "werewolf";
-}
-
-const FACTION_BY_ROLE = {
-  werewolf: "wolves",
-  seer: "good",
-  witch: "good",
-  hunter: "good",
-  guard: "good",
-  villager: "good",
-} satisfies Record<GameRole, Faction>;
-
-export function factionForRole(role: GameRole): Faction {
-  return FACTION_BY_ROLE[role];
 }
 
 export function createDefaultRuleset(): Ruleset {
@@ -81,14 +77,7 @@ export function createDefaultRuleset(): Ruleset {
 export function createTwelvePlayerRuleset(): Ruleset {
   return {
     playerCount: 12,
-    roleCounts: {
-      werewolf: 4,
-      seer: 1,
-      witch: 1,
-      hunter: 1,
-      guard: 1,
-      villager: 4,
-    },
+    roleCounts: { ...TWELVE_PLAYER_RULE_ROLE_COUNTS },
     winCondition: "slaughter_side",
     witchFirstNightSelfSave: true,
     witchAllowSameNightAntidoteAndPoison: false,
@@ -124,12 +113,12 @@ export function validateRuleset(value: unknown): Ruleset {
     "pkVoters",
     "allowAbstainVote",
   ]);
-  assertExactObjectKeys(roleCounts, "Ruleset roleCounts", GAME_ROLES);
+  assertExactObjectKeys(roleCounts, "Ruleset roleCounts", RULE_ROLE_IDS);
   if (!Number.isInteger(value.playerCount) || (value.playerCount as number) < 1) {
     throw new Error("Ruleset playerCount must be a positive integer");
   }
   let roleCountTotal = 0;
-  for (const role of GAME_ROLES) {
+  for (const role of RULE_ROLE_IDS) {
     const count = roleCounts[role];
     if (!Number.isInteger(count) || (count as number) < 0) {
       throw new Error(`Ruleset roleCounts.${role} must be a non-negative integer`);
@@ -142,7 +131,7 @@ export function validateRuleset(value: unknown): Ruleset {
   const currentBoard = createTwelvePlayerRuleset();
   if (
     value.playerCount !== currentBoard.playerCount ||
-    GAME_ROLES.some(
+    RULE_ROLE_IDS.some(
       (role) => roleCounts[role] !== currentBoard.roleCounts[role],
     )
   ) {

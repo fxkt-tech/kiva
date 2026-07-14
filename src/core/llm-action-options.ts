@@ -188,16 +188,16 @@ export function canActorUseActionOptions(input: {
 
   switch (input.draft.type) {
     case "guard_protect_selected":
-      return actor.gameRole === "guard" && actor.mechanicKey === "guard_protect";
+      return actor.ruleRole.id === "guard" && actor.ruleRole.mechanicKey === "guard_protect";
     case "wolf_vote_cast":
-      return actor.gameRole === "werewolf" && actor.mechanicKey === "wolf_kill";
+      return actor.ruleRole.id === "werewolf" && actor.ruleRole.mechanicKey === "wolf_kill";
     case "seer_check_selected":
-      return actor.gameRole === "seer" && actor.mechanicKey === "seer_check";
+      return actor.ruleRole.id === "seer" && actor.ruleRole.mechanicKey === "seer_check";
     case "witch_antidote_decided":
     case "witch_poison_decided":
-      return actor.gameRole === "witch" && actor.mechanicKey === "witch_medicine";
+      return actor.ruleRole.id === "witch" && actor.ruleRole.mechanicKey === "witch_medicine";
     case "hunter_shot_decided":
-      return actor.gameRole === "hunter" && actor.mechanicKey === "hunter_shot";
+      return actor.ruleRole.id === "hunter" && actor.ruleRole.mechanicKey === "hunter_shot";
     case "vote_cast": {
       if (!state.alivePlayerIds.includes(actor.playerId)) return false;
       if (input.draft.payload.voteType !== "pk") return true;

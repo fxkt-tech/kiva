@@ -9,7 +9,7 @@ const createdAt = "2026-06-26T00:00:00.000Z";
 const game = createSeedGame({ gameId, createdAt });
 const wolf1 = playerByRole("werewolf");
 const wolf2 = game.players.find(
-  (player) => player.gameRole === "werewolf" && player.playerId !== wolf1.playerId,
+  (player) => player.ruleRole.id === "werewolf" && player.playerId !== wolf1.playerId,
 )!;
 const seer = playerByRole("seer");
 
@@ -39,7 +39,7 @@ describe("player LLM context", () => {
     expect(context.knowledge.publicClaims).toEqual([]);
   });
 
-  it("exposes viewer role and prompt snapshots", () => {
+  it("exposes the compiled Actor runtime card and code-owned Rule Role", () => {
     const context = buildPlayerLlmContext({
       game,
       events: [],
@@ -47,13 +47,16 @@ describe("player LLM context", () => {
     });
 
     expect(context.viewer).toMatchObject({
-      roleName: seer.roleName,
-      team: seer.team,
-      mechanicKey: seer.mechanicKey,
-      characterSystemPromptSnapshot: seer.characterSystemPromptSnapshot,
-      roleSystemPromptSnapshot: seer.roleSystemPromptSnapshot,
-      roleActionPromptSnapshot: seer.roleActionPromptSnapshot,
+      actor: {
+        actorId: seer.actor.sourceId,
+        name: seer.actor.identity.name,
+        cognition: seer.actor.cognition,
+        expression: seer.actor.expression,
+      },
+      ruleRole: seer.ruleRole,
+      modelBinding: seer.actor.production.modelBinding,
     });
+    expect(context.viewer).not.toHaveProperty("characterSystemPromptSnapshot");
   });
 
   it("does not expose hidden roles in the safe roster", () => {
@@ -267,8 +270,8 @@ function roleAssigned(index: number, player: typeof game.players[number]) {
     visibility: { kind: "player_private", playerIds: [player.playerId] },
     payload: {
       playerId: player.playerId,
-      role: player.gameRole,
-      faction: player.faction,
+      role: player.ruleRole.id,
+      faction: player.ruleRole.faction,
     },
   } satisfies Extract<GameEvent, { type: "role_assigned" }>;
 }
@@ -299,8 +302,8 @@ function baseEvent(index: number) {
   } as const;
 }
 
-function playerByRole(role: typeof game.players[number]["gameRole"]) {
-  const player = game.players.find((candidate) => candidate.gameRole === role);
+function playerByRole(role: typeof game.players[number]["ruleRole"]["id"]) {
+  const player = game.players.find((candidate) => candidate.ruleRole.id === role);
   if (player === undefined) {
     throw new Error(`Missing seeded player for role: ${role}`);
   }

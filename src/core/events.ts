@@ -3,7 +3,7 @@ import type {
   EventId,
   Faction,
   GameId,
-  GameRole,
+  RuleRoleId,
   Phase,
   PlayerId,
 } from "./types";
@@ -41,7 +41,7 @@ export type RoleAssignedEvent = GameEventBase<
   "role_assigned",
   {
     readonly playerId: PlayerId;
-    readonly role: GameRole;
+    readonly role: RuleRoleId;
     readonly faction: Faction;
   }
 >;
@@ -162,7 +162,7 @@ export type VoteTableEntry = {
 
 export type RevealedRole = {
   readonly playerId: PlayerId;
-  readonly roleId: GameRole;
+  readonly roleId: RuleRoleId;
   readonly roleName: string;
   readonly faction: Faction;
 };

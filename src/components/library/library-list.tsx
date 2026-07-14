@@ -9,7 +9,7 @@ export type LibraryListItem = {
 };
 
 type LibraryListProps = {
-  readonly tab: "roles" | "characters" | "presenters" | "presets";
+  readonly tab: "actors" | "lineups" | "scripts" | "presenters" | "rules";
   readonly selectedId: string | null;
   readonly items: readonly LibraryListItem[];
 };
@@ -17,8 +17,16 @@ type LibraryListProps = {
 export function LibraryList({ tab, selectedId, items }: LibraryListProps) {
   return (
     <aside className="min-h-0 overflow-y-auto border-r border-border bg-background/45">
-      <div className="sticky top-0 z-10 border-b border-border bg-background/95 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">
-        Objects
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/95 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">
+        <span>Objects</span>
+        {tab === "actors" ? (
+          <Link
+            href="/library?tab=actors&id=__new_actor__"
+            className="rounded border border-interactive-border px-2 py-1 text-[10px] tracking-normal text-foreground"
+          >
+            New
+          </Link>
+        ) : null}
       </div>
       {items.length === 0 ? (
         <div className="px-3 py-6 text-sm text-subtle">No objects.</div>

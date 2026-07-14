@@ -8,7 +8,7 @@ import type {
   PresenterLine,
   PresenterSeatLine,
 } from "./presenter-definition";
-import type { GameRole, PlayerId } from "./types";
+import type { RuleRoleId, PlayerId } from "./types";
 
 export type PresenterCue = {
   readonly copyKey: PresenterCopyKey;
@@ -274,7 +274,9 @@ function playerLabel(
   playerId: PlayerId,
 ): string {
   const player = players.find((candidate) => candidate.playerId === playerId);
-  return player ? `${player.seatNo}号${player.name}` : `未知玩家${playerId}`;
+  return player
+    ? `${player.seatNo}号${player.actor.identity.name}`
+    : `未知玩家${playerId}`;
 }
 
 function playerListLabel(
@@ -284,7 +286,7 @@ function playerListLabel(
   return playerIds.map((playerId) => playerLabel(players, playerId)).join("、");
 }
 
-function roleLabel(role: GameRole): string {
+function roleLabel(role: RuleRoleId): string {
   switch (role) {
     case "werewolf":
       return "狼人";

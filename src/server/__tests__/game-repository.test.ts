@@ -115,6 +115,41 @@ describe("game repository", () => {
     await expect(repository.get(gameId)).resolves.toEqual(current);
   });
 
+  it("rejects role notifications that diverge from the immutable Game snapshot", async () => {
+    const rootDir = await createTempDir();
+    const repository = createGameRepository(rootDir);
+    const gameId = "role-truth" as GameId;
+    const current = record(gameId);
+    const player = current.game.players[0]!;
+    const mismatchedEvent = {
+      id: "event-role" as EventId,
+      gameId,
+      index: 1,
+      status: "active" as const,
+      type: "role_assigned" as const,
+      phase: "setup" as const,
+      visibility: {
+        kind: "player_private" as const,
+        playerIds: [player.playerId],
+      },
+      targetPlayerIds: [player.playerId],
+      payload: {
+        playerId: player.playerId,
+        role: "werewolf" as const,
+        faction: "wolves" as const,
+      },
+      createdAt: "2026-06-26T00:01:00.000Z",
+    };
+    await writePersistedRecord(rootDir, gameId, {
+      ...current,
+      events: [mismatchedEvent],
+    });
+
+    await expect(repository.get(gameId)).rejects.toThrow(
+      `Role assignment does not match immutable Game snapshot: ${player.playerId}`,
+    );
+  });
+
   it("deletes records and treats a missing record as a no-op", async () => {
     const rootDir = await createTempDir();
     const repository = createGameRepository(rootDir);
@@ -239,6 +274,23 @@ describe("game repository", () => {
           parsedOutput: {},
           error: null,
           createdAt: "2026-06-26T00:02:00.000Z",
+          stages: [
+            {
+              stage: "decision",
+              promptVersion: "speech:v1",
+              provider: "mock",
+              model: "mock-model",
+              request: {
+                schemaName: "werewolf_speech_v1",
+                systemPrompt: "old",
+                messages: [],
+              },
+              tokenUsage: null,
+              rawOutput: "{}",
+              parsedOutput: {},
+              error: null,
+            },
+          ],
         },
       ],
     });

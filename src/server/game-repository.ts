@@ -4,11 +4,9 @@ import {
   readFile,
   rename,
   rm,
-  stat,
   writeFile,
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { setTimeout } from "node:timers/promises";
 import { join } from "node:path";
 import type { DraftEvent } from "@/core/drafts";
 import type { GameEvent } from "@/core/events";
@@ -29,6 +27,7 @@ import {
 import { validateGamePresenterSnapshot } from "@/core/presenter-definition";
 import { validateGameScriptSnapshot } from "@/core/game-script";
 import { validateBoard, validatePlayerSnapshot } from "@/core/player";
+import { factionForRuleRole, isRuleRoleId } from "@/core/rule-role";
 import {
   validateRuleset,
   type GameId,
@@ -37,8 +36,9 @@ import {
   assertExactObjectKeys,
   isPlainObject,
 } from "@/core/model-binding";
+import { acquireDirectoryLock } from "./directory-lock";
 
-export const GAME_RECORD_SCHEMA_VERSION = 1 as const;
+export const GAME_RECORD_SCHEMA_VERSION = 2 as const;
 
 export type GameRecord = {
   readonly schemaVersion: typeof GAME_RECORD_SCHEMA_VERSION;
@@ -74,10 +74,6 @@ export function createGameRepository(rootDir = "kivdb"): GameRepository {
 
   async function ensureGamesDir(): Promise<void> {
     await mkdir(gamesDir, { recursive: true });
-  }
-
-  async function ensureLocksDir(): Promise<void> {
-    await mkdir(locksDir, { recursive: true });
   }
 
   function gameDir(gameId: GameId): string {
@@ -168,7 +164,7 @@ export function createGameRepository(rootDir = "kivdb"): GameRepository {
     },
 
     async withGameLock(gameId, operation) {
-      const release = await acquireLock(lockPath(gameId), ensureLocksDir);
+      const release = await acquireDirectoryLock(lockPath(gameId));
       try {
         return await operation();
       } finally {
@@ -206,9 +202,11 @@ export function validateGameRecord(rawRecord: unknown): GameRecord {
   const events = rawRecord.events.map((event) =>
     validateEventEnvelope(event, game.id),
   );
+  validateRoleAssignmentTruth(events, game);
   const draft = rawRecord.draft === null
     ? null
     : validateDraftEnvelope(rawRecord.draft, game.id);
+  validateRoleAssignmentTruth(draft ? [draft] : [], game);
   if (!Array.isArray(rawRecord.generations)) {
     throw new Error("Game record generations must be an array");
   }
@@ -420,6 +418,21 @@ function validateCurrentEventPayload(
   type: GameEvent["type"],
   payload: Record<string, unknown>,
 ): void {
+  if (type === "role_assigned") {
+    assertExactObjectKeys(payload, "Role assigned payload", [
+      "playerId",
+      "role",
+      "faction",
+    ]);
+    if (
+      !isNonBlankString(payload.playerId) ||
+      !isRuleRoleId(payload.role) ||
+      payload.faction !== factionForRuleRole(payload.role)
+    ) {
+      throw new Error("Role assigned payload is invalid");
+    }
+    return;
+  }
   if (type !== "night_resolved") return;
   assertExactObjectKeys(payload, "Night resolved payload", [
     "deadPlayerIds",
@@ -445,6 +458,27 @@ function validateCurrentEventPayload(
     )
   ) {
     throw new Error("Night resolved payload is invalid");
+  }
+}
+
+function validateRoleAssignmentTruth(
+  events: readonly (GameEvent | DraftEvent)[],
+  game: Game,
+): void {
+  for (const event of events) {
+    if (event.type !== "role_assigned") continue;
+    const player = game.players.find(
+      (candidate) => candidate.playerId === event.payload.playerId,
+    );
+    if (
+      !player ||
+      event.payload.role !== player.ruleRole.id ||
+      event.payload.faction !== player.ruleRole.faction
+    ) {
+      throw new Error(
+        `Role assignment does not match immutable Game snapshot: ${event.payload.playerId}`,
+      );
+    }
   }
 }
 
@@ -489,71 +523,4 @@ function isNonBlankString(value: unknown): value is string {
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error;
-}
-
-async function acquireLock(
-  path: string,
-  ensureParentDir: () => Promise<void>,
-): Promise<() => Promise<void>> {
-  await ensureParentDir();
-  const token = randomUUID();
-  const ownerPath = join(path, "owner.json");
-
-  while (true) {
-    try {
-      await mkdir(path);
-      await writeFile(
-        ownerPath,
-        JSON.stringify({ pid: process.pid, token, createdAt: Date.now() }),
-        "utf8",
-      );
-      return async () => {
-        const owner = await readLockOwner(ownerPath);
-        if (owner?.token === token) await rm(path, { recursive: true, force: true });
-      };
-    } catch (error) {
-      if (isNodeError(error) && error.code === "EEXIST") {
-        if (await lockIsStale(path, ownerPath)) {
-          await rm(path, { recursive: true, force: true });
-          continue;
-        }
-        await setTimeout(10);
-        continue;
-      }
-
-      throw error;
-    }
-  }
-}
-
-type LockOwner = { readonly pid: number; readonly token: string };
-
-async function readLockOwner(path: string): Promise<LockOwner | null> {
-  try {
-    const value = JSON.parse(await readFile(path, "utf8")) as Partial<LockOwner>;
-    return Number.isInteger(value.pid) && typeof value.token === "string"
-      ? value as LockOwner
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-async function lockIsStale(path: string, ownerPath: string): Promise<boolean> {
-  const owner = await readLockOwner(ownerPath);
-  if (owner) return !processIsAlive(owner.pid);
-  try {
-    return Date.now() - (await stat(path)).mtimeMs > 5_000;
-  } catch (error) {
-    return isNodeError(error) && error.code === "ENOENT";
-  }
-}
-
-function processIsAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
 }

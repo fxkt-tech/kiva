@@ -7,24 +7,29 @@ import {
   createFailedGenerationRecord,
   createSuccessfulGenerationRecord,
   type GenerationRecord,
+  type GenerationRequestSnapshot,
+  type GenerationStageSnapshot,
 } from "./generation-record";
-import type { LlmClient } from "./llm";
+import type { LlmClient, LlmTokenUsage } from "./llm";
+import { isLlmSpeechDraft, type LlmSpeechDraft } from "./llm-task-specs";
 import {
-  isLlmSpeechDraft,
-  type LlmSpeechDraft,
-} from "./llm-task-specs";
+  selectedIntentEvidence,
+  validatePlayerSpeechIntent,
+} from "./player-intent";
 import { buildPlayerLlmContext } from "./player-context";
 import {
-  buildSpeechPrompt,
+  buildSpeechIntentPrompt,
+  buildSpeechPerformancePrompt,
+  SPEECH_INTENT_PROMPT_VERSION,
+  SPEECH_PERFORMANCE_PROMPT_VERSION,
   SPEECH_PROMPT_VERSION,
 } from "./prompt-builders";
-import {
-  evaluateSpeech,
-  type SpeechBudget,
-} from "./speech-budget";
+import type { RuleRoleId } from "./rule-role";
+import { evaluateSpeech, type SpeechBudget } from "./speech-budget";
 import {
   generateValidatedJson,
   ValidatedGenerationError,
+  type ValidatedGenerationResult,
 } from "./validated-generation";
 
 export type GenerateSpeechDraftInput = {
@@ -48,7 +53,6 @@ export async function generateSpeechDraft(
   if (!isLlmSpeechDraft(input.draft)) {
     return { draft: input.draft, generation: null };
   }
-
   const draft = input.draft;
   const playerId = draft.payload.playerId;
   const context = buildPlayerLlmContext({
@@ -56,152 +60,301 @@ export async function generateSpeechDraft(
     events: input.events,
     viewerPlayerId: playerId,
   });
-  const prompt = buildSpeechPrompt({
+  const publicSpeech = isPublicSpeechDraft(draft);
+  const requireDisclosure = requiresDisclosure(
+    draft,
+    context.viewer.ruleRole.id,
+  );
+  const intentPrompt = buildSpeechIntentPrompt({
     context,
     draft,
     actorBrief: input.actorBrief,
   });
-  const request = {
-    systemPrompt: prompt.systemPrompt,
-    messages: prompt.messages,
-    schemaName: prompt.schemaName,
-  };
-  const requireDisclosure =
-    prompt.promptVersion === SPEECH_PROMPT_VERSION &&
-    requiresDisclosure(draft, context.viewer.role);
+  const intentRequest = requestFor(intentPrompt);
+  const stages: GenerationStageSnapshot[] = [];
 
+  let intentResult: ValidatedGenerationResult<
+    ReturnType<typeof validatePlayerSpeechIntent>
+  >;
   try {
-    const result = await generateValidatedJson({
+    intentResult = await generateValidatedJson({
       llmClient: input.llmClient,
-      modelBinding: context.viewer.modelBindingSnapshot,
-      request,
-      validate: (parsed) =>
-        parseAndValidateSpeechText(
-          parsed,
+      modelBinding: context.viewer.modelBinding,
+      request: intentRequest,
+      validate: (value) =>
+        validatePlayerSpeechIntent({
+          value,
+          evidenceScope: intentPrompt.evidenceScope,
+          publicSpeech,
           requireDisclosure,
-          prompt.speechBudget,
-        ),
-      repair: {
-        outputContract: speechRepairContract(
-          requireDisclosure,
-          prompt.speechBudget,
-        ),
-      },
+        }),
+      repair: { outputContract: intentRepairContract(requireDisclosure) },
     });
-
-    return {
-      draft: applyDraftPayloadEdit(input.draft, { text: result.value }),
-      generation: createSuccessfulGenerationRecord({
-        id: input.generationId,
-        gameId: input.game.id,
-        draftId: input.draft.id,
-        playerId,
-        purpose: "speech",
-        promptVersion: prompt.promptVersion,
-        modelBinding: context.viewer.modelBindingSnapshot,
-        inputContextHash: contextHash(context),
-        request,
-        tokenUsage: result.tokenUsage,
-        rawOutput: result.output.rawText,
-        parsedOutput: result.output.parsed,
-        attempts: result.attempts,
-        createdAt: input.createdAt,
-      }),
-    };
+    stages.push(
+      successfulStage(
+        "decision",
+        SPEECH_INTENT_PROMPT_VERSION,
+        intentRequest,
+        intentResult,
+      ),
+    );
   } catch (error) {
-    const failure =
-      error instanceof ValidatedGenerationError ? error : null;
+    const failure = generationFailure(error);
+    stages.push(
+      failedStage(
+        "decision",
+        SPEECH_INTENT_PROMPT_VERSION,
+        intentRequest,
+        context.viewer.modelBinding,
+        error,
+      ),
+    );
     return {
-      draft: input.draft,
+      draft,
       generation: createFailedGenerationRecord({
         id: input.generationId,
         gameId: input.game.id,
-        draftId: input.draft.id,
+        draftId: draft.id,
         playerId,
         purpose: "speech",
-        promptVersion: prompt.promptVersion,
-        modelBinding: context.viewer.modelBindingSnapshot,
+        promptVersion: SPEECH_PROMPT_VERSION,
+        modelBinding: context.viewer.modelBinding,
         inputContextHash: contextHash(context),
-        request,
-        tokenUsage: failure?.tokenUsage,
-        rawOutput: failure?.rawOutput ?? null,
+        request: intentRequest,
+        tokenUsage: failure.tokenUsage,
+        rawOutput: failure.rawOutput,
         error,
         createdAt: input.createdAt,
-        attempts: failure?.attempts,
+        stages,
+        attempts: failure.attempts,
+      }),
+    };
+  }
+
+  const evidence = selectedIntentEvidence({
+    intent: intentResult.value,
+    evidenceScope: intentPrompt.evidenceScope,
+    publicSpeech,
+  });
+  const speechBudget = requiredSpeechBudget(intentPrompt.speechBudget);
+  const performancePrompt = buildSpeechPerformancePrompt({
+    context,
+    draft,
+    intent: intentResult.value,
+    evidence,
+    speechBudget,
+    actorBrief: input.actorBrief,
+  });
+  const performanceRequest = requestFor(performancePrompt);
+  try {
+    const performanceResult = await generateValidatedJson({
+      llmClient: input.llmClient,
+      modelBinding: context.viewer.modelBinding,
+      request: performanceRequest,
+      validate: (value) => parsePerformanceText(value, speechBudget),
+      repair: { outputContract: performanceRepairContract(speechBudget) },
+    });
+    stages.push(
+      successfulStage(
+        "performance",
+        SPEECH_PERFORMANCE_PROMPT_VERSION,
+        performanceRequest,
+        performanceResult,
+      ),
+    );
+    return {
+      draft: applyDraftPayloadEdit(draft, { text: performanceResult.value }),
+      generation: createSuccessfulGenerationRecord({
+        id: input.generationId,
+        gameId: input.game.id,
+        draftId: draft.id,
+        playerId,
+        purpose: "speech",
+        promptVersion: SPEECH_PROMPT_VERSION,
+        modelBinding: context.viewer.modelBinding,
+        inputContextHash: contextHash(context),
+        request: performanceRequest,
+        tokenUsage: mergeUsage(
+          intentResult.tokenUsage,
+          performanceResult.tokenUsage,
+        ),
+        rawOutput: performanceResult.output.rawText,
+        parsedOutput: {
+          intent: intentResult.value,
+          text: performanceResult.value,
+        },
+        createdAt: input.createdAt,
+        stages,
+        attempts: performanceResult.attempts,
+      }),
+    };
+  } catch (error) {
+    const failure = generationFailure(error);
+    stages.push(
+      failedStage(
+        "performance",
+        SPEECH_PERFORMANCE_PROMPT_VERSION,
+        performanceRequest,
+        context.viewer.modelBinding,
+        error,
+      ),
+    );
+    return {
+      draft,
+      generation: createFailedGenerationRecord({
+        id: input.generationId,
+        gameId: input.game.id,
+        draftId: draft.id,
+        playerId,
+        purpose: "speech",
+        promptVersion: SPEECH_PROMPT_VERSION,
+        modelBinding: context.viewer.modelBinding,
+        inputContextHash: contextHash(context),
+        request: performanceRequest,
+        tokenUsage: mergeUsage(intentResult.tokenUsage, failure.tokenUsage),
+        rawOutput: failure.rawOutput,
+        error,
+        createdAt: input.createdAt,
+        stages,
+        attempts: failure.attempts,
       }),
     };
   }
 }
 
-function parseAndValidateSpeechText(
+function parsePerformanceText(
   output: Record<string, unknown>,
-  requireDisclosure: boolean,
-  budget?: SpeechBudget,
+  budget: SpeechBudget,
 ): string {
   const text = output.text;
   if (typeof text !== "string" || text.trim().length === 0) {
-    throw new Error("LLM speech output must include non-empty text");
+    throw new Error("Speech performance must include non-empty text");
   }
-
-  if (
-    requireDisclosure &&
-    output.disclosure !== "conceal" &&
-    output.disclosure !== "claim"
-  ) {
+  const normalized = text.trim();
+  const evaluation = evaluateSpeech(normalized, budget);
+  if (!evaluation.withinHardLimit) {
     throw new Error(
-      "Public special-role speech must include disclosure=conceal or claim",
+      `Speech text exceeds hard limit: ${evaluation.characterCount} > ${budget.hardMaxCharacters}`,
     );
   }
-
-  const normalizedText = text.trim();
-  if (budget) {
-    const evaluation = evaluateSpeech(normalizedText, budget);
-    if (!evaluation.withinHardLimit) {
-      throw new Error(
-        `LLM speech text exceeds hard limit: ${evaluation.characterCount} > ${budget.hardMaxCharacters} non-whitespace characters`,
-      );
-    }
-  }
-
-  return normalizedText;
+  return normalized;
 }
 
-function speechRepairContract(
-  requireDisclosure: boolean,
-  budget?: SpeechBudget,
-): readonly string[] {
+function intentRepairContract(requireDisclosure: boolean): readonly string[] {
+  return [
+    "objective、conclusion、intendedEffect 必须为简短非空字符串",
+    "evidenceEventIndexes 必须为最多 3 个可见事件编号且不得重复",
+    "uncertainty 必须为字符串或 null",
+    requireDisclosure
+      ? "disclosure 必须为 conceal 或 claim"
+      : "disclosure 必须为 not_applicable",
+    "只返回 JSON 对象，不写最终台词",
+  ];
+}
+
+function performanceRepairContract(budget: SpeechBudget): readonly string[] {
   return [
     "text 必须是非空字符串",
-    ...(budget
-      ? [
-          `text 必须不超过 ${budget.hardMaxCharacters} 个非空白字符；压缩时只保留本轮结论、一个关键依据和一个后续可验证点`,
-          "删除完整时间线、完整票型、重复前置观点、括号舞台动作和镜头说明",
-        ]
-      : []),
-    "decisionSummary 应是最多两句的简短字符串",
-    ...(requireDisclosure
-      ? ["disclosure 必须是 conceal 或 claim"]
-      : []),
+    `text 不得超过 ${budget.hardMaxCharacters} 个非空白字符`,
+    "不得加入 PlayerIntent 和 SELECTED_EVIDENCE 之外的新事实",
     "只返回 JSON 对象",
   ];
 }
 
 function isPublicSpeechDraft(draft: LlmSpeechDraft): boolean {
-  return (
-    draft.type !== "wolf_strategy_given" &&
-    draft.type !== "wolf_opinion_given"
-  );
+  return draft.type !== "wolf_strategy_given" && draft.type !== "wolf_opinion_given";
 }
 
 function requiresDisclosure(
   draft: LlmSpeechDraft,
-  role: Game["players"][number]["gameRole"],
+  role: RuleRoleId,
 ): boolean {
-  return (
-    isPublicSpeechDraft(draft) &&
-    role !== "werewolf" &&
-    role !== "villager"
-  );
+  return isPublicSpeechDraft(draft) && role !== "werewolf" && role !== "villager";
+}
+
+function requestFor(prompt: {
+  readonly systemPrompt: string;
+  readonly messages: GenerationRequestSnapshot["messages"];
+  readonly schemaName: string;
+}): GenerationRequestSnapshot {
+  return {
+    systemPrompt: prompt.systemPrompt,
+    messages: prompt.messages,
+    schemaName: prompt.schemaName,
+  };
+}
+
+function successfulStage<Value>(
+  stage: GenerationStageSnapshot["stage"],
+  promptVersion: string,
+  request: GenerationRequestSnapshot,
+  result: ValidatedGenerationResult<Value>,
+): GenerationStageSnapshot {
+  return {
+    stage,
+    promptVersion,
+    provider: result.output.provider,
+    model: result.output.model,
+    request,
+    tokenUsage: result.tokenUsage,
+    rawOutput: result.output.rawText,
+    parsedOutput: result.output.parsed,
+    error: null,
+    ...(result.attempts ? { attempts: result.attempts } : {}),
+  };
+}
+
+function failedStage(
+  stage: GenerationStageSnapshot["stage"],
+  promptVersion: string,
+  request: GenerationRequestSnapshot,
+  modelBinding: { readonly provider: string; readonly model: string },
+  error: unknown,
+): GenerationStageSnapshot {
+  const failure = generationFailure(error);
+  return {
+    stage,
+    promptVersion,
+    provider: modelBinding.provider,
+    model: modelBinding.model,
+    request,
+    tokenUsage: failure.tokenUsage,
+    rawOutput: failure.rawOutput,
+    parsedOutput: null,
+    error: error instanceof Error ? error.message : String(error),
+    ...(failure.attempts ? { attempts: failure.attempts } : {}),
+  };
+}
+
+function generationFailure(error: unknown) {
+  const failure = error instanceof ValidatedGenerationError ? error : null;
+  return {
+    tokenUsage: failure?.tokenUsage ?? null,
+    rawOutput: failure?.rawOutput ?? null,
+    attempts: failure?.attempts,
+  };
+}
+
+function requiredSpeechBudget(value: SpeechBudget | undefined): SpeechBudget {
+  if (!value) throw new Error("Speech prompt must include a budget");
+  return value;
+}
+
+function mergeUsage(
+  left: LlmTokenUsage | null,
+  right: LlmTokenUsage | null,
+): LlmTokenUsage | null {
+  if (!left) return right;
+  if (!right) return left;
+  const sum = (a: number | null | undefined, b: number | null | undefined) =>
+    a === null || a === undefined || b === null || b === undefined ? null : a + b;
+  return {
+    promptTokens: sum(left.promptTokens, right.promptTokens),
+    completionTokens: sum(left.completionTokens, right.completionTokens),
+    totalTokens: sum(left.totalTokens, right.totalTokens),
+    cachedPromptTokens: sum(left.cachedPromptTokens, right.cachedPromptTokens),
+    reasoningTokens: sum(left.reasoningTokens, right.reasoningTokens),
+  };
 }
 
 function contextHash(context: unknown): string {
@@ -210,6 +363,5 @@ function contextHash(context: unknown): string {
   for (let index = 0; index < content.length; index += 1) {
     hash = (hash * 31 + content.charCodeAt(index)) >>> 0;
   }
-
   return hash.toString(16).padStart(8, "0");
 }

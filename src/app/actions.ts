@@ -4,35 +4,36 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import type { DraftPayloadEdit } from "@/core/draft-edit";
-import type { GamePreset, GamePresetSeatAssignment } from "@/core/game-preset";
+import type { Lineup, LineupSeat } from "@/core/lineup";
 import { parseGameRunMode, type GameRunMode } from "@/core/game-run-mode";
 import type { DraftId, GameId, PlayerId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
-import { createLibraryActions } from "@/server/library-actions";
-import { createLibraryRepository } from "@/server/library-repository";
+import { createContentActions } from "@/server/content-actions";
+import { createContentCatalog } from "@/server/content-catalog";
 import { createRuntimeLlmClient } from "@/server/llm-runtime";
 
 const dataDir = process.env.KIVA_DATA_DIR;
 
 const gameActions = createGameActions(createGameRepository(dataDir), {
   llmClient: createRuntimeLlmClient(),
+  contentCatalog: createContentCatalog(dataDir),
 });
-const libraryActions = createLibraryActions({
-  libraryRepository: createLibraryRepository(dataDir),
+const contentActions = createContentActions({
+  catalog: createContentCatalog(dataDir),
   gameRepository: createGameRepository(dataDir),
 });
 
 export async function createGameAction() {
-  redirect("/library?tab=presets");
+  redirect("/library?tab=lineups");
 }
 
-export async function createGameFromPresetHomeAction(
-  presetId: string,
+export async function createGameFromLineupHomeAction(
+  lineupId: string,
   formData: FormData,
 ) {
-  const record = await libraryActions.createGameFromPreset(
-    presetId,
+  const record = await contentActions.createGameFromLineup(
+    lineupId,
     "",
     formValue(formData, "scriptId"),
     runModeFromForm(formData),
@@ -41,22 +42,18 @@ export async function createGameFromPresetHomeAction(
   redirect(createdGamePath(record.game.id, record.game.runMode));
 }
 
-export async function createGameFromSeatAssignmentsAction(formData: FormData) {
+export async function createGameFromCustomLineupHomeAction(formData: FormData) {
   const seatAssignments = seatAssignmentsFromForm(formData);
-  const preset: GamePreset = {
+  const lineup: Lineup = {
     id: `temporary_${Date.now()}`,
     name: "随机 12 人狼人杀",
     rulesetId: "classic_twelve",
-    playerCount: 12,
-    roleIds: seatAssignments.map((seat) => seat.roleId),
-    characterIds: seatAssignments.map((seat) => seat.characterId),
-    seatAssignments,
+    seats: seatAssignments,
     enabled: true,
-    createdAt: now(),
-    updatedAt: now(),
+    revision: 1,
   };
-  const record = await libraryActions.createGameFromTemporaryPreset(
-    preset,
+  const record = await contentActions.createGameFromTemporaryLineup(
+    lineup,
     "",
     formValue(formData, "scriptId"),
     runModeFromForm(formData),
@@ -148,23 +145,19 @@ function createdGamePath(gameId: GameId, runMode: GameRunMode): string {
     : `/games/${gameId}/editor`;
 }
 
-function seatAssignmentsFromForm(
-  formData: FormData,
-): readonly GamePresetSeatAssignment[] {
+function seatAssignmentsFromForm(formData: FormData): readonly LineupSeat[] {
   return Array.from({ length: 12 }, (_, index) => {
     const seatNo = index + 1;
 
     return {
       seatNo,
-      roleId: formValue(formData, `seat.${seatNo}.roleId`),
-      characterId: formValue(formData, `seat.${seatNo}.characterId`),
-      modelBindingOverride: null,
+      ruleRoleId: formValue(
+        formData,
+        `seat.${seatNo}.ruleRoleId`,
+      ) as LineupSeat["ruleRoleId"],
+      actorId: formValue(formData, `seat.${seatNo}.actorId`),
     };
   });
-}
-
-function now(): string {
-  return new Date().toISOString();
 }
 
 function draftPayloadEditFromForm(formData: FormData): DraftPayloadEdit {

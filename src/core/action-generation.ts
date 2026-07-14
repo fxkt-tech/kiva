@@ -79,7 +79,7 @@ export async function generateActionDraft(
         playerId,
         purpose: "action",
         promptVersion: prompt.promptVersion,
-        modelBinding: context.viewer.modelBindingSnapshot,
+        modelBinding: context.viewer.modelBinding,
         inputContextHash: contextHash(context),
         request,
         rawOutput: null,
@@ -92,7 +92,7 @@ export async function generateActionDraft(
   try {
     const result = await generateValidatedJson({
       llmClient: input.llmClient,
-      modelBinding: context.viewer.modelBindingSnapshot,
+      modelBinding: context.viewer.modelBinding,
       request,
       validate: (parsed) =>
         parseAndValidateActionEdit(draft, parsed, options),
@@ -111,7 +111,7 @@ export async function generateActionDraft(
         playerId,
         purpose: "action",
         promptVersion: prompt.promptVersion,
-        modelBinding: context.viewer.modelBindingSnapshot,
+        modelBinding: context.viewer.modelBinding,
         inputContextHash: contextHash(context),
         request,
         tokenUsage: result.tokenUsage,
@@ -133,7 +133,7 @@ export async function generateActionDraft(
         playerId,
         purpose: "action",
         promptVersion: prompt.promptVersion,
-        modelBinding: context.viewer.modelBindingSnapshot,
+        modelBinding: context.viewer.modelBinding,
         inputContextHash: contextHash(context),
         request,
         tokenUsage: failure?.tokenUsage,

@@ -32,14 +32,14 @@ describe("event presenter", () => {
           },
           payload: {
             playerId: players[0].playerId,
-            role: players[0].gameRole,
-            faction: players[0].faction,
+            role: players[0].ruleRole.id,
+            faction: players[0].ruleRole.faction,
           },
           createdAt,
         },
         players,
       ).text,
-    ).toContain(`1 号 ${players[0].name} 获得身份`);
+    ).toContain(`1 号 ${players[0].actor.identity.name} 获得身份`);
 
     expect(
       formatEventForHost(

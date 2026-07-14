@@ -1,4 +1,4 @@
-import type { RoleMechanicKey } from "./role-definition";
+import type { RuleRoleMechanicKey } from "./rule-role";
 
 export type ActionDraftType =
   | "seer_check_selected"
@@ -17,8 +17,10 @@ const MECHANIC_BY_DRAFT_TYPE = {
   witch_poison_decided: "witch_medicine",
   guard_protect_selected: "guard_protect",
   hunter_shot_decided: "hunter_shot",
-} satisfies Record<ActionDraftType, RoleMechanicKey>;
+} satisfies Record<ActionDraftType, RuleRoleMechanicKey>;
 
-export function mechanicForDraftType(type: ActionDraftType): RoleMechanicKey {
+export function mechanicForDraftType(
+  type: ActionDraftType,
+): RuleRoleMechanicKey {
   return MECHANIC_BY_DRAFT_TYPE[type];
 }

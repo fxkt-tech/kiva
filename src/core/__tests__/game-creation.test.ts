@@ -1,264 +1,113 @@
 import { describe, expect, it } from "vitest";
-import type { GamePreset } from "../game-preset";
-import { createGameFromPreset, createSeedGame } from "../game";
-import type { RoleDefinition } from "../role-definition";
-import { createDefaultRuleset, type GameId } from "../types";
-import { seedCharacters } from "@/seeds/characters";
-import { seedPresets } from "@/seeds/presets";
+import { compileActorRuntimeCard } from "../actor-definition";
+import { createGameFromLineup, createSeedGame } from "../game";
+import {
+  RULE_ROLE_IDS,
+  createDefaultRuleset,
+  type GameId,
+} from "../types";
+import { seedActors } from "@/seeds/actors";
+import { seedLineups } from "@/seeds/lineups";
 import { seedPresenters } from "@/seeds/presenters";
 import { seedScripts } from "@/seeds/scripts";
-import { seedRoles } from "@/seeds/roles";
 
-const gameId = "game_creation" as GameId;
-const createdAt = "2026-06-27T12:00:00.000Z";
+const createdAt = "2026-07-14T00:00:00.000Z";
 
-describe("game creation", () => {
-  it("snapshots the selected run mode", () => {
-    const scripted = createGameFromPreset({
-      gameId,
-      title: "Scripted game",
+describe("game creation from Lineup", () => {
+  it("freezes the exact selected 12 Actors and their Rule Roles", () => {
+    const game = createGameFromLineup({
+      gameId: "game_lineup" as GameId,
+      title: "本局阵容",
       createdAt,
       ruleset: createDefaultRuleset(),
-      preset: seedPresets[0]!,
+      lineup: seedLineups[0]!,
       presenter: seedPresenters[0]!,
       script: seedScripts[0]!,
-      roles: seedRoles,
-      characters: seedCharacters,
+      actors: seedActors,
       runMode: "scripted",
     });
-
-    expect(scripted.runMode).toBe("scripted");
+    expect(game.players).toHaveLength(12);
+    expect(game.players.map((player) => ({
+      actorId: player.actor.sourceId,
+      roleId: player.ruleRole.id,
+    }))).toEqual(
+      [...seedLineups[0]!.seats]
+        .sort((a, b) => a.seatNo - b.seatNo)
+        .map((seat) => ({ actorId: seat.actorId, roleId: seat.ruleRoleId })),
+    );
+    expect(game.players.every((player) => Object.keys(player).length === 4)).toBe(true);
   });
-  it("creates immutable player snapshots from a preset seat assignment", () => {
-    const game = createGameFromPreset({
-      gameId,
-      title: "Library game",
+
+  it("does not require Qin Chuan in every game", () => {
+    const replacement = seedActors.find((actor) => actor.id === "bai_qi")!;
+    const lineup = {
+      ...seedLineups[0]!,
+      id: "without_qin",
+      seats: seedLineups[0]!.seats.map((seat) =>
+        seat.actorId === "qin_chuan"
+          ? { ...seat, actorId: replacement.id }
+          : seat,
+      ),
+    };
+    const game = createGameFromLineup({
+      gameId: "without_qin" as GameId,
+      title: "无秦川对局",
       createdAt,
       ruleset: createDefaultRuleset(),
-      preset: seedPresets[0]!,
+      lineup,
       presenter: seedPresenters[0]!,
       script: seedScripts[0]!,
+      actors: seedActors,
       runMode: "game",
-      roles: seedRoles,
-      characters: seedCharacters,
     });
-
-    expect(game).toMatchObject({
-      id: gameId,
-      title: "Library game",
-      status: "drafting",
-      createdAt,
-      updatedAt: createdAt,
-    });
-    expect(game.players.map((player) => player.name)).toEqual([
-      "周序",
-      "乔可",
-      "秦川",
-      "夏弥",
-      "任野",
-      "顾绫",
-      "程雾",
-      "叶忱",
-      "迟木",
-      "唐梨",
-      "陆燃",
-      "苏弦",
-    ]);
-    expect(game.players.map((player) => player.gameRole)).toEqual([
-      "villager",
-      "seer",
-      "werewolf",
-      "witch",
-      "villager",
-      "werewolf",
-      "guard",
-      "hunter",
-      "werewolf",
-      "villager",
-      "werewolf",
-      "villager",
-    ]);
-    expect(game.players.map((player) => player.playerId)).toEqual([
-      "p1",
-      "p2",
-      "p3",
-      "p4",
-      "p5",
-      "p6",
-      "p7",
-      "p8",
-      "p9",
-      "p10",
-      "p11",
-      "p12",
-    ]);
-
-    expect(game.players[0]).toMatchObject({
-      characterSourceId: "zhou_xu",
-      roleSourceId: "villager",
-      roleName: "平民",
-      roleSystemPromptSnapshot: seedRoles.find((role) => role.id === "villager")!
-        .systemPrompt,
-      characterSystemPromptSnapshot: seedCharacters.find(
-        (character) => character.id === "zhou_xu",
-      )!.systemPrompt,
-      mechanicKey: "none",
-      team: "villager",
-    });
-    expect(game.players[0]?.modelBindingSnapshot).toEqual(
-      seedCharacters.find((character) => character.id === "zhou_xu")!
-        .defaultModelBinding,
-    );
+    expect(game.players.some((player) => player.actor.sourceId === "qin_chuan")).toBe(false);
   });
 
-  it("creates the seeded game with the current seat and identity format", () => {
-    const game = createSeedGame({ gameId, createdAt });
-
-    expect(
-      game.players.map((player) => ({
-        playerId: player.playerId,
-        seatNo: player.seatNo,
-        name: player.name,
-        gameRole: player.gameRole,
-      })),
-    ).toEqual([
-      { playerId: "p1", seatNo: 1, name: "周序", gameRole: "villager" },
-      { playerId: "p2", seatNo: 2, name: "乔可", gameRole: "seer" },
-      { playerId: "p3", seatNo: 3, name: "秦川", gameRole: "werewolf" },
-      { playerId: "p4", seatNo: 4, name: "夏弥", gameRole: "witch" },
-      { playerId: "p5", seatNo: 5, name: "任野", gameRole: "villager" },
-      { playerId: "p6", seatNo: 6, name: "顾绫", gameRole: "werewolf" },
-      { playerId: "p7", seatNo: 7, name: "程雾", gameRole: "guard" },
-      { playerId: "p8", seatNo: 8, name: "叶忱", gameRole: "hunter" },
-      { playerId: "p9", seatNo: 9, name: "迟木", gameRole: "werewolf" },
-      { playerId: "p10", seatNo: 10, name: "唐梨", gameRole: "villager" },
-      { playerId: "p11", seatNo: 11, name: "陆燃", gameRole: "werewolf" },
-      { playerId: "p12", seatNo: 12, name: "苏弦", gameRole: "villager" },
-    ]);
+  it("creates a valid seed game through the same path", () => {
+    expect(createSeedGame({ gameId: "seed" as GameId, createdAt }).players).toHaveLength(12);
   });
 
-  it("rejects presets without explicit seat assignments", () => {
-    const preset = { ...seedPresets[0]!, seatAssignments: null } satisfies GamePreset;
+  it("keeps one Actor contract unchanged across every Rule Role", () => {
+    const sourceActor = seedActors.find((actor) => actor.id === "qin_chuan")!;
+    const expectedCard = compileActorRuntimeCard(sourceActor);
 
-    expect(() =>
-      createGameFromPreset({
-        gameId,
-        title: "Missing seats",
+    for (const ruleRoleId of RULE_ROLE_IDS) {
+      const sourceSeat = seedLineups[0]!.seats.find(
+        (seat) => seat.actorId === sourceActor.id,
+      )!;
+      const targetSeat = seedLineups[0]!.seats.find(
+        (seat) => seat.ruleRoleId === ruleRoleId,
+      )!;
+      const lineup = {
+        ...seedLineups[0]!,
+        id: `qin_as_${ruleRoleId}`,
+        seats: seedLineups[0]!.seats.map((seat) => {
+          if (seat.seatNo === sourceSeat.seatNo) {
+            return { ...seat, actorId: targetSeat.actorId };
+          }
+          if (seat.seatNo === targetSeat.seatNo) {
+            return { ...seat, actorId: sourceSeat.actorId };
+          }
+          return seat;
+        }),
+      };
+      const game = createGameFromLineup({
+        gameId: `qin_as_${ruleRoleId}` as GameId,
+        title: `秦川 ${ruleRoleId}`,
         createdAt,
         ruleset: createDefaultRuleset(),
-        preset,
+        lineup,
         presenter: seedPresenters[0]!,
         script: seedScripts[0]!,
+        actors: seedActors,
         runMode: "game",
-        roles: seedRoles,
-        characters: seedCharacters,
-      }),
-    ).toThrow("Game preset twelve_player_standard must include seatAssignments");
-  });
+      });
+      const player = game.players.find(
+        (candidate) => candidate.actor.sourceId === sourceActor.id,
+      )!;
 
-  it("rejects role definitions that are not supported by the current ruleset", () => {
-    const unsupportedRole: RoleDefinition = {
-      ...seedRoles[0],
-      id: "idiot",
-      name: "白痴",
-    };
-    const preset = {
-      ...seedPresets[0]!,
-      seatAssignments: seedPresets[0]!.seatAssignments!.map((seat, index) =>
-        index === 0 ? { ...seat, roleId: "idiot" } : seat,
-      ),
-      roleIds: ["idiot", ...seedPresets[0]!.roleIds.slice(1)],
-    } satisfies GamePreset;
-
-    expect(() =>
-      createGameFromPreset({
-        gameId,
-        title: "Unsupported role",
-        createdAt,
-        ruleset: createDefaultRuleset(),
-        preset,
-        presenter: seedPresenters[0]!,
-        script: seedScripts[0]!,
-        runMode: "game",
-        roles: [unsupportedRole, ...seedRoles],
-        characters: seedCharacters,
-      }),
-    ).toThrow("Role is not supported by current ruleset: idiot");
-  });
-
-  it("rejects supported role definitions whose contract fields are inconsistent", () => {
-    const mismatchedRole: RoleDefinition = {
-      ...seedRoles[0],
-      id: "werewolf",
-      faction: "good",
-    };
-
-    expect(() =>
-      createGameFromPreset({
-        gameId,
-        title: "Mismatched role",
-        createdAt,
-        ruleset: createDefaultRuleset(),
-        preset: seedPresets[0]!,
-        presenter: seedPresenters[0]!,
-        script: seedScripts[0]!,
-        runMode: "game",
-        roles: [mismatchedRole, ...seedRoles.slice(1)],
-        characters: seedCharacters,
-      }),
-    ).toThrow("Role werewolf does not match the current ruleset contract");
-  });
-
-  it("rejects presets that reference missing role definitions", () => {
-    const preset = {
-      ...seedPresets[0]!,
-      seatAssignments: seedPresets[0]!.seatAssignments!.map((seat, index) =>
-        index === 0 ? { ...seat, roleId: "missing_role" } : seat,
-      ),
-      roleIds: ["missing_role", ...seedPresets[0]!.roleIds.slice(1)],
-    } satisfies GamePreset;
-
-    expect(() =>
-      createGameFromPreset({
-        gameId,
-        title: "Missing role",
-        createdAt,
-        ruleset: createDefaultRuleset(),
-        preset,
-        presenter: seedPresenters[0]!,
-        script: seedScripts[0]!,
-        runMode: "game",
-        roles: seedRoles,
-        characters: seedCharacters,
-      }),
-    ).toThrow("references unknown role: missing_role");
-  });
-
-  it("rejects presets that reference missing character definitions", () => {
-    const preset = {
-      ...seedPresets[0]!,
-      seatAssignments: seedPresets[0]!.seatAssignments!.map((seat, index) =>
-        index === 0 ? { ...seat, characterId: "missing_character" } : seat,
-      ),
-      characterIds: [
-        "missing_character",
-        ...seedPresets[0]!.characterIds.slice(1),
-      ],
-    } satisfies GamePreset;
-
-    expect(() =>
-      createGameFromPreset({
-        gameId,
-        title: "Missing character",
-        createdAt,
-        ruleset: createDefaultRuleset(),
-        preset,
-        presenter: seedPresenters[0]!,
-        script: seedScripts[0]!,
-        runMode: "game",
-        roles: seedRoles,
-        characters: seedCharacters,
-      }),
-    ).toThrow("references unknown character: missing_character");
+      expect(player.ruleRole.id).toBe(ruleRoleId);
+      expect(compileActorRuntimeCard(player.actor)).toEqual(expectedCard);
+    }
   });
 });

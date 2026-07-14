@@ -36,7 +36,7 @@ export function GameBoard({ game, events }: GameBoardProps) {
                       Seat {player.seatNo}
                     </div>
                     <div className="mt-1 truncate text-sm font-medium text-foreground">
-                      {player.name}
+                      {player.actor.identity.name}
                     </div>
                   </div>
                   <span
@@ -50,7 +50,7 @@ export function GameBoard({ game, events }: GameBoardProps) {
                   </span>
                 </div>
                 <div className="mt-2 text-xs uppercase tracking-[0.14em] text-muted">
-                  {player.gameRole}
+                  {player.ruleRole.id}
                 </div>
               </article>
             );

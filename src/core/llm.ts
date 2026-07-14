@@ -1,4 +1,4 @@
-import type { ModelBindingSnapshot } from "./player";
+import type { ModelBindingSnapshot } from "./model-binding";
 
 export type LlmMessage = {
   readonly role: "system" | "user" | "assistant";
@@ -302,12 +302,12 @@ function localOutputForRequest(
     ],
   };
 
-  if (request.schemaName === "werewolf_episode_story_v3") {
+  if (request.schemaName === "werewolf_episode_story_v4") {
     return episodeOutline;
   }
 
-  if (request.schemaName === "werewolf_episode_ensemble_v3") {
-    const profiles = prefixedJsonObjects(userContent, "CHARACTER_PROFILE");
+  if (request.schemaName === "werewolf_episode_ensemble_v4") {
+    const profiles = prefixedJsonObjects(userContent, "ACTOR_PROFILE");
     const relationshipKinds = [
       "rivalry",
       "alliance",
@@ -316,8 +316,8 @@ function localOutputForRequest(
     ] as const;
     const castAssignments = profiles.map((profile, index) => {
       const playerId = localString(profile.playerId, `p${index + 1}`);
-      const name = localString(profile.name, playerId);
-      const persona = localCharacterTrait(profile);
+      const name = localActorName(profile, playerId);
+      const persona = localActorTrait(profile);
       const opportunities = Array.isArray(profile.performanceStepIndexes)
         ? profile.performanceStepIndexes.filter(
             (value): value is number => Number.isInteger(value),
@@ -352,12 +352,12 @@ function localOutputForRequest(
     return { castAssignments, relationshipSeeds };
   }
 
-  if (request.schemaName === "werewolf_episode_character_v3") {
-    const profile = prefixedJsonObjects(userContent, "CHARACTER_PROFILE")[0] ?? {};
+  if (request.schemaName === "werewolf_episode_actor_arc_v4") {
+    const profile = prefixedJsonObjects(userContent, "ACTOR_PROFILE")[0] ?? {};
     const assignment = prefixedJsonObjects(userContent, "CAST_ASSIGNMENT")[0] ?? {};
     const playerId = localString(assignment.playerId, localString(profile.playerId, "unknown"));
-    const name = localString(profile.name, playerId);
-    const persona = localCharacterTrait(profile);
+    const name = localActorName(profile, playerId);
+    const persona = localActorTrait(profile);
     const signatureStepIndex = Number.isInteger(assignment.signatureStepIndex)
       ? Number(assignment.signatureStepIndex)
       : 1;
@@ -371,7 +371,7 @@ function localOutputForRequest(
     };
   }
 
-  if (request.schemaName === "werewolf_episode_relationship_v3") {
+  if (request.schemaName === "werewolf_episode_relationship_v4") {
     const seed = prefixedJsonObjects(userContent, "RELATIONSHIP_SEED")[0] ?? {};
     return {
       playerIds: Array.isArray(seed.playerIds) ? seed.playerIds : [],
@@ -381,7 +381,7 @@ function localOutputForRequest(
     };
   }
 
-  if (request.schemaName === "werewolf_episode_beats_v3") {
+  if (request.schemaName === "werewolf_episode_beats_v4") {
     const actorContexts = new Map(
       prefixedJsonObjects(userContent, "ACTOR_CONTEXT").map((context) => {
         const profile = localObject(context.profile);
@@ -402,18 +402,18 @@ function localOutputForRequest(
         const relationships = Array.isArray(context?.relationships)
           ? context.relationships
           : [];
-        const name = localString(profile?.name, playerId);
+        const name = profile ? localActorName(profile, playerId) : playerId;
         const trait = profile
-          ? localCharacterTrait(profile)
+          ? localActorTrait(profile)
           : "自己的稳定判断方式";
         const relationship = localObject(relationships[0]);
         return {
           stepIndex,
           objective: "让当前立场推动一条可由后续公开事件验证的冲突线。",
-          stance: "明确选择一项当前判断，并指出它与前序证词的差异。",
+          performanceMove: "明确选择一项当前判断，并指出它与前序证词的差异。",
           disclosure: "conceal",
           themeHook: "把本场选择写成对档案版本的争夺，并由后续公开结果完成验证。",
-          characterHook: `${name}以${trait}组织本场表达，不机械重复口头禅`,
+          actorHook: `${name}以${trait}组织本场表达，不机械重复口头禅`,
           arcMove: localString(
             direction?.change,
             "在压力下保留人物核心，同时显露一个可继续发展的次要侧面",
@@ -426,21 +426,29 @@ function localOutputForRequest(
     };
   }
 
-  if (request.schemaName === "werewolf_speech_v2") {
+  if (request.schemaName === "werewolf_speech_intent_v3") {
+    const publicSpecialRole =
+      userContent.includes("- 频道：公开发言") &&
+      /你的身份是 (预言家|女巫|猎人|守卫)/.test(userContent);
     return {
-      ...(userContent.includes('"disclosure"')
-        ? { disclosure: "conceal" }
-        : {}),
-      text: "我先根据目前能看到的信息给出自己的判断。",
-      decisionSummary: "当前信息有限，先给出可继续验证的方向。",
+      objective: "给出一个可由后续公开信息验证的当前判断",
+      conclusion: "当前信息有限，先保留结论并继续观察",
+      evidenceEventIndexes: [],
+      uncertainty: "缺少足够的差异化证据",
+      disclosure: publicSpecialRole ? "conceal" : "not_applicable",
+      intendedEffect: "让其他玩家补充可核验的信息",
     };
   }
 
+  if (request.schemaName === "werewolf_speech_performance_v1") {
+    return { text: "现在证据还不够，我先保留判断，大家把能核对的信息说清楚。" };
+  }
+
   if (
-    request.schemaName === "werewolf_target_action_v2" ||
-    request.schemaName === "werewolf_optional_action_v2"
+    request.schemaName === "werewolf_target_action_v3" ||
+    request.schemaName === "werewolf_optional_action_v3"
   ) {
-    if (request.schemaName === "werewolf_optional_action_v2") {
+    if (request.schemaName === "werewolf_optional_action_v3") {
       return {
         used: false,
         targetPlayerId: null,
@@ -500,14 +508,19 @@ function localString(value: unknown, fallback: string): string {
     : fallback;
 }
 
-function localCharacterTrait(profile: Record<string, unknown>): string {
-  return localString(
-    profile.persona,
-    localString(
-      profile.reasoningStyle,
-      localString(profile.speakingStyle, "自然克制的真人表达"),
-    ),
-  );
+function localActorTrait(profile: Record<string, unknown>): string {
+  const actor = localObject(profile.actor);
+  const core = localObject(actor?.core);
+  return localString(core?.stableCore, "自己的稳定判断方式");
+}
+
+function localActorName(
+  profile: Record<string, unknown>,
+  fallback: string,
+): string {
+  const actor = localObject(profile.actor);
+  const identity = localObject(actor?.identity);
+  return localString(identity?.name, fallback);
 }
 
 function localRelationshipPartner(

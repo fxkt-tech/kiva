@@ -6,11 +6,11 @@ import type { Game } from "../game";
 import { createSeedGame } from "../game";
 import { compilePublicPlayback } from "../playback";
 import {
-  factionForRole,
+  factionForRuleRole,
   type DraftId,
   type EventId,
   type GameId,
-  type GameRole,
+  type RuleRoleId,
   type Phase,
   type PlayerId,
 } from "../types";
@@ -75,8 +75,8 @@ describe("advance planner", () => {
       },
       payload: {
         playerId: game.players[0].playerId,
-        role: game.players[0].gameRole,
-        faction: game.players[0].faction,
+        role: game.players[0].ruleRole.id,
+        faction: game.players[0].ruleRole.faction,
       },
     });
   });
@@ -204,10 +204,10 @@ describe("advance planner", () => {
     });
   });
 
-  it("uses active role assignments as role truth after setup", () => {
+  it("keeps the immutable Game snapshot as role truth after setup", () => {
     const game = createGame();
     const events = [
-      ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
+      ...assignedRoleEvents(game.players.map((player) => player.ruleRole.id)),
       confirmedPhaseStarted("night", 1, game.players.length + 1),
     ];
     const swappedEvents = events.map((event) => {
@@ -219,8 +219,8 @@ describe("advance planner", () => {
           ...event,
           payload: {
             ...event.payload,
-            role: "villager" as GameRole,
-            faction: factionForRole("villager"),
+            role: "villager" as RuleRoleId,
+            faction: factionForRuleRole("villager"),
           },
         };
       }
@@ -233,8 +233,8 @@ describe("advance planner", () => {
           ...event,
           payload: {
             ...event.payload,
-            role: "seer" as GameRole,
-            faction: factionForRole("seer"),
+            role: "seer" as RuleRoleId,
+            faction: factionForRuleRole("seer"),
           },
         };
       }
@@ -268,14 +268,14 @@ describe("advance planner", () => {
 
     expect(seerCheck).toMatchObject({
       type: "seer_check_selected",
-      actorPlayerId: game.players[4].playerId,
+      actorPlayerId: game.players[1].playerId,
     });
   });
 
   it("does not plan first-night actions outside first night", () => {
     const game = createGame();
     const events = [
-      ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
+      ...assignedRoleEvents(game.players.map((player) => player.ruleRole.id)),
       confirmedPhaseStarted("day", 1, game.players.length + 1),
     ];
 
@@ -295,11 +295,11 @@ describe("advance planner", () => {
     const seer = playerByRole(game, "seer");
     const witch = playerByRole(game, "witch");
     const guard = playerByRole(game, "guard");
-    const wolves = game.players.filter((player) => player.gameRole === "werewolf");
+    const wolves = game.players.filter((player) => player.ruleRole.id === "werewolf");
     const killedPlayerId = game.players[0].playerId;
     const poisonTargetId = game.players[4].playerId;
     const events: readonly GameEvent[] = [
-      ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
+      ...assignedRoleEvents(game.players.map((player) => player.ruleRole.id)),
       confirmedPhaseStarted("night", 1, game.players.length + 1),
       confirmedEvent(
         createDraftEvent({
@@ -528,10 +528,10 @@ describe("complete deterministic game flow", () => {
   it("plans game end after exile kills the last wolf", () => {
     const game = createGame();
     const wolfIds = game.players
-      .filter((player) => player.gameRole === "werewolf")
+      .filter((player) => player.ruleRole.id === "werewolf")
       .map((player) => player.playerId);
     const events: readonly GameEvent[] = [
-      ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
+      ...assignedRoleEvents(game.players.map((player) => player.ruleRole.id)),
       confirmedPhaseStarted("night", 1, game.players.length + 1),
       confirmedEvent(
         createDraftEvent({
@@ -666,10 +666,10 @@ describe("complete deterministic game flow", () => {
   it("plans game end after night resolution kills all wolves", () => {
     const game = createGame();
     const wolfIds = game.players
-      .filter((player) => player.gameRole === "werewolf")
+      .filter((player) => player.ruleRole.id === "werewolf")
       .map((player) => player.playerId);
     const events: readonly GameEvent[] = [
-      ...assignedRoleEvents(game.players.map((player) => player.gameRole)),
+      ...assignedRoleEvents(game.players.map((player) => player.ruleRole.id)),
       confirmedPhaseStarted("night", 1, game.players.length + 1),
       confirmedEvent(
         createDraftEvent({
@@ -774,7 +774,7 @@ describe("complete deterministic game flow", () => {
   });
 });
 
-function assignedRoleEvents(roles: readonly GameRole[]): readonly GameEvent[] {
+function assignedRoleEvents(roles: readonly RuleRoleId[]): readonly GameEvent[] {
   const game = createGame();
   return game.players.map((player, index) =>
     confirmedEvent(
@@ -788,7 +788,7 @@ function assignedRoleEvents(roles: readonly GameRole[]): readonly GameEvent[] {
         payload: {
           playerId: player.playerId,
           role: roles[index],
-          faction: factionForRole(roles[index]),
+          faction: factionForRuleRole(roles[index]),
         },
         createdAt,
       }),
@@ -958,8 +958,8 @@ function confirmAllCurrentVotes(
   return events;
 }
 
-function playerByRole(game: Game, role: GameRole) {
-  const player = game.players.find((candidate) => candidate.gameRole === role);
+function playerByRole(game: Game, role: RuleRoleId) {
+  const player = game.players.find((candidate) => candidate.ruleRole.id === role);
   if (!player) {
     throw new Error(`Missing player for role ${role}`);
   }

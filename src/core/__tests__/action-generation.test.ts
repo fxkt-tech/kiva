@@ -4,14 +4,14 @@ import type { GameEvent } from "../events";
 import { createSeedGame } from "../game";
 import { MockLlmClient } from "../llm";
 import { generateActionDraft } from "../action-generation";
-import type { DraftId, EventId, Faction, GameId, GameRole, PlayerId } from "../types";
+import type { DraftId, EventId, Faction, GameId, RuleRoleId, PlayerId } from "../types";
 
 const gameId = "game_1" as GameId;
 const createdAt = "2026-06-26T00:00:00.000Z";
 const game = createSeedGame({ gameId, createdAt });
 const wolf = playerByRole("werewolf");
 const secondWolf = game.players.find(
-  (player) => player.gameRole === "werewolf" && player.playerId !== wolf.playerId,
+  (player) => player.ruleRole.id === "werewolf" && player.playerId !== wolf.playerId,
 )!;
 const seer = playerByRole("seer");
 const witch = playerByRole("witch");
@@ -42,7 +42,7 @@ describe("action generation", () => {
       status: "success",
       purpose: "action",
       request: {
-        schemaName: "werewolf_target_action_v2",
+        schemaName: "werewolf_target_action_v3",
         systemPrompt: expect.stringContaining("【执行优先级】"),
         messages: expect.arrayContaining([
           expect.objectContaining({
@@ -57,16 +57,14 @@ describe("action generation", () => {
       },
     });
     expect(result.generation?.request?.systemPrompt).toContain(
-      seer.persona,
+      seer.actor.core.stableCore,
     );
     expect(result.generation?.request?.systemPrompt).toContain(
-      seer.roleSystemPromptSnapshot,
+      seer.actor.cognition.evidencePolicy,
     );
-    expect(result.generation?.request?.systemPrompt).toContain(
-      seer.roleActionPromptSnapshot,
-    );
+    expect(result.generation?.request?.systemPrompt).not.toContain("本角色对当前技能的补充建议");
     expect(result.generation?.request?.messages[0]?.content).toContain(
-      `你的身份是 ${seer.roleName}`,
+      `你的身份是 ${seer.ruleRole.name}`,
     );
     expect(result.generation?.request?.messages[0]?.content).toContain(
       "预言家选择本夜查验目标",
@@ -142,16 +140,16 @@ describe("action generation", () => {
     const content = result.generation?.request?.messages[0]?.content ?? "";
 
     expect(content).toContain(
-      `${villager.seatNo} 号 ${villager.name}发言：我觉得 1 号发言像狼人。`,
+      `${villager.seatNo} 号 ${villager.actor.identity.name}发言：我觉得 1 号发言像狼人。`,
     );
     expect(content).toContain(
-      `投票结算：平票：${wolf.seatNo} 号 ${wolf.name}、${villager.seatNo} 号 ${villager.name}。`,
+      `投票结算：平票：${wolf.seatNo} 号 ${wolf.actor.identity.name}、${villager.seatNo} 号 ${villager.actor.identity.name}。`,
     );
     expect(content).toContain(
-      `  - ${villager.seatNo} 号 ${villager.name} -> ${wolf.seatNo} 号 ${wolf.name}`,
+      `  - ${villager.seatNo} 号 ${villager.actor.identity.name} -> ${wolf.seatNo} 号 ${wolf.actor.identity.name}`,
     );
     expect(content).toContain(
-      `  - ${wolf.seatNo} 号 ${wolf.name} -> ${villager.seatNo} 号 ${villager.name}`,
+      `  - ${wolf.seatNo} 号 ${wolf.actor.identity.name} -> ${villager.seatNo} 号 ${villager.actor.identity.name}`,
     );
     expect(content).not.toContain("#6");
     expect(content).not.toContain("#7");
@@ -171,14 +169,14 @@ describe("action generation", () => {
     const content = result.generation?.request?.messages[0]?.content ?? "";
 
     expect(content).toContain(
-      `${wolf.playerId} | ${wolf.seatNo} 号 | ${wolf.name} | 你；狼人，狼人阵营`,
+      `${wolf.playerId} | ${wolf.seatNo} 号 | ${wolf.actor.identity.name} | 你；狼人，狼人阵营`,
     );
     expect(content).toContain(
-      `${secondWolf.playerId} | ${secondWolf.seatNo} 号 | ${secondWolf.name} | 已知狼人队友；狼人，狼人阵营`,
+      `${secondWolf.playerId} | ${secondWolf.seatNo} 号 | ${secondWolf.actor.identity.name} | 已知狼人队友；狼人，狼人阵营`,
     );
-    expect(content).toContain(`${seer.playerId} | ${seer.seatNo} 号 | ${seer.name}`);
+    expect(content).toContain(`${seer.playerId} | ${seer.seatNo} 号 | ${seer.actor.identity.name}`);
     expect(content).not.toContain(
-      `${seer.playerId} | ${seer.seatNo} 号 | ${seer.name} | 预言家`,
+      `${seer.playerId} | ${seer.seatNo} 号 | ${seer.actor.identity.name} | 预言家`,
     );
   });
 
@@ -221,7 +219,7 @@ describe("action generation", () => {
       status: "failed",
       purpose: "action",
       request: {
-        schemaName: "werewolf_target_action_v2",
+        schemaName: "werewolf_target_action_v3",
         messages: expect.any(Array),
       },
       error: "Illegal targetPlayerId for wolf_vote_cast",
@@ -630,7 +628,7 @@ function draftBase(type: DraftEvent["type"]) {
 function roleAssigned(
   index: number,
   playerId: PlayerId,
-  role: GameRole,
+  role: RuleRoleId,
   faction: Faction,
 ): Extract<GameEvent, { type: "role_assigned" }> {
   return {
@@ -643,8 +641,8 @@ function roleAssigned(
   };
 }
 
-function playerByRole(role: GameRole) {
-  const player = game.players.find((candidate) => candidate.gameRole === role);
+function playerByRole(role: RuleRoleId) {
+  const player = game.players.find((candidate) => candidate.ruleRole.id === role);
   if (!player) {
     throw new Error(`Missing player for role ${role}`);
   }

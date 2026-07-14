@@ -6,7 +6,7 @@ import type {
   VoteType,
 } from "./events";
 import type { PlayerSnapshot } from "./player";
-import type { Faction, GameRole, Phase, PlayerId } from "./types";
+import type { Faction, RuleRoleId, Phase, PlayerId } from "./types";
 
 export type PresentedEvent = {
   readonly title: string;
@@ -288,7 +288,7 @@ function playerLabel(
     return `未知玩家 ${playerId}`;
   }
 
-  return `${player.seatNo} 号 ${player.name}`;
+  return `${player.seatNo} 号 ${player.actor.identity.name}`;
 }
 
 function playerListLabel(
@@ -325,7 +325,7 @@ function exileResolutionText(
   return "本轮无人被放逐。";
 }
 
-function roleLabel(role: GameRole): string {
+function roleLabel(role: RuleRoleId): string {
   switch (role) {
     case "werewolf":
       return "狼人";

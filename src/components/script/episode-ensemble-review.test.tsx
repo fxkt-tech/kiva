@@ -58,8 +58,8 @@ describe("EpisodeEnsembleReview", () => {
       />,
     );
 
-    expect(html).toContain(first!.name);
-    expect(html).toContain(second!.name);
+    expect(html).toContain(first!.actor.identity.name);
+    expect(html).toContain(second!.actor.identity.name);
     expect(html).toContain("主要角色");
     expect(html).toContain("支持角色");
     expect(html).toContain("把谨慎观察推进成公开追问");
@@ -81,10 +81,10 @@ function scriptWith(
 ): EpisodeScriptSnapshot {
   return {
     ...fields,
-    schemaVersion: 2,
+    schemaVersion: 3,
     id: "episode_review",
     gameId: game.id,
-    compilerVersion: "episode-compiler:v1",
+    compilerVersion: "episode-compiler:v2",
     inputHash: "episode_test",
     title: "测试剧本",
     logline: "测试群像审核",

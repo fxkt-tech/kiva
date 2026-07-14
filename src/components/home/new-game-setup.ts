@@ -1,124 +1,102 @@
-import type { CharacterDefinition } from "@/core/character-definition";
-import type { GamePresetSeatAssignment } from "@/core/game-preset";
-import type { RoleDefinition } from "@/core/role-definition";
+import type { ActorDefinition } from "@/core/actor-definition";
+import type { LineupSeat } from "@/core/lineup";
+import { ruleRoleById, type RuleRole } from "@/core/rule-role";
+import { TWELVE_PLAYER_RULE_ROLE_COUNTS } from "@/core/types";
 
-export const requiredTwelvePlayerRoleCounts = {
-  werewolf: 4,
-  seer: 1,
-  witch: 1,
-  hunter: 1,
-  guard: 1,
-  villager: 4,
-} as const;
+export const requiredTwelvePlayerRuleRoleCounts =
+  TWELVE_PLAYER_RULE_ROLE_COUNTS;
 
-const requiredRoleLabels: Readonly<Record<string, string>> = {
-  werewolf: "狼人",
-  seer: "预言家",
-  witch: "女巫",
-  hunter: "猎人",
-  guard: "守卫",
-  villager: "平民",
-};
-
-export type RandomSeatSetupInput = {
-  readonly roles: readonly RoleDefinition[];
-  readonly characters: readonly CharacterDefinition[];
+export function createRandomLineupSeats(input: {
+  readonly ruleRoles: readonly RuleRole[];
+  readonly actors: readonly ActorDefinition[];
   readonly random?: () => number;
-};
-
-export function createRandomSeatSetup({
-  roles,
-  characters,
-  random = Math.random,
-}: RandomSeatSetupInput): readonly GamePresetSeatAssignment[] {
-  const enabledRoleIds = new Set(roles.filter((role) => role.enabled).map((role) => role.id));
-  const enabledCharacters = characters.filter((character) => character.enabled);
-  const rolePool = Object.entries(requiredTwelvePlayerRoleCounts).flatMap(
+}): readonly LineupSeat[] {
+  const random = input.random ?? Math.random;
+  const availableRoleIds = new Set(input.ruleRoles.map((role) => role.id));
+  const rolePool = Object.entries(requiredTwelvePlayerRuleRoleCounts).flatMap(
     ([roleId, count]) =>
-      enabledRoleIds.has(roleId)
-        ? Array.from({ length: count }, () => roleId)
+      availableRoleIds.has(roleId as RuleRole["id"])
+        ? Array.from({ length: count }, () => roleId as RuleRole["id"])
         : [],
   );
-  const characterPool = shuffle(enabledCharacters, random).slice(0, 12);
+  const actorPool = shuffle(
+    input.actors.filter((actor) => actor.enabled),
+    random,
+  ).slice(0, 12);
 
-  return shuffle(rolePool, random).map((roleId, index) => ({
+  return shuffle(rolePool, random).map((ruleRoleId, index) => ({
     seatNo: index + 1,
-    roleId,
-    characterId: characterPool[index]?.id ?? "",
-    modelBindingOverride: null,
+    ruleRoleId,
+    actorId: actorPool[index]?.id ?? "",
   }));
 }
 
-export function validateSeatSetup(
-  seats: readonly GamePresetSeatAssignment[],
-  roles: readonly RoleDefinition[],
-  characters: readonly CharacterDefinition[],
+export function validateLineupSeats(
+  seats: readonly LineupSeat[],
+  ruleRoles: readonly RuleRole[],
+  actors: readonly ActorDefinition[],
 ): readonly string[] {
   const messages = [
-    ...roleCountMessages(seats),
-    ...seatReferenceMessages(seats, roles, characters),
+    ...ruleRoleCountMessages(seats),
+    ...seatReferenceMessages(seats, ruleRoles, actors),
   ];
-
   return [...new Set(messages)];
 }
 
-export function roleCountMessages(
-  seats: readonly Pick<GamePresetSeatAssignment, "roleId">[],
+export function ruleRoleCountMessages(
+  seats: readonly Pick<LineupSeat, "ruleRoleId">[],
 ): readonly string[] {
   const messages: string[] = [];
-
-  for (const [roleId, requiredCount] of Object.entries(requiredTwelvePlayerRoleCounts)) {
-    const actualCount = seats.filter((seat) => seat.roleId === roleId).length;
-    if (actualCount !== requiredCount) {
+  for (const [roleId, expected] of Object.entries(
+    requiredTwelvePlayerRuleRoleCounts,
+  )) {
+    const actual = seats.filter((seat) => seat.ruleRoleId === roleId).length;
+    if (actual !== expected) {
       messages.push(
-        `${requiredRoleLabels[roleId] ?? roleId}需要 ${requiredCount} 个，当前 ${actualCount} 个。`,
+        `${ruleRoleById(roleId as RuleRole["id"]).name}需要 ${expected} 个，当前 ${actual} 个。`,
       );
     }
   }
-
   return messages;
 }
 
 function seatReferenceMessages(
-  seats: readonly GamePresetSeatAssignment[],
-  roles: readonly RoleDefinition[],
-  characters: readonly CharacterDefinition[],
+  seats: readonly LineupSeat[],
+  ruleRoles: readonly RuleRole[],
+  actors: readonly ActorDefinition[],
 ): readonly string[] {
-  const enabledRoleIds = new Set(roles.filter((role) => role.enabled).map((role) => role.id));
-  const enabledCharacterIds = new Set(
-    characters.filter((character) => character.enabled).map((character) => character.id),
+  const ruleRoleIds = new Set(ruleRoles.map((role) => role.id));
+  const actorIds = new Set(
+    actors.filter((actor) => actor.enabled).map((actor) => actor.id),
   );
-  const characterIds = seats.map((seat) => seat.characterId).filter(Boolean);
+  const selectedActorIds = seats.map((seat) => seat.actorId).filter(Boolean);
   const messages: string[] = [];
 
   if (seats.length !== 12) {
     messages.push(`需要 12 个座位，当前 ${seats.length} 个。`);
   }
-
   for (const seat of seats) {
-    if (!enabledRoleIds.has(seat.roleId)) {
-      messages.push(`Seat ${seat.seatNo} 选择了不可用职业：${seat.roleId || "空"}`);
+    if (!ruleRoleIds.has(seat.ruleRoleId)) {
+      messages.push(`Seat ${seat.seatNo} 选择了未知规则身份。`);
     }
-
-    if (!enabledCharacterIds.has(seat.characterId)) {
-      messages.push(`Seat ${seat.seatNo} 选择了不可用玩家角色：${seat.characterId || "空"}`);
+    if (!actorIds.has(seat.actorId)) {
+      messages.push(`Seat ${seat.seatNo} 选择了不可用 Actor：${seat.actorId || "空"}`);
     }
   }
-
-  if (new Set(characterIds).size !== characterIds.length) {
-    messages.push("玩家角色不能重复。");
+  if (new Set(selectedActorIds).size !== selectedActorIds.length) {
+    messages.push("Actor 不能重复。");
   }
-
   return messages;
 }
 
 function shuffle<T>(items: readonly T[], random: () => number): T[] {
   const shuffled = [...items];
-
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(random() * (index + 1));
-    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex]!, shuffled[index]!];
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex]!,
+      shuffled[index]!,
+    ];
   }
-
   return shuffled;
 }

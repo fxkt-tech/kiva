@@ -48,7 +48,7 @@ describe("ScriptPreparationPage", () => {
       id: "episode_request_1",
       task: { kind: "story" },
       status: "success",
-      promptVersion: "episode-author:v3",
+      promptVersion: "episode-author:v4",
       provider: "openai-compatible",
       model: "author-model",
       request: {

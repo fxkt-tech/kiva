@@ -274,8 +274,8 @@ function baseEvent(index: number) {
   };
 }
 
-function playerByRole(role: typeof game.players[number]["gameRole"]) {
-  const player = game.players.find((candidate) => candidate.gameRole === role);
+function playerByRole(role: typeof game.players[number]["ruleRole"]["id"]) {
+  const player = game.players.find((candidate) => candidate.ruleRole.id === role);
   if (!player) throw new Error(`Missing player for role ${role}`);
   return player;
 }

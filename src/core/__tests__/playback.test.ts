@@ -70,8 +70,8 @@ describe("playback compiler", () => {
         players: expect.arrayContaining([
           expect.objectContaining({
             playerId: players[0].playerId,
-            avatar: players[0].avatar,
-            roleName: players[0].roleName,
+            avatar: players[0].actor.identity.portrait,
+            roleName: players[0].ruleRole.name,
             status: "alive",
           }),
         ]),
@@ -91,7 +91,7 @@ describe("playback compiler", () => {
         players: expect.arrayContaining([
           expect.objectContaining({
             playerId: players[0].playerId,
-            roleName: players[0].roleName,
+            roleName: players[0].ruleRole.name,
             status: "alive",
           }),
         ]),
@@ -107,7 +107,15 @@ describe("playback compiler", () => {
     const playback = compilePublicPlayback(
       [event(1, { kind: "public" })],
       players.map((player, index) =>
-        index === 0 ? { ...player, avatar } : player,
+        index === 0
+          ? {
+              ...player,
+              actor: {
+                ...player.actor,
+                identity: { ...player.actor.identity, portrait: avatar },
+              },
+            }
+          : player,
       ),
     );
 

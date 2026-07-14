@@ -1,251 +1,78 @@
 import { describe, expect, it } from "vitest";
-import type { ModelBindingSnapshot } from "@/core/player";
-import { seedPresenters } from "@/seeds/presenters";
-import {
-  characterFromFormData,
-  presenterFromFormData,
-  presetFromFormData,
-  roleFromFormData,
-} from "./form-parsers";
+import { seedActors } from "@/seeds/actors";
+import { seedLineups } from "@/seeds/lineups";
+import { actorFromFormData, lineupFromFormData } from "./form-parsers";
 
-const timestamp = "2026-06-27T00:00:00.000Z";
-
-const modelBinding = {
-  provider: "mock",
-  model: "mock-model",
-  responseFormat: "json",
-} satisfies ModelBindingSnapshot;
-
-describe("library form parsers", () => {
-  it("parses a role form", () => {
+describe("Library Studio form parsers", () => {
+  it("round-trips the structured Actor form and increments revision", () => {
+    const actor = seedActors[1]!;
     const form = new FormData();
-    form.set("id", "werewolf");
-    form.set("name", "狼人");
-    form.set("enabled", "on");
-    form.set("faction", "wolves");
-    form.set("team", "wolf");
-    form.set("mechanicKey", "wolf_kill");
-    form.set("visibilityRules", "own_role,wolf_teammates");
-    form.set("nightOrder", "10");
-    form.set("systemPrompt", "你是狼人。");
-    form.set("actionPrompt", "选择袭击目标。");
-
-    expect(roleFromFormData(form, timestamp)).toMatchObject({
-      id: "werewolf",
-      enabled: true,
-      visibilityRules: ["own_role", "wolf_teammates"],
-      nightOrder: 10,
-      actionPrompt: "选择袭击目标。",
-      defaultModelBinding: null,
+    appendActor(form, actor);
+    expect(actorFromFormData(form)).toMatchObject({
+      id: actor.id,
+      identity: actor.identity,
+      core: actor.core,
+      cognition: actor.cognition,
+      revision: actor.revision + 1,
     });
   });
 
-  it("parses a character form", () => {
+  it("keeps Qin Chuan's stable id/name pair", () => {
     const form = new FormData();
-    form.set("id", "qin");
-    form.set("name", "秦川");
-    form.set("enabled", "on");
-    form.set("tags", "冷静,强势");
-    form.set("persona", "冷静");
-    form.set("speakingStyle", "短句");
-    form.set("reasoningStyle", "证据优先");
-    form.set("systemPrompt", "你是秦川。");
-
-    expect(characterFromFormData(form, timestamp)).toMatchObject({
-      id: "qin",
-      tags: ["冷静", "强势"],
-      avatar: null,
-      enabled: true,
-      defaultModelBinding: null,
-    });
+    appendActor(form, seedActors[0]!);
+    form.set("identity.name", "别名");
+    expect(() => actorFromFormData(form)).toThrow("稳定 Actor");
   });
 
-  it("parses a preset seat table", () => {
+  it("parses one Actor and Rule Role per fixed seat", () => {
+    const lineup = seedLineups[0]!;
     const form = new FormData();
-    form.set("id", "six_player_standard");
-    form.set("name", "6人狼人杀试运行");
-    form.set("rulesetId", "six_player_v1");
-    form.set("playerCount", "2");
+    form.set("id", lineup.id);
+    form.set("name", lineup.name);
+    form.set("revision", String(lineup.revision));
     form.set("enabled", "on");
-    form.set("seat.1.roleId", "werewolf");
-    form.set("seat.1.characterId", "qin");
-    form.set("seat.2.roleId", "seer");
-    form.set("seat.2.characterId", "lin");
-
-    expect(presetFromFormData(form, timestamp)).toMatchObject({
-      roleIds: ["werewolf", "seer"],
-      characterIds: ["qin", "lin"],
-      seatAssignments: [
-        {
-          seatNo: 1,
-          roleId: "werewolf",
-          characterId: "qin",
-          modelBindingOverride: null,
-        },
-        {
-          seatNo: 2,
-          roleId: "seer",
-          characterId: "lin",
-          modelBindingOverride: null,
-        },
-      ],
+    for (const seat of lineup.seats) {
+      form.set(`seat.${seat.seatNo}.ruleRoleId`, seat.ruleRoleId);
+      form.set(`seat.${seat.seatNo}.actorId`, seat.actorId);
+    }
+    expect(lineupFromFormData(form)).toEqual({
+      ...lineup,
+      revision: lineup.revision + 1,
     });
-  });
-
-  it("parses missing enabled checkboxes as false", () => {
-    expect(roleFromFormData(roleForm({ enabled: false }), timestamp).enabled).toBe(
-      false,
-    );
-    expect(
-      characterFromFormData(characterForm({ enabled: false }), timestamp).enabled,
-    ).toBe(false);
-    expect(presetFromFormData(presetForm({ enabled: false }), timestamp).enabled).toBe(
-      false,
-    );
-  });
-
-  it("parses a complete presenter script catalog", () => {
-    const source = seedPresenters[0]!;
-    const form = presenterForm(source);
-    form.set("name", "新的守夜人");
-    form.set("line.phase.night.template", "夜幕降临，所有玩家闭眼。");
-
-    const presenter = presenterFromFormData(form, timestamp);
-
-    expect(presenter).toMatchObject({
-      id: "wen_zhou",
-      name: "新的守夜人",
-      avatar: "/kivdb-assets/presenters/presenter_wen_zhou_v1.png",
-      enabled: true,
-      createdAt: source.createdAt,
-      updatedAt: timestamp,
-    });
-    expect(presenter.lines["phase.night"]).toEqual({
-      template: "夜幕降临，所有玩家闭眼。",
-      variables: [],
-    });
-    expect(presenter.lines["prompt.speech"].variables).toEqual(["seatNo"]);
-  });
-
-  it("preserves role and character default model bindings from hidden JSON", () => {
-    const roleFormData = roleForm();
-    roleFormData.set("defaultModelBinding", JSON.stringify(modelBinding));
-    const characterFormData = characterForm();
-    characterFormData.set("defaultModelBinding", JSON.stringify(modelBinding));
-
-    expect(roleFromFormData(roleFormData, timestamp).defaultModelBinding).toEqual(
-      modelBinding,
-    );
-    expect(
-      characterFromFormData(characterFormData, timestamp).defaultModelBinding,
-    ).toEqual(modelBinding);
-  });
-
-  it("parses editable character model fields without sampling parameters", () => {
-    const form = characterForm();
-    form.set("modelBinding.provider", "volcengine");
-    form.set("modelBinding.model", "doubao-character-model");
-    form.set("modelBinding.responseFormat", "json");
-    form.set("modelBinding.fallbackModel", "doubao-fallback");
-
-    expect(characterFromFormData(form, timestamp).defaultModelBinding).toEqual({
-      provider: "volcengine",
-      model: "doubao-character-model",
-      responseFormat: "json",
-      fallbackModel: "doubao-fallback",
-    });
-  });
-
-  it("preserves preset seat model binding overrides from hidden JSON", () => {
-    const form = presetForm();
-    form.set("seat.2.modelBindingOverride", JSON.stringify(modelBinding));
-
-    expect(presetFromFormData(form, timestamp).seatAssignments).toEqual([
-      {
-        seatNo: 1,
-        roleId: "werewolf",
-        characterId: "qin",
-        modelBindingOverride: null,
-      },
-      {
-        seatNo: 2,
-        roleId: "seer",
-        characterId: "lin",
-        modelBindingOverride: modelBinding,
-      },
-    ]);
-  });
-
-  it("throws the original invalid JSON parse message", () => {
-    const form = roleForm();
-    form.set("defaultModelBinding", "{");
-
-    expect(() => roleFromFormData(form, timestamp)).toThrow(
-      /Expected property name|Unexpected end|JSON/,
-    );
   });
 });
 
-function roleForm(options: { readonly enabled?: boolean } = {}): FormData {
-  const form = new FormData();
-  form.set("id", "werewolf");
-  form.set("name", "狼人");
-  if (options.enabled !== false) {
-    form.set("enabled", "on");
-  }
-  form.set("faction", "wolves");
-  form.set("team", "wolf");
-  form.set("mechanicKey", "wolf_kill");
-  form.set("visibilityRules", "own_role,wolf_teammates");
-  form.set("nightOrder", "");
-  form.set("systemPrompt", "你是狼人。");
-  form.set("actionPrompt", "");
-  return form;
-}
-
-function characterForm(options: { readonly enabled?: boolean } = {}): FormData {
-  const form = new FormData();
-  form.set("id", "qin");
-  form.set("name", "秦川");
-  if (options.enabled !== false) {
-    form.set("enabled", "on");
-  }
-  form.set("avatar", "");
-  form.set("tags", "冷静,强势");
-  form.set("persona", "冷静");
-  form.set("speakingStyle", "短句");
-  form.set("reasoningStyle", "证据优先");
-  form.set("systemPrompt", "你是秦川。");
-  return form;
-}
-
-function presetForm(options: { readonly enabled?: boolean } = {}): FormData {
-  const form = new FormData();
-  form.set("id", "six_player_standard");
-  form.set("name", "6人狼人杀试运行");
-  form.set("rulesetId", "six_player_v1");
-  form.set("playerCount", "2");
-  if (options.enabled !== false) {
-    form.set("enabled", "on");
-  }
-  form.set("seat.1.roleId", "werewolf");
-  form.set("seat.1.characterId", "qin");
-  form.set("seat.2.roleId", "seer");
-  form.set("seat.2.characterId", "lin");
-  return form;
-}
-
-function presenterForm(source: (typeof seedPresenters)[number]): FormData {
-  const form = new FormData();
-  form.set("id", source.id);
-  form.set("name", source.name);
-  form.set("avatar", source.avatar ?? "");
+function appendActor(form: FormData, actor: (typeof seedActors)[number]) {
+  form.set("id", actor.id);
+  form.set("revision", String(actor.revision));
   form.set("enabled", "on");
-  form.set("createdAt", source.createdAt);
-
-  for (const [key, line] of Object.entries(source.lines)) {
-    form.set(`line.${key}.template`, line.template);
-  }
-
-  return form;
+  for (const [key, value] of Object.entries({
+    "identity.name": actor.identity.name,
+    "identity.portrait": actor.identity.portrait,
+    "identity.tags": actor.identity.tags.join(","),
+    "identity.visualAnchor": actor.identity.visualAnchor,
+    "core.stableCore": actor.core.stableCore,
+    "core.drive": actor.core.drive,
+    "core.blindSpot": actor.core.blindSpot,
+    "core.changeBoundary": actor.core.changeBoundary,
+    "cognition.attention": actor.cognition.attention,
+    "cognition.evidencePolicy": actor.cognition.evidencePolicy,
+    "cognition.decisionPolicy": actor.cognition.decisionPolicy,
+    "cognition.correctionTrigger": actor.cognition.correctionTrigger,
+    "interaction.tableFunction": actor.interaction.tableFunction,
+    "interaction.socialStrategy": actor.interaction.socialStrategy,
+    "interaction.pressureResponse": actor.interaction.pressureResponse,
+    "interaction.conflictAxes": actor.interaction.conflictAxes.join(","),
+    "expression.cadence": actor.expression.cadence,
+    "expression.diction": actor.expression.diction,
+    "expression.rhetoricalMoves": actor.expression.rhetoricalMoves.join(","),
+    "expression.avoid": actor.expression.avoid.join(","),
+    "production.modelBinding.provider": actor.production.modelBinding.provider,
+    "production.modelBinding.model": actor.production.modelBinding.model,
+    "production.modelBinding.fallbackModel": actor.production.modelBinding.fallbackModel ?? "",
+    "production.voice.voice": actor.production.voice.voice,
+    "production.voice.rate": actor.production.voice.rate,
+    "production.voice.pitch": actor.production.voice.pitch,
+    "production.voice.volume": actor.production.voice.volume,
+  })) form.set(key, value);
 }

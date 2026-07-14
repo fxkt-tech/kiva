@@ -8,7 +8,7 @@ import {
   type LlmGenerateJsonResult,
   type LlmTokenUsage,
 } from "./llm";
-import type { ModelBindingSnapshot } from "./player";
+import type { ModelBindingSnapshot } from "./model-binding";
 import type { PlayerId } from "./types";
 
 export type ValidatedGenerationResult<Value> = {

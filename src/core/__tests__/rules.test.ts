@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { createPlayerSnapshot } from "../player";
 import {
   checkWinCondition,
   createEndgameReveal,
@@ -11,6 +10,7 @@ import {
   validateWitchDecision,
 } from "../rules";
 import { createDefaultRuleset, type PlayerId } from "../types";
+import { testPlayer } from "./test-player";
 
 const p1 = "p1" as PlayerId;
 const p2 = "p2" as PlayerId;
@@ -50,54 +50,14 @@ describe("wolf vote resolution", () => {
 });
 
 const players = [
-  createPlayerSnapshot({
-    playerId: p1,
-    seatNo: 1,
-    name: "P1",
-    gameRole: "werewolf",
-  }),
-  createPlayerSnapshot({
-    playerId: p2,
-    seatNo: 2,
-    name: "P2",
-    gameRole: "werewolf",
-  }),
-  createPlayerSnapshot({
-    playerId: p3,
-    seatNo: 3,
-    name: "P3",
-    gameRole: "seer",
-  }),
-  createPlayerSnapshot({
-    playerId: p4,
-    seatNo: 4,
-    name: "P4",
-    gameRole: "witch",
-  }),
-  createPlayerSnapshot({
-    playerId: p5,
-    seatNo: 5,
-    name: "P5",
-    gameRole: "villager",
-  }),
-  createPlayerSnapshot({
-    playerId: p6,
-    seatNo: 6,
-    name: "P6",
-    gameRole: "villager",
-  }),
-  createPlayerSnapshot({
-    playerId: p7,
-    seatNo: 7,
-    name: "P7",
-    gameRole: "guard",
-  }),
-  createPlayerSnapshot({
-    playerId: p8,
-    seatNo: 8,
-    name: "P8",
-    gameRole: "hunter",
-  }),
+  testPlayer(p1, 1, "werewolf"),
+  testPlayer(p2, 2, "werewolf"),
+  testPlayer(p3, 3, "seer"),
+  testPlayer(p4, 4, "witch"),
+  testPlayer(p5, 5, "villager"),
+  testPlayer(p6, 6, "villager"),
+  testPlayer(p7, 7, "guard"),
+  testPlayer(p8, 8, "hunter"),
 ];
 
 describe("rules", () => {

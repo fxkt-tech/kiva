@@ -10,7 +10,7 @@ import {
   getActiveEvents,
   rollbackAfterIndex,
 } from "@/core/event-log";
-import { createGameFromPreset } from "@/core/game";
+import { createGameFromLineup } from "@/core/game";
 import type { GameRunMode } from "@/core/game-run-mode";
 import {
   actorBriefForStep,
@@ -27,7 +27,7 @@ import {
   createEpisodeAuthorWorkspace,
   EpisodeAuthoringError,
 } from "@/core/episode-author";
-import type { ModelBindingSnapshot } from "@/core/player";
+import type { ModelBindingSnapshot } from "@/core/model-binding";
 import {
   createDefaultRuleset,
   type DraftId,
@@ -40,26 +40,29 @@ import { generateSpeechDraft } from "@/core/speech-generation";
 import { evaluateSpeech, speechBudgetForDraft } from "@/core/speech-budget";
 import { generateActionDraft } from "@/core/action-generation";
 import { getLegalNightTargets } from "@/core/rules";
+import { RULE_ROLES } from "@/core/rule-role";
 import { deriveGameState } from "@/core/state";
-import { seedCharacters } from "@/seeds/characters";
-import { seedPresets } from "@/seeds/presets";
+import { seedActors } from "@/seeds/actors";
+import { seedLineups } from "@/seeds/lineups";
 import { seedPresenters } from "@/seeds/presenters";
-import { seedRoles } from "@/seeds/roles";
 import { seedScripts } from "@/seeds/scripts";
 import {
   GAME_RECORD_SCHEMA_VERSION,
   type GameRecord,
   type GameRepository,
 } from "./game-repository";
-import type { LibraryRecord, LibraryRepository } from "./library-repository";
+import type {
+  ContentCatalog,
+  ContentCatalogSnapshot,
+} from "./content-catalog";
 
 export type GameActions = ReturnType<typeof createGameActions>;
 
 export type CreateGameActionsOptions = {
   readonly llmClient?: LlmClient;
   readonly episodeAuthorModelBinding?: ModelBindingSnapshot;
-  readonly libraryRepository?: LibraryRepository;
-  readonly defaultPresetId?: string;
+  readonly contentCatalog?: ContentCatalog;
+  readonly defaultLineupId?: string;
 };
 
 export function createGameActions(
@@ -75,66 +78,68 @@ export function createGameActions(
     return record;
   }
 
-  async function createGameFromPresetId(
-    presetId: string,
+  async function createGameFromLineupId(
+    lineupId: string,
     presenterId: string,
     scriptId?: string,
     runMode: GameRunMode = "game",
   ): Promise<GameRecord> {
-    const createdAt = now();
-    const library = await loadGameLibrary(options.libraryRepository);
-    const preset = library.presets.find((item) => item.id === presetId);
-    if (!preset) {
-      throw new Error(`Game preset not found: ${presetId}`);
-    }
-    const presenter = requireEnabledPresenter(library, presenterId);
-    const script = requireEnabledScript(library, scriptId);
-    const game = createGameFromPreset({
-      gameId: createGameId(),
-      title: preset.name,
-      createdAt,
-      ruleset: createDefaultRuleset(),
-      preset,
-      presenter,
-      script,
-      roles: library.roles,
-      characters: library.characters,
-      runMode,
-    });
-    const record: GameRecord = {
-      schemaVersion: GAME_RECORD_SCHEMA_VERSION,
-      game,
-      events: [],
-      draft: null,
-      generations: [],
-      voiceArtifactsByEventId: {},
-      episodeScript: runMode === "scripted" ? { status: "idle" } : null,
-    };
+    return withGameCatalog(async (catalog) => {
+      const createdAt = now();
+      const lineup = catalog.lineups.find((item) => item.id === lineupId);
+      if (!lineup?.enabled) {
+        throw new Error(`Lineup not found or disabled: ${lineupId}`);
+      }
+      const presenter = requireEnabledPresenter(catalog, presenterId);
+      const script = requireEnabledScript(catalog, scriptId);
+      const game = createGameFromLineup({
+        gameId: createGameId(),
+        title: lineup.name,
+        createdAt,
+        ruleset: createDefaultRuleset(),
+        lineup,
+        presenter,
+        script,
+        actors: catalog.actors,
+        runMode,
+      });
+      const record: GameRecord = {
+        schemaVersion: GAME_RECORD_SCHEMA_VERSION,
+        game,
+        events: [],
+        draft: null,
+        generations: [],
+        voiceArtifactsByEventId: {},
+        episodeScript: runMode === "scripted" ? { status: "idle" } : null,
+      };
 
-    await repository.save(record);
-    return record;
+      await repository.save(record);
+      return record;
+    });
   }
 
-  async function createGameFromPresetRecord(
-    preset: LibraryRecord["presets"][number],
-    library: Pick<LibraryRecord, "roles" | "characters" | "presenters" | "scripts">,
+  async function createGameFromLineupRecord(
+    lineup: ContentCatalogSnapshot["lineups"][number],
+    catalog: Pick<
+      ContentCatalogSnapshot,
+      "actors" | "presenters" | "scripts"
+    >,
     presenterId: string,
     scriptId?: string,
     runMode: GameRunMode = "game",
   ): Promise<GameRecord> {
     const createdAt = now();
-    const presenter = requireEnabledPresenter(library, presenterId);
-    const script = requireEnabledScript(library, scriptId);
-    const game = createGameFromPreset({
+    const presenter = requireEnabledPresenter(catalog, presenterId);
+    const script = requireEnabledScript(catalog, scriptId);
+    const game = createGameFromLineup({
       gameId: createGameId(),
-      title: preset.name,
+      title: lineup.name,
       createdAt,
       ruleset: createDefaultRuleset(),
-      preset,
+      lineup,
       presenter,
       script,
-      roles: library.roles,
-      characters: library.characters,
+      actors: catalog.actors,
       runMode,
     });
     const record: GameRecord = {
@@ -296,38 +301,50 @@ export function createGameActions(
     runEpisodeScriptGeneration,
     generateEpisodeScript,
     async createGame(): Promise<GameRecord> {
-      const presetId = options.defaultPresetId ?? "twelve_player_standard";
-      const library = await loadGameLibrary(options.libraryRepository);
-      const preset = library.presets.find((candidate) => candidate.id === presetId);
-      if (!preset) {
-        throw new Error(`Game preset not found: ${presetId}`);
-      }
-      const presenterId = library.presenters[0]?.id;
-      if (!presenterId) {
-        throw new Error("No presenter definitions available");
-      }
-      return createGameFromPresetRecord(preset, library, presenterId, undefined, "game");
+      const lineupId = options.defaultLineupId ?? "twelve_player_standard";
+      return withGameCatalog(async (catalog) => {
+        const lineup = catalog.lineups.find(
+          (candidate) => candidate.id === lineupId,
+        );
+        if (!lineup?.enabled) {
+          throw new Error(`Lineup not found or disabled: ${lineupId}`);
+        }
+        const presenterId = catalog.presenters[0]?.id;
+        if (!presenterId) {
+          throw new Error("No presenter definitions available");
+        }
+        return createGameFromLineupRecord(
+          lineup,
+          catalog,
+          presenterId,
+          undefined,
+          "game",
+        );
+      });
     },
 
-    async createGameFromPresetId(
-      presetId: string,
+    async createGameFromLineupId(
+      lineupId: string,
       presenterId: string,
       scriptId?: string,
       runMode: GameRunMode = "game",
     ): Promise<GameRecord> {
-      return createGameFromPresetId(presetId, presenterId, scriptId, runMode);
+      return createGameFromLineupId(lineupId, presenterId, scriptId, runMode);
     },
 
-    async createGameFromPresetRecord(
-      preset: LibraryRecord["presets"][number],
-      library: Pick<LibraryRecord, "roles" | "characters" | "presenters" | "scripts">,
+    async createGameFromLineupRecord(
+      lineup: ContentCatalogSnapshot["lineups"][number],
+      catalog: Pick<
+        ContentCatalogSnapshot,
+        "actors" | "presenters" | "scripts"
+      >,
       presenterId: string,
       scriptId?: string,
       runMode: GameRunMode = "game",
     ): Promise<GameRecord> {
-      return createGameFromPresetRecord(
-        preset,
-        library,
+      return createGameFromLineupRecord(
+        lineup,
+        catalog,
         presenterId,
         scriptId,
         runMode,
@@ -599,6 +616,16 @@ export function createGameActions(
       });
     },
   };
+
+  async function withGameCatalog<T>(
+    operation: (catalog: ContentCatalogSnapshot) => Promise<T>,
+  ): Promise<T> {
+    const contentCatalog = options.contentCatalog;
+    if (contentCatalog) {
+      return operation(await contentCatalog.load());
+    }
+    return operation(await loadGameCatalog(undefined));
+  }
 }
 
 function validateSpeechDraft(
@@ -685,7 +712,7 @@ function validateWolfDraft(
     if (
       state.dayNumber !== 1 ||
       !leader ||
-      leader.gameRole !== "werewolf" ||
+      leader.ruleRole.id !== "werewolf" ||
       !state.alivePlayerIds.includes(leader.playerId)
     ) {
       throw new Error("Wolf leader must be an alive werewolf on the first night");
@@ -715,27 +742,27 @@ function validateWolfDraft(
   }
 }
 
-async function loadGameLibrary(
-  libraryRepository: LibraryRepository | undefined,
-): Promise<LibraryRecord> {
-  if (libraryRepository) {
-    return libraryRepository.loadAll();
+async function loadGameCatalog(
+  contentCatalog: ContentCatalog | undefined,
+): Promise<ContentCatalogSnapshot> {
+  if (contentCatalog) {
+    return contentCatalog.load();
   }
 
   return {
-    roles: seedRoles,
-    characters: seedCharacters,
-    presets: seedPresets,
+    ruleRoles: structuredClone(RULE_ROLES),
+    actors: seedActors,
+    lineups: seedLineups,
     presenters: seedPresenters,
     scripts: seedScripts,
   };
 }
 
 function requireEnabledPresenter(
-  library: Pick<LibraryRecord, "presenters">,
+  catalog: Pick<ContentCatalogSnapshot, "presenters">,
   presenterId: string,
-): LibraryRecord["presenters"][number] {
-  const enabled = library.presenters.filter((candidate) => candidate.enabled);
+): ContentCatalogSnapshot["presenters"][number] {
+  const enabled = catalog.presenters.filter((candidate) => candidate.enabled);
   if (enabled.length !== 1) {
     throw new Error(`Exactly one enabled presenter is required; found ${enabled.length}`);
   }
@@ -747,10 +774,10 @@ function requireEnabledPresenter(
 }
 
 function requireEnabledScript(
-  library: Pick<LibraryRecord, "scripts">,
+  catalog: Pick<ContentCatalogSnapshot, "scripts">,
   scriptId?: string,
-): LibraryRecord["scripts"][number] {
-  const enabled = library.scripts.filter((script) => script.enabled);
+): ContentCatalogSnapshot["scripts"][number] {
+  const enabled = catalog.scripts.filter((script) => script.enabled);
   const script = scriptId
     ? enabled.find((candidate) => candidate.id === scriptId)
     : enabled[0];

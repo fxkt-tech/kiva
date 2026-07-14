@@ -1,92 +1,88 @@
 import Link from "next/link";
-import type { CharacterDefinition } from "@/core/character-definition";
-import type { GamePreset } from "@/core/game-preset";
-import type { PresenterDefinition } from "@/core/presenter-definition";
-import type { PresenterVoiceManifest } from "@/core/presenter-voice";
-import type { RoleDefinition } from "@/core/role-definition";
-import type { LibraryActionsRecord } from "@/server/library-actions";
 import { textButtonClassName } from "@/components/ui/button-styles";
-import { CharacterEditor } from "./character-editor";
+import {
+  compileActorAuthorCard,
+  compileActorRuntimeCard,
+  type ActorDefinition,
+} from "@/core/actor-definition";
+import {
+  compileActorComparisonMatrix,
+  diagnoseActorPool,
+  diagnoseActorSelection,
+} from "@/core/actor-diagnostics";
+import {
+  createGameScriptSnapshot,
+  type GameScriptDefinition,
+} from "@/core/game-script";
+import type { Lineup } from "@/core/lineup";
+import {
+  createGamePresenterSnapshot,
+  type PresenterDefinition,
+} from "@/core/presenter-definition";
+import type { RuleRole } from "@/core/rule-role";
+import type { ContentCatalogSnapshot } from "@/server/content-catalog";
+import type { PresenterVoiceManifest } from "@/core/presenter-voice";
+import { ActorEditor } from "./actor-editor";
 import { LibraryList, type LibraryListItem } from "./library-list";
-import { PresetEditor } from "./preset-editor";
+import { LineupEditor } from "./lineup-editor";
 import { PresenterEditor } from "./presenter-editor";
-import { RoleEditor } from "./role-editor";
-import { ValidationPanel } from "./validation-panel";
+import { RuleRoleViewer } from "./rule-role-viewer";
+import { ScriptEditor } from "./script-editor";
 
-export type LibraryTab = "roles" | "characters" | "presenters" | "presets";
-
-type LibraryWorkspaceProps = {
-  readonly activeTab: LibraryTab;
-  readonly selectedId: string | null;
-  readonly library: LibraryActionsRecord;
-  readonly presenterVoiceManifests?: Readonly<Record<string, PresenterVoiceManifest>>;
-};
+export type LibraryTab =
+  | "actors"
+  | "lineups"
+  | "scripts"
+  | "presenters"
+  | "rules";
 
 type SelectedItem =
-  | { readonly kind: "role"; readonly id: string; readonly item: RoleDefinition }
-  | {
-      readonly kind: "character";
-      readonly id: string;
-      readonly item: CharacterDefinition;
-    }
-  | {
-      readonly kind: "preset";
-      readonly id: string;
-      readonly item: GamePreset;
-    }
-  | {
-      readonly kind: "presenter";
-      readonly id: string;
-      readonly item: PresenterDefinition;
-    };
+  | { readonly kind: "actor"; readonly id: string; readonly item: ActorDefinition }
+  | { readonly kind: "new_actor"; readonly id: string; readonly item: ActorDefinition }
+  | { readonly kind: "lineup"; readonly id: string; readonly item: Lineup }
+  | { readonly kind: "script"; readonly id: string; readonly item: GameScriptDefinition }
+  | { readonly kind: "presenter"; readonly id: string; readonly item: PresenterDefinition }
+  | { readonly kind: "rule"; readonly id: string; readonly item: RuleRole };
 
 const tabs: readonly LibraryTab[] = [
-  "roles",
-  "characters",
+  "actors",
+  "lineups",
+  "scripts",
   "presenters",
-  "presets",
+  "rules",
 ];
 
 export function LibraryWorkspace({
   activeTab,
   selectedId,
-  library,
+  catalog,
   presenterVoiceManifests = {},
-}: LibraryWorkspaceProps) {
-  const selected = selectItem(library, activeTab, selectedId);
-  const effectiveSelectedId = selected?.id ?? null;
-
+}: {
+  readonly activeTab: LibraryTab;
+  readonly selectedId: string | null;
+  readonly catalog: ContentCatalogSnapshot;
+  readonly presenterVoiceManifests?: Readonly<Record<string, PresenterVoiceManifest>>;
+}) {
+  const selected = selectItem(catalog, activeTab, selectedId);
   return (
     <main className="h-screen overflow-hidden bg-background text-foreground">
       <div className="flex h-full min-h-0 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link
-              href="/"
-              className={textButtonClassName("px-2.5 py-1.5 text-xs text-muted")}
-            >
-              Back
-            </Link>
-            <div className="min-w-0">
-              <h1 className="truncate text-base font-semibold text-foreground">
-                Kiva Library
-              </h1>
-              <p className="text-xs text-subtle">Director configuration desk</p>
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
+          <div className="flex items-center gap-3">
+            <Link href="/" className={textButtonClassName("px-2.5 py-1.5 text-xs text-muted")}>Back</Link>
+            <div>
+              <h1 className="text-base font-semibold">Kiva Library Studio</h1>
+              <p className="text-xs text-subtle">Actor、阵容与节目内容的唯一来源</p>
             </div>
           </div>
-          <Link
-            href="/library?tab=presets"
-            className={textButtonClassName("px-3 py-1.5 text-xs font-semibold")}
-          >
-            {activeTab === "presets" ? "Presets entry" : "Create game"}
+          <Link href="/library?tab=lineups" className={textButtonClassName("px-3 py-1.5 text-xs font-semibold")}>
+            创建对局
           </Link>
         </header>
 
-        <div className="grid min-h-0 flex-1 grid-cols-[128px_280px_minmax(0,1fr)_320px] overflow-hidden">
-          <nav className="min-h-0 border-r border-border bg-background px-2 py-3">
-            <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">
-              Library
-            </div>
+        <div className="grid min-h-0 flex-1 grid-cols-[126px_260px_minmax(0,1fr)_340px] overflow-hidden">
+          <nav className="min-h-0 border-r border-border px-2 py-3">
+            <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">Catalog</div>
             <div className="space-y-1">
               {tabs.map((tab) => (
                 <Link
@@ -95,15 +91,11 @@ export function LibraryWorkspace({
                   aria-current={tab === activeTab ? "page" : undefined}
                   className={[
                     "block rounded px-2.5 py-2 text-sm transition",
-                    tab === activeTab
-                      ? "bg-surface-strong text-foreground"
-                      : "text-muted hover:bg-surface-muted hover:text-foreground",
+                    tab === activeTab ? "bg-surface-strong text-foreground" : "text-muted hover:bg-surface-muted",
                   ].join(" ")}
                 >
-                  <span className="block font-medium">{labelForTab(tab)}</span>
-                  <span className="mt-0.5 block text-[11px] text-subtle">
-                    {countForTab(library, tab)}
-                  </span>
+                  <span className="block font-medium">{tabLabel(tab)}</span>
+                  <span className="mt-0.5 block text-[11px] text-subtle">{String(itemsForTab(catalog, tab).length).padStart(2, "0")}</span>
                 </Link>
               ))}
             </div>
@@ -111,188 +103,231 @@ export function LibraryWorkspace({
 
           <LibraryList
             tab={activeTab}
-            selectedId={effectiveSelectedId}
-            items={listItemsForTab(library, activeTab)}
+            selectedId={selected?.id ?? null}
+            items={listItems(catalog, activeTab)}
           />
 
-          <section
-            aria-label="Detail region"
-            className="min-h-0 overflow-y-auto bg-background p-4"
-          >
-            {selected === null ? (
-              <EmptyDetail />
-            ) : selected.kind === "role" ? (
-              <RoleEditor
-                key={selectedEditorKey(selected)}
-                role={selected.item}
+          <section aria-label="Detail region" className="min-h-0 overflow-y-auto p-4">
+            {!selected ? (
+              <div className="grid h-full place-items-center text-sm text-subtle">No catalog object selected.</div>
+            ) : selected.kind === "actor" || selected.kind === "new_actor" ? (
+              <ActorEditor
+                key={`actor:${selected.id}`}
+                actor={selected.item}
+                mode={selected.kind === "new_actor" ? "create" : "edit"}
               />
-            ) : selected.kind === "character" ? (
-              <CharacterEditor
-                key={selectedEditorKey(selected)}
-                character={selected.item}
+            ) : selected.kind === "lineup" ? (
+              <LineupEditor
+                key={`lineup:${selected.id}`}
+                lineup={selected.item}
+                actors={catalog.actors}
+                ruleRoles={catalog.ruleRoles}
+                presenters={catalog.presenters}
+                scripts={catalog.scripts}
               />
+            ) : selected.kind === "script" ? (
+              <ScriptEditor key={`script:${selected.id}`} script={selected.item} />
             ) : selected.kind === "presenter" ? (
               <PresenterEditor
-                key={selectedEditorKey(selected)}
+                key={`presenter:${selected.id}`}
                 presenter={selected.item}
-                voiceManifest={presenterVoiceManifests[selected.item.id]}
+                voiceManifest={presenterVoiceManifests[selected.id]}
               />
             ) : (
-              <PresetEditor
-                key={selectedEditorKey(selected)}
-                preset={selected.item}
-                roles={library.roles}
-                characters={library.characters}
-                presenters={library.presenters.filter(
-                  (presenter) => presenter.enabled,
-                )}
-              />
+              <RuleRoleViewer role={selected.item} />
             )}
           </section>
 
-          <ValidationPanel
-            library={library}
-            activeTab={activeTab}
-            selectedId={effectiveSelectedId}
-          />
+          <CompilerPreview selected={selected} catalog={catalog} />
         </div>
       </div>
     </main>
   );
 }
 
-export function selectedEditorKey(
-  selected: Pick<SelectedItem, "kind" | "id"> | null,
-): string | null {
-  return selected === null ? null : `${selected.kind}:${selected.id}`;
-}
-
-function EmptyDetail() {
+function CompilerPreview({
+  selected,
+  catalog,
+}: {
+  readonly selected: SelectedItem | null;
+  readonly catalog: ContentCatalogSnapshot;
+}) {
+  let title = "Compiler preview";
+  let body: unknown = null;
+  if (selected?.kind === "actor") {
+    title = "Actor cards";
+    const runtime = compileActorRuntimeCard(selected.item);
+    const author = compileActorAuthorCard(selected.item);
+    body = {
+      runtime,
+      author,
+      production: selected.item.production,
+      compiledSize: {
+        runtimeCharacters: JSON.stringify(runtime).length,
+        authorCharacters: JSON.stringify(author).length,
+      },
+      poolDiagnostics: diagnoseActorPool(catalog.actors),
+      poolMatrix: compileActorComparisonMatrix(catalog.actors),
+    };
+  } else if (selected?.kind === "new_actor") {
+    title = "New Actor contract";
+    body = {
+      requiredSections: [
+        "identity",
+        "core",
+        "cognition",
+        "interaction",
+        "expression",
+        "production",
+      ],
+      note: "保存后才会进入 Runtime/Author 编译与全池诊断。",
+    };
+  } else if (selected?.kind === "lineup") {
+    title = "Resolved cast matrix";
+    body = {
+      selectionDiagnostics: diagnoseActorSelection({
+        actors: catalog.actors,
+        actorIds: selected.item.seats.map((seat) => seat.actorId),
+      }),
+      cast: selected.item.seats.map((seat) => ({
+        seatNo: seat.seatNo,
+        ruleRole: catalog.ruleRoles.find((role) => role.id === seat.ruleRoleId)?.name,
+        actor: catalog.actors.find((actor) => actor.id === seat.actorId)?.identity.name,
+        actorId: seat.actorId,
+      })),
+    };
+  } else if (selected?.kind === "rule") {
+    title = "Engine-owned contract";
+    body = selected.item;
+  } else if (selected?.kind === "script") {
+    title = "Theme snapshot";
+    body = createGameScriptSnapshot(selected.item);
+  } else if (selected?.kind === "presenter") {
+    title = "Show voice";
+    body = {
+      snapshot: createGamePresenterSnapshot(selected.item),
+      lineCount: Object.keys(selected.item.lines).length,
+    };
+  }
   return (
-    <div className="flex h-full items-center justify-center text-sm text-subtle">
-      No library object selected.
-    </div>
+    <aside className="min-h-0 overflow-y-auto border-l border-border bg-background/70 p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300">{title}</p>
+      <p className="mt-2 text-xs leading-5 text-subtle">
+        这里展示真正送往运行时或 Script Author 的结构，不展示手写自由 Prompt。
+      </p>
+      <pre className="mt-4 whitespace-pre-wrap break-words rounded border border-border bg-surface/45 p-3 text-xs leading-5 text-muted">
+        {body === null ? "No preview." : JSON.stringify(body, null, 2)}
+      </pre>
+    </aside>
   );
 }
 
-function labelForTab(tab: LibraryTab): string {
-  if (tab === "characters") {
-    return "Characters";
-  }
-
-  if (tab === "presets") {
-    return "Presets";
-  }
-
-  if (tab === "presenters") {
-    return "Presenters";
-  }
-
-  return "Roles";
-}
-
-function countForTab(library: LibraryActionsRecord, tab: LibraryTab): string {
-  return String(itemsForTab(library, tab).length).padStart(2, "0");
-}
-
-function listItemsForTab(
-  library: LibraryActionsRecord,
+function listItems(
+  catalog: ContentCatalogSnapshot,
   tab: LibraryTab,
 ): readonly LibraryListItem[] {
-  if (tab === "characters") {
-    return library.characters.map((character) => ({
-      id: character.id,
-      name: character.name,
-      enabled: character.enabled,
-      valid: library.diagnostics.characters[character.id]?.valid,
-      meta: character.tags.length > 0 ? character.tags.join(", ") : "no tags",
+  if (tab === "actors") {
+    return catalog.actors.map((actor) => ({
+      id: actor.id,
+      name: actor.identity.name,
+      enabled: actor.enabled,
+      meta: actor.identity.tags.join(" · "),
     }));
   }
-
-  if (tab === "presets") {
-    return library.presets.map((preset) => ({
-      id: preset.id,
-      name: preset.name,
-      enabled: preset.enabled,
-      valid: library.diagnostics.presets[preset.id]?.valid,
-      meta: `${preset.playerCount} seats · ${preset.rulesetId}`,
+  if (tab === "lineups") {
+    return catalog.lineups.map((lineup) => ({
+      id: lineup.id,
+      name: lineup.name,
+      enabled: lineup.enabled,
+      meta: `${lineup.seats.length} seats · r${lineup.revision}`,
     }));
   }
-
+  if (tab === "scripts") {
+    return catalog.scripts.map((script) => ({
+      id: script.id,
+      name: script.name,
+      enabled: script.enabled,
+      meta: script.theme,
+    }));
+  }
   if (tab === "presenters") {
-    return library.presenters.map((presenter) => ({
+    return catalog.presenters.map((presenter) => ({
       id: presenter.id,
       name: presenter.name,
       enabled: presenter.enabled,
-      valid: library.diagnostics.presenters[presenter.id]?.valid,
       meta: `${Object.keys(presenter.lines).length} lines`,
     }));
   }
-
-  return library.roles.map((role) => ({
+  return catalog.ruleRoles.map((role) => ({
     id: role.id,
     name: role.name,
-    enabled: role.enabled,
-    valid: library.diagnostics.roles[role.id]?.valid,
+    enabled: true,
     meta: `${role.team} · ${role.mechanicKey}`,
   }));
 }
 
-function itemsForTab(library: LibraryActionsRecord, tab: LibraryTab) {
-  if (tab === "characters") {
-    return library.characters;
-  }
-
-  if (tab === "presets") {
-    return library.presets;
-  }
-
-  if (tab === "presenters") {
-    return library.presenters;
-  }
-
-  return library.roles;
+function itemsForTab(catalog: ContentCatalogSnapshot, tab: LibraryTab) {
+  if (tab === "actors") return catalog.actors;
+  if (tab === "lineups") return catalog.lineups;
+  if (tab === "scripts") return catalog.scripts;
+  if (tab === "presenters") return catalog.presenters;
+  return catalog.ruleRoles;
 }
 
 function selectItem(
-  library: LibraryActionsRecord,
+  catalog: ContentCatalogSnapshot,
   tab: LibraryTab,
   selectedId: string | null,
 ): SelectedItem | null {
-  const items = itemsForTab(library, tab);
-  const item = items.find((candidate) => candidate.id === selectedId) ?? items[0];
-
-  if (item === undefined) {
-    return null;
-  }
-
-  if (tab === "characters") {
+  if (tab === "actors" && selectedId === "__new_actor__") {
     return {
-      kind: "character",
-      id: item.id,
-      item: item as CharacterDefinition,
+      kind: "new_actor",
+      id: "__new_actor__",
+      item: newActorTemplate(catalog.actors[0]),
     };
   }
+  const item = itemsForTab(catalog, tab).find((value) => value.id === selectedId) ?? itemsForTab(catalog, tab)[0];
+  if (!item) return null;
+  if (tab === "actors") return { kind: "actor", id: item.id, item: item as ActorDefinition };
+  if (tab === "lineups") return { kind: "lineup", id: item.id, item: item as Lineup };
+  if (tab === "scripts") return { kind: "script", id: item.id, item: item as GameScriptDefinition };
+  if (tab === "presenters") return { kind: "presenter", id: item.id, item: item as PresenterDefinition };
+  return { kind: "rule", id: item.id, item: item as RuleRole };
+}
 
-  if (tab === "presets") {
-    return {
-      kind: "preset",
-      id: item.id,
-      item: item as GamePreset,
-    };
+function newActorTemplate(
+  productionSource: ActorDefinition | undefined,
+): ActorDefinition {
+  if (!productionSource) {
+    throw new Error("Creating an Actor requires one production profile template");
   }
-
-  if (tab === "presenters") {
-    return {
-      kind: "presenter",
-      id: item.id,
-      item: item as PresenterDefinition,
-    };
-  }
-
   return {
-    kind: "role",
-    id: item.id,
-    item: item as RoleDefinition,
+    id: "",
+    identity: { name: "", portrait: "", tags: [], visualAnchor: "" },
+    core: { stableCore: "", drive: "", blindSpot: "", changeBoundary: "" },
+    cognition: {
+      attention: "",
+      evidencePolicy: "",
+      decisionPolicy: "",
+      correctionTrigger: "",
+    },
+    interaction: {
+      tableFunction: "",
+      socialStrategy: "",
+      pressureResponse: "",
+      conflictAxes: [],
+    },
+    expression: { cadence: "", diction: "", rhetoricalMoves: [], avoid: [] },
+    production: structuredClone(productionSource.production),
+    enabled: true,
+    revision: 0,
   };
+}
+
+function tabLabel(tab: LibraryTab): string {
+  if (tab === "actors") return "Actors";
+  if (tab === "lineups") return "Lineups";
+  if (tab === "scripts") return "Scripts";
+  if (tab === "presenters") return "Show";
+  return "Rules";
 }

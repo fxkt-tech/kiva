@@ -7,7 +7,7 @@ import {
   compileEpisodePlan,
   createEpisodeScriptSnapshot,
   EPISODE_AUTHOR_PROMPT_VERSION,
-  episodeCharacterProfile,
+  episodeActorProfile,
   episodePerformanceOpportunities,
   MAX_EPISODE_RELATIONSHIP_SEEDS,
   MAX_EPISODE_STORY_ACTS,
@@ -19,7 +19,7 @@ import {
   type EpisodeAuthorWorkspace,
   type EpisodeCastAssignment,
   type EpisodeCastDirection,
-  type EpisodeCharacterProfile,
+  type EpisodeActorProfile,
   type EpisodeEnsembleMap,
   type EpisodeRelationshipDirection,
   type EpisodeRelationshipKind,
@@ -28,7 +28,7 @@ import {
   type EpisodeSpeechBeat,
   type EpisodeStorySpine,
 } from "./episode-script";
-import type { ModelBindingSnapshot } from "./player";
+import type { ModelBindingSnapshot } from "./model-binding";
 import type { PlayerId } from "./types";
 import {
   generateValidatedJson,
@@ -151,7 +151,7 @@ export async function authorEpisodeScript(input: {
   ) => Promise<void>;
 }): Promise<AuthorEpisodeScriptResult> {
   const plan = compileEpisodePlan(input.game);
-  const profiles = input.game.players.map(episodeCharacterProfile);
+  const profiles = input.game.players.map(episodeActorProfile);
   const opportunities = episodePerformanceOpportunities(input.game, plan);
   assertPerformanceOpportunities(profiles, opportunities);
 
@@ -235,7 +235,7 @@ export async function authorEpisodeScript(input: {
       validate: (parsed) => parseBeats(parsed, task.stepIndexes),
       outputContract: [
         `beats 必须恰好覆盖 stepIndex：${task.stepIndexes.join(", ")}`,
-        "每个 beat 包含非空 objective、stance、themeHook、characterHook、arcMove",
+        "每个 beat 包含非空 objective、performanceMove、themeHook、actorHook、arcMove",
         "disclosure 只能是 conceal、claim、not_applicable；relationshipMove 必须是非空字符串或 null",
       ],
     });
@@ -316,12 +316,12 @@ export async function authorEpisodeScript(input: {
         });
         break;
       }
-      case "character": {
+      case "actor_arc": {
         const story = requiredWorkspaceValue(workspace.story, "story");
         const ensemble = requiredWorkspaceValue(workspace.ensemble, "ensemble");
         const profile = requiredProfile(profiles, task.playerId);
         const assignment = requiredAssignment(ensemble, task.playerId);
-        const request = buildCharacterRequest({
+        const request = buildActorArcRequest({
           game: input.game,
           plan,
           story,
@@ -334,7 +334,7 @@ export async function authorEpisodeScript(input: {
         await completeTask({
           task,
           request,
-          validate: (parsed) => parseCharacterDirection(parsed, assignment),
+          validate: (parsed) => parseActorDirection(parsed, assignment),
           outputContract: [
             `playerId 必须为 ${task.playerId}`,
             "baseline、pressure、change、payoff、signatureDescription 必须是非空字符串",
@@ -427,7 +427,7 @@ function nextEpisodeAuthorTask(input: {
   const nextPlayer = game.players.find(
     (player) => !completedPlayers.has(player.playerId),
   );
-  if (nextPlayer) return { kind: "character", playerId: nextPlayer.playerId };
+  if (nextPlayer) return { kind: "actor_arc", playerId: nextPlayer.playerId };
 
   const completedPairs = new Set(
     workspace.relationships.map((relationship) => pairKey(relationship.playerIds)),
@@ -467,7 +467,7 @@ function buildStoryRequest(
 ): GenerationRequestSnapshot {
   const milestones = episodeMilestones(plan);
   return {
-    schemaName: "werewolf_episode_story_v3",
+    schemaName: "werewolf_episode_story_v4",
     systemPrompt: [
       "你是狼人杀节目的 Script Author Agent，当前只负责故事主轴。",
       "合法事件轨迹已经确定；不得改变行动、票型、死亡、身份、预算或胜方。",
@@ -500,11 +500,11 @@ function buildEnsembleRequest(input: {
   readonly game: Game;
   readonly plan: CompiledEpisodePlan;
   readonly story: EpisodeStorySpine;
-  readonly profiles: readonly EpisodeCharacterProfile[];
+  readonly profiles: readonly EpisodeActorProfile[];
   readonly opportunities: ReadonlyMap<PlayerId, readonly number[]>;
 }): GenerationRequestSnapshot {
   return {
-    schemaName: "werewolf_episode_ensemble_v3",
+    schemaName: "werewolf_episode_ensemble_v4",
     systemPrompt: [
       "你是狼人杀节目的 Script Author Agent，当前只负责群像分工。",
       "比较全体演员，分配主次功能、真实标志节点和本局关系配对。",
@@ -521,7 +521,7 @@ function buildEnsembleRequest(input: {
           "",
           "演员精简卡与可用标志节点（每行 JSON）：",
           ...input.profiles.map((profile) =>
-            characterProfileLine(
+            actorProfileLine(
               profile,
               input.opportunities.get(profile.playerId) ?? [],
             )
@@ -537,17 +537,17 @@ function buildEnsembleRequest(input: {
   };
 }
 
-function buildCharacterRequest(input: {
+function buildActorArcRequest(input: {
   readonly game: Game;
   readonly plan: CompiledEpisodePlan;
   readonly story: EpisodeStorySpine;
-  readonly profile: EpisodeCharacterProfile;
+  readonly profile: EpisodeActorProfile;
   readonly assignment: EpisodeCastAssignment;
   readonly relationshipSeeds: readonly EpisodeRelationshipSeed[];
 }): GenerationRequestSnapshot {
   const signatureStep = input.plan.steps[input.assignment.signatureStepIndex - 1];
   return {
-    schemaName: "werewolf_episode_character_v3",
+    schemaName: "werewolf_episode_actor_arc_v4",
     systemPrompt: [
       "你是狼人杀节目的 Script Author Agent，当前只展开一名演员的本局弧线。",
       "稳定人物核心必须保留；变化来自合法轨迹中的压力、失误、适应和兑现。",
@@ -560,7 +560,7 @@ function buildCharacterRequest(input: {
         content: [
           `提示词版本：${EPISODE_AUTHOR_PROMPT_VERSION}`,
           `STORY ${JSON.stringify(input.story)}`,
-          `CHARACTER_PROFILE ${JSON.stringify(input.profile)}`,
+          `ACTOR_PROFILE ${JSON.stringify(input.profile)}`,
           `CAST_ASSIGNMENT ${JSON.stringify(input.assignment)}`,
           `RELATED_SEEDS ${JSON.stringify(input.relationshipSeeds)}`,
           `SIGNATURE_STEP ${input.assignment.signatureStepIndex} | ${signatureStep?.summary ?? "合法表演节点"}`,
@@ -578,11 +578,11 @@ function buildRelationshipRequest(input: {
   readonly plan: CompiledEpisodePlan;
   readonly story: EpisodeStorySpine;
   readonly seed: EpisodeRelationshipSeed;
-  readonly profiles: readonly EpisodeCharacterProfile[];
+  readonly profiles: readonly EpisodeActorProfile[];
   readonly directions: readonly EpisodeCastDirection[];
 }): GenerationRequestSnapshot {
   return {
-    schemaName: "werewolf_episode_relationship_v3",
+    schemaName: "werewolf_episode_relationship_v4",
     systemPrompt: [
       "你是狼人杀节目的 Script Author Agent，当前只展开一对本局关系。",
       "关系必须从公开互动中形成，不得虚构赛前历史、私下交易或游戏证据。",
@@ -597,10 +597,10 @@ function buildRelationshipRequest(input: {
           `STORY ${JSON.stringify(input.story)}`,
           `RELATIONSHIP_SEED ${JSON.stringify(input.seed)}`,
           ...input.profiles.map((profile) =>
-            `CHARACTER_PROFILE ${JSON.stringify(profile)}`
+            `ACTOR_PROFILE ${JSON.stringify(profile)}`
           ),
           ...input.directions.map((direction) =>
-            `CHARACTER_DIRECTION ${JSON.stringify(direction)}`
+            `ACTOR_DIRECTION ${JSON.stringify(direction)}`
           ),
           "",
           "本局关系可用节点：",
@@ -621,7 +621,7 @@ function buildBeatRequest(input: {
   readonly game: Game;
   readonly plan: CompiledEpisodePlan;
   readonly workspace: EpisodeAuthorWorkspace;
-  readonly profiles: readonly EpisodeCharacterProfile[];
+  readonly profiles: readonly EpisodeActorProfile[];
   readonly stepIndexes: readonly number[];
 }): GenerationRequestSnapshot {
   const batch = input.stepIndexes.map((index) => {
@@ -644,7 +644,7 @@ function buildBeatRequest(input: {
     actorPlayerIds,
   );
   return {
-    schemaName: "werewolf_episode_beats_v3",
+    schemaName: "werewolf_episode_beats_v4",
     systemPrompt: [
       "你是狼人杀节目的 Script Author Agent，当前只编写一个局部场景的发言节拍。",
       "不得修改合法轨迹、planned payload 或预算，不得向演员泄露未来事件。",
@@ -694,7 +694,7 @@ function buildBeatRequest(input: {
               `SPEECH_STEP ${step.index} | ${step.slot.type} | actor=${step.slot.actorPlayerId} | budget=${JSON.stringify(step.speechBeat?.budget ?? null)}`,
           ),
           "",
-          "输出 beats[{stepIndex,objective,stance,disclosure,themeHook,characterHook,arcMove,relationshipMove}]。",
+          "输出 beats[{stepIndex,objective,performanceMove,disclosure,themeHook,actorHook,arcMove,relationshipMove}]。",
           "beats 必须且只能覆盖本场 SPEECH_STEP；relationshipMove 无适用关系时为 null。",
           "所有方向必须由演员届时可见事实执行，不得写未来答案或隐藏身份提示。",
         ].join("\n"),
@@ -906,7 +906,7 @@ function parseEnsemble(
   return { castAssignments, relationshipSeeds };
 }
 
-function parseCharacterDirection(
+function parseActorDirection(
   parsed: Record<string, unknown>,
   assignment: EpisodeCastAssignment,
 ): EpisodeCastDirection {
@@ -976,12 +976,12 @@ function parseBeats(
       return {
         stepIndex: stepIndex as number,
         objective: requiredString(item.objective, `beats[${index}].objective`),
-        stance: requiredString(item.stance, `beats[${index}].stance`),
+        performanceMove: requiredString(item.performanceMove, `beats[${index}].performanceMove`),
         disclosure,
         themeHook: requiredString(item.themeHook, `beats[${index}].themeHook`),
-        characterHook: requiredString(
-          item.characterHook,
-          `beats[${index}].characterHook`,
+        actorHook: requiredString(
+          item.actorHook,
+          `beats[${index}].actorHook`,
         ),
         arcMove: requiredString(item.arcMove, `beats[${index}].arcMove`),
         relationshipMove: nullableString(
@@ -1051,18 +1051,18 @@ function episodeMilestones(plan: CompiledEpisodePlan): readonly string[] {
     );
 }
 
-function characterProfileLine(
-  profile: EpisodeCharacterProfile,
+function actorProfileLine(
+  profile: EpisodeActorProfile,
   performanceStepIndexes: readonly number[],
 ): string {
-  return `CHARACTER_PROFILE ${JSON.stringify({
+  return `ACTOR_PROFILE ${JSON.stringify({
     ...profile,
     performanceStepIndexes,
   })}`;
 }
 
 function actorContextLine(input: {
-  readonly profile: EpisodeCharacterProfile;
+  readonly profile: EpisodeActorProfile;
   readonly direction: EpisodeCastDirection;
   readonly relationships: readonly EpisodeRelationshipDirection[];
 }): string {
@@ -1076,7 +1076,7 @@ function priorMovesForActors(
 ): readonly {
   readonly playerId: PlayerId;
   readonly stepIndex: number;
-  readonly characterHook: string | null;
+  readonly actorHook: string | null;
   readonly arcMove: string | null;
   readonly relationshipMove: string | null;
 }[] {
@@ -1090,7 +1090,7 @@ function priorMovesForActors(
       .map((beat) => ({
         playerId,
         stepIndex: beat.stepIndex,
-        characterHook: beat.characterHook,
+        actorHook: beat.actorHook,
         arcMove: beat.arcMove,
         relationshipMove: beat.relationshipMove,
       })),
@@ -1134,7 +1134,7 @@ function relationshipMilestoneLines(
 }
 
 function assertPerformanceOpportunities(
-  profiles: readonly EpisodeCharacterProfile[],
+  profiles: readonly EpisodeActorProfile[],
   opportunities: ReadonlyMap<PlayerId, readonly number[]>,
 ): void {
   const missing = profiles.filter(
@@ -1148,11 +1148,11 @@ function assertPerformanceOpportunities(
 }
 
 function requiredProfile(
-  profiles: readonly EpisodeCharacterProfile[],
+  profiles: readonly EpisodeActorProfile[],
   playerId: PlayerId,
-): EpisodeCharacterProfile {
+): EpisodeActorProfile {
   const profile = profiles.find((candidate) => candidate.playerId === playerId);
-  if (!profile) throw new Error(`Missing character profile: ${playerId}`);
+  if (!profile) throw new Error(`Missing Actor profile: ${playerId}`);
   return profile;
 }
 

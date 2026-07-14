@@ -1,18 +1,18 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   createDefaultRuleset,
-  factionForRole,
-  GAME_ROLES,
+  factionForRuleRole,
+  RULE_ROLE_IDS,
   isWerewolfRole,
-  type GameRole,
-  type RoleCounts,
+  type RuleRoleId,
+  type RuleRoleCounts,
   type Ruleset,
   validateRuleset,
 } from "../types";
 
 describe("core types", () => {
   it("defines the fixed first-version roles", () => {
-    expect(GAME_ROLES).toEqual([
+    expect(RULE_ROLE_IDS).toEqual([
       "werewolf",
       "seer",
       "witch",
@@ -74,21 +74,21 @@ describe("core types", () => {
   });
 
   it("maps roles to factions", () => {
-    expect(factionForRole("werewolf")).toBe("wolves");
-    expect(factionForRole("seer")).toBe("good");
-    expect(factionForRole("witch")).toBe("good");
-    expect(factionForRole("hunter")).toBe("good");
-    expect(factionForRole("guard")).toBe("good");
-    expect(factionForRole("villager")).toBe("good");
+    expect(factionForRuleRole("werewolf")).toBe("wolves");
+    expect(factionForRuleRole("seer")).toBe("good");
+    expect(factionForRuleRole("witch")).toBe("good");
+    expect(factionForRuleRole("hunter")).toBe("good");
+    expect(factionForRuleRole("guard")).toBe("good");
+    expect(factionForRuleRole("villager")).toBe("good");
   });
 
-  it("keeps GameRole as a narrow union", () => {
-    expectTypeOf<GameRole>().toEqualTypeOf<
+  it("keeps RuleRoleId as a narrow union", () => {
+    expectTypeOf<RuleRoleId>().toEqualTypeOf<
       "werewolf" | "seer" | "witch" | "hunter" | "guard" | "villager"
     >();
   });
 
   it("keeps ruleset role counts fixed for the first-version board", () => {
-    expectTypeOf<Ruleset["roleCounts"]>().toEqualTypeOf<RoleCounts>();
+    expectTypeOf<Ruleset["roleCounts"]>().toEqualTypeOf<RuleRoleCounts>();
   });
 });

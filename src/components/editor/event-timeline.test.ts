@@ -44,7 +44,7 @@ describe("EventTimeline", () => {
     expect(html).toContain("LLM details");
     expect(html).toContain("success");
     expect(html).toContain("openai-compatible/test-model");
-    expect(html).toContain("speech:v2");
+    expect(html).toContain("speech-pipeline:v3");
   });
 });
 
@@ -71,12 +71,12 @@ function generationRecord(draftId: DraftId, createdAt: string): GenerationRecord
     playerId: game.players[0]!.playerId as PlayerId,
     purpose: "speech",
     status: "success",
-    promptVersion: "speech:v2",
+    promptVersion: "speech-pipeline:v3",
     provider: "openai-compatible",
     model: "test-model",
     inputContextHash: "hash_1",
     request: {
-      schemaName: "werewolf_speech_v2",
+      schemaName: "werewolf_speech_performance_v1",
       systemPrompt: "system",
       messages: [{ role: "user", content: "visible context" }],
     },
@@ -84,6 +84,38 @@ function generationRecord(draftId: DraftId, createdAt: string): GenerationRecord
     rawOutput: '{"text":"ok"}',
     parsedOutput: { text: "ok" },
     error: null,
+    stages: [
+      {
+        stage: "decision",
+        promptVersion: "speech-intent:v3",
+        provider: "openai-compatible",
+        model: "test-model",
+        request: {
+          schemaName: "werewolf_speech_intent_v3",
+          systemPrompt: "intent system",
+          messages: [{ role: "user", content: "intent context" }],
+        },
+        tokenUsage: null,
+        rawOutput: '{"objective":"判断"}',
+        parsedOutput: { objective: "判断" },
+        error: null,
+      },
+      {
+        stage: "performance",
+        promptVersion: "speech-performance:v1",
+        provider: "openai-compatible",
+        model: "test-model",
+        request: {
+          schemaName: "werewolf_speech_performance_v1",
+          systemPrompt: "system",
+          messages: [{ role: "user", content: "visible context" }],
+        },
+        tokenUsage: null,
+        rawOutput: '{"text":"ok"}',
+        parsedOutput: { text: "ok" },
+        error: null,
+      },
+    ],
     createdAt,
   };
 }

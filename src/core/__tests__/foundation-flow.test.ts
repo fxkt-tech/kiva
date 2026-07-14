@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createPlayerSnapshot } from "../player";
 import { resolveNightDeaths } from "../rules";
 import { deriveGameState } from "../state";
 import { projectVisibleEvents } from "../visibility";
 import type { GameEvent } from "../events";
 import type { EventId, GameId, PlayerId } from "../types";
+import { testPlayer } from "./test-player";
 
 type EventOf<Type extends GameEvent["type"]> = Extract<
   GameEvent,
@@ -20,42 +20,12 @@ const villager1 = "p5" as PlayerId;
 const villager2 = "p6" as PlayerId;
 
 const players = [
-  createPlayerSnapshot({
-    playerId: wolf1,
-    seatNo: 1,
-    name: "Wolf 1",
-    gameRole: "werewolf",
-  }),
-  createPlayerSnapshot({
-    playerId: wolf2,
-    seatNo: 2,
-    name: "Wolf 2",
-    gameRole: "werewolf",
-  }),
-  createPlayerSnapshot({
-    playerId: seer,
-    seatNo: 3,
-    name: "Seer",
-    gameRole: "seer",
-  }),
-  createPlayerSnapshot({
-    playerId: witch,
-    seatNo: 4,
-    name: "Witch",
-    gameRole: "witch",
-  }),
-  createPlayerSnapshot({
-    playerId: villager1,
-    seatNo: 5,
-    name: "Villager 1",
-    gameRole: "villager",
-  }),
-  createPlayerSnapshot({
-    playerId: villager2,
-    seatNo: 6,
-    name: "Villager 2",
-    gameRole: "villager",
-  }),
+  testPlayer(wolf1, 1, "werewolf"),
+  testPlayer(wolf2, 2, "werewolf"),
+  testPlayer(seer, 3, "seer"),
+  testPlayer(witch, 4, "witch"),
+  testPlayer(villager1, 5, "villager"),
+  testPlayer(villager2, 6, "villager"),
 ];
 
 function eventBase(index: number) {

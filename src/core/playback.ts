@@ -453,9 +453,9 @@ function playersForScene(
   return players.map((player) => ({
     playerId: player.playerId,
     seatNo: player.seatNo,
-    name: player.name,
-    avatar: player.avatar,
-    roleName: player.roleName,
+    name: player.actor.identity.name,
+    avatar: player.actor.identity.portrait,
+    roleName: player.ruleRole.name,
     status: deadPlayerIds.has(player.playerId) ? "dead" : "alive",
     highlighted: highlightedPlayerIds.has(player.playerId),
   }));

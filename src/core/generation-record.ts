@@ -1,9 +1,11 @@
-import type { ModelBindingSnapshot } from "./player";
+import type { ModelBindingSnapshot } from "./model-binding";
 import type { LlmTokenUsage } from "./llm";
 import type { DraftId, GameId, PlayerId } from "./types";
 import { assertExactObjectKeys, isPlainObject } from "./model-binding";
 import {
   ACTION_PROMPT_VERSION,
+  SPEECH_INTENT_PROMPT_VERSION,
+  SPEECH_PERFORMANCE_PROMPT_VERSION,
   SPEECH_PROMPT_VERSION,
 } from "./prompt-builders";
 
@@ -27,6 +29,19 @@ export type GenerationAttemptSnapshot = {
   readonly error: string | null;
 };
 
+export type GenerationStageSnapshot = {
+  readonly stage: "decision" | "performance";
+  readonly promptVersion: string;
+  readonly provider: string;
+  readonly model: string;
+  readonly request: GenerationRequestSnapshot;
+  readonly tokenUsage: LlmTokenUsage | null;
+  readonly rawOutput: string | null;
+  readonly parsedOutput: Record<string, unknown> | null;
+  readonly error: string | null;
+  readonly attempts?: readonly GenerationAttemptSnapshot[];
+};
+
 export type GenerationRecord = {
   readonly id: string;
   readonly gameId: GameId;
@@ -44,6 +59,7 @@ export type GenerationRecord = {
   readonly parsedOutput: Record<string, unknown> | null;
   readonly error: string | null;
   readonly createdAt: string;
+  readonly stages: readonly GenerationStageSnapshot[];
   readonly attempts?: readonly GenerationAttemptSnapshot[];
 };
 
@@ -61,6 +77,7 @@ export type SuccessfulGenerationRecordInput = {
   readonly rawOutput: string;
   readonly parsedOutput: Record<string, unknown>;
   readonly createdAt: string;
+  readonly stages?: readonly GenerationStageSnapshot[];
   readonly attempts?: readonly GenerationAttemptSnapshot[];
 };
 
@@ -78,12 +95,15 @@ export type FailedGenerationRecordInput = {
   readonly rawOutput: string | null;
   readonly error: unknown;
   readonly createdAt: string;
+  readonly stages?: readonly GenerationStageSnapshot[];
   readonly attempts?: readonly GenerationAttemptSnapshot[];
 };
 
 export function createSuccessfulGenerationRecord(
   input: SuccessfulGenerationRecordInput,
 ): GenerationRecord {
+  const stages = input.stages ?? [stageFromSuccessfulInput(input)];
+  assertStageSequence(stages, input.purpose, "success");
   return {
     id: input.id,
     gameId: input.gameId,
@@ -101,6 +121,7 @@ export function createSuccessfulGenerationRecord(
     parsedOutput: input.parsedOutput,
     error: null,
     createdAt: input.createdAt,
+    stages,
     ...(input.attempts ? { attempts: input.attempts } : {}),
   };
 }
@@ -108,6 +129,8 @@ export function createSuccessfulGenerationRecord(
 export function createFailedGenerationRecord(
   input: FailedGenerationRecordInput,
 ): GenerationRecord {
+  const stages = input.stages ?? [stageFromFailedInput(input)];
+  assertStageSequence(stages, input.purpose, "failed");
   return {
     id: input.id,
     gameId: input.gameId,
@@ -125,6 +148,7 @@ export function createFailedGenerationRecord(
     parsedOutput: null,
     error: errorMessage(input.error),
     createdAt: input.createdAt,
+    stages,
     ...(input.attempts ? { attempts: input.attempts } : {}),
   };
 }
@@ -156,6 +180,7 @@ export function validateGenerationRecord(
       "parsedOutput",
       "error",
       "createdAt",
+      "stages",
     ],
     ["attempts"],
   );
@@ -190,14 +215,24 @@ export function validateGenerationRecord(
   }
   const allowedSchemaNames =
     purpose === "speech"
-      ? ["werewolf_speech_v2"]
-      : ["werewolf_target_action_v2", "werewolf_optional_action_v2"];
+      ? ["werewolf_speech_intent_v3", "werewolf_speech_performance_v1"]
+      : ["werewolf_target_action_v3", "werewolf_optional_action_v3"];
   validateGenerationRequestSnapshot(value.request, allowedSchemaNames);
   if (!isLlmTokenUsage(value.tokenUsage)) {
     throw new Error("Generation record tokenUsage is invalid");
   }
   if (value.rawOutput !== null && typeof value.rawOutput !== "string") {
     throw new Error("Generation record rawOutput is invalid");
+  }
+  if (
+    !Array.isArray(value.stages) ||
+    value.stages.length === 0 ||
+    value.stages.some((stage) => !isGenerationStageSnapshot(stage, purpose))
+  ) {
+    throw new Error("Generation record stages are invalid");
+  }
+  if (!hasValidStageSequence(value.stages, purpose, value.status)) {
+    throw new Error("Generation record stage sequence is invalid");
   }
   if (
     value.parsedOutput !== null &&
@@ -228,6 +263,159 @@ export function validateGenerationRecord(
   }
 
   return structuredClone(value) as GenerationRecord;
+}
+
+function stageFromSuccessfulInput(
+  input: SuccessfulGenerationRecordInput,
+): GenerationStageSnapshot {
+  return {
+    stage: "decision",
+    promptVersion: input.promptVersion,
+    provider: input.modelBinding.provider,
+    model: input.modelBinding.model,
+    request: input.request,
+    tokenUsage: input.tokenUsage ?? null,
+    rawOutput: input.rawOutput,
+    parsedOutput: input.parsedOutput,
+    error: null,
+    ...(input.attempts ? { attempts: input.attempts } : {}),
+  };
+}
+
+function stageFromFailedInput(
+  input: FailedGenerationRecordInput,
+): GenerationStageSnapshot {
+  return {
+    stage: "decision",
+    promptVersion: input.promptVersion,
+    provider: input.modelBinding.provider,
+    model: input.modelBinding.model,
+    request: input.request,
+    tokenUsage: input.tokenUsage ?? null,
+    rawOutput: input.rawOutput,
+    parsedOutput: null,
+    error: errorMessage(input.error),
+    ...(input.attempts ? { attempts: input.attempts } : {}),
+  };
+}
+
+function isGenerationStageSnapshot(
+  value: unknown,
+  purpose: GenerationPurpose,
+): value is GenerationStageSnapshot {
+  if (!isPlainObject(value)) return false;
+  try {
+    assertExactObjectKeys(
+      value,
+      "Generation stage",
+      [
+        "stage",
+        "promptVersion",
+        "provider",
+        "model",
+        "request",
+        "tokenUsage",
+        "rawOutput",
+        "parsedOutput",
+        "error",
+      ],
+      ["attempts"],
+    );
+  } catch {
+    return false;
+  }
+  if (
+    (value.stage !== "decision" && value.stage !== "performance") ||
+    !isNonBlankString(value.promptVersion) ||
+    !isNonBlankString(value.provider) ||
+    !isNonBlankString(value.model) ||
+    !isLlmTokenUsage(value.tokenUsage) ||
+    (value.rawOutput !== null && typeof value.rawOutput !== "string") ||
+    (value.parsedOutput !== null && !isPlainObject(value.parsedOutput)) ||
+    (value.error !== null && typeof value.error !== "string")
+  ) {
+    return false;
+  }
+  if (
+    (value.error === null && value.parsedOutput === null) ||
+    (value.error !== null && value.parsedOutput !== null)
+  ) {
+    return false;
+  }
+  const allowed =
+    purpose === "action"
+      ? ["werewolf_target_action_v3", "werewolf_optional_action_v3"]
+      : value.stage === "decision"
+        ? ["werewolf_speech_intent_v3"]
+        : ["werewolf_speech_performance_v1"];
+  try {
+    validateGenerationRequestSnapshot(value.request, allowed);
+  } catch {
+    return false;
+  }
+  const expectedPromptVersion =
+    purpose === "action"
+      ? ACTION_PROMPT_VERSION
+      : value.stage === "decision"
+        ? SPEECH_INTENT_PROMPT_VERSION
+        : SPEECH_PERFORMANCE_PROMPT_VERSION;
+  if (value.promptVersion !== expectedPromptVersion) return false;
+  return (
+    value.attempts === undefined ||
+    (Array.isArray(value.attempts) &&
+      value.attempts.every((attempt) =>
+        isGenerationAttemptSnapshot(attempt, allowed),
+      ))
+  );
+}
+
+function assertStageSequence(
+  stages: readonly GenerationStageSnapshot[],
+  purpose: GenerationPurpose,
+  status: GenerationStatus,
+): void {
+  if (
+    stages.some((stage) => !isGenerationStageSnapshot(stage, purpose)) ||
+    !hasValidStageSequence(stages, purpose, status)
+  ) {
+    throw new Error("Generation stage sequence is invalid");
+  }
+}
+
+function hasValidStageSequence(
+  stages: readonly GenerationStageSnapshot[],
+  purpose: GenerationPurpose,
+  status: GenerationStatus,
+): boolean {
+  const succeeded = (stage: GenerationStageSnapshot) => stage.error === null;
+  if (purpose === "action") {
+    return (
+      stages.length === 1 &&
+      stages[0]?.stage === "decision" &&
+      succeeded(stages[0]) === (status === "success")
+    );
+  }
+
+  if (status === "success") {
+    return (
+      stages.length === 2 &&
+      stages[0]?.stage === "decision" &&
+      stages[1]?.stage === "performance" &&
+      succeeded(stages[0]) &&
+      succeeded(stages[1])
+    );
+  }
+
+  return (
+    (stages.length === 1 &&
+      stages[0]?.stage === "decision" &&
+      !succeeded(stages[0])) ||
+    (stages.length === 2 &&
+      stages[0]?.stage === "decision" &&
+      stages[1]?.stage === "performance" &&
+      succeeded(stages[0]) &&
+      !succeeded(stages[1]))
+  );
 }
 
 export function validateGenerationRequestSnapshot(

@@ -39,7 +39,7 @@ describe("DraftPanel payload controls", () => {
 
     expect(html).toContain('name="targetPlayerId"');
     expect(html).toContain(`value="${players[0].playerId}"`);
-    expect(html).toContain(`${players[0].seatNo} · ${players[0].name}`);
+    expect(html).toContain(`${players[0].seatNo} · ${players[0].actor.identity.name}`);
     expect(html).toContain("Save action");
     expect(html).toContain("待确认：狼人密票");
     expect(html).toContain("投给 1 号");
@@ -105,7 +105,7 @@ describe("DraftPanel payload controls", () => {
     expect(html).toContain("Generation");
     expect(html).toContain("success");
     expect(html).toContain("mock/mock-model");
-    expect(html).toContain("speech:v2");
+    expect(html).toContain("speech-pipeline:v3");
     expect(html).not.toContain("old error");
   });
 
@@ -262,12 +262,12 @@ function generationRecord(input: {
     playerId: players[0].playerId,
     purpose: "speech",
     status: input.status,
-    promptVersion: "speech:v2",
+    promptVersion: "speech-pipeline:v3",
     provider: "mock",
     model: "mock-model",
     inputContextHash: "ctx",
     request: {
-      schemaName: "werewolf_speech_v2",
+      schemaName: "werewolf_speech_performance_v1",
       systemPrompt: "system prompt",
       messages: [{ role: "user", content: "visible context" }],
     },
@@ -280,6 +280,38 @@ function generationRecord(input: {
     parsedOutput:
       input.status === "success" ? { text: "ok", reasoning: "because" } : null,
     error: input.error,
+    stages: [
+      {
+        stage: "decision",
+        promptVersion: "speech-intent:v3",
+        provider: "mock",
+        model: "mock-model",
+        request: {
+          schemaName: "werewolf_speech_intent_v3",
+          systemPrompt: "intent system prompt",
+          messages: [{ role: "user", content: "visible intent context" }],
+        },
+        tokenUsage: null,
+        rawOutput: '{"objective":"判断"}',
+        parsedOutput: { objective: "判断" },
+        error: null,
+      },
+      {
+        stage: "performance",
+        promptVersion: "speech-performance:v1",
+        provider: "mock",
+        model: "mock-model",
+        request: {
+          schemaName: "werewolf_speech_performance_v1",
+          systemPrompt: "system prompt",
+          messages: [{ role: "user", content: "visible context" }],
+        },
+        tokenUsage: null,
+        rawOutput: "{}",
+        parsedOutput: input.status === "success" ? { text: "ok" } : null,
+        error: input.error,
+      },
+    ],
     createdAt:
       input.status === "success"
         ? "2026-06-26T00:01:00.000Z"

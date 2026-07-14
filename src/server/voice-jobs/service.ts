@@ -239,7 +239,7 @@ export class VoiceJobService {
     try {
       const result = await this.adapter.synthesize({
         sourceText: target.text,
-        profile: player.voiceProfileSnapshot,
+        profile: player.actor.production.voice,
         outputPath: tempPath,
       });
       const cues = aggregateSpeechCues(
@@ -259,7 +259,7 @@ export class VoiceJobService {
           playerId: item.playerId as PlayerId,
           sourceTextHash: createHash("sha256").update(target.text).digest("hex"),
           synthesizedText: result.synthesizedText,
-          voiceProfile: player.voiceProfileSnapshot,
+          voiceProfile: player.actor.production.voice,
           generator: result.generator,
           audio: { file, durationMs: result.durationMs },
           cues,

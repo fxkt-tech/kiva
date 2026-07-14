@@ -23,9 +23,14 @@ describe("LLM integration", () => {
     const actions = createGameActions(repository, {
       llmClient: new MockLlmClient([
         {
-          text: "白天发言由模型生成。",
-          reasoning: "根据当前可见信息生成白天发言。",
+          objective: "给出当前判断",
+          conclusion: "目前先观察发言差异",
+          evidenceEventIndexes: [],
+          uncertainty: "公开证据还不充分",
+          disclosure: "not_applicable",
+          intendedEffect: "让其他玩家补充信息",
         },
+        { text: "白天发言由模型生成。" },
       ]),
     });
 

@@ -27,6 +27,7 @@ export function PresenterEditor({ presenter, voiceManifest }: PresenterEditorPro
     <form action={savePresenterAction} className="space-y-5">
       <DirtyFormGuard />
       <input type="hidden" name="createdAt" value={presenter.createdAt} />
+      <input type="hidden" name="id" value={presenter.id} />
 
       <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -54,7 +55,7 @@ export function PresenterEditor({ presenter, voiceManifest }: PresenterEditorPro
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <TextField label="Id" name="id" defaultValue={presenter.id} />
+        <TextField label="Stable ID" name="id" defaultValue={presenter.id} disabled />
         <TextField label="Name" name="name" defaultValue={presenter.name} />
       </div>
       <TextField
@@ -235,11 +236,13 @@ function TextField({
   name,
   defaultValue,
   placeholder,
+  disabled = false,
 }: {
   readonly label: string;
   readonly name: string;
   readonly defaultValue: string;
   readonly placeholder?: string;
+  readonly disabled?: boolean;
 }) {
   return (
     <label className="block text-sm text-muted">
@@ -250,6 +253,7 @@ function TextField({
         name={name}
         defaultValue={defaultValue}
         placeholder={placeholder}
+        disabled={disabled}
         className="mt-1 w-full rounded border border-interactive-border bg-background px-3 py-2 text-sm text-foreground outline-none"
       />
     </label>

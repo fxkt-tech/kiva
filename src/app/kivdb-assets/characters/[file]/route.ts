@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { notFound } from "next/navigation";
 
-type CharacterAssetRouteProps = {
+type ActorAssetRouteProps = {
   readonly params: Promise<{
     readonly file: string;
   }>;
@@ -10,7 +10,7 @@ type CharacterAssetRouteProps = {
 
 export async function GET(
   _request: Request,
-  { params }: CharacterAssetRouteProps,
+  { params }: ActorAssetRouteProps,
 ) {
   const { file } = await params;
   if (!/^[a-z0-9_-]+\.png$/i.test(file)) {

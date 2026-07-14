@@ -15,15 +15,15 @@ describe("LLM runtime factory", () => {
           responseFormat: "json",
         },
         systemPrompt: "test",
-        messages: [{ role: "user", content: "draft=day_speech_given" }],
-        schemaName: "werewolf_speech_v2",
+        messages: [{ role: "user", content: "请把 PlayerIntent 写成自然台词" }],
+        schemaName: "werewolf_speech_performance_v1",
       }),
     ).resolves.toMatchObject({
       parsed: { text: expect.stringContaining("我先") },
     });
   });
 
-  it("selects a legal Prompt v2 target without relying on internal draft enums", async () => {
+  it("selects a legal action target without relying on internal draft enums", async () => {
     const client = createRuntimeLlmClient({ env: {} });
 
     await expect(
@@ -45,7 +45,7 @@ describe("LLM runtime factory", () => {
             ].join("\n"),
           },
         ],
-        schemaName: "werewolf_target_action_v2",
+        schemaName: "werewolf_target_action_v3",
       }),
     ).resolves.toMatchObject({
       parsed: {

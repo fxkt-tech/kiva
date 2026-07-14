@@ -12,8 +12,8 @@ import { summarizeGenerationTokenUsage } from "@/core/token-usage";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
 import type { GameRecord } from "@/server/game-repository";
-import { createLibraryActions } from "@/server/library-actions";
-import { createLibraryRepository } from "@/server/library-repository";
+import { createContentActions } from "@/server/content-actions";
+import { createContentCatalog } from "@/server/content-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +22,11 @@ export default async function HomePage() {
   const records = await createGameActions(
     createGameRepository(dataDir),
   ).listGames();
-  const library = await createLibraryActions({
-    libraryRepository: createLibraryRepository(dataDir),
+  const catalog = await createContentActions({
+    catalog: createContentCatalog(dataDir),
     gameRepository: createGameRepository(dataDir),
-  }).getLibrary();
-  const creatablePresets = library.presets.filter(
-    (preset) => library.diagnostics.presets[preset.id]?.canCreateGame === true,
-  );
+  }).getCatalog();
+  const creatableLineups = catalog.lineups.filter((lineup) => lineup.enabled);
 
   return (
     <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 lg:px-8">
@@ -51,10 +49,10 @@ export default async function HomePage() {
               Library
             </Link>
             <NewGameDialog
-              presets={creatablePresets}
-              roles={library.roles.filter((role) => role.enabled)}
-              characters={library.characters.filter((character) => character.enabled)}
-              scripts={library.scripts.filter((script) => script.enabled)}
+              lineups={creatableLineups}
+              ruleRoles={catalog.ruleRoles}
+              actors={catalog.actors.filter((actor) => actor.enabled)}
+              scripts={catalog.scripts.filter((script) => script.enabled)}
             />
           </div>
         </header>

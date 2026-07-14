@@ -4,6 +4,10 @@ import { confirmDraftEvent, type DraftEvent } from "./drafts";
 import type { GameEvent, VoteType } from "./events";
 import type { Game } from "./game";
 import {
+  compileActorAuthorCard,
+  type ActorAuthorCard,
+} from "./actor-definition";
+import {
   isGenerationAttemptSnapshot,
   isLlmTokenUsage,
   validateGenerationRequestSnapshot,
@@ -22,24 +26,23 @@ import {
   speechBudgetForDraft,
   type SpeechBudget,
 } from "./speech-budget";
-import type { ModelBindingSnapshot, PlayerSnapshot } from "./player";
+import type { ModelBindingSnapshot } from "./model-binding";
+import type { PlayerSnapshot } from "./player";
+import type { RuleRole } from "./rule-role";
 import type { DraftId, EventId, Phase, PlayerId } from "./types";
 
-export const EPISODE_SCRIPT_SCHEMA_VERSION = 2;
-export const EPISODE_COMPILER_VERSION = "episode-compiler:v1";
-export const EPISODE_AUTHOR_PROMPT_VERSION = "episode-author:v3" as const;
+export const EPISODE_SCRIPT_SCHEMA_VERSION = 3;
+export const EPISODE_COMPILER_VERSION = "episode-compiler:v2";
+export const EPISODE_AUTHOR_PROMPT_VERSION = "episode-author:v4" as const;
 export const MAX_EPISODE_STORY_ACTS = 4;
 export const MAX_EPISODE_RELATIONSHIP_SEEDS = 6;
 const MAX_EPISODE_STEPS = 240;
 
-export type EpisodeCharacterProfile = {
+export type EpisodeActorProfile = {
   readonly playerId: PlayerId;
   readonly seatNo: number;
-  readonly name: string;
-  readonly gameRole: PlayerSnapshot["gameRole"];
-  readonly persona: string;
-  readonly speakingStyle: string;
-  readonly reasoningStyle: string;
+  readonly actor: ActorAuthorCard;
+  readonly ruleRole: RuleRole;
 };
 
 export type EpisodeCastDirection = {
@@ -82,10 +85,10 @@ export type DraftSlot = {
 export type EpisodeSpeechBeat = {
   readonly stepIndex: number;
   readonly objective: string;
-  readonly stance: string;
+  readonly performanceMove: string;
   readonly disclosure: "conceal" | "claim" | "not_applicable";
   readonly themeHook: string;
-  readonly characterHook: string | null;
+  readonly actorHook: string | null;
   readonly arcMove: string | null;
   readonly relationshipMove: string | null;
   readonly budget: SpeechBudget;
@@ -172,7 +175,7 @@ export type EpisodeAuthorWorkspace = {
 export type EpisodeAuthorTask =
   | { readonly kind: "story" }
   | { readonly kind: "ensemble" }
-  | { readonly kind: "character"; readonly playerId: PlayerId }
+  | { readonly kind: "actor_arc"; readonly playerId: PlayerId }
   | {
       readonly kind: "relationship";
       readonly playerIds: readonly [PlayerId, PlayerId];
@@ -242,37 +245,34 @@ export type EpisodeActorBrief = {
   readonly stepIndex: number;
   readonly scene: string;
   readonly objective: string;
-  readonly stance: string;
+  readonly performanceMove: string;
   readonly disclosure: EpisodeSpeechBeat["disclosure"];
   readonly themeHook: string;
-  readonly characterHook: string | null;
+  readonly actorHook: string | null;
   readonly arcMove: string | null;
   readonly relationshipMove: string | null;
   readonly budget: SpeechBudget;
 };
 
-export function episodeCharacterProfile(
+export function episodeActorProfile(
   player: PlayerSnapshot,
-): EpisodeCharacterProfile {
+): EpisodeActorProfile {
   return {
     playerId: player.playerId,
     seatNo: player.seatNo,
-    name: player.name,
-    gameRole: player.gameRole,
-    persona: player.persona,
-    speakingStyle: player.speakingStyle,
-    reasoningStyle: player.reasoningStyle,
+    actor: compileActorAuthorCard(player.actor),
+    ruleRole: structuredClone(player.ruleRole),
   };
 }
 
 export function episodeInputHash(game: Game): string {
-  return characterDrivenEpisodeInputHash(game);
+  return actorDrivenEpisodeInputHash(game);
 }
 
-function characterDrivenEpisodeInputHash(game: Game): string {
+function actorDrivenEpisodeInputHash(game: Game): string {
   return stableHash(
     JSON.stringify({
-      players: game.players.map(episodeCharacterProfile),
+      players: game.players.map(episodeActorProfile),
       ruleset: game.ruleset,
       script: game.script,
     }),
@@ -894,10 +894,10 @@ function validateWorkspaceBeat(
   assertExactObjectKeys(beat, `Episode author beat ${index + 1}`, [
     "stepIndex",
     "objective",
-    "stance",
+    "performanceMove",
     "disclosure",
     "themeHook",
-    "characterHook",
+    "actorHook",
     "arcMove",
     "relationshipMove",
   ]);
@@ -914,12 +914,12 @@ function validateWorkspaceBeat(
   return {
     stepIndex: beat.stepIndex as number,
     objective: requiredString(beat.objective, `Episode author beat ${index + 1} objective`),
-    stance: requiredString(beat.stance, `Episode author beat ${index + 1} stance`),
+    performanceMove: requiredString(beat.performanceMove, `Episode author beat ${index + 1} performanceMove`),
     disclosure: beat.disclosure,
     themeHook: requiredString(beat.themeHook, `Episode author beat ${index + 1} themeHook`),
-    characterHook: nullableWorkspaceString(
-      beat.characterHook,
-      `Episode author beat ${index + 1} characterHook`,
+    actorHook: nullableWorkspaceString(
+      beat.actorHook,
+      `Episode author beat ${index + 1} actorHook`,
     ),
     arcMove: nullableWorkspaceString(
       beat.arcMove,
@@ -1009,28 +1009,28 @@ function validateEpisodeAuthorTask(
   switch (task.kind) {
     case "story":
       assertExactObjectKeys(task, `${label} task`, ["kind"]);
-      return { task: { kind: "story" }, schemaName: "werewolf_episode_story_v3" };
+      return { task: { kind: "story" }, schemaName: "werewolf_episode_story_v4" };
     case "ensemble":
       assertExactObjectKeys(task, `${label} task`, ["kind"]);
       return {
         task: { kind: "ensemble" },
-        schemaName: "werewolf_episode_ensemble_v3",
+        schemaName: "werewolf_episode_ensemble_v4",
       };
-    case "character":
+    case "actor_arc":
       assertExactObjectKeys(task, `${label} task`, ["kind", "playerId"]);
       return {
         task: {
-          kind: "character",
+          kind: "actor_arc",
           playerId: requiredString(task.playerId, `${label} task playerId`) as PlayerId,
         },
-        schemaName: "werewolf_episode_character_v3",
+        schemaName: "werewolf_episode_actor_arc_v4",
       };
     case "relationship": {
       assertExactObjectKeys(task, `${label} task`, ["kind", "playerIds"]);
       const playerIds = requiredPlayerPair(task.playerIds, `${label} task playerIds`);
       return {
         task: { kind: "relationship", playerIds },
-        schemaName: "werewolf_episode_relationship_v3",
+        schemaName: "werewolf_episode_relationship_v4",
       };
     }
     case "beats":
@@ -1040,7 +1040,7 @@ function validateEpisodeAuthorTask(
       }
       return {
         task: { kind: "beats", stepIndexes: [...task.stepIndexes] },
-        schemaName: "werewolf_episode_beats_v3",
+        schemaName: "werewolf_episode_beats_v4",
       };
     default:
       throw new Error(`${label} task kind is invalid`);
@@ -1110,10 +1110,10 @@ export function actorBriefForStep(
     stepIndex,
     scene: step.summary,
     objective: step.speechBeat.objective,
-    stance: step.speechBeat.stance,
+    performanceMove: step.speechBeat.performanceMove,
     disclosure: step.speechBeat.disclosure,
     themeHook: step.speechBeat.themeHook,
-    characterHook: step.speechBeat.characterHook,
+    actorHook: step.speechBeat.actorHook,
     arcMove: step.speechBeat.arcMove,
     relationshipMove: step.speechBeat.relationshipMove,
     budget: step.speechBeat.budget,
@@ -1190,10 +1190,10 @@ export function planNextEpisodeDraft(input: {
           stepIndex: step.index,
           scene: step.summary,
           objective: step.speechBeat.objective,
-          stance: step.speechBeat.stance,
+          performanceMove: step.speechBeat.performanceMove,
           disclosure: step.speechBeat.disclosure,
           themeHook: step.speechBeat.themeHook,
-          characterHook: step.speechBeat.characterHook,
+          actorHook: step.speechBeat.actorHook,
           arcMove: step.speechBeat.arcMove,
           relationshipMove: step.speechBeat.relationshipMove,
           budget: step.speechBeat.budget,
@@ -1234,10 +1234,10 @@ function defaultSpeechBeat(
   return {
     stepIndex,
     objective: `完成${draftSummary(draft)}，推动当前阵营冲突`,
-    stance: "围绕当前可见事实给出明确立场，并留下后续可验证点",
+    performanceMove: "围绕当前可见事实给出明确立场，并留下后续可验证点",
     disclosure: draft.phase === "night" ? "not_applicable" : "conceal",
     themeHook: `把本轮冲突自然映射到“${game.script.theme}”，不要只重复主题词`,
-    characterHook: null,
+    actorHook: null,
     arcMove: null,
     relationshipMove: null,
     budget,
@@ -1452,10 +1452,10 @@ function validateSpeechBeat(
   assertExactObjectKeys(current, `Episode step ${stepIndex} speech beat`, [
     "stepIndex",
     "objective",
-    "stance",
+    "performanceMove",
     "disclosure",
     "themeHook",
-    "characterHook",
+    "actorHook",
     "arcMove",
     "relationshipMove",
     "budget",
@@ -1469,7 +1469,7 @@ function validateSpeechBeat(
     "hardMaxCharacters",
   ]);
   nonEmpty(beat.objective, `Episode step ${stepIndex} objective`);
-  nonEmpty(beat.stance, `Episode step ${stepIndex} stance`);
+  nonEmpty(beat.performanceMove, `Episode step ${stepIndex} performanceMove`);
   nonEmpty(beat.themeHook, `Episode step ${stepIndex} theme hook`);
   if (
     beat.disclosure !== "conceal" &&
@@ -1479,8 +1479,8 @@ function validateSpeechBeat(
     throw new Error(`Episode step ${stepIndex} disclosure is invalid`);
   }
   nonEmpty(
-    beat.characterHook ?? "",
-    `Episode step ${stepIndex} character hook`,
+    beat.actorHook ?? "",
+    `Episode step ${stepIndex} actor hook`,
   );
   nonEmpty(beat.arcMove ?? "", `Episode step ${stepIndex} arc move`);
   if (

@@ -37,7 +37,7 @@ export function EpisodeEnsembleReview({
                     {player ? `${player.seatNo} 号` : direction.playerId}
                   </p>
                   <h4 className="mt-0.5 text-sm font-semibold">
-                    {player?.name ?? direction.playerId}
+                    {player?.actor.identity.name ?? direction.playerId}
                   </h4>
                 </div>
                 <span className="rounded-full border border-border px-2 py-1 text-[10px] text-muted">
@@ -122,7 +122,9 @@ function playerLabel(
   player: PlayerSnapshot | undefined,
   fallback: string,
 ): string {
-  return player ? `${player.seatNo} 号 ${player.name}` : fallback;
+  return player
+    ? `${player.seatNo} 号 ${player.actor.identity.name}`
+    : fallback;
 }
 
 function relationshipKindLabel(

@@ -1,4 +1,9 @@
-import type { ModelBindingSnapshot } from "./player";
+export type ModelBindingSnapshot = {
+  readonly provider: string;
+  readonly model: string;
+  readonly responseFormat: "json";
+  readonly fallbackModel?: string;
+};
 
 export function validateModelBindingSnapshot(
   value: unknown,

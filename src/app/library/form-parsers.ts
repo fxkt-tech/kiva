@@ -1,88 +1,111 @@
-import type { CharacterDefinition } from "@/core/character-definition";
-import {
-  type GamePreset,
-  type GamePresetSeatAssignment,
-} from "@/core/game-preset";
-import { validateModelBindingSnapshot } from "@/core/model-binding";
-import type { ModelBindingSnapshot } from "@/core/player";
-import { edgeVoiceProfile } from "@/core/voice";
+import type { ActorDefinition } from "@/core/actor-definition";
+import type { GameScriptDefinition } from "@/core/game-script";
+import type { Lineup } from "@/core/lineup";
+import type { ModelBindingSnapshot } from "@/core/model-binding";
 import {
   PRESENTER_LINE_VARIABLES,
   type PresenterCopyKey,
   type PresenterDefinition,
   type PresenterLineCatalog,
 } from "@/core/presenter-definition";
-import type {
-  RoleDefinition,
-  RoleKnowledgeRule,
-} from "@/core/role-definition";
+import type { RuleRoleId } from "@/core/rule-role";
+import { edgeVoiceProfile } from "@/core/voice";
 
-export function roleFromFormData(formData: FormData, now: string): RoleDefinition {
+export function actorFromFormData(formData: FormData): ActorDefinition {
+  const id = text(formData, "id");
+  const name = text(formData, "identity.name");
+  if ((id === "qin_chuan") !== (name === "秦川")) {
+    throw new Error('稳定 Actor 必须保持 "秦川" / qin_chuan');
+  }
   return {
-    id: text(formData, "id"),
-    name: text(formData, "name"),
+    id,
+    identity: {
+      name,
+      portrait: text(formData, "identity.portrait"),
+      tags: list(formData, "identity.tags"),
+      visualAnchor: text(formData, "identity.visualAnchor"),
+    },
+    core: {
+      stableCore: text(formData, "core.stableCore"),
+      drive: text(formData, "core.drive"),
+      blindSpot: text(formData, "core.blindSpot"),
+      changeBoundary: text(formData, "core.changeBoundary"),
+    },
+    cognition: {
+      attention: text(formData, "cognition.attention"),
+      evidencePolicy: text(formData, "cognition.evidencePolicy"),
+      decisionPolicy: text(formData, "cognition.decisionPolicy"),
+      correctionTrigger: text(formData, "cognition.correctionTrigger"),
+    },
+    interaction: {
+      tableFunction: text(formData, "interaction.tableFunction"),
+      socialStrategy: text(formData, "interaction.socialStrategy"),
+      pressureResponse: text(formData, "interaction.pressureResponse"),
+      conflictAxes: list(formData, "interaction.conflictAxes"),
+    },
+    expression: {
+      cadence: text(formData, "expression.cadence"),
+      diction: text(formData, "expression.diction"),
+      rhetoricalMoves: list(formData, "expression.rhetoricalMoves"),
+      avoid: list(formData, "expression.avoid"),
+    },
+    production: {
+      modelBinding: modelBinding(formData),
+      voice: edgeVoiceProfile(text(formData, "production.voice.voice"), {
+        rate: text(formData, "production.voice.rate"),
+        pitch: text(formData, "production.voice.pitch"),
+        volume: text(formData, "production.voice.volume"),
+      }),
+    },
     enabled: checkbox(formData, "enabled"),
-    faction: text(formData, "faction") as RoleDefinition["faction"],
-    team: text(formData, "team") as RoleDefinition["team"],
-    mechanicKey: text(formData, "mechanicKey") as RoleDefinition["mechanicKey"],
-    visibilityRules: list(formData, "visibilityRules") as RoleKnowledgeRule[],
-    nightOrder: nullableNumber(formData, "nightOrder"),
-    systemPrompt: text(formData, "systemPrompt"),
-    actionPrompt: nullableText(formData, "actionPrompt"),
-    defaultModelBinding: nullableModelBinding(formData, "defaultModelBinding"),
-    createdAt: textOrDefault(formData, "createdAt", now),
-    updatedAt: now,
+    revision: integer(formData, "revision") + 1,
   };
 }
 
-export function characterFromFormData(
+export function lineupFromFormData(formData: FormData): Lineup {
+  return {
+    id: text(formData, "id"),
+    name: text(formData, "name"),
+    rulesetId: "classic_twelve",
+    seats: Array.from({ length: 12 }, (_, index) => {
+      const seatNo = index + 1;
+      return {
+        seatNo,
+        ruleRoleId: text(
+          formData,
+          `seat.${seatNo}.ruleRoleId`,
+        ) as RuleRoleId,
+        actorId: text(formData, `seat.${seatNo}.actorId`),
+      };
+    }),
+    enabled: checkbox(formData, "enabled"),
+    revision: integer(formData, "revision") + 1,
+  };
+}
+
+export function scriptFromFormData(
   formData: FormData,
   now: string,
-): CharacterDefinition {
+): GameScriptDefinition {
   return {
     id: text(formData, "id"),
     name: text(formData, "name"),
-    avatar: nullableText(formData, "avatar"),
-    tags: list(formData, "tags"),
-    persona: text(formData, "persona"),
-    speakingStyle: text(formData, "speakingStyle"),
-    reasoningStyle: text(formData, "reasoningStyle"),
-    systemPrompt: text(formData, "systemPrompt"),
-    defaultModelBinding: characterModelBindingFromFormData(formData),
-    voiceProfile: edgeVoiceProfile(
-      textOrDefault(formData, "voiceProfile.voice", "zh-CN-XiaoxiaoNeural"),
-      {
-        pitch: textOrDefault(formData, "voiceProfile.pitch", "+0Hz"),
-        rate: textOrDefault(formData, "voiceProfile.rate", "+0%"),
-        volume: textOrDefault(formData, "voiceProfile.volume", "+0%"),
+    theme: text(formData, "theme"),
+    background: text(formData, "background"),
+    atmosphere: list(formData, "atmosphere"),
+    presentation: {
+      styleKey: "midnight_archive_v1",
+      coverImage: text(formData, "presentation.coverImage"),
+      dayBackground: text(formData, "presentation.dayBackground"),
+      nightBackground: text(formData, "presentation.nightBackground"),
+      colors: {
+        ink: text(formData, "presentation.colors.ink"),
+        paper: text(formData, "presentation.colors.paper"),
+        accent: text(formData, "presentation.colors.accent"),
+        signal: text(formData, "presentation.colors.signal"),
+        night: text(formData, "presentation.colors.night"),
       },
-    ),
-    enabled: checkbox(formData, "enabled"),
-    createdAt: textOrDefault(formData, "createdAt", now),
-    updatedAt: now,
-  };
-}
-
-export function presetFromFormData(formData: FormData, now: string): GamePreset {
-  const playerCount = number(formData, "playerCount");
-  const seatAssignments = seatAssignmentsFromFormData(formData, playerCount);
-
-  return {
-    id: text(formData, "id"),
-    name: text(formData, "name"),
-    rulesetId: text(formData, "rulesetId"),
-    playerCount,
-    roleIds: listOrDefault(
-      formData,
-      "roleIds",
-      seatAssignments.map((assignment) => assignment.roleId),
-    ),
-    characterIds: listOrDefault(
-      formData,
-      "characterIds",
-      seatAssignments.map((assignment) => assignment.characterId),
-    ),
-    seatAssignments,
+    },
     enabled: checkbox(formData, "enabled"),
     createdAt: textOrDefault(formData, "createdAt", now),
     updatedAt: now,
@@ -112,59 +135,32 @@ export function presenterFromFormData(
   };
 }
 
-function presenterLinesFromFormData(formData: FormData): PresenterLineCatalog {
-  const entries = (Object.keys(PRESENTER_LINE_VARIABLES) as PresenterCopyKey[])
-    .map((key) => {
-      const template = text(formData, `line.${key}.template`);
-      const variables = PRESENTER_LINE_VARIABLES[key];
-      return [
-        key,
-        {
-          template,
-          variables,
-        },
-      ] as const;
-    });
-
-  return Object.fromEntries(entries) as unknown as PresenterLineCatalog;
+function modelBinding(formData: FormData): ModelBindingSnapshot {
+  return {
+    provider: text(formData, "production.modelBinding.provider"),
+    model: text(formData, "production.modelBinding.model"),
+    responseFormat: "json",
+    ...(hasText(formData, "production.modelBinding.fallbackModel")
+      ? {
+          fallbackModel: text(
+            formData,
+            "production.modelBinding.fallbackModel",
+          ),
+        }
+      : {}),
+  };
 }
 
-function seatAssignmentsFromFormData(
-  formData: FormData,
-  playerCount: number,
-): readonly GamePresetSeatAssignment[] {
-  if (hasText(formData, "seatAssignments")) {
-    const parsed = JSON.parse(text(formData, "seatAssignments"));
-    if (!Array.isArray(parsed)) {
-      throw new Error("seatAssignments must be a JSON array");
-    }
-    return parsed.map((assignment) => {
-      const seat = assignment as Partial<GamePresetSeatAssignment>;
-      const nextAssignment: GamePresetSeatAssignment = {
-        seatNo: Number(seat.seatNo),
-        roleId: String(seat.roleId ?? ""),
-        characterId: String(seat.characterId ?? ""),
-        modelBindingOverride: modelBindingFromUnknown(
-          seat.modelBindingOverride ?? null,
-          "modelBindingOverride",
-        ),
-      };
-      return nextAssignment;
-    });
-  }
-
-  return Array.from({ length: playerCount }, (_, index) => {
-    const seatNo = index + 1;
-    return {
-      seatNo,
-      roleId: text(formData, `seat.${seatNo}.roleId`),
-      characterId: text(formData, `seat.${seatNo}.characterId`),
-      modelBindingOverride: nullableModelBinding(
-        formData,
-        `seat.${seatNo}.modelBindingOverride`,
-      ),
-    };
-  });
+function presenterLinesFromFormData(formData: FormData): PresenterLineCatalog {
+  return Object.fromEntries(
+    (Object.keys(PRESENTER_LINE_VARIABLES) as PresenterCopyKey[]).map((key) => [
+      key,
+      {
+        template: text(formData, `line.${key}.template`),
+        variables: PRESENTER_LINE_VARIABLES[key],
+      },
+    ]),
+  ) as unknown as PresenterLineCatalog;
 }
 
 function text(formData: FormData, key: string): string {
@@ -175,27 +171,19 @@ function text(formData: FormData, key: string): string {
 function textOrDefault(
   formData: FormData,
   key: string,
-  defaultValue: string,
+  fallback: string,
 ): string {
-  return text(formData, key) || defaultValue;
+  return text(formData, key) || fallback;
 }
 
 function nullableText(formData: FormData, key: string): string | null {
-  const value = text(formData, key);
-  return value === "" ? null : value;
+  return text(formData, key) || null;
 }
 
-function number(formData: FormData, key: string): number {
+function integer(formData: FormData, key: string): number {
   const value = Number(text(formData, key));
-  if (!Number.isFinite(value)) {
-    throw new Error(`${key} must be a finite number`);
-  }
+  if (!Number.isInteger(value)) throw new Error(`${key} must be an integer`);
   return value;
-}
-
-function nullableNumber(formData: FormData, key: string): number | null {
-  const value = text(formData, key);
-  return value === "" ? null : number(formData, key);
 }
 
 function checkbox(formData: FormData, key: string): boolean {
@@ -205,75 +193,13 @@ function checkbox(formData: FormData, key: string): boolean {
 
 function list(formData: FormData, key: string): readonly string[] {
   const value = text(formData, key);
-  if (value === "") {
-    return [];
-  }
-
-  if (value.startsWith("[")) {
-    const parsed = JSON.parse(value);
-    if (!Array.isArray(parsed)) {
-      throw new Error(`${key} must be a JSON array`);
-    }
-    return parsed.map((item) => String(item).trim()).filter(Boolean);
-  }
-
+  if (!value) return [];
   return value
-    .split(",")
+    .split(/[，,\n]/)
     .map((item) => item.trim())
     .filter(Boolean);
 }
 
-function listOrDefault(
-  formData: FormData,
-  key: string,
-  defaultValue: readonly string[],
-): readonly string[] {
-  return hasText(formData, key) ? list(formData, key) : defaultValue;
-}
-
-function nullableModelBinding(
-  formData: FormData,
-  key: string,
-): ModelBindingSnapshot | null {
-  if (!hasText(formData, key)) {
-    return null;
-  }
-
-  return modelBindingFromUnknown(JSON.parse(text(formData, key)), key);
-}
-
-function characterModelBindingFromFormData(
-  formData: FormData,
-): ModelBindingSnapshot | null {
-  if (
-    formData.has("modelBinding.provider") ||
-    formData.has("modelBinding.model") ||
-    formData.has("modelBinding.responseFormat")
-  ) {
-    return modelBindingFromUnknown(
-      {
-        provider: text(formData, "modelBinding.provider"),
-        model: text(formData, "modelBinding.model"),
-        responseFormat: text(formData, "modelBinding.responseFormat"),
-        ...(hasText(formData, "modelBinding.fallbackModel")
-          ? { fallbackModel: text(formData, "modelBinding.fallbackModel") }
-          : {}),
-      },
-      "modelBinding",
-    );
-  }
-
-  return nullableModelBinding(formData, "defaultModelBinding");
-}
-
-function modelBindingFromUnknown(
-  value: unknown,
-  path: string,
-): ModelBindingSnapshot | null {
-  validateModelBindingSnapshot(value, path);
-  return value as ModelBindingSnapshot | null;
-}
-
 function hasText(formData: FormData, key: string): boolean {
-  return text(formData, key) !== "";
+  return text(formData, key).length > 0;
 }

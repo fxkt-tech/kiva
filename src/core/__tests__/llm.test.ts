@@ -36,26 +36,26 @@ describe("LLM client boundary", () => {
     });
   });
 
-  it("returns a conceal disclosure for local Prompt v2 special-role speech", async () => {
+  it("returns a conceal disclosure for local PlayerIntent generation", async () => {
     const client = new LocalHeuristicLlmClient();
 
     await expect(
       client.generateJson({
         ...request,
-        schemaName: "werewolf_speech_v2",
+        schemaName: "werewolf_speech_intent_v3",
         messages: [
           {
             role: "user",
             content:
-              '只输出 {"disclosure":"conceal 或 claim","text":"...","decisionSummary":"..."}',
+              "- 频道：公开发言\n- 你的身份是 预言家（好人阵营）。",
           },
         ],
       }),
     ).resolves.toMatchObject({
       parsed: {
         disclosure: "conceal",
-        text: expect.any(String),
-        decisionSummary: expect.any(String),
+        objective: expect.any(String),
+        conclusion: expect.any(String),
       },
     });
   });

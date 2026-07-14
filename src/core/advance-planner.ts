@@ -14,7 +14,7 @@ import {
   validateWitchDecision,
 } from "./rules";
 import { deriveGameState, type DerivedGameState } from "./state";
-import type { DraftId, GameRole, Phase, PlayerId } from "./types";
+import type { DraftId, RuleRoleId, Phase, PlayerId } from "./types";
 import type { GameEvent } from "./events";
 
 export type PlanNextDraftInput = {
@@ -40,7 +40,7 @@ export function planNextDraft(input: PlanNextDraftInput): DraftEvent | null {
     return roleAssignment;
   }
 
-  const effectivePlayers = derivePlayersFromRoleAssignments(input.game, events);
+  const effectivePlayers = input.game.players;
   const state = deriveGameState(effectivePlayers, events);
 
   const pendingEnd = planPendingEndDraft(input, effectivePlayers, state);
@@ -135,8 +135,8 @@ function planRoleAssignment(
     },
     payload: {
       playerId: player.playerId,
-      role: player.gameRole,
-      faction: player.faction,
+      role: player.ruleRole.id,
+      faction: player.ruleRole.faction,
     },
     createdAt: input.createdAt,
   });
@@ -181,7 +181,7 @@ function planNightDraft(
   }
 
   const wolves = players
-    .filter((player) => player.gameRole === "werewolf")
+    .filter((player) => player.ruleRole.id === "werewolf")
     .filter((player) => state.alivePlayerIds.includes(player.playerId));
   if (wolves.length === 0) {
     return draftGameEndIfNeeded(input, players, state.deadPlayerIds, state.dayNumber);
@@ -356,7 +356,7 @@ function planNightDraft(
       visibility: { kind: "player_private", playerIds: [seer] },
       payload: {
         targetPlayerId: checkedPlayer.playerId,
-        result: checkedPlayer.faction,
+        result: checkedPlayer.ruleRole.faction,
       },
       createdAt: input.createdAt,
     });
@@ -562,7 +562,7 @@ function planPendingHunterShotDraft(
 ): DraftEvent | null {
   const hunter = players.find(
     (player) =>
-      player.gameRole === "hunter" &&
+      player.ruleRole.id === "hunter" &&
       state.deadPlayerIds.includes(player.playerId),
   );
   if (!hunter) {
@@ -958,19 +958,19 @@ function draftPhaseStarted(
 
 function firstPlayerIdByRole(
   players: readonly PlayerSnapshot[],
-  role: GameRole,
+  role: RuleRoleId,
 ): PlayerId | undefined {
-  return players.find((player) => player.gameRole === role)?.playerId;
+  return players.find((player) => player.ruleRole.id === role)?.playerId;
 }
 
 function firstAlivePlayerIdByRole(
   players: readonly PlayerSnapshot[],
   alivePlayerIds: readonly PlayerId[],
-  role: GameRole,
+  role: RuleRoleId,
 ): PlayerId | undefined {
   const alive = new Set(alivePlayerIds);
   return players.find(
-    (player) => player.gameRole === role && alive.has(player.playerId),
+    (player) => player.ruleRole.id === role && alive.has(player.playerId),
   )?.playerId;
 }
 
@@ -983,32 +983,6 @@ function findEvent<Type extends GameEvent["type"]>(
 
 function hasEvent(events: readonly GameEvent[], type: GameEvent["type"]) {
   return events.some((event) => event.type === type);
-}
-
-function derivePlayersFromRoleAssignments(
-  game: Game,
-  events: readonly GameEvent[],
-): readonly PlayerSnapshot[] {
-  const assignments = new Map(
-    events
-      .filter((event): event is EventOf<"role_assigned"> =>
-        event.type === "role_assigned",
-      )
-      .map((event) => [event.payload.playerId, event.payload] as const),
-  );
-
-  return game.players.map((player) => {
-    const assignment = assignments.get(player.playerId);
-    if (!assignment) {
-      return player;
-    }
-
-    return {
-      ...player,
-      gameRole: assignment.role,
-      faction: assignment.faction,
-    };
-  });
 }
 
 function isLegalTarget(
@@ -1061,7 +1035,7 @@ function chooseSeerTarget(
   ).filter((playerId) => !checked.has(playerId));
   const wolfTarget = legalTargets.find(
     (playerId) =>
-      players.find((player) => player.playerId === playerId)?.gameRole ===
+      players.find((player) => player.playerId === playerId)?.ruleRole.id ===
       "werewolf",
   );
 

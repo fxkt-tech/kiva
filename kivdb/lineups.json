@@ -1,0 +1,23 @@
+[
+  {
+    "id": "twelve_player_standard",
+    "name": "12人狼人杀标准局",
+    "rulesetId": "classic_twelve",
+    "seats": [
+      { "seatNo": 1, "ruleRoleId": "villager", "actorId": "zhou_xu" },
+      { "seatNo": 2, "ruleRoleId": "seer", "actorId": "qiao_ke" },
+      { "seatNo": 3, "ruleRoleId": "werewolf", "actorId": "qin_chuan" },
+      { "seatNo": 4, "ruleRoleId": "witch", "actorId": "xia_mi" },
+      { "seatNo": 5, "ruleRoleId": "villager", "actorId": "ren_ye" },
+      { "seatNo": 6, "ruleRoleId": "werewolf", "actorId": "gu_ling" },
+      { "seatNo": 7, "ruleRoleId": "guard", "actorId": "cheng_wu" },
+      { "seatNo": 8, "ruleRoleId": "hunter", "actorId": "ye_chen" },
+      { "seatNo": 9, "ruleRoleId": "werewolf", "actorId": "chi_mu" },
+      { "seatNo": 10, "ruleRoleId": "villager", "actorId": "tang_li" },
+      { "seatNo": 11, "ruleRoleId": "werewolf", "actorId": "lu_ran" },
+      { "seatNo": 12, "ruleRoleId": "villager", "actorId": "su_xian" }
+    ],
+    "enabled": true,
+    "revision": 1
+  }
+]

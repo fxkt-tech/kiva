@@ -258,7 +258,7 @@ function LibrarySample() {
   return (
     <div className="grid grid-cols-[110px_1fr] overflow-hidden rounded-md border border-[var(--preview-border)] bg-[var(--preview-surface)]">
       <nav className="border-r border-[var(--preview-border)] bg-[var(--preview-background)] p-2">
-        {["Roles", "Characters", "Presets"].map((item, index) => (
+        {["Rule Roles", "Actors", "Lineups"].map((item, index) => (
           <div
             className={[
               "rounded px-2 py-1.5 text-xs",

@@ -1,6 +1,5 @@
-import type { CharacterDefinition } from "./character-definition";
+import type { ActorDefinition } from "./actor-definition";
 import type { GameRunMode } from "./game-run-mode";
-import { validateGamePresets, type GamePreset } from "./game-preset";
 import {
   createGameScriptSnapshot,
   type GameScriptDefinition,
@@ -11,21 +10,18 @@ import {
   type GamePresenterSnapshot,
   type PresenterDefinition,
 } from "./presenter-definition";
+import { validateLineups, type Lineup } from "./lineup";
 import {
   createPlayerSnapshot,
   validateBoard,
   type PlayerSnapshot,
 } from "./player";
-import { validateRoleDefinitions, type RoleDefinition } from "./role-definition";
-import { seedCharacters } from "@/seeds/characters";
-import { seedPresets } from "@/seeds/presets";
+import { seedActors } from "@/seeds/actors";
+import { seedLineups } from "@/seeds/lineups";
 import { seedPresenters } from "@/seeds/presenters";
-import { seedRoles } from "@/seeds/roles";
 import { seedScripts } from "@/seeds/scripts";
 import {
   createDefaultRuleset,
-  GAME_ROLES,
-  type GameRole,
   type GameId,
   type PlayerId,
   type Ruleset,
@@ -52,68 +48,36 @@ export type CreateSeedGameInput = {
   readonly ruleset?: Ruleset;
 };
 
-export type CreateGameFromPresetInput = {
+export type CreateGameFromLineupInput = {
   readonly gameId: GameId;
   readonly title: string;
   readonly createdAt: string;
   readonly ruleset: Ruleset;
-  readonly preset: GamePreset;
+  readonly lineup: Lineup;
   readonly presenter: PresenterDefinition;
   readonly script: GameScriptDefinition;
-  readonly roles: readonly RoleDefinition[];
-  readonly characters: readonly CharacterDefinition[];
+  readonly actors: readonly ActorDefinition[];
   readonly runMode: GameRunMode;
 };
 
-export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
-  validateRoleDefinitions(input.roles);
-  validateGamePresets([input.preset], {
-    roles: input.roles,
-    characters: input.characters,
-  });
+export function createGameFromLineup(input: CreateGameFromLineupInput): Game {
+  validateLineups([input.lineup], input.actors);
+  const actorsById = new Map(input.actors.map((actor) => [actor.id, actor]));
 
-  if (input.preset.seatAssignments === null) {
-    throw new Error(`Game preset ${input.preset.id} must include seatAssignments`);
-  }
-
-  const rolesById = new Map(input.roles.map((role) => [role.id, role]));
-  const charactersById = new Map(
-    input.characters.map((character) => [character.id, character]),
-  );
-
-  const players = input.preset.seatAssignments.map((seat) => {
-    const role = rolesById.get(seat.roleId);
-    if (!role) {
-      throw new Error(`Role definition not found: ${seat.roleId}`);
-    }
-    const gameRole = toSupportedGameRole(role.id);
-    const character = charactersById.get(seat.characterId);
-    if (!character) {
-      throw new Error(`Character definition not found: ${seat.characterId}`);
-    }
-
-    return createPlayerSnapshot({
-      playerId: `p${seat.seatNo}` as PlayerId,
-      seatNo: seat.seatNo,
-      name: character.name,
-      gameRole,
-      characterSourceId: character.id,
-      roleSourceId: role.id,
-      avatar: character.avatar,
-      persona: character.persona,
-      speakingStyle: character.speakingStyle,
-      reasoningStyle: character.reasoningStyle,
-      characterSystemPromptSnapshot: character.systemPrompt,
-      roleSystemPromptSnapshot: role.systemPrompt,
-      roleActionPromptSnapshot: role.actionPrompt,
-      modelBindingSnapshot: character.defaultModelBinding ?? undefined,
-      voiceProfileSnapshot: character.voiceProfile,
-      roleName: role.name,
-      faction: role.faction,
-      team: role.team,
-      mechanicKey: role.mechanicKey,
+  const players = [...input.lineup.seats]
+    .sort((left, right) => left.seatNo - right.seatNo)
+    .map((seat) => {
+      const actor = actorsById.get(seat.actorId);
+      if (!actor) {
+        throw new Error(`Actor definition not found: ${seat.actorId}`);
+      }
+      return createPlayerSnapshot({
+        playerId: `p${seat.seatNo}` as PlayerId,
+        seatNo: seat.seatNo,
+        actor,
+        ruleRoleId: seat.ruleRoleId,
+      });
     });
-  });
 
   const game: Game = {
     id: input.gameId,
@@ -130,35 +94,22 @@ export function createGameFromPreset(input: CreateGameFromPresetInput): Game {
 
   const boardValidation = validateBoard(game.players, input.ruleset);
   if (!boardValidation.ok) {
-    throw new Error(`Game preset ${input.preset.id} does not match ruleset`);
+    throw new Error(`Lineup ${input.lineup.id} does not match ruleset`);
   }
 
   return game;
 }
 
 export function createSeedGame(input: CreateSeedGameInput): Game {
-  return createGameFromPreset({
+  return createGameFromLineup({
     gameId: input.gameId,
     title: "12人狼人杀标准局",
     createdAt: input.createdAt,
     ruleset: input.ruleset ?? createDefaultRuleset(),
-    preset: seedPresets[0],
+    lineup: seedLineups[0]!,
     presenter: seedPresenters[0]!,
     script: seedScripts[0]!,
-    roles: seedRoles,
-    characters: seedCharacters,
+    actors: seedActors,
     runMode: "game",
   });
-}
-
-function toSupportedGameRole(roleId: string): GameRole {
-  if (!isGameRole(roleId)) {
-    throw new Error(`Role is not supported by current ruleset: ${roleId}`);
-  }
-
-  return roleId;
-}
-
-function isGameRole(roleId: string): roleId is GameRole {
-  return (GAME_ROLES as readonly string[]).includes(roleId);
 }

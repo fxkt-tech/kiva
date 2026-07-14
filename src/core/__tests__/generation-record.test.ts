@@ -15,7 +15,7 @@ const modelBinding = {
   responseFormat: "json",
 } as const;
 const request = {
-  schemaName: "werewolf_speech_v2",
+  schemaName: "werewolf_target_action_v3",
   systemPrompt: "system prompt",
   messages: [{ role: "user", content: "visible context" }],
 } as const;
@@ -40,6 +40,28 @@ const attempts = [
 ] as const;
 
 describe("generation records", () => {
+  it("requires the complete decision-performance stage sequence for speech", () => {
+    expect(() =>
+      createSuccessfulGenerationRecord({
+        id: "generation_incomplete_speech",
+        gameId,
+        draftId,
+        playerId,
+        purpose: "speech",
+        promptVersion: "speech-pipeline:v3",
+        modelBinding,
+        inputContextHash: "ctx_hash",
+        request: {
+          ...request,
+          schemaName: "werewolf_speech_performance_v1",
+        },
+        rawOutput: '{"text":"hello"}',
+        parsedOutput: { text: "hello" },
+        createdAt,
+      }),
+    ).toThrow("Generation stage sequence is invalid");
+  });
+
   it("creates success records for parsed model output", () => {
     expect(
       createSuccessfulGenerationRecord({
@@ -47,8 +69,8 @@ describe("generation records", () => {
         gameId,
         draftId,
         playerId,
-        purpose: "speech",
-        promptVersion: "speech:v2",
+        purpose: "action",
+        promptVersion: "action:v3",
         modelBinding,
         inputContextHash: "ctx_hash",
         request,
@@ -61,9 +83,9 @@ describe("generation records", () => {
       gameId,
       draftId,
       playerId,
-      purpose: "speech",
+      purpose: "action",
       status: "success",
-      promptVersion: "speech:v2",
+      promptVersion: "action:v3",
       provider: "mock",
       model: "mock-model",
       inputContextHash: "ctx_hash",
@@ -73,6 +95,19 @@ describe("generation records", () => {
       parsedOutput: { text: "hello" },
       error: null,
       createdAt,
+      stages: [
+        {
+          stage: "decision",
+          promptVersion: "action:v3",
+          provider: "mock",
+          model: "mock-model",
+          request,
+          tokenUsage: null,
+          rawOutput: '{"text":"hello"}',
+          parsedOutput: { text: "hello" },
+          error: null,
+        },
+      ],
     });
   });
 
@@ -83,8 +118,8 @@ describe("generation records", () => {
         gameId,
         draftId,
         playerId,
-        purpose: "speech",
-        promptVersion: "speech:v2",
+        purpose: "action",
+        promptVersion: "action:v3",
         modelBinding,
         inputContextHash: "ctx_hash",
         request,
@@ -114,8 +149,8 @@ describe("generation records", () => {
       gameId,
       draftId,
       playerId,
-      purpose: "speech",
-      promptVersion: "speech:v2",
+      purpose: "action",
+      promptVersion: "action:v3",
       modelBinding,
       inputContextHash: "ctx_hash",
       request,
@@ -135,8 +170,8 @@ describe("generation records", () => {
         gameId,
         draftId,
         playerId,
-        purpose: "speech",
-        promptVersion: "speech:v2",
+        purpose: "action",
+        promptVersion: "action:v3",
         modelBinding,
         inputContextHash: "ctx_hash",
         request,
@@ -161,8 +196,8 @@ describe("generation records", () => {
       gameId,
       draftId,
       playerId,
-      purpose: "speech",
-      promptVersion: "speech:v2",
+      purpose: "action",
+      promptVersion: "action:v3",
       modelBinding,
       inputContextHash: "ctx_hash",
       request,

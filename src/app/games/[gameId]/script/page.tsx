@@ -320,8 +320,8 @@ function episodeAuthorRequestLabels(
     switch (request.task.kind) {
       case "ensemble":
         return "Ensemble map";
-      case "character":
-        return `Character · ${request.task.playerId}`;
+      case "actor_arc":
+        return `Actor arc · ${request.task.playerId}`;
       case "relationship":
         return `Relationship · ${request.task.playerIds.join("/")}`;
       case "beats":

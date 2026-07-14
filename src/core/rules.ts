@@ -7,7 +7,7 @@ import type {
   WolfVoteEntry,
   WolfVoteTally,
 } from "./events";
-import type { GameRole, PlayerId, PkVoters, Ruleset } from "./types";
+import type { RuleRoleId, PlayerId, PkVoters, Ruleset } from "./types";
 
 export type NightActionKind =
   | "wolf_kill"
@@ -16,7 +16,7 @@ export type NightActionKind =
   | "guard_protect"
   | "hunter_shot";
 
-const GOD_ROLES = new Set<GameRole>(["seer", "witch", "hunter", "guard"]);
+const GOD_ROLES = new Set<RuleRoleId>(["seer", "witch", "hunter", "guard"]);
 
 export type NightDeathReason = "wolf_kill" | "witch_poison";
 
@@ -120,7 +120,7 @@ const ROLE_NAMES = {
   hunter: "猎人",
   guard: "守卫",
   villager: "平民",
-} satisfies Record<GameRole, string>;
+} satisfies Record<RuleRoleId, string>;
 
 export function getLegalNightTargets(
   action: NightActionKind,
@@ -134,13 +134,13 @@ export function getLegalNightTargets(
     const actor = actorPlayerId
       ? players.find((player) => player.playerId === actorPlayerId)
       : undefined;
-    if (!actor || actor.gameRole !== "werewolf" || !alive.has(actor.playerId)) {
+    if (!actor || actor.ruleRole.id !== "werewolf" || !alive.has(actor.playerId)) {
       return [];
     }
 
     return players
       .filter((player) => alive.has(player.playerId))
-      .filter((player) => player.gameRole !== "werewolf")
+      .filter((player) => player.ruleRole.id !== "werewolf")
       .map((player) => player.playerId);
   }
 
@@ -257,16 +257,16 @@ export function createEndgameReveal(
 ): readonly RevealedRole[] {
   return players.map((player) => ({
     playerId: player.playerId,
-    roleId: player.gameRole,
-    roleName: ROLE_NAMES[player.gameRole],
-    faction: player.faction,
+    roleId: player.ruleRole.id,
+    roleName: ROLE_NAMES[player.ruleRole.id],
+    faction: player.ruleRole.faction,
   }));
 }
 
 function getActorSpecificTargets(
   players: readonly PlayerSnapshot[],
   alive: ReadonlySet<PlayerId>,
-  actorRole: GameRole,
+  actorRole: RuleRoleId,
   actorPlayerId?: PlayerId,
 ): readonly PlayerId[] {
   if (!actorPlayerId) {
@@ -274,7 +274,7 @@ function getActorSpecificTargets(
   }
 
   const actor = players.find((player) => player.playerId === actorPlayerId);
-  if (!actor || !alive.has(actor.playerId) || actor.gameRole !== actorRole) {
+  if (!actor || !alive.has(actor.playerId) || actor.ruleRole.id !== actorRole) {
     return [];
   }
 
@@ -294,7 +294,7 @@ function getGuardProtectTargets(
   }
 
   const actor = players.find((player) => player.playerId === actorPlayerId);
-  if (!actor || !alive.has(actor.playerId) || actor.gameRole !== "guard") {
+  if (!actor || !alive.has(actor.playerId) || actor.ruleRole.id !== "guard") {
     return [];
   }
 
@@ -313,7 +313,7 @@ function getHunterShotTargets(
   }
 
   const actor = players.find((player) => player.playerId === actorPlayerId);
-  if (!actor || actor.gameRole !== "hunter") {
+  if (!actor || actor.ruleRole.id !== "hunter") {
     return [];
   }
 
@@ -367,7 +367,7 @@ export function checkWinCondition(
   const dead = new Set(deadPlayerIds);
   const livingPlayers = players.filter((player) => !dead.has(player.playerId));
   const livingWolves = livingPlayers.filter(
-    (player) => player.gameRole === "werewolf",
+    (player) => player.ruleRole.id === "werewolf",
   );
 
   if (livingWolves.length === 0) {
@@ -376,7 +376,7 @@ export function checkWinCondition(
 
   if (ruleset.winCondition === "slaughter_all") {
     const livingGood = livingPlayers.filter(
-      (player) => player.faction === "good",
+      (player) => player.ruleRole.faction === "good",
     );
     if (livingGood.length === 0) {
       return { ended: true, winner: "wolves", reason: "all_good_dead" };
@@ -385,14 +385,14 @@ export function checkWinCondition(
   }
 
   const livingGods = livingPlayers.filter((player) =>
-    GOD_ROLES.has(player.gameRole),
+    GOD_ROLES.has(player.ruleRole.id),
   );
   if (livingGods.length === 0) {
     return { ended: true, winner: "wolves", reason: "all_gods_dead" };
   }
 
   const livingVillagers = livingPlayers.filter(
-    (player) => player.gameRole === "villager",
+    (player) => player.ruleRole.id === "villager",
   );
   if (livingVillagers.length === 0) {
     return { ended: true, winner: "wolves", reason: "all_villagers_dead" };

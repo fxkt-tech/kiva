@@ -45,7 +45,7 @@ describe("episode script", () => {
       (step) => step.speechBeat !== null,
     );
 
-    expect(result.script.schemaVersion).toBe(2);
+    expect(result.script.schemaVersion).toBe(3);
     expect(result.script.title).toContain("未明档案");
     expect(result.script.acts).toHaveLength(3);
     expect(result.script.castDirections).toHaveLength(game.players.length);
@@ -60,7 +60,7 @@ describe("episode script", () => {
     expect(result.script.relationships.length).toBeGreaterThan(0);
     expect(speechSteps.length).toBeGreaterThan(0);
     expect(speechSteps.every((step) => step.speechBeat?.themeHook)).toBe(true);
-    expect(speechSteps.every((step) => step.speechBeat?.characterHook)).toBe(true);
+    expect(speechSteps.every((step) => step.speechBeat?.actorHook)).toBe(true);
     expect(speechSteps.every((step) => step.speechBeat?.arcMove)).toBe(true);
 
     expect(result.script.plannedWinner).toBe(plan.plannedWinner);
@@ -73,12 +73,12 @@ describe("episode script", () => {
     expect(result.requests[0]).toMatchObject({
       task: { kind: "story" },
       status: "success",
-      promptVersion: "episode-author:v3",
-      request: { schemaName: "werewolf_episode_story_v3" },
+      promptVersion: "episode-author:v4",
+      request: { schemaName: "werewolf_episode_story_v4" },
     });
     expect(result.requests).toEqual(expect.arrayContaining([
       expect.objectContaining({ task: { kind: "ensemble" } }),
-      expect.objectContaining({ task: expect.objectContaining({ kind: "character" }) }),
+      expect.objectContaining({ task: expect.objectContaining({ kind: "actor_arc" }) }),
       expect.objectContaining({ task: expect.objectContaining({ kind: "relationship" }) }),
       expect.objectContaining({ task: expect.objectContaining({ kind: "beats" }) }),
     ]));
@@ -89,7 +89,7 @@ describe("episode script", () => {
         (request) =>
           request.task.kind === "beats" &&
           request.task.stepIndexes.length > 0 &&
-          request.request.schemaName === "werewolf_episode_beats_v3",
+          request.request.schemaName === "werewolf_episode_beats_v4",
       ),
     ).toBe(true);
   });
@@ -138,10 +138,16 @@ describe("episode script", () => {
         index === 0
           ? {
               ...player,
-              modelBindingSnapshot: {
-                provider: "actor-provider",
-                model: "actor-model",
-                responseFormat: "json" as const,
+              actor: {
+                ...player.actor,
+                production: {
+                  ...player.actor.production,
+                  modelBinding: {
+                    provider: "actor-provider",
+                    model: "actor-model",
+                    responseFormat: "json" as const,
+                  },
+                },
               },
             }
           : player,
@@ -187,23 +193,25 @@ describe("episode script", () => {
     });
 
     const ensemble = requests.find(
-      (request) => request.schemaName === "werewolf_episode_ensemble_v3",
+      (request) => request.schemaName === "werewolf_episode_ensemble_v4",
     );
     expect(ensemble).toBeDefined();
     const profileCards = prefixedJsonObjects(
       requestContent(ensemble!),
-      "CHARACTER_PROFILE",
+      "ACTOR_PROFILE",
     );
     expect(profileCards).toHaveLength(game.players.length);
     for (const player of game.players) {
       expect(profileCards).toContainEqual(
         expect.objectContaining({
           playerId: player.playerId,
-          name: player.name,
-          gameRole: player.gameRole,
-          persona: player.persona,
-          speakingStyle: player.speakingStyle,
-          reasoningStyle: player.reasoningStyle,
+          actor: expect.objectContaining({
+            actorId: player.actor.sourceId,
+            identity: expect.objectContaining({
+              name: player.actor.identity.name,
+            }),
+          }),
+          ruleRole: player.ruleRole,
           performanceStepIndexes: expect.any(Array),
         }),
       );
@@ -217,16 +225,16 @@ describe("episode script", () => {
     expect(ensemble?.systemPrompt).toContain("群像分工");
     expect(ensemble?.systemPrompt).toContain("不要展开长篇人物弧线");
 
-    const characterRequests = requests.filter(
-      (request) => request.schemaName === "werewolf_episode_character_v3",
+    const actorArcRequests = requests.filter(
+      (request) => request.schemaName === "werewolf_episode_actor_arc_v4",
     );
-    expect(characterRequests).toHaveLength(game.players.length);
-    expect(characterRequests.every((request) =>
-      prefixedJsonObjects(requestContent(request), "CHARACTER_PROFILE").length === 1
+    expect(actorArcRequests).toHaveLength(game.players.length);
+    expect(actorArcRequests.every((request) =>
+      prefixedJsonObjects(requestContent(request), "ACTOR_PROFILE").length === 1
     )).toBe(true);
 
     const relationshipRequests = requests.filter(
-      (request) => request.schemaName === "werewolf_episode_relationship_v3",
+      (request) => request.schemaName === "werewolf_episode_relationship_v4",
     );
     expect(relationshipRequests.length).toBeGreaterThan(0);
     for (const request of relationshipRequests) {
@@ -238,7 +246,7 @@ describe("episode script", () => {
     }
 
     const beatRequests = requests.filter(
-      (request) => request.schemaName === "werewolf_episode_beats_v3",
+      (request) => request.schemaName === "werewolf_episode_beats_v4",
     );
     expect(beatRequests.length).toBeGreaterThan(1);
     for (const request of beatRequests) {
@@ -259,9 +267,10 @@ describe("episode script", () => {
           (candidate) => candidate.playerId === profile?.playerId,
         );
         expect(profile).toMatchObject({
-          persona: player?.persona,
-          speakingStyle: player?.speakingStyle,
-          reasoningStyle: player?.reasoningStyle,
+          actor: expect.objectContaining({
+            actorId: player?.actor.sourceId,
+          }),
+          ruleRole: player?.ruleRole,
         });
         expect(direction).toMatchObject({ playerId: player?.playerId });
       }
@@ -281,7 +290,7 @@ describe("episode script", () => {
       async generateJson(request) {
         const result = await local.generateJson(request);
         if (
-          request.schemaName === "werewolf_episode_story_v3" &&
+          request.schemaName === "werewolf_episode_story_v4" &&
           storyAttempts++ === 0
         ) {
           const parsed = { ...result.parsed, title: "长".repeat(81) };
@@ -388,7 +397,7 @@ describe("episode script", () => {
     const oversizedRelationships: LlmClient = {
       async generateJson(request) {
         const result = await local.generateJson(request);
-        if (request.schemaName !== "werewolf_episode_ensemble_v3") {
+        if (request.schemaName !== "werewolf_episode_ensemble_v4") {
           return result;
         }
         validEnsemble ??= result.parsed;
@@ -430,7 +439,16 @@ describe("episode script", () => {
       ...game,
       players: game.players.map((player, index) =>
         index === 0
-          ? { ...player, persona: `${player.persona}，但压力下会主动冒险` }
+          ? {
+              ...player,
+              actor: {
+                ...player.actor,
+                core: {
+                  ...player.actor.core,
+                  stableCore: `${player.actor.core.stableCore}，但压力下会主动冒险`,
+                },
+              },
+            }
           : player,
       ),
     };
@@ -472,7 +490,7 @@ describe("episode script", () => {
 
     expect(brief).toMatchObject({
       stepIndex: speechStep.index,
-      characterHook: speechStep.speechBeat?.characterHook,
+      actorHook: speechStep.speechBeat?.actorHook,
       arcMove: speechStep.speechBeat?.arcMove,
       relationshipMove: speechStep.speechBeat?.relationshipMove,
     });
@@ -637,7 +655,7 @@ function validCastDirections(
   return sourceGame.players.map((player, index) => ({
     playerId: player.playerId,
     dramaticWeight: index < 3 ? "primary" : "supporting",
-    dramaticFunction: `${player.name}负责推动一条独立判断线`,
+    dramaticFunction: `${player.actor.identity.name}负责推动一条独立判断线`,
     baseline: "按稳定的人物方法观察局面",
     pressure: "公开冲突放大其方法的盲点",
     change: "保留核心但学会修正一次判断",
@@ -657,10 +675,10 @@ function validBeats(
       ? [{
           stepIndex: step.index,
           objective: "推动当前可见冲突",
-          stance: "根据可见事实给出明确判断",
+          performanceMove: "根据可见事实给出明确判断",
           disclosure: step.speechBeat.disclosure,
           themeHook: "让当前选择成为后续可验证的主题因果",
-          characterHook: "用演员稳定的人物方法组织表达",
+          actorHook: "用演员稳定的人物方法组织表达",
           arcMove: "在压力下推进一个有根据的次要侧面",
           relationshipMove: null,
         }]

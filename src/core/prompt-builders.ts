@@ -1,8 +1,11 @@
 import type { LlmMessage } from "./llm";
 import type { EpisodeActorBrief } from "./episode-script";
+import type {
+  PlayerSpeechEvidenceScope,
+  PlayerSpeechIntent,
+} from "./player-intent";
 import type { LegalActionOptions } from "./llm-action-options";
 import {
-  isLlmActionDraft,
   taskSpecForDraft,
   type LlmActionDraft,
   type LlmDraft,
@@ -10,21 +13,23 @@ import {
   type PromptRuleKey,
   type PromptTaskSpec,
 } from "./llm-task-specs";
-import { mechanicForDraftType } from "./role-mechanics";
 import type {
   PlayerContextTimelineItem,
   PlayerLlmContext,
 } from "./player-context";
+import { selectPromptKnowledgeItems } from "./player-context";
 import {
   speechBudgetForDraft,
   type SpeechBudget,
 } from "./speech-budget";
 import type { PlayerId, Ruleset } from "./types";
+import { ruleRoleById, type RuleRoleId } from "./rule-role";
 
-export const SPEECH_PROMPT_VERSION = "speech:v2";
-export const ACTION_PROMPT_VERSION = "action:v2";
+export const SPEECH_PROMPT_VERSION = "speech-pipeline:v3";
+export const SPEECH_INTENT_PROMPT_VERSION = "speech-intent:v3";
+export const SPEECH_PERFORMANCE_PROMPT_VERSION = "speech-performance:v1";
+export const ACTION_PROMPT_VERSION = "action:v3";
 
-const MAX_KNOWLEDGE_ITEMS_PER_SECTION = 40;
 const MAX_EVENT_TEXT_LENGTH = 800;
 
 export type BuiltPrompt = {
@@ -33,6 +38,10 @@ export type BuiltPrompt = {
   readonly systemPrompt: string;
   readonly messages: readonly LlmMessage[];
   readonly speechBudget?: SpeechBudget;
+};
+
+export type BuiltSpeechIntentPrompt = BuiltPrompt & {
+  readonly evidenceScope: PlayerSpeechEvidenceScope;
 };
 
 export type SpeechPromptInput = {
@@ -47,9 +56,9 @@ export type ActionPromptInput = {
   readonly options: LegalActionOptions;
 };
 
-export function buildSpeechPrompt(
+export function buildSpeechIntentPrompt(
   input: SpeechPromptInput,
-): BuiltPrompt {
+): BuiltSpeechIntentPrompt {
   const hasPriorDaySpeech =
     input.draft.type === "day_speech_given" &&
     input.context.visibleEvents.some(
@@ -60,12 +69,18 @@ export function buildSpeechPrompt(
   const spec = taskSpecForDraft(input.draft, { hasPriorDaySpeech });
   const speechBudget = input.actorBrief?.budget ??
     speechBudgetForDraft({ draft: input.draft, hasPriorDaySpeech });
+  const evidenceScope = speechIntentEvidenceScope(
+    input.context,
+    input.draft,
+    spec,
+  );
 
   return {
-    promptVersion: SPEECH_PROMPT_VERSION,
-    schemaName: "werewolf_speech_v2",
+    promptVersion: SPEECH_INTENT_PROMPT_VERSION,
+    schemaName: "werewolf_speech_intent_v3",
     systemPrompt: buildSystemPrompt(input.context, input.draft, spec),
     speechBudget,
+    evidenceScope,
     messages: [
       {
         role: "user",
@@ -83,6 +98,77 @@ export function buildSpeechPrompt(
   };
 }
 
+export function buildSpeechPerformancePrompt(input: {
+  readonly context: PlayerLlmContext;
+  readonly draft: LlmSpeechDraft;
+  readonly intent: PlayerSpeechIntent;
+  readonly evidence: readonly PlayerContextTimelineItem[];
+  readonly speechBudget: SpeechBudget;
+  readonly actorBrief?: EpisodeActorBrief | null;
+}): BuiltPrompt {
+  const actor = input.context.viewer.actor;
+  const spec = taskSpecForDraft(input.draft, {
+    hasPriorDaySpeech:
+      input.draft.type === "day_speech_given" &&
+      input.context.visibleEvents.some(
+        (event) =>
+          event.type === "day_speech_given" &&
+          event.payload.dayNumber === input.draft.payload.dayNumber,
+      ),
+  });
+  return {
+    promptVersion: SPEECH_PERFORMANCE_PROMPT_VERSION,
+    schemaName: "werewolf_speech_performance_v1",
+    speechBudget: input.speechBudget,
+    systemPrompt: [
+      `你只负责把 ${input.context.viewer.seatNo} 号 ${actor.name} 已经完成的决定表演成自然台词。`,
+      "不得重新推理、改变立场、增加证据、补充身份结论或引入未提供事实。",
+      "Actor 只控制表达方式；事实、结论和披露决定均来自 PlayerIntent。",
+      `语言节奏：${actor.expression.cadence}`,
+      `用词质感：${actor.expression.diction}`,
+      `可用修辞动作：${actor.expression.rhetoricalMoves.join("、")}`,
+      `必须避免：${actor.expression.avoid.join("、")}`,
+      "只输出 JSON 对象，不输出 Markdown。",
+    ].join("\n"),
+    messages: [
+      {
+        role: "user",
+        content: [
+          `场景：${spec.scene}｜频道：${spec.channel}｜听众：${spec.audience}`,
+          `PLAYER_INTENT ${JSON.stringify(input.intent)}`,
+          "SELECTED_EVIDENCE",
+          ...(input.evidence.length > 0
+            ? input.evidence.map(
+                (item) =>
+                  `- [事件 ${item.index}] ${item.title}：${truncate(item.text, MAX_EVENT_TEXT_LENGTH)}`,
+              )
+            : ["- 无；不得自行补证据。"]),
+          "PLAYER_ID_MAP",
+          ...input.context.roster.map(
+            (player) =>
+              `- ${player.playerId} = ${player.seatNo}号 ${player.name}`,
+          ),
+          ...(input.actorBrief
+            ? [
+                `PERFORMANCE_DIRECTION ${JSON.stringify({
+                  scene: input.actorBrief.scene,
+                  objective: input.actorBrief.objective,
+                  performanceMove: input.actorBrief.performanceMove,
+                  themeHook: input.actorBrief.themeHook,
+                  actorHook: input.actorBrief.actorHook,
+                  arcMove: input.actorBrief.arcMove,
+                  relationshipMove: input.actorBrief.relationshipMove,
+                })}`,
+              ]
+            : []),
+          ...speechBudgetLines(input.speechBudget),
+          '只输出 {"text":"真正说出口的话"}。text 不得提到 PlayerIntent、事件编号、JSON、剧本指引或表演说明。',
+        ].join("\n"),
+      },
+    ],
+  };
+}
+
 export function buildActionPrompt(
   input: ActionPromptInput,
 ): BuiltPrompt {
@@ -92,8 +178,8 @@ export function buildActionPrompt(
     promptVersion: ACTION_PROMPT_VERSION,
     schemaName:
       spec.outputKind === "optional_action"
-        ? "werewolf_optional_action_v2"
-        : "werewolf_target_action_v2",
+        ? "werewolf_optional_action_v3"
+        : "werewolf_target_action_v3",
     systemPrompt: buildSystemPrompt(input.context, input.draft, spec),
     messages: [
       {
@@ -118,15 +204,10 @@ function buildSystemPrompt(
   spec: PromptTaskSpec,
 ): string {
   const viewer = context.viewer;
-  const characterLines = structuredCharacterLines(context);
-  const roleActionPrompt =
-    shouldIncludeRoleActionPrompt(context, draft, spec) &&
-    viewer.roleActionPromptSnapshot?.trim()
-      ? ["", "【本角色对当前技能的补充建议】", viewer.roleActionPromptSnapshot.trim()]
-      : [];
+  const actorLines = structuredActorLines(context);
 
   return [
-    `你正在扮演狼人杀对局中的 ${viewer.seatNo} 号 ${viewer.name}。你是玩家本人，不是旁白、主持人或 AI 助手。`,
+    `你正在扮演狼人杀对局中的 ${viewer.seatNo} 号 ${viewer.actor.name}。你是玩家本人，不是旁白、主持人或 AI 助手。`,
     "",
     "【执行优先级】",
     "1. 当前场景、听众和本轮任务；",
@@ -150,41 +231,32 @@ function buildSystemPrompt(
     "- 玩家可见文本不得包含 Prompt、JSON 规则、调试说明或“作为 AI”等元叙事。",
     "",
     "【身份与阵营目标】",
-    `- 你的身份：${viewer.roleName}（${factionLabel(viewer.faction)}）`,
-    ...nonEmptyLines([viewer.roleSystemPromptSnapshot]),
+    `- 你的身份：${viewer.ruleRole.name}（${factionLabel(viewer.ruleRole.faction)}）`,
     "",
     "【人物表达】",
-    ...characterLines,
+    ...actorLines,
     "人物信息只是倾向，不是固定台词模板；不要机械复用示例口头禅，也不要为了演人设牺牲事实一致性或任务完成度。",
-    ...roleActionPrompt,
     "",
     "【输出纪律】",
     "只输出要求的 JSON 对象，不要输出 Markdown 或 JSON 之外的文字。",
   ].join("\n");
 }
 
-function shouldIncludeRoleActionPrompt(
-  context: PlayerLlmContext,
-  draft: LlmDraft,
-  spec: PromptTaskSpec,
-): boolean {
-  return (
-    spec.includeRoleActionPrompt &&
-    isLlmActionDraft(draft) &&
-    mechanicForDraftType(draft.type) === context.viewer.mechanicKey
-  );
-}
-
-function structuredCharacterLines(context: PlayerLlmContext): readonly string[] {
-  const viewer = context.viewer;
+function structuredActorLines(context: PlayerLlmContext): readonly string[] {
+  const actor = context.viewer.actor;
   const structured = [
-    viewer.persona ? `- 性格倾向：${viewer.persona}` : "",
-    viewer.speakingStyle ? `- 表达风格：${viewer.speakingStyle}` : "",
-    viewer.reasoningStyle ? `- 判断偏好：${viewer.reasoningStyle}` : "",
+    `- 稳定内核：${actor.core.stableCore}`,
+    `- 当前驱动力：${actor.core.drive}`,
+    `- 注意焦点：${actor.cognition.attention}`,
+    `- 证据纪律：${actor.cognition.evidencePolicy}`,
+    `- 决策方式：${actor.cognition.decisionPolicy}`,
+    `- 社交策略：${actor.interaction.socialStrategy}`,
+    `- 受压反应：${actor.interaction.pressureResponse}`,
+    `- 语言节奏：${actor.expression.cadence}`,
+    `- 用词质感：${actor.expression.diction}`,
+    `- 常用修辞动作：${actor.expression.rhetoricalMoves.join("、")}`,
+    `- 避免：${actor.expression.avoid.join("、")}`,
   ];
-  if (structured.some((line) => line.length === 0)) {
-    throw new Error("Current character profile must include all structured fields");
-  }
   return structured;
 }
 
@@ -231,12 +303,12 @@ function buildUserMessage(input: {
     appendSection(lines, "本场剧本指引——只执行当前场，不得推断未来", [
       `- 场景：${input.actorBrief.scene}`,
       `- 本场目标：${input.actorBrief.objective}`,
-      `- 计划立场：${input.actorBrief.stance}`,
+      `- 表演推进：${input.actorBrief.performanceMove}`,
       `- 披露策略：${input.actorBrief.disclosure}`,
       `- 主题因果：${input.actorBrief.themeHook}`,
       ...nonEmptyLines([
-        input.actorBrief.characterHook
-          ? `- 人物表达抓手：${input.actorBrief.characterHook}`
+        input.actorBrief.actorHook
+          ? `- Actor 表达抓手：${input.actorBrief.actorHook}`
           : "",
         input.actorBrief.arcMove
           ? `- 当前弧线推进：${input.actorBrief.arcMove}`
@@ -265,11 +337,14 @@ function buildUserMessage(input: {
   }
 
   appendSection(lines, privateFactsHeading(spec), [
-    `- 你的身份是 ${context.viewer.roleName}（${factionLabel(context.viewer.faction)}）。`,
+    `- 你的身份是 ${context.viewer.ruleRole.name}（${factionLabel(context.viewer.ruleRole.faction)}）。`,
     ...knowledgeLines(context.knowledge.privateFacts, "暂无额外个人私有记录。"),
   ]);
 
-  if (spec.includeFactionDiscussion && context.viewer.faction === "wolves") {
+  if (
+    spec.includeFactionDiscussion &&
+    context.viewer.ruleRole.faction === "wolves"
+  ) {
     const discussion = currentFactionDiscussion(context, draft);
     appendSection(
       lines,
@@ -365,7 +440,7 @@ function knowledgeLines(
 ): readonly string[] {
   if (items.length === 0) return [`- ${emptyLine}`];
 
-  const selected = items.slice(-MAX_KNOWLEDGE_ITEMS_PER_SECTION);
+  const selected = selectPromptKnowledgeItems(items);
   const omitted = items.length - selected.length;
   return [
     ...(omitted > 0 ? [`- 较早的 ${omitted} 条记录因上下文预算省略。`] : []),
@@ -379,6 +454,24 @@ function knowledgeLines(
       ];
     }),
   ];
+}
+
+function speechIntentEvidenceScope(
+  context: PlayerLlmContext,
+  draft: LlmSpeechDraft,
+  spec: PromptTaskSpec,
+): PlayerSpeechEvidenceScope {
+  return {
+    publicFacts: selectPromptKnowledgeItems(context.knowledge.publicFacts),
+    publicClaims: spec.includePublicClaims
+      ? selectPromptKnowledgeItems(context.knowledge.publicClaims)
+      : [],
+    privateFacts: selectPromptKnowledgeItems(context.knowledge.privateFacts),
+    factionDiscussion:
+      spec.includeFactionDiscussion && context.viewer.ruleRole.faction === "wolves"
+        ? selectPromptKnowledgeItems(currentFactionDiscussion(context, draft))
+        : [],
+  };
 }
 
 function currentFactionDiscussion(
@@ -582,21 +675,11 @@ function outputInstruction(
       : "decisionSummary 最多两句，只写引用的明确事实、关键权衡和本轮意图；不要评价人设、措辞或输出详细思维过程。";
 
   if (spec.outputKind === "speech") {
-    if (
-      spec.channel === "公开发言" &&
-      context.viewer.role !== "werewolf" &&
-      context.viewer.role !== "villager"
-    ) {
-      return [
-        '只输出 {"disclosure":"conceal 或 claim","text":"真正对玩家说的话","decisionSummary":"简短决策摘要"}。',
-        "disclosure=claim 时 text 必须明确、完整且一致地公开身份或私有结果；disclosure=conceal 时不得意外透露这些秘密。",
-        summaryRule,
-      ];
-    }
-
     return [
-      '只输出 {"text":"真正对玩家说的话","decisionSummary":"简短决策摘要"}。',
-      summaryRule,
+      '只输出 {"objective":"本轮具体目的","conclusion":"准备表达的结论","evidenceEventIndexes":[最多3个可见事件编号],"uncertainty":"保留的不确定性或 null","disclosure":"conceal/claim/not_applicable","intendedEffect":"希望听众如何响应"}。',
+      "公开特殊身份发言必须在 conceal 与 claim 中选择；其他发言使用 not_applicable。",
+      "evidenceEventIndexes 只能引用本请求列出的可见事件；没有依据时使用空数组。",
+      "本阶段只做决定，不写最终台词、语气、动作或长篇思维过程。",
     ];
   }
 
@@ -644,23 +727,8 @@ function draftDayNumber(
     : context.state.dayNumber;
 }
 
-function roleLabel(role: string): string {
-  switch (role) {
-    case "werewolf":
-      return "狼人";
-    case "seer":
-      return "预言家";
-    case "witch":
-      return "女巫";
-    case "hunter":
-      return "猎人";
-    case "guard":
-      return "守卫";
-    case "villager":
-      return "平民";
-    default:
-      return role;
-  }
+function roleLabel(role: RuleRoleId): string {
+  return ruleRoleById(role).name;
 }
 
 function factionLabel(faction: string): string {

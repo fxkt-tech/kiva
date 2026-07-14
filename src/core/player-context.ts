@@ -1,10 +1,16 @@
 import type { GameEvent } from "./events";
+import {
+  compileActorRuntimeCard,
+  type ActorRuntimeCard,
+} from "./actor-definition";
 import { formatEventForHost, type PresentedEvent } from "./event-presenter";
 import type { Game } from "./game";
 import type { GameScriptSnapshot } from "./game-script";
-import type { ModelBindingSnapshot, PlayerSnapshot } from "./player";
+import type { ModelBindingSnapshot } from "./model-binding";
+import type { PlayerSnapshot } from "./player";
+import type { RuleRole } from "./rule-role";
 import { deriveGameState } from "./state";
-import type { Faction, GameRole, PlayerId, Ruleset } from "./types";
+import type { Faction, RuleRoleId, PlayerId, Ruleset } from "./types";
 import { projectVisibleEvents, type VisibilityContext } from "./visibility";
 
 export type PlayerContextRosterEntry = {
@@ -12,7 +18,7 @@ export type PlayerContextRosterEntry = {
   readonly seatNo: number;
   readonly name: string;
   readonly isSelf: boolean;
-  readonly role?: GameRole;
+  readonly role?: RuleRoleId;
   readonly faction?: Faction;
 };
 
@@ -22,6 +28,14 @@ export type PlayerContextTimelineItem = PresentedEvent & {
   readonly phase: GameEvent["phase"];
   readonly dayNumber: number | null;
 };
+
+const MAX_PROMPT_KNOWLEDGE_ITEMS_PER_SECTION = 40;
+
+export function selectPromptKnowledgeItems(
+  items: readonly PlayerContextTimelineItem[],
+): readonly PlayerContextTimelineItem[] {
+  return items.slice(-MAX_PROMPT_KNOWLEDGE_ITEMS_PER_SECTION);
+}
 
 export type PlayerPromptKnowledge = {
   readonly publicFacts: readonly PlayerContextTimelineItem[];
@@ -50,19 +64,9 @@ export type PlayerLlmContext = {
   readonly viewer: {
     readonly playerId: PlayerId;
     readonly seatNo: number;
-    readonly name: string;
-    readonly role: GameRole;
-    readonly roleName: string;
-    readonly faction: Faction;
-    readonly team: PlayerSnapshot["team"];
-    readonly mechanicKey: PlayerSnapshot["mechanicKey"];
-    readonly persona: string;
-    readonly speakingStyle: string;
-    readonly reasoningStyle: string;
-    readonly characterSystemPromptSnapshot: string;
-    readonly roleSystemPromptSnapshot: string;
-    readonly roleActionPromptSnapshot: string | null;
-    readonly modelBindingSnapshot: ModelBindingSnapshot;
+    readonly actor: ActorRuntimeCard;
+    readonly ruleRole: RuleRole;
+    readonly modelBinding: ModelBindingSnapshot;
   };
   readonly roster: readonly PlayerContextRosterEntry[];
   readonly visibleEvents: readonly GameEvent[];
@@ -111,19 +115,9 @@ export function buildPlayerLlmContext(
     viewer: {
       playerId: viewer.playerId,
       seatNo: viewer.seatNo,
-      name: viewer.name,
-      role: viewer.gameRole,
-      roleName: viewer.roleName,
-      faction: viewer.faction,
-      team: viewer.team,
-      mechanicKey: viewer.mechanicKey,
-      persona: viewer.persona,
-      speakingStyle: viewer.speakingStyle,
-      reasoningStyle: viewer.reasoningStyle,
-      characterSystemPromptSnapshot: viewer.characterSystemPromptSnapshot,
-      roleSystemPromptSnapshot: viewer.roleSystemPromptSnapshot,
-      roleActionPromptSnapshot: viewer.roleActionPromptSnapshot,
-      modelBindingSnapshot: viewer.modelBindingSnapshot,
+      actor: compileActorRuntimeCard(viewer.actor),
+      ruleRole: structuredClone(viewer.ruleRole),
+      modelBinding: structuredClone(viewer.actor.production.modelBinding),
     },
     roster: input.game.players.map((player) => rosterEntryForViewer(player, viewer)),
     visibleEvents,
@@ -136,7 +130,7 @@ export function buildPlayerLlmContext(
       deadPlayerIds: state.deadPlayerIds,
       pkPlayerIds: state.pk.status === "pending" ? state.pk.tiedPlayerIds : [],
       witchResources:
-        viewer.gameRole === "witch"
+        viewer.ruleRole.id === "witch"
           ? {
               antidoteAvailable: state.witch.antidoteAvailable,
               poisonAvailable: state.witch.poisonAvailable,
@@ -280,7 +274,7 @@ function createVisibilityContext(
 ): VisibilityContext {
   return {
     wolfPlayerIds: players
-      .filter((player) => player.gameRole === "werewolf")
+      .filter((player) => player.ruleRole.id === "werewolf")
       .map((player) => player.playerId),
   };
 }
@@ -292,15 +286,15 @@ function rosterEntryForViewer(
   const entry = {
     playerId: player.playerId,
     seatNo: player.seatNo,
-    name: player.name,
+    name: player.actor.identity.name,
     isSelf: player.playerId === viewer.playerId,
   };
 
   if (canViewerKnowRole(player, viewer)) {
     return {
       ...entry,
-      role: player.gameRole,
-      faction: player.faction,
+      role: player.ruleRole.id,
+      faction: player.ruleRole.faction,
     };
   }
 
@@ -315,5 +309,7 @@ function canViewerKnowRole(
     return true;
   }
 
-  return viewer.gameRole === "werewolf" && player.gameRole === "werewolf";
+  return (
+    viewer.ruleRole.id === "werewolf" && player.ruleRole.id === "werewolf"
+  );
 }
