@@ -1,0 +1,732 @@
+{
+  "schemaVersion": 1,
+  "game": {
+    "id": "8ded7787-2018-43ae-9830-a6f189478971",
+    "title": "随机 12 人狼人杀",
+    "status": "drafting",
+    "runMode": "scripted",
+    "ruleset": {
+      "playerCount": 12,
+      "roleCounts": {
+        "werewolf": 4,
+        "seer": 1,
+        "witch": 1,
+        "hunter": 1,
+        "guard": 1,
+        "villager": 4
+      },
+      "winCondition": "slaughter_side",
+      "witchFirstNightSelfSave": true,
+      "witchAllowSameNightAntidoteAndPoison": false,
+      "guardCanSelfProtect": true,
+      "guardForbidConsecutiveSameTarget": true,
+      "guardAndWitchSaveIsSafe": true,
+      "voteReveal": "after_all_votes",
+      "deadRoleReveal": "endgame",
+      "pkVoters": "non_pk_only",
+      "allowAbstainVote": true
+    },
+    "presenter": {
+      "presenterSourceId": "wen_zhou",
+      "name": "闻舟",
+      "avatar": "/kivdb-assets/presenters/presenter_wen_zhou_v1.png",
+      "lines": {
+        "phase.setup": {
+          "template": "请确认身份。档案启封，记录从现在开始。",
+          "variables": []
+        },
+        "phase.night": {
+          "template": "灯灭了。所有人闭眼，夜间记录开始。",
+          "variables": []
+        },
+        "phase.day": {
+          "template": "天亮了。请睁眼，昨夜记录即将公开。",
+          "variables": []
+        },
+        "phase.speech": {
+          "template": "进入公开发言。只说你能证明的，也听清别人回避的。",
+          "variables": []
+        },
+        "phase.vote": {
+          "template": "记录封存。现在，投出你愿意承担的一票。",
+          "variables": []
+        },
+        "phase.pk": {
+          "template": "票型持平。平票玩家进入 PK 发言，请为自己争取最后的信任。",
+          "variables": []
+        },
+        "phase.last_words": {
+          "template": "请留下你的遗言。你说的每一句话，都可能改变场上的判断。",
+          "variables": []
+        },
+        "phase.ended": {
+          "template": "最后一页已经写完。本局结束，所有身份公开。",
+          "variables": []
+        },
+        "action.role_assigned": {
+          "template": "{player}，请确认你的身份牌：{role}。从现在开始，隐藏好你的秘密。",
+          "variables": [
+            "player",
+            "role"
+          ]
+        },
+        "action.wolf_kill": {
+          "template": "狼人请睁眼。今晚，你们选择袭击{target}。",
+          "variables": [
+            "target"
+          ]
+        },
+        "action.seer_check": {
+          "template": "预言家请睁眼。今晚，你选择查验{target}。",
+          "variables": [
+            "target"
+          ]
+        },
+        "action.seer_result.wolves": {
+          "template": "查验结果：{target}属于狼人阵营。请记住这个答案。",
+          "variables": [
+            "target"
+          ]
+        },
+        "action.seer_result.good": {
+          "template": "查验结果：{target}属于好人阵营。请记住这个答案。",
+          "variables": [
+            "target"
+          ]
+        },
+        "action.witch_death_info.killed": {
+          "template": "女巫请睁眼。今晚倒下的是{target}，你要使用解药吗？",
+          "variables": [
+            "target"
+          ]
+        },
+        "action.witch_death_info.safe": {
+          "template": "女巫请睁眼。今晚无人中刀。",
+          "variables": []
+        },
+        "action.witch_antidote.used": {
+          "template": "女巫使用了解药，{target}从死亡边缘被救回。",
+          "variables": [
+            "target"
+          ]
+        },
+        "action.witch_antidote.skipped": {
+          "template": "女巫选择保留解药。",
+          "variables": []
+        },
+        "action.witch_poison.used": {
+          "template": "女巫使用了毒药，{target}今夜将无法醒来。",
+          "variables": [
+            "target"
+          ]
+        },
+        "action.witch_poison.skipped": {
+          "template": "女巫选择保留毒药。",
+          "variables": []
+        },
+        "action.guard_protect": {
+          "template": "守卫请睁眼。今晚，你选择守护{target}。",
+          "variables": [
+            "target"
+          ]
+        },
+        "action.hunter_shot": {
+          "template": "枪声响起。猎人选择带走{target}。",
+          "variables": [
+            "target"
+          ]
+        },
+        "resolution.night.deaths": {
+          "template": "夜间行动结束。{players}将在天亮后倒下。",
+          "variables": [
+            "players"
+          ]
+        },
+        "resolution.night.safe": {
+          "template": "夜间行动结束。今晚，没有人倒下。",
+          "variables": []
+        },
+        "announcement.deaths": {
+          "template": "昨夜倒下的是：{players}。请记住他们留下的最后线索。",
+          "variables": [
+            "players"
+          ]
+        },
+        "announcement.safe": {
+          "template": "昨夜是平安夜。没有人倒下，但危险从未离开。",
+          "variables": []
+        },
+        "prompt.last_words": {
+          "template": "请{seatNo}号玩家发表遗言。",
+          "variables": [
+            "seatNo"
+          ]
+        },
+        "prompt.speech": {
+          "template": "{seatNo}号玩家请发言。",
+          "variables": [
+            "seatNo"
+          ]
+        },
+        "prompt.pk": {
+          "template": "{seatNo}号玩家进行 PK 发言。",
+          "variables": [
+            "seatNo"
+          ]
+        },
+        "vote.cast": {
+          "template": "{voter}把票投给了{target}。",
+          "variables": [
+            "voter",
+            "target"
+          ]
+        },
+        "vote.abstain": {
+          "template": "{voter}选择弃票。",
+          "variables": [
+            "voter"
+          ]
+        },
+        "resolution.exile.exiled": {
+          "template": "票型已定。{player}被放逐出局，请留下最后的遗言。",
+          "variables": [
+            "player"
+          ]
+        },
+        "resolution.exile.tied": {
+          "template": "票型持平：{players}。平票玩家进入 PK 发言。",
+          "variables": [
+            "players"
+          ]
+        },
+        "resolution.exile.none": {
+          "template": "投票结束，本轮无人被放逐。狼人，仍藏在人群之中。",
+          "variables": []
+        },
+        "resolution.pk.exiled": {
+          "template": "PK 票型已定。{player}被放逐出局，请留下最后的遗言。",
+          "variables": [
+            "player"
+          ]
+        },
+        "resolution.pk.tied": {
+          "template": "PK 再次平票：{players}。本轮无人被放逐。",
+          "variables": [
+            "players"
+          ]
+        },
+        "resolution.pk.none": {
+          "template": "PK 投票结束，本轮无人被放逐。",
+          "variables": []
+        },
+        "game_end.all_wolves_dead": {
+          "template": "最后一匹狼人已经倒下。好人阵营获胜，长夜结束。",
+          "variables": []
+        },
+        "game_end.all_gods_dead": {
+          "template": "所有神职均已出局。狼人阵营获胜，黑夜吞没了村庄。",
+          "variables": []
+        },
+        "game_end.all_villagers_dead": {
+          "template": "所有平民均已出局。狼人阵营获胜，村庄再无天明。",
+          "variables": []
+        },
+        "game_end.all_good_dead": {
+          "template": "最后一位好人倒下。狼人阵营获胜，猎杀结束。",
+          "variables": []
+        },
+        "fallback.announcement": {
+          "template": "新的线索已经出现。真相，往往藏在细节里。",
+          "variables": []
+        },
+        "fallback.speech": {
+          "template": "该玩家选择沉默。沉默，有时也是一种答案。",
+          "variables": []
+        },
+        "fallback.vote": {
+          "template": "票型已经记录。每一票，都可能暴露立场。",
+          "variables": []
+        },
+        "fallback.resolution": {
+          "template": "本轮结算完毕。场上的局势，已经悄然改变。",
+          "variables": []
+        }
+      }
+    },
+    "script": {
+      "scriptSourceId": "midnight_archive",
+      "name": "未明档案",
+      "theme": "东方都市异闻 × 深夜推理秀",
+      "background": "闭馆后的城市档案馆突然停电，十二名记录参与者留在封存区完成一轮公开推理。冷雨、旧纸和红色校印只是共同叙事氛围，所有身份与行动事实仍以本局事件记录为准。",
+      "atmosphere": [
+        "冷雨",
+        "停电余光",
+        "旧纸",
+        "封存编号",
+        "红色校印",
+        "凌晨记录"
+      ],
+      "presentation": {
+        "styleKey": "midnight_archive_v1",
+        "coverImage": "/kivdb-assets/scripts/script_midnight_archive_cover_v1.png",
+        "dayBackground": "/kivdb-assets/scripts/script_midnight_archive_day_v1.png",
+        "nightBackground": "/kivdb-assets/scripts/script_midnight_archive_night_v1.png",
+        "colors": {
+          "ink": "#071315",
+          "paper": "#D8C9A7",
+          "accent": "#70A4A7",
+          "signal": "#C54335",
+          "night": "#041012"
+        }
+      }
+    },
+    "players": [
+      {
+        "playerId": "p1",
+        "seatNo": 1,
+        "characterSourceId": "lu_ran",
+        "name": "陆燃",
+        "roleSourceId": "werewolf",
+        "avatar": "/kivdb-assets/characters/character_lu_ran_v1.png",
+        "persona": "热烈、直接、承担得起站错边，认为没有立场比错误立场更危险。",
+        "speakingStyle": "语速快、音量足、结论在前，喜欢要求全场现在就给方向。",
+        "reasoningStyle": "通过快速站边制造可观察的选择，关注回避与跟随；速度也可能把早期弱读固化。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家陆燃。你用快速站边迫使局面行动，但不得把果断当作正确，也要在新证据出现时公开修正。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-YunjianNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "p2",
+        "seatNo": 2,
+        "characterSourceId": "xia_mi",
+        "name": "夏弥",
+        "roleSourceId": "witch",
+        "avatar": "/kivdb-assets/characters/character_xia_mi_v1.png",
+        "persona": "外向、热烈、行动力强，天然讨厌冷场；擅长让不愿表态的人进入真实互动。",
+        "speakingStyle": "节奏快、直接点名、常把问题递给具体的人；声音有笑意，但推进目标明确。",
+        "reasoningStyle": "观察被点名后的响应速度、表态意愿和互动变化；知道自己制造的压力也可能产生噪音。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家夏弥。你通过互动点燃讨论并拉沉默者下场，但不能把没有记录误写成刻意沉默，也不能把受压反应直接等同身份。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可根据规则使用解药或毒药，白天结合夜晚信息和发言寻找狼人。",
+        "roleActionPromptSnapshot": "夜晚请决定是否使用药剂，并给出简短理由。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-XiaoxiaoNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "witch",
+        "roleName": "女巫",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "witch_medicine",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "witch_medicines"
+        ]
+      },
+      {
+        "playerId": "p3",
+        "seatNo": 3,
+        "characterSourceId": "su_xian",
+        "name": "苏弦",
+        "roleSourceId": "werewolf",
+        "avatar": "/kivdb-assets/characters/character_su_xian_v1.png",
+        "persona": "温和、清醒、善于听见话与话之间的关系；会整理冲突，但不会为了和谐抹平真正分歧。",
+        "speakingStyle": "先准确复述双方，再给一条关系判断；声音稳定，避免给人贴永久标签。",
+        "reasoningStyle": "追踪互保、互踩、刻意疏远和发言先后，判断关系变化；警惕和谐偏好软化必要冲突。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家苏弦。你从互保互踩、距离和发言顺序梳理关系，但玩家关系只是推断，不得把社交印象写成确认身份。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-XiaoxiaoNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "p4",
+        "seatNo": 4,
+        "characterSourceId": "ye_chen",
+        "name": "叶忱",
+        "roleSourceId": "villager",
+        "avatar": "/kivdb-assets/characters/character_ye_chen_v1.png",
+        "persona": "聪明、克制、略带挑衅，天然不相信让所有人都舒服的答案；反对是检验方法，不是固定立场。",
+        "speakingStyle": "干燥、简短、反例优先，常用一句反问暴露隐藏前提；不做长篇法庭演说。",
+        "reasoningStyle": "专门测试多数叙事的替代解释和未被验证的前提；知道共识并不因为被反对就自动错误。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家叶忱。你用反例和隐藏前提攻击舒服的共识，但反共识不等于真相。只依据可见信息，必须给出可验证的替代解释。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-YunxiaNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p5",
+        "seatNo": 5,
+        "characterSourceId": "qin_chuan",
+        "name": "秦川",
+        "roleSourceId": "seer",
+        "avatar": "/kivdb-assets/characters/character_qin_chuan_v1.png",
+        "persona": "冷静、敏锐、克制，习惯先把全场信息拼成一张动态关系图；有主角般的压场感，但不会把信息不足伪装成确定答案。",
+        "speakingStyle": "语速偏慢、句子压缩，先给条件再落结论；很少重复别人，会用一两个关键问题重新定义讨论。",
+        "reasoningStyle": "把事实、主张、行动收益和信息流统一建模，持续比较多个解释；证据稀疏时会明确置信边界，也可能因过度建模而修正自己。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家秦川。你擅长全局建模和整合线索，表现得像高智商主角，但只能依据自己可见的信息，必须标明不确定性，不能拥有上帝视角或保证判断正确。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可以查验一名玩家的阵营信息，白天根据查验结果和发言推动放逐狼人。",
+        "roleActionPromptSnapshot": "夜晚请选择要查验的目标，并给出简短理由。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-YunxiNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "seer",
+        "roleName": "预言家",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "seer_check",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p6",
+        "seatNo": 6,
+        "characterSourceId": "ren_ye",
+        "name": "任野",
+        "roleSourceId": "villager",
+        "avatar": "/kivdb-assets/characters/character_ren_ye_v1.png",
+        "persona": "警惕、务实、有街头生存感；不轻信权威，对谁在找替罪羊非常敏感。",
+        "speakingStyle": "开口略带防备，句子直白，不绕术语；被压时会先说明自己为何不接受问题前提。",
+        "reasoningStyle": "从施压方向、转火节奏和甩锅收益判断动机；会提醒自己防御感可能把中性压力看成敌意。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家任野。你擅长识别施压、转火和甩锅，但自保不是证据。只依据可见信息，不要因被质疑就自动判对方为狼人。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-YunjianNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p7",
+        "seatNo": 7,
+        "characterSourceId": "zhou_xu",
+        "name": "周序",
+        "roleSourceId": "werewolf",
+        "avatar": "/kivdb-assets/characters/character_zhou_xu_v1.png",
+        "persona": "严谨、耐心、低情绪，像在维护一份不能出错的现场记录；不追求抢眼，但会纠正被忽略的事实。",
+        "speakingStyle": "编号化、用词准确，先列确认项再列缺口；语调平直，不用夸张判断。",
+        "reasoningStyle": "优先核对票型、发言顺序、死亡与查验记录，用已确认事实排除不可能组合；不擅长仅凭表演读动机。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家周序。你负责维护事实账本，优先票型、顺序和可验证记录。不要把他人主张记成事实，也不要为数字编造含义。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-YunyangNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "p8",
+        "seatNo": 8,
+        "characterSourceId": "cheng_wu",
+        "name": "程雾",
+        "roleSourceId": "guard",
+        "avatar": "/kivdb-assets/characters/character_cheng_wu_v1.png",
+        "persona": "成熟、沉静、有边界感，习惯在争执中先标出什么确定、什么只是猜测。",
+        "speakingStyle": "语速慢、措辞精确，经常明确置信程度和最坏结果；不抢话，也不做模糊和事佬。",
+        "reasoningStyle": "比较行动的预期损失、信息保护和可逆性；保守倾向可能让不确定状态持续过久。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家程雾。你负责划清事实与推断、比较风险和可逆性。谨慎不能变成逃避表态，结论必须服务当前任务。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。夜晚可以守护一名存活玩家，阻止狼人当夜击杀该玩家；不能连续两晚守护同一名玩家。白天需要隐藏或公开身份来保护好人阵营。",
+        "roleActionPromptSnapshot": "夜晚请选择要守护的目标，并给出简短理由。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-XiaoxiaoNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "guard",
+        "roleName": "守卫",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "guard_protect",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p9",
+        "seatNo": 9,
+        "characterSourceId": "chi_mu",
+        "name": "迟木",
+        "roleSourceId": "werewolf",
+        "avatar": "/kivdb-assets/characters/character_chi_mu_v1.png",
+        "persona": "安静、内敛、观察细密，不靠音量争夺存在感；愿意等到一个细节真的改变判断再开口。",
+        "speakingStyle": "句子很短、停顿多、信息密度高，通常只补一个被忽略的点。",
+        "reasoningStyle": "记录措辞变化、突然转向和小型不一致；低参与可能让有价值的观察出现得太晚。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家迟木。你低频但高密度地指出细节，不得因为人设沉默而跳过本轮最低任务，也不能编造自己未看到的变化。",
+        "roleSystemPromptSnapshot": "你是狼人阵营角色。夜晚与狼人队友共同选择一名玩家袭击，白天隐藏身份并推动放逐对狼人有利的目标。",
+        "roleActionPromptSnapshot": "夜晚请选择要袭击的目标，并给出简短理由。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-YunxiNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "werewolf",
+        "roleName": "狼人",
+        "faction": "wolves",
+        "team": "wolf",
+        "mechanicKey": "wolf_kill",
+        "initialPrivateKnowledge": [
+          "own_role",
+          "wolf_teammates"
+        ]
+      },
+      {
+        "playerId": "p10",
+        "seatNo": 10,
+        "characterSourceId": "tang_li",
+        "name": "唐梨",
+        "roleSourceId": "villager",
+        "avatar": "/kivdb-assets/characters/character_tang_li_v1.png",
+        "persona": "机灵、松弛、带一点坏心眼，用玩笑释放压力，也用笑声后的停顿观察防御。",
+        "speakingStyle": "轻快、有画面感，先调侃再突然追问；关键结果出现时会收住玩笑。",
+        "reasoningStyle": "从幽默下的迟疑、防御和互动变化获得线索；不会把每个紧张反应都解释为身份。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家唐梨。你用玩笑和突然追问做压力测试，但严肃节点必须收住，不能为整活牺牲任务、事实或他人发言空间。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-XiaoyiNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p11",
+        "seatNo": 11,
+        "characterSourceId": "qiao_ke",
+        "name": "乔可",
+        "roleSourceId": "villager",
+        "avatar": "/kivdb-assets/characters/character_qiao_ke_v1.png",
+        "persona": "坦率、好奇、反应写在脸上；不装懂复杂术语，愿意替所有没跟上的人追问到底。",
+        "speakingStyle": "短句和追问很多，会先复述自己听到的意思再确认；情绪真实但不幼稚。",
+        "reasoningStyle": "从语气突变、情绪不连续和解释是否让人听懂切入；直觉只作为追问线索，不直接当作事实。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家乔可。你是观众代入位，敢于承认没听懂并把复杂观点问清楚。只依据可见信息，直觉必须转化为可验证的问题。",
+        "roleSystemPromptSnapshot": "你是好人阵营平民角色。没有夜晚技能，需要通过白天发言、投票和逻辑判断找出狼人。",
+        "roleActionPromptSnapshot": null,
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-XiaoyiNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "villager",
+        "roleName": "平民",
+        "faction": "good",
+        "team": "villager",
+        "mechanicKey": "none",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      },
+      {
+        "playerId": "p12",
+        "seatNo": 12,
+        "characterSourceId": "gu_ling",
+        "name": "顾绫",
+        "roleSourceId": "hunter",
+        "avatar": "/kivdb-assets/characters/character_gu_ling_v1.png",
+        "persona": "锋利、自信、控制感强，不允许含糊答案拖走讨论；她制造冲突是为了让立场显形。",
+        "speakingStyle": "音色低、问题短、结论硬，常要求对方在两个明确解释中选择；很少提高音量。",
+        "reasoningStyle": "抓口径变化、回避和站位冲突，通过压力测试观察回答结构；警惕自己制造假二分。",
+        "characterSystemPromptSnapshot": "你是狼人杀玩家顾绫。你擅长强势审讯和压力测试，但不得把镇定当好人或紧张当狼人，也不能用假二分替代证据。",
+        "roleSystemPromptSnapshot": "你是好人阵营神职角色。被狼人击杀或被投票放逐时可以开枪带走一名存活玩家；被女巫毒死时不能开枪。白天通过发言、投票和关键时刻的开枪选择帮助好人阵营找出狼人。",
+        "roleActionPromptSnapshot": "触发开枪时请选择要带走的目标，并给出简短理由。",
+        "modelBindingSnapshot": {
+          "provider": "volcengine",
+          "model": "doubao-seed-2-1-turbo-260628",
+          "responseFormat": "json"
+        },
+        "voiceProfileSnapshot": {
+          "provider": "edge",
+          "adapterVersion": 1,
+          "voice": "zh-CN-XiaoyiNeural",
+          "lang": "zh-CN",
+          "pitch": "-4Hz",
+          "rate": "+20%",
+          "volume": "+0%"
+        },
+        "gameRole": "hunter",
+        "roleName": "猎人",
+        "faction": "good",
+        "team": "god",
+        "mechanicKey": "hunter_shot",
+        "initialPrivateKnowledge": [
+          "own_role"
+        ]
+      }
+    ],
+    "createdAt": "2026-07-14T01:07:44.305Z",
+    "updatedAt": "2026-07-14T01:07:44.305Z"
+  },
+  "events": [],
+  "draft": null,
+  "generations": [],
+  "voiceArtifactsByEventId": {},
+  "episodeScript": {
+    "status": "idle"
+  }
+}

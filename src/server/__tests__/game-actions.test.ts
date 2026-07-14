@@ -211,6 +211,7 @@ describe("game actions", () => {
       game: { runMode: "scripted" },
       events: [],
       draft: null,
+      episodeScript: { status: "idle" },
     });
   });
 

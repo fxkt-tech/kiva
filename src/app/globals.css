@@ -63,6 +63,12 @@
   --accent-foreground: #f8fbff;
   --disabled: #bebed0;
   --disabled-foreground: #7c7a90;
+  --role-werewolf: #b4233e;
+  --role-seer: #0f766e;
+  --role-witch: #7e22ce;
+  --role-hunter: #8a5300;
+  --role-guard: #0369a1;
+  --role-villager: #52525b;
 }
 
 html[data-theme="dark"] {
@@ -96,6 +102,12 @@ html[data-theme="dark"] {
   --accent-foreground: #083344;
   --disabled: #3f3f46;
   --disabled-foreground: #a1a1aa;
+  --role-werewolf: #ff767b;
+  --role-seer: #76e2b6;
+  --role-witch: #cba4f4;
+  --role-hunter: #e5bd6e;
+  --role-guard: #80c8fb;
+  --role-villager: #d0d5d1;
 }
 
 body {

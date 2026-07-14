@@ -6,10 +6,13 @@ import { seedPresets } from "@/seeds/presets";
 import { seedRoles } from "@/seeds/roles";
 import { seedScripts } from "@/seeds/scripts";
 import {
+  EditableSeatTable,
   NewGameDialog,
+  ReadOnlySeatTable,
   RunModePicker,
   ScriptPicker,
 } from "./new-game-dialog";
+import { roleIdentityColor } from "./role-identity-color";
 
 describe("NewGameDialog", () => {
   it("renders a dialog trigger without immediately rendering setup forms", () => {
@@ -64,5 +67,64 @@ describe("NewGameDialog", () => {
     );
 
     expect(html).toContain("剧本批准前不会推进游戏");
+  });
+
+  it("colors role text, selected values, and dropdown options by identity", () => {
+    const seats = seedPresets[0]!.seatAssignments!;
+    const readOnlyHtml = renderToStaticMarkup(
+      React.createElement(ReadOnlySeatTable, {
+        seats,
+        roles: seedRoles,
+        characters: seedCharacters,
+      }),
+    );
+    const editableHtml = renderToStaticMarkup(
+      React.createElement(EditableSeatTable, {
+        seats,
+        roles: seedRoles,
+        characters: seedCharacters,
+        onUpdateSeat: () => {},
+      }),
+    );
+
+    for (const role of seedRoles) {
+      const color = roleIdentityColor(role.id);
+      expect(readOnlyHtml).toContain(`data-role-id="${role.id}"`);
+      expect(readOnlyHtml).toContain(`color:${color}`);
+      expect(editableHtml).toContain(`data-role-id="${role.id}"`);
+      expect(editableHtml).toContain(`color:${color}`);
+    }
+    expect(editableHtml).toContain('data-selected-role-id="villager"');
+    expect(readOnlyHtml).not.toContain("background-color:");
+    expect(readOnlyHtml).not.toContain("border-color:");
+    expect(roleIdentityColor("werewolf")).toBe(
+      "var(--role-werewolf, #b4233e)",
+    );
+  });
+
+  it("shows all twelve seats as two six-seat overview columns on desktop", () => {
+    const seats = seedPresets[0]!.seatAssignments!;
+    const readOnlyHtml = renderToStaticMarkup(
+      React.createElement(ReadOnlySeatTable, {
+        seats,
+        roles: seedRoles,
+        characters: seedCharacters,
+      }),
+    );
+    const editableHtml = renderToStaticMarkup(
+      React.createElement(EditableSeatTable, {
+        seats,
+        roles: seedRoles,
+        characters: seedCharacters,
+        onUpdateSeat: () => {},
+      }),
+    );
+
+    for (const html of [readOnlyHtml, editableHtml]) {
+      expect(html).toContain("lg:grid-cols-2");
+      expect(html.match(/data-seat-column=/g)).toHaveLength(2);
+      expect(html.match(/data-seat-no=/g)).toHaveLength(12);
+      expect(html.match(/data-seat-column-size="6"/g)).toHaveLength(2);
+    }
   });
 });

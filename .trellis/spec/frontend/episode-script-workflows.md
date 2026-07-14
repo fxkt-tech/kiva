@@ -18,6 +18,7 @@
 - `actorBriefForStep(script, stepIndex): EpisodeActorBrief | null`
 - `<EpisodeEnsembleReview script={script} players={players} />`
 - `gameActions.generateEpisodeScript(gameId)`
+- `generateEpisodeScriptAction(gameId)` submitted manually from `/games/:id/script`
 - `gameActions.approveEpisodeScript(gameId, expectedJobId, expectedScriptId)`
 
 ### 3. Contracts
@@ -33,6 +34,7 @@
 - Episode snapshots use exactly schema v2. Their input hash includes the exact projected character profiles, rules, and Game Script; no earlier schema or alternate hash recipe is decoded.
 - Snapshot identity includes schema version, compiler version, cast/rules/theme input hash, stable step indexes, planned payloads, speech budgets, and author metadata. Random Draft/Event IDs never enter the plan.
 - `GameRecord.episodeScript` is `idle | generating | review | approved | failed` for scripted games and `null` for game mode. The field and every state-specific key are required and validated exactly.
+- New Game creation stops at `idle`: neither preset nor random-seat creation may invoke Script Author or an LLM. The idle Script preparation page owns the explicit Generate form, and only that submission starts authoring.
 - Authoring writes a new job identity before the LLM call. Completion updates state only when that job is still current. Approval carries both job ID and candidate script ID.
 - Approved execution derives the cursor from active-event count, calls the normal planner, compares the Draft slot, binds the approved payload, and validates it again before confirmation.
 - Structural Drafts are read-only in Editor and never call the player action model. Speech text remains editable/generatable within the approved step budget.
@@ -67,15 +69,17 @@ type EpisodeSpeechBeatV2 = {
 | Approval identity/profile/hash changed, compiler-owned field differs, or events already exist | Reject approval. |
 | Snapshot schema is not v2 or lacks a current direction/hash field | Reject it; do not normalize, upgrade, or execute it. |
 | Scripted Game omits Episode state, or Game mode stores a non-null state | Reject the GameRecord. |
+| Scripted Game has just been created | Persist `idle`, redirect to `/script`, and make no authoring request. |
+| Director submits Generate from the idle Script page | Start a new authoring job and transition through `generating`. |
 | Runtime slot or planned payload differs | Stop with episode divergence; do not select an alternative. |
 | Structural edit is submitted in scripted mode | Reject; only speech `text` may be edited. |
 | Voice/Preview/export requested before approval | Reject or route back to Script Review. |
 
 ### 5. Good / Base / Bad Cases
 
-- Good: New Game assigns complementary primary/supporting functions from all 12 profiles, gives everyone a valid signature moment, develops central relationships across beats, and executes the unchanged legal plan after director approval.
+- Good: New Game lands on an idle Script page; after the director clicks Generate, Script Author assigns complementary primary/supporting functions from all 12 profiles, gives everyone a valid signature moment, develops central relationships across beats, and executes the unchanged legal plan after director approval.
 - Base: no external LLM credentials are present, so the local Script Author deterministically produces structurally complete v2 ensemble direction over the same legal trace.
-- Bad: mention an actor ID without its profile in a beat batch, restart its arc in every batch, expose a future payoff to the runtime actor, or alter the trace to manufacture equal screen time.
+- Bad: trigger authoring as a side effect of New Game creation, mention an actor ID without its profile in a beat batch, restart its arc in every batch, expose a future payoff to the runtime actor, or alter the trace to manufacture equal screen time.
 
 ### 6. Tests Required
 
@@ -86,6 +90,7 @@ type EpisodeSpeechBeatV2 = {
 - Provider-shaped regression throws the exact Headers Timeout error when a request exceeds 12 beats and proves the author completes without producing such a request.
 - Beat-request capture asserts all current actors have profiles/directions and no actor has more than two prior moves in one request.
 - Server integration round-trips v2 through repository state, rejects stale approval, character-profile changes, and structural edits, and executes the entire approved trace to terminal state.
+- Creation-action tests spy on `generateEpisodeScript()` and require zero calls for both scripted preset and random-seat creation; idle Script-page tests require a manual Generate form.
 - Decoder tests reject schema-v1, missing current direction fields, extra keys, and mismatched current character hashes.
 - Prompt tests assert own profile plus current Actor Brief direction and absence of planned winner/full script/another player's profile.
 - Review render tests assert all cast/relationship direction is visible and no input, textarea, or field-level button exists.
@@ -95,6 +100,6 @@ type EpisodeSpeechBeatV2 = {
 
 ### 7. Wrong vs Correct
 
-Wrong: ask the LLM to invent a hundred-event game, fall back from blank structured profiles to an opaque old prompt, or place the whole future arc in every actor prompt.
+Wrong: call Script Author from a New Game creation action, ask the LLM to invent a hundred-event game, fall back from blank structured profiles to an opaque old prompt, or place the whole future arc in every actor prompt.
 
-Correct: validate a schema-v2 snapshot against complete immutable profiles, compile a legal trace with the existing planner, project only the current move into runtime, and derive position from active events.
+Correct: persist scripted creation as idle, let the director explicitly start generation on the Script page, validate the resulting schema-v2 snapshot against complete immutable profiles, compile a legal trace with the existing planner, project only the current move into runtime, and derive position from active events.

@@ -86,7 +86,7 @@ export default async function ScriptPreparationPage({
   );
 }
 
-function EpisodeWorkspace({
+export function EpisodeWorkspace({
   record,
 }: {
   readonly record: GameRecord;

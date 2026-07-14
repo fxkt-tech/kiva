@@ -15,6 +15,7 @@ import {
   createRandomSeatSetup,
   validateSeatSetup,
 } from "./new-game-setup";
+import { roleIdentityColor } from "./role-identity-color";
 
 type NewGameDialogProps = {
   readonly presets: readonly GamePreset[];
@@ -25,6 +26,9 @@ type NewGameDialogProps = {
 
 type SeatMode = "preset" | "random";
 type SetupStep = "experience" | "lineup";
+
+const SEAT_GRID_CLASS =
+  "grid grid-cols-[52px_minmax(0,0.9fr)_minmax(0,1.1fr)] items-center gap-2";
 
 export function NewGameDialog({
   presets,
@@ -79,6 +83,15 @@ export function NewGameDialog({
     );
   }
 
+  function rerollRandomSeats() {
+    setRandomSeats(
+      createRandomSeatSetup({
+        roles: enabledRoles,
+        characters: enabledCharacters,
+      }),
+    );
+  }
+
   return (
     <>
       <Button
@@ -94,7 +107,7 @@ export function NewGameDialog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="new-game-title"
-            className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
+            className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
           >
             <header className="grid gap-4 border-b border-border px-5 py-4 sm:grid-cols-[1fr_auto_auto] sm:items-center">
               <div>
@@ -118,7 +131,10 @@ export function NewGameDialog({
               </Button>
             </header>
 
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div
+              key={setupStep}
+              className="min-h-0 flex-1 overflow-y-auto"
+            >
               {setupStep === "experience" ? (
                 <div className="mx-auto flex max-w-4xl flex-col gap-7 px-5 py-6">
                   <RunModePicker runMode={runMode} onSelectRunMode={setRunMode} />
@@ -139,23 +155,34 @@ export function NewGameDialog({
                   </div>
                 </div>
               ) : (
-                <div className="p-5">
-                  <SelectionSummary
-                    runMode={runMode}
-                    script={scripts.find((script) => script.id === selectedScriptId) ?? null}
-                  />
-                  <div className="mb-4 mt-5 flex items-center justify-between gap-4">
+                <div className="p-4 sm:p-5">
+                  <div className="mb-3 grid gap-3 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-300">Lineup</p>
                       <h3 className="mt-1 text-base font-semibold text-foreground">配置本局阵容</h3>
                     </div>
-                    <div className="inline-flex rounded-lg border border-border bg-surface-muted p-1">
-                      <ModeButton active={seatMode === "preset"} onClick={() => setSeatMode("preset")}>
-                        使用预设
-                      </ModeButton>
-                      <ModeButton active={seatMode === "random"} onClick={() => setSeatMode("random")}>
-                        随机阵容
-                      </ModeButton>
+                    <SelectionSummary
+                      runMode={runMode}
+                      script={scripts.find((script) => script.id === selectedScriptId) ?? null}
+                    />
+                    <div className="flex flex-wrap items-center justify-between gap-2 lg:justify-end">
+                      <div className="inline-flex rounded-lg border border-border bg-surface-muted p-1">
+                        <ModeButton active={seatMode === "preset"} onClick={() => setSeatMode("preset")}>
+                          使用预设
+                        </ModeButton>
+                        <ModeButton active={seatMode === "random"} onClick={() => setSeatMode("random")}>
+                          随机阵容
+                        </ModeButton>
+                      </div>
+                      {seatMode === "random" ? (
+                        <Button
+                          type="button"
+                          onClick={rerollRandomSeats}
+                          className="px-3"
+                        >
+                          Reroll
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
 
@@ -177,14 +204,6 @@ export function NewGameDialog({
                       roles={enabledRoles}
                       characters={enabledCharacters}
                       validationMessages={validationMessages}
-                      onReroll={() =>
-                        setRandomSeats(
-                          createRandomSeatSetup({
-                            roles: enabledRoles,
-                            characters: enabledCharacters,
-                          }),
-                        )
-                      }
                       onUpdateSeat={updateRandomSeat}
                       selectedScriptId={selectedScriptId}
                       runMode={runMode}
@@ -225,7 +244,7 @@ function SelectionSummary({
   readonly script: GameScriptDefinition | null;
 }) {
   return (
-    <section className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface/55 px-4 py-3">
+    <section className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-border bg-surface/55 px-3 py-2">
       <span className="text-xs font-medium text-subtle">本局方案</span>
       <span className="rounded-full border border-cyan-800/70 bg-cyan-950/30 px-2.5 py-1 text-xs text-cyan-100">
         {runMode === "scripted" ? "剧本模式" : "游戏模式"}
@@ -421,7 +440,7 @@ function PresetMode({
   readonly onBack: () => void;
 }) {
   return (
-    <div className="grid min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+    <div className="grid min-h-0 gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
       <div className="space-y-2">
         {presets.length === 0 ? (
           <p className="rounded border border-border bg-surface-muted/60 p-3 text-sm text-subtle">
@@ -451,7 +470,7 @@ function PresetMode({
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {selectedPreset ? (
           <>
             <ReadOnlySeatTable
@@ -462,7 +481,7 @@ function PresetMode({
             <form action={createGameFromPresetHomeAction.bind(null, selectedPreset.id)}>
               <input type="hidden" name="scriptId" value={selectedScriptId} />
               <input type="hidden" name="runMode" value={runMode} />
-              <div className="flex justify-between border-t border-border pt-4">
+              <div className="flex justify-between border-t border-border pt-3">
                 <Button type="button" onClick={onBack} unstyled className="rounded-md border border-border px-4 py-2 text-sm text-muted hover:bg-surface">
                   上一步
                 </Button>
@@ -486,7 +505,6 @@ function RandomMode({
   roles,
   characters,
   validationMessages,
-  onReroll,
   onUpdateSeat,
   selectedScriptId,
   runMode,
@@ -496,7 +514,6 @@ function RandomMode({
   readonly roles: readonly RoleDefinition[];
   readonly characters: readonly CharacterDefinition[];
   readonly validationMessages: readonly string[];
-  readonly onReroll: () => void;
   readonly onUpdateSeat: (
     seatNo: number,
     field: "roleId" | "characterId",
@@ -507,18 +524,9 @@ function RandomMode({
   readonly onBack: () => void;
 }) {
   return (
-    <form action={createGameFromSeatAssignmentsAction} className="space-y-4">
+    <form action={createGameFromSeatAssignmentsAction} className="space-y-3">
       <input type="hidden" name="scriptId" value={selectedScriptId} />
       <input type="hidden" name="runMode" value={runMode} />
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          onClick={onReroll}
-          className="px-3"
-        >
-          Reroll
-        </Button>
-      </div>
 
       <EditableSeatTable
         seats={seats}
@@ -528,7 +536,7 @@ function RandomMode({
       />
 
       {validationMessages.length > 0 ? (
-        <ul className="space-y-2 text-sm text-warning-badge-foreground">
+        <ul className="grid gap-2 text-sm text-warning-badge-foreground lg:grid-cols-2">
           {validationMessages.map((message) => (
             <li key={message} className="rounded bg-warning-badge px-3 py-2">
               {message}
@@ -537,7 +545,7 @@ function RandomMode({
         </ul>
       ) : null}
 
-      <div className="flex justify-between border-t border-border pt-4">
+      <div className="flex justify-between border-t border-border pt-3">
         <Button type="button" onClick={onBack} unstyled className="rounded-md border border-border px-4 py-2 text-sm text-muted hover:bg-surface">
           上一步
         </Button>
@@ -553,7 +561,7 @@ function RandomMode({
   );
 }
 
-function ReadOnlySeatTable({
+export function ReadOnlySeatTable({
   seats,
   roles,
   characters,
@@ -563,20 +571,22 @@ function ReadOnlySeatTable({
   readonly characters: readonly CharacterDefinition[];
 }) {
   return (
-    <SeatTableFrame>
-      {seats.map((seat) => (
+    <SeatTableFrame
+      seats={seats}
+      renderSeat={(seat) => (
         <SeatRow
           key={seat.seatNo}
           seatNo={seat.seatNo}
+          roleId={seat.roleId}
           role={roleLabel(roles, seat.roleId)}
           character={characterLabel(characters, seat.characterId)}
         />
-      ))}
-    </SeatTableFrame>
+      )}
+    />
   );
 }
 
-function EditableSeatTable({
+export function EditableSeatTable({
   seats,
   roles,
   characters,
@@ -592,11 +602,13 @@ function EditableSeatTable({
   ) => void;
 }) {
   return (
-    <SeatTableFrame>
-      {seats.map((seat) => (
+    <SeatTableFrame
+      seats={seats}
+      renderSeat={(seat) => (
         <div
           key={seat.seatNo}
-          className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border px-3 py-2 last:border-b-0"
+          data-seat-no={seat.seatNo}
+          className={`${SEAT_GRID_CLASS} border-b border-border px-2.5 py-1.5 last:border-b-0`}
         >
           <span className="self-center font-mono text-xs text-subtle">
             Seat {seat.seatNo}
@@ -604,13 +616,20 @@ function EditableSeatTable({
           <select
             name={`seat.${seat.seatNo}.roleId`}
             value={seat.roleId}
+            data-selected-role-id={seat.roleId}
             onChange={(event) =>
               onUpdateSeat(seat.seatNo, "roleId", event.target.value)
             }
-            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
+            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-xs font-semibold outline-none"
+            style={{ color: roleIdentityColor(seat.roleId) }}
           >
             {roles.map((role) => (
-              <option key={role.id} value={role.id}>
+              <option
+                key={role.id}
+                value={role.id}
+                data-role-id={role.id}
+                style={{ color: roleIdentityColor(role.id) }}
+              >
                 {role.name} · {role.id}
               </option>
             ))}
@@ -621,7 +640,7 @@ function EditableSeatTable({
             onChange={(event) =>
               onUpdateSeat(seat.seatNo, "characterId", event.target.value)
             }
-            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
+            className="min-w-0 rounded border border-interactive-border bg-background px-2 py-1.5 text-xs text-foreground outline-none"
           >
             {characters.map((character) => (
               <option key={character.id} value={character.id}>
@@ -630,37 +649,73 @@ function EditableSeatTable({
             ))}
           </select>
         </div>
-      ))}
-    </SeatTableFrame>
+      )}
+    />
   );
 }
 
-function SeatTableFrame({ children }: { readonly children: React.ReactNode }) {
+function SeatTableFrame({
+  seats,
+  renderSeat,
+}: {
+  readonly seats: readonly GamePresetSeatAssignment[];
+  readonly renderSeat: (seat: GamePresetSeatAssignment) => React.ReactNode;
+}) {
+  const columnSize = Math.ceil(seats.length / 2);
+  const columns = [seats.slice(0, columnSize), seats.slice(columnSize)];
+
   return (
-    <div className="overflow-hidden rounded border border-border">
-      <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border bg-surface-muted/60 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-subtle">
-        <span>Seat</span>
-        <span>Role</span>
-        <span>Character</span>
-      </div>
-      {children}
+    <div
+      data-seat-overview="true"
+      className="grid overflow-hidden rounded border border-border lg:grid-cols-2"
+    >
+      {columns.map((column, index) => (
+        <div
+          key={index}
+          data-seat-column={index + 1}
+          data-seat-column-size={column.length}
+          className={
+            index === 0
+              ? "min-w-0"
+              : "min-w-0 border-t border-border lg:border-l lg:border-t-0"
+          }
+        >
+          <div className={`${SEAT_GRID_CLASS} border-b border-border bg-surface-muted/60 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-subtle`}>
+            <span>Seat</span>
+            <span>Role</span>
+            <span>Character</span>
+          </div>
+          {column.map(renderSeat)}
+        </div>
+      ))}
     </div>
   );
 }
 
 function SeatRow({
   seatNo,
+  roleId,
   role,
   character,
 }: {
   readonly seatNo: number;
+  readonly roleId: string;
   readonly role: string;
   readonly character: string;
 }) {
   return (
-    <div className="grid grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border px-3 py-2 text-sm last:border-b-0">
+    <div
+      data-seat-no={seatNo}
+      className={`${SEAT_GRID_CLASS} border-b border-border px-2.5 py-2 text-xs last:border-b-0`}
+    >
       <span className="font-mono text-xs text-subtle">Seat {seatNo}</span>
-      <span className="min-w-0 truncate text-foreground">{role}</span>
+      <span
+        className="min-w-0 truncate font-semibold"
+        data-role-id={roleId}
+        style={{ color: roleIdentityColor(roleId) }}
+      >
+        {role}
+      </span>
       <span className="min-w-0 truncate text-foreground">{character}</span>
     </div>
   );
@@ -685,7 +740,7 @@ function roleLabel(roles: readonly RoleDefinition[], roleId: string): string {
 }
 
 function createButtonLabel(runMode: GameRunMode): string {
-  return runMode === "scripted" ? "创建并准备剧本" : "创建并进入游戏";
+  return runMode === "scripted" ? "创建并进入剧本页" : "创建并进入游戏";
 }
 
 function characterLabel(

@@ -36,9 +36,6 @@ export async function createGameFromPresetHomeAction(
     formValue(formData, "scriptId"),
     runModeFromForm(formData),
   );
-  if (record.game.runMode === "scripted") {
-    await gameActions.generateEpisodeScript(record.game.id);
-  }
   revalidatePath("/");
   redirect(createdGamePath(record.game.id, record.game.runMode));
 }
@@ -63,9 +60,6 @@ export async function createGameFromSeatAssignmentsAction(formData: FormData) {
     formValue(formData, "scriptId"),
     runModeFromForm(formData),
   );
-  if (record.game.runMode === "scripted") {
-    await gameActions.generateEpisodeScript(record.game.id);
-  }
   revalidatePath("/");
   redirect(createdGamePath(record.game.id, record.game.runMode));
 }
