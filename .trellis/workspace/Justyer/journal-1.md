@@ -336,3 +336,36 @@ Added schema-v2 ensemble direction, persona-aware outline and beat authoring, cu
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: Script Author controlled progression
+
+**Date**: 2026-07-15
+**Task**: Script Author controlled progression
+**Branch**: `main`
+
+### Summary
+
+Fixed Ensemble dramaticWeight prompting and Script alignment, added default-off one-task-at-a-time Script Author progression with guarded job IDs, durable ready state, auto-continue UI, tests, and workflow spec updates.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `431226a` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
