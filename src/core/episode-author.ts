@@ -63,6 +63,8 @@ export type AdvanceEpisodeAuthorResult =
 export type EpisodeAuthorCheckpoint = {
   readonly workspace: EpisodeAuthorWorkspace;
   readonly request: EpisodeAuthorRequestRecord;
+  readonly semanticTaskComplete: boolean;
+  readonly hasNextTask: boolean;
 };
 
 export class EpisodeAuthoringError extends Error {
@@ -206,10 +208,18 @@ async function runEpisodeAuthor(
   const checkpoint = async (
     nextWorkspace: EpisodeAuthorWorkspace,
     request: EpisodeAuthorRequestRecord,
+    semanticTaskComplete = false,
   ): Promise<void> => {
     workspace = validateEpisodeAuthorWorkspace(nextWorkspace);
     requests.push(request);
-    await input.onCheckpoint?.({ workspace, request });
+    await input.onCheckpoint?.({
+      workspace,
+      request,
+      semanticTaskComplete,
+      hasNextTask:
+        semanticTaskComplete &&
+        nextEpisodeAuthorTask({ game: input.game, plan, workspace }) !== null,
+    });
   };
 
   const fail = (error: unknown): never => {
@@ -230,7 +240,11 @@ async function runEpisodeAuthor(
       createdAt: input.createdAt,
     });
     if (outcome.ok) {
-      await checkpoint(taskInput.apply(outcome.result.value), outcome.record);
+      await checkpoint(
+        taskInput.apply(outcome.result.value),
+        outcome.record,
+        true,
+      );
       return;
     }
     await checkpoint(workspace, outcome.record);
@@ -246,6 +260,7 @@ async function runEpisodeAuthor(
         await checkpoint(
           taskInput.apply(conciseOutcome.result.value),
           conciseOutcome.record,
+          true,
         );
         return;
       }
@@ -257,6 +272,7 @@ async function runEpisodeAuthor(
 
   const completeBeatTask = async (
     task: Extract<EpisodeAuthorTask, { readonly kind: "beats" }>,
+    semanticTaskComplete: boolean,
   ): Promise<void> => {
     const request = buildBeatRequest({
       game: input.game,
@@ -291,6 +307,7 @@ async function runEpisodeAuthor(
           ),
         },
         outcome.record,
+        semanticTaskComplete,
       );
       return;
     }
@@ -301,11 +318,11 @@ async function runEpisodeAuthor(
       await completeBeatTask({
         kind: "beats",
         stepIndexes: task.stepIndexes.slice(0, midpoint),
-      });
+      }, false);
       await completeBeatTask({
         kind: "beats",
         stepIndexes: task.stepIndexes.slice(midpoint),
-      });
+      }, semanticTaskComplete);
       return;
     }
     fail(outcome.error);
@@ -419,7 +436,7 @@ async function runEpisodeAuthor(
         break;
       }
       case "beats":
-        await completeBeatTask(task);
+        await completeBeatTask(task, true);
         break;
     }
 

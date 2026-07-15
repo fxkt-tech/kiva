@@ -157,6 +157,52 @@ describe("game actions with Content Catalog", () => {
     ).toEqual(["story", "ensemble"]);
     expect(providerCalls).toBe(2);
   });
+
+  it("persists ready atomically with a successful task checkpoint", async () => {
+    const baseRepository = memoryGameRepository();
+    let interruptAfterCheckpoint = true;
+    const repository: GameRepository = {
+      ...baseRepository,
+      async save(record) {
+        await baseRepository.save(record);
+        if (
+          interruptAfterCheckpoint &&
+          record.episodeScript &&
+          "requests" in record.episodeScript &&
+          record.episodeScript.requests.length === 1
+        ) {
+          interruptAfterCheckpoint = false;
+          throw new Error("simulated process interruption after checkpoint");
+        }
+      },
+    };
+    const actions = createGameActions(repository, {
+      contentCatalog: memoryCatalog(),
+      llmClient: new LocalHeuristicLlmClient(),
+    });
+    const created = await actions.createGameFromLineupId(
+      seedLineups[0]!.id,
+      seedPresenters[0]!.id,
+      seedScripts[0]!.id,
+      "scripted",
+    );
+    const jobId = await actions.startEpisodeScriptGeneration(
+      created.game.id,
+      null,
+    );
+    expect(jobId).not.toBeNull();
+    if (!jobId) return;
+
+    const result = await actions.runEpisodeScriptGeneration(
+      created.game.id,
+      jobId,
+    );
+
+    expect(result.episodeScript?.status).toBe("ready");
+    if (result.episodeScript?.status !== "ready") return;
+    expect(result.episodeScript.workspace.story).not.toBeNull();
+    expect(result.episodeScript.requests).toHaveLength(1);
+  });
 });
 
 function memoryCatalog(

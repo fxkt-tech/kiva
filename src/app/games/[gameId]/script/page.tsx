@@ -101,10 +101,11 @@ export function EpisodeWorkspace({
 }: {
   readonly record: GameRecord;
 }) {
-  const state = record.episodeScript;
-  if (!state) {
+  const persistedState = record.episodeScript;
+  if (!persistedState) {
     throw new Error("Scripted game is missing its episode script state");
   }
+  const state = episodeScriptDisplayState(persistedState);
   const automationControl = (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background/35 p-3">
       <div>
@@ -226,7 +227,11 @@ export function EpisodeWorkspace({
             state.jobId,
           )}
         >
-          <FormSubmitButton label="重试生成" pendingLabel="正在重试…" className={primaryActionClass} />
+          <FormSubmitButton
+            label="重试当前阶段"
+            pendingLabel="正在重试当前阶段…"
+            className={primaryActionClass}
+          />
         </form>
       </div>
     );
@@ -276,8 +281,8 @@ export function EpisodeWorkspace({
           )}
         >
           <FormSubmitButton
-            label="任务长时间无响应？重新开始"
-            pendingLabel="正在重新开始…"
+            label="重试当前阶段"
+            pendingLabel="正在重试当前阶段…"
             className="rounded-md border border-border px-3 py-2 text-xs text-muted"
           />
         </form>
@@ -509,6 +514,13 @@ export function EpisodeAuthorRequests({
   readonly requests: readonly EpisodeAuthorRequestRecord[];
 }) {
   const labels = episodeAuthorRequestLabels(requests);
+  const entries = requests
+    .map((request, index) => ({
+      request,
+      label: labels[index]!,
+      sequence: index + 1,
+    }))
+    .reverse();
   return (
     <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
       <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
@@ -529,7 +541,7 @@ export function EpisodeAuthorRequests({
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <div className="divide-y divide-border">
-            {requests.map((request, index) => (
+            {entries.map(({ request, label, sequence }) => (
               <div
                 key={request.id}
                 className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 text-xs transition-colors hover:bg-surface-muted/35"
@@ -537,10 +549,10 @@ export function EpisodeAuthorRequests({
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-[10px] text-subtle">
-                      {String(index + 1).padStart(2, "0")}
+                      {String(sequence).padStart(2, "0")}
                     </span>
                     <div className="truncate font-medium text-foreground">
-                      {labels[index]}
+                      {label}
                     </div>
                   </div>
                   <div className="mt-1 flex min-w-0 items-center gap-1.5 pl-7 font-mono text-[10px] text-subtle">
@@ -566,7 +578,7 @@ export function EpisodeAuthorRequests({
                   </span>
                   <LlmGenerationDetails
                     generation={request}
-                    label={`${labels[index]} LLM details`}
+                    label={`${label} LLM details`}
                     showDecisionSummary={false}
                   />
                 </div>
@@ -621,6 +633,67 @@ function episodeAuthorRequestsForRecord(
 ): readonly EpisodeAuthorRequestRecord[] {
   const state = record.episodeScript;
   return state && "requests" in state ? state.requests : [];
+}
+
+function episodeScriptDisplayState(
+  state: EpisodeScriptState,
+): EpisodeScriptState {
+  if (
+    state.status !== "generating" ||
+    !generatingTaskResultIsPersisted(state)
+  ) {
+    return state;
+  }
+  return {
+    status: "ready",
+    jobId: state.jobId,
+    workspace: state.workspace,
+    requests: state.requests,
+  };
+}
+
+function generatingTaskResultIsPersisted(
+  state: Extract<EpisodeScriptState, { readonly status: "generating" }>,
+): boolean {
+  const currentJobRequests = state.requests.filter(
+    (request) => request.createdAt >= state.startedAt,
+  );
+  const latestRequest = currentJobRequests.at(-1);
+  if (!latestRequest || latestRequest.status !== "success") return false;
+  const task = latestRequest.task;
+
+  switch (task.kind) {
+    case "story":
+      return state.workspace.story !== null;
+    case "ensemble":
+      return state.workspace.ensemble !== null;
+    case "actor_arc":
+      return state.workspace.castDirections.some(
+        (direction) => direction.playerId === task.playerId,
+      );
+    case "relationship":
+      return state.workspace.relationships.some((relationship) =>
+        task.playerIds.every((playerId) =>
+          relationship.playerIds.includes(playerId),
+        ),
+      );
+    case "beats": {
+      const rootSplitRequest = currentJobRequests.find(
+        (request) =>
+          request.status === "failed" && request.task.kind === "beats",
+      );
+      const requiredStepIndexes =
+        rootSplitRequest?.task.kind === "beats"
+          ? rootSplitRequest.task.stepIndexes
+          : task.stepIndexes;
+      const completedStepIndexes = new Set(
+        state.workspace.beats.map((beat) => beat.stepIndex),
+      );
+      return requiredStepIndexes.every((stepIndex) =>
+        completedStepIndexes.has(stepIndex),
+      );
+    }
+  }
 }
 
 function episodeAuthorRequestLabels(

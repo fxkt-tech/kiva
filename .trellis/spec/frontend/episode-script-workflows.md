@@ -63,6 +63,13 @@ type EpisodeAuthorRequestRecord = {
   attempts?: readonly GenerationAttemptSnapshot[];
 };
 
+type EpisodeAuthorCheckpoint = {
+  workspace: EpisodeAuthorWorkspace;
+  request: EpisodeAuthorRequestRecord;
+  semanticTaskComplete: boolean;
+  hasNextTask: boolean;
+};
+
 type AdvanceEpisodeAuthorResult =
   | {
       status: "ready";
@@ -114,7 +121,7 @@ type EpisodeScriptReadyState = {
 #### Persistence, recovery, and observability
 
 - Before each provider call, a guarded start persists a fresh `jobId`, input-bound workspace, and retained request list. `expectedJobId === null` matches only `idle`; every other authorable state requires its exact current job ID under the Game lock. A stale or duplicate start returns `null` and schedules no runner.
-- After every successful or failed child request, `onCheckpoint` persists the validated workspace and appended request under the Game lock. A process exit can lose at most the in-flight provider call, never earlier completed tasks.
+- After every successful or failed child request, `onCheckpoint` persists the validated workspace and appended request under the Game lock. The checkpoint explicitly reports whether the full semantic task is complete and whether another task remains. When both are true, that same repository save writes `status: "ready"`; request success and READY must not be separate writes. A process exit can lose at most the in-flight provider call, never a completed task or its READY transition.
 - One deferred `runEpisodeScriptGeneration()` invocation advances at most one semantic task. It persists `ready` when another task remains, or `review` only after the last task and deterministic assembly succeed.
 - Starting from `ready`, or retrying `generating`/`failed`, with the same input hash resumes from the first incomplete deterministic task. It must not rerun completed story, ensemble, actor arc, relationship, or beat work.
 - Every child call persists an `EpisodeAuthorRequestRecord` containing its semantic task, exact request, raw/parsed output, attempts, provider/model, status, provider finish reason, and provider-returned token usage.
@@ -126,6 +133,9 @@ type EpisodeScriptReadyState = {
 - Both panel bodies own their vertical overflow with `min-h-0` plus `overflow-y-auto`. The request panel header remains visible, including when there are zero requests, and every persisted request retains its `LlmGenerationDetails` control. Request growth must never move the control panel or create document-level scrolling.
 - The Script page renders `ready` without a spinner, shows the next deterministic phase and a manual “生成下一步” action, and does not silently advance when the browser preference is off.
 - The Script page generating-state root explicitly uses `text-left`. In-flight work is indicated by the `GENERATING` badge and its pulsing status dot inside the shared card, not by replacing the card with a centered loading block.
+- `GENERATING` means the current semantic task still has an in-flight or incomplete provider request. If a historical generating snapshot already contains a successful current-job request fully applied to its workspace, the page projects it as `READY`; auto-continue and the manual next-step action use that effective state without rewriting the stored audit record.
+- The request audit renders newest first while retaining each record's original one-based sequence number and chronological run/batch label. The underlying append-only request array remains chronological.
+- A generating or failed task exposes only “重试当前阶段”. It resumes from the persisted workspace and never claims to restart the whole Author run.
 - Completion updates state only when `jobId` is still current. The deferred runner checks before its first provider call and again under the Game lock before every checkpoint or final state write.
 - Manual and automatic next-step submissions call the same guarded Server Action. Browser timers are advisory; the expected job ID is the correctness boundary for duplicate clicks, timers, refreshes, and tabs.
 - Script auto-continue uses the independent browser-global key `kiva:auto-continue-episode-author`. Only `"true"` enables it; missing/unknown values default off. An enabled `ready` snapshot waits one second before submission, and dependency changes or disabling clear the timer.
@@ -170,11 +180,13 @@ type EpisodeScriptReadyState = {
 | Process exits after a checkpoint | Retry resumes from persisted workspace and skips completed tasks. |
 | Author transport/output fails after bounded retry | Persist failed state with workspace and actionable error; allow resume. |
 | One semantic task succeeds and more work remains | Persist exact `ready` state with its producing job ID, workspace, and append-only requests. |
+| Process exits immediately after a successful task checkpoint | The already-saved record remains `ready`, because request append and status transition are atomic. |
 | Auto-continue preference is absent, false, or invalid | Remain in `ready` until the manual next-step action is submitted. |
 | Auto-continue is disabled while a task is in flight | Let the current task reach `ready`, `review`, or `failed`; never submit the following task. |
 | Script generating state replaces the shared status card with a spinner-only block | Regression failure; keep the same badge/progress/metrics structure used by `ready`, with `GENERATING` state copy and tone. |
 | Script request history grows beyond the viewport | Scroll only the `LLM requests` panel body; keep the page root, header, panel header, and left controls fixed. |
 | Episode state has no persisted requests yet | Render the empty `LLM requests` panel with `0 requests · 0 tokens`; do not remove the right-side workspace. |
+| Historical `generating` snapshot contains a successful current-job request already applied to its workspace | Project it as `READY`; do not show `GENERATING` or a current-stage retry action. |
 | Approval identity/profile/hash changed, compiler-owned field differs, or events exist | Reject approval. |
 | Episode snapshot is not schema v3 | Reject; do not normalize or upgrade. |
 | Episode author request is not v4 or workspace has an old shape | Reject; no compatibility path exists. |
@@ -188,11 +200,13 @@ type EpisodeScriptReadyState = {
 - Base preference: a browser with no Script preference stops after every successful task and keeps initial start, failure retry, and candidate regeneration manual.
 - Good recovery: the provider truncates a five-beat response; the Agent records that request, splits it into smaller batches, and continues without resending the truncated document.
 - Good workspace: thirty persisted requests scroll inside the right audit panel while the left status and actions remain reachable without document scrolling.
+- Good audit order: request 30 appears above request 29 while both keep their original sequence numbers and labels.
 - Bad: ask for the whole script, 12 full arcs, all relationships, and all beats in one response; append the malformed 8 KB output to a repair request; or restart all prior work after one late failure.
 - Bad: bind Script Author to seat 1's Actor model, keep only aggregate token counts, or replace request history when generating another candidate.
 - Bad: await the Agent run inside the browser Server Action or treat an in-memory promise as durable job state.
 - Bad: let the timer call a separate unguarded endpoint, store auto-continue in the Game record, share the Editor auto-confirm key, or use `generating` to mean both in-flight and waiting.
 - Bad: append `EpisodeAuthorRequests` inside every status branch, allow the document to grow with request count, or hide the audit panel when the list is empty.
+- Bad: append a successful request under `generating`, then rely on a second save to transition to `ready`; a process interruption between those writes leaves a false GENERATING badge.
 
 ### 6. Tests Required
 
@@ -204,6 +218,7 @@ type EpisodeScriptReadyState = {
 - Binding tests prove Script Author uses its dedicated snapshot and does not inherit any player's provider/model.
 - Truncation tests preserve raw output, finish reason, and usage; skip whole-JSON repair; split beat batches; and perform only one concise original-input retry for non-beat tasks.
 - Checkpoint integration tests fail after partial actor-arc completion, persist workspace/request history, resume the same job, and skip every completed task.
+- A simulated process interruption immediately after the first successful checkpoint still reloads `ready` with the completed workspace and request record.
 - One-step core tests prove story and ensemble advance separately, while a complete workspace assembles without another provider call and the full-run API remains compatible.
 - Ready-state decoder tests round-trip only the exact `status`, `jobId`, `workspace`, and `requests` keys.
 - Guarded action tests prove duplicate/stale starts return `null`, old runners make zero provider calls when already stale, request history appends across ready steps, and the synchronous wrapper still reaches review.
@@ -213,6 +228,7 @@ type EpisodeScriptReadyState = {
 - Auto-continue tests assert only stored `"true"` enables the control and scheduling requires enabled + ready + a current job ID. Script rendering tests assert the off-state accessibility label and the durable manual ready action.
 - Ready- and generating-state rendering tests assert the shared “当前状态” card, exact state badge, progressbar, retained requests, Actor arcs, and scene beats. Generating remains left-aligned and does not render the old centered spinner block.
 - Script request-panel rendering tests cover both a persisted request with its details control and the zero-request empty state. Manual viewport checks cover desktop two-column and narrow stacked layouts with panel-local scrolling.
+- Script rendering tests assert newest-first request order, effective READY for a settled historical generating snapshot, and “重试当前阶段” without any whole-run restart copy.
 - Creation/action tests require idle creation, deferred execution, stale-job zero-call exit, and approval identity checks.
 - Prompt tests assert only the current Actor Brief reaches player generation and future/full ensemble data does not.
 - Full `pnpm typecheck`, `pnpm test`, `pnpm build`, and `git diff --check` pass.
@@ -226,6 +242,10 @@ Correct: persist one `EpisodeAuthorWorkspace`, derive the next deterministic bou
 Wrong: infer recovery from request history text or begin a fresh candidate after every task failure.
 
 Correct: validate the structured workspace against the current plan hash, find the first missing task, and resume from there while retaining the append-only audit log.
+
+Wrong: persist a successful checkpoint as `generating`, return from the provider call, then perform a second save for `ready`.
+
+Correct: mark terminal semantic checkpoints with `semanticTaskComplete`/`hasNextTask` and atomically append the request, workspace, and READY transition in one locked save.
 
 Wrong: treat every malformed assistant response as repairable JSON.
 

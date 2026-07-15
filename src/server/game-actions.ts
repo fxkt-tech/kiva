@@ -220,7 +220,12 @@ export function createGameActions(
         llmClient: options.llmClient,
         createdAt: now(),
         workspace: generating.episodeScript.workspace,
-        onCheckpoint: async ({ workspace, request }) => {
+        onCheckpoint: async ({
+          workspace,
+          request,
+          semanticTaskComplete,
+          hasNextTask,
+        }) => {
           await repository.withGameLock(gameId, async () => {
             const current = await loadGame(gameId);
             if (
@@ -229,14 +234,19 @@ export function createGameActions(
             ) {
               throw new StaleEpisodeAuthorJobError();
             }
+            const requests = [...current.episodeScript.requests, request];
             await repository.save({
               ...current,
               game: { ...current.game, updatedAt: now() },
-              episodeScript: {
-                ...current.episodeScript,
-                workspace,
-                requests: [...current.episodeScript.requests, request],
-              },
+              episodeScript:
+                semanticTaskComplete && hasNextTask
+                  ? {
+                      status: "ready",
+                      jobId,
+                      workspace,
+                      requests,
+                    }
+                  : { ...current.episodeScript, workspace, requests },
             });
           });
         },

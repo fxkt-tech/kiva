@@ -84,6 +84,21 @@ describe("ScriptPreparationPage", () => {
     expect(html).toContain('aria-label="Story spine LLM details"');
     expect(html).toContain("Author the outline.");
     expect(html).toContain("Token usage");
+
+    const newerRequest: EpisodeAuthorRequestRecord = {
+      ...request,
+      id: "episode_request_2",
+      task: { kind: "ensemble" },
+      createdAt: "2026-07-14T00:01:00.000Z",
+    };
+    const reversedHtml = renderToStaticMarkup(
+      React.createElement(EpisodeAuthorRequests, {
+        requests: [request, newerRequest],
+      }),
+    );
+    expect(reversedHtml.indexOf("Ensemble map")).toBeLessThan(
+      reversedHtml.indexOf("Story spine"),
+    );
   });
 
   it("keeps the LLM request panel visible before the first request", () => {
@@ -199,7 +214,71 @@ describe("ScriptPreparationPage", () => {
     expect(html).toContain("已保留请求");
     expect(html).toContain("角色弧线");
     expect(html).toContain("场景节拍");
+    expect(html).toContain("重试当前阶段");
+    expect(html).not.toContain("重新开始");
     expect(html).toContain('class="text-left"');
     expect(html).not.toContain('class="text-center"');
+  });
+
+  it("shows ready once the current job request is persisted", () => {
+    const gameId = "settled-generating-script" as GameId;
+    const game = {
+      ...createSeedGame({
+        gameId,
+        createdAt: "2026-07-14T00:00:00.000Z",
+      }),
+      runMode: "scripted" as const,
+    };
+    const workspace = {
+      ...createEpisodeAuthorWorkspace({ game }),
+      story: {
+        title: "未明档案",
+        logline: "故事主轴已经完成。",
+        acts: [{ title: "第一幕", summary: "建立冲突。" }],
+      },
+    };
+    const request: EpisodeAuthorRequestRecord = {
+      id: "settled_story_request",
+      task: { kind: "story" },
+      status: "success",
+      promptVersion: "episode-author:v4",
+      provider: "openai-compatible",
+      model: "author-model",
+      request: {
+        schemaName: "werewolf_episode_story_v4",
+        systemPrompt: "Author the story.",
+        messages: [{ role: "user", content: "Game context" }],
+      },
+      tokenUsage: null,
+      finishReason: "stop",
+      rawOutput: '{"title":"未明档案"}',
+      parsedOutput: { title: "未明档案" },
+      error: null,
+      createdAt: "2026-07-14T00:01:01.000Z",
+    };
+    const record: GameRecord = {
+      schemaVersion: GAME_RECORD_SCHEMA_VERSION,
+      game,
+      events: [],
+      draft: null,
+      generations: [],
+      voiceArtifactsByEventId: {},
+      episodeScript: {
+        status: "generating",
+        jobId: "settled_job",
+        startedAt: "2026-07-14T00:01:00.000Z",
+        workspace,
+        requests: [request],
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(EpisodeWorkspace, { record }),
+    );
+
+    expect(html).toContain("READY");
+    expect(html).toContain("生成下一步");
+    expect(html).not.toContain("GENERATING");
+    expect(html).not.toContain("重试当前阶段");
   });
 });

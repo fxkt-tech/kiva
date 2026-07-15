@@ -75,6 +75,28 @@ describe("episode script", () => {
     expect(requests).toHaveLength(2);
   });
 
+  it("marks a successful checkpoint as a settled task with more work", async () => {
+    const checkpoints: Array<{
+      readonly semanticTaskComplete?: boolean;
+      readonly hasNextTask?: boolean;
+    }> = [];
+
+    await advanceEpisodeAuthor({
+      game,
+      llmClient: new LocalHeuristicLlmClient(),
+      createdAt: "2026-07-12T00:00:00.000Z",
+      onCheckpoint: async (checkpoint) => {
+        checkpoints.push(checkpoint);
+      },
+    });
+
+    expect(checkpoints).toHaveLength(1);
+    expect(checkpoints[0]).toMatchObject({
+      semanticTaskComplete: true,
+      hasNextTask: true,
+    });
+  });
+
   it("assembles a complete workspace without another provider call", async () => {
     const authored = await authorEpisodeScript({
       game,
