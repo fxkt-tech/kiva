@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 14
+- **Total Sessions**: 15
 - **Last Active**: 2026-07-15
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~470 | Active |
+| `journal-1.md` | ~503 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 15 | 2026-07-15 | Update global token pricing defaults | `3c0f2a8` | `main` |
 | 14 | 2026-07-15 | Keep Script Author contract in User Message 1 | `00f52ab` | `main` |
 | 13 | 2026-07-15 | Unify generation output contracts | `42d5567` | `main` |
 | 12 | 2026-07-15 | Fix initial Script Author output contracts | `cfc923d` | `main` |

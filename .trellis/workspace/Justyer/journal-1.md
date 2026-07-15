@@ -468,3 +468,36 @@ Merged the shared Script Author output contract into the sole initial user messa
 ### Next Steps
 
 - None - task complete
+
+
+## Session 15: Update global token pricing defaults
+
+**Date**: 2026-07-15
+**Task**: Update global token pricing defaults
+**Branch**: `main`
+
+### Summary
+
+Changed the shared input/output token price defaults from CNY 6/30 to CNY 3/15 per million tokens and updated UI, tests, design, and code-spec coverage.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3c0f2a8` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
