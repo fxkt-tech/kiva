@@ -129,7 +129,8 @@ type EpisodeScriptReadyState = {
 - The Script page renders current Agent phase/progress plus persisted request details while generating, and shows preserved partial-result counts plus a resume action when failed.
 - The Script page is a fixed-height tool workspace: the page root uses `h-screen overflow-hidden`, the game header occupies its own fixed row, and the remaining area is a `min-h-0` responsive grid. On desktop, 「开局已锁定」 is the left control panel and `LLM requests` is the right audit panel; narrow viewports stack the same two bounded panels.
 - Status, progress, auto-continue, generate/retry/approve actions, and immutable Game facts belong only to the locked control panel. Persisted Script Author requests are projected once from the current Episode state and rendered only in the audit panel; do not render request history inside `EpisodeWorkspace` state branches.
-- `idle`, `generating`, `ready`, `failed`, and `review` share one `EpisodeWorkspaceStatusCard` visual skeleton. The card always renders the “当前状态” kicker, state badge, title/copy, phase progress bar, retained-request count, Actor-arc count, and scene-beat count. State branches may change copy, tone, and available actions, but must not replace the card with a spinner-only or ad-hoc status layout.
+- `idle`, `generating`, `ready`, `failed`, and `review` share one `EpisodeWorkspaceStatusCard` visual skeleton. The card always renders the “当前状态” kicker, state badge, title/copy, phase progress bar, and semantic completion for all five request kinds: 故事主轴 (`story`), 群像分工 (`ensemble`), 角色弧线 (`actor_arc`), 关系弧线 (`relationship`), and 场景节拍 (`beats`). State branches may change copy, tone, and available actions, but must not replace the card with a spinner-only or ad-hoc status layout.
+- Left-card phase completion is derived from structured workspace artifacts, not request-record counts: retries may append multiple audit requests for one semantic task and must not inflate progress. Total retained requests and tokens belong only to the right `LLM requests` audit header.
 - Both panel bodies own their vertical overflow with `min-h-0` plus `overflow-y-auto`. The request panel header remains visible, including when there are zero requests, and every persisted request retains its `LlmGenerationDetails` control. Request growth must never move the control panel or create document-level scrolling.
 - The Script page renders `ready` without a spinner, shows the next deterministic phase and a manual “生成下一步” action, and does not silently advance when the browser preference is off.
 - The Script page generating-state root explicitly uses `text-left`. In-flight work is indicated by the `GENERATING` badge and its pulsing status dot inside the shared card, not by replacing the card with a centered loading block.
@@ -187,6 +188,7 @@ type EpisodeScriptReadyState = {
 | Script request history grows beyond the viewport | Scroll only the `LLM requests` panel body; keep the page root, header, panel header, and left controls fixed. |
 | Episode state has no persisted requests yet | Render the empty `LLM requests` panel with `0 requests · 0 tokens`; do not remove the right-side workspace. |
 | Historical `generating` snapshot contains a successful current-job request already applied to its workspace | Project it as `READY`; do not show `GENERATING` or a current-stage retry action. |
+| A semantic task has failed and been retried | Count its completed workspace artifact once on the left; retain every attempt in the right request audit. |
 | Approval identity/profile/hash changed, compiler-owned field differs, or events exist | Reject approval. |
 | Episode snapshot is not schema v3 | Reject; do not normalize or upgrade. |
 | Episode author request is not v4 or workspace has an old shape | Reject; no compatibility path exists. |
@@ -201,11 +203,13 @@ type EpisodeScriptReadyState = {
 - Good recovery: the provider truncates a five-beat response; the Agent records that request, splits it into smaller batches, and continues without resending the truncated document.
 - Good workspace: thirty persisted requests scroll inside the right audit panel while the left status and actions remain reachable without document scrolling.
 - Good audit order: request 30 appears above request 29 while both keep their original sequence numbers and labels.
+- Good phase summary: the left card shows `story`, `ensemble`, `actor_arc`, `relationship`, and `beats` completion while a failed Ensemble attempt remains visible only as an extra right-side audit record.
 - Bad: ask for the whole script, 12 full arcs, all relationships, and all beats in one response; append the malformed 8 KB output to a repair request; or restart all prior work after one late failure.
 - Bad: bind Script Author to seat 1's Actor model, keep only aggregate token counts, or replace request history when generating another candidate.
 - Bad: await the Agent run inside the browser Server Action or treat an in-memory promise as durable job state.
 - Bad: let the timer call a separate unguarded endpoint, store auto-continue in the Game record, share the Editor auto-confirm key, or use `generating` to mean both in-flight and waiting.
 - Bad: append `EpisodeAuthorRequests` inside every status branch, allow the document to grow with request count, or hide the audit panel when the list is empty.
+- Bad: label retained-request count as a Script Author phase or use request counts as completion, because retries then make semantic progress exceed its target.
 - Bad: append a successful request under `generating`, then rely on a second save to transition to `ready`; a process interruption between those writes leaves a false GENERATING badge.
 
 ### 6. Tests Required
@@ -226,7 +230,7 @@ type EpisodeScriptReadyState = {
 - Local author covers every cast member and speech step; invalid cast IDs, pairs, signature indexes, hash/schema/identity fail deterministically.
 - Script page tests render Agent progress, per-task request details, preserved partial-result counts, and resume copy.
 - Auto-continue tests assert only stored `"true"` enables the control and scheduling requires enabled + ready + a current job ID. Script rendering tests assert the off-state accessibility label and the durable manual ready action.
-- Ready- and generating-state rendering tests assert the shared “当前状态” card, exact state badge, progressbar, retained requests, Actor arcs, and scene beats. Generating remains left-aligned and does not render the old centered spinner block.
+- Ready- and generating-state rendering tests assert the shared “当前状态” card, exact state badge, progressbar, all five semantic request-kind labels, and artifact-derived completion values. They also assert “已保留请求” is absent from the left card. Generating remains left-aligned and does not render the old centered spinner block.
 - Script request-panel rendering tests cover both a persisted request with its details control and the zero-request empty state. Manual viewport checks cover desktop two-column and narrow stacked layouts with panel-local scrolling.
 - Script rendering tests assert newest-first request order, effective READY for a settled historical generating snapshot, and “重试当前阶段” without any whole-run restart copy.
 - Creation/action tests require idle creation, deferred execution, stale-job zero-call exit, and approval identity checks.
@@ -258,6 +262,10 @@ Correct: render the shared `dramaticWeight` instruction with the exact strings `
 Wrong: make `generating` a centered spinner card while `ready` uses the approved status-card hierarchy.
 
 Correct: render both states through `EpisodeWorkspaceStatusCard`; communicate in-flight work with the badge tone/dot while retaining phase progress and persisted-result metrics.
+
+Wrong: show `requests.length` as a left-card phase metric or derive phase completion by counting `request.task.kind` records.
+
+Correct: derive all five phase values from `EpisodeAuthorWorkspace`; reserve `requests.length` and token totals for the right audit panel where retries are intentionally preserved.
 
 Wrong: render request history inside `idle`, `generating`, `ready`, `failed`, and `review` branches and let those branches determine page height.
 

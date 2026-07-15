@@ -388,9 +388,11 @@ function EpisodeWorkspaceStatusCard({
         </div>
       </div>
 
-      <dl className="grid grid-cols-3 border-t border-border">
-        <StatusMetric label="已保留请求" value={presentation.requestCount} />
+      <dl className="grid grid-cols-5 border-t border-border">
+        <StatusMetric label="故事主轴" value={presentation.story} />
+        <StatusMetric label="群像分工" value={presentation.ensemble} />
         <StatusMetric label="角色弧线" value={presentation.actorArcs} />
+        <StatusMetric label="关系弧线" value={presentation.relationships} />
         <StatusMetric label="场景节拍" value={presentation.sceneBeats} />
       </dl>
     </section>
@@ -405,7 +407,7 @@ function StatusMetric({
   readonly value: string;
 }) {
   return (
-    <div className="min-w-0 border-r border-border px-3 py-2.5 last:border-r-0">
+    <div className="min-w-0 border-r border-border px-2 py-2.5 last:border-r-0">
       <dt className="truncate text-[10px] text-subtle">{label}</dt>
       <dd className="mt-1 font-mono text-[11px] font-semibold text-foreground">
         {value}
@@ -425,8 +427,10 @@ function episodeWorkspaceStatusPresentation(
       title: "等待生成剧本",
       copy: "尚未创建 Script Author 工作区。",
       progress: { label: "等待开始", completed: 0, total: 1 },
-      requestCount: "00",
+      story: "0 / 1",
+      ensemble: "0 / 1",
       actorArcs: `0 / ${playerCount}`,
+      relationships: "0 / —",
       sceneBeats: "0 / —",
     };
   }
@@ -444,17 +448,22 @@ function episodeWorkspaceStatusPresentation(
           ? "完整结构已经组装并校验，等待导演审核。"
           : "剧本结构已经锁定，可以进入游戏编辑器。",
       progress: { label: "导演审核", completed: 1, total: 1 },
-      requestCount: String(state.requests.length).padStart(2, "0"),
+      story: "1 / 1",
+      ensemble: "1 / 1",
       actorArcs: `${script.castDirections.length} / ${playerCount}`,
+      relationships: `${script.relationships.length} / ${script.relationships.length}`,
       sceneBeats: `${state.report.speechCount} / ${state.report.speechCount}`,
     };
   }
 
   const progress = episodeAuthorProgress(state.workspace);
+  const relationshipTotal = state.workspace.ensemble?.relationshipSeeds.length;
   const common = {
     progress,
-    requestCount: String(state.requests.length).padStart(2, "0"),
+    story: `${state.workspace.story ? 1 : 0} / 1`,
+    ensemble: `${state.workspace.ensemble ? 1 : 0} / 1`,
     actorArcs: `${state.workspace.castDirections.length} / ${playerCount}`,
+    relationships: `${state.workspace.relationships.length} / ${relationshipTotal ?? "—"}`,
     sceneBeats: `${state.workspace.beats.length} / ${state.workspace.speechStepCount}`,
   };
 
