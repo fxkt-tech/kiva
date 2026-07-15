@@ -501,3 +501,36 @@ Changed the shared input/output token price defaults from CNY 6/30 to CNY 3/15 p
 ### Next Steps
 
 - None - task complete
+
+
+## Session 16: Move Director review into shared detail panel
+
+**Date**: 2026-07-15
+**Task**: Move Director review into shared detail panel
+**Branch**: `main`
+
+### Summary
+
+Replaced the right-console Director review body with a selector, reused the middle detail panel for the complete review and approval actions, and made LLM request selection switch the panel back to request details.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5d0e38a` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
