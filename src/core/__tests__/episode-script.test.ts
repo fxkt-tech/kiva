@@ -513,6 +513,31 @@ describe("episode script", () => {
     ).toHaveLength(2);
   });
 
+  it("includes the disclosure enum contract in initial beat requests", async () => {
+    const local = new LocalHeuristicLlmClient();
+    const beatRequests: LlmGenerateJsonRequest[] = [];
+    const contract =
+      "disclosure 只能是 conceal、claim、not_applicable";
+
+    await authorEpisodeScript({
+      game,
+      llmClient: {
+        async generateJson(request) {
+          if (request.schemaName === "werewolf_episode_beats_v4") {
+            beatRequests.push(request);
+          }
+          return local.generateJson(request);
+        },
+      },
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    expect(beatRequests.length).toBeGreaterThan(0);
+    expect(beatRequests.every((request) =>
+      requestContent(request).includes(contract)
+    )).toBe(true);
+  });
+
   it("rejects objectively incomplete ensemble output after repair", async () => {
     const story = {
       title: "待分配群像",

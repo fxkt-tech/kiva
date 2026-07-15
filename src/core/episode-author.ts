@@ -611,7 +611,6 @@ function buildEnsembleRequest(input: {
           ),
           "",
           "输出 castAssignments[{playerId,dramaticWeight,dramaticFunction,signatureStepIndex}]。",
-          EPISODE_DRAMATIC_WEIGHT_CONTRACT,
           "输出 relationshipSeeds[{playerIds,kind}]，kind 为 rivalry/alliance/contrast/trust_shift。",
           `castAssignments 恰好覆盖所有演员；relationshipSeeds 必须为 1 到 ${MAX_EPISODE_RELATIONSHIP_SEEDS} 项，同一无向玩家对不得重复。`,
           "不要输出 baseline、pressure、change、payoff、setup、development 或关系 payoff。",
@@ -809,12 +808,13 @@ async function performAgentRequest<Value>(input: {
   readonly validate: (parsed: Record<string, unknown>) => Value;
   readonly outputContract: readonly string[];
 }): Promise<RequestOutcome<Value>> {
+  const request = withOutputContract(input.request, input.outputContract);
   try {
     const result = await retryHeadersTimeout(() =>
       generateValidatedJson({
         llmClient: input.llmClient,
         modelBinding: input.modelBinding,
-        request: input.request,
+        request,
         validate: input.validate,
         repair: { outputContract: input.outputContract },
       })
@@ -829,7 +829,7 @@ async function performAgentRequest<Value>(input: {
         promptVersion: EPISODE_AUTHOR_PROMPT_VERSION,
         provider: result.output.provider,
         model: result.output.model,
-        request: input.request,
+        request,
         tokenUsage: result.tokenUsage,
         finishReason: result.output.finishReason,
         rawOutput: result.output.rawText,
@@ -852,7 +852,7 @@ async function performAgentRequest<Value>(input: {
         promptVersion: EPISODE_AUTHOR_PROMPT_VERSION,
         provider: input.modelBinding.provider,
         model: input.modelBinding.model,
-        request: input.request,
+        request,
         tokenUsage: failure?.tokenUsage ?? null,
         finishReason: failure?.finishReason ?? null,
         rawOutput: failure?.rawOutput ?? null,
@@ -863,6 +863,25 @@ async function performAgentRequest<Value>(input: {
       },
     };
   }
+}
+
+function withOutputContract(
+  request: GenerationRequestSnapshot,
+  outputContract: readonly string[],
+): GenerationRequestSnapshot {
+  return {
+    ...request,
+    messages: [
+      ...request.messages,
+      {
+        role: "user",
+        content: [
+          "输出必须满足：",
+          ...outputContract.map((line) => `- ${line}`),
+        ].join("\n"),
+      },
+    ],
+  };
 }
 
 function parseStory(parsed: Record<string, unknown>): EpisodeStorySpine {

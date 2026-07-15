@@ -116,6 +116,7 @@ type EpisodeScriptReadyState = {
 - `beats` requests are grouped by local phase/scene and contain at most five speech steps. They receive only current actors, their completed direction, touching completed relationships, local structural context, and at most one earlier authored move per actor.
 - A child prompt never embeds the full previous assistant output or the entire workspace. The workspace is structured application state; each prompt projects only the fields needed for its task.
 - Every authored free-text field is instructed to stay within 80 Chinese characters. Structural validators, not output-token caps, decide whether a complete response is accepted.
+- Every child task defines one `outputContract`. `performAgentRequest()` appends that exact contract to the initial provider request and passes the same value to structural repair; the persisted request snapshot is the contract-bearing request actually sent. `schemaName` and JSON-object mode do not communicate field types, required fields, or enum literals to the provider.
 - The Script Author model binding is snapshotted in the workspace from a dedicated code-owned default or an explicit author override. It is independent of every player's Actor model binding.
 
 #### Persistence, recovery, and observability
@@ -173,6 +174,7 @@ type EpisodeScriptReadyState = {
 | Story has more than four acts, ensemble has more than six relationship seeds, or a free-text field exceeds 80 characters | Reject as unbounded output and use the one minimal structural repair. |
 | Story/ensemble/actor_arc/relationship output is incomplete or otherwise invalid | Use one minimal structural repair for complete JSON; otherwise fail the bounded task. |
 | Ensemble `dramaticWeight` is localized, numeric, or neither `"primary"` nor `"supporting"` | Repair once with the exact two-value string contract; fail the bounded task if the repaired value is still invalid. |
+| Initial child-task prompt omits a validator-required field or enum constraint | Regression failure; add the constraint to the task's shared `outputContract`, never only to the repair prompt. |
 | Cast direction omits/duplicates a player or has an invalid signature step | Fail before Review. |
 | Relationship references an unknown/same player or duplicates an undirected pair | Fail before Review. |
 | Beat output omits/duplicates a requested speech step | Repair complete JSON once; fail if still invalid. |
@@ -203,6 +205,7 @@ type EpisodeScriptReadyState = {
 ### 5. Good / Base / Bad Cases
 
 - Good: Agent authors a compact story, assigns all 12 players, completes one arc at a time, writes local scene beats, checkpoints each result, and assembles the unchanged legal plan.
+- Good contract flow: a beats task sends `disclosure` literals in its initial request, reuses the same literals if structural repair is needed, and records the exact initial request for audit.
 - Base: local deterministic author produces the same complete schema-v3 Episode snapshot through the same v4 task pipeline without external credentials.
 - Good controlled progression: one guarded browser job completes story and persists `ready`; a manual click or enabled timer submits the matching job ID and advances ensemble exactly once.
 - Base preference: a browser with no Script preference stops after every successful task and keeps initial start, failure retry, and candidate regeneration manual.
@@ -212,6 +215,7 @@ type EpisodeScriptReadyState = {
 - Good audit order: request 30 appears above request 29 while both keep their original sequence numbers and labels.
 - Good phase summary: the right control card shows `story`, `ensemble`, `actor_arc`, `relationship`, and `beats` completion while a failed Ensemble attempt remains visible only as an extra left-side audit record.
 - Bad: ask for the whole script, 12 full arcs, all relationships, and all beats in one response; append the malformed 8 KB output to a repair request; or restart all prior work after one late failure.
+- Bad: name `disclosure` in the output shape but reveal `conceal | claim | not_applicable` only after the model has already returned an invalid natural-language value.
 - Bad: bind Script Author to seat 1's Actor model, keep only aggregate token counts, or replace request history when generating another candidate.
 - Bad: await the Agent run inside the browser Server Action or treat an in-memory promise as durable job state.
 - Bad: let the timer call a separate unguarded endpoint, store auto-continue in the Game record, share the Editor auto-confirm key, or use `generating` to mean both in-flight and waiting.
@@ -226,6 +230,7 @@ type EpisodeScriptReadyState = {
 - Two compilations of one Game yield identical slots/payloads and end in `game_ended`.
 - Task-capture tests assert one bounded story request, one compact ensemble request, one actor_arc request per player, one relationship request per seed, and local beat batches of at most five.
 - An Ensemble contract regression makes the first response use localized weights and makes repair fall back to numeric weights unless the request contains both exact string literals; assert the initial and repair requests share the contract and the repaired task succeeds.
+- A beats prompt regression captures the real initial provider requests and asserts every request contains the exact `disclosure` literals before any repair occurs.
 - Cardinality tests reject more than four acts, more than six relationship seeds, or a free-text field longer than 80 characters before that output can enter later prompts.
 - Prompt-scope tests assert every child request has only the profiles/directions/local history required by its task and at most one prior move per actor.
 - Binding tests prove Script Author uses its dedicated snapshot and does not inherit any player's provider/model.
@@ -269,6 +274,10 @@ Correct: branch on provider finish reason. Repair a complete but structurally in
 Wrong: name `dramaticWeight` in the Ensemble shape and assume `schemaName` or JSON-object mode tells the provider which values are legal.
 
 Correct: render the shared `dramaticWeight` instruction with the exact strings `"primary"` and `"supporting"` in both the initial request and structural-repair contract, while keeping runtime validation strict.
+
+Wrong: maintain one abbreviated initial output shape and a separate, stricter repair-only contract.
+
+Correct: define one task `outputContract`, append it to the initial provider request, reuse it for structural repair, and persist the effective initial request.
 
 Wrong: make `generating` a centered spinner card while `ready` uses the approved status-card hierarchy.
 
