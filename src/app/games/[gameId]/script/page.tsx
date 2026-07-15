@@ -1,13 +1,14 @@
 import { ArrowLeft, Check, Clapperboard, Film, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import {
   approveEpisodeScriptAction,
   generateEpisodeScriptAction,
 } from "@/app/actions";
 import { FormSubmitButton } from "@/components/editor/form-submit-button";
-import { LlmGenerationDetails } from "@/components/editor/llm-generation-details";
 import { EpisodeAutoContinueButton } from "@/components/script/episode-auto-continue";
+import { EpisodeAuthorRequestWorkspace } from "@/components/script/episode-author-request-workspace";
 import { EpisodeEnsembleReview } from "@/components/script/episode-ensemble-review";
 import { EpisodeGeneratingRefresh } from "@/components/script/episode-generating-refresh";
 import { iconButtonClassName } from "@/components/ui/button-styles";
@@ -17,7 +18,6 @@ import type {
   EpisodeAuthorWorkspace,
   EpisodeScriptState,
 } from "@/core/episode-script";
-import { tokenCount } from "@/core/token-usage";
 import type { GameId } from "@/core/types";
 import { createGameActions } from "@/server/game-actions";
 import { createGameRepository } from "@/server/game-repository";
@@ -62,7 +62,7 @@ export default async function ScriptPreparationPage({
           </div>
         </header>
 
-        <section className="grid min-h-0 gap-3 overflow-hidden grid-rows-[minmax(280px,0.95fr)_minmax(320px,1.05fr)] lg:grid-cols-[minmax(360px,0.76fr)_minmax(520px,1.24fr)] lg:grid-rows-1">
+        <section className="grid min-h-0 gap-3 overflow-hidden grid-rows-[minmax(180px,0.72fr)_minmax(220px,0.9fr)_minmax(260px,1.15fr)] lg:grid-cols-[minmax(280px,0.62fr)_minmax(300px,0.8fr)_minmax(340px,1.18fr)] lg:grid-rows-1">
           <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
             <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
               <div className="flex items-center gap-2 text-sm font-semibold">
@@ -76,8 +76,8 @@ export default async function ScriptPreparationPage({
                 Script Author
               </span>
             </header>
-            <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
-              <div className="rounded-lg border border-warning-badge/60 bg-warning-badge/25 px-3 py-2.5 text-xs leading-5 text-warning-badge-foreground">
+            <div className="min-h-0 flex-1 overflow-y-auto p-3">
+              <div className="rounded-lg border border-warning-badge/60 bg-warning-badge/25 px-3 py-2 text-xs leading-5 text-warning-badge-foreground">
                 {record.episodeScript?.status === "approved"
                   ? "剧本已经批准，结构已锁定。"
                   : "剧本批准前不会推进游戏、生成玩家配音或允许导出。当前阵容与合法轨迹保持锁定。"}
@@ -89,7 +89,7 @@ export default async function ScriptPreparationPage({
             </div>
           </section>
 
-          <EpisodeAuthorRequests requests={requests} />
+          <EpisodeAuthorRequestWorkspace requests={requests} />
         </section>
       </div>
     </main>
@@ -107,7 +107,7 @@ export function EpisodeWorkspace({
   }
   const state = episodeScriptDisplayState(persistedState);
   const automationControl = (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background/35 p-3">
+    <div className="flex items-center justify-between gap-3">
       <div>
         <div className="text-xs font-medium text-foreground">自动生成下一步</div>
         <p className="mt-1 text-[11px] leading-4 text-subtle">
@@ -129,6 +129,7 @@ export function EpisodeWorkspace({
         <EpisodeWorkspaceStatusCard
           state={state}
           playerCount={record.game.players.length}
+          controls={automationControl}
         />
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -147,8 +148,6 @@ export function EpisodeWorkspace({
           <Metric label="预计时长" value={formatDuration(script.targetDurationMs)} />
           <Metric label="结构规模" value={`${script.steps.length} 步 / ${speechSteps.length} 段发言`} />
         </div>
-
-        <div className="mt-3">{automationControl}</div>
 
         <section className="mt-4">
           <h3 className="text-sm font-semibold">剧情幕</h3>
@@ -214,25 +213,28 @@ export function EpisodeWorkspace({
         <EpisodeWorkspaceStatusCard
           state={state}
           playerCount={record.game.players.length}
+          controls={
+            <>
+              <p className="rounded border border-danger-badge/60 bg-danger-badge/25 px-3 py-2 text-xs text-danger-badge-foreground">
+                {state.error}
+              </p>
+              {automationControl}
+              <form
+                action={generateEpisodeScriptAction.bind(
+                  null,
+                  record.game.id,
+                  state.jobId,
+                )}
+              >
+                <FormSubmitButton
+                  label="重试当前阶段"
+                  pendingLabel="正在重试当前阶段…"
+                  className={widePrimaryActionClass}
+                />
+              </form>
+            </>
+          }
         />
-        <p className="mt-3 rounded border border-danger-badge/60 bg-danger-badge/25 px-3 py-2 text-sm text-danger-badge-foreground">
-          {state.error}
-        </p>
-        <div className="mt-4">{automationControl}</div>
-        <form
-          className="mt-4"
-          action={generateEpisodeScriptAction.bind(
-            null,
-            record.game.id,
-            state.jobId,
-          )}
-        >
-          <FormSubmitButton
-            label="重试当前阶段"
-            pendingLabel="正在重试当前阶段…"
-            className={primaryActionClass}
-          />
-        </form>
       </div>
     );
   }
@@ -243,22 +245,25 @@ export function EpisodeWorkspace({
         <EpisodeWorkspaceStatusCard
           state={state}
           playerCount={record.game.players.length}
+          controls={
+            <>
+              {automationControl}
+              <form
+                action={generateEpisodeScriptAction.bind(
+                  null,
+                  record.game.id,
+                  state.jobId,
+                )}
+              >
+                <FormSubmitButton
+                  label="生成下一步"
+                  pendingLabel="正在开始下一步…"
+                  className={widePrimaryActionClass}
+                />
+              </form>
+            </>
+          }
         />
-        <div className="mt-4">{automationControl}</div>
-        <form
-          className="mt-3"
-          action={generateEpisodeScriptAction.bind(
-            null,
-            record.game.id,
-            state.jobId,
-          )}
-        >
-          <FormSubmitButton
-            label="生成下一步"
-            pendingLabel="正在开始下一步…"
-            className={widePrimaryActionClass}
-          />
-        </form>
       </div>
     );
   }
@@ -270,22 +275,25 @@ export function EpisodeWorkspace({
         <EpisodeWorkspaceStatusCard
           state={state}
           playerCount={record.game.players.length}
+          controls={
+            <>
+              {automationControl}
+              <form
+                action={generateEpisodeScriptAction.bind(
+                  null,
+                  record.game.id,
+                  state.jobId,
+                )}
+              >
+                <FormSubmitButton
+                  label="重试当前阶段"
+                  pendingLabel="正在重试当前阶段…"
+                  className={`${secondaryActionClass} w-full justify-center`}
+                />
+              </form>
+            </>
+          }
         />
-        <div className="mt-3">{automationControl}</div>
-        <form
-          className="mt-3"
-          action={generateEpisodeScriptAction.bind(
-            null,
-            record.game.id,
-            state.jobId,
-          )}
-        >
-          <FormSubmitButton
-            label="重试当前阶段"
-            pendingLabel="正在重试当前阶段…"
-            className="rounded-md border border-border px-3 py-2 text-xs text-muted"
-          />
-        </form>
       </div>
     );
   }
@@ -299,6 +307,24 @@ export function EpisodeWorkspace({
       <EpisodeWorkspaceStatusCard
         state={state}
         playerCount={record.game.players.length}
+        controls={
+          <>
+            {automationControl}
+            <form
+              action={generateEpisodeScriptAction.bind(
+                null,
+                record.game.id,
+                null,
+              )}
+            >
+              <FormSubmitButton
+                label="开始生成剧本"
+                pendingLabel="正在生成并模拟…"
+                className={widePrimaryActionClass}
+              />
+            </form>
+          </>
+        }
       />
       <div className="mt-4 flex items-start gap-3">
         <Film aria-hidden="true" className="mt-0.5 h-5 w-5 text-cyan-300" />
@@ -314,13 +340,6 @@ export function EpisodeWorkspace({
           <li key={step} className="rounded border border-border bg-background/50 px-3 py-3">{step}</li>
         ))}
       </ol>
-      <div className="mt-4">{automationControl}</div>
-      <form
-        className="mt-3"
-        action={generateEpisodeScriptAction.bind(null, record.game.id, null)}
-      >
-        <FormSubmitButton label="开始生成剧本" pendingLabel="正在生成并模拟…" className={widePrimaryActionClass} />
-      </form>
     </div>
   );
 }
@@ -328,9 +347,11 @@ export function EpisodeWorkspace({
 function EpisodeWorkspaceStatusCard({
   state,
   playerCount,
+  controls,
 }: {
   readonly state: EpisodeScriptState;
   readonly playerCount: number;
+  readonly controls?: ReactNode;
 }) {
   const presentation = episodeWorkspaceStatusPresentation(state, playerCount);
   const progressValue = Math.round(
@@ -340,7 +361,10 @@ function EpisodeWorkspaceStatusCard({
   );
 
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-background/55">
+    <section
+      aria-label="Script Author current status"
+      className="overflow-hidden rounded-lg border border-border bg-background/55"
+    >
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -395,6 +419,11 @@ function EpisodeWorkspaceStatusCard({
         <StatusMetric label="关系弧线" value={presentation.relationships} />
         <StatusMetric label="场景节拍" value={presentation.sceneBeats} />
       </dl>
+      {controls ? (
+        <div className="space-y-2 border-t border-border bg-background/25 p-3">
+          {controls}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -407,9 +436,9 @@ function StatusMetric({
   readonly value: string;
 }) {
   return (
-    <div className="min-w-0 border-r border-border px-2 py-2.5 last:border-r-0">
+    <div className="min-w-0 border-r border-border px-1.5 py-2.5 last:border-r-0">
       <dt className="truncate text-[10px] text-subtle">{label}</dt>
-      <dd className="mt-1 font-mono text-[11px] font-semibold text-foreground">
+      <dd className="mt-1 whitespace-nowrap font-mono text-[10px] font-semibold text-foreground">
         {value}
       </dd>
     </div>
@@ -517,92 +546,6 @@ export function EpisodeAuthorGeneratingStatus({
   );
 }
 
-export function EpisodeAuthorRequests({
-  requests,
-}: {
-  readonly requests: readonly EpisodeAuthorRequestRecord[];
-}) {
-  const labels = episodeAuthorRequestLabels(requests);
-  const entries = requests
-    .map((request, index) => ({
-      request,
-      label: labels[index]!,
-      sequence: index + 1,
-    }))
-    .reverse();
-  return (
-    <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
-      <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
-        <h2 className="text-sm font-semibold">LLM requests</h2>
-        <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-subtle">
-          {requests.length} requests · {formatRequestTokens(requests)} tokens
-        </span>
-      </header>
-      {requests.length === 0 ? (
-        <div className="grid min-h-0 flex-1 place-items-center p-6 text-center">
-          <div>
-            <Film aria-hidden="true" className="mx-auto h-5 w-5 text-subtle" />
-            <p className="mt-2 text-xs text-subtle">
-              开始生成后，请求记录会按执行顺序出现在这里。
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="divide-y divide-border">
-            {entries.map(({ request, label, sequence }) => (
-              <div
-                key={request.id}
-                className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 text-xs transition-colors hover:bg-surface-muted/35"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] text-subtle">
-                      {String(sequence).padStart(2, "0")}
-                    </span>
-                    <div className="truncate font-medium text-foreground">
-                      {label}
-                    </div>
-                  </div>
-                  <div className="mt-1 flex min-w-0 items-center gap-1.5 pl-7 font-mono text-[10px] text-subtle">
-                    <span
-                      aria-hidden="true"
-                      className={
-                        request.status === "success"
-                          ? "h-1.5 w-1.5 shrink-0 rounded-full bg-good-badge-foreground"
-                          : "h-1.5 w-1.5 shrink-0 rounded-full bg-danger-badge-foreground"
-                      }
-                    />
-                    <span className="truncate">
-                      {request.provider}/{request.model} · {request.status} ·{" "}
-                      {request.task.kind === "beats"
-                        ? `steps ${request.task.stepIndexes.join(", ")}`
-                        : request.task.kind}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="font-mono text-[10px] text-muted">
-                    {formatRequestTokens([request])} tokens
-                  </span>
-                  <LlmGenerationDetails
-                    generation={request}
-                    label={`${label} LLM details`}
-                    showDecisionSummary={false}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="px-4 py-5 text-center text-[10px] text-subtle">
-            后续请求会追加到这里，不改变左侧操作区位置。
-          </p>
-        </div>
-      )}
-    </section>
-  );
-}
-
 function LockedGameFacts({ record }: { readonly record: GameRecord }) {
   return (
     <section className="mt-5">
@@ -703,48 +646,6 @@ function generatingTaskResultIsPersisted(
       );
     }
   }
-}
-
-function episodeAuthorRequestLabels(
-  requests: readonly EpisodeAuthorRequestRecord[],
-): readonly string[] {
-  let run = 0;
-  let beatBatch = 0;
-  return requests.map((request) => {
-    if (request.task.kind === "story") {
-      run += 1;
-      beatBatch = 0;
-      return run === 1 ? "Story spine" : `Story spine · run ${run}`;
-    }
-    switch (request.task.kind) {
-      case "ensemble":
-        return "Ensemble map";
-      case "actor_arc":
-        return `Actor arc · ${request.task.playerId}`;
-      case "relationship":
-        return `Relationship · ${request.task.playerIds.join("/")}`;
-      case "beats":
-        beatBatch += 1;
-        return run <= 1
-          ? `Scene beats ${beatBatch}`
-          : `Scene beats ${beatBatch} · run ${run}`;
-    }
-  });
-}
-
-function formatRequestTokens(
-  requests: readonly EpisodeAuthorRequestRecord[],
-): string {
-  const total = requests.reduce((sum, request) => {
-    if (!request.tokenUsage) return sum;
-    return (
-      sum +
-      (tokenCount(request.tokenUsage.totalTokens) ||
-        tokenCount(request.tokenUsage.promptTokens) +
-          tokenCount(request.tokenUsage.completionTokens))
-    );
-  }, 0);
-  return new Intl.NumberFormat("en-US").format(total);
 }
 
 function Metric({ label, value }: { readonly label: string; readonly value: string }) {

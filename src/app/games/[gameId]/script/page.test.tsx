@@ -1,17 +1,17 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { EpisodeAuthorRequestWorkspace } from "@/components/script/episode-author-request-workspace";
 import { createEpisodeAuthorWorkspace } from "@/core/episode-author";
+import type { EpisodeAuthorRequestRecord } from "@/core/episode-script";
 import { createSeedGame } from "@/core/game";
 import type { GameId } from "@/core/types";
-import type { EpisodeAuthorRequestRecord } from "@/core/episode-script";
 import {
   GAME_RECORD_SCHEMA_VERSION,
   type GameRecord,
 } from "@/server/game-repository";
 import {
   EpisodeAuthorGeneratingStatus,
-  EpisodeAuthorRequests,
   EpisodeWorkspace,
 } from "./page";
 
@@ -49,7 +49,7 @@ describe("ScriptPreparationPage", () => {
     expect(html).toContain('aria-pressed="false"');
   });
 
-  it("renders one reusable LLM details control per script-author request", () => {
+  it("renders one selectable request list with an inline details panel", () => {
     const request: EpisodeAuthorRequestRecord = {
       id: "episode_request_1",
       task: { kind: "story" },
@@ -75,40 +75,50 @@ describe("ScriptPreparationPage", () => {
     };
 
     const html = renderToStaticMarkup(
-      React.createElement(EpisodeAuthorRequests, { requests: [request] }),
+      React.createElement(EpisodeAuthorRequestWorkspace, { requests: [request] }),
     );
 
     expect(html).toContain("LLM requests");
+    expect(html).toContain(">LLM Details<");
     expect(html).toContain("1 requests · 120 tokens");
     expect(html).toContain("openai-compatible/author-model");
-    expect(html).toContain('aria-label="Story spine LLM details"');
+    expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("Author the outline.");
     expect(html).toContain("Token usage");
+    expect(html).not.toContain("<dialog");
 
     const newerRequest: EpisodeAuthorRequestRecord = {
       ...request,
       id: "episode_request_2",
       task: { kind: "ensemble" },
+      request: {
+        ...request.request,
+        systemPrompt: "Author the ensemble.",
+      },
       createdAt: "2026-07-14T00:01:00.000Z",
     };
     const reversedHtml = renderToStaticMarkup(
-      React.createElement(EpisodeAuthorRequests, {
+      React.createElement(EpisodeAuthorRequestWorkspace, {
         requests: [request, newerRequest],
       }),
     );
     expect(reversedHtml.indexOf("Ensemble map")).toBeLessThan(
       reversedHtml.indexOf("Story spine"),
     );
+    expect(reversedHtml).toContain("Author the ensemble.");
+    expect(reversedHtml).not.toContain("Author the outline.");
   });
 
   it("keeps the LLM request panel visible before the first request", () => {
     const html = renderToStaticMarkup(
-      React.createElement(EpisodeAuthorRequests, { requests: [] }),
+      React.createElement(EpisodeAuthorRequestWorkspace, { requests: [] }),
     );
 
     expect(html).toContain("LLM requests");
+    expect(html).toContain(">LLM Details<");
     expect(html).toContain("0 requests · 0 tokens");
     expect(html).toContain("开始生成后，请求记录会按执行顺序出现在这里");
+    expect(html).toContain("选择一条请求后，这里会显示 Prompt、Token 和模型输出");
   });
 
   it("shows the persisted Script Author Agent phase while generating", () => {
@@ -167,6 +177,7 @@ describe("ScriptPreparationPage", () => {
     );
 
     expect(html).toContain("当前步骤已完成");
+    expect(html).toContain('aria-label="Script Author current status"');
     expect(html).toContain("当前状态");
     expect(html).toContain("READY");
     expect(html).toContain("下一步：群像分工 · 0/1");
@@ -181,6 +192,9 @@ describe("ScriptPreparationPage", () => {
     expect(html).toMatch(/群像分工<\/dt><dd[^>]*>0 \/ 1/);
     expect(html).toMatch(/关系弧线<\/dt><dd[^>]*>0 \/ —/);
     expect(html).toContain("生成下一步");
+    expect(html).toMatch(
+      /aria-label="Script Author current status"[\s\S]*自动生成下一步[\s\S]*生成下一步[\s\S]*<\/section>/,
+    );
     expect(html).not.toContain("animate-spin");
   });
 

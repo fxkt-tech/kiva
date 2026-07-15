@@ -36,8 +36,6 @@ export function LlmGenerationDetails({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
-  const decisionSummary = decisionSummaryText(generation.parsedOutput);
-
   async function copyMarkdown() {
     try {
       await navigator.clipboard.writeText(generationMarkdown(generation));
@@ -105,162 +103,120 @@ export function LlmGenerationDetails({
             </form>
           </div>
         </div>
-        <div className="max-h-[calc(82vh-65px)] space-y-4 overflow-y-auto p-4">
-          <GenerationBlock title="Token usage">
-            {generation.tokenUsage ? (
-              <div className="grid gap-2 text-xs sm:grid-cols-2">
-                <KeyValue
-                  label="Prompt"
-                  value={formatTokenCount(generation.tokenUsage.promptTokens)}
-                />
-                <KeyValue
-                  label="Completion"
-                  value={formatTokenCount(generation.tokenUsage.completionTokens)}
-                />
-                <KeyValue
-                  label="Total"
-                  value={formatTokenCount(generation.tokenUsage.totalTokens)}
-                />
-                <KeyValue
-                  label="Cached prompt"
-                  value={formatTokenCount(generation.tokenUsage.cachedPromptTokens)}
-                />
-                <KeyValue
-                  label="Reasoning"
-                  value={formatTokenCount(generation.tokenUsage.reasoningTokens)}
-                />
-                <div className="sm:col-span-2">
-                  <TokenCostCalculator
-                    promptTokens={tokenCount(generation.tokenUsage.promptTokens)}
-                    reasoningTokens={tokenCount(
-                      generation.tokenUsage.reasoningTokens,
-                    )}
-                    completionTokens={tokenCount(
-                      generation.tokenUsage.completionTokens,
-                    )}
-                  />
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-subtle">
-                Token usage was not returned by the provider.
-              </p>
-            )}
-          </GenerationBlock>
-
-          {generation.stages && generation.stages.length > 0 ? (
-          <GenerationBlock title={`Pipeline stages (${generation.stages.length})`}>
-            <div className="space-y-4">
-              {generation.stages.map((stage, index) => (
-                <div key={`${stage.stage}-${index}`} className="space-y-3 rounded-md border border-border p-3">
-                  <KeyValue
-                    label={`Stage ${index + 1}`}
-                    value={`${stage.stage} · ${stage.promptVersion} · ${stage.provider}/${stage.model}`}
-                  />
-                  <KeyValue label="Schema" value={stage.request.schemaName} />
-                  <TextDump label="System prompt" value={stage.request.systemPrompt} />
-                  {stage.request.messages.map((message, messageIndex) => (
-                    <TextDump
-                      key={`${message.role}-${messageIndex}`}
-                      label={`${message.role} message ${messageIndex + 1}`}
-                      value={message.content}
-                    />
-                  ))}
-                  <TextDump label="Raw output" value={stage.rawOutput ?? "No raw output was recorded."} />
-                  <TextDump
-                    label="Parsed output"
-                    value={stage.parsedOutput ? JSON.stringify(stage.parsedOutput, null, 2) : "No parsed output was recorded."}
-                  />
-                  {stage.error ? <TextDump label="Error" value={stage.error} /> : null}
-                </div>
-              ))}
-            </div>
-          </GenerationBlock>
-          ) : null}
-
-          <GenerationBlock title="Request">
-            <div className="space-y-3">
-              <KeyValue label="Schema" value={generation.request.schemaName} />
-              <TextDump label="System prompt" value={generation.request.systemPrompt} />
-              {generation.request.messages.map((message, index) => (
-                <TextDump
-                  key={`${message.role}-${index}`}
-                  label={`${message.role} message ${index + 1}`}
-                  value={message.content}
-                />
-              ))}
-            </div>
-          </GenerationBlock>
-
-          {generation.attempts && generation.attempts.length > 0 ? (
-            <GenerationBlock title={`Generation attempts (${generation.attempts.length})`}>
-              <div className="space-y-4">
-                {generation.attempts.map((attempt, index) => (
-                  <div
-                    key={`${attempt.request.schemaName}-${index}`}
-                    className="space-y-2 rounded-md border border-border p-3"
-                  >
-                    <KeyValue
-                      label={`Attempt ${index + 1}`}
-                      value={attempt.error ? "invalid" : "accepted"}
-                    />
-                    <TextDump
-                      label="System prompt"
-                      value={attempt.request.systemPrompt}
-                    />
-                    {attempt.request.messages.map((message, messageIndex) => (
-                      <TextDump
-                        key={`${message.role}-${messageIndex}`}
-                        label={`${message.role} message ${messageIndex + 1}`}
-                        value={message.content}
-                      />
-                    ))}
-                    <TextDump
-                      label="Raw output"
-                      value={attempt.rawOutput ?? "No raw output was recorded."}
-                    />
-                    {attempt.error ? (
-                      <TextDump label="Error" value={attempt.error} />
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </GenerationBlock>
-          ) : null}
-
-          {showDecisionSummary ? (
-            <GenerationBlock title="Player reasoning / decision summary">
-              <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
-                {decisionSummary ??
-                  "No decision summary was returned by the model. Hidden model reasoning is not available."}
-              </pre>
-            </GenerationBlock>
-          ) : null}
-
-          <GenerationBlock title="Raw output">
-            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
-              {generation.rawOutput ?? "No raw output was recorded."}
-            </pre>
-          </GenerationBlock>
-
-          <GenerationBlock title="Parsed output">
-            <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
-              {generation.parsedOutput
-                ? JSON.stringify(generation.parsedOutput, null, 2)
-                : "No parsed output was recorded."}
-            </pre>
-          </GenerationBlock>
-
-          {generation.error ? (
-            <GenerationBlock title="Error">
-              <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-red-300">
-                {generation.error}
-              </pre>
-            </GenerationBlock>
-          ) : null}
+        <div className="max-h-[calc(82vh-65px)] overflow-y-auto p-4">
+          <LlmGenerationDetailsContent
+            generation={generation}
+            showDecisionSummary={showDecisionSummary}
+          />
         </div>
       </dialog>
     </>
+  );
+}
+
+export function LlmGenerationDetailsContent({
+  generation,
+  showDecisionSummary = true,
+}: {
+  readonly generation: LlmDetailsRecord;
+  readonly showDecisionSummary?: boolean;
+}) {
+  const decisionSummary = decisionSummaryText(generation.parsedOutput);
+  return (
+    <div className="space-y-4">
+      <GenerationBlock title="Token usage">
+        {generation.tokenUsage ? (
+          <div className="grid gap-2 text-xs sm:grid-cols-2">
+            <KeyValue label="Prompt" value={formatTokenCount(generation.tokenUsage.promptTokens)} />
+            <KeyValue label="Completion" value={formatTokenCount(generation.tokenUsage.completionTokens)} />
+            <KeyValue label="Total" value={formatTokenCount(generation.tokenUsage.totalTokens)} />
+            <KeyValue label="Cached prompt" value={formatTokenCount(generation.tokenUsage.cachedPromptTokens)} />
+            <KeyValue label="Reasoning" value={formatTokenCount(generation.tokenUsage.reasoningTokens)} />
+            <div className="sm:col-span-2">
+              <TokenCostCalculator
+                promptTokens={tokenCount(generation.tokenUsage.promptTokens)}
+                reasoningTokens={tokenCount(generation.tokenUsage.reasoningTokens)}
+                completionTokens={tokenCount(generation.tokenUsage.completionTokens)}
+              />
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-subtle">Token usage was not returned by the provider.</p>
+        )}
+      </GenerationBlock>
+
+      {generation.stages && generation.stages.length > 0 ? (
+        <GenerationBlock title={`Pipeline stages (${generation.stages.length})`}>
+          <div className="space-y-4">
+            {generation.stages.map((stage, index) => (
+              <div key={`${stage.stage}-${index}`} className="space-y-3 rounded-md border border-border p-3">
+                <KeyValue label={`Stage ${index + 1}`} value={`${stage.stage} · ${stage.promptVersion} · ${stage.provider}/${stage.model}`} />
+                <KeyValue label="Schema" value={stage.request.schemaName} />
+                <TextDump label="System prompt" value={stage.request.systemPrompt} />
+                {stage.request.messages.map((message, messageIndex) => (
+                  <TextDump key={`${message.role}-${messageIndex}`} label={`${message.role} message ${messageIndex + 1}`} value={message.content} />
+                ))}
+                <TextDump label="Raw output" value={stage.rawOutput ?? "No raw output was recorded."} />
+                <TextDump label="Parsed output" value={stage.parsedOutput ? JSON.stringify(stage.parsedOutput, null, 2) : "No parsed output was recorded."} />
+                {stage.error ? <TextDump label="Error" value={stage.error} /> : null}
+              </div>
+            ))}
+          </div>
+        </GenerationBlock>
+      ) : null}
+
+      <GenerationBlock title="Request">
+        <div className="space-y-3">
+          <KeyValue label="Schema" value={generation.request.schemaName} />
+          <TextDump label="System prompt" value={generation.request.systemPrompt} />
+          {generation.request.messages.map((message, index) => (
+            <TextDump key={`${message.role}-${index}`} label={`${message.role} message ${index + 1}`} value={message.content} />
+          ))}
+        </div>
+      </GenerationBlock>
+
+      {generation.attempts && generation.attempts.length > 0 ? (
+        <GenerationBlock title={`Generation attempts (${generation.attempts.length})`}>
+          <div className="space-y-4">
+            {generation.attempts.map((attempt, index) => (
+              <div key={`${attempt.request.schemaName}-${index}`} className="space-y-2 rounded-md border border-border p-3">
+                <KeyValue label={`Attempt ${index + 1}`} value={attempt.error ? "invalid" : "accepted"} />
+                <TextDump label="System prompt" value={attempt.request.systemPrompt} />
+                {attempt.request.messages.map((message, messageIndex) => (
+                  <TextDump key={`${message.role}-${messageIndex}`} label={`${message.role} message ${messageIndex + 1}`} value={message.content} />
+                ))}
+                <TextDump label="Raw output" value={attempt.rawOutput ?? "No raw output was recorded."} />
+                {attempt.error ? <TextDump label="Error" value={attempt.error} /> : null}
+              </div>
+            ))}
+          </div>
+        </GenerationBlock>
+      ) : null}
+
+      {showDecisionSummary ? (
+        <GenerationBlock title="Player reasoning / decision summary">
+          <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
+            {decisionSummary ?? "No decision summary was returned by the model. Hidden model reasoning is not available."}
+          </pre>
+        </GenerationBlock>
+      ) : null}
+
+      <GenerationBlock title="Raw output">
+        <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
+          {generation.rawOutput ?? "No raw output was recorded."}
+        </pre>
+      </GenerationBlock>
+      <GenerationBlock title="Parsed output">
+        <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
+          {generation.parsedOutput ? JSON.stringify(generation.parsedOutput, null, 2) : "No parsed output was recorded."}
+        </pre>
+      </GenerationBlock>
+      {generation.error ? (
+        <GenerationBlock title="Error">
+          <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-red-300">{generation.error}</pre>
+        </GenerationBlock>
+      ) : null}
+    </div>
   );
 }
 
