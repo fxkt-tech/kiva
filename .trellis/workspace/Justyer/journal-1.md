@@ -369,3 +369,36 @@ Fixed Ensemble dramaticWeight prompting and Script alignment, added default-off 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: Fix initial Script Author output contracts
+
+**Date**: 2026-07-15
+**Task**: Fix initial Script Author output contracts
+**Branch**: `main`
+
+### Summary
+
+Reuse each Script Author output contract in the initial provider prompt and structural repair, add a scene-beats disclosure regression, and document the contract flow.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `cfc923d` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

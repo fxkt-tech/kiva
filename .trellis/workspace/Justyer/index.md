@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 11
+- **Total Sessions**: 12
 - **Last Active**: 2026-07-15
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~371 | Active |
+| `journal-1.md` | ~404 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 12 | 2026-07-15 | Fix initial Script Author output contracts | `cfc923d` | `main` |
 | 11 | 2026-07-15 | Script Author controlled progression | `431226a` | `main` |
 | 10 | 2026-07-14 | Script Author Agent v3 | `ebf5e09` | `main` |
 | 9 | 2026-07-14 | 最新版数据模型与剧本 Preview 收尾 | `ccbced6` | `main` |
