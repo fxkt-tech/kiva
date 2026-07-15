@@ -72,47 +72,31 @@ export function EpisodeAuthorRequestWorkspace({
                       setSelectedId(request.id);
                       setCopyStatus("idle");
                     }}
-                    className={`grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-3 text-left text-xs transition-colors ${
+                    className={`flex w-full min-w-0 items-center gap-2.5 px-3 py-2.5 text-left text-xs transition-colors ${
                       selectedRequest
                         ? "bg-accent/10 shadow-[inset_2px_0_0_var(--color-accent)]"
                         : "hover:bg-surface-muted/35"
                     }`}
                   >
-                    <span className="min-w-0">
-                      <span className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] text-subtle">
-                          {String(sequence).padStart(2, "0")}
-                        </span>
-                        <span className="truncate font-medium text-foreground">
-                          {label}
-                        </span>
-                      </span>
-                      <span className="mt-1 flex min-w-0 items-center gap-1.5 pl-7 font-mono text-[10px] text-subtle">
-                        <span
-                          aria-hidden="true"
-                          className={
-                            request.status === "success"
-                              ? "h-1.5 w-1.5 shrink-0 rounded-full bg-good-badge-foreground"
-                              : "h-1.5 w-1.5 shrink-0 rounded-full bg-danger-badge-foreground"
-                          }
-                        />
-                        <span className="truncate">
-                          {request.provider}/{request.model} · {request.status} ·{" "}
-                          {request.task.kind === "beats"
-                            ? `steps ${request.task.stepIndexes.join(", ")}`
-                            : request.task.kind}
-                        </span>
-                      </span>
+                    <span className="shrink-0 font-mono text-[10px] text-subtle">
+                      {String(sequence).padStart(2, "0")}
                     </span>
-                    <span className="flex shrink-0 items-center gap-1.5">
-                      <span className="font-mono text-[10px] text-muted">
-                        {formatRequestTokens([request])}
-                      </span>
-                      <ChevronRight
-                        aria-hidden="true"
-                        className={`h-3.5 w-3.5 ${selectedRequest ? "text-accent" : "text-subtle"}`}
-                      />
+                    <span
+                      aria-hidden="true"
+                      className={
+                        request.status === "success"
+                          ? "h-1.5 w-1.5 shrink-0 rounded-full bg-good-badge-foreground"
+                          : "h-1.5 w-1.5 shrink-0 rounded-full bg-danger-badge-foreground"
+                      }
+                    />
+                    <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                      {label}
+                      <span className="sr-only"> · {request.status}</span>
                     </span>
+                    <ChevronRight
+                      aria-hidden="true"
+                      className={`h-3.5 w-3.5 shrink-0 ${selectedRequest ? "text-accent" : "text-subtle"}`}
+                    />
                   </button>
                 );
               })}

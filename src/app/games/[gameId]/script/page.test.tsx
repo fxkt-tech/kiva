@@ -86,6 +86,15 @@ describe("ScriptPreparationPage", () => {
     expect(html).toContain("Author the outline.");
     expect(html).toContain("Token usage");
     expect(html).not.toContain("<dialog");
+    const requestRow = html.match(
+      /<button[^>]*aria-label="Story spine request"[\s\S]*?<\/button>/,
+    )?.[0];
+    expect(requestRow).toBeDefined();
+    expect(requestRow!.indexOf("rounded-full")).toBeLessThan(
+      requestRow!.indexOf(">Story spine<"),
+    );
+    expect(requestRow).not.toContain("openai-compatible");
+    expect(requestRow).not.toContain("120");
 
     const newerRequest: EpisodeAuthorRequestRecord = {
       ...request,
