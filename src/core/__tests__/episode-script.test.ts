@@ -537,11 +537,15 @@ describe("episode script", () => {
     });
 
     expect(beatRequests.length).toBeGreaterThan(0);
+    expect(beatRequests.every((request) => request.messages.length === 1))
+      .toBe(true);
     expect(beatRequests.every((request) =>
-      requestContent(request).includes(contract)
+      request.messages[0]?.content.includes(contract)
     )).toBe(true);
     expect(beatRequests.every((request) =>
-      requestContent(request).includes("每个字符串字段最多 80 个字符")
+      request.messages[0]?.content.includes(
+        "每个字符串字段最多 80 个字符",
+      )
     )).toBe(true);
   });
 

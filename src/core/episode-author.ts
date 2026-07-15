@@ -871,13 +871,21 @@ function withOutputContract(
   request: GenerationRequestSnapshot,
   outputContract: readonly string[],
 ): GenerationRequestSnapshot {
+  const userMessage = request.messages[0];
+  if (request.messages.length !== 1 || userMessage?.role !== "user") {
+    throw new Error(
+      "Episode author request must contain exactly one user message",
+    );
+  }
   return {
     ...request,
     messages: [
-      ...request.messages,
       {
+        ...userMessage,
         role: "user",
         content: [
+          userMessage.content,
+          "",
           "输出必须满足：",
           ...outputContract.map((line) => `- ${line}`),
         ].join("\n"),
