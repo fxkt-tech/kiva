@@ -86,6 +86,16 @@ describe("ScriptPreparationPage", () => {
     expect(html).toContain("Token usage");
   });
 
+  it("keeps the LLM request panel visible before the first request", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(EpisodeAuthorRequests, { requests: [] }),
+    );
+
+    expect(html).toContain("LLM requests");
+    expect(html).toContain("0 requests · 0 tokens");
+    expect(html).toContain("开始生成后，请求记录会按执行顺序出现在这里");
+  });
+
   it("shows the persisted Script Author Agent phase while generating", () => {
     const gameId = "generating-scripted-game" as GameId;
     const game = {
@@ -176,8 +186,8 @@ describe("ScriptPreparationPage", () => {
       React.createElement(EpisodeWorkspace, { record }),
     );
 
-    expect(html).toContain('class="py-10 text-left"');
-    expect(html).not.toContain('class="py-10 text-center"');
+    expect(html).toContain('class="text-left"');
+    expect(html).not.toContain('class="text-center"');
     expect(html).toContain('class="mx-auto h-8 w-8');
   });
 });
