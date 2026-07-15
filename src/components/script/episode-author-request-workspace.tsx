@@ -15,14 +15,17 @@ import {
   generationMarkdown,
   LlmGenerationDetailsContent,
 } from "@/components/editor/llm-generation-details";
+import { useEpisodeDetailSelection } from "@/components/script/episode-detail-selection";
 import { Button } from "@/components/ui/button";
 import type { EpisodeAuthorRequestRecord } from "@/core/episode-script";
 import { tokenCount } from "@/core/token-usage";
 
 export function EpisodeAuthorRequestWorkspace({
   requests,
+  directorReview,
 }: {
   readonly requests: readonly EpisodeAuthorRequestRecord[];
+  readonly directorReview?: ReactNode;
 }) {
   const labels = episodeAuthorRequestLabels(requests);
   const entries = requests
@@ -40,6 +43,11 @@ export function EpisodeAuthorRequestWorkspace({
   );
   const [allExpanded, setAllExpanded] = useState(true);
   const [expansionRevision, setExpansionRevision] = useState(0);
+  const detailSelection = useEpisodeDetailSelection();
+  const [localDetailView, setLocalDetailView] = useState<
+    "request" | "director-review"
+  >("request");
+  const detailView = detailSelection?.view ?? localDetailView;
   const selected =
     entries.find(({ request }) => request.id === selectedId) ?? entries[0] ?? null;
 
@@ -71,7 +79,9 @@ export function EpisodeAuthorRequestWorkspace({
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             <div className="divide-y divide-border">
               {entries.map(({ request, label, sequence }) => {
-                const selectedRequest = request.id === selected?.request.id;
+                const selectedRequest =
+                  detailView === "request" &&
+                  request.id === selected?.request.id;
                 return (
                   <button
                     key={request.id}
@@ -80,6 +90,8 @@ export function EpisodeAuthorRequestWorkspace({
                     aria-pressed={selectedRequest}
                     onClick={() => {
                       setSelectedId(request.id);
+                      detailSelection?.showRequest();
+                      setLocalDetailView("request");
                       setCopyStatus("idle");
                       setAllExpanded(true);
                       setExpansionRevision((revision) => revision + 1);
@@ -118,84 +130,108 @@ export function EpisodeAuthorRequestWorkspace({
       </section>
 
       <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
-        <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-3">
-          <h2 className="text-sm font-semibold">LLM Details</h2>
-          <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-subtle">
-            {selected ? `Request ${String(selected.sequence).padStart(2, "0")}` : "No selection"}
-          </span>
-        </header>
-        {selected ? (
+        {detailView === "director-review" && directorReview ? (
           <>
-            <div className="shrink-0 border-b border-border px-3 py-2.5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="truncate text-xs font-semibold text-foreground">
-                    {selected.label}
-                  </h3>
-                  <p className="mt-1 truncate font-mono text-[10px] text-subtle">
-                    {selected.request.status} · {selected.request.provider}/
-                    {selected.request.model} · {selected.request.promptVersion}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setAllExpanded((expanded) => !expanded);
-                      setExpansionRevision((revision) => revision + 1);
-                    }}
-                    aria-label={
-                      allExpanded
-                        ? "Collapse all LLM detail sections"
-                        : "Expand all LLM detail sections"
-                    }
-                    title={allExpanded ? "全部折叠" : "全部展开"}
-                    className="inline-flex h-7 items-center justify-center gap-1.5 px-2 py-0 text-[11px]"
-                  >
-                    {allExpanded ? (
-                      <ChevronsUp aria-hidden="true" className="h-3.5 w-3.5" />
-                    ) : (
-                      <ChevronsDown aria-hidden="true" className="h-3.5 w-3.5" />
-                    )}
-                    {allExpanded ? "全部折叠" : "全部展开"}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={copySelectedRequest}
-                    aria-label="Copy selected LLM details as Markdown"
-                    title={
-                      copyStatus === "copied"
-                        ? "Copied"
-                        : copyStatus === "error"
-                          ? "Copy failed"
-                          : "Copy as Markdown"
-                    }
-                    buttonStyle="icon"
-                    iconSize="xs"
-                  >
-                    {copyStatus === "copied" ? (
-                      <Check aria-hidden="true" className="h-3.5 w-3.5" />
-                    ) : (
-                      <Copy aria-hidden="true" className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
-              <LlmGenerationDetailsContent
-                key={`${selected.request.id}:${expansionRevision}`}
-                generation={selected.request}
-                showDecisionSummary={false}
-                defaultExpanded={allExpanded}
-              />
+            <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-3">
+              <h2 className="text-sm font-semibold">Director review</h2>
+              <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-subtle">
+                Final candidate
+              </span>
+            </header>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
+              {directorReview}
             </div>
           </>
         ) : (
-          <EmptyPanel
-            icon={<FileSearch aria-hidden="true" className="h-5 w-5" />}
-            copy="选择一条请求后，这里会显示 Prompt、Token 和模型输出。"
-          />
+          <>
+            <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-3">
+              <h2 className="text-sm font-semibold">LLM Details</h2>
+              <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-subtle">
+                {selected
+                  ? `Request ${String(selected.sequence).padStart(2, "0")}`
+                  : "No selection"}
+              </span>
+            </header>
+            {selected ? (
+              <>
+                <div className="shrink-0 border-b border-border px-3 py-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="truncate text-xs font-semibold text-foreground">
+                        {selected.label}
+                      </h3>
+                      <p className="mt-1 truncate font-mono text-[10px] text-subtle">
+                        {selected.request.status} · {selected.request.provider}/
+                        {selected.request.model} · {selected.request.promptVersion}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setAllExpanded((expanded) => !expanded);
+                          setExpansionRevision((revision) => revision + 1);
+                        }}
+                        aria-label={
+                          allExpanded
+                            ? "Collapse all LLM detail sections"
+                            : "Expand all LLM detail sections"
+                        }
+                        title={allExpanded ? "全部折叠" : "全部展开"}
+                        className="inline-flex h-7 items-center justify-center gap-1.5 px-2 py-0 text-[11px]"
+                      >
+                        {allExpanded ? (
+                          <ChevronsUp
+                            aria-hidden="true"
+                            className="h-3.5 w-3.5"
+                          />
+                        ) : (
+                          <ChevronsDown
+                            aria-hidden="true"
+                            className="h-3.5 w-3.5"
+                          />
+                        )}
+                        {allExpanded ? "全部折叠" : "全部展开"}
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={copySelectedRequest}
+                        aria-label="Copy selected LLM details as Markdown"
+                        title={
+                          copyStatus === "copied"
+                            ? "Copied"
+                            : copyStatus === "error"
+                              ? "Copy failed"
+                              : "Copy as Markdown"
+                        }
+                        buttonStyle="icon"
+                        iconSize="xs"
+                      >
+                        {copyStatus === "copied" ? (
+                          <Check aria-hidden="true" className="h-3.5 w-3.5" />
+                        ) : (
+                          <Copy aria-hidden="true" className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+                  <LlmGenerationDetailsContent
+                    key={`${selected.request.id}:${expansionRevision}`}
+                    generation={selected.request}
+                    showDecisionSummary={false}
+                    defaultExpanded={allExpanded}
+                  />
+                </div>
+              </>
+            ) : (
+              <EmptyPanel
+                icon={<FileSearch aria-hidden="true" className="h-5 w-5" />}
+                copy="选择一条请求后，这里会显示 Prompt、Token 和模型输出。"
+              />
+            )}
+          </>
         )}
       </section>
     </>

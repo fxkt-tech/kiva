@@ -9,6 +9,10 @@ import {
 import { FormSubmitButton } from "@/components/editor/form-submit-button";
 import { EpisodeAutoContinueButton } from "@/components/script/episode-auto-continue";
 import { EpisodeAuthorRequestWorkspace } from "@/components/script/episode-author-request-workspace";
+import {
+  DirectorReviewButton,
+  EpisodeDetailSelectionProvider,
+} from "@/components/script/episode-detail-selection";
 import { EpisodeEnsembleReview } from "@/components/script/episode-ensemble-review";
 import { EpisodeGeneratingRefresh } from "@/components/script/episode-generating-refresh";
 import { iconButtonClassName } from "@/components/ui/button-styles";
@@ -39,6 +43,7 @@ export default async function ScriptPreparationPage({
     redirect(`/games/${record.game.id}/editor`);
   }
   const requests = episodeAuthorRequestsForRecord(record);
+  const directorReview = episodeDirectorReviewForRecord(record);
 
   return (
     <main className="h-screen overflow-hidden bg-background p-3 text-foreground sm:p-4">
@@ -62,35 +67,40 @@ export default async function ScriptPreparationPage({
           </div>
         </header>
 
-        <section className="grid min-h-0 gap-3 overflow-hidden grid-rows-[minmax(220px,0.8fr)_minmax(260px,1.2fr)_minmax(180px,0.72fr)] lg:grid-cols-[minmax(260px,0.54fr)_minmax(380px,1.46fr)_minmax(280px,0.72fr)] lg:grid-rows-1">
-          <EpisodeAuthorRequestWorkspace requests={requests} />
+        <EpisodeDetailSelectionProvider>
+          <section className="grid min-h-0 gap-3 overflow-hidden grid-rows-[minmax(220px,0.8fr)_minmax(260px,1.2fr)_minmax(180px,0.72fr)] lg:grid-cols-[minmax(260px,0.54fr)_minmax(380px,1.46fr)_minmax(280px,0.72fr)] lg:grid-rows-1">
+            <EpisodeAuthorRequestWorkspace
+              requests={requests}
+              directorReview={directorReview}
+            />
 
-          <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
-            <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <Clapperboard
-                  aria-hidden="true"
-                  className="h-4 w-4 text-cyan-300"
-                />
-                <h2>剧本控制台</h2>
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
+              <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Clapperboard
+                    aria-hidden="true"
+                    className="h-4 w-4 text-cyan-300"
+                  />
+                  <h2>剧本控制台</h2>
+                </div>
+                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-subtle">
+                  Script Author
+                </span>
+              </header>
+              <div className="min-h-0 flex-1 overflow-y-auto p-3">
+                <div className="rounded-lg border border-warning-badge/60 bg-warning-badge/25 px-3 py-2 text-xs leading-5 text-warning-badge-foreground">
+                  {record.episodeScript?.status === "approved"
+                    ? "剧本已经批准，结构已锁定。"
+                    : "剧本批准前不会推进游戏、生成玩家配音或允许导出。当前阵容与合法轨迹保持锁定。"}
+                </div>
+                <div className="mt-3">
+                  <EpisodeWorkspace record={record} />
+                </div>
+                <LockedGameFacts record={record} />
               </div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-subtle">
-                Script Author
-              </span>
-            </header>
-            <div className="min-h-0 flex-1 overflow-y-auto p-3">
-              <div className="rounded-lg border border-warning-badge/60 bg-warning-badge/25 px-3 py-2 text-xs leading-5 text-warning-badge-foreground">
-                {record.episodeScript?.status === "approved"
-                  ? "剧本已经批准，结构已锁定。"
-                  : "剧本批准前不会推进游戏、生成玩家配音或允许导出。当前阵容与合法轨迹保持锁定。"}
-              </div>
-              <div className="mt-3">
-                <EpisodeWorkspace record={record} />
-              </div>
-              <LockedGameFacts record={record} />
-            </div>
+            </section>
           </section>
-        </section>
+        </EpisodeDetailSelectionProvider>
       </div>
     </main>
   );
@@ -122,87 +132,18 @@ export function EpisodeWorkspace({
     </div>
   );
   if (state.status === "review") {
-    const script = state.candidate;
-    const speechSteps = script.steps.filter((step) => step.speechBeat);
     return (
       <div>
         <EpisodeWorkspaceStatusCard
           state={state}
           playerCount={record.game.players.length}
-          controls={automationControl}
+          controls={
+            <>
+              {automationControl}
+              <DirectorReviewButton />
+            </>
+          }
         />
-        <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-cyan-300">Director review</p>
-            <h2 className="mt-1 text-xl font-semibold">{script.title}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{script.logline}</p>
-          </div>
-          <span className={state.report.valid ? "rounded-full bg-good-badge px-3 py-1 text-xs text-good-badge-foreground" : "rounded-full bg-danger-badge px-3 py-1 text-xs text-danger-badge-foreground"}>
-            {state.report.valid ? "校验通过" : "校验失败"}
-          </span>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <Metric label="计划胜方" value={script.plannedWinner === "good" ? "好人" : "狼人"} />
-          <Metric label="计划天数" value={`${script.plannedDayCount} 天`} />
-          <Metric label="预计时长" value={formatDuration(script.targetDurationMs)} />
-          <Metric label="结构规模" value={`${script.steps.length} 步 / ${speechSteps.length} 段发言`} />
-        </div>
-
-        <section className="mt-4">
-          <h3 className="text-sm font-semibold">剧情幕</h3>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
-            {script.acts.map((act) => (
-              <article key={act.title} className="rounded border border-border bg-background/50 p-3">
-                <h4 className="text-sm font-medium">{act.title}</h4>
-                <p className="mt-1 text-xs leading-5 text-muted">{act.summary}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <EpisodeEnsembleReview
-          script={script}
-          players={record.game.players}
-        />
-
-        <details className="mt-5 rounded border border-border bg-background/40">
-          <summary className="cursor-pointer px-4 py-3 text-sm font-medium">查看完整结构与发言节拍</summary>
-          <div className="max-h-96 space-y-2 overflow-y-auto border-t border-border p-3">
-            {script.steps.map((step) => (
-              <div key={step.index} className="rounded border border-border/70 px-3 py-2 text-xs">
-                <div className="font-mono text-subtle">#{step.index} · {step.slot.phase} · {step.slot.type}</div>
-                <div className="mt-1 text-muted">{step.summary}</div>
-                {step.speechBeat ? (
-                  <div className="mt-2 border-l-2 border-cyan-700 pl-2 text-muted">
-                    {step.speechBeat.objective} · {step.speechBeat.themeHook}
-                  </div>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </details>
-
-        {state.report.warnings.length > 0 ? (
-          <ul className="mt-4 space-y-1 text-xs text-warning-badge-foreground">
-            {state.report.warnings.map((warning) => <li key={warning}>{warning}</li>)}
-          </ul>
-        ) : null}
-
-        <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-          <form
-            action={generateEpisodeScriptAction.bind(
-              null,
-              record.game.id,
-              state.jobId,
-            )}
-          >
-            <FormSubmitButton label={<><RefreshCw className="h-4 w-4" /> 重新生成</>} pendingLabel="重新生成中…" className={secondaryActionClass} />
-          </form>
-          <form action={approveEpisodeScriptAction.bind(null, record.game.id, state.jobId, script.id)}>
-            <FormSubmitButton label={<><Check className="h-4 w-4" /> 批准并开局</>} pendingLabel="批准中…" disabled={!state.report.valid} className={primaryActionClass} />
-          </form>
-        </div>
       </div>
     );
   }
@@ -543,6 +484,154 @@ export function EpisodeAuthorGeneratingStatus({
         {progress.label} · {progress.completed}/{progress.total}
       </p>
     </>
+  );
+}
+
+function episodeDirectorReviewForRecord(record: GameRecord): ReactNode | undefined {
+  const persistedState = record.episodeScript;
+  if (!persistedState) return undefined;
+  const state = episodeScriptDisplayState(persistedState);
+  return state.status === "review" ? (
+    <EpisodeDirectorReview record={record} state={state} />
+  ) : undefined;
+}
+
+export function EpisodeDirectorReview({
+  record,
+  state,
+}: {
+  readonly record: GameRecord;
+  readonly state: Extract<EpisodeScriptState, { readonly status: "review" }>;
+}) {
+  const script = state.candidate;
+  const speechSteps = script.steps.filter((step) => step.speechBeat);
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold">{script.title}</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+            {script.logline}
+          </p>
+        </div>
+        <span
+          className={
+            state.report.valid
+              ? "rounded-full bg-good-badge px-3 py-1 text-xs text-good-badge-foreground"
+              : "rounded-full bg-danger-badge px-3 py-1 text-xs text-danger-badge-foreground"
+          }
+        >
+          {state.report.valid ? "校验通过" : "校验失败"}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Metric
+          label="计划胜方"
+          value={script.plannedWinner === "good" ? "好人" : "狼人"}
+        />
+        <Metric label="计划天数" value={`${script.plannedDayCount} 天`} />
+        <Metric
+          label="预计时长"
+          value={formatDuration(script.targetDurationMs)}
+        />
+        <Metric
+          label="结构规模"
+          value={`${script.steps.length} 步 / ${speechSteps.length} 段发言`}
+        />
+      </div>
+
+      <section className="mt-4">
+        <h3 className="text-sm font-semibold">剧情幕</h3>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          {script.acts.map((act) => (
+            <article
+              key={act.title}
+              className="rounded border border-border bg-background/50 p-3"
+            >
+              <h4 className="text-sm font-medium">{act.title}</h4>
+              <p className="mt-1 text-xs leading-5 text-muted">
+                {act.summary}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <EpisodeEnsembleReview script={script} players={record.game.players} />
+
+      <details className="mt-5 rounded border border-border bg-background/40">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-medium">
+          查看完整结构与发言节拍
+        </summary>
+        <div className="max-h-96 space-y-2 overflow-y-auto border-t border-border p-3">
+          {script.steps.map((step) => (
+            <div
+              key={step.index}
+              className="rounded border border-border/70 px-3 py-2 text-xs"
+            >
+              <div className="font-mono text-subtle">
+                #{step.index} · {step.slot.phase} · {step.slot.type}
+              </div>
+              <div className="mt-1 text-muted">{step.summary}</div>
+              {step.speechBeat ? (
+                <div className="mt-2 border-l-2 border-cyan-700 pl-2 text-muted">
+                  {step.speechBeat.objective} · {step.speechBeat.themeHook}
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </details>
+
+      {state.report.warnings.length > 0 ? (
+        <ul className="mt-4 space-y-1 text-xs text-warning-badge-foreground">
+          {state.report.warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      ) : null}
+
+      <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-border pt-4">
+        <form
+          action={generateEpisodeScriptAction.bind(
+            null,
+            record.game.id,
+            state.jobId,
+          )}
+        >
+          <FormSubmitButton
+            label={
+              <>
+                <RefreshCw className="h-4 w-4" /> 重新生成
+              </>
+            }
+            pendingLabel="重新生成中…"
+            className={secondaryActionClass}
+          />
+        </form>
+        <form
+          action={approveEpisodeScriptAction.bind(
+            null,
+            record.game.id,
+            state.jobId,
+            script.id,
+          )}
+        >
+          <FormSubmitButton
+            label={
+              <>
+                <Check className="h-4 w-4" /> 批准并开局
+              </>
+            }
+            pendingLabel="批准中…"
+            disabled={!state.report.valid}
+            className={primaryActionClass}
+          />
+        </form>
+      </div>
+    </div>
   );
 }
 

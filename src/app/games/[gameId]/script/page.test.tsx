@@ -2,6 +2,10 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { EpisodeAuthorRequestWorkspace } from "@/components/script/episode-author-request-workspace";
+import {
+  DirectorReviewButton,
+  EpisodeDetailSelectionProvider,
+} from "@/components/script/episode-detail-selection";
 import { createEpisodeAuthorWorkspace } from "@/core/episode-author";
 import type { EpisodeAuthorRequestRecord } from "@/core/episode-script";
 import { createSeedGame } from "@/core/game";
@@ -47,6 +51,64 @@ describe("ScriptPreparationPage", () => {
     expect(html).not.toContain("正在生成并模拟整局剧本");
     expect(html).toContain('aria-label="Enable auto-continue Script Author"');
     expect(html).toContain('aria-pressed="false"');
+  });
+
+  it("keeps Director review content out of the right console", () => {
+    const gameId = "review-scripted-game" as GameId;
+    const game = {
+      ...createSeedGame({
+        gameId,
+        createdAt: "2026-07-14T00:00:00.000Z",
+      }),
+      runMode: "scripted" as const,
+    };
+    const record: GameRecord = {
+      schemaVersion: GAME_RECORD_SCHEMA_VERSION,
+      game,
+      events: [],
+      draft: null,
+      generations: [],
+      voiceArtifactsByEventId: {},
+      episodeScript: {
+        status: "review",
+        jobId: "review_job",
+        candidate: {
+          schemaVersion: 3,
+          id: "episode_review",
+          gameId,
+          compilerVersion: "episode-compiler:v2",
+          inputHash: "review_input",
+          title: "中栏审核候选",
+          logline: "这段审核内容不能常驻右栏。",
+          plannedWinner: "good",
+          plannedDayCount: 1,
+          targetDurationMs: 60_000,
+          acts: [{ title: "第一幕", summary: "建立冲突。" }],
+          castDirections: [],
+          relationships: [],
+          steps: [],
+          createdAt: "2026-07-14T00:01:00.000Z",
+          author: { provider: "test", model: "test" },
+        },
+        report: {
+          valid: true,
+          stepCount: 0,
+          speechCount: 0,
+          targetDurationMs: 60_000,
+          warnings: [],
+        },
+        requests: [],
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(EpisodeWorkspace, { record }),
+    );
+
+    expect(html).toContain("Director review");
+    expect(html).toContain('aria-pressed="false"');
+    expect(html).not.toContain("中栏审核候选");
+    expect(html).not.toContain("批准并开局");
   });
 
   it("renders one selectable request list with an inline details panel", () => {
@@ -132,6 +194,35 @@ describe("ScriptPreparationPage", () => {
     expect(html).toContain("0 · 0 tokens");
     expect(html).toContain("开始生成后，请求记录会按执行顺序出现在这里");
     expect(html).toContain("选择一条请求后，这里会显示 Prompt、Token 和模型输出");
+  });
+
+  it("shows Director review in the middle detail panel when selected", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(
+        EpisodeDetailSelectionProvider,
+        { initialView: "director-review" },
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement(EpisodeAuthorRequestWorkspace, {
+            requests: [],
+            directorReview: React.createElement(
+              "div",
+              null,
+              "候选剧本审核内容",
+            ),
+          }),
+          React.createElement(DirectorReviewButton),
+        ),
+      ),
+    );
+
+    expect(html).toContain("LLM requests");
+    expect(html).toContain(">Director review<");
+    expect(html).toContain("Final candidate");
+    expect(html).toContain("候选剧本审核内容");
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).not.toContain(">LLM Details<");
   });
 
   it("shows the persisted Script Author Agent phase while generating", () => {

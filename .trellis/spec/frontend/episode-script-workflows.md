@@ -252,6 +252,7 @@ type EpisodeScriptReadyState = {
 - Ready- and generating-state rendering tests assert the shared “当前状态” card, exact state badge, progressbar, all five semantic request-kind labels, and artifact-derived completion values. They also assert “已保留请求” is absent from the control card. Generating remains left-aligned and does not render the old centered spinner block.
 - Script request/detail rendering tests assert newest-first buttons, newest default selection, one inline selected detail payload, `aria-pressed`, no `<dialog>`, and separate zero-request placeholders. Row assertions require the status dot before the visible label and reject provider/model metadata or per-request tokens inside the button. Browser checks click an older row and assert the inline detail title/content changes. Manual viewport checks cover desktop three-column and narrow three-panel stacked layouts with panel-local scrolling.
 - Detail-section tests assert default-open `<details>`/`<summary>` markup and the global control's accessible label. Browser checks independently close one section, collapse all, expand all, and verify selecting another request resets every section open.
+- Director-review tests assert the right console renders only the selectable `Director review` button, not the candidate body or approval actions. Selecting it replaces the middle `LLM Details` body with the complete candidate review and its existing actions; selecting any request restores that request's details.
 - Ready-, generating-, failed-, and idle-state rendering tests assert auto-continue and the applicable start/next/retry action are descendants of the shared current-status card.
 - Script rendering tests assert newest-first request order, effective READY for a settled historical generating snapshot, and “重试当前阶段” without any whole-run restart copy.
 - Creation/action tests require idle creation, deferred execution, stale-job zero-call exit, and approval identity checks.
@@ -299,6 +300,10 @@ Correct: derive all five phase values from `EpisodeAuthorWorkspace`; reserve `re
 Wrong: render request history inside `idle`, `generating`, `ready`, `failed`, and `review` branches, then open each request's details in a modal.
 
 Correct: project requests once at the page boundary, render one narrow selectable left audit panel plus one wide middle inline detail panel beside the right control panel, and give each panel body its own bounded overflow.
+
+Wrong: keep the complete Director review permanently inside the narrow right control panel or open it in a modal.
+
+Correct: keep one `Director review` selector in the right current-status controls and use the same shared detail selection state as LLM requests to render the complete read-only candidate and approval actions in the middle panel.
 
 Wrong: render detail cards as always-open sections or add one global boolean that prevents independent section toggles.
 
