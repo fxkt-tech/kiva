@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Film, LockKeyhole, RefreshCw } from "lucide-react";
+import { ArrowLeft, Check, Clapperboard, Film, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -66,11 +66,11 @@ export default async function ScriptPreparationPage({
           <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
             <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
               <div className="flex items-center gap-2 text-sm font-semibold">
-                <LockKeyhole
+                <Clapperboard
                   aria-hidden="true"
-                  className="h-4 w-4 text-warning-badge-foreground"
+                  className="h-4 w-4 text-cyan-300"
                 />
-                <h2>开局已锁定</h2>
+                <h2>剧本控制台</h2>
               </div>
               <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-subtle">
                 Script Author
