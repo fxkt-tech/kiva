@@ -94,7 +94,7 @@ There is no runtime prompt-version selector and no old Character/Prompt decoder.
 - JSON generation preserves provider `finishReason` and token usage before parsing. `finishReason === "length"` is a task-level incomplete-document failure and the truncated document is not appended to a whole-object repair request.
 - A successful speech record has exactly `decision -> performance`, both successful. A failed speech has either failed `decision`, or successful `decision -> failed performance`. An action has exactly one decision stage whose result matches record status.
 - Every stage stores its own exact request, raw/parsed result, attempts, model metadata, usage, and error. Persisted records reject missing stages, old prompt versions, old schema names, and inconsistent status payloads.
-- Model requests omit Actor-authored `temperature` and `maxTokens`. Client-side cost projection bills prompt plus reasoning at the input price and completion at the output price; it is not persisted game state.
+- Model requests omit Actor-authored `temperature` and `maxTokens`. Client-side cost projection defaults to ¥3 per million input tokens and ¥15 per million output tokens, bills prompt plus reasoning at the input price and completion at the output price, and remains editable non-persisted UI state. `DEFAULT_TOKEN_PRICING_CNY` is the single source for every token-cost view.
 
 #### Editor completion notifications
 

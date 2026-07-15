@@ -11,8 +11,8 @@ export type TokenUsageSummary = {
 };
 
 export const DEFAULT_TOKEN_PRICING_CNY = {
-  promptPerMillion: 6,
-  completionPerMillion: 30,
+  promptPerMillion: 3,
+  completionPerMillion: 15,
 } as const;
 
 export function calculateTokenCostCny(input: {

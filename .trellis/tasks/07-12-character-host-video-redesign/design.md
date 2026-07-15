@@ -135,7 +135,7 @@ Initial friction axes demonstrate possible pairings without encoding permanent a
 - Each Actor Definition owns its `provider`, `model`, JSON response format, and optional fallback model.
 - Game creation copies the complete selected Actor snapshot into `Player.actor`; runtime model selection reads `Player.actor.production.modelBinding`. Rule Roles and Lineup seats do not select or override an LLM.
 - `temperature` and `maxTokens` are not Actor configuration. OpenAI-compatible requests omit both fields and use provider/model defaults.
-- Token usage views include a non-persisted cost calculator. Default prices are ¥6 per million input tokens and ¥30 per million output tokens; input billing combines Prompt + Reasoning, while output billing uses Completion. Users may edit either price for immediate local recalculation.
+- Token usage views include a non-persisted cost calculator. Default prices are ¥3 per million input tokens and ¥15 per million output tokens; input billing combines Prompt + Reasoning, while output billing uses Completion. Users may edit either price for immediate local recalculation.
 
 ### 3.3 Actor Definition v2
 

@@ -7,8 +7,8 @@ import {
 describe("token usage pricing", () => {
   it("uses the default input and output prices per million tokens", () => {
     expect(DEFAULT_TOKEN_PRICING_CNY).toEqual({
-      promptPerMillion: 6,
-      completionPerMillion: 30,
+      promptPerMillion: 3,
+      completionPerMillion: 15,
     });
     expect(
       calculateTokenCostCny({
@@ -18,7 +18,7 @@ describe("token usage pricing", () => {
         promptPerMillion: DEFAULT_TOKEN_PRICING_CNY.promptPerMillion,
         completionPerMillion: DEFAULT_TOKEN_PRICING_CNY.completionPerMillion,
       }),
-    ).toBe(36);
+    ).toBe(18);
   });
 
   it("prices reasoning tokens as input tokens", () => {

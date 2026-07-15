@@ -14,9 +14,9 @@ describe("TokenCostCalculator", () => {
     );
 
     expect(html).toContain("输入价格");
-    expect(html).toContain('value="6"');
+    expect(html).toContain('value="3"');
     expect(html).toContain("输出价格");
-    expect(html).toContain('value="30"');
-    expect(html).toContain("¥39.0000");
+    expect(html).toContain('value="15"');
+    expect(html).toContain("¥19.5000");
   });
 });
