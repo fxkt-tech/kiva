@@ -15,6 +15,7 @@ import { episodeAuthorProgress } from "@/core/episode-author";
 import type {
   EpisodeAuthorRequestRecord,
   EpisodeAuthorWorkspace,
+  EpisodeScriptState,
 } from "@/core/episode-script";
 import { tokenCount } from "@/core/token-usage";
 import type { GameId } from "@/core/types";
@@ -124,7 +125,11 @@ export function EpisodeWorkspace({
     const speechSteps = script.steps.filter((step) => step.speechBeat);
     return (
       <div>
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <EpisodeWorkspaceStatusCard
+          state={state}
+          playerCount={record.game.players.length}
+        />
+        <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-cyan-300">Director review</p>
             <h2 className="mt-1 text-xl font-semibold">{script.title}</h2>
@@ -204,12 +209,13 @@ export function EpisodeWorkspace({
 
   if (state.status === "failed") {
     return (
-      <div>
-        <h2 className="text-base font-semibold text-danger-badge-foreground">剧本生成失败</h2>
-        <p className="mt-2 rounded border border-danger-badge/60 bg-danger-badge/25 px-3 py-2 text-sm text-danger-badge-foreground">{state.error}</p>
-        <p className="mt-2 text-xs text-muted">
-          已保留 {state.workspace.castDirections.length} 个角色弧线和{" "}
-          {state.workspace.beats.length} 个场景节拍；重试将从当前任务继续。
+      <div className="text-left">
+        <EpisodeWorkspaceStatusCard
+          state={state}
+          playerCount={record.game.players.length}
+        />
+        <p className="mt-3 rounded border border-danger-badge/60 bg-danger-badge/25 px-3 py-2 text-sm text-danger-badge-foreground">
+          {state.error}
         </p>
         <div className="mt-4">{automationControl}</div>
         <form
@@ -227,16 +233,12 @@ export function EpisodeWorkspace({
   }
 
   if (state.status === "ready") {
-    const progress = episodeAuthorProgress(state.workspace);
     return (
       <div className="text-left">
-        <h2 className="text-base font-semibold">当前步骤已完成</h2>
-        <p className="mt-2 text-sm text-muted">
-          下一步：{progress.label} · {progress.completed}/{progress.total}
-        </p>
-        <p className="mt-2 text-xs leading-5 text-subtle">
-          已完成的结果保存在工作区；下一次请求只处理当前任务。
-        </p>
+        <EpisodeWorkspaceStatusCard
+          state={state}
+          playerCount={record.game.players.length}
+        />
         <div className="mt-4">{automationControl}</div>
         <form
           className="mt-3"
@@ -260,10 +262,10 @@ export function EpisodeWorkspace({
     return (
       <div className="text-left">
         <EpisodeGeneratingRefresh />
-        <div className="rounded-lg border border-border bg-background/35 p-4">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-border border-t-cyan-300" />
-          <EpisodeAuthorGeneratingStatus workspace={state.workspace} />
-        </div>
+        <EpisodeWorkspaceStatusCard
+          state={state}
+          playerCount={record.game.players.length}
+        />
         <div className="mt-3">{automationControl}</div>
         <form
           className="mt-3"
@@ -289,7 +291,11 @@ export function EpisodeWorkspace({
 
   return (
     <div>
-      <div className="flex items-start gap-3">
+      <EpisodeWorkspaceStatusCard
+        state={state}
+        playerCount={record.game.players.length}
+      />
+      <div className="mt-4 flex items-start gap-3">
         <Film aria-hidden="true" className="mt-0.5 h-5 w-5 text-cyan-300" />
         <div>
           <h2 className="text-base font-semibold">生成一份可执行的单局剧本</h2>
@@ -312,6 +318,171 @@ export function EpisodeWorkspace({
       </form>
     </div>
   );
+}
+
+function EpisodeWorkspaceStatusCard({
+  state,
+  playerCount,
+}: {
+  readonly state: EpisodeScriptState;
+  readonly playerCount: number;
+}) {
+  const presentation = episodeWorkspaceStatusPresentation(state, playerCount);
+  const progressValue = Math.round(
+    (presentation.progress.completed /
+      Math.max(presentation.progress.total, 1)) *
+      100,
+  );
+
+  return (
+    <section className="overflow-hidden rounded-lg border border-border bg-background/55">
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-subtle">
+              当前状态
+            </p>
+            <h2 className="mt-1 text-base font-semibold text-foreground">
+              {presentation.title}
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              {presentation.copy}
+            </p>
+          </div>
+          <span
+            className={`${presentation.badgeClassName} inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold`}
+          >
+            <span
+              aria-hidden="true"
+              className={`h-1.5 w-1.5 rounded-full bg-current ${state.status === "generating" ? "animate-pulse" : ""}`}
+            />
+            {presentation.badge}
+          </span>
+        </div>
+
+        <div className="mt-4">
+          <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[10px] text-subtle">
+            <span className="truncate">{presentation.progress.label}</span>
+            <span className="shrink-0">
+              {presentation.progress.completed} / {presentation.progress.total}
+            </span>
+          </div>
+          <div
+            role="progressbar"
+            aria-label={`Script Author ${presentation.progress.label}`}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progressValue}
+            className="h-1 overflow-hidden rounded-full bg-surface-muted"
+          >
+            <div
+              className="h-full rounded-full bg-accent transition-[width] duration-500"
+              style={{ width: `${progressValue}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <dl className="grid grid-cols-3 border-t border-border">
+        <StatusMetric label="已保留请求" value={presentation.requestCount} />
+        <StatusMetric label="角色弧线" value={presentation.actorArcs} />
+        <StatusMetric label="场景节拍" value={presentation.sceneBeats} />
+      </dl>
+    </section>
+  );
+}
+
+function StatusMetric({
+  label,
+  value,
+}: {
+  readonly label: string;
+  readonly value: string;
+}) {
+  return (
+    <div className="min-w-0 border-r border-border px-3 py-2.5 last:border-r-0">
+      <dt className="truncate text-[10px] text-subtle">{label}</dt>
+      <dd className="mt-1 font-mono text-[11px] font-semibold text-foreground">
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function episodeWorkspaceStatusPresentation(
+  state: EpisodeScriptState,
+  playerCount: number,
+) {
+  if (state.status === "idle") {
+    return {
+      badge: "IDLE",
+      badgeClassName: "border-border bg-surface-muted text-muted",
+      title: "等待生成剧本",
+      copy: "尚未创建 Script Author 工作区。",
+      progress: { label: "等待开始", completed: 0, total: 1 },
+      requestCount: "00",
+      actorArcs: `0 / ${playerCount}`,
+      sceneBeats: "0 / —",
+    };
+  }
+
+  if (state.status === "review" || state.status === "approved") {
+    const script = state.status === "review" ? state.candidate : state.script;
+    return {
+      badge: state.status === "review" ? "REVIEW" : "APPROVED",
+      badgeClassName:
+        "border-good-badge/70 bg-good-badge text-good-badge-foreground",
+      title:
+        state.status === "review" ? "剧本候选已生成" : "剧本已经批准",
+      copy:
+        state.status === "review"
+          ? "完整结构已经组装并校验，等待导演审核。"
+          : "剧本结构已经锁定，可以进入游戏编辑器。",
+      progress: { label: "导演审核", completed: 1, total: 1 },
+      requestCount: String(state.requests.length).padStart(2, "0"),
+      actorArcs: `${script.castDirections.length} / ${playerCount}`,
+      sceneBeats: `${state.report.speechCount} / ${state.report.speechCount}`,
+    };
+  }
+
+  const progress = episodeAuthorProgress(state.workspace);
+  const common = {
+    progress,
+    requestCount: String(state.requests.length).padStart(2, "0"),
+    actorArcs: `${state.workspace.castDirections.length} / ${playerCount}`,
+    sceneBeats: `${state.workspace.beats.length} / ${state.workspace.speechStepCount}`,
+  };
+
+  if (state.status === "generating") {
+    return {
+      ...common,
+      badge: "GENERATING",
+      badgeClassName:
+        "border-info-badge/70 bg-info-badge text-info-badge-foreground",
+      title: "正在由 Script Author Agent 细化剧本",
+      copy: "正在处理当前任务，已完成结果会持续写入工作区。",
+    };
+  }
+
+  if (state.status === "failed") {
+    return {
+      ...common,
+      badge: "FAILED",
+      badgeClassName:
+        "border-danger-badge/70 bg-danger-badge text-danger-badge-foreground",
+      title: "剧本生成失败",
+      copy: `已保留 ${state.workspace.castDirections.length} 个角色弧线和 ${state.workspace.beats.length} 个场景节拍；重试会从当前任务继续。`,
+    };
+  }
+
+  return {
+    ...common,
+    badge: "READY",
+    badgeClassName:
+      "border-good-badge/70 bg-good-badge text-good-badge-foreground",
+    title: "当前步骤已完成",
+    copy: `下一步：${progress.label} · ${progress.completed}/${progress.total}`,
+  };
 }
 
 export function EpisodeAuthorGeneratingStatus({

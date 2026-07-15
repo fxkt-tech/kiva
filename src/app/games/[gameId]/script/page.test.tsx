@@ -152,7 +152,13 @@ describe("ScriptPreparationPage", () => {
     );
 
     expect(html).toContain("当前步骤已完成");
+    expect(html).toContain("当前状态");
+    expect(html).toContain("READY");
     expect(html).toContain("下一步：群像分工 · 0/1");
+    expect(html).toContain('role="progressbar"');
+    expect(html).toContain("已保留请求");
+    expect(html).toContain("角色弧线");
+    expect(html).toContain("场景节拍");
     expect(html).toContain("生成下一步");
     expect(html).not.toContain("animate-spin");
   });
@@ -186,8 +192,14 @@ describe("ScriptPreparationPage", () => {
       React.createElement(EpisodeWorkspace, { record }),
     );
 
+    expect(html).toContain("当前状态");
+    expect(html).toContain("GENERATING");
+    expect(html).toContain('role="progressbar"');
+    expect(html).toContain('aria-valuenow="0"');
+    expect(html).toContain("已保留请求");
+    expect(html).toContain("角色弧线");
+    expect(html).toContain("场景节拍");
     expect(html).toContain('class="text-left"');
     expect(html).not.toContain('class="text-center"');
-    expect(html).toContain('class="mx-auto h-8 w-8');
   });
 });

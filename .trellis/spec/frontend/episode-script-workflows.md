@@ -122,9 +122,10 @@ type EpisodeScriptReadyState = {
 - The Script page renders current Agent phase/progress plus persisted request details while generating, and shows preserved partial-result counts plus a resume action when failed.
 - The Script page is a fixed-height tool workspace: the page root uses `h-screen overflow-hidden`, the game header occupies its own fixed row, and the remaining area is a `min-h-0` responsive grid. On desktop, 「开局已锁定」 is the left control panel and `LLM requests` is the right audit panel; narrow viewports stack the same two bounded panels.
 - Status, progress, auto-continue, generate/retry/approve actions, and immutable Game facts belong only to the locked control panel. Persisted Script Author requests are projected once from the current Episode state and rendered only in the audit panel; do not render request history inside `EpisodeWorkspace` state branches.
+- `idle`, `generating`, `ready`, `failed`, and `review` share one `EpisodeWorkspaceStatusCard` visual skeleton. The card always renders the “当前状态” kicker, state badge, title/copy, phase progress bar, retained-request count, Actor-arc count, and scene-beat count. State branches may change copy, tone, and available actions, but must not replace the card with a spinner-only or ad-hoc status layout.
 - Both panel bodies own their vertical overflow with `min-h-0` plus `overflow-y-auto`. The request panel header remains visible, including when there are zero requests, and every persisted request retains its `LlmGenerationDetails` control. Request growth must never move the control panel or create document-level scrolling.
 - The Script page renders `ready` without a spinner, shows the next deterministic phase and a manual “生成下一步” action, and does not silently advance when the browser preference is off.
-- The Script page generating-state root explicitly uses `text-left` so progress copy and request history cannot inherit centered text. The loading spinner centers itself independently with `mx-auto`; centering the spinner must not center the surrounding text.
+- The Script page generating-state root explicitly uses `text-left`. In-flight work is indicated by the `GENERATING` badge and its pulsing status dot inside the shared card, not by replacing the card with a centered loading block.
 - Completion updates state only when `jobId` is still current. The deferred runner checks before its first provider call and again under the Game lock before every checkpoint or final state write.
 - Manual and automatic next-step submissions call the same guarded Server Action. Browser timers are advisory; the expected job ID is the correctness boundary for duplicate clicks, timers, refreshes, and tabs.
 - Script auto-continue uses the independent browser-global key `kiva:auto-continue-episode-author`. Only `"true"` enables it; missing/unknown values default off. An enabled `ready` snapshot waits one second before submission, and dependency changes or disabling clear the timer.
@@ -171,7 +172,7 @@ type EpisodeScriptReadyState = {
 | One semantic task succeeds and more work remains | Persist exact `ready` state with its producing job ID, workspace, and append-only requests. |
 | Auto-continue preference is absent, false, or invalid | Remain in `ready` until the manual next-step action is submitted. |
 | Auto-continue is disabled while a task is in flight | Let the current task reach `ready`, `review`, or `failed`; never submit the following task. |
-| Script generating-state text inherits center alignment | Regression failure; keep the state root left-aligned and center only the loading spinner. |
+| Script generating state replaces the shared status card with a spinner-only block | Regression failure; keep the same badge/progress/metrics structure used by `ready`, with `GENERATING` state copy and tone. |
 | Script request history grows beyond the viewport | Scroll only the `LLM requests` panel body; keep the page root, header, panel header, and left controls fixed. |
 | Episode state has no persisted requests yet | Render the empty `LLM requests` panel with `0 requests · 0 tokens`; do not remove the right-side workspace. |
 | Approval identity/profile/hash changed, compiler-owned field differs, or events exist | Reject approval. |
@@ -210,7 +211,7 @@ type EpisodeScriptReadyState = {
 - Local author covers every cast member and speech step; invalid cast IDs, pairs, signature indexes, hash/schema/identity fail deterministically.
 - Script page tests render Agent progress, per-task request details, preserved partial-result counts, and resume copy.
 - Auto-continue tests assert only stored `"true"` enables the control and scheduling requires enabled + ready + a current job ID. Script rendering tests assert the off-state accessibility label and the durable manual ready action.
-- A generating-state rendering test asserts the `EpisodeWorkspace` root uses `text-left`, excludes `text-center`, and retains the spinner's independent `mx-auto` class.
+- Ready- and generating-state rendering tests assert the shared “当前状态” card, exact state badge, progressbar, retained requests, Actor arcs, and scene beats. Generating remains left-aligned and does not render the old centered spinner block.
 - Script request-panel rendering tests cover both a persisted request with its details control and the zero-request empty state. Manual viewport checks cover desktop two-column and narrow stacked layouts with panel-local scrolling.
 - Creation/action tests require idle creation, deferred execution, stale-job zero-call exit, and approval identity checks.
 - Prompt tests assert only the current Actor Brief reaches player generation and future/full ensemble data does not.
@@ -234,9 +235,9 @@ Wrong: name `dramaticWeight` in the Ensemble shape and assume `schemaName` or JS
 
 Correct: render the shared `dramaticWeight` instruction with the exact strings `"primary"` and `"supporting"` in both the initial request and structural-repair contract, while keeping runtime validation strict.
 
-Wrong: put `text-center` on the whole Script generating-state container to center its spinner, which also centers every descendant text block.
+Wrong: make `generating` a centered spinner card while `ready` uses the approved status-card hierarchy.
 
-Correct: keep the generating-state container `text-left` and center the spinner itself with `mx-auto`.
+Correct: render both states through `EpisodeWorkspaceStatusCard`; communicate in-flight work with the badge tone/dot while retaining phase progress and persisted-result metrics.
 
 Wrong: render request history inside `idle`, `generating`, `ready`, `failed`, and `review` branches and let those branches determine page height.
 
