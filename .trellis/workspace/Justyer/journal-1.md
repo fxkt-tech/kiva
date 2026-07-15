@@ -402,3 +402,36 @@ Reuse each Script Author output contract in the initial provider prompt and stru
 ### Next Steps
 
 - None - task complete
+
+
+## Session 13: Unify generation output contracts
+
+**Date**: 2026-07-15
+**Task**: Unify generation output contracts
+**Branch**: `main`
+
+### Summary
+
+Made Script Author, PlayerIntent, speech performance, and action generation share exact initial/repair contracts; added dynamic ensemble bounds, exact intent limits, decisionSummary validation, and regression coverage.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `42d5567` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
