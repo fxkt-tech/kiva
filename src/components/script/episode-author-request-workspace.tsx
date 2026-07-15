@@ -1,6 +1,14 @@
 "use client";
 
-import { Check, ChevronRight, Copy, FileSearch, Film } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  ChevronsDown,
+  ChevronsUp,
+  Copy,
+  FileSearch,
+  Film,
+} from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import {
@@ -30,6 +38,8 @@ export function EpisodeAuthorRequestWorkspace({
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">(
     "idle",
   );
+  const [allExpanded, setAllExpanded] = useState(true);
+  const [expansionRevision, setExpansionRevision] = useState(0);
   const selected =
     entries.find(({ request }) => request.id === selectedId) ?? entries[0] ?? null;
 
@@ -71,6 +81,8 @@ export function EpisodeAuthorRequestWorkspace({
                     onClick={() => {
                       setSelectedId(request.id);
                       setCopyStatus("idle");
+                      setAllExpanded(true);
+                      setExpansionRevision((revision) => revision + 1);
                     }}
                     className={`flex w-full min-w-0 items-center gap-2.5 px-3 py-2.5 text-left text-xs transition-colors ${
                       selectedRequest
@@ -125,32 +137,57 @@ export function EpisodeAuthorRequestWorkspace({
                     {selected.request.model} · {selected.request.promptVersion}
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  onClick={copySelectedRequest}
-                  aria-label="Copy selected LLM details as Markdown"
-                  title={
-                    copyStatus === "copied"
-                      ? "Copied"
-                      : copyStatus === "error"
-                        ? "Copy failed"
-                        : "Copy as Markdown"
-                  }
-                  buttonStyle="icon"
-                  iconSize="xs"
-                >
-                  {copyStatus === "copied" ? (
-                    <Check aria-hidden="true" className="h-3.5 w-3.5" />
-                  ) : (
-                    <Copy aria-hidden="true" className="h-3.5 w-3.5" />
-                  )}
-                </Button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setAllExpanded((expanded) => !expanded);
+                      setExpansionRevision((revision) => revision + 1);
+                    }}
+                    aria-label={
+                      allExpanded
+                        ? "Collapse all LLM detail sections"
+                        : "Expand all LLM detail sections"
+                    }
+                    title={allExpanded ? "全部折叠" : "全部展开"}
+                    className="inline-flex h-7 items-center justify-center gap-1.5 px-2 py-0 text-[11px]"
+                  >
+                    {allExpanded ? (
+                      <ChevronsUp aria-hidden="true" className="h-3.5 w-3.5" />
+                    ) : (
+                      <ChevronsDown aria-hidden="true" className="h-3.5 w-3.5" />
+                    )}
+                    {allExpanded ? "全部折叠" : "全部展开"}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={copySelectedRequest}
+                    aria-label="Copy selected LLM details as Markdown"
+                    title={
+                      copyStatus === "copied"
+                        ? "Copied"
+                        : copyStatus === "error"
+                          ? "Copy failed"
+                          : "Copy as Markdown"
+                    }
+                    buttonStyle="icon"
+                    iconSize="xs"
+                  >
+                    {copyStatus === "copied" ? (
+                      <Check aria-hidden="true" className="h-3.5 w-3.5" />
+                    ) : (
+                      <Copy aria-hidden="true" className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
               <LlmGenerationDetailsContent
+                key={`${selected.request.id}:${expansionRevision}`}
                 generation={selected.request}
                 showDecisionSummary={false}
+                defaultExpanded={allExpanded}
               />
             </div>
           </>

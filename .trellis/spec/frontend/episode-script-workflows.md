@@ -133,7 +133,7 @@ type EpisodeScriptReadyState = {
 - `idle`, `generating`, `ready`, `failed`, and `review` share one `EpisodeWorkspaceStatusCard` visual skeleton. The card always renders the “当前状态” kicker, state badge, title/copy, phase progress bar, and semantic completion for all five request kinds: 故事主轴 (`story`), 群像分工 (`ensemble`), 角色弧线 (`actor_arc`), 关系弧线 (`relationship`), and 场景节拍 (`beats`). State branches may change copy, tone, and available actions, but must not replace the card with a spinner-only or ad-hoc status layout.
 - Control-card phase completion is derived from structured workspace artifacts, not request-record counts: retries may append multiple audit requests for one semantic task and must not inflate progress. Total retained requests and tokens belong only to the left `LLM requests` audit header, rendered compactly as `<count> · <tokens> tokens` because the panel title already names the count.
 - All three panel bodies own their vertical overflow with `min-h-0` plus `overflow-y-auto`. Request and detail headers remain visible, including when there are zero requests. `LLM requests` renders newest first as compact full-row selection buttons, defaults selection to the newest request, and uses `aria-pressed` for the active row. Each visible row contains only original sequence number, success/failure dot, chronological task label, and selection chevron—in that order. Provider/model/status/task metadata and per-request token counts do not render in the list; they belong to `LLM Details`. The status remains screen-reader text on the row.
-- `LLM Details` renders only the selected request's shared Prompt/Token/output content inline; Script must not render a details icon or `<dialog>`. Editor and Timeline may continue using the same shared content inside their existing modal trigger.
+- `LLM Details` renders only the selected request's shared Prompt/Token/output content inline; Script must not render a details icon or `<dialog>`. Every top-level detail block is an accessible `<details>` section, defaults expanded, and toggles independently from its summary. The Script detail header adds one visible “全部折叠 / 全部展开” control that resets all sections for the selected request; choosing another request restores the default all-expanded state. Editor and Timeline reuse the independently collapsible blocks inside their existing modal trigger but do not render the Script-only global control.
 - Request growth scrolls only `LLM requests`; long Prompt/output content scrolls only `LLM Details`. Neither may move the control panel or create document-level scrolling.
 - The Script page renders `ready` without a spinner, shows the next deterministic phase and a manual “生成下一步” action, and does not silently advance when the browser preference is off.
 - The Script page generating-state root explicitly uses `text-left`. In-flight work is indicated by the `GENERATING` badge and its pulsing status dot inside the shared card, not by replacing the card with a centered loading block.
@@ -190,7 +190,9 @@ type EpisodeScriptReadyState = {
 | Script generating state replaces the shared status card with a spinner-only block | Regression failure; keep the same badge/progress/metrics structure used by `ready`, with `GENERATING` state copy and tone. |
 | Script request history grows beyond the viewport | Scroll only the `LLM requests` panel body; keep the page root, all panel headers, details selection, and right controls fixed. |
 | Selected Prompt/output exceeds the viewport | Scroll only the `LLM Details` body; never open a modal or grow the document. |
-| Episode state has no persisted requests yet | Render `LLM requests` with `0 requests · 0 tokens` and a separate empty `LLM Details` panel; do not remove either workspace column. |
+| User collapses one detail block | Toggle only that `<details>` section; preserve every sibling's current state. |
+| User invokes the global detail control | Collapse every top-level section when expanded; switch the same control to “全部展开” and restore every section on the next click. |
+| Episode state has no persisted requests yet | Render `LLM requests` with `0 · 0 tokens` and a separate empty `LLM Details` panel; do not remove either workspace column. |
 | Historical `generating` snapshot contains a successful current-job request already applied to its workspace | Project it as `READY`; do not show `GENERATING` or a current-stage retry action. |
 | A semantic task has failed and been retried | Count its completed workspace artifact once in the control card; retain every attempt in the left request audit. |
 | Approval identity/profile/hash changed, compiler-owned field differs, or events exist | Reject approval. |
@@ -206,6 +208,7 @@ type EpisodeScriptReadyState = {
 - Base preference: a browser with no Script preference stops after every successful task and keeps initial start, failure retry, and candidate regeneration manual.
 - Good recovery: the provider truncates a five-beat response; the Agent records that request, splits it into smaller batches, and continues without resending the truncated document.
 - Good workspace: thirty persisted requests scroll inside the narrow left audit panel, clicking request 12 replaces request 30 in the wide middle inline details panel, and the right status/actions remain reachable without document scrolling.
+- Good detail scan: collapse all Prompt/output sections to compare their headings, expand only Request, then restore all sections with one click.
 - Good audit order: request 30 appears above request 29 while both keep their original sequence numbers and labels.
 - Good phase summary: the right control card shows `story`, `ensemble`, `actor_arc`, `relationship`, and `beats` completion while a failed Ensemble attempt remains visible only as an extra left-side audit record.
 - Bad: ask for the whole script, 12 full arcs, all relationships, and all beats in one response; append the malformed 8 KB output to a repair request; or restart all prior work after one late failure.
@@ -214,6 +217,7 @@ type EpisodeScriptReadyState = {
 - Bad: let the timer call a separate unguarded endpoint, store auto-continue in the Game record, share the Editor auto-confirm key, or use `generating` to mean both in-flight and waiting.
 - Bad: append `EpisodeAuthorRequests` inside every status branch, allow the document to grow with request count, or hide the audit panel when the list is empty.
 - Bad: keep a details icon on every request and open a modal, render every request's hidden details DOM, or detach auto-continue/current-stage actions from the status card.
+- Bad: hide card content with custom non-semantic div state, make single-card toggles affect siblings, or persist a collapsed-all state into a newly selected request.
 - Bad: label retained-request count as a Script Author phase or use request counts as completion, because retries then make semantic progress exceed its target.
 - Bad: append a successful request under `generating`, then rely on a second save to transition to `ready`; a process interruption between those writes leaves a false GENERATING badge.
 
@@ -237,6 +241,7 @@ type EpisodeScriptReadyState = {
 - Auto-continue tests assert only stored `"true"` enables the control and scheduling requires enabled + ready + a current job ID. Script rendering tests assert the off-state accessibility label and the durable manual ready action.
 - Ready- and generating-state rendering tests assert the shared “当前状态” card, exact state badge, progressbar, all five semantic request-kind labels, and artifact-derived completion values. They also assert “已保留请求” is absent from the control card. Generating remains left-aligned and does not render the old centered spinner block.
 - Script request/detail rendering tests assert newest-first buttons, newest default selection, one inline selected detail payload, `aria-pressed`, no `<dialog>`, and separate zero-request placeholders. Row assertions require the status dot before the visible label and reject provider/model metadata or per-request tokens inside the button. Browser checks click an older row and assert the inline detail title/content changes. Manual viewport checks cover desktop three-column and narrow three-panel stacked layouts with panel-local scrolling.
+- Detail-section tests assert default-open `<details>`/`<summary>` markup and the global control's accessible label. Browser checks independently close one section, collapse all, expand all, and verify selecting another request resets every section open.
 - Ready-, generating-, failed-, and idle-state rendering tests assert auto-continue and the applicable start/next/retry action are descendants of the shared current-status card.
 - Script rendering tests assert newest-first request order, effective READY for a settled historical generating snapshot, and “重试当前阶段” without any whole-run restart copy.
 - Creation/action tests require idle creation, deferred execution, stale-job zero-call exit, and approval identity checks.
@@ -276,6 +281,10 @@ Correct: derive all five phase values from `EpisodeAuthorWorkspace`; reserve `re
 Wrong: render request history inside `idle`, `generating`, `ready`, `failed`, and `review` branches, then open each request's details in a modal.
 
 Correct: project requests once at the page boundary, render one narrow selectable left audit panel plus one wide middle inline detail panel beside the right control panel, and give each panel body its own bounded overflow.
+
+Wrong: render detail cards as always-open sections or add one global boolean that prevents independent section toggles.
+
+Correct: use independently controlled semantic `<details>` blocks; remount the selected request's shared detail content only when the Script-only global expand/collapse command is invoked.
 
 Wrong: render auto-continue, “生成下一步”, or “重试当前阶段” as separate cards below current status.
 

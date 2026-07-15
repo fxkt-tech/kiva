@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, FileSearch, X } from "lucide-react";
+import { Check, ChevronDown, Copy, FileSearch, X } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -117,14 +117,16 @@ export function LlmGenerationDetails({
 export function LlmGenerationDetailsContent({
   generation,
   showDecisionSummary = true,
+  defaultExpanded = true,
 }: {
   readonly generation: LlmDetailsRecord;
   readonly showDecisionSummary?: boolean;
+  readonly defaultExpanded?: boolean;
 }) {
   const decisionSummary = decisionSummaryText(generation.parsedOutput);
   return (
     <div className="space-y-4">
-      <GenerationBlock title="Token usage">
+      <GenerationBlock title="Token usage" defaultExpanded={defaultExpanded}>
         {generation.tokenUsage ? (
           <div className="grid gap-2 text-xs sm:grid-cols-2">
             <KeyValue label="Prompt" value={formatTokenCount(generation.tokenUsage.promptTokens)} />
@@ -146,7 +148,7 @@ export function LlmGenerationDetailsContent({
       </GenerationBlock>
 
       {generation.stages && generation.stages.length > 0 ? (
-        <GenerationBlock title={`Pipeline stages (${generation.stages.length})`}>
+        <GenerationBlock title={`Pipeline stages (${generation.stages.length})`} defaultExpanded={defaultExpanded}>
           <div className="space-y-4">
             {generation.stages.map((stage, index) => (
               <div key={`${stage.stage}-${index}`} className="space-y-3 rounded-md border border-border p-3">
@@ -165,7 +167,7 @@ export function LlmGenerationDetailsContent({
         </GenerationBlock>
       ) : null}
 
-      <GenerationBlock title="Request">
+      <GenerationBlock title="Request" defaultExpanded={defaultExpanded}>
         <div className="space-y-3">
           <KeyValue label="Schema" value={generation.request.schemaName} />
           <TextDump label="System prompt" value={generation.request.systemPrompt} />
@@ -176,7 +178,7 @@ export function LlmGenerationDetailsContent({
       </GenerationBlock>
 
       {generation.attempts && generation.attempts.length > 0 ? (
-        <GenerationBlock title={`Generation attempts (${generation.attempts.length})`}>
+        <GenerationBlock title={`Generation attempts (${generation.attempts.length})`} defaultExpanded={defaultExpanded}>
           <div className="space-y-4">
             {generation.attempts.map((attempt, index) => (
               <div key={`${attempt.request.schemaName}-${index}`} className="space-y-2 rounded-md border border-border p-3">
@@ -194,25 +196,25 @@ export function LlmGenerationDetailsContent({
       ) : null}
 
       {showDecisionSummary ? (
-        <GenerationBlock title="Player reasoning / decision summary">
+        <GenerationBlock title="Player reasoning / decision summary" defaultExpanded={defaultExpanded}>
           <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
             {decisionSummary ?? "No decision summary was returned by the model. Hidden model reasoning is not available."}
           </pre>
         </GenerationBlock>
       ) : null}
 
-      <GenerationBlock title="Raw output">
+      <GenerationBlock title="Raw output" defaultExpanded={defaultExpanded}>
         <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
           {generation.rawOutput ?? "No raw output was recorded."}
         </pre>
       </GenerationBlock>
-      <GenerationBlock title="Parsed output">
+      <GenerationBlock title="Parsed output" defaultExpanded={defaultExpanded}>
         <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-muted">
           {generation.parsedOutput ? JSON.stringify(generation.parsedOutput, null, 2) : "No parsed output was recorded."}
         </pre>
       </GenerationBlock>
       {generation.error ? (
-        <GenerationBlock title="Error">
+        <GenerationBlock title="Error" defaultExpanded={defaultExpanded}>
           <pre className="whitespace-pre-wrap break-words text-xs leading-5 text-red-300">{generation.error}</pre>
         </GenerationBlock>
       ) : null}
@@ -252,17 +254,28 @@ export function generationMarkdown(
 function GenerationBlock({
   title,
   children,
+  defaultExpanded,
 }: {
   readonly title: string;
   readonly children: ReactNode;
+  readonly defaultExpanded: boolean;
 }) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
   return (
-    <section className="rounded-md border border-border bg-surface/55">
-      <div className="border-b border-border px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-subtle">
-        {title}
-      </div>
-      <div className="p-3">{children}</div>
-    </section>
+    <details
+      open={expanded}
+      onToggle={(event) => setExpanded(event.currentTarget.open)}
+      className="overflow-hidden rounded-md border border-border bg-surface/55"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-subtle transition-colors hover:bg-surface-muted/35 [&::-webkit-details-marker]:hidden">
+        <span>{title}</span>
+        <ChevronDown
+          aria-hidden="true"
+          className={`h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+        />
+      </summary>
+      <div className="border-t border-border p-3">{children}</div>
+    </details>
   );
 }
 

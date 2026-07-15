@@ -87,6 +87,9 @@ describe("ScriptPreparationPage", () => {
     expect(html).toContain("Author the outline.");
     expect(html).toContain("Token usage");
     expect(html).not.toContain("<dialog");
+    expect(html).toContain('aria-label="Collapse all LLM detail sections"');
+    expect(html.match(/<details open=""/g)).toHaveLength(4);
+    expect(html.match(/<summary/g)).toHaveLength(4);
     const requestRow = html.match(
       /<button[^>]*aria-label="Story spine request"[\s\S]*?<\/button>/,
     )?.[0];
