@@ -435,3 +435,36 @@ Made Script Author, PlayerIntent, speech performance, and action generation shar
 ### Next Steps
 
 - None - task complete
+
+
+## Session 14: Keep Script Author contract in User Message 1
+
+**Date**: 2026-07-15
+**Task**: Keep Script Author contract in User Message 1
+**Branch**: `main`
+
+### Summary
+
+Merged the shared Script Author output contract into the sole initial user message, rejected multi-message author requests, and added regression/spec coverage.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `00f52ab` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
