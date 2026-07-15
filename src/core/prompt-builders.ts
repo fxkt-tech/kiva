@@ -37,11 +37,14 @@ export type BuiltPrompt = {
   readonly schemaName: string;
   readonly systemPrompt: string;
   readonly messages: readonly LlmMessage[];
+  readonly outputContract: readonly string[];
   readonly speechBudget?: SpeechBudget;
 };
 
 export type BuiltSpeechIntentPrompt = BuiltPrompt & {
   readonly evidenceScope: PlayerSpeechEvidenceScope;
+  readonly publicSpeech: boolean;
+  readonly requireDisclosure: boolean;
 };
 
 export type SpeechPromptInput = {
@@ -74,6 +77,11 @@ export function buildSpeechIntentPrompt(
     input.draft,
     spec,
   );
+  const publicSpeech = isPublicSpeechDraft(input.draft);
+  const requireDisclosure = publicSpeech &&
+    input.context.viewer.ruleRole.id !== "werewolf" &&
+    input.context.viewer.ruleRole.id !== "villager";
+  const outputContract = speechIntentOutputContract(requireDisclosure);
 
   return {
     promptVersion: SPEECH_INTENT_PROMPT_VERSION,
@@ -81,6 +89,9 @@ export function buildSpeechIntentPrompt(
     systemPrompt: buildSystemPrompt(input.context, input.draft, spec),
     speechBudget,
     evidenceScope,
+    publicSpeech,
+    requireDisclosure,
+    outputContract,
     messages: [
       {
         role: "user",
@@ -92,6 +103,7 @@ export function buildSpeechIntentPrompt(
           options: null,
           speechBudget,
           actorBrief: input.actorBrief ?? null,
+          outputContract,
         }),
       },
     ],
@@ -116,10 +128,12 @@ export function buildSpeechPerformancePrompt(input: {
           event.payload.dayNumber === input.draft.payload.dayNumber,
       ),
   });
+  const outputContract = performanceOutputContract(input.speechBudget);
   return {
     promptVersion: SPEECH_PERFORMANCE_PROMPT_VERSION,
     schemaName: "werewolf_speech_performance_v1",
     speechBudget: input.speechBudget,
+    outputContract,
     systemPrompt: [
       `你只负责把 ${input.context.viewer.seatNo} 号 ${actor.name} 已经完成的决定表演成自然台词。`,
       "不得重新推理、改变立场、增加证据、补充身份结论或引入未提供事实。",
@@ -162,7 +176,7 @@ export function buildSpeechPerformancePrompt(input: {
               ]
             : []),
           ...speechBudgetLines(input.speechBudget),
-          '只输出 {"text":"真正说出口的话"}。text 不得提到 PlayerIntent、事件编号、JSON、剧本指引或表演说明。',
+          ...outputContract,
         ].join("\n"),
       },
     ],
@@ -173,6 +187,7 @@ export function buildActionPrompt(
   input: ActionPromptInput,
 ): BuiltPrompt {
   const spec = taskSpecForDraft(input.draft);
+  const outputContract = actionOutputContract(spec, input.options);
 
   return {
     promptVersion: ACTION_PROMPT_VERSION,
@@ -181,6 +196,7 @@ export function buildActionPrompt(
         ? "werewolf_optional_action_v3"
         : "werewolf_target_action_v3",
     systemPrompt: buildSystemPrompt(input.context, input.draft, spec),
+    outputContract,
     messages: [
       {
         role: "user",
@@ -192,6 +208,7 @@ export function buildActionPrompt(
           options: input.options,
           speechBudget: null,
           actorBrief: null,
+          outputContract,
         }),
       },
     ],
@@ -268,6 +285,7 @@ function buildUserMessage(input: {
   readonly options: LegalActionOptions | null;
   readonly speechBudget: SpeechBudget | null;
   readonly actorBrief: EpisodeActorBrief | null;
+  readonly outputContract: readonly string[];
 }): string {
   const { context, draft, spec } = input;
   const lines: string[] = [];
@@ -396,7 +414,7 @@ function buildUserMessage(input: {
     "- 每个身份、行为和结论是否有明确来源？他人的身份/查验说法是否仍明确标为声称，而不是事实？",
     "- JSON 字段与 playerId 是否完全符合本轮输出契约？",
   ]);
-  appendSection(lines, "输出", outputInstruction(context, spec, input.options));
+  appendSection(lines, "输出", input.outputContract);
 
   return lines.join("\n");
 }
@@ -664,35 +682,27 @@ function ruleLinesForKey(
   }
 }
 
-function outputInstruction(
-  context: PlayerLlmContext,
+function actionOutputContract(
   spec: PromptTaskSpec,
-  options: LegalActionOptions | null,
+  options: LegalActionOptions,
 ): readonly string[] {
   const summaryRule =
     spec.channel === "密封选择"
       ? 'decisionSummary 只说明跟随团队目标共识或偏离原因，不得描述候选身份、阵营、概率、行为或威胁程度；没有偏离时可直接写“跟随狼队已经形成的目标共识”。'
       : "decisionSummary 最多两句，只写引用的明确事实、关键权衡和本轮意图；不要评价人设、措辞或输出详细思维过程。";
 
-  if (spec.outputKind === "speech") {
-    return [
-      '只输出 {"objective":"本轮具体目的","conclusion":"准备表达的结论","evidenceEventIndexes":[最多3个可见事件编号],"uncertainty":"保留的不确定性或 null","disclosure":"conceal/claim/not_applicable","intendedEffect":"希望听众如何响应"}。',
-      "公开特殊身份发言必须在 conceal 与 claim 中选择；其他发言使用 not_applicable。",
-      "evidenceEventIndexes 只能引用本请求列出的可见事件；没有依据时使用空数组。",
-      "本阶段只做决定，不写最终台词、语气、动作或长篇思维过程。",
-    ];
-  }
-
   if (spec.outputKind === "optional_action") {
     if (options?.canUse === false) {
       return [
         '规则不允许本次使用。只输出 {"used":false,"targetPlayerId":null,"decisionSummary":"简短说明规则或资源原因"}。',
+        "decisionSummary 必须是非空字符串",
         summaryRule,
       ];
     }
     return [
       '使用时输出 {"used":true,"targetPlayerId":"合法候选中的 playerId","decisionSummary":"简短决策摘要"}。',
       '不使用时输出 {"used":false,"targetPlayerId":null,"decisionSummary":"简短决策摘要"}。',
+      "decisionSummary 必须是非空字符串",
       summaryRule,
     ];
   }
@@ -701,14 +711,47 @@ function outputInstruction(
     return [
       '投给候选时输出 {"targetPlayerId":"合法候选中的 playerId","decisionSummary":"简短决策摘要"}。',
       '弃票时输出 {"targetPlayerId":null,"decisionSummary":"简短决策摘要"}。',
+      "decisionSummary 必须是非空字符串",
       summaryRule,
     ];
   }
 
   return [
     '只输出 {"targetPlayerId":"合法候选中的 playerId","decisionSummary":"简短决策摘要"}；playerId 必须逐字匹配合法候选。',
+    "decisionSummary 必须是非空字符串",
     summaryRule,
   ];
+}
+
+function speechIntentOutputContract(
+  requireDisclosure: boolean,
+): readonly string[] {
+  return [
+    '只输出且仅包含 {"objective":"本轮具体目的","conclusion":"准备表达的结论","evidenceEventIndexes":[最多3个可见事件编号],"uncertainty":"保留的不确定性或 null","disclosure":"conceal/claim/not_applicable","intendedEffect":"希望听众如何响应"}。',
+    "objective、intendedEffect、非 null 的 uncertainty 最多 160 个字符；conclusion 最多 240 个字符；字符串必须非空且不得有首尾空白",
+    "evidenceEventIndexes 只能引用本请求列出的可见正整数事件编号，最多 3 个且不得重复；没有依据时使用空数组",
+    requireDisclosure
+      ? "disclosure 必须为 conceal 或 claim"
+      : "disclosure 必须为 not_applicable",
+    "本阶段只做决定，不写最终台词、语气、动作或长篇思维过程",
+  ];
+}
+
+function performanceOutputContract(
+  budget: SpeechBudget,
+): readonly string[] {
+  return [
+    '只输出且仅包含 {"text":"真正说出口的话"}',
+    "text 必须是非空字符串",
+    `text 不得超过 ${budget.hardMaxCharacters} 个非空白字符`,
+    "不得加入 PlayerIntent 和 SELECTED_EVIDENCE 之外的新事实",
+    "text 不得提到 PlayerIntent、事件编号、JSON、剧本指引或表演说明",
+  ];
+}
+
+function isPublicSpeechDraft(draft: LlmSpeechDraft): boolean {
+  return draft.type !== "wolf_strategy_given" &&
+    draft.type !== "wolf_opinion_given";
 }
 
 function timeLabel(draft: LlmDraft, context: PlayerLlmContext): string {

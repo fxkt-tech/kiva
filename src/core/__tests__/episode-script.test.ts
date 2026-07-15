@@ -401,7 +401,11 @@ describe("episode script", () => {
     expect(storyAttempts).toBe(2);
     expect(Array.from(result.script.title).length).toBeLessThanOrEqual(80);
     expect(result.requests[0]?.attempts).toHaveLength(2);
-    expect(result.requests[0]?.request.systemPrompt).toContain("80");
+    expect(
+      result.requests[0]?.request.messages
+        .map((message) => message.content)
+        .join("\n"),
+    ).toContain("80");
   });
 
   it("splits only a truncated beat task instead of repairing the incomplete JSON as a whole", async () => {
@@ -536,6 +540,89 @@ describe("episode script", () => {
     expect(beatRequests.every((request) =>
       requestContent(request).includes(contract)
     )).toBe(true);
+    expect(beatRequests.every((request) =>
+      requestContent(request).includes("每个字符串字段最多 80 个字符")
+    )).toBe(true);
+  });
+
+  it("shares exact story bounds with structural repair", async () => {
+    const local = new LocalHeuristicLlmClient();
+    const requests: LlmGenerateJsonRequest[] = [];
+    const client: LlmClient = {
+      async generateJson(request) {
+        requests.push(request);
+        if (
+          request.schemaName === "werewolf_episode_story_v4" &&
+          requests.length === 1
+        ) {
+          const valid = await local.generateJson(request);
+          const acts = valid.parsed.acts as readonly Record<string, unknown>[];
+          const parsed = { ...valid.parsed, acts: [...acts, ...acts, ...acts] };
+          return { ...valid, parsed, rawText: JSON.stringify(parsed) };
+        }
+        return local.generateJson(request);
+      },
+    };
+
+    await authorEpisodeScript({
+      game,
+      llmClient: client,
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    const storyRequests = requests.filter(
+      (request) => request.schemaName === "werewolf_episode_story_v4",
+    );
+    expect(storyRequests).toHaveLength(2);
+    expect(storyRequests.every((request) => {
+      const content = requestContent(request);
+      return content.includes("acts 必须为 1 到 4 项") &&
+        content.includes("每个字符串字段最多 80 个字符");
+    })).toBe(true);
+  });
+
+  it("gives ensemble repair exact kinds and signature indexes", async () => {
+    const local = new LocalHeuristicLlmClient();
+    const ensembleRequests: LlmGenerateJsonRequest[] = [];
+    let validEnsemble: Awaited<ReturnType<LlmClient["generateJson"]>> | null =
+      null;
+    const client: LlmClient = {
+      async generateJson(request) {
+        if (request.schemaName !== "werewolf_episode_ensemble_v4") {
+          return local.generateJson(request);
+        }
+        ensembleRequests.push(request);
+        if (validEnsemble === null) {
+          validEnsemble = await local.generateJson(request);
+          const assignments = validEnsemble.parsed
+            .castAssignments as readonly Record<string, unknown>[];
+          const parsed = {
+            ...validEnsemble.parsed,
+            castAssignments: assignments.map((assignment, index) =>
+              index === 0
+                ? { ...assignment, signatureStepIndex: -1 }
+                : assignment
+            ),
+          };
+          return { ...validEnsemble, parsed, rawText: JSON.stringify(parsed) };
+        }
+        return validEnsemble;
+      },
+    };
+
+    await authorEpisodeScript({
+      game,
+      llmClient: client,
+      createdAt: "2026-07-12T00:00:00.000Z",
+    });
+
+    expect(ensembleRequests).toHaveLength(2);
+    expect(ensembleRequests.every((request) => {
+      const content = requestContent(request);
+      return content.includes(
+        "kind 只能是 rivalry、alliance、contrast、trust_shift",
+      ) && content.includes("signatureStepIndex 合法值");
+    })).toBe(true);
   });
 
   it("rejects objectively incomplete ensemble output after repair", async () => {

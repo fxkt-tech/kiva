@@ -97,7 +97,7 @@ export async function generateActionDraft(
       validate: (parsed) =>
         parseAndValidateActionEdit(draft, parsed, options),
       repair: {
-        outputContract: actionRepairContract(draft, options),
+        outputContract: prompt.outputContract,
         legalTargetPlayerIds: options.targetPlayerIds,
       },
     });
@@ -146,32 +146,6 @@ export async function generateActionDraft(
   }
 }
 
-function actionRepairContract(
-  draft: LlmActionDraft,
-  options: LegalActionOptions,
-): readonly string[] {
-  if (
-    draft.type === "witch_antidote_decided" ||
-    draft.type === "witch_poison_decided"
-  ) {
-    return [
-      "used 必须是布尔值",
-      "used=false 时 targetPlayerId 必须为 null",
-      options.canUse === false
-        ? "本次规则禁止使用，used 必须为 false"
-        : "used=true 时 targetPlayerId 必须来自合法候选",
-      "decisionSummary 应是最多两句的简短字符串",
-    ];
-  }
-
-  return [
-    options.allowNoTarget
-      ? "targetPlayerId 必须是合法候选之一或 null"
-      : "targetPlayerId 必须是合法候选之一，不能是 null",
-    "decisionSummary 应是最多两句的简短字符串",
-  ];
-}
-
 function actionActorId(draft: LlmActionDraft): PlayerId {
   switch (draft.type) {
     case "vote_cast":
@@ -189,6 +163,12 @@ function parseAndValidateActionEdit(
   output: Record<string, unknown>,
   options: LegalActionOptions,
 ): DraftPayloadEdit {
+  if (
+    typeof output.decisionSummary !== "string" ||
+    output.decisionSummary.trim().length === 0
+  ) {
+    throw new Error("decisionSummary must be a non-empty string");
+  }
   switch (draft.type) {
     case "seer_check_selected":
     case "wolf_vote_cast":

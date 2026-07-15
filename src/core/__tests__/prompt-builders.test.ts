@@ -44,6 +44,8 @@ describe("v3 prompt builders", () => {
     expect(prompt.systemPrompt).toContain(villager.ruleRole.name);
     expect(prompt.systemPrompt).not.toContain("characterSystemPromptSnapshot");
     expect(prompt.messages[0]!.content).toContain("evidenceEventIndexes");
+    expect(prompt.messages[0]!.content).toContain("conclusion 最多 240 个字符");
+    expect(prompt.messages[0]!.content).toContain("不得重复");
     expect(prompt.messages[0]!.content).not.toContain('"text"');
   });
 
@@ -72,6 +74,9 @@ describe("v3 prompt builders", () => {
     expect(prompt.schemaName).toBe("werewolf_speech_performance_v1");
     expect(prompt.systemPrompt).toContain(villager.actor.expression.cadence);
     expect(prompt.messages[0]!.content).toContain("无；不得自行补证据");
+    expect(prompt.outputContract).toContain(
+      "text 不得超过 100 个非空白字符",
+    );
     expect(prompt.messages[0]!.content).not.toContain(villager.actor.cognition.evidencePolicy);
   });
 
@@ -90,5 +95,8 @@ describe("v3 prompt builders", () => {
       options: { targetPlayerIds: [], allowNoTarget: true },
     });
     expect(prompt.schemaName).toBe("werewolf_target_action_v3");
+    expect(prompt.outputContract).toContain(
+      "decisionSummary 必须是非空字符串",
+    );
   });
 });

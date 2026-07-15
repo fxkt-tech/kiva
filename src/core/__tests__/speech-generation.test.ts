@@ -87,5 +87,43 @@ describe("speech PlayerIntent pipeline", () => {
     });
     expect(result.generation?.status).toBe("success");
     expect(result.generation?.stages[0]?.attempts).toHaveLength(2);
+    expect(result.generation?.stages[0]?.attempts?.every((attempt) =>
+      attempt.request.messages.some((message) =>
+        message.content.includes("conclusion 最多 240 个字符") &&
+        message.content.includes("不得重复")
+      )
+    )).toBe(true);
+  });
+
+  it("shares the exact speech limit with performance repair", async () => {
+    const overLimitText = "长".repeat(171);
+    const result = await generateSpeechDraft({
+      game,
+      events: [],
+      draft: draft(),
+      llmClient: new MockLlmClient([
+        {
+          objective: "要求补充可核验信息",
+          conclusion: "当前不下定论",
+          evidenceEventIndexes: [],
+          uncertainty: "证据不足",
+          disclosure: "not_applicable",
+          intendedEffect: "推动下一位补充",
+        },
+        { text: overLimitText },
+        { text: "证据不足，我先保留判断，请后续玩家补充可核验的信息。" },
+      ]),
+      generationId: "generation_performance_contract",
+      createdAt: game.createdAt,
+    });
+
+    expect(result.generation?.status).toBe("success");
+    const attempts = result.generation?.stages[1]?.attempts;
+    expect(attempts).toHaveLength(2);
+    expect(attempts?.every((attempt) =>
+      attempt.request.messages.some((message) =>
+        message.content.includes("text 不得超过 170 个非空白字符")
+      )
+    )).toBe(true);
   });
 });

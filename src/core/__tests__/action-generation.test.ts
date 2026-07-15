@@ -26,7 +26,7 @@ describe("action generation", () => {
       llmClient: new MockLlmClient([
         {
           targetPlayerId: wolf.playerId,
-          reasoning: "优先查验发言和站边最可疑的人。",
+          decisionSummary: "优先查验发言和站边最可疑的人。",
         },
       ]),
       generationId: "generation_1",
@@ -53,7 +53,7 @@ describe("action generation", () => {
       },
       parsedOutput: {
         targetPlayerId: wolf.playerId,
-        reasoning: "优先查验发言和站边最可疑的人。",
+        decisionSummary: "优先查验发言和站边最可疑的人。",
       },
     });
     expect(result.generation?.request?.systemPrompt).toContain(
@@ -203,13 +203,35 @@ describe("action generation", () => {
     });
   });
 
+  it("rejects action output without a decisionSummary", async () => {
+    const draft = seerDraft(villager.playerId);
+    const invalidOutput = { targetPlayerId: wolf.playerId };
+    const result = await generateActionDraft({
+      game,
+      events: setupEvents(),
+      draft,
+      llmClient: new MockLlmClient([invalidOutput, invalidOutput]),
+      generationId: "generation_missing_summary",
+      createdAt,
+    });
+
+    expect(result.draft).toEqual(draft);
+    expect(result.generation).toMatchObject({
+      status: "failed",
+      error: "decisionSummary must be a non-empty string",
+    });
+  });
+
   it("rejects illegal wolf kill targets and keeps draft unchanged", async () => {
     const draft = wolfDraft(villager.playerId);
     const result = await generateActionDraft({
       game,
       events: setupEvents(),
       draft,
-      llmClient: new MockLlmClient([{ targetPlayerId: "missing" }]),
+      llmClient: new MockLlmClient([
+        { targetPlayerId: "missing", decisionSummary: "非法候选。" },
+        { targetPlayerId: "missing", decisionSummary: "仍是非法候选。" },
+      ]),
       generationId: "generation_2",
       createdAt,
     });
@@ -237,7 +259,7 @@ describe("action generation", () => {
       events: setupEvents(),
       draft,
       llmClient: new MockLlmClient([
-        { targetPlayerId: "missing" },
+        { targetPlayerId: "missing", decisionSummary: "非法候选。" },
         {
           targetPlayerId: villager.playerId,
           decisionSummary: "改为合法候选。",
@@ -274,7 +296,9 @@ describe("action generation", () => {
       game,
       events: setupEvents(),
       draft: voteDraft(villager.playerId),
-      llmClient: new MockLlmClient([{ targetPlayerId: null }]),
+      llmClient: new MockLlmClient([
+        { targetPlayerId: null, decisionSummary: "选择弃票。" },
+      ]),
       generationId: "generation_3",
       createdAt,
     });
@@ -315,7 +339,11 @@ describe("action generation", () => {
       events: setupEvents(),
       draft: witchPoisonDraft(),
       llmClient: new MockLlmClient([
-        { used: true, targetPlayerId: wolf.playerId },
+        {
+          used: true,
+          targetPlayerId: wolf.playerId,
+          decisionSummary: "使用毒药。",
+        },
       ]),
       generationId: "generation_4",
       createdAt,
@@ -390,7 +418,8 @@ describe("action generation", () => {
       events: setupEvents(),
       draft,
       llmClient: new MockLlmClient([
-        { targetPlayerId: wolf.playerId, reasoning: "想使用毒药" },
+        { targetPlayerId: wolf.playerId, decisionSummary: "想使用毒药" },
+        { targetPlayerId: wolf.playerId, decisionSummary: "仍未提供 used" },
       ]),
       generationId: "generation_missing_used",
       createdAt,
@@ -434,7 +463,11 @@ describe("action generation", () => {
       events: setupEvents(),
       draft: witchPoisonDraft(),
       llmClient: new MockLlmClient([
-        { used: true, targetPlayerId: wolf.playerId },
+        {
+          used: true,
+          targetPlayerId: wolf.playerId,
+          decisionSummary: "使用毒药。",
+        },
       ]),
       generationId: "generation_witch_prompt",
       createdAt,
@@ -472,7 +505,12 @@ describe("action generation", () => {
       game,
       events,
       draft: wolfVoteDraft(villager.playerId),
-      llmClient: new MockLlmClient([{ targetPlayerId: seer.playerId }]),
+      llmClient: new MockLlmClient([
+        {
+          targetPlayerId: seer.playerId,
+          decisionSummary: "跟随狼队目标共识。",
+        },
+      ]),
       generationId: "generation_wolf_vote",
       createdAt,
     });

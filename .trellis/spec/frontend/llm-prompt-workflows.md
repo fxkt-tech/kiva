@@ -39,6 +39,14 @@ type GenerationStageSnapshot = {
   parsedOutput: Record<string, unknown> | null;
   error: string | null;
 };
+
+type BuiltPrompt = {
+  promptVersion: string;
+  schemaName: string;
+  systemPrompt: string;
+  messages: readonly LlmMessage[];
+  outputContract: readonly string[];
+};
 ```
 
 Current contracts are:
@@ -65,9 +73,11 @@ There is no runtime prompt-version selector and no old Character/Prompt decoder.
 - A speech uses two real model calls. The decision call sees visible knowledge, own Rule Role, task constraints, Actor cognition, and any current bounded Actor Brief.
 - `BuiltSpeechIntentPrompt.evidenceScope` is the exact event set actually rendered after section flags and context-budget trimming. Intent validation accepts indexes only from that structure; an event that exists in memory but was omitted from the request is not selectable.
 - Public special-role speech must choose `conceal` or `claim`. Other speech uses `not_applicable`. Concealed public speech cannot pass private event excerpts to performance; an explicit claim may.
+- Each production prompt builder owns one exact `outputContract`, renders it in the initial user message, and returns it to generation for structural repair. Validators must not have a stricter private copy. PlayerIntent contracts include exact field keys, `160/240` character bounds, unique positive visible event indexes, and the context-specific disclosure literals.
 - The performance call receives only the validated intent, selected safe evidence excerpts, Actor expression fields, one speech budget, player-ID display mapping, and the optional current Actor Brief. It cannot re-run the whole game analysis or add evidence.
 - Only final `text` enters the Draft. The validated intent and both stage requests remain generation metadata.
 - Night actions stay one-stage decisions. Required targets and optional medicine use are validated against the shared legal options before changing a Draft.
+- Action output includes a non-empty `decisionSummary` because LLM Details exposes it as the model's bounded decision explanation. Initial generation, repair, and validation all require it; it is not hidden chain-of-thought and does not enter the confirmed Draft payload.
 
 #### Information and narrative boundaries
 
@@ -100,8 +110,10 @@ There is no runtime prompt-version selector and no old Character/Prompt decoder.
 | Target is not in `LegalActionOptions` | Repair once with the legal IDs; otherwise preserve the Draft. |
 | `used=false` has a target | Reject as contradictory and repair once. |
 | Intent has more than three, duplicate, non-integer, hidden, or prompt-omitted evidence indexes | Reject and repair once. |
+| Intent text exceeds its exact `160/240` field bound or has leading/trailing whitespace | Reject and repair once with the same bound shown initially. |
 | Public special-role intent omits disclosure | Accept only `conceal` or `claim`; repair once. |
 | Performance adds an invalid shape or exceeds the speech hard limit | Repair once; otherwise preserve the Draft. |
+| Action omits or empties `decisionSummary` | Reject and repair once; do not apply the target/use edit. |
 | Assistant JSON is malformed and finish reason is not `length` | Preserve the raw output and use one minimal structural repair. |
 | Assistant JSON is truncated with `finishReason=length` | Preserve metadata and return structured failure; do not repair the partial document. |
 | Transport/provider request fails | Do not reinterpret it as output repair. |
@@ -116,9 +128,11 @@ Natural-language quality is not a runtime keyword gate. Claim framing, disclosur
 - Good: a concealing seer reaches a cautious conclusion but the performance request contains no private check excerpt.
 - Base: evidence is insufficient, so the intent uses an empty index array and explicit uncertainty.
 - Good: a witch action uses one decision call, shared inventory/legal options, and no cosmetic second call.
+- Good contract flow: the exact PlayerIntent, performance limit, or action contract appears in both persisted attempts when structural repair occurs.
 - Bad: performance receives the entire private timeline or invents a fact that was not selected by the intent.
 - Bad: an event was trimmed from the prompt but the validator accepts its guessed index because it still exists in application memory.
 - Bad: a script background or another Actor profile is concatenated into game evidence.
+- Bad: the initial prompt, repair helper, and validator each maintain separate approximations of the same output shape.
 
 ### 6. Tests Required
 
@@ -126,7 +140,9 @@ Natural-language quality is not a runtime keyword gate. Claim framing, disclosur
 - Visibility-negative tests: host-only ballots, another player's private facts, future Episode data, and full ensemble data are absent.
 - Intent tests: disclosure matrix, maximum-three unique indexes, selected-evidence projection, and rejection of context-budget-omitted evidence.
 - Speech tests: exactly two successful calls, decision/performance failure sequences, hard-limit repair, unchanged Draft on failure, and usage aggregation.
+- Contract-sharing tests inspect real initial and repair attempts for PlayerIntent field limits/uniqueness and the performance hard limit.
 - Action tests: all seven action types, PK/abstention semantics, guard/seer history, witch resource contradictions, illegal targets, and one-stage records.
+- Action tests reject a missing `decisionSummary` and assert the shared prompt contract requires the same field.
 - Persistence tests: exact current prompt/schema versions and stage sequences round-trip; old/incomplete records are rejected.
 - Script-background tests: narrative appears before evidence with the non-evidence warning and never changes legal options.
 - Notification and token-pricing regressions remain covered.
@@ -169,3 +185,7 @@ const performance = buildSpeechPerformancePrompt({
 ```
 
 The same typed sources drive visibility, legality, rendering, validation, and persisted observability; no consumer privately reconstructs them.
+
+Wrong: render one abbreviated output example, build a second repair-only contract in the generator, and enforce a third set of limits in the validator.
+
+Correct: the production prompt builder returns one `outputContract`; its initial message renders that value and `generateValidatedJson()` reuses it unchanged for repair.

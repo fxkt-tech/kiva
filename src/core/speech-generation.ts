@@ -24,7 +24,6 @@ import {
   SPEECH_PERFORMANCE_PROMPT_VERSION,
   SPEECH_PROMPT_VERSION,
 } from "./prompt-builders";
-import type { RuleRoleId } from "./rule-role";
 import { evaluateSpeech, type SpeechBudget } from "./speech-budget";
 import {
   generateValidatedJson,
@@ -60,11 +59,6 @@ export async function generateSpeechDraft(
     events: input.events,
     viewerPlayerId: playerId,
   });
-  const publicSpeech = isPublicSpeechDraft(draft);
-  const requireDisclosure = requiresDisclosure(
-    draft,
-    context.viewer.ruleRole.id,
-  );
   const intentPrompt = buildSpeechIntentPrompt({
     context,
     draft,
@@ -85,10 +79,10 @@ export async function generateSpeechDraft(
         validatePlayerSpeechIntent({
           value,
           evidenceScope: intentPrompt.evidenceScope,
-          publicSpeech,
-          requireDisclosure,
+          publicSpeech: intentPrompt.publicSpeech,
+          requireDisclosure: intentPrompt.requireDisclosure,
         }),
-      repair: { outputContract: intentRepairContract(requireDisclosure) },
+      repair: { outputContract: intentPrompt.outputContract },
     });
     stages.push(
       successfulStage(
@@ -134,7 +128,7 @@ export async function generateSpeechDraft(
   const evidence = selectedIntentEvidence({
     intent: intentResult.value,
     evidenceScope: intentPrompt.evidenceScope,
-    publicSpeech,
+    publicSpeech: intentPrompt.publicSpeech,
   });
   const speechBudget = requiredSpeechBudget(intentPrompt.speechBudget);
   const performancePrompt = buildSpeechPerformancePrompt({
@@ -152,7 +146,7 @@ export async function generateSpeechDraft(
       modelBinding: context.viewer.modelBinding,
       request: performanceRequest,
       validate: (value) => parsePerformanceText(value, speechBudget),
-      repair: { outputContract: performanceRepairContract(speechBudget) },
+      repair: { outputContract: performancePrompt.outputContract },
     });
     stages.push(
       successfulStage(
@@ -238,38 +232,6 @@ function parsePerformanceText(
     );
   }
   return normalized;
-}
-
-function intentRepairContract(requireDisclosure: boolean): readonly string[] {
-  return [
-    "objective、conclusion、intendedEffect 必须为简短非空字符串",
-    "evidenceEventIndexes 必须为最多 3 个可见事件编号且不得重复",
-    "uncertainty 必须为字符串或 null",
-    requireDisclosure
-      ? "disclosure 必须为 conceal 或 claim"
-      : "disclosure 必须为 not_applicable",
-    "只返回 JSON 对象，不写最终台词",
-  ];
-}
-
-function performanceRepairContract(budget: SpeechBudget): readonly string[] {
-  return [
-    "text 必须是非空字符串",
-    `text 不得超过 ${budget.hardMaxCharacters} 个非空白字符`,
-    "不得加入 PlayerIntent 和 SELECTED_EVIDENCE 之外的新事实",
-    "只返回 JSON 对象",
-  ];
-}
-
-function isPublicSpeechDraft(draft: LlmSpeechDraft): boolean {
-  return draft.type !== "wolf_strategy_given" && draft.type !== "wolf_opinion_given";
-}
-
-function requiresDisclosure(
-  draft: LlmSpeechDraft,
-  role: RuleRoleId,
-): boolean {
-  return isPublicSpeechDraft(draft) && role !== "werewolf" && role !== "villager";
 }
 
 function requestFor(prompt: {

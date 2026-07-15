@@ -341,7 +341,7 @@ async function runEpisodeAuthor(
           validate: parseStory,
           outputContract: [
             "title 和 logline 必须是非空字符串",
-            "acts 必须是至少一项的 {title,summary} 数组",
+            `acts 必须为 1 到 ${MAX_EPISODE_STORY_ACTS} 项，每项只包含非空 title、summary`,
             "只写全局故事主轴，不写角色弧线、关系细节或逐场台词",
           ],
           apply: (story) => ({ ...workspace, story }),
@@ -366,7 +366,11 @@ async function runEpisodeAuthor(
             `castAssignments 必须恰好覆盖：${profiles.map((profile) => profile.playerId).join(", ")}`,
             "每项只包含 playerId、dramaticWeight、dramaticFunction、signatureStepIndex",
             EPISODE_DRAMATIC_WEIGHT_CONTRACT,
-            `relationshipSeeds 必须为 1 到 ${MAX_EPISODE_RELATIONSHIP_SEEDS} 项；每项只包含两个不同 playerId 和约定 kind`,
+            ...profiles.map((profile) =>
+              `${profile.playerId} 的 signatureStepIndex 合法值：${(opportunities.get(profile.playerId) ?? []).join(", ")}`
+            ),
+            `relationshipSeeds 必须为 1 到 ${MAX_EPISODE_RELATIONSHIP_SEEDS} 项；每项只包含两个不同的已列出 playerId`,
+            "kind 只能是 rivalry、alliance、contrast、trust_shift",
             "不要展开 baseline、pressure、change、payoff 或关系长文",
           ],
           apply: (ensemble) => ({ ...workspace, ensemble }),
@@ -555,7 +559,6 @@ function buildStoryRequest(
       "你是狼人杀节目的 Script Author Agent，当前只负责故事主轴。",
       "合法事件轨迹已经确定；不得改变行动、票型、死亡、身份、预算或胜方。",
       "本轮不处理角色弧线、关系细节或逐场台词。只返回 JSON 对象。",
-      CONCISE_AUTHOR_OUTPUT_INSTRUCTION,
     ].join("\n"),
     messages: [
       {
@@ -592,7 +595,6 @@ function buildEnsembleRequest(input: {
       "你是狼人杀节目的 Script Author Agent，当前只负责群像分工。",
       "比较全体演员，分配主次功能、真实标志节点和本局关系配对。",
       "保持输出紧凑，不要展开长篇人物弧线、关系过程或最终台词。只返回 JSON 对象。",
-      CONCISE_AUTHOR_OUTPUT_INSTRUCTION,
     ].join("\n"),
     messages: [
       {
@@ -635,7 +637,6 @@ function buildActorArcRequest(input: {
       "你是狼人杀节目的 Script Author Agent，当前只展开一名演员的本局弧线。",
       "稳定人物核心必须保留；变化来自合法轨迹中的压力、失误、适应和兑现。",
       "不得改变游戏事实，不得写最终台词。只返回 JSON 对象。",
-      CONCISE_AUTHOR_OUTPUT_INSTRUCTION,
     ].join("\n"),
     messages: [
       {
@@ -670,7 +671,6 @@ function buildRelationshipRequest(input: {
       "你是狼人杀节目的 Script Author Agent，当前只展开一对本局关系。",
       "关系必须从公开互动中形成，不得虚构赛前历史、私下交易或游戏证据。",
       "不得写最终台词。只返回 JSON 对象。",
-      CONCISE_AUTHOR_OUTPUT_INSTRUCTION,
     ].join("\n"),
     messages: [
       {
@@ -732,7 +732,6 @@ function buildBeatRequest(input: {
       "你是狼人杀节目的 Script Author Agent，当前只编写一个局部场景的发言节拍。",
       "不得修改合法轨迹、planned payload 或预算，不得向演员泄露未来事件。",
       "不要生成最终台词。只返回 JSON 对象。",
-      CONCISE_AUTHOR_OUTPUT_INSTRUCTION,
     ].join("\n"),
     messages: [
       {
@@ -794,7 +793,6 @@ function buildConciseRetryRequest(
     systemPrompt: [
       request.systemPrompt,
       "上次响应达到输出上限。本次从原始任务重新生成，不要复述上次内容。",
-      CONCISE_AUTHOR_OUTPUT_INSTRUCTION,
     ].join("\n"),
   };
 }
@@ -808,7 +806,11 @@ async function performAgentRequest<Value>(input: {
   readonly validate: (parsed: Record<string, unknown>) => Value;
   readonly outputContract: readonly string[];
 }): Promise<RequestOutcome<Value>> {
-  const request = withOutputContract(input.request, input.outputContract);
+  const outputContract = [
+    CONCISE_AUTHOR_OUTPUT_INSTRUCTION,
+    ...input.outputContract,
+  ];
+  const request = withOutputContract(input.request, outputContract);
   try {
     const result = await retryHeadersTimeout(() =>
       generateValidatedJson({
@@ -816,7 +818,7 @@ async function performAgentRequest<Value>(input: {
         modelBinding: input.modelBinding,
         request,
         validate: input.validate,
-        repair: { outputContract: input.outputContract },
+        repair: { outputContract },
       })
     );
     return {

@@ -115,8 +115,9 @@ type EpisodeScriptReadyState = {
 - Each `relationship` request sees one selected pair, their completed directions, and the structural opportunities relevant to that pair. It produces one complete relationship direction.
 - `beats` requests are grouped by local phase/scene and contain at most five speech steps. They receive only current actors, their completed direction, touching completed relationships, local structural context, and at most one earlier authored move per actor.
 - A child prompt never embeds the full previous assistant output or the entire workspace. The workspace is structured application state; each prompt projects only the fields needed for its task.
-- Every authored free-text field is instructed to stay within 80 Chinese characters. Structural validators, not output-token caps, decide whether a complete response is accepted.
+- Every authored free-text field stays within 80 Chinese characters. The concise-field instruction is part of every child task's shared `outputContract`, so initial generation and structural repair receive the same bound. Structural validators, not output-token caps, decide whether a complete response is accepted.
 - Every child task defines one `outputContract`. `performAgentRequest()` appends that exact contract to the initial provider request and passes the same value to structural repair; the persisted request snapshot is the contract-bearing request actually sent. `schemaName` and JSON-object mode do not communicate field types, required fields, or enum literals to the provider.
+- Story's shared contract says `acts` contains 1–4 items. Ensemble's shared contract lists the exact four relationship kinds and every selected player's legal `signatureStepIndex` values; repair must not infer either dynamic constraint from an error message.
 - The Script Author model binding is snapshotted in the workspace from a dedicated code-owned default or an explicit author override. It is independent of every player's Actor model binding.
 
 #### Persistence, recovery, and observability
@@ -175,6 +176,7 @@ type EpisodeScriptReadyState = {
 | Story/ensemble/actor_arc/relationship output is incomplete or otherwise invalid | Use one minimal structural repair for complete JSON; otherwise fail the bounded task. |
 | Ensemble `dramaticWeight` is localized, numeric, or neither `"primary"` nor `"supporting"` | Repair once with the exact two-value string contract; fail the bounded task if the repaired value is still invalid. |
 | Initial child-task prompt omits a validator-required field or enum constraint | Regression failure; add the constraint to the task's shared `outputContract`, never only to the repair prompt. |
+| Structural repair omits a cardinality, string bound, enum literal, or dynamic legal index enforced by validation | Regression failure; enrich the same task `outputContract` consumed by both attempts. |
 | Cast direction omits/duplicates a player or has an invalid signature step | Fail before Review. |
 | Relationship references an unknown/same player or duplicates an undirected pair | Fail before Review. |
 | Beat output omits/duplicates a requested speech step | Repair complete JSON once; fail if still invalid. |
@@ -231,6 +233,7 @@ type EpisodeScriptReadyState = {
 - Task-capture tests assert one bounded story request, one compact ensemble request, one actor_arc request per player, one relationship request per seed, and local beat batches of at most five.
 - An Ensemble contract regression makes the first response use localized weights and makes repair fall back to numeric weights unless the request contains both exact string literals; assert the initial and repair requests share the contract and the repaired task succeeds.
 - A beats prompt regression captures the real initial provider requests and asserts every request contains the exact `disclosure` literals before any repair occurs.
+- Story/Ensemble repair regressions assert both attempts contain the 80-character bound, 1–4 act bound, exact relationship-kind literals, and per-player legal signature indexes.
 - Cardinality tests reject more than four acts, more than six relationship seeds, or a free-text field longer than 80 characters before that output can enter later prompts.
 - Prompt-scope tests assert every child request has only the profiles/directions/local history required by its task and at most one prior move per actor.
 - Binding tests prove Script Author uses its dedicated snapshot and does not inherit any player's provider/model.
