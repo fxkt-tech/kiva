@@ -127,11 +127,11 @@ type EpisodeScriptReadyState = {
 - Every child call persists an `EpisodeAuthorRequestRecord` containing its semantic task, exact request, raw/parsed output, attempts, provider/model, status, provider finish reason, and provider-returned token usage.
 - Request history is append-only across failures, resumes, and whole-candidate regeneration. Game token totals include every retained Script Author request separately from player speech/action requests.
 - The Script page renders current Agent phase/progress plus persisted request details while generating, and shows preserved partial-result counts plus a resume action when failed.
-- The Script page is a fixed-height tool workspace: the page root uses `h-screen overflow-hidden`, the game header occupies its own fixed row, and the remaining area is a `min-h-0` responsive grid. Desktop renders three bounded columns in order: the narrow 「剧本控制台」 status/action panel, `LLM requests`, then the widest `LLM Details`; narrow viewports stack the same three panels in that order. “Locked” describes the pre-approval Game invariant and warning copy, not the control panel's name.
+- The Script page is a fixed-height tool workspace: the page root uses `h-screen overflow-hidden`, the game header occupies its own fixed row, and the remaining area is a `min-h-0` responsive grid. Desktop renders three bounded columns in order: the narrow `LLM requests` navigator, the widest `LLM Details`, then the right-side 「剧本控制台」 status/action panel. Narrow viewports stack the same three panels in that order. “Locked” describes the pre-approval Game invariant and warning copy, not the control panel's name.
 - Status, progress, auto-continue, generate-next/retry/start actions, and immutable Game facts belong only to the control panel. Auto-continue plus the state-specific primary action render inside the shared current-status card footer, not as detached sibling cards below it. Review/approve content may remain below the status card because it acts on the assembled candidate rather than the current Author task.
 - Persisted Script Author requests are projected once from the current Episode state and rendered only in the request/detail workspace; do not render request history inside `EpisodeWorkspace` state branches.
 - `idle`, `generating`, `ready`, `failed`, and `review` share one `EpisodeWorkspaceStatusCard` visual skeleton. The card always renders the “当前状态” kicker, state badge, title/copy, phase progress bar, and semantic completion for all five request kinds: 故事主轴 (`story`), 群像分工 (`ensemble`), 角色弧线 (`actor_arc`), 关系弧线 (`relationship`), and 场景节拍 (`beats`). State branches may change copy, tone, and available actions, but must not replace the card with a spinner-only or ad-hoc status layout.
-- Left-card phase completion is derived from structured workspace artifacts, not request-record counts: retries may append multiple audit requests for one semantic task and must not inflate progress. Total retained requests and tokens belong only to the middle `LLM requests` audit header.
+- Control-card phase completion is derived from structured workspace artifacts, not request-record counts: retries may append multiple audit requests for one semantic task and must not inflate progress. Total retained requests and tokens belong only to the left `LLM requests` audit header, rendered compactly as `<count> · <tokens> tokens` because the panel title already names the count.
 - All three panel bodies own their vertical overflow with `min-h-0` plus `overflow-y-auto`. Request and detail headers remain visible, including when there are zero requests. `LLM requests` renders newest first as compact full-row selection buttons, defaults selection to the newest request, and uses `aria-pressed` for the active row. Each visible row contains only original sequence number, success/failure dot, chronological task label, and selection chevron—in that order. Provider/model/status/task metadata and per-request token counts do not render in the list; they belong to `LLM Details`. The status remains screen-reader text on the row.
 - `LLM Details` renders only the selected request's shared Prompt/Token/output content inline; Script must not render a details icon or `<dialog>`. Editor and Timeline may continue using the same shared content inside their existing modal trigger.
 - Request growth scrolls only `LLM requests`; long Prompt/output content scrolls only `LLM Details`. Neither may move the control panel or create document-level scrolling.
@@ -188,11 +188,11 @@ type EpisodeScriptReadyState = {
 | Auto-continue preference is absent, false, or invalid | Remain in `ready` until the manual next-step action is submitted. |
 | Auto-continue is disabled while a task is in flight | Let the current task reach `ready`, `review`, or `failed`; never submit the following task. |
 | Script generating state replaces the shared status card with a spinner-only block | Regression failure; keep the same badge/progress/metrics structure used by `ready`, with `GENERATING` state copy and tone. |
-| Script request history grows beyond the viewport | Scroll only the `LLM requests` panel body; keep the page root, all panel headers, details selection, and left controls fixed. |
+| Script request history grows beyond the viewport | Scroll only the `LLM requests` panel body; keep the page root, all panel headers, details selection, and right controls fixed. |
 | Selected Prompt/output exceeds the viewport | Scroll only the `LLM Details` body; never open a modal or grow the document. |
 | Episode state has no persisted requests yet | Render `LLM requests` with `0 requests · 0 tokens` and a separate empty `LLM Details` panel; do not remove either workspace column. |
 | Historical `generating` snapshot contains a successful current-job request already applied to its workspace | Project it as `READY`; do not show `GENERATING` or a current-stage retry action. |
-| A semantic task has failed and been retried | Count its completed workspace artifact once on the left; retain every attempt in the right request audit. |
+| A semantic task has failed and been retried | Count its completed workspace artifact once in the control card; retain every attempt in the left request audit. |
 | Approval identity/profile/hash changed, compiler-owned field differs, or events exist | Reject approval. |
 | Episode snapshot is not schema v3 | Reject; do not normalize or upgrade. |
 | Episode author request is not v4 or workspace has an old shape | Reject; no compatibility path exists. |
@@ -205,9 +205,9 @@ type EpisodeScriptReadyState = {
 - Good controlled progression: one guarded browser job completes story and persists `ready`; a manual click or enabled timer submits the matching job ID and advances ensemble exactly once.
 - Base preference: a browser with no Script preference stops after every successful task and keeps initial start, failure retry, and candidate regeneration manual.
 - Good recovery: the provider truncates a five-beat response; the Agent records that request, splits it into smaller batches, and continues without resending the truncated document.
-- Good workspace: thirty persisted requests scroll inside the middle audit panel, clicking request 12 replaces request 30 in the right inline details panel, and the left status/actions remain reachable without document scrolling.
+- Good workspace: thirty persisted requests scroll inside the narrow left audit panel, clicking request 12 replaces request 30 in the wide middle inline details panel, and the right status/actions remain reachable without document scrolling.
 - Good audit order: request 30 appears above request 29 while both keep their original sequence numbers and labels.
-- Good phase summary: the left card shows `story`, `ensemble`, `actor_arc`, `relationship`, and `beats` completion while a failed Ensemble attempt remains visible only as an extra right-side audit record.
+- Good phase summary: the right control card shows `story`, `ensemble`, `actor_arc`, `relationship`, and `beats` completion while a failed Ensemble attempt remains visible only as an extra left-side audit record.
 - Bad: ask for the whole script, 12 full arcs, all relationships, and all beats in one response; append the malformed 8 KB output to a repair request; or restart all prior work after one late failure.
 - Bad: bind Script Author to seat 1's Actor model, keep only aggregate token counts, or replace request history when generating another candidate.
 - Bad: await the Agent run inside the browser Server Action or treat an in-memory promise as durable job state.
@@ -235,7 +235,7 @@ type EpisodeScriptReadyState = {
 - Local author covers every cast member and speech step; invalid cast IDs, pairs, signature indexes, hash/schema/identity fail deterministically.
 - Script page tests render Agent progress, per-task request details, preserved partial-result counts, and resume copy.
 - Auto-continue tests assert only stored `"true"` enables the control and scheduling requires enabled + ready + a current job ID. Script rendering tests assert the off-state accessibility label and the durable manual ready action.
-- Ready- and generating-state rendering tests assert the shared “当前状态” card, exact state badge, progressbar, all five semantic request-kind labels, and artifact-derived completion values. They also assert “已保留请求” is absent from the left card. Generating remains left-aligned and does not render the old centered spinner block.
+- Ready- and generating-state rendering tests assert the shared “当前状态” card, exact state badge, progressbar, all five semantic request-kind labels, and artifact-derived completion values. They also assert “已保留请求” is absent from the control card. Generating remains left-aligned and does not render the old centered spinner block.
 - Script request/detail rendering tests assert newest-first buttons, newest default selection, one inline selected detail payload, `aria-pressed`, no `<dialog>`, and separate zero-request placeholders. Row assertions require the status dot before the visible label and reject provider/model metadata or per-request tokens inside the button. Browser checks click an older row and assert the inline detail title/content changes. Manual viewport checks cover desktop three-column and narrow three-panel stacked layouts with panel-local scrolling.
 - Ready-, generating-, failed-, and idle-state rendering tests assert auto-continue and the applicable start/next/retry action are descendants of the shared current-status card.
 - Script rendering tests assert newest-first request order, effective READY for a settled historical generating snapshot, and “重试当前阶段” without any whole-run restart copy.
@@ -269,13 +269,13 @@ Wrong: make `generating` a centered spinner card while `ready` uses the approved
 
 Correct: render both states through `EpisodeWorkspaceStatusCard`; communicate in-flight work with the badge tone/dot while retaining phase progress and persisted-result metrics.
 
-Wrong: show `requests.length` as a left-card phase metric or derive phase completion by counting `request.task.kind` records.
+Wrong: show `requests.length` as a control-card phase metric or derive phase completion by counting `request.task.kind` records.
 
-Correct: derive all five phase values from `EpisodeAuthorWorkspace`; reserve `requests.length` and token totals for the right audit panel where retries are intentionally preserved.
+Correct: derive all five phase values from `EpisodeAuthorWorkspace`; reserve `requests.length` and token totals for the left audit panel where retries are intentionally preserved.
 
 Wrong: render request history inside `idle`, `generating`, `ready`, `failed`, and `review` branches, then open each request's details in a modal.
 
-Correct: project requests once at the page boundary, render one selectable middle audit panel plus one right inline detail panel beside the narrow control panel, and give each panel body its own bounded overflow.
+Correct: project requests once at the page boundary, render one narrow selectable left audit panel plus one wide middle inline detail panel beside the right control panel, and give each panel body its own bounded overflow.
 
 Wrong: render auto-continue, “生成下一步”, or “重试当前阶段” as separate cards below current status.
 

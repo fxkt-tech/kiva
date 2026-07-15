@@ -62,7 +62,9 @@ export default async function ScriptPreparationPage({
           </div>
         </header>
 
-        <section className="grid min-h-0 gap-3 overflow-hidden grid-rows-[minmax(180px,0.72fr)_minmax(220px,0.9fr)_minmax(260px,1.15fr)] lg:grid-cols-[minmax(280px,0.62fr)_minmax(300px,0.8fr)_minmax(340px,1.18fr)] lg:grid-rows-1">
+        <section className="grid min-h-0 gap-3 overflow-hidden grid-rows-[minmax(220px,0.8fr)_minmax(260px,1.2fr)_minmax(180px,0.72fr)] lg:grid-cols-[minmax(260px,0.54fr)_minmax(380px,1.46fr)_minmax(280px,0.72fr)] lg:grid-rows-1">
+          <EpisodeAuthorRequestWorkspace requests={requests} />
+
           <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface/45">
             <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
               <div className="flex items-center gap-2 text-sm font-semibold">
@@ -88,8 +90,6 @@ export default async function ScriptPreparationPage({
               <LockedGameFacts record={record} />
             </div>
           </section>
-
-          <EpisodeAuthorRequestWorkspace requests={requests} />
         </section>
       </div>
     </main>

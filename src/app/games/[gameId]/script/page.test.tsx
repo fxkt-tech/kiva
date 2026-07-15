@@ -80,7 +80,8 @@ describe("ScriptPreparationPage", () => {
 
     expect(html).toContain("LLM requests");
     expect(html).toContain(">LLM Details<");
-    expect(html).toContain("1 requests · 120 tokens");
+    expect(html).toContain("1 · 120 tokens");
+    expect(html).not.toContain("1 requests · 120 tokens");
     expect(html).toContain("openai-compatible/author-model");
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("Author the outline.");
@@ -125,7 +126,7 @@ describe("ScriptPreparationPage", () => {
 
     expect(html).toContain("LLM requests");
     expect(html).toContain(">LLM Details<");
-    expect(html).toContain("0 requests · 0 tokens");
+    expect(html).toContain("0 · 0 tokens");
     expect(html).toContain("开始生成后，请求记录会按执行顺序出现在这里");
     expect(html).toContain("选择一条请求后，这里会显示 Prompt、Token 和模型输出");
   });

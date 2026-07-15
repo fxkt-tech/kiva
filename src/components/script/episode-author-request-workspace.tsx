@@ -49,7 +49,7 @@ export function EpisodeAuthorRequestWorkspace({
         <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border px-3">
           <h2 className="text-sm font-semibold">LLM requests</h2>
           <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-subtle">
-            {requests.length} requests · {formatRequestTokens(requests)} tokens
+            {requests.length} · {formatRequestTokens(requests)} tokens
           </span>
         </header>
         {entries.length === 0 ? (
