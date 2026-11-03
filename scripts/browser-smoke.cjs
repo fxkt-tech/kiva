@@ -44,7 +44,10 @@ function healthBar(buffer, side) {
       window.soundCues = [];
       window.addEventListener('kiva-sound', event => window.soundCues.push(event.detail));
     });
-    await page.goto(process.env.KIVA_TEST_URL || 'http://localhost:8080', { timeout: 90000 });
+    const baseUrl = new URL(process.env.KIVA_TEST_URL || 'http://localhost:8080');
+    const passiveUrl = new URL(baseUrl);
+    passiveUrl.searchParams.set('dummy', 'passive');
+    await page.goto(passiveUrl.href, { timeout: 90000 });
     await page.locator('#enter').waitFor({ state: 'visible', timeout: 60000 });
     // Activate the document before requesting real pointer lock.
     await page.bringToFront();
@@ -214,8 +217,19 @@ function healthBar(buffer, side) {
     await contains('Player: 100 HP; READY');
     const cues = await page.evaluate(() => window.soundCues);
     for (const cue of ['charge-ready', 'sword-energy', 'parry', 'guard', 'jump', 'dodge']) assert(cues.includes(cue), `missing ${cue} sound`);
+    // Default play must repeat charged horizontal attacks without player input.
+    baseUrl.searchParams.delete('dummy');
+    await page.evaluate(() => document.exitPointerLock());
+    await page.goto(baseUrl.href, { timeout: 90000 });
+    await page.locator('#enter').waitFor({ state: 'visible', timeout: 60000 });
+    await page.locator('#enter').click();
+    await contains('Dummy: 100 HP; HORIZONTAL CHARGE');
+    await contains('Player: 70 HP');
+    await contains('Player: 40 HP');
+    assert(await page.evaluate(() => window.soundCues.filter(cue => cue === 'sword-energy').length >= 2),
+      'enemy repeats charged sword energy');
     assert(webgpu, 'engine must use BrowserWebGpu');
     assert.deepEqual([...errors], [], 'no browser or renderer errors');
-    console.log('PASS WebGPU rendering, horizontal/vertical, charged wave, cancellation, combined parry, riposte, normal punishes parry, uppercut, air attack, jump, dash/sprint/slide, audio and pause');
+    console.log('PASS WebGPU rendering, horizontal/vertical, charged wave, cancellation, combined parry, riposte, normal punishes parry, uppercut, air attack, jump, dash/sprint/slide, audio, pause and enemy AI');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

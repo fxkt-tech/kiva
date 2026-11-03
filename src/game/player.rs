@@ -1,7 +1,7 @@
 //! Rigid stickman geometry bound to imported shoulder/elbow/wrist/knee bones.
 use super::{
     animation::RigPose,
-    combat::{Fighter, Side},
+    combat::{EnemyAi, Fighter, Side},
     skeleton::AnimationLibrary,
 };
 use bevy::prelude::*;
@@ -59,6 +59,29 @@ pub(super) fn spawn_fighters(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let auto_enemy = {
+        #[cfg(target_arch = "wasm32")]
+        {
+            // The optional passive training URL also provides a stable fixture
+            // for the player-input browser regressions. Normal play uses AI.
+            !web_sys::window()
+                .and_then(|window| window.document())
+                .and_then(|document| document.url().ok())
+                .and_then(|url| url.split_once('?').map(|(_, query)| query.to_owned()))
+                .is_some_and(|query| {
+                    query
+                        .split('#')
+                        .next()
+                        .unwrap_or("")
+                        .split('&')
+                        .any(|part| part == "dummy=passive")
+                })
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            true
+        }
+    };
     let rod = meshes.add(Cylinder::new(1.0, 1.0).mesh().resolution(10));
     let sphere = meshes.add(Sphere::new(1.0).mesh().uv(16, 12));
     let head = meshes.add(Sphere::new(0.155).mesh().uv(24, 16));
@@ -109,6 +132,9 @@ pub(super) fn spawn_fighters(
                 Visibility::default(),
             ))
             .id();
+        if side == Side::Dummy && auto_enemy {
+            commands.entity(root).insert(EnemyAi);
+        }
         let mut attachments = Vec::new();
         // Each rod spans two animated joints, preserving contact when bending.
         for (a, b, radius) in [

@@ -737,3 +737,133 @@ fn crouch_then_right_click_can_be_buffered_across_separate_frames() {
         Action::Attack(ref attack) if attack.kind == AttackKind::Crouch(AttackAxis::Vertical)));
     assert!(arena.fighter(arena.player).crouched);
 }
+
+#[test]
+fn enemy_ai_repeats_charged_horizontal_attacks_without_player_input() {
+    let mut arena = Arena::new();
+    arena.world.entity_mut(arena.dummy).insert(EnemyAi);
+    arena.tick(0.01, Arena::controls());
+    assert!(
+        matches!(arena.fighter(arena.dummy).action,Action::Charge(ref charge) if charge.axis == AttackAxis::Horizontal)
+    );
+    let mut releases = 0;
+    for _ in 0..300 {
+        arena.tick(0.01, Arena::controls());
+        releases += arena
+            .world
+            .resource::<Sounds>()
+            .0
+            .iter()
+            .filter(|&&cue| cue == "sword-energy")
+            .count();
+    }
+    assert!(releases >= 2, "AI must finish recovery and charge again");
+    assert!(
+        arena.fighter(arena.player).health < 100.0,
+        "horizontal sword energy must hit the player"
+    );
+}
+
+#[test]
+fn enemy_ai_tracks_during_charge_and_locks_heading_on_release() {
+    let mut arena = Arena::new();
+    arena.world.entity_mut(arena.dummy).insert(EnemyAi);
+    arena
+        .world
+        .get_mut::<Transform>(arena.player)
+        .unwrap()
+        .translation = Vec3::new(4.0, 0.0, -0.6);
+    arena.world.resource_mut::<OrbitCamera>().heading = 0.7;
+    arena.tick(0.01, Arena::controls());
+    assert!((arena.fighter(arena.dummy).facing + std::f32::consts::FRAC_PI_2).abs() < 0.001);
+    // Mouse release belongs to the player and must not release the enemy charge.
+    arena.release(AttackAxis::Horizontal);
+    assert!(matches!(
+        arena.fighter(arena.dummy).action,
+        Action::Charge(_)
+    ));
+    arena
+        .world
+        .get_mut::<Transform>(arena.player)
+        .unwrap()
+        .translation = Vec3::new(-4.0, 0.0, -0.6);
+    arena.wait(0.80);
+    assert!(matches!(arena.fighter(arena.dummy).action,
+        Action::Attack(ref attack) if attack.kind == AttackKind::Focus(AttackAxis::Horizontal)));
+    let facing = arena.fighter(arena.dummy).facing;
+    assert!((facing - std::f32::consts::FRAC_PI_2).abs() < 0.001);
+    arena
+        .world
+        .get_mut::<Transform>(arena.player)
+        .unwrap()
+        .translation = Vec3::new(0.0, 0.0, 4.0);
+    arena.wait(0.05);
+    assert_eq!(arena.fighter(arena.dummy).facing, facing);
+}
+
+#[test]
+fn enemy_ai_restarts_after_interruption_and_training_override() {
+    let mut arena = Arena::new();
+    arena.world.entity_mut(arena.dummy).insert(EnemyAi);
+    arena.tick(0.01, Arena::controls());
+    arena.press(AttackAxis::Horizontal);
+    arena.release(AttackAxis::Horizontal);
+    arena.wait(0.20);
+    assert!(arena.fighter(arena.dummy).health < 100.0);
+    assert!(matches!(
+        arena.fighter(arena.dummy).action,
+        Action::Stagger(_)
+    ));
+    arena.wait(0.45);
+    assert!(matches!(arena.fighter(arena.dummy).action,
+        Action::Charge(ref charge) if charge.elapsed < CHARGE_READY));
+    let mut input = Arena::controls();
+    input.training_parry = true;
+    arena.tick(0.01, input);
+    assert!(matches!(
+        arena.fighter(arena.dummy).action,
+        Action::Parry(_)
+    ));
+    arena.wait(PARRY_DURATION + 0.05);
+    assert!(matches!(
+        arena.fighter(arena.dummy).action,
+        Action::Charge(_)
+    ));
+}
+
+#[test]
+fn enemy_ai_waits_for_weapon_and_survives_pause_and_reset() {
+    let mut arena = Arena::new();
+    arena.world.entity_mut(arena.dummy).insert(EnemyAi);
+    arena
+        .world
+        .get_mut::<Fighter>(arena.dummy)
+        .unwrap()
+        .disarmed = 0.30;
+    arena.wait(0.20);
+    assert!(matches!(arena.fighter(arena.dummy).action, Action::Idle));
+    arena.wait(0.15);
+    assert!(matches!(
+        arena.fighter(arena.dummy).action,
+        Action::Charge(_)
+    ));
+    arena.tick(0.01, Controls::default());
+    assert!(matches!(arena.fighter(arena.dummy).action, Action::Idle));
+    arena.tick(0.01, Arena::controls());
+    assert!(matches!(arena.fighter(arena.dummy).action,
+        Action::Charge(ref charge) if charge.elapsed < 0.02));
+    let mut input = Arena::controls();
+    input.reset = true;
+    arena.tick(0.01, input);
+    assert!(arena.world.get::<EnemyAi>(arena.dummy).is_some());
+    arena.tick(0.01, Arena::controls());
+    assert!(matches!(
+        arena.fighter(arena.dummy).action,
+        Action::Charge(_)
+    ));
+    let mut player = arena.world.get_mut::<Fighter>(arena.player).unwrap();
+    player.health = 0.0;
+    player.action = Action::Down(2.0);
+    arena.tick(0.01, Arena::controls());
+    assert!(matches!(arena.fighter(arena.dummy).action, Action::Idle));
+}

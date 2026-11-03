@@ -54,6 +54,10 @@ pub(super) enum Action {
 const INPUT_BUFFER: f32 = 0.24;
 const DODGE_ATTACK_START: f32 = 0.12;
 const SPRINT_HOLD_TIME: f32 = 0.16;
+const ENEMY_CHARGE_HOLD: f32 = CHARGE_READY + 0.25;
+
+#[derive(Component)]
+pub(super) struct EnemyAi;
 
 #[derive(Clone, Copy, Debug)]
 enum CombatInput {
@@ -451,6 +455,52 @@ fn start_attack(fighter: &mut Fighter, kind: AttackKind, heading: f32) {
     fighter.facing = heading;
     fighter.action = Action::Attack(Attack::new(kind));
 }
+fn drive_enemy(
+    fighter: &mut Fighter,
+    position: Vec3,
+    opponent: Option<&Snapshot>,
+    automatic: bool,
+    controls: &Controls,
+    sounds: &mut Sounds,
+    status: &mut CombatStatus,
+) {
+    if !can_cancel(&fighter.action) || fighter.disarmed > 0.0 || fighter.airborne {
+        return;
+    }
+    let Some(target) = opponent.filter(|target| target.alive) else {
+        return;
+    };
+    let direction = target.position - position;
+    let heading = (-direction.x).atan2(-direction.z);
+    // Existing training commands may override a charge or its recovery.
+    if controls.training_parry {
+        fighter.facing = heading;
+        fighter.action = Action::Parry(0.0);
+    } else if controls.training_attack || controls.training_normal {
+        start_attack(
+            fighter,
+            AttackKind::Training(controls.training_attack),
+            heading,
+        );
+        status.last = if controls.training_attack {
+            "Incoming BLUE / Parry on contact, or dodge."
+        } else {
+            "Incoming NORMAL / Beats parry; use blue armor or dodge."
+        }
+        .into();
+        sounds.0.push("windup");
+    } else if automatic && matches!(fighter.action, Action::Idle) {
+        fighter.facing = heading;
+        fighter.action = Action::Charge(Charge {
+            axis: AttackAxis::Horizontal,
+            combo: 0,
+            dodge_followup: false,
+            elapsed: 0.0,
+        });
+        sounds.0.push("windup");
+    }
+}
+
 fn move_fighter(
     fighter: &mut Fighter,
     transform: &mut Transform,
@@ -487,6 +537,7 @@ pub(super) fn simulate(
     time: Res<Time>,
     orbit: Res<OrbitCamera>,
     mut fighters: Query<(Entity, &mut Fighter, &mut Transform)>,
+    enemies: Query<Entity, With<EnemyAi>>,
     mut impacts: ResMut<Impacts>,
     mut status: ResMut<CombatStatus>,
     mut sounds: ResMut<Sounds>,
@@ -571,6 +622,16 @@ pub(super) fn simulate(
             .map(|target| target.position);
         if fighter.side == Side::Player {
             consume_input(fighter, &controls, orbit.heading, &mut sounds);
+        } else {
+            drive_enemy(
+                fighter,
+                transform.translation,
+                opponent,
+                enemies.contains(entity),
+                &controls,
+                &mut sounds,
+                &mut status,
+            );
         }
         if fighter.airborne {
             let (height, speed) = jump_step(transform.translation.y, fighter.vertical_speed, dt);
@@ -636,15 +697,28 @@ pub(super) fn simulate(
                 if previous < CHARGE_READY && charge.elapsed >= CHARGE_READY {
                     sounds.0.push("charge-ready");
                 }
-                fighter.facing = orbit.heading;
-                let button = controls.attacks[button_index(charge.axis)];
-                if button.released
-                    || (!button.held && !button.pressed)
-                    || charge.elapsed >= CHARGE_AUTO_RELEASE
-                {
-                    next_action = Some(Action::Attack(charge.release_attack()));
+                if fighter.side == Side::Dummy {
+                    if let Some(target) = opponent.filter(|target| target.alive) {
+                        let direction = target.position - transform.translation;
+                        fighter.facing = (-direction.x).atan2(-direction.z);
+                        if charge.elapsed >= ENEMY_CHARGE_HOLD {
+                            next_action = Some(Action::Attack(charge.release_attack()));
+                        }
+                    } else {
+                        next_action = Some(Action::Idle);
+                    }
+                } else {
+                    fighter.facing = orbit.heading;
+                    let button = controls.attacks[button_index(charge.axis)];
+                    if button.released
+                        || (!button.held && !button.pressed)
+                        || charge.elapsed >= CHARGE_AUTO_RELEASE
+                    {
+                        next_action = Some(Action::Attack(charge.release_attack()));
+                    }
                 }
             }
+
             Action::Down(remaining) => {
                 *remaining -= dt;
                 if *remaining <= 0.0 {
@@ -757,33 +831,9 @@ pub(super) fn simulate(
                     });
                 }
             }
-            Action::Idle => {
-                if fighter.side == Side::Dummy
-                    && fighter.disarmed <= 0.0
-                    && opponent.is_some_and(|target| target.alive)
-                {
-                    let direction = opponent.unwrap().position - transform.translation;
-                    let heading = (-direction.x).atan2(-direction.z);
-                    if controls.training_parry {
-                        fighter.facing = heading;
-                        next_action = Some(Action::Parry(0.0));
-                    } else if controls.training_attack || controls.training_normal {
-                        start_attack(
-                            fighter,
-                            AttackKind::Training(controls.training_attack),
-                            heading,
-                        );
-                        status.last = if controls.training_attack {
-                            "Incoming BLUE / Parry on contact, or dodge."
-                        } else {
-                            "Incoming NORMAL / Beats parry; use blue armor or dodge."
-                        }
-                        .into();
-                        sounds.0.push("windup");
-                    }
-                }
-            }
+            Action::Idle => {}
         }
+
         if let Some(action) = next_action {
             fighter.action = action;
         }
