@@ -1,3 +1,7 @@
 /target
 
 .DS_Store
+/dist
+.env
+.env.*
+__pycache__/

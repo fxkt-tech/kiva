@@ -17,6 +17,7 @@ pub fn default_profiles() -> Vec<PlayerProfile> {
     ]
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn apply_runtime_ai_config(profiles: &mut [PlayerProfile]) {
     let base_url = std::env::var("KIVA_LLM_BASE_URL").unwrap_or_default();
     let api_key = std::env::var("KIVA_LLM_API_KEY").unwrap_or_default();
@@ -30,6 +31,48 @@ pub fn apply_runtime_ai_config(profiles: &mut [PlayerProfile]) {
         profile.ai.base_url = base_url.clone();
         profile.ai.api_key = api_key.clone();
         profile.ai.model = model.clone();
+    }
+}
+
+// Only the availability flag crosses into the browser. Credentials stay in the proxy.
+#[cfg(target_arch = "wasm32")]
+static WEB_AI_ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+
+#[cfg(target_arch = "wasm32")]
+pub async fn load_web_ai_config() {
+    #[derive(serde::Deserialize)]
+    struct WebAiConfig {
+        enabled: bool,
+    }
+
+    let enabled = async {
+        let response = gloo_net::http::Request::get("/api/config")
+            .send()
+            .await
+            .ok()?;
+        if !response.ok() {
+            return None;
+        }
+        response
+            .json::<WebAiConfig>()
+            .await
+            .ok()
+            .map(|config| config.enabled)
+    }
+    .await
+    .unwrap_or(false);
+    let _ = WEB_AI_ENABLED.set(enabled);
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn apply_runtime_ai_config(profiles: &mut [PlayerProfile]) {
+    if !WEB_AI_ENABLED.get().copied().unwrap_or(false) {
+        return;
+    }
+    for profile in profiles {
+        profile.ai.base_url = "/api".into();
+        profile.ai.api_key = "local-proxy".into();
+        profile.ai.model = "server-configured".into();
     }
 }
 
@@ -55,7 +98,7 @@ fn profile(
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
     use super::*;
 

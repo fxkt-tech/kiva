@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy_input_focus::{InputDispatchPlugin, tab_navigation::TabNavigationPlugin};
-use bevy_ui_widgets::ScrollbarPlugin;
+use bevy_input_focus::tab_navigation::TabNavigationPlugin;
 
 pub mod ai;
 pub mod app_state;
@@ -26,7 +25,7 @@ pub struct WerewolfGamePlugin;
 
 impl Plugin for WerewolfGamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((ScrollbarPlugin, InputDispatchPlugin, TabNavigationPlugin))
+        app.add_plugins(TabNavigationPlugin)
             .init_state::<AppScreen>()
             .init_resource::<SessionResource>()
             .init_resource::<SelectedPlayer>()
@@ -49,8 +48,6 @@ impl Plugin for WerewolfGamePlugin {
             .add_systems(
                 Update,
                 (
-                    ui::button_action_system,
-                    ui::seat_selection_system,
                     ui::text_input_system,
                     ui::ai_task_poll_system,
                     ui::speech_playback_system,
@@ -58,6 +55,8 @@ impl Plugin for WerewolfGamePlugin {
                     ui::redraw_game_screen,
                 ),
             )
+            .add_observer(ui::button_action_system)
+            .add_observer(ui::seat_selection_system)
             .add_observer(ui::on_scroll_handler);
     }
 }

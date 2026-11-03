@@ -176,7 +176,7 @@ mod tests {
 
         assert_eq!(
             flow.public_records(),
-            vec!["[DAY 1 EXILE] Seat 2 is exiled.".to_string()]
+            vec!["第 1 天：2 号被放逐。".to_string()]
         );
     }
 }

@@ -139,7 +139,10 @@ fn format_public_event(logged: &LoggedEvent) -> String {
             voter,
             target,
             reason,
-        } => format!("第 {day} 天：{} 号投票给 {} 号：{reason}", voter.0, target.0),
+        } => format!(
+            "第 {day} 天：{} 号投票给 {} 号：{reason}",
+            voter.0, target.0
+        ),
         GameEvent::PlayerExiled { day, player } => format!("第 {day} 天：{} 号被放逐。", player.0),
         GameEvent::NightDeaths { night, deaths } if deaths.is_empty() => {
             format!("第 {night} 夜：平安夜。")

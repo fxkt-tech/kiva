@@ -21,7 +21,7 @@ use bevy::{
     prelude::*,
     tasks::{AsyncComputeTaskPool, Task},
 };
-use bevy_ui_widgets::{ControlOrientation, CoreScrollbarThumb, Scrollbar};
+use bevy_ui_widgets::{Activate, Button, ControlOrientation, Scrollbar, ScrollbarThumb};
 use futures_lite::future;
 
 const BG: Color = Color::srgb(0.018, 0.022, 0.030);
@@ -246,7 +246,8 @@ fn spawn_game_screen(
 
             root.spawn((Node {
                 width: percent(100),
-                height: percent(100),
+                height: px(0),
+                min_height: px(0),
                 flex_grow: 1.0,
                 flex_shrink: 1.0,
                 column_gap: px(14),
@@ -301,8 +302,9 @@ pub fn spawn_review_screen(
 }
 
 pub fn button_action_system(
+    activation: On<Activate>,
     mut commands: Commands,
-    mut interactions: Query<(&Interaction, &ButtonAction), (Changed<Interaction>, With<Button>)>,
+    actions: Query<&ButtonAction>,
     mut next_screen: ResMut<NextState<AppScreen>>,
     mut session: ResMut<SessionResource>,
     mut flow: ResMut<FlowState>,
@@ -312,58 +314,55 @@ pub fn button_action_system(
     mut speech: ResMut<SpeechPlayback>,
     mut ai_task: ResMut<AiTaskState>,
 ) {
-    for (interaction, action) in &mut interactions {
-        if *interaction != Interaction::Pressed {
-            continue;
+    let Ok(action) = actions.get(activation.entity) else {
+        return;
+    };
+    match action {
+        ButtonAction::StartGame => {
+            let roles = Role::nine_player_deck();
+            session.session = Some(GameSession::new_random_from_pool(roles, &mut rand::rng()));
+            *flow = FlowState::default();
+            *action_state = PlayerAction::default();
+            ai_task.active = false;
+            speech.reset();
+            pending_input.text.clear();
+            next_screen.set(AppScreen::Game);
         }
-
-        match action {
-            ButtonAction::StartGame => {
-                let roles = Role::nine_player_deck();
-                session.session = Some(GameSession::new_random_from_pool(roles, &mut rand::rng()));
-                *flow = FlowState::default();
-                *action_state = PlayerAction::default();
-                ai_task.active = false;
-                speech.reset();
-                pending_input.text.clear();
-                next_screen.set(AppScreen::Game);
+        ButtonAction::EnterNight
+        | ButtonAction::WitchSave
+        | ButtonAction::WitchPoison
+        | ButtonAction::WitchNoUse
+        | ButtonAction::HunterShoot
+        | ButtonAction::HunterSkip => {}
+        ButtonAction::AdvanceFlow => {
+            if ai_task.active || speech.active || speech.thinking {
+                return;
             }
-            ButtonAction::EnterNight
-            | ButtonAction::WitchSave
-            | ButtonAction::WitchPoison
-            | ButtonAction::WitchNoUse
-            | ButtonAction::HunterShoot
-            | ButtonAction::HunterSkip => {}
-            ButtonAction::AdvanceFlow => {
-                if ai_task.active || speech.active || speech.thinking {
-                    continue;
-                }
 
-                if flow.phase == FlowPhase::DaySpeech {
-                    start_speech_playback(&session, &mut speech, &mut redraw);
-                    continue;
-                }
+            if flow.phase == FlowPhase::DaySpeech {
+                start_speech_playback(&session, &mut speech, &mut redraw);
+                return;
+            }
 
-                speech.reset();
-                spawn_ai_flow_task(
-                    &mut commands,
-                    &session,
-                    &flow,
-                    &action_state,
-                    &pending_input,
-                    &mut ai_task,
+            speech.reset();
+            spawn_ai_flow_task(
+                &mut commands,
+                &session,
+                &flow,
+                &action_state,
+                &pending_input,
+                &mut ai_task,
+            );
+            redraw.value = true;
+            if !ai_task.active {
+                advance_flow(
+                    &mut session,
+                    &mut flow,
+                    &mut action_state,
+                    &mut pending_input,
+                    &mut next_screen,
                 );
                 redraw.value = true;
-                if !ai_task.active {
-                    advance_flow(
-                        &mut session,
-                        &mut flow,
-                        &mut action_state,
-                        &mut pending_input,
-                        &mut next_screen,
-                    );
-                    redraw.value = true;
-                }
             }
         }
     }
@@ -538,18 +537,18 @@ pub fn text_input_system(
 }
 
 pub fn seat_selection_system(
-    mut interactions: Query<(&Interaction, &SeatButton), (Changed<Interaction>, With<Button>)>,
+    activation: On<Activate>,
+    seats: Query<&SeatButton>,
     mut selected: ResMut<SelectedPlayer>,
     mut action_state: ResMut<PlayerAction>,
     mut redraw: ResMut<NeedsGameRedraw>,
 ) {
-    for (interaction, seat) in &mut interactions {
-        if *interaction == Interaction::Pressed {
-            selected.player = Some(seat.player);
-            action_state.selected_target = Some(seat.player);
-            redraw.value = true;
-        }
-    }
+    let Ok(seat) = seats.get(activation.entity) else {
+        return;
+    };
+    selected.player = Some(seat.player);
+    action_state.selected_target = Some(seat.player);
+    redraw.value = true;
 }
 
 pub fn send_scroll_events(
@@ -687,10 +686,12 @@ fn player_list(
             height: percent(100),
             flex_direction: FlexDirection::Column,
             row_gap: px(8),
+            overflow: Overflow::scroll_y(),
             padding: UiRect::all(px(12)),
             ..default()
         },
         BackgroundColor(PANEL),
+        ScrollPosition::default(),
         children![
             text(assets, "玩家", 25.0, GOLD),
             player_row(assets, &players[0], selected, current_speaker),
@@ -742,6 +743,7 @@ fn player_row(
         Node {
             width: percent(100),
             height: px(58),
+            flex_shrink: 0.0,
             align_items: AlignItems::Center,
             column_gap: px(10),
             border: UiRect::all(px(1)),
@@ -1103,13 +1105,11 @@ fn spawn_log_panel(parent: &mut ChildSpawnerCommands, assets: &UiAssets, records
                         },
                         Scrollbar::new(scroll_area_id, ControlOrientation::Vertical, 18.0),
                         children![(
-                            Node {
-                                position_type: PositionType::Absolute,
+                            BackgroundColor(Color::srgb(0.360, 0.385, 0.430)),
+                            ScrollbarThumb {
                                 border_radius: BorderRadius::all(px(4)),
                                 ..default()
                             },
-                            BackgroundColor(Color::srgb(0.360, 0.385, 0.430)),
-                            CoreScrollbarThumb,
                         )],
                     ));
                 });
@@ -1253,6 +1253,7 @@ fn observer_console(assets: &UiAssets, phase: FlowPhase, busy: bool) -> impl Bun
         Node {
             width: percent(100),
             height: px(96),
+            flex_shrink: 0.0,
             align_items: AlignItems::Center,
             justify_content: JustifyContent::SpaceBetween,
             padding: UiRect::horizontal(px(22)),
@@ -1304,6 +1305,7 @@ fn judge_bar(
         Node {
             width: percent(100),
             height: px(72),
+            flex_shrink: 0.0,
             align_items: AlignItems::Center,
             justify_content: JustifyContent::SpaceBetween,
             padding: UiRect::horizontal(px(22)),
@@ -1374,7 +1376,7 @@ fn spawn_ai_flow_task(
         action: action.clone(),
         pending_input: pending_input.clone(),
     };
-    let task = AsyncComputeTaskPool::get().spawn(async move { run_ai_flow_task(input) });
+    let task = AsyncComputeTaskPool::get().spawn(async move { run_ai_flow_task(input).await });
     commands.spawn(AiFlowTask {
         kind: AiTaskKind::Flow,
         task,
@@ -1395,10 +1397,11 @@ fn spawn_day_speech_task(
         let started_phase = flow.phase;
         let started_day = flow.day;
         let day = flow.day;
-        let _ = run_with_tokio_runtime(async {
+        let _ = run_ai_future(async {
             let client = OpenAiCompatibleClient;
             generate_day_speech_async(&client, &session, &mut flow.event_log, actor, day).await
-        });
+        })
+        .await;
 
         AiFlowTaskResult {
             session,
@@ -1416,16 +1419,17 @@ fn spawn_day_speech_task(
     });
 }
 
-fn run_ai_flow_task(input: AiFlowTaskInput) -> AiFlowTaskResult {
+async fn run_ai_flow_task(input: AiFlowTaskInput) -> AiFlowTaskResult {
     let mut session = input.session;
     let mut flow = input.flow;
     let started_phase = flow.phase;
     let started_day = flow.day;
     let mut action = input.action;
     let mut pending_input = input.pending_input;
-    let review = run_with_tokio_runtime(async {
+    let review = run_ai_future(async {
         advance_flow_state_async(&mut session, &mut flow, &mut action, &mut pending_input).await
     })
+    .await
     .unwrap_or_else(|_| {
         advance_flow_state(&mut session, &mut flow, &mut action, &mut pending_input)
     });
@@ -1441,10 +1445,17 @@ fn run_ai_flow_task(input: AiFlowTaskInput) -> AiFlowTaskResult {
     }
 }
 
-fn run_with_tokio_runtime<T>(
+async fn run_ai_future<T>(
     future: impl std::future::Future<Output = T>,
 ) -> Result<T, std::io::Error> {
-    tokio::runtime::Runtime::new().map(|runtime| runtime.block_on(future))
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        tokio::runtime::Runtime::new().map(|runtime| runtime.block_on(future))
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        Ok(future.await)
+    }
 }
 
 fn advance_flow_state(
@@ -1877,8 +1888,8 @@ fn text(assets: &UiAssets, label: impl Into<String>, font_size: f32, color: Colo
     (
         Text::new(label),
         TextFont {
-            font: assets.font.clone(),
-            font_size,
+            font: assets.font.clone().into(),
+            font_size: font_size.into(),
             ..default()
         },
         TextColor(color),
@@ -1894,12 +1905,12 @@ fn wrapped_text(
     (
         Text::new(label),
         TextFont {
-            font: assets.font.clone(),
-            font_size,
+            font: assets.font.clone().into(),
+            font_size: font_size.into(),
             ..default()
         },
         TextColor(color),
-        TextLayout::new_with_linebreak(LineBreak::WordOrCharacter),
+        TextLayout::linebreak(LineBreak::WordOrCharacter),
     )
 }
 
@@ -2018,6 +2029,56 @@ fn advance_label(phase: FlowPhase) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn button_activation_starts_a_game_and_seat_activation_selects_a_player() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, bevy::state::app::StatesPlugin))
+            .init_state::<AppScreen>()
+            .init_resource::<SessionResource>()
+            .init_resource::<FlowState>()
+            .init_resource::<PlayerAction>()
+            .init_resource::<PendingInput>()
+            .init_resource::<NeedsGameRedraw>()
+            .init_resource::<SpeechPlayback>()
+            .init_resource::<AiTaskState>()
+            .init_resource::<SelectedPlayer>()
+            .add_observer(button_action_system)
+            .add_observer(seat_selection_system);
+        let start = app.world_mut().spawn(ButtonAction::StartGame).id();
+        app.world_mut().trigger(Activate { entity: start });
+        app.update();
+        assert_eq!(
+            app.world().resource::<State<AppScreen>>().get(),
+            &AppScreen::Game
+        );
+        assert_eq!(
+            app.world()
+                .resource::<SessionResource>()
+                .session
+                .as_ref()
+                .unwrap()
+                .players
+                .len(),
+            9
+        );
+
+        let seat = app
+            .world_mut()
+            .spawn(SeatButton {
+                player: PlayerId(3),
+            })
+            .id();
+        app.world_mut().trigger(Activate { entity: seat });
+        assert_eq!(
+            app.world().resource::<SelectedPlayer>().player,
+            Some(PlayerId(3))
+        );
+        assert_eq!(
+            app.world().resource::<PlayerAction>().selected_target,
+            Some(PlayerId(3))
+        );
+    }
 
     #[test]
     fn flow_can_advance_from_night_to_day_speech_for_ai_observer() {

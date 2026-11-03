@@ -1,5 +1,8 @@
+#[cfg(not(target_arch = "wasm32"))]
 use async_openai::Client;
+#[cfg(not(target_arch = "wasm32"))]
 use async_openai::config::OpenAIConfig;
+#[cfg(not(target_arch = "wasm32"))]
 use async_openai::types::chat::{
     ChatCompletionRequestMessage, ChatCompletionRequestSystemMessageArgs,
     ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequest,
@@ -72,14 +75,25 @@ pub struct OpenAiCompatibleClient;
 
 impl LlmClient for OpenAiCompatibleClient {
     fn complete(&self, request: LlmRequest) -> Result<LlmResponse, LlmError> {
-        let runtime = tokio::runtime::Runtime::new()
-            .map_err(|err| LlmError::RequestFailed(err.to_string()))?;
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = request;
+            Err(LlmError::RequestFailed(
+                "synchronous LLM calls are unavailable in browsers".into(),
+            ))
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let runtime = tokio::runtime::Runtime::new()
+                .map_err(|err| LlmError::RequestFailed(err.to_string()))?;
 
-        runtime.block_on(self.complete_async(request))
+            runtime.block_on(self.complete_async(request))
+        }
     }
 }
 
 impl OpenAiCompatibleClient {
+    #[cfg(not(target_arch = "wasm32"))]
     pub async fn complete_async(&self, request: LlmRequest) -> Result<LlmResponse, LlmError> {
         let chat_request = build_chat_request(&request)?;
         let config = OpenAIConfig::new()
@@ -103,14 +117,55 @@ impl OpenAiCompatibleClient {
 
         Ok(LlmResponse { content })
     }
+
+    #[cfg(target_arch = "wasm32")]
+    pub async fn complete_async(&self, request: LlmRequest) -> Result<LlmResponse, LlmError> {
+        // Always use the same-origin proxy; never send credentials to the browser.
+        let body = serialize_chat_request(&request)?;
+        let response = gloo_net::http::Request::post("/api/chat/completions")
+            .header("Content-Type", "application/json")
+            .body(body)
+            .map_err(|err| LlmError::RequestFailed(err.to_string()))?
+            .send()
+            .await
+            .map_err(|err| LlmError::RequestFailed(err.to_string()))?;
+        if !response.ok() {
+            return Err(LlmError::RequestFailed(format!(
+                "LLM proxy returned HTTP {}",
+                response.status()
+            )));
+        }
+        let value = response
+            .json::<serde_json::Value>()
+            .await
+            .map_err(|err| LlmError::InvalidResponse(err.to_string()))?;
+        let content = value["choices"][0]["message"]["content"]
+            .as_str()
+            .filter(|content| !content.trim().is_empty())
+            .ok_or_else(|| LlmError::InvalidResponse("missing completion content".into()))?;
+        Ok(LlmResponse {
+            content: content.into(),
+        })
+    }
 }
 
 #[cfg_attr(not(test), allow(dead_code))]
 pub fn serialize_chat_request(request: &LlmRequest) -> Result<String, LlmError> {
-    let request = build_chat_request(request)?;
-    serde_json::to_string(&request).map_err(|err| LlmError::InvalidResponse(err.to_string()))
+    let mut body = serde_json::json!({
+        "model": request.model,
+        "messages": [
+            {"role": "system", "content": request.system},
+            {"role": "user", "content": request.user},
+        ],
+        "temperature": request.temperature,
+    });
+    if request.response_format == LlmResponseFormat::JsonObject {
+        body["response_format"] = serde_json::json!({"type": "json_object"});
+    }
+    serde_json::to_string(&body).map_err(|err| LlmError::InvalidResponse(err.to_string()))
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn build_chat_request(request: &LlmRequest) -> Result<CreateChatCompletionRequest, LlmError> {
     let system = ChatCompletionRequestSystemMessageArgs::default()
         .content(request.system.clone())
@@ -171,6 +226,11 @@ mod tests {
         };
 
         let body = serialize_chat_request(&request).unwrap();
+        #[cfg(not(target_arch = "wasm32"))]
+        assert_eq!(
+            serde_json::from_str::<serde_json::Value>(&body).unwrap(),
+            serde_json::to_value(build_chat_request(&request).unwrap()).unwrap(),
+        );
 
         assert!(body.contains("\"model\":\"model\""));
         assert!(body.contains("\"role\":\"system\""));
