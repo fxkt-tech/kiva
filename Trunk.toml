@@ -3,13 +3,9 @@ target = "index.html"
 dist = "dist"
 
 [watch]
-ignore = ["scripts", "docs", ".trellis", ".git"]
+ignore = ["README.md"]
 
 [serve]
 addresses = ["127.0.0.1"]
 port = 8080
 open = false
-
-[[proxy]]
-backend = "http://127.0.0.1:8001/api/"
-no_system_proxy = true

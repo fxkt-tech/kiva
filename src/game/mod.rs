@@ -1,62 +1,80 @@
+mod animation;
+mod arena;
+mod camera;
+mod combat;
+mod effects;
+mod hud;
+mod input;
+mod player;
+mod sound;
+
 use bevy::prelude::*;
-use bevy_input_focus::tab_navigation::TabNavigationPlugin;
 
-pub mod ai;
-pub mod app_state;
-pub mod decision;
-pub mod domain;
-pub mod events;
-pub mod llm;
-pub mod phase;
-pub mod player_config;
-pub mod player_pool;
-pub mod prompt;
-pub mod rules;
-pub mod session;
-pub mod ui;
-pub mod visibility;
+#[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum GameSet {
+    Input,
+    Look,
+    Combat,
+    Effects,
+    Animation,
+    Camera,
+    Hud,
+}
 
-use app_state::{
-    ActiveInfoTab, AiTaskState, AppScreen, FlowState, NeedsGameRedraw, PendingInput, PlayerAction,
-    PlayerMarks, SelectedPlayer, SessionResource, SpeechPlayback,
-};
-
-pub struct WerewolfGamePlugin;
-
-impl Plugin for WerewolfGamePlugin {
+pub struct GamePlugin;
+impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(TabNavigationPlugin)
-            .init_state::<AppScreen>()
-            .init_resource::<SessionResource>()
-            .init_resource::<SelectedPlayer>()
-            .init_resource::<ActiveInfoTab>()
-            .init_resource::<PlayerMarks>()
-            .init_resource::<PendingInput>()
-            .init_resource::<PlayerAction>()
-            .init_resource::<FlowState>()
-            .init_resource::<NeedsGameRedraw>()
-            .init_resource::<AiTaskState>()
-            .init_resource::<SpeechPlayback>()
-            .init_resource::<ui::UiAssets>()
-            .add_systems(Startup, (ui::spawn_camera, ui::enable_ime))
-            .add_systems(OnEnter(AppScreen::Start), ui::spawn_start_screen)
-            .add_systems(OnExit(AppScreen::Start), ui::cleanup_screen)
-            .add_systems(OnEnter(AppScreen::Game), ui::spawn_game_placeholder)
-            .add_systems(OnExit(AppScreen::Game), ui::cleanup_screen)
-            .add_systems(OnEnter(AppScreen::Review), ui::spawn_review_screen)
-            .add_systems(OnExit(AppScreen::Review), ui::cleanup_screen)
+        app.insert_resource(ClearColor(Color::srgb_u8(24, 32, 39)))
+            .init_resource::<input::Controls>()
+            .init_resource::<camera::OrbitCamera>()
+            .init_resource::<combat::Impacts>()
+            .init_resource::<combat::CombatStatus>()
+            .init_resource::<sound::Sounds>()
+            .configure_sets(
+                Update,
+                (
+                    GameSet::Input,
+                    GameSet::Look,
+                    GameSet::Combat,
+                    GameSet::Effects,
+                    GameSet::Animation,
+                    GameSet::Camera,
+                    GameSet::Hud,
+                )
+                    .chain(),
+            )
+            .add_systems(
+                Startup,
+                (
+                    arena::spawn_arena,
+                    camera::spawn_camera,
+                    player::spawn_fighters,
+                    effects::setup_effects,
+                    hud::spawn_hud,
+                ),
+            )
+            .add_systems(Update, input::collect_input.in_set(GameSet::Input))
+            .add_systems(Update, camera::rotate_camera.in_set(GameSet::Look))
+            .add_systems(Update, combat::simulate.in_set(GameSet::Combat))
             .add_systems(
                 Update,
                 (
-                    ui::text_input_system,
-                    ui::ai_task_poll_system,
-                    ui::speech_playback_system,
-                    ui::send_scroll_events,
-                    ui::redraw_game_screen,
-                ),
+                    effects::impact_effects,
+                    effects::update_effects,
+                    effects::sword_trails,
+                    sound::play_sounds,
+                )
+                    .chain()
+                    .in_set(GameSet::Effects),
             )
-            .add_observer(ui::button_action_system)
-            .add_observer(ui::seat_selection_system)
-            .add_observer(ui::on_scroll_handler);
+            .add_systems(
+                Update,
+                animation::animate_fighters.in_set(GameSet::Animation),
+            )
+            .add_systems(Update, camera::follow_player.in_set(GameSet::Camera))
+            .add_systems(
+                Update,
+                (hud::update_hud, effects::damage_numbers).in_set(GameSet::Hud),
+            );
     }
 }

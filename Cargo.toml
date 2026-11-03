@@ -2,57 +2,30 @@
 name = "kiva"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.97.1"
 
 [dependencies]
 bevy = { version = "0.20.1", default-features = false, features = [
-    "std", "default_app", "bevy_winit", "2d_bevy_render", "ui_bevy_render",
-    "bevy_ui_widgets", "ui_picking", "default_font", "webgl2",
+    "std", "default_app", "bevy_winit", "3d_bevy_render", "ui_bevy_render", "default_font",
 ] }
-bevy_input_focus = "0.20.1"
-bevy_ui_widgets = "0.20.1"
-futures-lite = "2.6.1"
-rand = "0.9"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-async-openai = { version = "0.37.0", features = ["chat-completion", "responses"] }
-bevy = { version = "0.20.1", default-features = false, features = ["multi_threaded", "x11"] }
-tokio = { version = "1.52.2", features = ["rt-multi-thread"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy = { version = "0.20.1", default-features = false, features = ["web"] }
-getrandom = { version = "0.3", features = ["wasm_js"] }
-gloo-net = { version = "0.6", default-features = false, features = ["http", "json"] }
-wasm-bindgen-futures = "0.4"
+bevy = { version = "0.20.1", default-features = false, features = ["web", "webgpu"] }
 
-# Enable a small amount of optimization in the dev profile.
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "CustomEvent", "CustomEventInit", "EventTarget"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+bevy = { version = "0.20.1", default-features = false, features = ["multi_threaded", "x11"] }
+
 [profile.dev]
 opt-level = 1
 
-# Enable a large amount of optimization in the dev profile for dependencies.
 [profile.dev.package."*"]
-opt-level = 3
+opt-level = 1
 
-# Enable more optimization in the release profile at the cost of compile time.
 [profile.release]
-# Compile the entire crate as one unit.
-# Slows compile times, marginal improvements.
-codegen-units = 1
-# Do a second optimization pass over the entire program, including dependencies.
-# Slows compile times, marginal improvements.
-lto = "thin"
-
-# Optimize for size in the wasm-release profile to reduce load times and bandwidth usage on web.
-[profile.wasm-release]
-# Default to release profile values.
-inherits = "release"
-# Optimize with size in mind (also try "z", sometimes it is better).
-# Slightly slows compile times, great improvements to file size and runtime performance.
 opt-level = "s"
-# Strip all debugging information from the binary to slightly reduce file size.
+lto = "thin"
+codegen-units = 1
 strip = "debuginfo"
-
-[features]
-desktop-dev = ["bevy/dynamic_linking", "bevy/file_watcher"]
-dev_hotpatch = ["bevy/hotpatching"]
