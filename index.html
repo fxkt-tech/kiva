@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#182027" />
+    <title>Kiva · Sword Training</title>
+    <link data-trunk rel="rust" data-bin="kiva" />
+    <link data-trunk rel="copy-dir" href="assets" />
+    <link data-trunk rel="copy-file" href="web/audio.js" />
+    <script src="audio.js" defer></script>
+    <style>
+      html, body { margin: 0; width: 100%; height: 100%; background: #182027; overflow: hidden; }
+      canvas { display: block; width: 100%; height: 100%; outline: none; }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center;
+        color: #e8e7da; background: #111b23bb; font: 16px system-ui, sans-serif; }
+      [hidden] { display: none !important; }
+      .card { max-width: 440px; margin: 24px; text-align: center; padding: 38px;
+        border: 1px solid #bca06a77; background: #15212aee; box-shadow: 0 24px 80px #0006; }
+      .eyebrow { color: #d9b77e; font-size: 12px; letter-spacing: 4px; }
+      h1 { font: 500 36px Georgia, serif; margin: 18px 0; }
+      p { color: #b6bfc2; line-height: 1.8; }
+      button { padding: 14px 32px; margin: 12px 0; border: 1px solid #d1b47c;
+        background: #d1b47c; color: #182027; font: 600 15px system-ui; cursor: pointer; }
+      button:hover { background: #e6c993; }
+      .hint { font-size: 12px; }
+      #sound-toggle { z-index: 4; position: fixed; top: 15px; right: 30px; padding: 8px 12px;
+        background: #15212acc; color: #d9b77e; font-size: 11px; border-color: #bca06a66; }
+      noscript { position: fixed; top: 1rem; left: 1rem; color: white; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" tabindex="0" aria-label="Sword training. WASD moves, left mouse attacks, right mouse guards, T triggers a dummy attack, R resets, Escape releases the mouse."></canvas>
+    <button id="sound-toggle" type="button" aria-label="Toggle sound" aria-pressed="false">SOUND ON [M]</button>
+    <div id="loading" class="overlay" role="status">Preparing the training courtyard…</div>
+    <div id="entry" class="overlay" hidden>
+      <div class="card">
+        <div class="eyebrow">KIVA / COMBAT PROTOTYPE</div>
+        <h1>The training courtyard</h1>
+        <p>Three cuts. One opponent.<br>Move the mouse to look. Hold right mouse to guard.<br>Space to double jump. Left Shift to dodge.</p>
+        <button id="enter" type="button">Enter training</button>
+        <p id="entry-hint" class="hint">Esc releases the mouse and pauses training.<br>Press T to make the dummy strike.</p>
+      </div>
+    </div>
+    <noscript>Enable JavaScript to play.</noscript>
+    <script>
+      const canvas = document.getElementById("game");
+      const entry = document.getElementById("entry");
+      const loading = document.getElementById("loading");
+      const hint = document.getElementById("entry-hint");
+      function enterTraining() {
+        canvas.focus();
+        window.KivaAudio?.unlock();
+        try {
+          const request = canvas.requestPointerLock();
+          request?.catch(() => { hint.textContent = "Mouse capture was declined. Click Enter training to retry."; });
+        } catch {
+          hint.textContent = "Mouse capture is unavailable in this browser.";
+        }
+      }
+      document.getElementById("enter").addEventListener("click", enterTraining);
+      canvas.addEventListener("click", () => {
+        if (document.pointerLockElement !== canvas) enterTraining();
+      });
+      // Cancel page-level right-click defaults without stopping propagation:
+      // Bevy must still receive the press/release events for guarding. Do not
+      // cancel pointerdown, which can suppress compatibility mouse events.
+      // Browser-native gestures / extensions may need a site exclusion in
+      // browser settings; a page cannot reliably override those features.
+      for (const type of ["mousedown", "mouseup", "auxclick", "contextmenu"]) {
+        document.addEventListener(type, event => {
+          const inGame = document.pointerLockElement === canvas || event.composedPath().includes(canvas);
+          if (inGame && (event.button === 2 || type === "contextmenu")) event.preventDefault();
+        }, { capture: true, passive: false });
+      }
+      document.addEventListener("pointerlockchange", () => {
+        entry.hidden = document.pointerLockElement === canvas;
+      });
+      window.addEventListener("blur", () => {
+        if (document.pointerLockElement === canvas) document.exitPointerLock();
+      });
+      window.addEventListener("TrunkApplicationStarted", () => {
+        loading.hidden = true;
+        entry.hidden = false;
+      }, { once: true });
+      window.addEventListener("TrunkApplicationError", () => {
+        loading.hidden = false;
+        loading.textContent = "Unable to start. Use a WebGPU-capable browser with GPU acceleration on localhost or HTTPS.";
+      }, { once: true });
+      if (!navigator.gpu) {
+        loading.textContent = "WebGPU is unavailable. Open this page in Chrome or Edge using localhost or HTTPS.";
+      }
+    </script>
+  </body>
+</html>

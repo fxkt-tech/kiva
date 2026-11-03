@@ -13,3 +13,5 @@ pnpm-debug.log*
 .tmp/
 kivdb/exports/
 kivdb/workers/
+/target/
+/dist/

@@ -1,0 +1,31 @@
+[package]
+name = "kiva"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+
+[dependencies]
+bevy = { version = "0.20.1", default-features = false, features = [
+    "std", "default_app", "bevy_winit", "3d_bevy_render", "ui_bevy_render", "default_font",
+] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+bevy = { version = "0.20.1", default-features = false, features = ["web", "webgpu"] }
+
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "CustomEvent", "CustomEventInit", "EventTarget"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+bevy = { version = "0.20.1", default-features = false, features = ["multi_threaded", "x11"] }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 1
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = "debuginfo"
