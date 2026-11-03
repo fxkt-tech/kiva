@@ -5,6 +5,13 @@ use bevy::{
     prelude::*,
 };
 
+#[derive(Clone, Copy, Default)]
+pub(super) struct ButtonFrame {
+    pub pressed: bool,
+    pub held: bool,
+    pub released: bool,
+}
+
 #[derive(Resource, Default)]
 pub(super) struct Controls {
     pub active: bool,
@@ -12,10 +19,17 @@ pub(super) struct Controls {
     pub movement: Vec2,
     pub look_delta: Vec2,
     pub zoom: f32,
-    pub attack: bool,
-    pub guard: bool,
+    pub attacks: [ButtonFrame; 2],
+    pub parry: bool,
+    pub crouch: bool,
+    pub crouch_pressed: bool,
+    pub sprint: bool,
+    pub walk: bool,
+    pub free_look: bool,
     pub reset: bool,
     pub training_attack: bool,
+    pub training_normal: bool,
+    pub training_parry: bool,
     pub jump: bool,
     pub dodge: bool,
 }
@@ -72,10 +86,24 @@ pub(super) fn collect_input(
     if !receiving {
         controls.movement = Vec2::ZERO;
     }
-    controls.attack = receiving && mouse.just_pressed(MouseButton::Left);
-    controls.guard = receiving && mouse.pressed(MouseButton::Right);
-    controls.reset = receiving && keys.just_pressed(KeyCode::KeyR);
+    controls.attacks = [MouseButton::Left, MouseButton::Right].map(|button| ButtonFrame {
+        pressed: receiving && mouse.just_pressed(button),
+        held: receiving && mouse.pressed(button),
+        released: receiving && mouse.just_released(button),
+    });
+    controls.parry = receiving
+        && (keys.just_pressed(KeyCode::KeyG)
+            || (controls.attacks.iter().all(|button| button.held)
+                && controls.attacks.iter().any(|button| button.pressed)));
+    controls.crouch = receiving && keys.pressed(KeyCode::KeyC);
+    controls.crouch_pressed = receiving && keys.just_pressed(KeyCode::KeyC);
+    controls.sprint = receiving && keys.pressed(KeyCode::ShiftLeft);
+    controls.walk = receiving && keys.pressed(KeyCode::ControlLeft);
+    controls.free_look = receiving && keys.pressed(KeyCode::AltLeft);
+    controls.reset = receiving && keys.just_pressed(KeyCode::F8);
     controls.jump = receiving && keys.just_pressed(KeyCode::Space);
     controls.dodge = receiving && keys.just_pressed(KeyCode::ShiftLeft);
-    controls.training_attack = receiving && keys.just_pressed(KeyCode::KeyT);
+    controls.training_attack = receiving && keys.just_pressed(KeyCode::F6);
+    controls.training_normal = receiving && keys.just_pressed(KeyCode::F7);
+    controls.training_parry = receiving && keys.just_pressed(KeyCode::F5);
 }

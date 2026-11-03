@@ -3,9 +3,12 @@ pub mod core;
 use super::{camera::OrbitCamera, input::Controls, sound::Sounds};
 use bevy::prelude::*;
 use core::{
-    Attack, AttackKind, DODGE_COOLDOWN, DODGE_DURATION, JumpState, damped_motion, dodge_protected,
-    dodge_step, guarded_damage, inside_attack, jump_step,
+    Armor, Attack, AttackAxis, AttackKind, CHARGE_AUTO_RELEASE, CHARGE_READY, Charge,
+    DODGE_DURATION, Defense, HitResult, JumpState, PARRY_DURATION, Stamina, can_clash,
+    damped_motion, dodge_protected, dodge_step, inside_attack, jump_step, parry_window,
+    resolve_hit, wave_intersects,
 };
+use std::collections::HashSet;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Side {
@@ -31,11 +34,20 @@ impl Side {
 #[derive(Debug)]
 pub(super) enum Action {
     Idle,
-    Guard,
+    Charge(Charge),
+    Parry(f32),
     Attack(Attack),
     Stagger(f32),
     Down(f32),
-    Dodge { elapsed: f32, direction: Vec3 },
+    Dodge {
+        elapsed: f32,
+        direction: Vec3,
+        held: bool,
+    },
+    Slide {
+        elapsed: f32,
+        direction: Vec3,
+    },
 }
 
 #[derive(Component)]
@@ -48,12 +60,17 @@ pub(super) struct Fighter {
     pub hit_stop: f32,
     pub velocity: Vec3,
     pub moving: bool,
+    pub crouched: bool,
+    pub sprinting: bool,
     pub walk_phase: f32,
     pub vertical_speed: f32,
     pub jumps: JumpState,
     pub airborne: bool,
-    pub dodge_cooldown: f32,
     pub protected: bool,
+    pub parry_active: bool,
+    pub stamina: Stamina,
+    pub riposte: f32,
+    pub disarmed: f32,
 }
 impl Fighter {
     pub fn new(side: Side) -> Self {
@@ -66,12 +83,17 @@ impl Fighter {
             hit_stop: 0.0,
             velocity: Vec3::ZERO,
             moving: false,
+            crouched: false,
+            sprinting: false,
             walk_phase: 0.0,
             vertical_speed: 0.0,
             jumps: JumpState::default(),
             airborne: false,
-            dodge_cooldown: 0.0,
             protected: false,
+            parry_active: false,
+            stamina: Stamina::default(),
+            riposte: 0.0,
+            disarmed: 0.0,
         }
     }
     pub fn forward(&self) -> Vec3 {
@@ -80,33 +102,69 @@ impl Fighter {
     pub fn alive(&self) -> bool {
         self.health > 0.0
     }
-    pub fn label(&self) -> String {
+    pub fn armor(&self) -> Armor {
         match &self.action {
-            Action::Idle => {
-                if self.airborne {
-                    format!("AIRBORNE {}/2", self.jumps.used())
-                } else if self.moving {
-                    "MOVING".into()
-                } else {
-                    "READY".into()
-                }
+            Action::Charge(charge) if charge.elapsed >= CHARGE_READY => Armor::Blue,
+            Action::Attack(attack) if attack.phase() != "RECOVERY" => attack.kind.armor(),
+            _ => Armor::Normal,
+        }
+    }
+    fn defense(&self) -> Defense {
+        if self.protected {
+            Defense::Evade
+        } else if self.parry_active {
+            Defense::Parry
+        } else if let Action::Attack(attack) = &self.action
+            && attack.phase() == "STRIKE"
+        {
+            Defense::Striking(attack.kind.armor())
+        } else {
+            match self.armor() {
+                Armor::Blue => Defense::Blue,
+                Armor::Gold => Defense::Gold,
+                _ => Defense::Open,
             }
-            Action::Guard => "GUARD / FRONT 120 DEG".into(),
-            Action::Attack(attack) => match attack.kind {
-                AttackKind::Light(index) => format!(
-                    "CUT {} / {}",
-                    index + 1,
-                    if attack.can_chain() {
-                        "CHAIN NOW"
-                    } else {
-                        attack.phase()
-                    }
-                ),
-                AttackKind::Training => format!("TRAINING STRIKE / {}", attack.phase()),
-            },
+        }
+    }
+    pub fn label(&self) -> String {
+        if self.disarmed > 0.0 {
+            return "DISARMED / TRAINING AUTO-RECOVERY".into();
+        }
+        match &self.action {
+            Action::Idle if self.airborne => format!("AIRBORNE {}/2", self.jumps.used()),
+            Action::Idle if self.riposte > 0.0 => "RIPOSTE READY / LMB".into(),
+            Action::Idle if self.crouched => "CROUCHING".into(),
+            Action::Idle if self.sprinting => "SPRINTING".into(),
+            Action::Idle if self.moving => "MOVING".into(),
+            Action::Idle => "READY".into(),
+            Action::Charge(charge) => format!(
+                "{} CHARGE / {}",
+                charge.axis.label(),
+                if charge.elapsed >= CHARGE_READY {
+                    "BLUE READY"
+                } else {
+                    "BUILDING"
+                }
+            ),
+            Action::Parry(_) => if self.parry_active {
+                "PARRY / ACTIVE"
+            } else {
+                "PARRY / RECOVERY"
+            }
+            .into(),
+            Action::Attack(attack) => format!(
+                "{} / {}",
+                attack.kind.label(),
+                if attack.can_chain() {
+                    "CHAIN NOW"
+                } else {
+                    attack.phase()
+                }
+            ),
             Action::Stagger(_) => "STAGGERED".into(),
             Action::Down(_) => "DOWN / RECOVERING".into(),
             Action::Dodge { .. } => "DODGING".into(),
+            Action::Slide { .. } => "SLIDING".into(),
         }
     }
 }
@@ -120,13 +178,12 @@ pub(super) struct CombatStatus {
 impl Default for CombatStatus {
     fn default() -> Self {
         Self {
-            last: "Close the gap. Click near the end of a cut to chain.".into(),
+            last: "Longsword / LMB horizontal, RMB vertical. Hold either for sword energy.".into(),
             hits: 0,
             blocks: 0,
         }
     }
 }
-
 pub(super) struct Impact {
     pub position: Vec3,
     pub damage: f32,
@@ -137,6 +194,46 @@ pub(super) struct Impact {
 #[derive(Resource, Default)]
 pub(super) struct Impacts(pub Vec<Impact>);
 
+pub(super) struct SwordWave {
+    pub id: u64,
+    source: Entity,
+    side: Side,
+    pub origin: Vec3,
+    pub direction: Vec3,
+    pub axis: AttackAxis,
+    pub distance: f32,
+    damage: f32,
+    targets: HashSet<Entity>,
+}
+#[derive(Resource, Default)]
+pub(super) struct SwordWaves {
+    pub active: Vec<SwordWave>,
+    next_id: u64,
+}
+impl SwordWaves {
+    fn spawn(
+        &mut self,
+        source: Entity,
+        side: Side,
+        origin: Vec3,
+        direction: Vec3,
+        axis: AttackAxis,
+        damage: f32,
+    ) {
+        self.next_id += 1;
+        self.active.push(SwordWave {
+            id: self.next_id,
+            source,
+            side,
+            origin,
+            direction,
+            axis,
+            distance: 0.0,
+            damage,
+            targets: HashSet::new(),
+        });
+    }
+}
 struct Snapshot {
     entity: Entity,
     side: Side,
@@ -147,8 +244,9 @@ struct Hit {
     source: Entity,
     target: Entity,
     damage: f32,
-    heavy: bool,
+    kind: AttackKind,
     origin: Vec3,
+    wave: Option<u64>,
 }
 
 fn bounded(position: Vec3, other: Option<Vec3>) -> Vec3 {
@@ -167,6 +265,61 @@ fn bounded(position: Vec3, other: Option<Vec3>) -> Vec3 {
     }
     result
 }
+fn movement(controls: &Controls, heading: f32) -> Vec3 {
+    Quat::from_rotation_y(heading) * Vec3::new(controls.movement.x, 0.0, -controls.movement.y)
+}
+fn pressed_axis(controls: &Controls) -> Option<AttackAxis> {
+    if controls.attacks[0].pressed {
+        Some(AttackAxis::Horizontal)
+    } else if controls.attacks[1].pressed {
+        Some(AttackAxis::Vertical)
+    } else {
+        None
+    }
+}
+fn button_index(axis: AttackAxis) -> usize {
+    if axis == AttackAxis::Horizontal { 0 } else { 1 }
+}
+fn can_cancel(action: &Action) -> bool {
+    matches!(
+        action,
+        Action::Idle | Action::Charge(_) | Action::Slide { .. }
+    ) || matches!(action, Action::Attack(attack) if attack.phase() == "RECOVERY")
+}
+fn start_attack(fighter: &mut Fighter, kind: AttackKind, heading: f32) {
+    fighter.facing = heading;
+    fighter.action = Action::Attack(Attack::new(kind));
+}
+fn move_fighter(
+    fighter: &mut Fighter,
+    transform: &mut Transform,
+    controls: &Controls,
+    heading: f32,
+    dt: f32,
+    obstacle: Option<Vec3>,
+) {
+    let direction = movement(controls, heading);
+    if direction.length_squared() == 0.0 {
+        return;
+    }
+    fighter.moving = true;
+    let charging = matches!(fighter.action, Action::Charge(_));
+    fighter.sprinting = controls.sprint && !controls.crouch && !charging && !controls.walk;
+    let speed = if charging || fighter.crouched {
+        1.6
+    } else if controls.walk {
+        1.8
+    } else if fighter.sprinting {
+        6.0
+    } else {
+        3.8
+    };
+    fighter.walk_phase += dt * speed * 2.5;
+    if !charging {
+        fighter.facing = (-direction.x).atan2(-direction.z);
+    }
+    transform.translation = bounded(transform.translation + direction * speed * dt, obstacle);
+}
 
 pub(super) fn simulate(
     controls: Res<Controls>,
@@ -176,11 +329,13 @@ pub(super) fn simulate(
     mut impacts: ResMut<Impacts>,
     mut status: ResMut<CombatStatus>,
     mut sounds: ResMut<Sounds>,
+    mut waves: ResMut<SwordWaves>,
 ) {
     impacts.0.clear();
     sounds.0.clear();
     if controls.reset {
         sounds.0.push("reset");
+        waves.active.clear();
         for (_, mut fighter, mut transform) in &mut fighters {
             let side = fighter.side;
             *fighter = Fighter::new(side);
@@ -193,7 +348,9 @@ pub(super) fn simulate(
     if !controls.active {
         for (_, mut fighter, _) in &mut fighters {
             fighter.moving = false;
-            if matches!(fighter.action, Action::Guard) {
+            fighter.crouched = false;
+            fighter.sprinting = false;
+            if matches!(fighter.action, Action::Charge(_) | Action::Parry(_)) {
                 fighter.action = Action::Idle;
             }
         }
@@ -214,8 +371,13 @@ pub(super) fn simulate(
         let fighter = &mut *fighter;
         fighter.flash = (fighter.flash - dt).max(0.0);
         fighter.moving = false;
+        fighter.sprinting = false;
         fighter.protected = false;
-        fighter.dodge_cooldown = (fighter.dodge_cooldown - dt).max(0.0);
+        fighter.parry_active = false;
+        fighter.stamina.tick(dt);
+        fighter.riposte = (fighter.riposte - dt).max(0.0);
+        fighter.disarmed = (fighter.disarmed - dt).max(0.0);
+        fighter.crouched = fighter.side == Side::Player && controls.crouch && !fighter.airborne;
         if fighter.hit_stop > 0.0 {
             fighter.hit_stop = (fighter.hit_stop - dt).max(0.0);
             continue;
@@ -224,31 +386,44 @@ pub(super) fn simulate(
         let obstacle = opponent
             .filter(|target| target.alive)
             .map(|target| target.position);
-        let can_act = matches!(&fighter.action, Action::Idle | Action::Guard)
-            || matches!(&fighter.action, Action::Attack(attack) if attack.phase() == "RECOVERY");
-        if fighter.side == Side::Player && can_act {
-            if controls.dodge && !fighter.airborne && fighter.dodge_cooldown <= 0.0 {
-                let movement = Quat::from_rotation_y(orbit.yaw)
-                    * Vec3::new(controls.movement.x, 0.0, -controls.movement.y);
-                let direction = if movement.length_squared() > 0.0 {
-                    movement
+        if fighter.side == Side::Player && can_cancel(&fighter.action) {
+            if controls.dodge && !fighter.airborne && fighter.stamina.spend(20.0) {
+                let direction = movement(&controls, orbit.heading);
+                let direction = if direction.length_squared() > 0.0 {
+                    direction
                 } else {
                     -fighter.forward()
                 };
                 fighter.action = Action::Dodge {
                     elapsed: 0.0,
                     direction,
+                    held: false,
                 };
-                fighter.dodge_cooldown = DODGE_COOLDOWN;
                 fighter.velocity = Vec3::ZERO;
                 sounds.0.push("dodge");
-            } else if controls.jump && matches!(fighter.action, Action::Idle | Action::Guard) {
+            } else if controls.jump {
                 if let Some(speed) = fighter.jumps.try_jump() {
                     fighter.vertical_speed = speed;
                     fighter.airborne = true;
                     fighter.action = Action::Idle;
+                    fighter.crouched = false;
                     sounds.0.push("jump");
                 }
+            } else if controls.parry && fighter.disarmed <= 0.0 {
+                fighter.facing = orbit.heading;
+                fighter.action = Action::Parry(0.0);
+                sounds.0.push("parry");
+            } else if controls.crouch_pressed {
+                let direction = movement(&controls, orbit.heading);
+                fighter.action =
+                    if controls.sprint && direction.length_squared() > 0.0 && !fighter.airborne {
+                        Action::Slide {
+                            elapsed: 0.0,
+                            direction,
+                        }
+                    } else {
+                        Action::Idle
+                    };
             }
         }
         if fighter.airborne {
@@ -261,25 +436,71 @@ pub(super) fn simulate(
                 sounds.0.push("land");
             }
         }
-        let was_guarding = matches!(fighter.action, Action::Guard);
-        let (movement, retention) = damped_motion(dt, 12.0);
+        let (distance, retention) = damped_motion(dt, 12.0);
         transform.translation = bounded(
-            transform.translation + fighter.velocity * movement,
+            transform.translation + fighter.velocity * distance,
             obstacle,
         );
         fighter.velocity *= retention;
         let mut next_action = None;
         match &mut fighter.action {
-            Action::Dodge { elapsed, direction } => {
+            Action::Dodge {
+                elapsed,
+                direction,
+                held,
+            } => {
                 let previous = *elapsed;
                 *elapsed += dt;
+                if controls.sprint && *elapsed >= 0.16 {
+                    *held = true;
+                }
+                // Holding Shift makes a short dash into sprint; tapping keeps the full dodge.
+                let duration = if *held { 0.26 } else { DODGE_DURATION };
                 fighter.protected = dodge_protected(previous, *elapsed);
                 transform.translation = bounded(
                     transform.translation + *direction * dodge_step(previous, *elapsed),
                     obstacle,
                 );
-                if *elapsed >= DODGE_DURATION {
+                if *elapsed >= duration {
                     next_action = Some(Action::Idle);
+                }
+            }
+            Action::Slide { elapsed, direction } => {
+                *elapsed += dt;
+                transform.translation = bounded(
+                    transform.translation
+                        + *direction * dt * 5.0 * (1.0 - *elapsed / 0.55).max(0.0),
+                    obstacle,
+                );
+                if *elapsed >= 0.55 || !controls.crouch {
+                    next_action = Some(Action::Idle);
+                }
+                if let Some(axis) = pressed_axis(&controls) {
+                    next_action = Some(Action::Attack(Attack::new(AttackKind::Crouch(axis))));
+                    fighter.facing = orbit.heading;
+                }
+            }
+            Action::Parry(elapsed) => {
+                let previous = *elapsed;
+                *elapsed += dt;
+                fighter.parry_active = parry_window(previous, *elapsed);
+                if *elapsed >= PARRY_DURATION {
+                    next_action = Some(Action::Idle);
+                }
+            }
+            Action::Charge(charge) => {
+                let previous = charge.elapsed;
+                charge.elapsed += dt;
+                if previous < CHARGE_READY && charge.elapsed >= CHARGE_READY {
+                    sounds.0.push("charge-ready");
+                }
+                fighter.facing = orbit.heading;
+                let button = controls.attacks[button_index(charge.axis)];
+                if button.released
+                    || (!button.held && !button.pressed)
+                    || charge.elapsed >= CHARGE_AUTO_RELEASE
+                {
+                    next_action = Some(Action::Attack(Attack::new(charge.release())));
                 }
             }
             Action::Down(remaining) => {
@@ -298,31 +519,53 @@ pub(super) fn simulate(
                 }
             }
             Action::Attack(attack) => {
-                if fighter.side == Side::Player && controls.attack {
-                    attack.buffer_next();
+                if fighter.side == Side::Player
+                    && let Some(axis) = pressed_axis(&controls)
+                {
+                    attack.buffer_next(axis);
                 }
                 let previous = attack.elapsed;
                 let step = attack.tick(dt);
-                if previous < attack.spec().windup && attack.elapsed >= attack.spec().windup {
-                    sounds.0.push(match attack.kind {
-                        AttackKind::Light(0) => "swing1",
-                        AttackKind::Light(1) => "swing2",
-                        AttackKind::Light(_) => "swing3",
-                        AttackKind::Training => "swing3",
-                    });
-                }
                 let forward = Quat::from_rotation_y(fighter.facing) * Vec3::NEG_Z;
+                if previous < attack.spec().windup && attack.elapsed >= attack.spec().windup {
+                    sounds.0.push(if attack.kind.armor() == Armor::Normal {
+                        "swing1"
+                    } else {
+                        "swing3"
+                    });
+                    if let AttackKind::Focus(axis) = attack.kind {
+                        waves.spawn(
+                            entity,
+                            fighter.side,
+                            transform.translation + Vec3::Y * 1.0,
+                            forward,
+                            axis,
+                            attack.spec().damage,
+                        );
+                        sounds.0.push("sword-energy");
+                    }
+                    if attack.kind == AttackKind::Crouch(AttackAxis::Vertical) && !fighter.airborne
+                    {
+                        fighter.vertical_speed = core::JUMP_SPEED;
+                        fighter.airborne = true;
+                        fighter.jumps.try_jump();
+                        sounds.0.push("jump");
+                    }
+                    if attack.kind == AttackKind::Air(AttackAxis::Vertical) {
+                        fighter.vertical_speed = -9.0;
+                    }
+                }
                 transform.translation = bounded(
                     transform.translation + forward * step.forward_step,
                     obstacle,
                 );
-                if step.active {
+                if step.active && !matches!(attack.kind, AttackKind::Focus(_)) {
                     for target in &snapshots {
                         if target.side == fighter.side || !target.alive {
                             continue;
                         }
                         let mut delta = target.position - transform.translation;
-                        if delta.y.abs() > 1.1 {
+                        if delta.y.abs() > 1.4 {
                             continue;
                         }
                         delta.y = 0.0;
@@ -334,141 +577,308 @@ pub(super) fn simulate(
                                 source: entity,
                                 target: target.entity,
                                 damage: attack.spec().damage,
-                                heavy: matches!(attack.kind, AttackKind::Light(2)),
+                                kind: attack.kind,
                                 origin: transform.translation,
+                                wave: None,
                             });
                         }
                     }
                 }
                 if step.finished {
-                    if fighter.side == Side::Player && !attack.has_hit() {
-                        status.last = "MISS / Move closer and face your target.".into();
+                    if fighter.side == Side::Player
+                        && !attack.has_hit()
+                        && !matches!(attack.kind, AttackKind::Focus(_))
+                    {
+                        status.last = "MISS / Close the gap and face the target.".into();
                     }
-                    next_action = Some(if fighter.side == Side::Player && controls.guard {
-                        Action::Guard
-                    } else if let Some(kind) = attack.next_combo() {
-                        Action::Attack(Attack::new(kind))
+                    next_action = Some(if let Some(kind) = attack.next_combo() {
+                        if let AttackKind::Light(axis, combo) = kind
+                            && controls.attacks[button_index(axis)].held
+                        {
+                            Action::Charge(Charge {
+                                axis,
+                                combo,
+                                elapsed: 0.0,
+                            })
+                        } else {
+                            Action::Attack(Attack::new(kind))
+                        }
                     } else {
                         Action::Idle
                     });
                 }
             }
-            Action::Idle | Action::Guard => {
+            Action::Idle => {
                 if fighter.side == Side::Player {
-                    if controls.guard {
-                        next_action = Some(Action::Guard);
-                        fighter.facing = orbit.yaw;
-                    } else if controls.attack && !fighter.airborne {
-                        fighter.facing = orbit.yaw;
-                        next_action = Some(Action::Attack(Attack::new(AttackKind::Light(0))));
-                    } else {
-                        next_action = Some(Action::Idle);
-                    }
-                    if !controls.attack || controls.guard {
-                        let movement = Quat::from_rotation_y(orbit.yaw)
-                            * Vec3::new(controls.movement.x, 0.0, -controls.movement.y);
-                        if movement.length_squared() > 0.0 {
-                            fighter.moving = true;
-                            let previous_step = (fighter.walk_phase / std::f32::consts::PI) as i32;
-                            fighter.walk_phase += dt * if controls.guard { 5.0 } else { 9.0 };
-                            if !fighter.airborne
-                                && (fighter.walk_phase / std::f32::consts::PI) as i32
-                                    != previous_step
-                            {
-                                sounds.0.push("step");
-                            }
-                            if !controls.guard {
-                                fighter.facing = (-movement.x).atan2(-movement.z);
-                            }
-                            transform.translation = bounded(
-                                transform.translation
-                                    + movement * dt * if controls.guard { 1.6 } else { 3.8 },
-                                obstacle,
-                            );
+                    if fighter.disarmed <= 0.0
+                        && !controls.parry
+                        && let Some(axis) = pressed_axis(&controls)
+                    {
+                        fighter.facing = orbit.heading;
+                        if fighter.riposte > 0.0 {
+                            fighter.riposte = 0.0;
+                            start_attack(fighter, AttackKind::Riposte, orbit.heading);
+                        } else if fighter.airborne {
+                            start_attack(fighter, AttackKind::Air(axis), orbit.heading);
+                        } else if controls.crouch {
+                            start_attack(fighter, AttackKind::Crouch(axis), orbit.heading);
+                        } else {
+                            fighter.action = Action::Charge(Charge {
+                                axis,
+                                combo: 0,
+                                elapsed: 0.0,
+                            });
                         }
                     }
-                } else if controls.training_attack && opponent.is_some_and(|target| target.alive) {
+                } else if fighter.disarmed <= 0.0 && opponent.is_some_and(|target| target.alive) {
                     let direction = opponent.unwrap().position - transform.translation;
-                    fighter.facing = (-direction.x).atan2(-direction.z);
-                    next_action = Some(Action::Attack(Attack::new(AttackKind::Training)));
-                    status.last = "Incoming strike! Guard or dodge as the blade arrives.".into();
-                    sounds.0.push("windup");
+                    let heading = (-direction.x).atan2(-direction.z);
+                    if controls.training_parry {
+                        fighter.facing = heading;
+                        next_action = Some(Action::Parry(0.0));
+                    } else if controls.training_attack || controls.training_normal {
+                        start_attack(
+                            fighter,
+                            AttackKind::Training(controls.training_attack),
+                            heading,
+                        );
+                        status.last = if controls.training_attack {
+                            "Incoming BLUE / Parry on contact, or dodge."
+                        } else {
+                            "Incoming NORMAL / Beats parry; use blue armor or dodge."
+                        }
+                        .into();
+                        sounds.0.push("windup");
+                    }
                 }
             }
-        }
-        if matches!(&next_action, Some(Action::Guard)) && !was_guarding {
-            sounds.0.push("guard-up");
         }
         if let Some(action) = next_action {
             fighter.action = action;
         }
+        if fighter.side == Side::Player
+            && matches!(fighter.action, Action::Idle | Action::Charge(_))
+        {
+            let step_before = (fighter.walk_phase / std::f32::consts::PI) as i32;
+            move_fighter(
+                fighter,
+                &mut transform,
+                &controls,
+                orbit.heading,
+                dt,
+                obstacle,
+            );
+            if !fighter.airborne
+                && (fighter.walk_phase / std::f32::consts::PI) as i32 != step_before
+            {
+                sounds.0.push("step");
+            }
+        }
         transform.rotation = Quat::from_rotation_y(fighter.facing);
     }
-    for hit in hits {
+    // Re-snapshot positions after movement; a fast wave must test its whole path.
+    for wave in &mut waves.active {
+        let previous = wave.distance;
+        wave.distance = (wave.distance + dt * 12.0).min(10.0);
+        for (entity, fighter, transform) in &fighters {
+            if fighter.side == wave.side || !fighter.alive() || wave.targets.contains(&entity) {
+                continue;
+            }
+            let offset = transform.translation + Vec3::Y * 1.0 - wave.origin;
+            let forward = offset.dot(wave.direction);
+            let lateral = offset.dot(Vec3::new(wave.direction.z, 0.0, -wave.direction.x));
+            if wave_intersects(
+                previous,
+                wave.distance,
+                forward,
+                lateral,
+                offset.y,
+                wave.axis,
+            ) {
+                wave.targets.insert(entity);
+                hits.push(Hit {
+                    source: wave.source,
+                    target: entity,
+                    damage: wave.damage,
+                    kind: AttackKind::Focus(wave.axis),
+                    origin: wave.origin,
+                    wave: Some(wave.id),
+                });
+            }
+        }
+    }
+    // Decide defenses before mutating either actor, so query iteration order
+    // cannot turn simultaneous strikes into a one-sided interrupt.
+    let mut results: Vec<_> = hits
+        .iter()
+        .map(|hit| {
+            let (_, fighter, transform) = fighters.get(hit.target).unwrap();
+            let incoming = (hit.origin - transform.translation)
+                .with_y(0.0)
+                .normalize_or_zero();
+            let mut defense = fighter.defense();
+            if fighter.forward().dot(incoming) < 0.0 {
+                defense = match defense {
+                    Defense::Parry | Defense::Striking(Armor::Normal) => Defense::Open,
+                    Defense::Striking(Armor::Blue) => Defense::Blue,
+                    Defense::Striking(Armor::Gold) => Defense::Gold,
+                    other => other,
+                };
+            }
+            if hit.wave.is_some() && matches!(defense, Defense::Striking(_)) {
+                // Sword energy is countered with parry; swinging at it is not a clash.
+                defense = match fighter.armor() {
+                    Armor::Blue => Defense::Blue,
+                    Armor::Gold => Defense::Gold,
+                    _ => Defense::Open,
+                };
+            }
+            resolve_hit(hit.kind.armor(), defense)
+        })
+        .collect();
+    for (i, hit) in hits.iter().enumerate() {
+        if hit.wave.is_some() || results[i] == HitResult::Evade {
+            continue;
+        }
+        if let Some((j, _)) = hits.iter().enumerate().skip(i + 1).find(|(j, other)| {
+            other.wave.is_none()
+                && other.source == hit.target
+                && other.target == hit.source
+                && can_clash(hit.kind.armor(), other.kind.armor())
+                && results[*j] != HitResult::Evade
+        }) {
+            results[i] = HitResult::Clash;
+            results[j] = HitResult::Clash;
+        }
+    }
+    let mut clash_pairs = HashSet::new();
+    for (index, hit) in hits.into_iter().enumerate() {
         let Ok((_, mut target, transform)) = fighters.get_mut(hit.target) else {
             continue;
         };
         if !target.alive() {
             continue;
         }
-        if target.protected {
-            status.last = "EVADED / The strike passed through your dodge window.".into();
-            sounds.0.push("evade");
-            continue;
-        }
-        let mut incoming = hit.origin - transform.translation;
-        incoming.y = 0.0;
-        let incoming = incoming.normalize_or_zero();
-        let (damage, blocked) = guarded_damage(
-            hit.damage,
-            matches!(target.action, Action::Guard),
-            target.forward().dot(incoming),
-        );
-        target.health = (target.health - damage).max(0.0);
-        sounds.0.push(if blocked { "guard" } else { "hit" });
-        target.flash = 0.18;
-        target.hit_stop = if blocked { 0.035 } else { 0.055 };
-        target.velocity = -incoming
-            * if blocked {
-                0.8
-            } else if hit.heavy {
-                3.6
-            } else {
-                2.2
-            };
-        if blocked {
-            status.blocks += 1;
-        } else {
-            status.hits += 1;
-        }
-        if !target.alive() {
-            target.action = Action::Down(2.0);
-            sounds.0.push("down");
-            status.last = if target.side == Side::Dummy {
-                "DUMMY DOWN / Respawning in 2 seconds."
-            } else {
-                "YOU ARE DOWN / Recovering in 2 seconds."
+        match results[index] {
+            HitResult::Clash => {
+                let pair = if hit.source.to_bits() < hit.target.to_bits() {
+                    (hit.source, hit.target)
+                } else {
+                    (hit.target, hit.source)
+                };
+                if !clash_pairs.insert(pair) {
+                    continue;
+                }
+                // Release the target borrow before applying the same clash to both.
+                for entity in [hit.source, hit.target] {
+                    if let Ok((_, mut fighter, transform)) = fighters.get_mut(entity) {
+                        fighter.action = Action::Stagger(0.18);
+                        fighter.hit_stop = 0.04;
+                        impacts.0.push(Impact {
+                            position: transform.translation + Vec3::Y,
+                            damage: 0.0,
+                            blocked: true,
+                            target_side: fighter.side,
+                            heavy: false,
+                        });
+                    }
+                }
+                sounds.0.push("guard");
+                status.last = "CLASH / Equal attacks met.".into();
             }
-            .into();
-        } else if blocked {
-            status.last = format!("BLOCK / {:.0} damage taken (80% reduced)", damage);
-        } else {
-            target.action = Action::Stagger(0.24);
-            status.last = format!(
-                "{} / {:.0} damage",
-                if hit.heavy { "HEAVY HIT" } else { "HIT" },
-                damage
-            );
-        }
-        impacts.0.push(Impact {
-            position: transform.translation + Vec3::Y * 1.25,
-            damage,
-            blocked,
-            target_side: target.side,
-            heavy: hit.heavy,
-        });
-        if let Ok((_, mut source, _)) = fighters.get_mut(hit.source) {
-            source.hit_stop = 0.045;
+            HitResult::Evade => {
+                status.last = "EVADED".into();
+                sounds.0.push("evade");
+            }
+            HitResult::Counter => {
+                target.riposte = 1.8;
+                target.action = Action::Idle;
+                target.parry_active = false;
+                let position = transform.translation;
+                let side = target.side;
+                impacts.0.push(Impact {
+                    position: position + Vec3::Y,
+                    damage: 0.0,
+                    blocked: true,
+                    target_side: side,
+                    heavy: true,
+                });
+                status.blocks += 1;
+                status.last = "PARRY SUCCESS / LMB for gold riposte.".into();
+                sounds.0.push("guard");
+                if let Some(id) = hit.wave {
+                    if let Some(wave) = waves.active.iter_mut().find(|wave| wave.id == id) {
+                        wave.distance = 10.0;
+                        let direction = -wave.direction;
+                        let axis = wave.axis;
+                        waves.spawn(
+                            hit.target,
+                            side,
+                            position + Vec3::Y,
+                            direction,
+                            axis,
+                            hit.damage * 0.4,
+                        );
+                    }
+                }
+                if let Ok((_, mut source, source_transform)) = fighters.get_mut(hit.source)
+                    && source_transform.translation.distance(position) < 2.8
+                {
+                    source.disarmed = 1.2;
+                    source.action = Action::Stagger(1.2);
+                    source.hit_stop = 0.06;
+                }
+            }
+            HitResult::Damage { stagger } => {
+                target.health = (target.health - hit.damage).max(0.0);
+                target.flash = 0.18;
+                target.hit_stop = 0.035;
+                let incoming = (hit.origin - transform.translation)
+                    .with_y(0.0)
+                    .normalize_or_zero();
+                target.velocity = -incoming
+                    * if hit.kind.armor() == Armor::Normal {
+                        1.5
+                    } else {
+                        3.0
+                    };
+                let heavy = hit.kind.armor() != Armor::Normal;
+                if !target.alive() {
+                    target.action = Action::Down(2.0);
+                    sounds.0.push("down");
+                    status.last = "DOWN / Training auto-recovery in 2 seconds.".into();
+                } else if stagger {
+                    target.action =
+                        Action::Stagger(if hit.kind == AttackKind::Crouch(AttackAxis::Vertical) {
+                            0.50
+                        } else {
+                            0.24
+                        });
+                    if hit.kind == AttackKind::Crouch(AttackAxis::Vertical) {
+                        target.vertical_speed = 6.2;
+                        target.airborne = true;
+                    }
+                    status.last = format!("{} / {:.0} damage", hit.kind.label(), hit.damage);
+                } else {
+                    status.last = format!("ARMOR / {:.0} damage, no stagger", hit.damage);
+                }
+                impacts.0.push(Impact {
+                    position: transform.translation + Vec3::Y * 1.25,
+                    damage: hit.damage,
+                    blocked: false,
+                    target_side: target.side,
+                    heavy,
+                });
+                sounds.0.push("hit");
+                status.hits += 1;
+                if let Ok((_, mut source, _)) = fighters.get_mut(hit.source) {
+                    source.hit_stop = 0.03;
+                }
+            }
         }
     }
+    waves.active.retain(|wave| wave.distance < 10.0);
 }
+
+#[cfg(test)]
+mod tests;

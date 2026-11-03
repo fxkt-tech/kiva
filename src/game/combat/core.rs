@@ -2,9 +2,67 @@
 use std::collections::HashSet;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AttackAxis {
+    Horizontal,
+    Vertical,
+}
+impl AttackAxis {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Horizontal => "HORIZONTAL",
+            Self::Vertical => "VERTICAL",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AttackKind {
-    Light(usize),
-    Training,
+    Light(AttackAxis, usize),
+    Focus(AttackAxis),
+    Crouch(AttackAxis),
+    Air(AttackAxis),
+    Riposte,
+    Training(bool),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Armor {
+    Normal,
+    Blue,
+    Gold,
+}
+
+impl AttackKind {
+    pub fn axis(self) -> AttackAxis {
+        match self {
+            Self::Light(axis, _) | Self::Focus(axis) | Self::Crouch(axis) | Self::Air(axis) => axis,
+            _ => AttackAxis::Vertical,
+        }
+    }
+    pub fn armor(self) -> Armor {
+        match self {
+            Self::Light(_, 2) | Self::Focus(_) | Self::Training(true) => Armor::Blue,
+            Self::Riposte => Armor::Gold,
+            _ => Armor::Normal,
+        }
+    }
+    pub fn label(self) -> String {
+        match self {
+            Self::Light(axis, i) => format!(
+                "{} {}{}",
+                axis.label(),
+                i + 1,
+                if i == 2 { " / BLUE" } else { "" }
+            ),
+            Self::Focus(axis) => format!("{} SWORD ENERGY / BLUE", axis.label()),
+            Self::Crouch(AttackAxis::Horizontal) => "CROUCH SLASH".into(),
+            Self::Crouch(AttackAxis::Vertical) => "UPPERCUT".into(),
+            Self::Air(AttackAxis::Horizontal) => "AIR SLASH".into(),
+            Self::Air(AttackAxis::Vertical) => "AIR PLUNGE".into(),
+            Self::Riposte => "RIPOSTE / GOLD".into(),
+            Self::Training(blue) => format!("TRAINING {}", if blue { "BLUE" } else { "NORMAL" }),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -64,14 +122,99 @@ pub const TRAINING_ATTACK: AttackSpec = AttackSpec {
 };
 pub const COMBO_WINDOW: f32 = 0.22;
 pub const BODY_RADIUS: f32 = 0.32;
-pub const GUARD_HALF_ARC: f32 = std::f32::consts::FRAC_PI_3;
+pub const CHARGE_READY: f32 = 0.55;
+pub const CHARGE_AUTO_RELEASE: f32 = 1.45;
+pub const PARRY_DURATION: f32 = 0.60;
+pub const PARRY_START: f32 = 0.05;
+pub const PARRY_END: f32 = 0.28;
+
+#[derive(Debug)]
+pub struct Charge {
+    pub axis: AttackAxis,
+    pub elapsed: f32,
+    pub combo: usize,
+}
+impl Charge {
+    pub fn release(&self) -> AttackKind {
+        if self.elapsed >= CHARGE_READY {
+            AttackKind::Focus(self.axis)
+        } else {
+            AttackKind::Light(self.axis, self.combo)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Stamina {
+    pub value: f32,
+    delay: f32,
+}
+impl Default for Stamina {
+    fn default() -> Self {
+        Self {
+            value: 100.0,
+            delay: 0.0,
+        }
+    }
+}
+impl Stamina {
+    pub fn spend(&mut self, cost: f32) -> bool {
+        if self.value < cost {
+            return false;
+        }
+        self.value -= cost;
+        self.delay = 0.65;
+        true
+    }
+    pub fn tick(&mut self, dt: f32) {
+        let recovering = (dt - self.delay).max(0.0);
+        self.delay = (self.delay - dt).max(0.0);
+        self.value = (self.value + recovering * 24.0).min(100.0);
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum Defense {
+    Open,
+    Blue,
+    Gold,
+    Parry,
+    Evade,
+    Striking(Armor),
+}
+#[derive(Debug, PartialEq, Eq)]
+pub enum HitResult {
+    Damage { stagger: bool },
+    Counter,
+    Evade,
+    Clash,
+}
+pub fn resolve_hit(attack: Armor, defense: Defense) -> HitResult {
+    match (attack, defense) {
+        (_, Defense::Evade) => HitResult::Evade,
+        (Armor::Blue, Defense::Parry) => HitResult::Counter,
+        (a, Defense::Striking(b)) if can_clash(a, b) => HitResult::Clash,
+        (Armor::Normal, Defense::Striking(Armor::Blue | Armor::Gold))
+        | (Armor::Blue, Defense::Striking(Armor::Gold)) => HitResult::Damage { stagger: false },
+        (Armor::Normal, Defense::Blue | Defense::Gold) | (Armor::Blue, Defense::Gold) => {
+            HitResult::Damage { stagger: false }
+        }
+        _ => HitResult::Damage { stagger: true },
+    }
+}
+pub fn can_clash(a: Armor, b: Armor) -> bool {
+    a == b && a != Armor::Gold
+}
+pub fn parry_window(previous: f32, current: f32) -> bool {
+    previous < PARRY_END && current >= PARRY_START
+}
 
 #[derive(Debug)]
 pub struct Attack {
     pub kind: AttackKind,
     pub elapsed: f32,
-    queued: bool,
-    buffered_until: Option<f32>,
+    queued: Option<AttackAxis>,
+    buffered_until: Option<(f32, AttackAxis)>,
     hit_targets: HashSet<u64>,
 }
 
@@ -86,7 +229,7 @@ impl Attack {
         Self {
             kind,
             elapsed: 0.0,
-            queued: false,
+            queued: None,
             buffered_until: None,
             hit_targets: HashSet::new(),
         }
@@ -94,25 +237,80 @@ impl Attack {
 
     pub fn spec(&self) -> AttackSpec {
         match self.kind {
-            AttackKind::Light(index) => LIGHT_ATTACKS[index],
-            AttackKind::Training => TRAINING_ATTACK,
+            AttackKind::Light(axis, index) => {
+                let mut spec = LIGHT_ATTACKS[index];
+                if axis == AttackAxis::Vertical {
+                    spec.half_arc = 0.48;
+                    spec.range += 0.12;
+                }
+                spec
+            }
+            AttackKind::Focus(axis) => AttackSpec {
+                windup: 0.16,
+                active: 0.10,
+                recovery: 0.40,
+                damage: 30.0,
+                range: 1.9,
+                half_arc: if axis == AttackAxis::Horizontal {
+                    1.1
+                } else {
+                    0.48
+                },
+                step: 0.20,
+            },
+            AttackKind::Crouch(axis) => AttackSpec {
+                windup: 0.14,
+                active: 0.12,
+                recovery: 0.25,
+                damage: 14.0,
+                range: 1.8,
+                half_arc: if axis == AttackAxis::Horizontal {
+                    1.2
+                } else {
+                    0.50
+                },
+                step: 0.2,
+            },
+            AttackKind::Air(axis) => AttackSpec {
+                windup: 0.12,
+                active: 0.16,
+                recovery: 0.24,
+                damage: if axis == AttackAxis::Horizontal {
+                    12.0
+                } else {
+                    18.0
+                },
+                range: 1.9,
+                half_arc: 0.8,
+                step: 0.12,
+            },
+            AttackKind::Riposte => AttackSpec {
+                windup: 0.10,
+                active: 0.16,
+                recovery: 0.35,
+                damage: 35.0,
+                range: 2.5,
+                half_arc: 0.9,
+                step: 0.55,
+            },
+            AttackKind::Training(_) => TRAINING_ATTACK,
         }
     }
 
     pub fn can_chain(&self) -> bool {
-        matches!(self.kind, AttackKind::Light(0 | 1))
+        matches!(self.kind, AttackKind::Light(_, 0 | 1))
             && self.elapsed >= self.spec().duration() - COMBO_WINDOW
             && self.elapsed < self.spec().duration()
     }
 
-    pub fn buffer_next(&mut self) -> bool {
-        if matches!(self.kind, AttackKind::Light(0 | 1))
+    pub fn buffer_next(&mut self, axis: AttackAxis) -> bool {
+        if matches!(self.kind, AttackKind::Light(_, 0 | 1))
             && self.elapsed >= self.spec().windup
             && self.elapsed < self.spec().duration()
         {
-            self.buffered_until = Some(self.elapsed + COMBO_WINDOW);
+            self.buffered_until = Some((self.elapsed + COMBO_WINDOW, axis));
             if self.can_chain() {
-                self.queued = true;
+                self.queued = Some(axis);
             }
             true
         } else {
@@ -122,8 +320,8 @@ impl Attack {
 
     pub fn next_combo(&self) -> Option<AttackKind> {
         match self.kind {
-            AttackKind::Light(index) if self.queued && index < 2 => {
-                Some(AttackKind::Light(index + 1))
+            AttackKind::Light(_, index) if index < 2 => {
+                self.queued.map(|axis| AttackKind::Light(axis, index + 1))
             }
             _ => None,
         }
@@ -142,12 +340,12 @@ impl Attack {
         let previous = self.elapsed;
         self.elapsed += dt.max(0.0);
         let chain_start = spec.duration() - COMBO_WINDOW;
-        if self
-            .buffered_until
-            .is_some_and(|until| until >= chain_start && until >= previous)
+        if let Some((until, axis)) = self.buffered_until
+            && until >= chain_start
+            && until >= previous
             && self.elapsed >= chain_start
         {
-            self.queued = true;
+            self.queued = Some(axis);
             self.buffered_until = None;
         }
         let end = spec.windup + spec.active;
@@ -182,7 +380,6 @@ pub fn damped_motion(dt: f32, rate: f32) -> (f32, f32) {
 
 pub const DODGE_DURATION: f32 = 0.42;
 pub const DODGE_DISTANCE: f32 = 2.4;
-pub const DODGE_COOLDOWN: f32 = 0.72;
 pub const JUMP_SPEED: f32 = 6.4;
 pub const GRAVITY: f32 = 18.0;
 
@@ -239,9 +436,24 @@ pub fn inside_attack(distance: f32, forward_dot: f32, spec: AttackSpec) -> bool 
         && forward_dot >= (spec.half_arc + allowance).min(std::f32::consts::PI).cos()
 }
 
-pub fn guarded_damage(damage: f32, guarding: bool, incoming_dot: f32) -> (f32, bool) {
-    let blocked = guarding && incoming_dot >= GUARD_HALF_ARC.cos();
-    (if blocked { damage * 0.2 } else { damage }, blocked)
+/// Swept wave collision in local coordinates: forward distance, lateral offset,
+/// and height relative to the defender's torso. Tests the whole frame interval.
+pub fn wave_intersects(
+    previous: f32,
+    current: f32,
+    forward: f32,
+    lateral: f32,
+    height: f32,
+    axis: AttackAxis,
+) -> bool {
+    let (width, tall) = match axis {
+        AttackAxis::Horizontal => (1.3, 0.4),
+        AttackAxis::Vertical => (0.42, 1.35),
+    };
+    forward >= previous - BODY_RADIUS
+        && forward <= current + BODY_RADIUS
+        && lateral.abs() <= width + BODY_RADIUS
+        && height.abs() <= tall + BODY_RADIUS
 }
 
 #[cfg(test)]
@@ -250,7 +462,7 @@ mod tests {
 
     #[test]
     fn windup_cannot_hit_but_a_slow_frame_crossing_the_strike_can() {
-        let mut attack = Attack::new(AttackKind::Light(0));
+        let mut attack = Attack::new(AttackKind::Light(AttackAxis::Horizontal, 0));
         assert!(!attack.tick(0.05).active);
         assert!(attack.tick(0.3).active);
         assert!(!attack.tick(0.01).active);
@@ -258,43 +470,52 @@ mod tests {
 
     #[test]
     fn one_swing_hits_each_target_only_once() {
-        let mut attack = Attack::new(AttackKind::Light(0));
+        let mut attack = Attack::new(AttackKind::Light(AttackAxis::Horizontal, 0));
         assert!(attack.claim_target(42));
         assert!(!attack.claim_target(42));
         assert!(attack.claim_target(43));
-        assert!(Attack::new(AttackKind::Light(1)).claim_target(42));
+        assert!(Attack::new(AttackKind::Light(AttackAxis::Horizontal, 1)).claim_target(42));
     }
 
     #[test]
     fn early_click_is_rejected_and_repeated_late_clicks_queue_only_one_step() {
-        let mut attack = Attack::new(AttackKind::Light(0));
-        assert!(!attack.buffer_next());
+        let mut attack = Attack::new(AttackKind::Light(AttackAxis::Horizontal, 0));
+        assert!(!attack.buffer_next(AttackAxis::Horizontal));
         assert_eq!(attack.next_combo(), None);
         attack.tick(0.35);
         for _ in 0..10 {
-            assert!(attack.buffer_next());
+            assert!(attack.buffer_next(AttackAxis::Horizontal));
         }
-        assert_eq!(attack.next_combo(), Some(AttackKind::Light(1)));
+        assert_eq!(
+            attack.next_combo(),
+            Some(AttackKind::Light(AttackAxis::Horizontal, 1))
+        );
         attack.tick(1.0);
-        assert!(!attack.buffer_next());
+        assert!(!attack.buffer_next(AttackAxis::Horizontal));
     }
 
     #[test]
     fn strike_input_is_buffered_until_the_chain_window_opens() {
-        let mut attack = Attack::new(AttackKind::Light(0));
+        let mut attack = Attack::new(AttackKind::Light(AttackAxis::Horizontal, 0));
         attack.tick(0.16);
-        assert!(attack.buffer_next());
+        assert!(attack.buffer_next(AttackAxis::Horizontal));
         assert_eq!(attack.next_combo(), None);
         attack.tick(0.16);
-        assert_eq!(attack.next_combo(), Some(AttackKind::Light(1)));
+        assert_eq!(
+            attack.next_combo(),
+            Some(AttackKind::Light(AttackAxis::Horizontal, 1))
+        );
     }
 
     #[test]
     fn final_and_training_attacks_never_chain() {
-        for kind in [AttackKind::Light(2), AttackKind::Training] {
+        for kind in [
+            AttackKind::Light(AttackAxis::Horizontal, 2),
+            AttackKind::Training(true),
+        ] {
             let mut attack = Attack::new(kind);
             attack.tick(attack.spec().duration() - 0.1);
-            assert!(!attack.buffer_next());
+            assert!(!attack.buffer_next(AttackAxis::Horizontal));
             assert_eq!(attack.next_combo(), None);
         }
     }
@@ -302,7 +523,7 @@ mod tests {
     #[test]
     fn lunge_distance_is_independent_of_tick_size() {
         for dt in [0.005, 0.016, 0.1, 0.7] {
-            let mut attack = Attack::new(AttackKind::Light(2));
+            let mut attack = Attack::new(AttackKind::Light(AttackAxis::Horizontal, 2));
             let mut distance = 0.0;
             while attack.elapsed < attack.spec().duration() {
                 distance += attack.tick(dt).forward_step;
@@ -399,9 +620,122 @@ mod tests {
     }
 
     #[test]
-    fn only_frontal_guard_reduces_damage() {
-        assert_eq!(guarded_damage(20.0, true, 1.0), (4.0, true));
-        assert_eq!(guarded_damage(20.0, true, -1.0), (20.0, false));
-        assert_eq!(guarded_damage(20.0, false, 1.0), (20.0, false));
+    fn charge_release_chooses_a_combo_or_a_blue_wave() {
+        let mut charge = Charge {
+            axis: AttackAxis::Vertical,
+            elapsed: 0.05,
+            combo: 1,
+        };
+        assert_eq!(charge.release(), AttackKind::Light(AttackAxis::Vertical, 1));
+        charge.elapsed = CHARGE_READY;
+        assert_eq!(charge.release(), AttackKind::Focus(AttackAxis::Vertical));
+    }
+
+    #[test]
+    fn mixed_combo_keeps_its_stage_but_uses_the_new_axis() {
+        let mut attack = Attack::new(AttackKind::Light(AttackAxis::Horizontal, 0));
+        attack.tick(0.35);
+        attack.buffer_next(AttackAxis::Vertical);
+        assert_eq!(
+            attack.next_combo(),
+            Some(AttackKind::Light(AttackAxis::Vertical, 1))
+        );
+        assert_eq!(
+            AttackKind::Light(AttackAxis::Vertical, 2).armor(),
+            Armor::Blue
+        );
+    }
+
+    #[test]
+    fn normal_beats_parry_parry_beats_blue_and_blue_resists_normal_stagger() {
+        assert_eq!(
+            resolve_hit(Armor::Normal, Defense::Parry),
+            HitResult::Damage { stagger: true }
+        );
+        assert_eq!(resolve_hit(Armor::Blue, Defense::Parry), HitResult::Counter);
+        assert_eq!(
+            resolve_hit(Armor::Normal, Defense::Blue),
+            HitResult::Damage { stagger: false }
+        );
+        assert_eq!(
+            resolve_hit(Armor::Gold, Defense::Parry),
+            HitResult::Damage { stagger: true }
+        );
+        assert_eq!(resolve_hit(Armor::Blue, Defense::Evade), HitResult::Evade);
+        assert_eq!(
+            resolve_hit(Armor::Normal, Defense::Striking(Armor::Normal)),
+            HitResult::Clash
+        );
+        assert!(can_clash(Armor::Normal, Armor::Normal));
+        assert!(can_clash(Armor::Blue, Armor::Blue));
+        assert!(!can_clash(Armor::Normal, Armor::Blue));
+        assert!(!can_clash(Armor::Gold, Armor::Gold));
+    }
+
+    #[test]
+    fn parry_is_a_short_window_not_a_held_guard() {
+        assert!(!parry_window(0.0, 0.03));
+        assert!(parry_window(0.04, 0.08));
+        assert!(parry_window(0.0, 0.40));
+        assert!(!parry_window(0.30, 0.40));
+    }
+
+    #[test]
+    fn stamina_limits_dodges_and_recovers_only_after_a_delay() {
+        let mut stamina = Stamina::default();
+        for _ in 0..5 {
+            assert!(stamina.spend(20.0));
+        }
+        assert!(!stamina.spend(20.0));
+        stamina.tick(0.6);
+        assert_eq!(stamina.value, 0.0);
+        stamina.tick(1.05);
+        assert!((stamina.value - 24.0).abs() < 0.001);
+        stamina.tick(10.0);
+        assert_eq!(stamina.value, 100.0);
+    }
+
+    #[test]
+    fn waves_hit_across_slow_frames_and_have_different_shapes() {
+        assert!(wave_intersects(
+            0.0,
+            5.0,
+            3.0,
+            1.0,
+            0.0,
+            AttackAxis::Horizontal
+        ));
+        assert!(!wave_intersects(
+            0.0,
+            5.0,
+            3.0,
+            1.0,
+            0.0,
+            AttackAxis::Vertical
+        ));
+        assert!(wave_intersects(
+            0.0,
+            5.0,
+            3.0,
+            0.0,
+            1.0,
+            AttackAxis::Vertical
+        ));
+        assert!(!wave_intersects(
+            0.0,
+            5.0,
+            3.0,
+            0.0,
+            1.0,
+            AttackAxis::Horizontal
+        ));
+        assert!(!wave_intersects(
+            0.0,
+            1.0,
+            3.0,
+            0.0,
+            0.0,
+            AttackAxis::Horizontal
+        ));
     }
 }

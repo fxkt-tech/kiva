@@ -9,6 +9,8 @@ pub(super) struct FighterLabel(Side);
 #[derive(Component)]
 pub(super) struct HealthBar(Side);
 #[derive(Component)]
+pub(super) struct StaminaBar(Side);
+#[derive(Component)]
 pub(super) struct StatusLabel;
 
 fn label(value: impl Into<String>, size: f32, color: Color) -> impl Bundle {
@@ -29,7 +31,7 @@ pub(super) fn spawn_hud(mut commands: Commands) {
             left: px(30),
             ..default()
         },
-        children![(label("KIVA / SWORD TRAINING", 22.0, ink))],
+        children![(label("KIVA / LONGSWORD TRAINING", 22.0, ink))],
     ));
     for (side, left, title, color) in [
         (
@@ -77,7 +79,27 @@ pub(super) fn spawn_hud(mut commands: Commands) {
                         BackgroundColor(color)
                     )]
                 ),
-                (FighterLabel(side), label("100 / 100  READY", 12.0, ink)),
+                (
+                    Node {
+                        width: percent(100),
+                        height: px(4),
+                        ..default()
+                    },
+                    BackgroundColor(Color::srgb_u8(45, 49, 51)),
+                    children![(
+                        StaminaBar(side),
+                        Node {
+                            width: percent(100),
+                            height: percent(100),
+                            ..default()
+                        },
+                        BackgroundColor(gold)
+                    )]
+                ),
+                (
+                    FighterLabel(side),
+                    label("100 HP / 100 SP  READY", 12.0, ink)
+                ),
             ],
         ));
     }
@@ -98,14 +120,15 @@ pub(super) fn spawn_hud(mut commands: Commands) {
             position_type: PositionType::Absolute,
             bottom: px(24),
             width: percent(100),
-            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            flex_direction: FlexDirection::Column,
+            row_gap: px(4),
             ..default()
         },
-        children![label(
-            "WASD move | SPACE x2 jump | L-SHIFT dodge | LMB combo | RMB guard | T strike | R reset | M sound | Esc",
-            13.0,
-            ink
-        )],
+        children![
+            label("LMB horizontal / RMB vertical (hold: charge) | LMB+RMB / G parry | C+RMB uppercut", 12.0, ink),
+            label("WASD move | SPACE x2 jump | SHIFT dodge/run | C crouch/slide | F5 parry / F6 blue / F7 normal / F8 reset", 11.0, ink),
+        ],
     ));
     commands.spawn((
         Node {
@@ -126,7 +149,8 @@ pub(super) fn update_hud(
     status: Res<CombatStatus>,
     fighters: Query<&Fighter>,
     mut labels: Query<(&FighterLabel, &mut Text), Without<StatusLabel>>,
-    mut bars: Query<(&HealthBar, &mut Node)>,
+    mut bars: Query<(&HealthBar, &mut Node), Without<StaminaBar>>,
+    mut stamina_bars: Query<(&StaminaBar, &mut Node), Without<HealthBar>>,
     mut status_label: Single<&mut Text, (With<StatusLabel>, Without<FighterLabel>)>,
     #[cfg(target_arch = "wasm32")] mut accessible: Local<String>,
 ) {
@@ -137,14 +161,15 @@ pub(super) fn update_hud(
             .iter()
             .map(|fighter| {
                 format!(
-                    "{}: {:.0} HP; {}",
+                    "{}: {:.0} HP; {}; STAMINA {:.0}",
                     if fighter.side == Side::Player {
                         "Player"
                     } else {
                         "Dummy"
                     },
                     fighter.health,
-                    fighter.label()
+                    fighter.label(),
+                    fighter.stamina.value
                 )
             })
             .collect::<Vec<_>>()
@@ -164,7 +189,12 @@ pub(super) fn update_hud(
     }
     for (label, mut text) in &mut labels {
         if let Some(fighter) = fighters.iter().find(|fighter| fighter.side == label.0) {
-            text.0 = format!("{:.0} / 100  {}", fighter.health, fighter.label());
+            text.0 = format!(
+                "{:.0} HP / {:.0} SP  {}",
+                fighter.health,
+                fighter.stamina.value,
+                fighter.label()
+            );
         }
     }
     for (bar, mut node) in &mut bars {
@@ -172,9 +202,14 @@ pub(super) fn update_hud(
             node.width = percent(fighter.health);
         }
     }
+    for (bar, mut node) in &mut stamina_bars {
+        if let Some(fighter) = fighters.iter().find(|fighter| fighter.side == bar.0) {
+            node.width = percent(fighter.stamina.value);
+        }
+    }
     status_label.0 = if controls.active {
         format!(
-            "{}   |   HITS {}  BLOCKS {}",
+            "{}   |   HITS {}  PARRIES {}",
             status.last, status.hits, status.blocks
         )
     } else {

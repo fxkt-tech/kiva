@@ -1,4 +1,4 @@
-// Optional browser integration test. Uses an ALREADY RUNNING dev server.
+// Optional browser integration test. Connects to an ALREADY RUNNING dev server.
 // Requires playwright and pngjs on NODE_PATH; see README.md.
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
@@ -21,148 +21,182 @@ function healthBar(buffer, side) {
 }
 
 (async () => {
-  const args = ['--no-sandbox'];
+  const args = ['--no-sandbox', '--force-device-scale-factor=1'];
   if (process.env.KIVA_BROWSER_SOFTWARE === '1') {
-    // ANGLE-only SwiftShader fails to allocate WebGPU swap-chain shared images
-    // in headless Linux Chromium. Enable its Vulkan compositor as well.
     args.push('--enable-unsafe-webgpu', '--use-angle=swiftshader', '--enable-features=Vulkan',
       '--use-vulkan=swiftshader', '--disable-vulkan-surface', '--disable-gpu-watchdog');
   }
-  const browser = await chromium.launch({ headless: true, args });
+  const browser = await chromium.launch({ headless: process.env.KIVA_BROWSER_HEADED !== '1', args,
+    channel: process.env.KIVA_BROWSER_CHANNEL || 'chromium' });
   try {
-    const page = await browser.newPage({ viewport: { width: 960, height: 640 } });
-    const errors = [];
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+    const errors = new Set();
     let webgpu = false;
-    page.on('pageerror', error => errors.push(error.message));
+    page.on('pageerror', error => { errors.add(error.message); console.error(error.message); });
     page.on('console', message => {
       if (message.text().includes('backend: BrowserWebGpu')) webgpu = true;
-      if (message.type() === 'error' || message.text().includes('%cERROR%c')) errors.push(message.text());
+      if (message.type() === 'error' || message.text().includes('%cERROR%c')) {
+        if (!errors.has(message.text()) && errors.size < 3) console.error(message.text());
+        errors.add(message.text());
+      }
     });
     await page.addInitScript(() => {
       window.soundCues = [];
       window.addEventListener('kiva-sound', event => window.soundCues.push(event.detail));
     });
-    await page.goto(process.env.KIVA_TEST_URL || 'http://localhost:8080', { waitUntil: 'networkidle', timeout: 90000 });
+    await page.goto(process.env.KIVA_TEST_URL || 'http://localhost:8080', { timeout: 90000 });
     await page.locator('#enter').waitFor({ state: 'visible', timeout: 60000 });
-    await page.waitForTimeout(3500);
+    // Activate the document before requesting real pointer lock.
+    await page.bringToFront();
+    await page.keyboard.press('Tab');
     await page.locator('#enter').click();
     await page.waitForFunction(() => document.pointerLockElement?.id === 'game');
     const cdp = await page.context().newCDPSession(page);
-    const button = async (name, down) => {
-      // CDP absolute viewport coordinates produce artificial cursor-warp deltas
-      // under pointer lock. Zero coordinates preserve real relative-look state.
+    const button = async (name, down, buttons = down ? (name === 'left' ? 1 : 2) : 0) => {
       await cdp.send('Input.dispatchMouseEvent', {
-        type: down ? 'mousePressed' : 'mouseReleased', button: name,
-        buttons: down ? (name === 'left' ? 1 : 2) : 0, x: 0, y: 0, clickCount: 1,
+        type: down ? 'mousePressed' : 'mouseReleased', button: name, buttons,
+        x: 0, y: 0, clickCount: 1,
       });
     };
-    const attack = async () => {
-      await button('left', true);
-      await page.waitForTimeout(45);
-      await button('left', false);
+    const tap = async (name = 'left') => {
+      await button(name, true); await page.waitForTimeout(50); await button(name, false);
     };
+    const contains = text => page.waitForFunction(text =>
+      document.getElementById('game').getAttribute('aria-label').includes(text), text, { timeout: 6000 });
+    const summary = () => page.locator('#game').getAttribute('aria-label');
+    const hp = async side => Number((await summary()).match(new RegExp(`${side}: (\\d+) HP`))[1]);
     const reset = async () => {
-      await page.keyboard.press('KeyR', { delay: 80 });
-      await page.waitForTimeout(350);
-      // Software WebGPU may still be compiling its first rendering pipelines.
-      // Wait for the rendered bars, with the same health assertion and a bound.
-      const deadline = Date.now() + 20000;
-      while (true) {
-        const resetImage = await page.screenshot();
-        if (healthBar(resetImage, 'dummy') > 240 && healthBar(resetImage, 'player') > 240) break;
-        assert(Date.now() < deadline, 'R must reset both health bars');
-        await page.waitForTimeout(250);
-      }
+      await page.keyboard.press('F8', { delay: 50 });
+      await contains('Dummy: 100 HP; READY');
+      await contains('Player: 100 HP; READY');
+      await page.waitForTimeout(150);
     };
-    const screenshot = async name => page.screenshot(name && process.env.KIVA_SCREENSHOT_DIR
+    const shot = async name => page.screenshot(process.env.KIVA_SCREENSHOT_DIR
       ? { path: `${process.env.KIVA_SCREENSHOT_DIR}/${name}.png` } : {});
-    await page.waitForTimeout(350);
     await reset();
-    const initial = await screenshot('idle');
-    const playerFull = healthBar(initial, 'player');
-    const dummyFull = healthBar(initial, 'dummy');
-    assert(playerFull > 230 && dummyFull > 230, 'WebGPU must actually render both full health bars');
-    await attack();
-    await page.waitForTimeout(800);
-    const hit = await screenshot('single-hit');
-    assert(Math.abs(healthBar(hit, 'dummy') / dummyFull - 0.90) < 0.015, 'one swing deals exactly 10 damage');
-
-    await reset();
-    const comboAttack = async () => {
-      await attack();
-      const deadline = Date.now() + 6000;
-      while (!(await page.locator('#game').getAttribute('aria-label')).includes('CUT 3 /')) {
-        assert(Date.now() < deadline, 'repeated clicks should reach the third cut');
-        await page.waitForTimeout(35);
-        await attack();
-      }
-      await page.waitForFunction(() => document.getElementById('game').getAttribute('aria-label').includes('Player: 100 HP; READY'), undefined, { timeout: 5000 });
-    };
-    await comboAttack();
-    const combo = await screenshot('combo');
-    assert(Math.abs(healthBar(combo, 'dummy') / dummyFull - 0.50) < 0.02, 'three-cut combo deals 10 + 15 + 25');
-
-    const downDeadline = Date.now() + 10000;
-    while (!(await page.locator('#game').getAttribute('aria-label')).includes('Dummy: 0 HP')) {
-      assert(Date.now() < downDeadline, 'repeated attacks should down the dummy');
-      await page.waitForFunction(() => document.getElementById('game').getAttribute('aria-label').includes('Player: 100 HP; READY'), undefined, { timeout: 3000 });
-      await attack();
-      await page.waitForTimeout(650);
+    // Require actual rendering as well as state updates.
+    const deadline = Date.now() + 25000;
+    while (true) {
+      const initial = await shot('idle');
+      if (healthBar(initial, 'player') > 230 && healthBar(initial, 'dummy') > 230) break;
+      assert(Date.now() < deadline, 'WebGPU must render both health bars');
+      await page.waitForTimeout(250);
     }
-    assert(healthBar(await screenshot('down'), 'dummy') < 20, 'dummy falls when health reaches zero');
-    await page.waitForTimeout(2300);
-    assert(healthBar(await screenshot('respawn'), 'dummy') > dummyFull - 3, 'dummy respawns with full health');
+    await tap('right');
+    await contains('VERTICAL 1');
+    await contains('Dummy: 90 HP');
+    await reset();
+    await tap('left');
+    await contains('HORIZONTAL 1');
+    await contains('Dummy: 90 HP');
+
+    await reset();
+    await tap('left');
+    await contains('HORIZONTAL 1');
+    await page.waitForTimeout(310);
+    await tap('right');
+    await contains('VERTICAL 2');
+    await page.waitForTimeout(390);
+    await tap('left');
+    await contains('HORIZONTAL 3 / BLUE');
+    await contains('Dummy: 50 HP');
 
     await reset();
     await button('right', true);
-    await page.waitForTimeout(200);
-    await page.keyboard.press('KeyT', { delay: 60 });
-    await page.waitForTimeout(1300);
-    const guarded = await screenshot('guard');
-    assert(Math.abs(healthBar(guarded, 'player') / playerFull - 0.96) < 0.015, 'frontal guard reduces 20 damage to 4');
+    await contains('VERTICAL CHARGE / BLUE READY');
     await button('right', false);
+    await contains('VERTICAL SWORD ENERGY');
+    await contains('Dummy: 70 HP');
+    await shot('sword-energy');
 
     await reset();
-    await page.keyboard.press('KeyT', { delay: 60 });
-    await page.waitForTimeout(1300);
-    const unguarded = await screenshot('unguarded');
-    assert(Math.abs(healthBar(unguarded, 'player') / playerFull - 0.80) < 0.015, 'unguarded strike deals full 20 damage');
-    await reset();
-    assert.equal(await page.evaluate(() => window.KivaAudio.state), 'running', 'audio unlocks on entering training');
-    await page.keyboard.press('Space', { delay: 60 });
-    await page.waitForFunction(() => document.getElementById('game').getAttribute('aria-label').includes('AIRBORNE'));
-    await page.keyboard.press('Space', { delay: 40 });
-    await page.waitForFunction(() => document.getElementById('game').getAttribute('aria-label').includes('AIRBORNE 2/2'));
-    await page.keyboard.press('Space', { delay: 40 });
-    await screenshot('jump');
-    await page.waitForFunction(() => document.getElementById('game').getAttribute('aria-label').includes('Player: 100 HP; READY'));
-    assert.equal(await page.evaluate(() => window.soundCues.filter(cue => cue === 'jump').length), 2, 'two jumps allowed, third airborne jump rejected');
-    assert((await page.evaluate(() => window.soundCues)).includes('land'), 'landing sound is emitted');
+    await button('left', true);
+    await contains('HORIZONTAL CHARGE / BLUE READY');
+    await page.keyboard.press('KeyC', { delay: 60 });
+    await button('left', false);
+    await page.waitForTimeout(700);
+    assert.equal(await hp('Dummy'), 100, 'crouch-cancel must not release the held sword energy');
 
+    await reset();
+    await button('left', true);
+    await button('right', true, 3);
+    await contains('PARRY / ACTIVE');
+    await button('right', false, 1); await button('left', false);
+    await page.waitForTimeout(700);
+    assert.equal(await hp('Dummy'), 100, 'combined parry must not queue a normal attack');
+
+    await reset();
+    await page.keyboard.press('F6', { delay: 50 });
+    await page.waitForTimeout(420);
+    await page.keyboard.press('KeyG', { delay: 40 });
+    await contains('RIPOSTE READY');
+    assert.equal(await hp('Player'), 100, 'timed parry stops the blue strike');
+    await tap('left');
+    await contains('RIPOSTE / GOLD');
+    await contains('Dummy: 65 HP');
+    await shot('riposte');
+
+    await reset();
+    await page.keyboard.press('F5', { delay: 40 });
+    await tap('left');
+    await contains('Dummy: 90 HP');
+
+    await reset();
+    await page.keyboard.press('F7', { delay: 50 });
+    await page.waitForTimeout(420);
+    await page.keyboard.press('KeyG', { delay: 40 });
+    await contains('Player: 80 HP');
+
+    await reset();
+    await page.keyboard.down('KeyC');
+    await tap('right');
+    await page.keyboard.up('KeyC');
+    await contains('UPPERCUT');
+    await contains('Dummy: 86 HP');
+    await shot('uppercut');
+
+    await reset();
+    await page.keyboard.press('Space', { delay: 50 });
+    await contains('AIRBORNE 1/2');
+    await tap('left');
+    await contains('AIR SLASH');
+    await shot('air-slash');
+
+    await reset();
+    await page.keyboard.press('Space', { delay: 50 });
+    await page.keyboard.press('Space', { delay: 50 });
+    await contains('AIRBORNE 2/2');
+    const jumps = await page.evaluate(() => window.soundCues.filter(cue => cue === 'jump').length);
+    await page.keyboard.press('Space', { delay: 50 });
+    assert.equal(await page.evaluate(() => window.soundCues.filter(cue => cue === 'jump').length), jumps, 'third jump rejected');
+
+    await reset();
     await page.keyboard.down('KeyD');
-    await page.keyboard.press('ShiftLeft', { delay: 70 });
-    await page.waitForFunction(() => document.getElementById('game').getAttribute('aria-label').includes('DODGING'));
-    await screenshot('dodge');
-    await page.keyboard.up('KeyD');
-    await page.waitForFunction(() => document.getElementById('game').getAttribute('aria-label').includes('Player: 100 HP; READY'));
-    const dodgeCues = await page.evaluate(() => window.soundCues.filter(cue => cue === 'dodge').length);
-    assert(dodgeCues >= 1, 'left Shift starts a dodge');
-
-    await page.keyboard.press('KeyM');
-    assert.equal(await page.evaluate(() => window.KivaAudio.muted), true, 'M mutes sound');
-    await page.keyboard.press('KeyM');
-    assert.equal(await page.evaluate(() => window.KivaAudio.muted), false, 'M restores sound');
-    const cues = await page.evaluate(() => window.soundCues);
-    for (const cue of ['swing1', 'swing2', 'swing3', 'hit', 'guard', 'down', 'revive', 'jump', 'land', 'dodge']) {
-      assert(cues.includes(cue), `missing sound cue: ${cue}`);
-    }
+    await page.keyboard.down('ShiftLeft');
+    await contains('DODGING');
+    await contains('SPRINTING');
+    await page.keyboard.down('KeyC');
+    await contains('SLIDING');
+    await page.keyboard.up('KeyC'); await page.keyboard.up('ShiftLeft'); await page.keyboard.up('KeyD');
+    await reset();
+    await page.keyboard.press('KeyR'); await page.keyboard.press('KeyM');
+    assert.equal(await page.evaluate(() => window.KivaAudio.muted), false, 'M is reserved for map, not mute');
+    assert.equal(await page.evaluate(() => window.KivaAudio.state), 'running');
+    // DOM click avoids browser focus changes while the mouse is captured.
+    await page.locator('#sound-toggle').evaluate(button => button.click());
+    assert.equal(await page.evaluate(() => window.KivaAudio.muted), true);
+    await page.locator('#sound-toggle').evaluate(button => button.click());
+    await button('left', true);
+    await contains('HORIZONTAL CHARGE');
     await page.evaluate(() => document.exitPointerLock());
     await page.locator('#entry').waitFor({ state: 'visible' });
-    await page.waitForTimeout(100);
-    assert(webgpu, 'engine must use BrowserWebGpu, not a WebGL fallback');
-    assert.deepEqual(errors, [], 'no browser or renderer errors');
-    console.log('PASS WebGPU render, mouse capture, attacks, combo, respawn, guard, jump, dodge, audio, mute and pause');
-  } finally {
-    await browser.close();
-  }
+    await button('left', false);
+    await page.locator('#enter').click();
+    await contains('Player: 100 HP; READY');
+    const cues = await page.evaluate(() => window.soundCues);
+    for (const cue of ['charge-ready', 'sword-energy', 'parry', 'guard', 'jump', 'dodge']) assert(cues.includes(cue), `missing ${cue} sound`);
+    assert(webgpu, 'engine must use BrowserWebGpu');
+    assert.deepEqual([...errors], [], 'no browser or renderer errors');
+    console.log('PASS WebGPU rendering, horizontal/vertical, charged wave, cancellation, combined parry, riposte, normal punishes parry, uppercut, air attack, jump, dash/sprint/slide, audio and pause');
+  } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

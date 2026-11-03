@@ -7,7 +7,7 @@
   function refreshButton() {
     const element = button();
     if (element) {
-      element.textContent = muted ? 'SOUND OFF [M]' : 'SOUND ON [M]';
+      element.textContent = muted ? 'SOUND OFF' : 'SOUND ON';
       element.setAttribute('aria-pressed', String(muted));
     }
   }
@@ -65,7 +65,9 @@
       case 'swing3': rush(3000, 180, 0.28, 0.58); tone(125, 42, 0.23, 0.18); break;
       case 'hit': rush(1800, 380, 0.11, 0.65); tone(125, 43, 0.14, 0.30, 'triangle'); break;
       case 'guard': tone(1450, 1350, 0.25, 0.16, 'triangle'); tone(2210, 2030, 0.18, 0.10); rush(5500, 1600, 0.08, 0.45, 'highpass'); break;
-      case 'guard-up': tone(650, 830, 0.09, 0.08, 'triangle'); break;
+      case 'parry': tone(650, 830, 0.09, 0.08, 'triangle'); break;
+      case 'charge-ready': tone(880, 1320, 0.18, 0.12, 'sine'); break;
+      case 'sword-energy': rush(4500, 300, 0.35, 0.35); tone(220, 80, 0.25, 0.12); break;
       case 'jump': rush(300, 1600, 0.16, 0.22); tone(180, 360, 0.13, 0.10); break;
       case 'land': rush(800, 130, 0.13, 0.40, 'lowpass'); tone(95, 38, 0.14, 0.22); break;
       case 'dodge': rush(2400, 230, 0.23, 0.36); break;
@@ -89,7 +91,6 @@
     get muted() { return muted; },
   };
   window.addEventListener('kiva-sound', event => play(event.detail));
-  window.addEventListener('keydown', event => { if (event.code === 'KeyM' && !event.repeat) toggle(); });
   document.addEventListener('pointerlockchange', () => {
     if (!context) return;
     if (document.pointerLockElement) context.resume().catch(() => {});

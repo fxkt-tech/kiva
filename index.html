@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#182027" />
+    <link rel="icon" href="data:," />
     <title>Kiva · Sword Training</title>
     <link data-trunk rel="rust" data-bin="kiva" />
     <link data-trunk rel="copy-dir" href="assets" />
@@ -30,16 +31,22 @@
     </style>
   </head>
   <body>
-    <canvas id="game" tabindex="0" aria-label="Sword training. WASD moves, left mouse attacks, right mouse guards, T triggers a dummy attack, R resets, Escape releases the mouse."></canvas>
-    <button id="sound-toggle" type="button" aria-label="Toggle sound" aria-pressed="false">SOUND ON [M]</button>
+    <canvas id="game" tabindex="0" aria-label="Sword training. WASD moves; left mouse horizontal, right mouse vertical; hold either to charge; both mouse buttons or G parries; C crouches; Shift dodges or sprints; Space jumps twice; F5 dummy parry, F6 blue strike, F7 normal strike, F8 resets; Escape pauses."></canvas>
+    <button id="sound-toggle" type="button" aria-label="Toggle sound" aria-pressed="false">SOUND ON</button>
     <div id="loading" class="overlay" role="status">Preparing the training courtyard…</div>
     <div id="entry" class="overlay" hidden>
       <div class="card">
         <div class="eyebrow">KIVA / COMBAT PROTOTYPE</div>
         <h1>The training courtyard</h1>
-        <p>Three cuts. One opponent.<br>Move the mouse to look. Hold right mouse to guard.<br>Space to double jump. Left Shift to dodge.</p>
+        <p>Longsword training · keyboard &amp; mouse<br>
+          Left click: horizontal · Right click: vertical<br>
+          Hold either: charge sword energy<br>
+          Both buttons / G: parry · C + right click: uppercut<br>
+          WASD: move · Shift: dodge / hold to sprint<br>
+          Space: double jump · Hold C: crouch / slide<br>
+          Ctrl: walk · Alt: free look</p>
         <button id="enter" type="button">Enter training</button>
-        <p id="entry-hint" class="hint">Esc releases the mouse and pauses training.<br>Press T to make the dummy strike.</p>
+        <p id="entry-hint" class="hint">Esc releases the mouse and pauses training.<br>F5: dummy parry · F6: blue strike · F7: normal strike<br>F8: reset · Use fn + F-keys if macOS uses media keys.</p>
       </div>
     </div>
     <noscript>Enable JavaScript to play.</noscript>
@@ -63,7 +70,7 @@
         if (document.pointerLockElement !== canvas) enterTraining();
       });
       // Cancel page-level right-click defaults without stopping propagation:
-      // Bevy must still receive the press/release events for guarding. Do not
+      // Bevy must still receive both attack buttons and their release events. Do not
       // cancel pointerdown, which can suppress compatibility mouse events.
       // Browser-native gestures / extensions may need a site exclusion in
       // browser settings; a page cannot reliably override those features.
@@ -79,14 +86,18 @@
       window.addEventListener("blur", () => {
         if (document.pointerLockElement === canvas) document.exitPointerLock();
       });
-      window.addEventListener("TrunkApplicationStarted", () => {
+      window.addEventListener("kiva-ready", () => {
         loading.hidden = true;
         entry.hidden = false;
       }, { once: true });
-      window.addEventListener("TrunkApplicationError", () => {
-        loading.hidden = false;
+      function startupFailed() {
+        if (loading.hidden) return;
         loading.textContent = "Unable to start. Use a WebGPU-capable browser with GPU acceleration on localhost or HTTPS.";
-      }, { once: true });
+      }
+      window.addEventListener("TrunkApplicationError", startupFailed, { once: true });
+      // Older Trunk loaders only surface initialization failures as JS errors.
+      window.addEventListener("error", startupFailed);
+      window.addEventListener("unhandledrejection", startupFailed);
       if (!navigator.gpu) {
         loading.textContent = "WebGPU is unavailable. Open this page in Chrome or Edge using localhost or HTTPS.";
       }

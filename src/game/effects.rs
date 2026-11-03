@@ -1,6 +1,9 @@
 use super::{
     camera::OrbitCamera,
-    combat::{Action, Fighter, Impacts, Side},
+    combat::{
+        Action, Fighter, Impacts, Side, SwordWaves,
+        core::{Armor, AttackAxis},
+    },
     input::Controls,
     player::{Appearance, SwordTip},
 };
@@ -12,6 +15,7 @@ pub(super) struct EffectAssets {
     spark: Handle<StandardMaterial>,
     block: Handle<StandardMaterial>,
     trail: Handle<StandardMaterial>,
+    wave: Handle<StandardMaterial>,
 }
 #[derive(Component)]
 pub(super) struct Fleeting {
@@ -43,6 +47,7 @@ pub(super) fn setup_effects(
         spark: material(Color::srgb_u8(240, 226, 165)),
         block: material(Color::srgb_u8(255, 171, 55)),
         trail: material(Color::srgb_u8(142, 227, 218)),
+        wave: material(Color::srgb_u8(114, 192, 255)),
     });
 }
 
@@ -87,11 +92,11 @@ pub(super) fn impact_effects(
                 position: impact.position + Vec3::Y * 0.5,
                 remaining: 0.85,
             },
-            Text::new(format!(
-                "{}{:.0}",
-                if impact.blocked { "BLOCK " } else { "-" },
-                impact.damage
-            )),
+            Text::new(if impact.blocked {
+                "DEFLECT".into()
+            } else {
+                format!("-{:.0}", impact.damage)
+            }),
             TextFont::from_font_size(26.0),
             TextColor(color),
             Node {
@@ -129,9 +134,17 @@ pub(super) fn update_effects(
     }
     for (fighter, appearance) in &fighters {
         if let Some(mut material) = materials.get_mut(&appearance.material) {
-            material.base_color = appearance
-                .color
-                .mix(&Color::WHITE, (fighter.flash / 0.18).clamp(0.0, 1.0) * 0.9);
+            let color = if matches!(fighter.action, Action::Parry(_)) {
+                Color::srgb_u8(238, 77, 72)
+            } else {
+                match fighter.armor() {
+                    Armor::Blue => Color::srgb_u8(77, 149, 255),
+                    Armor::Gold => Color::srgb_u8(255, 209, 90),
+                    _ => appearance.color,
+                }
+            };
+            material.base_color =
+                color.mix(&Color::WHITE, (fighter.flash / 0.18).clamp(0.0, 1.0) * 0.9);
         }
     }
 }
@@ -201,5 +214,56 @@ pub(super) fn damage_numbers(
         } else {
             color.0.set_alpha(0.0);
         }
+    }
+}
+
+#[derive(Component)]
+pub(super) struct WaveVisual(u64);
+
+pub(super) fn sword_waves(
+    mut commands: Commands,
+    waves: Res<SwordWaves>,
+    assets: Res<EffectAssets>,
+    mut visuals: Query<(Entity, &WaveVisual, &mut Transform)>,
+) {
+    let transform_for = |wave: &super::combat::SwordWave| {
+        let mut transform =
+            Transform::from_translation(wave.origin + wave.direction * wave.distance)
+                .looking_to(wave.direction, Vec3::Y);
+        if wave.axis == AttackAxis::Vertical {
+            transform.rotation *= Quat::from_rotation_z(std::f32::consts::FRAC_PI_2);
+        }
+        transform
+    };
+    for (entity, visual, mut transform) in &mut visuals {
+        if let Some(wave) = waves.active.iter().find(|wave| wave.id == visual.0) {
+            *transform = transform_for(wave);
+        } else {
+            commands.entity(entity).despawn();
+        }
+    }
+    for wave in &waves.active {
+        if visuals.iter().any(|(_, visual, _)| visual.0 == wave.id) {
+            continue;
+        }
+        commands
+            .spawn((
+                WaveVisual(wave.id),
+                transform_for(wave),
+                Visibility::default(),
+            ))
+            .with_children(|parent| {
+                // A curved blade of energy, built from tapered luminous segments.
+                for index in 0..11 {
+                    let x = (index as f32 - 5.0) * 0.24;
+                    parent.spawn((
+                        Mesh3d(assets.cube.clone()),
+                        MeshMaterial3d(assets.wave.clone()),
+                        Transform::from_xyz(x, 0.0, x * x * 0.22)
+                            .with_rotation(Quat::from_rotation_y(-x * 0.4))
+                            .with_scale(Vec3::new(0.27, 0.065, 0.20 * (1.0 - x.abs() * 0.5))),
+                    ));
+                }
+            });
     }
 }

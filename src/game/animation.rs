@@ -1,10 +1,10 @@
 use super::{
     combat::{
         Action, Fighter,
-        core::{AttackKind, DODGE_DURATION},
+        core::{AttackAxis, AttackKind, CHARGE_READY, DODGE_DURATION},
     },
     input::Controls,
-    player::{BoneVisual, attachment_transform},
+    player::{Attachment, BoneVisual, attachment_transform},
     skeleton::{AnimationLibrary, blend},
 };
 use bevy::prelude::*;
@@ -13,8 +13,11 @@ use bevy::prelude::*;
 enum PoseState {
     Idle,
     Run,
-    Guard,
-    Attack(u8),
+    Charge(AttackAxis),
+    Parry,
+    Crouch,
+    Slide,
+    Attack(AttackKind),
     Air(u8),
     Land,
     Dodge,
@@ -49,9 +52,13 @@ impl RigPose {
 }
 fn attack_pose(library: &AnimationLibrary, attack: &super::combat::core::Attack) -> Vec<Transform> {
     let spec = attack.spec();
-    let index = match attack.kind {
-        AttackKind::Light(i) => i,
-        AttackKind::Training => 2,
+    let index = if attack.kind.axis() == AttackAxis::Vertical {
+        2
+    } else {
+        match attack.kind {
+            AttackKind::Light(_, 1) => 1,
+            _ => 0,
+        }
     };
     // Source markers split preparation, contact and follow-through. Time-warp
     // each phase to the gameplay's actual damage window, including training.
@@ -60,11 +67,22 @@ fn attack_pose(library: &AnimationLibrary, attack: &super::combat::core::Attack)
         1 => ("Sword_Regular_B", 0.23, 0.50),
         _ => ("Sword_Regular_C", 0.60, 0.95),
     };
+    let sample = |name: &str, seconds: f32, looping: bool| {
+        library.sample(
+            name,
+            if attack.kind == AttackKind::Crouch(AttackAxis::Vertical) {
+                (1.15 - seconds).max(0.0)
+            } else {
+                seconds
+            },
+            looping,
+        )
+    };
     let t = attack.elapsed;
     if t < spec.windup {
-        library.sample(name, contact * (t / spec.windup), false)
+        sample(name, contact * (t / spec.windup), false)
     } else if t < spec.windup + spec.active {
-        library.sample(
+        sample(
             name,
             contact + (follow - contact) * ((t - spec.windup) / spec.active),
             false,
@@ -77,15 +95,15 @@ fn attack_pose(library: &AnimationLibrary, attack: &super::combat::core::Attack)
             } else {
                 "Sword_Regular_B_Rec"
             };
-            let source = library.sample(name, follow, false);
-            let target = library.sample(rec, library.duration(rec) * recovery, false);
+            let source = sample(name, follow, false);
+            let target = sample(rec, library.duration(rec) * recovery, false);
             source
                 .into_iter()
                 .zip(target)
                 .map(|(a, b)| blend(a, b, (recovery * 8.0).min(1.0)))
                 .collect()
         } else {
-            library.sample(
+            sample(
                 name,
                 follow + (library.duration(name) - follow) * recovery,
                 false,
@@ -98,7 +116,7 @@ pub(super) fn animate_fighters(
     controls: Res<Controls>,
     library: Res<AnimationLibrary>,
     mut fighters: Query<(&Fighter, &mut RigPose)>,
-    mut visuals: Query<(&BoneVisual, &mut Transform)>,
+    mut visuals: Query<(&BoneVisual, &mut Transform, Option<&mut Visibility>)>,
 ) {
     for (fighter, mut rig) in &mut fighters {
         if controls.reset {
@@ -112,11 +130,10 @@ pub(super) fn animate_fighters(
         let landed = rig.was_airborne && !fighter.airborne;
         rig.was_airborne = fighter.airborne;
         let state = match &fighter.action {
-            Action::Attack(a) => PoseState::Attack(match a.kind {
-                AttackKind::Light(i) => i as u8,
-                AttackKind::Training => 3,
-            }),
-            Action::Guard => PoseState::Guard,
+            Action::Attack(a) => PoseState::Attack(a.kind),
+            Action::Charge(charge) => PoseState::Charge(charge.axis),
+            Action::Parry(_) => PoseState::Parry,
+            Action::Slide { .. } => PoseState::Slide,
             Action::Dodge { .. } => PoseState::Dodge,
             Action::Stagger(_) => PoseState::Stagger,
             Action::Down(_) => PoseState::Down,
@@ -124,6 +141,7 @@ pub(super) fn animate_fighters(
             Action::Idle if landed || (rig.state == PoseState::Land && rig.clock < 0.16) => {
                 PoseState::Land
             }
+            Action::Idle if fighter.crouched => PoseState::Crouch,
             Action::Idle if fighter.moving => PoseState::Run,
             Action::Idle => PoseState::Idle,
         };
@@ -140,9 +158,22 @@ pub(super) fn animate_fighters(
         rig.transition += dt;
         let mut target = match &fighter.action {
             Action::Attack(attack) => attack_pose(&library, attack),
-            Action::Guard => {
-                library.sample("Sword_Block", 0.40 + (rig.clock * 1.7).sin() * 0.025, false)
-            }
+            Action::Charge(charge) => library.sample(
+                if charge.axis == AttackAxis::Horizontal {
+                    "Sword_Regular_A"
+                } else {
+                    "Sword_Regular_C"
+                },
+                (charge.elapsed / CHARGE_READY).min(1.0)
+                    * if charge.axis == AttackAxis::Horizontal {
+                        0.18
+                    } else {
+                        0.5
+                    },
+                false,
+            ),
+            Action::Parry(_) => library.sample("Sword_Block", 0.2 + rig.clock.min(0.2), false),
+            Action::Slide { .. } => library.sample("Sword_Idle", 0.0, false),
             Action::Dodge { elapsed, .. } => library.sample(
                 "Roll",
                 elapsed / DODGE_DURATION * library.duration("Roll"),
@@ -176,10 +207,20 @@ pub(super) fn animate_fighters(
             Action::Idle if state == PoseState::Land => {
                 library.sample("Jump_Land", 0.15 + rig.clock * 4.0, false)
             }
-            Action::Idle if fighter.moving => library.sample("Jog_Fwd_Loop", rig.clock * 1.2, true),
+            Action::Idle if fighter.moving => library.sample(
+                if fighter.sprinting {
+                    "Jog_Fwd_Loop"
+                } else {
+                    "Walk_Loop"
+                },
+                rig.clock * if fighter.sprinting { 1.6 } else { 1.2 },
+                true,
+            ),
             Action::Idle => library.sample("Sword_Idle", rig.clock, true),
         };
-        if state == PoseState::Guard && (fighter.moving || fighter.airborne) {
+        if matches!(state, PoseState::Charge(_) | PoseState::Parry)
+            && (fighter.moving || fighter.airborne)
+        {
             // Keep the blocking arms, with an independently animated lower
             // body. Indices follow the verified parent-first import layout.
             let lower = if fighter.airborne {
@@ -190,6 +231,15 @@ pub(super) fn animate_fighters(
             target[1] = lower[1]; // pelvis
             let first_leg = library.bone("thigh_l");
             target[first_leg..].copy_from_slice(&lower[first_leg..]);
+        }
+        if fighter.crouched || state == PoseState::Slide {
+            target[library.bone("pelvis")].translation.y -= 0.3;
+            for side in ["l", "r"] {
+                target[library.bone(&format!("thigh_{side}"))].rotation *=
+                    Quat::from_rotation_x(-0.55);
+                target[library.bone(&format!("calf_{side}"))].rotation *=
+                    Quat::from_rotation_x(1.05);
+            }
         }
         if state == PoseState::Dodge {
             target[0].rotation = Quat::from_rotation_y(rig.dodge_yaw) * target[0].rotation;
@@ -210,8 +260,17 @@ pub(super) fn animate_fighters(
             .collect();
         rig.model = library.model_pose(&rig.local);
     }
-    for (visual, mut transform) in &mut visuals {
-        if let Ok((_, rig)) = fighters.get(visual.owner) {
+    for (visual, mut transform, visibility) in &mut visuals {
+        if let Ok((fighter, rig)) = fighters.get(visual.owner) {
+            if matches!(visual.attachment, Attachment::Sword { .. })
+                && let Some(mut visibility) = visibility
+            {
+                *visibility = if fighter.disarmed > 0.0 {
+                    Visibility::Hidden
+                } else {
+                    Visibility::Inherited
+                };
+            }
             *transform = attachment_transform(&visual.attachment, &rig.model);
         }
     }

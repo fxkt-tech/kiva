@@ -18,5 +18,5 @@ if ! rustup target list --installed | grep -qx wasm32-unknown-unknown; then
   exit 1
 fi
 
-echo 'Open http://localhost:8080 in your Windows browser after the build succeeds.'
+echo 'Open http://localhost:8080 in a WebGPU-capable browser after the build succeeds.'
 exec trunk serve "$@"

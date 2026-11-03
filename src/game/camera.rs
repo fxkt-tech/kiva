@@ -8,6 +8,8 @@ use bevy::prelude::*;
 pub(super) struct OrbitCamera {
     pub yaw: f32,
     pub pitch: f32,
+    pub heading: f32,
+    pub free_looking: bool,
     pub distance: f32,
     pub shake: f32,
 }
@@ -16,6 +18,8 @@ impl Default for OrbitCamera {
         Self {
             yaw: 0.0,
             pitch: 0.28,
+            heading: 0.0,
+            free_looking: false,
             distance: 5.2,
             shake: 0.0,
         }
@@ -41,7 +45,14 @@ pub(super) fn rotate_camera(mut orbit: ResMut<OrbitCamera>, controls: Res<Contro
     if !controls.active {
         return;
     }
+    if orbit.free_looking && !controls.free_look {
+        orbit.yaw = orbit.heading;
+    }
+    orbit.free_looking = controls.free_look;
     orbit.yaw -= controls.look_delta.x * 0.003;
+    if !controls.free_look {
+        orbit.heading = orbit.yaw;
+    }
     orbit.pitch = (orbit.pitch + controls.look_delta.y * 0.003).clamp(-0.08, 1.05);
     orbit.distance = (orbit.distance - controls.zoom * 0.35).clamp(2.8, 8.5);
 }

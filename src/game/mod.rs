@@ -29,6 +29,7 @@ impl Plugin for GamePlugin {
             .init_resource::<input::Controls>()
             .init_resource::<camera::OrbitCamera>()
             .init_resource::<combat::Impacts>()
+            .init_resource::<combat::SwordWaves>()
             .init_resource::<combat::CombatStatus>()
             .init_resource::<sound::Sounds>()
             .init_resource::<skeleton::AnimationLibrary>()
@@ -64,6 +65,7 @@ impl Plugin for GamePlugin {
                     effects::impact_effects,
                     effects::update_effects,
                     effects::sword_trails,
+                    effects::sword_waves,
                     sound::play_sounds,
                 )
                     .chain()
