@@ -6,6 +6,7 @@ mod effects;
 mod hud;
 mod input;
 mod player;
+mod skeleton;
 mod sound;
 
 use bevy::prelude::*;
@@ -30,6 +31,7 @@ impl Plugin for GamePlugin {
             .init_resource::<combat::Impacts>()
             .init_resource::<combat::CombatStatus>()
             .init_resource::<sound::Sounds>()
+            .init_resource::<skeleton::AnimationLibrary>()
             .configure_sets(
                 Update,
                 (

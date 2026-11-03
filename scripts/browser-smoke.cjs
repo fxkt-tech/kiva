@@ -64,8 +64,15 @@ function healthBar(buffer, side) {
     const reset = async () => {
       await page.keyboard.press('KeyR', { delay: 80 });
       await page.waitForTimeout(350);
-      const resetImage = await page.screenshot();
-      assert(healthBar(resetImage, 'dummy') > 240 && healthBar(resetImage, 'player') > 240, 'R must reset both health bars');
+      // Software WebGPU may still be compiling its first rendering pipelines.
+      // Wait for the rendered bars, with the same health assertion and a bound.
+      const deadline = Date.now() + 20000;
+      while (true) {
+        const resetImage = await page.screenshot();
+        if (healthBar(resetImage, 'dummy') > 240 && healthBar(resetImage, 'player') > 240) break;
+        assert(Date.now() < deadline, 'R must reset both health bars');
+        await page.waitForTimeout(250);
+      }
     };
     const screenshot = async name => page.screenshot(name && process.env.KIVA_SCREENSHOT_DIR
       ? { path: `${process.env.KIVA_SCREENSHOT_DIR}/${name}.png` } : {});

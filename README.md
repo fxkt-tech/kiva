@@ -39,7 +39,7 @@ Bevy 0.20.1 的第三人称 3D 近战原型：一个持剑主角、一个训练�
 - 空格从地面起跳，空中可再按一次进行二段跳，每段向上速度重置为 6.4。最多两段，落地或重置后恢复次数；单段最高约 1.14 米，落地后恢复普攻。
 - 左 Shift 按当前 WASD 方向闪避；没有方向输入时向后闪避。每次约 2.4 米、持续 0.42 秒，冷却 0.72 秒。
 - 闪避中段（0.06～0.28 秒）可避开伤害。可从待机、格挡或攻击收招进入，前摇和出刀阶段仍需完成动作。
-- 人物增加层叠衣袍、肩甲、束发、分段手臂与手腕关节；三段攻击包含平滑蓄力、腰身转动、手腕跟随和下劈重心变化。
+- 主角和训练木人均为火柴人：圆头、细杆身体及独立肩、肘、腕、髋、膝、踝关节。采用 Quaternius 免费 CC0 骨骼动画，包含三连击、格挡、奔跑、跳跃、二段跳空中姿势、翻滚闪避、受击与倒地；切换动作时混合姿势，剑跟随右手骨骼。
 - 浏览器 WebAudio 实时合成三种挥剑、命中、金属格挡、抬剑、脚步、跳跃、落地、闪避、倒地、复活等音效，无需下载音频素材。
 - 点击 Enter training 时解锁音频，Esc / 失焦时暂停声音。按 M 或点击右上角按钮静音，设置保存在当前浏览器。
 - 音效在网页端输出；原生窗口保留画面和战斗逻辑，方便本地调试。
@@ -83,19 +83,21 @@ src/game/mod.rs          系统注册与执行顺序
 src/game/input.rs        输入、鼠标捕获状态与暂停
 src/game/camera.rs       第三人称相机、自由视角与震动
 src/game/arena.rs        地面、灯光与练武场
-src/game/player.rs       主角和木人的简易人形模型、关节与武器
+src/game/player.rs       火柴人几何体、骨骼绑定与右手武器挂点
 src/game/combat/core.rs  不依赖渲染的攻击时序、连招、范围和格挡规则
 src/game/combat/mod.rs   双方状态、移动、命中、伤害、击退与复活
-src/game/animation.rs    程序化挥剑、格挡、行走、后仰与倒地动作
+src/game/animation.rs    动作选择、姿势过渡、攻击阶段与骨骼动画同步
+src/game/skeleton.rs     动画采样、四元数插值与骨骼层级计算
 src/game/effects.rs      剑轨、火花、闪白、伤害数字与打击反馈
 src/game/hud.rs          血条、动作状态、命中与格挡提示
 src/game/sound.rs        动作音效事件
 web/audio.js             浏览器合成音效、音量与暂停
-assets/                 后续模型、贴图、音频等资源
+assets/animations/      已整理的骨骼动作、CC0 许可与素材来源
+scripts/import-animations.py 从官方免费 GLB 动作包重新生成资源，无需 Blender
 index.html              网页入口、加载提示与鼠标捕获交互
 ```
 
-攻击数值集中在 `combat/core.rs` 的 `LIGHT_ATTACKS`、`TRAINING_ATTACK` 和 `COMBO_WINDOW`。当前人物由基础几何体组成，通过关节变换驱动动作，后续可替换为正式模型和骨骼动画。
+攻击数值集中在 `combat/core.rs` 的 `LIGHT_ATTACKS`、`TRAINING_ATTACK` 和 `COMBO_WINDOW`。火柴人保留素材的 23 根主体骨骼，以原始关键帧驱动身体各段；动作资源约 422 KiB，编译时嵌入，网页无需额外请求模型。动画不驱动战斗位移或伤害。素材来源、许可和重建步骤见 [assets/animations/README.md](assets/animations/README.md)。
 
 ## 检查
 
@@ -104,6 +106,7 @@ cargo fmt --check
 cargo check --locked --target wasm32-unknown-unknown
 cargo check --locked
 ./scripts/test-combat.sh
+cargo test --locked --lib
 ```
 
 战斗规则测试直接使用 Rust 测试框架运行，不初始化窗口或 GPU。

@@ -1,179 +1,218 @@
 use super::{
     combat::{
         Action, Fighter,
-        core::{AttackKind, DODGE_DURATION, ease},
+        core::{AttackKind, DODGE_DURATION},
     },
     input::Controls,
-    player::{Joint, JointKind},
+    player::{BoneVisual, attachment_transform},
+    skeleton::{AnimationLibrary, blend},
 };
 use bevy::prelude::*;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum PoseState {
+    Idle,
+    Run,
+    Guard,
+    Attack(u8),
+    Air(u8),
+    Land,
+    Dodge,
+    Stagger,
+    Down,
+}
+#[derive(Component)]
+pub(super) struct RigPose {
+    local: Vec<Transform>,
+    pub model: Vec<Transform>,
+    from: Vec<Transform>,
+    state: PoseState,
+    clock: f32,
+    transition: f32,
+    was_airborne: bool,
+    dodge_yaw: f32,
+}
+impl RigPose {
+    pub fn new(library: &AnimationLibrary) -> Self {
+        let local = library.sample("Sword_Idle", 0.0, true);
+        Self {
+            model: library.model_pose(&local),
+            from: local.clone(),
+            local,
+            state: PoseState::Idle,
+            clock: 0.0,
+            transition: 1.0,
+            was_airborne: false,
+            dodge_yaw: 0.0,
+        }
+    }
+}
+fn attack_pose(library: &AnimationLibrary, attack: &super::combat::core::Attack) -> Vec<Transform> {
+    let spec = attack.spec();
+    let index = match attack.kind {
+        AttackKind::Light(i) => i,
+        AttackKind::Training => 2,
+    };
+    // Source markers split preparation, contact and follow-through. Time-warp
+    // each phase to the gameplay's actual damage window, including training.
+    let (name, contact, follow) = match index {
+        0 => ("Sword_Regular_A", 0.20, 0.40),
+        1 => ("Sword_Regular_B", 0.23, 0.50),
+        _ => ("Sword_Regular_C", 0.60, 0.95),
+    };
+    let t = attack.elapsed;
+    if t < spec.windup {
+        library.sample(name, contact * (t / spec.windup), false)
+    } else if t < spec.windup + spec.active {
+        library.sample(
+            name,
+            contact + (follow - contact) * ((t - spec.windup) / spec.active),
+            false,
+        )
+    } else {
+        let recovery = ((t - spec.windup - spec.active) / spec.recovery).clamp(0.0, 1.0);
+        if index < 2 {
+            let rec = if index == 0 {
+                "Sword_Regular_A_Rec"
+            } else {
+                "Sword_Regular_B_Rec"
+            };
+            let source = library.sample(name, follow, false);
+            let target = library.sample(rec, library.duration(rec) * recovery, false);
+            source
+                .into_iter()
+                .zip(target)
+                .map(|(a, b)| blend(a, b, (recovery * 8.0).min(1.0)))
+                .collect()
+        } else {
+            library.sample(
+                name,
+                follow + (library.duration(name) - follow) * recovery,
+                false,
+            )
+        }
+    }
+}
 pub(super) fn animate_fighters(
     time: Res<Time>,
     controls: Res<Controls>,
-    fighters: Query<&Fighter>,
-    mut joints: Query<(&Joint, &mut Transform)>,
+    library: Res<AnimationLibrary>,
+    mut fighters: Query<(&Fighter, &mut RigPose)>,
+    mut visuals: Query<(&BoneVisual, &mut Transform)>,
 ) {
-    if !controls.active && !controls.reset {
-        return;
+    for (fighter, mut rig) in &mut fighters {
+        if controls.reset {
+            *rig = RigPose::new(&library);
+            continue;
+        }
+        if !controls.active || fighter.hit_stop > 0.0 {
+            continue;
+        }
+        let dt = time.delta_secs();
+        let landed = rig.was_airborne && !fighter.airborne;
+        rig.was_airborne = fighter.airborne;
+        let state = match &fighter.action {
+            Action::Attack(a) => PoseState::Attack(match a.kind {
+                AttackKind::Light(i) => i as u8,
+                AttackKind::Training => 3,
+            }),
+            Action::Guard => PoseState::Guard,
+            Action::Dodge { .. } => PoseState::Dodge,
+            Action::Stagger(_) => PoseState::Stagger,
+            Action::Down(_) => PoseState::Down,
+            Action::Idle if fighter.airborne => PoseState::Air(fighter.jumps.used()),
+            Action::Idle if landed || (rig.state == PoseState::Land && rig.clock < 0.16) => {
+                PoseState::Land
+            }
+            Action::Idle if fighter.moving => PoseState::Run,
+            Action::Idle => PoseState::Idle,
+        };
+        if rig.state != state {
+            rig.from = rig.local.clone();
+            rig.state = state;
+            rig.clock = 0.0;
+            rig.transition = 0.0;
+            if let Action::Dodge { direction, .. } = &fighter.action {
+                rig.dodge_yaw = (-direction.x).atan2(-direction.z) - fighter.facing;
+            }
+        }
+        rig.clock += dt;
+        rig.transition += dt;
+        let mut target = match &fighter.action {
+            Action::Attack(attack) => attack_pose(&library, attack),
+            Action::Guard => {
+                library.sample("Sword_Block", 0.40 + (rig.clock * 1.7).sin() * 0.025, false)
+            }
+            Action::Dodge { elapsed, .. } => library.sample(
+                "Roll",
+                elapsed / DODGE_DURATION * library.duration("Roll"),
+                false,
+            ),
+            Action::Stagger(remaining) => library.sample(
+                "Hit_Chest",
+                (0.24 - remaining) / 0.24 * library.duration("Hit_Chest"),
+                false,
+            ),
+            Action::Down(remaining) => library.sample(
+                "Death01",
+                (2.0 - remaining) / 0.8 * library.duration("Death01"),
+                false,
+            ),
+            Action::Idle if fighter.airborne => {
+                if fighter.jumps.used() >= 2 {
+                    library.sample("NinjaJump_Idle_Loop", rig.clock, true)
+                } else {
+                    let start =
+                        library.sample("Jump_Start", 0.30 + rig.clock.min(0.14) * 3.5, false);
+                    let air = library.sample("Jump_Loop", (rig.clock - 0.14).max(0.0), true);
+                    let weight = ((rig.clock - 0.14) / 0.10).clamp(0.0, 1.0);
+                    start
+                        .into_iter()
+                        .zip(air)
+                        .map(|(a, b)| blend(a, b, weight))
+                        .collect()
+                }
+            }
+            Action::Idle if state == PoseState::Land => {
+                library.sample("Jump_Land", 0.15 + rig.clock * 4.0, false)
+            }
+            Action::Idle if fighter.moving => library.sample("Jog_Fwd_Loop", rig.clock * 1.2, true),
+            Action::Idle => library.sample("Sword_Idle", rig.clock, true),
+        };
+        if state == PoseState::Guard && (fighter.moving || fighter.airborne) {
+            // Keep the blocking arms, with an independently animated lower
+            // body. Indices follow the verified parent-first import layout.
+            let lower = if fighter.airborne {
+                library.sample("Jump_Loop", rig.clock, true)
+            } else {
+                library.sample("Walk_Loop", rig.clock * 0.85, true)
+            };
+            target[1] = lower[1]; // pelvis
+            let first_leg = library.bone("thigh_l");
+            target[first_leg..].copy_from_slice(&lower[first_leg..]);
+        }
+        if state == PoseState::Dodge {
+            target[0].rotation = Quat::from_rotation_y(rig.dodge_yaw) * target[0].rotation;
+        }
+        let transition_seconds = match state {
+            PoseState::Attack(_) => 0.055,
+            PoseState::Stagger => 0.035,
+            _ => 0.12,
+        };
+        let w = (rig.transition / transition_seconds).clamp(0.0, 1.0);
+        let w = w * w * (3.0 - 2.0 * w);
+        rig.local = rig
+            .from
+            .iter()
+            .copied()
+            .zip(target)
+            .map(|(a, b)| blend(a, b, w))
+            .collect();
+        rig.model = library.model_pose(&rig.local);
     }
-    for (joint, mut transform) in &mut joints {
-        let Ok(fighter) = fighters.get(joint.owner) else {
-            continue;
-        };
-        if fighter.hit_stop > 0.0 && !controls.reset {
-            continue;
+    for (visual, mut transform) in &mut visuals {
+        if let Ok((_, rig)) = fighters.get(visual.owner) {
+            *transform = attachment_transform(&visual.attachment, &rig.model);
         }
-        let mut pose = joint.rest;
-        let gait = if fighter.moving {
-            fighter.walk_phase.sin() * 0.48
-        } else {
-            0.0
-        };
-        match joint.kind {
-            JointKind::Body => {
-                pose.translation.y += if fighter.moving {
-                    (fighter.walk_phase * 2.0).cos().abs() * 0.035
-                } else {
-                    (time.elapsed_secs() * 2.0).sin() * 0.008
-                };
-            }
-            JointKind::LeftLeg => pose.rotation = Quat::from_rotation_x(gait),
-            JointKind::RightLeg => pose.rotation = Quat::from_rotation_x(-gait),
-            JointKind::LeftArm => pose.rotation = Quat::from_rotation_x(-gait * 0.6),
-            JointKind::RightArm => pose.rotation = Quat::from_rotation_x(0.15 + gait * 0.3),
-            JointKind::Wrist => pose.rotation = Quat::from_rotation_y(-0.12),
-        }
-        if fighter.airborne {
-            match joint.kind {
-                JointKind::LeftLeg => pose.rotation = Quat::from_rotation_x(-0.60),
-                JointKind::RightLeg => pose.rotation = Quat::from_rotation_x(0.45),
-                JointKind::Body => pose.rotation = Quat::from_rotation_x(0.12),
-                JointKind::LeftArm => pose.rotation = Quat::from_rotation_z(0.35),
-                _ => {}
-            }
-        }
-        match &fighter.action {
-            Action::Dodge { elapsed, direction } => {
-                let weight =
-                    (std::f32::consts::PI * (*elapsed / DODGE_DURATION).clamp(0.0, 1.0)).sin();
-                let side = direction.dot(Quat::from_rotation_y(fighter.facing) * Vec3::X);
-                match joint.kind {
-                    JointKind::Body => {
-                        pose.translation.y -= weight * 0.12;
-                        pose.rotation = Quat::from_euler(
-                            EulerRot::XYZ,
-                            0.25 * weight,
-                            0.0,
-                            -0.45 * side * weight,
-                        );
-                    }
-                    JointKind::LeftLeg => pose.rotation = Quat::from_rotation_x(-0.7 * weight),
-                    JointKind::RightLeg => pose.rotation = Quat::from_rotation_x(0.8 * weight),
-                    JointKind::RightArm => pose.rotation = Quat::from_rotation_x(0.9 * weight),
-                    _ => {}
-                }
-            }
-            Action::Attack(attack) => {
-                let spec = attack.spec();
-                let wind = ease(attack.elapsed / spec.windup);
-                let strike = ease((attack.elapsed - spec.windup) / spec.active);
-                let recover =
-                    ((attack.elapsed - spec.windup - spec.active) / spec.recovery).clamp(0.0, 1.0);
-                let weight = 1.0 - recover * recover;
-                let reverse = matches!(attack.kind, AttackKind::Light(1));
-                let heavy = matches!(attack.kind, AttackKind::Light(2));
-                let sweep = if reverse {
-                    1.15 * wind - 2.25 * strike
-                } else {
-                    -1.15 * wind + 2.25 * strike
-                };
-                match joint.kind {
-                    JointKind::RightArm => {
-                        pose.rotation = if heavy {
-                            Quat::from_euler(
-                                EulerRot::YXZ,
-                                0.1,
-                                (1.65 * wind - 1.7 * strike) * weight,
-                                -0.18 * weight,
-                            )
-                        } else {
-                            Quat::from_euler(
-                                EulerRot::YXZ,
-                                sweep * weight,
-                                0.45 * weight,
-                                -0.35 * weight,
-                            )
-                        };
-                    }
-                    JointKind::LeftArm => {
-                        pose.rotation = Quat::from_euler(
-                            EulerRot::XYZ,
-                            0.55 * wind * weight,
-                            0.0,
-                            0.25 * weight,
-                        )
-                    }
-                    JointKind::Wrist => {
-                        pose.rotation = Quat::from_euler(
-                            EulerRot::XYZ,
-                            if heavy {
-                                -0.2 * strike * weight
-                            } else {
-                                0.1 * weight
-                            },
-                            -sweep * 0.35 * weight,
-                            if reverse {
-                                -0.18 * weight
-                            } else {
-                                0.18 * weight
-                            },
-                        )
-                    }
-                    JointKind::LeftLeg => {
-                        pose.rotation = Quat::from_rotation_x(-0.25 * wind * weight)
-                    }
-                    JointKind::RightLeg => {
-                        pose.rotation = Quat::from_rotation_x(0.30 * strike * weight)
-                    }
-                    JointKind::Body => {
-                        pose.rotation = Quat::from_euler(
-                            EulerRot::XYZ,
-                            if heavy { 0.16 * strike * weight } else { 0.0 },
-                            sweep * 0.22 * weight,
-                            0.0,
-                        );
-                        pose.translation.y -= 0.04 * wind * weight;
-                    }
-                }
-            }
-            Action::Guard => match joint.kind {
-                JointKind::RightArm => {
-                    pose.rotation = Quat::from_euler(EulerRot::YXZ, -0.65, 1.05, -0.20)
-                }
-                JointKind::LeftArm => {
-                    pose.rotation = Quat::from_euler(EulerRot::XYZ, 1.15, 0.35, 0.35)
-                }
-                JointKind::Body => {
-                    pose.translation.y -= 0.055;
-                    pose.rotation = Quat::from_rotation_x(0.08);
-                }
-                _ => {}
-            },
-            Action::Stagger(remaining) => {
-                if matches!(joint.kind, JointKind::Body) {
-                    pose.rotation =
-                        Quat::from_rotation_x(-0.27 * (remaining / 0.24).clamp(0.0, 1.0));
-                }
-            }
-            Action::Down(_) => {
-                if matches!(joint.kind, JointKind::Body) {
-                    pose.translation.y = 0.22;
-                    pose.rotation = Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2);
-                }
-            }
-            Action::Idle => {}
-        }
-        *transform = pose;
     }
 }

@@ -1,22 +1,11 @@
-//! Shared low-poly character rig, used by the swordsman and training dummy.
-use super::combat::{Fighter, Side};
-use bevy::{ecs::hierarchy::ChildSpawnerCommands, prelude::*};
+//! Rigid stickman geometry bound to imported shoulder/elbow/wrist/knee bones.
+use super::{
+    animation::RigPose,
+    combat::{Fighter, Side},
+    skeleton::AnimationLibrary,
+};
+use bevy::prelude::*;
 
-#[derive(Clone, Copy)]
-pub(super) enum JointKind {
-    Body,
-    RightArm,
-    LeftArm,
-    RightLeg,
-    LeftLeg,
-    Wrist,
-}
-#[derive(Component)]
-pub(super) struct Joint {
-    pub owner: Entity,
-    pub kind: JointKind,
-    pub rest: Transform,
-}
 #[derive(Component)]
 pub(super) struct Appearance {
     pub material: Handle<StandardMaterial>,
@@ -27,81 +16,92 @@ pub(super) struct SwordTip {
     pub owner: Entity,
     pub previous: Option<Vec3>,
 }
-
-struct RigMeshes {
-    cube: Handle<Mesh>,
-    head: Handle<Mesh>,
-    limb: Handle<Mesh>,
+pub(super) enum Attachment {
+    Segment { from: usize, to: usize, radius: f32 },
+    Joint { bone: usize, radius: f32 },
+    Head { bone: usize },
+    Sword { bone: usize },
 }
-fn part(
-    parent: &mut ChildSpawnerCommands,
-    mesh: Handle<Mesh>,
-    material: Handle<StandardMaterial>,
-    position: Vec3,
-    scale: Vec3,
-) {
-    parent.spawn((
-        Mesh3d(mesh),
-        MeshMaterial3d(material),
-        Transform::from_translation(position).with_scale(scale),
-    ));
+#[derive(Component)]
+pub(super) struct BoneVisual {
+    pub owner: Entity,
+    pub attachment: Attachment,
 }
-
+pub(super) fn attachment_transform(attachment: &Attachment, pose: &[Transform]) -> Transform {
+    match *attachment {
+        Attachment::Segment { from, to, radius } => {
+            let a = pose[from].translation;
+            let b = pose[to].translation;
+            let delta = b - a;
+            Transform::from_translation((a + b) * 0.5)
+                .with_rotation(Quat::from_rotation_arc(
+                    Vec3::Y,
+                    delta.normalize_or(Vec3::Y),
+                ))
+                .with_scale(Vec3::new(radius, delta.length().max(0.001), radius))
+        }
+        Attachment::Joint { bone, radius } => {
+            Transform::from_translation(pose[bone].translation).with_scale(Vec3::splat(radius))
+        }
+        Attachment::Head { bone } => {
+            Transform::from_translation(pose[bone].transform_point(Vec3::Y * 0.105))
+                .with_rotation(pose[bone].rotation)
+        }
+        Attachment::Sword { bone } => {
+            Transform::from_translation(pose[bone].transform_point(Vec3::Y * 0.055))
+                .with_rotation(pose[bone].rotation)
+        }
+    }
+}
 pub(super) fn spawn_fighters(
     mut commands: Commands,
+    library: Res<AnimationLibrary>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let rig = RigMeshes {
-        cube: meshes.add(Cuboid::new(1.0, 1.0, 1.0)),
-        head: meshes.add(Sphere::new(0.20).mesh().uv(16, 12)),
-        limb: meshes.add(Capsule3d::new(0.095, 0.30)),
-    };
+    let rod = meshes.add(Cylinder::new(1.0, 1.0).mesh().resolution(10));
+    let sphere = meshes.add(Sphere::new(1.0).mesh().uv(16, 12));
+    let head = meshes.add(Sphere::new(0.155).mesh().uv(24, 16));
+    let cube = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
     let metal = materials.add(StandardMaterial {
-        base_color: Color::srgb_u8(188, 205, 210),
-        metallic: 0.75,
+        base_color: Color::srgb_u8(213, 231, 235),
+        metallic: 0.7,
         perceptual_roughness: 0.3,
         ..default()
     });
     let gold = materials.add(StandardMaterial {
-        base_color: Color::srgb_u8(190, 152, 69),
-        metallic: 0.55,
+        base_color: Color::srgb_u8(218, 170, 69),
+        metallic: 0.6,
         ..default()
     });
-    let dark = materials.add(StandardMaterial {
-        base_color: Color::srgb_u8(29, 34, 38),
-        ..default()
-    });
-    let skin = materials.add(StandardMaterial {
-        base_color: Color::srgb_u8(181, 139, 105),
+    let dark = materials.add(Color::srgb_u8(25, 32, 39));
+    let eyes = materials.add(StandardMaterial {
+        base_color: Color::srgb_u8(225, 248, 249),
+        emissive: LinearRgba::new(0.2, 0.5, 0.5, 1.0),
         ..default()
     });
     for side in [Side::Player, Side::Dummy] {
         let color = if side == Side::Player {
-            Color::srgb_u8(33, 106, 119)
+            Color::srgb_u8(65, 191, 190)
         } else {
-            Color::srgb_u8(155, 102, 65)
+            Color::srgb_u8(223, 146, 83)
         };
-        let cloth = materials.add(StandardMaterial {
+        let body = materials.add(StandardMaterial {
             base_color: color,
-            perceptual_roughness: 0.8,
+            perceptual_roughness: 0.62,
             ..default()
         });
-        let blade = if side == Side::Player {
-            metal.clone()
-        } else {
-            gold.clone()
-        };
+        let rig = RigPose::new(&library);
         let root = commands
             .spawn((
                 Name::new(if side == Side::Player {
-                    "Swordsman"
+                    "Stickman swordsman"
                 } else {
-                    "Training dummy"
+                    "Stickman training dummy"
                 }),
                 Fighter::new(side),
                 Appearance {
-                    material: cloth.clone(),
+                    material: body.clone(),
                     color,
                 },
                 Transform::from_translation(side.home())
@@ -109,228 +109,142 @@ pub(super) fn spawn_fighters(
                 Visibility::default(),
             ))
             .id();
-        commands.entity(root).with_children(|root_children| {
-            let rest = Transform::from_xyz(0.0, 0.9, 0.0);
-            root_children
-                .spawn((
-                    Joint {
-                        owner: root,
-                        kind: JointKind::Body,
-                        rest,
-                    },
-                    rest,
-                    Visibility::default(),
-                ))
-                .with_children(|body| {
-                    part(
-                        body,
-                        rig.cube.clone(),
-                        cloth.clone(),
-                        Vec3::new(0.0, 0.23, 0.0),
-                        Vec3::new(0.59, 0.66, 0.35),
-                    );
-                    part(
-                        body,
-                        rig.cube.clone(),
+        let mut attachments = Vec::new();
+        // Each rod spans two animated joints, preserving contact when bending.
+        for (a, b, radius) in [
+            ("pelvis", "spine_01", 0.075),
+            ("spine_01", "spine_02", 0.075),
+            ("spine_02", "spine_03", 0.075),
+            ("spine_03", "neck_01", 0.065),
+            ("neck_01", "Head", 0.055),
+            ("upperarm_l", "upperarm_r", 0.06),
+            ("thigh_l", "thigh_r", 0.065),
+            ("upperarm_l", "lowerarm_l", 0.052),
+            ("lowerarm_l", "hand_l", 0.047),
+            ("upperarm_r", "lowerarm_r", 0.052),
+            ("lowerarm_r", "hand_r", 0.047),
+            ("thigh_l", "calf_l", 0.062),
+            ("calf_l", "foot_l", 0.055),
+            ("thigh_r", "calf_r", 0.062),
+            ("calf_r", "foot_r", 0.055),
+            ("foot_l", "ball_l", 0.055),
+            ("foot_r", "ball_r", 0.055),
+        ] {
+            attachments.push((
+                rod.clone(),
+                Attachment::Segment {
+                    from: library.bone(a),
+                    to: library.bone(b),
+                    radius,
+                },
+            ));
+        }
+        for name in [
+            "pelvis",
+            "spine_02",
+            "upperarm_l",
+            "lowerarm_l",
+            "hand_l",
+            "upperarm_r",
+            "lowerarm_r",
+            "hand_r",
+            "thigh_l",
+            "calf_l",
+            "foot_l",
+            "thigh_r",
+            "calf_r",
+            "foot_r",
+        ] {
+            attachments.push((
+                sphere.clone(),
+                Attachment::Joint {
+                    bone: library.bone(name),
+                    radius: if name == "pelvis" { 0.085 } else { 0.06 },
+                },
+            ));
+        }
+        for (mesh, attachment) in attachments {
+            commands.spawn((
+                Mesh3d(mesh),
+                MeshMaterial3d(body.clone()),
+                attachment_transform(&attachment, &rig.model),
+                BoneVisual {
+                    owner: root,
+                    attachment,
+                },
+                ChildOf(root),
+            ));
+        }
+        let attachment = Attachment::Head {
+            bone: library.bone("Head"),
+        };
+        commands
+            .spawn((
+                Mesh3d(head.clone()),
+                MeshMaterial3d(body),
+                attachment_transform(&attachment, &rig.model),
+                BoneVisual {
+                    owner: root,
+                    attachment,
+                },
+                ChildOf(root),
+            ))
+            .with_children(|head| {
+                for x in [-0.055, 0.055] {
+                    head.spawn((
+                        Mesh3d(sphere.clone()),
+                        MeshMaterial3d(eyes.clone()),
+                        Transform::from_xyz(x, 0.025, 0.142).with_scale(Vec3::splat(0.022)),
+                    ));
+                }
+            });
+        let attachment = Attachment::Sword {
+            bone: library.bone("hand_r"),
+        };
+        commands
+            .spawn((
+                Name::new("Right hand sword socket"),
+                attachment_transform(&attachment, &rig.model),
+                Visibility::default(),
+                BoneVisual {
+                    owner: root,
+                    attachment,
+                },
+                ChildOf(root),
+            ))
+            .with_children(|sword| {
+                for (material, position, scale) in [
+                    (
                         dark.clone(),
-                        Vec3::new(0.0, -0.04, 0.0),
-                        Vec3::new(0.63, 0.10, 0.38),
-                    );
-                    part(
-                        body,
-                        rig.cube.clone(),
-                        dark.clone(),
-                        Vec3::new(0.0, -0.16, 0.0),
-                        Vec3::new(0.5, 0.24, 0.33),
-                    );
-                    part(
-                        body,
-                        rig.cube.clone(),
+                        Vec3::new(0.0, 0.0, -0.035),
+                        Vec3::new(0.065, 0.065, 0.22),
+                    ),
+                    (
                         gold.clone(),
-                        Vec3::new(0.0, 0.23, -0.183),
-                        Vec3::new(0.055, 0.58, 0.025),
-                    );
-                    part(
-                        body,
-                        rig.head.clone(),
-                        if side == Side::Player {
-                            skin.clone()
-                        } else {
-                            cloth.clone()
-                        },
-                        Vec3::new(0.0, 0.80, 0.0),
-                        Vec3::ONE,
-                    );
-                    part(
-                        body,
-                        rig.cube.clone(),
-                        dark.clone(),
-                        Vec3::new(0.0, 0.91, 0.0),
-                        Vec3::new(0.37, 0.09, 0.36),
-                    );
-                    part(
-                        body,
-                        rig.cube.clone(),
-                        dark.clone(),
-                        Vec3::new(0.0, 0.79, -0.185),
-                        Vec3::new(0.24, 0.045, 0.04),
-                    );
-                    // Layered robe, shoulder guards and a tied-back hair silhouette.
-                    part(
-                        body,
-                        rig.cube.clone(),
-                        cloth.clone(),
-                        Vec3::new(0.0, -0.17, 0.0),
-                        Vec3::new(0.66, 0.32, 0.41),
-                    );
-                    for x in [-0.31, 0.31] {
-                        part(
-                            body,
-                            rig.head.clone(),
-                            if side == Side::Player {
-                                metal.clone()
-                            } else {
-                                gold.clone()
-                            },
-                            Vec3::new(x, 0.47, 0.0),
-                            Vec3::new(0.95, 0.45, 0.85),
-                        );
-                    }
-                    if side == Side::Player {
-                        part(
-                            body,
-                            rig.head.clone(),
-                            dark.clone(),
-                            Vec3::new(0.0, 0.93, 0.02),
-                            Vec3::new(1.02, 0.54, 1.02),
-                        );
-                        part(
-                            body,
-                            rig.limb.clone(),
-                            dark.clone(),
-                            Vec3::new(0.0, 0.66, 0.22),
-                            Vec3::new(0.6, 0.85, 0.6),
-                        );
-                        for (x, angle) in [(-0.12, -0.23_f32), (0.12, 0.23_f32)] {
-                            body.spawn((
-                                Mesh3d(rig.cube.clone()),
-                                MeshMaterial3d(dark.clone()),
-                                Transform::from_xyz(x, 0.27, -0.19)
-                                    .with_rotation(Quat::from_rotation_z(angle))
-                                    .with_scale(Vec3::new(0.11, 0.62, 0.035)),
-                            ));
-                        }
-                    }
-                    for (kind, x) in [(JointKind::LeftLeg, -0.16), (JointKind::RightLeg, 0.16)] {
-                        let rest = Transform::from_xyz(x, -0.28, 0.0);
-                        body.spawn((
-                            Joint {
-                                owner: root,
-                                kind,
-                                rest,
-                            },
-                            rest,
-                            Visibility::default(),
-                        ))
-                        .with_children(|leg| {
-                            part(
-                                leg,
-                                rig.limb.clone(),
-                                dark.clone(),
-                                Vec3::new(0.0, -0.24, 0.0),
-                                Vec3::new(1.1, 1.2, 1.1),
-                            );
-                            part(
-                                leg,
-                                rig.cube.clone(),
-                                dark.clone(),
-                                Vec3::new(0.0, -0.51, -0.045),
-                                Vec3::new(0.22, 0.14, 0.34),
-                            );
-                        });
-                    }
-                    for (kind, x) in [(JointKind::LeftArm, -0.40), (JointKind::RightArm, 0.40)] {
-                        let rest = Transform::from_xyz(x, 0.49, 0.0);
-                        body.spawn((
-                            Joint {
-                                owner: root,
-                                kind,
-                                rest,
-                            },
-                            rest,
-                            Visibility::default(),
-                        ))
-                        .with_children(|arm| {
-                            part(
-                                arm,
-                                rig.limb.clone(),
-                                cloth.clone(),
-                                Vec3::new(0.0, -0.12, 0.0),
-                                Vec3::new(1.05, 0.6, 1.05),
-                            );
-                            part(
-                                arm,
-                                rig.limb.clone(),
-                                if side == Side::Player {
-                                    skin.clone()
-                                } else {
-                                    cloth.clone()
-                                },
-                                Vec3::new(0.0, -0.34, 0.0),
-                                Vec3::new(0.82, 0.6, 0.82),
-                            );
-                            part(
-                                arm,
-                                rig.head.clone(),
-                                dark.clone(),
-                                Vec3::new(0.0, -0.44, 0.0),
-                                Vec3::splat(0.48),
-                            );
-                            if matches!(kind, JointKind::RightArm) {
-                                arm.spawn((
-                                    Joint {
-                                        owner: root,
-                                        kind: JointKind::Wrist,
-                                        rest: Transform::from_xyz(0.0, -0.47, -0.03),
-                                    },
-                                    Transform::from_xyz(0.0, -0.47, -0.03),
-                                    Visibility::default(),
-                                ))
-                                .with_children(|sword| {
-                                    part(
-                                        sword,
-                                        rig.cube.clone(),
-                                        dark.clone(),
-                                        Vec3::new(0.0, 0.0, 0.06),
-                                        Vec3::new(0.065, 0.065, 0.23),
-                                    );
-                                    part(
-                                        sword,
-                                        rig.cube.clone(),
-                                        gold.clone(),
-                                        Vec3::new(0.0, 0.0, -0.08),
-                                        Vec3::new(0.29, 0.05, 0.065),
-                                    );
-                                    part(
-                                        sword,
-                                        rig.cube.clone(),
-                                        blade.clone(),
-                                        Vec3::new(0.0, 0.0, -0.55),
-                                        Vec3::new(0.07, 0.028, 0.91),
-                                    );
-                                    sword.spawn((
-                                        SwordTip {
-                                            owner: root,
-                                            previous: None,
-                                        },
-                                        Transform::from_xyz(0.0, 0.0, -1.0),
-                                        Visibility::default(),
-                                    ));
-                                });
-                            }
-                        });
-                    }
-                });
-        });
+                        Vec3::new(0.0, 0.0, 0.09),
+                        Vec3::new(0.29, 0.05, 0.055),
+                    ),
+                    (
+                        metal.clone(),
+                        Vec3::new(0.0, 0.0, 0.56),
+                        Vec3::new(0.07, 0.028, 0.91),
+                    ),
+                ] {
+                    sword.spawn((
+                        Mesh3d(cube.clone()),
+                        MeshMaterial3d(material),
+                        Transform::from_translation(position).with_scale(scale),
+                    ));
+                }
+                sword.spawn((
+                    SwordTip {
+                        owner: root,
+                        previous: None,
+                    },
+                    Transform::from_xyz(0.0, 0.0, 1.02),
+                    Visibility::default(),
+                ));
+            });
+        commands.entity(root).insert(rig);
     }
 }

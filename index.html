@@ -62,7 +62,17 @@
       canvas.addEventListener("click", () => {
         if (document.pointerLockElement !== canvas) enterTraining();
       });
-      canvas.addEventListener("contextmenu", event => event.preventDefault());
+      // Cancel page-level right-click defaults without stopping propagation:
+      // Bevy must still receive the press/release events for guarding. Do not
+      // cancel pointerdown, which can suppress compatibility mouse events.
+      // Browser-native gestures / extensions may need a site exclusion in
+      // browser settings; a page cannot reliably override those features.
+      for (const type of ["mousedown", "mouseup", "auxclick", "contextmenu"]) {
+        document.addEventListener(type, event => {
+          const inGame = document.pointerLockElement === canvas || event.composedPath().includes(canvas);
+          if (inGame && (event.button === 2 || type === "contextmenu")) event.preventDefault();
+        }, { capture: true, passive: false });
+      }
       document.addEventListener("pointerlockchange", () => {
         entry.hidden = document.pointerLockElement === canvas;
       });
