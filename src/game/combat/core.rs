@@ -133,8 +133,16 @@ pub struct Charge {
     pub axis: AttackAxis,
     pub elapsed: f32,
     pub combo: usize,
+    pub dodge_followup: bool,
 }
 impl Charge {
+    pub fn release_attack(&self) -> Attack {
+        if self.dodge_followup && self.elapsed < CHARGE_READY {
+            Attack::after_dodge(self.axis)
+        } else {
+            Attack::new(self.release())
+        }
+    }
     pub fn release(&self) -> AttackKind {
         if self.elapsed >= CHARGE_READY {
             AttackKind::Focus(self.axis)
@@ -216,6 +224,7 @@ pub struct Attack {
     queued: Option<AttackAxis>,
     buffered_until: Option<(f32, AttackAxis)>,
     hit_targets: HashSet<u64>,
+    dodge_followup: bool,
 }
 
 pub struct AttackStep {
@@ -232,7 +241,14 @@ impl Attack {
             queued: None,
             buffered_until: None,
             hit_targets: HashSet::new(),
+            dodge_followup: false,
         }
+    }
+
+    pub fn after_dodge(axis: AttackAxis) -> Self {
+        let mut attack = Self::new(AttackKind::Light(axis, 0));
+        attack.dodge_followup = true;
+        attack
     }
 
     pub fn spec(&self) -> AttackSpec {
@@ -242,6 +258,10 @@ impl Attack {
                 if axis == AttackAxis::Vertical {
                     spec.half_arc = 0.48;
                     spec.range += 0.12;
+                    spec.step += 0.22;
+                }
+                if self.dodge_followup {
+                    spec.step += 0.45;
                 }
                 spec
             }
@@ -625,6 +645,7 @@ mod tests {
             axis: AttackAxis::Vertical,
             elapsed: 0.05,
             combo: 1,
+            dodge_followup: false,
         };
         assert_eq!(charge.release(), AttackKind::Light(AttackAxis::Vertical, 1));
         charge.elapsed = CHARGE_READY;

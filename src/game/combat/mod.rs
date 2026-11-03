@@ -50,6 +50,19 @@ pub(super) enum Action {
     },
 }
 
+// Seconds of input leniency; attack start-up and strike still cannot be cancelled.
+const INPUT_BUFFER: f32 = 0.24;
+const DODGE_ATTACK_START: f32 = 0.12;
+
+#[derive(Clone, Copy, Debug)]
+enum CombatInput {
+    Dodge(Vec3),
+    Jump,
+    Parry,
+    Attack { axis: AttackAxis, crouch: bool },
+    Crouch,
+}
+
 #[derive(Component)]
 pub(super) struct Fighter {
     pub side: Side,
@@ -71,6 +84,7 @@ pub(super) struct Fighter {
     pub stamina: Stamina,
     pub riposte: f32,
     pub disarmed: f32,
+    buffered_input: Option<(CombatInput, f32)>,
 }
 impl Fighter {
     pub fn new(side: Side) -> Self {
@@ -94,6 +108,7 @@ impl Fighter {
             stamina: Stamina::default(),
             riposte: 0.0,
             disarmed: 0.0,
+            buffered_input: None,
         }
     }
     pub fn forward(&self) -> Vec3 {
@@ -286,6 +301,136 @@ fn can_cancel(action: &Action) -> bool {
         Action::Idle | Action::Charge(_) | Action::Slide { .. }
     ) || matches!(action, Action::Attack(attack) if attack.phase() == "RECOVERY")
 }
+// Capture intent before hit stop. A buffered C+B keeps its meaning even if
+// the keys are released before the attack's recovery window opens.
+fn buffer_input(fighter: &mut Fighter, controls: &Controls, heading: f32, dt: f32) {
+    if matches!(fighter.action, Action::Stagger(_) | Action::Down(_)) {
+        fighter.buffered_input = None;
+        return;
+    }
+    if let Some((_, remaining)) = &mut fighter.buffered_input {
+        *remaining -= dt;
+        if *remaining <= 0.0 {
+            fighter.buffered_input = None;
+        }
+    }
+    let input = if controls.dodge {
+        let direction = movement(controls, heading);
+        Some(CombatInput::Dodge(if direction.length_squared() > 0.0 {
+            direction
+        } else {
+            -fighter.forward()
+        }))
+    } else if controls.jump {
+        Some(CombatInput::Jump)
+    } else if controls.parry {
+        Some(CombatInput::Parry)
+    } else if let Some(axis) = pressed_axis(controls) {
+        Some(CombatInput::Attack {
+            axis,
+            crouch: controls.crouch,
+        })
+    } else if controls.crouch_pressed {
+        Some(CombatInput::Crouch)
+    } else {
+        None
+    };
+    if let Some(input) = input {
+        fighter.buffered_input = Some((input, INPUT_BUFFER));
+    }
+}
+
+fn consume_input(fighter: &mut Fighter, controls: &Controls, heading: f32, sounds: &mut Sounds) {
+    let Some((input, _)) = fighter.buffered_input else {
+        return;
+    };
+    let can_cancel = can_cancel(&fighter.action);
+    match input {
+        CombatInput::Dodge(direction) if can_cancel && !fighter.airborne => {
+            fighter.buffered_input = None;
+            if fighter.stamina.spend(20.0) {
+                fighter.action = Action::Dodge {
+                    elapsed: 0.0,
+                    direction,
+                    held: false,
+                };
+                fighter.velocity = Vec3::ZERO;
+                sounds.0.push("dodge");
+            }
+        }
+        CombatInput::Jump if can_cancel => {
+            fighter.buffered_input = None;
+            if let Some(speed) = fighter.jumps.try_jump() {
+                fighter.vertical_speed = speed;
+                fighter.airborne = true;
+                fighter.action = Action::Idle;
+                fighter.crouched = false;
+                sounds.0.push("jump");
+            }
+        }
+        CombatInput::Parry if can_cancel && fighter.disarmed <= 0.0 => {
+            fighter.buffered_input = None;
+            fighter.facing = heading;
+            fighter.action = Action::Parry(0.0);
+            sounds.0.push("parry");
+        }
+        CombatInput::Crouch if can_cancel => {
+            fighter.buffered_input = None;
+            let direction = movement(controls, heading);
+            fighter.action =
+                if controls.sprint && direction.length_squared() > 0.0 && !fighter.airborne {
+                    Action::Slide {
+                        elapsed: 0.0,
+                        direction,
+                    }
+                } else {
+                    Action::Idle
+                };
+        }
+        CombatInput::Attack { axis, crouch } if fighter.disarmed <= 0.0 => {
+            let dodge_attack = matches!(fighter.action, Action::Dodge { elapsed, .. } if elapsed >= DODGE_ATTACK_START);
+            let aerial_followup = fighter.airborne
+                && matches!(&fighter.action, Action::Attack(a) if a.phase() == "RECOVERY");
+            let crouch_followup = crouch && !fighter.airborne && can_cancel;
+            if matches!(fighter.action, Action::Idle | Action::Slide { .. })
+                || dodge_attack
+                || aerial_followup
+                || crouch_followup
+            {
+                fighter.buffered_input = None;
+                fighter.facing = heading;
+                fighter.protected = false;
+                if fighter.riposte > 0.0 {
+                    fighter.riposte = 0.0;
+                    start_attack(fighter, AttackKind::Riposte, heading);
+                } else if fighter.airborne {
+                    start_attack(fighter, AttackKind::Air(axis), heading);
+                } else if crouch {
+                    start_attack(fighter, AttackKind::Crouch(axis), heading);
+                } else if controls.attacks[button_index(axis)].held {
+                    fighter.action = Action::Charge(Charge {
+                        axis,
+                        combo: 0,
+                        dodge_followup: dodge_attack,
+                        elapsed: 0.0,
+                    });
+                } else if dodge_attack {
+                    fighter.action = Action::Attack(Attack::after_dodge(axis));
+                } else {
+                    start_attack(fighter, AttackKind::Light(axis, 0), heading);
+                }
+            } else if !crouch
+                && !fighter.airborne
+                && let Action::Attack(attack) = &mut fighter.action
+                && attack.buffer_next(axis)
+            {
+                fighter.buffered_input = None;
+            }
+        }
+        _ => {}
+    }
+}
+
 fn start_attack(fighter: &mut Fighter, kind: AttackKind, heading: f32) {
     fighter.facing = heading;
     fighter.action = Action::Attack(Attack::new(kind));
@@ -348,6 +493,7 @@ pub(super) fn simulate(
     if !controls.active {
         for (_, mut fighter, _) in &mut fighters {
             fighter.moving = false;
+            fighter.buffered_input = None;
             fighter.crouched = false;
             fighter.sprinting = false;
             if matches!(fighter.action, Action::Charge(_) | Action::Parry(_)) {
@@ -378,6 +524,9 @@ pub(super) fn simulate(
         fighter.riposte = (fighter.riposte - dt).max(0.0);
         fighter.disarmed = (fighter.disarmed - dt).max(0.0);
         fighter.crouched = fighter.side == Side::Player && controls.crouch && !fighter.airborne;
+        if fighter.side == Side::Player {
+            buffer_input(fighter, &controls, orbit.heading, dt);
+        }
         if fighter.hit_stop > 0.0 {
             fighter.hit_stop = (fighter.hit_stop - dt).max(0.0);
             continue;
@@ -386,45 +535,8 @@ pub(super) fn simulate(
         let obstacle = opponent
             .filter(|target| target.alive)
             .map(|target| target.position);
-        if fighter.side == Side::Player && can_cancel(&fighter.action) {
-            if controls.dodge && !fighter.airborne && fighter.stamina.spend(20.0) {
-                let direction = movement(&controls, orbit.heading);
-                let direction = if direction.length_squared() > 0.0 {
-                    direction
-                } else {
-                    -fighter.forward()
-                };
-                fighter.action = Action::Dodge {
-                    elapsed: 0.0,
-                    direction,
-                    held: false,
-                };
-                fighter.velocity = Vec3::ZERO;
-                sounds.0.push("dodge");
-            } else if controls.jump {
-                if let Some(speed) = fighter.jumps.try_jump() {
-                    fighter.vertical_speed = speed;
-                    fighter.airborne = true;
-                    fighter.action = Action::Idle;
-                    fighter.crouched = false;
-                    sounds.0.push("jump");
-                }
-            } else if controls.parry && fighter.disarmed <= 0.0 {
-                fighter.facing = orbit.heading;
-                fighter.action = Action::Parry(0.0);
-                sounds.0.push("parry");
-            } else if controls.crouch_pressed {
-                let direction = movement(&controls, orbit.heading);
-                fighter.action =
-                    if controls.sprint && direction.length_squared() > 0.0 && !fighter.airborne {
-                        Action::Slide {
-                            elapsed: 0.0,
-                            direction,
-                        }
-                    } else {
-                        Action::Idle
-                    };
-            }
+        if fighter.side == Side::Player {
+            consume_input(fighter, &controls, orbit.heading, &mut sounds);
         }
         if fighter.airborne {
             let (height, speed) = jump_step(transform.translation.y, fighter.vertical_speed, dt);
@@ -475,10 +587,6 @@ pub(super) fn simulate(
                 if *elapsed >= 0.55 || !controls.crouch {
                     next_action = Some(Action::Idle);
                 }
-                if let Some(axis) = pressed_axis(&controls) {
-                    next_action = Some(Action::Attack(Attack::new(AttackKind::Crouch(axis))));
-                    fighter.facing = orbit.heading;
-                }
             }
             Action::Parry(elapsed) => {
                 let previous = *elapsed;
@@ -500,7 +608,7 @@ pub(super) fn simulate(
                     || (!button.held && !button.pressed)
                     || charge.elapsed >= CHARGE_AUTO_RELEASE
                 {
-                    next_action = Some(Action::Attack(Attack::new(charge.release())));
+                    next_action = Some(Action::Attack(charge.release_attack()));
                 }
             }
             Action::Down(remaining) => {
@@ -519,11 +627,6 @@ pub(super) fn simulate(
                 }
             }
             Action::Attack(attack) => {
-                if fighter.side == Side::Player
-                    && let Some(axis) = pressed_axis(&controls)
-                {
-                    attack.buffer_next(axis);
-                }
                 let previous = attack.elapsed;
                 let step = attack.tick(dt);
                 let forward = Quat::from_rotation_y(fighter.facing) * Vec3::NEG_Z;
@@ -598,6 +701,7 @@ pub(super) fn simulate(
                             Action::Charge(Charge {
                                 axis,
                                 combo,
+                                dodge_followup: false,
                                 elapsed: 0.0,
                             })
                         } else {
@@ -609,28 +713,10 @@ pub(super) fn simulate(
                 }
             }
             Action::Idle => {
-                if fighter.side == Side::Player {
-                    if fighter.disarmed <= 0.0
-                        && !controls.parry
-                        && let Some(axis) = pressed_axis(&controls)
-                    {
-                        fighter.facing = orbit.heading;
-                        if fighter.riposte > 0.0 {
-                            fighter.riposte = 0.0;
-                            start_attack(fighter, AttackKind::Riposte, orbit.heading);
-                        } else if fighter.airborne {
-                            start_attack(fighter, AttackKind::Air(axis), orbit.heading);
-                        } else if controls.crouch {
-                            start_attack(fighter, AttackKind::Crouch(axis), orbit.heading);
-                        } else {
-                            fighter.action = Action::Charge(Charge {
-                                axis,
-                                combo: 0,
-                                elapsed: 0.0,
-                            });
-                        }
-                    }
-                } else if fighter.disarmed <= 0.0 && opponent.is_some_and(|target| target.alive) {
+                if fighter.side == Side::Dummy
+                    && fighter.disarmed <= 0.0
+                    && opponent.is_some_and(|target| target.alive)
+                {
                     let direction = opponent.unwrap().position - transform.translation;
                     let heading = (-direction.x).atan2(-direction.z);
                     if controls.training_parry {
@@ -851,9 +937,14 @@ pub(super) fn simulate(
                     target.action =
                         Action::Stagger(if hit.kind == AttackKind::Crouch(AttackAxis::Vertical) {
                             0.50
+                        } else if matches!(hit.kind, AttackKind::Light(AttackAxis::Vertical, _)) {
+                            0.55
+                        } else if target.airborne && matches!(hit.kind, AttackKind::Air(_)) {
+                            0.38
                         } else {
                             0.24
                         });
+                    target.buffered_input = None;
                     if hit.kind == AttackKind::Crouch(AttackAxis::Vertical) {
                         target.vertical_speed = 6.2;
                         target.airborne = true;
