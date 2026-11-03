@@ -127,7 +127,7 @@ pub(super) fn spawn_hud(mut commands: Commands) {
         },
         children![
             label("LMB horizontal / RMB vertical (hold: charge) | LMB+RMB / G parry | C+RMB uppercut", 12.0, ink),
-            label("WASD move | SPACE x2 jump | SHIFT dodge/run | C crouch/slide | F5 parry / F6 blue / F7 normal / F8 reset", 11.0, ink),
+            label("WASD move | SPACE x2 jump | SHIFT tap dodge/long-press run | C toggle crouch/slide | F5 parry / F6 blue / F7 normal / F8 reset", 11.0, ink),
         ],
     ));
     commands.spawn((

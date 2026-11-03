@@ -33,12 +33,6 @@ pub enum Armor {
 }
 
 impl AttackKind {
-    pub fn axis(self) -> AttackAxis {
-        match self {
-            Self::Light(axis, _) | Self::Focus(axis) | Self::Crouch(axis) | Self::Air(axis) => axis,
-            _ => AttackAxis::Vertical,
-        }
-    }
     pub fn armor(self) -> Armor {
         match self {
             Self::Light(_, 2) | Self::Focus(_) | Self::Training(true) => Armor::Blue,
@@ -65,12 +59,85 @@ impl AttackKind {
     }
 }
 
+// Hit counts follow historical PC references (2021 player measurements and the
+// official 2022-05-21 update). Windows and damage budgets are prototype tuning,
+// not verified timing or coefficients for the current retail game.
+pub const MAX_STRIKES: usize = 3;
+#[derive(Clone, Copy, Debug)]
+pub struct StrikeSpec {
+    /// Start/end fractions of AttackSpec.active; gaps are non-damaging.
+    pub start: f32,
+    pub end: f32,
+    pub share: f32,
+}
+const SINGLE: &[StrikeSpec] = &[StrikeSpec {
+    start: 0.0,
+    end: 1.0,
+    share: 1.0,
+}];
+const DOUBLE: &[StrikeSpec] = &[
+    StrikeSpec {
+        start: 0.0,
+        end: 0.4,
+        share: 1.0,
+    },
+    StrikeSpec {
+        start: 0.6,
+        end: 1.0,
+        share: 1.0,
+    },
+];
+const TRIPLE: &[StrikeSpec] = &[
+    StrikeSpec {
+        start: 0.0,
+        end: 0.22,
+        share: 1.0,
+    },
+    StrikeSpec {
+        start: 0.39,
+        end: 0.61,
+        share: 1.0,
+    },
+    StrikeSpec {
+        start: 0.78,
+        end: 1.0,
+        share: 1.0,
+    },
+];
+const AIR_DOUBLE: &[StrikeSpec] = &[
+    StrikeSpec {
+        start: 0.0,
+        end: 1.0 / 3.0,
+        share: 1.0,
+    },
+    StrikeSpec {
+        start: 2.0 / 3.0,
+        end: 1.0,
+        share: 1.0,
+    },
+];
+const PLUNGE: &[StrikeSpec] = &[
+    StrikeSpec {
+        start: 0.0,
+        end: 0.3,
+        share: 2.0,
+    },
+    StrikeSpec {
+        start: 0.5,
+        end: 1.0,
+        share: 16.0,
+    },
+];
+
 #[derive(Clone, Copy, Debug)]
 pub struct AttackSpec {
     pub windup: f32,
+    /// Span from the first hit to the last, including gaps between hits.
     pub active: f32,
     pub recovery: f32,
+    /// Total damage budget, distributed using the strike shares.
     pub damage: f32,
+    pub strikes: &'static [StrikeSpec],
     pub range: f32,
     pub half_arc: f32,
     pub step: f32,
@@ -88,6 +155,7 @@ pub const LIGHT_ATTACKS: [AttackSpec; 3] = [
         active: 0.10,
         recovery: 0.28,
         damage: 10.0,
+        strikes: SINGLE,
         range: 1.75,
         half_arc: 1.05,
         step: 0.18,
@@ -97,6 +165,7 @@ pub const LIGHT_ATTACKS: [AttackSpec; 3] = [
         active: 0.12,
         recovery: 0.32,
         damage: 15.0,
+        strikes: SINGLE,
         range: 1.85,
         half_arc: 1.10,
         step: 0.22,
@@ -106,6 +175,7 @@ pub const LIGHT_ATTACKS: [AttackSpec; 3] = [
         active: 0.14,
         recovery: 0.48,
         damage: 25.0,
+        strikes: SINGLE,
         range: 2.00,
         half_arc: 0.85,
         step: 0.28,
@@ -116,6 +186,7 @@ pub const TRAINING_ATTACK: AttackSpec = AttackSpec {
     active: 0.14,
     recovery: 0.55,
     damage: 20.0,
+    strikes: SINGLE,
     range: 2.65,
     half_arc: 1.05,
     step: 0.12,
@@ -223,12 +294,13 @@ pub struct Attack {
     pub elapsed: f32,
     queued: Option<AttackAxis>,
     buffered_until: Option<(f32, AttackAxis)>,
-    hit_targets: HashSet<u64>,
+    hit_targets: HashSet<(u64, usize)>,
     dodge_followup: bool,
 }
 
 pub struct AttackStep {
     pub active: bool,
+    pub strikes: [bool; MAX_STRIKES],
     pub forward_step: f32,
     pub finished: bool,
 }
@@ -251,10 +323,18 @@ impl Attack {
         attack
     }
 
+    pub fn follows_dodge(&self) -> bool {
+        self.dodge_followup
+    }
+
     pub fn spec(&self) -> AttackSpec {
         match self.kind {
             AttackKind::Light(axis, index) => {
                 let mut spec = LIGHT_ATTACKS[index];
+                if axis == AttackAxis::Horizontal && index == 1 {
+                    spec.active = 0.30;
+                    spec.strikes = TRIPLE;
+                }
                 if axis == AttackAxis::Vertical {
                     spec.half_arc = 0.48;
                     spec.range += 0.12;
@@ -270,6 +350,7 @@ impl Attack {
                 active: 0.10,
                 recovery: 0.40,
                 damage: 30.0,
+                strikes: SINGLE,
                 range: 1.9,
                 half_arc: if axis == AttackAxis::Horizontal {
                     1.1
@@ -279,10 +360,19 @@ impl Attack {
                 step: 0.20,
             },
             AttackKind::Crouch(axis) => AttackSpec {
-                windup: 0.14,
+                windup: if axis == AttackAxis::Vertical {
+                    0.40
+                } else {
+                    0.14
+                },
                 active: 0.12,
                 recovery: 0.25,
                 damage: 14.0,
+                strikes: if axis == AttackAxis::Vertical {
+                    DOUBLE
+                } else {
+                    SINGLE
+                },
                 range: 1.8,
                 half_arc: if axis == AttackAxis::Horizontal {
                     1.2
@@ -293,12 +383,21 @@ impl Attack {
             },
             AttackKind::Air(axis) => AttackSpec {
                 windup: 0.12,
-                active: 0.16,
+                active: if axis == AttackAxis::Horizontal {
+                    AIR_SLASH_SWING * 2.0 + AIR_SLASH_GAP
+                } else {
+                    0.16
+                },
                 recovery: 0.24,
                 damage: if axis == AttackAxis::Horizontal {
                     12.0
                 } else {
                     18.0
+                },
+                strikes: if axis == AttackAxis::Horizontal {
+                    AIR_DOUBLE
+                } else {
+                    PLUNGE
                 },
                 range: 1.9,
                 half_arc: 0.8,
@@ -309,6 +408,7 @@ impl Attack {
                 active: 0.16,
                 recovery: 0.35,
                 damage: 35.0,
+                strikes: DOUBLE,
                 range: 2.5,
                 half_arc: 0.9,
                 step: 0.55,
@@ -351,8 +451,29 @@ impl Attack {
         !self.hit_targets.is_empty()
     }
 
-    pub fn claim_target(&mut self, target: u64) -> bool {
-        self.hit_targets.insert(target)
+    pub fn claim_target(&mut self, target: u64, strike: usize) -> bool {
+        self.hit_targets.insert((target, strike))
+    }
+
+    pub fn strike_windows(&self) -> [(f32, f32); MAX_STRIKES] {
+        let spec = self.spec();
+        let end = spec.windup + spec.active;
+        let mut windows = [(end, end); MAX_STRIKES];
+        for (window, strike) in windows.iter_mut().zip(spec.strikes) {
+            *window = (
+                spec.windup + spec.active * strike.start,
+                spec.windup + spec.active * strike.end,
+            );
+        }
+        windows
+    }
+
+    pub fn strike_damage(&self, strike: usize) -> f32 {
+        let spec = self.spec();
+        let total: f32 = spec.strikes.iter().map(|hit| hit.share).sum();
+        spec.strikes
+            .get(strike)
+            .map_or(0.0, |hit| spec.damage * hit.share / total)
     }
 
     pub fn tick(&mut self, dt: f32) -> AttackStep {
@@ -372,8 +493,12 @@ impl Attack {
         let step_start = spec.windup * 0.85;
         // Test the crossed interval, not just the current phase: a slow frame
         // must not skip an entire damage window or apply the lunge twice.
+        let strikes = self
+            .strike_windows()
+            .map(|(start, end)| start < end && previous < end && self.elapsed >= start);
         AttackStep {
-            active: previous < end && self.elapsed >= spec.windup,
+            active: strikes.iter().any(|active| *active),
+            strikes,
             forward_step: (ease((self.elapsed - step_start) / (end - step_start))
                 - ease((previous - step_start) / (end - step_start)))
                 * spec.step,
@@ -385,7 +510,15 @@ impl Attack {
         if self.elapsed < self.spec().windup {
             "WINDUP"
         } else if self.elapsed < self.spec().windup + self.spec().active {
-            "STRIKE"
+            if self
+                .strike_windows()
+                .iter()
+                .any(|&(start, end)| self.elapsed >= start && self.elapsed < end)
+            {
+                "STRIKE"
+            } else {
+                "WINDUP"
+            }
         } else {
             "RECOVERY"
         }
@@ -398,6 +531,8 @@ pub fn damped_motion(dt: f32, rate: f32) -> (f32, f32) {
     ((1.0 - retention) / rate, retention)
 }
 
+pub const AIR_SLASH_SWING: f32 = 0.08;
+pub const AIR_SLASH_GAP: f32 = 0.08;
 pub const DODGE_DURATION: f32 = 0.42;
 pub const DODGE_DISTANCE: f32 = 2.4;
 pub const JUMP_SPEED: f32 = 6.4;
@@ -491,10 +626,66 @@ mod tests {
     #[test]
     fn one_swing_hits_each_target_only_once() {
         let mut attack = Attack::new(AttackKind::Light(AttackAxis::Horizontal, 0));
-        assert!(attack.claim_target(42));
-        assert!(!attack.claim_target(42));
-        assert!(attack.claim_target(43));
-        assert!(Attack::new(AttackKind::Light(AttackAxis::Horizontal, 1)).claim_target(42));
+        assert!(attack.claim_target(42, 0));
+        assert!(!attack.claim_target(42, 0));
+        assert!(attack.claim_target(43, 0));
+        assert!(Attack::new(AttackKind::Light(AttackAxis::Horizontal, 1)).claim_target(42, 0));
+    }
+
+    #[test]
+    fn aerial_slash_has_two_separate_strikes_and_deduplicates_each() {
+        let mut attack = Attack::new(AttackKind::Air(AttackAxis::Horizontal));
+        let windows = attack.strike_windows();
+        assert_eq!(
+            attack.tick(windows[0].0 + 0.01).strikes,
+            [true, false, false]
+        );
+        assert!(attack.claim_target(42, 0));
+        assert!(!attack.claim_target(42, 0));
+        attack.elapsed = windows[0].1 + 0.01;
+        assert_eq!(attack.phase(), "WINDUP");
+        assert!(!attack.tick(windows[1].0 - attack.elapsed - 0.01).active);
+        assert_eq!(attack.tick(0.02).strikes, [false, true, false]);
+        assert!(attack.claim_target(42, 1));
+        assert!(!attack.claim_target(42, 1));
+        let mut slow = Attack::new(AttackKind::Air(AttackAxis::Horizontal));
+        assert_eq!(
+            slow.tick(slow.spec().duration()).strikes,
+            [true, true, false],
+            "a slow frame crossing both cuts must retain both hit windows"
+        );
+    }
+
+    #[test]
+    fn strike_profiles_preserve_damage_and_survive_frames_crossing_all_hits() {
+        for (kind, count, total) in [
+            (AttackKind::Light(AttackAxis::Horizontal, 1), 3, 15.0),
+            (AttackKind::Crouch(AttackAxis::Vertical), 2, 14.0),
+            (AttackKind::Air(AttackAxis::Horizontal), 2, 12.0),
+            (AttackKind::Air(AttackAxis::Vertical), 2, 18.0),
+            (AttackKind::Riposte, 2, 35.0),
+        ] {
+            let mut attack = Attack::new(kind);
+            assert_eq!(attack.spec().strikes.len(), count);
+            assert_eq!(
+                (0..count)
+                    .map(|strike| attack.strike_damage(strike))
+                    .sum::<f32>(),
+                total
+            );
+            let step = attack.tick(attack.spec().duration());
+            assert_eq!(step.strikes.iter().filter(|&&active| active).count(), count);
+            for strike in 0..count {
+                assert!(attack.claim_target(42, strike));
+                assert!(!attack.claim_target(42, strike));
+            }
+            assert!(attack.has_hit());
+            let mut previous_end = attack.spec().windup;
+            for (start, end) in attack.strike_windows().into_iter().take(count) {
+                assert!(start >= previous_end && end > start);
+                previous_end = end;
+            }
+        }
     }
 
     #[test]

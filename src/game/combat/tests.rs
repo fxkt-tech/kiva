@@ -71,6 +71,19 @@ impl Arena {
         controls.attacks[button_index(axis)].released = true;
         self.tick(0.01, controls);
     }
+    fn begin_sprint(&mut self, direction: Vec2) {
+        let mut input = Self::controls();
+        input.dodge = true;
+        input.sprint = true;
+        input.movement = direction;
+        self.tick(0.01, input);
+        for _ in 0..35 {
+            let mut input = Self::controls();
+            input.sprint = true;
+            input.movement = direction;
+            self.tick(0.01, input);
+        }
+    }
     fn fighter(&self, entity: Entity) -> &Fighter {
         self.world.get::<Fighter>(entity).unwrap()
     }
@@ -99,7 +112,6 @@ fn charge_crouch_cancel_does_not_fire_on_the_later_mouse_release() {
     }
     assert_eq!(arena.fighter(arena.player).armor(), Armor::Blue);
     let mut controls = Arena::controls();
-    controls.crouch = true;
     controls.crouch_pressed = true;
     arena.tick(0.01, controls);
     arena.release(AttackAxis::Horizontal);
@@ -223,10 +235,16 @@ fn equal_normal_attacks_clash_without_query_order_advantage() {
 fn uppercut_launches_both_actors_and_an_air_attack_is_available() {
     let mut arena = Arena::new();
     let mut controls = Arena::controls();
-    controls.crouch = true;
+    controls.crouch_pressed = true;
     controls.attacks[1].pressed = true;
     arena.tick(0.01, controls);
-    arena.wait(0.20);
+    let windup = Attack::new(AttackKind::Crouch(AttackAxis::Vertical))
+        .spec()
+        .windup;
+    arena.wait(windup - 0.03);
+    assert!(!arena.fighter(arena.player).airborne);
+    assert_eq!(arena.fighter(arena.dummy).health, 100.0);
+    arena.wait(0.05);
     assert!(arena.fighter(arena.player).airborne);
     assert!(arena.fighter(arena.dummy).airborne);
     arena.wait(0.35);
@@ -328,14 +346,13 @@ fn b_dodge_b_uppercut_air_slash_plunge_connects_without_a_gap() {
             }
             let hits = arena.world.resource::<CombatStatus>().hits;
             if hits == 2 && !sent_uppercut {
-                input.crouch = true;
                 input.crouch_pressed = true;
                 input.attacks[1].pressed = true;
                 sent_uppercut = true;
-            } else if hits == 3 && !sent_air {
+            } else if hits == 4 && !sent_air {
                 input.attacks[0].pressed = true;
                 sent_air = true;
-            } else if hits == 4 && !sent_plunge {
+            } else if hits == 6 && !sent_plunge {
                 input.attacks[1].pressed = true;
                 sent_plunge = true;
             }
@@ -345,7 +362,7 @@ fn b_dodge_b_uppercut_air_slash_plunge_connects_without_a_gap() {
                 "dt {dt}: target escaped after {hits} hits; player {:?}",
                 arena.fighter(arena.player).action
             );
-            if arena.world.resource::<CombatStatus>().hits == 5 {
+            if arena.world.resource::<CombatStatus>().hits == 8 {
                 break;
             }
         }
@@ -353,7 +370,7 @@ fn b_dodge_b_uppercut_air_slash_plunge_connects_without_a_gap() {
             saw_dodge && sent_b && sent_uppercut && sent_air && sent_plunge,
             "missing transition at dt {dt}"
         );
-        assert_eq!(arena.world.resource::<CombatStatus>().hits, 5, "dt {dt}");
+        assert_eq!(arena.world.resource::<CombatStatus>().hits, 8, "dt {dt}");
         assert_eq!(arena.fighter(arena.dummy).health, 36.0);
     }
 }
@@ -426,7 +443,7 @@ fn buffered_inputs_expire_and_pause_discards_them() {
             .unwrap()
             .hit_stop = 0.35;
         let mut input = Arena::controls();
-        input.crouch = true;
+        input.crouch_pressed = true;
         input.attacks[1].pressed = true;
         arena.tick(0.01, input);
         if pause {
@@ -436,4 +453,287 @@ fn buffered_inputs_expire_and_pause_discards_them() {
         assert!(matches!(arena.fighter(arena.player).action, Action::Idle));
         assert_eq!(arena.fighter(arena.dummy).health, 100.0);
     }
+}
+
+#[test]
+fn one_air_left_click_hits_twice_and_plays_two_swings() {
+    for dt in [1.0 / 144.0, 1.0 / 30.0, 0.5] {
+        let mut arena = Arena::new();
+        for (entity, z) in [(arena.player, 0.5), (arena.dummy, -0.5)] {
+            let mut fighter = arena.world.get_mut::<Fighter>(entity).unwrap();
+            fighter.airborne = true;
+            fighter.vertical_speed = core::JUMP_SPEED;
+            arena
+                .world
+                .get_mut::<Transform>(entity)
+                .unwrap()
+                .translation = Vec3::new(0.0, 2.0, z);
+        }
+        arena.press(AttackAxis::Horizontal);
+        let mut swings = 0;
+        let mut elapsed = 0.0;
+        while elapsed < 1.0 {
+            arena.tick(dt, Arena::controls());
+            swings += arena
+                .world
+                .resource::<Sounds>()
+                .0
+                .iter()
+                .filter(|&&cue| cue == "swing1")
+                .count();
+            elapsed += dt;
+        }
+        assert_eq!(arena.world.resource::<CombatStatus>().hits, 2, "dt {dt}");
+        assert_eq!(arena.fighter(arena.dummy).health, 88.0, "dt {dt}");
+        assert_eq!(swings, 2, "dt {dt}");
+    }
+}
+
+#[test]
+fn multi_hit_moves_deal_their_budget_once_across_frame_rates() {
+    for (kind, count, damage) in [
+        (AttackKind::Light(AttackAxis::Horizontal, 1), 3, 15.0),
+        (AttackKind::Crouch(AttackAxis::Vertical), 2, 14.0),
+        (AttackKind::Air(AttackAxis::Vertical), 2, 18.0),
+        (AttackKind::Riposte, 2, 35.0),
+    ] {
+        for dt in [1.0 / 144.0, 1.0 / 30.0, 0.5] {
+            let mut arena = Arena::new();
+            for (entity, z) in [(arena.player, 0.5), (arena.dummy, -0.5)] {
+                let mut fighter = arena.world.get_mut::<Fighter>(entity).unwrap();
+                let aerial = matches!(kind, AttackKind::Air(_));
+                fighter.airborne = aerial;
+                fighter.vertical_speed = if aerial { core::JUMP_SPEED } else { 0.0 };
+                arena
+                    .world
+                    .get_mut::<Transform>(entity)
+                    .unwrap()
+                    .translation = Vec3::new(0.0, if aerial { 2.0 } else { 0.0 }, z);
+            }
+            arena.world.get_mut::<Fighter>(arena.player).unwrap().action =
+                Action::Attack(Attack::new(kind));
+            let mut elapsed = 0.0;
+            while elapsed < 2.0 {
+                arena.tick(dt, Arena::controls());
+                elapsed += dt;
+            }
+            assert_eq!(
+                arena.world.resource::<CombatStatus>().hits,
+                count,
+                "{kind:?}, dt {dt}"
+            );
+            assert_eq!(
+                arena.fighter(arena.dummy).health,
+                100.0 - damage,
+                "{kind:?}, dt {dt}"
+            );
+        }
+    }
+}
+
+#[test]
+fn uppercut_second_hit_keeps_the_existing_launch_velocity() {
+    let mut arena = Arena::new();
+    let mut input = Arena::controls();
+    input.crouch_pressed = true;
+    input.attacks[1].pressed = true;
+    arena.tick(0.01, input);
+    for _ in 0..100 {
+        arena.tick(0.01, Arena::controls());
+        if arena.world.resource::<CombatStatus>().hits == 2 {
+            assert!(
+                arena.fighter(arena.dummy).vertical_speed < 6.0,
+                "second hit relaunched the target"
+            );
+            assert!(arena.fighter(arena.dummy).airborne);
+            assert_eq!(arena.fighter(arena.dummy).health, 86.0);
+            return;
+        }
+    }
+    panic!("uppercut failed to land both hits");
+}
+
+#[test]
+fn uppercut_second_hit_can_launch_when_the_first_missed() {
+    let mut arena = Arena::new();
+    arena
+        .world
+        .get_mut::<Transform>(arena.dummy)
+        .unwrap()
+        .translation
+        .z = -4.0;
+    let mut input = Arena::controls();
+    input.crouch_pressed = true;
+    input.attacks[1].pressed = true;
+    arena.tick(0.01, input);
+    arena.wait(0.44);
+    assert_eq!(arena.world.resource::<CombatStatus>().hits, 0);
+    arena
+        .world
+        .get_mut::<Transform>(arena.dummy)
+        .unwrap()
+        .translation
+        .z = 0.0;
+    arena.wait(0.08);
+    assert_eq!(arena.world.resource::<CombatStatus>().hits, 1);
+    assert_eq!(arena.fighter(arena.dummy).health, 93.0);
+    assert!(arena.fighter(arena.dummy).airborne);
+}
+
+#[test]
+fn crouch_toggles_on_each_press_and_survives_key_release() {
+    let mut arena = Arena::new();
+    let mut input = Arena::controls();
+    input.crouch_pressed = true;
+    arena.tick(0.01, input);
+    assert!(arena.fighter(arena.player).crouched);
+    arena.wait(0.3);
+    assert!(
+        arena.fighter(arena.player).crouched,
+        "releasing C must not stand up"
+    );
+    let mut input = Arena::controls();
+    input.crouch_pressed = true;
+    arena.tick(0.01, input);
+    assert!(!arena.fighter(arena.player).crouched);
+}
+
+#[test]
+fn crouched_right_click_uses_uppercut_without_holding_c() {
+    let mut arena = Arena::new();
+    let mut input = Arena::controls();
+    input.crouch_pressed = true;
+    arena.tick(0.01, input);
+    arena.wait(0.1);
+    arena.press(AttackAxis::Vertical);
+    assert!(matches!(arena.fighter(arena.player).action,
+        Action::Attack(ref attack) if attack.kind == AttackKind::Crouch(AttackAxis::Vertical)));
+}
+
+#[test]
+fn tapped_c_starts_slide_and_slide_finishes_crouched() {
+    let mut arena = Arena::new();
+    arena.begin_sprint(Vec2::X);
+    let mut input = Arena::controls();
+    input.movement = Vec2::X;
+    input.crouch_pressed = true;
+    arena.tick(0.01, input);
+    arena.wait(0.10);
+    assert!(matches!(
+        arena.fighter(arena.player).action,
+        Action::Slide { .. }
+    ));
+    arena.wait(0.6);
+    assert!(matches!(arena.fighter(arena.player).action, Action::Idle));
+    assert!(arena.fighter(arena.player).crouched);
+}
+
+#[test]
+fn sprint_stays_on_after_shift_release_until_all_directions_are_released() {
+    let mut arena = Arena::new();
+    let mut input = Arena::controls();
+    input.dodge = true;
+    input.sprint = true;
+    input.movement = Vec2::X;
+    arena.tick(0.01, input);
+    for _ in 0..35 {
+        let mut input = Arena::controls();
+        input.sprint = true;
+        input.movement = Vec2::X;
+        arena.tick(0.01, input);
+    }
+    assert!(arena.fighter(arena.player).sprinting);
+    let mut input = Arena::controls();
+    input.movement = Vec2::X;
+    arena.tick(0.01, input);
+    assert!(
+        arena.fighter(arena.player).sprinting,
+        "Shift release must not stop sprinting"
+    );
+    arena.tick(0.01, Arena::controls());
+    assert!(!arena.fighter(arena.player).sprinting);
+    let mut input = Arena::controls();
+    input.movement = Vec2::X;
+    arena.tick(0.01, input);
+    assert!(
+        !arena.fighter(arena.player).sprinting,
+        "a new movement needs a new long Shift press"
+    );
+}
+
+#[test]
+fn sprint_survives_direction_changes_and_opposing_held_keys() {
+    let mut arena = Arena::new();
+    arena.begin_sprint(Vec2::X);
+    let mut input = Arena::controls();
+    input.movement_held = true;
+    // W+S can cancel the vector while physical direction keys remain down.
+    arena.tick(0.01, input);
+    assert!(arena.fighter(arena.player).sprint_latched);
+    let mut input = Arena::controls();
+    input.movement_held = true;
+    input.movement = Vec2::Y;
+    arena.tick(0.01, input);
+    assert!(arena.fighter(arena.player).sprinting);
+    arena.tick(0.01, Arena::controls());
+    assert!(!arena.fighter(arena.player).sprint_latched);
+}
+
+#[test]
+fn short_shift_press_does_not_latch_sprint() {
+    let mut arena = Arena::new();
+    let mut input = Arena::controls();
+    input.dodge = true;
+    input.sprint = true;
+    input.movement = Vec2::X;
+    arena.tick(0.01, input);
+    for _ in 0..50 {
+        let mut input = Arena::controls();
+        input.movement = Vec2::X;
+        arena.tick(0.01, input);
+    }
+    assert!(!arena.fighter(arena.player).sprinting);
+    assert!(!arena.fighter(arena.player).sprint_latched);
+}
+
+#[test]
+fn pause_and_reset_clear_sticky_stances() {
+    for reset in [false, true] {
+        let mut arena = Arena::new();
+        arena.begin_sprint(Vec2::X);
+        let mut input = Arena::controls();
+        input.crouch_pressed = true;
+        input.movement = Vec2::X;
+        arena.tick(0.01, input);
+        assert!(arena.fighter(arena.player).crouched);
+        assert!(arena.fighter(arena.player).sprint_latched);
+        let mut input = if reset {
+            Arena::controls()
+        } else {
+            Controls::default()
+        };
+        input.reset = reset;
+        arena.tick(0.01, input);
+        let fighter = arena.fighter(arena.player);
+        assert!(!fighter.crouched);
+        assert!(!fighter.sprint_latched);
+        assert_eq!(fighter.sprint_hold_time, 0.0);
+    }
+}
+
+#[test]
+fn crouch_then_right_click_can_be_buffered_across_separate_frames() {
+    let mut arena = Arena::new();
+    let mut attack = Attack::new(AttackKind::Light(AttackAxis::Vertical, 0));
+    attack.elapsed = 0.15;
+    arena.world.get_mut::<Fighter>(arena.player).unwrap().action = Action::Attack(attack);
+    let mut input = Arena::controls();
+    input.crouch_pressed = true;
+    arena.tick(0.01, input);
+    arena.wait(0.02);
+    arena.press(AttackAxis::Vertical);
+    arena.wait(0.2);
+    assert!(matches!(arena.fighter(arena.player).action,
+        Action::Attack(ref attack) if attack.kind == AttackKind::Crouch(AttackAxis::Vertical)));
+    assert!(arena.fighter(arena.player).crouched);
 }

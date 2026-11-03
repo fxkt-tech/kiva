@@ -53,6 +53,7 @@ pub(super) enum Action {
 // Seconds of input leniency; attack start-up and strike still cannot be cancelled.
 const INPUT_BUFFER: f32 = 0.24;
 const DODGE_ATTACK_START: f32 = 0.12;
+const SPRINT_HOLD_TIME: f32 = 0.16;
 
 #[derive(Clone, Copy, Debug)]
 enum CombatInput {
@@ -60,7 +61,7 @@ enum CombatInput {
     Jump,
     Parry,
     Attack { axis: AttackAxis, crouch: bool },
-    Crouch,
+    Crouch(bool),
 }
 
 #[derive(Component)]
@@ -75,6 +76,8 @@ pub(super) struct Fighter {
     pub moving: bool,
     pub crouched: bool,
     pub sprinting: bool,
+    sprint_latched: bool,
+    sprint_hold_time: f32,
     pub walk_phase: f32,
     pub vertical_speed: f32,
     pub jumps: JumpState,
@@ -99,6 +102,8 @@ impl Fighter {
             moving: false,
             crouched: false,
             sprinting: false,
+            sprint_latched: false,
+            sprint_hold_time: 0.0,
             walk_phase: 0.0,
             vertical_speed: 0.0,
             jumps: JumpState::default(),
@@ -260,6 +265,7 @@ struct Hit {
     target: Entity,
     damage: f32,
     kind: AttackKind,
+    strike: usize,
     origin: Vec3,
     wave: Option<u64>,
 }
@@ -314,6 +320,15 @@ fn buffer_input(fighter: &mut Fighter, controls: &Controls, heading: f32, dt: f3
             fighter.buffered_input = None;
         }
     }
+    let pending_crouch = match fighter.buffered_input {
+        Some((CombatInput::Crouch(crouch) | CombatInput::Attack { crouch, .. }, _)) => crouch,
+        _ => fighter.crouched,
+    };
+    let crouch = if controls.crouch_pressed && !fighter.airborne {
+        !pending_crouch
+    } else {
+        pending_crouch
+    };
     let input = if controls.dodge {
         let direction = movement(controls, heading);
         Some(CombatInput::Dodge(if direction.length_squared() > 0.0 {
@@ -326,12 +341,9 @@ fn buffer_input(fighter: &mut Fighter, controls: &Controls, heading: f32, dt: f3
     } else if controls.parry {
         Some(CombatInput::Parry)
     } else if let Some(axis) = pressed_axis(controls) {
-        Some(CombatInput::Attack {
-            axis,
-            crouch: controls.crouch,
-        })
-    } else if controls.crouch_pressed {
-        Some(CombatInput::Crouch)
+        Some(CombatInput::Attack { axis, crouch })
+    } else if controls.crouch_pressed && !fighter.airborne {
+        Some(CombatInput::Crouch(crouch))
     } else {
         None
     };
@@ -355,6 +367,7 @@ fn consume_input(fighter: &mut Fighter, controls: &Controls, heading: f32, sound
                     held: false,
                 };
                 fighter.velocity = Vec3::ZERO;
+                fighter.crouched = false;
                 sounds.0.push("dodge");
             }
         }
@@ -374,24 +387,25 @@ fn consume_input(fighter: &mut Fighter, controls: &Controls, heading: f32, sound
             fighter.action = Action::Parry(0.0);
             sounds.0.push("parry");
         }
-        CombatInput::Crouch if can_cancel => {
+        CombatInput::Crouch(crouch) if can_cancel && !fighter.airborne => {
             fighter.buffered_input = None;
+            fighter.crouched = crouch;
             let direction = movement(controls, heading);
-            fighter.action =
-                if controls.sprint && direction.length_squared() > 0.0 && !fighter.airborne {
-                    Action::Slide {
-                        elapsed: 0.0,
-                        direction,
-                    }
-                } else {
-                    Action::Idle
-                };
+            fighter.action = if crouch && fighter.sprint_latched && direction.length_squared() > 0.0
+            {
+                Action::Slide {
+                    elapsed: 0.0,
+                    direction,
+                }
+            } else {
+                Action::Idle
+            };
         }
         CombatInput::Attack { axis, crouch } if fighter.disarmed <= 0.0 => {
             let dodge_attack = matches!(fighter.action, Action::Dodge { elapsed, .. } if elapsed >= DODGE_ATTACK_START);
             let aerial_followup = fighter.airborne
                 && matches!(&fighter.action, Action::Attack(a) if a.phase() == "RECOVERY");
-            let crouch_followup = crouch && !fighter.airborne && can_cancel;
+            let crouch_followup = (crouch || fighter.crouched) && !fighter.airborne && can_cancel;
             if matches!(fighter.action, Action::Idle | Action::Slide { .. })
                 || dodge_attack
                 || aerial_followup
@@ -399,6 +413,7 @@ fn consume_input(fighter: &mut Fighter, controls: &Controls, heading: f32, sound
             {
                 fighter.buffered_input = None;
                 fighter.facing = heading;
+                fighter.crouched = crouch && !fighter.airborne;
                 fighter.protected = false;
                 if fighter.riposte > 0.0 {
                     fighter.riposte = 0.0;
@@ -420,6 +435,7 @@ fn consume_input(fighter: &mut Fighter, controls: &Controls, heading: f32, sound
                     start_attack(fighter, AttackKind::Light(axis, 0), heading);
                 }
             } else if !crouch
+                && !fighter.crouched
                 && !fighter.airborne
                 && let Action::Attack(attack) = &mut fighter.action
                 && attack.buffer_next(axis)
@@ -449,7 +465,7 @@ fn move_fighter(
     }
     fighter.moving = true;
     let charging = matches!(fighter.action, Action::Charge(_));
-    fighter.sprinting = controls.sprint && !controls.crouch && !charging && !controls.walk;
+    fighter.sprinting = fighter.sprint_latched && !fighter.crouched && !charging && !controls.walk;
     let speed = if charging || fighter.crouched {
         1.6
     } else if controls.walk {
@@ -496,6 +512,8 @@ pub(super) fn simulate(
             fighter.buffered_input = None;
             fighter.crouched = false;
             fighter.sprinting = false;
+            fighter.sprint_latched = false;
+            fighter.sprint_hold_time = 0.0;
             if matches!(fighter.action, Action::Charge(_) | Action::Parry(_)) {
                 fighter.action = Action::Idle;
             }
@@ -523,8 +541,24 @@ pub(super) fn simulate(
         fighter.stamina.tick(dt);
         fighter.riposte = (fighter.riposte - dt).max(0.0);
         fighter.disarmed = (fighter.disarmed - dt).max(0.0);
-        fighter.crouched = fighter.side == Side::Player && controls.crouch && !fighter.airborne;
+        if fighter.airborne {
+            fighter.crouched = false;
+        }
         if fighter.side == Side::Player {
+            // Key presence, rather than the normalized movement vector, matters:
+            // opposing held directions may cancel to zero without being released.
+            let directions_held = controls.movement_held || controls.movement != Vec2::ZERO;
+            if !directions_held {
+                fighter.sprint_latched = false;
+            }
+            if controls.sprint {
+                fighter.sprint_hold_time += dt;
+                if fighter.sprint_hold_time >= SPRINT_HOLD_TIME && directions_held {
+                    fighter.sprint_latched = true;
+                }
+            } else {
+                fighter.sprint_hold_time = 0.0;
+            }
             buffer_input(fighter, &controls, orbit.heading, dt);
         }
         if fighter.hit_stop > 0.0 {
@@ -563,10 +597,10 @@ pub(super) fn simulate(
             } => {
                 let previous = *elapsed;
                 *elapsed += dt;
-                if controls.sprint && *elapsed >= 0.16 {
+                if controls.sprint && fighter.sprint_hold_time >= SPRINT_HOLD_TIME {
                     *held = true;
                 }
-                // Holding Shift makes a short dash into sprint; tapping keeps the full dodge.
+                // A long Shift press shortens the dash; the sprint latch survives Shift release.
                 let duration = if *held { 0.26 } else { DODGE_DURATION };
                 fighter.protected = dodge_protected(previous, *elapsed);
                 transform.translation = bounded(
@@ -584,7 +618,7 @@ pub(super) fn simulate(
                         + *direction * dt * 5.0 * (1.0 - *elapsed / 0.55).max(0.0),
                     obstacle,
                 );
-                if *elapsed >= 0.55 || !controls.crouch {
+                if *elapsed >= 0.55 || !fighter.crouched {
                     next_action = Some(Action::Idle);
                 }
             }
@@ -630,12 +664,16 @@ pub(super) fn simulate(
                 let previous = attack.elapsed;
                 let step = attack.tick(dt);
                 let forward = Quat::from_rotation_y(fighter.facing) * Vec3::NEG_Z;
+                for (start, end) in attack.strike_windows() {
+                    if start < end && previous < start && attack.elapsed >= start {
+                        sounds.0.push(if attack.kind.armor() == Armor::Normal {
+                            "swing1"
+                        } else {
+                            "swing3"
+                        });
+                    }
+                }
                 if previous < attack.spec().windup && attack.elapsed >= attack.spec().windup {
-                    sounds.0.push(if attack.kind.armor() == Armor::Normal {
-                        "swing1"
-                    } else {
-                        "swing3"
-                    });
                     if let AttackKind::Focus(axis) = attack.kind {
                         waves.spawn(
                             entity,
@@ -651,6 +689,7 @@ pub(super) fn simulate(
                     {
                         fighter.vertical_speed = core::JUMP_SPEED;
                         fighter.airborne = true;
+                        fighter.crouched = false;
                         fighter.jumps.try_jump();
                         sounds.0.push("jump");
                     }
@@ -663,27 +702,33 @@ pub(super) fn simulate(
                     obstacle,
                 );
                 if step.active && !matches!(attack.kind, AttackKind::Focus(_)) {
-                    for target in &snapshots {
-                        if target.side == fighter.side || !target.alive {
+                    for (strike, active) in step.strikes.into_iter().enumerate() {
+                        if !active {
                             continue;
                         }
-                        let mut delta = target.position - transform.translation;
-                        if delta.y.abs() > 1.4 {
-                            continue;
-                        }
-                        delta.y = 0.0;
-                        let dot = forward.dot(delta.normalize_or_zero());
-                        if inside_attack(delta.length(), dot, attack.spec())
-                            && attack.claim_target(target.entity.to_bits())
-                        {
-                            hits.push(Hit {
-                                source: entity,
-                                target: target.entity,
-                                damage: attack.spec().damage,
-                                kind: attack.kind,
-                                origin: transform.translation,
-                                wave: None,
-                            });
+                        for target in &snapshots {
+                            if target.side == fighter.side || !target.alive {
+                                continue;
+                            }
+                            let mut delta = target.position - transform.translation;
+                            if delta.y.abs() > 1.4 {
+                                continue;
+                            }
+                            delta.y = 0.0;
+                            let dot = forward.dot(delta.normalize_or_zero());
+                            if inside_attack(delta.length(), dot, attack.spec())
+                                && attack.claim_target(target.entity.to_bits(), strike)
+                            {
+                                hits.push(Hit {
+                                    source: entity,
+                                    target: target.entity,
+                                    damage: attack.strike_damage(strike),
+                                    kind: attack.kind,
+                                    strike,
+                                    origin: transform.translation,
+                                    wave: None,
+                                });
+                            }
                         }
                     }
                 }
@@ -787,6 +832,7 @@ pub(super) fn simulate(
                     target: entity,
                     damage: wave.damage,
                     kind: AttackKind::Focus(wave.axis),
+                    strike: 0,
                     origin: wave.origin,
                     wave: Some(wave.id),
                 });
@@ -945,9 +991,12 @@ pub(super) fn simulate(
                             0.24
                         });
                     target.buffered_input = None;
-                    if hit.kind == AttackKind::Crouch(AttackAxis::Vertical) {
+                    if hit.kind == AttackKind::Crouch(AttackAxis::Vertical)
+                        && (hit.strike == 0 || !target.airborne)
+                    {
                         target.vertical_speed = 6.2;
                         target.airborne = true;
+                        target.crouched = false;
                     }
                     status.last = format!("{} / {:.0} damage", hit.kind.label(), hit.damage);
                 } else {

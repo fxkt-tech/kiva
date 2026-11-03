@@ -17,12 +17,13 @@ pub(super) struct Controls {
     pub active: bool,
     pub just_entered: bool,
     pub movement: Vec2,
+    pub movement_held: bool,
     pub look_delta: Vec2,
     pub zoom: f32,
     pub attacks: [ButtonFrame; 2],
     pub parry: bool,
-    pub crouch: bool,
     pub crouch_pressed: bool,
+    /// Physical Shift state; combat latches sprint after a long press.
     pub sprint: bool,
     pub walk: bool,
     pub free_look: bool,
@@ -86,6 +87,17 @@ pub(super) fn collect_input(
     if !receiving {
         controls.movement = Vec2::ZERO;
     }
+    controls.movement_held = receiving
+        && keys.any_pressed([
+            KeyCode::KeyW,
+            KeyCode::KeyA,
+            KeyCode::KeyS,
+            KeyCode::KeyD,
+            KeyCode::ArrowUp,
+            KeyCode::ArrowLeft,
+            KeyCode::ArrowDown,
+            KeyCode::ArrowRight,
+        ]);
     controls.attacks = [MouseButton::Left, MouseButton::Right].map(|button| ButtonFrame {
         pressed: receiving && mouse.just_pressed(button),
         held: receiving && mouse.pressed(button),
@@ -95,7 +107,6 @@ pub(super) fn collect_input(
         && (keys.just_pressed(KeyCode::KeyG)
             || (controls.attacks.iter().all(|button| button.held)
                 && controls.attacks.iter().any(|button| button.pressed)));
-    controls.crouch = receiving && keys.pressed(KeyCode::KeyC);
     controls.crouch_pressed = receiving && keys.just_pressed(KeyCode::KeyC);
     controls.sprint = receiving && keys.pressed(KeyCode::ShiftLeft);
     controls.walk = receiving && keys.pressed(KeyCode::ControlLeft);

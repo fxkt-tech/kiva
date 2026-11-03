@@ -1,7 +1,9 @@
+mod attacks;
+
 use super::{
     combat::{
         Action, Fighter,
-        core::{AttackAxis, AttackKind, CHARGE_READY, DODGE_DURATION},
+        core::{AttackAxis, AttackKind, DODGE_DURATION},
     },
     input::Controls,
     player::{Attachment, BoneVisual, attachment_transform},
@@ -35,10 +37,11 @@ pub(super) struct RigPose {
     was_airborne: bool,
     dodge_yaw: f32,
     crouch_weight: f32,
+    attack_elapsed: f32,
 }
 impl RigPose {
     pub fn new(library: &AnimationLibrary) -> Self {
-        let local = library.sample("Sword_Idle", 0.0, true);
+        let local = attacks::idle(library, 0.0);
         Self {
             model: library.model_pose(&local),
             from: local.clone(),
@@ -49,67 +52,7 @@ impl RigPose {
             was_airborne: false,
             dodge_yaw: 0.0,
             crouch_weight: 0.0,
-        }
-    }
-}
-fn attack_pose(library: &AnimationLibrary, attack: &super::combat::core::Attack) -> Vec<Transform> {
-    let spec = attack.spec();
-    let index = if attack.kind.axis() == AttackAxis::Vertical {
-        2
-    } else {
-        match attack.kind {
-            AttackKind::Light(_, 1) => 1,
-            _ => 0,
-        }
-    };
-    // Source markers split preparation, contact and follow-through. Time-warp
-    // each phase to the gameplay's actual damage window, including training.
-    let (name, contact, follow) = match index {
-        0 => ("Sword_Regular_A", 0.20, 0.40),
-        1 => ("Sword_Regular_B", 0.23, 0.50),
-        _ => ("Sword_Regular_C", 0.60, 0.95),
-    };
-    let sample = |name: &str, seconds: f32, looping: bool| {
-        library.sample(
-            name,
-            if attack.kind == AttackKind::Crouch(AttackAxis::Vertical) {
-                (1.15 - seconds).max(0.0)
-            } else {
-                seconds
-            },
-            looping,
-        )
-    };
-    let t = attack.elapsed;
-    if t < spec.windup {
-        sample(name, contact * (t / spec.windup), false)
-    } else if t < spec.windup + spec.active {
-        sample(
-            name,
-            contact + (follow - contact) * ((t - spec.windup) / spec.active),
-            false,
-        )
-    } else {
-        let recovery = ((t - spec.windup - spec.active) / spec.recovery).clamp(0.0, 1.0);
-        if index < 2 {
-            let rec = if index == 0 {
-                "Sword_Regular_A_Rec"
-            } else {
-                "Sword_Regular_B_Rec"
-            };
-            let source = sample(name, follow, false);
-            let target = sample(rec, library.duration(rec) * recovery, false);
-            source
-                .into_iter()
-                .zip(target)
-                .map(|(a, b)| blend(a, b, (recovery * 8.0).min(1.0)))
-                .collect()
-        } else {
-            sample(
-                name,
-                follow + (library.duration(name) - follow) * recovery,
-                false,
-            )
+            attack_elapsed: 0.0,
         }
     }
 }
@@ -117,6 +60,8 @@ fn attack_pose(library: &AnimationLibrary, attack: &super::combat::core::Attack)
 // so fixed local X rotations tuck the feet up instead of planting them.
 fn crouch_pose(library: &AnimationLibrary, local: &mut [Transform], weight: f32) {
     let standing = library.model_pose(local);
+    let rest_root = Quat::from_rotation_y(std::f32::consts::PI) * library.bones[0].rest.rotation;
+    let forward = standing[0].rotation * rest_root.inverse() * Vec3::NEG_Z;
     let pelvis = library.bone("pelvis");
     let parent = library.bones[pelvis].parent.expect("pelvis has a parent");
     local[pelvis].translation += standing[parent]
@@ -135,7 +80,7 @@ fn crouch_pose(library: &AnimationLibrary, local: &mut [Transform], weight: f32)
         let direction = (target - hip).normalize();
         let distance = target.distance(hip).clamp(0.0001, upper + lower - 0.0001);
         let along = (upper * upper - lower * lower + distance * distance) / (2.0 * distance);
-        let bend = (Vec3::NEG_Z - direction * direction.dot(Vec3::NEG_Z)).normalize();
+        let bend = (forward - direction * direction.dot(forward)).normalize();
         let knee = hip + direction * along + bend * (upper * upper - along * along).max(0.0).sqrt();
         aim_bone(library, local, &model, thigh, model[calf].translation, knee);
         let model = library.model_pose(local);
@@ -206,7 +151,12 @@ pub(super) fn animate_fighters(
             Action::Idle if fighter.moving => PoseState::Run,
             Action::Idle => PoseState::Idle,
         };
-        if rig.state != state {
+        let attack_elapsed = if let Action::Attack(a) = &fighter.action {
+            a.elapsed
+        } else {
+            0.0
+        };
+        if rig.state != state || attack_elapsed < rig.attack_elapsed {
             rig.from = rig.local.clone();
             rig.state = state;
             rig.clock = 0.0;
@@ -215,24 +165,12 @@ pub(super) fn animate_fighters(
                 rig.dodge_yaw = (-direction.x).atan2(-direction.z) - fighter.facing;
             }
         }
+        rig.attack_elapsed = attack_elapsed;
         rig.clock += dt;
         rig.transition += dt;
         let mut target = match &fighter.action {
-            Action::Attack(attack) => attack_pose(&library, attack),
-            Action::Charge(charge) => library.sample(
-                if charge.axis == AttackAxis::Horizontal {
-                    "Sword_Regular_A"
-                } else {
-                    "Sword_Regular_C"
-                },
-                (charge.elapsed / CHARGE_READY).min(1.0)
-                    * if charge.axis == AttackAxis::Horizontal {
-                        0.18
-                    } else {
-                        0.5
-                    },
-                false,
-            ),
+            Action::Attack(attack) => attacks::sample(&library, attack),
+            Action::Charge(charge) => attacks::charge(&library, charge),
             Action::Parry(_) => library.sample("Sword_Block", 0.2 + rig.clock.min(0.2), false),
             Action::Slide { .. } => library.sample("Sword_Idle", 0.0, false),
             Action::Dodge { elapsed, .. } => library.sample(
@@ -277,8 +215,11 @@ pub(super) fn animate_fighters(
                 rig.clock * if fighter.sprinting { 1.6 } else { 1.2 },
                 true,
             ),
-            Action::Idle => library.sample("Sword_Idle", rig.clock, true),
+            Action::Idle => attacks::idle(&library, rig.clock),
         };
+        if matches!(fighter.action, Action::Idle) && fighter.airborne {
+            attacks::hold_guard(&library, &mut target);
+        }
         if matches!(state, PoseState::Charge(_) | PoseState::Parry)
             && (fighter.moving || fighter.airborne)
         {
@@ -310,13 +251,26 @@ pub(super) fn animate_fighters(
             .zip(target)
             .map(|(a, b)| blend(a, b, w))
             .collect();
-        let crouching = fighter.crouched || state == PoseState::Slide;
+        let crouching = match &fighter.action {
+            Action::Attack(a) if a.kind == AttackKind::Crouch(AttackAxis::Vertical) => {
+                a.elapsed < a.spec().windup
+            }
+            Action::Attack(a) if a.kind == AttackKind::Crouch(AttackAxis::Horizontal) => true,
+            Action::Attack(_) => false,
+            _ => fighter.crouched || state == PoseState::Slide,
+        };
         rig.crouch_weight =
             (rig.crouch_weight + if crouching { dt / 0.12 } else { -dt / 0.12 }).clamp(0.0, 1.0);
         let mut posed = rig.local.clone();
         if rig.crouch_weight > 0.0 {
             let weight = rig.crouch_weight;
             crouch_pose(&library, &mut posed, weight * weight * (3.0 - 2.0 * weight));
+        }
+        if matches!(&fighter.action, Action::Attack(a) if a.kind == AttackKind::Air(AttackAxis::Vertical))
+        {
+            // Local-pose blending alone can separate the two wrists. Reattach
+            // the off-hand after blending and the grounded crouch adjustment.
+            attacks::grip_handle(&library, &mut posed);
         }
         rig.model = library.model_pose(&posed);
     }

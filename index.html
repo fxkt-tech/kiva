@@ -31,7 +31,7 @@
     </style>
   </head>
   <body>
-    <canvas id="game" tabindex="0" aria-label="Sword training. WASD moves; left mouse horizontal, right mouse vertical; hold either to charge; both mouse buttons or G parries; C crouches; Shift dodges or sprints; Space jumps twice; F5 dummy parry, F6 blue strike, F7 normal strike, F8 resets; Escape pauses."></canvas>
+    <canvas id="game" tabindex="0" aria-label="Sword training. WASD moves; left mouse horizontal, right mouse vertical; hold either to charge; both mouse buttons or G parries; C toggles crouch; tap Shift dodges; long-press Shift starts sprint until all direction keys are released; Space jumps twice; F5 dummy parry, F6 blue strike, F7 normal strike, F8 resets; Escape pauses."></canvas>
     <button id="sound-toggle" type="button" aria-label="Toggle sound" aria-pressed="false">SOUND ON</button>
     <div id="loading" class="overlay" role="status">Preparing the training courtyard…</div>
     <div id="entry" class="overlay" hidden>
@@ -42,8 +42,9 @@
           Left click: horizontal · Right click: vertical<br>
           Hold either: charge sword energy<br>
           Both buttons / G: parry · C + right click: uppercut<br>
-          WASD: move · Shift: dodge / hold to sprint<br>
-          Space: double jump · Hold C: crouch / slide<br>
+          WASD: move · Shift: tap dodge / long-press sprint<br>
+          Sprint continues until all direction keys are released<br>
+          Space: double jump · C: toggle crouch / slide<br>
           Ctrl: walk · Alt: free look</p>
         <button id="enter" type="button">Enter training</button>
         <p id="entry-hint" class="hint">Esc releases the mouse and pauses training.<br>F5: dummy parry · F6: blue strike · F7: normal strike<br>F8: reset · Use fn + F-keys if macOS uses media keys.</p>

@@ -23,10 +23,10 @@ BONES = [
 ]
 CLIPS = [
     ["Sword_Idle", "Jog_Fwd_Loop", "Walk_Loop", "Jump_Start", "Jump_Loop",
-     "Jump_Land", "Roll", "Hit_Chest", "Death01"],
+     "Jump_Land", "Roll", "Hit_Chest", "Death01", "Sword_Attack"],
     ["Sword_Regular_A", "Sword_Regular_A_Rec", "Sword_Regular_B",
      "Sword_Regular_B_Rec", "Sword_Regular_C", "Sword_Block",
-     "NinjaJump_Idle_Loop"],
+     "NinjaJump_Idle_Loop", "Sword_Heavy_Combo", "Sword_Dash"],
 ]
 
 
