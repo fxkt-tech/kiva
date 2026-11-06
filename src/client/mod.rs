@@ -65,9 +65,13 @@ pub(super) fn run() {
     )
     .add_systems(
         PostUpdate,
-        ui::publish.after(bevy::transform::TransformSystems::Propagate),
+        ui::publish
+            .after(bevy::transform::TransformSystems::Propagate)
+            .after(bevy::camera::CameraUpdateSystems),
     )
     .add_systems(PostStartup, web::ready);
+    #[cfg(target_arch = "wasm32")]
+    app.add_systems(PostUpdate, ui::publish_labels.after(ui::publish));
     #[cfg(not(target_arch = "wasm32"))]
     app.add_systems(Startup, ui::native_hud)
         .add_systems(Update, ui::update_native_hud);

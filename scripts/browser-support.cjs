@@ -1,4 +1,27 @@
 const { chromium } = require("playwright");
+const fs = require("node:fs/promises");
+const { createReadStream } = require("node:fs");
+const http = require("node:http");
+const path = require("node:path");
+
+async function serveBuild(directory) {
+  const root = path.resolve(directory);
+  const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".wasm": "application/wasm" };
+  const server = http.createServer(async (request, response) => {
+    const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
+    const file = path.resolve(root, `.${pathname === "/" ? "/index.html" : pathname}`);
+    if (!file.startsWith(root + path.sep)) { response.writeHead(403); response.end(); return; }
+    try {
+      const stat = await fs.stat(file);
+      response.writeHead(200, { "Content-Type": types[path.extname(file)] || "application/octet-stream", "Content-Length": stat.size });
+      createReadStream(file).pipe(response);
+    } catch {
+      response.writeHead(404); response.end();
+    }
+  });
+  await new Promise((resolve, reject) => { server.once("error", reject); server.listen(0, "127.0.0.1", resolve); });
+  return { url: `http://127.0.0.1:${server.address().port}`, close: () => new Promise((resolve) => server.close(resolve)) };
+}
 
 async function launchBrowser() {
   const args = ["--no-sandbox", "--force-device-scale-factor=1", "--no-proxy-server"];
@@ -49,4 +72,4 @@ async function reportFailure(page) {
   })).catch(() => "page unavailable"));
 }
 
-module.exports = { launchBrowser, enterGame, worldPoint, clickWorld, reportFailure };
+module.exports = { launchBrowser, enterGame, worldPoint, clickWorld, reportFailure, serveBuild };

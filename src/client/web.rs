@@ -81,14 +81,21 @@ pub(super) fn set_camera_lock(locked: bool) {
     let _ = locked;
 }
 pub(super) fn publish(json: &str) {
+    dispatch_json("kiva-state", json);
+}
+#[cfg(target_arch = "wasm32")]
+pub(super) fn publish_labels(json: &str) {
+    dispatch_json("kiva-labels", json);
+}
+fn dispatch_json(name: &str, json: &str) {
     #[cfg(target_arch = "wasm32")]
     if let Some(window) = web_sys::window() {
         let init = web_sys::CustomEventInit::new();
         init.set_detail(&wasm_bindgen::JsValue::from_str(json));
-        if let Ok(event) = web_sys::CustomEvent::new_with_event_init_dict("kiva-state", &init) {
+        if let Ok(event) = web_sys::CustomEvent::new_with_event_init_dict(name, &init) {
             let _ = window.dispatch_event(&event);
         }
     }
     #[cfg(not(target_arch = "wasm32"))]
-    let _ = json;
+    let _ = (name, json);
 }

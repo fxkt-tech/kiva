@@ -113,6 +113,7 @@
       if (!label) {
         label = document.createElement("div");
         label.className = `unit-label ${unit.team}`;
+        label.hidden = true;
         const name = document.createElement("strong");
         name.textContent = unit.id === state.player_id ? "旅者" : unit.name;
         const bar = document.createElement("div");
@@ -121,11 +122,6 @@
         label.append(name, bar);
         $("unit-labels").appendChild(label);
         labels.set(unit.id, label);
-      }
-      label.hidden = !unit.alive || !unit.screen;
-      if (unit.screen) {
-        label.style.left = `${unit.screen[0]}px`;
-        label.style.top = `${unit.screen[1]}px`;
       }
       label.querySelector("i").style.width = `${100 * unit.health / unit.max_health}%`;
     }
@@ -139,6 +135,24 @@
       $("target-health").textContent = `${Math.ceil(selected.health)} / ${selected.max_health} HP`;
     }
   }
+
+  // Position belongs to the render frame. The slower HUD snapshot updates
+  // health, names and menus; it must never overwrite these screen coordinates.
+  window.addEventListener("kiva-labels", (event) => {
+    const positions = JSON.parse(event.detail);
+    const present = new Set();
+    for (const unit of positions) {
+      present.add(unit.id);
+      const label = labels.get(unit.id);
+      if (!label) continue;
+      label.hidden = !unit.alive || !unit.screen;
+      if (unit.screen) {
+        label.style.left = `${unit.screen[0]}px`;
+        label.style.top = `${unit.screen[1]}px`;
+      }
+    }
+    for (const [id, label] of labels) if (!present.has(id)) label.hidden = true;
+  });
 
   function renderMinimap(state) {
     const ctx = $("minimap").getContext("2d");

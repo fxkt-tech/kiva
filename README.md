@@ -110,6 +110,15 @@ NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-s
 此测试自行创建临时静态文件测试入口并在结束时关闭，覆盖跨帧按下按钮、
 Q/W/E 选目标释放、R 直接释放以及真正失焦后的暂停恢复。
 
+血条跟随的浏览器回归测试使用同一份构建，无需启动开发服务：
+
+```bash
+NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-healthbars.cjs
+```
+
+它按浏览器显示帧采样实际血条 DOM 坐标，验证人物移动、镜头移动时的更新频率，
+同时检查完整 HUD 状态仍按较低频率发布。
+
 ## 构建部署
 
 ```bash

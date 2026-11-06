@@ -50,6 +50,38 @@ struct HudView {
     obstacles: Vec<[f32; 4]>,
 }
 
+#[cfg(target_arch = "wasm32")]
+#[derive(Serialize)]
+struct LabelPosition {
+    id: String,
+    screen: Option<[f32; 2]>,
+    alive: bool,
+}
+
+/// Only lightweight screen positions cross this bridge every rendered frame.
+/// Use the actual display transforms, including interpolation and camera motion.
+#[cfg(target_arch = "wasm32")]
+pub(super) fn publish_labels(
+    camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
+    units: Query<(Entity, &GlobalTransform, &UnitState), With<super::scene::UnitVisual>>,
+) {
+    let (camera, camera_transform) = *camera;
+    let positions: Vec<_> = units
+        .iter()
+        .map(|(id, transform, state)| LabelPosition {
+            id: id.to_bits().to_string(),
+            screen: camera
+                .world_to_viewport(camera_transform, transform.transform_point(Vec3::Y * 2.2))
+                .ok()
+                .map(|point| point.to_array()),
+            alive: state.alive(),
+        })
+        .collect();
+    if let Ok(json) = serde_json::to_string(&positions) {
+        web::publish_labels(&json);
+    }
+}
+
 #[expect(
     clippy::too_many_arguments,
     reason = "Bevy system parameters declare independent ECS access"
