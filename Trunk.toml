@@ -7,5 +7,5 @@ ignore = ["README.md"]
 
 [serve]
 addresses = ["127.0.0.1"]
-port = 8080
+port = 3221
 open = false
