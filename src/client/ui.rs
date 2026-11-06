@@ -66,6 +66,9 @@ pub(super) fn publish_labels(
     units: Query<(Entity, &GlobalTransform, &UnitState), With<super::scene::UnitVisual>>,
 ) {
     let (camera, camera_transform) = *camera;
+    let Some(viewport) = camera.logical_viewport_size() else {
+        return;
+    };
     let positions: Vec<_> = units
         .iter()
         .map(|(id, transform, state)| LabelPosition {
@@ -73,7 +76,7 @@ pub(super) fn publish_labels(
             screen: camera
                 .world_to_viewport(camera_transform, transform.transform_point(Vec3::Y * 2.2))
                 .ok()
-                .map(|point| point.to_array()),
+                .map(|point| web::viewport_to_css(point, viewport).to_array()),
             alive: state.alive(),
         })
         .collect();
@@ -114,6 +117,7 @@ pub(super) fn publish(
     }
     *next_publish = time.elapsed_secs() + 0.08;
     let (camera, transform) = *camera;
+    let viewport = Vec2::new(window.width(), window.height());
     let views = units
         .iter()
         .map(|(id, unit, state, pose, action, order, _)| {
@@ -135,7 +139,7 @@ pub(super) fn publish(
                 screen: camera
                     .world_to_viewport(transform, Vec3::new(visual.x, 2.2, visual.y))
                     .ok()
-                    .map(|point| point.to_array()),
+                    .map(|point| web::viewport_to_css(point, viewport).to_array()),
                 health: state.health(),
                 max_health: unit.stats().max_health,
                 mana: state.mana(),
@@ -190,7 +194,7 @@ pub(super) fn publish(
         camera_center: rig.center.to_array(),
         view_projection: (camera.clip_from_view() * transform.to_matrix().inverse())
             .to_cols_array(),
-        viewport: [window.width(), window.height()],
+        viewport: web::canvas_size().unwrap_or(viewport).to_array(),
         obstacles: map
             .obstacles()
             .iter()

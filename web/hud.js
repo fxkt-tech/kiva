@@ -15,6 +15,24 @@
 
   function setPaused(paused) {
     root.dataset.paused = String(paused);
+    if (paused && document.pointerLockElement === canvas) document.exitPointerLock();
+  }
+
+  async function enterGame() {
+    if (!ready) return;
+    $("pointer-error").hidden = true;
+    canvas.focus();
+    try {
+      await canvas.requestPointerLock();
+    } catch {
+      captureFailed();
+    }
+  }
+
+  function captureFailed() {
+    setPaused(true);
+    $("pointer-error").textContent = "鼠标捕获未成功，请点击进入按钮重试。";
+    $("pointer-error").hidden = false;
   }
 
   function syncMenu() {
@@ -43,11 +61,15 @@
   new MutationObserver(syncMenu).observe(root, {
     attributes: true, attributeFilter: ["data-paused"],
   });
-  $("enter").addEventListener("click", () => {
-    entered = true;
-    setPaused(false);
-    canvas.focus();
+  $("enter").addEventListener("click", enterGame);
+  document.addEventListener("pointerlockchange", () => {
+    const captured = document.pointerLockElement === canvas;
+    root.dataset.pointerLocked = String(captured);
+    if (captured) { entered = true; $("pointer-error").hidden = true; }
+    else { delete root.dataset.skill; $("game-cursor").hidden = true; }
+    setPaused(!captured);
   });
+  document.addEventListener("pointerlockerror", captureFailed);
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
   canvas.addEventListener("pointerdown", () => canvas.focus());
   window.addEventListener("blur", () => {
@@ -56,6 +78,7 @@
   });
   $("help-toggle").addEventListener("click", toggleHelp);
   window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.pointerLockElement === canvas) setPaused(true);
     if (event.key === "?") toggleHelp();
   });
   document.querySelectorAll("[data-slot]").forEach((button) => {

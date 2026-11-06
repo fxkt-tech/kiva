@@ -2,6 +2,7 @@
 mod camera;
 mod content;
 mod controls;
+mod pointer;
 mod scene;
 mod ui;
 mod web;
@@ -37,6 +38,7 @@ pub(super) fn run() {
     .insert_resource(ClearColor(Color::srgb_u8(12, 23, 25)))
     .init_resource::<camera::CameraRig>()
     .init_resource::<controls::PointerState>()
+    .init_resource::<pointer::GamePointer>()
     .init_resource::<controls::ClientFeedback>()
     .add_systems(
         Startup,

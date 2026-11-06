@@ -28,7 +28,9 @@ async function measureTracking(page, name, duration) {
         else { stale++; maxStale = Math.max(maxStale, stale); }
       }
       lastPosition = position;
-      if (now - start < duration) requestAnimationFrame(sample);
+      // Software WebGPU can run below 20 fps; collect enough real frames
+      // instead of failing merely because the test machine renders slowly.
+      if (now - start < duration || (frames < 20 && now - start < 10000)) requestAnimationFrame(sample);
       else {
         window.removeEventListener("kiva-state", onHud);
         window.removeEventListener("kiva-labels", onLabels);

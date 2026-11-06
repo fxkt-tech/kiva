@@ -13,7 +13,8 @@
     <script src="hud.js" defer></script>
   </head>
   <body>
-    <canvas id="game" tabindex="0" aria-label="试炼之境：右键移动或攻击，A 加左键攻击移动，QWER 技能，Y 锁定镜头，空格回到角色，Esc 取消或暂停。"></canvas>
+    <canvas id="game" tabindex="0" aria-label="试炼之境：右键移动或攻击，A 加左键攻击移动，QWER 技能，Y 锁定镜头，空格回到角色，Esc 释放鼠标并暂停。"></canvas>
+    <div id="game-cursor" hidden aria-hidden="true"><svg viewBox="0 0 24 28"><path d="M1 1v21l6-6 5 10 5-2-5-10h10Z"/></svg></div>
     <header class="brand">
       <span class="brand-mark">◇</span>
       <div><div class="eyebrow">KIVA / PROVING GROUNDS</div><h1>试炼之境<span>01</span></h1></div>
@@ -34,7 +35,7 @@
         <dt>Y / 空格</dt><dd>锁定镜头 / 按住跟随</dd>
         <dt>边缘 / 方向键</dt><dd>平移镜头</dd>
         <dt>滚轮</dt><dd>缩放</dd>
-        <dt>Esc</dt><dd>取消操作 / 暂停</dd>
+        <dt>Esc</dt><dd>释放鼠标并暂停</dd>
       </dl>
       <p>金色圆环表示选中，青色表示可施法范围。障碍物会阻挡移动、冲刺和弹丸。</p>
     </aside>
@@ -74,8 +75,9 @@
         <div class="eyebrow">A PLACE TO BEGIN</div><div class="entry-mark">◇</div>
         <h2 id="entry-title">每一步，皆由你决定。</h2><p>探索场地，练习走位，释放技能。<br>从一次右键开始。</p>
         <button id="enter">进入试炼 <span>→</span></button>
+        <p id="pointer-error" role="status" hidden></p>
         <div class="entry-controls"><span><kbd>右键</kbd> 移动 / 攻击</span><span><kbd>QWER</kbd> 技能</span><span><kbd>Y</kbd> 锁定镜头</span></div>
-        <small class="entry-note">本地单人试炼 · 无需锁定鼠标</small>
+        <small class="entry-note">进入后鼠标限制在游戏区域 · Esc 释放并暂停</small>
       </div>
     </div>
     <noscript>请启用 JavaScript 后运行游戏。</noscript>

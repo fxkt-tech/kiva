@@ -53,10 +53,12 @@ sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 | 空格 | 按住时镜头跟随角色；松开保留位置 |
 | 鼠标靠近画布边缘 / 方向键 | 自由模式下平移镜头 |
 | 滚轮 | 有限范围内缩放 |
-| Esc | 依次取消瞄准、取消选择、切换暂停 |
+| Esc | 释放鼠标并暂停 |
 | ? / 操作指南按钮 | 展开操作说明 |
 
-鼠标无需锁定。地点技能必须在射程内；方向技能沿鼠标方向发射。
+浏览器中点击“进入试炼”后会捕获鼠标，显示限制在游戏区域内的光标。
+光标到达边缘仍可滚屏，按 Esc 可释放鼠标并暂停，点击“继续试炼”重新进入。
+如果浏览器拒绝捕获，游戏保持暂停并显示重试提示。地点技能必须在射程内；方向技能沿鼠标方向发射。
 点击底部 Q/W/E 技能按钮也可进入瞄准，再左键点击场景释放；R 按钮点击后直接释放。
 前摇取消不消耗能量和冷却，出手后移动不会重置冷却。
 训练目标死亡后约 3 秒重生。地图右下角预览只读，不下达移动指令。
@@ -114,10 +116,13 @@ Q/W/E 选目标释放、R 直接释放以及真正失焦后的暂停恢复。
 
 ```bash
 NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-healthbars.cjs
+NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-cursor.cjs
 ```
 
 它按浏览器显示帧采样实际血条 DOM 坐标，验证人物移动、镜头移动时的更新频率，
 同时检查完整 HUD 状态仍按较低频率发布。
+光标测试覆盖捕获、越界移动、边缘滚屏与回移停止、Esc 释放与重新进入、
+技能按钮、点地移动、高 DPI 以及捕获失败提示。
 
 ## 构建部署
 

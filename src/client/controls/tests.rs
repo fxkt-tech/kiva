@@ -13,6 +13,7 @@ fn app() -> (App, Entity) {
     app.add_plugins((MinimalPlugins, SimulationPlugin))
         .add_message::<WindowEvent>()
         .init_resource::<PointerState>()
+        .init_resource::<GamePointer>()
         .add_systems(Update, collect_input);
     let window = app
         .world_mut()

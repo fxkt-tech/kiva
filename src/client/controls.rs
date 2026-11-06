@@ -1,5 +1,5 @@
 //! Human and demo AI adapters both submit the public simulation commands.
-use super::{camera::GameCamera, web};
+use super::{camera::GameCamera, pointer::GamePointer, web};
 use crate::simulation::*;
 use bevy::{
     prelude::*,
@@ -22,6 +22,7 @@ pub(super) struct PlayerController {
 }
 #[derive(Resource, Default)]
 pub(super) struct PointerState {
+    pub position: Option<Vec2>,
     pub ground: Option<Vec2>,
     pub hovered: Option<Entity>,
     pub over_ui: bool,
@@ -54,6 +55,7 @@ fn set_paused(world: &mut World, paused: bool) {
     if paused {
         let player = world.resource::<PlayerController>().player;
         if !was_paused {
+            web::release_pointer();
             world.resource_mut::<CommandQueue>().clear();
             submit(world, player, UnitCommand::Stop);
         }
@@ -67,7 +69,10 @@ fn update_pointer(world: &mut World, cursor: Option<Vec2>) {
     let ray = cursor.and_then(|cursor| {
         let mut cameras = world.query_filtered::<(&Camera, &GlobalTransform), With<GameCamera>>();
         let (camera, transform) = cameras.single(world).ok()?;
-        camera.viewport_to_world(transform, cursor).ok()
+        let viewport = camera.logical_viewport_size()?;
+        camera
+            .viewport_to_world(transform, web::css_to_viewport(cursor, viewport))
+            .ok()
     });
     let ground = ray.and_then(|ray| {
         let distance = ray.intersect_plane(Vec3::ZERO, InfinitePlane3d::new(Vec3::Y))?;
@@ -97,6 +102,7 @@ fn update_pointer(world: &mut World, cursor: Option<Vec2>) {
         })
     };
     *world.resource_mut::<PointerState>() = PointerState {
+        position: cursor,
         ground,
         hovered,
         over_ui,
@@ -127,6 +133,12 @@ fn select_ability(world: &mut World, slot: usize) {
 
 fn key_pressed(world: &mut World, key: KeyCode) {
     if key == KeyCode::Escape {
+        if let Some(captured) = web::pointer_captured() {
+            if captured {
+                set_paused(world, true);
+            }
+            return;
+        }
         let mut player = world.resource_mut::<PlayerController>();
         if player.aim.is_some() {
             player.aim = None;
@@ -166,6 +178,14 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
     let pointer = world.resource::<PointerState>();
     let (ground, hovered, over_ui) = (pointer.ground, pointer.hovered, pointer.over_ui);
     if over_ui {
+        if button == MouseButton::Left {
+            if let Some(point) = pointer.position {
+                web::click_ui(point);
+            }
+            if let Some(slot) = web::take_skill_request() {
+                select_ability(world, slot);
+            }
+        }
         return;
     }
     let player = world.resource::<PlayerController>().player;
@@ -227,32 +247,59 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
 pub(super) fn collect_input(
     world: &mut World,
     mut cursor: Local<bevy::ecs::message::MessageCursor<bevy::window::WindowEvent>>,
-    mut last_cursor: Local<Option<Vec2>>,
 ) {
     use bevy::window::WindowEvent;
-    let (focused, current_cursor) = {
+    let (focused, current_cursor, size, scale) = {
         let mut windows = world.query::<&Window>();
         let Ok(window) = windows.single(world) else {
             return;
         };
-        (window.focused, window.cursor_position())
+        (
+            window.focused,
+            window.cursor_position(),
+            Vec2::new(window.width(), window.height()),
+            window.scale_factor(),
+        )
     };
+    let size = web::canvas_size().unwrap_or(size);
+    let captured = web::pointer_captured();
+    let just_captured =
+        world
+            .resource_mut::<GamePointer>()
+            .sync(captured.unwrap_or(false), size, current_cursor);
     let focused = web::document_focused().unwrap_or(focused);
-    let paused = !focused || web::paused().unwrap_or(world.resource::<SimulationControl>().paused);
+    let paused = !focused
+        || captured == Some(false)
+        || web::paused().unwrap_or(world.resource::<SimulationControl>().paused);
     set_paused(world, paused);
-    let events: Vec<_> = cursor
+    let mut events: Vec<_> = cursor
         .read(world.resource::<Messages<WindowEvent>>())
         .cloned()
         .collect();
+    // Motion used to reach Enter/resume belongs to the unlocked session.
+    if just_captured {
+        events.clear();
+    }
     for event in events {
         match event {
             WindowEvent::CursorMoved(event) => {
-                *last_cursor = Some(event.position);
-                update_pointer(world, *last_cursor);
+                world
+                    .resource_mut::<GamePointer>()
+                    .absolute(Some(event.position));
+                let point = world.resource::<GamePointer>().position();
+                update_pointer(world, point);
             }
             WindowEvent::CursorLeft(_) => {
-                *last_cursor = None;
-                update_pointer(world, None);
+                world.resource_mut::<GamePointer>().absolute(None);
+                let point = world.resource::<GamePointer>().position();
+                update_pointer(world, point);
+            }
+            WindowEvent::MouseMotion(event) if captured == Some(true) => {
+                world
+                    .resource_mut::<GamePointer>()
+                    .relative(event.delta / scale);
+                let point = world.resource::<GamePointer>().position();
+                update_pointer(world, point);
             }
             WindowEvent::KeyboardInput(event)
                 if focused && event.state.is_pressed() && !event.repeat =>
@@ -260,7 +307,8 @@ pub(super) fn collect_input(
                 key_pressed(world, event.key_code)
             }
             WindowEvent::MouseButtonInput(event) if event.state.is_pressed() => {
-                update_pointer(world, (*last_cursor).or(current_cursor));
+                let point = world.resource::<GamePointer>().position();
+                update_pointer(world, point);
                 mouse_pressed(world, event.button);
             }
             _ => {}
@@ -270,10 +318,13 @@ pub(super) fn collect_input(
         if let Some(slot) = web::take_skill_request() {
             select_ability(world, slot);
         }
-        update_pointer(world, current_cursor);
+        let point = world.resource::<GamePointer>().position();
+        update_pointer(world, point);
+        web::draw_pointer(point);
     } else {
         *world.resource_mut::<PointerState>() = PointerState::default();
         let _ = web::take_skill_request();
+        web::draw_pointer(None);
     }
 }
 

@@ -3,6 +3,7 @@ const fs = require("node:fs/promises");
 const { createReadStream } = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const physicalPositions = new WeakMap();
 
 async function serveBuild(directory) {
   const root = path.resolve(directory);
@@ -41,8 +42,75 @@ async function enterGame(page, url = process.env.KIVA_TEST_URL || "http://127.0.
   await page.goto(url, { timeout: 120000 });
   await page.locator("#enter").waitFor({ state: "visible", timeout: 120000 });
   await page.bringToFront();
-  await page.locator("#enter").click();
-  await page.waitForFunction(() => window.__kivaState && !window.__kivaState.paused);
+  await resumeGame(page);
+}
+
+async function resumeGame(page) {
+  const button = page.locator("#enter");
+  const box = await button.boundingBox();
+  await button.click();
+  physicalPositions.set(page, { x: box.x + box.width / 2, y: box.y + box.height / 2 });
+  await page.waitForFunction(() => document.pointerLockElement?.id === "game"
+    && window.__kivaState && !window.__kivaState.paused && !document.getElementById("game-cursor").hidden);
+}
+
+async function movePointer(page, x, y) {
+  const captured = await page.evaluate(() => document.pointerLockElement?.id === "game");
+  if (!captured) {
+    await page.mouse.move(x, y);
+    physicalPositions.set(page, { x, y });
+    return;
+  }
+  const cursor = await page.evaluate(() => {
+    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
+    return { x: matrix.m41, y: matrix.m42, scale: devicePixelRatio };
+  });
+  const last = physicalPositions.get(page);
+  assertPhysicalPosition(last);
+  const next = { x: last.x + (x - cursor.x) * cursor.scale, y: last.y + (y - cursor.y) * cursor.scale };
+  await page.mouse.move(next.x, next.y);
+  physicalPositions.set(page, next);
+  await page.waitForFunction(([x, y]) => {
+    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
+    return Math.abs(matrix.m41 - x) < 2 && Math.abs(matrix.m42 - y) < 2;
+  }, [x, y]);
+}
+
+function assertPhysicalPosition(position) {
+  if (!position) throw new Error("enterGame/resumeGame must initialize the captured pointer");
+}
+
+async function moveRelative(page, dx, dy) {
+  const before = await page.evaluate(() => {
+    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
+    return { x: matrix.m41, y: matrix.m42, scale: devicePixelRatio, width: innerWidth, height: innerHeight };
+  });
+  const last = physicalPositions.get(page);
+  assertPhysicalPosition(last);
+  const next = { x: last.x + dx * before.scale, y: last.y + dy * before.scale };
+  await page.mouse.move(next.x, next.y);
+  physicalPositions.set(page, next);
+  const expected = [Math.max(0, Math.min(before.width - 1, before.x + dx)), Math.max(0, Math.min(before.height - 1, before.y + dy))];
+  await page.waitForFunction(([x, y]) => {
+    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
+    return Math.abs(matrix.m41 - x) < 2 && Math.abs(matrix.m42 - y) < 2;
+  }, expected);
+}
+
+async function clickPointer(page, button = "left", delay = 90) {
+  await page.mouse.down({ button });
+  if (delay) await page.waitForTimeout(delay);
+  await page.mouse.up({ button });
+}
+
+async function clickUi(page, selector, delay = 90) {
+  if (!await page.evaluate(() => document.pointerLockElement?.id === "game")) {
+    await page.locator(selector).click({ delay });
+    return;
+  }
+  const box = await page.locator(selector).boundingBox();
+  await movePointer(page, box.x + box.width / 2, box.y + box.height / 2);
+  await clickPointer(page, "left", delay);
 }
 
 async function worldPoint(page, position) {
@@ -56,7 +124,8 @@ async function worldPoint(page, position) {
 
 async function clickWorld(page, position, button = "left") {
   const [x, y] = await worldPoint(page, position);
-  await page.mouse.click(x, y, { button, delay: 90 });
+  await movePointer(page, x, y);
+  await clickPointer(page, button);
 }
 
 async function reportFailure(page) {
@@ -72,4 +141,4 @@ async function reportFailure(page) {
   })).catch(() => "page unavailable"));
 }
 
-module.exports = { launchBrowser, enterGame, worldPoint, clickWorld, reportFailure, serveBuild };
+module.exports = { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickPointer, clickUi, worldPoint, clickWorld, reportFailure, serveBuild };

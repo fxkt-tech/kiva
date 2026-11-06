@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { PNG } = require("pngjs");
-const { launchBrowser, enterGame, clickWorld, reportFailure } = require("./browser-support.cjs");
+const { launchBrowser, enterGame, resumeGame, movePointer, clickUi, clickWorld, reportFailure } = require("./browser-support.cjs");
 
 async function main() {
   const browser = await launchBrowser();
@@ -34,7 +34,7 @@ async function main() {
       return s.units.find((u) => u.id === s.player_id).order === "Idle";
     });
     await enterGame(page);
-    assert.equal(await page.evaluate(() => document.pointerLockElement), null);
+    assert.equal(await page.evaluate(() => document.pointerLockElement?.id), "game");
     assert(webgpu, "must use the WebGPU renderer");
 
     const artifactDir = process.env.KIVA_SCREENSHOT_DIR || "/tmp/kiva-browser-tests/artifacts";
@@ -66,7 +66,7 @@ async function main() {
 
     await page.keyboard.press("q");
     await page.waitForFunction(() => window.__kivaState.aim === 0);
-    await page.keyboard.press("Escape");
+    await clickWorld(page, [0, 6], "right");
     await page.waitForFunction(() => window.__kivaState.aim === null);
     assert.equal((await state()).abilities[0].cooldown, 0);
     await page.keyboard.press("q");
@@ -107,21 +107,21 @@ async function main() {
     console.log("PASS chase attack, attack move and stop");
 
     const beforeHud = await playerPosition();
-    await page.locator('[data-slot="0"]').click();
+    await clickUi(page, '[data-slot="0"]');
     await page.waitForFunction(() => window.__kivaState.aim === 0);
     assert(Math.hypot(...(await playerPosition()).map((v, i) => v - beforeHud[i])) < 0.1);
-    await page.keyboard.press("Escape");
+    await clickWorld(page, [0, 6], "right");
     await page.keyboard.press("y");
     await page.waitForFunction(() => window.__kivaState.camera_locked);
     await page.keyboard.press("y");
     await page.waitForFunction(() => !window.__kivaState.camera_locked);
     const beforePan = (await state()).camera_center;
-    await page.mouse.move(2, 450);
+    await movePointer(page, 2, 450);
     await page.waitForFunction((before) => {
       const after = window.__kivaState.camera_center;
       return Math.hypot(after[0] - before[0], after[1] - before[1]) > 1;
     }, beforePan);
-    await page.mouse.move(720, 450);
+    await movePointer(page, 720, 450);
     await page.keyboard.down("Space");
     await page.waitForFunction(() => {
       const s = window.__kivaState;
@@ -138,21 +138,12 @@ async function main() {
     await waitPosition(destination);
     console.log("PASS UI isolation, camera modes, edge pan, zoom and resized picking");
 
-    if ((await state()).aim !== null) {
-      await page.keyboard.press("Escape");
-      await page.waitForFunction(() => window.__kivaState.aim === null);
-    }
-    if ((await state()).selected !== null) {
-      await page.keyboard.press("Escape");
-      await page.waitForFunction(() => window.__kivaState.selected === null);
-    }
     await page.keyboard.press("Escape");
     await page.waitForFunction(() => window.__kivaState.paused);
     const tick = (await state()).tick;
     await page.waitForTimeout(500);
     assert.equal((await state()).tick, tick);
-    await page.locator("#enter").click();
-    await page.waitForFunction(() => !window.__kivaState.paused);
+    await resumeGame(page);
     // Playwright normally emulates focus for every page. Disable that emulation
     // so the next tab exercises real DOM blur and the game's focus handling.
     const cdp = await context.newCDPSession(page);
@@ -163,8 +154,7 @@ async function main() {
     await page.bringToFront();
     await page.waitForFunction(() => window.__kivaState.paused);
     await otherPage.close();
-    await page.locator("#enter").click();
-    await page.waitForFunction(() => !window.__kivaState.paused);
+    await resumeGame(page);
     await waitIdle();
     console.log("PASS pause, focus loss and clean resume");
     await context.close();

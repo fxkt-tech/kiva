@@ -50,6 +50,7 @@ pub(super) fn update(
     mut rig: ResMut<CameraRig>,
     mut camera: Single<&mut Transform, With<GameCamera>>,
 ) {
+    let size = web::canvas_size().unwrap_or(Vec2::new(window.width(), window.height()));
     let scroll: f32 = wheel.read().map(|event| event.y).sum();
     if !control.paused {
         if keys.just_pressed(KeyCode::KeyY) {
@@ -70,19 +71,19 @@ pub(super) fn update(
                     - f32::from(keys.pressed(KeyCode::ArrowUp)),
             );
             if !pointer.over_ui
-                && let Some(cursor) = window.cursor_position()
+                && let Some(cursor) = pointer.position
             {
                 let margin = 14.0;
                 if cursor.x >= 0.0 && cursor.x < margin {
                     direction.x -= 1.0;
                 }
-                if cursor.x <= window.width() && cursor.x > window.width() - margin {
+                if cursor.x <= size.x && cursor.x > size.x - margin {
                     direction.x += 1.0;
                 }
                 if cursor.y >= 0.0 && cursor.y < margin {
                     direction.y -= 1.0;
                 }
-                if cursor.y <= window.height() && cursor.y > window.height() - margin {
+                if cursor.y <= size.y && cursor.y > size.y - margin {
                     direction.y += 1.0;
                 }
             }
