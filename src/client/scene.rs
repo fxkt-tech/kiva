@@ -1,0 +1,397 @@
+//! Procedural presentation. Visual transforms interpolate authoritative poses.
+use super::{
+    content::Scenery,
+    controls::{Aim, ClientFeedback, Pickable, PlayerController, PointerState},
+};
+use crate::simulation::*;
+use bevy::prelude::*;
+
+#[derive(Resource)]
+pub(super) struct SceneAssets {
+    body: Handle<Mesh>,
+    head: Handle<Mesh>,
+    base: Handle<Mesh>,
+    bolt: Handle<Mesh>,
+    ally: Handle<StandardMaterial>,
+    enemy: Handle<StandardMaterial>,
+    gold: Handle<StandardMaterial>,
+    dark: Handle<StandardMaterial>,
+}
+#[derive(Component)]
+pub(super) struct UnitVisual;
+#[derive(Component)]
+pub(super) struct ProjectileVisual;
+
+pub(super) fn setup(
+    mut commands: Commands,
+    scenery: Res<Scenery>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    commands.insert_resource(GlobalAmbientLight {
+        color: Color::srgb_u8(174, 209, 206),
+        brightness: 500.0,
+        ..default()
+    });
+    commands.spawn((
+        DirectionalLight {
+            illuminance: 6500.0,
+            shadow_maps_enabled: true,
+            ..default()
+        },
+        Transform::from_xyz(-12.0, 25.0, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
+    let ground = materials.add(Color::srgb_u8(35, 61, 54));
+    let path = materials.add(Color::srgb_u8(66, 82, 70));
+    let stone = materials.add(Color::srgb_u8(79, 91, 83));
+    let stone_top = materials.add(Color::srgb_u8(103, 117, 101));
+    let foliage = materials.add(Color::srgb_u8(24, 64, 52));
+    let foliage_light = materials.add(Color::srgb_u8(36, 83, 61));
+    let gold = materials.add(StandardMaterial {
+        base_color: Color::srgb_u8(213, 181, 114),
+        metallic: 0.5,
+        perceptual_roughness: 0.5,
+        ..default()
+    });
+    commands.spawn((
+        Mesh3d(meshes.add(Plane3d::default().mesh().size(64.0, 64.0))),
+        MeshMaterial3d(ground),
+        Transform::default(),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Cuboid::new(14.0, 0.04, 48.0))),
+        MeshMaterial3d(path.clone()),
+        Transform::from_xyz(0.0, 0.015, -2.0),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Cuboid::new(45.0, 0.035, 9.0))),
+        MeshMaterial3d(path),
+        Transform::from_xyz(0.0, 0.02, 3.0),
+    ));
+    let tile = meshes.add(Cuboid::new(1.85, 0.04, 1.85));
+    for z in -5..=5 {
+        for x in -3..=3 {
+            if (x + z) % 3 != 0 {
+                continue;
+            }
+            commands.spawn((
+                Mesh3d(tile.clone()),
+                MeshMaterial3d(stone.clone()),
+                Transform::from_xyz(x as f32 * 2.0, 0.045, z as f32 * 2.0),
+            ));
+        }
+    }
+    for obstacle in &scenery.walls {
+        commands.spawn((
+            Mesh3d(meshes.add(Cuboid::new(
+                obstacle.half_size.x * 2.0,
+                1.1,
+                obstacle.half_size.y * 2.0,
+            ))),
+            MeshMaterial3d(stone.clone()),
+            Transform::from_xyz(obstacle.center.x, 0.55, obstacle.center.y),
+        ));
+        commands.spawn((
+            Mesh3d(meshes.add(Cuboid::new(
+                obstacle.half_size.x * 2.0 + 0.12,
+                0.16,
+                obstacle.half_size.y * 2.0 + 0.12,
+            ))),
+            MeshMaterial3d(stone_top.clone()),
+            Transform::from_xyz(obstacle.center.x, 1.12, obstacle.center.y),
+        ));
+    }
+    let trunk = meshes.add(Cylinder::new(0.22, 1.5));
+    let crown = meshes.add(Sphere::new(1.0).mesh().ico(1).expect("valid tree mesh"));
+    for (i, &(point, height)) in scenery.trees.iter().enumerate() {
+        commands.spawn((
+            Mesh3d(trunk.clone()),
+            MeshMaterial3d(stone.clone()),
+            Transform::from_xyz(point.x, 0.75, point.y),
+        ));
+        commands.spawn((
+            Mesh3d(crown.clone()),
+            MeshMaterial3d(if i % 2 == 0 {
+                foliage.clone()
+            } else {
+                foliage_light.clone()
+            }),
+            Transform::from_xyz(point.x, height, point.y).with_scale(Vec3::new(
+                1.2,
+                height * 0.85,
+                1.2,
+            )),
+        ));
+    }
+    // Pillars frame the training grounds without requiring imported assets.
+    for point in &scenery.pillars {
+        let (x, z) = (point.x, point.y);
+        commands.spawn((
+            Mesh3d(meshes.add(Cylinder::new(0.5, 1.8))),
+            MeshMaterial3d(stone_top.clone()),
+            Transform::from_xyz(x, 0.9, z),
+        ));
+        commands.spawn((
+            Mesh3d(meshes.add(Sphere::new(0.25).mesh().uv(12, 8))),
+            MeshMaterial3d(gold.clone()),
+            Transform::from_xyz(x, 1.95, z),
+        ));
+    }
+    commands.insert_resource(SceneAssets {
+        body: meshes.add(Capsule3d::new(0.34, 0.65)),
+        head: meshes.add(Sphere::new(0.24).mesh().uv(16, 12)),
+        base: meshes.add(Cylinder::new(0.5, 0.12)),
+        bolt: meshes.add(Sphere::new(1.0).mesh().uv(12, 8)),
+        ally: materials.add(StandardMaterial {
+            base_color: Color::srgb_u8(72, 205, 194),
+            emissive: LinearRgba::new(0.05, 0.25, 0.22, 1.0),
+            ..default()
+        }),
+        enemy: materials.add(StandardMaterial {
+            base_color: Color::srgb_u8(201, 99, 81),
+            emissive: LinearRgba::new(0.3, 0.05, 0.03, 1.0),
+            ..default()
+        }),
+        gold,
+        dark: materials.add(Color::srgb_u8(24, 38, 44)),
+    });
+}
+
+pub(super) fn attach_unit_visuals(
+    mut commands: Commands,
+    assets: Res<SceneAssets>,
+    units: Query<(Entity, &Unit), Without<UnitVisual>>,
+) {
+    for (entity, unit) in &units {
+        let material = if unit.team() == Team::Ally {
+            assets.ally.clone()
+        } else {
+            assets.enemy.clone()
+        };
+        commands
+            .entity(entity)
+            .insert((
+                UnitVisual,
+                Pickable {
+                    offset: Vec3::Y,
+                    half_size: Vec3::new(unit.stats().radius + 0.1, 1.0, unit.stats().radius + 0.1),
+                },
+                Transform::default(),
+                Visibility::default(),
+                Name::new(unit.name().to_owned()),
+            ))
+            .with_children(|parent| {
+                parent.spawn((
+                    Mesh3d(assets.base.clone()),
+                    MeshMaterial3d(assets.dark.clone()),
+                    Transform::from_xyz(0.0, 0.12, 0.0),
+                ));
+                parent.spawn((
+                    Mesh3d(assets.body.clone()),
+                    MeshMaterial3d(material),
+                    Transform::from_xyz(0.0, 0.95, 0.0),
+                ));
+                parent.spawn((
+                    Mesh3d(assets.head.clone()),
+                    MeshMaterial3d(assets.gold.clone()),
+                    Transform::from_xyz(0.0, 1.65, 0.0),
+                ));
+                parent.spawn((
+                    Mesh3d(assets.body.clone()),
+                    MeshMaterial3d(assets.gold.clone()),
+                    Transform::from_xyz(0.43, 0.85, -0.15).with_scale(Vec3::new(0.17, 1.15, 0.17)),
+                ));
+            });
+    }
+}
+
+pub(super) fn sync_units(
+    fixed: Res<Time<Fixed>>,
+    control: Res<SimulationControl>,
+    mut units: Query<(&UnitPose, &UnitState, &mut Transform, &mut Visibility), With<UnitVisual>>,
+) {
+    let fraction = if control.paused {
+        1.0
+    } else {
+        fixed.overstep_fraction()
+    };
+    for (pose, state, mut transform, mut visibility) in &mut units {
+        let point = pose.interpolated(fraction);
+        transform.translation = Vec3::new(point.x, 0.0, point.y);
+        transform.rotation = Quat::from_rotation_y((-pose.facing().x).atan2(-pose.facing().y));
+        *visibility = if state.alive() {
+            Visibility::Inherited
+        } else {
+            Visibility::Hidden
+        };
+    }
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "Bevy system parameters declare independent ECS access"
+)]
+pub(super) fn sync_effects(
+    mut commands: Commands,
+    time: Res<Time>,
+    fixed: Res<Time<Fixed>>,
+    control: Res<SimulationControl>,
+    assets: Res<SceneAssets>,
+    player: Res<PlayerController>,
+    pointer: Res<PointerState>,
+    feedback: Res<ClientFeedback>,
+    catalog: Res<AbilityCatalog>,
+    units: Query<(
+        Entity,
+        &Unit,
+        &UnitPose,
+        &UnitState,
+        &AbilitySlots,
+        &UnitAction,
+    )>,
+    projectiles: Query<(Entity, &Projectile), Without<ProjectileVisual>>,
+    mut visuals: Query<(&Projectile, &mut Transform), With<ProjectileVisual>>,
+    areas: Query<&AreaEffect>,
+    mut gizmos: Gizmos,
+) {
+    let fraction = if control.paused {
+        1.0
+    } else {
+        fixed.overstep_fraction()
+    };
+    for (entity, projectile) in &projectiles {
+        commands.entity(entity).insert((
+            ProjectileVisual,
+            Mesh3d(assets.bolt.clone()),
+            MeshMaterial3d(if projectile.team() == Team::Ally {
+                assets.ally.clone()
+            } else {
+                assets.enemy.clone()
+            }),
+            Transform::default(),
+        ));
+    }
+    for (projectile, mut transform) in &mut visuals {
+        let point = projectile.interpolated(fraction);
+        transform.translation = Vec3::new(point.x, 0.9, point.y);
+        transform.scale = Vec3::splat(projectile.radius().max(0.16));
+    }
+    let ring = |gizmos: &mut Gizmos, point: Vec2, radius: f32, color: Color| {
+        gizmos.circle(
+            Isometry3d::new(
+                Vec3::new(point.x, 0.08, point.y),
+                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2),
+            ),
+            radius,
+            color,
+        );
+    };
+    for (id, unit, pose, state, _, action) in &units {
+        if !state.alive() {
+            continue;
+        }
+        let point = pose.interpolated(fraction);
+        if let UnitAction::Channeling {
+            radius, remaining, ..
+        } = action
+        {
+            ring(&mut gizmos, point, *radius, Color::srgb_u8(140, 212, 190));
+            ring(
+                &mut gizmos,
+                point,
+                radius * (1.0 - (remaining * 2.0).fract()),
+                Color::srgb_u8(189, 227, 201),
+            );
+        }
+        let color = if unit.team() == Team::Ally {
+            Color::srgb_u8(112, 223, 204)
+        } else {
+            Color::srgb_u8(211, 121, 100)
+        };
+        ring(&mut gizmos, point, unit.stats().radius + 0.16, color);
+        if player.selected == Some(id) || pointer.hovered == Some(id) {
+            ring(
+                &mut gizmos,
+                point,
+                unit.stats().radius + 0.28,
+                Color::srgb_u8(242, 207, 137),
+            );
+        }
+    }
+    for area in &areas {
+        ring(
+            &mut gizmos,
+            area.position(),
+            area.radius(),
+            Color::srgb_u8(225, 174, 95),
+        );
+        ring(
+            &mut gizmos,
+            area.position(),
+            area.radius() * area.progress(),
+            Color::srgb_u8(246, 216, 142),
+        );
+    }
+    if let Some((point, valid, start)) = feedback.marker {
+        let age = time.elapsed_secs() - start;
+        if age < 0.8 {
+            ring(
+                &mut gizmos,
+                point,
+                0.3 + age * 0.6,
+                if valid {
+                    Color::srgb_u8(115, 232, 198)
+                } else {
+                    Color::srgb_u8(245, 104, 91)
+                },
+            );
+        }
+    }
+    if let Some(aim) = player.aim
+        && let Ok((_, unit, pose, _, slots, _)) = units.get(player.player)
+    {
+        let origin = pose.position();
+        match aim {
+            Aim::AttackMove => ring(
+                &mut gizmos,
+                origin,
+                unit.stats().attack_range + unit.stats().radius,
+                Color::srgb_u8(229, 177, 105),
+            ),
+            Aim::Ability(slot) => {
+                if let Some(definition) = slots.ability(slot).and_then(|id| catalog.get(id)) {
+                    ring(
+                        &mut gizmos,
+                        origin,
+                        definition.range,
+                        Color::srgb_u8(99, 204, 204),
+                    );
+                    if let Some(point) = pointer.ground {
+                        let valid = definition.targeting == Targeting::Direction
+                            || origin.distance(point) <= definition.range;
+                        let color = if valid {
+                            Color::srgb_u8(153, 236, 214)
+                        } else {
+                            Color::srgb_u8(240, 117, 101)
+                        };
+                        match definition.effect {
+                            AbilityEffect::Area { radius, .. } => {
+                                ring(&mut gizmos, point, radius, color)
+                            }
+                            _ => {
+                                let end =
+                                    origin + (point - origin).clamp_length_max(definition.range);
+                                gizmos.line(
+                                    Vec3::new(origin.x, 0.1, origin.y),
+                                    Vec3::new(end.x, 0.1, end.y),
+                                    color,
+                                );
+                                ring(&mut gizmos, end, 0.25, color);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

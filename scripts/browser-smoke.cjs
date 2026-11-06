@@ -1,235 +1,195 @@
-// Optional browser integration test. Connects to an ALREADY RUNNING dev server.
-// Requires playwright and pngjs on NODE_PATH; see README.md.
-const assert = require('node:assert/strict');
-const { chromium } = require('playwright');
-const { PNG } = require('pngjs');
+// Optional integration suite. Connects to an already running Trunk/static server.
+const assert = require("node:assert/strict");
+const fs = require("node:fs/promises");
+const path = require("node:path");
+const { PNG } = require("pngjs");
+const { launchBrowser, enterGame, clickWorld, reportFailure } = require("./browser-support.cjs");
 
-function healthBar(buffer, side) {
-  const image = PNG.sync.read(buffer);
-  const color = side === 'player' ? [90, 208, 194] : [228, 159, 95];
-  const start = side === 'player' ? 20 : image.width - 320;
-  let longest = 0;
-  for (let y = 85; y < 150; y++) {
-    let run = 0;
-    for (let x = start; x < start + 300; x++) {
-      const index = (y * image.width + x) * 4;
-      run = color.every((value, channel) => Math.abs(image.data[index + channel] - value) < 3) ? run + 1 : 0;
-      longest = Math.max(longest, run);
+async function main() {
+  const browser = await launchBrowser();
+  let page;
+  try {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+    page = await context.newPage();
+    page.setDefaultTimeout(20000);
+    const errors = [];
+    let webgpu = false;
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => {
+      if (message.text().includes("BrowserWebGpu")) webgpu = true;
+      if (message.type() === "error" || message.text().includes("%cERROR%c")) errors.push(message.text());
+    });
+    const state = () => page.evaluate(() => window.__kivaState);
+    const playerPosition = () => page.evaluate(() => {
+      const s = window.__kivaState;
+      return s.units.find((u) => u.id === s.player_id).position;
+    });
+    const waitPosition = (position) => page.waitForFunction(([x, y]) => {
+      const s = window.__kivaState;
+      const p = s.units.find((u) => u.id === s.player_id).position;
+      return Math.hypot(p[0] - x, p[1] - y) < 0.12;
+    }, position);
+    const waitIdle = () => page.waitForFunction(() => {
+      const s = window.__kivaState;
+      return s.units.find((u) => u.id === s.player_id).order === "Idle";
+    });
+    await enterGame(page);
+    assert.equal(await page.evaluate(() => document.pointerLockElement), null);
+    assert(webgpu, "must use the WebGPU renderer");
+
+    const artifactDir = process.env.KIVA_SCREENSHOT_DIR || "/tmp/kiva-browser-tests/artifacts";
+    await fs.mkdir(artifactDir, { recursive: true });
+    const screenshot = await page.screenshot({ path: path.join(artifactDir, "proving-grounds.png") });
+    const image = PNG.sync.read(screenshot);
+    const colors = new Set();
+    for (let y = 200; y < 650; y += 5) {
+      for (let x = 300; x < 1100; x += 5) {
+        const i = (y * image.width + x) * 4;
+        colors.add(`${image.data[i] >> 3},${image.data[i + 1] >> 3},${image.data[i + 2] >> 3}`);
+      }
     }
+    assert(colors.size > 30, "scene must render visible geometry");
+    console.log("PASS WebGPU scene, HUD and visible cursor");
+
+    await clickWorld(page, [-4, 6], "right");
+    await waitPosition([-4, 6]);
+    await clickWorld(page, [7, 6], "right");
+    await page.waitForFunction(() => {
+      const s = window.__kivaState;
+      return s.units.find((u) => u.id === s.player_id).position[0] > -2;
+    });
+    await clickWorld(page, [0, 6], "right");
+    await waitPosition([0, 6]);
+    await page.keyboard.press("s");
+    await waitIdle();
+    console.log("PASS click-to-move and replacing orders");
+
+    await page.keyboard.press("q");
+    await page.waitForFunction(() => window.__kivaState.aim === 0);
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => window.__kivaState.aim === null);
+    assert.equal((await state()).abilities[0].cooldown, 0);
+    await page.keyboard.press("q");
+    await clickWorld(page, [3, -2]);
+    await page.waitForFunction(() => window.__kivaState.units.some((u) => u.name === "训练哨兵" && u.health === 325));
+    await page.keyboard.press("w");
+    await clickWorld(page, [3, -2]);
+    await page.waitForFunction(() => window.__kivaState.units.some((u) => u.name === "训练哨兵" && u.health === 205));
+    console.log("PASS aim cancellation, projectile and delayed area damage");
+
+    await page.keyboard.press("e");
+    await clickWorld(page, [-3, 6]);
+    await waitPosition([-3, 6]);
+    assert((await state()).abilities[2].cooldown > 0);
+    await page.keyboard.press("r");
+    await page.waitForFunction(() => {
+      const s = window.__kivaState;
+      return s.units.find((u) => u.id === s.player_id).action === "Channeling";
+    });
+    await clickWorld(page, [0, 6], "right");
+    await waitPosition([0, 6]);
+    assert((await state()).abilities[3].cooldown > 0);
+    console.log("PASS dash, channel interruption and persistent cooldowns");
+
+    await clickWorld(page, [3, -2, 1.3], "right");
+    await page.waitForFunction(() => window.__kivaState.units.some((u) => u.name === "训练哨兵" && u.health < 205));
+    await page.keyboard.press("s");
+    await waitIdle();
+    await page.keyboard.press("a");
+    await page.waitForFunction(() => window.__kivaState.attack_move);
+    await clickWorld(page, [3, -4]);
+    await page.waitForFunction(() => {
+      const s = window.__kivaState;
+      return s.units.find((u) => u.id === s.player_id).order === "Attack move";
+    });
+    await page.keyboard.press("s");
+    await waitIdle();
+    console.log("PASS chase attack, attack move and stop");
+
+    const beforeHud = await playerPosition();
+    await page.locator('[data-slot="0"]').click();
+    await page.waitForFunction(() => window.__kivaState.aim === 0);
+    assert(Math.hypot(...(await playerPosition()).map((v, i) => v - beforeHud[i])) < 0.1);
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("y");
+    await page.waitForFunction(() => window.__kivaState.camera_locked);
+    await page.keyboard.press("y");
+    await page.waitForFunction(() => !window.__kivaState.camera_locked);
+    const beforePan = (await state()).camera_center;
+    await page.mouse.move(2, 450);
+    await page.waitForFunction((before) => {
+      const after = window.__kivaState.camera_center;
+      return Math.hypot(after[0] - before[0], after[1] - before[1]) > 1;
+    }, beforePan);
+    await page.mouse.move(720, 450);
+    await page.keyboard.down("Space");
+    await page.waitForFunction(() => {
+      const s = window.__kivaState;
+      const p = s.units.find((u) => u.id === s.player_id).position;
+      return Math.hypot(s.camera_center[0] - p[0], s.camera_center[1] - p[1]) < 0.1;
+    });
+    await page.keyboard.up("Space");
+    await page.mouse.wheel(0, 100);
+    await page.setViewportSize({ width: 1000, height: 720 });
+    await page.waitForFunction(() => window.__kivaState.viewport[0] === 1000);
+    const start = await playerPosition();
+    const destination = [start[0] - 2, start[1]];
+    await clickWorld(page, destination, "right");
+    await waitPosition(destination);
+    console.log("PASS UI isolation, camera modes, edge pan, zoom and resized picking");
+
+    if ((await state()).aim !== null) {
+      await page.keyboard.press("Escape");
+      await page.waitForFunction(() => window.__kivaState.aim === null);
+    }
+    if ((await state()).selected !== null) {
+      await page.keyboard.press("Escape");
+      await page.waitForFunction(() => window.__kivaState.selected === null);
+    }
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => window.__kivaState.paused);
+    const tick = (await state()).tick;
+    await page.waitForTimeout(500);
+    assert.equal((await state()).tick, tick);
+    await page.locator("#enter").click();
+    await page.waitForFunction(() => !window.__kivaState.paused);
+    // Playwright normally emulates focus for every page. Disable that emulation
+    // so the next tab exercises real DOM blur and the game's focus handling.
+    const cdp = await context.newCDPSession(page);
+    await cdp.send("Emulation.setFocusEmulationEnabled", { enabled: false });
+    const otherPage = await page.context().newPage();
+    await otherPage.bringToFront();
+    await page.waitForFunction(() => document.documentElement.dataset.paused === "true");
+    await page.bringToFront();
+    await page.waitForFunction(() => window.__kivaState.paused);
+    await otherPage.close();
+    await page.locator("#enter").click();
+    await page.waitForFunction(() => !window.__kivaState.paused);
+    await waitIdle();
+    console.log("PASS pause, focus loss and clean resume");
+    await context.close();
+
+    const highDpiContext = await browser.newContext({ viewport: { width: 1000, height: 720 }, deviceScaleFactor: 2 });
+    const highDpiPage = await highDpiContext.newPage();
+    page = highDpiPage;
+    highDpiPage.on("pageerror", (error) => errors.push(error.message));
+    await enterGame(highDpiPage);
+    await clickWorld(highDpiPage, [-2, 6], "right");
+    await highDpiPage.waitForFunction(() => {
+      const s = window.__kivaState;
+      const p = s.units.find((u) => u.id === s.player_id).position;
+      return Math.hypot(p[0] + 2, p[1] - 6) < 0.12;
+    });
+    await highDpiContext.close();
+    console.log("PASS high-DPI picking");
+    assert.deepEqual(errors, [], "no browser or renderer errors");
+    console.log(`Browser suite passed. Screenshot: ${artifactDir}/proving-grounds.png`);
+  } catch (error) {
+    if (page) await reportFailure(page);
+    throw error;
+  } finally {
+    await browser.close();
   }
-  return longest;
 }
 
-(async () => {
-  const args = ['--no-sandbox', '--force-device-scale-factor=1'];
-  if (process.env.KIVA_BROWSER_SOFTWARE === '1') {
-    args.push('--enable-unsafe-webgpu', '--use-angle=swiftshader', '--enable-features=Vulkan',
-      '--use-vulkan=swiftshader', '--disable-vulkan-surface', '--disable-gpu-watchdog');
-  }
-  const browser = await chromium.launch({ headless: process.env.KIVA_BROWSER_HEADED !== '1', args,
-    channel: process.env.KIVA_BROWSER_CHANNEL || 'chromium' });
-  try {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
-    const errors = new Set();
-    let webgpu = false;
-    page.on('pageerror', error => { errors.add(error.message); console.error(error.message); });
-    page.on('console', message => {
-      if (message.text().includes('backend: BrowserWebGpu')) webgpu = true;
-      if (message.type() === 'error' || message.text().includes('%cERROR%c')) {
-        if (!errors.has(message.text()) && errors.size < 3) console.error(message.text());
-        errors.add(message.text());
-      }
-    });
-    await page.addInitScript(() => {
-      window.soundCues = [];
-      window.addEventListener('kiva-sound', event => window.soundCues.push(event.detail));
-    });
-    const baseUrl = new URL(process.env.KIVA_TEST_URL || 'http://localhost:8080');
-    const passiveUrl = new URL(baseUrl);
-    passiveUrl.searchParams.set('dummy', 'passive');
-    await page.goto(passiveUrl.href, { timeout: 90000 });
-    await page.locator('#enter').waitFor({ state: 'visible', timeout: 60000 });
-    // Activate the document before requesting real pointer lock.
-    await page.bringToFront();
-    await page.keyboard.press('Tab');
-    await page.locator('#enter').click();
-    await page.waitForFunction(() => document.pointerLockElement?.id === 'game');
-    const cdp = await page.context().newCDPSession(page);
-    const button = async (name, down, buttons = down ? (name === 'left' ? 1 : 2) : 0) => {
-      await cdp.send('Input.dispatchMouseEvent', {
-        type: down ? 'mousePressed' : 'mouseReleased', button: name, buttons,
-        x: 0, y: 0, clickCount: 1,
-      });
-    };
-    const tap = async (name = 'left') => {
-      await button(name, true); await page.waitForTimeout(50); await button(name, false);
-    };
-    const contains = text => page.waitForFunction(text =>
-      document.getElementById('game').getAttribute('aria-label').includes(text), text, { timeout: 6000 });
-    const summary = () => page.locator('#game').getAttribute('aria-label');
-    const hp = async side => Number((await summary()).match(new RegExp(`${side}: (\\d+) HP`))[1]);
-    const reset = async () => {
-      await page.keyboard.press('F8', { delay: 50 });
-      await contains('Dummy: 100 HP; READY');
-      await contains('Player: 100 HP; READY');
-      await page.waitForTimeout(150);
-    };
-    const shot = async name => page.screenshot(process.env.KIVA_SCREENSHOT_DIR
-      ? { path: `${process.env.KIVA_SCREENSHOT_DIR}/${name}.png` } : {});
-    await reset();
-    // Require actual rendering as well as state updates.
-    const deadline = Date.now() + 25000;
-    while (true) {
-      const initial = await shot('idle');
-      if (healthBar(initial, 'player') > 230 && healthBar(initial, 'dummy') > 230) break;
-      assert(Date.now() < deadline, 'WebGPU must render both health bars');
-      await page.waitForTimeout(250);
-    }
-    await tap('right');
-    await contains('VERTICAL 1');
-    await contains('Dummy: 90 HP');
-    await reset();
-    await tap('left');
-    await contains('HORIZONTAL 1');
-    await contains('Dummy: 90 HP');
-
-    await reset();
-    await tap('left');
-    await contains('HORIZONTAL 1');
-    await page.waitForTimeout(310);
-    await tap('right');
-    await contains('VERTICAL 2');
-    await page.waitForTimeout(390);
-    await tap('left');
-    await contains('HORIZONTAL 3 / BLUE');
-    await contains('Dummy: 50 HP');
-
-    await reset();
-    await button('right', true);
-    await contains('VERTICAL CHARGE / BLUE READY');
-    await button('right', false);
-    await contains('VERTICAL SWORD ENERGY');
-    await contains('Dummy: 70 HP');
-    await shot('sword-energy');
-
-    await reset();
-    await button('left', true);
-    await contains('HORIZONTAL CHARGE / BLUE READY');
-    await page.keyboard.press('KeyC', { delay: 60 });
-    await button('left', false);
-    await page.waitForTimeout(700);
-    assert.equal(await hp('Dummy'), 100, 'crouch-cancel must not release the held sword energy');
-
-    await reset();
-    await button('left', true);
-    await button('right', true, 3);
-    await contains('PARRY / ACTIVE');
-    await button('right', false, 1); await button('left', false);
-    await page.waitForTimeout(700);
-    assert.equal(await hp('Dummy'), 100, 'combined parry must not queue a normal attack');
-
-    await reset();
-    await page.keyboard.press('F6', { delay: 50 });
-    await page.waitForTimeout(420);
-    await page.keyboard.press('KeyG', { delay: 40 });
-    await contains('RIPOSTE READY');
-    assert.equal(await hp('Player'), 100, 'timed parry stops the blue strike');
-    await tap('left');
-    await contains('RIPOSTE / GOLD');
-    await contains('Dummy: 65 HP');
-    await shot('riposte');
-
-    await reset();
-    await page.keyboard.press('F5', { delay: 40 });
-    await tap('left');
-    await contains('Dummy: 90 HP');
-
-    await reset();
-    await page.keyboard.press('F7', { delay: 50 });
-    await page.waitForTimeout(420);
-    await page.keyboard.press('KeyG', { delay: 40 });
-    await contains('Player: 80 HP');
-
-    await reset();
-    await page.keyboard.down('KeyC');
-    await tap('right');
-    await page.keyboard.up('KeyC');
-    await contains('UPPERCUT');
-    await contains('Dummy: 86 HP');
-    await shot('uppercut');
-
-    await reset();
-    await page.keyboard.press('Space', { delay: 50 });
-    await contains('AIRBORNE 1/2');
-    await tap('left');
-    await contains('AIR SLASH');
-    await shot('air-slash');
-
-    await reset();
-    await page.keyboard.press('Space', { delay: 50 });
-    await page.keyboard.press('Space', { delay: 50 });
-    await contains('AIRBORNE 2/2');
-    const jumps = await page.evaluate(() => window.soundCues.filter(cue => cue === 'jump').length);
-    await page.keyboard.press('Space', { delay: 50 });
-    assert.equal(await page.evaluate(() => window.soundCues.filter(cue => cue === 'jump').length), jumps, 'third jump rejected');
-
-    await reset();
-    await page.keyboard.press('KeyC', { delay: 50 });
-    await contains('CROUCHING');
-    await page.waitForTimeout(100);
-    assert((await summary()).includes('CROUCHING'), 'releasing C keeps crouch toggled on');
-    await page.keyboard.press('KeyC', { delay: 50 });
-    await contains('READY');
-    await page.keyboard.down('KeyD');
-    await page.keyboard.down('ShiftLeft');
-    await contains('DODGING');
-    await contains('SPRINTING');
-    await page.keyboard.up('ShiftLeft');
-    await page.waitForTimeout(100);
-    await contains('SPRINTING');
-    await page.keyboard.down('KeyW');
-    await page.keyboard.up('KeyD');
-    await contains('SPRINTING');
-    await page.keyboard.up('KeyW');
-    await contains('READY');
-    await page.keyboard.down('KeyD');
-    await page.keyboard.down('ShiftLeft');
-    await contains('SPRINTING');
-    await page.keyboard.up('ShiftLeft');
-    await page.keyboard.press('KeyC', { delay: 50 });
-    await contains('SLIDING');
-    await contains('CROUCHING');
-    await page.keyboard.up('KeyD');
-    await reset();
-    await page.keyboard.press('KeyR'); await page.keyboard.press('KeyM');
-    assert.equal(await page.evaluate(() => window.KivaAudio.muted), false, 'M is reserved for map, not mute');
-    assert.equal(await page.evaluate(() => window.KivaAudio.state), 'running');
-    // DOM click avoids browser focus changes while the mouse is captured.
-    await page.locator('#sound-toggle').evaluate(button => button.click());
-    assert.equal(await page.evaluate(() => window.KivaAudio.muted), true);
-    await page.locator('#sound-toggle').evaluate(button => button.click());
-    await button('left', true);
-    await contains('HORIZONTAL CHARGE');
-    await page.evaluate(() => document.exitPointerLock());
-    await page.locator('#entry').waitFor({ state: 'visible' });
-    await button('left', false);
-    await page.locator('#enter').click();
-    await contains('Player: 100 HP; READY');
-    const cues = await page.evaluate(() => window.soundCues);
-    for (const cue of ['charge-ready', 'sword-energy', 'parry', 'guard', 'jump', 'dodge']) assert(cues.includes(cue), `missing ${cue} sound`);
-    // Default play must repeat charged horizontal attacks without player input.
-    baseUrl.searchParams.delete('dummy');
-    await page.evaluate(() => document.exitPointerLock());
-    await page.goto(baseUrl.href, { timeout: 90000 });
-    await page.locator('#enter').waitFor({ state: 'visible', timeout: 60000 });
-    await page.locator('#enter').click();
-    await contains('Dummy: 100 HP; HORIZONTAL CHARGE');
-    await contains('Player: 70 HP');
-    await contains('Player: 40 HP');
-    assert(await page.evaluate(() => window.soundCues.filter(cue => cue === 'sword-energy').length >= 2),
-      'enemy repeats charged sword energy');
-    assert(webgpu, 'engine must use BrowserWebGpu');
-    assert.deepEqual([...errors], [], 'no browser or renderer errors');
-    console.log('PASS WebGPU rendering, horizontal/vertical, charged wave, cancellation, combined parry, riposte, normal punishes parry, uppercut, air attack, jump, dash/sprint/slide, audio, pause and enemy AI');
-  } finally { await browser.close(); }
-})().catch(error => { console.error(error); process.exitCode = 1; });
+main().catch((error) => { console.error(error); process.exitCode = 1; });

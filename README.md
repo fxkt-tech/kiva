@@ -1,86 +1,15 @@
-# Kiva · Longsword Training
+# Kiva · 试炼之境
 
-Bevy 0.20.1 第三人称 3D 近战原型：一个持长剑主角、一个训练木人和一座练武场。支持 macOS 开发，通过 Chrome / Edge 的 WebGPU 运行，也支持原生桌面构建。
+基于 Bevy 0.20.1 的浏览器俯视角游戏基础框架：固定角度三维镜头、鼠标点地移动、
+绕障寻路、追击普攻、攻击移动，以及四种用于验证技能架构的示例技能。
+通过 Trunk / WASM / WebGPU 运行，支持原生桌面调试。
 
-操作参照《永劫无间》PC 长剑的基础近战体系；伤害、时序、距离是本原型的可调参数，不声称与原作逐帧一致。当前完成单武器训练，不包含飞索、攀爬、英雄技能、远程武器、背包和魂玉。
+游戏模拟独立于输入、相机、模型和浏览器。模块职责、执行顺序、扩展约定见
+[架构文档](docs/architecture.md)。旧长剑训练原型保留在 `act` 分支。
 
-## 操作
+## 启动
 
-点击 **Enter training** 捕获鼠标，鼠标直接旋转视角。Esc / 失焦暂停模拟并清理输入；暂停中的蓄力会取消，重新进入后不会误放剑气。
-
-| 操作 | 行为 |
-| --- | --- |
-| WASD / 方向键 | 相对镜头方向移动 |
-| 鼠标移动 | 旋转视角；滚轮暂保留镜头距离调节 |
-| 按住左 Alt + 鼠标 | 自由观察，不改变移动与出剑方向；松开回到原方向 |
-| 空格 | 跳跃，空中再按一次二段跳 |
-| 左 Shift | 点按闪避；长按触发疾跑，松开 Shift 后继续，松开所有方向键才结束 |
-| 左 Ctrl | 慢走 |
-| 点按 C | 切换蹲伏／站立；疾跑时按下进入滑铲 |
-| 左键点按 | 平击，可衔接三段连击 |
-| 右键点按 | 纵击，可衔接三段连击 |
-| 长按左键 / 右键后松开 | 蓄力，释放横向 / 纵向剑气 |
-| 左右键组合 / G | 振刀；G 是本原型选择的快捷键 |
-| 蹲伏时左键 | 蹲伏横扫 |
-| 蹲伏时右键 | 升龙，命中时双方浮空 |
-| 空中左键 / 右键 | 空中平击 / 下劈 |
-| 振刀成功后左键或右键 | 金霸体反击 |
-| F5 | 木人立即振刀，用于练习普攻克制振刀 |
-| F6 / F7 | 木人出一次蓝霸体攻击 / 普通攻击 |
-| F8 | 重置位置、血量、精力、动作和剑气 |
-| 页面右上角按钮 | 开关音效，保存静音设置 |
-| Esc | 释放鼠标并暂停训练 |
-
-macOS 若将 F 键用于媒体控制，请使用 **fn + F5 / F6 / F7 / F8**。R、M、T 已腾出，分别为未来的维修、地图和聊天操作保留。
-
-C 使用切换模式：松开按键会继续蹲伏，再按一次起身；蹲下后可直接点击左右键出招。
-滑铲结束后保持蹲伏，按 C 可提前起身结束滑铲。跳跃、闪避、升龙起跳、暂停和重置会退出蹲伏。
-
-## 长剑战斗规则
-
-- 平击与纵击各有三段，支持混合衔接；伤害 **10 / 15 / 25**，第三段为蓝霸体。纵击的攻击扇形更窄、距离略长。
-- 每段分为前摇、有效攻击时间、收招；每次挥砍对同一目标只结算一次伤害，各类多段招式逐段独立判定。前摇后的输入可缓存 **0.22 秒**，第三段结束后连段归零。
-- 长按攻击进入蓄力：**0.55 秒**发出提示音并进入蓝霸体，松开释放 **30** 伤害剑气；持续按住 **1.45 秒**自动释放。未蓄满时松开出普通攻击。
-- 横剑气更宽，纵剑气更高。剑气以 **12 米/秒**传播，最远 **10 米**；按整个帧间路径检测，不会因慢帧穿过目标而漏判。
-- 普攻可以打断振刀；振刀可克制正面蓝霸体攻击；蓝霸体受到普攻时仍扣血，但不产生硬直。金霸体反击不能被振刀，也不被普通／蓝霸体攻击打断。
-- 振刀动作持续 **0.60 秒**，有效窗口 **0.05～0.28 秒**，不能通过一直按住来持续防御。近距离振刀成功使攻击者失去武器 **1.2 秒**，训练场自动恢复；**1.8 秒**内可发动一次 **17.5 + 17.5** 伤害金霸体反击。
-- 剑气可被振刀反射，反射伤害为原伤害 **40%**；远距离振剑气不会直接让远处的持剑者失去武器。
-- 同等级近战攻击相遇会拼刀，双方短暂硬直；剑气不按普通挥剑拼刀处理。
-- 蹲伏横扫伤害 **14**；升龙为 **7 + 7** 两段，首次命中使双方浮空，第二段不重置浮空速度。空中左键一次连续砍两刀，每刀 **6**（合计 **12**），各有命中判定和挥剑音效；空中下劈为 **2 + 16** 两段。
-- 蓄力可用蹲伏、跳跃、闪避或振刀取消，之后松开鼠标不会误放招。普通攻击在收招阶段可用蹲伏、跳跃、闪避或振刀取消；出刀阶段需完成动作。
-- 支持 **B → 闪避 → B → C+右键升龙 → 空中左键 → 空中右键下劈**（B 为右键纵击）。第一刀命中后可预输入 Shift，闪避中预输入第二次右键，再在第二刀命中后预输入 C+右键；无需等动作完全结束。按住右键仍可进入蓄力。
-- 攻击、闪避、跳跃、振刀与下蹲有 **0.24 秒**输入缓存，命中停顿期间也接收输入；C+右键保留升龙意图。闪避 **0.12 秒**后可接攻击，出手立即结束闪避无敌，闪避接普攻从第一段重新开始并增加前进量。普通纵击硬直 **0.55 秒**、普通横击 **0.24 秒**、升龙 **0.50 秒**、空中攻击命中浮空目标 **0.38 秒**。升龙前摇为 **0.40 秒**。这些为本原型的连招调校值。
-- 精力上限 **100**，闪避消耗 **20**，消耗后等待 **0.65 秒**再以每秒 **24** 恢复。精力不足不能闪避，疾跑不消耗精力。
-- 双方 **100 HP**，归零倒下，约两秒后训练场自动复位。敌人自动朝向玩家，反复蓄力 **0.80 秒**后释放横向剑气，收招后再次蓄力；不主动追击。蓄力期间转向，出刀后锁定方向；被打断或缴械后等待恢复再继续。F5～F7 可临时指定训练动作，结束后恢复自动攻击。网页地址添加 `?dummy=passive` 可切换为被动木人。
-
-## 动作与反馈
-
-- 点按闪避持续 **0.42 秒**，长按 Shift 触发疾跑时，在 **0.26 秒**结束短闪并衔接疾跑；松开 Shift 后继续疾跑，所有方向键松开后结束；无方向输入时向后闪避。闪避有效窗口 **0.06～0.28 秒**。
-- 待机移动速度 **3.8 米/秒**，疾跑 **6**，慢走 **1.8**，蓄力和蹲伏移动 **1.6**。跳跃保留二段跳，落地恢复次数。
-- 火柴人采用 Quaternius CC0 身体动画与自编剑路：横击为横斩／回斩／大横扫，纵击为突刺／斜劈／重纵劈；闪避追击、蹲伏横扫、升龙、空中往返双斩、下劈、两种蓄力释放与振刀反击各有独立姿势。升龙转体一周并由下向上挑剑，空中下劈先举剑再下落；除空中右键下劈保留双手握剑外，其他攻击、蓄力、待机与空中持剑均为右手单手持剑，左手保留自然动作，蹲伏保持脚部落点。当前不复刻原作动画资产。
-- 蓝霸体显示蓝色、振刀红色、反击金色；武器失去期间隐藏剑，界面显示血量、精力和动作状态。命中有停顿、闪白、火花、伤害数字、剑轨和镜头震动。
-- WebAudio 合成挥剑、蓄满提示、剑气、振刀、脚步、跳跃、落地和闪避音效。进入训练解锁音频，暂停训练时暂停播放；原生窗口不输出 WebAudio。
-
-## 参数来源与多段判定
-
-攻击配置集中在 `combat/core.rs` 的 `AttackSpec`：`damage` 为整招总伤害，
-`strikes` 给出各段在攻击阶段内的起止比例和伤害份额；动画、音效与命中使用同一组窗口。
-`active` 包含段间回刀空档，只有各段窗口内能命中，全部段落结束后才进入后摇。
-
-| 招式 | 命中结构 | 原型伤害分配 |
-| --- | --- | --- |
-| 2A（二段横击） | 三次往返斩击 | 5 + 5 + 5 |
-| 升龙 | 两段上挑，转体一周 | 7 + 7 |
-| 空中左键 | 横斩、回斩 | 6 + 6 |
-| 空中下劈 | 初次接触、下劈后续 | 2 + 16 |
-| 振刀反击 | 前刺、斜斩 | 17.5 + 17.5 |
-
-段数参考 [2021 年玩家原始测试记录](https://baskmedia.jp/naraka-longsword-howtouse/)
-和 [2022 年 5 月 21 日官方公告](https://www.yjwujian.cn/news/update/20220509/33456_1016939.html)。
-上述伤害分配、窗口和位移为本原型的调校值，不是已验证的当前端游参数。
-升龙前摇保留 0.40 秒；下劈保留双手，其余攻击单手。暂未用无法核实的帧数替换时序。
-
-## macOS 开发
+需要 Rust 1.97.1 或更新版本。安装工具后，在仓库根目录运行：
 
 ```bash
 rustup target add wasm32-unknown-unknown
@@ -88,92 +17,105 @@ cargo install trunk --locked
 make run
 ```
 
-构建完成后在更新至近期版本的 Chrome / Edge 打开 <http://localhost:8080>。本地使用 localhost，部署使用 HTTPS，并开启浏览器 GPU 加速。旧浏览器即使有 WebGPU，也可能不支持 Bevy 0.20 的着色器语法；本机 Chrome 143 会因此黑屏，新版 Chromium 已用于验证。
+浏览器打开 <http://localhost:3221>，点击“进入试炼”。需支持 WebGPU 的新版 Chrome / Edge，
+开启 GPU 加速。本地使用 localhost，部署使用 HTTPS。不需要 Node.js 运行游戏。
 
-## WSL 环境
+开发服务监听代码改动并刷新页面。自定义 Trunk 参数可以使用：
 
-把项目放在 WSL 的 Linux 文件系统中。使用 Linux 版 Rust，最低版本为 1.97.1：
+```bash
+make run ARGS='--port 8080'
+```
+
+WSL 中把仓库放在 Linux 文件系统，安装 Linux 版 Rust。原生工具缺失时先安装：
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y build-essential pkg-config
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-source "$HOME/.cargo/env"
-rustup update stable
-rustup target add wasm32-unknown-unknown
-cargo install trunk --locked
+sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 ```
 
-如果已经运行开发服务，保持现有服务即可，Trunk 会监听改动并刷新页面。需要手动启动时：
+使用 Windows 浏览器访问 localhost 即可，网页渲染不依赖 WSLg。`cargo run` 可调试原生版，
+需要可用的桌面图形环境；原生版提供基本文字 HUD。
 
-```bash
-make run
-```
+## 操作
 
-在 Windows 浏览器打开 <http://localhost:8080>。网页端需要 WebGPU 和可用的 GPU 适配器；本地使用 localhost，正式部署使用 HTTPS。当前构建不自动回退到 WebGL2。WSL 不负责网页渲染，不需要 WSLg 或 Node.js 运行游戏。
+| 操作 | 行为 |
+| --- | --- |
+| 右键地面 | 移动到指定位置，自动绕过静态障碍 |
+| 右键敌人 | 追击并持续普攻 |
+| 左键单位 | 选择单位并查看信息 |
+| A → 左键 | 攻击移动，途中获取附近敌人 |
+| S | 停止并取消当前可中断动作 |
+| Q → 左键 | 奥术飞矢：方向弹丸 |
+| W → 左键 | 震荡领域：指定地点延迟范围伤害 |
+| E → 左键 | 流风步：短距离冲刺，遇墙停止 |
+| R | 共鸣：在自身周围持续引导伤害，移动可中断 |
+| Y | 切换自由镜头和跟随镜头 |
+| 空格 | 按住时镜头跟随角色；松开保留位置 |
+| 鼠标靠近画布边缘 / 方向键 | 自由模式下平移镜头 |
+| 滚轮 | 有限范围内缩放 |
+| Esc | 依次取消瞄准、取消选择、切换暂停 |
+| ? / 操作指南按钮 | 展开操作说明 |
 
-## 构建与预览
+鼠标无需锁定。地点技能必须在射程内；方向技能沿鼠标方向发射。
+点击底部 Q/W/E 技能按钮也可进入瞄准，再左键点击场景释放；R 按钮点击后直接释放。
+前摇取消不消耗能量和冷却，出手后移动不会重置冷却。
+训练目标死亡后约 3 秒重生。地图右下角预览只读，不下达移动指令。
 
-```bash
-trunk build --release
-python3 -m http.server 8080 --bind 127.0.0.1 --directory dist
-```
-
-`dist/` 是完整静态网站，不需要后端。子目录部署可使用 `trunk build --release --public-url /kiva/`。首次开发构建包含调试信息，体积较大；发布时使用 release 构建。
-
-## 代码结构
-
-```text
-src/lib.rs               引擎、窗口和网页适配
-src/game/mod.rs          系统注册与执行顺序
-src/game/input.rs        输入、鼠标捕获状态与暂停
-src/game/camera.rs       第三人称相机、自由视角与震动
-src/game/arena.rs        地面、灯光与练武场
-src/game/player.rs       火柴人几何体、骨骼绑定与右手武器挂点
-src/game/combat/core.rs  不依赖渲染的攻击时序、连招、蓄力、振刀与精力规则
-src/game/combat/mod.rs   双方状态、移动、命中、剑气、反射、击退与复活
-src/game/animation.rs    动作选择、姿势过渡与骨骼动画同步
-src/game/animation/attacks.rs 各类攻击的剑路、阶段采样与双手握柄
-src/game/skeleton.rs     动画采样、四元数插值与骨骼层级计算
-src/game/effects.rs      剑轨、火花、闪白、伤害数字与打击反馈
-src/game/hud.rs          血量／精力条、动作状态、命中与振刀提示
-src/game/sound.rs        动作音效事件
-web/audio.js             浏览器合成音效、音量与暂停
-assets/animations/      已整理的骨骼动作、CC0 许可与素材来源
-scripts/import-animations.py 从官方免费 GLB 动作包重新生成资源，无需 Blender
-index.html              网页入口、加载提示与鼠标捕获交互
-```
-
-攻击时序与数值集中在 `combat/core.rs` 的 `Attack::spec`、`LIGHT_ATTACKS`、`TRAINING_ATTACK` 及相关常量中。火柴人保留素材的 23 根主体骨骼，以原始关键帧驱动身体并叠加自编攻击姿势；动作资源约 565 KiB，编译时嵌入，网页无需额外请求模型。动画不驱动战斗位移或伤害。素材来源、许可和重建步骤见 [assets/animations/README.md](assets/animations/README.md)。
+首版为本地单人测试场景，包含固定靶和巡逻靶。单位暂不互相阻挡；
+尚未加入装备、经济、兵线、战争迷雾或联网。
 
 ## 检查
 
 ```bash
-cargo fmt --check
-cargo check --locked --target wasm32-unknown-unknown
-cargo check --locked
-./scripts/test-combat.sh
-cargo test --locked --lib
+rustup component add rustfmt clippy
+make check
 ```
 
-战斗规则测试直接使用 Rust 测试框架运行，不初始化窗口或 GPU。
+`make check` 依次运行格式检查、Clippy、Rust 测试和 WASM 类型检查，GitHub Actions 使用相同入口。
+也可单独执行 `make fmt`、`make lint`、`make test`、`make wasm`。
 
-`cargo run` 可打开桌面版，鼠标左键进入操作、Esc 释放鼠标。原生运行需要对应平台的图形环境；WSL 中通常通过 WSLg。
+`tests/simulation.rs` 使用相同的公开角色指令接口，验证寻路、攻击、施法提交、冷却、
+中断、伤害、死亡重生等规则，不创建窗口、相机或 GPU。
 
-浏览器集成测试可选，需要另外安装测试工具；它连接已有服务，不启动服务：
+浏览器集成测试需要已运行的开发服务，以及额外的测试工具：
 
 ```bash
-npm install --prefix /tmp/kiva-browser-tests playwright pngjs
+npm install --prefix /tmp/kiva-browser-tests playwright@1.65.0 pngjs@7.0.0
 /tmp/kiva-browser-tests/node_modules/.bin/playwright install chromium
 NODE_PATH=/tmp/kiva-browser-tests/node_modules node scripts/browser-smoke.cjs
-```
-
-该测试验证真实 WebGPU 渲染、鼠标捕获、平击／纵击、蓄力剑气、动作取消、组合振刀、振刀反击、普攻克制振刀、升龙、空中攻击、二段跳、闪避／疾跑／滑铲、音效和暂停。测试默认使用 Playwright 安装的 Chromium；设置 `KIVA_BROWSER_HEADED=1` 显示窗口，`KIVA_BROWSER_CHANNEL=chrome` 可验证本机 Chrome。`KIVA_BROWSER_SOFTWARE=1` 使用 Linux 无头 Chromium 的 Vulkan / SwiftShader 测试配置，用于没有硬件 GPU 的自动化环境；Windows 正常游玩不需要这些参数。可通过 `KIVA_TEST_URL` 指定已有服务地址。
-
-也可单独检查启动流程及 WASM 下载失败提示（保持开发服务运行）：
-
-```bash
 NODE_PATH=/tmp/kiva-browser-tests/node_modules node scripts/browser-startup.cjs
 ```
 
-加载遮罩由游戏场景初始化完成后的 `kiva-ready` 事件关闭，不依赖特定 Trunk 版本的启动事件。
+冒烟测试覆盖真实 WebGPU 渲染、点地移动、普攻、示例技能、HUD 隔离、镜头操作、
+窗口尺寸变化、高 DPI、暂停和失焦。启动测试验证 WASM 下载失败提示和重试。
+截图默认保存到 `/tmp/kiva-browser-tests/artifacts`，可通过 `KIVA_SCREENSHOT_DIR` 覆盖。
+
+可选环境变量：`KIVA_TEST_URL` 指定服务地址，`KIVA_BROWSER_HEADED=1` 显示窗口，
+`KIVA_BROWSER_CHANNEL=chrome` 使用本机 Chrome。
+没有硬件 GPU 的 Linux 自动化环境可设置 `KIVA_BROWSER_SOFTWARE=1` 使用 SwiftShader / Vulkan；
+Windows 正常游玩不需要这些参数。
+
+Linux 截图验收使用 `KIVA_BROWSER_HEADED=1`，可在桌面或 `xvfb-run -a` 下运行。
+某些无头 Chromium 会正常运行 WebGPU 模拟，却把画布截成黑色，相关环境说明见
+[WebGPU 浏览器测试记录](https://github.com/pmndrs/react-three-examples/blob/main/research/webgpu-ci-github.md)。
+如果浏览器缺少系统运行库，可运行 Playwright 的 `install-deps chromium` 安装依赖。
+
+单独验证鼠标点击技能的完整流程，不需要启动开发服务：
+
+```bash
+trunk build --dist /tmp/kiva-browser-site
+NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-skills.cjs
+```
+
+此测试自行创建临时静态文件测试入口并在结束时关闭，覆盖跨帧按下按钮、
+Q/W/E 选目标释放、R 直接释放以及真正失焦后的暂停恢复。
+
+## 构建部署
+
+```bash
+trunk build --release
+python3 -m http.server 3221 --bind 127.0.0.1 --directory dist
+```
+
+`dist/` 是完整静态站点，不需要后端。部署到子目录时指定
+`trunk build --release --public-url /kiva/`。
