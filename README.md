@@ -85,7 +85,7 @@ C 使用切换模式：松开按键会继续蹲伏，再按一次起身；蹲下
 ```bash
 rustup target add wasm32-unknown-unknown
 cargo install trunk --locked
-./scripts/web-dev.sh
+make run
 ```
 
 构建完成后在更新至近期版本的 Chrome / Edge 打开 <http://localhost:8080>。本地使用 localhost，部署使用 HTTPS，并开启浏览器 GPU 加速。旧浏览器即使有 WebGPU，也可能不支持 Bevy 0.20 的着色器语法；本机 Chrome 143 会因此黑屏，新版 Chromium 已用于验证。
@@ -107,7 +107,7 @@ cargo install trunk --locked
 如果已经运行开发服务，保持现有服务即可，Trunk 会监听改动并刷新页面。需要手动启动时：
 
 ```bash
-./scripts/web-dev.sh
+make run
 ```
 
 在 Windows 浏览器打开 <http://localhost:8080>。网页端需要 WebGPU 和可用的 GPU 适配器；本地使用 localhost，正式部署使用 HTTPS。当前构建不自动回退到 WebGL2。WSL 不负责网页渲染，不需要 WSLg 或 Node.js 运行游戏。
