@@ -76,7 +76,7 @@ impl AttributeDelta {
             self.attack_speed,
         ]
     }
-    fn valid(self) -> bool {
+    pub(super) fn valid(self) -> bool {
         self.values().into_iter().all(f32::is_finite)
     }
 }
@@ -157,6 +157,11 @@ impl AttributeModifier {
 /// Allocated by AttributeChanges; never recycled within one simulation World.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ModifierSourceId(u64);
+impl ModifierSourceId {
+    pub(super) fn value(self) -> u64 {
+        self.0
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AttributeRejection {
     InvalidUnit,

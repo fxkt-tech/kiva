@@ -7,6 +7,7 @@ mod characters;
 mod combat;
 mod damage;
 mod effects;
+mod equipment;
 mod model;
 mod movement;
 mod navigation;
@@ -27,9 +28,14 @@ pub use characters::{
 };
 pub use damage::{DamageOrigin, DamageSnapshot, DamageSpec, DamageType};
 pub use effects::ImpactSnapshot;
+pub use equipment::{
+    EQUIPMENT_SLOTS, EquipmentCatalog, EquipmentDefinition, EquipmentError, EquipmentId,
+    EquipmentInstanceId, EquipmentPassive, EquipmentSlots, EquippedItem, equip_equipment,
+    unequip_equipment,
+};
 use model::Movement;
 pub use model::{
-    AbilitySlots, AbilityTarget, AreaEffect, CommandQueue, Projectile, Rejection,
+    AbilitySlots, AbilityTarget, AreaEffect, CastSource, CommandQueue, Projectile, Rejection,
     SimulationControl, SimulationEvent, SimulationTick, Team, Unit, UnitAction, UnitCommand,
     UnitLifeRef, UnitOrder, UnitPose, UnitSpec, UnitState, UnitStats,
 };
@@ -48,6 +54,7 @@ impl Plugin for SimulationPlugin {
             .init_resource::<AttributeChanges>()
             .init_resource::<AbilityCatalog>()
             .init_resource::<CharacterCatalog>()
+            .init_resource::<EquipmentCatalog>()
             .init_resource::<SimulationControl>()
             .init_resource::<SimulationTick>()
             .init_resource::<effects::PendingImpacts>()
@@ -150,6 +157,7 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
                 ids: spec.abilities,
                 cooldowns: [0.0; 4],
             },
+            EquipmentSlots::default(),
             UnitOrder::default(),
             UnitAction::default(),
             Movement::default(),

@@ -1,5 +1,5 @@
 //! Damage expressions are snapshotted at commit; defenses are read at impact.
-use super::{AbilityId, EffectiveAttributes};
+use super::{AbilityId, EffectiveAttributes, EquipmentId, EquipmentInstanceId};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DamageType {
@@ -58,6 +58,16 @@ impl DamageSpec {
 pub enum DamageOrigin {
     BasicAttack,
     Ability(AbilityId),
+    EquipmentActive {
+        equipment: EquipmentId,
+        instance: EquipmentInstanceId,
+        ability: AbilityId,
+    },
+    EquipmentPassive {
+        equipment: EquipmentId,
+        instance: EquipmentInstanceId,
+        passive: usize,
+    },
 }
 /// A committed effect's immutable damage. Construction stays inside simulation.
 #[derive(Clone, Copy, Debug, PartialEq)]

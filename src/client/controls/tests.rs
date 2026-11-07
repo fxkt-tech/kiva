@@ -258,7 +258,13 @@ fn selecting_discards_game_input_and_npc_commands_and_cannot_be_unpaused() {
         .iter(app.world())
         .map(|(id, pose)| (id, pose.position()))
         .collect();
-    let npc = positions[0].0;
+    // Query order can change when spawn bundles gain components. The static
+    // sentinel must stay idle; the separate patrol is expected to resume.
+    let npc = app
+        .world_mut()
+        .query_filtered::<Entity, (With<Unit>, Without<Patrol>)>()
+        .single(app.world())
+        .unwrap();
     app.world_mut()
         .resource_mut::<CommandQueue>()
         .submit(npc, UnitCommand::MoveTo(Vec2::new(5.0, 5.0)));
@@ -440,5 +446,124 @@ fn delayed_capture_event_keeps_resume_paused_then_recenters_and_discards_queued_
     assert!(
         !sync_pointer(app.world_mut(), None, false, size, None).1,
         "native input keeps its absent-browser capture branch"
+    );
+}
+
+#[test]
+fn keyboard_and_mouse_item_selection_share_target_validation_and_commit_the_item_source() {
+    let (mut app, window) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let instance = equip_equipment(app.world_mut(), player, 1, EquipmentId(7)).unwrap();
+    let enemy = control_caster(&mut app, AbilityId(5));
+    let health = app.world().get::<UnitState>(enemy).unwrap().health();
+    press(&mut app, window, KeyCode::Digit2);
+    app.update();
+    assert!(matches!(app.world().resource::<PlayerController>().aim,
+        Some(Aim::Equipment { slot:1, instance:id }) if id == instance));
+    for hovered in [None, Some(player)] {
+        *app.world_mut().resource_mut::<PointerState>() = PointerState {
+            ground: Some(Vec2::new(1.0, 6.0)),
+            hovered,
+            ..default()
+        };
+        mouse_pressed(app.world_mut(), MouseButton::Left);
+        assert!(matches!(
+            app.world().resource::<PlayerController>().aim,
+            Some(Aim::Equipment { slot: 1, .. })
+        ));
+    }
+    app.world_mut().resource_mut::<PlayerController>().aim = None;
+    let raw = serde_json::json!({"slot":1,"instance_id":instance.to_string()}).to_string();
+    queued_equipment_request(app.world_mut(), Some(&raw), false);
+    assert!(matches!(app.world().resource::<PlayerController>().aim,
+        Some(Aim::Equipment { slot:1, instance:id }) if id == instance));
+    app.world_mut().resource_mut::<PointerState>().hovered = Some(enemy);
+    mouse_pressed(app.world_mut(), MouseButton::Left);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    for _ in 0..20 {
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    assert!(
+        app.world()
+            .get::<EquipmentSlots>(player)
+            .unwrap()
+            .item(1)
+            .unwrap()
+            .cooldown()
+            > 0.0
+    );
+    assert_eq!(
+        app.world().get::<AbilitySlots>(player).unwrap().cooldown(0),
+        Some(0.0)
+    );
+    assert!(app.world().get::<UnitState>(enemy).unwrap().health() < health);
+}
+
+#[test]
+fn queued_item_requests_are_discarded_at_capture_pause_and_stale_instance_boundaries() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let instance = equip_equipment(app.world_mut(), player, 0, EquipmentId(7)).unwrap();
+    let raw = serde_json::json!({"slot":0,"instance_id":instance.to_string()}).to_string();
+    queued_equipment_request(app.world_mut(), Some(&raw), true);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    app.world_mut().resource_mut::<SimulationControl>().paused = true;
+    queued_equipment_request(app.world_mut(), Some(&raw), false);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    app.world_mut().resource_mut::<SimulationControl>().paused = false;
+    queued_equipment_request(app.world_mut(), Some(&raw), false);
+    assert!(app.world().resource::<PlayerController>().aim.is_some());
+    unequip_equipment(app.world_mut(), player, 0, instance).unwrap();
+    let replacement = equip_equipment(app.world_mut(), player, 0, EquipmentId(7)).unwrap();
+    assert_ne!(instance, replacement);
+    refresh_aim(app.world_mut());
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    queued_equipment_request(app.world_mut(), Some(&raw), false);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    assert!(
+        app.world()
+            .resource::<ClientFeedback>()
+            .message
+            .contains("已经变更")
+    );
+    app.world_mut().run_schedule(FixedUpdate);
+    assert_eq!(
+        app.world()
+            .get::<EquipmentSlots>(player)
+            .unwrap()
+            .item(0)
+            .unwrap()
+            .cooldown(),
+        0.0
+    );
+}
+
+#[test]
+fn a_self_cast_item_submits_immediately_and_consumes_its_own_cooldown() {
+    let (mut app, window) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    equip_equipment(app.world_mut(), player, 5, EquipmentId(9)).unwrap();
+    press(&mut app, window, KeyCode::Digit6);
+    app.update();
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    for _ in 0..20 {
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    assert!(matches!(
+        app.world().get::<UnitAction>(player),
+        Some(UnitAction::Channeling { .. })
+    ));
+    assert!(
+        app.world()
+            .get::<EquipmentSlots>(player)
+            .unwrap()
+            .item(5)
+            .unwrap()
+            .cooldown()
+            > 0.0
+    );
+    assert_eq!(
+        app.world().get::<AbilitySlots>(player).unwrap().cooldown(3),
+        Some(0.0)
     );
 }

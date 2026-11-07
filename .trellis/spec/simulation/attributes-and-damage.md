@@ -4,7 +4,8 @@
 
 适用于构造单位、修改属性、定义伤害、普攻时序和命中结算。实现位于
 `src/simulation/attributes.rs`、`damage.rs`、`actions.rs`、`combat.rs`。
-本规范描述基础属性与伤害实现；状态计时和控制规则由[状态规范](abilities-and-statuses.md)约束，装备生命周期尚未实现。
+本规范描述基础属性与伤害实现；状态计时和控制由[状态规范](abilities-and-statuses.md)约束，
+装卸、持久来源及被动快照由[装备规范](equipment.md)约束。
 
 ## 2. 接口
 
@@ -56,11 +57,13 @@ pub struct DamageSpec {
 - `AttributeModifier.move_speed_multiplier`默认1且有限[0,1]，仅对最终移速乘算；在f64中乘完再做最终饱和。
 - Slow模块聚合最强强度，只维护一个私有来源：20%加速+30%Slow是1.2×0.7=0.84倍。
 - 状态末段变更同步复用属性内部校验/提交，不能等下一步公开队列才更新最终值。
+- 装卸同样复用内部同步入口，暂停期间也即时更新；实例贡献一个Explicit来源，不直接加减最终值。
 - `Explicit` 来源仅显式移除；`OnDeath` 在死亡时清理。状态计时不属于属性模块。
 - 伤害提交快照 `base + ad_ratio * AD + ap_ratio * AP`；命中时读取目标对应最终抗性。
 - 来源死亡/移除不改变已提交效果；引导后续脉冲复用同一攻方快照。
 - 抗性非负倍率 `100 / (100 + r)`，负抗性倍率 `2 - 100 / (100 - r)`，真实伤害忽略抗性。
 - `Damaged { source, target, amount, kind, origin }` 的 amount 为实际生命损失；0 实际损失不发事件。
+- `DamageOrigin`区分普攻、技能、含实例的装备主动/被动；不可把装备归因为同一个技能ID。
 
 ## 4. 校验与错误矩阵
 
@@ -103,7 +106,8 @@ pub struct DamageSpec {
 
 错误：装备先 `final_attack_damage += 10`，卸下时 `-= 10`；来源替换和百分比叠加后容易残留。
 
-正确：为装备实例分配并保留来源 ID，通过 `AttributeChanges` upsert/remove；由属性模块从基础值重算。
+正确：通过`equip_equipment/unequip_equipment`管理实例，入口在属性模块同步提交来源并从基础值重算。
+其它公开属性调用方继续使用`AttributeChanges`队列，不自行改写最终值。
 输入和 UI 读取 `unit.attributes().attack_damage()`，定义配置读取 `unit.definition()`。
 
 错误：弹丸命中时查询施法者当前 AP；施法者已销毁时丢弃整个效果。

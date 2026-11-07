@@ -85,7 +85,7 @@ fn representable_time(v: f32) -> bool {
         && (v == 0.0 || v - super::TICK_SECONDS < v)
 }
 impl ImpactDefinition {
-    fn valid(&self, targeting: Targeting, range: f32) -> bool {
+    pub(super) fn valid(&self, targeting: Targeting, range: f32) -> bool {
         let delivery_valid = match self.delivery {
             Delivery::Direct => targeting == Targeting::Enemy,
             Delivery::Projectile { speed, radius } => {

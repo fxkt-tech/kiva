@@ -9,7 +9,9 @@
     <link data-trunk rel="rust" data-bin="kiva" />
     <link data-trunk rel="copy-file" href="web/style.css" />
     <link data-trunk rel="copy-file" href="web/hud.js" />
+    <link data-trunk rel="copy-file" href="web/equipment.js" />
     <link rel="stylesheet" href="style.css" />
+    <script src="equipment.js" defer></script>
     <script src="hud.js" defer></script>
   </head>
   <body>
@@ -20,6 +22,7 @@
       <div><div class="eyebrow">KIVA / PROVING GROUNDS</div><h1>试炼之境<span>01</span></h1></div>
     </header>
     <div class="top-right" data-ui>
+      <button id="equipment-toggle" class="subtle" hidden>装备 <kbd>P</kbd></button>
       <span class="status"><i></i><span id="session-status">正在准备</span></span>
       <button id="help-toggle" class="subtle" aria-expanded="false" aria-controls="help">操作指南 <kbd>?</kbd></button>
     </div>
@@ -31,6 +34,8 @@
         <dt>A → 左键</dt><dd>攻击移动</dd>
         <dt>S</dt><dd>停止当前指令</dd>
         <dt>Q / W / E / R</dt><dd>按装配技能选择单位、地点或方向；自身技能直接释放</dd>
+        <dt>1 / 2 / 3 / 4 / 5 / 6</dt><dd>使用对应格的主动装备，也可鼠标点击</dd>
+        <dt>P</dt><dd>暂停并调整本局装备</dd>
         <dt>Y / 空格</dt><dd>锁定镜头 / 按住跟随</dd>
         <dt>边缘 / 方向键</dt><dd>平移镜头</dd>
         <dt>滚轮</dt><dd>缩放</dd>
@@ -49,7 +54,7 @@
     </aside>
     <footer>
       <div class="camera-hint"><span id="camera-mode">自由镜头</span><span><kbd>Y</kbd> 切换 · <kbd>Space</kbd> 跟随</span></div>
-      <section id="hero-hud" class="hero-hud panel" data-ui aria-label="角色属性与技能" hidden>
+      <section id="hero-hud" class="hero-hud panel" data-ui aria-label="角色属性、技能与装备" hidden>
         <dl id="hero-stats" class="hero-stats" aria-label="当前战斗属性">
           <div class="hero-stat" title="攻击力"><dt>攻击</dt><dd><span data-stat="attack_damage">—</span></dd></div>
           <div class="hero-stat" title="法术强度"><dt>法强</dt><dd><span data-stat="ability_power">—</span></dd></div>
@@ -71,6 +76,17 @@
           <button class="ability" data-slot="1" aria-label="W 技能槽位" disabled><kbd>W</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
           <button class="ability" data-slot="2" aria-label="E 技能槽位" disabled><kbd>E</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
           <button class="ability" data-slot="3" aria-label="R 技能槽位" disabled><kbd>R</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
+        </div>
+        <div id="equipment-hud" class="equipment-hud" aria-label="六个装备格">
+          <span id="equipment-count">装备 0 / 6</span>
+          <div class="equipment-grid">
+            <button class="equipment-slot" data-equipment-slot="0" disabled><kbd>1</kbd><span class="equipment-symbol">◇</span><span class="equipment-cooldown"></span></button>
+            <button class="equipment-slot" data-equipment-slot="1" disabled><kbd>2</kbd><span class="equipment-symbol">◇</span><span class="equipment-cooldown"></span></button>
+            <button class="equipment-slot" data-equipment-slot="2" disabled><kbd>3</kbd><span class="equipment-symbol">◇</span><span class="equipment-cooldown"></span></button>
+            <button class="equipment-slot" data-equipment-slot="3" disabled><kbd>4</kbd><span class="equipment-symbol">◇</span><span class="equipment-cooldown"></span></button>
+            <button class="equipment-slot" data-equipment-slot="4" disabled><kbd>5</kbd><span class="equipment-symbol">◇</span><span class="equipment-cooldown"></span></button>
+            <button class="equipment-slot" data-equipment-slot="5" disabled><kbd>6</kbd><span class="equipment-symbol">◇</span><span class="equipment-cooldown"></span></button>
+          </div>
         </div>
       </section>
       <div class="map-wrap panel" data-ui>
@@ -113,6 +129,7 @@
           <p id="selection-error" role="status" aria-live="polite" hidden></p>
           <button id="enter" disabled>进入试炼 <span>→</span></button>
           <div id="reselection-actions" hidden>
+            <button id="equipment-manage">调整装备</button>
             <button id="reselect" aria-describedby="reselection-note">重新选择角色</button>
             <p id="reselection-note">重开整场试炼，重置本局进度。</p>
           </div>
@@ -121,6 +138,16 @@
           <small class="entry-note">进入后鼠标限制在游戏区域 · Esc 释放并暂停</small>
         </div>
       </div>
+    </div>
+    <div id="equipment-editor" class="overlay" data-ui role="dialog" aria-modal="true" aria-labelledby="equipment-title" hidden>
+      <section class="equipment-editor-card panel">
+        <header><span class="eyebrow">FIELD EQUIPMENT</span><h2 id="equipment-title">为下一次交锋做好准备。</h2><p>选择装备放入空格，每个角色最多装备六件。</p></header>
+        <div class="equipment-editor-scroll">
+          <section aria-label="当前六格装备"><h3>当前装备</h3><div id="equipment-inventory" class="equipment-inventory"></div></section>
+          <section aria-label="训练场装备目录"><h3>可选装备</h3><div id="equipment-catalog" class="equipment-catalog"></div></section>
+        </div>
+        <footer><p id="equipment-status" role="status" aria-live="polite">正在读取装备配置…</p><button id="equipment-close">返回暂停菜单</button></footer>
+      </section>
     </div>
     <noscript>请启用 JavaScript 后运行游戏。</noscript>
   </body>

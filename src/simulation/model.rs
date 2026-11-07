@@ -1,6 +1,6 @@
 use super::{
     AttributeRejection, BaseAttributes, DamageOrigin, DamageType, EffectiveAttributes,
-    ModifierSourceId, StatusKind,
+    EquipmentInstanceId, ModifierSourceId, StatusKind,
     abilities::{AbilityId, AbilityLoadout},
     attributes::AttributeState,
     effects::ImpactSnapshot,
@@ -156,8 +156,24 @@ pub enum UnitCommand {
     MoveTo(Vec2),
     AttackTarget(Entity),
     AttackMove(Vec2),
-    CastAbility { slot: usize, target: AbilityTarget },
+    CastAbility {
+        slot: usize,
+        target: AbilityTarget,
+    },
+    UseEquipment {
+        slot: usize,
+        instance: EquipmentInstanceId,
+        target: AbilityTarget,
+    },
     Stop,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CastSource {
+    AbilitySlot(usize),
+    EquipmentSlot {
+        slot: usize,
+        instance: EquipmentInstanceId,
+    },
 }
 #[derive(Resource, Default)]
 pub struct CommandQueue(VecDeque<(Entity, UnitCommand)>);
@@ -212,7 +228,7 @@ pub enum UnitAction {
         duration: u32,
     },
     Casting {
-        slot: usize,
+        source: CastSource,
         ability: AbilityId,
         target: AbilityTarget,
         target_life: Option<UnitLifeRef>,

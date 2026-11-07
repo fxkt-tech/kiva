@@ -125,9 +125,9 @@ pub(super) fn apply_damage(
     source: UnitLifeRef,
     target: UnitLifeRef,
     damage: DamageSnapshot,
-) {
+) -> f32 {
     if !target.is_current(world) {
-        return;
+        return 0.0;
     }
     let attributes = *world
         .get::<Unit>(target.entity())
@@ -139,7 +139,7 @@ pub(super) fn apply_damage(
     let new_health = damage.health_after(&attributes, state.health);
     let amount = state.health - new_health;
     if amount <= 0.0 {
-        return;
+        return 0.0;
     }
     state.health = new_health;
     let died = !state.alive();
@@ -153,6 +153,7 @@ pub(super) fn apply_damage(
     if died {
         die(world, target.entity());
     }
+    amount
 }
 fn die(world: &mut World, target: Entity) {
     let delay = world.get::<Unit>(target).expect("unit").respawn_delay;

@@ -24,6 +24,7 @@ pub(super) fn interrupt_control(world: &mut World, entity: Entity, kind: StatusK
 }
 
 pub(super) fn advance_actions(world: &mut World) {
+    super::equipment::advance_cooldowns(world);
     let mut actors: Vec<Entity> = world
         .query_filtered::<Entity, With<Unit>>()
         .iter(world)
@@ -100,7 +101,7 @@ pub(super) fn advance_actions(world: &mut World) {
                 }
             }
             UnitAction::Casting {
-                slot,
+                source,
                 ability,
                 target,
                 target_life,
@@ -108,14 +109,14 @@ pub(super) fn advance_actions(world: &mut World) {
             } => {
                 if remaining > TICK_SECONDS + 1e-6 {
                     UnitAction::Casting {
-                        slot,
+                        source,
                         ability,
                         target,
                         target_life,
                         remaining: remaining - TICK_SECONDS,
                     }
                 } else {
-                    commit_ability(world, entity, slot, ability, target, target_life)
+                    commit_cast(world, entity, source, ability, target, target_life)
                 }
             }
             UnitAction::Channeling {
@@ -184,8 +185,13 @@ fn release_attack(world: &mut World, entity: Entity, target: UnitLifeRef, interv
             ap_ratio: 0.0,
         })],
     };
-    let payload = effects::snapshot(world, entity, DamageOrigin::BasicAttack, &definition)
-        .expect("finite basic attack");
+    let Some(payload) = effects::snapshot_attack(world, entity, &definition) else {
+        world.write_message(SimulationEvent::CommandRejected {
+            unit: entity,
+            reason: Rejection::InvalidDamage,
+        });
+        return false;
+    };
     world
         .get_mut::<UnitState>(entity)
         .expect("unit state")
@@ -198,18 +204,172 @@ fn release_attack(world: &mut World, entity: Entity, target: UnitLifeRef, interv
     true
 }
 
-fn commit_ability(
+/// Both command sources use this same validation before replacing an action.
+pub(super) fn begin_cast(
     world: &mut World,
     entity: Entity,
-    slot: usize,
+    source: CastSource,
+    target: AbilityTarget,
+) -> Result<(), Rejection> {
+    let (ability, cooldown, _) = cast_binding(world, entity, source)?;
+    if cooldown > 1e-5 {
+        return Err(Rejection::OnCooldown);
+    }
+    let definition = world
+        .resource::<AbilityCatalog>()
+        .get(ability)
+        .ok_or(Rejection::NoAbility)?;
+    if !world
+        .get::<ControlState>(entity)
+        .is_some_and(|control| control.permits(definition))
+    {
+        return Err(Rejection::Controlled);
+    }
+    if world
+        .get::<UnitState>(entity)
+        .ok_or(Rejection::InvalidUnit)?
+        .mana
+        < definition.mana_cost
+    {
+        return Err(Rejection::InsufficientMana);
+    }
+    if !matches!(
+        world.get::<UnitAction>(entity),
+        Some(
+            UnitAction::Ready
+                | UnitAction::Recovery { .. }
+                | UnitAction::AttackWindup { .. }
+                | UnitAction::AttackBackswing { .. }
+        )
+    ) {
+        return Err(Rejection::Busy);
+    }
+    validate_target(world, entity, definition, target)?;
+    let remaining = definition.windup;
+    let target_life = if let AbilityTarget::Unit(target) = target {
+        Some(
+            world
+                .get::<UnitState>(target)
+                .expect("validated target")
+                .life_ref(target),
+        )
+    } else {
+        None
+    };
+    *world
+        .get_mut::<UnitAction>(entity)
+        .expect("validated action") = UnitAction::Casting {
+        source,
+        ability,
+        target,
+        target_life,
+        remaining,
+    };
+    super::movement::clear_route(
+        &mut world
+            .get_mut::<super::model::Movement>(entity)
+            .expect("unit movement"),
+    );
+    Ok(())
+}
+
+fn cast_binding(
+    world: &World,
+    unit: Entity,
+    source: CastSource,
+) -> Result<(AbilityId, f32, DamageOrigin), Rejection> {
+    match source {
+        CastSource::AbilitySlot(slot) => {
+            let slots = world
+                .get::<AbilitySlots>(unit)
+                .ok_or(Rejection::NoAbility)?;
+            let ability = slots.ability(slot).ok_or(Rejection::NoAbility)?;
+            Ok((
+                ability,
+                slots.cooldown(slot).expect("known slot"),
+                DamageOrigin::Ability(ability),
+            ))
+        }
+        CastSource::EquipmentSlot { slot, instance } => {
+            let (equipment, ability, cooldown) =
+                super::equipment::binding(world, unit, slot, instance)
+                    .ok_or(Rejection::NoAbility)?;
+            Ok((
+                ability,
+                cooldown,
+                DamageOrigin::EquipmentActive {
+                    equipment,
+                    instance,
+                    ability,
+                },
+            ))
+        }
+    }
+}
+
+fn commit_cooldown(world: &mut World, unit: Entity, source: CastSource, cooldown: f32) {
+    match source {
+        CastSource::AbilitySlot(slot) => {
+            world
+                .get_mut::<AbilitySlots>(unit)
+                .expect("validated slots")
+                .cooldowns[slot] = cooldown
+        }
+        CastSource::EquipmentSlot { slot, instance } => {
+            super::equipment::commit_cooldown(world, unit, slot, instance, cooldown)
+        }
+    }
+}
+
+pub(super) fn cancel_equipment_cast(
+    world: &mut World,
+    unit: Entity,
+    instance: EquipmentInstanceId,
+) {
+    let cancel = match world.get::<UnitAction>(unit) {
+        Some(UnitAction::Casting {
+            source: CastSource::EquipmentSlot {
+                instance: current, ..
+            },
+            ..
+        }) => *current == instance,
+        Some(UnitAction::Channeling { pulse, .. }) => {
+            matches!(pulse.origin, DamageOrigin::EquipmentActive { instance: current, .. } if current == instance)
+        }
+        _ => false,
+    };
+    if cancel {
+        *world.get_mut::<UnitAction>(unit).expect("matched action") = UnitAction::Ready;
+    }
+}
+
+fn reject_cast(world: &mut World, unit: Entity, reason: Rejection) -> UnitAction {
+    world.write_message(SimulationEvent::CommandRejected { unit, reason });
+    UnitAction::Ready
+}
+
+fn commit_cast(
+    world: &mut World,
+    entity: Entity,
+    source: CastSource,
     id: AbilityId,
     target: AbilityTarget,
     target_life: Option<UnitLifeRef>,
 ) -> UnitAction {
-    let Some(definition) = world.resource::<AbilityCatalog>().get(id).cloned() else {
-        return UnitAction::Ready;
+    let binding = cast_binding(world, entity, source);
+    let (current, cooldown, origin) = match binding {
+        Ok(binding) if binding.0 == id => binding,
+        _ => return reject_cast(world, entity, Rejection::NoAbility),
     };
+    let definition = world
+        .resource::<AbilityCatalog>()
+        .get(current)
+        .expect("resolved ability")
+        .clone();
     let validation = validate_target(world, entity, &definition, target).and_then(|()| {
+        if cooldown > 1e-5 {
+            return Err(Rejection::OnCooldown);
+        }
         if target_life.is_some_and(|life| !life.is_current(world)) {
             return Err(Rejection::InvalidTarget);
         }
@@ -234,9 +394,7 @@ fn commit_ability(
     }
     let impact = match &definition.execution {
         AbilityExecution::Impact(impact) | AbilityExecution::Channel { pulse: impact, .. } => {
-            let Some(snapshot) =
-                effects::snapshot(world, entity, DamageOrigin::Ability(id), impact)
-            else {
+            let Some(snapshot) = effects::snapshot(world, entity, origin, impact) else {
                 world.write_message(SimulationEvent::CommandRejected {
                     unit: entity,
                     reason: Rejection::InvalidDamage,
@@ -249,10 +407,7 @@ fn commit_ability(
     };
     // All targets, permissions and every effect snapshot are valid before costs.
     world.get_mut::<UnitState>(entity).expect("unit state").mana -= definition.mana_cost;
-    world
-        .get_mut::<AbilitySlots>(entity)
-        .expect("unit slots")
-        .cooldowns[slot] = definition.cooldown;
+    commit_cooldown(world, entity, source, definition.cooldown);
     let origin = world.get::<UnitPose>(entity).expect("unit pose").position;
     let point = match target {
         AbilityTarget::Point(p) => p,

@@ -19,6 +19,7 @@ pub struct ImpactSnapshot {
     pub(super) sequence: u64,
     pub(super) delivery: Delivery,
     effects: Arc<[EffectSnapshot]>,
+    attack_passives: Arc<[ImpactSnapshot]>,
 }
 impl ImpactSnapshot {
     pub fn delivery(&self) -> Delivery {
@@ -126,7 +127,19 @@ pub(super) fn snapshot(
         sequence,
         delivery: definition.delivery,
         effects: effects.into(),
+        attack_passives: Arc::from([]),
     })
+}
+
+/// A successful attack commits all attached effects before its attack interval.
+pub(super) fn snapshot_attack(
+    world: &mut World,
+    source: Entity,
+    definition: &ImpactDefinition,
+) -> Option<ImpactSnapshot> {
+    let mut payload = snapshot(world, source, DamageOrigin::BasicAttack, definition)?;
+    payload.attack_passives = super::equipment::snapshot_passives(world, source)?.into();
+    Some(payload)
 }
 
 pub(super) fn emit(
@@ -201,26 +214,43 @@ pub(super) fn resolve(world: &mut World) {
         )
     });
     for packet in packets {
-        for (index, effect) in packet.payload.effects.iter().copied().enumerate() {
-            if !packet.target.is_current(world) {
-                break;
-            }
-            match effect {
-                EffectSnapshot::Damage(damage) => {
-                    super::combat::apply_damage(world, packet.payload.source, packet.target, damage)
+        let damaged = resolve_payload(world, &packet, &packet.payload);
+        if damaged && packet.payload.origin == DamageOrigin::BasicAttack {
+            // Only the ordinary attack owns this discovery step. Attached
+            // snapshots contain no discovery of their own, so procs cannot recur.
+            for passive in packet.payload.attack_passives.iter() {
+                if !packet.target.is_current(world) {
+                    break;
                 }
-                EffectSnapshot::ApplyStatus(spec) => {
-                    super::statuses::apply(world, packet.target, &packet.payload, index, spec)
-                }
-                EffectSnapshot::Displace(spec) => super::movement::start_forced(
-                    world,
-                    packet.target,
-                    spec,
-                    packet.center,
-                    packet.direction,
-                    packet.payload.facing,
-                ),
+                resolve_payload(world, &packet, passive);
             }
         }
     }
+}
+
+fn resolve_payload(world: &mut World, packet: &HitPacket, payload: &ImpactSnapshot) -> bool {
+    let mut damaged = false;
+    for (index, effect) in payload.effects.iter().copied().enumerate() {
+        if !packet.target.is_current(world) {
+            break;
+        }
+        match effect {
+            EffectSnapshot::Damage(damage) => {
+                damaged |=
+                    super::combat::apply_damage(world, payload.source, packet.target, damage) > 0.0;
+            }
+            EffectSnapshot::ApplyStatus(spec) => {
+                super::statuses::apply(world, packet.target, payload, index, spec);
+            }
+            EffectSnapshot::Displace(spec) => super::movement::start_forced(
+                world,
+                packet.target,
+                spec,
+                packet.center,
+                packet.direction,
+                payload.facing,
+            ),
+        }
+    }
+    damaged
 }

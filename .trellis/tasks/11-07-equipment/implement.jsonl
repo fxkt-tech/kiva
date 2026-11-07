@@ -1,0 +1,17 @@
+{"file": ".trellis/spec/index.md", "reason": "Project scope, source ownership, verification and user-managed service rules."}
+{"file": ".trellis/spec/simulation/index.md", "reason": "Simulation checklist and public behavior tests."}
+{"file": ".trellis/spec/simulation/runtime.md", "reason": "Fixed step, lifecycle, reset and pending-state ownership."}
+{"file": ".trellis/spec/simulation/attributes-and-damage.md", "reason": "Source modifiers, atomic recompute, snapshot/impact and damage provenance."}
+{"file": ".trellis/spec/simulation/abilities-and-statuses.md", "reason": "Shared ability execution, effects, statuses and interruption contracts."}
+{"file": ".trellis/spec/simulation/characters.md", "reason": "Retain character versus actual loadout identity separation."}
+{"file": ".trellis/spec/client/index.md", "reason": "Rust/Web adapter checks."}
+{"file": ".trellis/spec/client/browser.md", "reason": "Pointer lock input, displayed transforms, fixture ownership and short-animation testing."}
+{"file": ".trellis/spec/client/attributes-hud.md", "reason": "144px seven short labels, effective values and no units."}
+{"file": ".trellis/spec/client/character-selection.md", "reason": "Authoritative session, restart, stale inputs and player IDs."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace all content/command/readonly/UI call sites."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing modules without parallel state or speculative abstractions."}
+{"file": "docs/architecture.md", "reason": "Current application and simulation ownership."}
+{"file": ".trellis/tasks/11-07-equipment/research/casting-source.md", "reason": "Code-backed source-aware casting design and compatibility."}
+{"file": ".trellis/tasks/11-07-equipment/research/inventory-and-passives.md", "reason": "Code-backed inventory, sources, snapshots and passive recursion analysis."}
+{"file": ".trellis/spec/simulation/equipment.md", "reason": "Implemented six-slot ownership, source casting, passive snapshot and lifecycle contracts."}
+{"file": ".trellis/spec/client/equipment.md", "reason": "Implemented strict equipment requests, acknowledgement, static catalog and pointer/input contracts."}

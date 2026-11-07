@@ -8,10 +8,12 @@
 - `CommandQueue::submit` 表示意图，`SimulationEvent` 表示结果。指令先校验；拒绝时保留原有效指令和动作。
 - `movement.rs` 写位置，`actions.rs` 写动作时钟/消耗/冷却，`combat.rs` 写伤害/死亡/重生。
 - `effects.rs` 统一快照/投递/排序结算；`statuses.rs` 拥有控制实例与权限归并，不能另写位置或最终属性。
+- `equipment.rs`拥有六格实例/装卸/装备CD，使用属性模块同步提交与动作模块统一施法入口。
 
 这些规则可在 `src/simulation/model.rs`、`orders.rs` 和 `tests/simulation.rs` 中对应验证。
 属性、伤害和普攻时序的具体接口见 [attributes-and-damage.md](attributes-and-damage.md)。
 组合技能、控制、生命身份和强制位移见 [abilities-and-statuses.md](abilities-and-statuses.md)。
+装备属性/被动/主动来源及装卸边界见 [equipment.md](equipment.md)。
 
 ## 固定步与动作
 
@@ -24,6 +26,8 @@
 - 已发射弹丸或布置的范围效果不因施法者死亡而失效。新指令和死亡不会退还已提交消耗。
 - 普攻冷却独立于移动；相同攻击指令不能不断重置前摇。
 - 暂停冻结整个固定步链，已入队的一次输入不会因为显示帧而丢失或重复执行。
+- 装备CD在actions推进开始、筛选存活单位之前计时，仍位于指令消费之后。
+  死亡保留装备/Explicit加成且CD继续推进；重生不重置装备CD，角色技能仍遵循原重生规则。
 
 ## 空间与数值
 
@@ -36,8 +40,8 @@
 
 `reset_simulation(&mut World)`是整场试炼重开的模拟清理入口：设置paused=true、tick=0，
 移除Unit/Projectile/AreaEffect实体及其linked children，清命令、待处理属性变更、命中包和SimulationEvent消息。
-引导、控制、运动和属性运行态随所属单位删除，不直接从客户端改写这些组件。
-它保留NavigationMap、技能/角色目录及非模拟静态实体，NPC和玩家的重新创建由客户端内容/会话协调。
+引导、控制、运动、装备和属性运行态随所属单位删除，不直接从客户端改写这些组件。
+它保留NavigationMap、技能/角色/装备目录及非模拟静态实体，NPC和玩家的重新创建由客户端内容/会话协调。
 
 清队列不能重建身份分配器：AttributeChanges的last_source、PendingImpacts的next_sequence、StatusSequence保持单调，
 ModifierSourceId在同一个World内仍不得复用。应用Time墙钟/固定步资源不重建，只有SimulationTick归零。

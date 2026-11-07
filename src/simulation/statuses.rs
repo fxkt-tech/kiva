@@ -82,7 +82,7 @@ impl StatusSpec {
 pub struct StatusView {
     id: u64,
     source: UnitLifeRef,
-    ability: Option<AbilityId>,
+    origin: DamageOrigin,
     effect_index: usize,
     kind: StatusKind,
     remaining: u32,
@@ -97,7 +97,12 @@ impl StatusView {
         self.source
     }
     pub fn ability(&self) -> Option<AbilityId> {
-        self.ability
+        match self.origin {
+            DamageOrigin::Ability(id) | DamageOrigin::EquipmentActive { ability: id, .. } => {
+                Some(id)
+            }
+            DamageOrigin::BasicAttack | DamageOrigin::EquipmentPassive { .. } => None,
+        }
     }
     pub fn kind(&self) -> StatusKind {
         self.kind
@@ -228,17 +233,13 @@ pub(super) fn apply(
     if !target.is_current(world) {
         return;
     }
-    let ability = match impact.origin {
-        DamageOrigin::Ability(id) => Some(id),
-        DamageOrigin::BasicAttack => None,
-    };
     let existing = world.get::<UnitStatuses>(target.entity()).and_then(|s| {
         s.entries.iter().position(|v| {
             v.remaining > 0
                 && matches!(spec.kind(), StatusKind::Stun | StatusKind::Root)
                 && v.kind == spec.kind()
                 && v.source == impact.source
-                && v.ability == ability
+                && v.origin == impact.origin
                 && v.effect_index == index
         })
     });
@@ -266,7 +267,7 @@ pub(super) fn apply(
             .push(StatusView {
                 id,
                 source: impact.source,
-                ability,
+                origin: impact.origin,
                 effect_index: index,
                 kind: spec.kind(),
                 remaining: spec.duration().ticks(),

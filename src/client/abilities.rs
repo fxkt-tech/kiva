@@ -3,8 +3,7 @@ use crate::simulation::*;
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub(super) struct AbilityMetadata {
-    slot: usize,
+pub(super) struct AbilityDescription {
     name: String,
     total_cooldown: f32,
     cost: f32,
@@ -14,9 +13,8 @@ pub(super) struct AbilityMetadata {
     icon: &'static str,
     description: String,
 }
-
-impl AbilityMetadata {
-    pub fn new(slot: usize, definition: &AbilityDefinition) -> Self {
+impl AbilityDescription {
+    pub fn new(definition: &AbilityDefinition) -> Self {
         let (targeting, target_hint) = match definition.targeting {
             Targeting::Enemy => ("Enemy", "点选敌方单位"),
             Targeting::Direction => ("Direction", "选择释放方向"),
@@ -25,7 +23,6 @@ impl AbilityMetadata {
         };
         let (icon, description) = describe_execution(definition.targeting, &definition.execution);
         Self {
-            slot,
             name: definition.name.clone(),
             total_cooldown: definition.cooldown,
             cost: definition.mana_cost,
@@ -34,6 +31,21 @@ impl AbilityMetadata {
             target_hint,
             icon,
             description,
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub(super) struct AbilityMetadata {
+    slot: usize,
+    #[serde(flatten)]
+    description: AbilityDescription,
+}
+impl AbilityMetadata {
+    pub fn new(slot: usize, definition: &AbilityDefinition) -> Self {
+        Self {
+            slot,
+            description: AbilityDescription::new(definition),
         }
     }
 }
@@ -54,22 +66,65 @@ impl AbilityView {
         control: &ControlState,
         slots: &AbilitySlots,
     ) -> Self {
-        let unavailable_reason = unavailable_reason(state, control, slots, slot, definition);
+        Self::with_cooldown(
+            slot,
+            definition,
+            state,
+            control,
+            slots.cooldown(slot).unwrap_or(0.0),
+        )
+    }
+    pub fn with_cooldown(
+        slot: usize,
+        definition: &AbilityDefinition,
+        state: &UnitState,
+        control: &ControlState,
+        cooldown: f32,
+    ) -> Self {
+        let unavailable_reason = unavailable_reason(state, control, cooldown, definition);
         Self {
             metadata: AbilityMetadata::new(slot, definition),
-            cooldown: slots.cooldown(slot).unwrap_or(0.0),
+            cooldown,
             available: unavailable_reason.is_none(),
             unavailable_reason,
         }
     }
 }
 
+pub(super) struct CastInfo<'a> {
+    pub definition: &'a AbilityDefinition,
+    pub cooldown: f32,
+}
+
+/// Resolve presentation from the actual source without owning any cast rules.
+pub(super) fn resolve<'a>(
+    source: CastSource,
+    slots: &AbilitySlots,
+    equipment: &EquipmentSlots,
+    abilities: &'a AbilityCatalog,
+    catalog: &EquipmentCatalog,
+) -> Option<CastInfo<'a>> {
+    let (ability, cooldown) = match source {
+        CastSource::AbilitySlot(slot) => (slots.ability(slot)?, slots.cooldown(slot)?),
+        CastSource::EquipmentSlot { slot, instance } => {
+            let item = equipment.item(slot)?;
+            if item.instance() != instance {
+                return None;
+            }
+            (catalog.get(item.equipment())?.active?, item.cooldown())
+        }
+    };
+    Some(CastInfo {
+        definition: abilities.get(ability)?,
+        cooldown,
+    })
+}
+
 /// An affordance only: the simulation validates the actual cast again.
 pub(super) fn unavailable_reason(
     state: &UnitState,
     control: &ControlState,
-    slots: &AbilitySlots,
-    slot: usize,
+    cooldown: f32,
     definition: &AbilityDefinition,
 ) -> Option<&'static str> {
     if !state.alive() {
@@ -82,7 +137,7 @@ pub(super) fn unavailable_reason(
         } else {
             "受控制限制，无法施法"
         })
-    } else if slots.cooldown(slot).unwrap_or(0.0) > 1e-5 {
+    } else if cooldown > 1e-5 {
         Some("技能冷却中")
     } else if state.mana() < definition.mana_cost {
         Some("能量不足")
@@ -132,7 +187,7 @@ fn describe_execution(
     }
 }
 
-fn describe_effects(effects: &[Effect]) -> String {
+pub(super) fn describe_effects(effects: &[Effect]) -> String {
     effects
         .iter()
         .map(|effect| match effect {

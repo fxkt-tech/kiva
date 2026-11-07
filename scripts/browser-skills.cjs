@@ -78,6 +78,9 @@ async function exerciseSkills(page) {
     return target.statuses.length === 0 && target.attributes.move_speed === 5.5;
   });
 
+  // Cap elapsed time per native display frame for this short animation only.
+  // CDP/software-rendering delays must not consume its remaining control ticks.
+  await page.evaluate(() => window.__testUseFrameClock());
   // Keep the latest rendered body projection independently of the 80ms HUD.
   assert.notEqual(await page.evaluate(() => window.__kivaState.selected), stunned.id,
     "the airborne click must produce a new selection");
@@ -93,6 +96,7 @@ async function exerciseSkills(page) {
         displaced: target.control.is_displaced });
     };
     window.addEventListener("kiva-state", () => {
+      window.__testLastSnapshotAt = performance.now();
       if (window.__kivaState.units.some((unit) => unit.statuses.some((effect) => effect.kind === "Airborne"))) {
         window.__recordSkillTrace("airborne-state");
       }
@@ -159,17 +163,17 @@ async function exerciseSkills(page) {
   assert.equal(await page.evaluate(() => window.__kivaState.selected), stunned.id);
   const paused = await page.evaluate((id) => {
     const s = window.__kivaState;
-    return { tick: s.tick, target: s.units.find((unit) => unit.id === id) };
+    return { tick: s.tick, clock: performance.now(), target: s.units.find((unit) => unit.id === id) };
   }, stunned.id);
   assert.equal(paused.target.health, 205, "control-only R must not invent damage");
   assert.equal(paused.target.control.can_cast, false);
   assert(paused.target.statuses.some((effect) => effect.kind === "Airborne"),
     "pause must occur while airborne so this verifies the visible frozen pose");
   assert(paused.target.visual_height > 0, "pausing must preserve the already rendered airborne height");
-  await page.waitForTimeout(400);
+  await page.waitForFunction((pausedAt) => window.__testLastSnapshotAt >= pausedAt + 400, paused.clock);
   const still = await page.evaluate((id) => {
     const s = window.__kivaState;
-    return { tick: s.tick, target: s.units.find((unit) => unit.id === id) };
+    return { tick: s.tick, clock: performance.now(), target: s.units.find((unit) => unit.id === id) };
   }, stunned.id);
   assert.equal(still.tick, paused.tick);
   assert.equal(still.target.visual_height, paused.target.visual_height);
@@ -221,6 +225,25 @@ async function main() {
       const context = await browser.newContext(config);
       page = await context.newPage();
       page.setDefaultTimeout(20000);
+      // Preserve native timers, animation delivery and trusted input. Only the
+      // monotonic time read by WASM is capped after the short-animation phase
+      // starts. Install before Bevy captures performance.now; do not write World.
+      await page.addInitScript(() => {
+        const nativeNow = performance.now.bind(performance);
+        const nativeFrame = requestAnimationFrame.bind(window);
+        let controlled = false;
+        let time = 0;
+        let lastFrame;
+        Object.defineProperty(performance, "now", { value: () => controlled ? time : nativeNow() });
+        window.__testUseFrameClock = () => { time = nativeNow(); controlled = true; };
+        window.requestAnimationFrame = (callback) => nativeFrame((timestamp) => {
+          if (controlled && timestamp !== lastFrame) {
+            lastFrame = timestamp;
+            time += 1000 / 60;
+          }
+          callback(controlled ? time : timestamp);
+        });
+      });
       await enterGame(page, site.url);
       await exerciseSkills(page);
       console.log(`PASS Q/W/E/R, invalid enemy aim, composed controls, slow restoration, airborne picking and pause ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);

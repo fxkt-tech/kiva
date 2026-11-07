@@ -216,6 +216,26 @@ pub(super) fn take_session_requests() -> Option<String> {
         None
     }
 }
+pub(super) fn take_equipment_requests() -> Option<String> {
+    take_attribute("data-equipment-requests")
+}
+pub(super) fn take_equipment_skill_request() -> Option<String> {
+    take_attribute("data-equipment-skill")
+}
+fn take_attribute(name: &str) -> Option<String> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let root = root()?;
+        let value = root.get_attribute(name)?;
+        let _ = root.remove_attribute(name);
+        Some(value)
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let _ = name;
+        None
+    }
+}
 pub(super) fn set_camera_lock(locked: bool) {
     #[cfg(target_arch = "wasm32")]
     if let Some(root) = root() {

@@ -22,10 +22,12 @@ StatusDuration::from_millis(u64) -> Option<StatusDuration>
 `effects.rs`保存不可变快照、投递和排序，不直接扣血/写位置/改最终属性。
 `statuses.rs`拥有实例与权限归并，调用`actions`/`movement`内部入口执行中断，
 同步复用属性模块的校验/提交操作。`combat`负责扣血和死亡编排；`movement`唯一写位置。
-`UnitCommand::CastAbility { slot, target: AbilityTarget }`仍是调用入口，不新增按英雄/技能ID的命令。
+`UnitCommand::CastAbility { slot, target: AbilityTarget }`保留；装备使用
+`UseEquipment { slot, instance, target }`，二者通过`CastSource`复用同一begin/commit，
+不新增按英雄/装备ID的执行分支。装备实例与CD见[装备规范](equipment.md)。
 
 只读接口：`UnitStatuses::iter/len/is_empty/airborne_height`；实例可读种类、来源生命、
-技能、实例ID、持续/剩余tick和秒、Slow强度。`ControlState`提供
+技能（从内部完整origin派生）、实例ID、持续/剩余tick和秒、Slow强度。`ControlState`提供
 `can_move/attack/cast/dash`、`forced_motion`、`permits(&AbilityDefinition)`。
 公开意图接受Entity，已接受的锁定目标在内部转为`UnitLifeRef`。
 
@@ -36,7 +38,8 @@ StatusDuration::from_millis(u64) -> Option<StatusDuration>
 - 效果列表非空且有序，整组快照验证先于消耗/冷却。命中后逐项执行，死亡后跳过目标其余效果。
 - 直接命中也入统一末段队列；actor和命中包显式稳定排序。同一步双方已经提交的技能均保留。
 - 旧状态在移动后、新命中前递减。末段新应用N tick，准确限制后续N个动作步；到期后不补跑动作。
-- Stun/Root同来源生命+技能+效果索引取较晚到期；不同来源独立。Slow独立实例取最强，Airborne独立实例取最大连续显示高度。
+- Stun/Root同来源生命+完整DamageOrigin+效果索引取较晚到期；不同来源独立。
+  装备origin包含实例，同AbilityId的不同装备不合并。Slow独立实例取最强，Airborne独立实例取最大连续显示高度。
 - Root禁走路和自主Dash，但允许普攻/普通施法/非移动引导；Stun/Airborne禁止全部自主动作。
   ForcedMotion独立锁，普通控制与Stop不取消它。Root/Stun会终止自主Dash。
 - 新受限命令拒绝；原持续意图保留并在解除后重新规划；Stop清持续意图和普通路线。

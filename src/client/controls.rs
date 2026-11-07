@@ -5,6 +5,7 @@ use bevy::{
     prelude::*,
     shape::{Aabb3d, RayCast3d},
 };
+use serde::Deserialize;
 
 #[cfg(test)]
 mod tests;
@@ -13,6 +14,27 @@ mod tests;
 pub(super) enum Aim {
     AttackMove,
     Ability(usize),
+    Equipment {
+        slot: usize,
+        instance: EquipmentInstanceId,
+    },
+}
+impl Aim {
+    pub fn source(self) -> Option<CastSource> {
+        match self {
+            Self::AttackMove => None,
+            Self::Ability(slot) => Some(CastSource::AbilitySlot(slot)),
+            Self::Equipment { slot, instance } => {
+                Some(CastSource::EquipmentSlot { slot, instance })
+            }
+        }
+    }
+    fn from_source(source: CastSource) -> Self {
+        match source {
+            CastSource::AbilitySlot(slot) => Self::Ability(slot),
+            CastSource::EquipmentSlot { slot, instance } => Self::Equipment { slot, instance },
+        }
+    }
 }
 #[derive(Resource, Default)]
 pub(super) struct PlayerController {
@@ -118,54 +140,119 @@ fn hovered_unit(world: &mut World, ray: Ray3d) -> Option<Entity> {
         .map(|(id, _)| id)
 }
 
-fn skill_unavailable(world: &World, player: Entity, slot: usize) -> Option<&'static str> {
+fn cast_info(world: &World, player: Entity, source: CastSource) -> Option<abilities::CastInfo<'_>> {
+    abilities::resolve(
+        source,
+        world.get::<AbilitySlots>(player)?,
+        world.get::<EquipmentSlots>(player)?,
+        world.resource::<AbilityCatalog>(),
+        world.resource::<EquipmentCatalog>(),
+    )
+}
+
+fn cast_unavailable(world: &World, player: Entity, source: CastSource) -> Option<&'static str> {
     let Some(state) = world.get::<UnitState>(player) else {
         return Some("无法操控当前单位");
     };
-    let (Some(control), Some(slots)) = (
-        world.get::<ControlState>(player),
-        world.get::<AbilitySlots>(player),
-    ) else {
+    let Some(control) = world.get::<ControlState>(player) else {
         return Some("当前单位尚未准备就绪");
     };
-    let Some(definition) = slots
-        .ability(slot)
-        .and_then(|id| world.resource::<AbilityCatalog>().get(id))
-    else {
-        return Some("该槽位没有装配技能");
+    let Some(info) = cast_info(world, player, source) else {
+        return Some(match source {
+            CastSource::AbilitySlot(_) => "该槽位没有装配技能",
+            _ => "该装备没有可用主动技能",
+        });
     };
-    abilities::unavailable_reason(state, control, slots, slot, definition)
+    abilities::unavailable_reason(state, control, info.cooldown, info.definition)
 }
 
-fn select_ability(world: &mut World, slot: usize) {
+fn feedback(world: &mut World, reason: &'static str) {
+    let expires = world.resource::<Time>().elapsed_secs() + 2.0;
+    let mut feedback = world.resource_mut::<ClientFeedback>();
+    feedback.message = reason.into();
+    feedback.expires = expires;
+}
+
+fn submit_cast(world: &mut World, player: Entity, source: CastSource, target: AbilityTarget) {
+    submit(
+        world,
+        player,
+        match source {
+            CastSource::AbilitySlot(slot) => UnitCommand::CastAbility { slot, target },
+            CastSource::EquipmentSlot { slot, instance } => UnitCommand::UseEquipment {
+                slot,
+                instance,
+                target,
+            },
+        },
+    );
+}
+
+fn select_cast(world: &mut World, source: CastSource) {
     let Some(player) = world.resource::<ClientSession>().player() else {
         return;
     };
-    if let Some(reason) = skill_unavailable(world, player, slot) {
-        let expires = world.resource::<Time>().elapsed_secs() + 2.0;
-        let mut feedback = world.resource_mut::<ClientFeedback>();
-        feedback.message = reason.into();
-        feedback.expires = expires;
+    if let Some(reason) = cast_unavailable(world, player, source) {
+        feedback(world, reason);
         return;
     }
-    let definition = world
-        .get::<AbilitySlots>(player)
-        .and_then(|slots| slots.ability(slot))
-        .and_then(|id| world.resource::<AbilityCatalog>().get(id));
-    if let Some(definition) = definition {
-        if definition.targeting == Targeting::SelfCast {
-            world.resource_mut::<PlayerController>().aim = None;
-            submit(
-                world,
-                player,
-                UnitCommand::CastAbility {
-                    slot,
-                    target: AbilityTarget::SelfCast,
-                },
-            );
-        } else {
-            world.resource_mut::<PlayerController>().aim = Some(Aim::Ability(slot));
-        }
+    if cast_info(world, player, source)
+        .is_some_and(|info| info.definition.targeting == Targeting::SelfCast)
+    {
+        world.resource_mut::<PlayerController>().aim = None;
+        submit_cast(world, player, source, AbilityTarget::SelfCast);
+    } else {
+        world.resource_mut::<PlayerController>().aim = Some(Aim::from_source(source));
+    }
+}
+
+fn select_ability(world: &mut World, slot: usize) {
+    select_cast(world, CastSource::AbilitySlot(slot));
+}
+
+fn equipment_source(
+    world: &World,
+    player: Entity,
+    slot: usize,
+    expected: Option<&str>,
+) -> Result<CastSource, &'static str> {
+    let item = world
+        .get::<EquipmentSlots>(player)
+        .and_then(|slots| slots.item(slot))
+        .ok_or("该装备格为空")?;
+    if expected.is_some_and(|expected| expected != item.instance().to_string()) {
+        return Err("装备已经变更，请重新选择");
+    }
+    Ok(CastSource::EquipmentSlot {
+        slot,
+        instance: item.instance(),
+    })
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct EquipmentSkillRequest {
+    slot: usize,
+    instance_id: String,
+}
+
+fn queued_equipment_request(world: &mut World, raw: Option<&str>, just_captured: bool) {
+    if just_captured || world.resource::<SimulationControl>().paused {
+        return;
+    }
+    let Some(player) = world.resource::<ClientSession>().player() else {
+        return;
+    };
+    let Some(raw) = raw else {
+        return;
+    };
+    let Ok(request) = serde_json::from_str::<EquipmentSkillRequest>(raw) else {
+        feedback(world, "装备释放请求格式无效");
+        return;
+    };
+    match equipment_source(world, player, request.slot, Some(&request.instance_id)) {
+        Ok(source) => select_cast(world, source),
+        Err(reason) => feedback(world, reason),
     }
 }
 
@@ -213,7 +300,9 @@ pub(super) fn refresh_aim(world: &mut World) {
     let controller = world.resource::<PlayerController>();
     let aim = controller.aim;
     let unavailable = match aim {
-        Some(Aim::Ability(slot)) => skill_unavailable(world, unit, slot).is_some(),
+        Some(aim @ (Aim::Ability(_) | Aim::Equipment { .. })) => {
+            cast_unavailable(world, unit, aim.source().expect("cast aim")).is_some()
+        }
         Some(Aim::AttackMove) => world
             .get::<ControlState>(unit)
             .is_none_or(|control| !control.can_move()),
@@ -261,6 +350,21 @@ fn key_pressed(world: &mut World, key: KeyCode) {
                 .position(|code| *code == key)
             {
                 select_ability(world, slot);
+            } else if let Some(slot) = [
+                KeyCode::Digit1,
+                KeyCode::Digit2,
+                KeyCode::Digit3,
+                KeyCode::Digit4,
+                KeyCode::Digit5,
+                KeyCode::Digit6,
+            ]
+            .iter()
+            .position(|code| *code == key)
+            {
+                match equipment_source(world, player, slot, None) {
+                    Ok(source) => select_cast(world, source),
+                    Err(reason) => feedback(world, reason),
+                }
             }
         }
     }
@@ -280,6 +384,8 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
             if let Some(slot) = web::take_skill_request() {
                 select_ability(world, slot);
             }
+            let equipment_request = web::take_equipment_skill_request();
+            queued_equipment_request(world, equipment_request.as_deref(), false);
         }
         return;
     }
@@ -305,29 +411,28 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
                         submit(world, player, UnitCommand::AttackMove(point));
                     }
                 }
-                Some(Aim::Ability(slot)) => {
-                    let definition = world
-                        .get::<AbilitySlots>(player)
-                        .and_then(|slots| slots.ability(slot))
-                        .and_then(|id| world.resource::<AbilityCatalog>().get(id));
-                    let target = definition.and_then(|definition| match definition.targeting {
-                        Targeting::Direction => ground.and_then(|point| {
-                            let direction = point
-                                - world
-                                    .get::<UnitPose>(player)
-                                    .expect("player pose")
-                                    .position();
-                            (direction.length_squared() > 1e-6)
-                                .then_some(AbilityTarget::Direction(direction))
-                        }),
-                        Targeting::Point => ground.map(AbilityTarget::Point),
-                        Targeting::Enemy => hovered
-                            .filter(|target| valid_enemy_pick(world, player, *target))
-                            .map(AbilityTarget::Unit),
-                        Targeting::SelfCast => Some(AbilityTarget::SelfCast),
+                Some(aim @ (Aim::Ability(_) | Aim::Equipment { .. })) => {
+                    let source = aim.source().expect("cast aim");
+                    let target = cast_info(world, player, source).and_then(|info| {
+                        match info.definition.targeting {
+                            Targeting::Direction => ground.and_then(|point| {
+                                let direction = point
+                                    - world
+                                        .get::<UnitPose>(player)
+                                        .expect("player pose")
+                                        .position();
+                                (direction.length_squared() > 1e-6)
+                                    .then_some(AbilityTarget::Direction(direction))
+                            }),
+                            Targeting::Point => ground.map(AbilityTarget::Point),
+                            Targeting::Enemy => hovered
+                                .filter(|target| valid_enemy_pick(world, player, *target))
+                                .map(AbilityTarget::Unit),
+                            Targeting::SelfCast => Some(AbilityTarget::SelfCast),
+                        }
                     });
                     if let Some(target) = target {
-                        submit(world, player, UnitCommand::CastAbility { slot, target });
+                        submit_cast(world, player, source, target);
                     } else {
                         return;
                     }
@@ -412,6 +517,8 @@ pub(super) fn collect_input(
     }
     let skill_request = web::take_skill_request();
     queued_skill_request(world, skill_request, just_captured);
+    let equipment_request = web::take_equipment_skill_request();
+    queued_equipment_request(world, equipment_request.as_deref(), just_captured);
     if !world.resource::<SimulationControl>().paused {
         let point = world.resource::<GamePointer>().position();
         update_pointer(world, point);

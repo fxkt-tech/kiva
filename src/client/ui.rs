@@ -3,11 +3,12 @@ use super::{
     abilities::{AbilityMetadata, AbilityView},
     camera::{CameraRig, GameCamera},
     controls::{Aim, ClientFeedback, Pickable, PlayerController},
+    equipment::{self, EquipmentAdapter, EquipmentDefinitionView, EquipmentView},
     session::{ClientSession, SelectionAck},
     web,
 };
 use crate::simulation::*;
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemParam, prelude::*};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -106,6 +107,9 @@ struct HudView {
     session: SessionView,
     selected: Option<String>,
     aim: Option<usize>,
+    equipment_aim: Option<usize>,
+    equipment: EquipmentView,
+    equipment_catalog: Option<Vec<EquipmentDefinitionView>>,
     attack_move: bool,
     units: Vec<UnitView>,
     abilities: Vec<AbilityView>,
@@ -266,6 +270,22 @@ fn project_display(
         .map(|point| web::viewport_to_css(point, viewport).to_array())
 }
 
+#[derive(SystemParam)]
+pub(super) struct EquipmentProjection<'w, 's> {
+    adapter: Res<'w, EquipmentAdapter>,
+    catalog: Res<'w, EquipmentCatalog>,
+    units: Query<
+        'w,
+        's,
+        (
+            &'static EquipmentSlots,
+            &'static UnitState,
+            &'static ControlState,
+        ),
+    >,
+    sent_catalog: Local<'s, bool>,
+}
+
 #[expect(
     clippy::too_many_arguments,
     reason = "Bevy system parameters declare independent ECS access"
@@ -285,8 +305,12 @@ pub(super) fn publish(
     window: Single<&Window>,
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
     units: Query<ProjectedUnit>,
+    mut equipment: EquipmentProjection,
 ) {
-    if !session.is_changed() && time.elapsed_secs() < *next_publish {
+    if !session.is_changed()
+        && !equipment.adapter.is_changed()
+        && time.elapsed_secs() < *next_publish
+    {
         return;
     }
     *next_publish = time.elapsed_secs() + 0.08;
@@ -372,6 +396,19 @@ pub(super) fn publish(
             Some(Aim::Ability(slot)) => Some(slot),
             _ => None,
         },
+        equipment_aim: match player.aim {
+            Some(Aim::Equipment { slot, .. }) => Some(slot),
+            _ => None,
+        },
+        equipment: EquipmentView::new(
+            session.player().and_then(|id| equipment.units.get(id).ok()),
+            &equipment.catalog,
+            &catalog,
+            equipment::paused_unlocked(&control),
+            &equipment.adapter.ack,
+        ),
+        equipment_catalog: (!*equipment.sent_catalog)
+            .then(|| equipment::catalog_view(&equipment.catalog, &catalog)),
         attack_move: matches!(player.aim, Some(Aim::AttackMove)),
         units: views,
         abilities,
@@ -393,6 +430,7 @@ pub(super) fn publish(
     };
     if let Ok(json) = serde_json::to_string(&view) {
         web::publish(&json);
+        *equipment.sent_catalog = true;
     }
 }
 

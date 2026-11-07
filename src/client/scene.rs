@@ -1,5 +1,6 @@
 //! Procedural presentation. Visual transforms interpolate authoritative poses.
 use super::{
+    abilities,
     content::Scenery,
     controls::{Aim, ClientFeedback, Pickable, PlayerController, PointerState},
     session::ClientSession,
@@ -333,12 +334,14 @@ pub(super) fn sync_effects(
     pointer: Res<PointerState>,
     feedback: Res<ClientFeedback>,
     catalog: Res<AbilityCatalog>,
+    equipment: Res<EquipmentCatalog>,
     units: Query<(
         Entity,
         &Unit,
         &UnitPose,
         &UnitState,
         &AbilitySlots,
+        &EquipmentSlots,
         &UnitAction,
     )>,
     projectiles: Query<(Entity, &Projectile), Without<ProjectileVisual>>,
@@ -378,7 +381,7 @@ pub(super) fn sync_effects(
             color,
         );
     };
-    for (id, unit, pose, state, _, action) in &units {
+    for (id, unit, pose, state, _, _, action) in &units {
         if !state.alive() {
             continue;
         }
@@ -442,7 +445,7 @@ pub(super) fn sync_effects(
     }
     if let Some(aim) = player.aim
         && let Some(player) = session.player()
-        && let Ok((_, unit, pose, _, slots, _)) = units.get(player)
+        && let Ok((_, unit, pose, _, slots, items, _)) = units.get(player)
     {
         let origin = pose.position();
         match aim {
@@ -452,8 +455,15 @@ pub(super) fn sync_effects(
                 unit.attributes().attack_range() + unit.definition().radius,
                 Color::srgb_u8(229, 177, 105),
             ),
-            Aim::Ability(slot) => {
-                if let Some(definition) = slots.ability(slot).and_then(|id| catalog.get(id)) {
+            aim @ (Aim::Ability(_) | Aim::Equipment { .. }) => {
+                if let Some(info) = abilities::resolve(
+                    aim.source().expect("cast aim"),
+                    slots,
+                    items,
+                    &catalog,
+                    &equipment,
+                ) {
+                    let definition = info.definition;
                     ring(
                         &mut gizmos,
                         origin,

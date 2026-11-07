@@ -147,63 +147,19 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
             );
         }
         UnitCommand::CastAbility { slot, target } => {
-            let slots = world
-                .get::<AbilitySlots>(entity)
-                .ok_or(Rejection::NoAbility)?;
-            let id = slots.ability(slot).ok_or(Rejection::NoAbility)?;
-            if slots.cooldowns[slot] > 1e-5 {
-                return Err(Rejection::OnCooldown);
-            }
-            let definition = world
-                .resource::<AbilityCatalog>()
-                .get(id)
-                .ok_or(Rejection::NoAbility)?;
-            if !world
-                .get::<ControlState>(entity)
-                .is_some_and(|control| control.permits(definition))
-            {
-                return Err(Rejection::Controlled);
-            }
-            if state.mana < definition.mana_cost {
-                return Err(Rejection::InsufficientMana);
-            }
-            if !matches!(
-                world.get::<UnitAction>(entity),
-                Some(
-                    UnitAction::Ready
-                        | UnitAction::Recovery { .. }
-                        | UnitAction::AttackWindup { .. }
-                        | UnitAction::AttackBackswing { .. }
-                )
-            ) {
-                return Err(Rejection::Busy);
-            }
-            validate_target(world, entity, definition, target)?;
-            let windup = definition.windup;
-            let target_life = if let AbilityTarget::Unit(target) = target {
-                Some(
-                    world
-                        .get::<UnitState>(target)
-                        .expect("validated target")
-                        .life_ref(target),
-                )
-            } else {
-                None
-            };
-            *world
-                .get_mut::<UnitAction>(entity)
-                .ok_or(Rejection::InvalidUnit)? = UnitAction::Casting {
-                slot,
-                ability: id,
+            super::actions::begin_cast(world, entity, CastSource::AbilitySlot(slot), target)?;
+        }
+        UnitCommand::UseEquipment {
+            slot,
+            instance,
+            target,
+        } => {
+            super::actions::begin_cast(
+                world,
+                entity,
+                CastSource::EquipmentSlot { slot, instance },
                 target,
-                target_life,
-                remaining: windup,
-            };
-            super::movement::clear_route(
-                &mut *world
-                    .get_mut::<Movement>(entity)
-                    .ok_or(Rejection::InvalidUnit)?,
-            );
+            )?;
         }
         UnitCommand::Stop => {
             *world

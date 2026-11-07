@@ -38,9 +38,17 @@
     previewElement: document.querySelector(`[data-preview-stat="${key}"]`),
   }));
   window.__kivaStartup = "loading";
+  const equipmentUi = window.createEquipmentUi({
+    pause: () => setPaused(true),
+    blocked: () => !ready || Boolean(captureAttempt) || returnPending,
+  });
 
   function setPaused(paused) {
     root.dataset.paused = String(paused);
+    if (paused) {
+      delete root.dataset.skill;
+      delete root.dataset.equipmentSkill;
+    }
     if (paused && document.pointerLockElement === canvas) document.exitPointerLock();
   }
 
@@ -87,7 +95,7 @@
   }
 
   function enterGame() {
-    if (!ready || captureAttempt || returnPending || !session) return;
+    if (!ready || captureAttempt || returnPending || equipmentUi.isOpen() || equipmentUi.isPending() || !session) return;
     const choice = confirmedChoice();
     if (session.phase === "Selecting" && !choice) return;
     const attempt = { phase: session.phase, choice, stage: "requesting" };
@@ -121,7 +129,8 @@
 
   function returnToSelection() {
     if (!ready || session?.phase !== "Active" || !activePlayerId || returnPending
-      || captureAttempt || root.dataset.paused !== "true" || document.pointerLockElement === canvas) return;
+      || captureAttempt || equipmentUi.isOpen() || equipmentUi.isPending()
+      || root.dataset.paused !== "true" || document.pointerLockElement === canvas) return;
     if (enqueueSessionRequest({ type: "ReturnToSelection", player_id: activePlayerId })) {
       returnPending = true;
       delete root.dataset.skill;
@@ -145,7 +154,7 @@
       return;
     }
     const attempt = captureAttempt;
-    if (returnPending) {
+    if (returnPending || equipmentUi.isOpen()) {
       setPaused(true);
       return;
     }
@@ -185,10 +194,10 @@
     $("enter").textContent = captureAttempt
       ? (captureAttempt.stage === "launching" ? "正在进入…" : "正在捕获鼠标…")
       : (active ? "继续试炼 →" : "进入试炼 →");
-    $("enter").disabled = !ready || Boolean(captureAttempt) || returnPending || (!active && !confirmedChoice());
+    $("enter").disabled = !ready || Boolean(captureAttempt) || returnPending || equipmentUi.isPending() || (!active && !confirmedChoice());
     $("reselection-actions").hidden = !active;
     $("reselect").textContent = returnPending ? "正在返回选角…" : "重新选择角色";
-    $("reselect").disabled = !ready || !activePlayerId || returnPending || Boolean(captureAttempt)
+    $("reselect").disabled = !ready || !activePlayerId || returnPending || Boolean(captureAttempt) || equipmentUi.isPending()
       || root.dataset.paused !== "true" || document.pointerLockElement === canvas;
     const selection = session?.selection;
     const waiting = selection?.selection_ack.request_id !== latestSelectionRequest;
@@ -442,21 +451,23 @@
         ? String(Math.ceil(ability.cooldown)) : ability.cooldown.toFixed(1);
       button.title = `${ability.name} · ${ability.target_hint}\n${ability.description}\n能量 ${ability.cost} · 冷却 ${ability.total_cooldown}s · 射程 ${ability.range}${ability.unavailable_reason ? `\n${ability.unavailable_reason}` : ""}`;
     }
-    $("aim-hint").hidden = state.aim === null && !state.attack_move;
+    $("aim-hint").hidden = state.aim === null && state.equipment_aim == null && !state.attack_move;
     $("aim-text").textContent = state.attack_move
       ? "攻击移动：选择前进方向"
       : (() => {
-        const ability = state.abilities.find((a) => a.slot === state.aim);
+        const ability = state.equipment_aim != null
+          ? state.equipment?.slots[state.equipment_aim]?.item?.active
+          : state.abilities.find((a) => a.slot === state.aim);
         return ability ? `${ability.name}：${ability.target_hint}` : "";
       })();
     const hovered = document.querySelector(".ability[data-virtual-hover]");
-    const detail = state.abilities.find((ability) => ability.slot === (hovered ? Number(hovered.dataset.slot) : state.aim));
+    const detail = equipmentUi.detail() || state.abilities.find((ability) => ability.slot === (hovered ? Number(hovered.dataset.slot) : state.aim));
     $("ability-detail").hidden = !detail || state.paused;
     if (detail) {
       $("ability-detail").querySelector("strong").textContent = detail.name;
       $("ability-detail").querySelector("span").textContent = detail.target_hint;
       $("ability-detail").querySelector("p").textContent = detail.description;
-      $("ability-detail").querySelector("small").textContent = detail.unavailable_reason || `能量 ${detail.cost} · 冷却 ${detail.total_cooldown}s · 射程 ${detail.range}`;
+      $("ability-detail").querySelector("small").textContent = detail.note || detail.unavailable_reason || `能量 ${detail.cost} · 冷却 ${detail.total_cooldown}s · 射程 ${detail.range}`;
     }
     renderHelp(state.abilities);
   }
@@ -547,6 +558,8 @@
     // Read-only diagnostics allow tests to assert actual simulation results.
     window.__kivaState = state;
     renderSession(state.session, state.player_id);
+    equipmentUi.render(state);
+    syncMenu();
     const player = state.units.find((unit) => unit.id === state.player_id);
     $("session-status").textContent = state.session.phase === "Selecting"
       ? "选择角色" : state.paused ? "试炼暂停" : "本地试炼 · WEBGPU";

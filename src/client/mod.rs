@@ -3,6 +3,7 @@ mod abilities;
 mod camera;
 mod content;
 mod controls;
+mod equipment;
 mod pointer;
 mod scene;
 mod session;
@@ -46,6 +47,7 @@ pub(super) fn run() {
     .init_resource::<pointer::GamePointer>()
     .init_resource::<controls::ClientFeedback>()
     .init_resource::<controls::PlayerController>()
+    .init_resource::<equipment::EquipmentAdapter>()
     .add_systems(
         Startup,
         (content::setup, session::setup, scene::setup, camera::setup).chain(),
@@ -55,6 +57,7 @@ pub(super) fn run() {
         RunFixedMainLoop,
         (
             session::process_requests,
+            equipment::process_requests,
             controls::collect_input,
             controls::patrol_units,
         )
