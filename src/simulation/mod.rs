@@ -12,11 +12,13 @@ mod model;
 mod movement;
 mod navigation;
 mod orders;
+mod recovery;
 mod statuses;
 pub use abilities::{
     AbilityCatalog, AbilityDefinition, AbilityExecution, AbilityId, AbilityLoadout, Delivery,
     DisplacementDirection, DisplacementSpec, Effect, ImpactDefinition, Targeting,
 };
+pub use actions::preview_cast;
 pub use attributes::{
     AttributeChanges, AttributeDelta, AttributeModifier, AttributeRejection, BaseAttributes,
     EffectiveAttributes, MAX_ATTACK_SPEED, MIN_ATTACK_SPEED, ModifierRemoval, ModifierSourceId,
@@ -35,17 +37,26 @@ pub use equipment::{
 };
 use model::Movement;
 pub use model::{
-    AbilitySlots, AbilityTarget, AreaEffect, CastSource, CommandQueue, Projectile, Rejection,
-    SimulationControl, SimulationEvent, SimulationTick, Team, Unit, UnitAction, UnitCommand,
-    UnitLifeRef, UnitOrder, UnitPose, UnitSpec, UnitState, UnitStats,
+    AbilitySlots, AbilityTarget, AreaEffect, BasicAttackDelivery, CastSource, CommandQueue,
+    Projectile, Rejection, SimulationControl, SimulationEvent, SimulationTick, Team, Unit,
+    UnitAction, UnitClass, UnitCommand, UnitLifeRef, UnitOrder, UnitPose, UnitSpec, UnitState,
+    UnitStats,
 };
+pub use movement::{SoftAvoidance, is_dashing};
 pub use navigation::{NavigationMap, Obstacle, PathError};
+pub use recovery::{RecoveryAmount, RecoveryError, RecoverySpec, restore_in_zone};
 pub use statuses::{
     ControlState, StatusDuration, StatusKind, StatusSpec, StatusView, UnitStatuses,
 };
 
 pub const TICK_RATE: f64 = 60.0;
 pub const TICK_SECONDS: f32 = 1.0 / TICK_RATE as f32;
+/// A complete atomic battle tick. Modes may order their decisions/outcome around
+/// this set without gaining access to the private battle systems.
+#[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum SimulationSet {
+    Step,
+}
 pub struct SimulationPlugin;
 impl Plugin for SimulationPlugin {
     fn build(&self, app: &mut App) {
@@ -76,6 +87,7 @@ impl Plugin for SimulationPlugin {
                     effects::resolve,
                 )
                     .chain()
+                    .in_set(SimulationSet::Step)
                     .run_if(|control: Res<SimulationControl>| !control.paused),
             );
     }
@@ -106,8 +118,9 @@ pub fn reset_simulation(world: &mut World) {
     world.resource_mut::<SimulationTick>().0 = 0;
 }
 
-/// Validates construction; all runtime mutation stays inside this module.
-pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static str> {
+/// Checks a complete unit configuration without spawning or allocating any
+/// identities. Multi-unit mode setup can preflight the same rules atomically.
+pub fn validate_unit_spec(world: &World, spec: &UnitSpec) -> Result<(), &'static str> {
     if !spec.stats.valid()
         || spec.name.is_empty()
         || spec
@@ -115,6 +128,11 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
             .is_some_and(|v| !v.is_finite() || v <= 0.0)
     {
         return Err("invalid unit definition");
+    }
+    if spec.stats.class == UnitClass::Structure
+        && (spec.respawn_delay.is_some() || spec.abilities.iter().any(Option::is_some))
+    {
+        return Err("structures cannot have abilities or respawn");
     }
     if !world
         .resource::<NavigationMap>()
@@ -125,12 +143,19 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
     if abilities::validate_loadout(&spec.abilities, world.resource::<AbilityCatalog>()).is_err() {
         return Err("unknown equipped ability");
     }
+    Ok(())
+}
+
+/// Validates construction; all runtime mutation stays inside this module.
+pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static str> {
+    validate_unit_spec(world, &spec)?;
     let slow_source = world
         .resource_mut::<AttributeChanges>()
         .allocate_source()
         .ok_or("attribute source space exhausted")?;
     let health = spec.stats.max_health;
     let mana = spec.stats.max_mana;
+    let control = ControlState::for_class(spec.stats.class);
     Ok(world
         .spawn((
             Unit {
@@ -147,6 +172,8 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
                 mana,
                 attack_cooldown: 0,
                 respawn_remaining: None,
+                last_damaged_tick: None,
+                last_recovery_tick: None,
             },
             UnitPose {
                 position: spec.position,
@@ -162,7 +189,7 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
             UnitAction::default(),
             Movement::default(),
             UnitStatuses::new(slow_source),
-            ControlState::default(),
+            control,
         ))
         .id())
 }

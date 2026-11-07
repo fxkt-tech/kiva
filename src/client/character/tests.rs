@@ -5,7 +5,11 @@ use super::{
     rig::AnimationLibrary,
 };
 use crate::{
-    client::{content::Scenery, scene},
+    client::{
+        presentation::{self, PresentationFrame},
+        scene, unit_appearance,
+    },
+    gameplay::MapDefinition,
     simulation::*,
 };
 use bevy::prelude::*;
@@ -17,15 +21,16 @@ fn app() -> App {
         .init_resource::<Assets<Mesh>>()
         .init_resource::<Assets<StandardMaterial>>()
         .insert_resource(NavigationMap::new(20.0, 1.0, vec![]))
-        .insert_resource(Scenery {
-            walls: vec![],
-            trees: vec![],
-            pillars: vec![],
-        })
-        .add_systems(Startup, (scene::setup, model::setup).chain())
+        .insert_resource(MapDefinition::default())
+        .init_resource::<PresentationFrame>()
+        .add_systems(
+            Startup,
+            (scene::setup, model::setup, unit_appearance::setup).chain(),
+        )
         .add_systems(
             Update,
             (
+                presentation::prepare,
                 scene::attach_unit_visuals,
                 scene::sync_units,
                 scene::sync_ground_bases,
@@ -727,4 +732,154 @@ fn commit_death_respawn_in_one_display_frame_drops_old_dash_and_reset_cleans_hie
             .count(),
         33
     );
+}
+
+#[test]
+fn match_roles_use_separate_models_and_terminal_roots_and_bones_sync_once_then_freeze() {
+    use crate::{
+        client::{
+            test_support,
+            unit_appearance::{BaseCore, MinionModel},
+        },
+        gameplay::*,
+    };
+    let mut app = app();
+    app.add_plugins(GameplayPlugin);
+    prepare_world(app.world_mut());
+    let handle = start_match(app.world_mut(), CharacterId(1)).unwrap();
+    app.world_mut().resource_mut::<SimulationControl>().paused = false;
+    app.add_systems(
+        Update,
+        crate::client::unit_appearance::sync_simple_models.after(animation::sync_attachments),
+    );
+    app.world_mut().run_schedule(Update);
+    assert_eq!(
+        app.world_mut()
+            .query::<&CharacterModel>()
+            .iter(app.world())
+            .count(),
+        2
+    );
+    assert_eq!(
+        app.world_mut()
+            .query::<&BoneVisual>()
+            .iter(app.world())
+            .count(),
+        66
+    );
+    assert_eq!(
+        app.world_mut()
+            .query::<&MinionModel>()
+            .iter(app.world())
+            .count(),
+        2
+    );
+    for _ in 0..150 {
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    app.world_mut().run_schedule(Update);
+    assert_eq!(
+        app.world_mut()
+            .query::<&MinionModel>()
+            .iter(app.world())
+            .count(),
+        12
+    );
+    assert_eq!(
+        app.world_mut()
+            .query::<&BaseCore>()
+            .iter(app.world())
+            .count(),
+        2
+    );
+    for (role, appearance, pickable, rig) in app
+        .world_mut()
+        .query::<(
+            &UnitRole,
+            &crate::client::unit_appearance::UnitAppearance,
+            &crate::client::controls::Pickable,
+            Option<&RigPose>,
+        )>()
+        .iter(app.world())
+    {
+        assert_eq!(pickable.offset, appearance.pick_center);
+        assert_eq!(pickable.half_size, appearance.pick_half_size);
+        assert!(appearance.label_offset.y > appearance.pick_center.y + appearance.pick_half_size.y);
+        assert_eq!(rig.is_some(), *role == UnitRole::Hero);
+    }
+    let before = app
+        .world()
+        .get::<Transform>(handle.player)
+        .unwrap()
+        .translation;
+    let origin = app
+        .world()
+        .get::<UnitPose>(handle.player)
+        .unwrap()
+        .position();
+    command(
+        &mut app,
+        handle.player,
+        UnitCommand::MoveTo(origin + Vec2::X * 2.0),
+    );
+    test_support::finish_match(&mut app, Team::Ally);
+    let point = app
+        .world()
+        .get::<UnitPose>(handle.player)
+        .unwrap()
+        .position();
+    assert_ne!(point, origin);
+    app.world_mut().run_schedule(Update);
+    let final_root = *app.world().get::<Transform>(handle.player).unwrap();
+    assert_ne!(final_root.translation, before);
+    assert_eq!(final_root.translation, Vec3::new(point.x, 0.0, point.y));
+    let enemy_base = app
+        .world()
+        .resource::<MatchState>()
+        .base(Team::Enemy)
+        .unwrap();
+    assert_eq!(
+        *app.world().get::<Visibility>(enemy_base).unwrap(),
+        Visibility::Inherited
+    );
+    assert_eq!(
+        app.world_mut()
+            .query_filtered::<&Visibility, With<BaseCore>>()
+            .iter(app.world())
+            .filter(|visible| **visible == Visibility::Hidden)
+            .count(),
+        1
+    );
+    let local = app
+        .world()
+        .get::<RigPose>(handle.player)
+        .unwrap()
+        .local
+        .clone();
+    let time = app.world().get::<RigPose>(handle.player).unwrap().last_time;
+    let (socket, sword) = sword(&mut app, handle.player);
+    let overstep = app
+        .world()
+        .resource::<Time<Fixed>>()
+        .timestep()
+        .mul_f32(0.9);
+    app.world_mut()
+        .resource_mut::<Time<Fixed>>()
+        .accumulate_overstep(overstep);
+    for _ in 0..3 {
+        app.world_mut().run_schedule(Update);
+    }
+    assert_eq!(
+        *app.world().get::<Transform>(handle.player).unwrap(),
+        final_root
+    );
+    assert_eq!(
+        app.world().get::<RigPose>(handle.player).unwrap().local,
+        local
+    );
+    assert_eq!(
+        app.world().get::<RigPose>(handle.player).unwrap().last_time,
+        time
+    );
+    assert_eq!(*app.world().get::<Transform>(socket).unwrap(), sword);
 }

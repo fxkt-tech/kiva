@@ -6,10 +6,10 @@
 
 ## Kiva 数据流
 
-1. `src/client/content.rs` 注册定义并调用 `spawn_unit`。
-2. `src/client/controls.rs` 收集有顺序的设备事件并提交模拟指令。
+1. `src/gameplay/content/`注册定义，模式通过`spawn_unit/spawn_character`原子构造阵容。
+2. `src/client/controls.rs`收集有顺序的设备事件；`src/gameplay/ai/`在固定步前决策，均提交公开模拟指令。
 3. `src/simulation/` 在固定步处理规则，保存权威状态并发布结果。
-4. `src/client/scene.rs` 插值和绘制，`src/client/ui.rs` 生成只读数据。
+4. 玩法在完整结算后判终局、出兵、清理与恢复；`src/client/scene.rs`插值和绘制，`src/client/ui.rs`生成只读数据。
 5. `src/client/web.rs` 桥接浏览器，`web/hud.js` 展示，`scripts/browser-*.cjs` 验证。
 
 ## 检查问题

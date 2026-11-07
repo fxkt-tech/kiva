@@ -1,11 +1,23 @@
 /* Equipment presentation and intents. Definitions and state come from Rust. */
 (() => {
   "use strict";
+  // Rust publishes static definitions once. Retain them even when its first
+  // snapshot precedes the deferred HUD; no DOM exists at this early boundary.
+  let initialCatalog = null;
+  function retainCatalog(event) {
+    const snapshot = typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
+    if (!Array.isArray(snapshot.equipment_catalog)) return;
+    initialCatalog = snapshot.equipment_catalog;
+    window.removeEventListener("kiva-state", retainCatalog);
+  }
+  window.addEventListener("kiva-state", retainCatalog);
+
   window.createEquipmentUi = ({ pause, blocked }) => {
     const root = document.documentElement;
     const $ = (id) => document.getElementById(id);
     let state = null;
-    let catalog = [];
+    let catalog = initialCatalog || [];
+    if (initialCatalog) window.__kivaEquipmentCatalog = catalog;
     let opened = false;
     let requestId = 0;
     let pending = null;
@@ -160,6 +172,7 @@
     }
 
     function render(nextState) {
+      if (nextState.match?.phase === "Finished") { opened = false; pending = null; }
       const wasActive = state?.session.phase === "Active";
       state = nextState;
       if (Array.isArray(state.equipment_catalog)) {

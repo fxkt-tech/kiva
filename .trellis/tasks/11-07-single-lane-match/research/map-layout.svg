@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="680" viewBox="0 0 640 680">
+<defs><marker id="a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#74d9c6"/></marker><marker id="b" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="#e89380"/></marker></defs>
+<rect width="640" height="680" rx="18" fill="#102626"/>
+<g font-family="Noto Sans CJK SC,Microsoft YaHei,sans-serif" fill="#ece5cc">
+<rect x="30" y="30" width="580" height="580" rx="5" fill="#254b3e" stroke="#71917b" stroke-width="2"/>
+<path d="M140 500L500 140" stroke="#3c6652" stroke-width="132"/><path d="M140 500L500 140" stroke="#727d67" stroke-width="86"/><path d="M190 450L450 190" stroke="#a3a891" stroke-width="2" stroke-dasharray="9 9"/>
+<circle cx="140" cy="500" r="44" fill="#1a4340" stroke="#74d9c6" stroke-width="3"/><path d="M140 475L156 500L140 519L124 500Z" fill="#74d9c6"/>
+<circle cx="500" cy="140" r="44" fill="#4e3731" stroke="#e89380" stroke-width="3"/><path d="M500 115L516 140L500 159L484 140Z" fill="#e89380"/>
+<text x="75" y="565" font-size="23">我方基地</text><text x="449" y="73" font-size="23">敌方基地</text>
+<rect x="96" y="542" width="88" height="6" fill="#74d9c6"/><rect x="456" y="92" width="88" height="6" fill="#e89380"/>
+<path d="M233 394L298 329" stroke="#74d9c6" stroke-width="3" marker-end="url(#a)"/><path d="M410 237L345 302" stroke="#e89380" stroke-width="3" marker-end="url(#b)"/>
+<g fill="#74d9c6" stroke="#102626" stroke-width="2"><path d="M266 328L278 347L254 347Z"/><path d="M285 347L297 366L273 366Z"/><path d="M304 366L316 385L292 385Z"/><circle cx="227" cy="378" r="9"/><circle cx="246" cy="397" r="9"/><circle cx="265" cy="416" r="9"/></g>
+<g fill="#e89380" stroke="#102626" stroke-width="2"><path d="M374 309L386 290L362 290Z"/><path d="M355 290L367 271L343 271Z"/><path d="M336 271L348 252L324 252Z"/><circle cx="413" cy="259" r="9"/><circle cx="394" cy="240" r="9"/><circle cx="375" cy="221" r="9"/></g>
+<path d="M187 426L204 447L187 468L170 447Z" fill="#c0f3e7" stroke="#74d9c6" stroke-width="2"/><text x="48" y="425" font-size="18">玩家英雄</text>
+<path d="M454 180L471 201L454 222L437 201Z" fill="#ffd0bf" stroke="#e89380" stroke-width="2"/><text x="485" y="232" font-size="18">AI英雄</text>
+<text x="53" y="72" font-size="19">单中路 · 双向推进</text><text x="55" y="103" font-size="15" fill="#c2c9b2">每方每波：3近战 + 3远程</text>
+<text x="320" y="642" text-anchor="middle" font-size="18">正方形地图约一屏尺度，保留滚屏 / 缩放 / 跟随</text><text x="320" y="666" text-anchor="middle" font-size="13" fill="#a6b6a6">布局示意，非最终美术与世界坐标；0秒首波，之后每60秒一波</text>
+</g></svg>

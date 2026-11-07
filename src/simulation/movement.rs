@@ -5,6 +5,18 @@ use super::{
 };
 use bevy::prelude::*;
 
+/// Opt-in separation for ordinary walking. It is a visual crowd aid, not a
+/// hard collider: it cannot block heroes or alter committed motion endpoints.
+#[derive(Component, Clone, Copy, Debug, Default)]
+pub struct SoftAvoidance;
+
+/// Observes committed autonomous movement without exposing its writable state.
+pub fn is_dashing(world: &World, unit: Entity) -> bool {
+    world
+        .get::<Movement>(unit)
+        .is_some_and(|movement| movement.dash.is_some())
+}
+
 pub(super) fn reset_pose(pose: &mut UnitPose, home: Vec2) {
     pose.position = home;
     pose.previous = home;
@@ -38,7 +50,11 @@ pub(super) fn start_forced(
     impact_direction: Vec2,
     fallback: Vec2,
 ) {
-    if !target.is_current(world) {
+    if !target.is_current(world)
+        || world
+            .get::<Unit>(target.entity())
+            .is_none_or(|unit| unit.class() == UnitClass::Structure)
+    {
         return;
     }
     let position = world
@@ -92,6 +108,15 @@ fn sweep_blocked(start: Vec2, requested: Vec2, next: Vec2) -> bool {
 
 pub(super) fn move_units(world: &mut World) {
     let mut finished = Vec::new();
+    // Every participant observes the same pre-movement positions. Reading
+    // already moved neighbors would make steering depend on ECS iteration.
+    let mut neighbors: Vec<_> = world
+        .query_filtered::<(Entity, &Unit, &UnitState, &UnitPose), With<SoftAvoidance>>()
+        .iter(world)
+        .filter(|(_, unit, state, _)| state.alive() && unit.class() == UnitClass::Actor)
+        .map(|(entity, unit, _, pose)| (entity, pose.position(), unit.definition().radius))
+        .collect();
+    neighbors.sort_by_key(|(entity, _, _)| entity.to_bits());
     world.resource_scope(|world, map: Mut<NavigationMap>| {
         let mut actors = world.query::<(
             Entity,
@@ -101,8 +126,10 @@ pub(super) fn move_units(world: &mut World) {
             &UnitAction,
             &mut UnitPose,
             &mut Movement,
+            Has<SoftAvoidance>,
         )>();
-        for (entity, unit, state, control, action, mut pose, mut movement) in actors.iter_mut(world)
+        for (entity, unit, state, control, action, mut pose, mut movement, avoids) in
+            actors.iter_mut(world)
         {
             pose.previous = pose.position;
             if !state.alive() {
@@ -159,15 +186,41 @@ pub(super) fn move_units(world: &mut World) {
                     movement.route.pop_front();
                     continue;
                 }
-                pose.facing = delta / distance;
-                let requested = pose.position + pose.facing * distance.min(budget);
-                let next = map.sweep(pose.position, requested, unit.stats.radius);
+                let forward = delta / distance;
+                pose.facing = forward;
+                if avoids {
+                    let lateral = separation(
+                        entity,
+                        pose.position,
+                        unit.stats.radius,
+                        pose.facing,
+                        &neighbors,
+                    );
+                    pose.facing = (pose.facing + lateral).normalize_or(pose.facing);
+                }
+                let mut requested = pose.position + pose.facing * distance.min(budget);
+                let mut next = map.sweep(pose.position, requested, unit.stats.radius);
+                if avoids && next.distance_squared(requested) > 1e-6 {
+                    // Separation is optional. If its side-step meets a wall,
+                    // retain the valid route's forward motion rather than
+                    // repeatedly clearing/replanning into that same wall.
+                    let straight = pose.position + forward * distance.min(budget);
+                    let straight_end = map.sweep(pose.position, straight, unit.stats.radius);
+                    if straight_end.distance_squared(straight) <= 1e-6
+                        || (straight_end - pose.position).dot(forward)
+                            > (next - pose.position).dot(forward)
+                    {
+                        requested = straight;
+                        next = straight_end;
+                        pose.facing = forward;
+                    }
+                }
                 pose.position = next;
                 if next.distance_squared(requested) > 1e-6 {
                     clear_route(&mut movement);
                     break;
                 }
-                if distance > budget {
+                if distance > budget || (avoids && next.distance(destination) > 0.001) {
                     break;
                 }
                 budget -= distance;
@@ -181,4 +234,40 @@ pub(super) fn move_units(world: &mut World) {
     for unit in finished {
         super::statuses::synchronize(world, unit);
     }
+}
+
+fn separation(
+    entity: Entity,
+    position: Vec2,
+    radius: f32,
+    forward: Vec2,
+    neighbors: &[(Entity, Vec2, f32)],
+) -> Vec2 {
+    let mut lateral = Vec2::ZERO;
+    for &(other, point, other_radius) in neighbors {
+        if other == entity {
+            continue;
+        }
+        let delta = position - point;
+        let distance = delta.length();
+        let spacing = (radius + other_radius) * 1.2;
+        if distance >= spacing {
+            continue;
+        }
+        let away = if distance > 0.0001 {
+            delta / distance
+        } else if entity.to_bits() < other.to_bits() {
+            Vec2::NEG_X
+        } else {
+            Vec2::X
+        };
+        let mut side = away - forward * away.dot(forward);
+        if side.length_squared() < 0.01 {
+            // Head-on pairs turn in opposite world directions, so they can
+            // pass rather than stop or push one another backward.
+            side = Vec2::new(-away.y, away.x);
+        }
+        lateral += side.normalize_or_zero() * (1.0 - distance / spacing);
+    }
+    lateral.clamp_length_max(0.7)
 }

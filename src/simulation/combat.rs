@@ -32,6 +32,7 @@ pub(super) fn advance_projectiles(
         for (id, unit, state, pose) in &units {
             if !state.alive()
                 || unit.team == projectile.payload.team
+                || !unit.class().accepts(projectile.payload.origin)
                 || projectile
                     .homing
                     .is_some_and(|target| target != state.life_ref(id))
@@ -129,10 +130,19 @@ pub(super) fn apply_damage(
     if !target.is_current(world) {
         return 0.0;
     }
+    if !world
+        .get::<Unit>(target.entity())
+        .expect("unit")
+        .class()
+        .accepts(damage.origin())
+    {
+        return 0.0;
+    }
     let attributes = *world
         .get::<Unit>(target.entity())
         .expect("unit")
         .attributes();
+    let tick = world.resource::<SimulationTick>().0;
     let mut state = world
         .get_mut::<UnitState>(target.entity())
         .expect("unit state");
@@ -142,6 +152,7 @@ pub(super) fn apply_damage(
         return 0.0;
     }
     state.health = new_health;
+    state.last_damaged_tick = Some(tick);
     let died = !state.alive();
     world.write_message(SimulationEvent::Damaged {
         source: source.entity(),
@@ -200,6 +211,8 @@ pub(super) fn respawn_units(world: &mut World) {
             state.mana = mana;
             state.respawn_remaining = None;
             state.attack_cooldown = 0;
+            state.last_damaged_tick = None;
+            state.last_recovery_tick = None;
         }
         world
             .get_mut::<AbilitySlots>(entity)

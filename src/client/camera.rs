@@ -46,9 +46,22 @@ pub(super) fn update(
     map: Res<NavigationMap>,
     mut rig: ResMut<CameraRig>,
     mut camera: Single<&mut Transform, With<GameCamera>>,
+    mut observed_player: Local<Option<Entity>>,
 ) {
-    if session.player().is_none() {
+    let player = session.player();
+    if player.is_none() {
         *rig = CameraRig::default();
+        *observed_player = None;
+    } else if player != *observed_player
+        && let Some(player) = player
+        && let Ok(pose) = poses.get(player)
+    {
+        // A new player means a new match, including Active -> Active restart.
+        // Center once; subsequent free-camera movement and ordinary resume
+        // keep their existing center, zoom and lock behavior.
+        rig.center = pose.position();
+        rig.locked = false;
+        *observed_player = Some(player);
     }
     let size = web::canvas_size().unwrap_or(Vec2::new(window.width(), window.height()));
     let scroll: f32 = wheel.read().map(|event| event.y).sum();
@@ -143,5 +156,49 @@ mod tests {
             app.world().get::<Transform>(camera).unwrap().translation,
             Vec3::new(0.0, 0.0, 3.0) + OFFSET
         );
+    }
+
+    #[test]
+    fn y_and_space_center_the_real_hero_on_initial_and_restarted_rounds() {
+        let mut app = App::new();
+        app.add_plugins((
+            MinimalPlugins,
+            SimulationPlugin,
+            crate::gameplay::GameplayPlugin,
+        ))
+        .init_resource::<PointerState>()
+        .init_resource::<ButtonInput<KeyCode>>()
+        .init_resource::<CameraRig>()
+        .add_message::<MouseWheel>()
+        .add_systems(Update, update);
+        content::setup(app.world_mut());
+        app.world_mut().spawn((GameCamera, Transform::default()));
+        app.world_mut().spawn(Window::default());
+        let mut previous_player = None;
+        for _ in 0..2 {
+            session::setup(app.world_mut());
+            session::start_native(app.world_mut());
+            let player = app.world().resource::<ClientSession>().player().unwrap();
+            assert_ne!(Some(player), previous_player);
+            let point = app.world().get::<UnitPose>(player).unwrap().position();
+            for key in [KeyCode::KeyY, KeyCode::Space] {
+                *app.world_mut().resource_mut::<CameraRig>() = CameraRig::default();
+                app.world_mut()
+                    .resource_mut::<ButtonInput<KeyCode>>()
+                    .reset_all();
+                app.world_mut()
+                    .resource_mut::<ButtonInput<KeyCode>>()
+                    .press(key);
+                app.world_mut().run_schedule(Update);
+                let rig = app.world().resource::<CameraRig>();
+                assert_eq!(
+                    rig.center, point,
+                    "{key:?} must reach the real spawn without clamping"
+                );
+                assert_eq!(rig.locked, key == KeyCode::KeyY);
+            }
+            previous_player = Some(player);
+            crate::gameplay::reset_match(app.world_mut());
+        }
     }
 }

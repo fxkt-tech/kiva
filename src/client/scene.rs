@@ -2,11 +2,16 @@
 use super::{
     abilities,
     character::{self, AnimationLibrary, ModelAssets, RigPose},
-    content::Scenery,
     controls::{Aim, ClientFeedback, Pickable, PlayerController, PointerState},
+    presentation::PresentationFrame,
     session::ClientSession,
+    unit_appearance::{self, ModelKind, UnitAppearance, UnitModelAssets},
+    world_scene,
 };
-use crate::simulation::*;
+use crate::{
+    gameplay::{MapDefinition, UnitRole},
+    simulation::*,
+};
 use bevy::prelude::*;
 
 #[derive(Resource)]
@@ -26,10 +31,26 @@ pub(super) struct ProjectileVisual;
 
 const AIRBORNE_PEAK_HEIGHT: f32 = 1.8;
 type GroundBaseFilter = (With<UnitGroundBase>, Without<UnitVisual>);
+type UnattachedUnit<'a> = (
+    Entity,
+    &'a Unit,
+    &'a UnitPose,
+    &'a UnitState,
+    &'a UnitStatuses,
+    Option<&'a UnitRole>,
+);
+type DisplayedUnit<'a> = (
+    &'a UnitPose,
+    &'a UnitState,
+    &'a UnitStatuses,
+    Option<&'a UnitAppearance>,
+    &'a mut Transform,
+    &'a mut Visibility,
+);
 
 pub(super) fn setup(
     mut commands: Commands,
-    scenery: Res<Scenery>,
+    map: Res<MapDefinition>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
@@ -46,102 +67,7 @@ pub(super) fn setup(
         },
         Transform::from_xyz(-12.0, 25.0, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
-    let ground = materials.add(Color::srgb_u8(35, 61, 54));
-    let path = materials.add(Color::srgb_u8(66, 82, 70));
-    let stone = materials.add(Color::srgb_u8(79, 91, 83));
-    let stone_top = materials.add(Color::srgb_u8(103, 117, 101));
-    let foliage = materials.add(Color::srgb_u8(24, 64, 52));
-    let foliage_light = materials.add(Color::srgb_u8(36, 83, 61));
-    let gold = materials.add(StandardMaterial {
-        base_color: Color::srgb_u8(213, 181, 114),
-        metallic: 0.5,
-        perceptual_roughness: 0.5,
-        ..default()
-    });
-    commands.spawn((
-        Mesh3d(meshes.add(Plane3d::default().mesh().size(64.0, 64.0))),
-        MeshMaterial3d(ground),
-        Transform::default(),
-    ));
-    commands.spawn((
-        Mesh3d(meshes.add(Cuboid::new(14.0, 0.04, 48.0))),
-        MeshMaterial3d(path.clone()),
-        Transform::from_xyz(0.0, 0.015, -2.0),
-    ));
-    commands.spawn((
-        Mesh3d(meshes.add(Cuboid::new(45.0, 0.035, 9.0))),
-        MeshMaterial3d(path),
-        Transform::from_xyz(0.0, 0.02, 3.0),
-    ));
-    let tile = meshes.add(Cuboid::new(1.85, 0.04, 1.85));
-    for z in -5..=5 {
-        for x in -3..=3 {
-            if (x + z) % 3 != 0 {
-                continue;
-            }
-            commands.spawn((
-                Mesh3d(tile.clone()),
-                MeshMaterial3d(stone.clone()),
-                Transform::from_xyz(x as f32 * 2.0, 0.045, z as f32 * 2.0),
-            ));
-        }
-    }
-    for obstacle in &scenery.walls {
-        commands.spawn((
-            Mesh3d(meshes.add(Cuboid::new(
-                obstacle.half_size.x * 2.0,
-                1.1,
-                obstacle.half_size.y * 2.0,
-            ))),
-            MeshMaterial3d(stone.clone()),
-            Transform::from_xyz(obstacle.center.x, 0.55, obstacle.center.y),
-        ));
-        commands.spawn((
-            Mesh3d(meshes.add(Cuboid::new(
-                obstacle.half_size.x * 2.0 + 0.12,
-                0.16,
-                obstacle.half_size.y * 2.0 + 0.12,
-            ))),
-            MeshMaterial3d(stone_top.clone()),
-            Transform::from_xyz(obstacle.center.x, 1.12, obstacle.center.y),
-        ));
-    }
-    let trunk = meshes.add(Cylinder::new(0.22, 1.5));
-    let crown = meshes.add(Sphere::new(1.0).mesh().ico(1).expect("valid tree mesh"));
-    for (i, &(point, height)) in scenery.trees.iter().enumerate() {
-        commands.spawn((
-            Mesh3d(trunk.clone()),
-            MeshMaterial3d(stone.clone()),
-            Transform::from_xyz(point.x, 0.75, point.y),
-        ));
-        commands.spawn((
-            Mesh3d(crown.clone()),
-            MeshMaterial3d(if i % 2 == 0 {
-                foliage.clone()
-            } else {
-                foliage_light.clone()
-            }),
-            Transform::from_xyz(point.x, height, point.y).with_scale(Vec3::new(
-                1.2,
-                height * 0.85,
-                1.2,
-            )),
-        ));
-    }
-    // Pillars frame the training grounds without requiring imported assets.
-    for point in &scenery.pillars {
-        let (x, z) = (point.x, point.y);
-        commands.spawn((
-            Mesh3d(meshes.add(Cylinder::new(0.5, 1.8))),
-            MeshMaterial3d(stone_top.clone()),
-            Transform::from_xyz(x, 0.9, z),
-        ));
-        commands.spawn((
-            Mesh3d(meshes.add(Sphere::new(0.25).mesh().uv(12, 8))),
-            MeshMaterial3d(gold.clone()),
-            Transform::from_xyz(x, 1.95, z),
-        ));
-    }
+    world_scene::spawn_map(&mut commands, &map, &mut meshes, &mut materials);
     commands.insert_resource(SceneAssets {
         base: meshes.add(Cylinder::new(0.5, 0.12)),
         bolt: meshes.add(Sphere::new(1.0).mesh().uv(12, 8)),
@@ -165,9 +91,11 @@ pub(super) fn attach_unit_visuals(
     library: Res<AnimationLibrary>,
     models: Res<ModelAssets>,
     tick: Res<SimulationTick>,
-    units: Query<(Entity, &Unit, &UnitPose, &UnitState, &UnitStatuses), Without<UnitVisual>>,
+    simple: Res<UnitModelAssets>,
+    units: Query<UnattachedUnit<'_>, Without<UnitVisual>>,
 ) {
-    for (entity, unit, pose, state, statuses) in &units {
+    for (entity, unit, pose, state, statuses, role) in &units {
+        let appearance = UnitAppearance::new(role.copied(), unit.definition().radius);
         let point = pose.position();
         let height = if state.alive() {
             statuses.airborne_height(0.0) * AIRBORNE_PEAK_HEIGHT
@@ -183,22 +111,15 @@ pub(super) fn attach_unit_visuals(
             .entity(entity)
             .insert((
                 UnitVisual,
+                appearance,
                 Pickable {
-                    offset: Vec3::Y,
-                    half_size: Vec3::new(
-                        unit.definition().radius + 0.1,
-                        1.0,
-                        unit.definition().radius + 0.1,
-                    ),
+                    offset: appearance.pick_center,
+                    half_size: appearance.pick_half_size,
                 },
                 Transform::from_xyz(point.x, height, point.y).with_rotation(Quat::from_rotation_y(
                     (-pose.facing().x).atan2(-pose.facing().y),
                 )),
-                if state.alive() {
-                    Visibility::Inherited
-                } else {
-                    Visibility::Hidden
-                },
+                appearance.visible(state.alive()),
                 Name::new(unit.name().to_owned()),
             ))
             .with_children(|parent| {
@@ -206,41 +127,45 @@ pub(super) fn attach_unit_visuals(
                     UnitGroundBase,
                     Mesh3d(assets.base.clone()),
                     MeshMaterial3d(assets.dark.clone()),
-                    Transform::from_xyz(0.0, 0.12 - height, 0.0),
+                    Transform::from_xyz(0.0, 0.12 - height, 0.0).with_scale(Vec3::new(
+                        unit.definition().radius / 0.45,
+                        1.0,
+                        unit.definition().radius / 0.45,
+                    )),
                 ));
             });
-        let rig = RigPose::new(&library, state.life_ref(entity), tick.0 as f64 / TICK_RATE);
-        character::spawn_model(
-            &mut commands,
-            entity,
-            &models,
-            &library,
-            rig.model(),
-            material,
-        );
-        commands.entity(entity).insert(rig);
+        if appearance.kind == ModelKind::Hero {
+            let rig = RigPose::new(&library, state.life_ref(entity), tick.0 as f64 / TICK_RATE);
+            character::spawn_model(
+                &mut commands,
+                entity,
+                &models,
+                &library,
+                rig.model(),
+                material,
+            );
+            commands.entity(entity).insert(rig);
+        } else {
+            unit_appearance::spawn_simple_model(
+                &mut commands,
+                entity,
+                appearance,
+                &simple,
+                material,
+            );
+        }
     }
 }
 
 pub(super) fn sync_units(
-    fixed: Res<Time<Fixed>>,
-    control: Res<SimulationControl>,
-    mut units: Query<
-        (
-            &UnitPose,
-            &UnitState,
-            &UnitStatuses,
-            &mut Transform,
-            &mut Visibility,
-        ),
-        With<UnitVisual>,
-    >,
+    frame: Res<PresentationFrame>,
+    mut units: Query<DisplayedUnit<'_>, With<UnitVisual>>,
 ) {
-    if control.paused {
+    if !frame.should_sync() {
         return;
     }
-    let fraction = fixed.overstep_fraction();
-    for (pose, state, statuses, mut transform, mut visibility) in &mut units {
+    let fraction = frame.fraction();
+    for (pose, state, statuses, appearance, mut transform, mut visibility) in &mut units {
         let point = pose.interpolated(fraction);
         let height = if state.alive() {
             statuses.airborne_height(fraction) * AIRBORNE_PEAK_HEIGHT
@@ -249,11 +174,16 @@ pub(super) fn sync_units(
         };
         transform.translation = Vec3::new(point.x, height, point.y);
         transform.rotation = Quat::from_rotation_y((-pose.facing().x).atan2(-pose.facing().y));
-        *visibility = if state.alive() {
-            Visibility::Inherited
-        } else {
-            Visibility::Hidden
-        };
+        *visibility = appearance.map_or_else(
+            || {
+                if state.alive() {
+                    Visibility::Inherited
+                } else {
+                    Visibility::Hidden
+                }
+            },
+            |appearance| appearance.visible(state.alive()),
+        );
     }
 }
 
@@ -275,8 +205,7 @@ pub(super) fn sync_ground_bases(
 pub(super) fn sync_effects(
     mut commands: Commands,
     time: Res<Time>,
-    fixed: Res<Time<Fixed>>,
-    control: Res<SimulationControl>,
+    frame: Res<PresentationFrame>,
     assets: Res<SceneAssets>,
     player: Res<PlayerController>,
     session: Res<ClientSession>,
@@ -298,12 +227,9 @@ pub(super) fn sync_effects(
     areas: Query<&AreaEffect>,
     mut gizmos: Gizmos,
 ) {
-    let fraction = if control.paused {
-        1.0
-    } else {
-        fixed.overstep_fraction()
-    };
+    let fraction = frame.fraction();
     for (entity, projectile) in &projectiles {
+        let point = projectile.interpolated(fraction);
         commands.entity(entity).insert((
             ProjectileVisual,
             Mesh3d(assets.bolt.clone()),
@@ -312,7 +238,8 @@ pub(super) fn sync_effects(
             } else {
                 assets.enemy.clone()
             }),
-            Transform::default(),
+            Transform::from_translation(Vec3::new(point.x, 0.9, point.y))
+                .with_scale(Vec3::splat(projectile.radius().max(0.16))),
         ));
     }
     for (projectile, mut transform) in &mut visuals {
@@ -460,7 +387,16 @@ mod tests {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, TransformPlugin, SimulationPlugin))
             .insert_resource(NavigationMap::new(20.0, 1.0, vec![]))
-            .add_systems(Update, (sync_units, sync_ground_bases).chain());
+            .init_resource::<PresentationFrame>()
+            .add_systems(
+                Update,
+                (
+                    super::super::presentation::prepare,
+                    sync_units,
+                    sync_ground_bases,
+                )
+                    .chain(),
+            );
         let airborne = AbilityId(100);
         let kill = AbilityId(101);
         for (id, effect) in [

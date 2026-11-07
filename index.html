@@ -6,14 +6,20 @@
     <meta name="theme-color" content="#101d20" />
     <link rel="icon" href="data:," />
     <title>Kiva · 试炼之境</title>
+    <link data-trunk rel="copy-file" href="web/startup.js" />
+    <script src="startup.js"></script>
+    <link data-trunk rel="copy-file" href="web/equipment.js" />
+    <script src="equipment.js"></script>
     <link data-trunk rel="rust" data-bin="kiva" />
     <link data-trunk rel="copy-file" href="web/style.css" />
     <link data-trunk rel="copy-file" href="web/hud.js" />
-    <link data-trunk rel="copy-file" href="web/equipment.js" />
     <link data-trunk rel="copy-file" href="web/pointer.js" />
+    <link data-trunk rel="copy-file" href="web/match.js" />
+    <link data-trunk rel="copy-file" href="web/match.css" />
     <link rel="stylesheet" href="style.css" />
-    <script src="equipment.js" defer></script>
+    <link rel="stylesheet" href="match.css" />
     <script src="pointer.js" defer></script>
+    <script src="match.js" defer></script>
     <script src="hud.js" defer></script>
   </head>
   <body>
@@ -21,8 +27,13 @@
     <div id="game-cursor" hidden aria-hidden="true"><svg viewBox="0 0 24 28"><path d="M1 1v21l6-6 5 10 5-2-5-10h10Z"/></svg></div>
     <header class="brand">
       <span class="brand-mark">◇</span>
-      <div><div class="eyebrow">KIVA / PROVING GROUNDS</div><h1>试炼之境<span>01</span></h1></div>
+      <div><div class="eyebrow">KIVA / SINGLE LANE</div><h1>中路对决<span>01</span></h1></div>
     </header>
+    <section id="match-hud" class="match-hud" data-ui aria-label="对局状态" hidden>
+      <div class="base-score"><strong>我方基地</strong><span id="ally-base-health">—</span><div class="base-meter"><i id="ally-base-fill"></i></div></div>
+      <div class="match-timing"><strong id="match-clock">0:00</strong><small>第 <span id="wave-count">1</span> 波</small><small>下波 <span id="next-wave">60s</span></small></div>
+      <div class="base-score enemy"><strong>敌方基地</strong><span id="enemy-base-health">—</span><div class="base-meter"><i id="enemy-base-fill"></i></div></div>
+    </section>
     <div class="top-right" data-ui>
       <button id="equipment-toggle" class="subtle" hidden>装备 <kbd>P</kbd></button>
       <span class="status"><i></i><span id="session-status">正在准备</span></span>
@@ -92,12 +103,12 @@
         </div>
       </section>
       <div class="map-wrap panel" data-ui>
-        <div class="map-heading"><span>试炼场</span><small>LOCAL SESSION</small></div>
+        <div class="map-heading"><span>中路战场</span><small>LOCAL SESSION</small></div>
         <canvas id="minimap" width="180" height="180" aria-label="地图预览"></canvas>
       </div>
     </footer>
     <div id="loading" class="overlay" role="status" data-ui>
-      <div class="entry-card"><div class="eyebrow">KIVA / PROVING GROUNDS</div><div class="loading-gem">◇</div><h2>唤醒试炼场</h2><p id="loading-message">正在准备场景与游戏引擎…</p><button id="retry" hidden>重新加载</button></div>
+      <div class="entry-card"><div class="eyebrow">KIVA / SINGLE LANE</div><div class="loading-gem">◇</div><h2>唤醒试炼场</h2><p id="loading-message">正在准备场景与游戏引擎…</p><button id="retry" hidden>重新加载</button></div>
     </div>
     <div id="entry" class="overlay" data-ui data-phase="Selecting" role="dialog" aria-modal="true" aria-labelledby="entry-title" hidden>
       <div class="entry-card">
@@ -133,13 +144,16 @@
           <div id="reselection-actions" hidden>
             <button id="equipment-manage">调整装备</button>
             <button id="reselect" aria-describedby="reselection-note">重新选择角色</button>
-            <p id="reselection-note">重开整场试炼，重置本局进度。</p>
+            <p id="reselection-note">重开整场对局，重置双方英雄、基地和兵线。</p>
           </div>
           <p id="pointer-error" role="status" aria-live="polite" hidden></p>
           <div class="entry-controls"><span><kbd>右键</kbd> 移动 / 攻击</span><span><kbd>QWER</kbd> 技能</span><span><kbd>Y</kbd> 锁定镜头</span></div>
           <small class="entry-note">进入后鼠标限制在游戏区域 · Esc 释放并暂停</small>
         </div>
       </div>
+    </div>
+    <div id="match-result" class="overlay" data-ui role="dialog" aria-modal="true" aria-labelledby="match-result-title" hidden>
+      <section class="match-result-card panel"><span class="eyebrow">MATCH COMPLETE</span><h2 id="match-result-title">对局结束</h2><p id="match-result-detail"></p><div class="match-result-actions"><button id="restart">再来一局</button><button id="result-reselect">重新选择角色</button></div></section>
     </div>
     <div id="equipment-editor" class="overlay" data-ui role="dialog" aria-modal="true" aria-labelledby="equipment-title" hidden>
       <section class="equipment-editor-card panel">

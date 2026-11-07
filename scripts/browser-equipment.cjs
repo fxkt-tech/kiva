@@ -2,20 +2,25 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
-const { launchBrowser, serveBuild, enterGame, resumeGame, clickUi, clickWorld, reportFailure } = require("./browser-support.cjs");
-const state = (page) => page.evaluate(() => window.__kivaState);
-const hero = (snapshot) => snapshot.units.find((unit) => unit.id === snapshot.player_id);
+const { launchBrowser, serveBuild, installFrameClock, selectAndEnter, resumeGame, pause, clickUi,
+  clickWorld, clickUnit, moveTo, nearHome, nearMiddle, state, hero, enemyHero, base, observed, waitTicks,
+  reportFailure } = require("./browser-lane-support.cjs");
 
-async function observed(page, predicate, argument) {
-  const result = await page.waitForFunction(predicate, argument);
-  try { return await result.jsonValue(); }
-  finally { await result.dispose(); }
+function progress(stage, snapshot) {
+  const player = snapshot && hero(snapshot);
+  const target = snapshot && enemyHero(snapshot);
+  console.log(`EQUIPMENT ${stage}`, JSON.stringify({ tick: snapshot?.tick, aim: snapshot?.equipment_aim,
+    player: player && { position: player.position, health: player.health, order: player.order, action: player.action },
+    target: target && { id: target.id, position: target.position, health: target.health } }));
 }
 
 async function openEditor(page) {
   await page.keyboard.press("p");
   await page.waitForFunction(() => !document.getElementById("equipment-editor").hidden
     && window.__kivaState.equipment.can_manage && !document.pointerLockElement);
+  // Paused management has no short combat window. Speed up publication only;
+  // the simulation remains paused and retains every combat tick on resume.
+  await page.evaluate(() => window.__laneSetFrameStep(250));
 }
 
 async function equip(page, id) {
@@ -39,7 +44,8 @@ async function unequip(page, slot) {
   }, slot);
 }
 
-async function continueTrial(page) {
+async function continueMatch(page) {
+  await page.evaluate(() => window.__laneSetFrameStep(1000 / 60));
   await page.locator("#equipment-close").click();
   assert.equal(await page.evaluate(() => window.__kivaState.paused), true);
   await resumeGame(page);
@@ -54,23 +60,62 @@ async function screenshot(page, label) {
   await page.screenshot({ path: path.join(directory, `${label}-${width}x${height}-dpr${scale}.png`) });
 }
 
-async function attackOnceAndPause(page, expectedHealth) {
-  await page.evaluate(() => {
-    const before = window.__kivaState.units.find((unit) => unit.name === "训练哨兵").health;
+async function attackOnceAndPause(page, id, expectSlow) {
+  const before = (await state(page)).units.find((unit) => unit.id === id);
+  assert(before?.alive, "the observed combat target must survive until the attack");
+  progress(`basic attack requested; expect Slow=${expectSlow}`);
+  await page.evaluate(({ id, health, expectSlow, initialTick }) => {
     function pauseAfterHit(event) {
-      const snapshot = JSON.parse(event.detail);
-      if (snapshot.units.find((unit) => unit.name === "训练哨兵").health >= before) return;
+      const snapshot = typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
+      const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
+      const target = snapshot.units.find((unit) => unit.id === id);
+      if (!target?.alive || !player?.alive || snapshot.tick > initialTick + 600) {
+        window.__gearAttackFailure = `No observed basic hit: ${JSON.stringify({ player, target, expectSlow })}`;
+        window.removeEventListener("kiva-state", pauseAfterHit);
+        return;
+      }
+      // Lane units can deal damage at the same time. Require our actual basic
+      // attack release as well as damage and the authored on-hit status.
+      if (!target?.alive || target.health >= health || player.action !== "AttackBackswing"
+        || target.statuses.some((effect) => effect.kind === "Slow") !== expectSlow) return;
       window.removeEventListener("kiva-state", pauseAfterHit);
       document.documentElement.dataset.paused = "true";
       document.exitPointerLock();
     }
+    window.__gearAttackFailure = null;
     window.addEventListener("kiva-state", pauseAfterHit);
+  }, { id, health: before.health, expectSlow, initialTick: (await state(page)).tick });
+  await clickUnit(page, id, "right");
+  const paused = await observed(page, () => {
+    if (window.__gearAttackFailure) throw new Error(window.__gearAttackFailure);
+    return window.__kivaState.paused && !document.pointerLockElement ? window.__kivaState : false;
   });
-  await clickWorld(page, [3, -2, 1.1], "right");
-  const paused = await observed(page, () => window.__kivaState.paused && !document.pointerLockElement ? window.__kivaState : false);
-  const target = paused.units.find((unit) => unit.name === "训练哨兵");
-  assert(Math.abs(target.health - expectedHealth) < 0.002, `one attack must leave ${expectedHealth} HP, got ${target.health}`);
+  const target = paused.units.find((unit) => unit.id === id);
+  assert(target.health < before.health, "a released basic attack must damage its chosen target");
+  assert.equal(target.statuses.some((effect) => effect.kind === "Slow"), expectSlow);
+  assert.equal(paused.selected, id);
+  progress(`basic hit paused; Slow=${expectSlow}`, paused);
   return paused;
+}
+
+async function approachEnemy(page) {
+  const before = await state(page);
+  progress(`walk to ${JSON.stringify(nearMiddle(before, -0.65, -3))}`, before);
+  await moveTo(page, nearMiddle(before, -0.65, -3));
+  await page.keyboard.press("s");
+  const initialTick = (await state(page)).tick;
+  const ready = await observed(page, (initialTick) => {
+    const snapshot = window.__kivaState;
+    const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
+    const target = snapshot.units.find((unit) => unit.role === "Hero" && unit.team === "enemy");
+    if (!player?.alive || !target?.alive || snapshot.tick > initialTick + 900) {
+      throw new Error(`No equipment combat range: ${JSON.stringify({ player, target })}`);
+    }
+    return player.alive && target?.alive && player.order === "Idle"
+      && Math.hypot(...target.position.map((value, i) => value - player.position[i])) < 9.5 ? snapshot : false;
+  }, initialTick);
+  progress("combat range ready", ready);
+  return ready;
 }
 
 async function layout(page) {
@@ -95,8 +140,10 @@ async function layout(page) {
 }
 
 async function exercise(page, url, deep) {
-  await enterGame(page, url);
+  progress(`load ${page.viewportSize().width}×${page.viewportSize().height}`);
+  await selectAndEnter(page, url);
   const original = await state(page);
+  progress("entered live lane", original);
   assert.equal(original.equipment.slots.length, 6);
   assert(original.equipment.slots.every(({ item }) => item === null));
   assert.equal((await page.evaluate(() => window.__kivaEquipmentCatalog)).length, 9);
@@ -128,6 +175,7 @@ async function exercise(page, url, deep) {
   assert.equal(await page.locator('[data-equip-id]:enabled').count(), 0);
   assert.deepEqual(hero(filled).attributes, { attack_damage: 60, ability_power: 25, armor: 25,
     magic_resistance: 20, move_speed: 6.25, attack_range: 6, attack_speed: 1.5625 });
+  progress("six slots and exact attributes verified", filled);
   await screenshot(page, "equipment-editor");
   const orb = filled.equipment.slots[5].item;
   await page.evaluate((instance) => {
@@ -138,56 +186,126 @@ async function exercise(page, url, deep) {
     }
     document.addEventListener("pointerlockchange", staleClick);
   }, orb.instance_id);
-  await continueTrial(page);
+  await continueMatch(page);
   assert.equal((await state(page)).equipment_aim, null, "a valid stale equipment click must be discarded at capture");
   assert.equal((await state(page)).equipment.slots[5].item.active.cooldown, 0);
   await layout(page);
   await screenshot(page, "equipment-combat");
+  const ready = await state(page);
   if (deep) await page.keyboard.press("6");
   else await clickUi(page, '[data-equipment-slot="5"]');
   await page.waitForFunction(() => window.__kivaState.equipment_aim === 5);
-  await clickWorld(page, [0, 2]);
-  assert.equal((await state(page)).equipment_aim, 5, "enemy equipment must keep aim on invalid ground");
-  await clickWorld(page, [3, -2, 1.1]);
-  const hit = await observed(page, () => {
+  for (const candidate of [null, ready.player_id, base(ready, "ally").id, base(ready, "enemy").id]) {
+    if (candidate === null) await clickWorld(page, nearHome(ready, 7, -7));
+    else await clickUnit(page, candidate);
+    await waitTicks(page);
+    const rejected = await state(page);
+    assert.equal(rejected.equipment_aim, 5, "enemy equipment must preserve invalid/friendly/structure aim");
+    assert.equal(rejected.equipment.slots[5].item.active.cooldown, 0);
+    assert.equal(rejected.abilities[0].cooldown, 0);
+    progress(`invalid item aim preserved: ${candidate || "ground"}`, rejected);
+  }
+  // Keep the long base-camera checks at home, then approach actual combat.
+  // Movement cancels the old item aim; re-arm through its real input path.
+  const combat = await approachEnemy(page);
+  const target = enemyHero(combat);
+  if (deep) await page.keyboard.press("6");
+  else await clickUi(page, '[data-equipment-slot="5"]');
+  await page.waitForFunction(() => window.__kivaState.equipment_aim === 5);
+  const beforeHitSnapshot = await state(page);
+  const beforeHit = beforeHitSnapshot.units.find((unit) => unit.id === target.id);
+  await clickUnit(page, target.id);
+  progress("item active submitted");
+  const hit = await observed(page, ({ id, initialTick }) => {
     const snapshot = window.__kivaState;
-    return snapshot.units.some((unit) => unit.name === "训练哨兵" && unit.health === 310)
+    const target = snapshot.units.find((unit) => unit.id === id);
+    if (!target?.alive || snapshot.tick > initialTick + 180) {
+      throw new Error(`Item active did not Stun its target: ${JSON.stringify(target)}`);
+    }
+    return target.statuses.some((effect) => effect.kind === "Stun")
       && snapshot.equipment.slots[5].item.active.cooldown > 0 ? snapshot : false;
-  });
+  }, { id: target.id, initialTick: beforeHitSnapshot.tick });
+  assert(hit.units.find((unit) => unit.id === target.id).health < beforeHit.health,
+    "the real item active must damage the captured target");
+  assert.equal(hit.equipment_aim, null);
+  assert(hero(hit).mana < hero(ready).mana);
   assert.equal(hit.abilities[0].cooldown, 0, "equipment must not consume the matching hero ability cooldown");
-  await page.keyboard.press("Escape");
-  await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
-  const cooldown = (await state(page)).equipment.slots[5].item.active.cooldown;
-  await page.waitForTimeout(250);
-  assert.equal((await state(page)).equipment.slots[5].item.active.cooldown, cooldown);
+  progress("item damage/Stun and separate role cooldown verified", hit);
+  await pause(page);
+  const frozen = await page.evaluate(() => ({ snapshot: window.__kivaState, clock: performance.now() }));
+  await page.evaluate(() => window.__laneSetFrameStep(250));
+  try {
+    await page.waitForFunction((clock) => window.__gearLastSnapshotAt >= clock + 400, frozen.clock);
+  } finally {
+    await page.evaluate(() => window.__laneSetFrameStep(1000 / 60));
+  }
+  const still = await state(page);
+  assert.equal(still.tick, frozen.snapshot.tick);
+  assert.equal(still.equipment.slots[5].item.active.cooldown, frozen.snapshot.equipment.slots[5].item.active.cooldown);
+  assert.equal(still.abilities[0].cooldown, frozen.snapshot.abilities[0].cooldown);
+  progress("paused cooldown remained exact", still);
   await resumeGame(page);
   assert.equal((await state(page)).player_id, original.player_id);
 
   if (deep) {
+    const itemCooldown = (await state(page)).equipment.slots[5].item.active.cooldown;
+    const beforeRole = (await state(page)).units.find((unit) => unit.id === target.id);
     await page.keyboard.press("q");
     await page.waitForFunction(() => window.__kivaState.aim === 0);
-    await clickWorld(page, [3, -2, 1.1]);
-    await page.waitForFunction(() => window.__kivaState.units.some((unit) => unit.name === "训练哨兵" && unit.health === 220));
-    const struck = await attackOnceAndPause(page, 145.5);
-    assert(struck.units.find((unit) => unit.name === "训练哨兵").statuses.some((effect) => effect.kind === "Slow"));
+    await clickUnit(page, target.id);
+    const roleHit = await observed(page, (id) => {
+      const snapshot = window.__kivaState;
+      return snapshot.abilities[0].cooldown > 0
+        && snapshot.units.find((unit) => unit.id === id)?.statuses.some((effect) => effect.kind === "Stun") ? snapshot : false;
+    }, target.id);
+    assert(roleHit.units.find((unit) => unit.id === target.id).health < beforeRole.health);
+    assert(roleHit.equipment.slots[5].item.active.cooldown > 0);
+    assert(roleHit.equipment.slots[5].item.active.cooldown <= itemCooldown,
+      "role Q must not refresh the separate item cooldown");
+    progress("role Q hit while item cooldown remained independent", roleHit);
+    const struck = await attackOnceAndPause(page, target.id, true);
+    assert(struck.units.find((unit) => unit.id === target.id).statuses.some((effect) => effect.kind === "Slow"));
     await openEditor(page);
     await unequip(page, 4);
-    await continueTrial(page);
-    await attackOnceAndPause(page, 85.5);
+    await continueMatch(page);
+    await page.keyboard.press("s");
+    await page.waitForFunction(() => {
+      const snapshot = window.__kivaState;
+      return snapshot.units.find((unit) => unit.id === snapshot.player_id)?.order === "Idle";
+    });
+    await page.evaluate(() => window.__laneSetFrameStep(250));
+    try {
+      await observed(page, (id) => {
+        const unit = window.__kivaState.units.find((unit) => unit.id === id);
+        if (!unit?.alive) throw new Error(`Target ${id} died before checking passive removal`);
+        return !unit.statuses.some((effect) => effect.kind === "Slow");
+      }, target.id);
+    } finally {
+      await page.evaluate(() => window.__laneSetFrameStep(1000 / 60));
+    }
+    progress("old Slow expired after unequip");
+    await attackOnceAndPause(page, target.id, false);
     await openEditor(page);
     const oldBow = (await state(page)).equipment.slots[0].item;
     await unequip(page, 0);
     await equip(page, 8);
     await unequip(page, 1);
     await equip(page, 9);
-    await continueTrial(page);
+    await continueMatch(page);
+    await page.keyboard.press("s");
+    // A production movement order chooses a safe open part of the map. The
+    // max-range dash is measured from the resulting actual hero position.
+    await moveTo(page, nearHome(await state(page), 4, -5));
+    await page.keyboard.press("s");
     const dashSnapshot = await state(page);
     const beforeDash = hero(dashSnapshot).position;
     const dashRange = dashSnapshot.equipment.slots[0].item.active.range;
-    const destination = [beforeDash[0] - dashRange, beforeDash[1]];
+    const length = Math.hypot(...beforeDash);
+    const direction = beforeDash.map((value) => -value / length);
+    const destination = beforeDash.map((value, i) => value + direction[i] * dashRange);
     await clickUi(page, '[data-equipment-slot="0"]');
     await page.waitForFunction(() => window.__kivaState.equipment_aim === 0);
-    await clickWorld(page, [beforeDash[0] - dashRange * 2, beforeDash[1]]);
+    await clickWorld(page, beforeDash.map((value, i) => value + direction[i] * dashRange * 2));
     const dashed = await observed(page, (destination) => {
       const snapshot = window.__kivaState;
       const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
@@ -195,9 +313,10 @@ async function exercise(page, url, deep) {
         && snapshot.equipment.slots[0].item.active.cooldown > 0 ? snapshot : false;
     }, destination);
     assert.equal(dashed.abilities[2].cooldown, 0);
+    progress("item far dash reached maximum range; role E unchanged", dashed);
     await page.evaluate(() => {
       function pauseChannel(event) {
-        const snapshot = JSON.parse(event.detail);
+        const snapshot = typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
         if (snapshot.units.find((unit) => unit.id === snapshot.player_id)?.action !== "Channeling") return;
         window.removeEventListener("kiva-state", pauseChannel);
         document.documentElement.dataset.paused = "true";
@@ -206,11 +325,13 @@ async function exercise(page, url, deep) {
       window.addEventListener("kiva-state", pauseChannel);
     });
     await page.keyboard.press("2");
+    progress("self item channel submitted");
     await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
     assert.equal((await state(page)).equipment_aim, null, "self equipment must cast without an aim click");
     await openEditor(page);
     await unequip(page, 1);
     assert.equal(hero(await state(page)).action, "Ready", "unequip must cancel future item channel pulses");
+    progress("self item channel cancelled by unequip");
     await page.evaluate((instance) => {
       document.documentElement.dataset.equipmentRequests = JSON.stringify([{ type: "Unequip",
         player_id: window.__kivaState.player_id, slot: 0, instance_id: instance, request_id: 900002 }]);
@@ -220,8 +341,7 @@ async function exercise(page, url, deep) {
     assert.equal((await state(page)).equipment.slots[0].item.id, 8);
     await page.locator("#equipment-close").click();
   } else {
-    await page.keyboard.press("Escape");
-    await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
+    await pause(page);
   }
   await page.locator("#reselect").click();
   await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting" && !document.getElementById("enter").disabled);
@@ -230,10 +350,12 @@ async function exercise(page, url, deep) {
   await resumeGame(page);
   const fresh = await state(page);
   assert.notEqual(fresh.player_id, original.player_id);
+  assert.notEqual(fresh.match.id, original.match.id);
+  assert.equal(fresh.match.wave_number, 1);
   assert(fresh.equipment.slots.every(({ item }) => item === null));
   assert.equal(hero(fresh).attributes.attack_damage, 40);
   assert.equal(hero(fresh).attributes.ability_power, 0);
-  console.log(`PASS six slots, stacking/removal, full inventory, real active input, independent cooldown, pause/restart${deep ? ", passive damage and shared dash/channel" : ""}`);
+  console.log(`PASS six slots, stacking/removal, full inventory, real lane item input, invalid targets, independent cooldown, pause/reselection${deep ? ", on-hit Slow/unequip, far dash/channel and stale instance" : ""}`);
 }
 
 async function main() {
@@ -251,7 +373,11 @@ async function main() {
     for (const [index, config] of cases.entries()) {
       const context = await browser.newContext(config);
       page = await context.newPage();
-      page.setDefaultTimeout(20000);
+      page.setDefaultTimeout(120000);
+      await installFrameClock(page);
+      await page.addInitScript(() => window.addEventListener("kiva-state", () => {
+        window.__gearLastSnapshotAt = performance.now();
+      }));
       page.on("pageerror", (error) => errors.push(error.message));
       await exercise(page, site.url, index === 0);
       await context.close();

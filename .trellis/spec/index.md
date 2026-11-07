@@ -8,6 +8,7 @@
 | 层 | 入口 | 涉及路径 |
 |---|---|---|
 | 模拟 | [simulation/index.md](simulation/index.md) | `src/simulation/`、`tests/simulation.rs` |
+| 玩法 | [gameplay/index.md](gameplay/index.md) | `src/gameplay/`、`tests/{match_mode,minions,hero_ai}.rs` |
 | 客户端 | [client/index.md](client/index.md) | `src/client/`、`web/`、`index.html`、`scripts/browser-*.cjs` |
 | 跨层检查 | [guides/index.md](guides/index.md) | 模拟接口、HUD 数据和输入之间的改动 |
 
@@ -15,7 +16,7 @@
 
 1. 阅读任务的 `prd.md`、`design.md`、`implement.md`，区分已批准范围与建议。
 2. 按修改路径加载对应规范，先用 `rg` 找齐同一字段和接口的使用者。
-3. 保持 `client → simulation` 的依赖方向；不将 DOM、按键或模型放入模拟规则。
+3. 保持 `client → gameplay → simulation` 的依赖方向；客户端可直接读取模拟视图，不将 DOM、按键或模型放入玩法和模拟规则。
 4. 使用无窗口行为测试验证规则，浏览器测试验证实际交互和显示。
 
 ## Quality Check

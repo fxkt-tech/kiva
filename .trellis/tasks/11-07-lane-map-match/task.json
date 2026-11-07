@@ -1,0 +1,33 @@
+{
+  "id": "lane-map-match",
+  "name": "lane-map-match",
+  "title": "单中路地图、基地与胜负闭环",
+  "description": "建立模式数据与对局生命周期，接入地图显示、基地生命和结果重开。",
+  "status": "in_progress",
+  "dev_type": "fullstack",
+  "scope": "gameplay/simulation/client",
+  "package": null,
+  "priority": "P2",
+  "creator": "asuka",
+  "assignee": "asuka",
+  "createdAt": "2026-11-07",
+  "completedAt": null,
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "11-07-single-lane-match",
+  "relatedFiles": [],
+  "notes": "切片实现、公开行为测试、独立复核及相关Web验收通过；整体最终交付由父任务汇总，未提交。",
+  "meta": {
+    "planning_only": false,
+    "implementation_authorized": true,
+    "commit_push_authorized": true,
+    "implementation_complete": true,
+    "quality_gate": "passed",
+    "ready_for_commit": true
+  }
+}

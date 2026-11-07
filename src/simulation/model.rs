@@ -13,8 +13,52 @@ pub enum Team {
     Ally,
     Enemy,
 }
+/// Combat properties, independent of a mode's hero/minion/base roles.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum UnitClass {
+    #[default]
+    Actor,
+    Structure,
+}
+impl UnitClass {
+    pub(super) fn accepts(self, origin: DamageOrigin) -> bool {
+        self == Self::Actor || origin == DamageOrigin::BasicAttack
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum BasicAttackDelivery {
+    Direct,
+    Projectile { speed: f32, radius: f32 },
+}
+impl Default for BasicAttackDelivery {
+    fn default() -> Self {
+        Self::Projectile {
+            speed: 22.0,
+            radius: 0.12,
+        }
+    }
+}
+impl BasicAttackDelivery {
+    pub(super) fn valid(self) -> bool {
+        match self {
+            Self::Direct => true,
+            Self::Projectile { speed, radius } => {
+                speed.is_finite() && speed > 0.0 && radius.is_finite() && radius > 0.0
+            }
+        }
+    }
+    pub(super) fn delivery(self) -> super::Delivery {
+        match self {
+            Self::Direct => super::Delivery::Direct,
+            Self::Projectile { speed, radius } => super::Delivery::Projectile { speed, radius },
+        }
+    }
+}
 #[derive(Clone, Debug)]
 pub struct UnitStats {
+    pub class: UnitClass,
+    pub attack_delivery: BasicAttackDelivery,
     pub max_health: f32,
     pub max_mana: f32,
     pub mana_regen: f32,
@@ -25,6 +69,8 @@ pub struct UnitStats {
 impl Default for UnitStats {
     fn default() -> Self {
         Self {
+            class: UnitClass::Actor,
+            attack_delivery: BasicAttackDelivery::default(),
             max_health: 600.0,
             max_mana: 300.0,
             mana_regen: 8.0,
@@ -45,6 +91,7 @@ impl UnitStats {
             && self.attack_windup_fraction.is_finite()
             && (0.0..=1.0).contains(&self.attack_windup_fraction)
             && self.base_attributes.valid()
+            && self.attack_delivery.valid()
     }
 }
 #[derive(Clone, Debug)]
@@ -66,6 +113,9 @@ pub struct Unit {
     pub(super) respawn_delay: Option<f32>,
 }
 impl Unit {
+    pub fn class(&self) -> UnitClass {
+        self.stats.class
+    }
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -86,6 +136,8 @@ pub struct UnitState {
     pub(super) mana: f32,
     pub(super) attack_cooldown: u32,
     pub(super) respawn_remaining: Option<f32>,
+    pub(super) last_damaged_tick: Option<u64>,
+    pub(super) last_recovery_tick: Option<u64>,
 }
 /// Identity of one life; Entity alone does not distinguish respawns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -125,6 +177,9 @@ impl UnitState {
     }
     pub fn attack_cooldown(&self) -> f32 {
         self.attack_cooldown as f32 * super::TICK_SECONDS
+    }
+    pub fn last_damaged_tick(&self) -> Option<u64> {
+        self.last_damaged_tick
     }
 }
 #[derive(Component, Debug)]

@@ -65,12 +65,20 @@ async function enterGame(page, url = process.env.KIVA_TEST_URL || "http://127.0.
 }
 
 async function resumeGame(page, activation = "mouse") {
+  return captureWithButton(page, "#enter", activation, false);
+}
+
+async function restartGame(page, activation = "mouse") {
+  return captureWithButton(page, "#restart", activation, true);
+}
+
+async function captureWithButton(page, selector, activation, replacement) {
   // Pointer Lock checks the native browser view as well as document focus;
   // Playwright's focus emulation alone does not make that view foreground.
   await page.bringToFront();
   const previousPlayer = await page.evaluate(() => window.__kivaState.player_id);
-  const button = page.locator("#enter");
-  await page.waitForFunction(() => !document.getElementById("enter").disabled);
+  const button = page.locator(selector);
+  await page.waitForFunction((selector) => !document.querySelector(selector).disabled, selector);
   const box = await button.boundingBox();
   if (activation === "keyboard") {
     await button.focus();
@@ -82,7 +90,11 @@ async function resumeGame(page, activation = "mouse") {
   await page.waitForFunction(() => document.pointerLockElement?.id === "game"
     && window.__kivaState?.session?.phase === "Active" && window.__kivaState.player_id
     && !window.__kivaState.paused && !document.getElementById("game-cursor").hidden);
-  if (previousPlayer !== null && previousPlayer !== await page.evaluate(() => window.__kivaState.player_id)) {
+  const currentPlayer = await page.evaluate(() => window.__kivaState.player_id);
+  if (replacement && (!previousPlayer || currentPlayer === previousPlayer)) {
+    throw new Error("Restarting must bind a new player instance");
+  }
+  if (!replacement && previousPlayer !== null && previousPlayer !== currentPlayer) {
     throw new Error("Resuming must preserve the existing player instance");
   }
   const center = await page.evaluate(() => {
@@ -210,6 +222,8 @@ async function reportFailure(page) {
     aim: window.__kivaState?.aim,
     selected: window.__kivaState?.selected,
     player_id: window.__kivaState?.player_id,
+    match: window.__kivaState?.match,
+    map: window.__kivaState?.map,
     session: window.__kivaState?.session,
     captured: document.pointerLockElement?.id || null,
     domPaused: document.documentElement.dataset.paused,
@@ -224,4 +238,4 @@ async function reportFailure(page) {
   console.error("Browser state:", JSON.stringify(state, null, 2));
 }
 
-module.exports = { launchBrowser, openSelection, selectCharacter, enterGame, resumeGame, movePointer, moveRelative, clickPointer, clickAndMovePointer, clickUi, worldPoint, clickWorld, reportFailure, serveBuild };
+module.exports = { launchBrowser, openSelection, selectCharacter, enterGame, resumeGame, restartGame, movePointer, moveRelative, clickPointer, clickAndMovePointer, clickUi, worldPoint, clickWorld, reportFailure, serveBuild };

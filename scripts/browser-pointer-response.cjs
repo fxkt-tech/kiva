@@ -3,6 +3,8 @@ const assert = require("node:assert/strict");
 const { launchBrowser, serveBuild, openSelection, selectCharacter, resumeGame,
   moveRelative, movePointer, clickPointer, worldPoint, reportFailure } = require("./browser-support.cjs");
 
+const { installFrameClock, state, nearHome } = require("./browser-lane-support.cjs");
+
 async function observe(page, physicalUnits) {
   await page.addInitScript(({ physicalUnits }) => {
     // Exercise a browser reporting physical deltas as well as this Chromium's
@@ -96,8 +98,10 @@ async function exercise(page, url) {
   // Rendering may be late. The cursor must still move, and an earlier click
   // must retain its own position even after subsequent motion in the same batch.
   await page.keyboard.press("s");
-  const destination = await worldPoint(page, [2, 6]);
-  const laterPoint = await worldPoint(page, [-3, 6]);
+  const snapshot = await state(page);
+  const destinationWorld = nearHome(snapshot, 2.2, -1.3);
+  const destination = await worldPoint(page, destinationWorld);
+  const laterPoint = await worldPoint(page, nearHome(snapshot, 4, -2.5));
   const heldLabels = await holdFrames(page);
   try {
     await moveRelative(page, 24, 0);
@@ -109,11 +113,11 @@ async function exercise(page, url) {
   } finally {
     await page.evaluate(() => window.__resumePointerFrames());
   }
-  await page.waitForFunction(() => {
+  await page.waitForFunction(([x, z]) => {
     const state = window.__kivaState;
     const player = state.units.find((unit) => unit.id === state.player_id);
-    return Math.hypot(player.position[0] - 2, player.position[1] - 6) < 0.1;
-  });
+    return Math.hypot(player.position[0] - x, player.position[1] - z) < 0.1;
+  }, destinationWorld);
   await page.keyboard.press("Escape");
   await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
   assert(await page.locator("#game-cursor").isHidden());
@@ -134,10 +138,11 @@ async function main() {
     for (const [scale, physicalUnits] of [[1, false], [1.5, false], [2, false], [1.5, true]]) {
       const context = await browser.newContext({ viewport: { width: 1000, height: 720 }, deviceScaleFactor: scale });
       page = await context.newPage();
-      page.setDefaultTimeout(20000);
+      page.setDefaultTimeout(120000);
       page.on("pageerror", (error) => console.error("Pointer test page error:", error.message));
       page.on("requestfailed", (request) => console.error("Pointer test failed request:", request.url(), request.failure()?.errorText));
       page.on("console", (message) => { if (message.type() === "error") console.error("Pointer test browser error:", message.text()); });
+      await installFrameClock(page);
       await observe(page, physicalUnits);
       await exercise(page, site.url);
       console.log(`PASS pointer response DPR${scale}, ${physicalUnits ? "physical" : "native"} movement units`);

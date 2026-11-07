@@ -49,7 +49,12 @@ pub(super) fn resolve_target(
             }
             point
         }
-        (Targeting::Enemy, AbilityTarget::Unit(target)) if valid_enemy(world, unit, target) => {
+        (Targeting::Enemy, AbilityTarget::Unit(target))
+            if valid_enemy(world, unit, target)
+                && world
+                    .get::<Unit>(target)
+                    .is_some_and(|unit| unit.class() == UnitClass::Actor) =>
+        {
             world
                 .get::<UnitPose>(target)
                 .ok_or(Rejection::InvalidTarget)?

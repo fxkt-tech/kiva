@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickUi, clickWorld, reportFailure, serveBuild } = require("./browser-support.cjs");
+const { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickUi, clickWorld, reportFailure, serveBuild, installFrameClock, state, nearHome, waitTicks } = require("./browser-lane-support.cjs");
 
 async function main() {
   const browser = await launchBrowser();
@@ -8,6 +8,8 @@ async function main() {
   try {
     site = await serveBuild(process.env.KIVA_SITE_DIR || "dist");
     page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    page.setDefaultTimeout(120000);
+    await installFrameClock(page);
     await enterGame(page, site.url);
     const captured = await page.evaluate(() => document.pointerLockElement?.id || null);
     console.log("Captured game canvas:", captured);
@@ -42,29 +44,40 @@ async function main() {
       return Math.hypot(...s.camera_center.map((value, i) => value - p[i])) < 0.1;
     });
     await page.keyboard.up("Space");
-    await clickWorld(page, [2, 6], "right");
-    await page.waitForFunction(() => {
+    const home = await state(page);
+    const destination = nearHome(home, 2.8, -1.8);
+    await clickWorld(page, destination, "right");
+    await page.waitForFunction(([x, z]) => {
       const s = window.__kivaState;
       const p = s.units.find((unit) => unit.id === s.player_id).position;
-      return Math.hypot(p[0] - 2, p[1] - 6) < 0.1;
-    });
-    await clickUi(page, '[data-slot="0"]');
-    await page.waitForFunction(() => window.__kivaState.aim === 0);
-    await clickWorld(page, [3, -2, 1.1]);
-    await page.waitForFunction(() => window.__kivaState.units.some((unit) => unit.name === "训练哨兵" && unit.health === 325));
+      return Math.hypot(p[0] - x, p[1] - z) < 0.1;
+    }, destination);
+    await clickUi(page, '[data-slot="2"]');
+    await page.waitForFunction(() => window.__kivaState.aim === 2);
+    const dashed = nearHome(home, 3.8, -0.5);
+    await clickWorld(page, dashed);
+    await page.waitForFunction(([x, z]) => {
+      const s = window.__kivaState;
+      const p = s.units.find((unit) => unit.id === s.player_id).position;
+      return s.abilities[2].cooldown > 0 && Math.hypot(p[0] - x, p[1] - z) < 0.1;
+    }, dashed);
     console.log("PASS Escape/re-entry, click-to-move and skill buttons with the captured cursor");
 
     await page.context().close();
     const highDpi = await browser.newContext({ viewport: { width: 1000, height: 720 }, deviceScaleFactor: 2 });
     page = await highDpi.newPage();
+    page.setDefaultTimeout(120000);
+    await installFrameClock(page);
     await enterGame(page, site.url);
     await movePointer(page, 560, 400);
-    await clickWorld(page, [-2, 6], "right");
-    await page.waitForFunction(() => {
+    const highHome = await state(page);
+    const highDestination = nearHome(highHome, 2.8, -1.8);
+    await clickWorld(page, highDestination, "right");
+    await page.waitForFunction(([x, z]) => {
       const s = window.__kivaState;
       const p = s.units.find((unit) => unit.id === s.player_id).position;
-      return Math.hypot(p[0] + 2, p[1] - 6) < 0.1;
-    });
+      return Math.hypot(p[0] - x, p[1] - z) < 0.1;
+    }, highDestination);
     await page.setViewportSize({ width: 800, height: 600 });
     await page.waitForFunction(() => window.__kivaState.viewport[0] === 800);
     await movePointer(page, 799, 300);
@@ -72,12 +85,16 @@ async function main() {
     await moveRelative(page, -100, 0);
     await nextCenter();
     await nextCenter();
-    await clickWorld(page, [-4, 6], "right");
-    await page.waitForFunction(() => {
+    await page.keyboard.down("Space");
+    await waitTicks(page, 3);
+    await page.keyboard.up("Space");
+    const resizedDestination = nearHome(highHome, 3.8, -0.5);
+    await clickWorld(page, resizedDestination, "right");
+    await page.waitForFunction(([x, z]) => {
       const s = window.__kivaState;
       const p = s.units.find((unit) => unit.id === s.player_id).position;
-      return Math.hypot(p[0] + 4, p[1] - 6) < 0.1;
-    });
+      return Math.hypot(p[0] - x, p[1] - z) < 0.1;
+    }, resizedDestination);
     await highDpi.close();
     console.log("PASS captured cursor, resize bounds and world picking at high DPI");
 

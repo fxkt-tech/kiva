@@ -7,7 +7,7 @@
 
 ## 2. 接口与投影
 
-`ClientSession`只存在Selecting或Active{player,selection_revision}，player()返回Option<Entity>。
+`ClientSession`只存在Selecting或Active{player,selection_revision,match_id}，player()返回Option<Entity>。
 它是客户端活动玩家引用唯一所有者；PlayerController仅保留selected/aim。
 Web桥接读取并移除`data-session-requests`，JSON数组最多32条，严格type标签：
 
@@ -32,18 +32,18 @@ HUD保持原字段并增加session：
 
 ## 3. 执行契约
 
-Startup准备地图/技能/角色/NPC，Web不创建玩家且显式暂停；默认预选旅者，初始回执request0已接受。
+Startup准备目录/地图与Waiting状态，Web不创建任何对局单位且显式暂停；默认预选旅者，初始回执request0已接受。
 Native通过相同创建入口自动采用默认角色，不等待DOM；SimulationPlugin默认暂停语义保持。
-固定步前按`session::process_requests → collect_input → patrol_units`运行，会话处理本身不受暂停阻断。
+固定步前按`session::process_requests → equipment::process_requests → collect_input`运行，会话处理本身不受暂停阻断。
 
 每次接受Select（含同角色）推进修订并回显request_id。失败选择保留旧预览但撤销开始资格，
-直到新的选择被接受。Launch同时核对阶段、最新资格、ID/修订、实际捕获和文档焦点，再唯一创建绑定。
+直到新的选择被接受。Launch同时核对阶段、最新资格、ID/修订、实际捕获及本次事件确认和文档焦点，再调用`gameplay::start_match`原子创建双方基地、英雄和首波首对兵，唯一绑定玩家。
 捕获/创建失败保留有效选择以便重试；Active阶段拒绝后续选角/启动而不改变实例。
 整个批次先解析结构/长度，结构错误不执行任何前缀；结构合法后语义请求FIFO独立处理，不回滚已提交Active。
 
 ### 重新选择与整场重开
 
-暂停菜单“重新选择角色”会重开整场试炼，旁边明确说明重置本局进度；普通“继续试炼”仍保留当前局。
+暂停菜单“重新选择角色”会重开整场对局，旁边明确说明重置本局进度；普通“继续对局”仍保留当前局。
 ReturnToSelection只接受当前玩家身份、实际未捕获鼠标且已经暂停/请求暂停/失焦的状态。
 成功返回是本批次边界，丢弃剩余旧局意图；Selecting重复返回无副作用，旧玩家返回不能重置新玩家。
 SelectCharacter是当前Selecting界面的同步意图，不携带局代次；其旧局隔离保证为返回批次尾部丢弃。
@@ -51,9 +51,10 @@ SelectCharacter是当前Selecting界面的同步意图，不携带局代次；�
 Active保留最后接受的selection_revision，返回时checked_add推进版本，并预选上局实际角色。
 不能调用setup把版本重置到1，否则旧Launch会再次合法。选择失败仍保留已有版本，不回收版本空间。
 
-session协调`reset_simulation`与`content::spawn_training_units`，只重建NPC，不重复注册目录、地图或静态场景。
+session只调用`gameplay::reset_match`，回到Waiting且无对局单位，不重复注册目录、地图或静态场景。
+下次接受Launch再原子装配整场。Finished的“再来一局”协议见[lane-match.md](lane-match.md)。
 模拟清理契约见[runtime.md](../simulation/runtime.md)。Selecting时controls清目标/瞄准/反馈和输入，
-camera复位现有CameraRig，patrol暂停时清Local tick缓存，防止tick归零后的旧缓存影响新局。
+camera在Selecting复位现有CameraRig，新玩家首次观察时自由镜头居中一次；普通恢复不重置平移/缩放。输入适配清理旧玩家绑定和选中缓存，防止tick归零后重放旧意图。
 模拟tick归零，应用墙钟/显示调度不重建。
 
 DOM等待Rust的Selecting投影后才切换界面，重置本地request_id=0关联、旧捕获attempt和技能意图。
@@ -68,7 +69,7 @@ DOM等待Rust的Selecting投影后才切换界面，重置本地request_id=0关�
 适配层区分实际捕获与本次事件已确认的捕获：Selecting不能提前释放等待事件的锁，
 事件已确认、处理完请求仍无玩家时才释放无效/单独捕获。Launch仍复核实际捕获和焦点。
 
-controls集中处理运行时暂停与输入：Web须Active+真实聚焦+事件已确认的canvas捕获+无暂停请求才跑固定步。
+controls集中处理运行时暂停与输入：Web须Active+MatchState.can_advance()+真实聚焦+事件已确认的canvas捕获+无暂停请求才跑固定步。
 Selecting排空窗口/技能意图和游戏命令，不向假Entity发Stop；Active暂停保留原清队列/一次Stop规则。
 GamePointer仅在已确认且允许运行时视为捕获；暂停清除其捕获边界，恢复重新居中。
 just_captured不仅丢旧WindowEvent，也要排空并忽略旧DOM技能请求，防止启动/恢复当帧误瞄准或施法。
@@ -87,24 +88,25 @@ just_captured不仅丢旧WindowEvent，也要排空并忽略旧DOM技能请求�
 | 重复启动/局内Select | 不多创建、不换人、不刷新生命/冷却/NPC |
 | Esc/真实失焦/丢捕获 | 暂停并清输入；恢复仍为同Entity/角色/实际装配 |
 | 死亡/重生 | 仍为Active，不显示选角，不重套默认技能 |
-| 明确点击重新选择 | 整场清理、重建NPC、tick0冻结，预选上局角色；下次开局创建新玩家 |
+| 明确点击重新选择 | 整场清理、清空对局、tick0冻结，预选上局角色；下次开局创建新玩家 |
 | 旧玩家返回请求/旧版本Launch | 不影响新玩家/不创建旧角色 |
 
 ## 5. 示例
 
 正常：先选择秘术师，等最新回执后进入，实际30攻击/40法强与预览一致；Q方向瞄准、R自身引导。
-默认：旅者预选但尚无玩家，tick/NPC保持不动，实际英雄HUD隐藏。
+默认：旅者预选但尚无玩家，tick0且无对局单位，实际英雄HUD隐藏。
 错误：data-paused=false就开始模拟，或失败选角后用旧A/rev1偷偷创建A，或恢复时重建玩家。
 
 ## 6. 验证
 
 session/controls/UI测试不创建GPU窗口；用同一协调函数和捕获事实验证资格、版本、批次、重试、重复及纯投影。
-原16项客户端行为保留，角色公开测试及旧simulation/status场景继续执行。
+原有有序输入、捕获、暂停、选角和装备断言保留，角色公开测试及旧simulation/status场景继续执行。
 `browser-characters.cjs`验证真实按钮/捕获、三分辨率、键盘、过期/非法混合意图、旧Promise、真实失焦和同实例恢复。
 其中延迟真实捕获通知跨四个显示帧，验证开始/恢复等待期间不丢锁、不推进tick，通知后不重放旧技能。
 浏览器只可通过现有意图通道构造非法请求，不设置World/运行态；core显式技能装配通过公开Rust创建接口测试。
-`browser-reselection.cjs`覆盖三尺寸反复重开、同角色/切角色、旧版本与旧玩家请求、NPC生命/位置和普通恢复，
-使用实际受损NPC和已提交延迟技能验证新局没有旧伤害；performance.timeOrigin保持证明没有刷新页面。
+`browser-reselection.cjs`覆盖三尺寸反复重开、同角色/切角色、旧版本与旧玩家请求、对局单位身份/生命/波次和普通恢复，
+通过真实延迟技能提交后暂停再重选，验证全根替换、干净属性/CD/状态与普通恢复身份；performance.timeOrigin保持证明没有刷新页面。
+该浏览器技能位于安全侧翼，不单独证明旧区域命中已清理；旧区域/旧生命投递和重置清理由Rust reset/match模式场景验证。
 
 `#character-select`/`[data-character-id]`/`#character-preview [data-preview-stat]`是稳定选择器，
 预览不使用实际HUD的[data-stat]。错误分别在#selection-error和#pointer-error，#enter保持开局/恢复入口。

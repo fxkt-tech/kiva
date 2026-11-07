@@ -1,7 +1,8 @@
 # 架构与扩展约定
 
 本项目用 Bevy ECS 承载一套权威游戏状态。`simulation` 是可独立运行的游戏规则模块，
-`client` 是输入、AI、三维表现和浏览器的适配层。依赖方向为 `client → simulation`。
+`gameplay`组合地图、对局生命周期与自主决策，`client`适配输入、三维表现和浏览器。
+依赖方向为 `client → gameplay → simulation`；客户端也直接读取模拟的公开视图。
 
 ## 模块接口
 
@@ -21,15 +22,28 @@ src/simulation/navigation.rs  A*、路径平滑、静态障碍与扫掠检测
 src/simulation/movement.rs    移动、冲刺、位置重置
 src/simulation/actions.rs     前摇、提交、收招、引导、冷却
 src/simulation/combat.rs      弹丸、延迟范围效果、伤害、死亡、重生
-src/client/content.rs         地图、技能/角色/装备目录、训练单位与演示上下文
+src/simulation/recovery.rs    受限的友方结构恢复，脱战、范围和每tick去重
+src/gameplay/mod.rs           GameplayPlugin、调度接口与幂等准备
+src/gameplay/content/         技能、角色、装备的不可变内容定义
+src/gameplay/map.rs           地图、基地、出生和兵线路径的共同几何
+src/gameplay/definition.rs    基地/兵种/波次/恢复的模式配置
+src/gameplay/spawn.rs         原子开局、首波和重置
+src/gameplay/match_state.rs   对局身份/阶段、单位角色/控制来源/波次组件
+src/gameplay/lifecycle.rs     终局、后续波次、死兵回收和基地恢复
+src/gameplay/ai/              小兵/英雄战术、观察、有限追击与技能语义
+src/client/content.rs         客户端默认选择与玩法准备接线
 src/client/session.rs         选角/开局阶段、选择校验与唯一活动玩家引用
 src/client/equipment.rs       暂停装卸适配、严格请求/回执和只读装备投影
 src/client/abilities.rs       输入与HUD共用的只读技能可用性和描述
-src/client/controls.rs        玩家输入、演示 AI、指令反馈
+src/client/controls.rs        玩家输入、施法预检、指令反馈
 src/client/pointer.rs         Web输入帧指针镜像、Native绝对坐标与捕获边界
 src/client/controls/tests.rs  同帧事件顺序、暂停与焦点恢复回归测试
 src/client/camera.rs          固定角度俯视镜头
 src/client/scene.rs           过程生成场景、显示根插值和指示器
+src/client/world_scene.rs     由模式地图派生的地面、中路和静态装饰
+src/client/unit_appearance.rs 英雄/兵种/基地的模型、拾取和标签参数
+src/client/presentation.rs    普通暂停与终局的统一表现采样帧
+src/client/match_view.rs      只读对局、波次与基地投影
 src/client/character/rig.rs   内嵌骨骼动作校验、采样和父序变换
 src/client/character/model.rs 分段模型、头眼与右手剑socket
 src/client/character/poses.rs 源动作上的骨骼姿态与持剑手势
@@ -37,16 +51,22 @@ src/client/character/animation.rs 只读模拟到动作、过渡与生命缓存
 src/client/ui.rs              HUD 的只读状态投影
 src/client/web.rs             浏览器交互适配
 web/hud.js                    DOM 展示、暂停菜单、技能按钮
-web/equipment.js              六格HUD、装配面板、装备意图与说明展示
+web/startup.js                Trunk前同步捕获启动结果，向迟到HUD回放，无DOM依赖
+web/equipment.js              首份只读目录缓存、六格HUD、装配面板和装备意图
+web/match.js                  对局时钟、基地生命、波次和结算展示
 web/pointer.js                Web实时CSS指针、正常位移校准、按下坐标与即时显示
 tests/simulation.rs           既有属性、攻击、技能生命周期无窗口回归
 tests/status_effects.rs       多效果、控制组合、生命身份和强制运动行为测试
 tests/characters.rs           角色构造、装配、实例独立和重生保持测试
 tests/equipment.rs            装卸/施法/被动/归因/生命周期公开行为测试
 tests/reset.rs                整局实体/队列清理与静态资源/分配器保留测试
+tests/combat_foundation.rs    结构受效、普攻投递、施法预检和恢复行为
+tests/match_mode.rs           原子开局/波次、终局、恢复和整局重置
+tests/minions.rs              真实兵线、普通避让、生命引用和长局运行
+tests/hero_ai.rs              实际装配施法、战术、有限追击和攻守冲刺
 ```
 
-模块内部默认私有，通过 `simulation/mod.rs` 显式导出外部需要的接口。
+模块内部默认私有，通过各层`mod.rs`显式导出外部需要的接口。
 `UnitPose`、`UnitState`、`AbilitySlots`、`EquipmentSlots` 的运行态字段不对外开放写权限。
 客户端不添加修改这些字段的系统。游戏模拟不导入 `client` 或 Web 对象，
 也不读取输入设备、模型、动画、相机、材质或 HUD。
@@ -61,6 +81,8 @@ tests/reset.rs                整局实体/队列清理与静态资源/分配器
 `Time<Fixed>` 与 `TICK_SECONDS` 均由它派生。
 
 每个固定步按以下顺序执行：
+
+玩法自主决策先在`GameplaySet::Decisions`运行，然后进入完整的`SimulationSet::Step`：
 
 1. 推进模拟 tick。
 2. 处理到期重生。
@@ -79,7 +101,12 @@ tests/reset.rs                整局实体/队列清理与静态资源/分配器
 新状态不会在应用当步递减，到期后也不补跑动作。强制位移从下一个移动阶段开始。
 此顺序是规则的一部分，调整时应补充相关行为测试。
 
-客户端在 `RunFixedMainLoopSystems::BeforeFixedMainLoop` 依次处理选角/开局请求、装备管理请求、采集输入、驱动演示AI。
+完整模拟步后依次执行`Outcome → Waves → Cleanup → Recovery`。Outcome统一读取双方基地，
+同tick双方归零判平局；阶段只终结一次，立即暂停并清命令。Waves在函数内再次检查状态，
+终局当步不生成波次。Finished即使被误设为未暂停也不能再运行后续模拟步。
+小兵根在完整结算后回收；已提交的独立效果继续存在。英雄恢复最后通过模拟的受限入口执行。
+
+客户端在 `RunFixedMainLoopSystems::BeforeFixedMainLoop` 依次处理选角/开局请求、装备管理请求和采集输入。
 会话与装备管理请求在模拟暂停时仍会消费；Web必须已绑定Active玩家且捕获/聚焦成功才允许固定步。
 一次操作沿 Bevy 的统一 `WindowEvent` 消息流消费，保留键盘、鼠标和光标事件的先后顺序，
 避免同一帧内“停止 → 选择技能”被聚合按键状态颠倒；持续相机操作读取按住状态。
@@ -95,6 +122,8 @@ HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件�
 移动事件只推进浏览器指针，Rust在点击及帧末拾取，避免高轮询鼠标逐raw样本重复射线查询。
 即使这一帧没有固定步，指令仍保留；多个固定步不会重复执行一次按键。
 相机和表现逐帧更新，人物根使用上一模拟位置与当前位置插值，并加上击飞表现高度。
+`PresentationFrame`为显示根、骨骼、弹丸和兵种模型提供同一个采样分数；普通暂停保持最后显示帧，
+首次观察终局允许同步最终状态一次，此后冻结，不能随继续变化的overstep抖动。
 底座通过反向局部高度留在地面，模型子层只负责骨骼姿态。拾取读取最后实际显示的
 `UnitVisual GlobalTransform + Pickable.offset`，与输入时可见画面一致；不读取未插值的战斗位置。
 浏览器 HUD 在相机投影和世界变换更新后读取数据，约每 80 ms 发布一次完整状态。
@@ -102,9 +131,44 @@ HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件�
 与插值后的模型和当前镜头保持同步。完整 HUD 快照不能覆盖血条坐标。
 固定步长不承诺跨平台浮点确定性。
 
+## 单中路模式与自主决策
+
+`MapDefinition`是导航、出生、三维地面、小地图和浏览器投影共同的地图来源。
+默认边长64、中路宽7，基地在Ally(-8,24)/Enemy(8,-24)，沿默认观察方向为左下/右上。
+地图大小不改变镜头玩法，仍保留滚屏、缩放、Y与空格跟随。
+
+`prepare_world`幂等准备内容和导航；`start_match`只接受Waiting与零tick，预检全部16个根的定义、出生及路线，
+只构造两基地、双英雄和双方首只近战兵，失败回滚本次新根，成功才发布单调`MatchId`和Running。
+`MatchDefinition`在开局时快照，
+`MatchState`只保存模式阶段、英雄/基地引用、波次与终局，不复制HP/CD等模拟事实。
+`UnitRole`表达英雄/近战兵/远程兵/基地；`Controller`独立表达人类/英雄AI/小兵AI。
+
+首波在0秒开始，每方先3近战、后3远程，slot0..5分别在0/30/60/90/120/150tick生成。
+以后每3600tick开始下一波，波次起点不随本波出齐时间漂移；默认近战720生命、远程480生命。
+`MatchRecord`私有待发状态只保存波次、下一slot和tick，暂停不推进，终局/失败/reset清除。
+每波先全量预检，实际每次同时原子生成双方同slot的一对兵；失败回滚本次新增根并冻结，
+已参与战斗的早先兵保留。不能隐瞒漏兵、跳波或静默限制活兵数量。
+单兵间隔必须为正，出齐时长小于波间隔且整数运算不溢出。
+基地3000生命、20护甲，Structure不移动、不施法、不复活；技能、装备主动、普攻附属效果和控制不作用于Structure。
+普攻本体可伤基地，攻击属性加成正常计入。免疫结构不挡住伤害Actor的技能弹丸。
+结构分类与受效判定集中在模拟层，不能只靠UI禁选或AI不施法实现免疫。
+英雄继续3秒复活；友方基地2.5半径内脱战120tick后，每秒恢复最大HP和最大法力的各20%（每0.5秒各10%）。
+范围、当前生命、脱战、上限和每tick最多一次由`restore_in_zone`裁决，不开放任意回血接口。
+
+`AiPlugin`独立于模式生命周期，5Hz决策、首次/新生命延迟12tick，每次至多一条指令。
+Brain只拥有当前生命目标、命令去重和战术记忆，移动/攻击/技能都经过相同模拟入口。
+小兵沿中路三列推进，优先敌兵，再获取附近英雄，清空后打基地；稳定目标和前摇避免频繁重发指令。
+英雄可推进、交战、撤退、恢复和守家；技能候选从自己的实际四槽与装备实例读取，按目标/投递/效果语义评分，
+不按内容ID或QWER分支。方向弹丸按当前速度有限前导并估计首撞，范围技能考虑延迟与覆盖，
+引导要求当前范围有敌且风险许可，冲刺要求可达和威胁许可。预检复用`preview_cast`，估伤复用`estimate_damage`。
+追击英雄共用有限资格：12视距、中路带、起追位置6距离、离攻距最多240tick，放弃后180tick回线，
+所有进攻技能和普攻共用该限制。AI不读取敌方输入/CD或未来路径，也不跳过法力、控制和冷却。
+
+详细接口、错误矩阵和长局验证见[玩法规范](../.trellis/spec/gameplay/index.md)。
+
 ## 骨骼角色表现
 
-角色采用act分支的23骨骼刚性火柴人和CC0动作资源，原生/WASM内嵌同一份数据。
+双方英雄采用act分支的23骨骼刚性火柴人和CC0动作资源，原生/WASM内嵌同一份数据。
 `character::rig`校验和采样源局部变换，`poses`提供小型持剑姿态，`model`将17骨段、14关节、
 头眼和剑绑定到骨骼。全部几何位于单位的`CharacterModel`子树，整场重开随根递归删除。
 
@@ -118,6 +182,10 @@ HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件�
 暂停仅消费通知并标记待重置，保留实际骨骼、socket和播放缓存，恢复后再更新。
 资源出处与重建方式见[动画资源](../assets/animations/README.md)，可执行约定见
 [骨骼角色规范](../.trellis/spec/client/character-animation.md)。
+
+小兵采用共享轻量几何，近战盾剑和远程法杖外观分开；基地采用低台与阵营水晶。
+`unit_appearance`按显式`UnitRole`集中决定模型、拾取边界和标签高度，不能把所有Unit隐式套成英雄。
+模型层只读，基地受效和兵种攻击方式均由模拟定义决定。
 
 
 ## 指令与动作
@@ -147,16 +215,21 @@ Point Dash允许超距点击：范围内到点击点，范围外沿方向到最�
 - `equipment.rs`负责装备目录/六格实例、装卸和装备CD，主动复用actions，属性复用attributes。
 - `attributes.rs` 负责最终属性的唯一计算和来源修正生命周期；客户端只读最终结果。
 - `damage.rs` 负责伤害表达式、快照与抗性计算，生命写入仍由 `combat.rs` 完成。
+- `recovery.rs`拥有受限恢复写入口，统一检查源/目标当前生命、友方、范围、脱战和同tick去重。
+- `gameplay`只写模式阶段、波次与Brain记忆，战术通过公开指令、构造和恢复接口进入模拟。
 - 构造状态只通过 `spawn_unit`；错误的出生位置、属性和技能装配会被拒绝。
 - `Transform` 属于显示，不作为战斗位置来源。动画和粒子不决定命中或伤害。
 
 单位碰撞半径用于障碍膨胀，路径平滑、普通移动、冲刺和弹丸共用静态地图几何。
 扫掠采用保守的膨胀矩形，转角可能比圆形角色真实轮廓稍宽。地图是平面、障碍是静态的。
-单位暂不互相阻挡；未来加入拥挤处理时，应在移动模块实现。
+单位没有硬阻挡；显式标记`SoftAvoidance`的小兵只在普通沿路线行走时做有界侧向分离。
+邻居位置在写位置前统一快照；侧移撞墙时回退原有效路线，不能因此清掉可行窄路。
+静止/前摇单位不被挤动，英雄未默认启用此标记，Dash和强制位移沿用原扫掠及终点。
 
 ## 属性与来源修正
 
-`UnitStats` 是构造时的静态定义：包含七项 `BaseAttributes`、生命/法力参数、碰撞半径及普攻前摇比例。
+`UnitStats` 是构造时的静态定义：包含七项 `BaseAttributes`、生命/法力参数、碰撞半径、普攻前摇比例、
+`UnitClass`和`BasicAttackDelivery`。默认Actor保留原弹丸普攻；近战可选择Direct投递。
 `Unit::definition()` 读取静态定义，`Unit::attributes()` 读取模拟维护的 `EffectiveAttributes`。
 移动、普攻射程、范围圈、技能伤害和 HUD 都读取最终值；生命/法力上限、碰撞半径本期仍为静态参数。
 
@@ -256,7 +329,7 @@ resistance <  0: multiplier = 2 - 100 / (100 - resistance)
 - 引导被移动/停止中断：停止后续脉冲，已提交消耗和冷却保留。
 - 冷却独立于动作，移动与走砍不能重置冷却。
 
-增加由现有效果表达的技能时，在 `client/content.rs` 注册新定义并装配到单位即可。
+增加由现有效果表达的技能时，在 `gameplay/content/` 注册新定义并装配到单位即可。
 增加一种全新效果时，扩展 `Effect`、注册校验、快照与对应规则所有者；
 新增生命周期机制应先用无窗口测试描述规则。不要在输入、相机、伤害系统中增加
 “如果技能 ID 等于某个英雄技能”的分支。需要新的显示效果时，再添加对应的表现逻辑。
@@ -331,13 +404,20 @@ Enemy技能点击空地/友军保持瞄准；合法候选提交后退出，后�
 未来随机模式可先生成Explicit配置再创建，本期没有局内换技能或随机生成器。
 
 `client/session.rs`拥有Selecting/Active两个阶段和唯一活动玩家Entity；`PlayerController`只保存选中目标和瞄准。
-Web启动准备目录/地图/NPC并暂停，默认预选旅者，实际玩家尚不存在。只读HUD此时player_id为null、
+Web启动准备目录和地图并暂停，模式Waiting且没有单位，默认预选旅者。只读HUD此时player_id为null、
 运行时abilities为空，选角使用独立预览；camera/scene/controls都按合法无玩家阶段处理。
+
+`startup.js`同步位于Trunk模块之前，唯一保存loading/failed/ready，并向HUD订阅者立即回放当前状态。
+WASM快速下载失败可能早于defer HUD执行，不能只在HUD末尾监听错误；启动适配不依赖DOM，
+HUD就绪后再呈现失败/重试。实际ready为终态，早先或迟到错误不能把已经进入的游戏改为启动失败。
+启动回归用请求屏障保证真实WASM拒绝早于HUD下载完成，不靠延时或碰运气复现。
 
 角色卡片提交带request_id的SelectCharacter；每次接受都推进Rust选择修订并回显回执。
 失败选择保留旧预览但撤销开始资格；旧Launch不能通过。点击进入冻结最新已确认角色/修订，
 沿用按钮点击内的Pointer Lock请求；同一成功捕获回调先发送Launch再改变DOM暂停展示。
-Rust固定步前复核阶段、开始资格、角色/版本、实际捕获和焦点，唯一创建并绑定玩家。
+Rust固定步前复核阶段、开始资格、角色/版本、实际捕获和焦点，通过`start_match`原子创建两基地、
+双英雄和双方首只近战兵，成功后绑定`MatchHandle`中的玩家和对局身份；后续出兵只由玩法固定步推进。
+镜头模块观察到新的玩家实体时定位一次并保持自由模式，普通暂停/恢复保留原镜头；Selecting复位默认。
 捕获或创建失败保留有效选择供重试；结构错误批次整体拒绝，结构有效的语义意图按FIFO独立处理。
 
 浏览器实际锁定状态可能早于pointerlockchange事件。每次申请先清除旧事件确认，事件回调再确认捕获；
@@ -345,19 +425,25 @@ Rust固定步前复核阶段、开始资格、角色/版本、实际捕获和焦
 只有事件已确认、请求处理后仍无有效玩家的捕获才作为无效开局释放。
 Web指针在暂停时立即隐藏并清按下快照；GamePointer清捕获边界，恢复确认后重新居中并丢弃旧窗口/技能请求。
 
-Active恢复仅重新捕获，不发初次Launch，不创建新玩家或重置NPC。死亡仍为Active，局内选角/重复启动不会改绑定。
+Active恢复仅重新捕获，不发初次Launch，不创建新玩家或重置对局。死亡仍为Active，局内选角/重复启动不会改绑定。
 Selecting始终冻结模拟，排空菜单阶段游戏输入和命令，不向假Entity发Stop；Active暂停保留原一次Stop语义。
 `SimulationPlugin`默认暂停值不改变；Native通过同一创建路径自动选择旅者，不等待Web事件。
 
-暂停菜单另有“重新选择角色”，明确结束本局并重开整场试炼。ReturnToSelection携带当前玩家Entity字符串，
-会话核对身份和已暂停/实际释放捕获后，调用模拟层`reset_simulation`，再复用内容函数只重建训练NPC。
+暂停菜单与结算页均有“重新选择角色”，明确结束本局并重开整场对局。ReturnToSelection携带当前玩家Entity字符串，
+会话核对身份和已暂停/实际释放捕获后，调用玩法层`reset_match`，回到无单位的Waiting。
 该入口清除模拟实体及子层、技能载体、待执行命令/属性/命中包/消息，暂停并将SimulationTick归零；
 地图、目录、静态场景和身份分配器继续保留。属性来源与效果/状态序号在同World内仍单调分配。
-controls在无玩家边界清反馈和输入，camera复位原CameraRig，patrol清旧tick缓存；不重建应用墙钟或相机实体。
+controls在无玩家边界清反馈和输入，camera复位原CameraRig；Brain随单位删除，不重建应用墙钟或相机实体。
 
 Active保留开局选择版本，返回时递增并预选上局角色；旧版本Launch不能在下一局重新合法。
 成功返回即结束当前请求批次，剩余旧局意图丢弃；旧玩家返回不能重置新玩家。DOM等Rust投影再进入选角，
-清本地选择关联/捕获尝试，下次成功开局创建新玩家；普通“继续试炼”仍恢复同一Entity。
+清本地选择关联/捕获尝试，下次成功开局创建完整新阵容；普通继续仍恢复同一Entity。
+
+结算页“重新开始”在真实按钮点击内先申请捕获，成功回调发送`RestartMatch { match_id, player_id }`。
+仅当前Finished对局、当前玩家且已聚焦捕获的请求能重开；重置后以同角色原子开局并重新绑定。
+Active到Active同样是完整会话边界，旧批次尾部和旧游戏输入丢弃；重开失败清绑定回Selecting。
+`match_view`只读发布`match`与`map`，包括对局身份、阶段、结果、波次/倒计时、双方基地HP和共同几何。
+`UnitView`显式投影role/wave/formation_slot，JS不按名称猜兵种或推导对局结果。
 
 默认旅者保留原配置；秘术师使用另一组属性及已注册飞矢/范围/冲刺/引导。角色变化由内容和实际装配驱动，
 没有在输入/战斗模块增加角色ID条件。Web主入口支持两角色预览、键盘选择、捕获失败重试及响应式布局。
@@ -384,29 +470,32 @@ Active保留开局选择版本，返回时递增并预选上局角色；旧版�
 复用既有Damage/Status/Displace结算，只发现一层触发，不监听所有Damaged再递归派发；技能和装备主动不会触发。
 命中不查实时背包，卸装或来源死亡不改变已提交快照；目标死亡则跳过其后续效果。
 
-Web首版采用训练场直接装卸：P或暂停菜单打开装配面板，暂停并释放捕获，关闭后仍暂停。
+Web首版允许直接装卸：P或暂停菜单打开装配面板，暂停并释放捕获，关闭后仍暂停。
 `client/equipment.rs`只接受当前Active玩家的封闭Equip/Unequip请求，严格整批解析后逐条执行，回显成功/错误。
 六格HUD用1–6或真实鼠标释放主动，与角色技能共用瞄准/范围/说明，输入携带实例并在捕获边界丢弃旧意图。
-静态目录仅首份完整HUD发送；JS缓存只读说明，动态属性/CD/可用性始终来自Rust，
+静态目录仅首份完整HUD发送；equipment模块在Rust之前同步注册一次目录监听，缓存后移除，
+其顶层不访问DOM，迟到HUD创建工厂时仍能取得目录。正常早工厂继续由render首份状态初始化；
+JS缓存只读说明，动态属性/CD/可用性始终来自Rust，
 原abilities四格与aim协议保持；装备使用独立equipment/equipment_aim字段和DOM选择器。
 
 9件示例分别覆盖攻击、法强、双抗、移速、攻速/攻距、命中附伤/减速及普通/冲刺/引导主动。
-演示数值与引用位于content，不在输入或结算中按装备ID分支。经济、合成、唯一组和共享CD属于后续规则，
-当前训练场每次穿戴创建新实例且主动CD为0。具体接口和错误矩阵见
+演示数值与引用位于`gameplay/content/`，不在输入或结算中按装备ID分支。经济、合成、唯一组和共享CD属于后续规则，
+当前每次穿戴创建新实例且主动CD为0。具体接口和错误矩阵见
 [模拟装备契约](../.trellis/spec/simulation/equipment.md)和[客户端装备契约](../.trellis/spec/client/equipment.md)。
 
 ## 验证与维护
 
 `make check` 执行格式检查、Clippy、完整 Rust 测试与 WASM 类型检查，CI 执行同一入口。
-核心行为测试只安装 `MinimalPlugins` 与 `SimulationPlugin`，通过 `CommandQueue` 下指令，
+核心行为测试只安装 `MinimalPlugins` 与 `SimulationPlugin`；玩法测试按范围增加`GameplayPlugin`与独立`AiPlugin`。
+通过 `CommandQueue` 下指令，
 读取单位状态和模拟事件验证结果。测试不创建相机或加载模型，也不直接篡改运行态。
 内部函数和 ECS 调度可以重构，而无需改写这些行为场景。
 
 浏览器测试验证真实 WebGPU 渲染、鼠标拾取、UI 隔离、镜头、技能和暂停。
 Linux 的截图验收使用带窗口的 Chromium（可运行在 Xvfb 中），避免无头 WebGPU 画布未进入截图合成的情况。
 诊断快照 `window.__kivaState` 是只读投影，不提供修改游戏状态的测试后门。
-浏览器DOM只能提交暂停、槽位/实例选择、封闭的选角/开局和装备管理意图；不能传属性或实际技能数组。
-技能是否合法由模拟验证，角色选择与开局由客户端会话结合核心创建入口校验，装备管理通过核心装卸入口校验。
+浏览器DOM只能提交暂停、槽位/实例选择、封闭的会话和装备管理意图；不能传属性或实际技能数组。
+技能是否合法由模拟验证，角色选择与开局由客户端会话结合玩法原子构造入口校验，装备管理通过核心装卸入口校验。
 Web 端使用整个文档的焦点判断是否离开游戏，而非画布焦点。
 技能按钮等 HUD 控件获取焦点不暂停模拟；切出页面仍暂停并清理待执行输入。
 进入浏览器游戏需要成功捕获鼠标；Esc、切出窗口或捕获丢失会释放鼠标并暂停。

@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { launchBrowser, enterGame, resumeGame, movePointer, clickPointer, clickUi,
-  clickWorld, reportFailure, serveBuild } = require("./browser-support.cjs");
+  clickWorld, reportFailure, serveBuild, installFrameClock, state, nearHome } = require("./browser-lane-support.cjs");
 
 const expected = {
   attack_damage: 40, ability_power: 0, armor: 0, magic_resistance: 0,
@@ -108,12 +108,13 @@ async function assertUiIsolation(page) {
     "stat clicks must not move the hero");
   assert.equal(await page.evaluate(() => document.pointerLockElement?.id), "game");
   await page.keyboard.press("s");
-  await clickWorld(page, [-2, 6], "right");
-  await page.waitForFunction(() => {
-    const state = window.__kivaState;
-    const player = state.units.find((unit) => unit.id === state.player_id);
-    return Math.hypot(player.position[0] + 2, player.position[1] - 6) < 0.12;
-  });
+  const destination = nearHome(await state(page), 2.8, -1.8);
+  await clickWorld(page, destination, "right");
+  await page.waitForFunction(([x, z]) => {
+    const snapshot = window.__kivaState;
+    const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
+    return Math.hypot(player.position[0] - x, player.position[1] - z) < 0.12;
+  }, destination);
   await page.keyboard.press("Escape");
   await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
   assertHud(await observeHud(page), "paused");
@@ -135,7 +136,8 @@ async function main() {
     ]) {
       const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale });
       page = await context.newPage();
-      page.setDefaultTimeout(15000);
+      page.setDefaultTimeout(120000);
+      await installFrameClock(page);
       page.on("pageerror", (error) => errors.push(error.message));
       await enterGame(page, site.url);
       await page.locator('#hero-stats [data-stat="attack_speed"]').waitFor();

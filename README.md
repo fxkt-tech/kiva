@@ -2,6 +2,7 @@
 
 基于 Bevy 0.20.1 的浏览器俯视角游戏基础框架：固定角度三维镜头、鼠标点地移动、
 绕障寻路、追击普攻、攻击移动、角色选择、组合技能、六格装备和骨骼角色动作。
+当前玩法为单中路对局：双方基地、定时兵线，以及会推线、战斗、施法和撤退的敌方英雄。
 通过 Trunk / WASM / WebGPU 运行，支持原生桌面调试。
 
 游戏模拟独立于输入、相机、模型和浏览器。模块职责、执行顺序、扩展约定见
@@ -17,7 +18,7 @@ cargo install trunk --locked
 make run
 ```
 
-浏览器打开 <http://localhost:3221>，选择角色后点击“进入试炼”。需支持 WebGPU 的新版 Chrome / Edge，
+浏览器打开 <http://localhost:3221>，选择角色后进入对局。需支持 WebGPU 的新版 Chrome / Edge，
 开启 GPU 加速。本地使用 localhost，部署使用 HTTPS。不需要 Node.js 运行游戏。
 
 开发服务监听代码改动并刷新页面。自定义 Trunk 参数可以使用：
@@ -55,17 +56,31 @@ sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 | Esc | 释放鼠标并暂停 |
 | ? / 操作指南按钮 | 展开操作说明 |
 
-浏览器中点击“进入试炼”后会捕获鼠标，显示限制在游戏区域内的光标。
-光标到达边缘仍可滚屏，按 Esc 可释放鼠标并暂停，点击“继续试炼”重新进入。
+浏览器中进入对局后会捕获鼠标，显示限制在游戏区域内的光标。
+光标到达边缘仍可滚屏，按 Esc 可释放鼠标并暂停，点击继续按钮重新进入。
 如果浏览器拒绝捕获，游戏保持暂停并显示重试提示。普通地点技能必须在射程内；方向技能沿鼠标方向发射。
 流风步等地点冲刺在点击超出射程时沿该方向冲刺到最大距离，范围内则到点击点；障碍物会提前截断位移。
 点击底部技能/装备按钮同样可以释放；单位、地点、方向目标进入瞄准，自身目标立即释放。
 前摇取消不消耗能量和冷却，出手后移动不会重置冷却。
-训练目标死亡后约 3 秒重生。地图预览只读，不下达移动指令。
-暂停菜单的“重新选择角色”会重开整场试炼，重置玩家、NPC和装备；普通继续保留本局状态。
+地图预览只读，不下达移动指令。暂停菜单的“重新选择角色”会重开整场对局，
+重置双方英雄、基地、兵线和装备；普通继续保留本局状态。
 
-首版为本地单人测试场景，包含固定靶和巡逻靶。单位暂不互相阻挡；
-尚未加入经济、兵线、战争迷雾或联网。
+## 对局规则
+
+64×64的正方形地图只有一条中路，我方基地位于左下、敌方基地位于右上。
+地图大小不限制镜头操作，边缘滚屏、方向键、缩放、Y和空格跟随均可继续使用。
+开局立即开始首波，此后每60秒开始下一波。每方每0.5秒出1个兵，先3近战、后3远程；
+一波在2.5秒内出齐，暂停冻结出兵进度。近战兵720生命、远程兵480生命。
+首次开局或整局重开时镜头定位到自己的英雄，随后可自由移动。
+小兵沿中路推进，优先攻击敌兵、再攻击附近英雄和基地，短程追击后会回线。
+
+基地初始3000生命，只有普攻本体可以伤害基地；技能、装备主动和普攻附属效果不会作用于基地。
+任一基地生命归零立即结束对局，同一步双方基地归零则平局。结算后可重开同角色或重新选角。
+英雄死亡约3秒后复活，己方基地附近脱战2秒后，每0.5秒恢复最大生命和最大法力的各10%。
+敌方英雄使用实际装配、法力、冷却和控制规则，能够推线、施法、有限追击、撤退回补和守家。
+
+目前为本地单人对局。单位没有硬碰撞，小兵普通行走时轻量避让；
+尚未加入防御塔、经济、野区、战争迷雾或联网。
 
 ## 基础属性
 
@@ -79,18 +94,18 @@ sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 普攻具有前摇和后摇，出手后进入收招；移动、停止、换目标或施法可以取消后摇，已发射攻击继续生效。
 改变攻速从下一次新普攻生效，取消后摇不会刷新已提交的普攻间隔。
 
-玩家和NPC采用act分支的骨骼火柴人样式，具有关节、头眼和随右手运动的剑。
+双方英雄采用act分支的骨骼火柴人样式，具有关节、头眼和随右手运动的剑。
 待机、移动、普攻前后摇、施法、引导、冲刺及受控姿态跟随当前模拟，暂停冻结已显示动作。
 动作使用内嵌CC0资源，不需要额外下载；来源、许可及重建方式见[动画资源](assets/animations/README.md)。
 
 ## 装备
 
-训练场可直接装备/卸下9件示例装备，最多六件，允许重复。P打开装配后，装备进入首个空格；
-满格时需先卸下一件。关闭面板仍保持暂停，点击“继续试炼”恢复。
+对局中可直接装备/卸下9件示例装备，最多六件，允许重复。P打开装配后，装备进入首个空格；
+满格时需先卸下一件。关闭面板仍保持暂停，点击继续按钮恢复。
 
 装备支持七属性加成、普攻命中附伤/减速被动及普通施法/冲刺/引导主动。
 主动有独立冷却，不占用角色四技能。卸装取消该实例未提交的施法和后续引导，已经发出的效果继续保留。
-死亡保留装备及属性，装备冷却继续推进，重生不刷新；暂停冻结。训练装配每次穿戴生成新实例且冷却为0。
+死亡保留装备及属性，装备冷却继续推进，重生不刷新；暂停冻结。每次穿戴生成新实例且冷却为0。
 金币、商店、合成、唯一装备和共享冷却尚未实现。
 
 ## 检查
@@ -105,6 +120,8 @@ make check
 
 `tests/simulation.rs` 使用相同的公开指令和属性变更接口，验证来源修正、伤害类型与抗性、
 攻击时序、寻路、施法提交、冷却、中断、死亡重生等规则，不创建窗口、相机或 GPU。
+`tests/combat_foundation.rs`、`match_mode.rs`、`minions.rs`、`hero_ai.rs`验证结构受效边界、
+完整对局生命周期、波次、兵线与英雄决策；玩法测试同样通过公开接口运行真实战斗。
 
 浏览器集成测试需要额外的测试工具，可使用现有开发服务，或设置 `KIVA_SITE_DIR` 测试独立构建：
 
@@ -113,10 +130,12 @@ npm install --prefix /tmp/kiva-browser-tests playwright@1.65.0 pngjs@7.0.0
 /tmp/kiva-browser-tests/node_modules/.bin/playwright install chromium
 NODE_PATH=/tmp/kiva-browser-tests/node_modules node scripts/browser-smoke.cjs
 NODE_PATH=/tmp/kiva-browser-tests/node_modules node scripts/browser-startup.cjs
+node --test scripts/startup-unit.test.cjs
 ```
 
-冒烟测试覆盖真实 WebGPU 渲染、点地移动、普攻、示例技能、HUD 隔离、镜头操作、
-窗口尺寸变化、高 DPI、暂停和失焦。启动测试验证 WASM 下载失败提示和重试。
+冒烟测试覆盖真实 WebGPU 渲染、点地移动、HUD 隔离、镜头操作、
+窗口尺寸变化、高 DPI、暂停和失焦。启动测试验证早于HUD初始化的WASM下载失败仍显示提示与重试，
+成功后迟到错误不会覆盖已就绪状态；启动单元测试不需要GPU。
 截图默认保存到 `/tmp/kiva-browser-tests/artifacts`，可通过 `KIVA_SCREENSHOT_DIR` 覆盖。
 
 可选环境变量：`KIVA_TEST_URL` 指定服务地址，`KIVA_BROWSER_HEADED=1` 显示窗口，
@@ -137,7 +156,7 @@ NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-s
 ```
 
 此测试自行创建临时静态文件测试入口并在结束时关闭，覆盖跨帧按下按钮、
-Q/W/E 选目标释放、R 直接释放以及真正失焦后的暂停恢复。
+不同目标和执行方式的键鼠技能、无效目标保留瞄准，以及真正失焦后的暂停恢复。
 
 血条跟随的浏览器回归测试使用同一份构建，无需启动开发服务：
 
@@ -166,6 +185,15 @@ NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-s
 ```bash
 NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-equipment.cjs
 ```
+
+完整对局回归验证首波阵容、基地位置、相机、暂停、真实终局、重开与旧请求隔离：
+
+```bash
+NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-lane-match.cjs
+NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-reselection.cjs
+```
+
+交互测试可用浏览器帧时钟 fixture 适配软件 GPU，不提供修改 World 的接口；血条频率测试保留原生显示时钟。
 
 ## 构建部署
 

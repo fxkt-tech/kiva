@@ -201,7 +201,7 @@ fn malformed_batches_are_consumed_without_executing_a_valid_prefix() {
 fn selection_and_new_player_reset_ack_and_reject_an_old_round_request() {
     let (mut app, player) = app();
     batch(&mut app, json!([equip(player, 0, 1, 1)]), true, false);
-    reset_simulation(app.world_mut());
+    crate::gameplay::reset_match(app.world_mut());
     session::setup(app.world_mut());
     process_requests(app.world_mut());
     assert_eq!(

@@ -4,10 +4,15 @@ use super::{
     camera::{CameraRig, GameCamera},
     controls::{Aim, ClientFeedback, Pickable, PlayerController},
     equipment::{self, EquipmentAdapter, EquipmentDefinitionView, EquipmentView},
+    match_view::{self, MapView, MatchProjection, MatchView},
     session::{ClientSession, SelectionAck},
+    unit_appearance::UnitAppearance,
     web,
 };
-use crate::simulation::*;
+use crate::{
+    gameplay::{UnitRole, WaveMember},
+    simulation::*,
+};
 use bevy::{ecs::system::SystemParam, prelude::*};
 use serde::Serialize;
 
@@ -82,6 +87,9 @@ impl From<&ControlState> for ControlView {
 struct UnitView {
     id: String,
     character_id: Option<u16>,
+    role: Option<&'static str>,
+    wave: Option<u64>,
+    formation_slot: Option<u8>,
     name: String,
     team: &'static str,
     position: [f32; 2],
@@ -105,6 +113,9 @@ struct HudView {
     paused: bool,
     player_id: Option<String>,
     session: SessionView,
+    #[serde(rename = "match")]
+    game: MatchView,
+    map: MapView,
     selected: Option<String>,
     aim: Option<usize>,
     equipment_aim: Option<usize>,
@@ -215,6 +226,9 @@ type ProjectedUnit = (
     &'static UnitStatuses,
     &'static ControlState,
     Option<&'static CharacterIdentity>,
+    Option<&'static UnitRole>,
+    Option<&'static WaveMember>,
+    Option<&'static UnitAppearance>,
 );
 
 #[cfg(target_arch = "wasm32")]
@@ -226,12 +240,21 @@ struct LabelPosition {
     alive: bool,
 }
 
+#[cfg(target_arch = "wasm32")]
+type DisplayedLabel<'a> = (
+    Entity,
+    &'a GlobalTransform,
+    &'a Pickable,
+    &'a UnitState,
+    &'a UnitAppearance,
+);
+
 /// Only lightweight screen positions cross this bridge every rendered frame.
 /// Use the actual display transforms, including interpolation and camera motion.
 #[cfg(target_arch = "wasm32")]
 pub(super) fn publish_labels(
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
-    units: Query<(Entity, &GlobalTransform, &Pickable, &UnitState), With<super::scene::UnitVisual>>,
+    units: Query<DisplayedLabel<'_>, With<super::scene::UnitVisual>>,
 ) {
     let (camera, camera_transform) = *camera;
     let Some(viewport) = camera.logical_viewport_size() else {
@@ -239,18 +262,26 @@ pub(super) fn publish_labels(
     };
     let positions: Vec<_> = units
         .iter()
-        .map(|(id, transform, pickable, state)| LabelPosition {
-            id: id.to_bits().to_string(),
-            screen: project_display(camera, camera_transform, transform, Vec3::Y * 2.2, viewport),
-            body_screen: project_display(
-                camera,
-                camera_transform,
-                transform,
-                pickable.offset,
-                viewport,
-            ),
-            alive: state.alive(),
-        })
+        .map(
+            |(id, transform, pickable, state, appearance)| LabelPosition {
+                id: id.to_bits().to_string(),
+                screen: project_display(
+                    camera,
+                    camera_transform,
+                    transform,
+                    appearance.label_offset,
+                    viewport,
+                ),
+                body_screen: project_display(
+                    camera,
+                    camera_transform,
+                    transform,
+                    pickable.offset,
+                    viewport,
+                ),
+                alive: state.alive(),
+            },
+        )
         .collect();
     if let Ok(json) = serde_json::to_string(&positions) {
         web::publish_labels(&json);
@@ -306,8 +337,10 @@ pub(super) fn publish(
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
     units: Query<ProjectedUnit>,
     mut equipment: EquipmentProjection,
+    game: MatchProjection,
 ) {
     if !session.is_changed()
+        && !game.changed()
         && !equipment.adapter.is_changed()
         && time.elapsed_secs() < *next_publish
     {
@@ -334,11 +367,17 @@ pub(super) fn publish(
                 statuses,
                 control,
                 character,
+                role,
+                wave,
+                appearance,
             )| {
                 let point = pose.position();
                 UnitView {
                     id: id.to_bits().to_string(),
                     character_id: character.map(|identity| identity.id().0),
+                    role: role.copied().map(match_view::role_name),
+                    wave: wave.map(WaveMember::wave),
+                    formation_slot: wave.map(WaveMember::slot),
                     name: unit.name().into(),
                     team: if unit.team() == Team::Ally {
                         "ally"
@@ -346,7 +385,13 @@ pub(super) fn publish(
                         "enemy"
                     },
                     position: point.to_array(),
-                    screen: project_display(camera, transform, display, Vec3::Y * 2.2, viewport),
+                    screen: project_display(
+                        camera,
+                        transform,
+                        display,
+                        appearance.map_or(Vec3::Y * 2.2, |appearance| appearance.label_offset),
+                        viewport,
+                    ),
                     body_screen: project_display(
                         camera,
                         transform,
@@ -377,20 +422,24 @@ pub(super) fn publish(
     let abilities = session
         .player()
         .and_then(|id| units.get(id).ok())
-        .map(|(_, _, state, _, _, _, slots, _, _, _, control, _)| {
-            (0..4)
-                .filter_map(|slot| {
-                    let definition = catalog.get(slots.ability(slot)?)?;
-                    Some(AbilityView::new(slot, definition, state, control, slots))
-                })
-                .collect()
-        })
+        .map(
+            |(_, _, state, _, _, _, slots, _, _, _, control, _, _, _, _)| {
+                (0..4)
+                    .filter_map(|slot| {
+                        let definition = catalog.get(slots.ability(slot)?)?;
+                        Some(AbilityView::new(slot, definition, state, control, slots))
+                    })
+                    .collect()
+            },
+        )
         .unwrap_or_default();
     let view = HudView {
         tick: tick.0,
         paused: control.paused,
         player_id: session.player().map(|id| id.to_bits().to_string()),
         session: SessionView::new(&session, &characters, &catalog),
+        game: game.view(tick.0),
+        map: game.map_view(),
         selected: player.selected.map(|id| id.to_bits().to_string()),
         aim: match player.aim {
             Some(Aim::Ability(slot)) => Some(slot),
@@ -404,7 +453,7 @@ pub(super) fn publish(
             session.player().and_then(|id| equipment.units.get(id).ok()),
             &equipment.catalog,
             &catalog,
-            equipment::paused_unlocked(&control),
+            equipment::paused_unlocked(&control) && game.can_manage(),
             &equipment.adapter.ack,
         ),
         equipment_catalog: (!*equipment.sent_catalog)
@@ -512,7 +561,7 @@ pub(super) fn update_native_hud(
 #[cfg(test)]
 mod tests {
     use super::super::{
-        content::{self, DemoSettings},
+        content::{self, SelectionSettings},
         session,
     };
     use super::*;
@@ -524,7 +573,7 @@ mod tests {
             app.add_plugins((MinimalPlugins, SimulationPlugin));
             content::setup(app.world_mut());
             app.world_mut()
-                .resource_mut::<DemoSettings>()
+                .resource_mut::<SelectionSettings>()
                 .default_character = id;
             session::setup(app.world_mut());
             let view = SessionView::new(
@@ -553,7 +602,7 @@ mod tests {
             );
             assert_eq!(
                 app.world_mut().query::<&Unit>().iter(app.world()).count(),
-                2,
+                0,
                 "previewing cannot create a hidden player"
             );
             assert_eq!(

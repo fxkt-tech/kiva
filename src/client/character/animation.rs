@@ -4,6 +4,7 @@ use super::{
     poses::{self, Gesture},
     rig::{AnimationLibrary, blend},
 };
+use crate::client::presentation::PresentationFrame;
 use crate::simulation::*;
 use bevy::prelude::*;
 
@@ -55,8 +56,8 @@ impl RigPose {
     }
 }
 
-fn presentation_time(tick: &SimulationTick, fixed: &Time<Fixed>) -> f64 {
-    (tick.0 as f64 + f64::from(fixed.overstep_fraction())) / TICK_RATE
+fn presentation_time(tick: &SimulationTick, frame: &PresentationFrame) -> f64 {
+    (tick.0 as f64 + f64::from(frame.fraction())) / TICK_RATE
 }
 
 type AnimatedUnit<'a> = (
@@ -123,20 +124,19 @@ pub(in crate::client) fn record_events(
 }
 
 pub(in crate::client) fn sync_poses(
-    fixed: Res<Time<Fixed>>,
+    frame: Res<PresentationFrame>,
     tick: Res<SimulationTick>,
-    control: Res<SimulationControl>,
     library: Res<AnimationLibrary>,
     catalog: Res<AbilityCatalog>,
     mut units: Query<AnimatedUnit>,
 ) {
     // Retain the exact last local/model pose, blend origin and clocks. In
     // particular do not resample a one-tick backswing with an alpha of zero.
-    if control.paused {
+    if !frame.should_sync() {
         return;
     }
-    let now = presentation_time(&tick, &fixed);
-    let fraction = fixed.overstep_fraction();
+    let now = presentation_time(&tick, &frame);
+    let fraction = frame.fraction();
     for (pose, state, action, order, statuses, permissions, mut rig) in &mut units {
         if !state.alive() {
             continue;
@@ -261,11 +261,11 @@ pub(in crate::client) fn sync_poses(
 }
 
 pub(in crate::client) fn sync_attachments(
-    control: Res<SimulationControl>,
+    frame: Res<PresentationFrame>,
     rigs: Query<&RigPose>,
     mut visuals: Query<(&BoneVisual, &mut Transform)>,
 ) {
-    if control.paused {
+    if !frame.should_sync() {
         return;
     }
     for (visual, mut transform) in &mut visuals {

@@ -1,221 +1,314 @@
-// Real Pointer Lock interaction against a temporary static fixture. State is
-// observed through Rust projections; tests never mutate the simulation world.
+// Production lane combat, captured input and read-only Rust projections.
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const {
-  launchBrowser, enterGame, resumeGame, movePointer, clickPointer, clickAndMovePointer,
+  launchBrowser, installFrameClock, selectAndEnter, resumeGame, pause, state, hero, enemyHero, base,
+  observed, waitTicks, moveTo, nearHome, nearMiddle, clickUnit, movePointer, clickPointer, clickAndMovePointer,
   clickUi, clickWorld, worldPoint, reportFailure, serveBuild,
-} = require("./browser-support.cjs");
+} = require("./browser-lane-support.cjs");
 
-async function status(page, kind) {
-  // Return the snapshot that satisfied the condition. A second CDP round trip
-  // can otherwise sample after a short control effect has already expired.
-  const snapshot = await page.waitForFunction((kind) => {
-    const unit = window.__kivaState.units.find((unit) => unit.name === "训练哨兵");
-    return unit?.statuses.some((effect) => effect.kind === kind) ? unit : false;
-  }, kind);
-  try { return await snapshot.jsonValue(); }
-  finally { await snapshot.dispose(); }
+function progress(stage, snapshot) {
+  const player = snapshot && hero(snapshot);
+  const enemy = snapshot && enemyHero(snapshot);
+  console.log(`SKILLS ${stage}`, JSON.stringify({ tick: snapshot?.tick, aim: snapshot?.aim,
+    player: player && { position: player.position, health: player.health, order: player.order },
+    enemy: enemy && { id: enemy.id, position: enemy.position, health: enemy.health } }));
 }
 
-async function exerciseSkills(page) {
-  const before = await page.evaluate(() => {
-    const s = window.__kivaState;
-    const hero = s.units.find((unit) => unit.id === s.player_id);
-    return { position: hero.position, mana: hero.mana, names: s.abilities.map((ability) => ability.name) };
-  });
-  const buttons = await page.locator("[data-slot] small").allTextContents();
-  for (let slot = 0; slot < before.names.length; slot++) {
-    assert((await page.locator(`[data-slot="${slot}"]`).getAttribute("title")).includes(before.names[slot]));
-  }
-  assert.deepEqual(buttons, before.names, "button labels must follow the equipped definitions");
+async function status(page, id, kind) {
+  const initialTick = (await state(page)).tick;
+  return observed(page, ({ id, kind, initialTick }) => {
+    const snapshot = window.__kivaState;
+    const unit = snapshot.units.find((unit) => unit.id === id);
+    if (!unit?.alive) throw new Error(`Target ${id} died while waiting for ${kind}`);
+    if (unit.statuses.some((effect) => effect.kind === kind)) return snapshot;
+    if (snapshot.tick > initialTick + 180) {
+      throw new Error(`No ${kind} after 180 actual ticks: ${JSON.stringify({ unit, aim: snapshot.aim, abilities: snapshot.abilities })}`);
+    }
+    return false;
+  }, { id, kind, initialTick });
+}
 
-  // An enemy-target ability must remain selected for empty and friendly clicks.
-  // Holding a HUD click across updates also checks document-focus handling.
+async function freshMatch(page) {
+  const old = await state(page);
+  if (!old.paused) await pause(page);
+  await page.locator("#reselect").click();
+  await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting"
+    && !document.getElementById("enter").disabled);
+  assert.equal((await state(page)).units.length, 0);
+  await resumeGame(page);
+  const fresh = await state(page);
+  assert.notEqual(fresh.match.id, old.match.id);
+  assert.notEqual(fresh.player_id, old.player_id);
+  assert.equal(fresh.match.phase, "Running");
+  return fresh;
+}
+
+async function approach(page, forwardOffset = -0.65, lateral = -3) {
+  const before = await state(page);
+  progress(`walk to ${JSON.stringify(nearMiddle(before, forwardOffset, lateral))}`, before);
+  await moveTo(page, nearMiddle(before, forwardOffset, lateral));
+  await page.keyboard.press("s");
+  const initialTick = (await state(page)).tick;
+  const ready = await observed(page, (initialTick) => {
+    const snapshot = window.__kivaState;
+    const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
+    const enemy = snapshot.units.find((unit) => unit.role === "Hero" && unit.team === "enemy");
+    if (!player?.alive || !enemy?.alive) throw new Error("A hero died while preparing skill range");
+    if (snapshot.tick > initialTick + 900) {
+      throw new Error(`No combat range after 900 actual ticks: ${JSON.stringify({ player, enemy })}`);
+    }
+    return player.alive && enemy?.alive && player.order === "Idle"
+      && Math.hypot(...enemy.position.map((value, i) => value - player.position[i])) < 7.5 ? snapshot : false;
+  }, initialTick);
+  progress("combat range ready", ready);
+  return ready;
+}
+
+async function exerciseControls(page, keyboardW) {
+  const before = await state(page);
+  const names = before.abilities.map((ability) => ability.name);
+  assert.deepEqual(await page.locator("[data-slot] small").allTextContents(), names);
+  for (let slot = 0; slot < names.length; slot++) {
+    assert((await page.locator(`[data-slot="${slot}"]`).getAttribute("title")).includes(names[slot]));
+  }
+
+  // Held HUD input and invalid candidates must preserve aim without movement,
+  // resource consumption or a cooldown. Structures are invalid skill targets.
   await clickUi(page, '[data-slot="0"]', 1200);
   await page.waitForFunction(() => window.__kivaState.aim === 0);
-  await clickWorld(page, [0, 2]);
-  await page.waitForTimeout(180);
-  assert.equal(await page.evaluate(() => window.__kivaState.aim), 0);
-  await clickWorld(page, [...before.position, 1.1]);
-  await page.waitForTimeout(180);
-  assert.equal(await page.evaluate(() => window.__kivaState.aim), 0);
-  assert.equal(await page.evaluate(() => window.__kivaState.abilities[0].cooldown), 0);
-  await clickWorld(page, [3, -2, 1.1]);
-  const stunned = await status(page, "Stun");
-  assert.equal(stunned.health, 325);
+  for (const candidate of [null, before.player_id, base(before, "ally").id, base(before, "enemy").id]) {
+    if (candidate === null) await clickWorld(page, nearHome(before, 5, -4));
+    else await clickUnit(page, candidate);
+    await waitTicks(page);
+    const rejected = await state(page);
+    assert.equal(rejected.aim, 0, "invalid enemy aim must remain selected");
+    assert.equal(rejected.abilities[0].cooldown, 0);
+    assert.equal(hero(rejected).mana, hero(before).max_mana);
+    assert(Math.hypot(...hero(rejected).position.map((value, i) => value - hero(before).position[i])) < 0.1,
+      "HUD and invalid candidates must not issue walking orders");
+    progress(`invalid aim preserved: ${candidate || "ground"}`, rejected);
+  }
+
+  const ready = await approach(page);
+  assert.equal(ready.aim, null, "a movement order must cancel selected aim");
+  const target = enemyHero(ready);
+  const speed = target.attributes.move_speed;
+  await page.keyboard.press("w");
+  await page.waitForFunction(() => window.__kivaState.aim === 1);
+  await page.keyboard.press("s");
+  await page.waitForFunction(() => window.__kivaState.aim === null);
+  await page.keyboard.press("q");
+  await page.waitForFunction(() => window.__kivaState.aim === 0);
+  await clickUnit(page, target.id);
+  progress("Q submitted");
+  const afterQ = await status(page, target.id, "Stun");
+  progress("Q stun observed", afterQ);
+  const stunned = afterQ.units.find((unit) => unit.id === target.id);
+  // Other lane units attack concurrently: bind the effect to this actual
+  // target and check damage occurred, rather than assuming an idle 400HP NPC.
+  assert(stunned.health < target.health);
   assert.equal(stunned.control.can_move, false);
   assert.equal(stunned.control.can_attack, false);
   assert.equal(stunned.control.can_cast, false);
-  assert.equal(await page.evaluate(() => window.__kivaState.aim), null);
-  const afterQ = await page.evaluate(() => {
-    const s = window.__kivaState;
-    return { position: s.units.find((unit) => unit.id === s.player_id).position, cooldown: s.abilities[0].cooldown, paused: s.paused };
-  });
+  assert.equal(afterQ.aim, null);
   assert.equal(afterQ.paused, false);
-  assert(afterQ.cooldown > 0);
-  assert(Math.hypot(...afterQ.position.map((value, i) => value - before.position[i])) < 0.1,
-    "HUD and invalid target clicks must not issue walking orders");
+  assert(afterQ.abilities[0].cooldown > 0);
+  assert(hero(afterQ).mana < hero(ready).mana);
 
-  await clickUi(page, '[data-slot="1"]');
-  await clickWorld(page, [3, -2]);
-  const rooted = await status(page, "Root");
-  assert.equal(rooted.health, 205);
+  if (keyboardW) await page.keyboard.press("w");
+  else await clickUi(page, '[data-slot="1"]');
+  await page.waitForFunction(() => window.__kivaState.aim === 1);
+  await clickWorld(page, stunned.position);
+  progress("W submitted");
+  const afterW = await status(page, target.id, "Root");
+  progress("W Root/Slow observed", afterW);
+  const rooted = afterW.units.find((unit) => unit.id === target.id);
+  assert(rooted.health < stunned.health);
   assert(rooted.statuses.some((effect) => effect.kind === "Slow"));
   assert.equal(rooted.control.can_move, false);
   assert.equal(rooted.control.can_attack, true);
   assert.equal(rooted.control.can_cast, true);
-  assert(Math.abs(rooted.attributes.move_speed - 3.85) < 0.001,
-    "status and final movement speed must agree in the same published snapshot");
-  await page.waitForFunction(() => {
-    const target = window.__kivaState.units.find((unit) => unit.name === "训练哨兵");
-    return !target.statuses.some((effect) => effect.kind === "Root")
-      && target.statuses.some((effect) => effect.kind === "Slow") && target.control.can_move;
-  });
-  await page.waitForFunction(() => {
-    const target = window.__kivaState.units.find((unit) => unit.name === "训练哨兵");
-    return target.statuses.length === 0 && target.attributes.move_speed === 5.5;
-  });
+  assert(Math.abs(rooted.attributes.move_speed - speed * 0.7) < 0.001,
+    "composed Root/Slow and final speed must agree in the same snapshot");
+  assert(afterW.abilities[1].cooldown > 0);
+  await observed(page, (id) => {
+    const unit = window.__kivaState.units.find((unit) => unit.id === id);
+    return unit?.alive && !unit.statuses.some((effect) => effect.kind === "Root")
+      && unit.statuses.some((effect) => effect.kind === "Slow") && unit.control.can_move;
+  }, target.id);
+  // Only the long tail of Slow remains; short Root/Slow composition was already
+  // observed at the fine frame step. Every simulation tick still runs.
+  await page.evaluate(() => window.__laneSetFrameStep(250));
+  try {
+    const restored = await observed(page, ({ id, speed }) => {
+      const unit = window.__kivaState.units.find((unit) => unit.id === id);
+      if (!unit?.alive) throw new Error(`Target ${id} died before Slow restoration`);
+      return !unit.statuses.some((effect) => ["Root", "Slow", "Stun"].includes(effect.kind))
+        && Math.abs(unit.attributes.move_speed - speed) < 0.001 ? window.__kivaState : false;
+    }, { id: target.id, speed });
+    progress("Slow expired; speed restored", restored);
+  } finally {
+    await page.evaluate(() => window.__laneSetFrameStep(1000 / 60));
+  }
+}
 
-  // Cap elapsed time per native display frame for this short animation only.
-  // CDP/software-rendering delays must not consume its remaining control ticks.
-  await page.evaluate(() => window.__testUseFrameClock());
-  // Virtual time advances per rendered frame. Give slow software GPUs a wall
-  // time budget without extending any production control duration/assertion.
-  page.setDefaultTimeout(120000);
-  // Keep the latest rendered body projection independently of the 80ms HUD.
-  assert.notEqual(await page.evaluate(() => window.__kivaState.selected), stunned.id,
-    "the airborne click must produce a new selection");
-  await page.evaluate(() => {
-    window.__testLabels = new Map();
+async function exerciseAirborne(page, mouseR) {
+  progress("R fresh match");
+  await freshMatch(page);
+  const ready = await approach(page, 0.35, -5);
+  const target = enemyHero(ready);
+  // The real Q holds the intelligent enemy during R's windup/projectile flight;
+  // the flank also keeps the projectile clear of the minion line.
+  await clickUi(page, '[data-slot="3"]');
+  await page.waitForFunction(() => window.__kivaState.aim === 3);
+  assert.equal((await state(page)).abilities[3].cooldown, 0, "selecting directional R must not self-cast");
+  await page.keyboard.press("s");
+  await page.waitForFunction(() => window.__kivaState.aim === null);
+  // Prepare listeners before Q starts the short control window.
+  await page.evaluate((id) => {
     window.__testSkillTrace = [];
     window.__recordSkillTrace = (event) => {
-      const state = window.__kivaState;
-      const target = state.units.find((unit) => unit.name === "训练哨兵");
-      window.__testSkillTrace.push({ event, time: performance.now(), tick: state.tick,
-        selected: state.selected, height: target.visual_height,
-        remaining: target.statuses.find((effect) => effect.kind === "Airborne")?.remaining,
-        displaced: target.control.is_displaced });
+      const snapshot = window.__kivaState;
+      const target = snapshot.units.find((unit) => unit.id === id);
+      window.__testSkillTrace.push({ event, time: performance.now(), tick: snapshot.tick,
+        selected: snapshot.selected, height: target?.visual_height,
+        remaining: target?.statuses.find((effect) => effect.kind === "Airborne")?.remaining,
+        displaced: target?.control.is_displaced });
     };
     window.addEventListener("kiva-state", () => {
       window.__testLastSnapshotAt = performance.now();
-      if (window.__kivaState.units.some((unit) => unit.statuses.some((effect) => effect.kind === "Airborne"))) {
+      if (window.__kivaState.units.find((unit) => unit.id === id)?.statuses.some((effect) => effect.kind === "Airborne")) {
         window.__recordSkillTrace("airborne-state");
       }
     });
     let pauseAfterPick = false;
     document.addEventListener("pointerdown", (event) => {
-      window.__recordSkillTrace("pointerdown");
       if (window.__testPauseOnPick && event.isTrusted && event.button === 0) {
         window.__testPauseOnPick = false;
         pauseAfterPick = true;
+        window.__recordSkillTrace("pointerdown");
       }
     });
-    window.addEventListener("kiva-labels", (event) => {
-      const labels = typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
-      for (const label of labels) window.__testLabels.set(label.id, label);
-      // This display frame follows consumption of the real pick input. Submit
-      // pause now, then release capture; waiting for the throttled HUD loses time.
+    window.addEventListener("kiva-labels", () => {
+      // This display frame follows the actual pick. Pause through the existing
+      // production intent before native unlock notification can cost a tick.
       if (pauseAfterPick) {
         pauseAfterPick = false;
         window.__recordSkillTrace("pause-after-pick");
-        // Use the existing pause intent before releasing the native lock, just
-        // as Escape does. Native unlock notification can arrive a frame later.
         document.documentElement.dataset.paused = "true";
         document.exitPointerLock();
       }
     });
-  });
-  await clickUi(page, '[data-slot="3"]');
+  }, target.id);
+  await clickUi(page, '[data-slot="0"]');
+  await clickUnit(page, target.id);
+  const stunned = await status(page, target.id, "Stun");
+  const origin = stunned.units.find((unit) => unit.id === target.id).position;
+  const player = hero(stunned).position;
+  const direction = origin.map((value, i) => value - player[i]);
+  const distance = Math.hypot(...direction);
+  const landing = origin.map((value, i) => value + direction[i] / distance * 4);
+  assert(landing.every((value) => Math.abs(value) < stunned.map.half_size - 1),
+    "the authored four-unit displacement needs a clear map endpoint");
+  assert.notEqual(stunned.selected, target.id, "the airborne click must make a new selection");
+  // Keyboard and HUD selection share the directional targeting path.
+  if (mouseR) await clickUi(page, '[data-slot="3"]');
+  else await page.keyboard.press("r");
   await page.waitForFunction(() => window.__kivaState.aim === 3);
-  assert.equal(await page.evaluate(() => window.__kivaState.abilities[3].cooldown), 0,
-    "selecting directional R must not self-cast");
-  // Pre-position during the projectile's flight, before the short airborne
-  // window starts. Four units is the authored demo push distance checked below;
-  // y=2.6 intersects the elevated body after that horizontal motion finishes.
-  const dx = 3 - before.position[0];
-  const dz = -2 - before.position[1];
-  const length = Math.hypot(dx, dz);
-  const landing = [3 + dx / length * 4, -2 + dz / length * 4];
-  // Prepare both projections before committing R. Keep host projection work
-  // and the helper's usual held click outside the 800ms control window.
-  const castPoint = await worldPoint(page, [3, -2]);
+  assert.equal((await state(page)).abilities[3].cooldown, 0, "selecting R must not self-cast");
+  const castPoint = await worldPoint(page, origin);
   const airbornePoint = await worldPoint(page, [...landing, 2.6]);
   await movePointer(page, ...castPoint);
   await clickAndMovePointer(page, ...airbornePoint);
-  await page.waitForFunction(({ id, point }) => {
-    const target = window.__kivaState.units.find((unit) => unit.id === id);
+  progress("R submitted; waiting for displaced airborne body");
+  await page.waitForFunction(({ id, point, initialTick }) => {
+    const snapshot = window.__kivaState;
+    const target = snapshot.units.find((unit) => unit.id === id);
+    if (!target?.alive) throw new Error(`R target ${id} died before the airborne pick`);
+    if (snapshot.tick > initialTick + 180) {
+      throw new Error(`R did not produce a pickable airborne endpoint: ${JSON.stringify(target)}`);
+    }
     const cursor = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
-    // Horizontal displacement must finish before sampling the click point:
-    // software rendering can advance a full movement step between CDP calls.
-    const ready = target.statuses.some((effect) => effect.kind === "Airborne")
+    const ready = target?.statuses.some((effect) => effect.kind === "Airborne")
       && !target.control.is_displaced && target.visual_height > 0.3
       && Math.abs(cursor.m41 - point[0]) < 2 && Math.abs(cursor.m42 - point[1]) < 2
-      && window.__testLabels.get(id)?.body_screen;
-    if (ready) {
-      window.__recordSkillTrace("pick-ready");
-      window.__testPauseOnPick = true;
-    }
+      && window.__laneLabels.get(id)?.body_screen;
+    if (ready) { window.__recordSkillTrace("pick-ready"); window.__testPauseOnPick = true; }
     return ready;
-  }, { id: stunned.id, point: airbornePoint });
-  // Inspect control and damage after the real selection has frozen the pose;
-  // reading them through extra host round trips first consumes the click window.
+  }, { id: target.id, point: airbornePoint, initialTick: stunned.tick });
   await clickPointer(page, "left", 0);
-  await page.waitForFunction(() => window.__kivaState.paused);
-  assert.equal(await page.evaluate(() => window.__kivaState.selected), stunned.id);
-  const paused = await page.evaluate((id) => {
-    const s = window.__kivaState;
-    return { tick: s.tick, clock: performance.now(), target: s.units.find((unit) => unit.id === id) };
-  }, stunned.id);
-  assert.equal(paused.target.health, 205, "control-only R must not invent damage");
+  await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
+  const paused = await page.evaluate((id) => ({ tick: window.__kivaState.tick, clock: performance.now(),
+    selected: window.__kivaState.selected, target: window.__kivaState.units.find((unit) => unit.id === id) }), target.id);
+  assert.equal(paused.selected, target.id);
+  assert(paused.target.health <= stunned.units.find((unit) => unit.id === target.id).health,
+    "control-only R must not restore health during the displacement");
   assert.equal(paused.target.control.can_cast, false);
-  assert(paused.target.statuses.some((effect) => effect.kind === "Airborne"),
-    "pause must occur while airborne so this verifies the visible frozen pose");
-  assert(paused.target.visual_height > 0, "pausing must preserve the already rendered airborne height");
-  await page.waitForFunction((pausedAt) => window.__testLastSnapshotAt >= pausedAt + 400, paused.clock);
-  const still = await page.evaluate((id) => {
-    const s = window.__kivaState;
-    return { tick: s.tick, clock: performance.now(), target: s.units.find((unit) => unit.id === id) };
-  }, stunned.id);
+  assert(paused.target.statuses.some((effect) => effect.kind === "Airborne"));
+  assert(paused.target.visual_height > 0);
+  assert(Math.abs(Math.hypot(...paused.target.position.map((value, i) => value - origin[i])) - 4) < 0.08,
+    "measure displacement while controlled, before AI can move after landing");
+  progress("airborne body selected and paused");
+  await page.evaluate(() => window.__laneSetFrameStep(250));
+  try {
+    await page.waitForFunction((clock) => window.__testLastSnapshotAt >= clock + 400, paused.clock);
+  } finally {
+    await page.evaluate(() => window.__laneSetFrameStep(1000 / 60));
+  }
+  const still = await state(page);
+  const frozen = still.units.find((unit) => unit.id === target.id);
   assert.equal(still.tick, paused.tick);
-  assert.equal(still.target.visual_height, paused.target.visual_height);
-  assert.deepEqual(still.target.statuses, paused.target.statuses);
-  assert.deepEqual(still.target.screen, paused.target.screen);
+  assert.equal(frozen.visual_height, paused.target.visual_height);
+  assert.deepEqual(frozen.statuses, paused.target.statuses);
+  assert.deepEqual(frozen.screen, paused.target.screen);
+  assert.deepEqual(frozen.position, paused.target.position);
   assert(await page.locator('#target-statuses [data-status="Airborne"]').count() > 0);
+  progress("exact airborne pose remained frozen", still);
   if (process.env.KIVA_BROWSER_HEADED === "1") {
     const directory = process.env.KIVA_SCREENSHOT_DIR || "/tmp/kiva-browser-tests/artifacts";
     await fs.mkdir(directory, { recursive: true });
     const size = page.viewportSize();
     const dpr = await page.evaluate(() => devicePixelRatio);
-    // Inspect the frozen scene; restore the real pause overlay immediately.
-    const inspectionStyle = await page.addStyleTag({ content: "#entry { visibility: hidden !important; }" });
-    try {
-      await page.screenshot({ path: path.join(directory, `airborne-${size.width}x${size.height}-dpr${dpr}.png`) });
-    } finally {
-      await inspectionStyle.evaluate((element) => element.remove());
-    }
+    const style = await page.addStyleTag({ content: "#entry { visibility: hidden !important; }" });
+    try { await page.screenshot({ path: path.join(directory, `airborne-${size.width}x${size.height}-dpr${dpr}.png`) }); }
+    finally { await style.evaluate((element) => element.remove()); }
   }
   await resumeGame(page);
-  await page.waitForFunction((id) => {
-    const target = window.__kivaState.units.find((unit) => unit.id === id);
-    return target.statuses.length === 0 && target.visual_height === 0 && !target.control.is_displaced;
-  }, stunned.id);
-  const landed = await page.evaluate((id) => window.__kivaState.units.find((unit) => unit.id === id), stunned.id);
-  assert(Math.abs(Math.hypot(landed.position[0] - 3, landed.position[1] + 2) - 4) < 0.08);
+  await observed(page, (id) => {
+    const unit = window.__kivaState.units.find((unit) => unit.id === id);
+    return unit?.alive && !unit.statuses.some((effect) => effect.kind === "Airborne")
+      && unit.visual_height === 0 && !unit.control.is_displaced;
+  }, target.id);
+}
 
-  const dash = await page.evaluate(() => {
-    const s = window.__kivaState;
-    return { origin: s.units.find((unit) => unit.id === s.player_id).position, range: s.abilities[2].range };
-  });
-  const destination = [dash.origin[0] - dash.range, dash.origin[1]];
-  await clickUi(page, '[data-slot="2"]');
-  await clickWorld(page, [dash.origin[0] - dash.range * 2, dash.origin[1]]);
-  await page.waitForFunction((destination) => {
-    const s = window.__kivaState;
-    const hero = s.units.find((unit) => unit.id === s.player_id);
-    return Math.hypot(hero.position[0] - destination[0], hero.position[1] - destination[1]) < 0.1 && s.abilities[2].cooldown > 0;
+async function exerciseDash(page, keyboardE) {
+  progress("E fresh match");
+  await freshMatch(page);
+  await page.keyboard.press("s");
+  await page.keyboard.press("e");
+  await page.waitForFunction(() => window.__kivaState.aim === 2);
+  await page.keyboard.press("s");
+  await page.waitForFunction(() => window.__kivaState.aim === null);
+  const snapshot = await state(page);
+  const origin = hero(snapshot).position;
+  const range = snapshot.abilities[2].range;
+  const length = Math.hypot(...origin);
+  const direction = origin.map((value) => -value / length);
+  const destination = origin.map((value, i) => value + direction[i] * range);
+  if (keyboardE) await page.keyboard.press("e");
+  else await clickUi(page, '[data-slot="2"]');
+  await clickWorld(page, origin.map((value, i) => value + direction[i] * range * 2));
+  const dashed = await observed(page, (destination) => {
+    const snapshot = window.__kivaState;
+    const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
+    return Math.hypot(...player.position.map((value, i) => value - destination[i])) < 0.1
+      && snapshot.abilities[2].cooldown > 0 ? snapshot : false;
   }, destination);
+  assert(hero(dashed).mana < hero(snapshot).mana);
+  assert.equal(dashed.aim, null);
+  progress("far E reached maximum-range endpoint", dashed);
 }
 
 async function main() {
@@ -229,37 +322,24 @@ async function main() {
       { viewport: { width: 800, height: 600 }, deviceScaleFactor: 1 },
       { viewport: { width: 1000, height: 720 }, deviceScaleFactor: 2 },
     ];
-    const requestedCase = process.env.KIVA_SKILLS_CASE;
-    const selected = cases.filter(({ viewport, deviceScaleFactor }) => !requestedCase
-      || `${viewport.width}x${viewport.height}@${deviceScaleFactor}` === requestedCase);
-    assert(selected.length, `Unknown KIVA_SKILLS_CASE: ${requestedCase}`);
+    const requested = process.env.KIVA_SKILLS_CASE;
+    const selected = cases.filter(({ viewport, deviceScaleFactor }) => !requested
+      || `${viewport.width}x${viewport.height}@${deviceScaleFactor}` === requested);
+    assert(selected.length, `Unknown KIVA_SKILLS_CASE: ${requested}`);
     for (const config of selected) {
       const context = await browser.newContext(config);
       page = await context.newPage();
-      page.setDefaultTimeout(20000);
-      // Preserve native timers, animation delivery and trusted input. Only the
-      // monotonic time read by WASM is capped after the short-animation phase
-      // starts. Install before Bevy captures performance.now; do not write World.
-      await page.addInitScript(() => {
-        const nativeNow = performance.now.bind(performance);
-        const nativeFrame = requestAnimationFrame.bind(window);
-        let controlled = false;
-        let time = 0;
-        let lastFrame;
-        Object.defineProperty(performance, "now", { value: () => controlled ? time : nativeNow() });
-        window.__testUseFrameClock = () => { time = nativeNow(); controlled = true; };
-        window.requestAnimationFrame = (callback) => nativeFrame((timestamp) => {
-          if (controlled && timestamp !== lastFrame) {
-            lastFrame = timestamp;
-            time += 1000 / 60;
-          }
-          callback(controlled ? time : timestamp);
-        });
-      });
-      await enterGame(page, site.url);
-      await exerciseSkills(page);
-      console.log(`PASS Q/W/E/R, invalid enemy aim, composed controls, slow restoration, airborne picking and pause ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);
+      page.setDefaultTimeout(120000);
+      await installFrameClock(page);
+      progress(`load ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);
+      progress("entered live lane", await selectAndEnter(page, site.url));
+      const alternateInput = config.viewport.width === 800;
+      await exerciseControls(page, alternateInput);
+      await exerciseAirborne(page, alternateInput);
+      await exerciseDash(page, alternateInput);
+      console.log(`PASS lane Q/W/E/R keyboard and HUD, invalid/friendly/structure aim, composed controls, restoration, airborne picking/freeze and far dash ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);
       await context.close();
+      page = null;
     }
   } catch (error) {
     if (page) {

@@ -15,6 +15,20 @@ pub struct DamageSpec {
     pub ap_ratio: f32,
 }
 impl DamageSpec {
+    /// Predicts current health loss using the same snapshot and resistance
+    /// calculation as a real hit. It does not commit damage or inspect a unit.
+    pub fn estimate_damage(
+        self,
+        source: &EffectiveAttributes,
+        target: &EffectiveAttributes,
+        health: f32,
+    ) -> Option<f32> {
+        if !health.is_finite() || health < 0.0 {
+            return None;
+        }
+        let snapshot = self.snapshot(source, DamageOrigin::BasicAttack)?;
+        Some(health - snapshot.health_after(target, health))
+    }
     pub const fn physical(base: f32) -> Self {
         Self {
             kind: DamageType::Physical,

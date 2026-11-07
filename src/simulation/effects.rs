@@ -229,6 +229,12 @@ pub(super) fn resolve(world: &mut World) {
 }
 
 fn resolve_payload(world: &mut World, packet: &HitPacket, payload: &ImpactSnapshot) -> bool {
+    if world
+        .get::<Unit>(packet.target.entity())
+        .is_none_or(|unit| !unit.class().accepts(payload.origin))
+    {
+        return false;
+    }
     let mut damaged = false;
     for (index, effect) in payload.effects.iter().copied().enumerate() {
         if !packet.target.is_current(world) {

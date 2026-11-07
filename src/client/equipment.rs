@@ -130,6 +130,12 @@ fn apply_request(
         .resource::<ClientSession>()
         .player()
         .ok_or("请先开始试炼。")?;
+    if !world
+        .resource::<crate::gameplay::MatchState>()
+        .can_advance()
+    {
+        return Err("本局已结束或无法继续，请重新开局。".into());
+    }
     if player.to_bits().to_string() != request.player_id() {
         return Err("这场试炼已经结束，请重新操作。".into());
     }

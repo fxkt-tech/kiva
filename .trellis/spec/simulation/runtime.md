@@ -9,6 +9,7 @@
 - `movement.rs` 写位置，`actions.rs` 写动作时钟/消耗/冷却，`combat.rs` 写伤害/死亡/重生。
 - `effects.rs` 统一快照/投递/排序结算；`statuses.rs` 拥有控制实例与权限归并，不能另写位置或最终属性。
 - `equipment.rs`拥有六格实例/装卸/装备CD，使用属性模块同步提交与动作模块统一施法入口。
+- `recovery.rs`拥有受限资源恢复；`validate_unit_spec`与spawn共享无分配预检。近战、结构与模式组合接口见[战斗基础](combat-foundation.md)。
 
 这些规则可在 `src/simulation/model.rs`、`orders.rs` 和 `tests/simulation.rs` 中对应验证。
 属性、伤害和普攻时序的具体接口见 [attributes-and-damage.md](attributes-and-damage.md)。
@@ -18,6 +19,7 @@
 ## 固定步与动作
 
 - `TICK_RATE` / `TICK_SECONDS` 是时间基准，当前 60 Hz。调度通过 `SimulationPlugin` 中的 `.chain()` 声明。
+- 公开`SimulationSet::Step`包住完整固定步，模式可在其前后排序或附加门控，通用模拟不依赖具体模式。
 - `UnitOrder` 是持续目的，`UnitAction` 是当前动作。技能结束后可以继续之前的持续指令。
 - 技能前摇结束时重新验证权限、目标生命和资源，整组快照成功后提交扣费、冷却和效果；此前取消不扣资源。
 - Point Dash在提交时从当前施法位置向原点击点截取最大射程，事件和运动使用同一个解析终点；非Dash保持原射程拒绝。
@@ -42,7 +44,7 @@
 `reset_simulation(&mut World)`是整场试炼重开的模拟清理入口：设置paused=true、tick=0，
 移除Unit/Projectile/AreaEffect实体及其linked children，清命令、待处理属性变更、命中包和SimulationEvent消息。
 引导、控制、运动、装备和属性运行态随所属单位删除，不直接从客户端改写这些组件。
-它保留NavigationMap、技能/角色/装备目录及非模拟静态实体，NPC和玩家的重新创建由客户端内容/会话协调。
+它保留NavigationMap、技能/角色/装备目录及非模拟静态实体；完整对局的重建由gameplay负责，客户端会话调用其入口。
 
 清队列不能重建身份分配器：AttributeChanges的last_source、PendingImpacts的next_sequence、StatusSequence保持单调，
 ModifierSourceId在同一个World内仍不得复用。应用Time墙钟/固定步资源不重建，只有SimulationTick归零。

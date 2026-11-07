@@ -59,11 +59,6 @@ pub(super) struct ClientFeedback {
     pub expires: f32,
     pub marker: Option<(Vec2, bool, f32)>,
 }
-#[derive(Component)]
-pub(super) struct Patrol {
-    pub points: [Vec2; 2],
-    pub next: usize,
-}
 
 fn submit(world: &mut World, player: Entity, command: UnitCommand) {
     world.resource_mut::<CommandQueue>().submit(player, command);
@@ -71,7 +66,11 @@ fn submit(world: &mut World, player: Entity, command: UnitCommand) {
 
 fn set_paused(world: &mut World, paused: bool) {
     let player = world.resource::<ClientSession>().player();
-    let paused = paused || player.is_none();
+    let paused = paused
+        || player.is_none()
+        || !world
+            .resource::<crate::gameplay::MatchState>()
+            .can_advance();
     let was_paused = world.resource::<SimulationControl>().paused;
     world.resource_mut::<SimulationControl>().paused = paused;
     web::set_paused(paused);
@@ -433,6 +432,15 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
                         }
                     });
                     if let Some(target) = target {
+                        if matches!(target, AbilityTarget::Unit(_))
+                            && let Err(reason) = preview_cast(world, player, source, target)
+                        {
+                            let now = world.resource::<Time>().elapsed_secs();
+                            let mut feedback = world.resource_mut::<ClientFeedback>();
+                            feedback.message = rejection_message(&reason).into();
+                            feedback.expires = now + 2.0;
+                            return;
+                        }
                         submit_cast(world, player, source, target);
                     } else {
                         return;
@@ -531,26 +539,17 @@ pub(super) fn collect_input(
     }
 }
 
-pub(super) fn patrol_units(
-    control: Res<SimulationControl>,
-    mut queue: ResMut<CommandQueue>,
-    tick: Res<SimulationTick>,
-    mut last_tick: Local<Option<u64>>,
-    mut units: Query<(Entity, &UnitState, &UnitOrder, &mut Patrol)>,
-) {
-    if control.paused {
-        *last_tick = None;
-        return;
-    }
-    if *last_tick == Some(tick.0) {
-        return;
-    }
-    *last_tick = Some(tick.0);
-    for (entity, state, order, mut patrol) in &mut units {
-        if state.alive() && matches!(order, UnitOrder::Idle) {
-            queue.submit(entity, UnitCommand::MoveTo(patrol.points[patrol.next]));
-            patrol.next = 1 - patrol.next;
-        }
+fn rejection_message(reason: &Rejection) -> &'static str {
+    match reason {
+        Rejection::NoPath => "No route to that location",
+        Rejection::OutOfRange => "Outside cast range",
+        Rejection::OnCooldown => "Ability is cooling down",
+        Rejection::InsufficientMana => "Not enough energy",
+        Rejection::Dead => "Waiting to respawn",
+        Rejection::Busy => "Action already in progress",
+        Rejection::InvalidDamage => "Ability damage cannot be resolved",
+        Rejection::Controlled => "受控制限制，当前操作不可用",
+        _ => "Choose a valid target",
     }
 }
 
@@ -571,18 +570,7 @@ pub(super) fn receive_feedback(
             SimulationEvent::CommandRejected { unit, reason }
                 if Some(*unit) == session.player() =>
             {
-                feedback.message = match reason {
-                    Rejection::NoPath => "No route to that location",
-                    Rejection::OutOfRange => "Outside cast range",
-                    Rejection::OnCooldown => "Ability is cooling down",
-                    Rejection::InsufficientMana => "Not enough energy",
-                    Rejection::Dead => "Waiting to respawn",
-                    Rejection::Busy => "Action already in progress",
-                    Rejection::InvalidDamage => "Ability damage cannot be resolved",
-                    Rejection::Controlled => "受控制限制，当前操作不可用",
-                    _ => "Choose a valid target",
-                }
-                .into();
+                feedback.message = rejection_message(reason).into();
                 feedback.expires = time.elapsed_secs() + 2.0;
                 if let Some(point) = pointer.ground {
                     feedback.marker = Some((point, false, time.elapsed_secs()));

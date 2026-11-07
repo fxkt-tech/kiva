@@ -17,7 +17,8 @@ AttributeChanges::upsert(&mut self, unit: Entity, source: ModifierSourceId, modi
 AttributeChanges::remove(&mut self, unit: Entity, source: ModifierSourceId)
 ```
 
-`UnitStats` 含 `base_attributes: BaseAttributes`、静态生命/法力/碰撞参数和 `attack_windup_fraction`。
+`UnitStats` 含 `base_attributes: BaseAttributes`、静态生命/法力/碰撞参数、`attack_windup_fraction`，
+以及默认保持旧英雄行为的`class`/`attack_delivery`，详见[战斗基础](combat-foundation.md)。
 最终值通过七个 getter 读取：`attack_damage()`、`ability_power()`、`armor()`、
 `magic_resistance()`、`move_speed()`、`attack_range()`、`attack_speed()`。
 不能从客户端写入运行态，也不能将 `definition().base_attributes` 当作当前生效值。

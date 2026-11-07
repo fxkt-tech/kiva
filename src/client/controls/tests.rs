@@ -10,13 +10,17 @@ use bevy::{
 
 fn selecting_app() -> (App, Entity) {
     let mut app = App::new();
-    app.add_plugins((MinimalPlugins, SimulationPlugin))
-        .add_message::<WindowEvent>()
-        .init_resource::<PointerState>()
-        .init_resource::<GamePointer>()
-        .init_resource::<ClientFeedback>()
-        .init_resource::<PlayerController>()
-        .add_systems(Update, collect_input);
+    app.add_plugins((
+        MinimalPlugins,
+        SimulationPlugin,
+        crate::gameplay::GameplayPlugin,
+    ))
+    .add_message::<WindowEvent>()
+    .init_resource::<PointerState>()
+    .init_resource::<GamePointer>()
+    .init_resource::<ClientFeedback>()
+    .init_resource::<PlayerController>()
+    .add_systems(Update, collect_input);
     let window = app
         .world_mut()
         .spawn(Window {
@@ -162,12 +166,14 @@ fn enemy_skill_keeps_aim_on_empty_ground_or_friendly_body_without_submitting() {
 }
 
 fn control_caster(app: &mut App, ability: AbilityId) -> Entity {
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let position = app.world().get::<UnitPose>(player).unwrap().position() + Vec2::X;
     spawn_unit(
         app.world_mut(),
         UnitSpec {
             name: "Control test caster".into(),
             team: Team::Enemy,
-            position: Vec2::new(1.0, 6.0),
+            position,
             stats: UnitStats::default(),
             abilities: [Some(ability), None, None, None],
             respawn_delay: None,
@@ -215,12 +221,13 @@ fn root_keeps_nonmovement_aim_but_rejects_selecting_a_dash() {
     let (mut app, _) = app();
     let player = app.world().resource::<ClientSession>().player().unwrap();
     let caster = control_caster(&mut app, AbilityId(6));
+    let position = app.world().get::<UnitPose>(player).unwrap().position();
     submit(
         app.world_mut(),
         caster,
         UnitCommand::CastAbility {
             slot: 0,
-            target: AbilityTarget::Point(Vec2::new(0.0, 6.0)),
+            target: AbilityTarget::Point(position),
         },
     );
     for _ in 0..60 {
@@ -251,20 +258,19 @@ fn root_keeps_nonmovement_aim_but_rejects_selecting_a_dash() {
 #[test]
 fn selecting_discards_game_input_and_npc_commands_and_cannot_be_unpaused() {
     let (mut app, window) = selecting_app();
-    app.add_systems(Update, patrol_units.after(collect_input));
-    let positions: Vec<_> = app
-        .world_mut()
-        .query::<(Entity, &UnitPose)>()
-        .iter(app.world())
-        .map(|(id, pose)| (id, pose.position()))
-        .collect();
-    // Query order can change when spawn bundles gain components. The static
-    // sentinel must stay idle; the separate patrol is expected to resume.
-    let npc = app
-        .world_mut()
-        .query_filtered::<Entity, (With<Unit>, Without<Patrol>)>()
-        .single(app.world())
-        .unwrap();
+    let npc = spawn_unit(
+        app.world_mut(),
+        UnitSpec {
+            name: "Selecting command fixture".into(),
+            team: Team::Enemy,
+            position: Vec2::ZERO,
+            stats: UnitStats::default(),
+            abilities: [None; 4],
+            respawn_delay: None,
+        },
+    )
+    .unwrap();
+    let positions = [(npc, Vec2::ZERO)];
     app.world_mut()
         .resource_mut::<CommandQueue>()
         .submit(npc, UnitCommand::MoveTo(Vec2::new(5.0, 5.0)));
@@ -365,7 +371,7 @@ fn pause_and_resume_keep_the_same_player_loadout_and_committed_cooldown() {
             .query::<&CharacterIdentity>()
             .iter(app.world())
             .count(),
-        1
+        2
     );
 }
 
@@ -566,4 +572,57 @@ fn a_self_cast_item_submits_immediately_and_consumes_its_own_cooldown() {
         app.world().get::<AbilitySlots>(player).unwrap().cooldown(3),
         Some(0.0)
     );
+}
+
+#[test]
+fn terminal_round_cannot_resume_or_accept_new_gameplay_input() {
+    let (mut app, window) = app();
+    super::super::test_support::finish_match(&mut app, Team::Ally);
+    let tick = app.world().resource::<SimulationTick>().0;
+    set_paused(app.world_mut(), false);
+    press(&mut app, window, KeyCode::KeyQ);
+    app.world_mut().run_schedule(Update);
+    assert!(app.world().resource::<SimulationControl>().paused);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    for _ in 0..10 {
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    assert_eq!(app.world().resource::<SimulationTick>().0, tick);
+}
+
+#[test]
+fn enemy_skill_and_item_keep_aim_when_clicking_a_structure() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let base = app
+        .world()
+        .resource::<crate::gameplay::MatchState>()
+        .base(Team::Enemy)
+        .unwrap();
+    let instance = equip_equipment(app.world_mut(), player, 0, EquipmentId(7)).unwrap();
+    for aim in [Aim::Ability(0), Aim::Equipment { slot: 0, instance }] {
+        app.world_mut().resource_mut::<PlayerController>().aim = Some(aim);
+        *app.world_mut().resource_mut::<PointerState>() = PointerState {
+            hovered: Some(base),
+            ground: Some(Vec2::new(4.0, -12.0)),
+            ..default()
+        };
+        mouse_pressed(app.world_mut(), MouseButton::Left);
+        assert!(app.world().resource::<PlayerController>().aim.is_some());
+        assert!(!app.world().resource::<ClientFeedback>().message.is_empty());
+        app.world_mut().run_schedule(FixedUpdate);
+        assert_eq!(
+            app.world().get::<AbilitySlots>(player).unwrap().cooldown(0),
+            Some(0.0)
+        );
+        assert_eq!(
+            app.world()
+                .get::<EquipmentSlots>(player)
+                .unwrap()
+                .item(0)
+                .unwrap()
+                .cooldown(),
+            0.0
+        );
+    }
 }

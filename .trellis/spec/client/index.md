@@ -6,19 +6,21 @@
 
 1. 阅读 [browser.md](browser.md)。
 2. 找齐 Rust HUD 投影、JSON 字段、DOM 渲染及浏览器断言的使用者。
-3. 规则留在模拟层；内容装配位于 `src/client/content.rs`，输入和展示不得判断具体技能 ID。
+3. 通用规则留在模拟层，对局/内容装配位于 `src/gameplay/`；`client/content.rs`只准备客户端上下文，输入和展示不得判断具体技能 ID。
 4. 区分模拟固定步、显示帧、完整 HUD 快照三个更新频率。
 5. 修改属性面板时阅读 [attributes-hud.md](attributes-hud.md)。
 6. 修改选角/开局/玩家引用时阅读 [character-selection.md](character-selection.md)。
 7. 修改装备管理、主动输入或六格HUD时阅读 [equipment.md](equipment.md)。
 8. 修改鼠标位移、光标时序或点击位置时阅读 [pointer.md](pointer.md)。
-9. 修改角色模型、骨骼、动作或其生命周期时阅读 [character-animation.md](character-animation.md)。
+9. 修改地图、基地、波次、终局/重开、角色类型表现时阅读 [lane-match.md](lane-match.md)。
+10. 修改角色模型、骨骼、动作或其生命周期时阅读 [character-animation.md](character-animation.md)。
 
 ## Quality Check
 
 - `make check`，涉及 WASM 专属代码时增加 WASM Clippy。
 - 角色表现变更运行 `cargo test --locked --lib client::character`，保留scene击飞根测试，验证有窗口截图和技能/血条/重开回归。
 - 修改 JavaScript 后用 `node --check <文件>` 检查语法。
+- 启动加载/DOM顺序变更运行 `node --test scripts/startup-unit.test.cjs`，并在重建后串行执行 `scripts/browser-startup.cjs` 与最终smoke。
 - 修改返回选角/整场重开时执行 `scripts/browser-reselection.cjs`，覆盖不同角色、同角色及普通继续。
 - 装备变更执行 `scripts/browser-equipment.cjs`，并按影响回归属性、技能、捕获及重开入口。
 - 按变动运行 `scripts/browser-skills.cjs`、`browser-cursor.cjs`、`browser-healthbars.cjs` 或 `browser-smoke.cjs`。

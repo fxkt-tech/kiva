@@ -23,13 +23,15 @@
 
 ## 内容与回归
 
-演示技能和单位在 `src/client/content.rs` 装配，具体 ID 不进入相机、输入或伤害结算分支。
+技能/角色/装备目录由 `src/gameplay/content/` 装配，对局由 `gameplay::start_match` 创建；具体 ID 不进入相机、输入或伤害结算分支。
 模拟接口变动必须同步更新演示内容、Rust 测试内容及依赖伤害/位置数值的浏览器断言。
 新增 HUD 区域提供可读标签和稳定选择器，实际值来自 Rust 快照。
 
-角色采用`client/character`的刚性骨骼火柴人；待机、真实移动、普攻前后摇、技能及控制姿态均只读模拟。
+英雄采用`client/character`的刚性骨骼火柴人；小兵与基地使用显式角色的轻量模型，见[中路对局](lane-match.md)。待机、真实移动、普攻前后摇、技能及控制姿态均只读模拟。
 骨骼采样、时间、暂停和生命周期契约见[骨骼角色](character-animation.md)。
 姿态不能改动`UnitVisual`世界根、底座、拾取范围或血条锚点，也不能触发伤害或结束冷却。
+
+`scripts/browser-lane-support.cjs`按真实地图派生近家/中线位置，等待固定步分批兵线，并在目标离开画布时先用真实箭头平移；不可伪造offscreen点击。
 
 `scripts/browser-support.cjs` 已提供 Pointer Lock 下的 `movePointer`、`clickPointer`、`clickUi`、
 `clickWorld` 和临时 HTTP fixture。新增浏览器测试复用这些辅助函数。
@@ -87,7 +89,8 @@ Point Dash超距仍显示可释放颜色，预览线终点截到射程圈；角�
 | 情形 | 处理 |
 |---|---|
 | Enemy技能点击空地或友方 | 保持瞄准，不提交命令 |
-| 点击合法敌方候选 | 提交并退出瞄准；模拟仍复核生命/射程/资源 |
+| 点击敌方结构、超距或其他预检拒绝候选 | 通过公共`preview_cast`反馈拒绝并保留瞄准，不提交命令 |
+| 点击通过只读预检的敌方候选 | 提交并退出瞄准；模拟仍复核生命/射程/资源 |
 | 合法候选的提交后校验失败 | 提示拒绝，不缓存自动重试 |
 | 新控制让已选技能不可用 | 清理瞄准；后续仍由模拟强制校验 |
 | Hover/点击飞起的模型 | 按最后实际显示根拾取，不使用当前未插值地面UnitPose |
@@ -123,12 +126,15 @@ scene/controls无GPU场景验证可见根拾取、空地/友方瞄准、控制�
 不要延长生产控制时间或增加写World接口来迁就测试。演示数值变化时同步预定位和位移结果断言。
 
 即使预定位，慢软件GPU仍可能在可信pointerdown后的单帧内追赶15个固定步，耗尽剩余250ms控制。
-`browser-skills`在导航前安装测试专用的performance.now/原生RAF包装，默认保持真实时间；
-R专项开始时切到每个不同原生RAF时间戳推进1000/60ms，同批回调不重复推进，回调时间与performance.now一致。
-原生定时器、捕获和可信鼠标事件保留；从R到当前context结束（含后续E）不切回墙钟，避免大幅跳时。
+交互脚本通过`browser-lane-support.installFrameClock`在导航前安装测试专用的performance.now/原生RAF包装，
+每个不同原生RAF时间戳推进1000/60ms，同批回调不重复推进，回调时间与performance.now一致。
+原生定时器、捕获和可信鼠标事件保留；当前context中不切回墙钟，避免大幅跳时。
+长距离走位、状态尾段等待、暂停验证和完整对局的长时推进可临时改为每帧250ms，
+模拟仍执行全部固定步，不能跳过战斗或兵波；短控制和真实拾取窗口恢复1000/60ms。
 暂停断言等待测试时钟至少推进400ms且收到其后的新kiva-state，再比较tick/姿态/状态/坐标，
 不能只等待宿主400ms或在停止测试时钟后断言冻结。
-这是按显示帧归一的交互/姿态检查，不证明真实墙钟时长或长帧性能；真实时序仍由核心tick场景及原生时钟smoke覆盖。
+这是按显示帧归一的交互/姿态检查，不证明真实墙钟时长或长帧性能；规则时序由核心tick场景覆盖，
+原生显示频率与HUD节流证据由不安装帧时钟的`browser-healthbars`提供。
 帧时钟启用后，browser-skills使用120秒宿主等待预算；慢软件GPU可能在20秒内只推进少量虚拟tick，
 增加执行预算不能修改生产控制时长或跳过活动状态/位置断言。
 可用`KIVA_SKILLS_CASE=1000x720@2`单独执行指定尺寸，默认仍执行三种尺寸；未知case必须报错，不能零场景通过。
@@ -136,3 +142,22 @@ R专项开始时切到每个不同原生RAF时间戳推进1000/60ms，同批回�
 `status`等待短控制效果时直接返回满足条件的快照对象，并读取/释放该JSHandle。
 不要先waitForFunction、再另一次evaluate读取当前快照；第二次CDP往返可能已跨过状态结束，
 把不同时间的状态存在性和控制权限拼到同一个断言里。
+
+
+## 启动通知与DOM顺序
+
+`startup.js`必须以同步经典script安装在Trunk的Rust标记之前；该标记会原地生成含顶层await的module，
+加载失败可能早于defer HUD执行。早期适配只记录loading/failed/ready，不访问DOM；
+`kivaStartup.subscribe`即时回放当前状态，HUD就绪后据此显示loading失败、重试按钮或开局菜单。
+`__kivaStartup`仅为诊断投影，HUD不得自行重置为loading或另注册一套启动事件所有者。
+
+实际kiva-ready可以覆盖此前非致命的启动错误；一旦ready，不再接受迟到的error/unhandledrejection/
+TrunkApplicationError覆盖。应用加载失败后的重试仍使用页面reload，不能用定时延迟或自动重试隐藏错误。
+
+`node --test scripts/startup-unit.test.cjs`在没有DOM/GPU的环境验证三类早期错误、晚订阅、早ready与ready胜出。
+`browser-startup.cjs`以请求屏障阻塞hud.js，先实际abort WASM并确认failed已保留，再放行HUD检查alert/retry；
+成功reload后再派发旧Trunk错误确认不会覆盖ready。
+另一个正常WASM场景阻塞HUD直到实际kiva-ready和首个9项equipment_catalog均已发出，再放行并真实选角/捕获/按P，
+断言九件目录仍完整；只读初始目录由同步equipment模块缓存，startup仍只拥有三态，不保留整局快照。
+Node状态测试同时在没有DOM的VM加载两个同步head模块并约束其安装顺序。
+该浏览器检查与重建/最终smoke串行运行。

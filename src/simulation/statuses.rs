@@ -161,20 +161,27 @@ impl UnitStatuses {
 }
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct ControlState {
+    structure: bool,
     rooted: bool,
     stunned: bool,
     airborne: bool,
     forced: bool,
 }
 impl ControlState {
+    pub(super) fn for_class(class: UnitClass) -> Self {
+        Self {
+            structure: class == UnitClass::Structure,
+            ..default()
+        }
+    }
     pub fn can_move(&self) -> bool {
-        !self.rooted && self.can_attack()
+        !self.structure && !self.rooted && self.can_attack()
     }
     pub fn can_attack(&self) -> bool {
         !self.stunned && !self.airborne && !self.forced
     }
     pub fn can_cast(&self) -> bool {
-        self.can_attack()
+        !self.structure && self.can_attack()
     }
     pub fn can_dash(&self) -> bool {
         self.can_move()
@@ -197,7 +204,12 @@ pub(super) fn synchronize(world: &mut World, unit: Entity) {
         forced: world
             .get::<Movement>(unit)
             .is_some_and(|m| m.forced.is_some()),
-        ..default()
+        ..ControlState::for_class(
+            world
+                .get::<Unit>(unit)
+                .expect("unit statuses owner")
+                .class(),
+        )
     };
     let mut strongest = 0.0_f32;
     for status in statuses.iter() {
@@ -230,7 +242,11 @@ pub(super) fn apply(
     index: usize,
     spec: StatusSpec,
 ) {
-    if !target.is_current(world) {
+    if !target.is_current(world)
+        || world
+            .get::<Unit>(target.entity())
+            .is_none_or(|unit| unit.class() == UnitClass::Structure)
+    {
         return;
     }
     let existing = world.get::<UnitStatuses>(target.entity()).and_then(|s| {

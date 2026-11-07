@@ -174,10 +174,7 @@ fn release_attack(world: &mut World, entity: Entity, target: UnitLifeRef, interv
         return false;
     }
     let definition = ImpactDefinition {
-        delivery: Delivery::Projectile {
-            speed: 22.0,
-            radius: 0.12,
-        },
+        delivery: unit.stats.attack_delivery.delivery(),
         effects: vec![Effect::Damage(DamageSpec {
             kind: DamageType::Physical,
             base: 0.0,
@@ -204,13 +201,24 @@ fn release_attack(world: &mut World, entity: Entity, target: UnitLifeRef, interv
     true
 }
 
-/// Both command sources use this same validation before replacing an action.
-pub(super) fn begin_cast(
-    world: &mut World,
+/// Read-only cast preflight shared by autonomous decisions and actual starts.
+/// The returned target is resolved for the current pose only; submission and
+/// commit still validate again, and this function never spends or queues work.
+pub fn preview_cast(
+    world: &World,
     entity: Entity,
     source: CastSource,
     target: AbilityTarget,
-) -> Result<(), Rejection> {
+) -> Result<AbilityTarget, Rejection> {
+    let state = world
+        .get::<UnitState>(entity)
+        .ok_or(Rejection::InvalidUnit)?;
+    if !state.alive() {
+        return Err(Rejection::Dead);
+    }
+    if super::movement::is_dashing(world, entity) {
+        return Err(Rejection::Busy);
+    }
     let (ability, cooldown, _) = cast_binding(world, entity, source)?;
     if cooldown > 1e-5 {
         return Err(Rejection::OnCooldown);
@@ -244,10 +252,25 @@ pub(super) fn begin_cast(
     ) {
         return Err(Rejection::Busy);
     }
-    // Validate now but retain the original click; resolve from the current pose
-    // at commit, after windup and before spending any resources.
-    resolve_target(world, entity, definition, target)?;
-    let remaining = definition.windup;
+    resolve_target(world, entity, definition, target)
+}
+
+/// Both command sources use this same validation before replacing an action.
+pub(super) fn begin_cast(
+    world: &mut World,
+    entity: Entity,
+    source: CastSource,
+    target: AbilityTarget,
+) -> Result<(), Rejection> {
+    // Retain the original click; resolve from the current pose at commit,
+    // after windup and before spending any resources.
+    preview_cast(world, entity, source, target)?;
+    let (ability, _, _) = cast_binding(world, entity, source).expect("validated binding");
+    let remaining = world
+        .resource::<AbilityCatalog>()
+        .get(ability)
+        .expect("validated ability")
+        .windup;
     let target_life = if let AbilityTarget::Unit(target) = target {
         Some(
             world

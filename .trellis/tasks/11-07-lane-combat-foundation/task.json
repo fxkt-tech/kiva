@@ -1,0 +1,32 @@
+{
+  "id": "lane-combat-foundation",
+  "name": "lane-combat-foundation",
+  "title": "单中路战斗基础扩展",
+  "description": "普攻近战/弹丸投递、结构受效、受限恢复和AI共用只读查询。",
+  "status": "in_progress",
+  "dev_type": "fullstack",
+  "scope": "gameplay/simulation/client",
+  "package": null,
+  "priority": "P2",
+  "creator": "asuka",
+  "assignee": "asuka",
+  "createdAt": "2026-11-07",
+  "completedAt": null,
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "11-07-single-lane-match",
+  "relatedFiles": [],
+  "notes": "战斗基础实现、10项新增行为测试及整体223项测试/WASM检查通过；独立复核问题已修复，未提交。",
+  "meta": {
+    "planning_only": false,
+    "implementation_authorized": true,
+    "commit_push_authorized": true,
+    "quality_gate": "passed",
+    "ready_for_commit": true
+  }
+}

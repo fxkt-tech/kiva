@@ -4,11 +4,11 @@
 
 `src/client/equipment.rs`拥有管理适配和只读投影；`web/equipment.js`拥有装配界面及装备按钮DOM。
 父级`hud.js`继续拥有暂停/捕获/会话和共用tooltip。核心规则见[装备契约](../simulation/equipment.md)。
-首版为训练场直接装卸，不含商店或经济。
+当前为对局暂停时直接装卸，不含商店或经济。
 
 ## 2. 接口
 
-固定步前顺序为会话请求→装备管理→输入→演示AI；管理在暂停时仍消费。
+固定步前顺序为会话请求→装备管理→输入；模式AI在固定步运行。管理在暂停时仍消费。
 `EquipmentAdapter { owner, ack }`仅在玩家改变或请求产生结果时变更，不逐帧重置导致HUD限频失效。
 
 ```text
@@ -23,7 +23,8 @@ data-equipment-skill = JSON { slot:usize, instance_id:String }
 
 ## 3. 请求、投影与交互契约
 
-管理必须为当前Active玩家、模拟或DOM已暂停且实际未捕获；死亡仍可调整持久装备。
+管理必须为当前Active玩家、MatchState.can_advance()、模拟或DOM已暂停且实际未捕获；死亡仍可调整持久装备。
+Finished或波次构造错误时拒绝管理，结果界面隐藏装配面板。
 整批先解析结构，任何结构错误拒绝整批；结构有效后语义按FIFO逐条独立执行。
 只调用核心装卸入口，不直接写属性、冷却或动作。
 
@@ -43,7 +44,10 @@ equipment_aim: null | usize
   UI确认请求队列已消费后接受这个通用错误并解除pending，允许用户重试。
   队列可含多个意图但投影仅保存最终回执，当前UI逐个等待，不依赖中间回执。
 - 目录仅首次成功完整快照发送，此后为null；JS缓存只读目录（诊断`__kivaEquipmentCatalog`），
-  不在每80ms快照重复静态内容。运行时格/CD/权限来自Rust。
+  不在每80ms快照重复静态内容。`equipment.js`须在Trunk Rust标记前同步加载，模块级监听首个带目录的kiva-state，
+  仅缓存只读静态定义并移除该一次监听；DOM访问仍留在createEquipmentUi内部。
+  HUD工厂迟到时从该缓存初始化，工厂早创建时沿用render的首份目录更新；后续null不得清空目录。
+  不缓存整场运行态，不在startup.js混入目录，不增加World写接口或投影ack。运行时格/CD/权限来自Rust。
 - `AbilityDescription`提供无slot的共用说明；旧`AbilityMetadata/AbilityView`仍为扁平字段。
   装备active用实际格，原`abilities`仍是四技能，原`aim`仍只表示角色技能。
 - `1–6`或真实游戏光标点击`[data-equipment-slot]`，共用`select_cast/submit_cast`；
@@ -51,7 +55,7 @@ equipment_aim: null | usize
   自身目标立即提交，其余复用现有目标交互，Enemy点空地/友方保持瞄准。
 - `data-equipment-skill`独立于原`data-skill`，HUD点击在同一个鼠标事件内消费。
   无玩家、暂停、just_captured边界排空旧意图，不能恢复后重放或释放新实例。
-- P或暂停菜单打开装配界面并释放捕获；关闭/Esc回到暂停菜单，继续试炼才恢复捕获。
+- P或暂停菜单打开装配界面并释放捕获；关闭/Esc回到暂停菜单，继续对局才恢复捕获。
   面板按Rust首个空格装备；满格禁用、卸装带当前实例；pending期间阻止继续/重开与重复操作。
   Selecting隐藏面板、清本地pending/旧装备技能意图；普通恢复不清库存。
 - HUD装备使用独立选择器，不复用`.ability`或`data-slot`；保留144px七属性、无单位和原四技能。

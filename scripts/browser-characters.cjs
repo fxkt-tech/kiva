@@ -5,8 +5,8 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const {
   launchBrowser, openSelection, selectCharacter, resumeGame, clickWorld,
-  reportFailure, serveBuild,
-} = require("./browser-support.cjs");
+  reportFailure, serveBuild, installFrameClock, nearHome,
+} = require("./browser-lane-support.cjs");
 
 const fields = ["attack_damage", "ability_power", "armor", "magic_resistance", "move_speed", "attack_speed", "attack_range"];
 const arcanist = {
@@ -112,7 +112,8 @@ function assertUnstarted(snapshot) {
   assert.equal(snapshot.player_id, null);
   assert.equal(snapshot.paused, true);
   assert.deepEqual(snapshot.abilities, []);
-  assert(snapshot.units.every((unit) => unit.character_id === null), "previews must not create hidden character instances");
+  assert.equal(snapshot.units.length, 0, "selection must not create a hidden match roster");
+  assert.equal(snapshot.match.phase, "Waiting");
 }
 
 async function sendIntents(page, intents) {
@@ -228,7 +229,7 @@ async function exerciseSelection(page, url, config, failures) {
   assert.equal(idle.aim, null);
   assert.equal(idle.attack_move, false);
   assert.deepEqual(idle.units.map(({ id, position }) => ({ id, position })),
-    initial.units.map(({ id, position }) => ({ id, position })), "training actors cannot patrol before the match starts");
+    initial.units.map(({ id, position }) => ({ id, position })), "the match roster must not advance before launch");
   await inspectPreview(page, 1);
 
   // A single browser turn produces multiple normal card clicks, exercising
@@ -275,7 +276,7 @@ async function exerciseSelection(page, url, config, failures) {
   assert.equal(active.session.phase, "Active");
   assert.equal(active.session.selection, null);
   assert.equal(hero.character_id, 2);
-  assert.equal(active.units.filter((unit) => unit.character_id !== null).length, 1);
+  assert.equal(active.units.filter((unit) => unit.character_id !== null).length, 2);
   assert.equal(hero.name, preview.name);
   assert.equal(hero.health, preview.max_health);
   assert.equal(hero.mana, preview.max_mana);
@@ -293,8 +294,10 @@ async function exerciseSelection(page, url, config, failures) {
 
   await page.keyboard.press("q");
   await page.waitForFunction(() => window.__kivaState.aim === 0);
-  await clickWorld(page, [3, -2]);
-  await page.waitForFunction(() => window.__kivaState.units.some((unit) => unit.name === "训练哨兵" && unit.health === 301));
+  await clickWorld(page, nearHome(active, 5, -1));
+  await page.waitForFunction(() => window.__kivaState.abilities[0].cooldown > 0);
+  assert((await state(page)).units.find((unit) => unit.id === active.player_id).mana < preview.max_mana,
+    "the selected character's direction spell must commit its real resource cost");
   await page.keyboard.press("r");
   await page.waitForFunction(() => {
     const s = window.__kivaState;
@@ -310,7 +313,7 @@ async function exerciseSelection(page, url, config, failures) {
   await nextState(page);
   const repeated = await nextState(page);
   assert.equal(repeated.player_id, committed.player_id);
-  assert.equal(repeated.units.filter((unit) => unit.character_id !== null).length, 1);
+  assert.equal(repeated.units.filter((unit) => unit.character_id !== null).length, 2);
   assert.equal(repeated.units.find((unit) => unit.id === repeated.player_id).character_id, 2);
   assert(repeated.abilities[3].cooldown <= committed.abilities[3].cooldown + 0.001,
     "repeated launch must not restart an ability cooldown");
@@ -337,8 +340,9 @@ async function exerciseSelection(page, url, config, failures) {
 async function exerciseCaptureRetry(browser, url) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
+  await installFrameClock(page);
+  page.setDefaultTimeout(120000);
   try {
-    page.setDefaultTimeout(20000);
     await traceCapture(page);
     await page.addInitScript(() => {
       const request = HTMLCanvasElement.prototype.requestPointerLock;
@@ -375,7 +379,8 @@ async function exerciseLateCaptureCallback(browser, url) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   try {
-    page.setDefaultTimeout(20000);
+    page.setDefaultTimeout(120000);
+      await installFrameClock(page);
     await traceCapture(page);
     await page.addInitScript(() => {
       const request = HTMLCanvasElement.prototype.requestPointerLock;
@@ -452,7 +457,8 @@ async function main() {
     for (const [index, config] of cases.entries()) {
       const context = await browser.newContext(config);
       page = await context.newPage();
-      page.setDefaultTimeout(20000);
+      page.setDefaultTimeout(120000);
+      await installFrameClock(page);
       await traceCapture(page);
       page.on("pageerror", (error) => errors.push(error.message));
       await exerciseSelection(page, site.url, config, index === 0);

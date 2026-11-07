@@ -5,11 +5,17 @@ mod character;
 mod content;
 mod controls;
 mod equipment;
+mod match_view;
 mod pointer;
+mod presentation;
 mod scene;
 mod session;
+#[cfg(test)]
+mod test_support;
 mod ui;
+mod unit_appearance;
 mod web;
+mod world_scene;
 
 use crate::simulation::{SimulationControl, SimulationPlugin};
 use bevy::prelude::*;
@@ -25,7 +31,7 @@ pub(super) fn run() {
             })
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "Kiva · The proving grounds".into(),
+                    title: "Kiva · Single lane".into(),
                     resolution: (1440, 900).into(),
                     #[cfg(target_arch = "wasm32")]
                     canvas: Some("#game".into()),
@@ -38,11 +44,16 @@ pub(super) fn run() {
                 ..default()
             }),
     )
-    .add_plugins(SimulationPlugin)
+    .add_plugins((
+        SimulationPlugin,
+        crate::gameplay::GameplayPlugin,
+        crate::gameplay::AiPlugin,
+    ))
     .insert_resource(SimulationControl {
         paused: cfg!(target_arch = "wasm32"),
     })
     .insert_resource(ClearColor(Color::srgb_u8(12, 23, 25)))
+    .init_resource::<presentation::PresentationFrame>()
     .init_resource::<character::AnimationLibrary>()
     .init_resource::<camera::CameraRig>()
     .init_resource::<controls::PointerState>()
@@ -57,6 +68,7 @@ pub(super) fn run() {
             session::setup,
             scene::setup,
             character::setup,
+            unit_appearance::setup,
             camera::setup,
         )
             .chain(),
@@ -68,7 +80,6 @@ pub(super) fn run() {
             session::process_requests,
             equipment::process_requests,
             controls::collect_input,
-            controls::patrol_units,
         )
             .chain()
             .in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
@@ -76,12 +87,14 @@ pub(super) fn run() {
     .add_systems(
         Update,
         (
+            presentation::prepare,
             scene::attach_unit_visuals,
             scene::sync_units,
             scene::sync_ground_bases,
             character::record_events,
             character::sync_poses,
             character::sync_attachments,
+            unit_appearance::sync_simple_models,
             scene::sync_effects,
             controls::receive_feedback,
             controls::refresh_aim,
