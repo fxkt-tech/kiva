@@ -430,15 +430,17 @@ fn swept_projectile_cannot_tunnel_through_targets_or_walls() {
 
 #[test]
 fn dash_uses_the_same_swept_collision_as_walking() {
-    let mut a = Arena::new(vec![Obstacle {
-        center: Vec2::new(3.0, 0.0),
-        half_size: Vec2::new(0.1, 3.0),
-    }]);
-    let p = a.unit(Team::Ally, Vec2::ZERO);
-    a.cast(p, 2, AbilityTarget::Point(Vec2::new(7.0, 0.0)));
-    a.advance(1.0);
-    assert!(a.position(p).x > 2.0 && a.position(p).x < 2.45);
-    assert!(a.cooldown(p, 2) > 0.0);
+    for distance in [7.0, 100.0] {
+        let mut a = Arena::new(vec![Obstacle {
+            center: Vec2::new(3.0, 0.0),
+            half_size: Vec2::new(0.1, 3.0),
+        }]);
+        let p = a.unit(Team::Ally, Vec2::ZERO);
+        a.cast(p, 2, AbilityTarget::Point(Vec2::new(distance, 0.0)));
+        a.advance(1.0);
+        assert!(a.position(p).x > 2.0 && a.position(p).x < 2.45);
+        assert!(a.cooldown(p, 2) > 0.0);
+    }
 }
 
 #[test]
@@ -2033,4 +2035,87 @@ fn a_failed_attack_release_never_enters_backswing_or_commits_a_cooldown() {
             .all(|event| !matches!(event, SimulationEvent::AttackReleased { .. }))
     );
     assert_eq!(a.health(target), 600.0);
+}
+
+#[test]
+fn dash_resolves_near_and_distant_points_before_committing_costs_and_event_position() {
+    for (click, expected) in [
+        (Vec2::new(30.0, 40.0), Vec2::new(4.8, 6.4)),
+        (Vec2::new(3.0, 4.0), Vec2::new(3.0, 4.0)),
+        (Vec2::ZERO, Vec2::ZERO),
+    ] {
+        let mut a = Arena::new(vec![]);
+        let player = a.unit(Team::Ally, Vec2::ZERO);
+        a.cast(player, 2, AbilityTarget::Point(click));
+        a.step();
+        assert!(matches!(
+            a.app.world().get::<UnitAction>(player),
+            Some(UnitAction::Casting { .. })
+        ));
+        assert_eq!(a.mana(player), 300.0);
+        assert_eq!(a.cooldown(player, 2), 0.0);
+        a.advance(0.8);
+        assert!(
+            a.position(player).distance(expected) < 0.01,
+            "{click:?}: {:?}",
+            a.position(player)
+        );
+        assert!(a.mana(player) < 270.0);
+        assert!(a.cooldown(player, 2) > 0.0);
+        let events = a.events();
+        let commits: Vec<_> = events
+            .iter()
+            .filter_map(|event| match event {
+                SimulationEvent::AbilityCommitted {
+                    unit,
+                    ability,
+                    position,
+                } if *unit == player && *ability == DASH => Some(*position),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(commits.len(), 1);
+        assert!(commits[0].distance(expected) < 0.001);
+        assert!(
+            !events
+                .iter()
+                .any(|event| matches!(event, SimulationEvent::CommandRejected { .. }))
+        );
+    }
+}
+
+#[test]
+fn dash_accepts_finite_extreme_points_without_losing_direction_or_range() {
+    let origin = Vec2::new(1.0, -2.0);
+    for click in [Vec2::splat(f32::MAX), Vec2::new(-f32::MAX, f32::MAX)] {
+        let mut a = Arena::new(vec![]);
+        let player = a.unit(Team::Ally, origin);
+        a.cast(player, 2, AbilityTarget::Point(click));
+        a.advance(0.8);
+        let expected = origin.as_dvec2() + (click.as_dvec2() - origin.as_dvec2()).normalize() * 8.0;
+        assert!(a.position(player).is_finite());
+        assert!(a.position(player).distance(expected.as_vec2()) < 0.01);
+        assert!((a.position(player).distance(origin) - 8.0).abs() < 0.01);
+    }
+}
+
+#[test]
+fn invalid_dash_targets_preserve_the_existing_move_and_resources() {
+    for target in [
+        AbilityTarget::Point(Vec2::splat(f32::NAN)),
+        AbilityTarget::Point(Vec2::new(f32::INFINITY, 0.0)),
+        AbilityTarget::Direction(Vec2::X),
+    ] {
+        let mut a = Arena::new(vec![]);
+        let player = a.unit(Team::Ally, Vec2::ZERO);
+        a.command(player, UnitCommand::MoveTo(Vec2::new(0.0, 10.0)));
+        a.advance(0.1);
+        let before = a.position(player);
+        a.cast(player, 2, target);
+        a.step();
+        assert!(a.position(player).y > before.y);
+        assert_eq!(a.mana(player), 300.0);
+        assert_eq!(a.cooldown(player, 2), 0.0);
+        assert!(a.events().iter().any(|event| matches!(event, SimulationEvent::CommandRejected { unit, reason: Rejection::InvalidTarget } if *unit == player)));
+    }
 }

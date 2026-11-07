@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/simulation/abilities-and-statuses.md", "reason": "Shared target validation/commit and movement ownership."}
+{"file": ".trellis/spec/simulation/runtime.md", "reason": "Fixed stage and atomic costs."}
+{"file": ".trellis/spec/simulation/equipment.md", "reason": "Item and role share cast source path."}
+{"file": ".trellis/spec/client/browser.md", "reason": "Readonly targeting, real input and browser fixtures."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace target through command, commit, event and indicator."}
+{"file": "docs/architecture.md", "reason": "Maintain current ownership including uncommitted pointer changes."}

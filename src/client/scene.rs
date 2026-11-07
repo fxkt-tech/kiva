@@ -472,6 +472,7 @@ pub(super) fn sync_effects(
                     );
                     if let Some(point) = pointer.ground {
                         let valid = definition.targeting == Targeting::Direction
+                            || definition.execution.is_dash()
                             || origin.distance(point) <= definition.range;
                         let color = if valid {
                             Color::srgb_u8(153, 236, 214)

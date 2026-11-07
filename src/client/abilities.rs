@@ -156,7 +156,10 @@ fn describe_execution(
     execution: &AbilityExecution,
 ) -> (&'static str, String) {
     match execution {
-        AbilityExecution::Dash { .. } => ("dash", "冲刺至目标地点，障碍会截断位移".into()),
+        AbilityExecution::Dash { .. } => (
+            "dash",
+            "冲刺至目标地点；超出射程时沿该方向冲刺至最远距离，障碍会截断位移".into(),
+        ),
         AbilityExecution::Impact(impact) => {
             let (icon, delivery) = match impact.delivery {
                 Delivery::Direct => ("enemy", "直接命中".into()),

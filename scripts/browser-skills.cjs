@@ -81,6 +81,9 @@ async function exerciseSkills(page) {
   // Cap elapsed time per native display frame for this short animation only.
   // CDP/software-rendering delays must not consume its remaining control ticks.
   await page.evaluate(() => window.__testUseFrameClock());
+  // Virtual time advances per rendered frame. Give slow software GPUs a wall
+  // time budget without extending any production control duration/assertion.
+  page.setDefaultTimeout(120000);
   // Keep the latest rendered body projection independently of the 80ms HUD.
   assert.notEqual(await page.evaluate(() => window.__kivaState.selected), stunned.id,
     "the airborne click must produce a new selection");
@@ -201,13 +204,18 @@ async function exerciseSkills(page) {
   const landed = await page.evaluate((id) => window.__kivaState.units.find((unit) => unit.id === id), stunned.id);
   assert(Math.abs(Math.hypot(landed.position[0] - 3, landed.position[1] + 2) - 4) < 0.08);
 
+  const dash = await page.evaluate(() => {
+    const s = window.__kivaState;
+    return { origin: s.units.find((unit) => unit.id === s.player_id).position, range: s.abilities[2].range };
+  });
+  const destination = [dash.origin[0] - dash.range, dash.origin[1]];
   await clickUi(page, '[data-slot="2"]');
-  await clickWorld(page, [-3, 6]);
-  await page.waitForFunction(() => {
+  await clickWorld(page, [dash.origin[0] - dash.range * 2, dash.origin[1]]);
+  await page.waitForFunction((destination) => {
     const s = window.__kivaState;
     const hero = s.units.find((unit) => unit.id === s.player_id);
-    return Math.hypot(hero.position[0] + 3, hero.position[1] - 6) < 0.1 && s.abilities[2].cooldown > 0;
-  });
+    return Math.hypot(hero.position[0] - destination[0], hero.position[1] - destination[1]) < 0.1 && s.abilities[2].cooldown > 0;
+  }, destination);
 }
 
 async function main() {
@@ -221,7 +229,11 @@ async function main() {
       { viewport: { width: 800, height: 600 }, deviceScaleFactor: 1 },
       { viewport: { width: 1000, height: 720 }, deviceScaleFactor: 2 },
     ];
-    for (const config of cases) {
+    const requestedCase = process.env.KIVA_SKILLS_CASE;
+    const selected = cases.filter(({ viewport, deviceScaleFactor }) => !requestedCase
+      || `${viewport.width}x${viewport.height}@${deviceScaleFactor}` === requestedCase);
+    assert(selected.length, `Unknown KIVA_SKILLS_CASE: ${requestedCase}`);
+    for (const config of selected) {
       const context = await browser.newContext(config);
       page = await context.newPage();
       page.setDefaultTimeout(20000);

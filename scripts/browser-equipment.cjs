@@ -181,11 +181,13 @@ async function exercise(page, url, deep) {
     await unequip(page, 1);
     await equip(page, 9);
     await continueTrial(page);
-    const beforeDash = hero(await state(page)).position;
-    const destination = [beforeDash[0] - 1.5, beforeDash[1]];
+    const dashSnapshot = await state(page);
+    const beforeDash = hero(dashSnapshot).position;
+    const dashRange = dashSnapshot.equipment.slots[0].item.active.range;
+    const destination = [beforeDash[0] - dashRange, beforeDash[1]];
     await clickUi(page, '[data-equipment-slot="0"]');
     await page.waitForFunction(() => window.__kivaState.equipment_aim === 0);
-    await clickWorld(page, destination);
+    await clickWorld(page, [beforeDash[0] - dashRange * 2, beforeDash[1]]);
     const dashed = await observed(page, (destination) => {
       const snapshot = window.__kivaState;
       const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);

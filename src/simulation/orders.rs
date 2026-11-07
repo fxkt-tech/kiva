@@ -18,12 +18,12 @@ pub(super) fn valid_enemy_life(world: &World, source: Entity, target: UnitLifeRe
     target.is_current(world) && valid_enemy(world, source, target.entity())
 }
 
-pub(super) fn validate_target(
+pub(super) fn resolve_target(
     world: &World,
     unit: Entity,
     definition: &AbilityDefinition,
     target: AbilityTarget,
-) -> Result<(), Rejection> {
+) -> Result<AbilityTarget, Rejection> {
     let origin = world
         .get::<UnitPose>(unit)
         .ok_or(Rejection::InvalidUnit)?
@@ -32,22 +32,36 @@ pub(super) fn validate_target(
         (Targeting::Direction, AbilityTarget::Direction(direction))
             if direction.is_finite() && direction.length_squared() > 1e-6 =>
         {
-            return Ok(());
+            return Ok(target);
         }
-        (Targeting::Point, AbilityTarget::Point(point)) if point.is_finite() => point,
+        (Targeting::Point, AbilityTarget::Point(point)) if point.is_finite() => {
+            if definition.execution.is_dash() {
+                // Preserve direction for finite clicks whose f32 length overflows.
+                let offset = point.as_dvec2() - origin.as_dvec2();
+                let distance = offset.length();
+                let range = f64::from(definition.range);
+                let destination = if distance > range {
+                    (origin.as_dvec2() + offset * (range / distance)).as_vec2()
+                } else {
+                    point
+                };
+                return Ok(AbilityTarget::Point(destination));
+            }
+            point
+        }
         (Targeting::Enemy, AbilityTarget::Unit(target)) if valid_enemy(world, unit, target) => {
             world
                 .get::<UnitPose>(target)
                 .ok_or(Rejection::InvalidTarget)?
                 .position
         }
-        (Targeting::SelfCast, AbilityTarget::SelfCast) => return Ok(()),
+        (Targeting::SelfCast, AbilityTarget::SelfCast) => return Ok(target),
         _ => return Err(Rejection::InvalidTarget),
     };
     if origin.distance(point) > definition.range + 0.001 {
         return Err(Rejection::OutOfRange);
     }
-    Ok(())
+    Ok(target)
 }
 
 fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Result<(), Rejection> {

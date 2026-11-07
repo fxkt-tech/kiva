@@ -1109,3 +1109,31 @@ fn death_preserves_equipment_and_ticking_cooldowns_while_pause_and_trial_reset_h
     a.step(1);
     assert_eq!(a.slots(fresh).item(0).unwrap().cooldown(), 0.0);
 }
+
+#[test]
+fn equipment_dash_uses_the_same_maximum_range_and_committed_endpoint() {
+    let mut a = Arena::new();
+    let actor = a.actor();
+    a.equip(actor, 0, LEAF);
+    a.use_item(actor, 0, AbilityTarget::Point(Vec2::new(100.0, 0.0)));
+    a.step(8);
+    let events = a.drain();
+    assert!(events.iter().any(|event| matches!(event,
+        SimulationEvent::AbilityCommitted { unit, ability, position }
+            if *unit == actor && *ability == DASH && position.distance(Vec2::new(15.0, 0.0)) < 0.001)));
+    assert!(a.slots(actor).item(0).unwrap().cooldown() > 0.0);
+    assert_eq!(
+        a.world().get::<AbilitySlots>(actor).unwrap().cooldown(2),
+        Some(0.0)
+    );
+    assert!(a.state(actor).mana() < 295.0);
+    a.step(210);
+    assert!(
+        a.world()
+            .get::<UnitPose>(actor)
+            .unwrap()
+            .position()
+            .distance(Vec2::new(15.0, 0.0))
+            < 0.01
+    );
+}

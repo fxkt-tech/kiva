@@ -1,7 +1,7 @@
 //! Action clocks, interruptions and the single atomic skill commit point.
 use super::{
     effects::{self, ImpactTarget},
-    orders::{valid_enemy_life, validate_target},
+    orders::{resolve_target, valid_enemy_life},
     *,
 };
 use bevy::prelude::*;
@@ -244,7 +244,9 @@ pub(super) fn begin_cast(
     ) {
         return Err(Rejection::Busy);
     }
-    validate_target(world, entity, definition, target)?;
+    // Validate now but retain the original click; resolve from the current pose
+    // at commit, after windup and before spending any resources.
+    resolve_target(world, entity, definition, target)?;
     let remaining = definition.windup;
     let target_life = if let AbilityTarget::Unit(target) = target {
         Some(
@@ -366,7 +368,7 @@ fn commit_cast(
         .get(current)
         .expect("resolved ability")
         .clone();
-    let validation = validate_target(world, entity, &definition, target).and_then(|()| {
+    let validation = resolve_target(world, entity, &definition, target).and_then(|resolved| {
         if cooldown > 1e-5 {
             return Err(Rejection::OnCooldown);
         }
@@ -382,16 +384,13 @@ fn commit_cast(
         if world.get::<UnitState>(entity).expect("unit state").mana < definition.mana_cost {
             Err(Rejection::InsufficientMana)
         } else {
-            Ok(())
+            Ok(resolved)
         }
     });
-    if let Err(reason) = validation {
-        world.write_message(SimulationEvent::CommandRejected {
-            unit: entity,
-            reason,
-        });
-        return UnitAction::Ready;
-    }
+    let target = match validation {
+        Ok(target) => target,
+        Err(reason) => return reject_cast(world, entity, reason),
+    };
     let impact = match &definition.execution {
         AbilityExecution::Impact(impact) | AbilityExecution::Channel { pulse: impact, .. } => {
             let Some(snapshot) = effects::snapshot(world, entity, origin, impact) else {

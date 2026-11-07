@@ -17,6 +17,7 @@ Effect::ApplyStatus(StatusSpec)
 Effect::Displace(DisplacementSpec)
 StatusDuration::from_ticks(u32) -> Option<StatusDuration>
 StatusDuration::from_millis(u64) -> Option<StatusDuration>
+orders::resolve_target(&World, unit, &AbilityDefinition, AbilityTarget) -> Result<AbilityTarget, Rejection> // 内部解析
 ```
 
 `effects.rs`保存不可变快照、投递和排序，不直接扣血/写位置/改最终属性。
@@ -35,6 +36,11 @@ StatusDuration::from_millis(u64) -> Option<StatusDuration>
 
 - Enemy支持Direct、锁定生命的Projectile、冻结地点的Area；Direction支持首敌Projectile。
   Point支持Area或Dash；SelfCast支持敌方Area或Area脉冲Channel。
+- Point Dash范围内到点击点，超距沿施法位置到原点击点的方向截到最大射程。
+  begin仅验证并保存原目标，commit从当前UnitPose解析实际终点，再统一提交消耗/CD、AbilityCommitted.position和运动。
+  方向/距离使用f64中间值，有限极大点击不能因f32求长溢出而丢失方向。
+  角色/装备共用resolve_target；碰墙/地图边界仍由movement的sweep处理，不在客户端缩短命令目标。
+  其它Point/Enemy执行保留严格射程校验；规则依据既有execution.is_dash()，不匹配技能ID。
 - 效果列表非空且有序，整组快照验证先于消耗/冷却。命中后逐项执行，死亡后跳过目标其余效果。
 - 直接命中也入统一末段队列；actor和命中包显式稳定排序。同一步双方已经提交的技能均保留。
 - 旧状态在移动后、新命中前递减。末段新应用N tick，准确限制后续N个动作步；到期后不补跑动作。
@@ -61,7 +67,9 @@ Direct/Projectile的中心是施法者提交位置，Area的中心是冻结的�
 | Slow强度非有限、≤0或>1 | 注册拒绝 |
 | 位移距离/速度非有限或≤0 | 注册拒绝 |
 | 速度虽为有限正数，但一步不能产生可表示位置变化 | 移动阶段结束运动并释放其锁；不能永久受控 |
-| 前摇结束时权限/生命/射程/资源失效 | 拒绝提交，不部分扣费/启冷却 |
+| 有限超距Point Dash | 解析为最大距离终点，正常校验并提交 |
+| 非Dash地点/单位目标超距 | OutOfRange，不部分扣费/启冷却 |
+| 非有限/错误类型目标，或前摇结束权限/生命/资源失效 | 拒绝提交，不部分扣费/启冷却 |
 | 合法定义但伤害快照溢出 | InvalidDamage，不部分扣费/启冷却 |
 | 受限新移动/攻击/施法 | Controlled，原有效意图/动作保留 |
 | 控制中Stop | 清意图；不清强制运动或已提交效果 |
@@ -71,6 +79,7 @@ Direct/Projectile的中心是施法者提交位置，Area的中心是冻结的�
 
 - 正常：Area按`[Damage, Root, Slow]`执行；当步HUD包含Slow和同步减速后的最终移速。
 - 正常：基础移速10、+20%加速、30%Slow得到8.4；短50%Slow结束后回8.4，最后回12。
+- 正常：原点、射程8的Dash点击(30,40)，提交终点(4.8,6.4)；点击(3,4)则到(3,4)，墙会提前截断。
 - 默认：无状态、无强制运动时权限允许；不改变既有属性/普攻时序。
 - 错误：每个Slow分别写负加算百分比，会让30%+50%变80%，且和加速混算错误。
 - 错误：下一步命令前删除1tick状态，导致它从未限制过一次动作。
@@ -81,6 +90,8 @@ Direct/Projectile的中心是施法者提交位置，Area的中心是冻结的�
 既有`tests/simulation.rs`验证旧技能、普攻时序、快照和引导分数脉冲；
 `tests/status_effects.rs`验证精确状态时钟、权限/中断/Stop、来源叠加、减速、位移几何和生命身份。
 变更命中排序必须覆盖同tick互相施法；变更死亡必须覆盖有序致死前/后效果和来源移除。
+Dash射程变更由simulation/equipment公开场景覆盖近远/斜向/极值、资源和事件终点、墙与非法目标保留；
+browser-skills和browser-equipment使用真实鼠标点两倍射程，断言最大端点及对应来源CD。
 执行`make check`；涉及客户端时按客户端规范运行WASM及浏览器验证。
 
 ## 7. 错误与正确写法
