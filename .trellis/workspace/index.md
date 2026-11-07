@@ -27,7 +27,7 @@ workspace/
 
 | Developer | Last Active | Sessions | Active File |
 |-----------|-------------|----------|-------------|
-| (none yet) | - | - | - |
+| asuka | 2026-11-07 | 3 | [journal-1.md](asuka/journal-1.md) |
 
 ---
 
