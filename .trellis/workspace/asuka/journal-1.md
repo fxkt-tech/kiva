@@ -215,3 +215,37 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 7: 鼠标响应与冲刺最大范围修复
+<!-- trellis-session: v=2 fp=da8bd08e9328c28b -->
+
+**Date**: 2026-11-07
+**Task**: 鼠标响应与冲刺最大范围修复
+**Branch**: `main`
+
+### Summary
+
+统一 Web 指针坐标与事件即时显示，并让地点冲刺超距时按最大射程释放；两项修复已验收并归档。
+
+### Main Changes
+
+- Web 单独持有实时 CSS 指针，校准普通鼠标与捕获位移比例，事件内显示并保留点击时坐标；Rust 消费输入帧快照。
+- 角色与装备地点冲刺共用模拟目标解析，提交时按当前位置截取最大射程，预览与说明同步更新。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a12ecb5` | fix: normalize web pointer speed and reduce cursor latency |
+| `008f546` | fix: clamp point dashes to maximum cast range |
+
+### Testing
+
+- [OK] 最终 make check：162 项 Rust 测试通过；WASM Clippy、Trunk 构建、JS 语法与任务清单检查通过。
+- [OK] 指针 Node 回归 12 项通过；鼠标修复阶段 10 个浏览器套件通过，含 DPR 1/1.5/2 与物理单位夹具。Windows 11/Edge 硬件环境尚未直接实测。
+- [OK] 冲刺技能与装备三种窗口/DPR 场景及 headed smoke 通过；DPR2 首次旧 R 预置超时已记录，增加宿主等待预算后完整通过，生产时钟与断言未放宽。
+
+### Status
+
+[OK] **Completed**

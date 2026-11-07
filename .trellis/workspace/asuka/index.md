@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
+- **Total Sessions**: 7
 - **Last Active**: 2026-11-07
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~217 | Active |
+| `journal-1.md` | ~251 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 7 | 2026-11-07 | 鼠标响应与冲刺最大范围修复 | `a12ecb5`, `008f546` | `main` |
 | 6 | 2026-11-07 | 六格装备、被动与统一主动施法 | `e987c23` | `main` |
 | 5 | 2026-11-07 | 角色选择与整场试炼重开 | `3b844ef` | `main` |
 | 4 | 2026-11-07 | 技能组合与状态效果系统 | `ef5fac6` | `main` |
