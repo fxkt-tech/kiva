@@ -143,3 +143,41 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 5: 角色选择与整场试炼重开
+<!-- trellis-session: v=2 fp=083368d22581d283 -->
+
+**Date**: 2026-11-07
+**Task**: 角色选择与整场试炼重开
+**Branch**: `main`
+
+### Summary
+
+实现角色定义、默认/显式装配、开局预览和重新选角，保持模拟与客户端职责清晰；完整验收通过，按用户授权提交并归档。
+
+### Main Changes
+
+- 角色定义、本局装配、战斗运行态和客户端会话分别拥有状态；统一角色创建与初始属性投影。
+- 暂停菜单重新选角重开整场试炼，清运行态并保留静态内容和身份分配器，隔离旧启动/返回请求。
+- 同步架构、Trellis规范、角色TODO和验收记录；用户自行管理开发服务。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3b844ef` | feat: add character selection and trial restart |
+
+### Testing
+
+- [OK] make check通过138项Rust测试，保留原130项；原生Clippy及WASM check通过。
+- [OK] WASM Clippy -D warnings、最终Trunk构建、JavaScript语法和文档路径检查通过。
+- [OK] 角色及重新选择三尺寸/DPR2、旧回调/失焦恢复、cursor通过；隔离临时Xvfb下完整smoke及暂停菜单截图通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 按用户授权将功能、归档和本次日志一起推送到origin/main。
