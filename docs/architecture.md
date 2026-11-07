@@ -11,7 +11,8 @@ src/simulation/mod.rs         SimulationPlugin、spawn_unit、公开接口
 src/simulation/model.rs       单位、指令、动作、只读视图、模拟事件
 src/simulation/attributes.rs  基础/最终属性、来源修正、变更队列、普攻时序推导
 src/simulation/damage.rs      伤害表达式、提交快照、类型与抗性计算
-src/simulation/abilities.rs   目标、执行、投递和有序效果的定义与注册校验
+src/simulation/abilities.rs   目标、执行、投递、有序效果与四槽装配定义
+src/simulation/characters.rs  角色目录、身份、默认/显式装配解析与统一角色创建
 src/simulation/effects.rs     不可变命中快照、投递创建与稳定排序结算
 src/simulation/statuses.rs    状态实例、计时、叠加、控制权限与减速归并
 src/simulation/orders.rs      指令校验、持续指令、目标获取与追击
@@ -19,7 +20,8 @@ src/simulation/navigation.rs  A*、路径平滑、静态障碍与扫掠检测
 src/simulation/movement.rs    移动、冲刺、位置重置
 src/simulation/actions.rs     前摇、提交、收招、引导、冷却
 src/simulation/combat.rs      弹丸、延迟范围效果、伤害、死亡、重生
-src/client/content.rs         地图、示例单位、技能定义及装配
+src/client/content.rs         地图、技能/角色目录、训练单位与演示上下文
+src/client/session.rs         选角/开局阶段、选择校验与唯一活动玩家引用
 src/client/abilities.rs       输入与HUD共用的只读技能可用性和描述
 src/client/controls.rs        玩家输入、演示 AI、指令反馈
 src/client/pointer.rs         有边界的游戏内光标与捕获会话
@@ -31,6 +33,7 @@ src/client/web.rs             浏览器交互适配
 web/hud.js                    DOM 展示、暂停菜单、技能按钮
 tests/simulation.rs           既有属性、攻击、技能生命周期无窗口回归
 tests/status_effects.rs       多效果、控制组合、生命身份和强制运动行为测试
+tests/characters.rs           角色构造、装配、实例独立和重生保持测试
 ```
 
 模块内部默认私有，通过 `simulation/mod.rs` 显式导出外部需要的接口。
@@ -66,14 +69,15 @@ tests/status_effects.rs       多效果、控制组合、生命身份和强制�
 新状态不会在应用当步递减，到期后也不补跑动作。强制位移从下一个移动阶段开始。
 此顺序是规则的一部分，调整时应补充相关行为测试。
 
-客户端在 `RunFixedMainLoopSystems::BeforeFixedMainLoop` 采集输入并放入队列。
+客户端在 `RunFixedMainLoopSystems::BeforeFixedMainLoop` 依次处理选角/开局请求、采集输入、驱动演示AI。
+会话请求在模拟暂停时仍会消费；Web必须已绑定Active玩家且捕获/聚焦成功才允许固定步。
 一次操作沿 Bevy 的统一 `WindowEvent` 消息流消费，保留键盘、鼠标和光标事件的先后顺序，
 避免同一帧内“停止 → 选择技能”被聚合按键状态颠倒；持续相机操作读取按住状态。
 浏览器通过 Pointer Lock 捕获原生鼠标，`GamePointer` 将相对移动量按窗口缩放比例转换为
 逻辑像素，并限制在画布范围内。滚屏、射线拾取、HUD 点击和可见光标共用这一个位置，
 该位置使用 CSS 像素；相机 viewport 的逻辑尺寸与画布显示尺寸不同时，Web 适配层负责双向换算，
 避免高 DPI 下的显示与点击错位。
-锁定期间忽略系统固定不动的绝对坐标。进入或恢复捕获时居中，并丢弃前一会话的移动事件。
+锁定期间忽略系统固定不动的绝对坐标。进入或恢复捕获时居中，并丢弃前一会话的窗口事件及DOM技能请求。
 HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件内消费，保持输入顺序。
 即使这一帧没有固定步，指令仍保留；多个固定步不会重复执行一次按键。
 相机和表现逐帧更新，人物根使用上一模拟位置与当前位置插值，并加上击飞表现高度。
@@ -272,6 +276,54 @@ Enemy技能点击空地/友军保持瞄准；合法候选提交后退出，后�
 默认装配Q点选眩晕、W范围伤害+禁锢/减速、E自主Dash、R方向击退/击飞。
 原飞矢和引导仍在内容中注册，未引入具体技能ID规则分支。
 
+## 角色、实际装配与开局
+
+`CharacterCatalog`拥有不可变的角色名称/描述、UnitStats和默认技能ID列表，先注册技能再注册角色。
+`CharacterDefinition::initial_attributes()`与单位构造复用属性模块的纯计算，包含攻速归一化；
+预览不创建单位、不分配修正来源，也不在JS复制属性公式。
+
+`spawn_character(world, CharacterSpawnSpec)`解析角色及完整装配后复用`spawn_unit`，成功时附加
+只读`CharacterIdentity`。角色身份只存角色ID；实际HP、属性、状态和技能仍由原组件唯一拥有。
+未知角色/技能或非法出生点等正常失败不产生半成品或玩家绑定。NPC仍可直接spawn_unit且没有角色身份。
+
+`LoadoutSelection::CharacterDefault`复制默认四槽；`Explicit(AbilityLoadout)`完整替换，None就是空槽。
+重复技能ID保持合法、冷却按槽独立。`AbilitySlots`是实际装配唯一事实，不回写模板；同角色多个实例彼此独立。
+死亡重生保留角色ID、实例stats和实际技能ID，沿用原生命代次/清理/冷却规则，不重新套默认技能。
+未来随机模式可先生成Explicit配置再创建，本期没有局内换技能或随机生成器。
+
+`client/session.rs`拥有Selecting/Active两个阶段和唯一活动玩家Entity；`PlayerController`只保存选中目标和瞄准。
+Web启动准备目录/地图/NPC并暂停，默认预选旅者，实际玩家尚不存在。只读HUD此时player_id为null、
+运行时abilities为空，选角使用独立预览；camera/scene/controls都按合法无玩家阶段处理。
+
+角色卡片提交带request_id的SelectCharacter；每次接受都推进Rust选择修订并回显回执。
+失败选择保留旧预览但撤销开始资格；旧Launch不能通过。点击进入冻结最新已确认角色/修订，
+沿用按钮点击内的Pointer Lock请求；同一成功捕获回调先发送Launch再改变DOM暂停展示。
+Rust固定步前复核阶段、开始资格、角色/版本、实际捕获和焦点，唯一创建并绑定玩家。
+捕获或创建失败保留有效选择供重试；结构错误批次整体拒绝，结构有效的语义意图按FIFO独立处理。
+
+浏览器实际锁定状态可能早于pointerlockchange事件。每次申请先清除旧事件确认，事件回调再确认捕获；
+会话不释放尚在等待通知的锁，控制层也不提前启用输入或消耗光标居中边界。
+只有事件已确认、请求处理后仍无有效玩家的捕获才作为无效开局释放。
+GamePointer在暂停时清除捕获边界，恢复确认后重新居中并丢弃旧窗口/技能请求。
+
+Active恢复仅重新捕获，不发初次Launch，不创建新玩家或重置NPC。死亡仍为Active，局内选角/重复启动不会改绑定。
+Selecting始终冻结模拟，排空菜单阶段游戏输入和命令，不向假Entity发Stop；Active暂停保留原一次Stop语义。
+`SimulationPlugin`默认暂停值不改变；Native通过同一创建路径自动选择旅者，不等待Web事件。
+
+暂停菜单另有“重新选择角色”，明确结束本局并重开整场试炼。ReturnToSelection携带当前玩家Entity字符串，
+会话核对身份和已暂停/实际释放捕获后，调用模拟层`reset_simulation`，再复用内容函数只重建训练NPC。
+该入口清除模拟实体及子层、技能载体、待执行命令/属性/命中包/消息，暂停并将SimulationTick归零；
+地图、目录、静态场景和身份分配器继续保留。属性来源与效果/状态序号在同World内仍单调分配。
+controls在无玩家边界清反馈和输入，camera复位原CameraRig，patrol清旧tick缓存；不重建应用墙钟或相机实体。
+
+Active保留开局选择版本，返回时递增并预选上局角色；旧版本Launch不能在下一局重新合法。
+成功返回即结束当前请求批次，剩余旧局意图丢弃；旧玩家返回不能重置新玩家。DOM等Rust投影再进入选角，
+清本地选择关联/捕获尝试，下次成功开局创建新玩家；普通“继续试炼”仍恢复同一Entity。
+
+默认旅者保留原配置；秘术师使用另一组属性及已注册飞矢/范围/冲刺/引导。角色变化由内容和实际装配驱动，
+没有在输入/战斗模块增加角色ID条件。Web主入口支持两角色预览、键盘选择、捕获失败重试及响应式布局。
+完整的核心接口与选角协议分别见Trellis模拟/客户端规范。
+
 ## 验证与维护
 
 `make check` 执行格式检查、Clippy、完整 Rust 测试与 WASM 类型检查，CI 执行同一入口。
@@ -282,7 +334,8 @@ Enemy技能点击空地/友军保持瞄准；合法候选提交后退出，后�
 浏览器测试验证真实 WebGPU 渲染、鼠标拾取、UI 隔离、镜头、技能和暂停。
 Linux 的截图验收使用带窗口的 Chromium（可运行在 Xvfb 中），避免无头 WebGPU 画布未进入截图合成的情况。
 诊断快照 `window.__kivaState` 是只读投影，不提供修改游戏状态的测试后门。
-浏览器 DOM 只能请求暂停和技能槽位选择；技能是否合法由模拟验证。
+浏览器DOM只能提交暂停、槽位选择和封闭的选角/开局意图；不能传属性或实际技能数组。
+技能是否合法由模拟验证，角色选择与开局由客户端会话结合核心创建入口校验。
 Web 端使用整个文档的焦点判断是否离开游戏，而非画布焦点。
 技能按钮等 HUD 控件获取焦点不暂停模拟；切出页面仍暂停并清理待执行输入。
 进入浏览器游戏需要成功捕获鼠标；Esc、切出窗口或捕获丢失会释放鼠标并暂停。

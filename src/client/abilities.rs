@@ -3,10 +3,9 @@ use crate::simulation::*;
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub(super) struct AbilityView {
+pub(super) struct AbilityMetadata {
     slot: usize,
     name: String,
-    cooldown: f32,
     total_cooldown: f32,
     cost: f32,
     range: f32,
@@ -14,10 +13,39 @@ pub(super) struct AbilityView {
     target_hint: &'static str,
     icon: &'static str,
     description: String,
+}
+
+impl AbilityMetadata {
+    pub fn new(slot: usize, definition: &AbilityDefinition) -> Self {
+        let (targeting, target_hint) = match definition.targeting {
+            Targeting::Enemy => ("Enemy", "点选敌方单位"),
+            Targeting::Direction => ("Direction", "选择释放方向"),
+            Targeting::Point => ("Point", "选择目标地点"),
+            Targeting::SelfCast => ("SelfCast", "以自身为中心立即释放"),
+        };
+        let (icon, description) = describe_execution(definition.targeting, &definition.execution);
+        Self {
+            slot,
+            name: definition.name.clone(),
+            total_cooldown: definition.cooldown,
+            cost: definition.mana_cost,
+            range: definition.range,
+            targeting,
+            target_hint,
+            icon,
+            description,
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub(super) struct AbilityView {
+    #[serde(flatten)]
+    metadata: AbilityMetadata,
+    cooldown: f32,
     available: bool,
     unavailable_reason: Option<&'static str>,
 }
-
 impl AbilityView {
     pub fn new(
         slot: usize,
@@ -26,25 +54,10 @@ impl AbilityView {
         control: &ControlState,
         slots: &AbilitySlots,
     ) -> Self {
-        let (targeting, target_hint) = match definition.targeting {
-            Targeting::Enemy => ("Enemy", "点选敌方单位"),
-            Targeting::Direction => ("Direction", "选择释放方向"),
-            Targeting::Point => ("Point", "选择目标地点"),
-            Targeting::SelfCast => ("SelfCast", "以自身为中心立即释放"),
-        };
-        let (icon, description) = describe_execution(definition.targeting, &definition.execution);
         let unavailable_reason = unavailable_reason(state, control, slots, slot, definition);
         Self {
-            slot,
-            name: definition.name.clone(),
+            metadata: AbilityMetadata::new(slot, definition),
             cooldown: slots.cooldown(slot).unwrap_or(0.0),
-            total_cooldown: definition.cooldown,
-            cost: definition.mana_cost,
-            range: definition.range,
-            targeting,
-            target_hint,
-            icon,
-            description,
             available: unavailable_reason.is_none(),
             unavailable_reason,
         }

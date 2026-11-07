@@ -1,5 +1,5 @@
 //! Human and demo AI adapters both submit the public simulation commands.
-use super::{abilities, camera::GameCamera, pointer::GamePointer, web};
+use super::{abilities, camera::GameCamera, pointer::GamePointer, session::ClientSession, web};
 use crate::simulation::*;
 use bevy::{
     prelude::*,
@@ -14,9 +14,8 @@ pub(super) enum Aim {
     AttackMove,
     Ability(usize),
 }
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub(super) struct PlayerController {
-    pub player: Entity,
     pub selected: Option<Entity>,
     pub aim: Option<Aim>,
 }
@@ -49,15 +48,23 @@ fn submit(world: &mut World, player: Entity, command: UnitCommand) {
 }
 
 fn set_paused(world: &mut World, paused: bool) {
+    let player = world.resource::<ClientSession>().player();
+    let paused = paused || player.is_none();
     let was_paused = world.resource::<SimulationControl>().paused;
     world.resource_mut::<SimulationControl>().paused = paused;
     web::set_paused(paused);
     if paused {
-        let player = world.resource::<PlayerController>().player;
         if !was_paused {
             web::release_pointer();
             world.resource_mut::<CommandQueue>().clear();
-            submit(world, player, UnitCommand::Stop);
+            if let Some(player) = player {
+                submit(world, player, UnitCommand::Stop);
+            }
+        }
+        if player.is_none() {
+            world.resource_mut::<CommandQueue>().clear();
+            world.resource_mut::<PlayerController>().selected = None;
+            *world.resource_mut::<ClientFeedback>() = ClientFeedback::default();
         }
         world.resource_mut::<PlayerController>().aim = None;
         *world.resource_mut::<PointerState>() = PointerState::default();
@@ -131,7 +138,9 @@ fn skill_unavailable(world: &World, player: Entity, slot: usize) -> Option<&'sta
 }
 
 fn select_ability(world: &mut World, slot: usize) {
-    let player = world.resource::<PlayerController>().player;
+    let Some(player) = world.resource::<ClientSession>().player() else {
+        return;
+    };
     if let Some(reason) = skill_unavailable(world, player, slot) {
         let expires = world.resource::<Time>().elapsed_secs() + 2.0;
         let mut feedback = world.resource_mut::<ClientFeedback>();
@@ -160,6 +169,33 @@ fn select_ability(world: &mut World, slot: usize) {
     }
 }
 
+/// A DOM request may have been queued before capture completed. It belongs to
+/// that menu session, just like the window events discarded at the boundary.
+fn queued_skill_request(world: &mut World, slot: Option<usize>, just_captured: bool) {
+    if !just_captured
+        && !world.resource::<SimulationControl>().paused
+        && let Some(slot) = slot
+    {
+        select_ability(world, slot);
+    }
+}
+
+fn sync_pointer(
+    world: &mut World,
+    capture: Option<web::PointerCapture>,
+    paused: bool,
+    size: Vec2,
+    cursor: Option<Vec2>,
+) -> (Option<bool>, bool) {
+    let captured = capture.map(web::PointerCapture::confirmed);
+    let just_captured = world.resource_mut::<GamePointer>().sync(
+        captured.unwrap_or(false) && !paused,
+        size,
+        cursor,
+    );
+    (captured, just_captured)
+}
+
 fn valid_enemy_pick(world: &World, player: Entity, target: Entity) -> bool {
     world.get::<UnitState>(target).is_some_and(UnitState::alive)
         && world
@@ -170,8 +206,12 @@ fn valid_enemy_pick(world: &World, player: Entity, target: Entity) -> bool {
 
 /// New control must invalidate an existing aim even without a new input event.
 pub(super) fn refresh_aim(world: &mut World) {
+    let Some(unit) = world.resource::<ClientSession>().player() else {
+        world.resource_mut::<PlayerController>().aim = None;
+        return;
+    };
     let controller = world.resource::<PlayerController>();
-    let (unit, aim) = (controller.player, controller.aim);
+    let aim = controller.aim;
     let unavailable = match aim {
         Some(Aim::Ability(slot)) => skill_unavailable(world, unit, slot).is_some(),
         Some(Aim::AttackMove) => world
@@ -206,7 +246,9 @@ fn key_pressed(world: &mut World, key: KeyCode) {
     if world.resource::<SimulationControl>().paused {
         return;
     }
-    let player = world.resource::<PlayerController>().player;
+    let Some(player) = world.resource::<ClientSession>().player() else {
+        return;
+    };
     match key {
         KeyCode::KeyS => {
             submit(world, player, UnitCommand::Stop);
@@ -241,7 +283,9 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
         }
         return;
     }
-    let player = world.resource::<PlayerController>().player;
+    let Some(player) = world.resource::<ClientSession>().player() else {
+        return;
+    };
     match button {
         MouseButton::Right => {
             world.resource_mut::<PlayerController>().aim = None;
@@ -316,22 +360,20 @@ pub(super) fn collect_input(
         )
     };
     let size = web::canvas_size().unwrap_or(size);
-    let captured = web::pointer_captured();
-    let just_captured =
-        world
-            .resource_mut::<GamePointer>()
-            .sync(captured.unwrap_or(false), size, current_cursor);
+    let capture = web::pointer_capture();
     let focused = web::document_focused().unwrap_or(focused);
-    let paused = !focused
-        || captured == Some(false)
+    let paused = world.resource::<ClientSession>().player().is_none()
+        || !focused
+        || capture.map(web::PointerCapture::confirmed) == Some(false)
         || web::paused().unwrap_or(world.resource::<SimulationControl>().paused);
     set_paused(world, paused);
+    let (captured, just_captured) = sync_pointer(world, capture, paused, size, current_cursor);
     let mut events: Vec<_> = cursor
         .read(world.resource::<Messages<WindowEvent>>())
         .cloned()
         .collect();
     // Motion used to reach Enter/resume belongs to the unlocked session.
-    if just_captured {
+    if just_captured || world.resource::<ClientSession>().player().is_none() {
         events.clear();
     }
     for event in events {
@@ -368,16 +410,14 @@ pub(super) fn collect_input(
             _ => {}
         }
     }
+    let skill_request = web::take_skill_request();
+    queued_skill_request(world, skill_request, just_captured);
     if !world.resource::<SimulationControl>().paused {
-        if let Some(slot) = web::take_skill_request() {
-            select_ability(world, slot);
-        }
         let point = world.resource::<GamePointer>().position();
         update_pointer(world, point);
         web::draw_pointer(point);
     } else {
         *world.resource_mut::<PointerState>() = PointerState::default();
-        let _ = web::take_skill_request();
         web::draw_pointer(None);
     }
 }
@@ -390,6 +430,7 @@ pub(super) fn patrol_units(
     mut units: Query<(Entity, &UnitState, &UnitOrder, &mut Patrol)>,
 ) {
     if control.paused {
+        *last_tick = None;
         return;
     }
     if *last_tick == Some(tick.0) {
@@ -406,17 +447,21 @@ pub(super) fn patrol_units(
 
 pub(super) fn receive_feedback(
     time: Res<Time>,
-    player: Res<PlayerController>,
+    session: Res<ClientSession>,
     pointer: Res<PointerState>,
     mut events: MessageReader<SimulationEvent>,
     mut feedback: ResMut<ClientFeedback>,
 ) {
     for event in events.read() {
         match event {
-            SimulationEvent::MoveOrdered { unit, destination } if *unit == player.player => {
+            SimulationEvent::MoveOrdered { unit, destination }
+                if Some(*unit) == session.player() =>
+            {
                 feedback.marker = Some((*destination, true, time.elapsed_secs()));
             }
-            SimulationEvent::CommandRejected { unit, reason } if *unit == player.player => {
+            SimulationEvent::CommandRejected { unit, reason }
+                if Some(*unit) == session.player() =>
+            {
                 feedback.message = match reason {
                     Rejection::NoPath => "No route to that location",
                     Rejection::OutOfRange => "Outside cast range",

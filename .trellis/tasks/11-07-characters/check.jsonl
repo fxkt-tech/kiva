@@ -1,0 +1,14 @@
+{"file": ".trellis/spec/index.md", "reason": "Project layering, plan-only versus implemented specs, quality gates and user-managed server rule."}
+{"file": ".trellis/spec/simulation/index.md", "reason": "Simulation construction/ownership checklist and public behavior test conventions."}
+{"file": ".trellis/spec/simulation/runtime.md", "reason": "spawn_unit, fixed-step pause, persistent orders and respawn invariants."}
+{"file": ".trellis/spec/simulation/attributes-and-damage.md", "reason": "Unique initial/final attribute calculation, technical attack-speed normalization and snapshots."}
+{"file": ".trellis/spec/simulation/abilities-and-statuses.md", "reason": "Preserve actual slot execution, lifecycle, pause, state and motion semantics."}
+{"file": ".trellis/spec/client/index.md", "reason": "Client/Web integration and browser validation entrypoints."}
+{"file": ".trellis/spec/client/browser.md", "reason": "Actual displayed transforms, Pointer Lock capture/centering, input ordering and read-only projections."}
+{"file": ".trellis/spec/client/attributes-hud.md", "reason": "Keep 144px seven short labels without units and avoid preview selector collisions."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace content through construction/session/readonly view/DOM/tests, including no-player phase."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Keep definition/loadout/runtime owners and reuse validation/construction instead of parallel paths."}
+{"file": "docs/architecture.md", "reason": "Authoritative current module responsibilities and Bevy lifecycle/data flow."}
+{"file": ".trellis/tasks/11-07-characters/research/character-and-selection-seams.md", "reason": "Code-backed role/loadout/native/PointerLock/no-player investigation and architectural tradeoffs."}
+{"file": ".trellis/spec/simulation/characters.md", "reason": "Implemented character catalog/spawn/loadout/preview/lifecycle public contracts."}
+{"file": ".trellis/spec/client/character-selection.md", "reason": "Implemented selection/session/capture/intent/readonly projection/input boundary contracts."}

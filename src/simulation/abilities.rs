@@ -5,6 +5,8 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AbilityId(pub u16);
+/// Complete four-slot construction loadout; `None` is an empty slot.
+pub type AbilityLoadout = [Option<AbilityId>; 4];
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Targeting {
     Direction,
@@ -162,4 +164,18 @@ impl AbilityCatalog {
     pub fn get(&self, id: AbilityId) -> Option<&AbilityDefinition> {
         self.0.get(&id)
     }
+}
+
+pub(super) fn validate_loadout(
+    loadout: &AbilityLoadout,
+    catalog: &AbilityCatalog,
+) -> Result<(), (usize, AbilityId)> {
+    for (slot, ability) in loadout.iter().enumerate() {
+        if let Some(ability) = ability
+            && catalog.get(*ability).is_none()
+        {
+            return Err((slot, *ability));
+        }
+    }
+    Ok(())
 }

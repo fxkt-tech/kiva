@@ -1,6 +1,8 @@
 use super::{
     AttributeRejection, BaseAttributes, DamageOrigin, DamageType, EffectiveAttributes,
-    ModifierSourceId, StatusKind, abilities::AbilityId, attributes::AttributeState,
+    ModifierSourceId, StatusKind,
+    abilities::{AbilityId, AbilityLoadout},
+    attributes::AttributeState,
     effects::ImpactSnapshot,
 };
 use bevy::prelude::*;
@@ -51,7 +53,7 @@ pub struct UnitSpec {
     pub team: Team,
     pub position: Vec2,
     pub stats: UnitStats,
-    pub abilities: [Option<AbilityId>; 4],
+    pub abilities: AbilityLoadout,
     pub respawn_delay: Option<f32>,
 }
 #[derive(Component, Debug)]
@@ -172,7 +174,7 @@ impl CommandQueue {
 }
 #[derive(Component, Debug)]
 pub struct AbilitySlots {
-    pub(super) ids: [Option<AbilityId>; 4],
+    pub(super) ids: AbilityLoadout,
     pub(super) cooldowns: [f32; 4],
 }
 impl AbilitySlots {

@@ -19,12 +19,24 @@
     channel: '<path d="m20 4 4 11 12 5-12 4-4 12-11-4 11-5z"/><circle cx="20" cy="20" r="5"/>',
   };
   let ready = false;
-  let entered = false;
+  let session = null;
+  let activePlayerId = null;
+  let returnPending = false;
+  let captureAttempt = null;
+  let latestSelectionRequest = 0;
+  let requestedCharacter = null;
+  let selectionError = "";
+  let choicesSignature = "";
+  let previewSignature = "";
   let helpLoadout = "";
   const statFields = [
     ["attack_damage", 1], ["ability_power", 1], ["armor", 1], ["magic_resistance", 1],
     ["move_speed", 2], ["attack_speed", 2], ["attack_range", 2],
-  ].map(([key, digits]) => ({ key, digits, element: document.querySelector(`[data-stat="${key}"]`) }));
+  ].map(([key, digits]) => ({
+    key, digits,
+    element: document.querySelector(`[data-stat="${key}"]`),
+    previewElement: document.querySelector(`[data-preview-stat="${key}"]`),
+  }));
   window.__kivaStartup = "loading";
 
   function setPaused(paused) {
@@ -32,28 +44,164 @@
     if (paused && document.pointerLockElement === canvas) document.exitPointerLock();
   }
 
-  async function enterGame() {
-    if (!ready) return;
-    $("pointer-error").hidden = true;
-    canvas.focus();
+  function enqueueSessionRequest(request) {
     try {
-      await canvas.requestPointerLock();
+      const requests = JSON.parse(root.dataset.sessionRequests || "[]");
+      if (!Array.isArray(requests) || requests.length >= 32) return false;
+      requests.push(request);
+      root.dataset.sessionRequests = JSON.stringify(requests);
+      return true;
     } catch {
-      captureFailed();
+      return false;
     }
   }
 
-  function captureFailed() {
+  function confirmedChoice() {
+    const selection = session?.selection;
+    if (session?.phase !== "Selecting" || !selection?.can_start
+      || !selection.selection_ack.accepted
+      || selection.selection_ack.request_id !== latestSelectionRequest
+      || !selection.selected || selection.selection_revision == null
+      || selection.selected.id !== requestedCharacter) return null;
+    return { character_id: selection.selected.id, selection_revision: selection.selection_revision };
+  }
+
+  function selectCharacter(characterId) {
+    if (!ready || session?.phase !== "Selecting" || captureAttempt) return;
+    const requestId = latestSelectionRequest === 0xffffffff ? 1 : latestSelectionRequest + 1;
+    if (!enqueueSessionRequest({ type: "SelectCharacter", character_id: characterId, request_id: requestId })) {
+      selectionError = "选择请求暂未完成，请稍后重试。";
+    } else {
+      latestSelectionRequest = requestId;
+      requestedCharacter = characterId;
+      selectionError = "";
+      $("pointer-error").hidden = true;
+    }
+    syncMenu();
+  }
+
+  function clearCaptureAttempt(attempt) {
+    if (!attempt || captureAttempt !== attempt) return;
+    document.removeEventListener("pointerlockerror", attempt.onError);
+    captureAttempt = null;
+  }
+
+  function enterGame() {
+    if (!ready || captureAttempt || returnPending || !session) return;
+    const choice = confirmedChoice();
+    if (session.phase === "Selecting" && !choice) return;
+    const attempt = { phase: session.phase, choice, stage: "requesting" };
+    attempt.onError = () => captureFailed(attempt);
+    captureAttempt = attempt;
+    // Each request needs its own event acknowledgement, even when the previous
+    // unlock notification has not been dispatched yet.
+    root.dataset.pointerLocked = "false";
+    document.addEventListener("pointerlockerror", attempt.onError);
+    $("pointer-error").hidden = true;
+    syncMenu();
+    canvas.focus();
+    try {
+      // Keep the request in this trusted click. Promise settlement is not a
+      // capture acknowledgement; only pointerlockchange can submit Launch.
+      const request = canvas.requestPointerLock();
+      if (request?.catch) request.catch(() => captureFailed(attempt));
+    } catch {
+      captureFailed(attempt);
+    }
+  }
+
+  function captureFailed(attempt) {
+    if (captureAttempt !== attempt || attempt.stage !== "requesting") return;
+    clearCaptureAttempt(attempt);
     setPaused(true);
     $("pointer-error").textContent = "鼠标捕获未成功，请点击进入按钮重试。";
     $("pointer-error").hidden = false;
+    syncMenu();
+  }
+
+  function returnToSelection() {
+    if (!ready || session?.phase !== "Active" || !activePlayerId || returnPending
+      || captureAttempt || root.dataset.paused !== "true" || document.pointerLockElement === canvas) return;
+    if (enqueueSessionRequest({ type: "ReturnToSelection", player_id: activePlayerId })) {
+      returnPending = true;
+      delete root.dataset.skill;
+      $("pointer-error").hidden = true;
+    } else {
+      $("pointer-error").textContent = "请求暂未完成，请重新选择角色重试。";
+      $("pointer-error").hidden = false;
+    }
+    syncMenu();
+  }
+
+  function pointerLockChanged() {
+    const captured = document.pointerLockElement === canvas;
+    root.dataset.pointerLocked = String(captured);
+    if (!captured) {
+      clearCaptureAttempt(captureAttempt);
+      delete root.dataset.skill;
+      $("game-cursor").hidden = true;
+      setPaused(true);
+      syncMenu();
+      return;
+    }
+    const attempt = captureAttempt;
+    if (returnPending) {
+      setPaused(true);
+      return;
+    }
+    if (attempt?.stage === "launching") return;
+    if (session?.phase === "Active") {
+      clearCaptureAttempt(attempt);
+      $("pointer-error").hidden = true;
+      setPaused(false);
+    } else if (session?.phase === "Selecting" && attempt?.phase === "Selecting"
+      && attempt.stage === "requesting" && document.hasFocus()) {
+      if (!enqueueSessionRequest({ type: "Launch", ...attempt.choice })) {
+        clearCaptureAttempt(attempt);
+        selectionError = "启动请求暂未完成，请稍后重试。";
+        setPaused(true);
+      } else {
+        attempt.stage = "launching";
+        document.removeEventListener("pointerlockerror", attempt.onError);
+        // Rust must receive the frozen choice before observing an unpaused DOM.
+        setPaused(false);
+      }
+    } else {
+      clearCaptureAttempt(attempt);
+      setPaused(true);
+    }
+    syncMenu();
   }
 
   function syncMenu() {
-    $("entry").hidden = !ready || root.dataset.paused === "false";
-    if (entered) {
-      $("entry-title").textContent = "片刻停留，再出发。";
-      $("enter").textContent = "继续试炼 →";
+    const active = session?.phase === "Active";
+    $("entry").hidden = !ready || (active && root.dataset.paused === "false");
+    $("entry").dataset.phase = active ? "Active" : "Selecting";
+    $("character-select").hidden = active;
+    $("entry-title").textContent = active ? "片刻停留，再出发。" : "选择你的旅程。";
+    $("entry-description").textContent = active
+      ? "继续探索场地，练习走位，释放技能。"
+      : "选择角色，查看初始属性与技能，再进入试炼。";
+    $("enter").textContent = captureAttempt
+      ? (captureAttempt.stage === "launching" ? "正在进入…" : "正在捕获鼠标…")
+      : (active ? "继续试炼 →" : "进入试炼 →");
+    $("enter").disabled = !ready || Boolean(captureAttempt) || returnPending || (!active && !confirmedChoice());
+    $("reselection-actions").hidden = !active;
+    $("reselect").textContent = returnPending ? "正在返回选角…" : "重新选择角色";
+    $("reselect").disabled = !ready || !activePlayerId || returnPending || Boolean(captureAttempt)
+      || root.dataset.paused !== "true" || document.pointerLockElement === canvas;
+    const selection = session?.selection;
+    const waiting = selection?.selection_ack.request_id !== latestSelectionRequest;
+    $("selection-status").hidden = active;
+    $("selection-status").textContent = captureAttempt?.stage === "launching"
+      ? "正在确认开局…" : waiting ? "正在确认角色选择…"
+      : confirmedChoice() ? "准备就绪，进入试炼后开始。" : "请选择一个角色。";
+    $("selection-error").textContent = selectionError || selection?.error || "";
+    $("selection-error").hidden = active || !$("selection-error").textContent;
+    $("character-preview").setAttribute("aria-busy", String(waiting));
+    for (const button of $("character-choices").querySelectorAll("[data-character-id]")) {
+      button.disabled = Boolean(captureAttempt);
+      button.setAttribute("aria-pressed", String(Number(button.dataset.characterId) === selection?.selected?.id));
     }
   }
 
@@ -76,19 +224,15 @@
     attributes: true, attributeFilter: ["data-paused"],
   });
   $("enter").addEventListener("click", enterGame);
-  document.addEventListener("pointerlockchange", () => {
-    const captured = document.pointerLockElement === canvas;
-    root.dataset.pointerLocked = String(captured);
-    if (captured) { entered = true; $("pointer-error").hidden = true; }
-    else { delete root.dataset.skill; $("game-cursor").hidden = true; }
-    setPaused(!captured);
-  });
-  document.addEventListener("pointerlockerror", captureFailed);
+  $("reselect").addEventListener("click", returnToSelection);
+  document.addEventListener("pointerlockchange", pointerLockChanged);
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
   canvas.addEventListener("pointerdown", () => canvas.focus());
   window.addEventListener("blur", () => {
+    clearCaptureAttempt(captureAttempt);
     setPaused(true);
     delete root.dataset.skill;
+    syncMenu();
   });
   $("help-toggle").addEventListener("click", toggleHelp);
   window.addEventListener("keydown", (event) => {
@@ -97,7 +241,7 @@
   });
   document.querySelectorAll("[data-slot]").forEach((button) => {
     button.addEventListener("click", () => {
-      if (root.dataset.paused === "false") {
+      if (session?.phase === "Active" && root.dataset.paused === "false") {
         root.dataset.skill = button.dataset.slot;
         canvas.focus();
       }
@@ -122,7 +266,98 @@
       ? value.toExponential(1) : String(rounded);
   }
 
+  function renderCharacterChoices(choices) {
+    const signature = JSON.stringify(choices);
+    if (choicesSignature === signature) return;
+    choicesSignature = signature;
+    $("character-choices").replaceChildren(...choices.map((choice) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "character-choice";
+      button.dataset.characterId = choice.id;
+      button.setAttribute("aria-pressed", "false");
+      const name = document.createElement("strong");
+      const description = document.createElement("span");
+      name.textContent = choice.name;
+      description.textContent = choice.description;
+      button.append(name, description);
+      button.addEventListener("click", () => selectCharacter(choice.id));
+      return button;
+    }));
+  }
+
+  function renderPreviewAbilities(abilities) {
+    $("preview-abilities").replaceChildren(...skillKeys.map((key, slot) => {
+      const ability = abilities.find((item) => item.slot === slot);
+      const item = document.createElement("article");
+      item.className = "preview-ability";
+      item.dataset.previewSlot = slot;
+      const name = document.createElement("strong");
+      name.textContent = `${key} · ${ability?.name || "未装配"}`;
+      item.append(name);
+      if (ability) {
+        const target = document.createElement("span");
+        const description = document.createElement("p");
+        const details = document.createElement("small");
+        target.textContent = ability.target_hint;
+        description.textContent = ability.description;
+        details.textContent = `能量 ${ability.cost} · 冷却 ${ability.total_cooldown}s · 射程 ${ability.range}`;
+        item.append(target, description, details);
+      }
+      return item;
+    }));
+  }
+
+  function renderCharacterPreview(selected) {
+    const signature = JSON.stringify(selected);
+    if (previewSignature === signature) return;
+    previewSignature = signature;
+    $("preview-name").textContent = selected?.name || "请选择角色";
+    $("preview-description").textContent = selected?.description || "";
+    $("preview-health").textContent = formatAttribute(selected?.max_health, 1);
+    $("preview-mana").textContent = formatAttribute(selected?.max_mana, 1);
+    for (const { key, digits, previewElement } of statFields) {
+      previewElement.textContent = formatAttribute(selected?.attributes?.[key], digits);
+    }
+    renderPreviewAbilities(selected?.abilities || []);
+  }
+
+  function renderSession(nextSession, playerId) {
+    if (session?.phase === "Active" && nextSession.phase === "Selecting") {
+      clearCaptureAttempt(captureAttempt);
+      latestSelectionRequest = 0;
+      requestedCharacter = null;
+      selectionError = "";
+      delete root.dataset.skill;
+      root.dataset.pointerLocked = "false";
+      setPaused(true);
+      $("pointer-error").hidden = true;
+    }
+    if (returnPending && !root.hasAttribute("data-session-requests")) {
+      returnPending = false;
+      if (nextSession.phase === "Active") {
+        $("pointer-error").textContent = "暂时无法重新选择角色，请重试。";
+        $("pointer-error").hidden = false;
+      }
+    }
+    session = nextSession;
+    activePlayerId = playerId;
+    if (session.phase === "Active") {
+      if (captureAttempt?.phase === "Selecting") clearCaptureAttempt(captureAttempt);
+      selectionError = "";
+    } else {
+      const selection = session.selection;
+      if (latestSelectionRequest === 0 && requestedCharacter === null) {
+        requestedCharacter = selection?.selected?.id ?? null;
+      }
+      renderCharacterChoices(selection?.choices || []);
+      renderCharacterPreview(selection?.selected || null);
+    }
+    syncMenu();
+  }
+
   function renderHero(player) {
+    $("hero-hud").hidden = session?.phase !== "Active" || !player;
     for (const { key, digits, element } of statFields) {
       element.textContent = formatAttribute(player?.attributes?.[key], digits);
     }
@@ -311,8 +546,10 @@
     const state = JSON.parse(event.detail);
     // Read-only diagnostics allow tests to assert actual simulation results.
     window.__kivaState = state;
+    renderSession(state.session, state.player_id);
     const player = state.units.find((unit) => unit.id === state.player_id);
-    $("session-status").textContent = state.paused ? "试炼暂停" : "本地试炼 · WEBGPU";
+    $("session-status").textContent = state.session.phase === "Selecting"
+      ? "选择角色" : state.paused ? "试炼暂停" : "本地试炼 · WEBGPU";
     $("camera-mode").textContent = state.camera_locked ? "跟随镜头" : "自由镜头";
     $("notice").textContent = state.notice;
     renderHero(player);

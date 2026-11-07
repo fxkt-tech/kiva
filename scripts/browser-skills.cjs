@@ -4,14 +4,19 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const {
-  launchBrowser, enterGame, resumeGame, movePointer, clickPointer,
+  launchBrowser, enterGame, resumeGame, movePointer, clickPointer, clickAndMovePointer,
   clickUi, clickWorld, worldPoint, reportFailure, serveBuild,
 } = require("./browser-support.cjs");
 
 async function status(page, kind) {
-  await page.waitForFunction((kind) => window.__kivaState.units.some((unit) =>
-    unit.name === "训练哨兵" && unit.statuses.some((effect) => effect.kind === kind)), kind);
-  return page.evaluate(() => window.__kivaState.units.find((unit) => unit.name === "训练哨兵"));
+  // Return the snapshot that satisfied the condition. A second CDP round trip
+  // can otherwise sample after a short control effect has already expired.
+  const snapshot = await page.waitForFunction((kind) => {
+    const unit = window.__kivaState.units.find((unit) => unit.name === "训练哨兵");
+    return unit?.statuses.some((effect) => effect.kind === kind) ? unit : false;
+  }, kind);
+  try { return await snapshot.jsonValue(); }
+  finally { await snapshot.dispose(); }
 }
 
 async function exerciseSkills(page) {
@@ -78,19 +83,39 @@ async function exerciseSkills(page) {
     "the airborne click must produce a new selection");
   await page.evaluate(() => {
     window.__testLabels = new Map();
+    window.__testSkillTrace = [];
+    window.__recordSkillTrace = (event) => {
+      const state = window.__kivaState;
+      const target = state.units.find((unit) => unit.name === "训练哨兵");
+      window.__testSkillTrace.push({ event, time: performance.now(), tick: state.tick,
+        selected: state.selected, height: target.visual_height,
+        remaining: target.statuses.find((effect) => effect.kind === "Airborne")?.remaining,
+        displaced: target.control.is_displaced });
+    };
+    window.addEventListener("kiva-state", () => {
+      if (window.__kivaState.units.some((unit) => unit.statuses.some((effect) => effect.kind === "Airborne"))) {
+        window.__recordSkillTrace("airborne-state");
+      }
+    });
+    let pauseAfterPick = false;
+    document.addEventListener("pointerdown", (event) => {
+      window.__recordSkillTrace("pointerdown");
+      if (window.__testPauseOnPick && event.isTrusted && event.button === 0) {
+        window.__testPauseOnPick = false;
+        pauseAfterPick = true;
+      }
+    });
     window.addEventListener("kiva-labels", (event) => {
       const labels = typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
       for (const label of labels) window.__testLabels.set(label.id, label);
-    });
-    // Freeze via the real capture-loss path as soon as selection is published.
-    // Host/CDP round trips must not consume an 800ms animation before pausing.
-    let pending = true;
-    window.addEventListener("kiva-state", (event) => {
-      const state = JSON.parse(event.detail);
-      const target = state.units.find((unit) => unit.name === "训练哨兵");
-      if (pending && state.selected === target?.id && target.visual_height > 0
-        && target.statuses.some((effect) => effect.kind === "Airborne")) {
-        pending = false;
+      // This display frame follows consumption of the real pick input. Submit
+      // pause now, then release capture; waiting for the throttled HUD loses time.
+      if (pauseAfterPick) {
+        pauseAfterPick = false;
+        window.__recordSkillTrace("pause-after-pick");
+        // Use the existing pause intent before releasing the native lock, just
+        // as Escape does. Native unlock notification can arrive a frame later.
+        document.documentElement.dataset.paused = "true";
         document.exitPointerLock();
       }
     });
@@ -99,7 +124,6 @@ async function exerciseSkills(page) {
   await page.waitForFunction(() => window.__kivaState.aim === 3);
   assert.equal(await page.evaluate(() => window.__kivaState.abilities[3].cooldown), 0,
     "selecting directional R must not self-cast");
-  await clickWorld(page, [3, -2]);
   // Pre-position during the projectile's flight, before the short airborne
   // window starts. Four units is the authored demo push distance checked below;
   // y=2.6 intersects the elevated body after that horizontal motion finishes.
@@ -107,24 +131,38 @@ async function exerciseSkills(page) {
   const dz = -2 - before.position[1];
   const length = Math.hypot(dx, dz);
   const landing = [3 + dx / length * 4, -2 + dz / length * 4];
-  await movePointer(page, ...await worldPoint(page, [...landing, 2.6]));
-  const airborne = await status(page, "Airborne");
-  assert.equal(airborne.health, 205, "control-only R must not invent damage");
-  assert.equal(airborne.control.can_cast, false);
-  await page.waitForFunction((id) => {
+  // Prepare both projections before committing R. Keep host projection work
+  // and the helper's usual held click outside the 800ms control window.
+  const castPoint = await worldPoint(page, [3, -2]);
+  const airbornePoint = await worldPoint(page, [...landing, 2.6]);
+  await movePointer(page, ...castPoint);
+  await clickAndMovePointer(page, ...airbornePoint);
+  await page.waitForFunction(({ id, point }) => {
     const target = window.__kivaState.units.find((unit) => unit.id === id);
+    const cursor = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
     // Horizontal displacement must finish before sampling the click point:
     // software rendering can advance a full movement step between CDP calls.
-    return !target.control.is_displaced && target.visual_height > 0.3
+    const ready = target.statuses.some((effect) => effect.kind === "Airborne")
+      && !target.control.is_displaced && target.visual_height > 0.3
+      && Math.abs(cursor.m41 - point[0]) < 2 && Math.abs(cursor.m42 - point[1]) < 2
       && window.__testLabels.get(id)?.body_screen;
-  }, airborne.id);
+    if (ready) {
+      window.__recordSkillTrace("pick-ready");
+      window.__testPauseOnPick = true;
+    }
+    return ready;
+  }, { id: stunned.id, point: airbornePoint });
+  // Inspect control and damage after the real selection has frozen the pose;
+  // reading them through extra host round trips first consumes the click window.
   await clickPointer(page, "left", 0);
   await page.waitForFunction(() => window.__kivaState.paused);
-  assert.equal(await page.evaluate(() => window.__kivaState.selected), airborne.id);
+  assert.equal(await page.evaluate(() => window.__kivaState.selected), stunned.id);
   const paused = await page.evaluate((id) => {
     const s = window.__kivaState;
     return { tick: s.tick, target: s.units.find((unit) => unit.id === id) };
-  }, airborne.id);
+  }, stunned.id);
+  assert.equal(paused.target.health, 205, "control-only R must not invent damage");
+  assert.equal(paused.target.control.can_cast, false);
   assert(paused.target.statuses.some((effect) => effect.kind === "Airborne"),
     "pause must occur while airborne so this verifies the visible frozen pose");
   assert(paused.target.visual_height > 0, "pausing must preserve the already rendered airborne height");
@@ -132,7 +170,7 @@ async function exerciseSkills(page) {
   const still = await page.evaluate((id) => {
     const s = window.__kivaState;
     return { tick: s.tick, target: s.units.find((unit) => unit.id === id) };
-  }, airborne.id);
+  }, stunned.id);
   assert.equal(still.tick, paused.tick);
   assert.equal(still.target.visual_height, paused.target.visual_height);
   assert.deepEqual(still.target.statuses, paused.target.statuses);
@@ -155,8 +193,8 @@ async function exerciseSkills(page) {
   await page.waitForFunction((id) => {
     const target = window.__kivaState.units.find((unit) => unit.id === id);
     return target.statuses.length === 0 && target.visual_height === 0 && !target.control.is_displaced;
-  }, airborne.id);
-  const landed = await page.evaluate((id) => window.__kivaState.units.find((unit) => unit.id === id), airborne.id);
+  }, stunned.id);
+  const landed = await page.evaluate((id) => window.__kivaState.units.find((unit) => unit.id === id), stunned.id);
   assert(Math.abs(Math.hypot(landed.position[0] - 3, landed.position[1] + 2) - 4) < 0.08);
 
   await clickUi(page, '[data-slot="2"]');
@@ -189,7 +227,10 @@ async function main() {
       await context.close();
     }
   } catch (error) {
-    if (page) await reportFailure(page);
+    if (page) {
+      console.error("Skill trace:", JSON.stringify(await page.evaluate(() => window.__testSkillTrace)));
+      await reportFailure(page);
+    }
     throw error;
   } finally {
     try { await browser.close(); }

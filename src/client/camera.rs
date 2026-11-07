@@ -1,7 +1,4 @@
-use super::{
-    controls::{PlayerController, PointerState},
-    web,
-};
+use super::{controls::PointerState, session::ClientSession, web};
 use crate::simulation::{NavigationMap, SimulationControl, UnitPose};
 use bevy::{input::mouse::MouseWheel, prelude::*};
 
@@ -44,15 +41,18 @@ pub(super) fn update(
     mut wheel: MessageReader<MouseWheel>,
     window: Single<&Window>,
     pointer: Res<PointerState>,
-    player: Res<PlayerController>,
+    session: Res<ClientSession>,
     poses: Query<&UnitPose>,
     map: Res<NavigationMap>,
     mut rig: ResMut<CameraRig>,
     mut camera: Single<&mut Transform, With<GameCamera>>,
 ) {
+    if session.player().is_none() {
+        *rig = CameraRig::default();
+    }
     let size = web::canvas_size().unwrap_or(Vec2::new(window.width(), window.height()));
     let scroll: f32 = wheel.read().map(|event| event.y).sum();
-    if !control.paused {
+    if !control.paused && session.player().is_some() {
         if keys.just_pressed(KeyCode::KeyY) {
             rig.locked = !rig.locked;
         }
@@ -60,7 +60,8 @@ pub(super) fn update(
             rig.zoom = (rig.zoom - scroll * 0.045).clamp(0.65, 1.5);
         }
         if (rig.locked || keys.pressed(KeyCode::Space))
-            && let Ok(pose) = poses.get(player.player)
+            && let Some(player) = session.player()
+            && let Ok(pose) = poses.get(player)
         {
             rig.center = pose.interpolated(fixed.overstep_fraction());
         } else {
@@ -98,4 +99,49 @@ pub(super) fn update(
     let target = Vec3::new(rig.center.x, 0.0, rig.center.y);
     **camera = Transform::from_translation(target + OFFSET * rig.zoom).looking_at(target, Vec3::Y);
     web::set_camera_lock(rig.locked);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::{content, session};
+    use super::*;
+    use crate::simulation::SimulationPlugin;
+
+    #[test]
+    fn selecting_restores_the_existing_camera_to_its_initial_rig() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin))
+            .init_resource::<PointerState>()
+            .init_resource::<ButtonInput<KeyCode>>()
+            .add_message::<MouseWheel>()
+            .insert_resource(CameraRig {
+                center: Vec2::new(15.0, -9.0),
+                locked: true,
+                zoom: 1.4,
+            })
+            .add_systems(Update, update);
+        content::setup(app.world_mut());
+        session::setup(app.world_mut());
+        let camera = app
+            .world_mut()
+            .spawn((GameCamera, Transform::default()))
+            .id();
+        app.world_mut().spawn(Window::default());
+        app.world_mut().run_schedule(Update);
+        let rig = app.world().resource::<CameraRig>();
+        assert_eq!(rig.center, CameraRig::default().center);
+        assert!(!rig.locked);
+        assert_eq!(rig.zoom, 1.0);
+        assert_eq!(
+            app.world_mut()
+                .query_filtered::<Entity, With<GameCamera>>()
+                .iter(app.world())
+                .collect::<Vec<_>>(),
+            [camera]
+        );
+        assert_eq!(
+            app.world().get::<Transform>(camera).unwrap().translation,
+            Vec3::new(0.0, 0.0, 3.0) + OFFSET
+        );
+    }
 }

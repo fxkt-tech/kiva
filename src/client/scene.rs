@@ -2,6 +2,7 @@
 use super::{
     content::Scenery,
     controls::{Aim, ClientFeedback, Pickable, PlayerController, PointerState},
+    session::ClientSession,
 };
 use crate::simulation::*;
 use bevy::prelude::*;
@@ -328,6 +329,7 @@ pub(super) fn sync_effects(
     control: Res<SimulationControl>,
     assets: Res<SceneAssets>,
     player: Res<PlayerController>,
+    session: Res<ClientSession>,
     pointer: Res<PointerState>,
     feedback: Res<ClientFeedback>,
     catalog: Res<AbilityCatalog>,
@@ -439,7 +441,8 @@ pub(super) fn sync_effects(
         }
     }
     if let Some(aim) = player.aim
-        && let Ok((_, unit, pose, _, slots, _)) = units.get(player.player)
+        && let Some(player) = session.player()
+        && let Ok((_, unit, pose, _, slots, _)) = units.get(player)
     {
         let origin = pose.position();
         match aim {

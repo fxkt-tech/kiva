@@ -1,6 +1,6 @@
 //! Demo content. Unit loadouts and ability numbers are authored here; the
 //! simulation and controls know slots and definitions, never these ability IDs.
-use super::controls::{Patrol, PlayerController};
+use super::controls::Patrol;
 use crate::simulation::*;
 use bevy::prelude::*;
 
@@ -9,6 +9,14 @@ pub(super) struct Scenery {
     pub walls: Vec<Obstacle>,
     pub trees: Vec<(Vec2, f32)>,
     pub pillars: Vec<Vec2>,
+}
+
+#[derive(Resource)]
+pub(super) struct DemoSettings {
+    pub default_character: CharacterId,
+    pub player_team: Team,
+    pub player_spawn: Vec2,
+    pub respawn_delay: Option<f32>,
 }
 
 pub(super) fn setup(world: &mut World) {
@@ -214,23 +222,67 @@ pub(super) fn setup(world: &mut World) {
             .register(id, definition)
             .expect("valid demo ability");
     }
-    let player = spawn_unit(
-        world,
-        UnitSpec {
-            name: "旅者".into(),
-            team: Team::Ally,
-            position: Vec2::new(0.0, 6.0),
-            stats: UnitStats::default(),
-            abilities: [
-                Some(AbilityId(5)),
-                Some(AbilityId(6)),
-                Some(AbilityId(3)),
-                Some(AbilityId(7)),
-            ],
-            respawn_delay: Some(3.0),
-        },
-    )
-    .expect("valid player");
+    let mut characters = CharacterCatalog::default();
+    for (id, definition) in [
+        (
+            CharacterId(1),
+            CharacterDefinition {
+                name: "旅者".into(),
+                description: "稳健的近中距离斗士，以控制与机动掌握战场。".into(),
+                stats: UnitStats::default(),
+                default_loadout: [
+                    Some(AbilityId(5)),
+                    Some(AbilityId(6)),
+                    Some(AbilityId(3)),
+                    Some(AbilityId(7)),
+                ],
+            },
+        ),
+        (
+            CharacterId(2),
+            CharacterDefinition {
+                name: "秘术师".into(),
+                description: "灵活的远程施法者，以飞矢与共鸣持续压制敌人。".into(),
+                stats: UnitStats {
+                    max_health: 480.0,
+                    max_mana: 360.0,
+                    mana_regen: 10.0,
+                    base_attributes: BaseAttributes {
+                        attack_damage: 30.0,
+                        ability_power: 40.0,
+                        move_speed: 5.2,
+                        attack_speed: 1.0,
+                        attack_range: 6.0,
+                        ..default()
+                    },
+                    ..default()
+                },
+                default_loadout: [
+                    Some(AbilityId(1)),
+                    Some(AbilityId(2)),
+                    Some(AbilityId(3)),
+                    Some(AbilityId(4)),
+                ],
+            },
+        ),
+    ] {
+        characters
+            .register(id, definition, world.resource::<AbilityCatalog>())
+            .expect("valid demo character");
+    }
+    world.insert_resource(characters);
+    world.insert_resource(DemoSettings {
+        default_character: CharacterId(1),
+        player_team: Team::Ally,
+        player_spawn: Vec2::new(0.0, 6.0),
+        respawn_delay: Some(3.0),
+    });
+    spawn_training_units(world);
+}
+
+/// Runtime demo opponents are rebuilt together when starting another trial.
+/// Catalogs, navigation and static scenery are prepared only by setup.
+pub(super) fn spawn_training_units(world: &mut World) {
     spawn_unit(
         world,
         UnitSpec {
@@ -268,10 +320,5 @@ pub(super) fn setup(world: &mut World) {
     world.entity_mut(runner).insert(Patrol {
         points: [Vec2::new(-5.0, -6.0), Vec2::new(5.0, -6.0)],
         next: 1,
-    });
-    world.insert_resource(PlayerController {
-        player,
-        selected: None,
-        aim: None,
     });
 }

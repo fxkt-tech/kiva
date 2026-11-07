@@ -1,8 +1,9 @@
 //! Read-only projections for the browser HUD and native debug overlay.
 use super::{
-    abilities::AbilityView,
+    abilities::{AbilityMetadata, AbilityView},
     camera::{CameraRig, GameCamera},
     controls::{Aim, ClientFeedback, Pickable, PlayerController},
+    session::{ClientSession, SelectionAck},
     web,
 };
 use crate::simulation::*;
@@ -79,6 +80,7 @@ impl From<&ControlState> for ControlView {
 #[derive(Serialize)]
 struct UnitView {
     id: String,
+    character_id: Option<u16>,
     name: String,
     team: &'static str,
     position: [f32; 2],
@@ -100,7 +102,8 @@ struct UnitView {
 struct HudView {
     tick: u64,
     paused: bool,
-    player_id: String,
+    player_id: Option<String>,
+    session: SessionView,
     selected: Option<String>,
     aim: Option<usize>,
     attack_move: bool,
@@ -112,6 +115,87 @@ struct HudView {
     view_projection: [f32; 16],
     viewport: [f32; 2],
     obstacles: Vec<[f32; 4]>,
+}
+
+#[derive(Serialize)]
+struct SessionView {
+    phase: &'static str,
+    selection: Option<SelectionView>,
+}
+#[derive(Serialize)]
+struct SelectionView {
+    choices: Vec<CharacterSummary>,
+    selected: Option<CharacterPreview>,
+    selection_revision: Option<u64>,
+    selection_ack: SelectionAck,
+    can_start: bool,
+    error: Option<String>,
+}
+#[derive(Serialize)]
+struct CharacterSummary {
+    id: u16,
+    name: String,
+    description: String,
+}
+#[derive(Serialize)]
+struct CharacterPreview {
+    #[serde(flatten)]
+    character: CharacterSummary,
+    max_health: f32,
+    max_mana: f32,
+    attributes: AttributesView,
+    abilities: Vec<AbilityMetadata>,
+}
+impl SessionView {
+    fn new(
+        session: &ClientSession,
+        characters: &CharacterCatalog,
+        abilities: &AbilityCatalog,
+    ) -> Self {
+        let Some(selection) = session.selection() else {
+            return Self {
+                phase: "Active",
+                selection: None,
+            };
+        };
+        let summary = |id: CharacterId, definition: &CharacterDefinition| CharacterSummary {
+            id: id.0,
+            name: definition.name.clone(),
+            description: definition.description.clone(),
+        };
+        let selected = selection.selected.and_then(|choice| {
+            let definition = characters.get(choice.character_id)?;
+            let attributes = definition.initial_attributes()?;
+            Some(CharacterPreview {
+                character: summary(choice.character_id, definition),
+                max_health: definition.stats.max_health,
+                max_mana: definition.stats.max_mana,
+                attributes: (&attributes).into(),
+                abilities: definition
+                    .default_loadout
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(slot, id)| {
+                        Some(AbilityMetadata::new(slot, abilities.get((*id)?)?))
+                    })
+                    .collect(),
+            })
+        });
+        Self {
+            phase: "Selecting",
+            selection: Some(SelectionView {
+                choices: characters
+                    .iter()
+                    .map(|(id, definition)| summary(id, definition))
+                    .collect(),
+                selected,
+                selection_revision: selection.selected.map(|choice| choice.revision),
+                selection_ack: selection.ack,
+                can_start: selection.can_start(),
+                error: selection.error.clone(),
+            }),
+        }
+    }
 }
 
 type ProjectedUnit = (
@@ -126,6 +210,7 @@ type ProjectedUnit = (
     &'static Pickable,
     &'static UnitStatuses,
     &'static ControlState,
+    Option<&'static CharacterIdentity>,
 );
 
 #[cfg(target_arch = "wasm32")]
@@ -189,17 +274,19 @@ pub(super) fn publish(
     time: Res<Time>,
     mut next_publish: Local<f32>,
     player: Res<PlayerController>,
+    session: Res<ClientSession>,
     control: Res<SimulationControl>,
     tick: Res<SimulationTick>,
     rig: Res<CameraRig>,
     feedback: Res<ClientFeedback>,
     catalog: Res<AbilityCatalog>,
+    characters: Res<CharacterCatalog>,
     map: Res<NavigationMap>,
     window: Single<&Window>,
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
     units: Query<ProjectedUnit>,
 ) {
-    if time.elapsed_secs() < *next_publish {
+    if !session.is_changed() && time.elapsed_secs() < *next_publish {
         return;
     }
     *next_publish = time.elapsed_secs() + 0.08;
@@ -210,10 +297,24 @@ pub(super) fn publish(
     let views = units
         .iter()
         .map(
-            |(id, unit, state, pose, action, order, _, display, pickable, statuses, control)| {
+            |(
+                id,
+                unit,
+                state,
+                pose,
+                action,
+                order,
+                _,
+                display,
+                pickable,
+                statuses,
+                control,
+                character,
+            )| {
                 let point = pose.position();
                 UnitView {
                     id: id.to_bits().to_string(),
+                    character_id: character.map(|identity| identity.id().0),
                     name: unit.name().into(),
                     team: if unit.team() == Team::Ally {
                         "ally"
@@ -249,9 +350,10 @@ pub(super) fn publish(
             },
         )
         .collect();
-    let abilities = units
-        .get(player.player)
-        .map(|(_, _, state, _, _, _, slots, _, _, _, control)| {
+    let abilities = session
+        .player()
+        .and_then(|id| units.get(id).ok())
+        .map(|(_, _, state, _, _, _, slots, _, _, _, control, _)| {
             (0..4)
                 .filter_map(|slot| {
                     let definition = catalog.get(slots.ability(slot)?)?;
@@ -263,7 +365,8 @@ pub(super) fn publish(
     let view = HudView {
         tick: tick.0,
         paused: control.paused,
-        player_id: player.player.to_bits().to_string(),
+        player_id: session.player().map(|id| id.to_bits().to_string()),
+        session: SessionView::new(&session, &characters, &catalog),
         selected: player.selected.map(|id| id.to_bits().to_string()),
         aim: match player.aim {
             Some(Aim::Ability(slot)) => Some(slot),
@@ -316,13 +419,15 @@ pub(super) fn native_hud(mut commands: Commands) {
 }
 #[cfg(not(target_arch = "wasm32"))]
 pub(super) fn update_native_hud(
-    player: Res<PlayerController>,
+    session: Res<ClientSession>,
     control: Res<SimulationControl>,
     catalog: Res<AbilityCatalog>,
     units: Query<(&Unit, &UnitState, &AbilitySlots, &UnitStatuses)>,
     mut hud: Single<&mut Text, With<NativeHud>>,
 ) {
-    if let Ok((unit, state, slots, statuses)) = units.get(player.player) {
+    if let Some(player) = session.player()
+        && let Ok((unit, state, slots, statuses)) = units.get(player)
+    {
         let attributes = unit.attributes();
         let loadout = ["Q", "W", "E", "R"]
             .into_iter()
@@ -360,6 +465,126 @@ pub(super) fn update_native_hud(
             } else {
                 ""
             }
+        );
+    } else {
+        hud.0 = "KIVA / 请选择角色".into();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::{
+        content::{self, DemoSettings},
+        session,
+    };
+    use super::*;
+
+    #[test]
+    fn both_role_previews_match_constructed_attributes_and_share_flat_runtime_skill_metadata() {
+        for id in [CharacterId(1), CharacterId(2)] {
+            let mut app = App::new();
+            app.add_plugins((MinimalPlugins, SimulationPlugin));
+            content::setup(app.world_mut());
+            app.world_mut()
+                .resource_mut::<DemoSettings>()
+                .default_character = id;
+            session::setup(app.world_mut());
+            let view = SessionView::new(
+                app.world().resource::<ClientSession>(),
+                app.world().resource::<CharacterCatalog>(),
+                app.world().resource::<AbilityCatalog>(),
+            );
+            let json = serde_json::to_value(view).unwrap();
+            assert_eq!(json["phase"], "Selecting");
+            assert_eq!(json["selection"]["selection_ack"]["request_id"], 0);
+            assert_eq!(json["selection"]["selection_ack"]["accepted"], true);
+            assert_eq!(json["selection"]["can_start"], true);
+            let choices = json["selection"]["choices"].as_array().unwrap();
+            assert_eq!(
+                choices
+                    .iter()
+                    .map(|choice| choice["id"].as_u64().unwrap())
+                    .collect::<Vec<_>>(),
+                [1, 2]
+            );
+            let preview = &json["selection"]["selected"];
+            assert_eq!(preview["id"], id.0);
+            assert!(
+                preview.get("health").is_none(),
+                "a preview has no runtime health"
+            );
+            assert_eq!(
+                app.world_mut().query::<&Unit>().iter(app.world()).count(),
+                2,
+                "previewing cannot create a hidden player"
+            );
+            assert_eq!(
+                app.world_mut()
+                    .query::<&CharacterIdentity>()
+                    .iter(app.world())
+                    .count(),
+                0
+            );
+
+            session::start_native(app.world_mut());
+            let player = app.world().resource::<ClientSession>().player().unwrap();
+            let unit = app.world().get::<Unit>(player).unwrap();
+            let state = app.world().get::<UnitState>(player).unwrap();
+            let control = app.world().get::<ControlState>(player).unwrap();
+            let slots = app.world().get::<AbilitySlots>(player).unwrap();
+            assert_eq!(
+                preview["attributes"],
+                serde_json::to_value(AttributesView::from(unit.attributes())).unwrap()
+            );
+            assert_eq!(
+                preview["max_health"].as_f64().unwrap() as f32,
+                state.health()
+            );
+            assert_eq!(preview["max_mana"].as_f64().unwrap() as f32, state.mana());
+            for metadata in preview["abilities"].as_array().unwrap() {
+                let slot = metadata["slot"].as_u64().unwrap() as usize;
+                let definition = app
+                    .world()
+                    .resource::<AbilityCatalog>()
+                    .get(slots.ability(slot).unwrap())
+                    .unwrap();
+                let runtime =
+                    serde_json::to_value(AbilityView::new(slot, definition, state, control, slots))
+                        .unwrap();
+                for (key, value) in metadata.as_object().unwrap() {
+                    assert_eq!(
+                        &runtime[key], value,
+                        "preview/runtime metadata diverged at {key}"
+                    );
+                }
+                assert!(metadata.get("cooldown").is_none());
+                assert!(metadata.get("available").is_none());
+                assert_eq!(runtime["cooldown"], 0.0);
+                assert_eq!(runtime["available"], true);
+                assert!(
+                    runtime.get("metadata").is_none(),
+                    "existing runtime JSON stays flat"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn active_projection_stops_repeating_character_choices_and_previews() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin));
+        content::setup(app.world_mut());
+        session::setup(app.world_mut());
+        session::start_native(app.world_mut());
+        let view = SessionView::new(
+            app.world().resource::<ClientSession>(),
+            app.world().resource::<CharacterCatalog>(),
+            app.world().resource::<AbilityCatalog>(),
+        );
+        let json = serde_json::to_value(view).unwrap();
+        assert_eq!(
+            json,
+            serde_json::json!({"phase":"Active", "selection":null})
         );
     }
 }

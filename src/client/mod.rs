@@ -5,10 +5,11 @@ mod content;
 mod controls;
 mod pointer;
 mod scene;
+mod session;
 mod ui;
 mod web;
 
-use crate::simulation::SimulationPlugin;
+use crate::simulation::{SimulationControl, SimulationPlugin};
 use bevy::prelude::*;
 
 pub(super) fn run() {
@@ -36,19 +37,27 @@ pub(super) fn run() {
             }),
     )
     .add_plugins(SimulationPlugin)
+    .insert_resource(SimulationControl {
+        paused: cfg!(target_arch = "wasm32"),
+    })
     .insert_resource(ClearColor(Color::srgb_u8(12, 23, 25)))
     .init_resource::<camera::CameraRig>()
     .init_resource::<controls::PointerState>()
     .init_resource::<pointer::GamePointer>()
     .init_resource::<controls::ClientFeedback>()
+    .init_resource::<controls::PlayerController>()
     .add_systems(
         Startup,
-        (content::setup, scene::setup, camera::setup).chain(),
+        (content::setup, session::setup, scene::setup, camera::setup).chain(),
     )
     // Input is sampled once before zero or more fixed steps, and enqueued.
     .add_systems(
         RunFixedMainLoop,
-        (controls::collect_input, controls::patrol_units)
+        (
+            session::process_requests,
+            controls::collect_input,
+            controls::patrol_units,
+        )
             .chain()
             .in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
     )
@@ -79,7 +88,15 @@ pub(super) fn run() {
     #[cfg(target_arch = "wasm32")]
     app.add_systems(PostUpdate, ui::publish_labels.after(ui::publish));
     #[cfg(not(target_arch = "wasm32"))]
-    app.add_systems(Startup, ui::native_hud)
-        .add_systems(Update, ui::update_native_hud);
+    app.add_systems(
+        Startup,
+        (
+            ui::native_hud,
+            session::start_native
+                .after(session::setup)
+                .before(scene::setup),
+        ),
+    )
+    .add_systems(Update, ui::update_native_hud);
     app.run();
 }

@@ -38,20 +38,52 @@ async function launchBrowser() {
   });
 }
 
-async function enterGame(page, url = process.env.KIVA_TEST_URL || "http://127.0.0.1:3221") {
+async function openSelection(page, url = process.env.KIVA_TEST_URL || "http://127.0.0.1:3221") {
   await page.goto(url, { timeout: 120000 });
   await page.locator("#enter").waitFor({ state: "visible", timeout: 120000 });
   await page.bringToFront();
+  await page.waitForFunction(() => window.__kivaState?.session?.phase === "Selecting"
+    && window.__kivaState.session.selection?.can_start, undefined, { timeout: 120000 });
+}
+
+async function selectCharacter(page, characterId) {
+  const previousAck = await page.evaluate(() => window.__kivaState.session.selection.selection_ack.request_id);
+  await page.locator(`[data-character-id="${characterId}"]`).click();
+  await page.waitForFunction(({ characterId, previousAck }) => {
+    const selection = window.__kivaState?.session?.selection;
+    return selection?.selected?.id === characterId && selection.selection_ack.accepted
+      && selection.selection_ack.request_id !== previousAck && selection.can_start
+      && !document.getElementById("enter").disabled;
+  }, { characterId, previousAck });
+}
+
+async function enterGame(page, url = process.env.KIVA_TEST_URL || "http://127.0.0.1:3221", characterId = 1) {
+  await openSelection(page, url);
+  await selectCharacter(page, characterId);
   await resumeGame(page);
 }
 
-async function resumeGame(page) {
+async function resumeGame(page, activation = "mouse") {
+  // Pointer Lock checks the native browser view as well as document focus;
+  // Playwright's focus emulation alone does not make that view foreground.
+  await page.bringToFront();
+  const previousPlayer = await page.evaluate(() => window.__kivaState.player_id);
   const button = page.locator("#enter");
+  await page.waitForFunction(() => !document.getElementById("enter").disabled);
   const box = await button.boundingBox();
-  await button.click();
+  if (activation === "keyboard") {
+    await button.focus();
+    await page.keyboard.press("Enter");
+  } else {
+    await button.click();
+  }
   physicalPositions.set(page, { x: box.x + box.width / 2, y: box.y + box.height / 2 });
   await page.waitForFunction(() => document.pointerLockElement?.id === "game"
-    && window.__kivaState && !window.__kivaState.paused && !document.getElementById("game-cursor").hidden);
+    && window.__kivaState?.session?.phase === "Active" && window.__kivaState.player_id
+    && !window.__kivaState.paused && !document.getElementById("game-cursor").hidden);
+  if (previousPlayer !== null && previousPlayer !== await page.evaluate(() => window.__kivaState.player_id)) {
+    throw new Error("Resuming must preserve the existing player instance");
+  }
   const center = await page.evaluate(() => {
     const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
     const canvas = document.getElementById("game");
@@ -114,9 +146,34 @@ async function moveRelative(page, dx, dy) {
 }
 
 async function clickPointer(page, button = "left", delay = 90) {
+  if (!delay) {
+    const position = physicalPositions.get(page);
+    assertPhysicalPosition(position);
+    // Playwright batches an immediate click's native press/release events.
+    await page.mouse.click(position.x, position.y, { button });
+    return;
+  }
   await page.mouse.down({ button });
-  if (delay) await page.waitForTimeout(delay);
+  await page.waitForTimeout(delay);
   await page.mouse.up({ button });
+}
+
+async function clickAndMovePointer(page, x, y) {
+  const cursor = await page.evaluate(() => {
+    if (document.pointerLockElement?.id !== "game") throw new Error("Captured pointer required");
+    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
+    return { x: matrix.m41, y: matrix.m42, scale: devicePixelRatio };
+  });
+  const last = physicalPositions.get(page);
+  assertPhysicalPosition(last);
+  const next = { x: last.x + (x - cursor.x) * cursor.scale, y: last.y + (y - cursor.y) * cursor.scale };
+  // Plan the follow-up motion before committing the click. Short animations
+  // must not spend their input window on host-side cursor queries.
+  await clickPointer(page, "left", 0);
+  await page.mouse.move(next.x, next.y);
+  physicalPositions.set(page, next);
+  // The caller observes motion together with its animation condition, avoiding
+  // a separate feedback round trip in the short interaction window.
 }
 
 async function clickUi(page, selector, delay = 90) {
@@ -151,6 +208,12 @@ async function reportFailure(page) {
     tick: window.__kivaState?.tick,
     aim: window.__kivaState?.aim,
     selected: window.__kivaState?.selected,
+    player_id: window.__kivaState?.player_id,
+    session: window.__kivaState?.session,
+    captured: document.pointerLockElement?.id || null,
+    domPaused: document.documentElement.dataset.paused,
+    pointerError: document.getElementById("pointer-error")?.textContent,
+    selectionError: document.getElementById("selection-error")?.textContent,
     units: window.__kivaState?.units,
     abilities: window.__kivaState?.abilities,
     notice: window.__kivaState?.notice,
@@ -160,4 +223,4 @@ async function reportFailure(page) {
   console.error("Browser state:", JSON.stringify(state, null, 2));
 }
 
-module.exports = { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickPointer, clickUi, worldPoint, clickWorld, reportFailure, serveBuild };
+module.exports = { launchBrowser, openSelection, selectCharacter, enterGame, resumeGame, movePointer, moveRelative, clickPointer, clickAndMovePointer, clickUi, worldPoint, clickWorld, reportFailure, serveBuild };

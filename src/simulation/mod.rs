@@ -3,6 +3,7 @@
 mod abilities;
 mod actions;
 mod attributes;
+mod characters;
 mod combat;
 mod damage;
 mod effects;
@@ -12,7 +13,7 @@ mod navigation;
 mod orders;
 mod statuses;
 pub use abilities::{
-    AbilityCatalog, AbilityDefinition, AbilityExecution, AbilityId, Delivery,
+    AbilityCatalog, AbilityDefinition, AbilityExecution, AbilityId, AbilityLoadout, Delivery,
     DisplacementDirection, DisplacementSpec, Effect, ImpactDefinition, Targeting,
 };
 pub use attributes::{
@@ -20,6 +21,10 @@ pub use attributes::{
     EffectiveAttributes, MAX_ATTACK_SPEED, MIN_ATTACK_SPEED, ModifierRemoval, ModifierSourceId,
 };
 use bevy::prelude::*;
+pub use characters::{
+    CharacterCatalog, CharacterDefinition, CharacterError, CharacterId, CharacterIdentity,
+    CharacterSpawnSpec, LoadoutSelection, spawn_character,
+};
 pub use damage::{DamageOrigin, DamageSnapshot, DamageSpec, DamageType};
 pub use effects::ImpactSnapshot;
 use model::Movement;
@@ -42,6 +47,7 @@ impl Plugin for SimulationPlugin {
             .init_resource::<CommandQueue>()
             .init_resource::<AttributeChanges>()
             .init_resource::<AbilityCatalog>()
+            .init_resource::<CharacterCatalog>()
             .init_resource::<SimulationControl>()
             .init_resource::<SimulationTick>()
             .init_resource::<effects::PendingImpacts>()
@@ -71,6 +77,28 @@ fn begin_tick(mut tick: ResMut<SimulationTick>) {
     tick.0 += 1;
 }
 
+/// Ends the current trial and leaves the simulation paused at tick zero.
+///
+/// Despawning runtime roots also removes their linked children. Navigation,
+/// content catalogs and monotonic identity allocators remain in this World.
+pub fn reset_simulation(world: &mut World) {
+    world.resource_mut::<SimulationControl>().paused = true;
+    let entities: Vec<_> = world
+        .query_filtered::<Entity, Or<(With<Unit>, With<Projectile>, With<AreaEffect>)>>()
+        .iter(world)
+        .collect();
+    for entity in entities {
+        world.despawn(entity);
+    }
+    world.resource_mut::<CommandQueue>().clear();
+    world.resource_mut::<AttributeChanges>().clear_pending();
+    world
+        .resource_mut::<effects::PendingImpacts>()
+        .clear_pending();
+    world.resource_mut::<Messages<SimulationEvent>>().clear();
+    world.resource_mut::<SimulationTick>().0 = 0;
+}
+
 /// Validates construction; all runtime mutation stays inside this module.
 pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static str> {
     if !spec.stats.valid()
@@ -87,12 +115,7 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
     {
         return Err("unit spawn is blocked");
     }
-    if spec
-        .abilities
-        .iter()
-        .flatten()
-        .any(|id| world.resource::<AbilityCatalog>().get(*id).is_none())
-    {
+    if abilities::validate_loadout(&spec.abilities, world.resource::<AbilityCatalog>()).is_err() {
         return Err("unknown equipped ability");
     }
     let slow_source = world

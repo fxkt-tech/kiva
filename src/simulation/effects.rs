@@ -47,6 +47,11 @@ pub(super) struct PendingImpacts {
     packets: Vec<HitPacket>,
 }
 impl PendingImpacts {
+    /// Discard hits from the finished trial while preserving sequence identity.
+    pub(super) fn clear_pending(&mut self) {
+        self.packets.clear();
+    }
+
     fn sequence(&mut self) -> u64 {
         self.next_sequence = self
             .next_sequence

@@ -32,6 +32,18 @@
 - 在构造和指令校验处拒绝非有限数值；不要依靠显示层过滤错误。
 - 不承诺跨平台浮点确定性；相等距离的目标选择已有实体 ID 排序。
 
+## 显式结束本局
+
+`reset_simulation(&mut World)`是整场试炼重开的模拟清理入口：设置paused=true、tick=0，
+移除Unit/Projectile/AreaEffect实体及其linked children，清命令、待处理属性变更、命中包和SimulationEvent消息。
+引导、控制、运动和属性运行态随所属单位删除，不直接从客户端改写这些组件。
+它保留NavigationMap、技能/角色目录及非模拟静态实体，NPC和玩家的重新创建由客户端内容/会话协调。
+
+清队列不能重建身份分配器：AttributeChanges的last_source、PendingImpacts的next_sequence、StatusSequence保持单调，
+ModifierSourceId在同一个World内仍不得复用。应用Time墙钟/固定步资源不重建，只有SimulationTick归零。
+这与死亡/重生是不同的显式边界；普通死亡后已提交效果仍存活的既有规则不变。
+公开行为回归见`tests/reset.rs`，覆盖实际弹丸/延迟区域/引导/控制、队列清理、静态实体保留和新局独立性。
+
 ## 测试方式
 
 `tests/simulation.rs` 的 `Arena` 只安装 `MinimalPlugins` 和 `SimulationPlugin`，通过公开构造和指令接口运行。

@@ -175,6 +175,11 @@ pub struct AttributeChanges {
     pending: VecDeque<(Entity, ModifierSourceId, Change)>,
 }
 impl AttributeChanges {
+    /// Discard requests from the finished trial without recycling source IDs.
+    pub(super) fn clear_pending(&mut self) {
+        self.pending.clear();
+    }
+
     /// None means the ID space is exhausted; no existing source can be reused.
     pub fn allocate_source(&mut self) -> Option<ModifierSourceId> {
         self.last_source = self.last_source.checked_add(1)?;
@@ -198,12 +203,17 @@ impl AttributeState {
     pub fn new(base: BaseAttributes) -> Self {
         Self {
             modifiers: BTreeMap::new(),
-            effective: compute(base, &BTreeMap::new()),
+            effective: initial_attributes(base),
         }
     }
     pub fn effective(&self) -> &EffectiveAttributes {
         &self.effective
     }
+}
+
+/// Pure initial projection, shared by runtime construction and content previews.
+pub(super) fn initial_attributes(base: BaseAttributes) -> EffectiveAttributes {
+    compute(base, &BTreeMap::new())
 }
 
 fn compute(

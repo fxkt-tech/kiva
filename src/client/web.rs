@@ -62,6 +62,33 @@ pub(super) fn pointer_captured() -> Option<bool> {
         None
     }
 }
+
+/// The browser can acquire the native lock before it dispatches the change
+/// event. Only that event lets the UI submit Launch or finish a resume.
+#[derive(Clone, Copy, Default)]
+pub(super) struct PointerCapture {
+    pub actual: bool,
+    pub event_confirmed: bool,
+}
+impl PointerCapture {
+    pub fn confirmed(self) -> bool {
+        self.actual && self.event_confirmed
+    }
+}
+pub(super) fn pointer_capture() -> Option<PointerCapture> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        Some(PointerCapture {
+            actual: pointer_captured()?,
+            event_confirmed: root()?.get_attribute("data-pointer-locked").as_deref()
+                == Some("true"),
+        })
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        None
+    }
+}
 pub(super) fn release_pointer() {
     #[cfg(target_arch = "wasm32")]
     if pointer_captured() == Some(true)
@@ -170,6 +197,19 @@ pub(super) fn take_skill_request() -> Option<usize> {
         let value = root.get_attribute("data-skill")?;
         let _ = root.remove_attribute("data-skill");
         value.parse().ok()
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        None
+    }
+}
+pub(super) fn take_session_requests() -> Option<String> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let root = root()?;
+        let value = root.get_attribute("data-session-requests")?;
+        let _ = root.remove_attribute("data-session-requests");
+        Some(value)
     }
     #[cfg(not(target_arch = "wasm32"))]
     {

@@ -8,13 +8,14 @@ use bevy::{
     window::WindowEvent,
 };
 
-fn app() -> (App, Entity) {
+fn selecting_app() -> (App, Entity) {
     let mut app = App::new();
     app.add_plugins((MinimalPlugins, SimulationPlugin))
         .add_message::<WindowEvent>()
         .init_resource::<PointerState>()
         .init_resource::<GamePointer>()
         .init_resource::<ClientFeedback>()
+        .init_resource::<PlayerController>()
         .add_systems(Update, collect_input);
     let window = app
         .world_mut()
@@ -24,6 +25,13 @@ fn app() -> (App, Entity) {
         })
         .id();
     super::super::content::setup(app.world_mut());
+    super::super::session::setup(app.world_mut());
+    (app, window)
+}
+
+fn app() -> (App, Entity) {
+    let (mut app, window) = selecting_app();
+    super::super::session::start_native(app.world_mut());
     (app, window)
 }
 
@@ -111,7 +119,7 @@ fn an_earlier_focus_event_cannot_override_explicit_resume() {
 #[test]
 fn picking_uses_the_displayed_body_transform_and_local_offset() {
     let (mut app, _) = app();
-    let player = app.world().resource::<PlayerController>().player;
+    let player = app.world().resource::<ClientSession>().player().unwrap();
     app.world_mut().entity_mut(player).insert((
         GlobalTransform::from(Transform::from_xyz(4.0, 3.0, 5.0)),
         Pickable {
@@ -128,7 +136,7 @@ fn picking_uses_the_displayed_body_transform_and_local_offset() {
 #[test]
 fn enemy_skill_keeps_aim_on_empty_ground_or_friendly_body_without_submitting() {
     let (mut app, _) = app();
-    let player = app.world().resource::<PlayerController>().player;
+    let player = app.world().resource::<ClientSession>().player().unwrap();
     select_ability(app.world_mut(), 0);
     let mut events = bevy::ecs::message::MessageCursor::<SimulationEvent>::default();
     for hovered in [None, Some(player)] {
@@ -171,7 +179,7 @@ fn control_caster(app: &mut App, ability: AbilityId) -> Entity {
 #[test]
 fn a_real_stun_clears_existing_aim_without_replaying_the_cast() {
     let (mut app, _) = app();
-    let player = app.world().resource::<PlayerController>().player;
+    let player = app.world().resource::<ClientSession>().player().unwrap();
     let caster = control_caster(&mut app, AbilityId(5));
     select_ability(app.world_mut(), 0);
     submit(
@@ -205,7 +213,7 @@ fn a_real_stun_clears_existing_aim_without_replaying_the_cast() {
 #[test]
 fn root_keeps_nonmovement_aim_but_rejects_selecting_a_dash() {
     let (mut app, _) = app();
-    let player = app.world().resource::<PlayerController>().player;
+    let player = app.world().resource::<ClientSession>().player().unwrap();
     let caster = control_caster(&mut app, AbilityId(6));
     submit(
         app.world_mut(),
@@ -237,5 +245,200 @@ fn root_keeps_nonmovement_aim_but_rejects_selecting_a_dash() {
             .resource::<ClientFeedback>()
             .message
             .contains("位移")
+    );
+}
+
+#[test]
+fn selecting_discards_game_input_and_npc_commands_and_cannot_be_unpaused() {
+    let (mut app, window) = selecting_app();
+    app.add_systems(Update, patrol_units.after(collect_input));
+    let positions: Vec<_> = app
+        .world_mut()
+        .query::<(Entity, &UnitPose)>()
+        .iter(app.world())
+        .map(|(id, pose)| (id, pose.position()))
+        .collect();
+    let npc = positions[0].0;
+    app.world_mut()
+        .resource_mut::<CommandQueue>()
+        .submit(npc, UnitCommand::MoveTo(Vec2::new(5.0, 5.0)));
+    for key in [KeyCode::KeyQ, KeyCode::KeyA, KeyCode::Escape, KeyCode::KeyS] {
+        press(&mut app, window, key);
+    }
+    set_paused(app.world_mut(), false);
+    app.world_mut().run_schedule(Update);
+    for _ in 0..20 {
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    assert!(app.world().resource::<SimulationControl>().paused);
+    assert_eq!(app.world().resource::<SimulationTick>().0, 0);
+    assert!(app.world().resource::<ClientSession>().player().is_none());
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    for (id, position) in &positions {
+        assert_eq!(
+            app.world().get::<UnitPose>(*id).unwrap().position(),
+            *position
+        );
+    }
+
+    // Starting later must not replay any of the selection screen's input or
+    // the NPC command that was queued before the no-player gate ran.
+    super::super::session::start_native(app.world_mut());
+    set_paused(app.world_mut(), false);
+    app.world_mut().run_schedule(Update);
+    app.world_mut().run_schedule(FixedUpdate);
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    assert!(matches!(
+        app.world().get::<UnitOrder>(player),
+        Some(UnitOrder::Idle)
+    ));
+    assert!(matches!(
+        app.world().get::<UnitOrder>(npc),
+        Some(UnitOrder::Idle)
+    ));
+}
+
+#[test]
+fn pause_and_resume_keep_the_same_player_loadout_and_committed_cooldown() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    submit(
+        app.world_mut(),
+        player,
+        UnitCommand::CastAbility {
+            slot: 2,
+            target: AbilityTarget::Point(Vec2::new(1.0, 6.0)),
+        },
+    );
+    for _ in 0..10 {
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    let cooldown = app
+        .world()
+        .get::<AbilitySlots>(player)
+        .unwrap()
+        .cooldown(2)
+        .unwrap();
+    let mana = app.world().get::<UnitState>(player).unwrap().mana();
+    let tick = app.world().resource::<SimulationTick>().0;
+    set_paused(app.world_mut(), true);
+    for _ in 0..15 {
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    assert_eq!(app.world().resource::<SimulationTick>().0, tick);
+    assert_eq!(
+        app.world().get::<AbilitySlots>(player).unwrap().cooldown(2),
+        Some(cooldown)
+    );
+    assert_eq!(app.world().get::<UnitState>(player).unwrap().mana(), mana);
+    set_paused(app.world_mut(), false);
+    app.world_mut().run_schedule(FixedUpdate);
+    assert_eq!(
+        app.world().resource::<ClientSession>().player(),
+        Some(player)
+    );
+    assert_eq!(
+        app.world().get::<CharacterIdentity>(player).unwrap().id(),
+        CharacterId(1)
+    );
+    assert_eq!(
+        app.world().get::<AbilitySlots>(player).unwrap().ability(2),
+        Some(AbilityId(3))
+    );
+    assert!(
+        app.world()
+            .get::<AbilitySlots>(player)
+            .unwrap()
+            .cooldown(2)
+            .unwrap()
+            < cooldown
+    );
+    assert_eq!(
+        app.world_mut()
+            .query::<&CharacterIdentity>()
+            .iter(app.world())
+            .count(),
+        1
+    );
+}
+
+#[test]
+fn a_skill_queued_before_capture_cannot_arm_or_cast_after_launch_or_resume() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    queued_skill_request(app.world_mut(), Some(0), true);
+    queued_skill_request(app.world_mut(), Some(2), true);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    app.world_mut().run_schedule(FixedUpdate);
+    assert_eq!(
+        app.world().get::<AbilitySlots>(player).unwrap().cooldown(2),
+        Some(0.0)
+    );
+    assert_eq!(app.world().get::<UnitState>(player).unwrap().mana(), 300.0);
+    set_paused(app.world_mut(), true);
+    queued_skill_request(app.world_mut(), Some(0), false);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    set_paused(app.world_mut(), false);
+    queued_skill_request(app.world_mut(), Some(0), true);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    queued_skill_request(app.world_mut(), Some(0), false);
+    assert!(matches!(
+        app.world().resource::<PlayerController>().aim,
+        Some(Aim::Ability(0))
+    ));
+}
+
+#[test]
+fn delayed_capture_event_keeps_resume_paused_then_recenters_and_discards_queued_skill() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let size = Vec2::new(1280.0, 800.0);
+    let confirmed = Some(web::PointerCapture {
+        actual: true,
+        event_confirmed: true,
+    });
+    assert!(sync_pointer(app.world_mut(), confirmed, false, size, None).1);
+    app.world_mut()
+        .resource_mut::<GamePointer>()
+        .relative(Vec2::new(200.0, -100.0));
+    set_paused(app.world_mut(), true);
+    // DOM pause can precede native unlock. It still ends this input session.
+    assert!(!sync_pointer(app.world_mut(), confirmed, true, size, None).1);
+    let before_event = Some(web::PointerCapture {
+        actual: true,
+        event_confirmed: false,
+    });
+    for _ in 0..4 {
+        let (captured, just_captured) =
+            sync_pointer(app.world_mut(), before_event, true, size, None);
+        assert_eq!(captured, Some(false));
+        assert!(
+            !just_captured,
+            "native acquisition cannot consume the event boundary"
+        );
+        queued_skill_request(app.world_mut(), Some(0), just_captured);
+        assert!(app.world().resource::<PlayerController>().aim.is_none());
+    }
+    set_paused(app.world_mut(), false);
+    let (captured, just_captured) = sync_pointer(app.world_mut(), confirmed, false, size, None);
+    assert_eq!(captured, Some(true));
+    assert!(
+        just_captured,
+        "the event's unpause must start a fresh input session"
+    );
+    assert_eq!(
+        app.world().resource::<GamePointer>().position(),
+        Some(size * 0.5)
+    );
+    queued_skill_request(app.world_mut(), Some(0), just_captured);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    assert_eq!(
+        app.world().resource::<ClientSession>().player(),
+        Some(player)
+    );
+    assert!(
+        !sync_pointer(app.world_mut(), None, false, size, None).1,
+        "native input keeps its absent-browser capture branch"
     );
 }
