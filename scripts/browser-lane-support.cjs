@@ -10,20 +10,25 @@ async function installFrameClock(page) {
     let now = nativeNow();
     let lastFrame;
     let step = 1000 / 60;
+    const diagnostics = { frames: 0, states: 0, labels: 0, step };
+    window.__laneDiagnostics = diagnostics;
     Object.defineProperty(performance, "now", { value: () => now });
     window.requestAnimationFrame = (callback) => nativeFrame((timestamp) => {
       if (timestamp !== lastFrame) {
         lastFrame = timestamp;
         now += step;
+        diagnostics.frames++;
       }
       callback(now);
     });
     window.__laneSetFrameStep = (milliseconds) => {
       if (![1000 / 60, 250].includes(milliseconds)) throw new Error("Unsupported fixture frame step");
       step = milliseconds;
+      diagnostics.step = step;
     };
     window.__laneStarts = new Map();
     window.addEventListener("kiva-state", (event) => {
+      diagnostics.states++;
       const snapshot = typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
       if (snapshot.match?.phase === "Running" && !window.__laneStarts.has(snapshot.match.id)) {
         window.__laneStarts.set(snapshot.match.id, snapshot);
@@ -31,6 +36,7 @@ async function installFrameClock(page) {
     });
     window.__laneLabels = new Map();
     window.addEventListener("kiva-labels", (event) => {
+      diagnostics.labels++;
       const labels = typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
       window.__laneLabels = new Map(labels.map((label) => [label.id, label]));
     });
@@ -67,13 +73,15 @@ async function firstWaveStart(page) {
   assert(snapshot.tick < 30, "the first trusted start projection must precede the second scheduled pair");
   assert.equal(snapshot.match.phase, "Running");
   assert.equal(snapshot.match.wave_number, 1);
-  assert.equal(snapshot.units.length, 6, "start creates two bases, two heroes and one minion per team");
-  for (const team of ["ally", "enemy"]) {
+  assert.equal(snapshot.units.length, 3, "first observation contains our base, hero and first minion; unseen enemies stay hidden");
+  assert.equal(snapshot.units.filter((unit)=>unit.team==="enemy").length,0);
+  assert.equal(snapshot.match.bases.enemy,null,"enemy base health is unknown before vision");
+  for (const team of ["ally"]) {
     const first = minions(snapshot, team);
     assert.equal(first.length, 1);
     assert.equal(first[0].role, "MeleeMinion");
     assert.equal(first[0].formation_slot, 0);
-    assert.equal(first[0].max_health, 720);
+    assert.equal(first[0].max_health, 465);
   }
   assert.equal(snapshot.camera_locked, false);
   assert(Math.hypot(...snapshot.camera_center.map((value, i) => value - hero(snapshot).position[i])) < 0.15,
@@ -88,13 +96,14 @@ async function waitForFirstWave(page) {
     snapshot = await observed(page, () => window.__kivaState.tick >= 150 ? window.__kivaState : false);
   } finally { await page.evaluate(() => window.__laneSetFrameStep(1000 / 60)); }
   assert.equal(snapshot.match.wave_number, 1);
-  assert.equal(snapshot.units.length, 16, "all six pairs have actually spawned by tick150");
-  for (const team of ["ally", "enemy"]) {
+  assert.equal(snapshot.units.filter((unit)=>unit.team==="ally").length, 8, "our six scheduled minions, hero and base are observed by tick150");
+  assert(snapshot.units.every((unit)=>unit.team==="ally"),"camera position cannot reveal the distant enemy roster");
+  for (const team of ["ally"]) {
     const wave = minions(snapshot, team).filter((unit) => unit.wave === 1);
     assert.deepEqual(wave.map((unit) => unit.formation_slot).sort((a,b) => a-b), [0,1,2,3,4,5]);
     assert.equal(wave.filter((unit) => unit.role === "MeleeMinion").length, 3);
     assert.equal(wave.filter((unit) => unit.role === "RangedMinion").length, 3);
-    for (const unit of wave) assert.equal(unit.max_health, unit.role === "MeleeMinion" ? 720 : 480);
+    for (const unit of wave) assert.equal(unit.max_health, unit.role === "MeleeMinion" ? 465 : 284);
   }
   return snapshot;
 }
@@ -114,6 +123,13 @@ async function visibleWorldPoint(page, position) {
 }
 
 async function panTo(page, position) {
+  const diagnostics = process.env.KIVA_PAN_DIAGNOSTICS === "1";
+  const sample = () => page.evaluate(() => ({ date_now: Date.now(), performance_now: performance.now(),
+    tick: window.__kivaState.tick, center: window.__kivaState.camera_center,
+    locked: window.__kivaState.camera_locked, paused: window.__kivaState.paused,
+    dom_paused: document.documentElement.dataset.paused, captured: document.pointerLockElement?.id,
+    fixture: window.__laneDiagnostics }));
+  if (diagnostics) console.log("PAN begin", JSON.stringify({ position, ...(await sample()) }));
   if ((await state(page)).camera_locked) {
     await page.keyboard.press("y");
     await page.waitForFunction(() => !window.__kivaState.camera_locked);
@@ -131,13 +147,22 @@ async function panTo(page, position) {
       if (Math.abs(remaining) < 2.5) continue;
       const sign = Math.sign(remaining);
       const key = sign > 0 ? positive : negative;
+      if (diagnostics) console.log("PAN axis", JSON.stringify({ key, remaining, center }));
+      const timer = diagnostics ? setInterval(async () => {
+        try { console.log("PAN waiting", JSON.stringify({ key, ...(await sample()) })); }
+        catch (error) { console.error("PAN diagnostic error", error.message); }
+      }, 5000) : null;
       await page.keyboard.down(key);
       try {
         await page.waitForFunction(({ position, axis, sign }) => {
           const center = window.__kivaState.camera_center;
           return ((position[0] - center[0]) * axis[0] + (position[1] - center[1]) * axis[1]) * sign <= 2.5;
         }, { position, axis, sign });
-      } finally { await page.keyboard.up(key); }
+      } finally {
+        if (timer) clearInterval(timer);
+        await page.keyboard.up(key);
+      }
+      if (diagnostics) console.log("PAN reached", JSON.stringify({ key, ...(await sample()) }));
     }
   } finally { await page.evaluate(() => window.__laneSetFrameStep?.(1000 / 60)); }
   assert(await visibleWorldPoint(page, position), "real arrow-key panning must bring the world target into the viewport");
@@ -175,6 +200,7 @@ async function moveTo(page, destination) {
     await page.waitForFunction(([x, z]) => {
       const snapshot = window.__kivaState;
       const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
+      if (!player?.alive) throw new Error("The live opponent defeated the player during the movement order");
       return Math.hypot(player.position[0] - x, player.position[1] - z) < 0.15;
     }, destination);
   } finally {
@@ -183,8 +209,8 @@ async function moveTo(page, destination) {
 }
 
 function nearHome(snapshot, forward = 2, lateral = -2) {
-  const home = base(snapshot, "ally").position;
-  const away = base(snapshot, "enemy").position;
+  const home = snapshot.map.ally_base;
+  const away = snapshot.map.enemy_base;
   const length = Math.hypot(away[0] - home[0], away[1] - home[1]);
   const direction = [(away[0] - home[0]) / length, (away[1] - home[1]) / length];
   return [home[0] + direction[0] * forward - direction[1] * lateral,
@@ -192,7 +218,7 @@ function nearHome(snapshot, forward = 2, lateral = -2) {
 }
 
 function nearMiddle(snapshot, forwardOffset = -0.65, lateral = -3) {
-  const length = Math.hypot(...base(snapshot, "enemy").position.map((value, i) => value - base(snapshot, "ally").position[i]));
+  const length = Math.hypot(...snapshot.map.enemy_base.map((value, i) => value - snapshot.map.ally_base[i]));
   return nearHome(snapshot, length / 2 + forwardOffset, lateral);
 }
 

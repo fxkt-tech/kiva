@@ -16,6 +16,13 @@
     direction: '<path d="m24 5-14 18h10l-4 12 15-20H20z"/>',
     area: '<circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="5"/><path d="M20 3v7m0 20v7M3 20h7m20 0h7"/>',
     dash: '<path d="M5 14h20m-16 7h24M4 28h20m-2-20 12 13-12 13"/>',
+    shield: '<path d="M20 3 34 9v12c0 8-8 13-14 16C14 34 6 29 6 21V9Z"/>',
+    standard: '<path d="M12 36V4m1 2h20l-7 8 7 7H13"/>',
+    leap: '<path d="M5 29Q20 0 34 25m-5-8 5 8-9 1M5 34h29"/>',
+    focus: '<path d="M5 32 33 5M11 5q25 15 20 27M5 5v30l30-1"/>',
+    volley: '<path d="M20 35 6 6m14 29V3m0 32L34 6M3 10l3-4 5 1m18 0 5-1 3 4"/>',
+    scout: '<path d="m3 18 13-5 4 7 4-7 13 5-13 5-4 12-4-12Z"/>',
+    arrow: '<path d="M20 37V3m-8 10 8-10 8 10M13 31l7-7 7 7"/>',
     channel: '<path d="m20 4 4 11 12 5-12 4-4 12-11-4 11-5z"/><circle cx="20" cy="20" r="5"/>',
   };
   let ready = false;
@@ -332,7 +339,7 @@
         const details = document.createElement("small");
         target.textContent = ability.target_hint;
         description.textContent = ability.description;
-        details.textContent = `能量 ${ability.cost} · 冷却 ${ability.total_cooldown}s · 射程 ${ability.range}`;
+        details.textContent = `能量 ${ability.cost} · 冷却 ${ability.total_cooldown}s · 射程 ${ability.display_range}`;
         item.append(target, description, details);
       }
       return item;
@@ -348,8 +355,9 @@
     $("preview-health").textContent = formatAttribute(selected?.max_health, 1);
     $("preview-mana").textContent = formatAttribute(selected?.max_mana, 1);
     for (const { key, digits, previewElement } of statFields) {
-      previewElement.textContent = formatAttribute(selected?.attributes?.[key], digits);
+      previewElement.textContent = formatAttribute(selected?.display_attributes?.[key], digits);
     }
+    $("preview-passive").textContent = (selected?.passives || []).join("；");
     renderPreviewAbilities(selected?.abilities || []);
   }
 
@@ -400,11 +408,16 @@
   function renderHero(player) {
     $("hero-hud").hidden = session?.phase !== "Active" || !player;
     for (const { key, digits, element } of statFields) {
-      element.textContent = formatAttribute(player?.attributes?.[key], digits);
+      element.textContent = formatAttribute(player?.display_attributes?.[key], digits);
     }
     renderStatuses($("hero-statuses"), player);
     if (!player) return;
     $("hero-name").textContent = player.name;
+    $("hero-passive").title = (player.passives || []).join("；");
+    $("hero-passive").hidden = !player.passives?.length;
+    $("shield-text").hidden = !(player.shield > 0);
+    $("shield-text").textContent = `护盾 ${Math.ceil(player.shield || 0)}`;
+    document.querySelector('[data-stat="attack_speed"]').closest(".hero-stat").title = `基础攻速 ${player.base_attack_speed}`;
     $("health-fill").style.width = `${100 * player.health / player.max_health}%`;
     $("mana-fill").style.width = `${100 * player.mana / player.max_mana}%`;
     $("health-text").textContent = `${Math.ceil(player.health)} / ${player.max_health}`;
@@ -459,6 +472,7 @@
       button.disabled = true;
       button.classList.remove("cooling", "aiming", "no-energy", "unavailable");
       button.querySelector("small").textContent = "未装配";
+      window.renderSkillState(button,null);
       button.querySelector("svg").replaceChildren();
       button.querySelector(".cooldown").textContent = "";
       button.removeAttribute("data-icon");
@@ -481,7 +495,8 @@
       }
       button.querySelector(".cooldown").textContent = ability.cooldown >= 1
         ? String(Math.ceil(ability.cooldown)) : ability.cooldown.toFixed(1);
-      button.title = `${ability.name} · ${ability.target_hint}\n${ability.description}\n能量 ${ability.cost} · 冷却 ${ability.total_cooldown}s · 射程 ${ability.range}${ability.unavailable_reason ? `\n${ability.unavailable_reason}` : ""}`;
+      const runtimeNote=window.renderSkillState(button,ability);
+      button.title = `${ability.name} · ${ability.target_hint}\n${ability.description}\n能量 ${ability.cost} · 冷却 ${ability.total_cooldown}s · 射程 ${ability.display_range}${ability.unavailable_reason ? `\n${ability.unavailable_reason}` : ""}`;
     }
     $("aim-hint").hidden = state.aim === null && state.equipment_aim == null && !state.attack_move;
     $("aim-text").textContent = state.attack_move
@@ -499,32 +514,32 @@
       $("ability-detail").querySelector("strong").textContent = detail.name;
       $("ability-detail").querySelector("span").textContent = detail.target_hint;
       $("ability-detail").querySelector("p").textContent = detail.description;
-      $("ability-detail").querySelector("small").textContent = detail.note || detail.unavailable_reason || `能量 ${detail.cost} · 冷却 ${detail.total_cooldown}s · 射程 ${detail.range}`;
+      $("ability-detail").querySelector("small").textContent = detail.note || detail.unavailable_reason || `能量 ${detail.cost} · 冷却 ${detail.total_cooldown}s · 射程 ${detail.display_range ?? detail.range}`;
     }
     renderHelp(state.abilities);
+  }
+
+  function unitLabel(unit) {
+    let label=labels.get(unit.id);
+    if (!label) {
+      label=document.createElement("div");
+      label.className=`unit-label ${unit.team}`;
+      label.dataset.role=unit.role || "";
+      label.hidden=true;
+      const name=document.createElement("strong"); name.textContent=unit.name;
+      const bar=document.createElement("div"); bar.className="bar"; bar.appendChild(document.createElement("i"));
+      const statuses=document.createElement("div"); statuses.className="status-badges";
+      label.append(name,bar,statuses);
+      $("unit-labels").appendChild(label); labels.set(unit.id,label);
+    }
+    return label;
   }
 
   function renderUnits(state) {
     const present = new Set();
     for (const unit of state.units) {
       present.add(unit.id);
-      let label = labels.get(unit.id);
-      if (!label) {
-        label = document.createElement("div");
-        label.className = `unit-label ${unit.team}`;
-        label.dataset.role = unit.role || "";
-        label.hidden = true;
-        const name = document.createElement("strong");
-        name.textContent = unit.name;
-        const bar = document.createElement("div");
-        bar.className = "bar";
-        bar.appendChild(document.createElement("i"));
-        const statuses = document.createElement("div");
-        statuses.className = "status-badges";
-        label.append(name, bar, statuses);
-        $("unit-labels").appendChild(label);
-        labels.set(unit.id, label);
-      }
+      const label = unitLabel(unit);
       label.querySelector("i").style.width = `${100 * unit.health / unit.max_health}%`;
       renderStatuses(label.querySelector(".status-badges"), unit);
     }
@@ -547,8 +562,9 @@
     const present = new Set();
     for (const unit of positions) {
       present.add(unit.id);
-      const label = labels.get(unit.id);
+      const label = unit.unit ? unitLabel({ id:unit.id, ...unit.unit }) : labels.get(unit.id);
       if (!label) continue;
+      if (unit.unit) label.querySelector("i").style.width=`${100*unit.unit.health/unit.unit.max_health}%`;
       label.hidden = !unit.alive || !unit.screen;
       if (unit.screen) {
         label.style.left = `${unit.screen[0]}px`;
@@ -556,6 +572,7 @@
       }
     }
     for (const [id, label] of labels) if (!present.has(id)) label.hidden = true;
+    if (window.__kivaState?.selected && !present.has(window.__kivaState.selected)) $("target-panel").hidden=true;
   });
 
   function renderMinimap(state) {

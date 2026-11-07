@@ -13,18 +13,25 @@ src/simulation/model.rs       单位、指令、动作、只读视图、模拟�
 src/simulation/attributes.rs  基础/最终属性、来源修正、变更队列、普攻时序推导
 src/simulation/damage.rs      伤害表达式、提交快照、类型与抗性计算
 src/simulation/abilities.rs   目标、执行、投递、有序效果与四槽装配定义
+src/simulation/mechanics_defs.rs 复合执行、单位类别与普攻特性的通用配置
+src/simulation/mechanics.rs   护盾、强化、充能与临时属性的运行态/只读视图
+src/simulation/attack_traits.rs 普攻特性、逐目标触发与攻击快照
+src/simulation/compound.rs    复合施法与已提交运动的协调，不写位置/生命
+src/simulation/battlefield.rs  军旗、光环、侦察、临时地形对象及寿命
+src/simulation/vision.rs      团队可见性快照与共享查询
 src/simulation/characters.rs  角色目录、身份、默认/显式装配解析与统一角色创建
 src/simulation/equipment.rs   装备目录、六格实例、来源装卸、装备CD与被动收集
 src/simulation/effects.rs     不可变命中快照、投递创建与稳定排序结算
 src/simulation/statuses.rs    状态实例、计时、叠加、控制权限与减速归并
 src/simulation/orders.rs      指令校验、持续指令、目标获取与追击
-src/simulation/navigation.rs  A*、路径平滑、静态障碍与扫掠检测
+src/simulation/navigation.rs  A*、静态/临时几何、解析扫掠与出生落点解析
 src/simulation/movement.rs    移动、冲刺、位置重置
 src/simulation/actions.rs     前摇、提交、收招、引导、冷却
 src/simulation/combat.rs      弹丸、延迟范围效果、伤害、死亡、重生
-src/simulation/recovery.rs    受限的友方结构恢复，脱战、范围和每tick去重
+src/simulation/recovery.rs    自然生命恢复与受限的友方结构恢复
 src/gameplay/mod.rs           GameplayPlugin、调度接口与幂等准备
 src/gameplay/content/         技能、角色、装备的不可变内容定义
+src/gameplay/units.rs         端游距离/速度与世界单位的统一换算
 src/gameplay/map.rs           地图、基地、出生和兵线路径的共同几何
 src/gameplay/definition.rs    基地/兵种/波次/恢复的模式配置
 src/gameplay/spawn.rs         原子开局、首波和重置
@@ -43,10 +50,13 @@ src/client/scene.rs           过程生成场景、显示根插值和指示器
 src/client/world_scene.rs     由模式地图派生的地面、中路和静态装饰
 src/client/unit_appearance.rs 英雄/兵种/基地的模型、拾取和标签参数
 src/client/presentation.rs    普通暂停与终局的统一表现采样帧
+src/client/visibility.rs      模型/拾取/HUD共享的可见实体集合
+src/client/battlefield.rs     军旗、墙、侦察与护盾的只读三维表现
 src/client/match_view.rs      只读对局、波次与基地投影
 src/client/character/rig.rs   内嵌骨骼动作校验、采样和父序变换
-src/client/character/model.rs 分段模型、头眼与右手剑socket
-src/client/character/poses.rs 源动作上的骨骼姿态与持剑手势
+src/client/character/model.rs 分段模型、头眼与武器socket
+src/client/character/weapon.rs 展示身份到剑/枪/弓几何，不参与战斗规则
+src/client/character/poses.rs 源动作上的骨骼姿态与持武器手势
 src/client/character/animation.rs 只读模拟到动作、过渡与生命缓存
 src/client/ui.rs              HUD 的只读状态投影
 src/client/web.rs             浏览器交互适配
@@ -58,6 +68,8 @@ web/pointer.js                Web实时CSS指针、正常位移校准、按下�
 tests/simulation.rs           既有属性、攻击、技能生命周期无窗口回归
 tests/status_effects.rs       多效果、控制组合、生命身份和强制运动行为测试
 tests/characters.rs           角色构造、装配、实例独立和重生保持测试
+tests/champion_content.rs     内置皇子/寒冰真实内容配线与命令行为
+tests/champion_mechanics.rs   通用被动/复合技能/视野/地形边界
 tests/equipment.rs            装卸/施法/被动/归因/生命周期公开行为测试
 tests/reset.rs                整局实体/队列清理与静态资源/分配器保留测试
 tests/combat_foundation.rs    结构受效、普攻投递、施法预检和恢复行为
@@ -86,14 +98,14 @@ tests/hero_ai.rs              实际装配施法、战术、有限追击和攻�
 
 1. 推进模拟 tick。
 2. 处理到期重生。
-3. FIFO 消费属性修正请求，完整校验后原子更新来源集合与最终属性。
+3. FIFO 消费属性修正请求，完整校验后原子更新来源集合与最终属性；推进增强/充能/对象寿命和光环，刷新团队视野。
 4. FIFO 消费待处理玩家指令，每条消费一次。
 5. 推进冷却与动作，提交已完成前摇的攻击和技能；装备CD在此阶段开头对死亡单位也推进。
 6. 解析持续指令，选择目标、规划路线或开始普攻前摇。
 7. 统一处理普通移动、自主冲刺或强制运动；每步只使用一种运动预算。
-8. 扫掠弹丸，推进延迟范围效果，收集命中包；直接命中也只入队。
+8. 收集已提交路径运动的命中/落点，扫掠弹丸并推进延迟范围效果；全部只入队。
 9. 推进并移除旧状态，同步更新控制权限和减速属性。
-10. 稳定排序命中包，按定义顺序执行伤害、状态、位移请求；致死立即清理。
+10. 稳定排序命中包，按定义顺序执行伤害、状态、位移请求；致死立即清理；重新发布可见性快照。
 
 顺序由插件内 `.chain()` 声明，包括 Bevy 延迟实体操作的同步点。
 因此同一步内，所有单位的动作提交先于控制、伤害与死亡：同一步被击杀或控制的单位，已提交效果仍有效。
@@ -144,7 +156,7 @@ HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件�
 `UnitRole`表达英雄/近战兵/远程兵/基地；`Controller`独立表达人类/英雄AI/小兵AI。
 
 首波在0秒开始，每方先3近战、后3远程，slot0..5分别在0/30/60/90/120/150tick生成。
-以后每3600tick开始下一波，波次起点不随本波出齐时间漂移；默认近战720生命、远程480生命。
+以后每3600tick开始下一波，波次起点不随本波出齐时间漂移；默认近战465生命、远程284生命。
 `MatchRecord`私有待发状态只保存波次、下一slot和tick，暂停不推进，终局/失败/reset清除。
 每波先全量预检，实际每次同时原子生成双方同slot的一对兵；失败回滚本次新增根并冻结，
 已参与战斗的早先兵保留。不能隐瞒漏兵、跳波或静默限制活兵数量。
@@ -166,11 +178,37 @@ Brain只拥有当前生命目标、命令去重和战术记忆，移动/攻击/�
 
 详细接口、错误矩阵和长局验证见[玩法规范](../.trellis/spec/gameplay/index.md)。
 
+## 复合技能与团队观察
+
+角色模板把通用 `AttackPassive` 置于 `UnitStats`，通过实际 loadout 推导已学技能被动；
+`CharacterDefinition::initial_attributes_with_loadout`在不创建实体的情况下预览同一份贡献。
+`UnitKind`表达通用Hero/Minion/Other目标类别，与模式UnitRole独立，技能过滤不导入gameplay。
+
+复合执行由Line/Shield/Standard/Leap/Empower/Volley/Scout/Arrow配置组合几何、运动与有序效果。
+它们仍经过统一preview、前摇复核、伤害快照和消耗/CD提交；效果不能另开扣血或位置写入口。
+护盾吸收抗性后的伤害，实际生命损失仍由combat发布；盾全吸收的有效普攻仍可触发一次命中被动。
+战争律动用命中前当前生命，按来源生命/被动索引/目标生命独立计时；结构不接受附伤。
+强化普攻将倍率和箭数一并冻结，五箭表现只触发一次装备命中效果；军旗光环对友方英雄取最强一份。
+
+场上对象保存来源生命、阵营、激活/到期tick和位置；地图只保存其临时墙几何句柄。
+movement先在包含全部旧墙与新圈的导航副本中为所有受影响Actor规划局部排离，全部成功才提交；
+径向受阻会近邻搜索，仍无解则整圈不创建并发布TerrainPlacementFailed，伤害/消耗保留，客户端仅向施法玩家反馈。
+普通移动路径与sweep共用墙；弹丸与侦察不受临时墙阻挡。
+跃击按冻结落点运动，来源死亡不落地结算；已布置独立旗帜/侦察/地形按各自寿命存续。
+二次释放通过当前来源的recast权限走统一施法入口，不重复扣法力或刷新原CD。
+构造/复活复用NavigationMap::resolve_placement：静态非法仍拒绝，临时墙遮挡原点时只局部排离，原home不变；
+无安全复活点则保留dead life待下tick重试。模式预检使用当前实际静态几何path_static，不能因R圈暂时封路冻结兵波。
+
+`TeamVision`由存活单位和已激活临时视野源构成；构造、reset以及固定步边界刷新。
+没有视野源的独立Arena保留全视野。方向/地点技能允许盲打，敌方单位锁定和持续攻击只使用当前可见信息；
+已提交载体的命中按几何和生命身份裁决，不因之后丢视野而撤销。
+客户端VisibleWorld集合将同一事实供模型、逐帧血条、HUD和拾取使用；AI也按自身阵营过滤观察。
+
 ## 骨骼角色表现
 
 双方英雄采用act分支的23骨骼刚性火柴人和CC0动作资源，原生/WASM内嵌同一份数据。
 `character::rig`校验和采样源局部变换，`poses`提供小型持剑姿态，`model`将17骨段、14关节、
-头眼和剑绑定到骨骼。全部几何位于单位的`CharacterModel`子树，整场重开随根递归删除。
+头眼和当前武器绑定到骨骼；皇子使用长枪，寒冰使用弓，独立姿态负责双臂配合。全部几何位于单位的`CharacterModel`子树，整场重开随根递归删除。
 
 `character::animation`只读UnitAction、真实步位移、控制、目录与模拟事件。它用模拟tick和插值分数推进
 待机、步态及平滑过渡，不从宿主时间重建战斗时钟。普攻准备缓存首次观察到的前摇剩余，
@@ -200,7 +238,7 @@ Brain只拥有当前生命目标、命令去重和战术记忆，移动/攻击/�
 但不会取消已提交的自主冲刺、外来强制位移或弹丸。其它新指令不能覆盖自主冲刺。
 死亡清理所有运动。重复攻击同一目标不会不断重置攻击前摇。
 
-无效指令不替换已有指令，不取消已有施法，不扣资源。普通地点/单位目标技能必须在射程内，不自动走近施法。
+无效指令不替换已有指令，不取消已有施法，不扣资源。普通地点/单位目标技能必须在射程内，不自动走近施法；军旗与Dash通过统一地点截取语义支持最大范围释放。
 Point Dash允许超距点击：范围内到点击点，范围外沿方向到最大距离，碰墙/边界仍由统一扫掠提前停止。
 普攻会追踪目标；停止后不自动获取附近敌人。
 攻击移动会选择自身获取范围内最近的敌人，距离相同时按实体 ID 排序，目标消失后继续原路。
@@ -301,7 +339,7 @@ resistance <  0: multiplier = 2 - 100 / (100 - resistance)
 
 统一结算扣血并截断到 0，不提前四舍五入。`Damaged.amount` 是实际生命损失，0 实际损失不发受伤事件。
 目标命中前的抗性变化生效；同一次引导的不同脉冲可以受到目标抗性变化影响。
-普攻是物理伤害，演示Q/W是魔法伤害，法强系数分别为0.6/0.8；保留的引导定义每脉冲0.2。
+普攻是物理伤害，具体技能按实际内容定义的伤害类型与加成执行；旧演示定义仅保留给装备/独立测试，不再是英雄默认装配。
 默认R只有击退与击飞，组合效果不要求包含伤害。
 这些示例系数属于内容配置，不进入输入、移动或伤害算法中的技能 ID 分支。
 
@@ -340,7 +378,7 @@ resistance <  0: multiplier = 2 - 100 / (100 - resistance)
 `Channel { duration, interval, pulse }`。`ImpactDefinition`包含一个投递和非空的有序效果列表：
 
 - `Delivery`：Direct、Projectile、Area；执行时创建载体或排队，均不直接打断其它actor。
-- `Effect`：Damage、ApplyStatus、Displace。伤害参数在提交时快照；引导所有脉冲复用同一快照。
+- `Effect`：Damage、BonusAttackDamage、ArmorReduction、ApplyStatus、Displace。伤害参数在提交时快照；引导所有脉冲复用同一快照。
 - Enemy可以直接命中、锁定生命跟踪弹丸、提交时冻结地点的范围；Direction使用首个敌人弹丸。
   Point使用范围或自主Dash，SelfCast使用敌方范围或范围引导；其它组合注册时拒绝。
 
@@ -404,7 +442,7 @@ Enemy技能点击空地/友军保持瞄准；合法候选提交后退出，后�
 未来随机模式可先生成Explicit配置再创建，本期没有局内换技能或随机生成器。
 
 `client/session.rs`拥有Selecting/Active两个阶段和唯一活动玩家Entity；`PlayerController`只保存选中目标和瞄准。
-Web启动准备目录和地图并暂停，模式Waiting且没有单位，默认预选旅者。只读HUD此时player_id为null、
+Web启动准备目录和地图并暂停，模式Waiting且没有单位，默认预选皇子。只读HUD此时player_id为null、
 运行时abilities为空，选角使用独立预览；camera/scene/controls都按合法无玩家阶段处理。
 
 `startup.js`同步位于Trunk模块之前，唯一保存loading/failed/ready，并向HUD订阅者立即回放当前状态。
@@ -427,7 +465,7 @@ Web指针在暂停时立即隐藏并清按下快照；GamePointer清捕获边界
 
 Active恢复仅重新捕获，不发初次Launch，不创建新玩家或重置对局。死亡仍为Active，局内选角/重复启动不会改绑定。
 Selecting始终冻结模拟，排空菜单阶段游戏输入和命令，不向假Entity发Stop；Active暂停保留原一次Stop语义。
-`SimulationPlugin`默认暂停值不改变；Native通过同一创建路径自动选择旅者，不等待Web事件。
+`SimulationPlugin`默认暂停值不改变；Native通过同一创建路径自动选择皇子，不等待Web事件。
 
 暂停菜单与结算页均有“重新选择角色”，明确结束本局并重开整场对局。ReturnToSelection携带当前玩家Entity字符串，
 会话核对身份和已暂停/实际释放捕获后，调用玩法层`reset_match`，回到无单位的Waiting。
@@ -444,9 +482,10 @@ Active保留开局选择版本，返回时递增并预选上局角色；旧版�
 Active到Active同样是完整会话边界，旧批次尾部和旧游戏输入丢弃；重开失败清绑定回Selecting。
 `match_view`只读发布`match`与`map`，包括对局身份、阶段、结果、波次/倒计时、双方基地HP和共同几何。
 `UnitView`显式投影role/wave/formation_slot，JS不按名称猜兵种或推导对局结果。
+对敌军的单位/模型/标签/拾取投影共用团队可见性，未知敌基地生命为null，静态地图几何仍公开。
 
-默认旅者保留原配置；秘术师使用另一组属性及已注册飞矢/范围/冲刺/引导。角色变化由内容和实际装配驱动，
-没有在输入/战斗模块增加角色ID条件。Web主入口支持两角色预览、键盘选择、捕获失败重试及响应式布局。
+默认两名角色为德玛西亚皇子与寒冰射手，各自装配独立被动与完整QWER。一级基础值、技能与换算口径见[角色数值](champions.md)。
+角色变化由内容和实际装配驱动，没有在输入/战斗模块增加角色ID条件。Web主入口支持两角色预览、键盘选择、捕获失败重试及响应式布局。
 完整的核心接口与选角协议分别见Trellis模拟/客户端规范。
 
 ## 六格装备与触发边界
@@ -466,7 +505,7 @@ Active到Active同样是完整会话边界，旧批次尾部和旧游戏输入�
 整局重开随Unit删除库存，保留装备目录与来源分配器，新局空六格。
 
 首版被动仅`OnBasicAttackHit`。普攻出手前按格/被动索引快照全部附属效果，成功才提交攻击间隔。
-命中先结算基础普攻，实际正损血且目标仍是活的同一生命，才解析附属快照。
+命中先结算基础普攻，抗性后为正伤害且目标仍是活的同一生命，才解析附属快照（包含盾全吸收的命中）。
 复用既有Damage/Status/Displace结算，只发现一层触发，不监听所有Damaged再递归派发；技能和装备主动不会触发。
 命中不查实时背包，卸装或来源死亡不改变已提交快照；目标死亡则跳过其后续效果。
 

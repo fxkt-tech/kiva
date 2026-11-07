@@ -41,6 +41,7 @@ pub(super) struct MatchProjection<'w, 's> {
     state: Res<'w, MatchState>,
     map: Res<'w, MapDefinition>,
     units: Query<'w, 's, (&'static Unit, &'static UnitState)>,
+    visible: Res<'w, super::visibility::VisibleWorld>,
 }
 
 impl MatchProjection<'_, '_> {
@@ -67,6 +68,9 @@ impl MatchProjection<'_, '_> {
         };
         let base = |team| {
             let id = self.state.base(team)?;
+            if !self.visible.contains(id) {
+                return None;
+            }
             let (unit, state) = self.units.get(id).ok()?;
             Some(BaseView {
                 id: id.to_bits().to_string(),

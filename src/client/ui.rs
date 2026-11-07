@@ -7,6 +7,7 @@ use super::{
     match_view::{self, MapView, MatchProjection, MatchView},
     session::{ClientSession, SelectionAck},
     unit_appearance::UnitAppearance,
+    visibility::VisibleWorld,
     web,
 };
 use crate::{
@@ -37,6 +38,15 @@ impl From<&EffectiveAttributes> for AttributesView {
             attack_range: attributes.attack_range(),
             attack_speed: attributes.attack_speed(),
         }
+    }
+}
+
+impl AttributesView {
+    fn display(attributes: &EffectiveAttributes) -> Self {
+        let mut view = Self::from(attributes);
+        view.move_speed = crate::gameplay::units::league_units(view.move_speed);
+        view.attack_range = crate::gameplay::units::league_units(view.attack_range);
+        view
     }
 }
 
@@ -101,6 +111,12 @@ struct UnitView {
     mana: f32,
     max_mana: f32,
     attributes: AttributesView,
+    display_attributes: AttributesView,
+    base_attack_speed: f32,
+    passives: Vec<String>,
+    shield: f32,
+    focus: u8,
+    empowered: bool,
     statuses: Vec<StatusInfo>,
     control: ControlView,
     alive: bool,
@@ -123,6 +139,7 @@ struct HudView {
     equipment_catalog: Option<Vec<EquipmentDefinitionView>>,
     attack_move: bool,
     units: Vec<UnitView>,
+    objects: Vec<ObjectView>,
     abilities: Vec<AbilityView>,
     notice: String,
     camera_locked: bool,
@@ -159,6 +176,9 @@ struct CharacterPreview {
     max_health: f32,
     max_mana: f32,
     attributes: AttributesView,
+    display_attributes: AttributesView,
+    base_attack_speed: f32,
+    passives: Vec<String>,
     abilities: Vec<AbilityMetadata>,
 }
 impl SessionView {
@@ -180,12 +200,16 @@ impl SessionView {
         };
         let selected = selection.selected.and_then(|choice| {
             let definition = characters.get(choice.character_id)?;
-            let attributes = definition.initial_attributes()?;
+            let attributes = definition
+                .initial_attributes_with_loadout(abilities, &definition.default_loadout)?;
             Some(CharacterPreview {
                 character: summary(choice.character_id, definition),
                 max_health: definition.stats.max_health,
                 max_mana: definition.stats.max_mana,
                 attributes: (&attributes).into(),
+                display_attributes: AttributesView::display(&attributes),
+                base_attack_speed: definition.stats.base_attributes.attack_speed,
+                passives: super::abilities::describe_passives(&definition.stats),
                 abilities: definition
                     .default_loadout
                     .iter()
@@ -225,19 +249,33 @@ type ProjectedUnit = (
     &'static Pickable,
     &'static UnitStatuses,
     &'static ControlState,
-    Option<&'static CharacterIdentity>,
-    Option<&'static UnitRole>,
-    Option<&'static WaveMember>,
-    Option<&'static UnitAppearance>,
+    (
+        Option<&'static CharacterIdentity>,
+        Option<&'static UnitRole>,
+        Option<&'static WaveMember>,
+        Option<&'static UnitAppearance>,
+        Option<&'static UnitMechanics>,
+    ),
 );
 
 #[cfg(target_arch = "wasm32")]
 #[derive(Serialize)]
 struct LabelPosition {
     id: String,
+    unit: LabelUnit,
     screen: Option<[f32; 2]>,
     body_screen: Option<[f32; 2]>,
     alive: bool,
+}
+
+#[cfg(target_arch = "wasm32")]
+#[derive(Serialize)]
+struct LabelUnit {
+    name: String,
+    team: &'static str,
+    role: Option<&'static str>,
+    health: f32,
+    max_health: f32,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -247,12 +285,15 @@ type DisplayedLabel<'a> = (
     &'a Pickable,
     &'a UnitState,
     &'a UnitAppearance,
+    &'a Unit,
+    Option<&'a UnitRole>,
 );
 
-/// Only lightweight screen positions cross this bridge every rendered frame.
-/// Use the actual display transforms, including interpolation and camera motion.
+/// Visible positions and minimal label metadata cross this bridge every frame.
+/// Newly observed units gain a label immediately; hidden identities stay local.
 #[cfg(target_arch = "wasm32")]
 pub(super) fn publish_labels(
+    visible: Res<VisibleWorld>,
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
     units: Query<DisplayedLabel<'_>, With<super::scene::UnitVisual>>,
 ) {
@@ -262,8 +303,20 @@ pub(super) fn publish_labels(
     };
     let positions: Vec<_> = units
         .iter()
+        .filter(|(id, ..)| visible.contains(*id))
         .map(
-            |(id, transform, pickable, state, appearance)| LabelPosition {
+            |(id, transform, pickable, state, appearance, unit, role)| LabelPosition {
+                unit: LabelUnit {
+                    name: unit.name().into(),
+                    team: if unit.team() == Team::Ally {
+                        "ally"
+                    } else {
+                        "enemy"
+                    },
+                    role: role.copied().map(match_view::role_name),
+                    health: state.health(),
+                    max_health: unit.definition().max_health,
+                },
                 id: id.to_bits().to_string(),
                 screen: project_display(
                     camera,
@@ -301,6 +354,55 @@ fn project_display(
         .map(|point| web::viewport_to_css(point, viewport).to_array())
 }
 
+#[derive(Serialize)]
+struct ObjectView {
+    id: String,
+    kind: &'static str,
+    team: &'static str,
+    owner: Option<String>,
+    position: [f32; 2],
+    radius: f32,
+    remaining: f32,
+    active: bool,
+}
+
+#[derive(SystemParam)]
+pub(super) struct ObservedProjection<'w, 's> {
+    visible: Res<'w, VisibleWorld>,
+    units: Query<'w, 's, ProjectedUnit>,
+    objects: Query<'w, 's, (Entity, &'static BattlefieldObject)>,
+}
+impl ObservedProjection<'_, '_> {
+    fn objects(&self, tick: u64) -> Vec<ObjectView> {
+        self.objects
+            .iter()
+            .filter(|(id, _)| self.visible.contains(*id))
+            .map(|(id, object)| ObjectView {
+                id: id.to_bits().to_string(),
+                kind: match object.kind() {
+                    ObjectKind::Standard => "Standard",
+                    ObjectKind::Terrain => "Terrain",
+                    ObjectKind::Scout => "Scout",
+                    ObjectKind::Reveal => "Reveal",
+                },
+                team: if object.team() == Team::Ally {
+                    "ally"
+                } else {
+                    "enemy"
+                },
+                owner: self
+                    .visible
+                    .contains(object.owner().entity())
+                    .then(|| object.owner().entity().to_bits().to_string()),
+                position: object.position().to_array(),
+                radius: object.radius(),
+                remaining: object.remaining_seconds(tick),
+                active: object.active(tick),
+            })
+            .collect()
+    }
+}
+
 #[derive(SystemParam)]
 pub(super) struct EquipmentProjection<'w, 's> {
     adapter: Res<'w, EquipmentAdapter>,
@@ -335,9 +437,9 @@ pub(super) fn publish(
     map: Res<NavigationMap>,
     window: Single<&Window>,
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
-    units: Query<ProjectedUnit>,
     mut equipment: EquipmentProjection,
     game: MatchProjection,
+    observed: ObservedProjection,
 ) {
     if !session.is_changed()
         && !game.changed()
@@ -351,8 +453,10 @@ pub(super) fn publish(
     let viewport = camera
         .logical_viewport_size()
         .unwrap_or(Vec2::new(window.width(), window.height()));
+    let units = &observed.units;
     let views = units
         .iter()
+        .filter(|(id, ..)| observed.visible.contains(*id))
         .map(
             |(
                 id,
@@ -366,10 +470,7 @@ pub(super) fn publish(
                 pickable,
                 statuses,
                 control,
-                character,
-                role,
-                wave,
-                appearance,
+                (character, role, wave, appearance, mechanics),
             )| {
                 let point = pose.position();
                 UnitView {
@@ -405,6 +506,12 @@ pub(super) fn publish(
                     mana: state.mana(),
                     max_mana: unit.definition().max_mana,
                     attributes: unit.attributes().into(),
+                    display_attributes: AttributesView::display(unit.attributes()),
+                    base_attack_speed: unit.definition().base_attributes.attack_speed,
+                    passives: super::abilities::describe_passives(unit.definition()),
+                    shield: mechanics.map_or(0.0, UnitMechanics::shield),
+                    focus: mechanics.map_or(0, UnitMechanics::focus),
+                    empowered: mechanics.is_some_and(UnitMechanics::empowered),
                     statuses: statuses.iter().map(Into::into).collect(),
                     control: control.into(),
                     alive: state.alive(),
@@ -423,11 +530,16 @@ pub(super) fn publish(
         .player()
         .and_then(|id| units.get(id).ok())
         .map(
-            |(_, _, state, _, _, _, slots, _, _, _, control, _, _, _, _)| {
+            |(_, _, state, _, _, _, slots, _, _, _, control, (_, _, _, _, mechanics))| {
                 (0..4)
                     .filter_map(|slot| {
                         let definition = catalog.get(slots.ability(slot)?)?;
-                        Some(AbilityView::new(slot, definition, state, control, slots))
+                        Some(
+                            AbilityView::new(slot, definition, state, control, slots)
+                                .with_mechanics(
+                                    definition, state, control, mechanics, slot, tick.0,
+                                ),
+                        )
                     })
                     .collect()
             },
@@ -460,6 +572,7 @@ pub(super) fn publish(
             .then(|| equipment::catalog_view(&equipment.catalog, &catalog)),
         attack_move: matches!(player.aim, Some(Aim::AttackMove)),
         units: views,
+        objects: observed.objects(tick.0),
         abilities,
         notice: if time.elapsed_secs() < feedback.expires {
             feedback.message.clone()
@@ -533,7 +646,7 @@ pub(super) fn update_native_hud(
             .collect::<Vec<_>>()
             .join(" · ");
         hud.0 = format!(
-            "KIVA / THE PROVING GROUNDS\nRight click: move / attack · A + click: attack move · S: stop\n{loadout}\nLeft click confirms target; self-cast skills release immediately\nY: camera lock · Space: center · Arrows / edges: pan · Scroll: zoom · Esc: pause\nHP {:.0}   Energy {:.0}   Q {:.1}  W {:.1}  E {:.1}  R {:.1}\nAD {:.1}   AP {:.1}   Armor {:.1}   MR {:.1}\nMove {:.2} units/s   Range {:.2} units   Attack speed {:.2}/s\n{statuses}{}",
+            "KIVA / THE PROVING GROUNDS\nRight click: move / attack · A + click: attack move · S: stop\n{loadout}\nLeft click confirms target; self-cast skills release immediately\nY: camera lock · Space: center · Arrows / edges: pan · Scroll: zoom · Esc: pause\nHP {:.0}   Energy {:.0}   Q {:.1}  W {:.1}  E {:.1}  R {:.1}\nAD {:.1}   AP {:.1}   Armor {:.1}   MR {:.1}\nMove {:.0}   Range {:.0}   Attack speed {:.2}/s\n{statuses}{}",
             state.health(),
             state.mana(),
             slots.cooldown(0).unwrap_or(0.0),
@@ -544,8 +657,8 @@ pub(super) fn update_native_hud(
             attributes.ability_power(),
             attributes.armor(),
             attributes.magic_resistance(),
-            attributes.move_speed(),
-            attributes.attack_range(),
+            crate::gameplay::units::league_units(attributes.move_speed()),
+            crate::gameplay::units::league_units(attributes.attack_range()),
             attributes.attack_speed(),
             if control.paused {
                 "\nPAUSED · Press Escape to resume"
@@ -628,6 +741,20 @@ mod tests {
                 state.health()
             );
             assert_eq!(preview["max_mana"].as_f64().unwrap() as f32, state.mana());
+            assert_eq!(
+                preview["display_attributes"],
+                serde_json::to_value(AttributesView::display(unit.attributes())).unwrap()
+            );
+            assert_eq!(
+                preview["display_attributes"]["move_speed"],
+                if id == CharacterId(1) { 340.0 } else { 325.0 }
+            );
+            assert_eq!(
+                preview["display_attributes"]["attack_range"],
+                if id == CharacterId(1) { 175.0 } else { 600.0 }
+            );
+            assert!(!preview["passives"].as_array().unwrap().is_empty());
+
             for metadata in preview["abilities"].as_array().unwrap() {
                 let slot = metadata["slot"].as_u64().unwrap() as usize;
                 let definition = app
@@ -635,9 +762,17 @@ mod tests {
                     .resource::<AbilityCatalog>()
                     .get(slots.ability(slot).unwrap())
                     .unwrap();
-                let runtime =
-                    serde_json::to_value(AbilityView::new(slot, definition, state, control, slots))
-                        .unwrap();
+                let runtime = serde_json::to_value(
+                    AbilityView::new(slot, definition, state, control, slots).with_mechanics(
+                        definition,
+                        state,
+                        control,
+                        app.world().get::<UnitMechanics>(player),
+                        slot,
+                        0,
+                    ),
+                )
+                .unwrap();
                 for (key, value) in metadata.as_object().unwrap() {
                     assert_eq!(
                         &runtime[key], value,
@@ -647,7 +782,11 @@ mod tests {
                 assert!(metadata.get("cooldown").is_none());
                 assert!(metadata.get("available").is_none());
                 assert_eq!(runtime["cooldown"], 0.0);
-                assert_eq!(runtime["available"], true);
+                assert_eq!(
+                    runtime["available"],
+                    !(id == CharacterId(2) && slot == 0),
+                    "zero-focus Q alone starts unavailable"
+                );
                 assert!(
                     runtime.get("metadata").is_none(),
                     "existing runtime JSON stays flat"

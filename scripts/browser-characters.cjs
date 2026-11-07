@@ -10,8 +10,8 @@ const {
 
 const fields = ["attack_damage", "ability_power", "armor", "magic_resistance", "move_speed", "attack_speed", "attack_range"];
 const arcanist = {
-  attack_damage: 30, ability_power: 40, armor: 0, magic_resistance: 0,
-  move_speed: 5.2, attack_speed: 1, attack_range: 6,
+  attack_damage: 59, ability_power: 0, armor: 26, magic_resistance: 33,
+  move_speed: 325, attack_speed: 0.658, attack_range: 600,
 };
 const state = (page) => page.evaluate(() => window.__kivaState);
 const nextState = (page) => page.evaluate(() => new Promise((resolve) => {
@@ -77,7 +77,7 @@ async function deferCaptureNotification(page) {
         if (evidence.frames.length < 4) {
           requestAnimationFrame(frame);
         } else {
-          document.documentElement.dataset.skill = "0";
+          document.documentElement.dataset.skill = "1";
           // Deliver the deferred notification; the capture itself remains the
           // result of the real trusted button click and native browser request.
           document.dispatchEvent(new Event("pointerlockchange"));
@@ -104,7 +104,7 @@ async function assertDeferredCapture(page) {
 }
 
 function close(actual, expected, message) {
-  assert(Math.abs(actual - expected) < 0.001, `${message}: ${actual} != ${expected}`);
+  assert(Math.abs(actual - expected) < 0.006, `${message}: ${actual} != ${expected}`);
 }
 
 function assertUnstarted(snapshot) {
@@ -132,7 +132,7 @@ async function inspectPreview(page, expectedId) {
   const values = await page.evaluate((fields) => Object.fromEntries(fields.map((field) =>
     [field, document.querySelector(`#character-preview [data-preview-stat="${field}"]`)?.textContent])), fields);
   assert.equal(await page.locator("#character-preview [data-preview-stat]").count(), 7);
-  for (const field of fields) close(Number(values[field]), preview.attributes[field], `preview ${field}`);
+  for (const field of fields) close(Number(values[field]), preview.display_attributes[field], `preview ${field}`);
   assert.equal(await page.locator(`[data-character-id="${expectedId}"]`).getAttribute("aria-pressed"), "true");
   return preview;
 }
@@ -216,7 +216,7 @@ async function exerciseSelection(page, url, config, failures) {
   const initial = await state(page);
   assertUnstarted(initial);
   assert.equal(initial.tick, 0);
-  assert.equal(initial.session.selection.selected.id, 1, "Traveller remains the default selection");
+  assert.equal(initial.session.selection.selected.id, 1, "Jarvan remains the default selection");
   assert.equal(await page.locator("[data-character-id]").count(), 2);
   assert(await page.locator("#hero-hud").isHidden());
   await page.keyboard.press("q");
@@ -253,10 +253,10 @@ async function exerciseSelection(page, url, config, failures) {
       && selection.selection_ack.request_id !== previousAck && !document.getElementById("enter").disabled;
   }, previousAck);
   const preview = await inspectPreview(page, 2);
-  assert.equal(preview.max_health, 480);
-  assert.equal(preview.max_mana, 360);
-  for (const field of fields) close(preview.attributes[field], arcanist[field], `Arcanist ${field}`);
-  assert.deepEqual(preview.abilities.map(({ targeting }) => targeting), ["Direction", "Point", "Point", "SelfCast"]);
+  assert.equal(preview.max_health, 610);
+  assert.equal(preview.max_mana, 280);
+  for (const field of fields) close(preview.display_attributes[field], arcanist[field], `Arcanist ${field}`);
+  assert.deepEqual(preview.abilities.map(({ targeting }) => targeting), ["SelfCast", "Direction", "Point", "Direction"]);
   await screenshot(page, "character-selection");
   if (failures) await exerciseChoiceFailures(page);
 
@@ -264,7 +264,7 @@ async function exerciseSelection(page, url, config, failures) {
     function leaveStaleSkill() {
       if (document.pointerLockElement?.id !== "game") return;
       document.removeEventListener("pointerlockchange", leaveStaleSkill);
-      document.documentElement.dataset.skill = "0";
+      document.documentElement.dataset.skill = "1";
     }
     document.addEventListener("pointerlockchange", leaveStaleSkill);
   });
@@ -276,14 +276,14 @@ async function exerciseSelection(page, url, config, failures) {
   assert.equal(active.session.phase, "Active");
   assert.equal(active.session.selection, null);
   assert.equal(hero.character_id, 2);
-  assert.equal(active.units.filter((unit) => unit.character_id !== null).length, 2);
+  assert.equal(active.units.filter((unit) => unit.character_id !== null && unit.team === "ally").length, 1);
   assert.equal(hero.name, preview.name);
   assert.equal(hero.health, preview.max_health);
   assert.equal(hero.mana, preview.max_mana);
   assert.equal(hero.order, "Idle");
   assert.equal(hero.action, "Ready");
   assert.equal(active.aim, null, "selection-stage Q must not replay at launch");
-  for (const field of fields) close(hero.attributes[field], preview.attributes[field], `initial live ${field}`);
+  for (const field of fields) close(hero.display_attributes[field], preview.display_attributes[field], `initial live ${field}`);
   assert.deepEqual(active.abilities.map(({ name }) => name), preview.abilities.map(({ name }) => name));
   const liveDom = await page.evaluate((fields) => Object.fromEntries(fields.map((field) =>
     [field, document.querySelector(`#hero-stats [data-stat="${field}"]`).textContent])), fields);
@@ -292,18 +292,20 @@ async function exerciseSelection(page, url, config, failures) {
   assert(await page.locator("#character-select").isHidden());
   await screenshot(page, "character-arcanist");
 
-  await page.keyboard.press("q");
-  await page.waitForFunction(() => window.__kivaState.aim === 0);
-  await clickWorld(page, nearHome(active, 5, -1));
-  await page.waitForFunction(() => window.__kivaState.abilities[0].cooldown > 0);
+  // Q starts unavailable at zero focus. Commit actual directional W and R;
+  // both remain distinct after stale launch/selection requests and resume.
+  assert.equal((await state(page)).abilities[0].available,false);
+  assert.equal((await state(page)).abilities[0].mechanics.focus,0);
+  await page.keyboard.press("w");
+  await page.waitForFunction(() => window.__kivaState.aim === 1);
+  await clickWorld(page, nearHome(active,5,-1));
+  await page.waitForFunction(() => window.__kivaState.abilities[1].cooldown > 0);
   assert((await state(page)).units.find((unit) => unit.id === active.player_id).mana < preview.max_mana,
-    "the selected character's direction spell must commit its real resource cost");
+    "the selected champion's real W must commit its resource cost");
   await page.keyboard.press("r");
-  await page.waitForFunction(() => {
-    const s = window.__kivaState;
-    return s.aim === null && s.abilities[3].cooldown > 0
-      && s.units.find((unit) => unit.id === s.player_id).action === "Channeling";
-  });
+  await page.waitForFunction(() => window.__kivaState.aim === 3);
+  await clickWorld(page, nearHome(active,8,-1));
+  await page.waitForFunction(() => window.__kivaState.aim === null && window.__kivaState.abilities[3].cooldown > 0);
   const committed = await state(page);
   await sendIntents(page, [
     { type: "Launch", character_id: 1, selection_revision: 1 },
@@ -313,7 +315,7 @@ async function exerciseSelection(page, url, config, failures) {
   await nextState(page);
   const repeated = await nextState(page);
   assert.equal(repeated.player_id, committed.player_id);
-  assert.equal(repeated.units.filter((unit) => unit.character_id !== null).length, 2);
+  assert.equal(repeated.units.filter((unit) => unit.character_id !== null && unit.team === "ally").length, 1);
   assert.equal(repeated.units.find((unit) => unit.id === repeated.player_id).character_id, 2);
   assert(repeated.abilities[3].cooldown <= committed.abilities[3].cooldown + 0.001,
     "repeated launch must not restart an ability cooldown");
@@ -331,10 +333,10 @@ async function exerciseSelection(page, url, config, failures) {
   assert.equal(resumed.player_id, paused.player_id);
   const resumedHero = resumed.units.find((unit) => unit.id === resumed.player_id);
   assert.equal(resumedHero.character_id, 2);
-  assert.equal(resumedHero.max_health, 480);
+  assert.equal(resumedHero.max_health, 610);
   assert(resumed.abilities[3].cooldown > 0 && resumed.abilities[3].cooldown <= paused.abilities[3].cooldown,
     "resume preserves the committed cooldown instead of creating a fresh character");
-  console.log(`PASS no-player freeze, latest selection, preview/live values, keyboard choice/start, Arcanist Q/R, duplicate requests and same-instance resume ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);
+  console.log(`PASS no-player freeze, latest selection, preview/live values, keyboard choice/start, Ashe W/R, duplicate requests and same-instance resume ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);
 }
 
 async function exerciseCaptureRetry(browser, url) {

@@ -112,7 +112,7 @@ async function approachEnemy(page) {
       throw new Error(`No equipment combat range: ${JSON.stringify({ player, target })}`);
     }
     return player.alive && target?.alive && player.order === "Idle"
-      && Math.hypot(...target.position.map((value, i) => value - player.position[i])) < 9.5 ? snapshot : false;
+      && Math.hypot(...target.position.map((value, i) => value - player.position[i])) < 7.0 ? snapshot : false;
   }, initialTick);
   progress("combat range ready", ready);
   return ready;
@@ -165,16 +165,16 @@ async function exercise(page, url, deep) {
   }
   await equip(page, 1);
   const duplicate = await equip(page, 1);
-  assert.equal(hero(duplicate).attributes.attack_damage, 80);
+  assert.equal(hero(duplicate).attributes.attack_damage, 104);
   assert.notEqual(duplicate.equipment.slots[0].item.instance_id, duplicate.equipment.slots[1].item.instance_id);
-  assert.equal(hero(await unequip(page, 0)).attributes.attack_damage, 60);
+  assert.equal(hero(await unequip(page, 0)).attributes.attack_damage, 84);
   await equip(page, 2);
   for (const id of [4, 5, 6, 7]) await equip(page, id);
   const filled = await state(page);
   assert.equal(filled.equipment.first_empty_slot, null);
   assert.equal(await page.locator('[data-equip-id]:enabled').count(), 0);
-  assert.deepEqual(hero(filled).attributes, { attack_damage: 60, ability_power: 25, armor: 25,
-    magic_resistance: 20, move_speed: 6.25, attack_range: 6, attack_speed: 1.5625 });
+  assert.deepEqual(hero(filled).attributes, { attack_damage: 84, ability_power: 25, armor: 61,
+    magic_resistance: 52, move_speed: 4.15, attack_range: 2.25, attack_speed: 0.9541 });
   progress("six slots and exact attributes verified", filled);
   await screenshot(page, "equipment-editor");
   const orb = filled.equipment.slots[5].item;
@@ -195,7 +195,7 @@ async function exercise(page, url, deep) {
   if (deep) await page.keyboard.press("6");
   else await clickUi(page, '[data-equipment-slot="5"]');
   await page.waitForFunction(() => window.__kivaState.equipment_aim === 5);
-  for (const candidate of [null, ready.player_id, base(ready, "ally").id, base(ready, "enemy").id]) {
+  for (const candidate of [null, ready.player_id, base(ready, "ally").id]) {
     if (candidate === null) await clickWorld(page, nearHome(ready, 7, -7));
     else await clickUnit(page, candidate);
     await waitTicks(page);
@@ -253,11 +253,11 @@ async function exercise(page, url, deep) {
     await page.keyboard.press("q");
     await page.waitForFunction(() => window.__kivaState.aim === 0);
     await clickUnit(page, target.id);
-    const roleHit = await observed(page, (id) => {
+    const roleHit = await observed(page, ({id,armor}) => {
       const snapshot = window.__kivaState;
       return snapshot.abilities[0].cooldown > 0
-        && snapshot.units.find((unit) => unit.id === id)?.statuses.some((effect) => effect.kind === "Stun") ? snapshot : false;
-    }, target.id);
+        && snapshot.units.find((unit) => unit.id === id)?.attributes.armor < armor ? snapshot : false;
+    }, {id:target.id,armor:beforeRole.attributes.armor});
     assert(roleHit.units.find((unit) => unit.id === target.id).health < beforeRole.health);
     assert(roleHit.equipment.slots[5].item.active.cooldown > 0);
     assert(roleHit.equipment.slots[5].item.active.cooldown <= itemCooldown,
@@ -293,15 +293,54 @@ async function exercise(page, url, deep) {
     await equip(page, 9);
     await continueMatch(page);
     await page.keyboard.press("s");
+    await page.keyboard.press("w"); // Real shield/slow supports the live disengage.
+    // A live ranged opponent keeps attacking during a retreat. Use the actual
+    // newly equipped dash to disengage before walking back; the old stationary
+    // training target never required this survival step.
+    const retreat = await state(page);
+    const retreatOrigin = hero(retreat).position;
+    const laneLength = Math.hypot(...retreat.map.enemy_base.map((value, i) => value - retreat.map.ally_base[i]));
+    const laneDirection = retreat.map.enemy_base.map((value, i) => (value - retreat.map.ally_base[i]) / laneLength);
+    const lateral = [-laneDirection[1], laneDirection[0]];
+    const relative = retreatOrigin.map((value, i) => value - retreat.map.ally_base[i]);
+    const forward = relative.reduce((sum, value, i) => sum + value * laneDirection[i], 0);
+    const side = Math.sign(relative.reduce((sum, value, i) => sum + value * lateral[i], 0)) || -1;
+    // Leave both the hero pursuit strip (5.5) and the minion acquisition
+    // radius (8). Returning along the lane would invite another real fight.
+    const safePoint = nearHome(retreat, forward, side * (retreat.map.lane_width / 2 + 6));
+    const retreatRange = retreat.equipment.slots[0].item.active.range;
+    const retreatLength = Math.hypot(...safePoint.map((value, i) => value - retreatOrigin[i]));
+    const retreatPoint = retreatOrigin.map((value, i) => value
+      + (safePoint[i] - value) / retreatLength * retreatRange);
+    await clickUi(page, '[data-equipment-slot="0"]');
+    await page.waitForFunction(() => window.__kivaState.equipment_aim === 0);
+    await clickWorld(page, retreatPoint);
+    await observed(page, (destination) => {
+      const snapshot = window.__kivaState;
+      const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
+      if (!player.alive) throw new Error("Player died before the equipment disengage finished");
+      return snapshot.equipment.slots[0].item.active.cooldown > 0
+        && Math.hypot(...player.position.map((value, i) => value - destination[i])) < 0.15;
+    }, retreatPoint);
+    progress("real item dash disengaged from the live opponent", await state(page));
     // A production movement order chooses a safe open part of the map. The
     // max-range dash is measured from the resulting actual hero position.
-    await moveTo(page, nearHome(await state(page), 4, -5));
+    await moveTo(page, safePoint);
     await page.keyboard.press("s");
+    await page.evaluate(() => window.__laneSetFrameStep(250));
+    try {
+      await observed(page, () => {
+        const snapshot = window.__kivaState;
+        const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
+        if (!player.alive) throw new Error("Player died before the independent item dash check");
+        return snapshot.equipment.slots[0].item.active.cooldown === 0
+          && snapshot.equipment.slots[0].item.active.available;
+      });
+    } finally { await page.evaluate(() => window.__laneSetFrameStep(1000 / 60)); }
     const dashSnapshot = await state(page);
     const beforeDash = hero(dashSnapshot).position;
     const dashRange = dashSnapshot.equipment.slots[0].item.active.range;
-    const length = Math.hypot(...beforeDash);
-    const direction = beforeDash.map((value) => -value / length);
+    const direction = lateral.map((value) => value * side);
     const destination = beforeDash.map((value, i) => value + direction[i] * dashRange);
     await clickUi(page, '[data-equipment-slot="0"]');
     await page.waitForFunction(() => window.__kivaState.equipment_aim === 0);
@@ -353,13 +392,13 @@ async function exercise(page, url, deep) {
   assert.notEqual(fresh.match.id, original.match.id);
   assert.equal(fresh.match.wave_number, 1);
   assert(fresh.equipment.slots.every(({ item }) => item === null));
-  assert.equal(hero(fresh).attributes.attack_damage, 40);
+  assert.equal(hero(fresh).attributes.attack_damage, 64);
   assert.equal(hero(fresh).attributes.ability_power, 0);
   console.log(`PASS six slots, stacking/removal, full inventory, real lane item input, invalid targets, independent cooldown, pause/reselection${deep ? ", on-hit Slow/unequip, far dash/channel and stale instance" : ""}`);
 }
 
 async function main() {
-  const browser = await launchBrowser();
+  let browser;
   let site;
   let page;
   const errors = [];
@@ -370,18 +409,43 @@ async function main() {
       { viewport: { width: 800, height: 600 }, deviceScaleFactor: 1 },
       { viewport: { width: 1000, height: 720 }, deviceScaleFactor: 2 },
     ];
-    for (const [index, config] of cases.entries()) {
+    const requested = process.env.KIVA_EQUIPMENT_CASE;
+    const selected = cases.filter((config) => !requested
+      || `${config.viewport.width}x${config.viewport.height}@${config.deviceScaleFactor}` === requested);
+    assert(selected.length, "unknown KIVA_EQUIPMENT_CASE");
+    for (const config of selected) {
+      // Each WebGPU case owns its browser/device lifetime. A lost software
+      // device must fail this case rather than poison the next viewport.
+      browser = await launchBrowser();
       const context = await browser.newContext(config);
       page = await context.newPage();
       page.setDefaultTimeout(120000);
+      let failBrowser;
+      const browserFailure = new Promise((_, reject) => { failBrowser = reject; });
       await installFrameClock(page);
       await page.addInitScript(() => window.addEventListener("kiva-state", () => {
         window.__gearLastSnapshotAt = performance.now();
       }));
-      page.on("pageerror", (error) => errors.push(error.message));
-      await exercise(page, site.url, index === 0);
+      page.on("pageerror", (error) => {
+        errors.push(error.message);
+        console.error("Browser pageerror:", error.stack || error.message);
+        failBrowser(error);
+      });
+      page.on("console", (message) => {
+        // tracing-wasm writes even Rust WARN/ERROR through console.log.
+        if (process.env.KIVA_PAN_DIAGNOSTICS === "1" || message.type() === "error"
+          || /%c(?:WARN|ERROR)%c/.test(message.text())) {
+          console.log(`Browser console ${message.type()}:`, message.text());
+        }
+        if (message.text().includes("Quitting the application due to")) {
+          failBrowser(new Error(message.text()));
+        }
+      });
+      await Promise.race([exercise(page, site.url, config.viewport.width === 1280), browserFailure]);
       await context.close();
       page = null;
+      await browser.close();
+      browser = null;
       console.log(`PASS equipment viewport ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);
     }
     assert.deepEqual(errors, []);
@@ -389,7 +453,7 @@ async function main() {
     if (page) await reportFailure(page);
     throw error;
   } finally {
-    try { await browser.close(); }
+    try { if (browser) await browser.close(); }
     finally { if (site) await site.close(); }
   }
 }

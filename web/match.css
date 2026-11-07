@@ -40,3 +40,13 @@
   .match-result-card { padding: 30px 24px; min-width: 0; }
   .match-result-actions { flex-wrap: wrap; }
 }
+
+.hero-traits {display:flex;gap:8px;margin-top:4px;font-size:9px;color:#b0bca8;}
+#shield-text {color:#efd185;}
+.preview-passive {font-size:11px;line-height:1.6;color:#b8cbb9;margin:12px 0;}
+.skill-state {position:absolute;right:-4px;top:-7px;min-width:24px;padding:2px 4px;background:#152d35;border:1px solid #78bace;color:#bbeaff;font-size:9px;line-height:13px;z-index:2;}
+.ability.recast {border-color:#e1b56a;}
+.ability.empowered {box-shadow:0 0 14px #8ad7ec55;}
+.vision-hint {font-size:9px;color:#8ea7a4;}
+
+.base-score.unknown .base-meter i {background:repeating-linear-gradient(120deg,#98aaa755 0 4px,#98aaa711 4px 8px);}

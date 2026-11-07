@@ -21,15 +21,16 @@ pub(super) fn decide(world: &mut World) {
         return;
     }
     let tick = world.resource::<SimulationTick>().0;
-    let seen = observations::observe(world);
+    let observations = observations::observe(world);
     let map = world.resource::<MapDefinition>().clone();
     let controlled: Vec<_> = world
-        .query::<(Entity, &Controller, &UnitState)>()
+        .query::<(Entity, &Controller, &UnitState, &Unit)>()
         .iter(world)
-        .filter(|(_, controller, state)| **controller == Controller::MinionAi && state.alive())
-        .map(|(entity, _, state)| (entity, state.life_ref(entity)))
+        .filter(|(_, controller, state, _)| **controller == Controller::MinionAi && state.alive())
+        .map(|(entity, _, state, unit)| (entity, state.life_ref(entity), unit.team()))
         .collect();
-    for (entity, life) in controlled {
+    for (entity, life, team) in controlled {
+        let seen = observations.for_team(team);
         if world
             .get::<MinionBrain>(entity)
             .is_none_or(|brain| brain.life != life)
@@ -58,7 +59,7 @@ pub(super) fn decide(world: &mut World) {
             .get::<MinionBrain>(entity)
             .expect("brain")
             .target
-            .and_then(|life| observations::current_target(&seen, life));
+            .and_then(|life| observations::current_target(seen, life));
         let candidate = seen
             .iter()
             .filter(|other| {

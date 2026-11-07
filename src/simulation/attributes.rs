@@ -218,17 +218,24 @@ impl AttributeState {
 
 /// Pure initial projection, shared by runtime construction and content previews.
 pub(super) fn initial_attributes(base: BaseAttributes) -> EffectiveAttributes {
-    compute(base, &BTreeMap::new())
+    compute(base, std::iter::empty())
 }
 
-fn compute(
+pub(super) fn initial_attributes_with_modifier(
     base: BaseAttributes,
-    modifiers: &BTreeMap<ModifierSourceId, AttributeModifier>,
+    modifier: &AttributeModifier,
+) -> EffectiveAttributes {
+    compute(base, std::iter::once(modifier))
+}
+
+fn compute<'a>(
+    base: BaseAttributes,
+    modifiers: impl Iterator<Item = &'a AttributeModifier>,
 ) -> EffectiveAttributes {
     let mut flat = [0.0_f64; 7];
     let mut percent = [0.0_f64; 7];
     let mut move_multiplier = 1.0_f64;
-    for modifier in modifiers.values() {
+    for modifier in modifiers {
         move_multiplier *= f64::from(modifier.move_speed_multiplier);
         for (total, value) in flat.iter_mut().zip(modifier.flat.values()) {
             *total += f64::from(value);
@@ -289,7 +296,7 @@ fn apply(
     if candidate == unit.attributes.modifiers {
         return Ok(());
     }
-    let effective = compute(unit.stats.base_attributes, &candidate);
+    let effective = compute(unit.stats.base_attributes, candidate.values());
     let mut unit = world.get_mut::<Unit>(entity).expect("validated unit");
     unit.attributes.modifiers = candidate;
     if unit.attributes.effective != effective {
@@ -339,6 +346,9 @@ pub(super) fn clear_on_death(unit: &mut Unit) {
         .modifiers
         .retain(|_, modifier| modifier.removal != ModifierRemoval::OnDeath);
     if old_len != unit.attributes.modifiers.len() {
-        unit.attributes.effective = compute(unit.stats.base_attributes, &unit.attributes.modifiers);
+        unit.attributes.effective = compute(
+            unit.stats.base_attributes,
+            unit.attributes.modifiers.values(),
+        );
     }
 }

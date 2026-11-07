@@ -10,7 +10,7 @@ pub(super) struct Targets {
     pub focus: Option<UnitLifeRef>,
 }
 impl Targets {
-    fn contains(&self, unit: &SeenUnit) -> bool {
+    pub(super) fn contains(&self, unit: &SeenUnit) -> bool {
         self.allowed.contains(&unit.life)
     }
 }
@@ -53,7 +53,7 @@ pub(super) fn choose(
         let Some(definition) = world.resource::<AbilityCatalog>().get(id) else {
             continue;
         };
-        let candidates = candidates(world, hero, seen, targets, definition, retreat);
+        let candidates = candidates(world, hero, seen, targets, definition, source, retreat);
         for (target, score) in candidates {
             if score <= 0.0 || preview_cast(world, hero.entity, source, target).is_err() {
                 continue;
@@ -80,9 +80,18 @@ fn candidates(
     seen: &[SeenUnit],
     targets: &Targets,
     definition: &AbilityDefinition,
+    source: CastSource,
     retreat: Option<Vec2>,
 ) -> Vec<(AbilityTarget, f32)> {
+    if let Some(candidates) =
+        super::compound_spells::candidates(world, hero, seen, targets, definition, source, retreat)
+    {
+        return candidates;
+    }
     if definition.execution.is_dash() {
+        if is_dashing(world, hero.entity) {
+            return vec![];
+        }
         let point = if let Some(home) = retreat {
             if hero.position.distance(home) < 2.0 {
                 return vec![];
@@ -131,7 +140,7 @@ fn candidates(
         let unsafe_end = if retreat.is_some() {
             end_threat > current_threat + 0.1
         } else {
-            end_threat > 2.3 || end_threat > current_threat + 1.5
+            !offensive_landing_allowed(seen, hero, end)
         };
         if end.distance(hero.position) < 1.0 || unsafe_end {
             return vec![];
@@ -145,6 +154,14 @@ fn candidates(
         AbilityExecution::Impact(impact) => (impact, false),
         AbilityExecution::Channel { pulse, .. } => (pulse, true),
         AbilityExecution::Dash { .. } => unreachable!(),
+        AbilityExecution::Line(_)
+        | AbilityExecution::Shield(_)
+        | AbilityExecution::Standard(_)
+        | AbilityExecution::Leap(_)
+        | AbilityExecution::Empower(_)
+        | AbilityExecution::Volley(_)
+        | AbilityExecution::Scout(_)
+        | AbilityExecution::Arrow(_) => unreachable!("compound execution dispatched above"),
     };
     let enemies: Vec<_> = seen
         .iter()
@@ -261,7 +278,7 @@ fn candidates(
     }
 }
 
-fn value(world: &World, hero: &SeenUnit, enemy: &SeenUnit, effects: &[Effect]) -> f32 {
+pub(super) fn value(world: &World, hero: &SeenUnit, enemy: &SeenUnit, effects: &[Effect]) -> f32 {
     let source = world
         .get::<Unit>(hero.entity)
         .expect("observed hero")
@@ -297,6 +314,27 @@ fn value(world: &World, hero: &SeenUnit, enemy: &SeenUnit, effects: &[Effect]) -
                 }
             }
             Effect::Displace(_) => 8.0,
+            Effect::BonusAttackDamage { damage, ratio } => {
+                let base_ad = world
+                    .get::<Unit>(hero.entity)
+                    .expect("hero")
+                    .definition()
+                    .base_attributes
+                    .attack_damage;
+                let mut estimated = *damage;
+                estimated.base += (source.attack_damage() - base_ad).max(0.0) * ratio;
+                estimated
+                    .estimate_damage(source, target, enemy.health)
+                    .unwrap_or(0.0)
+                    * 0.12
+            }
+            Effect::ArmorReduction { .. } => {
+                if target.armor() > 0.0 {
+                    6.0
+                } else {
+                    0.0
+                }
+            }
         };
     }
     if enemy.role == crate::gameplay::UnitRole::Hero {
@@ -311,13 +349,35 @@ fn value(world: &World, hero: &SeenUnit, enemy: &SeenUnit, effects: &[Effect]) -
 pub(super) fn threat(seen: &[SeenUnit], team: Team, point: Vec2) -> f32 {
     seen.iter()
         .filter(|unit| unit.team != team && unit.role != crate::gameplay::UnitRole::Base)
-        .map(|unit| {
-            let weight = if unit.role == crate::gameplay::UnitRole::Hero {
-                2.0
-            } else {
-                0.7
-            };
-            weight * (1.0 - unit.position.distance(point) / 8.0).max(0.0)
-        })
+        .map(|unit| presence(unit, point))
         .sum()
+}
+
+/// One policy covers every offensive relocation. Existing friendly actors may
+/// support the landing; the caster and passive bases do not count as support.
+/// All inputs belong to the same already visibility-filtered observation.
+pub(super) fn offensive_landing_allowed(seen: &[SeenUnit], hero: &SeenUnit, landing: Vec2) -> bool {
+    let risk = |point| {
+        let support: f32 = seen
+            .iter()
+            .filter(|unit| {
+                unit.team == hero.team
+                    && unit.entity != hero.entity
+                    && unit.role != crate::gameplay::UnitRole::Base
+            })
+            .map(|unit| presence(unit, point) * unit.health_fraction().clamp(0.0, 1.0))
+            .sum();
+        (threat(seen, hero.team, point) - support).max(0.0)
+    };
+    let landing_risk = risk(landing);
+    landing_risk <= 2.3 && landing_risk <= risk(hero.position) + 1.5
+}
+
+fn presence(unit: &SeenUnit, point: Vec2) -> f32 {
+    let weight = if unit.role == crate::gameplay::UnitRole::Hero {
+        2.0
+    } else {
+        0.7
+    };
+    weight * (1.0 - unit.position.distance(point) / 8.0).max(0.0)
 }

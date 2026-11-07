@@ -1,5 +1,8 @@
 //! Rigid geometry follows the imported joints, with a right-hand sword socket.
-use super::rig::AnimationLibrary;
+use super::{
+    rig::AnimationLibrary,
+    weapon::{self, WeaponStyle},
+};
 use bevy::prelude::*;
 
 #[derive(Resource)]
@@ -7,10 +10,10 @@ pub(in crate::client) struct ModelAssets {
     rod: Handle<Mesh>,
     joint: Handle<Mesh>,
     head: Handle<Mesh>,
-    cube: Handle<Mesh>,
-    metal: Handle<StandardMaterial>,
-    gold: Handle<StandardMaterial>,
-    dark: Handle<StandardMaterial>,
+    pub(super) cube: Handle<Mesh>,
+    pub(super) metal: Handle<StandardMaterial>,
+    pub(super) gold: Handle<StandardMaterial>,
+    pub(super) dark: Handle<StandardMaterial>,
     eyes: Handle<StandardMaterial>,
 }
 
@@ -53,6 +56,7 @@ pub(super) enum Attachment {
     Joint { bone: usize, radius: f32 },
     Head { bone: usize },
     Sword { bone: usize },
+    Hand { bone: usize },
 }
 
 impl Attachment {
@@ -76,7 +80,7 @@ impl Attachment {
                 Transform::from_translation(pose[bone].transform_point(Vec3::Y * 0.105))
                     .with_rotation(pose[bone].rotation)
             }
-            Self::Sword { bone } => {
+            Self::Sword { bone } | Self::Hand { bone } => {
                 Transform::from_translation(pose[bone].transform_point(Vec3::Y * 0.055))
                     .with_rotation(pose[bone].rotation)
             }
@@ -97,6 +101,7 @@ pub(in crate::client) fn spawn_model(
     library: &AnimationLibrary,
     pose: &[Transform],
     body: Handle<StandardMaterial>,
+    weapon: WeaponStyle,
 ) {
     commands.entity(owner).with_children(|root| {
         root.spawn((
@@ -183,41 +188,20 @@ pub(in crate::client) fn spawn_model(
                         ));
                     }
                 });
-            let attachment = Attachment::Sword {
-                bone: library.bone("hand_r"),
+            let hand = library.bone("hand_r");
+            let attachment = if weapon == WeaponStyle::Sword {
+                Attachment::Sword { bone: hand }
+            } else {
+                Attachment::Hand { bone: hand }
             };
             model
                 .spawn((
-                    Name::new("Right hand sword socket"),
+                    Name::new(format!("{} hand socket", weapon.label())),
                     attachment.transform(pose),
                     Visibility::Inherited,
                     BoneVisual { owner, attachment },
                 ))
-                .with_children(|sword| {
-                    for (material, position, scale) in [
-                        (
-                            assets.dark.clone(),
-                            Vec3::new(0.0, 0.0, -0.035),
-                            Vec3::new(0.065, 0.065, 0.22),
-                        ),
-                        (
-                            assets.gold.clone(),
-                            Vec3::new(0.0, 0.0, 0.09),
-                            Vec3::new(0.29, 0.05, 0.055),
-                        ),
-                        (
-                            assets.metal.clone(),
-                            Vec3::new(0.0, 0.0, 0.56),
-                            Vec3::new(0.07, 0.028, 0.91),
-                        ),
-                    ] {
-                        sword.spawn((
-                            Mesh3d(assets.cube.clone()),
-                            MeshMaterial3d(material),
-                            Transform::from_translation(position).with_scale(scale),
-                        ));
-                    }
-                });
+                .with_children(|socket| weapon::spawn(socket, assets, weapon));
         });
     });
 }

@@ -7,7 +7,8 @@
 
 ## 2. 接口与选择器
 
-- `UnitView.attributes` 是包含七项 f32 数值的只读 JSON 对象。
+- `UnitView.attributes` 是七项模拟世界实际数值；`display_attributes` 是同一结果的显示投影，移速和攻距经统一100:1反向换算。
+- 选角预览同样提供两份，DOM只读取`display_attributes`，不能在JS里补算。
 - `#hero-stats` 是 `#hero-hud` 的第一个内容区域，继承 `data-ui` 隔离。
 - `[data-stat="<field>"]` 的 textContent 仅包含数字文本，面板不显示单位。
 - `player_id` 对应单位决定玩家属性，不能从固定角色常量取值。
@@ -21,11 +22,11 @@
 | ability_power | 法强 | 1 | 数值 |
 | armor | 护甲 | 1 | 数值，可负 |
 | magic_resistance | 魔抗 | 1 | 数值，可负 |
-| move_speed | 移速 | 2 | 单位/秒 |
+| move_speed | 移速 | 2 | 端游距离单位/秒 |
 | attack_speed | 攻速 | 2 | 次/秒 |
-| attack_range | 攻距 | 2 | 单位 |
+| attack_range | 攻距 | 2 | 端游距离单位 |
 
-Rust 从 `EffectiveAttributes` getter 一一投影，不在 JS 重算加成、抗性或攻速。
+Rust 从 `EffectiveAttributes` getter 投影；只在AttributesView::display调用gameplay::units统一转换距离，不在JS重算属性。
 格式化移除无意义尾零；非零值四舍五入会变 0，或绝对值达到 1e6 时使用简短科学计数法。
 死亡保留当前属性显示。完整快照约 80 ms 一次，血条位置仍走独立逐帧通道。
 
@@ -42,7 +43,7 @@ Rust 从 `EffectiveAttributes` getter 一一投影，不在 JS 重算加成、�
 ## 5. 正常、默认和错误示例
 
 - 正常：模拟返回 attack_damage 75，数值元素显示 `75`。
-- 默认：移速 `5.5`、攻速 `1.25`，仅显示标签和数字。
+- 默认：寒冰移速 `325`、攻速 `0.658`，仅显示标签和数字。
 - 错误：显示值从 `BaseAttributes` 硬编码，或在 JS 中重新叠加装备属性。
 
 ## 6. 验证
@@ -57,3 +58,6 @@ Rust 从 `EffectiveAttributes` getter 一一投影，不在 JS 重算加成、�
 错误：每次 `kiva-labels` 都更新整个属性面板，或把卡片内容放在没有 `data-ui` 的外部浮层。
 
 正确：属性随 `kiva-state` 更新，坐标随 `kiva-labels` 更新；属性放在角色卡片左侧，并复用既有 UI 输入隔离。
+
+属性DOM与预览使用Rust的display_attributes；world attributes仍用于实际几何/规则诊断。移速与攻距经统一league_units显示端游数值，
+其余五项不变；装备flat距离同口径。初始攻速读取已学技能贡献，不在JS为皇子另加E被动。

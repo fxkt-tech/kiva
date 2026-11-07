@@ -132,3 +132,17 @@ pub fn restore_in_zone(
     state.last_recovery_tick = Some(tick);
     Ok(amount)
 }
+
+/// Natural regeneration is immutable unit content and follows the same fixed
+/// clock as other recovery. It cannot resurrect a dead life.
+pub(super) fn regenerate_health(world: &mut World, entity: Entity) {
+    let unit = world.get::<Unit>(entity).expect("unit");
+    let (maximum, rate) = (unit.stats.max_health, unit.stats.health_regen);
+    if rate == 0.0 {
+        return;
+    }
+    let mut state = world.get_mut::<UnitState>(entity).expect("unit state");
+    if state.alive() {
+        state.health = (state.health + rate * TICK_SECONDS).min(maximum);
+    }
+}

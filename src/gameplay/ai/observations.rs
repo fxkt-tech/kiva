@@ -25,7 +25,20 @@ impl SeenUnit {
     }
 }
 
-pub(super) fn observe(world: &mut World) -> Vec<SeenUnit> {
+pub(super) struct TeamObservations {
+    ally: Vec<SeenUnit>,
+    enemy: Vec<SeenUnit>,
+}
+impl TeamObservations {
+    pub fn for_team(&self, team: Team) -> &[SeenUnit] {
+        match team {
+            Team::Ally => &self.ally,
+            Team::Enemy => &self.enemy,
+        }
+    }
+}
+
+pub(super) fn observe(world: &mut World) -> TeamObservations {
     let mut seen: Vec<_> = world
         .query::<(Entity, &Unit, &UnitState, &UnitPose, &UnitRole)>()
         .iter(world)
@@ -43,7 +56,16 @@ pub(super) fn observe(world: &mut World) -> Vec<SeenUnit> {
         })
         .collect();
     seen.sort_by_key(|unit| unit.entity.to_bits());
-    seen
+    let visible = |team| {
+        seen.iter()
+            .filter(|unit| team_can_see(world, team, unit.entity))
+            .cloned()
+            .collect()
+    };
+    TeamObservations {
+        ally: visible(Team::Ally),
+        enemy: visible(Team::Enemy),
+    }
 }
 
 pub(super) fn current_target(seen: &[SeenUnit], target: UnitLifeRef) -> Option<&SeenUnit> {

@@ -3,10 +3,12 @@ mod animation;
 mod model;
 mod poses;
 mod rig;
+mod weapon;
 
 pub(super) use animation::{RigPose, record_events, sync_attachments, sync_poses};
 pub(super) use model::{ModelAssets, setup, spawn_model};
 pub(super) use rig::AnimationLibrary;
+pub(super) use weapon::WeaponStyle;
 
 #[cfg(test)]
 mod tests;

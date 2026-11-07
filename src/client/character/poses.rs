@@ -1,5 +1,8 @@
 //! Small visual gestures over the source clips; these never create game effects.
-use super::rig::{AnimationLibrary, Clip, blend};
+use super::{
+    rig::{AnimationLibrary, Clip, blend},
+    weapon::WeaponStyle,
+};
 use bevy::prelude::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -51,11 +54,22 @@ pub(super) fn smooth(weight: f32) -> f32 {
     weight * weight * (3.0 - 2.0 * weight)
 }
 
+#[cfg(test)]
 pub(super) fn sample(
     library: &AnimationLibrary,
     gesture: Gesture,
     progress: f32,
     clock: f32,
+) -> Vec<Transform> {
+    sample_weapon(library, gesture, progress, clock, WeaponStyle::Sword)
+}
+
+pub(super) fn sample_weapon(
+    library: &AnimationLibrary,
+    gesture: Gesture,
+    progress: f32,
+    clock: f32,
+    weapon: WeaponStyle,
 ) -> Vec<Transform> {
     let p = smooth(progress);
     let (mut local, grip) = match gesture {
@@ -116,7 +130,47 @@ pub(super) fn sample(
     local[head].rotation = (model[parent].rotation.inverse()
         * Quat::from_rotation_y(std::f32::consts::PI))
     .normalize();
-    place_sword_hand(library, &mut local, grip);
+    let grip = match weapon {
+        WeaponStyle::Sword => grip,
+        WeaponStyle::Spear => {
+            let guard = Grip::new(0.18, 0.32, -0.12, 175.0, -5.0);
+            let contact = Grip::new(0.08, 0.32, -0.65, 180.0, 0.0);
+            match gesture {
+                Gesture::Windup => {
+                    if progress < 0.65 {
+                        guard.mix(
+                            Grip::new(0.32, 0.3, 0.12, 145.0, 0.0),
+                            smooth(progress / 0.65),
+                        )
+                    } else {
+                        Grip::new(0.32, 0.3, 0.12, 145.0, 0.0)
+                            .mix(contact, smooth((progress - 0.65) / 0.35))
+                    }
+                }
+                Gesture::Backswing => contact.mix(guard, p),
+                Gesture::Cast | Gesture::Channel => {
+                    guard.mix(Grip::new(0.18, 0.65, -0.12, 180.0, -40.0), p)
+                }
+                Gesture::Dash => contact,
+                _ => guard,
+            }
+        }
+        WeaponStyle::Bow => {
+            let draw = match gesture {
+                Gesture::Windup => p,
+                Gesture::Backswing => 1.0 - p,
+                _ => 0.15,
+            };
+            place_hand(
+                library,
+                &mut local,
+                Grip::new(-0.12, 0.4, -0.36 + draw * 0.36, 180.0, 0.0),
+                true,
+            );
+            Grip::new(0.15, 0.4, -0.48, 180.0, 0.0)
+        }
+    };
+    place_hand(library, &mut local, grip, false);
     local
 }
 
@@ -146,10 +200,10 @@ fn body_gesture(library: &AnimationLibrary, clip: Clip, seconds: f32) -> Vec<Tra
 
 // Two-bone right-arm IK preserves upper/lower arm lengths. The left arm retains
 // the source gesture. This is presentation only, not a weapon hitbox.
-fn place_sword_hand(library: &AnimationLibrary, local: &mut [Transform], grip: Grip) {
-    let upper = library.bone("upperarm_r");
-    let lower = library.bone("lowerarm_r");
-    let hand = library.bone("hand_r");
+fn place_hand(library: &AnimationLibrary, local: &mut [Transform], grip: Grip, left: bool) {
+    let upper = library.bone(if left { "upperarm_l" } else { "upperarm_r" });
+    let lower = library.bone(if left { "lowerarm_l" } else { "lowerarm_r" });
+    let hand = library.bone(if left { "hand_l" } else { "hand_r" });
     let model = library.model_pose(local);
     let target = model[library.bone("pelvis")].translation + grip.offset;
     let shoulder = model[upper].translation;
@@ -159,7 +213,7 @@ fn place_sword_hand(library: &AnimationLibrary, local: &mut [Transform], grip: G
     let direction = delta.normalize_or(Vec3::NEG_Z);
     let distance = delta.length().clamp((a - b).abs() + 0.001, a + b - 0.001);
     let along = (a * a - b * b + distance * distance) / (2.0 * distance);
-    let pole = Vec3::new(1.0, -0.6, 0.3);
+    let pole = Vec3::new(if left { -1.0 } else { 1.0 }, -0.6, 0.3);
     let bend = (pole - direction * pole.dot(direction)).normalize_or(Vec3::Y);
     let elbow = shoulder + direction * along + bend * (a * a - along * along).max(0.0).sqrt();
     aim_bone(

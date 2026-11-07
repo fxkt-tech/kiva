@@ -3,17 +3,17 @@
 ## 1. 范围与触发
 
 修改角色几何、骨骼资源、动画、普攻/施法姿态、暂停或生命周期表现时阅读。
-`src/client/character/`恢复act分支的刚性骨骼火柴人：17骨段、14关节、头眼和右手剑。
-双方英雄共用模型与动作适配，不按具体角色、技能或装备ID分支。小兵/基地按`UnitRole`使用独立轻量表现，不挂英雄骨架。
+`src/client/character/`恢复act分支的刚性骨骼火柴人：17骨段、14关节、头眼和骨骼武器（皇子枪、寒冰弓，独立Arena保留默认剑）。
+双方英雄共用骨骼与动作适配，外观映射在weapon模块选择枪/弓，不按具体技能或装备ID判断规则。小兵/基地按`UnitRole`使用独立轻量表现，不挂英雄骨架。
 
 ## 2. 接口与职责
 
 - `rig::AnimationLibrary`：内嵌KIVAAN01骨骼/局部动作数据，`sample(Clip, seconds, looping)`插值，`model_pose(local)`计算父序模型变换。
-- `model::spawn_model(commands, owner, assets, library, pose, body)`：在单位下创建一个`CharacterModel`容器与所有几何子实体。
-- `animation::RigPose::new(library, life, now)`、`model()`：本次生命的表现缓存及只读初始模型姿态。
+- `model::spawn_model(commands, owner, assets, library, pose, body, weapon)`：在单位下创建一个`CharacterModel`容器与所有几何子实体。
+- `animation::RigPose::new(library, life, now, weapon)`、`model()`：本次生命的表现缓存及只读初始模型姿态。
 - `record_events`：独立`MessageReader<SimulationEvent>`消费已发生的提交、移动、死亡和重生通知。
 - `sync_poses`：读取权威动作、步位移、控制和目录，更新局部/模型骨骼及过渡。
-- `sync_attachments`：从模型骨骼更新`BoneVisual`的局部Transform，剑socket始终附着hand_r。
+- `sync_attachments`：从模型骨骼更新`BoneVisual`的局部Transform，武器socket附着hand_r，weapon模块提供几何与双臂持握姿态。
 
 依赖方向为`client::character → simulation`；本模块不写模拟字段、命令、伤害或时钟。
 
@@ -23,7 +23,7 @@
 只统一源+Z至游戏-Z和1.1比例。根平移为零，不重复应用位移；来源、CC0许可和重建方式见
 [动画资源](../../../assets/animations/README.md)。
 
-`UnitVisual`继续唯一拥有世界平面插值、朝向和Airborne高度；底座抵消高度，模型容器本身不改变世界根。
+`UnitVisual`继续唯一拥有世界平面插值、朝向和Airborne/公开leap_progress派生高度；底座抵消高度，模型容器本身不改变世界根。
 拾取与标签读取同一实际显示根，骨骼手脚摆动不能移动拾取框、血条或模拟位置。
 
 播放时间取`(SimulationTick + PresentationFrame.fraction()) / TICK_RATE`，暂停不累计宿主时间。
@@ -55,12 +55,12 @@
 | 无动作、零位移 | 待机，不由命令文字推断运动 |
 | 普攻取消/技能切换 | 跟随新的权威动作，无额外命中或冷却变更 |
 | 暂停期间收到提交或生命通知 | 保留显示姿态，安全消费通知，恢复再更新 |
-| 单位死亡/重生/整场重开 | 隐藏/重置姿态/递归清理，无孤立剑或眼睛 |
+| 单位死亡/重生/整场重开 | 隐藏/重置姿态/递归清理，无孤立武器或眼睛 |
 
 ## 5. 正常、默认与错误案例
 
 正常：瞬发冲刺只显示到Ready仍持续移动，从提交通知保留冲刺姿态，停止后回待机。
-默认：新单位用同一中立guard，友敌材质不同；没有模型专属角色或技能分支。
+默认：新单位按武器采用中立guard，友敌材质不同；只有weapon模块映射角色外观，动作不执行角色或技能规则。
 错误：在动画出剑某帧扣血、靠播放完clip解除后摇，或把动画root motion加到UnitPose上。
 
 ## 6. 验证与断言点
@@ -71,7 +71,7 @@
 原`scene`击飞根、底座、暂停、重生测试继续保留。
 
 执行`make check`和WASM Clippy；临时Trunk构建后运行smoke、skills、healthbars与reselection，截图使用有窗口浏览器。
-截图检查关节分段、头眼朝向、手剑接触和实际动作，不能仅凭HUD的action文字判定骨骼正确。
+截图检查关节分段、头眼朝向、武器握持、弓弦姿态和实际动作，不能仅凭HUD的action文字判定骨骼正确。
 
 ## 7. 错误与正确
 

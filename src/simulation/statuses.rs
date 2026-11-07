@@ -46,13 +46,19 @@ pub enum StatusSpec {
     Airborne {
         duration: StatusDuration,
     },
+    DecayingSlow {
+        duration: StatusDuration,
+        fraction: f32,
+        to_fraction: f32,
+        decay: StatusDuration,
+    },
 }
 impl StatusSpec {
     pub fn kind(self) -> StatusKind {
         match self {
             Self::Stun { .. } => StatusKind::Stun,
             Self::Root { .. } => StatusKind::Root,
-            Self::Slow { .. } => StatusKind::Slow,
+            Self::Slow { .. } | Self::DecayingSlow { .. } => StatusKind::Slow,
             Self::Airborne { .. } => StatusKind::Airborne,
         }
     }
@@ -61,18 +67,20 @@ impl StatusSpec {
             Self::Stun { duration }
             | Self::Root { duration }
             | Self::Slow { duration, .. }
-            | Self::Airborne { duration } => duration,
+            | Self::Airborne { duration }
+            | Self::DecayingSlow { duration, .. } => duration,
         }
     }
     pub fn fraction(self) -> Option<f32> {
-        if let Self::Slow { fraction, .. } = self {
+        if let Self::Slow { fraction, .. } | Self::DecayingSlow { fraction, .. } = self {
             Some(fraction)
         } else {
             None
         }
     }
     pub(super) fn valid(self) -> bool {
-        self.duration().ticks() > 0
+        (!matches!(self,Self::DecayingSlow {to_fraction,fraction,decay,duration} if !to_fraction.is_finite() || to_fraction<=0.0 || to_fraction>fraction || decay.ticks()>duration.ticks()))
+            && self.duration().ticks() > 0
             && self
                 .fraction()
                 .is_none_or(|v| v.is_finite() && v > 0.0 && v <= 1.0)
@@ -88,6 +96,7 @@ pub struct StatusView {
     remaining: u32,
     duration: u32,
     fraction: Option<f32>,
+    decay: Option<(f32, f32, u32)>,
 }
 impl StatusView {
     pub fn id(&self) -> u64 {
@@ -101,7 +110,9 @@ impl StatusView {
             DamageOrigin::Ability(id) | DamageOrigin::EquipmentActive { ability: id, .. } => {
                 Some(id)
             }
-            DamageOrigin::BasicAttack | DamageOrigin::EquipmentPassive { .. } => None,
+            DamageOrigin::BasicAttack
+            | DamageOrigin::UnitPassive { .. }
+            | DamageOrigin::EquipmentPassive { .. } => None,
         }
     }
     pub fn kind(&self) -> StatusKind {
@@ -190,7 +201,7 @@ impl ControlState {
         self.forced
     }
     pub fn permits(&self, ability: &AbilityDefinition) -> bool {
-        self.can_cast() && (!ability.execution.is_dash() || self.can_dash())
+        self.can_cast() && (!ability.execution.requires_mobility() || self.can_dash())
     }
 }
 #[derive(Resource, Default)]
@@ -249,6 +260,13 @@ pub(super) fn apply(
     {
         return;
     }
+    if spec.kind() == StatusKind::Airborne
+        && world
+            .get::<super::compound::CompoundMotion>(target.entity())
+            .is_some_and(|motion| matches!(motion.kind, super::compound::MotionKind::Leap { .. }))
+    {
+        return;
+    }
     let existing = world.get::<UnitStatuses>(target.entity()).and_then(|s| {
         s.entries.iter().position(|v| {
             v.remaining > 0
@@ -289,6 +307,17 @@ pub(super) fn apply(
                 remaining: spec.duration().ticks(),
                 duration: spec.duration().ticks(),
                 fraction: spec.fraction(),
+                decay: if let StatusSpec::DecayingSlow {
+                    fraction,
+                    to_fraction,
+                    decay,
+                    ..
+                } = spec
+                {
+                    Some((fraction, to_fraction, decay.ticks()))
+                } else {
+                    None
+                },
             });
         id
     };
@@ -321,6 +350,11 @@ pub(super) fn advance_old(world: &mut World) {
             let mut expired = Vec::new();
             for status in &mut statuses.entries {
                 status.remaining -= 1;
+                if let Some((initial, end, ticks)) = status.decay {
+                    let elapsed = status.duration - status.remaining;
+                    status.fraction =
+                        Some(initial + (end - initial) * (elapsed as f32 / ticks as f32).min(1.0));
+                }
                 if status.remaining == 0 {
                     expired.push((status.id, status.kind, status.source));
                 }
@@ -332,9 +366,7 @@ pub(super) fn advance_old(world: &mut World) {
                 .retain(|s| s.remaining > 0 || s.kind == StatusKind::Airborne);
             expired
         };
-        if !expired.is_empty() {
-            synchronize(world, unit);
-        }
+        synchronize(world, unit);
         for (instance, kind, source) in expired {
             world.write_message(SimulationEvent::StatusExpired {
                 unit,

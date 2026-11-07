@@ -15,6 +15,29 @@ pub fn is_dashing(world: &World, unit: Entity) -> bool {
     world
         .get::<Movement>(unit)
         .is_some_and(|movement| movement.dash.is_some())
+        || world.get::<super::compound::CompoundMotion>(unit).is_some()
+}
+
+/// Ordinary movement and most committed motions forbid new casts. Link motion
+/// may explicitly allow casts, enabling compound combinations without content IDs.
+pub fn motion_allows_cast(world: &World, unit: Entity) -> bool {
+    if world
+        .get::<Movement>(unit)
+        .is_some_and(|movement| movement.dash.is_some())
+    {
+        return false;
+    }
+    world
+        .get::<super::compound::CompoundMotion>(unit)
+        .is_none_or(|motion| {
+            matches!(
+                motion.kind,
+                super::compound::MotionKind::Link {
+                    can_cast_during_motion: true,
+                    ..
+                }
+            )
+        })
 }
 
 pub(super) fn reset_pose(pose: &mut UnitPose, home: Vec2) {
@@ -31,10 +54,107 @@ pub(super) fn interrupt_autonomous(world: &mut World, unit: Entity) {
         clear_route(&mut movement);
         movement.dash = None;
     }
+    if world
+        .get::<super::compound::CompoundMotion>(unit)
+        .is_some_and(|motion| matches!(motion.kind, super::compound::MotionKind::Link { .. }))
+        && world
+            .get::<ControlState>(unit)
+            .is_some_and(|control| !control.can_cast())
+    {
+        world
+            .entity_mut(unit)
+            .remove::<super::compound::CompoundMotion>();
+        let pose = world.get::<UnitPose>(unit).expect("pose");
+        let radius = world.get::<Unit>(unit).expect("unit").stats.radius;
+        let map = world.resource::<NavigationMap>();
+        if !map.walkable(pose.position, radius)
+            && let Some(free) = nearest_landing(map, pose.position, radius)
+        {
+            let mut pose = world.get_mut::<UnitPose>(unit).expect("pose");
+            pose.position = free;
+        }
+    }
 }
 pub(super) fn clear_all(world: &mut World, unit: Entity) {
+    world
+        .entity_mut(unit)
+        .remove::<super::compound::CompoundMotion>();
     if let Some(mut movement) = world.get_mut::<Movement>(unit) {
         *movement = Movement::default();
+    }
+}
+pub(super) fn start_compound(
+    world: &mut World,
+    unit: Entity,
+    motion: super::compound::CompoundMotion,
+) {
+    clear_route(&mut world.get_mut::<Movement>(unit).expect("movement"));
+    world.entity_mut(unit).insert(motion);
+}
+/// Preflight every displacement against all proposed terrain before moving
+/// anyone. Existing walls remain solid during displacement; a new ring must
+/// never push an actor through an older wall or out of an enclosed pocket.
+pub(super) fn plan_ring_overlap(
+    world: &mut World,
+    proposed: &NavigationMap,
+    center: Vec2,
+    ring: f32,
+    thickness: f32,
+) -> Option<Vec<(Entity, Vec2)>> {
+    let mut units: Vec<_> = world
+        .query::<(Entity, &Unit, &UnitState, &UnitPose)>()
+        .iter(world)
+        .filter(|(_, unit, state, pose)| {
+            state.alive()
+                && unit.class() == UnitClass::Actor
+                && (pose.position.distance(center) - ring).abs() <= thickness + unit.stats.radius
+        })
+        .map(|(id, unit, _, pose)| (id, unit.stats.radius, pose.position))
+        .collect();
+    units.sort_by_key(|(id, _, _)| id.to_bits());
+    let original = world.resource::<NavigationMap>();
+    let mut plan = Vec::with_capacity(units.len());
+    for (id, radius, position) in units {
+        let offset = position - center;
+        let direction = super::effects::direction(offset, Vec2::X);
+        let distance = if offset.length() < ring {
+            (ring - thickness - radius - 0.01).max(0.0)
+        } else {
+            ring + thickness + radius + 0.01
+        };
+        let clear = |point: Vec2| {
+            proposed.walkable(point, radius) && original.line_clear(position, point, radius)
+        };
+        let preferred = center + direction * distance;
+        let next = if clear(preferred) {
+            preferred
+        } else {
+            // Search only the immediate ring neighborhood. If old terrain
+            // encloses the actor, reject this ring rather than teleporting it
+            // across the map or leaving it inside collision geometry.
+            let limit = ring + thickness + radius;
+            (1..=(limit / 0.05).ceil() as usize).find_map(|step| {
+                let distance = (step as f32 * 0.05).min(limit);
+                (0..64).find_map(|spoke| {
+                    let offset = Vec2::from_angle(spoke as f32 * std::f32::consts::TAU / 64.0)
+                        .rotate(direction);
+                    let point = position + offset * distance;
+                    clear(point).then_some(point)
+                })
+            })?
+        };
+        plan.push((id, next));
+    }
+    Some(plan)
+}
+
+pub(super) fn apply_terrain_relocations(world: &mut World, plan: Vec<(Entity, Vec2)>) {
+    for (id, next) in plan {
+        if let Some(mut pose) = world.get_mut::<UnitPose>(id) {
+            pose.position = next;
+            pose.previous = next;
+        }
+        clear_route(&mut world.get_mut::<Movement>(id).expect("movement"));
     }
 }
 pub(super) fn start_dash(world: &mut World, unit: Entity, destination: Vec2, speed: f32) {
@@ -50,6 +170,12 @@ pub(super) fn start_forced(
     impact_direction: Vec2,
     fallback: Vec2,
 ) {
+    if world
+        .get::<super::compound::CompoundMotion>(target.entity())
+        .is_some_and(|motion| matches!(motion.kind, super::compound::MotionKind::Leap { .. }))
+    {
+        return;
+    }
     if !target.is_current(world)
         || world
             .get::<Unit>(target.entity())
@@ -127,12 +253,61 @@ pub(super) fn move_units(world: &mut World) {
             &mut UnitPose,
             &mut Movement,
             Has<SoftAvoidance>,
+            Option<&mut super::compound::CompoundMotion>,
         )>();
-        for (entity, unit, state, control, action, mut pose, mut movement, avoids) in
+        for (entity, unit, state, control, action, mut pose, mut movement, avoids, compound) in
             actors.iter_mut(world)
         {
             pose.previous = pose.position;
             if !state.alive() {
+                continue;
+            }
+            if let Some(mut motion) = compound {
+                let delta = motion.destination - pose.position;
+                let requested = pose.position + delta.clamp_length_max(motion.speed * TICK_SECONDS);
+                let traverses = matches!(
+                    motion.kind,
+                    super::compound::MotionKind::Leap { .. }
+                        | super::compound::MotionKind::Link {
+                            traverse_terrain: true,
+                            ..
+                        }
+                );
+                let mut next = if traverses {
+                    requested.clamp(
+                        Vec2::splat(-map.half_size() + unit.stats.radius + 0.001),
+                        Vec2::splat(map.half_size() - unit.stats.radius - 0.001),
+                    )
+                } else {
+                    map.sweep(pose.position, requested, unit.stats.radius)
+                };
+                let mut landed = next.distance(motion.destination) < 0.01
+                    || requested == pose.position
+                    || sweep_blocked(pose.position, requested, next);
+                if let Some((remaining, total)) = motion.lifetime {
+                    let remaining = remaining.saturating_sub(1);
+                    motion.lifetime = Some((remaining, total));
+                    landed = remaining == 0;
+                    if landed {
+                        next = motion.destination.clamp(
+                            Vec2::splat(-map.half_size() + unit.stats.radius + 0.001),
+                            Vec2::splat(map.half_size() - unit.stats.radius - 0.001),
+                        );
+                    }
+                }
+                if traverses && landed && !map.walkable(next, unit.stats.radius) {
+                    if let Some(free) = nearest_landing(&map, next, unit.stats.radius) {
+                        next = free;
+                    } else {
+                        next = motion.origin;
+                        landed = true;
+                    }
+                }
+                if delta.length_squared() > 1e-6 {
+                    pose.facing = super::effects::direction(delta, pose.facing);
+                }
+                motion.done = landed;
+                pose.position = next;
                 continue;
             }
             if let Some(motion) = &movement.forced {
@@ -270,4 +445,28 @@ fn separation(
         lateral += side.normalize_or_zero() * (1.0 - distance / spacing);
     }
     lateral.clamp_length_max(0.7)
+}
+
+fn nearest_landing(map: &NavigationMap, point: Vec2, radius: f32) -> Option<Vec2> {
+    for step in 1..=((map.half_size() * 3.0) / 0.1).ceil() as usize {
+        let distance = step as f32 * 0.1;
+        for spoke in 0..32 {
+            let candidate =
+                point + Vec2::from_angle(spoke as f32 * std::f32::consts::TAU / 32.0) * distance;
+            if map.walkable(candidate, radius) {
+                return Some(candidate);
+            }
+        }
+    }
+    None
+}
+
+/// Normalized fixed-tick leap phase; presentation chooses its own arc height.
+pub fn leap_progress(world: &World, unit: Entity, interpolation: f32) -> Option<f32> {
+    let motion = world.get::<super::compound::CompoundMotion>(unit)?;
+    let (remaining, total) = motion.lifetime?;
+    Some(
+        (1.0 - (remaining as f32 + (1.0 - interpolation.clamp(0.0, 1.0))) / total as f32)
+            .clamp(0.0, 1.0),
+    )
 }

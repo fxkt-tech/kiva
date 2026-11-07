@@ -8,6 +8,7 @@ pub(super) struct AbilityDescription {
     total_cooldown: f32,
     cost: f32,
     range: f32,
+    display_range: f32,
     targeting: &'static str,
     target_hint: &'static str,
     icon: &'static str,
@@ -16,7 +17,10 @@ pub(super) struct AbilityDescription {
 impl AbilityDescription {
     pub fn new(definition: &AbilityDefinition) -> Self {
         let (targeting, target_hint) = match definition.targeting {
-            Targeting::Enemy => ("Enemy", "点选敌方单位"),
+            Targeting::Enemy if matches!(&definition.execution, AbilityExecution::Leap(spec) if spec.heroes_only) => {
+                ("Enemy", "点选可见敌方英雄")
+            }
+            Targeting::Enemy => ("Enemy", "点选可见敌方单位"),
             Targeting::Direction => ("Direction", "选择释放方向"),
             Targeting::Point => ("Point", "选择目标地点"),
             Targeting::SelfCast => ("SelfCast", "以自身为中心立即释放"),
@@ -27,6 +31,7 @@ impl AbilityDescription {
             total_cooldown: definition.cooldown,
             cost: definition.mana_cost,
             range: definition.range,
+            display_range: crate::gameplay::units::league_units(definition.range),
             targeting,
             target_hint,
             icon,
@@ -57,6 +62,19 @@ pub(super) struct AbilityView {
     cooldown: f32,
     available: bool,
     unavailable_reason: Option<&'static str>,
+    mechanics: Option<AbilityRuntimeView>,
+}
+
+#[derive(Serialize)]
+struct AbilityRuntimeView {
+    focus: Option<u8>,
+    required_focus: Option<u8>,
+    empowered: bool,
+    charges: Option<u8>,
+    max_charges: Option<u8>,
+    recharge: Option<f32>,
+    recast: bool,
+    recast_ready: bool,
 }
 impl AbilityView {
     pub fn new(
@@ -87,7 +105,56 @@ impl AbilityView {
             cooldown,
             available: unavailable_reason.is_none(),
             unavailable_reason,
+            mechanics: None,
         }
+    }
+    pub fn with_mechanics(
+        mut self,
+        definition: &AbilityDefinition,
+        state: &UnitState,
+        control: &ControlState,
+        mechanics: Option<&UnitMechanics>,
+        slot: usize,
+        tick: u64,
+    ) -> Self {
+        let Some(mechanics) = mechanics else {
+            return self;
+        };
+        let focus = match definition.execution {
+            AbilityExecution::Empower(spec) => Some(spec.required_stacks),
+            _ => None,
+        };
+        let charges = match definition.execution {
+            AbilityExecution::Scout(spec) => Some(spec.charges),
+            _ => None,
+        };
+        let recast = mechanics.recast(slot);
+        self.unavailable_reason = runtime_unavailable_reason(
+            state,
+            control,
+            self.cooldown,
+            definition,
+            Some(mechanics),
+            slot,
+            tick,
+        );
+        self.available = self.unavailable_reason.is_none();
+        self.mechanics = Some(AbilityRuntimeView {
+            focus: focus.map(|_| mechanics.focus()),
+            required_focus: focus,
+            empowered: mechanics.empowered(),
+            charges: mechanics.charges(slot),
+            max_charges: charges,
+            recharge: mechanics.recharge(slot, tick),
+            recast,
+            recast_ready: mechanics.recast_ready(slot, tick),
+        });
+        if recast {
+            self.cooldown = 0.0;
+            self.metadata.description.cost = 0.0;
+            self.metadata.description.target_hint = "再次释放，立即移除当前地形";
+        }
+        self
     }
 }
 
@@ -146,6 +213,71 @@ pub(super) fn unavailable_reason(
     }
 }
 
+pub(super) fn runtime_unavailable_reason(
+    state: &UnitState,
+    control: &ControlState,
+    cooldown: f32,
+    definition: &AbilityDefinition,
+    mechanics: Option<&UnitMechanics>,
+    slot: usize,
+    tick: u64,
+) -> Option<&'static str> {
+    if let Some(mechanics) = mechanics {
+        if mechanics.recast(slot) {
+            return if !state.alive() {
+                Some("等待重生")
+            } else if !control.can_cast() {
+                Some("受控制限制，无法施法")
+            } else if !mechanics.recast_ready(slot, tick) {
+                Some("稍后可再次释放")
+            } else {
+                None
+            };
+        }
+        if matches!(definition.execution, AbilityExecution::Empower(_)) && mechanics.empowered() {
+            return Some("强化已生效");
+        }
+        if matches!(definition.execution,AbilityExecution::Empower(spec) if mechanics.focus()<spec.required_stacks)
+        {
+            return Some("专注层数不足，请先普攻积攒");
+        }
+        if mechanics.charges(slot) == Some(0) {
+            return Some("侦察充能不足");
+        }
+    }
+    unavailable_reason(state, control, cooldown, definition)
+}
+
+pub(super) fn clamps_point_target(definition: &AbilityDefinition) -> bool {
+    definition.execution.is_dash() || matches!(definition.execution, AbilityExecution::Standard(_))
+}
+
+pub(super) fn describe_passives(stats: &UnitStats) -> Vec<String> {
+    stats
+        .attack_passives
+        .iter()
+        .map(|passive| match passive {
+            AttackPassive::CurrentHealth {
+                ratio,
+                minimum,
+                non_hero_cap,
+                target_cooldown,
+            } => format!(
+                "普攻附加目标当前生命{}%物理伤害，至少{}，非英雄最多{}；每目标{}秒冷却",
+                number(ratio * 100.0),
+                number(*minimum),
+                number(*non_hero_cap),
+                number(*target_cooldown)
+            ),
+            AttackPassive::Frost { slow, duration } => format!(
+                "普攻及技能伤害使目标减速{}%，持续{}秒",
+                number(slow * 100.0),
+                number(*duration)
+            ),
+        })
+        .collect()
+}
+
 fn number(value: f32) -> String {
     let text = format!("{value:.2}");
     text.trim_end_matches('0').trim_end_matches('.').into()
@@ -156,6 +288,95 @@ fn describe_execution(
     execution: &AbilityExecution,
 ) -> (&'static str, String) {
     match execution {
+        AbilityExecution::Line(spec) => (
+            "direction",
+            format!(
+                "直线贯穿：{}{}",
+                describe_effects(&spec.effects),
+                if spec.link.is_some() {
+                    "；命中自己的军旗时突进并沿途击飞"
+                } else {
+                    ""
+                }
+            ),
+        ),
+        AbilityExecution::Shield(spec) => (
+            "shield",
+            format!(
+                "获得{}（+{}%额外攻击力）护盾，持续{}秒；每个附近敌方英雄增加{}%最大生命护盾{}",
+                number(spec.base),
+                number(spec.bonus_ad_ratio * 100.0),
+                number(spec.duration),
+                number(spec.max_health_per_enemy_hero * 100.0),
+                spec.slow.map_or(String::new(), |slow| format!(
+                    "；{}",
+                    describe_effects(&[Effect::ApplyStatus(slow)])
+                ))
+            ),
+        ),
+        AbilityExecution::Standard(spec) => (
+            "standard",
+            format!(
+                "投掷军旗：{}；旗帜持续{}秒，附近友方攻速+{}%；已学被动攻速+{}%；超距按最远地点释放",
+                describe_effects(&spec.impact.effects),
+                number(spec.duration),
+                number(spec.attack_speed * 100.0),
+                number(spec.passive_attack_speed * 100.0)
+            ),
+        ),
+        AbilityExecution::Leap(spec) => (
+            "leap",
+            format!(
+                "跃向选定英雄：{}{}",
+                describe_effects(&spec.effects),
+                spec.terrain.map_or(String::new(), |ring| format!(
+                    "；生成{}秒阻挡地形，{}秒后可再次释放拆除",
+                    number(ring.duration),
+                    number(ring.recast_delay)
+                ))
+            ),
+        ),
+        AbilityExecution::Empower(spec) => (
+            "focus",
+            format!(
+                "普攻积攒{}层专注；主动持续{}秒，攻速+{}%，每次普攻发射{}箭合计{}%攻击力，装备命中效果只触发一次",
+                spec.required_stacks,
+                number(spec.duration),
+                number(spec.attack_speed * 100.0),
+                spec.arrows,
+                number(spec.attack_damage_multiplier * 100.0)
+            ),
+        ),
+        AbilityExecution::Volley(spec) => (
+            "volley",
+            format!(
+                "射出{}支扇形箭，同一目标只命中一次：{}{}",
+                spec.count,
+                describe_effects(&spec.effects),
+                spec.hero_slow.map_or(String::new(), |slow| format!(
+                    "；对英雄{}",
+                    describe_effects(&[Effect::ApplyStatus(slow)])
+                ))
+            ),
+        ),
+        AbilityExecution::Scout(spec) => (
+            "scout",
+            format!(
+                "鹰灵沿途侦察并在终点提供{}秒团队视野，无伤害；最多{}次充能，每{}秒恢复一次；未知敌人需侦察或接近才能看见",
+                number(spec.destination_duration),
+                spec.charges,
+                number(spec.recharge)
+            ),
+        ),
+        AbilityExecution::Arrow(spec) => (
+            "arrow",
+            format!(
+                "穿过小兵，仅首个敌方英雄拦截：{}；周围范围伤害，眩晕随飞行距离从{}秒增至{}秒",
+                describe_effects(&spec.effects),
+                number(spec.stun_min),
+                number(spec.stun_max)
+            ),
+        ),
         AbilityExecution::Dash { .. } => (
             "dash",
             "冲刺至目标地点；超出射程时沿该方向冲刺至最远距离，障碍会截断位移".into(),
@@ -217,6 +438,17 @@ pub(super) fn describe_effects(effects: &[Effect]) -> String {
             Effect::ApplyStatus(status) => match status {
                 StatusSpec::Stun { duration } => format!("眩晕{}秒", number(duration.seconds())),
                 StatusSpec::Root { duration } => format!("禁锢{}秒", number(duration.seconds())),
+                StatusSpec::DecayingSlow {
+                    duration,
+                    fraction,
+                    to_fraction,
+                    ..
+                } => format!(
+                    "减速{}%逐渐回落至{}%，持续{}秒",
+                    number(fraction * 100.0),
+                    number(to_fraction * 100.0),
+                    number(duration.seconds())
+                ),
                 StatusSpec::Slow { duration, fraction } => format!(
                     "减速{}%，持续{}秒",
                     number(fraction * 100.0),
@@ -226,6 +458,21 @@ pub(super) fn describe_effects(effects: &[Effect]) -> String {
                     format!("击飞{}秒", number(duration.seconds()))
                 }
             },
+            Effect::BonusAttackDamage { damage, ratio } => format!(
+                "{}{}伤害（+{}%额外攻击力）",
+                number(damage.base),
+                match damage.kind {
+                    DamageType::Physical => "物理",
+                    DamageType::Magical => "魔法",
+                    DamageType::True => "真实",
+                },
+                number(ratio * 100.0)
+            ),
+            Effect::ArmorReduction { fraction, duration } => format!(
+                "护甲降低{}%，持续{}秒",
+                number(fraction * 100.0),
+                number(*duration)
+            ),
             Effect::Displace(displacement) => {
                 let label = match displacement.direction {
                     DisplacementDirection::AlongImpact | DisplacementDirection::AwayFromCenter => {
@@ -233,7 +480,10 @@ pub(super) fn describe_effects(effects: &[Effect]) -> String {
                     }
                     DisplacementDirection::TowardCenter => "拉拽",
                 };
-                format!("{label}{}单位", number(displacement.distance))
+                format!(
+                    "{label}{}",
+                    number(crate::gameplay::units::league_units(displacement.distance))
+                )
             }
         })
         .collect::<Vec<_>>()

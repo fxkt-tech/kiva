@@ -13,6 +13,7 @@
     <link data-trunk rel="rust" data-bin="kiva" />
     <link data-trunk rel="copy-file" href="web/style.css" />
     <link data-trunk rel="copy-file" href="web/hud.js" />
+    <link data-trunk rel="copy-file" href="web/skill-state.js" />
     <link data-trunk rel="copy-file" href="web/pointer.js" />
     <link data-trunk rel="copy-file" href="web/match.js" />
     <link data-trunk rel="copy-file" href="web/match.css" />
@@ -20,6 +21,7 @@
     <link rel="stylesheet" href="match.css" />
     <script src="pointer.js" defer></script>
     <script src="match.js" defer></script>
+    <script src="skill-state.js" defer></script>
     <script src="hud.js" defer></script>
   </head>
   <body>
@@ -66,7 +68,7 @@
       <div><small>选中目标</small><strong id="target-name"></strong><span id="target-health"></span><div id="target-statuses" class="status-badges" aria-label="目标状态" hidden></div></div>
     </aside>
     <footer>
-      <div class="camera-hint"><span id="camera-mode">自由镜头</span><span><kbd>Y</kbd> 切换 · <kbd>Space</kbd> 跟随</span></div>
+      <div class="camera-hint"><span id="camera-mode">自由镜头</span><span class="vision-hint">未侦察的敌人不可见</span><span><kbd>Y</kbd> 切换 · <kbd>Space</kbd> 跟随</span></div>
       <section id="hero-hud" class="hero-hud panel" data-ui aria-label="角色属性、技能与装备" hidden>
         <dl id="hero-stats" class="hero-stats" aria-label="当前战斗属性">
           <div class="hero-stat" title="攻击力"><dt>攻击</dt><dd><span data-stat="attack_damage">—</span></dd></div>
@@ -82,6 +84,7 @@
           <div class="hero-title"><strong id="hero-name">—</strong><span id="hero-action">—</span></div>
           <div class="meter health"><i id="health-fill"></i><span id="health-text">—</span></div>
           <div class="meter energy"><i id="mana-fill"></i><span id="mana-text">—</span></div>
+          <div class="hero-traits"><span id="hero-passive">被动</span><span id="shield-text" hidden></span></div>
         </div>
         <div id="hero-statuses" class="status-badges hero-statuses" aria-label="角色状态" hidden></div>
         <div id="abilities" class="abilities">
@@ -134,6 +137,7 @@
               <div><dt>攻速</dt><dd data-preview-stat="attack_speed">—</dd></div>
               <div><dt>攻距</dt><dd data-preview-stat="attack_range">—</dd></div>
             </dl>
+            <p id="preview-passive" class="preview-passive"></p>
             <div id="preview-abilities" class="preview-abilities" aria-label="初始装配技能"></div>
           </section>
         </div>

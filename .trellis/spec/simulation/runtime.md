@@ -9,7 +9,9 @@
 - `movement.rs` 写位置，`actions.rs` 写动作时钟/消耗/冷却，`combat.rs` 写伤害/死亡/重生。
 - `effects.rs` 统一快照/投递/排序结算；`statuses.rs` 拥有控制实例与权限归并，不能另写位置或最终属性。
 - `equipment.rs`拥有六格实例/装卸/装备CD，使用属性模块同步提交与动作模块统一施法入口。
-- `recovery.rs`拥有受限资源恢复；`validate_unit_spec`与spawn共享无分配预检。近战、结构与模式组合接口见[战斗基础](combat-foundation.md)。
+- `mechanics/compound/battlefield/vision`负责增强、复合执行、临时对象与观察，见[复合机制](champion-primitives.md)。
+- 指令前推进增强/充能/对象并刷新视野，结算后再次刷新；构造/reset即时刷新，暂停首帧不能泄露全图。
+- `recovery.rs`拥有自然生命与受限资源恢复；`validate_unit_spec`与spawn共享无分配预检。近战、结构与模式组合接口见[战斗基础](combat-foundation.md)。
 
 这些规则可在 `src/simulation/model.rs`、`orders.rs` 和 `tests/simulation.rs` 中对应验证。
 属性、伤害和普攻时序的具体接口见 [attributes-and-damage.md](attributes-and-damage.md)。

@@ -42,11 +42,12 @@ async function exerciseMap(page, url, deep) {
   assert.equal(typeof initial.match.id, "string", "match identity must preserve u64 precision");
   assert.equal(initial.map.half_size, 32);
   assert.equal(base(initial, "ally").max_health, 3000);
-  assert.equal(base(initial, "enemy").max_health, 3000);
+  assert.equal(initial.match.bases.enemy,null);
+  assert.equal((await page.locator("#enemy-base-health").textContent()),"未知");
   assert.deepEqual(initial.map.ally_base, [-8, 24]);
   assert.deepEqual(initial.map.enemy_base, [8, -24]);
   const allyProjection = await worldPoint(page, [...base(initial, "ally").position, 1.4]);
-  const enemyProjection = await worldPoint(page, [...base(initial, "enemy").position, 1.4]);
+  const enemyProjection = await worldPoint(page, [...initial.map.enemy_base, 1.4]);
   assert(allyProjection[0] < enemyProjection[0] && allyProjection[1] > enemyProjection[1],
     "the default camera orientation keeps allied/enemy bases southwest/northeast even when one is off screen");
   assert.equal(initial.camera_locked, false);
@@ -58,20 +59,18 @@ async function exerciseMap(page, url, deep) {
   await assertLayout(page);
   await screenshot(page, "single-lane-start");
 
-  // An enemy-target spell must reject a structure without spending or dropping
-  // its aim. The simulation also checks every delivery and effect source.
-  await page.keyboard.press("q");
-  await page.waitForFunction(() => window.__kivaState.aim === 0);
-  await clickUnit(page, base(initial, "enemy").id);
-  await waitTicks(page, 3);
-  const invalid = await state(page);
-  assert.equal(invalid.aim, 0);
-  assert.equal(invalid.abilities[0].cooldown, 0);
-  assert.deepEqual(hero(invalid).position, hero(initial).position);
-  const clickedBase = base(invalid, "enemy").body_screen;
-  assert(clickedBase && clickedBase[0] > 0 && clickedBase[0] < page.viewportSize().width
-    && clickedBase[1] > 0 && clickedBase[1] < page.viewportSize().height,
-  "enemy structure aim was tested after actual camera movement into view");
+  // Hero-only R cannot target an ally or an unobserved enemy location. Camera
+  // movement is not a source of team vision and must not leak the enemy base.
+  await page.keyboard.press("r");
+  await page.waitForFunction(()=>window.__kivaState.aim===3);
+  await clickUnit(page,base(initial,"ally").id);
+  assert.equal((await state(page)).aim,3);
+  await clickWorld(page,initial.map.enemy_base);
+  const invalid=await state(page);
+  assert.equal(invalid.aim,3);
+  assert.equal(invalid.abilities[3].cooldown,0);
+  assert.equal(invalid.match.bases.enemy,null,"panning cannot reveal enemy base health");
+  assert.deepEqual(hero(invalid).position,hero(initial).position);
   await page.keyboard.press("s");
   await moveTo(page, nearHome(initial, 2.8, -1.8));
   await page.keyboard.press("s");
@@ -122,11 +121,29 @@ async function exerciseOutcome(page) {
   // Accelerate only the fixture's monotonic clock. Production tick ordering,
   // wave intervals, damage and AI all run unchanged, through real fixed steps.
   await page.evaluate(() => window.__laneSetFrameStep(250));
-  await page.waitForFunction(() => window.__kivaState.match.phase === "Finished", undefined, { timeout: 180000 });
+  // Software rendering can advance fewer Bevy frames than the fixture's RAF
+  // clock: Time's max-delta cap still applies. Bound the real match as well as
+  // host time instead of treating performance.now() as simulation progress.
+  const startedAt = Date.now();
+  const progress = setInterval(async () => {
+    try {
+      const snapshot = await page.evaluate(() => ({ tick: window.__kivaState.tick,
+        match: window.__kivaState.match, fixture: window.__laneDiagnostics }));
+      console.log("MATCH progress", JSON.stringify({ wall_seconds: (Date.now() - startedAt) / 1000, ...snapshot }));
+    } catch (error) { console.error("MATCH diagnostic:", error.message); }
+  }, 10000);
+  try {
+    await page.waitForFunction(() => {
+      const snapshot = window.__kivaState;
+      if (snapshot.tick > 60 * 60 * 10) throw new Error("The real lane match did not finish within ten simulated minutes");
+      return snapshot.match.phase === "Finished";
+    }, undefined, { timeout: 360000 });
+  } finally { clearInterval(progress); }
   await page.locator("#match-result").waitFor({ state: "visible" });
   const finished = await state(page);
   assert(["Victory", "Defeat", "Draw"].includes(finished.match.outcome));
-  assert([base(finished, "ally"), base(finished, "enemy")].some((unit) => unit.health === 0));
+  if (finished.match.outcome!=="Victory") assert.equal(base(finished,"ally").health,0);
+  assert.equal(await page.locator("#match-result").isVisible(),true);
   assert.equal(await page.evaluate(() => document.pointerLockElement), null);
   await screenshot(page, "single-lane-result");
   const fixed = finished.units.map(({ id, position, health, visual_height }) => ({ id, position, health, visual_height }));
@@ -143,7 +160,7 @@ async function exerciseOutcome(page) {
   await page.evaluate(() => window.__laneSetFrameStep(1000 / 60));
   await restartGame(page);
   const first = await firstWaveStart(page);
-  assert.equal(first.units.length, 6);
+  assert.equal(first.units.length, 3);
   const restarted = await waitForFirstWave(page);
   assert.notEqual(restarted.match.id, finished.match.id);
   assert.notEqual(restarted.player_id, finished.player_id);
@@ -164,7 +181,7 @@ async function exerciseOutcome(page) {
 }
 
 async function main() {
-  const browser = await launchBrowser();
+  let browser;
   let site, page;
   try {
     site = await serveBuild(process.env.KIVA_SITE_DIR || "dist");
@@ -178,23 +195,38 @@ async function main() {
       || `${viewport.width}x${viewport.height}@${deviceScaleFactor}` === requested);
     assert(selected.length, `Unknown KIVA_LANE_CASE: ${requested}`);
     for (const config of selected) {
+      browser = await launchBrowser();
       const context = await browser.newContext(config);
       page = await context.newPage();
       page.setDefaultTimeout(120000);
       const errors = [];
-      page.on("pageerror", (error) => errors.push(error.message));
+      let failBrowser;
+      const browserFailure = new Promise((_, reject) => { failBrowser = reject; });
+      page.on("pageerror", (error) => {
+        errors.push(error.message);
+        console.error("Browser pageerror:", error.stack || error.message);
+        failBrowser(error);
+      });
+      page.on("console", (message) => {
+        if (message.type() === "error" || /%c(?:WARN|ERROR)%c/.test(message.text())) {
+          console.log(`Browser console ${message.type()}:`, message.text());
+        }
+        if (message.text().includes("Quitting the application due to")) failBrowser(new Error(message.text()));
+      });
       await installFrameClock(page);
-      await exerciseMap(page, site.url, config.viewport.width === 1280);
-      if (config.viewport.width === 1280) await exerciseOutcome(page);
+      await Promise.race([exerciseMap(page, site.url, config.viewport.width === 1280), browserFailure]);
+      if (config.viewport.width === 1280) await Promise.race([exerciseOutcome(page), browserFailure]);
       assert.deepEqual(errors, []);
       await context.close();
       page = null;
+      await browser.close();
+      browser = null;
     }
   } catch (error) {
     if (page) await reportFailure(page);
     throw error;
   } finally {
-    try { await browser.close(); }
+    try { if (browser) await browser.close(); }
     finally { if (site) await site.close(); }
   }
 }

@@ -19,6 +19,26 @@ pub struct CharacterDefinition {
 impl CharacterDefinition {
     /// Initial effective attributes, including technical attack-speed limits.
     /// This projection does not create a unit or allocate modifier sources.
+    pub fn initial_attributes_with_loadout(
+        &self,
+        abilities: &AbilityCatalog,
+        loadout: &AbilityLoadout,
+    ) -> Option<EffectiveAttributes> {
+        super::abilities::validate_loadout(loadout, abilities).ok()?;
+        super::mechanics::validate_loadout(loadout, abilities).ok()?;
+        self.stats.valid().then(|| {
+            attributes::initial_attributes_with_modifier(
+                self.stats.base_attributes,
+                &super::AttributeModifier {
+                    additive_percent: super::AttributeDelta {
+                        attack_speed: super::mechanics::passive_speed(loadout, abilities),
+                        ..default()
+                    },
+                    ..default()
+                },
+            )
+        })
+    }
     pub fn initial_attributes(&self) -> Option<EffectiveAttributes> {
         self.stats
             .valid()
@@ -94,6 +114,8 @@ impl CharacterCatalog {
         }
         validate_loadout(&definition.default_loadout, abilities)
             .map_err(|(slot, ability)| CharacterError::UnknownAbility { slot, ability })?;
+        super::mechanics::validate_loadout(&definition.default_loadout, abilities)
+            .map_err(|_| CharacterError::InvalidDefinition)?;
         self.0.insert(id, definition);
         Ok(())
     }

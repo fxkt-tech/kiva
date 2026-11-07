@@ -24,9 +24,10 @@
 
     function renderBase(team, base) {
       const element = $(`${team}-base-health`);
-      element.textContent = base ? `${Math.ceil(base.health)} / ${base.max_health}` : "—";
+      element.textContent = base ? `${Math.ceil(base.health)} / ${base.max_health}` : state?.phase === "Waiting" ? "—" : "未知";
       const fill = $(`${team}-base-fill`);
-      fill.style.width = base ? `${100 * base.health / base.max_health}%` : "0%";
+      fill.style.width = base ? `${100 * base.health / base.max_health}%` : "100%";
+      element.closest(".base-score").classList.toggle("unknown", !base);
     }
 
     function render(next) {

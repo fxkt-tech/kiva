@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickUi, clickWorld, reportFailure, serveBuild, installFrameClock, state, nearHome, waitTicks } = require("./browser-lane-support.cjs");
+const { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickUi, clickWorld, reportFailure, serveBuild, installFrameClock, state, hero, observed, nearHome, waitTicks } = require("./browser-lane-support.cjs");
 
 async function main() {
   const browser = await launchBrowser();
@@ -52,16 +52,34 @@ async function main() {
       const p = s.units.find((unit) => unit.id === s.player_id).position;
       return Math.hypot(p[0] - x, p[1] - z) < 0.1;
     }, destination);
+    await page.waitForFunction(() => {
+      const snapshot = window.__kivaState;
+      return snapshot.units.find((unit) => unit.id === snapshot.player_id).order === "Idle";
+    });
+    const beforeStandard = await state(page);
+    const origin = hero(beforeStandard).position;
+    const lane = beforeStandard.map.enemy_base.map((value, index) => value - beforeStandard.map.ally_base[index]);
+    const length = Math.hypot(...lane);
+    const direction = lane.map((value) => value / length);
+    const range = beforeStandard.abilities[2].range;
+    const landing = origin.map((value, index) => value + direction[index] * range);
     await clickUi(page, '[data-slot="2"]');
     await page.waitForFunction(() => window.__kivaState.aim === 2);
-    const dashed = nearHome(home, 3.8, -0.5);
-    await clickWorld(page, dashed);
-    await page.waitForFunction(([x, z]) => {
-      const s = window.__kivaState;
-      const p = s.units.find((unit) => unit.id === s.player_id).position;
-      return s.abilities[2].cooldown > 0 && Math.hypot(p[0] - x, p[1] - z) < 0.1;
-    }, dashed);
-    console.log("PASS Escape/re-entry, click-to-move and skill buttons with the captured cursor");
+    // Jarvan E places a flag. A far ground click must clamp its actual landing
+    // to the authored range without turning the player's body into a dash.
+    await clickWorld(page, origin.map((value, index) => value + direction[index] * range * 2));
+    const placed = await observed(page, (landing) => {
+      const snapshot = window.__kivaState;
+      return snapshot.abilities[2].cooldown > 0 && snapshot.objects.some((object) =>
+        object.kind === "Standard" && object.owner === snapshot.player_id && object.team === "ally" && object.active
+          && Math.hypot(...object.position.map((value, index) => value - landing[index])) < 0.1)
+        ? snapshot : false;
+    }, landing);
+    assert(Math.hypot(...hero(placed).position.map((value, index) => value - origin[index])) < 0.1,
+      "the captured flag-placement click must keep the hero stationary");
+    assert.equal(hero(placed).order, "Idle");
+    assert.equal(placed.aim, null);
+    console.log("PASS Escape/re-entry, click-to-move and max-range flag placement with the captured cursor");
 
     await page.context().close();
     const highDpi = await browser.newContext({ viewport: { width: 1000, height: 720 }, deviceScaleFactor: 2 });

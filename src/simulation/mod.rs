@@ -2,13 +2,25 @@
 //! interface. No system reads a keyboard, window, camera, mesh or browser object.
 mod abilities;
 mod actions;
+mod attack_traits;
 mod attributes;
+mod battlefield;
 mod characters;
 mod combat;
+mod compound;
 mod damage;
 mod effects;
 mod equipment;
+mod mechanics;
+mod mechanics_defs;
 mod model;
+mod vision;
+pub use mechanics::{BattlefieldObject, ObjectKind, UnitMechanics};
+pub use mechanics_defs::{
+    ArrowSpec, AttackPassive, DashLinkSpec, EmpowerSpec, LeapSpec, LineSpec, RingTerrainSpec,
+    ScoutSpec, ShieldSpec, StandardSpec, UnitKind, VolleySpec,
+};
+pub use vision::{TeamVision, point_visible, team_can_see};
 mod movement;
 mod navigation;
 mod orders;
@@ -42,7 +54,7 @@ pub use model::{
     UnitAction, UnitClass, UnitCommand, UnitLifeRef, UnitOrder, UnitPose, UnitSpec, UnitState,
     UnitStats,
 };
-pub use movement::{SoftAvoidance, is_dashing};
+pub use movement::{SoftAvoidance, is_dashing, leap_progress, motion_allows_cast};
 pub use navigation::{NavigationMap, Obstacle, PathError};
 pub use recovery::{RecoveryAmount, RecoveryError, RecoverySpec, restore_in_zone};
 pub use statuses::{
@@ -69,6 +81,8 @@ impl Plugin for SimulationPlugin {
             .init_resource::<SimulationControl>()
             .init_resource::<SimulationTick>()
             .init_resource::<effects::PendingImpacts>()
+            .init_resource::<mechanics::MechanicMemory>()
+            .init_resource::<TeamVision>()
             .init_resource::<statuses::StatusSequence>()
             .add_message::<SimulationEvent>()
             .add_systems(
@@ -77,14 +91,19 @@ impl Plugin for SimulationPlugin {
                     begin_tick,
                     combat::respawn_units,
                     attributes::consume_changes,
+                    mechanics::before_commands,
+                    compound::advance_objects,
+                    vision::refresh,
                     orders::consume_commands,
                     actions::advance_actions,
                     orders::resolve_orders,
                     movement::move_units,
+                    compound::advance_motion_impacts,
                     combat::advance_projectiles,
                     combat::advance_areas,
                     statuses::advance_old,
                     effects::resolve,
+                    vision::refresh,
                 )
                     .chain()
                     .in_set(SimulationSet::Step)
@@ -103,12 +122,19 @@ fn begin_tick(mut tick: ResMut<SimulationTick>) {
 pub fn reset_simulation(world: &mut World) {
     world.resource_mut::<SimulationControl>().paused = true;
     let entities: Vec<_> = world
-        .query_filtered::<Entity, Or<(With<Unit>, With<Projectile>, With<AreaEffect>)>>()
+        .query_filtered::<Entity, Or<(
+            With<Unit>,
+            With<Projectile>,
+            With<AreaEffect>,
+            With<BattlefieldObject>,
+        )>>()
         .iter(world)
         .collect();
     for entity in entities {
         world.despawn(entity);
     }
+    world.resource_mut::<NavigationMap>().clear_temporary();
+    *world.resource_mut::<mechanics::MechanicMemory>() = default();
     world.resource_mut::<CommandQueue>().clear();
     world.resource_mut::<AttributeChanges>().clear_pending();
     world
@@ -116,6 +142,7 @@ pub fn reset_simulation(world: &mut World) {
         .clear_pending();
     world.resource_mut::<Messages<SimulationEvent>>().clear();
     world.resource_mut::<SimulationTick>().0 = 0;
+    vision::refresh(world);
 }
 
 /// Checks a complete unit configuration without spawning or allocating any
@@ -134,21 +161,27 @@ pub fn validate_unit_spec(world: &World, spec: &UnitSpec) -> Result<(), &'static
     {
         return Err("structures cannot have abilities or respawn");
     }
-    if !world
+    if world
         .resource::<NavigationMap>()
-        .walkable(spec.position, spec.stats.radius)
+        .resolve_placement(spec.position, spec.stats.radius)
+        .is_none()
     {
         return Err("unit spawn is blocked");
     }
     if abilities::validate_loadout(&spec.abilities, world.resource::<AbilityCatalog>()).is_err() {
         return Err("unknown equipped ability");
     }
+    mechanics::validate_loadout(&spec.abilities, world.resource::<AbilityCatalog>())?;
     Ok(())
 }
 
 /// Validates construction; all runtime mutation stays inside this module.
 pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static str> {
     validate_unit_spec(world, &spec)?;
+    let position = world
+        .resource::<NavigationMap>()
+        .resolve_placement(spec.position, spec.stats.radius)
+        .expect("validated birth placement");
     let slow_source = world
         .resource_mut::<AttributeChanges>()
         .allocate_source()
@@ -156,7 +189,7 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
     let health = spec.stats.max_health;
     let mana = spec.stats.max_mana;
     let control = ControlState::for_class(spec.stats.class);
-    Ok(world
+    let entity = world
         .spawn((
             Unit {
                 name: spec.name,
@@ -176,8 +209,8 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
                 last_recovery_tick: None,
             },
             UnitPose {
-                position: spec.position,
-                previous: spec.position,
+                position,
+                previous: position,
                 facing: Vec2::NEG_Y,
             },
             AbilitySlots {
@@ -191,5 +224,11 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
             UnitStatuses::new(slow_source),
             control,
         ))
-        .id())
+        .id();
+    if let Err(reason) = mechanics::initialize(world, entity) {
+        world.despawn(entity);
+        return Err(reason);
+    }
+    vision::refresh(world);
+    Ok(entity)
 }

@@ -22,6 +22,7 @@ pub(super) fn finish_match(app: &mut App, winner: Team) {
             team: winner,
             position,
             stats: UnitStats {
+                vision_radius: 12.0,
                 attack_delivery: BasicAttackDelivery::Direct,
                 base_attributes: BaseAttributes {
                     attack_damage: 10000.0,
@@ -46,4 +47,28 @@ pub(super) fn finish_match(app: &mut App, winner: Team) {
         app.world().resource::<MatchState>().phase(),
         MatchPhase::Finished(MatchOutcome::Winner(winner))
     );
+}
+
+/// Ordered-input regressions use explicit generic skills independently of the
+/// production champion kits. This fixture is compiled only into client tests.
+pub(super) fn generic_control_roster(world: &mut World) {
+    let mut catalog = CharacterCatalog::default();
+    for (id, loadout) in [(1, [5, 6, 3, 7]), (2, [1, 2, 3, 4])] {
+        catalog
+            .register(
+                CharacterId(id),
+                CharacterDefinition {
+                    name: format!("Input fixture {id}"),
+                    description: "Generic input adapter fixture".into(),
+                    stats: UnitStats {
+                        vision_radius: 12.0,
+                        ..default()
+                    },
+                    default_loadout: loadout.map(|id| Some(AbilityId(id))),
+                },
+                world.resource::<AbilityCatalog>(),
+            )
+            .unwrap();
+    }
+    world.insert_resource(catalog);
 }

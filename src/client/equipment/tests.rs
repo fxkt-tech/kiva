@@ -243,7 +243,7 @@ fn catalog_and_runtime_share_slot_free_active_metadata_and_never_equip_defaults(
     ))
     .unwrap();
     assert_eq!(catalog.as_array().unwrap().len(), 9);
-    assert_eq!(catalog[1]["bonuses"], json!(["攻距 +0.5", "攻速 +25%"]));
+    assert_eq!(catalog[1]["bonuses"], json!(["攻距 +50", "攻速 +25%"]));
     assert!(
         catalog[5]["passives"][0]["description"]
             .as_str()

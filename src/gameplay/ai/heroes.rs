@@ -46,15 +46,18 @@ pub(super) fn decide(world: &mut World) {
         return;
     }
     let tick = world.resource::<SimulationTick>().0;
-    let seen = observations::observe(world);
+    let observations = observations::observe(world);
     let map = world.resource::<MapDefinition>().clone();
     let controlled: Vec<_> = world
-        .query::<(Entity, &Controller, &UnitState)>()
+        .query::<(Entity, &Controller, &UnitState, &Unit)>()
         .iter(world)
-        .filter(|(_, controller, _)| **controller == Controller::HeroAi)
-        .map(|(entity, _, state)| (entity, state.alive(), state.life_ref(entity)))
+        .filter(|(_, controller, _, _)| **controller == Controller::HeroAi)
+        .map(|(entity, _, state, unit)| {
+            (entity, state.alive(), state.life_ref(entity), unit.team())
+        })
         .collect();
-    for (entity, alive, life) in controlled {
+    for (entity, alive, life, team) in controlled {
+        let seen = observations.for_team(team);
         if !alive {
             world.entity_mut(entity).remove::<HeroBrain>();
             continue;
@@ -92,12 +95,13 @@ pub(super) fn decide(world: &mut World) {
             })
             .sum();
         let outnumbered = hero.health_fraction() < 0.6
-            && spells::threat(&seen, hero.team, hero.position) > friendly_cover + 2.5;
+            && spells::threat(seen, hero.team, hero.position) > friendly_cover + 2.5;
         let withdrawing = hero.health_fraction() < 0.25
             || outnumbered
             || (matches!(previous, Tactic::Retreat | Tactic::Recover)
                 && hero.health_fraction() < 0.75);
-        if is_dashing(world, entity) {
+        let in_motion = is_dashing(world, entity);
+        if in_motion && !motion_allows_cast(world, entity) {
             continue;
         }
         let action = world.get::<UnitAction>(entity).expect("hero action");
@@ -120,6 +124,14 @@ pub(super) fn decide(world: &mut World) {
             };
             brain.target = None;
             brain.pursuit.clear();
+            if in_motion {
+                if let Some(command) =
+                    spells::choose(world, hero, seen, &spells::Targets::default(), Some(home))
+                {
+                    observations::submit(world, entity, command);
+                }
+                continue;
+            }
             if !world
                 .get::<ControlState>(entity)
                 .expect("control")
@@ -129,7 +141,7 @@ pub(super) fn decide(world: &mut World) {
             }
             if !recovering {
                 if let Some(command) =
-                    spells::choose(world, hero, &seen, &spells::Targets::default(), Some(home))
+                    spells::choose(world, hero, seen, &spells::Targets::default(), Some(home))
                 {
                     observations::submit(world, entity, command);
                 } else {
@@ -155,9 +167,9 @@ pub(super) fn decide(world: &mut World) {
             .get_mut::<HeroBrain>(entity)
             .expect("brain")
             .pursuit
-            .refresh(hero, &seen, &map, tick, reach);
+            .refresh(hero, seen, &map, tick, reach);
         let brain = world.get::<HeroBrain>(entity).expect("brain");
-        let target = select_target(brain, hero, &seen, &map, defended, tick);
+        let target = select_target(brain, hero, seen, &map, defended, tick);
         let spell_targets = spells::Targets {
             allowed: seen
                 .iter()
@@ -181,12 +193,15 @@ pub(super) fn decide(world: &mut World) {
                 Tactic::Push
             };
         }
-        if let Some(command) = dodge(world, hero, &seen) {
+        if !in_motion && let Some(command) = dodge(world, hero, seen) {
             observations::submit(world, entity, command);
             continue;
         }
-        if let Some(command) = spells::choose(world, hero, &seen, &spell_targets, None) {
+        if let Some(command) = spells::choose(world, hero, seen, &spell_targets, None) {
             observations::submit(world, entity, command);
+            continue;
+        }
+        if in_motion {
             continue;
         }
         if let Some(target) = target {
@@ -207,7 +222,7 @@ pub(super) fn decide(world: &mut World) {
                 let point = target.position
                     + (hero.position - target.position).normalize_or(map.lane_lateral(hero.team))
                         * preferred;
-                if safe_walk(world, hero, point, &seen) {
+                if safe_walk(world, hero, point, seen) {
                     observations::submit(world, entity, UnitCommand::MoveTo(point));
                     continue;
                 }
@@ -221,7 +236,7 @@ pub(super) fn decide(world: &mut World) {
             }
             continue;
         }
-        advance_lane(world, hero, &seen, &map);
+        advance_lane(world, hero, seen, &map);
     }
 }
 
@@ -328,7 +343,9 @@ fn dodge(world: &mut World, hero: &SeenUnit, seen: &[SeenUnit]) -> Option<UnitCo
     let threats: Vec<_> = world
         .query::<&Projectile>()
         .iter(world)
-        .filter(|projectile| projectile.team() != hero.team)
+        .filter(|projectile| {
+            projectile.team() != hero.team && point_visible(world, hero.team, projectile.position())
+        })
         .map(|projectile| {
             (
                 projectile.position(),

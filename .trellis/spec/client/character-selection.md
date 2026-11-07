@@ -32,7 +32,7 @@ HUD保持原字段并增加session：
 
 ## 3. 执行契约
 
-Startup准备目录/地图与Waiting状态，Web不创建任何对局单位且显式暂停；默认预选旅者，初始回执request0已接受。
+Startup准备目录/地图与Waiting状态，Web不创建任何对局单位且显式暂停；默认预选皇子，初始回执request0已接受。
 Native通过相同创建入口自动采用默认角色，不等待DOM；SimulationPlugin默认暂停语义保持。
 固定步前按`session::process_requests → equipment::process_requests → collect_input`运行，会话处理本身不受暂停阻断。
 
@@ -73,7 +73,7 @@ controls集中处理运行时暂停与输入：Web须Active+MatchState.can_advan
 Selecting排空窗口/技能意图和游戏命令，不向假Entity发Stop；Active暂停保留原清队列/一次Stop规则。
 GamePointer仅在已确认且允许运行时视为捕获；暂停清除其捕获边界，恢复重新居中。
 just_captured不仅丢旧WindowEvent，也要排空并忽略旧DOM技能请求，防止启动/恢复当帧误瞄准或施法。
-无玩家是合法阶段，camera不跟随空玩家，scene不画玩家瞄准，HUD不伪造旅者生命和技能。
+无玩家是合法阶段，camera不跟随空玩家，scene不画玩家瞄准，HUD不伪造玩家生命和技能。
 
 ## 4. 错误与边界矩阵
 
@@ -93,8 +93,8 @@ just_captured不仅丢旧WindowEvent，也要排空并忽略旧DOM技能请求�
 
 ## 5. 示例
 
-正常：先选择秘术师，等最新回执后进入，实际30攻击/40法强与预览一致；Q方向瞄准、R自身引导。
-默认：旅者预选但尚无玩家，tick0且无对局单位，实际英雄HUD隐藏。
+正常：先选择寒冰，等最新回执后进入，实际59攻击/0法强与预览一致；Q叠层强化、R方向箭。
+默认：皇子预选但尚无玩家，tick0且无对局单位，实际英雄HUD隐藏。
 错误：data-paused=false就开始模拟，或失败选角后用旧A/rev1偷偷创建A，或恢复时重建玩家。
 
 ## 6. 验证

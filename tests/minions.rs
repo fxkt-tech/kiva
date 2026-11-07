@@ -49,6 +49,12 @@ fn spawn(app: &mut App, team: Team, point: Vec2, role: UnitRole, controller: Con
             team,
             position: point,
             stats: UnitStats {
+                kind: if role == UnitRole::Hero {
+                    UnitKind::Hero
+                } else {
+                    UnitKind::Minion
+                },
+                vision_radius: 12.0,
                 max_health: 2000.0,
                 attack_delivery: BasicAttackDelivery::Direct,
                 base_attributes: BaseAttributes {
@@ -195,6 +201,11 @@ fn fragile_enemy(app: &mut App, point: Vec2, respawn: Option<f32>) -> Entity {
             team: Team::Enemy,
             position: point,
             stats: UnitStats {
+                kind: if respawn.is_some() {
+                    UnitKind::Hero
+                } else {
+                    UnitKind::Minion
+                },
                 max_health: 12.0,
                 base_attributes: BaseAttributes {
                     attack_speed: 0.0,
@@ -504,6 +515,16 @@ fn soft_avoidance_does_not_change_dash_or_external_displacement_endpoints() {
 #[test]
 #[ignore = "explicit 30 minute simulation soak"]
 fn half_hour_real_waves_do_not_accumulate_dead_roots_or_silently_skip_spawns() {
+    half_hour_match(CharacterId(1));
+}
+
+#[test]
+#[ignore = "explicit 30 minute Jarvan object lifecycle soak"]
+fn half_hour_jarvan_ai_waves_preserve_objects_and_reset() {
+    half_hour_match(CharacterId(2));
+}
+
+fn half_hour_match(player: CharacterId) {
     let mut app = App::new();
     app.add_plugins((MinimalPlugins, SimulationPlugin, GameplayPlugin, AiPlugin));
     prepare_world(app.world_mut());
@@ -515,7 +536,13 @@ fn half_hour_real_waves_do_not_accumulate_dead_roots_or_silently_skip_spawns() {
     app.world_mut()
         .insert_resource(definition.with_base_stats(base));
     let static_entities = app.world().entities().count_spawned();
-    start_match(app.world_mut(), CharacterId(1)).unwrap();
+    start_match(app.world_mut(), player).unwrap();
+    let opponent = app
+        .world()
+        .resource::<MatchState>()
+        .hero(Team::Enemy)
+        .unwrap();
+    let opponent = app.world().get::<CharacterIdentity>(opponent).unwrap().id();
     app.world_mut().resource_mut::<SimulationControl>().paused = false;
     let mut emitted = std::collections::HashSet::new();
     let mut per_wave = [0; 31];
@@ -524,6 +551,8 @@ fn half_hour_real_waves_do_not_accumulate_dead_roots_or_silently_skip_spawns() {
     let mut peak = 0;
     let mut peak_entities = 0;
     let mut peak_effects = 0;
+    let mut seen_standard = false;
+    let mut seen_terrain = false;
     // Complete wave31 as well: a wave starts at108000 and finishes at108150.
     for tick in 1_u64..=108150 {
         ticks(&mut app, 1);
@@ -531,10 +560,18 @@ fn half_hour_real_waves_do_not_accumulate_dead_roots_or_silently_skip_spawns() {
             peak_entities = peak_entities.max(app.world().entities().count_spawned());
             let effects = app
                 .world_mut()
-                .query_filtered::<Entity, Or<(With<Projectile>, With<AreaEffect>)>>()
+                .query_filtered::<Entity, Or<(With<Projectile>, With<AreaEffect>, With<BattlefieldObject>)>>()
                 .iter(app.world())
                 .count();
             peak_effects = peak_effects.max(effects);
+            for object in app
+                .world_mut()
+                .query::<&BattlefieldObject>()
+                .iter(app.world())
+            {
+                seen_standard |= object.kind() == ObjectKind::Standard && object.active(tick);
+                seen_terrain |= object.kind() == ObjectKind::Terrain && object.active(tick);
+            }
             let states = app
                 .world_mut()
                 .query::<(&UnitRole, &UnitState)>()
@@ -562,6 +599,12 @@ fn half_hour_real_waves_do_not_accumulate_dead_roots_or_silently_skip_spawns() {
     assert_eq!(app.world().resource::<MatchState>().wave_number(), 31);
     assert_eq!(emitted.len(), 31 * 12);
     assert!(per_wave.into_iter().all(|count| count == 12));
+    if opponent == CharacterId(1) {
+        assert!(
+            seen_standard && seen_terrain,
+            "the real Jarvan AI must exercise both flag and wall lifetimes"
+        );
+    }
     assert!(
         peak < 31 * 12,
         "real combat should have removed casualties; all waves still spawned"
@@ -577,7 +620,8 @@ fn half_hour_real_waves_do_not_accumulate_dead_roots_or_silently_skip_spawns() {
         "reset must clean units and independently committed effects"
     );
     println!(
-        "30 minutes + final2.5s,31 complete waves/372 unique emissions,peak {peak} living minions/{peak_entities} total entities/{peak_effects} effects; no dead roots retained; reset returned to {static_entities} static entities"
+        "player{} vs ai{},30 minutes + final2.5s,31 complete waves/372 unique emissions,peak {peak} living minions/{peak_entities} total entities/{peak_effects} effects (including battlefield objects); flags={seen_standard},terrain={seen_terrain}; no dead roots retained; reset returned to {static_entities} static entities",
+        player.0, opponent.0
     );
 }
 

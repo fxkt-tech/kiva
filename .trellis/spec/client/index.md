@@ -13,7 +13,8 @@
 7. 修改装备管理、主动输入或六格HUD时阅读 [equipment.md](equipment.md)。
 8. 修改鼠标位移、光标时序或点击位置时阅读 [pointer.md](pointer.md)。
 9. 修改地图、基地、波次、终局/重开、角色类型表现时阅读 [lane-match.md](lane-match.md)。
-10. 修改角色模型、骨骼、动作或其生命周期时阅读 [character-animation.md](character-animation.md)。
+10. 修改角色套件、视野、护盾、充能或重施时阅读 [champion-presentation.md](champion-presentation.md)。
+11. 修改角色模型、骨骼、动作或其生命周期时阅读 [character-animation.md](character-animation.md)。
 
 ## Quality Check
 

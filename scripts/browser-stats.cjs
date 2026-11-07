@@ -7,8 +7,8 @@ const { launchBrowser, enterGame, resumeGame, movePointer, clickPointer, clickUi
   clickWorld, reportFailure, serveBuild, installFrameClock, state, nearHome } = require("./browser-lane-support.cjs");
 
 const expected = {
-  attack_damage: 40, ability_power: 0, armor: 0, magic_resistance: 0,
-  move_speed: 5.5, attack_speed: 1.25, attack_range: 5.5,
+  attack_damage: 64, ability_power: 0, armor: 36, magic_resistance: 32,
+  move_speed: 340, attack_speed: 0.7896, attack_range: 175,
 };
 
 async function observeHud(page) {
@@ -21,7 +21,7 @@ async function observeHud(page) {
       return width && height ? { x, y, width, height } : null;
     }
     return {
-      attributes: player.attributes,
+      attributes: player.display_attributes,
       values: Object.fromEntries(fields.map((field) => [field,
         document.querySelector(`[data-stat="${field}"]`)?.textContent])),
       entries: fields.map((field) => box(document.querySelector(`[data-stat="${field}"]`))),
@@ -56,7 +56,7 @@ function assertHud(hud, scenario) {
   for (const [field, value] of Object.entries(expected)) {
     assert(Number.isFinite(hud.attributes[field]), `${field} must come from a finite simulation value`);
     assert(Math.abs(hud.attributes[field] - value) < 0.0001, `${field} must preserve its default behavior`);
-    assert.equal(Number(hud.values[field]), hud.attributes[field], `${field}: DOM must match the simulation snapshot`);
+    assert(Math.abs(Number(hud.values[field])-hud.attributes[field])<0.051, `${field}: DOM must match rounded display attributes`);
   }
   assert.deepEqual(hud.labels, ["攻击", "法强", "护甲", "魔抗", "移速", "攻速", "攻距"], "labels must match the requested order");
   assert.deepEqual(hud.fields, Object.keys(expected), "short labels must stay paired with the correct attributes");

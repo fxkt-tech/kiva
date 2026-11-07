@@ -20,6 +20,8 @@ StatusDuration::from_millis(u64) -> Option<StatusDuration>
 orders::resolve_target(&World, unit, &AbilityDefinition, AbilityTarget) -> Result<AbilityTarget, Rejection> // 内部解析
 ```
 
+复合执行Line/Shield/Standard/Leap/Empower/Volley/Scout/Arrow、临时减甲与衰减Slow见[复合机制](champion-primitives.md)。
+
 `effects.rs`保存不可变快照、投递和排序，不直接扣血/写位置/改最终属性。
 `statuses.rs`拥有实例与权限归并，调用`actions`/`movement`内部入口执行中断，
 同步复用属性模块的校验/提交操作。`combat`负责扣血和死亡编排；`movement`唯一写位置。

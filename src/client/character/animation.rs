@@ -3,6 +3,7 @@ use super::{
     model::BoneVisual,
     poses::{self, Gesture},
     rig::{AnimationLibrary, blend},
+    weapon::WeaponStyle,
 };
 use crate::client::presentation::PresentationFrame;
 use crate::simulation::*;
@@ -17,6 +18,7 @@ struct CastMemory {
 #[derive(Component)]
 pub(in crate::client) struct RigPose {
     life: UnitLifeRef,
+    weapon: WeaponStyle,
     pub(super) local: Vec<Transform>,
     pub(super) model: Vec<Transform>,
     from: Vec<Transform>,
@@ -36,10 +38,16 @@ impl RigPose {
         &self.model
     }
 
-    pub fn new(library: &AnimationLibrary, life: UnitLifeRef, now: f64) -> Self {
-        let local = poses::sample(library, Gesture::Idle, 0.0, 0.0);
+    pub fn new(
+        library: &AnimationLibrary,
+        life: UnitLifeRef,
+        now: f64,
+        weapon: WeaponStyle,
+    ) -> Self {
+        let local = poses::sample_weapon(library, Gesture::Idle, 0.0, 0.0, weapon);
         Self {
             life,
+            weapon,
             model: library.model_pose(&local),
             from: local.clone(),
             local,
@@ -61,6 +69,7 @@ fn presentation_time(tick: &SimulationTick, frame: &PresentationFrame) -> f64 {
 }
 
 type AnimatedUnit<'a> = (
+    Entity,
     &'a UnitPose,
     &'a UnitState,
     &'a UnitAction,
@@ -128,6 +137,7 @@ pub(in crate::client) fn sync_poses(
     tick: Res<SimulationTick>,
     library: Res<AnimationLibrary>,
     catalog: Res<AbilityCatalog>,
+    motion: Option<Res<crate::client::motion_view::MotionView>>,
     mut units: Query<AnimatedUnit>,
 ) {
     // Retain the exact last local/model pose, blend origin and clocks. In
@@ -137,13 +147,13 @@ pub(in crate::client) fn sync_poses(
     }
     let now = presentation_time(&tick, &frame);
     let fraction = frame.fraction();
-    for (pose, state, action, order, statuses, permissions, mut rig) in &mut units {
+    for (id, pose, state, action, order, statuses, permissions, mut rig) in &mut units {
         if !state.alive() {
             continue;
         }
         if rig.reset_pending {
             let cast = rig.cast.take();
-            *rig = RigPose::new(&library, rig.life, now);
+            *rig = RigPose::new(&library, rig.life, now, rig.weapon);
             rig.cast = cast;
         }
         let dt = (now - rig.last_time).max(0.0) as f32;
@@ -170,7 +180,11 @@ pub(in crate::client) fn sync_poses(
         {
             cast.dash = None;
         }
-        let dashing = moving && rig.cast.as_ref().is_some_and(|cast| cast.dash.is_some());
+        let dashing = moving
+            && motion.as_ref().map_or_else(
+                || rig.cast.as_ref().is_some_and(|cast| cast.dash.is_some()),
+                |motion| motion.dashing(id),
+            );
         let (gesture, remaining, duration, ability) = if airborne {
             (Gesture::Airborne, 0.0, 0.0, None)
         } else if permissions.forced_motion() {
@@ -241,7 +255,7 @@ pub(in crate::client) fn sync_poses(
         } else {
             1.0
         };
-        let target = poses::sample(&library, gesture, progress, rig.clock);
+        let target = poses::sample_weapon(&library, gesture, progress, rig.clock, rig.weapon);
         // The first release pose follows the authoritative action transition,
         // even if a fast attack has only a single recovery tick.
         let weight = if matches!(gesture, Gesture::Windup | Gesture::Backswing) {

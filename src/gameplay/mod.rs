@@ -7,6 +7,7 @@ mod lifecycle;
 mod map;
 mod match_state;
 mod spawn;
+pub mod units;
 
 pub use ai::AiPlugin;
 pub use definition::MatchDefinition;

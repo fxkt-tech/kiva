@@ -9,7 +9,9 @@ pub(super) fn valid_enemy(world: &World, source: Entity, target: Entity) -> bool
         world.get::<Unit>(target),
         world.get::<UnitState>(target),
     ) {
-        (Some(a), Some(b), Some(state)) => a.team != b.team && state.alive(),
+        (Some(a), Some(b), Some(state)) => {
+            a.team != b.team && state.alive() && super::team_can_see(world, a.team, target)
+        }
         _ => false,
     }
 }
@@ -35,7 +37,12 @@ pub(super) fn resolve_target(
             return Ok(target);
         }
         (Targeting::Point, AbilityTarget::Point(point)) if point.is_finite() => {
-            if definition.execution.is_dash() {
+            if definition.execution.is_dash()
+                || matches!(
+                    definition.execution,
+                    AbilityExecution::Standard(_) | AbilityExecution::Scout(_)
+                )
+            {
                 // Preserve direction for finite clicks whose f32 length overflows.
                 let offset = point.as_dvec2() - origin.as_dvec2();
                 let distance = offset.length();
@@ -55,6 +62,13 @@ pub(super) fn resolve_target(
                     .get::<Unit>(target)
                     .is_some_and(|unit| unit.class() == UnitClass::Actor) =>
         {
+            if matches!(&definition.execution,AbilityExecution::Leap(spec) if spec.heroes_only)
+                && world
+                    .get::<Unit>(target)
+                    .is_none_or(|unit| unit.stats.kind != UnitKind::Hero)
+            {
+                return Err(Rejection::InvalidTarget);
+            }
             world
                 .get::<UnitPose>(target)
                 .ok_or(Rejection::InvalidTarget)?
@@ -77,9 +91,11 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
         return Err(Rejection::Dead);
     }
     if !matches!(command, UnitCommand::Stop)
-        && world
-            .get::<Movement>(entity)
-            .is_some_and(|m| m.dash.is_some())
+        && super::movement::is_dashing(world, entity)
+        && !(matches!(
+            command,
+            UnitCommand::CastAbility { .. } | UnitCommand::UseEquipment { .. }
+        ) && super::movement::motion_allows_cast(world, entity))
     {
         return Err(Rejection::Busy);
     }
@@ -215,17 +231,22 @@ type OrderActor<'a> = (
     &'a mut UnitOrder,
     &'a mut UnitAction,
     &'a mut Movement,
+    Option<&'a super::compound::CompoundMotion>,
 );
 
 pub(super) fn resolve_orders(
     map: Res<NavigationMap>,
+    vision: Res<TeamVision>,
     targets: Query<(Entity, &Unit, &UnitState, &UnitPose)>,
     mut actors: Query<OrderActor<'_>>,
     mut events: MessageWriter<SimulationEvent>,
 ) {
-    for (entity, unit, state, pose, control, mut order, mut action, mut movement) in &mut actors {
+    for (entity, unit, state, pose, control, mut order, mut action, mut movement, compound) in
+        &mut actors
+    {
         if !state.alive()
             || !matches!(*action, UnitAction::Ready)
+            || compound.is_some()
             || movement.dash.is_some()
             || movement.forced.is_some()
             || (!control.can_move() && !control.can_attack())
@@ -241,6 +262,10 @@ pub(super) fn resolve_orders(
                     other.team != unit.team
                         && life.alive()
                         && life.life_ref(target.entity()) == target
+                        && vision.point_visible(
+                            unit.team,
+                            targets.get(target.entity()).expect("target").3.position,
+                        )
                 })
         };
         let target = match &mut *order {
@@ -267,6 +292,7 @@ pub(super) fn resolve_orders(
                         .filter(|(_, other, life, p)| {
                             other.team != unit.team
                                 && life.alive()
+                                && vision.point_visible(unit.team, p.position)
                                 && p.position.distance(pose.position)
                                     <= unit.attributes().attack_range() + 3.0
                         })
@@ -288,7 +314,7 @@ pub(super) fn resolve_orders(
             };
             let reach = unit.attributes().attack_range() + unit.stats.radius + other.stats.radius;
             if pose.position.distance(target_pose.position) <= reach
-                && map.line_clear(pose.position, target_pose.position, 0.05)
+                && map.projectile_line_clear(pose.position, target_pose.position, 0.05)
             {
                 movement.route.clear();
                 movement.goal = None;

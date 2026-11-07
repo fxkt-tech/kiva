@@ -122,10 +122,17 @@ fn update_pointer(world: &mut World, cursor: Option<Vec2>) {
 /// the same root transform used for its label. Simulation still validates hits.
 fn hovered_unit(world: &mut World, ray: Ray3d) -> Option<Entity> {
     let cast = RayCast3d::from_ray(ray, 200.0);
+    let team = world
+        .resource::<ClientSession>()
+        .player()
+        .and_then(|player| world.get::<Unit>(player))
+        .map(Unit::team);
     world
         .query::<(Entity, &UnitState, &GlobalTransform, &Pickable)>()
         .iter(world)
-        .filter(|(_, state, _, _)| state.alive())
+        .filter(|(id, state, _, _)| {
+            state.alive() && team.is_none_or(|team| team_can_see(world, team, *id))
+        })
         .filter_map(|(id, _, transform, bounds)| {
             let center = transform.transform_point(bounds.offset);
             let half_size = transform.affine().matrix3.abs() * bounds.half_size;
@@ -162,7 +169,18 @@ fn cast_unavailable(world: &World, player: Entity, source: CastSource) -> Option
             _ => "该装备没有可用主动技能",
         });
     };
-    abilities::unavailable_reason(state, control, info.cooldown, info.definition)
+    match source {
+        CastSource::AbilitySlot(slot) => abilities::runtime_unavailable_reason(
+            state,
+            control,
+            info.cooldown,
+            info.definition,
+            world.get::<UnitMechanics>(player),
+            slot,
+            world.resource::<SimulationTick>().0,
+        ),
+        _ => abilities::unavailable_reason(state, control, info.cooldown, info.definition),
+    }
 }
 
 fn feedback(world: &mut World, reason: &'static str) {
@@ -195,8 +213,10 @@ fn select_cast(world: &mut World, source: CastSource) {
         feedback(world, reason);
         return;
     }
-    if cast_info(world, player, source)
-        .is_some_and(|info| info.definition.targeting == Targeting::SelfCast)
+    let recast = matches!(source,CastSource::AbilitySlot(slot) if world.get::<UnitMechanics>(player).is_some_and(|state|state.recast(slot)));
+    if recast
+        || cast_info(world, player, source)
+            .is_some_and(|info| info.definition.targeting == Targeting::SelfCast)
     {
         world.resource_mut::<PlayerController>().aim = None;
         submit_cast(world, player, source, AbilityTarget::SelfCast);
@@ -286,6 +306,9 @@ fn sync_pointer(
 fn valid_enemy_pick(world: &World, player: Entity, target: Entity) -> bool {
     world.get::<UnitState>(target).is_some_and(UnitState::alive)
         && world
+            .get::<Unit>(player)
+            .is_some_and(|player| team_can_see(world, player.team(), target))
+        && world
             .get::<Unit>(target)
             .zip(world.get::<Unit>(player))
             .is_some_and(|(target, player)| target.team() != player.team())
@@ -297,6 +320,12 @@ pub(super) fn refresh_aim(world: &mut World) {
         world.resource_mut::<PlayerController>().aim = None;
         return;
     };
+    let team = world.get::<Unit>(unit).map(Unit::team);
+    let selected = world.resource::<PlayerController>().selected;
+    if selected.is_some_and(|selected| team.is_none_or(|team| !team_can_see(world, team, selected)))
+    {
+        world.resource_mut::<PlayerController>().selected = None;
+    }
     let controller = world.resource::<PlayerController>();
     let aim = controller.aim;
     let unavailable = match aim {
@@ -544,6 +573,8 @@ fn rejection_message(reason: &Rejection) -> &'static str {
         Rejection::NoPath => "No route to that location",
         Rejection::OutOfRange => "Outside cast range",
         Rejection::OnCooldown => "Ability is cooling down",
+        Rejection::NoCharges => "侦察充能不足",
+        Rejection::InsufficientStacks => "专注层数不足，请先普攻积攒",
         Rejection::InsufficientMana => "Not enough energy",
         Rejection::Dead => "Waiting to respawn",
         Rejection::Busy => "Action already in progress",
@@ -562,6 +593,12 @@ pub(super) fn receive_feedback(
 ) {
     for event in events.read() {
         match event {
+            SimulationEvent::TerrainPlacementFailed { unit, .. }
+                if Some(*unit) == session.player() =>
+            {
+                feedback.message = "附近空间不足，围墙未生成".into();
+                feedback.expires = time.elapsed_secs() + 2.0;
+            }
             SimulationEvent::MoveOrdered { unit, destination }
                 if Some(*unit) == session.player() =>
             {

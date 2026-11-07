@@ -152,7 +152,10 @@ fn validate_plan(
         if item.spec.stats.class == UnitClass::Actor {
             world
                 .resource::<NavigationMap>()
-                .path(
+                // Configuration reachability is static. A live temporary
+                // wall may hold a minion until it expires without invalidating
+                // the map or cancelling its scheduled factory construction.
+                .path_static(
                     item.spec.position,
                     map.base_position(super::opponent(item.spec.team)),
                     item.spec.stats.radius,
@@ -245,7 +248,7 @@ pub fn start_match(
         (Team::Ally, player_character, Controller::Human),
         (
             Team::Enemy,
-            definition.opponent_character(),
+            definition.opponent_for(player_character),
             Controller::HeroAi,
         ),
     ] {

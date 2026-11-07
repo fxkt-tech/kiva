@@ -1,11 +1,13 @@
 //! Application adapters. Gameplay imports never point back into this module.
 mod abilities;
+mod battlefield;
 mod camera;
 mod character;
 mod content;
 mod controls;
 mod equipment;
 mod match_view;
+mod motion_view;
 mod pointer;
 mod presentation;
 mod scene;
@@ -14,6 +16,7 @@ mod session;
 mod test_support;
 mod ui;
 mod unit_appearance;
+mod visibility;
 mod web;
 mod world_scene;
 
@@ -54,6 +57,8 @@ pub(super) fn run() {
     })
     .insert_resource(ClearColor(Color::srgb_u8(12, 23, 25)))
     .init_resource::<presentation::PresentationFrame>()
+    .init_resource::<visibility::VisibleWorld>()
+    .init_resource::<motion_view::MotionView>()
     .init_resource::<character::AnimationLibrary>()
     .init_resource::<camera::CameraRig>()
     .init_resource::<controls::PointerState>()
@@ -69,6 +74,7 @@ pub(super) fn run() {
             scene::setup,
             character::setup,
             unit_appearance::setup,
+            battlefield::setup,
             camera::setup,
         )
             .chain(),
@@ -87,7 +93,9 @@ pub(super) fn run() {
     .add_systems(
         Update,
         (
+            visibility::refresh,
             presentation::prepare,
+            motion_view::sample,
             scene::attach_unit_visuals,
             scene::sync_units,
             scene::sync_ground_bases,
@@ -95,7 +103,9 @@ pub(super) fn run() {
             character::sync_poses,
             character::sync_attachments,
             unit_appearance::sync_simple_models,
-            scene::sync_effects,
+            battlefield::attach,
+            battlefield::sync,
+            (scene::attach_projectiles, scene::sync_effects).chain(),
             controls::receive_feedback,
             controls::refresh_aim,
         )

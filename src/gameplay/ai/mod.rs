@@ -1,4 +1,5 @@
 //! Autonomous controllers submit exactly the same public commands as a human.
+mod compound_spells;
 mod heroes;
 mod minions;
 mod observations;

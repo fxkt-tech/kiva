@@ -13,7 +13,7 @@ pub(super) fn interrupt_control(world: &mut World, entity: Entity, kind: StatusK
             Some(UnitAction::Casting { ability, .. }) => world
                 .resource::<AbilityCatalog>()
                 .get(*ability)
-                .is_some_and(|d| d.execution.is_dash()),
+                .is_some_and(|d| d.execution.requires_mobility()),
             _ => false,
         },
         StatusKind::Slow => false,
@@ -42,6 +42,7 @@ pub(super) fn advance_actions(world: &mut World) {
             state.attack_cooldown = state.attack_cooldown.saturating_sub(1);
             state.mana = (state.mana + regen * TICK_SECONDS).min(max_mana);
         }
+        super::recovery::regenerate_health(world, entity);
         for cooldown in &mut world
             .get_mut::<AbilitySlots>(entity)
             .expect("unit slots")
@@ -169,7 +170,7 @@ fn release_attack(world: &mut World, entity: Entity, target: UnitLifeRef, interv
         > unit.attributes().attack_range() + unit.stats.radius + target_radius
         || !world
             .resource::<NavigationMap>()
-            .line_clear(origin, target_position, 0.05)
+            .projectile_line_clear(origin, target_position, 0.05)
     {
         return false;
     }
@@ -178,7 +179,9 @@ fn release_attack(world: &mut World, entity: Entity, target: UnitLifeRef, interv
         effects: vec![Effect::Damage(DamageSpec {
             kind: DamageType::Physical,
             base: 0.0,
-            ad_ratio: 1.0,
+            ad_ratio: world
+                .get::<UnitMechanics>(entity)
+                .map_or(1.0, |state| state.multiplier),
             ap_ratio: 0.0,
         })],
     };
@@ -193,6 +196,7 @@ fn release_attack(world: &mut World, entity: Entity, target: UnitLifeRef, interv
         .get_mut::<UnitState>(entity)
         .expect("unit state")
         .attack_cooldown = interval;
+    super::attack_traits::released(world, entity, target);
     effects::emit(world, payload, ImpactTarget::Unit(target), origin, 100.0);
     world.write_message(SimulationEvent::AttackReleased {
         source: entity,
@@ -216,10 +220,29 @@ pub fn preview_cast(
     if !state.alive() {
         return Err(Rejection::Dead);
     }
-    if super::movement::is_dashing(world, entity) {
+    if !super::movement::motion_allows_cast(world, entity) {
         return Err(Rejection::Busy);
     }
     let (ability, cooldown, _) = cast_binding(world, entity, source)?;
+    if super::compound::is_recast(world, entity, source) {
+        if target != AbilityTarget::SelfCast {
+            return Err(Rejection::InvalidTarget);
+        }
+        if !world
+            .get::<ControlState>(entity)
+            .is_some_and(ControlState::can_cast)
+        {
+            return Err(Rejection::Controlled);
+        }
+        if let CastSource::AbilitySlot(slot) = source
+            && world
+                .get::<UnitMechanics>(entity)
+                .is_some_and(|state| state.recast_ready(slot, world.resource::<SimulationTick>().0))
+        {
+            return Ok(AbilityTarget::SelfCast);
+        }
+        return Err(Rejection::OnCooldown);
+    }
     if cooldown > 1e-5 {
         return Err(Rejection::OnCooldown);
     }
@@ -252,6 +275,7 @@ pub fn preview_cast(
     ) {
         return Err(Rejection::Busy);
     }
+    super::compound::preflight(world, entity, source, definition)?;
     resolve_target(world, entity, definition, target)
 }
 
@@ -265,6 +289,17 @@ pub(super) fn begin_cast(
     // Retain the original click; resolve from the current pose at commit,
     // after windup and before spending any resources.
     preview_cast(world, entity, source, target)?;
+    if super::compound::is_recast(world, entity, source) {
+        super::compound::recast(world, entity, source)?;
+        let (ability, _, _) = cast_binding(world, entity, source)?;
+        let position = world.get::<UnitPose>(entity).expect("pose").position;
+        world.write_message(SimulationEvent::AbilityCommitted {
+            unit: entity,
+            ability,
+            position,
+        });
+        return Ok(());
+    }
     let (ability, _, _) = cast_binding(world, entity, source).expect("validated binding");
     let remaining = world
         .resource::<AbilityCatalog>()
@@ -404,6 +439,7 @@ fn commit_cast(
         {
             return Err(Rejection::Controlled);
         }
+        super::compound::preflight(world, entity, source, &definition)?;
         if world.get::<UnitState>(entity).expect("unit state").mana < definition.mana_cost {
             Err(Rejection::InsufficientMana)
         } else {
@@ -425,7 +461,16 @@ fn commit_cast(
             };
             Some(snapshot)
         }
-        AbilityExecution::Dash { .. } => None,
+        _ => {
+            if let Some(impact) = super::compound::impact_definition(&definition.execution) {
+                let Some(snapshot) = effects::snapshot(world, entity, origin, &impact) else {
+                    return reject_cast(world, entity, Rejection::InvalidDamage);
+                };
+                Some(snapshot)
+            } else {
+                None
+            }
+        }
     };
     // All targets, permissions and every effect snapshot are valid before costs.
     world.get_mut::<UnitState>(entity).expect("unit state").mana -= definition.mana_cost;
@@ -444,7 +489,7 @@ fn commit_cast(
     let recovery = UnitAction::Recovery {
         remaining: definition.recovery,
     };
-    match definition.execution {
+    match definition.execution.clone() {
         AbilityExecution::Impact(_) => {
             let target = match target {
                 AbilityTarget::Unit(_) => {
@@ -476,5 +521,9 @@ fn commit_cast(
             pulse: impact.expect("prepared pulse"),
             recovery: definition.recovery,
         },
+        _ => {
+            super::compound::execute(world, entity, source, &definition, target, impact);
+            recovery
+        }
     }
 }

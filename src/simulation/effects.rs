@@ -8,6 +8,7 @@ pub(super) enum EffectSnapshot {
     Damage(DamageSnapshot),
     ApplyStatus(StatusSpec),
     Displace(DisplacementSpec),
+    ArmorReduction { fraction: f32, duration: f32 },
 }
 #[derive(Clone, Debug)]
 pub struct ImpactSnapshot {
@@ -20,6 +21,8 @@ pub struct ImpactSnapshot {
     pub(super) delivery: Delivery,
     effects: Arc<[EffectSnapshot]>,
     attack_passives: Arc<[ImpactSnapshot]>,
+    pub(super) unit_passives: Arc<[AttackPassive]>,
+    pub(super) attack_arrows: u8,
 }
 impl ImpactSnapshot {
     pub fn delivery(&self) -> Delivery {
@@ -110,8 +113,37 @@ pub(super) fn snapshot(
             }
             Effect::ApplyStatus(spec) => EffectSnapshot::ApplyStatus(spec),
             Effect::Displace(spec) => EffectSnapshot::Displace(spec),
+            Effect::BonusAttackDamage { damage, ratio } => {
+                let damage = damage.snapshot(unit.attributes(), origin)?;
+                let bonus = (unit.attributes().attack_damage()
+                    - unit.stats.base_attributes.attack_damage)
+                    .max(0.0);
+                let raw = f64::from(damage.raw()) + f64::from(ratio) * f64::from(bonus);
+                if !raw.is_finite() || raw > f64::from(f32::MAX) {
+                    return None;
+                }
+                EffectSnapshot::Damage(damage.with_raw(raw as f32))
+            }
+            Effect::ArmorReduction { fraction, duration } => {
+                EffectSnapshot::ArmorReduction { fraction, duration }
+            }
         });
     }
+    if definition
+        .effects
+        .iter()
+        .any(|effect| matches!(effect, Effect::Damage(_) | Effect::BonusAttackDamage { .. }))
+    {
+        for passive in &unit.stats.attack_passives {
+            if let AttackPassive::Frost { slow, duration } = *passive {
+                effects.push(EffectSnapshot::ApplyStatus(StatusSpec::Slow {
+                    fraction: slow,
+                    duration: super::mechanics::duration(duration),
+                }));
+            }
+        }
+    }
+    let unit_passives = unit.stats.attack_passives.clone();
     let (team, position, facing) = (
         unit.team(),
         pose.position(),
@@ -128,6 +160,8 @@ pub(super) fn snapshot(
         delivery: definition.delivery,
         effects: effects.into(),
         attack_passives: Arc::from([]),
+        unit_passives: unit_passives.into(),
+        attack_arrows: 1,
     })
 }
 
@@ -138,6 +172,9 @@ pub(super) fn snapshot_attack(
     definition: &ImpactDefinition,
 ) -> Option<ImpactSnapshot> {
     let mut payload = snapshot(world, source, DamageOrigin::BasicAttack, definition)?;
+    payload.attack_arrows = world
+        .get::<UnitMechanics>(source)
+        .map_or(1, UnitMechanics::arrows);
     payload.attack_passives = super::equipment::snapshot_passives(world, source)?.into();
     Some(payload)
 }
@@ -161,6 +198,7 @@ pub(super) fn emit(
         ImpactTarget::Direction(value) => direction(value, payload.facing),
         _ => direction(target_position - anchor, payload.facing),
     };
+    let attack_arrows = payload.attack_arrows;
     match payload.delivery {
         Delivery::Direct => {
             let ImpactTarget::Unit(life) = target else {
@@ -188,6 +226,8 @@ pub(super) fn emit(
                 speed,
                 radius,
                 homing,
+                behavior: default(),
+                arrows: attack_arrows,
             });
         }
         Delivery::Area { radius, delay } => {
@@ -214,7 +254,11 @@ pub(super) fn resolve(world: &mut World) {
         )
     });
     for packet in packets {
+        let passives = super::attack_traits::prepare_hit(world, packet.target, &packet.payload);
         let damaged = resolve_payload(world, &packet, &packet.payload);
+        if damaged {
+            super::attack_traits::finish_hit(world, packet.target, &packet.payload, passives);
+        }
         if damaged && packet.payload.origin == DamageOrigin::BasicAttack {
             // Only the ordinary attack owns this discovery step. Attached
             // snapshots contain no discovery of their own, so procs cannot recur.
@@ -248,6 +292,9 @@ fn resolve_payload(world: &mut World, packet: &HitPacket, payload: &ImpactSnapsh
             EffectSnapshot::ApplyStatus(spec) => {
                 super::statuses::apply(world, packet.target, payload, index, spec);
             }
+            EffectSnapshot::ArmorReduction { fraction, duration } => {
+                super::mechanics::armor_reduction(world, packet.target, payload, fraction, duration)
+            }
             EffectSnapshot::Displace(spec) => super::movement::start_forced(
                 world,
                 packet.target,
@@ -259,4 +306,11 @@ fn resolve_payload(world: &mut World, packet: &HitPacket, payload: &ImpactSnapsh
         }
     }
     damaged
+}
+
+pub(super) fn append_status(mut payload: ImpactSnapshot, status: StatusSpec) -> ImpactSnapshot {
+    let mut effects = payload.effects.to_vec();
+    effects.push(EffectSnapshot::ApplyStatus(status));
+    payload.effects = effects.into();
+    payload
 }

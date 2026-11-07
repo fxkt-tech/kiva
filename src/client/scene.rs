@@ -6,6 +6,7 @@ use super::{
     presentation::PresentationFrame,
     session::ClientSession,
     unit_appearance::{self, ModelKind, UnitAppearance, UnitModelAssets},
+    visibility::VisibleWorld,
     world_scene,
 };
 use crate::{
@@ -18,6 +19,7 @@ use bevy::prelude::*;
 pub(super) struct SceneAssets {
     base: Handle<Mesh>,
     bolt: Handle<Mesh>,
+    crystal: Handle<Mesh>,
     ally: Handle<StandardMaterial>,
     enemy: Handle<StandardMaterial>,
     dark: Handle<StandardMaterial>,
@@ -38,8 +40,10 @@ type UnattachedUnit<'a> = (
     &'a UnitState,
     &'a UnitStatuses,
     Option<&'a UnitRole>,
+    Option<&'a CharacterIdentity>,
 );
 type DisplayedUnit<'a> = (
+    Entity,
     &'a UnitPose,
     &'a UnitState,
     &'a UnitStatuses,
@@ -70,7 +74,8 @@ pub(super) fn setup(
     world_scene::spawn_map(&mut commands, &map, &mut meshes, &mut materials);
     commands.insert_resource(SceneAssets {
         base: meshes.add(Cylinder::new(0.5, 0.12)),
-        bolt: meshes.add(Sphere::new(1.0).mesh().uv(12, 8)),
+        bolt: meshes.add(Cuboid::new(0.12, 0.12, 0.85)),
+        crystal: meshes.add(Sphere::new(1.0).mesh().ico(0).expect("crystal arrow")),
         ally: materials.add(StandardMaterial {
             base_color: Color::srgb_u8(72, 205, 194),
             emissive: LinearRgba::new(0.05, 0.25, 0.22, 1.0),
@@ -94,7 +99,7 @@ pub(super) fn attach_unit_visuals(
     simple: Res<UnitModelAssets>,
     units: Query<UnattachedUnit<'_>, Without<UnitVisual>>,
 ) {
-    for (entity, unit, pose, state, statuses, role) in &units {
+    for (entity, unit, pose, state, statuses, role, identity) in &units {
         let appearance = UnitAppearance::new(role.copied(), unit.definition().radius);
         let point = pose.position();
         let height = if state.alive() {
@@ -135,7 +140,13 @@ pub(super) fn attach_unit_visuals(
                 ));
             });
         if appearance.kind == ModelKind::Hero {
-            let rig = RigPose::new(&library, state.life_ref(entity), tick.0 as f64 / TICK_RATE);
+            let weapon = character::WeaponStyle::for_character(identity.map(CharacterIdentity::id));
+            let rig = RigPose::new(
+                &library,
+                state.life_ref(entity),
+                tick.0 as f64 / TICK_RATE,
+                weapon,
+            );
             character::spawn_model(
                 &mut commands,
                 entity,
@@ -143,6 +154,7 @@ pub(super) fn attach_unit_visuals(
                 &library,
                 rig.model(),
                 material,
+                weapon,
             );
             commands.entity(entity).insert(rig);
         } else {
@@ -159,31 +171,41 @@ pub(super) fn attach_unit_visuals(
 
 pub(super) fn sync_units(
     frame: Res<PresentationFrame>,
+    visible: Option<Res<VisibleWorld>>,
+    motion: Option<Res<super::motion_view::MotionView>>,
     mut units: Query<DisplayedUnit<'_>, With<UnitVisual>>,
 ) {
     if !frame.should_sync() {
         return;
     }
     let fraction = frame.fraction();
-    for (pose, state, statuses, appearance, mut transform, mut visibility) in &mut units {
+    for (id, pose, state, statuses, appearance, mut transform, mut visibility) in &mut units {
         let point = pose.interpolated(fraction);
         let height = if state.alive() {
-            statuses.airborne_height(fraction) * AIRBORNE_PEAK_HEIGHT
+            (statuses.airborne_height(fraction) * AIRBORNE_PEAK_HEIGHT)
+                .max(motion.as_ref().map_or(0.0, |motion| motion.height(id)))
         } else {
             0.0
         };
         transform.translation = Vec3::new(point.x, height, point.y);
         transform.rotation = Quat::from_rotation_y((-pose.facing().x).atan2(-pose.facing().y));
-        *visibility = appearance.map_or_else(
-            || {
-                if state.alive() {
-                    Visibility::Inherited
-                } else {
-                    Visibility::Hidden
-                }
-            },
-            |appearance| appearance.visible(state.alive()),
-        );
+        *visibility = if visible
+            .as_ref()
+            .is_some_and(|visible| !visible.contains(id))
+        {
+            Visibility::Hidden
+        } else {
+            appearance.map_or_else(
+                || {
+                    if state.alive() {
+                        Visibility::Inherited
+                    } else {
+                        Visibility::Hidden
+                    }
+                },
+                |appearance| appearance.visible(state.alive()),
+            )
+        };
     }
 }
 
@@ -198,15 +220,79 @@ pub(super) fn sync_ground_bases(
     }
 }
 
+fn projectile_visibility(visible: Option<&VisibleWorld>, id: Entity) -> Visibility {
+    if visible.is_none_or(|visible| visible.contains(id)) {
+        Visibility::Inherited
+    } else {
+        Visibility::Hidden
+    }
+}
+fn projectile_transform(projectile: &Projectile, fraction: f32) -> Transform {
+    let point = projectile.interpolated(fraction);
+    let direction = projectile.direction();
+    Transform::from_xyz(point.x, 0.9, point.y)
+        .with_rotation(if direction.length_squared() > 1e-8 {
+            Quat::from_rotation_y((-direction.x).atan2(-direction.y))
+        } else {
+            Quat::IDENTITY
+        })
+        .with_scale(if projectile.is_crystal_arrow() {
+            Vec3::new(0.45, 0.25, 1.2)
+        } else {
+            Vec3::ONE
+        })
+}
+pub(super) fn attach_projectiles(
+    mut commands: Commands,
+    frame: Res<PresentationFrame>,
+    assets: Res<SceneAssets>,
+    visible: Option<Res<VisibleWorld>>,
+    projectiles: Query<(Entity, &Projectile), Without<ProjectileVisual>>,
+) {
+    for (id, projectile) in &projectiles {
+        commands.entity(id).insert((
+            ProjectileVisual,
+            projectile_visibility(visible.as_deref(), id),
+            Mesh3d(if projectile.is_crystal_arrow() {
+                assets.crystal.clone()
+            } else {
+                assets.bolt.clone()
+            }),
+            MeshMaterial3d(if projectile.team() == Team::Ally {
+                assets.ally.clone()
+            } else {
+                assets.enemy.clone()
+            }),
+            projectile_transform(projectile, frame.fraction()),
+        ));
+        if projectile.arrows() > 1 && !projectile.is_crystal_arrow() {
+            let count = projectile.arrows();
+            commands.entity(id).with_children(|carrier| {
+                for index in 1..count {
+                    let side = if index % 2 == 0 { 1.0 } else { -1.0 };
+                    let offset = side * ((index as f32 + 1.0) * 0.5).floor() * 0.16;
+                    carrier.spawn((
+                        Mesh3d(assets.bolt.clone()),
+                        MeshMaterial3d(if projectile.team() == Team::Ally {
+                            assets.ally.clone()
+                        } else {
+                            assets.enemy.clone()
+                        }),
+                        Transform::from_xyz(offset, 0.0, 0.0),
+                    ));
+                }
+            });
+        }
+    }
+}
+
 #[expect(
     clippy::too_many_arguments,
     reason = "Bevy system parameters declare independent ECS access"
 )]
 pub(super) fn sync_effects(
-    mut commands: Commands,
     time: Res<Time>,
     frame: Res<PresentationFrame>,
-    assets: Res<SceneAssets>,
     player: Res<PlayerController>,
     session: Res<ClientSession>,
     pointer: Res<PointerState>,
@@ -222,30 +308,18 @@ pub(super) fn sync_effects(
         &EquipmentSlots,
         &UnitAction,
     )>,
-    projectiles: Query<(Entity, &Projectile), Without<ProjectileVisual>>,
-    mut visuals: Query<(&Projectile, &mut Transform), With<ProjectileVisual>>,
-    areas: Query<&AreaEffect>,
+    mut visuals: Query<
+        (Entity, &Projectile, &mut Transform, &mut Visibility),
+        With<ProjectileVisual>,
+    >,
+    areas: Query<(Entity, &AreaEffect)>,
+    visible: Option<Res<VisibleWorld>>,
     mut gizmos: Gizmos,
 ) {
     let fraction = frame.fraction();
-    for (entity, projectile) in &projectiles {
-        let point = projectile.interpolated(fraction);
-        commands.entity(entity).insert((
-            ProjectileVisual,
-            Mesh3d(assets.bolt.clone()),
-            MeshMaterial3d(if projectile.team() == Team::Ally {
-                assets.ally.clone()
-            } else {
-                assets.enemy.clone()
-            }),
-            Transform::from_translation(Vec3::new(point.x, 0.9, point.y))
-                .with_scale(Vec3::splat(projectile.radius().max(0.16))),
-        ));
-    }
-    for (projectile, mut transform) in &mut visuals {
-        let point = projectile.interpolated(fraction);
-        transform.translation = Vec3::new(point.x, 0.9, point.y);
-        transform.scale = Vec3::splat(projectile.radius().max(0.16));
+    for (id, projectile, mut transform, mut visibility) in &mut visuals {
+        *visibility = projectile_visibility(visible.as_deref(), id);
+        *transform = projectile_transform(projectile, fraction);
     }
     let ring = |gizmos: &mut Gizmos, point: Vec2, radius: f32, color: Color| {
         gizmos.circle(
@@ -258,7 +332,11 @@ pub(super) fn sync_effects(
         );
     };
     for (id, unit, pose, state, _, _, action) in &units {
-        if !state.alive() {
+        if !state.alive()
+            || visible
+                .as_ref()
+                .is_some_and(|visible| !visible.contains(id))
+        {
             continue;
         }
         let point = pose.interpolated(fraction);
@@ -290,7 +368,13 @@ pub(super) fn sync_effects(
             );
         }
     }
-    for area in &areas {
+    for (id, area) in &areas {
+        if visible
+            .as_ref()
+            .is_some_and(|visible| !visible.contains(id))
+        {
+            continue;
+        }
         ring(
             &mut gizmos,
             area.position(),
@@ -348,7 +432,7 @@ pub(super) fn sync_effects(
                     );
                     if let Some(point) = pointer.ground {
                         let valid = definition.targeting == Targeting::Direction
-                            || definition.execution.is_dash()
+                            || abilities::clamps_point_target(definition)
                             || origin.distance(point) <= definition.range;
                         let color = if valid {
                             Color::srgb_u8(153, 236, 214)
@@ -360,6 +444,11 @@ pub(super) fn sync_effects(
                                 delivery: Delivery::Area { radius, .. },
                                 ..
                             }) => ring(&mut gizmos, point, *radius, color),
+                            AbilityExecution::Standard(spec) => {
+                                let end =
+                                    origin + (point - origin).clamp_length_max(definition.range);
+                                ring(&mut gizmos, end, spec.aura_radius, color);
+                            }
                             _ => {
                                 let end =
                                     origin + (point - origin).clamp_length_max(definition.range);
@@ -537,5 +626,93 @@ mod tests {
             Vec3::X * 2.0
         );
         assert!(app.world().get::<UnitStatuses>(target).unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_hidden_enemy_projectile_starts_hidden_with_its_actual_interpolated_transform() {
+        let mut app = App::new();
+        app.add_plugins((
+            MinimalPlugins,
+            SimulationPlugin,
+            crate::gameplay::GameplayPlugin,
+        ))
+        .init_resource::<PresentationFrame>()
+        .init_resource::<VisibleWorld>()
+        .insert_resource(SceneAssets {
+            base: default(),
+            bolt: default(),
+            crystal: default(),
+            ally: default(),
+            enemy: default(),
+            dark: default(),
+        })
+        .add_systems(
+            Update,
+            (
+                crate::client::visibility::refresh,
+                crate::client::presentation::prepare,
+                attach_projectiles,
+            )
+                .chain(),
+        );
+        crate::client::content::setup(app.world_mut());
+        crate::client::session::setup(app.world_mut());
+        crate::client::session::start_native(app.world_mut());
+        let caster = spawn_unit(
+            app.world_mut(),
+            UnitSpec {
+                name: "Hidden projectile fixture".into(),
+                team: Team::Enemy,
+                position: Vec2::ZERO,
+                stats: UnitStats::default(),
+                abilities: [Some(AbilityId(1)), None, None, None],
+                respawn_delay: None,
+            },
+        )
+        .unwrap();
+        app.world_mut().resource_mut::<CommandQueue>().submit(
+            caster,
+            UnitCommand::CastAbility {
+                slot: 0,
+                target: AbilityTarget::Direction(Vec2::X),
+            },
+        );
+        for _ in 0..20 {
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+        let id = app
+            .world_mut()
+            .query_filtered::<Entity, With<Projectile>>()
+            .single(app.world())
+            .unwrap();
+        assert!(!point_visible(
+            app.world(),
+            Team::Ally,
+            app.world().get::<Projectile>(id).unwrap().position()
+        ));
+        app.world_mut().run_schedule(Update);
+        assert!(app.world().get::<ProjectileVisual>(id).is_some());
+        assert_eq!(
+            *app.world().get::<Visibility>(id).unwrap(),
+            Visibility::Hidden,
+            "no first-frame flash before the next synchronization"
+        );
+        let projectile = app.world().get::<Projectile>(id).unwrap();
+        let point = projectile.interpolated(app.world().resource::<PresentationFrame>().fraction());
+        let displayed = app.world().get::<Transform>(id).unwrap();
+        assert_eq!(
+            displayed.translation,
+            Vec3::new(point.x, 0.9, point.y),
+            "first carrier frame uses the actual displayed sample"
+        );
+        assert!(
+            (displayed.rotation * Vec3::NEG_Z).dot(Vec3::X) > 0.99,
+            "arrow geometry starts facing its real travel direction"
+        );
+        assert_eq!(
+            displayed.scale,
+            Vec3::ONE,
+            "ordinary arrows start at their final presentation scale"
+        );
     }
 }

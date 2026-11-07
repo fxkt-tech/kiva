@@ -71,6 +71,9 @@ impl DamageSpec {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DamageOrigin {
     BasicAttack,
+    UnitPassive {
+        passive: usize,
+    },
     Ability(AbilityId),
     EquipmentActive {
         equipment: EquipmentId,
@@ -91,6 +94,12 @@ pub struct DamageSnapshot {
     origin: DamageOrigin,
 }
 impl DamageSnapshot {
+    pub(super) fn from_raw(raw: f32, kind: DamageType, origin: DamageOrigin) -> Self {
+        Self { raw, kind, origin }
+    }
+    pub(super) fn with_raw(self, raw: f32) -> Self {
+        Self { raw, ..self }
+    }
     pub fn raw(&self) -> f32 {
         self.raw
     }
@@ -100,11 +109,11 @@ impl DamageSnapshot {
     pub fn origin(&self) -> DamageOrigin {
         self.origin
     }
-    pub(super) fn health_after(self, attributes: &EffectiveAttributes, health: f32) -> f32 {
+    pub(super) fn mitigated_damage(self, attributes: &EffectiveAttributes) -> f64 {
         let resistance = match self.kind {
             DamageType::Physical => attributes.armor(),
             DamageType::Magical => attributes.magic_resistance(),
-            DamageType::True => return (f64::from(health) - f64::from(self.raw)).max(0.0) as f32,
+            DamageType::True => return f64::from(self.raw),
         };
         let resistance = f64::from(resistance);
         let multiplier = if resistance >= 0.0 {
@@ -112,6 +121,9 @@ impl DamageSnapshot {
         } else {
             2.0 - 100.0 / (100.0 - resistance)
         };
-        (f64::from(health) - f64::from(self.raw) * multiplier).max(0.0) as f32
+        f64::from(self.raw) * multiplier
+    }
+    pub(super) fn health_after(self, attributes: &EffectiveAttributes, health: f32) -> f32 {
+        (f64::from(health) - self.mitigated_damage(attributes)).max(0.0) as f32
     }
 }

@@ -78,7 +78,10 @@ fn content_and_preselection_create_no_units_until_the_native_creation_path_commi
         app.world().get::<CharacterIdentity>(player).unwrap().id(),
         CharacterId(1)
     );
-    assert_eq!(app.world().get::<Unit>(player).unwrap().name(), "旅者");
+    assert_eq!(
+        app.world().get::<Unit>(player).unwrap().name(),
+        "德玛西亚皇子"
+    );
     assert!(!app.world().resource::<SimulationControl>().paused);
 }
 
@@ -136,10 +139,10 @@ fn rapid_choices_use_the_last_rust_revision_and_create_the_selected_loadout() {
     apply_request(app.world_mut(), launch(final_choice), CAPTURED).unwrap();
     let player = app.world().resource::<ClientSession>().player().unwrap();
     let unit = app.world().get::<Unit>(player).unwrap();
-    assert_eq!(unit.name(), "秘术师");
-    assert_eq!(unit.attributes().ability_power(), 40.0);
+    assert_eq!(unit.name(), "寒冰射手");
+    assert_eq!(unit.attributes().ability_power(), 0.0);
     let slots = app.world().get::<AbilitySlots>(player).unwrap();
-    for (slot, id) in [1, 2, 3, 4].into_iter().enumerate() {
+    for (slot, id) in [21, 22, 23, 24].into_iter().enumerate() {
         assert_eq!(slots.ability(slot), Some(AbilityId(id)));
     }
 }
@@ -390,7 +393,7 @@ fn return_resets_the_match_after_real_damage_without_recreating_static_content()
         player,
         UnitCommand::CastAbility {
             slot: 1,
-            target: AbilityTarget::Point(target_position),
+            target: AbilityTarget::Direction(target_position - player_position),
         },
     );
     for _ in 0..80 {
@@ -403,7 +406,10 @@ fn return_resets_the_match_after_real_damage_without_recreating_static_content()
             name: "Reset test source".into(),
             team: Team::Enemy,
             position: player_position + Vec2::X,
-            stats: UnitStats::default(),
+            stats: UnitStats {
+                vision_radius: 12.0,
+                ..default()
+            },
             abilities: [Some(AbilityId(5)), None, None, None],
             respawn_delay: None,
         },
@@ -419,7 +425,15 @@ fn return_resets_the_match_after_real_damage_without_recreating_static_content()
     for _ in 0..20 {
         app.world_mut().run_schedule(FixedUpdate);
     }
-    assert!(app.world().get::<UnitState>(player).unwrap().health() < 480.0);
+    assert!(
+        app.world().get::<UnitState>(player).unwrap().health()
+            < app
+                .world()
+                .get::<Unit>(player)
+                .unwrap()
+                .definition()
+                .max_health
+    );
     assert!(
         app.world()
             .get::<AbilitySlots>(player)

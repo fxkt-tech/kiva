@@ -44,7 +44,7 @@ CastSource::AbilitySlot(usize) | EquipmentSlot { slot, instance: EquipmentInstan
 - 卸装只中断本实例未提交的Casting及未来Channel脉冲；不撤销已提交弹丸、区域、自主冲刺或附属被动快照。
   Channel来源取不可变`pulse.origin`，不另存一份来源字段。
 - 普攻出手前按格/被动索引快照全部被动，全部成功才提交攻击间隔和弹丸。
-  命中先结算普攻基础包；只有实际正生命损失且目标仍为活的同一生命，才执行附属被动。
+  命中先结算普攻基础包；只有抗性后为正伤害命中且目标仍为活的同一生命，才执行附属被动。
   被动通过既有payload结算，不重新发现触发器；技能/主动/被动伤害不会递归触发。
   已提交快照不查询实时库存或来源是否仍存活，致死后跳过目标其余效果。
 - `DamageOrigin::EquipmentActive { equipment, instance, ability }`和
@@ -83,7 +83,7 @@ CastSource::AbilitySlot(usize) | EquipmentSlot { slot, instance: EquipmentInstan
 
 `tests/equipment.rs`通过公开目录、spawn、装卸、指令和事件覆盖：注册失败、原子六格、重复与属性来源、
 共享施法/独立冷却/状态来源、拒绝保留、未提交取消和旧实例、已提交载体/冲刺保留、引导取消、
-被动快照与顺序/无递归/正损血/目标生命、快照溢出、死亡/暂停/重开。
+被动快照与顺序/无递归/抗性后正命中（含盾全吸收）/目标生命、快照溢出、死亡/暂停/重开。
 同时执行原simulation/status/characters/reset测试和`make check`，防止来源改造改变原技能行为。
 
 ## 7. 错误与正确
@@ -94,4 +94,6 @@ CastSource::AbilitySlot(usize) | EquipmentSlot { slot, instance: EquipmentInstan
 
 错误：被动命中后再遍历当前背包，为被动伤害再次派发普攻触发。
 
-正确：普攻出手附带不可变被动快照，正损血/生命门控后只解析一层既有效果。
+正确：普攻出手附带不可变被动快照，正伤害命中/生命门控后只解析一层既有效果。
+
+充能/共享攻击资源/地形重施目前限定角色槽；EquipmentCatalog明确拒绝Empower、Scout和带terrain的Leap主动。普通Impact/Dash/Channel及无上述状态限制的复合执行仍复用统一入口，详见[复合机制](champion-primitives.md)。

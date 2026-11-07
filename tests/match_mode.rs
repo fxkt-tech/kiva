@@ -62,6 +62,10 @@ fn actor(
     stats: UnitStats,
     abilities: AbilityLoadout,
 ) -> Entity {
+    let stats = UnitStats {
+        vision_radius: 13.5,
+        ..stats
+    };
     spawn_unit(
         app.world_mut(),
         UnitSpec {
@@ -142,8 +146,8 @@ fn start_builds_two_bases_two_heroes_and_first_minion_pair_at_tick_zero() {
     assert_eq!(map.base_position(Team::Ally), Vec2::new(-8.0, 24.0));
     assert_eq!(map.base_position(Team::Enemy), Vec2::new(8.0, -24.0));
     let definition = app.world().resource::<MatchDefinition>();
-    assert_eq!(definition.melee_stats().max_health, 720.0);
-    assert_eq!(definition.ranged_stats().max_health, 480.0);
+    assert_eq!(definition.melee_stats().max_health, 465.0);
+    assert_eq!(definition.ranged_stats().max_health, 284.0);
     assert_eq!(definition.minion_spawn_interval_ticks(), 30);
     for team in [Team::Ally, Team::Enemy] {
         let hero = state.hero(team).unwrap();
@@ -215,7 +219,7 @@ fn ordered_symmetric_pairs_emit_only_at_their_exact_simulation_ticks() {
             assert_eq!(member.wave(), 1);
             assert!(slot < emitted);
             assert_eq!(pose.position(), map.creep_spawns(unit.team())[slot]);
-            assert_eq!(state.health(), if slot < 3 { 720.0 } else { 480.0 });
+            assert_eq!(state.health(), if slot < 3 { 465.0 } else { 284.0 });
         }
         for slots in seen {
             assert!(slots[..emitted].iter().all(|seen| *seen));
@@ -504,8 +508,30 @@ fn a_real_hero_can_approach_and_damage_the_walkable_base_target() {
         .resource::<MatchState>()
         .base(Team::Enemy)
         .unwrap();
+    assert!(!team_can_see(app.world(), Team::Ally, base));
     submit(&mut app, hero, UnitCommand::AttackTarget(base));
+    step(&mut app, 1);
+    assert!(matches!(
+        app.world().get::<UnitOrder>(hero),
+        Some(UnitOrder::Idle)
+    ));
+    // Static map geometry is known even in fog. Move there through the real
+    // navigation command, then acquire the base only after it is visible.
+    let map = app.world().resource::<MapDefinition>();
+    let approach = map.base_position(Team::Enemy) - map.lane_direction(Team::Ally) * 3.0;
+    submit(&mut app, hero, UnitCommand::MoveTo(approach));
     step(&mut app, 1200);
+    assert!(
+        app.world()
+            .get::<UnitPose>(hero)
+            .unwrap()
+            .position()
+            .distance(approach)
+            < 0.1
+    );
+    assert!(team_can_see(app.world(), Team::Ally, base));
+    submit(&mut app, hero, UnitCommand::AttackTarget(base));
+    step(&mut app, 120);
     let health = app.world().get::<UnitState>(base).unwrap().health();
     assert!(
         health > 0.0 && health < 3000.0,
@@ -515,6 +541,128 @@ fn a_real_hero_can_approach_and_damage_the_walkable_base_target() {
         app.world().resource::<MatchState>().phase(),
         MatchPhase::Running
     );
+}
+
+#[test]
+fn a_temporary_ring_across_the_next_wave_spawn_cannot_freeze_or_skip_the_pair() {
+    let mut app = arena(MatchDefinition::default());
+    let hero = begin(&mut app).player;
+    let map = app.world().resource::<MapDefinition>().clone();
+    let target = actor(
+        &mut app,
+        Team::Enemy,
+        map.base_position(Team::Ally) + map.lane_direction(Team::Ally) * 0.5,
+        UnitStats {
+            kind: UnitKind::Hero,
+            ..default()
+        },
+        [None; 4],
+    );
+    step(&mut app, 3578);
+    submit(
+        &mut app,
+        hero,
+        UnitCommand::CastAbility {
+            slot: 3,
+            target: AbilityTarget::Unit(target),
+        },
+    );
+    step(&mut app, 21);
+    let spawn = map.creep_spawns(Team::Ally)[0];
+    let radius = app
+        .world()
+        .resource::<MatchDefinition>()
+        .melee_stats()
+        .radius;
+    assert!(
+        app.world_mut()
+            .query::<&BattlefieldObject>()
+            .iter(app.world())
+            .any(|object| object.kind() == ObjectKind::Terrain && object.active(3599))
+    );
+    assert!(
+        !app.world()
+            .resource::<NavigationMap>()
+            .walkable(spawn, radius)
+    );
+    step(&mut app, 1);
+    let mode = app.world().resource::<MatchState>();
+    assert!(
+        mode.wave_error().is_none(),
+        "a temporary wall is normal gameplay, not a configuration error: {:?}",
+        mode.wave_error()
+    );
+    assert_eq!(mode.wave_number(), 2);
+    assert!(!app.world().resource::<SimulationControl>().paused);
+    assert_eq!(app.world().resource::<SimulationTick>().0, 3600);
+    assert_eq!(minions_in_wave(&mut app, 2), [1, 0, 1, 0]);
+    let newborn = app
+        .world_mut()
+        .query::<(Entity, &Unit, &WaveMember)>()
+        .iter(app.world())
+        .find(|(_, unit, member)| {
+            unit.team() == Team::Ally && member.wave() == 2 && member.slot() == 0
+        })
+        .map(|(entity, _, _)| entity)
+        .unwrap();
+    let relocated = app.world().get::<UnitPose>(newborn).unwrap().position();
+    assert!(
+        relocated.distance(spawn) > 0.1 && relocated.distance(spawn) < 2.0,
+        "a temporary collision should cause a local factory placement, not a missing or teleported minion"
+    );
+    assert!(
+        app.world()
+            .resource::<NavigationMap>()
+            .walkable(relocated, radius)
+    );
+
+    step(&mut app, 150);
+    assert_eq!(app.world().resource::<SimulationTick>().0, 3750);
+    assert_eq!(minions_in_wave(&mut app, 2), [3, 3, 3, 3]);
+    assert!(app.world().resource::<MatchState>().can_advance());
+    let inner_spawn = map.creep_spawns(Team::Ally)[3];
+    let inner_radius = app
+        .world()
+        .resource::<MatchDefinition>()
+        .ranged_stats()
+        .radius;
+    let navigation = app.world().resource::<NavigationMap>();
+    assert!(navigation.walkable(inner_spawn, inner_radius));
+    assert!(
+        navigation
+            .path(inner_spawn, map.base_position(Team::Enemy), inner_radius)
+            .is_err(),
+        "an actor inside the still-active ring is allowed to wait for its temporary route to reopen"
+    );
+    for (unit, pose, member) in app
+        .world_mut()
+        .query::<(&Unit, &UnitPose, &WaveMember)>()
+        .iter(app.world())
+    {
+        if member.wave() == 2 {
+            assert!(
+                app.world()
+                    .resource::<NavigationMap>()
+                    .walkable(pose.position(), unit.definition().radius)
+            );
+            if unit.team() == Team::Enemy {
+                assert_eq!(
+                    pose.position(),
+                    map.creep_spawns(Team::Enemy)[usize::from(member.slot())],
+                    "temporary terrain on one side cannot move the unaffected opposing formation"
+                );
+            }
+        }
+    }
+    step(&mut app, 61);
+    assert!(
+        app.world()
+            .resource::<NavigationMap>()
+            .path(inner_spawn, map.base_position(Team::Enemy), inner_radius)
+            .is_ok()
+    );
+    assert!(app.world().resource::<MatchState>().can_advance());
+    assert_eq!(minions_in_wave(&mut app, 2), [3, 3, 3, 3]);
 }
 
 #[test]
@@ -733,6 +881,12 @@ fn base_recovery_obeys_combat_delay_and_applies_the_same_rules_to_both_heroes() 
             .unwrap()
             .definition()
             .max_health;
+        let regen = app
+            .world()
+            .get::<Unit>(hero)
+            .unwrap()
+            .definition()
+            .health_regen;
         let point = app.world().get::<UnitPose>(hero).unwrap().position();
         let hit = AbilityId(602);
         app.world_mut()
@@ -757,14 +911,17 @@ fn base_recovery_obeys_combat_delay_and_applies_the_same_rules_to_both_heroes() 
                 target: AbilityTarget::Unit(hero),
             },
         );
-        step(&mut app, 120);
+        step(&mut app, 1);
         assert_eq!(
             app.world().get::<UnitState>(hero).unwrap().health(),
             maximum - 60.0
         );
+        step(&mut app, 119);
+        let before_recovery = app.world().get::<UnitState>(hero).unwrap().health();
+        assert!((before_recovery - (maximum - 60.0 + 119.0 * regen / 60.0)).abs() < 0.005);
         step(&mut app, 1);
         let health = app.world().get::<UnitState>(hero).unwrap().health();
-        assert!((health - (maximum - 60.0 + maximum * 0.20 / 60.0)).abs() < 0.001);
+        assert!((health - (before_recovery + (regen + maximum * 0.20) / 60.0)).abs() < 0.001);
         step(&mut app, 200);
         assert_eq!(
             app.world().get::<UnitState>(hero).unwrap().health(),

@@ -208,7 +208,7 @@
       return { name: definition.name, target_hint: item.active?.target_hint || "被动装备",
         description: descriptionLines(definition).join("；"),
         note: item.active?.unavailable_reason || (item.active
-          ? `能量 ${item.active.cost} · 冷却 ${item.active.total_cooldown}s · 射程 ${item.active.range}` : "该装备没有主动能力") };
+          ? `能量 ${item.active.cost} · 冷却 ${item.active.total_cooldown}s · 射程 ${item.active.display_range}` : "该装备没有主动能力") };
     }
 
     $("equipment-toggle").addEventListener("click", open);

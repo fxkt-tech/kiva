@@ -34,6 +34,8 @@ UnitView: role: Hero|MeleeMinion|RangedMinion|Base|null,
 
 Web选角为Waiting、tick0、无对局单位。Launch成功才产生双方基地、双英雄和每队slot0近战兵（共6根）并绑定玩家。
 模式固定步在30/60/90/120/150tick逐对补齐3近战+3远程，客户端不维护出兵计时器。
+实际双方共6/16根；客户端units只投影当前团队可见敌军，开局通常仅我方3根，出齐后我方8根。
+地图基地几何保持公开；未知敌基地投影为null且DOM显示未知，不能用0伪造已毁。
 客户端安装SimulationPlugin、GameplayPlugin、AiPlugin；AI与波次/胜负规则不进入Web。
 `MatchState.can_advance()`并入有效暂停和装备权限；Finished及波次构造错误不能通过继续恢复。
 错误文本投影到notice，仍可回选角重新开始。结束时释放真实鼠标，结果界面没有继续旧局入口。
@@ -72,7 +74,7 @@ Finished首次显示以fraction1.0同步最终权威根和骨骼一次，之后�
 
 默认地图64×64，基地为(-8,24)/(8,-24)，道路宽7，方位为左下/右上；
 开局镜头位于玩家，不要求全图/两基地同时可见，不可用全图相机替代自由操作。地图、小地图、导航及出生均来自同一MapDefinition。
-开局即第1波首对，之后每0.5秒补一对，2.5秒齐3+3；近战720HP、远程480HP，下波仍60秒起；显示值由Rust给出，JS仅格式化分钟/秒与HP。
+开局即第1波首对，之后每0.5秒补一对，2.5秒齐3+3；近战465HP、远程284HP，下波仍60秒起；显示值由Rust给出，JS仅格式化分钟/秒与HP。
 错误：浏览器独立计时出兵、按敌方HP直接判断胜利、改JS entered布尔量伪造新局或硬编码地图边界而不读MapDefinition。
 
 ## 6. 验证与稳定选择器
@@ -85,7 +87,8 @@ Rust保留原56项客户端回归，并增加真实对局重开/失败/终局输
 `#match-result/#restart/#result-reselect`；标签的`data-role`来自UnitView。
 浏览器回归使用独立临时构建及HTTP fixture，覆盖800×600、DPR2、窗口缩放、终局与两种重开；
 不启动或关闭用户的开发服务。浏览器驱动身份/捕获校准复用browser-support，不增加World写桥。
-共享lane-support记录首个Running快照，要求tick<30、6根且双方slot0；完整阵容只在等待150tick之后断言。
+共享lane-support记录首个Running快照，要求tick<30、可见我方3根且slot0；等待150tick后断言我方8根及3+3。
+敌方实际6/16与对称排期由headless验证，浏览器不能用全图单位诊断绕过团队视野。
 250ms夹具帧步只节省宿主等待，模拟仍运行全部固定步。skills/equipment按两基地距离派生中线位置；
 远处目标必须先通过真实箭头平移到可见区域，再使用当前屏幕投影点击，不能依赖画布外的伪点击。
 `healthbars`保持原生performance/RAF，以长侧翼移动和可见我方基地相机平移验证每帧跟随、20帧/80%阈值，
@@ -95,3 +98,11 @@ Rust保留原56项客户端回归，并增加真实对局重开/失败/终局输
 
 正确：gameplay更新MatchState，Rust生成只读快照，match.js格式化显示并提交封闭会话意图。
 错误：HUD自行维护波次/胜负、session复制模式清理规则，或为基地创建英雄骨架再把四肢藏起来。
+
+## 复合技能展示
+
+`visibility::VisibleWorld`缓存只读可见实体集合，模型、拾取、逐帧标签和HUD共用；隐藏敌军不得留在JSON诊断信息中。
+`battlefield`独立负责旗、墙、鹰与盾；冻结采样仍用PresentationFrame，场上对象寿命全部来自模拟。
+角色外观仅在weapon表现模块按身份选择枪/弓；controls/abilities按通用execution与真实UnitMechanics读取状态。
+技能按钮显示层数/充能/重施，R重施以SelfCast无需另点目标且忽略原始法力/CD；仍受真实重施时机和控制权限约束。
+Standard和Dash超距预览使用统一clamps_point_target，原点击点交给模拟在commit重算最大端点。

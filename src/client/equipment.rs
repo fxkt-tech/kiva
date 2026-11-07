@@ -313,6 +313,11 @@ fn bonus_descriptions(flat: AttributeDelta, percent: AttributeDelta) -> Vec<Stri
             if value == 0.0 {
                 continue;
             }
+            let value = if !is_percent && matches!(label, "移速" | "攻距") {
+                crate::gameplay::units::league_units(value)
+            } else {
+                value
+            };
             let value = f64::from(value) * if is_percent { 100.0 } else { 1.0 };
             let number = if value.abs() >= 1e6 || value.abs() < 0.01 {
                 format!("{value:.1e}")

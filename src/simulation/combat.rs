@@ -5,9 +5,11 @@ use bevy::prelude::*;
 pub(super) fn advance_projectiles(
     mut commands: Commands,
     map: Res<NavigationMap>,
+    tick: Res<SimulationTick>,
     units: Query<(Entity, &Unit, &UnitState, &UnitPose)>,
     mut projectiles: Query<(Entity, &mut Projectile)>,
     mut impacts: ResMut<PendingImpacts>,
+    mut memory: ResMut<super::mechanics::MechanicMemory>,
 ) {
     for (entity, mut projectile) in &mut projectiles {
         if let Some(target) = projectile.homing {
@@ -25,9 +27,14 @@ pub(super) fn advance_projectiles(
             );
         }
         projectile.previous = projectile.position;
+        let behavior = projectile.behavior.clone();
+        if let super::mechanics::ProjectileBehavior::Arrow { spec, .. } = &behavior {
+            projectile.speed =
+                (projectile.speed + spec.acceleration * TICK_SECONDS).min(spec.max_speed);
+        }
         let distance = (projectile.speed * TICK_SECONDS).min(projectile.remaining);
         let requested = projectile.position + projectile.direction * distance;
-        let end = map.sweep(projectile.position, requested, projectile.radius);
+        let end = map.projectile_sweep(projectile.position, requested, projectile.radius);
         let mut hit = None;
         for (id, unit, state, pose) in &units {
             if !state.alive()
@@ -36,6 +43,8 @@ pub(super) fn advance_projectiles(
                 || projectile
                     .homing
                     .is_some_and(|target| target != state.life_ref(id))
+                || (matches!(behavior, super::mechanics::ProjectileBehavior::Arrow { .. })
+                    && unit.stats.kind != UnitKind::Hero)
             {
                 continue;
             }
@@ -50,27 +59,95 @@ pub(super) fn advance_projectiles(
                 hit = Some((fraction, id));
             }
         }
+        if let Some((fraction, target)) = hit {
+            let (_, target_unit, state, pose) = units.get(target).expect("hit target");
+            let life = state.life_ref(target);
+            let mut payload = projectile.payload.clone();
+            let mut apply = true;
+            match &behavior {
+                super::mechanics::ProjectileBehavior::Volley {
+                    group,
+                    expires,
+                    hero_slow,
+                } => {
+                    apply = memory.groups.insert((*group, life), *expires).is_none();
+                    if target_unit.stats.kind == UnitKind::Hero
+                        && let Some(slow) = hero_slow
+                    {
+                        payload = super::effects::append_status(payload, *slow);
+                    }
+                }
+                super::mechanics::ProjectileBehavior::Arrow { spec, traveled } => {
+                    let seconds = spec.stun_min
+                        + (spec.stun_max - spec.stun_min)
+                            * ((traveled + distance * fraction) / spec.stun_distance)
+                                .clamp(0.0, 1.0);
+                    payload = super::effects::append_status(
+                        payload,
+                        StatusSpec::Stun {
+                            duration: super::mechanics::duration(seconds),
+                        },
+                    );
+                    for (id, unit, other, other_pose) in &units {
+                        if id != target
+                            && other.alive()
+                            && unit.team != projectile.payload.team
+                            && unit.class().accepts(projectile.payload.origin)
+                            && other_pose.position.distance(pose.position)
+                                <= spec.impact_radius + unit.stats.radius
+                        {
+                            impacts.hit(
+                                1,
+                                projectile.payload.clone(),
+                                projectile.carrier,
+                                other.life_ref(id),
+                                pose.position,
+                                projectile.direction,
+                            );
+                        }
+                    }
+                }
+                _ => {}
+            }
+            if apply {
+                impacts.hit(
+                    1,
+                    payload,
+                    projectile.carrier,
+                    life,
+                    projectile.payload.position,
+                    projectile.direction,
+                );
+            }
+        }
         projectile.position = end;
         projectile.remaining -= distance;
-        if let Some((_, target)) = hit {
-            let state = units.get(target).expect("hit unit").2;
-            // Projectile centers retain the caster's committed origin;
-            // AlongImpact separately follows the actual collision direction.
-            impacts.hit(
-                1,
-                projectile.payload.clone(),
-                projectile.carrier,
-                state.life_ref(target),
-                projectile.payload.position,
-                projectile.direction,
-            );
+        if let super::mechanics::ProjectileBehavior::Arrow { traveled, .. } =
+            &mut projectile.behavior
+        {
+            *traveled += distance;
         }
         if hit.is_some() || projectile.remaining <= 0.001 || end.distance_squared(requested) > 1e-6
         {
+            if let super::mechanics::ProjectileBehavior::Arrow { spec, .. } = &behavior {
+                let center = hit.map_or(end, |(_, target)| {
+                    units.get(target).expect("hit").3.position
+                });
+                commands.spawn(super::battlefield::object(
+                    projectile.payload.source,
+                    projectile.payload.team,
+                    center,
+                    ObjectKind::Reveal,
+                    spec.vision_radius,
+                    spec.vision_radius,
+                    tick.0 + super::mechanics::ticks(1.0),
+                ));
+            }
             commands.entity(entity).despawn();
         }
     }
 }
+
 fn segment_circle(start: Vec2, end: Vec2, center: Vec2, radius: f32) -> Option<f32> {
     let delta = end - start;
     let offset = start - center;
@@ -143,32 +220,35 @@ pub(super) fn apply_damage(
         .expect("unit")
         .attributes();
     let tick = world.resource::<SimulationTick>().0;
-    let mut state = world
-        .get_mut::<UnitState>(target.entity())
-        .expect("unit state");
-    let new_health = damage.health_after(&attributes, state.health);
-    let amount = state.health - new_health;
-    if amount <= 0.0 {
+    let hit = damage.mitigated_damage(&attributes);
+    if hit <= 0.0 {
         return 0.0;
     }
-    state.health = new_health;
+    let remaining = super::mechanics::absorb(world, target.entity(), hit);
+    let mut state = world.get_mut::<UnitState>(target.entity()).expect("state");
+    let previous_health = state.health;
+    state.health = (f64::from(previous_health) - remaining).max(0.0) as f32;
+    let amount = previous_health - state.health;
     state.last_damaged_tick = Some(tick);
     let died = !state.alive();
-    world.write_message(SimulationEvent::Damaged {
-        source: source.entity(),
-        target: target.entity(),
-        amount,
-        kind: damage.kind(),
-        origin: damage.origin(),
-    });
+    if amount > 0.0 {
+        world.write_message(SimulationEvent::Damaged {
+            source: source.entity(),
+            target: target.entity(),
+            amount,
+            kind: damage.kind(),
+            origin: damage.origin(),
+        });
+    }
     if died {
         die(world, target.entity());
     }
-    amount
+    hit.min(f64::from(f32::MAX)) as f32
 }
 fn die(world: &mut World, target: Entity) {
     let delay = world.get::<Unit>(target).expect("unit").respawn_delay;
     super::movement::clear_all(world, target);
+    super::mechanics::clear_life(world, target);
     super::statuses::clear(world, target);
     super::attributes::clear_on_death(&mut world.get_mut::<Unit>(target).expect("unit"));
     world
@@ -200,7 +280,20 @@ pub(super) fn respawn_units(world: &mut World) {
             continue;
         }
         let unit = world.get::<Unit>(entity).expect("unit");
-        let (health, mana, home) = (unit.stats.max_health, unit.stats.max_mana, unit.home);
+        let (health, mana, home, radius) = (
+            unit.stats.max_health,
+            unit.stats.max_mana,
+            unit.home,
+            unit.stats.radius,
+        );
+        let Some(position) = world
+            .resource::<NavigationMap>()
+            .resolve_placement(home, radius)
+        else {
+            // Never publish a new life inside collision. If no safe local
+            // point exists yet, retain the due respawn and retry next tick.
+            continue;
+        };
         {
             let mut state = world.get_mut::<UnitState>(entity).expect("unit state");
             state.life_epoch = state
@@ -219,7 +312,10 @@ pub(super) fn respawn_units(world: &mut World) {
             .expect("slots")
             .cooldowns = [0.0; 4];
         super::movement::clear_all(world, entity);
-        super::movement::reset_pose(&mut world.get_mut::<UnitPose>(entity).expect("pose"), home);
+        super::movement::reset_pose(
+            &mut world.get_mut::<UnitPose>(entity).expect("pose"),
+            position,
+        );
         super::statuses::clear(world, entity);
         world.write_message(SimulationEvent::Respawned { unit: entity });
     }

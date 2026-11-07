@@ -109,6 +109,23 @@ impl EquipmentCatalog {
         {
             return Err(EquipmentError::UnknownActive(active));
         }
+        if definition
+            .active
+            .and_then(|id| abilities.get(id))
+            .is_some_and(|ability| {
+                matches!(
+                    ability.execution,
+                    super::AbilityExecution::Scout(_)
+                        | super::AbilityExecution::Leap(super::LeapSpec {
+                            terrain: Some(_),
+                            ..
+                        })
+                        | super::AbilityExecution::Empower(_)
+                )
+            })
+        {
+            return Err(EquipmentError::InvalidDefinition);
+        }
         self.0.insert(id, definition);
         Ok(())
     }

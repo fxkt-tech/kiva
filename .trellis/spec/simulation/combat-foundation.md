@@ -45,7 +45,7 @@ UnitState::last_damaged_tick() -> Option<u64>
   非法health、表达式或快照溢出返回None，不修改任何运行态。
 - `SimulationSet::Step`包含完整原战斗链。模式可在前后排序和附加运行条件；单独安装SimulationPlugin仍按原暂停规则运行。
 - 恢复一次最多应用`maximum * fraction / TICK_RATE`，返回实际增量。源须为存活同一生命的Structure，目标须为存活友方Actor，
-  两者中心距离不超radius，且最近一次正损血已过去至少out_of_combat_ticks。0损失不刷新脱战时间。
+  两者中心距离不超radius，且最近一次抗性后正伤害命中已过去至少out_of_combat_ticks（含被盾全吸收）。抗性后0伤害不刷新脱战时间。
 - 恢复拒绝暂停，同一目标生命每SimulationTick最多一次（不同来源也不能叠加）。恢复钳制上限，不复活死亡目标；
   新生命清除旧受伤/恢复tick。模式在完整战斗步之后选择需要恢复的英雄，不由AI或客户端写HP/法力。
 

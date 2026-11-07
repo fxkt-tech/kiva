@@ -1,4 +1,5 @@
 //! Mode tuning is configuration, independent of AI decisions and rendering.
+use super::units::world_units;
 use crate::simulation::*;
 use bevy::prelude::*;
 
@@ -7,7 +8,7 @@ pub(super) const MINIONS_PER_TEAM: u8 = 6;
 #[derive(Resource, Clone, Debug)]
 pub struct MatchDefinition {
     default_character: CharacterId,
-    opponent_character: CharacterId,
+    opponent_character: Option<CharacterId>,
     wave_interval_ticks: u64,
     minion_spawn_interval_ticks: u64,
     hero_respawn_delay: f32,
@@ -21,12 +22,13 @@ impl Default for MatchDefinition {
     fn default() -> Self {
         Self {
             default_character: CharacterId(1),
-            opponent_character: CharacterId(2),
+            opponent_character: None,
             wave_interval_ticks: (60.0 * TICK_RATE) as u64,
             minion_spawn_interval_ticks: (0.5 * TICK_RATE) as u64,
             hero_respawn_delay: 3.0,
             base_stats: UnitStats {
                 class: UnitClass::Structure,
+                vision_radius: world_units(1350.0),
                 attack_delivery: BasicAttackDelivery::Direct,
                 max_health: 3000.0,
                 max_mana: 0.0,
@@ -44,34 +46,38 @@ impl Default for MatchDefinition {
                 ..default()
             },
             melee_stats: UnitStats {
+                kind: UnitKind::Minion,
+                vision_radius: world_units(1200.0),
                 attack_delivery: BasicAttackDelivery::Direct,
-                max_health: 720.0,
+                max_health: 465.0,
                 max_mana: 0.0,
                 mana_regen: 0.0,
                 radius: 0.3,
                 base_attributes: BaseAttributes {
-                    attack_damage: 12.0,
-                    move_speed: 2.5,
-                    attack_speed: 1.0,
-                    attack_range: 0.7,
+                    attack_damage: 11.0,
+                    move_speed: world_units(350.0),
+                    attack_speed: 1.25,
+                    attack_range: world_units(110.0),
                     ..default()
                 },
                 ..default()
             },
             ranged_stats: UnitStats {
+                kind: UnitKind::Minion,
+                vision_radius: world_units(1200.0),
                 attack_delivery: BasicAttackDelivery::Projectile {
                     speed: 14.0,
                     radius: 0.1,
                 },
-                max_health: 480.0,
+                max_health: 284.0,
                 max_mana: 0.0,
                 mana_regen: 0.0,
                 radius: 0.28,
                 base_attributes: BaseAttributes {
-                    attack_damage: 18.0,
-                    move_speed: 2.5,
-                    attack_speed: 0.8,
-                    attack_range: 4.0,
+                    attack_damage: 21.0,
+                    move_speed: world_units(350.0),
+                    attack_speed: 0.667,
+                    attack_range: world_units(550.0),
                     ..default()
                 },
                 ..default()
@@ -91,7 +97,11 @@ impl MatchDefinition {
         self.default_character
     }
     pub fn opponent_character(&self) -> CharacterId {
+        self.opponent_for(self.default_character)
+    }
+    pub fn opponent_for(&self, player: CharacterId) -> CharacterId {
         self.opponent_character
+            .unwrap_or_else(|| super::content::default_opponent(player))
     }
     pub fn wave_interval_ticks(&self) -> u64 {
         self.wave_interval_ticks
@@ -118,7 +128,7 @@ impl MatchDefinition {
     /// Configuration builders are applied before a match starts. They never
     /// mutate a running unit; start_match validates the complete definition.
     pub fn with_opponent(mut self, character: CharacterId) -> Self {
-        self.opponent_character = character;
+        self.opponent_character = Some(character);
         self
     }
     pub fn with_base_stats(mut self, stats: UnitStats) -> Self {

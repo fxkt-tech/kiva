@@ -11,7 +11,8 @@
 CharacterId(u16)
 AbilityLoadout = [Option<AbilityId>; 4]
 CharacterDefinition { name, description, stats: UnitStats, default_loadout: AbilityLoadout }
-CharacterDefinition::initial_attributes(&self) -> Option<EffectiveAttributes>
+CharacterDefinition::initial_attributes(&self) -> Option<EffectiveAttributes> // 裸基础
+CharacterDefinition::initial_attributes_with_loadout(&self, &AbilityCatalog, &AbilityLoadout) -> Option<EffectiveAttributes> // 包含实际技能被动
 CharacterCatalog::register(&mut self, id, definition, &AbilityCatalog) -> Result<(), CharacterError>
 CharacterCatalog::get(id) -> Option<&CharacterDefinition>
 CharacterCatalog::iter() -> ordered (CharacterId, &CharacterDefinition)
@@ -53,8 +54,9 @@ NPC无需CharacterIdentity，旧UnitSpec/数组调用和SimulationPlugin默认�
 
 ## 5. 示例
 
-默认：旅者使用定义的四槽。显式：`[Some(other),None,Some(other),None]`保留两个空槽，
-两个other分别计冷却，角色默认列表不被修改。重生继续该显式列表。
+默认：皇子使用定义的四槽，已学Standard被动20%攻速通过统一来源生效。显式：`[Some(other),None,Some(other),None]`保留两个空槽，
+两个other分别计冷却，角色默认列表不被修改。
+Empower是单位共享攻击资源：相同配置重复槽合法，配置不同的多个Empower构造时明确拒绝；不以第一个槽隐式支配其它定义。重生继续该显式列表。
 错误：重生时反查目录把实际技能换回默认，或用CharacterIdentity保存另一份技能/属性缓存。
 
 ## 6. 必测

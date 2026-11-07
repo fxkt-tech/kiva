@@ -82,12 +82,16 @@ fn gesture(app: &App, entity: Entity) -> Gesture {
     app.world().get::<RigPose>(entity).unwrap().gesture
 }
 
-fn sword(app: &mut App, owner: Entity) -> (Entity, Transform) {
+fn weapon_socket(app: &mut App, owner: Entity) -> (Entity, Transform) {
     app.world_mut()
         .query::<(Entity, &BoneVisual, &Transform)>()
         .iter(app.world())
         .find(|(_, visual, _)| {
-            visual.owner == owner && matches!(visual.attachment, Attachment::Sword { .. })
+            visual.owner == owner
+                && matches!(
+                    visual.attachment,
+                    Attachment::Sword { .. } | Attachment::Hand { .. }
+                )
         })
         .map(|(entity, _, transform)| (entity, *transform))
         .unwrap()
@@ -230,7 +234,7 @@ fn all_units_get_one_rig_and_the_rendered_sword_follows_the_hand() {
         count
     );
     for owner in [hero, enemy] {
-        let (_, rendered) = sword(&mut app, owner);
+        let (_, rendered) = weapon_socket(&mut app, owner);
         let library = app.world().resource::<AnimationLibrary>();
         let rig = app.world().get::<RigPose>(owner).unwrap();
         let expected = (Attachment::Sword {
@@ -241,9 +245,9 @@ fn all_units_get_one_rig_and_the_rendered_sword_follows_the_hand() {
     }
     command(&mut app, hero, UnitCommand::AttackTarget(enemy));
     step(&mut app, 1);
-    let (_, before) = sword(&mut app, hero);
+    let (_, before) = weapon_socket(&mut app, hero);
     step(&mut app, 10);
-    let (_, after) = sword(&mut app, hero);
+    let (_, after) = weapon_socket(&mut app, hero);
     assert_ne!(before, after, "the actual visible hand socket must animate");
 }
 
@@ -335,7 +339,7 @@ fn pause_retains_rendered_one_tick_backswing_and_stop_returns_to_idle() {
     let overstep = fixed.timestep().mul_f32(0.9);
     fixed.accumulate_overstep(overstep);
     app.world_mut().run_schedule(Update);
-    let (socket, rendered) = sword(&mut app, hero);
+    let (socket, rendered) = weapon_socket(&mut app, hero);
     let frozen = app.world().get::<RigPose>(hero).unwrap().local.clone();
     let clock = app.world().get::<RigPose>(hero).unwrap().last_time;
     app.world_mut().resource_mut::<SimulationControl>().paused = true;
@@ -353,7 +357,7 @@ fn pause_retains_rendered_one_tick_backswing_and_stop_returns_to_idle() {
     step(&mut app, 1);
     assert_eq!(gesture(&app, hero), Gesture::Idle);
     step(&mut app, 12);
-    let (_, neutral) = sword(&mut app, hero);
+    let (_, neutral) = weapon_socket(&mut app, hero);
     assert_ne!(neutral, rendered);
 }
 
@@ -439,7 +443,7 @@ fn pause_before_first_dash_display_consumes_notice_without_reposing() {
         UnitStats::default(),
     );
     app.world_mut().run_schedule(Update);
-    let (socket, rendered) = sword(&mut app, hero);
+    let (socket, rendered) = weapon_socket(&mut app, hero);
     let local = app.world().get::<RigPose>(hero).unwrap().local.clone();
     let time = app.world().get::<RigPose>(hero).unwrap().last_time;
     command(
@@ -536,7 +540,7 @@ fn stun_airborne_and_forced_motion_drive_bones_while_height_stays_on_the_root() 
     );
     assert!(app.world().get::<Transform>(hero).unwrap().translation.y > 0.0);
     let root = app.world().get::<Transform>(hero).unwrap().translation;
-    let (_, socket) = sword(&mut app, hero);
+    let (_, socket) = weapon_socket(&mut app, hero);
     let rig = app.world().get::<RigPose>(hero).unwrap();
     let library = app.world().resource::<AnimationLibrary>();
     let expected = (Attachment::Sword {
@@ -663,7 +667,7 @@ fn commit_death_respawn_in_one_display_frame_drops_old_dash_and_reset_cleans_hie
     );
     app.world_mut().run_schedule(Update);
     let old_life = app.world().get::<UnitState>(hero).unwrap().life_ref(hero);
-    let (old_socket, _) = sword(&mut app, hero);
+    let (old_socket, _) = weapon_socket(&mut app, hero);
     command(
         &mut app,
         hero,
@@ -686,7 +690,7 @@ fn commit_death_respawn_in_one_display_frame_drops_old_dash_and_reset_cleans_hie
     assert_ne!(state.life_ref(hero), old_life);
     assert_eq!(gesture(&app, hero), Gesture::Idle);
     assert_eq!(
-        sword(&mut app, hero).0,
+        weapon_socket(&mut app, hero).0,
         old_socket,
         "respawn reuses one complete model"
     );
@@ -857,7 +861,7 @@ fn match_roles_use_separate_models_and_terminal_roots_and_bones_sync_once_then_f
         .local
         .clone();
     let time = app.world().get::<RigPose>(handle.player).unwrap().last_time;
-    let (socket, sword) = sword(&mut app, handle.player);
+    let (socket, sword) = weapon_socket(&mut app, handle.player);
     let overstep = app
         .world()
         .resource::<Time<Fixed>>()
@@ -882,4 +886,44 @@ fn match_roles_use_separate_models_and_terminal_roots_and_bones_sync_once_then_f
         time
     );
     assert_eq!(*app.world().get::<Transform>(socket).unwrap(), sword);
+}
+
+#[test]
+fn spear_and_bow_keep_finite_animated_bones_and_hand_attachment_lengths() {
+    use super::weapon::WeaponStyle;
+    let library = AnimationLibrary::default();
+    let rest = library.model_pose(&library.sample(super::rig::Clip::Idle, 0.0, false));
+    for weapon in [WeaponStyle::Spear, WeaponStyle::Bow] {
+        let before = poses::sample_weapon(&library, Gesture::Windup, 0.0, 0.0, weapon);
+        let after = poses::sample_weapon(&library, Gesture::Windup, 1.0, 0.0, weapon);
+        assert_ne!(
+            before, after,
+            "weapon users retain their actual attack gestures"
+        );
+        for frame in [
+            before,
+            after,
+            poses::sample_weapon(&library, Gesture::Run, 0.5, 0.3, weapon),
+        ] {
+            let model = library.model_pose(&frame);
+            for bone in &model {
+                assert!(bone.translation.is_finite());
+                assert!((bone.rotation.length() - 1.0).abs() < 0.001);
+            }
+            for (from, to) in [
+                ("upperarm_r", "lowerarm_r"),
+                ("lowerarm_r", "hand_r"),
+                ("upperarm_l", "lowerarm_l"),
+                ("lowerarm_l", "hand_l"),
+            ] {
+                let (a, b) = (library.bone(from), library.bone(to));
+                assert!(
+                    (model[a].translation.distance(model[b].translation)
+                        - rest[a].translation.distance(rest[b].translation))
+                    .abs()
+                        < 0.001
+                );
+            }
+        }
+    }
 }

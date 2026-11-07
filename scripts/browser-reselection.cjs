@@ -27,10 +27,10 @@ function assertFreshMatch(snapshot, oldIds, characterId) {
   assert.equal(snapshot.session.phase, "Active");
   assert.equal(snapshot.match.phase, "Running");
   assert.equal(snapshot.match.wave_number, 1);
-  assert.equal(snapshot.units.length, 16, "two bases, two heroes and both first waves must be new roots");
-  assert.equal(snapshot.units.filter(({ role }) => role === "Hero").length, 2);
-  assert.equal(snapshot.units.filter(({ role }) => role === "Base").length, 2);
-  for (const team of ["ally", "enemy"]) {
+  assert.equal(snapshot.units.length, 8, "our visible base, hero and complete first wave must be fresh");
+  assert.equal(snapshot.units.filter(({ role }) => role === "Hero").length, 1);
+  assert.equal(snapshot.units.filter(({ role }) => role === "Base").length, 1);
+  for (const team of ["ally"]) {
     assert.equal(minions(snapshot, team).filter(({ role }) => role === "MeleeMinion").length, 3);
     assert.equal(minions(snapshot, team).filter(({ role }) => role === "RangedMinion").length, 3);
   }
@@ -126,7 +126,7 @@ async function exercise(page, url, config) {
     selection_revision: initial.session.selection.selection_revision };
   await resumeGame(page);
   const firstStart = await firstWaveStart(page);
-  assert.equal(firstStart.units.length, 6);
+  assert.equal(firstStart.units.length, 3);
   const first = await waitForFirstWave(page);
   const firstPlayer = first.player_id;
   const oldIds = first.units.map((unit) => unit.id);
@@ -134,7 +134,7 @@ async function exercise(page, url, config) {
   await page.keyboard.press("y");
   await page.waitForFunction(() => window.__kivaState.camera_locked);
 
-  // Commit a real delayed area on a safe flank, then pause in the same browser
+  // Commit a real actual volley on a safe flank, then pause in the same browser
   // callback that first observes its cooldown. Native reset/match tests prove
   // exact old-area/old-life delivery cleanup; this UI test verifies a committed
   // cast can cross reset with fresh roots, full new HP and no inherited state.
@@ -158,7 +158,7 @@ async function exercise(page, url, config) {
     && !document.pointerLockElement && !document.getElementById("reselect").disabled);
   const committed = await page.evaluate(() => window.__reselectionCommitted);
   assert(committed.cooldown > first.abilities[1].total_cooldown - 0.3,
-    "pause must happen during the actual 650ms delayed impact, shortly after commit");
+    "pause must happen during the actual real launched volley, shortly after commit");
   assert(committed.mana < hero(first).max_mana, "the old match must have really spent its ability cost");
   assert(await page.locator("#character-select").isHidden());
   const selecting = await returnToSelection(page, firstPlayer, config.deviceScaleFactor === 2);
@@ -170,7 +170,7 @@ async function exercise(page, url, config) {
   await selectCharacter(page, 1);
   await resumeGame(page);
   const secondStart = await firstWaveStart(page);
-  assert.equal(secondStart.units.length, 6);
+  assert.equal(secondStart.units.length, 3);
   const second = await waitForFirstWave(page);
   const secondPlayer = second.player_id;
   assertFreshMatch(second, oldIds, 1);
@@ -178,10 +178,9 @@ async function exercise(page, url, config) {
   const clean = await observed(page, (minimum) => window.__kivaState.tick >= minimum ? window.__kivaState : false,
     second.tick + 45);
   assert(clean.tick < 360, "check the clean first wave before armies cross the enlarged lane");
-  assert.equal(clean.units.length, 16);
-  assert(clean.units.filter((unit) => unit.team === "enemy").every((unit) =>
-    unit.health === unit.max_health && unit.statuses.length === 0),
-  "opposing new roots must have no old player damage/status after the old delay window");
+  assert.equal(clean.units.length, 8);
+  assert(clean.units.every((unit)=>unit.team==="ally" && unit.health===unit.max_health && unit.statuses.length===0),
+    "the newly observed roster has no inherited wounds/status; distant enemies remain private");
   assert.equal(hero(clean).health, hero(clean).max_health);
   assert.deepEqual(hero(clean).statuses, []);
   // The new enemy hero is allowed to attack our minions already; their wounds
@@ -207,14 +206,14 @@ async function exercise(page, url, config) {
   assert(nextSelection.session.selection.selection_revision > selecting.session.selection.selection_revision);
   await resumeGame(page); // Same role, without another card click or page reload.
   const thirdStart = await firstWaveStart(page);
-  assert.equal(thirdStart.units.length, 6);
+  assert.equal(thirdStart.units.length, 3);
   const third = await waitForFirstWave(page);
   assertFreshMatch(third, second.units.map((unit) => unit.id), 1);
   assert.notEqual(third.match.id, second.match.id);
   assert.equal(await page.evaluate(() => performance.timeOrigin), timeOrigin, "reselection must not reload the page");
   assert(await page.evaluate(() => document.getElementById("game") === window.__reselectionCanvas),
     "reselection reuses the real canvas");
-  console.log(`PASS full lane reset, committed delayed cast, empty Waiting, scheduled 6-to-16 rosters, old request isolation, changed/same role and resume ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);
+  console.log(`PASS full lane reset, committed delayed cast, empty Waiting, scheduled 3-to-8 visible rosters, old request isolation, changed/same role and resume ${config.viewport.width}×${config.viewport.height} DPR${config.deviceScaleFactor}`);
 }
 
 async function main() {

@@ -1,7 +1,7 @@
 // Measure actual DOM movement on browser animation frames, not HUD event counts.
 // The static fixture listens on an ephemeral port and is closed after the test.
 const assert = require("node:assert/strict");
-const { launchBrowser, enterGame, clickWorld, worldPoint, panTo, state, hero, base,
+const { launchBrowser, enterGame, clickWorld, worldPoint, panTo, state, hero, nearMiddle,
   reportFailure, serveBuild } = require("./browser-lane-support.cjs");
 
 async function measureTracking(page, selector, duration) {
@@ -73,7 +73,7 @@ async function main() {
     // long flank route gives the human hero several native seconds of actual
     // movement; AI stop/cast decisions are not a continuous-motion fixture.
     const initial = await state(page);
-    const destination = [-9, 0];
+    const destination = nearMiddle(initial, -3, -(initial.map.lane_width + 2));
     const midpoint = hero(initial).position.map((value, i) => (value + destination[i]) / 2);
     await panTo(page, midpoint); // No fixture clock is installed on this page.
     const point = await worldPoint(page, destination);
@@ -90,7 +90,7 @@ async function main() {
     // it. This leaves enough map-boundary room and visible travel for 20 real
     // frames; the enemy base is legitimately far outside the initial camera.
     const current = await state(page);
-    const home = base(current, "ally").position;
+    const home = current.map.ally_base;
     const bound = current.map.half_size - 6;
     const cameraStart = [home[0] - 18 * 2 / Math.sqrt(5), home[1] + 18 / Math.sqrt(5)]
       .map((value) => Math.max(-bound, Math.min(bound, value)));

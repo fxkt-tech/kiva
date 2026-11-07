@@ -58,6 +58,10 @@ impl BasicAttackDelivery {
 #[derive(Clone, Debug)]
 pub struct UnitStats {
     pub class: UnitClass,
+    pub kind: super::UnitKind,
+    pub health_regen: f32,
+    pub vision_radius: f32,
+    pub attack_passives: Vec<super::AttackPassive>,
     pub attack_delivery: BasicAttackDelivery,
     pub max_health: f32,
     pub max_mana: f32,
@@ -70,6 +74,10 @@ impl Default for UnitStats {
     fn default() -> Self {
         Self {
             class: UnitClass::Actor,
+            kind: super::UnitKind::Other,
+            health_regen: 0.0,
+            vision_radius: 0.0,
+            attack_passives: Vec::new(),
             attack_delivery: BasicAttackDelivery::default(),
             max_health: 600.0,
             max_mana: 300.0,
@@ -85,13 +93,40 @@ impl UnitStats {
         [self.max_health, self.radius]
             .into_iter()
             .all(|v| v.is_finite() && v > 0.0)
-            && [self.max_mana, self.mana_regen]
-                .into_iter()
-                .all(|v| v.is_finite() && v >= 0.0)
+            && [
+                self.max_mana,
+                self.mana_regen,
+                self.health_regen,
+                self.vision_radius,
+            ]
+            .into_iter()
+            .all(|v| v.is_finite() && v >= 0.0)
             && self.attack_windup_fraction.is_finite()
             && (0.0..=1.0).contains(&self.attack_windup_fraction)
             && self.base_attributes.valid()
             && self.attack_delivery.valid()
+            && self.attack_passives.iter().all(|passive| match passive {
+                super::AttackPassive::CurrentHealth {
+                    ratio,
+                    minimum,
+                    non_hero_cap,
+                    target_cooldown,
+                } => {
+                    ratio.is_finite()
+                        && (0.0..=1.0).contains(ratio)
+                        && minimum.is_finite()
+                        && *minimum >= 0.0
+                        && non_hero_cap.is_finite()
+                        && *non_hero_cap >= *minimum
+                        && super::abilities::positive_time(*target_cooldown)
+                }
+                super::AttackPassive::Frost { slow, duration } => {
+                    slow.is_finite()
+                        && *slow > 0.0
+                        && *slow <= 1.0
+                        && super::abilities::positive_time(*duration)
+                }
+            })
     }
 }
 #[derive(Clone, Debug)]
@@ -336,6 +371,8 @@ pub enum Rejection {
     NoAbility,
     OnCooldown,
     InsufficientMana,
+    InsufficientStacks,
+    NoCharges,
     NoPath,
     Busy,
     InvalidDamage,
@@ -377,6 +414,12 @@ pub enum SimulationEvent {
         ability: AbilityId,
         position: Vec2,
     },
+    /// The landing remains committed, but nearby actors cannot safely leave
+    /// the proposed terrain. No wall or partial relocation was applied.
+    TerrainPlacementFailed {
+        unit: Entity,
+        position: Vec2,
+    },
     Damaged {
         source: Entity,
         target: Entity,
@@ -402,10 +445,24 @@ pub struct Projectile {
     pub(super) speed: f32,
     pub(super) radius: f32,
     pub(super) homing: Option<UnitLifeRef>,
+    pub(super) behavior: super::mechanics::ProjectileBehavior,
+    pub(super) arrows: u8,
 }
 impl Projectile {
+    pub fn arrows(&self) -> u8 {
+        self.arrows
+    }
+    pub fn is_crystal_arrow(&self) -> bool {
+        matches!(
+            self.behavior,
+            super::mechanics::ProjectileBehavior::Arrow { .. }
+        )
+    }
     pub fn position(&self) -> Vec2 {
         self.position
+    }
+    pub fn direction(&self) -> Vec2 {
+        self.direction
     }
     pub fn team(&self) -> Team {
         self.payload.team
@@ -427,6 +484,9 @@ pub struct AreaEffect {
     pub(super) duration: f32,
 }
 impl AreaEffect {
+    pub fn team(&self) -> Team {
+        self.payload.team
+    }
     pub fn position(&self) -> Vec2 {
         self.position
     }
