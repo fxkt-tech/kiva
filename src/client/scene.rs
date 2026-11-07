@@ -1,6 +1,7 @@
 //! Procedural presentation. Visual transforms interpolate authoritative poses.
 use super::{
     abilities,
+    character::{self, AnimationLibrary, ModelAssets, RigPose},
     content::Scenery,
     controls::{Aim, ClientFeedback, Pickable, PlayerController, PointerState},
     session::ClientSession,
@@ -10,21 +11,16 @@ use bevy::prelude::*;
 
 #[derive(Resource)]
 pub(super) struct SceneAssets {
-    body: Handle<Mesh>,
-    head: Handle<Mesh>,
     base: Handle<Mesh>,
     bolt: Handle<Mesh>,
     ally: Handle<StandardMaterial>,
     enemy: Handle<StandardMaterial>,
-    gold: Handle<StandardMaterial>,
     dark: Handle<StandardMaterial>,
 }
 #[derive(Component)]
 pub(super) struct UnitVisual;
 #[derive(Component)]
 pub(super) struct UnitGroundBase;
-#[derive(Component)]
-pub(super) struct UnitModel;
 #[derive(Component)]
 pub(super) struct ProjectileVisual;
 
@@ -147,8 +143,6 @@ pub(super) fn setup(
         ));
     }
     commands.insert_resource(SceneAssets {
-        body: meshes.add(Capsule3d::new(0.34, 0.65)),
-        head: meshes.add(Sphere::new(0.24).mesh().uv(16, 12)),
         base: meshes.add(Cylinder::new(0.5, 0.12)),
         bolt: meshes.add(Sphere::new(1.0).mesh().uv(12, 8)),
         ally: materials.add(StandardMaterial {
@@ -161,7 +155,6 @@ pub(super) fn setup(
             emissive: LinearRgba::new(0.3, 0.05, 0.03, 1.0),
             ..default()
         }),
-        gold,
         dark: materials.add(Color::srgb_u8(24, 38, 44)),
     });
 }
@@ -169,6 +162,9 @@ pub(super) fn setup(
 pub(super) fn attach_unit_visuals(
     mut commands: Commands,
     assets: Res<SceneAssets>,
+    library: Res<AnimationLibrary>,
+    models: Res<ModelAssets>,
+    tick: Res<SimulationTick>,
     units: Query<(Entity, &Unit, &UnitPose, &UnitState, &UnitStatuses), Without<UnitVisual>>,
 ) {
     for (entity, unit, pose, state, statuses) in &units {
@@ -212,33 +208,17 @@ pub(super) fn attach_unit_visuals(
                     MeshMaterial3d(assets.dark.clone()),
                     Transform::from_xyz(0.0, 0.12 - height, 0.0),
                 ));
-                // Backswing poses only the model child. Airborne height belongs
-                // to the display root shared by the body, pick and label.
-                parent
-                    .spawn((
-                        UnitModel,
-                        Transform::from_xyz(0.0, 0.45, 0.0),
-                        Visibility::Inherited,
-                    ))
-                    .with_children(|model| {
-                        model.spawn((
-                            Mesh3d(assets.body.clone()),
-                            MeshMaterial3d(material),
-                            Transform::from_xyz(0.0, 0.5, 0.0),
-                        ));
-                        model.spawn((
-                            Mesh3d(assets.head.clone()),
-                            MeshMaterial3d(assets.gold.clone()),
-                            Transform::from_xyz(0.0, 1.2, 0.0),
-                        ));
-                        model.spawn((
-                            Mesh3d(assets.body.clone()),
-                            MeshMaterial3d(assets.gold.clone()),
-                            Transform::from_xyz(0.43, 0.4, -0.15)
-                                .with_scale(Vec3::new(0.17, 1.15, 0.17)),
-                        ));
-                    });
             });
+        let rig = RigPose::new(&library, state.life_ref(entity), tick.0 as f64 / TICK_RATE);
+        character::spawn_model(
+            &mut commands,
+            entity,
+            &models,
+            &library,
+            rig.model(),
+            material,
+        );
+        commands.entity(entity).insert(rig);
     }
 }
 
@@ -285,37 +265,6 @@ pub(super) fn sync_ground_bases(
         if let Ok(root) = units.get(parent.parent()) {
             transform.translation.y = 0.12 - root.translation.y;
         }
-    }
-}
-
-pub(super) fn sync_unit_models(
-    fixed: Res<Time<Fixed>>,
-    control: Res<SimulationControl>,
-    units: Query<(&UnitAction, &UnitState), With<UnitVisual>>,
-    mut models: Query<(&ChildOf, &mut Transform), With<UnitModel>>,
-) {
-    // Keep the exact pose from the last rendered frame while paused. Replacing
-    // its interpolation fraction with zero would rewind a short backswing.
-    if control.paused {
-        return;
-    }
-    let fraction = fixed.overstep_fraction();
-    for (parent, mut transform) in &mut models {
-        let recovery = match units.get(parent.parent()) {
-            Ok((
-                UnitAction::AttackBackswing {
-                    remaining,
-                    duration,
-                },
-                state,
-            )) if state.alive() => {
-                ((*remaining as f32 - fraction) / (*duration).max(1) as f32).clamp(0.0, 1.0)
-            }
-            _ => 0.0,
-        };
-        // Local -Z is forward; an attack leans into its release and then
-        // settles back. Simulation action ticks, never animation, set the pace.
-        transform.rotation = Quat::from_rotation_x(-0.2 * recovery);
     }
 }
 
@@ -652,95 +601,5 @@ mod tests {
             Vec3::X * 2.0
         );
         assert!(app.world().get::<UnitStatuses>(target).unwrap().is_empty());
-    }
-
-    #[test]
-    fn pause_retains_rendered_backswing_pose_until_presentation_resumes() {
-        let mut app = App::new();
-        app.add_plugins((MinimalPlugins, SimulationPlugin))
-            .insert_resource(NavigationMap::new(20.0, 1.0, vec![]))
-            .add_systems(Update, sync_unit_models);
-        let mut spawn = |team, position| {
-            spawn_unit(
-                app.world_mut(),
-                UnitSpec {
-                    name: "Presentation test".into(),
-                    team,
-                    position,
-                    stats: UnitStats {
-                        base_attributes: BaseAttributes {
-                            attack_speed: MAX_ATTACK_SPEED,
-                            ..default()
-                        },
-                        ..default()
-                    },
-                    abilities: [None; 4],
-                    respawn_delay: None,
-                },
-            )
-            .expect("valid test unit")
-        };
-        let attacker = spawn(Team::Ally, Vec2::ZERO);
-        let target = spawn(Team::Enemy, Vec2::X * 2.0);
-        app.world_mut().entity_mut(attacker).insert(UnitVisual);
-        let model = app
-            .world_mut()
-            .spawn((UnitModel, ChildOf(attacker), Transform::default()))
-            .id();
-        app.world_mut()
-            .resource_mut::<CommandQueue>()
-            .submit(attacker, UnitCommand::AttackTarget(target));
-        app.world_mut().run_schedule(FixedUpdate);
-        app.world_mut().run_schedule(FixedUpdate);
-        assert!(matches!(
-            app.world().get::<UnitAction>(attacker),
-            Some(UnitAction::AttackBackswing {
-                remaining: 1,
-                duration: 1,
-            })
-        ));
-
-        // Draw near the end of a one-tick backswing, where resetting alpha
-        // during pause would visibly return the body to its release pose.
-        let mut fixed = app.world_mut().resource_mut::<Time<Fixed>>();
-        let overstep = fixed.timestep().mul_f32(0.9);
-        fixed.accumulate_overstep(overstep);
-        app.world_mut().run_schedule(Update);
-        let rendered = *app
-            .world()
-            .get::<Transform>(model)
-            .expect("model transform");
-        assert_ne!(rendered.rotation, Quat::IDENTITY);
-
-        app.world_mut().resource_mut::<SimulationControl>().paused = true;
-        app.world_mut().run_schedule(Update);
-        assert_eq!(
-            *app.world()
-                .get::<Transform>(model)
-                .expect("model transform"),
-            rendered,
-            "pausing must retain the already displayed pose"
-        );
-
-        app.world_mut().resource_mut::<SimulationControl>().paused = false;
-        app.world_mut()
-            .resource_mut::<Time<Fixed>>()
-            .discard_overstep(overstep);
-        app.world_mut().run_schedule(Update);
-        assert_ne!(
-            app.world().get::<Transform>(model).unwrap().rotation,
-            rendered.rotation,
-            "resuming permits the presentation to update"
-        );
-        app.world_mut()
-            .resource_mut::<CommandQueue>()
-            .submit(attacker, UnitCommand::Stop);
-        app.world_mut().run_schedule(FixedUpdate);
-        app.world_mut().run_schedule(Update);
-        assert_eq!(
-            app.world().get::<Transform>(model).unwrap().rotation,
-            Quat::IDENTITY,
-            "an interrupted backswing returns the model to neutral"
-        );
     }
 }

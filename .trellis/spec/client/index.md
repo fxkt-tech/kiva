@@ -12,10 +12,12 @@
 6. 修改选角/开局/玩家引用时阅读 [character-selection.md](character-selection.md)。
 7. 修改装备管理、主动输入或六格HUD时阅读 [equipment.md](equipment.md)。
 8. 修改鼠标位移、光标时序或点击位置时阅读 [pointer.md](pointer.md)。
+9. 修改角色模型、骨骼、动作或其生命周期时阅读 [character-animation.md](character-animation.md)。
 
 ## Quality Check
 
 - `make check`，涉及 WASM 专属代码时增加 WASM Clippy。
+- 角色表现变更运行 `cargo test --locked --lib client::character`，保留scene击飞根测试，验证有窗口截图和技能/血条/重开回归。
 - 修改 JavaScript 后用 `node --check <文件>` 检查语法。
 - 修改返回选角/整场重开时执行 `scripts/browser-reselection.cjs`，覆盖不同角色、同角色及普通继续。
 - 装备变更执行 `scripts/browser-equipment.cjs`，并按影响回归属性、技能、捕获及重开入口。

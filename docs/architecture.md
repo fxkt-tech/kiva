@@ -29,7 +29,11 @@ src/client/controls.rs        玩家输入、演示 AI、指令反馈
 src/client/pointer.rs         Web输入帧指针镜像、Native绝对坐标与捕获边界
 src/client/controls/tests.rs  同帧事件顺序、暂停与焦点恢复回归测试
 src/client/camera.rs          固定角度俯视镜头
-src/client/scene.rs           过程生成场景、模型、插值和指示器
+src/client/scene.rs           过程生成场景、显示根插值和指示器
+src/client/character/rig.rs   内嵌骨骼动作校验、采样和父序变换
+src/client/character/model.rs 分段模型、头眼与右手剑socket
+src/client/character/poses.rs 源动作上的骨骼姿态与持剑手势
+src/client/character/animation.rs 只读模拟到动作、过渡与生命缓存
 src/client/ui.rs              HUD 的只读状态投影
 src/client/web.rs             浏览器交互适配
 web/hud.js                    DOM 展示、暂停菜单、技能按钮
@@ -91,12 +95,30 @@ HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件�
 移动事件只推进浏览器指针，Rust在点击及帧末拾取，避免高轮询鼠标逐raw样本重复射线查询。
 即使这一帧没有固定步，指令仍保留；多个固定步不会重复执行一次按键。
 相机和表现逐帧更新，人物根使用上一模拟位置与当前位置插值，并加上击飞表现高度。
-底座通过反向局部高度留在地面，模型子层只负责后摇姿态。拾取读取最后实际显示的
+底座通过反向局部高度留在地面，模型子层只负责骨骼姿态。拾取读取最后实际显示的
 `UnitVisual GlobalTransform + Pickable.offset`，与输入时可见画面一致；不读取未插值的战斗位置。
 浏览器 HUD 在相机投影和世界变换更新后读取数据，约每 80 ms 发布一次完整状态。
 头顶血条的位置走独立的 `kiva-labels` 轻量通道，每个显示帧根据人物实际显示变换投影，
 与插值后的模型和当前镜头保持同步。完整 HUD 快照不能覆盖血条坐标。
 固定步长不承诺跨平台浮点确定性。
+
+## 骨骼角色表现
+
+角色采用act分支的23骨骼刚性火柴人和CC0动作资源，原生/WASM内嵌同一份数据。
+`character::rig`校验和采样源局部变换，`poses`提供小型持剑姿态，`model`将17骨段、14关节、
+头眼和剑绑定到骨骼。全部几何位于单位的`CharacterModel`子树，整场重开随根递归删除。
+
+`character::animation`只读UnitAction、真实步位移、控制、目录与模拟事件。它用模拟tick和插值分数推进
+待机、步态及平滑过渡，不从宿主时间重建战斗时钟。普攻准备缓存首次观察到的前摇剩余，
+后摇直接读取冻结的duration；前摇末段姿势衔接CONTACT，实际出手、命中和后摇阶段只由模拟推进。动画不驱动位移、伤害或冷却。
+
+独立MessageReader读取`AbilityCommitted`，因此瞬发或装备主动不必经过可见Casting帧；
+冲刺姿态由已提交类型与实际运动共同决定，可以超出技能Recovery，但不能延长运动。
+提交、死亡、重生按通知顺序清记忆，life_ref变化补充清理旧生命缓存；不会从旧生命恢复冲刺。
+暂停仅消费通知并标记待重置，保留实际骨骼、socket和播放缓存，恢复后再更新。
+资源出处与重建方式见[动画资源](../assets/animations/README.md)，可执行约定见
+[骨骼角色规范](../.trellis/spec/client/character-animation.md)。
+
 
 ## 指令与动作
 
@@ -181,7 +203,7 @@ final = (base + sum(flat)) * max(0, 1 + sum(additive_percent))
 固定步量化使周期最多多出不足一个 tick，默认 1.25 次/秒对应 48 tick。
 
 客户端将后摇显示为“攻击后摇”，并根据模拟中的剩余 tick 对模型子层做收招姿态插值。
-身体、头部和武器位于 `UnitModel` 子层，角色根位置、底座、拾取范围和血条锚点不参与该姿态变换。
+身体、头部和武器位于 `CharacterModel` 骨骼子树，角色根位置、底座、拾取范围和血条锚点不参与该姿态变换。
 动画只读取规则，不能决定命中、冷却或动作结束。
 
 ## 统一伤害

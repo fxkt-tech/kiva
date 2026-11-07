@@ -27,12 +27,9 @@
 模拟接口变动必须同步更新演示内容、Rust 测试内容及依赖伤害/位置数值的浏览器断言。
 新增 HUD 区域提供可读标签和稳定选择器，实际值来自 Rust 快照。
 
-普攻后摇由 `UnitAction::AttackBackswing` 只读驱动：HUD 显示“攻击后摇”，
-`sync_unit_models` 仅对 `UnitModel` 子层的身体/头部/武器做收招插值。
-姿态不得改动 `UnitVisual` 根变换、底座、拾取范围或血条锚点，也不得由动画触发伤害或结束冷却。
-暂停时保留已经显示的模型 Transform；不要把插值比例改成0后重算姿态，这会使短后摇倒退。
-`client::scene::tests::pause_retains_rendered_backswing_pose_until_presentation_resumes` 用真实普攻与
-0.9 tick 插值验证暂停冻结、恢复更新和停止后回到中立姿态。
+角色采用`client/character`的刚性骨骼火柴人；待机、真实移动、普攻前后摇、技能及控制姿态均只读模拟。
+骨骼采样、时间、暂停和生命周期契约见[骨骼角色](character-animation.md)。
+姿态不能改动`UnitVisual`世界根、底座、拾取范围或血条锚点，也不能触发伤害或结束冷却。
 
 `scripts/browser-support.cjs` 已提供 Pointer Lock 下的 `movePointer`、`clickPointer`、`clickUi`、
 `clickWorld` 和临时 HTTP fixture。新增浏览器测试复用这些辅助函数。
@@ -72,7 +69,7 @@ Playwright模拟的DOM焦点不能代替Chromium的原生焦点检查；生产�
 
 ### 3. 规则与所有权
 
-`UnitVisual`根拥有平面插值+Airborne高度；`UnitGroundBase`反向抵消高度；`UnitModel`只做后摇姿态。
+`UnitVisual`根拥有平面插值+Airborne高度；`UnitGroundBase`反向抵消高度；`CharacterModel`子树只负责骨骼表现。
 `UnitStatuses::airborne_height`提供归一化连续曲线，峰值配置属于客户端。
 拾取AABB中心为实际`GlobalTransform.transform_point(Pickable.offset)`，包围半径同样转换。
 标签、完整快照和拾取共用可见根，不再各自用战斗位置/高度公式重算。

@@ -1,6 +1,7 @@
 //! Application adapters. Gameplay imports never point back into this module.
 mod abilities;
 mod camera;
+mod character;
 mod content;
 mod controls;
 mod equipment;
@@ -42,6 +43,7 @@ pub(super) fn run() {
         paused: cfg!(target_arch = "wasm32"),
     })
     .insert_resource(ClearColor(Color::srgb_u8(12, 23, 25)))
+    .init_resource::<character::AnimationLibrary>()
     .init_resource::<camera::CameraRig>()
     .init_resource::<controls::PointerState>()
     .init_resource::<pointer::GamePointer>()
@@ -50,7 +52,14 @@ pub(super) fn run() {
     .init_resource::<equipment::EquipmentAdapter>()
     .add_systems(
         Startup,
-        (content::setup, session::setup, scene::setup, camera::setup).chain(),
+        (
+            content::setup,
+            session::setup,
+            scene::setup,
+            character::setup,
+            camera::setup,
+        )
+            .chain(),
     )
     // Input is sampled once before zero or more fixed steps, and enqueued.
     .add_systems(
@@ -70,7 +79,9 @@ pub(super) fn run() {
             scene::attach_unit_visuals,
             scene::sync_units,
             scene::sync_ground_bases,
-            scene::sync_unit_models,
+            character::record_events,
+            character::sync_poses,
+            character::sync_attachments,
             scene::sync_effects,
             controls::receive_feedback,
             controls::refresh_aim,
