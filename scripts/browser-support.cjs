@@ -3,7 +3,8 @@ const fs = require("node:fs/promises");
 const { createReadStream } = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
-const physicalPositions = new WeakMap();
+// CDP coordinates have the same CSS gain as the browser normal pointer.
+const mousePositions = new WeakMap();
 
 async function serveBuild(directory) {
   const root = path.resolve(directory);
@@ -77,7 +78,7 @@ async function resumeGame(page, activation = "mouse") {
   } else {
     await button.click();
   }
-  physicalPositions.set(page, { x: box.x + box.width / 2, y: box.y + box.height / 2 });
+  mousePositions.set(page, { x: box.x + box.width / 2, y: box.y + box.height / 2 });
   await page.waitForFunction(() => document.pointerLockElement?.id === "game"
     && window.__kivaState?.session?.phase === "Active" && window.__kivaState.player_id
     && !window.__kivaState.paused && !document.getElementById("game-cursor").hidden);
@@ -106,38 +107,38 @@ async function movePointer(page, x, y) {
   const cursor = await page.evaluate(() => {
     if (document.pointerLockElement?.id !== "game") return null;
     const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
-    return { x: matrix.m41, y: matrix.m42, scale: devicePixelRatio };
+    return { x: matrix.m41, y: matrix.m42 };
   });
   if (!cursor) {
     await page.mouse.move(x, y);
-    physicalPositions.set(page, { x, y });
+    mousePositions.set(page, { x, y });
     return;
   }
-  const last = physicalPositions.get(page);
-  assertPhysicalPosition(last);
-  const next = { x: last.x + (x - cursor.x) * cursor.scale, y: last.y + (y - cursor.y) * cursor.scale };
+  const last = mousePositions.get(page);
+  assertMousePosition(last);
+  const next = { x: last.x + x - cursor.x, y: last.y + y - cursor.y };
   await page.mouse.move(next.x, next.y);
-  physicalPositions.set(page, next);
+  mousePositions.set(page, next);
   await page.waitForFunction(([x, y]) => {
     const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
     return Math.abs(matrix.m41 - x) < 2 && Math.abs(matrix.m42 - y) < 2;
   }, [x, y]);
 }
 
-function assertPhysicalPosition(position) {
+function assertMousePosition(position) {
   if (!position) throw new Error("enterGame/resumeGame must initialize the captured pointer");
 }
 
 async function moveRelative(page, dx, dy) {
   const before = await page.evaluate(() => {
     const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
-    return { x: matrix.m41, y: matrix.m42, scale: devicePixelRatio, width: innerWidth, height: innerHeight };
+    return { x: matrix.m41, y: matrix.m42, width: innerWidth, height: innerHeight };
   });
-  const last = physicalPositions.get(page);
-  assertPhysicalPosition(last);
-  const next = { x: last.x + dx * before.scale, y: last.y + dy * before.scale };
+  const last = mousePositions.get(page);
+  assertMousePosition(last);
+  const next = { x: last.x + dx, y: last.y + dy };
   await page.mouse.move(next.x, next.y);
-  physicalPositions.set(page, next);
+  mousePositions.set(page, next);
   const expected = [Math.max(0, Math.min(before.width - 1, before.x + dx)), Math.max(0, Math.min(before.height - 1, before.y + dy))];
   await page.waitForFunction(([x, y]) => {
     const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
@@ -147,8 +148,8 @@ async function moveRelative(page, dx, dy) {
 
 async function clickPointer(page, button = "left", delay = 90) {
   if (!delay) {
-    const position = physicalPositions.get(page);
-    assertPhysicalPosition(position);
+    const position = mousePositions.get(page);
+    assertMousePosition(position);
     // Playwright batches an immediate click's native press/release events.
     await page.mouse.click(position.x, position.y, { button });
     return;
@@ -162,16 +163,16 @@ async function clickAndMovePointer(page, x, y) {
   const cursor = await page.evaluate(() => {
     if (document.pointerLockElement?.id !== "game") throw new Error("Captured pointer required");
     const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
-    return { x: matrix.m41, y: matrix.m42, scale: devicePixelRatio };
+    return { x: matrix.m41, y: matrix.m42 };
   });
-  const last = physicalPositions.get(page);
-  assertPhysicalPosition(last);
-  const next = { x: last.x + (x - cursor.x) * cursor.scale, y: last.y + (y - cursor.y) * cursor.scale };
+  const last = mousePositions.get(page);
+  assertMousePosition(last);
+  const next = { x: last.x + x - cursor.x, y: last.y + y - cursor.y };
   // Plan the follow-up motion before committing the click. Short animations
   // must not spend their input window on host-side cursor queries.
   await clickPointer(page, "left", 0);
   await page.mouse.move(next.x, next.y);
-  physicalPositions.set(page, next);
+  mousePositions.set(page, next);
   // The caller observes motion together with its animation condition, avoiding
   // a separate feedback round trip in the short interaction window.
 }

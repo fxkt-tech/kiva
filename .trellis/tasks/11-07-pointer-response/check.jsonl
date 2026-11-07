@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/client/browser.md", "reason": "Capture and input timing contracts."}
+{"file": ".trellis/spec/client/character-selection.md", "reason": "Actual versus confirmed capture and stale input boundaries."}
+{"file": ".trellis/spec/client/equipment.md", "reason": "Actual HUD active input remains shared."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace event coordinates through commands and presentation."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "One owner for normalized pointer coordinates."}
+{"file": "docs/architecture.md", "reason": "Existing client/simulation ownership."}
+{"file": ".trellis/spec/client/pointer.md", "reason": "Implemented single pointer owner, calibration, event-time presses and regression contracts."}

@@ -275,6 +275,7 @@ fn sync_pointer(
     cursor: Option<Vec2>,
 ) -> (Option<bool>, bool) {
     let captured = capture.map(web::PointerCapture::confirmed);
+    web::sync_game_pointer(captured.unwrap_or(false) && !paused);
     let just_captured = world.resource_mut::<GamePointer>().sync(
         captured.unwrap_or(false) && !paused,
         size,
@@ -452,7 +453,7 @@ pub(super) fn collect_input(
     mut cursor: Local<bevy::ecs::message::MessageCursor<bevy::window::WindowEvent>>,
 ) {
     use bevy::window::WindowEvent;
-    let (focused, current_cursor, size, scale) = {
+    let (focused, current_cursor, size) = {
         let mut windows = world.query::<&Window>();
         let Ok(window) = windows.single(world) else {
             return;
@@ -461,7 +462,6 @@ pub(super) fn collect_input(
             window.focused,
             window.cursor_position(),
             Vec2::new(window.width(), window.height()),
-            window.scale_factor(),
         )
     };
     let size = web::canvas_size().unwrap_or(size);
@@ -472,7 +472,7 @@ pub(super) fn collect_input(
         || capture.map(web::PointerCapture::confirmed) == Some(false)
         || web::paused().unwrap_or(world.resource::<SimulationControl>().paused);
     set_paused(world, paused);
-    let (captured, just_captured) = sync_pointer(world, capture, paused, size, current_cursor);
+    let (_, just_captured) = sync_pointer(world, capture, paused, size, current_cursor);
     let mut events: Vec<_> = cursor
         .read(world.resource::<Messages<WindowEvent>>())
         .cloned()
@@ -480,25 +480,19 @@ pub(super) fn collect_input(
     // Motion used to reach Enter/resume belongs to the unlocked session.
     if just_captured || world.resource::<ClientSession>().player().is_none() {
         events.clear();
+        web::clear_pointer_presses();
     }
     for event in events {
         match event {
-            WindowEvent::CursorMoved(event) => {
+            WindowEvent::CursorMoved(event) if capture.is_none() => {
                 world
                     .resource_mut::<GamePointer>()
                     .absolute(Some(event.position));
                 let point = world.resource::<GamePointer>().position();
                 update_pointer(world, point);
             }
-            WindowEvent::CursorLeft(_) => {
+            WindowEvent::CursorLeft(_) if capture.is_none() => {
                 world.resource_mut::<GamePointer>().absolute(None);
-                let point = world.resource::<GamePointer>().position();
-                update_pointer(world, point);
-            }
-            WindowEvent::MouseMotion(event) if captured == Some(true) => {
-                world
-                    .resource_mut::<GamePointer>()
-                    .relative(event.delta / scale);
                 let point = world.resource::<GamePointer>().position();
                 update_pointer(world, point);
             }
@@ -508,6 +502,12 @@ pub(super) fn collect_input(
                 key_pressed(world, event.key_code)
             }
             WindowEvent::MouseButtonInput(event) if event.state.is_pressed() => {
+                if capture.is_some() {
+                    let Some(point) = web::take_pointer_press(event.button) else {
+                        continue;
+                    };
+                    world.resource_mut::<GamePointer>().observe(point);
+                }
                 let point = world.resource::<GamePointer>().position();
                 update_pointer(world, point);
                 mouse_pressed(world, event.button);
@@ -520,12 +520,14 @@ pub(super) fn collect_input(
     let equipment_request = web::take_equipment_skill_request();
     queued_equipment_request(world, equipment_request.as_deref(), just_captured);
     if !world.resource::<SimulationControl>().paused {
+        if let Some(point) = web::game_pointer_position() {
+            world.resource_mut::<GamePointer>().observe(point);
+        }
         let point = world.resource::<GamePointer>().position();
         update_pointer(world, point);
-        web::draw_pointer(point);
     } else {
         *world.resource_mut::<PointerState>() = PointerState::default();
-        web::draw_pointer(None);
+        web::clear_pointer_presses();
     }
 }
 

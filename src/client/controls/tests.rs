@@ -407,7 +407,7 @@ fn delayed_capture_event_keeps_resume_paused_then_recenters_and_discards_queued_
     assert!(sync_pointer(app.world_mut(), confirmed, false, size, None).1);
     app.world_mut()
         .resource_mut::<GamePointer>()
-        .relative(Vec2::new(200.0, -100.0));
+        .observe(Vec2::new(840.0, 300.0));
     set_paused(app.world_mut(), true);
     // DOM pause can precede native unlock. It still ends this input session.
     assert!(!sync_pointer(app.world_mut(), confirmed, true, size, None).1);

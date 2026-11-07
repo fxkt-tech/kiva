@@ -11,6 +11,7 @@
 5. 修改属性面板时阅读 [attributes-hud.md](attributes-hud.md)。
 6. 修改选角/开局/玩家引用时阅读 [character-selection.md](character-selection.md)。
 7. 修改装备管理、主动输入或六格HUD时阅读 [equipment.md](equipment.md)。
+8. 修改鼠标位移、光标时序或点击位置时阅读 [pointer.md](pointer.md)。
 
 ## Quality Check
 
@@ -20,4 +21,5 @@
 - 装备变更执行 `scripts/browser-equipment.cjs`，并按影响回归属性、技能、捕获及重开入口。
 - 按变动运行 `scripts/browser-skills.cjs`、`browser-cursor.cjs`、`browser-healthbars.cjs` 或 `browser-smoke.cjs`。
 - 在 Pointer Lock 下验证 HUD 交互；检查 800×600、高 DPI 和窗口缩放。
+- 指针变更运行 `node --test scripts/pointer-unit.test.cjs` 和 `scripts/browser-pointer-response.cjs`，独立对比正常移动比例及同事件响应。
 - 浏览器脚本使用临时构建和自有 fixture，结束时清理。截图使用已验证的有窗口 Chromium 环境。

@@ -1,4 +1,4 @@
-//! A visible game cursor driven by relative input while the browser owns the mouse.
+//! Input-frame pointer snapshot. The browser owns and draws its live coordinates.
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
@@ -28,15 +28,15 @@ impl GamePointer {
     pub fn position(&self) -> Option<Vec2> {
         self.position
     }
-    pub fn relative(&mut self, delta: Vec2) {
-        if self.captured && delta.is_finite() {
-            self.position = self.position.map(|point| point + delta);
-            self.clamp();
-        }
-    }
     pub fn absolute(&mut self, position: Option<Vec2>) {
         if !self.captured {
             self.position = position;
+        }
+    }
+    pub fn observe(&mut self, point: Vec2) {
+        if self.captured && point.is_finite() {
+            self.position = Some(point);
+            self.clamp();
         }
     }
     fn clamp(&mut self) {
@@ -55,9 +55,9 @@ mod tests {
         let mut pointer = GamePointer::default();
         pointer.sync(true, Vec2::new(1280.0, 800.0), None);
         assert_eq!(pointer.position(), Some(Vec2::new(640.0, 400.0)));
-        pointer.relative(Vec2::new(10000.0, -10000.0));
+        pointer.observe(Vec2::new(10000.0, -10000.0));
         assert_eq!(pointer.position(), Some(Vec2::new(1279.0, 0.0)));
-        pointer.relative(Vec2::new(-2.0, 2.0));
+        pointer.observe(Vec2::new(1277.0, 2.0));
         assert_eq!(pointer.position(), Some(Vec2::new(1277.0, 2.0)));
     }
 
@@ -73,7 +73,7 @@ mod tests {
     fn resize_clamps_and_recapture_recenters() {
         let mut pointer = GamePointer::default();
         pointer.sync(true, Vec2::splat(1000.0), None);
-        pointer.relative(Vec2::splat(1000.0));
+        pointer.observe(Vec2::splat(1500.0));
         pointer.sync(true, Vec2::splat(600.0), None);
         assert_eq!(pointer.position(), Some(Vec2::splat(599.0)));
         pointer.sync(false, Vec2::splat(600.0), Some(Vec2::ONE));

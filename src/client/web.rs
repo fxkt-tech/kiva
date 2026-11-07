@@ -113,47 +113,71 @@ pub(super) fn click_ui(point: Vec2) {
     #[cfg(not(target_arch = "wasm32"))]
     let _ = point;
 }
-pub(super) fn draw_pointer(point: Option<Vec2>) {
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen::prelude::wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = ["window", "kivaPointer"], js_name = sync)]
+    fn browser_pointer_sync(active: bool);
+    #[wasm_bindgen(js_namespace = ["window", "kivaPointer"], js_name = position)]
+    fn browser_pointer_position() -> Vec<f32>;
+    #[wasm_bindgen(js_namespace = ["window", "kivaPointer"], js_name = takePress)]
+    fn browser_pointer_press(button: u16) -> Vec<f32>;
+    #[wasm_bindgen(js_namespace = ["window", "kivaPointer"], js_name = clearPresses)]
+    fn browser_pointer_clear();
+}
+
+#[cfg(target_arch = "wasm32")]
+fn pointer_point(values: Vec<f32>) -> Option<Vec2> {
+    let [x, y] = values.as_slice() else {
+        return None;
+    };
+    let point = Vec2::new(*x, *y);
+    point.is_finite().then_some(point)
+}
+
+pub(super) fn sync_game_pointer(active: bool) {
     #[cfg(target_arch = "wasm32")]
-    if let Some(document) = web_sys::window().and_then(|window| window.document())
-        && let Some(cursor) = document.get_element_by_id("game-cursor")
+    browser_pointer_sync(active);
+    #[cfg(not(target_arch = "wasm32"))]
+    let _ = active;
+}
+
+pub(super) fn game_pointer_position() -> Option<Vec2> {
+    #[cfg(target_arch = "wasm32")]
     {
-        if let Some(point) = point.filter(|_| pointer_captured() == Some(true)) {
-            let size = document
-                .document_element()
-                .map(|root| Vec2::new(root.client_width() as f32, root.client_height() as f32))
-                .unwrap_or(Vec2::ZERO);
-            let flip_x = if point.x > size.x - 24.0 { -1 } else { 1 };
-            let flip_y = if point.y > size.y - 24.0 { -1 } else { 1 };
-            let _ = cursor.set_attribute(
-                "style",
-                &format!(
-                    "transform:translate3d({}px,{}px,0);--flip-x:{flip_x};--flip-y:{flip_y}",
-                    point.x, point.y
-                ),
-            );
-            let _ = cursor.remove_attribute("hidden");
-            let hovered = document
-                .element_from_point(point.x, point.y)
-                .and_then(|element| element.closest("[data-ui] button").ok().flatten());
-            if let Ok(Some(previous)) = document.query_selector("[data-virtual-hover]")
-                && hovered.as_ref() != Some(&previous)
-            {
-                let _ = previous.remove_attribute("data-virtual-hover");
-            }
-            if let Some(button) = hovered {
-                let _ = button.set_attribute("data-virtual-hover", "");
-            }
-        } else {
-            let _ = cursor.set_attribute("hidden", "");
-            if let Ok(Some(previous)) = document.query_selector("[data-virtual-hover]") {
-                let _ = previous.remove_attribute("data-virtual-hover");
-            }
-        }
+        pointer_point(browser_pointer_position())
     }
     #[cfg(not(target_arch = "wasm32"))]
-    let _ = point;
+    {
+        None
+    }
 }
+
+pub(super) fn take_pointer_press(button: MouseButton) -> Option<Vec2> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let button = match button {
+            MouseButton::Left => 0,
+            MouseButton::Middle => 1,
+            MouseButton::Right => 2,
+            MouseButton::Back => 3,
+            MouseButton::Forward => 4,
+            MouseButton::Other(value) => value,
+        };
+        pointer_point(browser_pointer_press(button))
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let _ = button;
+        None
+    }
+}
+
+pub(super) fn clear_pointer_presses() {
+    #[cfg(target_arch = "wasm32")]
+    browser_pointer_clear();
+}
+
 pub(super) fn paused() -> Option<bool> {
     #[cfg(target_arch = "wasm32")]
     {

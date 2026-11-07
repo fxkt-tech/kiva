@@ -12,13 +12,14 @@
 
 ## 鼠标与坐标
 
-- `src/client/pointer.rs` 的 `GamePointer` 拥有被限制在画布内的 CSS 像素坐标。
+- `web/pointer.js`拥有画布内的实时CSS坐标和按下快照，`GamePointer`只镜像输入帧坐标；详见[指针契约](pointer.md)。
 - 进入/恢复游戏必须成功捕获鼠标；Esc、失焦或捕获丢失释放并暂停，失败则保持暂停。
 - 实际锁定状态可领先捕获事件；等待本次pointerlockchange确认后才启用游戏光标与输入，详见[会话契约](character-selection.md)。
 - 捕获中使用相对鼠标位移，忽略锁定系统光标的绝对坐标。
 - viewport 逻辑坐标与 CSS 像素通过 `web.rs` 双向转换，高 DPI 下不能直接混用。
 - HUD 使用 `[data-ui]` 隔离输入。游戏光标通过真实 DOM 按钮激活技能选择，不能穿透为地面指令。
 - `controls.rs` 顺序消费 `WindowEvent`，保留同帧按键与鼠标事件先后。
+- Web移动直接更新DOM，Rust不再用MouseMotion除DPR后二次积分；鼠标按下消费事件位置，帧末才读取最新位置。
 
 ## 内容与回归
 

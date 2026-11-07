@@ -11,7 +11,7 @@
 - `actions.rs` 的技能提交点：消耗、冷却、效果统一提交。
 - `NavigationMap`：移动、冲刺和弹丸共用的静态地图几何。
 - `combat.rs`：统一伤害、死亡、重生，避免在每种效果内独立扣血。
-- `GamePointer` 和 `web.rs`：统一游戏光标及坐标转换。
+- `web/pointer.js`拥有Web实时坐标，`GamePointer`镜像输入采样，`web.rs`统一桥接和相机坐标转换。
 - `browser-support.cjs`：真实鼠标捕获下的点击、移动、世界投影和临时服务器。
 
 ## 接口检查

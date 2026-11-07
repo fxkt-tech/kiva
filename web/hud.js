@@ -148,7 +148,6 @@
     if (!captured) {
       clearCaptureAttempt(captureAttempt);
       delete root.dataset.skill;
-      $("game-cursor").hidden = true;
       setPaused(true);
       syncMenu();
       return;
