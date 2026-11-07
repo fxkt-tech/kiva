@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 5
+- **Total Sessions**: 6
 - **Last Active**: 2026-11-07
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~183 | Active |
+| `journal-1.md` | ~217 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 6 | 2026-11-07 | 六格装备、被动与统一主动施法 | `e987c23` | `main` |
 | 5 | 2026-11-07 | 角色选择与整场试炼重开 | `3b844ef` | `main` |
 | 4 | 2026-11-07 | 技能组合与状态效果系统 | `ef5fac6` | `main` |
 | 3 | 2026-11-07 | 提交基础属性与普攻后摇实现 | `0f58fba`, `f2176b0` | `main` |

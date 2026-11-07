@@ -181,3 +181,37 @@
 ### Next Steps
 
 - 按用户授权将功能、归档和本次日志一起推送到origin/main。
+
+
+## Session 6: 六格装备、被动与统一主动施法
+<!-- trellis-session: v=2 fp=ab7970d183a78acd -->
+
+**Date**: 2026-11-07
+**Task**: 六格装备、被动与统一主动施法
+**Branch**: `main`
+
+### Summary
+
+完成装备系统方案、实现及验收；用户授权提交与推送，任务已归档。
+
+### Main Changes
+
+- 六格实例与目录分离，持久来源属性、原子装卸、独立主动冷却及死亡/暂停/重开生命周期。
+- 装备主动复用角色技能begin/commit；普攻被动提交快照、正损血门控与有界触发。
+- 九件示例、P装配面板、1–6与鼠标主动；同步架构、两层规范、TODO及完整验收记录。
+- 短击飞浏览器回归按原生显示帧归一测试时钟，保留真实输入及全部断言，暂停等待新快照证明冻结。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e987c23` | feat: add six-slot equipment and shared ability casting |
+
+### Testing
+
+- [OK] make check通过：158项Rust测试，原138项保留；WASM Clippy通过。
+- [OK] 九个浏览器入口通过，装备额外有窗口三尺寸验收；JSON/JSONL、JavaScript语法、链接及diff检查通过。
+
+### Status
+
+[OK] **Completed**
