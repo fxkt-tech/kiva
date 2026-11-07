@@ -3,7 +3,7 @@
   "name": "base-stats",
   "title": "基础属性与统一战斗计算",
   "description": "实现七项基础/最终属性、来源修正、统一伤害和整数普攻时序，并在卡片左侧展示最终属性。",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": "fullstack",
   "scope": "simulation/client",
   "package": null,
@@ -11,11 +11,11 @@
   "creator": "asuka",
   "assignee": "asuka",
   "createdAt": "2026-11-07",
-  "completedAt": null,
+  "completedAt": "2026-11-07",
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "f2176b0fcd46ce38a09e5d68b4dbef0208b5cb82",
   "pr_url": null,
   "subtasks": [],
   "children": [],
@@ -39,7 +39,7 @@
     "README.md",
     ".trellis/spec/"
   ],
-  "notes": "Feature and backswing revision previously verified with65 Rust tests. Latest user-authorized cosmetic edit removes units and narrows HUD184px→144px; explicitly no tests/builds run for this edit. Worktree uncommitted; user-managed services untouched.",
+  "notes": "User authorized commit and push. Feature committed; final unit removal and144px cosmetic width intentionally not retested per user request. Earlier65 Rust tests and relevant browser checks passed. User-managed services untouched.",
   "meta": {
     "plan_review": "approved",
     "source_requirement": "docs/TODO.md:1",
@@ -52,11 +52,14 @@
       "context_manifests"
     ],
     "approval": "User: 开始实现 (2026-11-07), after final planning summary.",
-    "implementation": "implemented",
+    "implementation": "complete",
     "quality_checks": "latest_cosmetic_change_not_tested_per_user",
-    "validation_record": ".trellis/tasks/11-07-base-stats/validation.md",
-    "pending_step": "3.4: commit when user requests",
+    "validation_record": ".trellis/tasks/archive/2026-11/11-07-base-stats/validation.md",
     "followup": "Attribute units removed; panel144px; no tests or builds per explicit user request.",
-    "rust_tests": 65
+    "rust_tests": 65,
+    "work_commits": [
+      "0f58fba",
+      "f2176b0"
+    ]
   }
 }

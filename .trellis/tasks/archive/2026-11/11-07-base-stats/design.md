@@ -1,6 +1,6 @@
 # 基础属性系统设计提案
 
-本文已由用户于 2026-11-07 在方案总结后批准，实现与验收已完成，工作区尚未提交。
+本文已由用户于 2026-11-07 批准，首轮和追加实现均已完成并提交，任务已归档。
 需求与验收以 [prd.md](prd.md) 为准；原始源码依据见 [research/current-system.md](research/current-system.md)。
 实际验证结果记录于 [validation.md](validation.md)。
 

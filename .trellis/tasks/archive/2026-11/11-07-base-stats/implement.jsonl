@@ -4,6 +4,6 @@
 {"file": ".trellis/spec/client/index.md", "reason": "Client/HUD migration and browser verification requirements."}
 {"file": ".trellis/spec/client/browser.md", "reason": "Pointer Lock, CSS coordinate conversion, read-only HUD and health-bar update contract."}
 {"file": "docs/architecture.md", "reason": "Existing authoritative architecture and gameplay rules to preserve or explicitly migrate."}
-{"file": ".trellis/tasks/11-07-base-stats/research/current-system.md", "reason": "Baseline source anchors and complete list of affected rule and presentation consumers."}
+{"file": ".trellis/tasks/archive/2026-11/11-07-base-stats/research/current-system.md", "reason": "Baseline source anchors and complete list of affected rule and presentation consumers."}
 {"file": ".trellis/spec/simulation/attributes-and-damage.md", "reason": "Implemented attribute queue, damage snapshots, resistance and attack cadence contracts; errors and behavioral assertions."}
 {"file": ".trellis/spec/client/attributes-hud.md", "reason": "Implemented seven-field HUD schema, selectors, numeric formatting and input/layout invariants."}
