@@ -249,3 +249,37 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 8: 恢复 act 骨骼角色与动作表现
+<!-- trellis-session: v=2 fp=6b0f2452fb798c29 -->
+
+**Date**: 2026-11-07
+**Task**: 恢复 act 骨骼角色与动作表现
+**Branch**: `main`
+
+### Summary
+
+复用 act 的 CC0 骨骼资源恢复玩家/NPC 火柴人样式，以只读模拟状态驱动动作，完成验收并归档。
+
+### Main Changes
+
+- 新增独立 character 模块，分别负责骨骼采样、分段模型与剑 socket、姿态和模拟动作适配，替换胶囊模型。
+- 待机、真实移动、普攻前后摇、施法引导、瞬发及装备冲刺、控制动作接入现有模拟；暂停、重生和整场重开保留统一生命周期。
+- 修复前摇到后摇及后摇动作片段之间的两处姿态接缝，新增完整骨骼和剑 socket 连续性断言。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8491980` | feat: restore skeletal characters and animations |
+
+### Testing
+
+- [OK] make check 173 项 Rust 测试（含 12 项骨骼专项）、WASM Clippy、Trunk 构建、资产一致性及独立代码/规范复核通过。
+- [OK] 有窗口 smoke、技能三尺寸/DPR场景及截图通过；默认无头血条测量 91/91、48/48 帧更新，重新选角与整场重开三尺寸通过。
+- 采样限制：有窗口软件渲染血条采样新旧构建均未凑足20帧，实际样本均100%更新；保留失败记录，未修改测试脚本、时钟或断言。
+
+### Status
+
+[OK] **Completed**
