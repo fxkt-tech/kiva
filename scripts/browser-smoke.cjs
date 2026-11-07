@@ -72,28 +72,35 @@ async function main() {
     await page.waitForFunction(() => window.__kivaState.aim === null);
     assert.equal((await state()).abilities[0].cooldown, 0);
     await page.keyboard.press("q");
-    await clickWorld(page, [3, -2]);
+    await clickWorld(page, [3, -2, 1.1]);
     await page.waitForFunction(() => window.__kivaState.units.some((u) => u.name === "训练哨兵" && u.health === 325));
     await page.keyboard.press("w");
     await clickWorld(page, [3, -2]);
     await page.waitForFunction(() => window.__kivaState.units.some((u) => u.name === "训练哨兵" && u.health === 205));
-    console.log("PASS aim cancellation, projectile and delayed area damage");
+    console.log("PASS aim cancellation, targeted damage and delayed area damage");
 
     await page.keyboard.press("e");
     await clickWorld(page, [-3, 6]);
     await waitPosition([-3, 6]);
     assert((await state()).abilities[2].cooldown > 0);
     await page.keyboard.press("r");
+    await page.waitForFunction(() => window.__kivaState.aim === 3);
+    await clickWorld(page, [3, -2]);
     await page.waitForFunction(() => {
       const s = window.__kivaState;
-      return s.units.find((u) => u.id === s.player_id).action === "Channeling";
+      return s.abilities[3].cooldown > 0 && s.aim === null;
+    });
+    await page.waitForFunction(() => {
+      const target = window.__kivaState.units.find((u) => u.name === "训练哨兵");
+      return Math.hypot(target.position[0] - 3, target.position[1] + 2) > 3.8;
     });
     await clickWorld(page, [0, 6], "right");
     await waitPosition([0, 6]);
     assert((await state()).abilities[3].cooldown > 0);
-    console.log("PASS dash, channel interruption and persistent cooldowns");
+    console.log("PASS dash, directional projectile displacement and persistent cooldowns");
 
-    await clickWorld(page, [3, -2, 1.3], "right");
+    const displacedTarget = (await state()).units.find((u) => u.name === "训练哨兵");
+    await clickWorld(page, [...displacedTarget.position, 1.3], "right");
     await page.waitForFunction(() => window.__kivaState.units.some((u) => u.name === "训练哨兵" && u.health < 205));
     await page.waitForFunction(() => {
       const s = window.__kivaState;

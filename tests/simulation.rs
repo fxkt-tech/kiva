@@ -18,46 +18,55 @@ impl Arena {
         app.add_plugins((MinimalPlugins, SimulationPlugin));
         app.insert_resource(NavigationMap::new(20.0, 1.0, obstacles));
         let mut catalog = app.world_mut().resource_mut::<AbilityCatalog>();
-        for (id, name, targeting, range, effect) in [
+        for (id, name, targeting, range, execution) in [
             (
                 BOLT,
                 "Bolt",
                 Targeting::Direction,
                 12.0,
-                AbilityEffect::Projectile {
-                    speed: 30.0,
-                    radius: 0.2,
-                    damage: DamageSpec::magical(80.0),
-                },
+                AbilityExecution::Impact(ImpactDefinition {
+                    delivery: Delivery::Projectile {
+                        speed: 30.0,
+                        radius: 0.2,
+                    },
+                    effects: vec![Effect::Damage(DamageSpec::magical(80.0))],
+                }),
             ),
             (
                 NOVA,
                 "Nova",
                 Targeting::Point,
                 10.0,
-                AbilityEffect::Area {
-                    radius: 2.0,
-                    delay: 0.5,
-                    damage: DamageSpec::magical(100.0),
-                },
+                AbilityExecution::Impact(ImpactDefinition {
+                    delivery: Delivery::Area {
+                        radius: 2.0,
+                        delay: 0.5,
+                    },
+                    effects: vec![Effect::Damage(DamageSpec::magical(100.0))],
+                }),
             ),
             (
                 DASH,
                 "Dash",
                 Targeting::Point,
                 8.0,
-                AbilityEffect::Dash { speed: 40.0 },
+                AbilityExecution::Dash { speed: 40.0 },
             ),
             (
                 CHANNEL,
                 "Channel",
                 Targeting::SelfCast,
                 0.0,
-                AbilityEffect::Channel {
+                AbilityExecution::Channel {
                     duration: 2.0,
                     interval: 0.5,
-                    radius: 4.0,
-                    damage: DamageSpec::magical(20.0),
+                    pulse: ImpactDefinition {
+                        delivery: Delivery::Area {
+                            radius: 4.0,
+                            delay: 0.0,
+                        },
+                        effects: vec![Effect::Damage(DamageSpec::magical(20.0))],
+                    },
                 },
             ),
         ] {
@@ -72,7 +81,7 @@ impl Arena {
                         recovery: 0.1,
                         cooldown: 3.0,
                         mana_cost: 40.0,
-                        effect,
+                        execution,
                     },
                 )
                 .unwrap();
@@ -165,7 +174,7 @@ impl Arena {
         &mut self,
         attributes: BaseAttributes,
         targeting: Targeting,
-        effect: AbilityEffect,
+        execution: AbilityExecution,
     ) -> Entity {
         let id = AbilityId(100);
         self.app
@@ -181,7 +190,7 @@ impl Arena {
                     recovery: 0.1,
                     cooldown: 3.0,
                     mana_cost: 40.0,
-                    effect,
+                    execution,
                 },
             )
             .unwrap();
@@ -711,11 +720,13 @@ fn high_speed_projectile_sweeps_the_entire_tick() {
         .get(BOLT)
         .unwrap()
         .clone();
-    definition.effect = AbilityEffect::Projectile {
-        speed: 2000.0,
-        radius: 0.1,
-        damage: DamageSpec::magical(90.0),
-    };
+    definition.execution = AbilityExecution::Impact(ImpactDefinition {
+        delivery: Delivery::Projectile {
+            speed: 2000.0,
+            radius: 0.1,
+        },
+        effects: vec![Effect::Damage(DamageSpec::magical(90.0))],
+    });
     let fast = AbilityId(6);
     a.app
         .world_mut()
@@ -750,11 +761,16 @@ fn fractional_channel_duration_does_not_add_a_final_pulse() {
         .get(CHANNEL)
         .unwrap()
         .clone();
-    definition.effect = AbilityEffect::Channel {
+    definition.execution = AbilityExecution::Channel {
         duration: 0.55,
         interval: 0.17,
-        radius: 4.0,
-        damage: DamageSpec::magical(20.0),
+        pulse: ImpactDefinition {
+            delivery: Delivery::Area {
+                radius: 4.0,
+                delay: 0.0,
+            },
+            effects: vec![Effect::Damage(DamageSpec::magical(20.0))],
+        },
     };
     let fractional = AbilityId(7);
     a.app
@@ -1089,16 +1105,18 @@ fn invalid_base_attributes_and_damage_definitions_are_rejected() {
             .get(BOLT)
             .unwrap()
             .clone();
-        definition.effect = AbilityEffect::Projectile {
-            speed: 30.0,
-            radius: 0.2,
-            damage: DamageSpec {
+        definition.execution = AbilityExecution::Impact(ImpactDefinition {
+            delivery: Delivery::Projectile {
+                speed: 30.0,
+                radius: 0.2,
+            },
+            effects: vec![Effect::Damage(DamageSpec {
                 kind: DamageType::Magical,
                 base: 75.0,
                 ad_ratio: 0.0,
                 ap_ratio: value,
-            },
-        };
+            })],
+        });
         assert!(
             a.app
                 .world_mut()
@@ -1124,16 +1142,18 @@ fn physical_magical_true_and_negative_resistance_use_one_damage_contract() {
         let caster = a.caster(
             BaseAttributes::default(),
             Targeting::Point,
-            AbilityEffect::Area {
-                radius: 2.0,
-                delay: 0.0,
-                damage: DamageSpec {
+            AbilityExecution::Impact(ImpactDefinition {
+                delivery: Delivery::Area {
+                    radius: 2.0,
+                    delay: 0.0,
+                },
+                effects: vec![Effect::Damage(DamageSpec {
                     kind,
                     base: 100.0,
                     ad_ratio: 0.0,
                     ap_ratio: 0.0,
-                },
-            },
+                })],
+            }),
         );
         let target = a.spawn(
             Team::Enemy,
@@ -1168,16 +1188,18 @@ fn spell_power_and_attack_damage_coefficients_scale_at_commit() {
             ..default()
         },
         Targeting::Direction,
-        AbilityEffect::Projectile {
-            speed: 30.0,
-            radius: 0.2,
-            damage: DamageSpec {
+        AbilityExecution::Impact(ImpactDefinition {
+            delivery: Delivery::Projectile {
+                speed: 30.0,
+                radius: 0.2,
+            },
+            effects: vec![Effect::Damage(DamageSpec {
                 kind: DamageType::Magical,
                 base: 75.0,
                 ad_ratio: 0.0,
                 ap_ratio: 0.6,
-            },
-        },
+            })],
+        }),
     );
     let target = a.unit(Team::Enemy, Vec2::new(3.0, 0.0));
     a.cast(caster, 0, AbilityTarget::Direction(Vec2::X));
@@ -1210,16 +1232,18 @@ fn committed_area_snapshot_survives_source_removal_and_reads_impact_defense() {
             ..default()
         },
         Targeting::Point,
-        AbilityEffect::Area {
-            radius: 2.0,
-            delay: 0.5,
-            damage: DamageSpec {
+        AbilityExecution::Impact(ImpactDefinition {
+            delivery: Delivery::Area {
+                radius: 2.0,
+                delay: 0.5,
+            },
+            effects: vec![Effect::Damage(DamageSpec {
                 kind: DamageType::Magical,
                 base: 75.0,
                 ad_ratio: 0.0,
                 ap_ratio: 0.6,
-            },
-        },
+            })],
+        }),
     );
     let target = a.unit(Team::Enemy, Vec2::new(4.0, 0.0));
     a.cast(caster, 0, AbilityTarget::Point(Vec2::new(4.0, 0.0)));
@@ -1251,16 +1275,18 @@ fn projectile_keeps_committed_damage_after_source_attributes_change_and_despawn(
             ..default()
         },
         Targeting::Direction,
-        AbilityEffect::Projectile {
-            speed: 4.0,
-            radius: 0.2,
-            damage: DamageSpec {
+        AbilityExecution::Impact(ImpactDefinition {
+            delivery: Delivery::Projectile {
+                speed: 4.0,
+                radius: 0.2,
+            },
+            effects: vec![Effect::Damage(DamageSpec {
                 kind: DamageType::Magical,
                 base: 75.0,
                 ad_ratio: 0.0,
                 ap_ratio: 0.6,
-            },
-        },
+            })],
+        }),
     );
     let target = a.unit(Team::Enemy, Vec2::new(5.0, 0.0));
     a.cast(caster, 0, AbilityTarget::Direction(Vec2::X));
@@ -1292,15 +1318,20 @@ fn channel_reuses_committed_damage_and_reads_defenses_for_each_pulse() {
             ..default()
         },
         Targeting::SelfCast,
-        AbilityEffect::Channel {
+        AbilityExecution::Channel {
             duration: 2.0,
             interval: 0.5,
-            radius: 4.0,
-            damage: DamageSpec {
-                kind: DamageType::Magical,
-                base: 20.0,
-                ad_ratio: 0.0,
-                ap_ratio: 0.2,
+            pulse: ImpactDefinition {
+                delivery: Delivery::Area {
+                    radius: 4.0,
+                    delay: 0.0,
+                },
+                effects: vec![Effect::Damage(DamageSpec {
+                    kind: DamageType::Magical,
+                    base: 20.0,
+                    ad_ratio: 0.0,
+                    ap_ratio: 0.2,
+                })],
             },
         },
     );
@@ -1345,16 +1376,18 @@ fn overflowing_damage_is_rejected_before_committing_resources() {
             ..default()
         },
         Targeting::Point,
-        AbilityEffect::Area {
-            radius: 2.0,
-            delay: 0.0,
-            damage: DamageSpec {
+        AbilityExecution::Impact(ImpactDefinition {
+            delivery: Delivery::Area {
+                radius: 2.0,
+                delay: 0.0,
+            },
+            effects: vec![Effect::Damage(DamageSpec {
                 kind: DamageType::Magical,
                 base: 75.0,
                 ad_ratio: 0.0,
                 ap_ratio: f32::MAX,
-            },
-        },
+            })],
+        }),
     );
     let target = a.unit(Team::Enemy, Vec2::new(3.0, 0.0));
     a.cast(caster, 0, AbilityTarget::Point(Vec2::new(3.0, 0.0)));
@@ -1378,11 +1411,13 @@ fn zero_and_overkill_damage_report_actual_health_loss() {
         let caster = a.caster(
             BaseAttributes::default(),
             Targeting::Point,
-            AbilityEffect::Area {
-                radius: 2.0,
-                delay: 0.0,
-                damage: DamageSpec::physical(damage),
-            },
+            AbilityExecution::Impact(ImpactDefinition {
+                delivery: Delivery::Area {
+                    radius: 2.0,
+                    delay: 0.0,
+                },
+                effects: vec![Effect::Damage(DamageSpec::physical(damage))],
+            }),
         );
         let target = a.spawn(
             Team::Enemy,
@@ -1791,7 +1826,7 @@ fn movement_stop_retarget_and_spell_cancel_backswing_without_resetting_cooldown(
                 Some(UnitOrder::Idle)
             )),
             "retarget" => assert!(
-                matches!(a.app.world().get::<UnitOrder>(p), Some(UnitOrder::AttackTarget(id)) if *id == other)
+                matches!(a.app.world().get::<UnitOrder>(p), Some(UnitOrder::AttackTarget(id)) if id.entity() == other)
             ),
             _ => {}
         }
@@ -1839,7 +1874,7 @@ fn repeated_target_and_invalid_requests_preserve_the_advancing_backswing() {
             matches!(a.app.world().get::<UnitAction>(p), Some(UnitAction::AttackBackswing { remaining, duration: original }) if *remaining == duration - index as u32 - 1 && *original == duration)
         );
         assert!(
-            matches!(a.app.world().get::<UnitOrder>(p), Some(UnitOrder::AttackTarget(id)) if *id == target)
+            matches!(a.app.world().get::<UnitOrder>(p), Some(UnitOrder::AttackTarget(id)) if id.entity() == target)
         );
     }
     let rejections = a

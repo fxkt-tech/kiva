@@ -50,7 +50,7 @@ async function main() {
     });
     await clickUi(page, '[data-slot="0"]');
     await page.waitForFunction(() => window.__kivaState.aim === 0);
-    await clickWorld(page, [3, -2]);
+    await clickWorld(page, [3, -2, 1.1]);
     await page.waitForFunction(() => window.__kivaState.units.some((unit) => unit.name === "训练哨兵" && unit.health === 325));
     console.log("PASS Escape/re-entry, click-to-move and skill buttons with the captured cursor");
 

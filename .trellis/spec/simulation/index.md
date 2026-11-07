@@ -9,6 +9,7 @@
 3. 为变动明确唯一写入者、指令拒绝行为、提交时机、死亡/重生行为。
 4. 查阅 `tests/simulation.rs` 的 `Arena`，优先通过公开接口描述可观察结果。
 5. 涉及属性、伤害和攻速时阅读 [attributes-and-damage.md](attributes-and-damage.md)。
+6. 涉及技能、控制、生命身份或强制运动时阅读 [abilities-and-statuses.md](abilities-and-statuses.md)。
 
 ## Quality Check
 

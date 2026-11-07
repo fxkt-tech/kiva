@@ -1,6 +1,5 @@
 //! Damage expressions are snapshotted at commit; defenses are read at impact.
 use super::{AbilityId, EffectiveAttributes};
-use bevy::prelude::Entity;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DamageType {
@@ -91,10 +90,4 @@ impl DamageSnapshot {
         };
         (f64::from(health) - f64::from(self.raw) * multiplier).max(0.0) as f32
     }
-}
-#[derive(Clone, Copy)]
-pub(super) struct DamageRequest {
-    pub source: Entity,
-    pub target: Entity,
-    pub damage: DamageSnapshot,
 }

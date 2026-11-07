@@ -30,21 +30,22 @@
         <dt>左键</dt><dd>选择 / 确认技能目标</dd>
         <dt>A → 左键</dt><dd>攻击移动</dd>
         <dt>S</dt><dd>停止当前指令</dd>
-        <dt>Q / W / E</dt><dd>选择技能，再左键释放</dd>
-        <dt>R</dt><dd>持续引导；移动可中断</dd>
+        <dt>Q / W / E / R</dt><dd>按装配技能选择单位、地点或方向；自身技能直接释放</dd>
         <dt>Y / 空格</dt><dd>锁定镜头 / 按住跟随</dd>
         <dt>边缘 / 方向键</dt><dd>平移镜头</dd>
         <dt>滚轮</dt><dd>缩放</dd>
         <dt>Esc</dt><dd>释放鼠标并暂停</dd>
       </dl>
+      <div id="help-abilities" class="help-abilities" aria-label="当前装配技能"></div>
       <p>金色圆环表示选中，青色表示可施法范围。障碍物会阻挡移动、冲刺和弹丸。</p>
     </aside>
     <div id="unit-labels" aria-hidden="true"></div>
     <div id="notice" role="status" aria-live="polite"></div>
     <div id="aim-hint" hidden><span id="aim-text"></span><small>左键确认 · 右键取消并移动</small></div>
+    <aside id="ability-detail" class="ability-detail panel" hidden aria-label="技能说明"><strong></strong><span></span><p></p><small></small></aside>
     <aside id="target-panel" class="target panel" data-ui hidden>
       <span class="target-dot"></span>
-      <div><small>选中目标</small><strong id="target-name"></strong><span id="target-health"></span></div>
+      <div><small>选中目标</small><strong id="target-name"></strong><span id="target-health"></span><div id="target-statuses" class="status-badges" aria-label="目标状态" hidden></div></div>
     </aside>
     <footer>
       <div class="camera-hint"><span id="camera-mode">自由镜头</span><span><kbd>Y</kbd> 切换 · <kbd>Space</kbd> 跟随</span></div>
@@ -60,15 +61,16 @@
         </dl>
         <div class="portrait"><span>◇</span><small>01</small></div>
         <div class="hero-info">
-          <div class="hero-title"><strong>旅者</strong><span id="hero-action">准备就绪</span></div>
+          <div class="hero-title"><strong id="hero-name">旅者</strong><span id="hero-action">准备就绪</span></div>
           <div class="meter health"><i id="health-fill"></i><span id="health-text">600 / 600</span></div>
           <div class="meter energy"><i id="mana-fill"></i><span id="mana-text">300 / 300</span></div>
         </div>
+        <div id="hero-statuses" class="status-badges hero-statuses" aria-label="角色状态" hidden></div>
         <div id="abilities" class="abilities">
-          <button class="ability" data-slot="0" aria-label="Q 奥术飞矢"><kbd>Q</kbd><svg viewBox="0 0 40 40"><path d="m24 5-14 18h10l-4 12 15-20H20z"/></svg><span class="cooldown"></span><small>奥术飞矢</small></button>
-          <button class="ability" data-slot="1" aria-label="W 震荡领域"><kbd>W</kbd><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="5"/><path d="M20 3v7m0 20v7M3 20h7m20 0h7"/></svg><span class="cooldown"></span><small>震荡领域</small></button>
-          <button class="ability" data-slot="2" aria-label="E 流风步"><kbd>E</kbd><svg viewBox="0 0 40 40"><path d="M5 14h20m-16 7h24M4 28h20m-2-20 12 13-12 13"/></svg><span class="cooldown"></span><small>流风步</small></button>
-          <button class="ability" data-slot="3" aria-label="R 共鸣"><kbd>R</kbd><svg viewBox="0 0 40 40"><path d="m20 4 4 11 12 5-12 4-4 12-11-4 11-5z"/><circle cx="20" cy="20" r="5"/></svg><span class="cooldown"></span><small>共鸣</small></button>
+          <button class="ability" data-slot="0" aria-label="Q 技能槽位" disabled><kbd>Q</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
+          <button class="ability" data-slot="1" aria-label="W 技能槽位" disabled><kbd>W</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
+          <button class="ability" data-slot="2" aria-label="E 技能槽位" disabled><kbd>E</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
+          <button class="ability" data-slot="3" aria-label="R 技能槽位" disabled><kbd>R</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
         </div>
       </section>
       <div class="map-wrap panel" data-ui>

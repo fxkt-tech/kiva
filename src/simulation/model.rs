@@ -1,7 +1,7 @@
 use super::{
-    AttributeRejection, BaseAttributes, DamageOrigin, DamageSnapshot, DamageType,
-    EffectiveAttributes, ModifierSourceId, abilities::AbilityId, attributes::AttributeState,
-    damage::DamageRequest,
+    AttributeRejection, BaseAttributes, DamageOrigin, DamageType, EffectiveAttributes,
+    ModifierSourceId, StatusKind, abilities::AbilityId, attributes::AttributeState,
+    effects::ImpactSnapshot,
 };
 use bevy::prelude::*;
 use std::collections::VecDeque;
@@ -80,11 +80,38 @@ impl Unit {
 #[derive(Component, Debug)]
 pub struct UnitState {
     pub(super) health: f32,
+    pub(super) life_epoch: u64,
     pub(super) mana: f32,
     pub(super) attack_cooldown: u32,
     pub(super) respawn_remaining: Option<f32>,
 }
+/// Identity of one life; Entity alone does not distinguish respawns.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct UnitLifeRef {
+    entity: Entity,
+    epoch: u64,
+}
+impl UnitLifeRef {
+    pub fn entity(self) -> Entity {
+        self.entity
+    }
+    pub fn epoch(self) -> u64 {
+        self.epoch
+    }
+    pub(super) fn is_current(self, world: &World) -> bool {
+        world
+            .get::<UnitState>(self.entity)
+            .is_some_and(|s| s.alive() && s.life_epoch == self.epoch)
+    }
+}
 impl UnitState {
+    pub fn life_ref(&self, entity: Entity) -> UnitLifeRef {
+        UnitLifeRef {
+            entity,
+            epoch: self.life_epoch,
+        }
+    }
+
     pub fn health(&self) -> f32 {
         self.health
     }
@@ -161,10 +188,10 @@ pub enum UnitOrder {
     #[default]
     Idle,
     MoveTo(Vec2),
-    AttackTarget(Entity),
+    AttackTarget(UnitLifeRef),
     AttackMove {
         destination: Vec2,
-        target: Option<Entity>,
+        target: Option<UnitLifeRef>,
     },
 }
 #[derive(Component, Clone, Debug, Default)]
@@ -172,7 +199,7 @@ pub enum UnitAction {
     #[default]
     Ready,
     AttackWindup {
-        target: Entity,
+        target: UnitLifeRef,
         remaining: u32,
         interval: u32,
     },
@@ -186,14 +213,14 @@ pub enum UnitAction {
         slot: usize,
         ability: AbilityId,
         target: AbilityTarget,
+        target_life: Option<UnitLifeRef>,
         remaining: f32,
     },
     Channeling {
         remaining: f32,
         next_pulse: f32,
         interval: f32,
-        radius: f32,
-        damage: DamageSnapshot,
+        pulse: ImpactSnapshot,
         recovery: f32,
     },
     Recovery {
@@ -218,6 +245,14 @@ pub(super) struct Movement {
     pub goal: Option<Vec2>,
     pub repath_remaining: f32,
     pub dash: Option<(Vec2, f32)>,
+    pub forced: Option<ForcedMotion>,
+    pub motion_sequence: u64,
+}
+pub(super) struct ForcedMotion {
+    pub id: u64,
+    pub target: UnitLifeRef,
+    pub destination: Vec2,
+    pub speed: f32,
 }
 #[derive(Clone, Debug, PartialEq)]
 pub enum Rejection {
@@ -231,9 +266,22 @@ pub enum Rejection {
     NoPath,
     Busy,
     InvalidDamage,
+    Controlled,
 }
 #[derive(Message, Clone, Debug)]
 pub enum SimulationEvent {
+    StatusApplied {
+        unit: Entity,
+        instance: u64,
+        kind: StatusKind,
+        source: UnitLifeRef,
+    },
+    StatusExpired {
+        unit: Entity,
+        instance: u64,
+        kind: StatusKind,
+        source: UnitLifeRef,
+    },
     AttributeChangeRejected {
         unit: Entity,
         source: ModifierSourceId,
@@ -272,23 +320,22 @@ pub enum SimulationEvent {
 }
 #[derive(Component, Debug)]
 pub struct Projectile {
-    pub(super) source: Entity,
-    pub(super) team: Team,
+    pub(super) payload: ImpactSnapshot,
+    pub(super) carrier: u64,
     pub(super) position: Vec2,
     pub(super) previous: Vec2,
     pub(super) direction: Vec2,
     pub(super) remaining: f32,
     pub(super) speed: f32,
     pub(super) radius: f32,
-    pub(super) damage: DamageSnapshot,
-    pub(super) homing: Option<Entity>,
+    pub(super) homing: Option<UnitLifeRef>,
 }
 impl Projectile {
     pub fn position(&self) -> Vec2 {
         self.position
     }
     pub fn team(&self) -> Team {
-        self.team
+        self.payload.team
     }
     pub fn radius(&self) -> f32 {
         self.radius
@@ -299,13 +346,12 @@ impl Projectile {
 }
 #[derive(Component, Debug)]
 pub struct AreaEffect {
-    pub(super) source: Entity,
-    pub(super) team: Team,
+    pub(super) payload: ImpactSnapshot,
+    pub(super) carrier: u64,
     pub(super) position: Vec2,
     pub(super) radius: f32,
     pub(super) remaining: f32,
     pub(super) duration: f32,
-    pub(super) damage: DamageSnapshot,
 }
 impl AreaEffect {
     pub fn position(&self) -> Vec2 {
@@ -318,8 +364,6 @@ impl AreaEffect {
         (1.0 - self.remaining / self.duration.max(0.001)).clamp(0.0, 1.0)
     }
 }
-#[derive(Resource, Default)]
-pub(super) struct PendingDamage(pub Vec<DamageRequest>);
 #[derive(Resource, Default)]
 pub struct SimulationControl {
     pub paused: bool,

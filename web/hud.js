@@ -9,8 +9,18 @@
     Ready: "准备就绪", Attacking: "攻击前摇", AttackBackswing: "攻击后摇", Casting: "施法中",
     Channeling: "引导中", Recovery: "收招中",
   };
+  const statusNames = { Stun: "眩晕", Root: "禁锢", Slow: "减速", Airborne: "击飞" };
+  const skillKeys = ["Q", "W", "E", "R"];
+  const skillIcons = {
+    enemy: '<circle cx="20" cy="20" r="9"/><circle cx="20" cy="20" r="3"/><path d="M20 3v10m0 14v10M3 20h10m14 0h10"/>',
+    direction: '<path d="m24 5-14 18h10l-4 12 15-20H20z"/>',
+    area: '<circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="5"/><path d="M20 3v7m0 20v7M3 20h7m20 0h7"/>',
+    dash: '<path d="M5 14h20m-16 7h24M4 28h20m-2-20 12 13-12 13"/>',
+    channel: '<path d="m20 4 4 11 12 5-12 4-4 12-11-4 11-5z"/><circle cx="20" cy="20" r="5"/>',
+  };
   let ready = false;
   let entered = false;
+  let helpLoadout = "";
   const statFields = [
     ["attack_damage", 1], ["ability_power", 1], ["armor", 1], ["magic_resistance", 1],
     ["move_speed", 2], ["attack_speed", 2], ["attack_range", 2],
@@ -116,30 +126,104 @@
     for (const { key, digits, element } of statFields) {
       element.textContent = formatAttribute(player?.attributes?.[key], digits);
     }
+    renderStatuses($("hero-statuses"), player);
     if (!player) return;
+    $("hero-name").textContent = player.name;
     $("health-fill").style.width = `${100 * player.health / player.max_health}%`;
     $("mana-fill").style.width = `${100 * player.mana / player.max_mana}%`;
     $("health-text").textContent = `${Math.ceil(player.health)} / ${player.max_health}`;
     $("mana-text").textContent = `${Math.floor(player.mana)} / ${player.max_mana}`;
-    $("hero-action").textContent = player.alive
-      ? (actionNames[player.action] || player.action) : "等待重生";
+    $("hero-action").textContent = !player.alive ? "等待重生"
+      : player.control?.is_displaced ? "强制位移中"
+      : (actionNames[player.action] || player.action);
+  }
+
+  function renderStatuses(container, unit) {
+    const statuses = unit?.statuses || [];
+    const texts = statuses.map((status) => {
+      const amount = status.slow_fraction == null ? "" : `${Math.round(status.slow_fraction * 100)}%`;
+      return `${statusNames[status.kind] || status.kind}${amount} ${Math.ceil(status.remaining * 10) / 10}s`;
+    });
+    if (unit?.control?.is_displaced) texts.push("强制位移");
+    const signature = texts.join("|");
+    if (container.dataset.signature !== signature) {
+      const badges = texts.map((text, index) => {
+        const badge = document.createElement("span");
+        badge.dataset.status = statuses[index]?.kind || "Displaced";
+        badge.textContent = text;
+        return badge;
+      });
+      container.replaceChildren(...badges);
+      container.dataset.signature = signature;
+    }
+    container.hidden = texts.length === 0;
+  }
+
+  function renderHelp(abilities) {
+    const signature = JSON.stringify(abilities.map(({ slot, name, target_hint, description }) => [slot, name, target_hint, description]));
+    if (helpLoadout === signature) return;
+    helpLoadout = signature;
+    $("help-abilities").replaceChildren(...abilities.map((ability) => {
+      const item = document.createElement("div");
+      const name = document.createElement("strong");
+      const target = document.createElement("span");
+      const effects = document.createElement("small");
+      name.textContent = `${skillKeys[ability.slot]} · ${ability.name}`;
+      target.textContent = ability.target_hint;
+      effects.textContent = ability.description;
+      item.append(name, target, effects);
+      return item;
+    }));
   }
 
   function renderAbilities(state, player) {
+    const slots = new Set(state.abilities.map((ability) => ability.slot));
+    for (const button of document.querySelectorAll(".ability")) {
+      if (slots.has(Number(button.dataset.slot))) continue;
+      button.disabled = true;
+      button.classList.remove("cooling", "aiming", "no-energy", "unavailable");
+      button.querySelector("small").textContent = "未装配";
+      button.querySelector("svg").replaceChildren();
+      button.querySelector(".cooldown").textContent = "";
+      button.removeAttribute("data-icon");
+      button.removeAttribute("title");
+      button.setAttribute("aria-label", `${skillKeys[Number(button.dataset.slot)]} 未装配技能`);
+    }
     for (const ability of state.abilities) {
       const button = document.querySelector(`[data-slot="${ability.slot}"]`);
       if (!button) continue;
       button.classList.toggle("cooling", ability.cooldown > 0.01);
       button.classList.toggle("aiming", state.aim === ability.slot);
       button.classList.toggle("no-energy", Boolean(player && player.mana < ability.cost));
+      button.classList.toggle("unavailable", !ability.available);
+      button.disabled = state.paused || !ability.available;
+      button.querySelector("small").textContent = ability.name;
+      button.setAttribute("aria-label", `${skillKeys[ability.slot]} ${ability.name}`);
+      if (button.dataset.icon !== ability.icon) {
+        button.querySelector("svg").innerHTML = skillIcons[ability.icon] || skillIcons.enemy;
+        button.dataset.icon = ability.icon;
+      }
       button.querySelector(".cooldown").textContent = ability.cooldown >= 1
         ? String(Math.ceil(ability.cooldown)) : ability.cooldown.toFixed(1);
-      button.title = `${ability.name} · 能量 ${ability.cost} · 冷却 ${ability.total_cooldown}s · 射程 ${ability.range}`;
+      button.title = `${ability.name} · ${ability.target_hint}\n${ability.description}\n能量 ${ability.cost} · 冷却 ${ability.total_cooldown}s · 射程 ${ability.range}${ability.unavailable_reason ? `\n${ability.unavailable_reason}` : ""}`;
     }
     $("aim-hint").hidden = state.aim === null && !state.attack_move;
     $("aim-text").textContent = state.attack_move
       ? "攻击移动：选择前进方向"
-      : `${state.abilities.find((a) => a.slot === state.aim)?.name || ""}：选择目标`;
+      : (() => {
+        const ability = state.abilities.find((a) => a.slot === state.aim);
+        return ability ? `${ability.name}：${ability.target_hint}` : "";
+      })();
+    const hovered = document.querySelector(".ability[data-virtual-hover]");
+    const detail = state.abilities.find((ability) => ability.slot === (hovered ? Number(hovered.dataset.slot) : state.aim));
+    $("ability-detail").hidden = !detail || state.paused;
+    if (detail) {
+      $("ability-detail").querySelector("strong").textContent = detail.name;
+      $("ability-detail").querySelector("span").textContent = detail.target_hint;
+      $("ability-detail").querySelector("p").textContent = detail.description;
+      $("ability-detail").querySelector("small").textContent = detail.unavailable_reason || `能量 ${detail.cost} · 冷却 ${detail.total_cooldown}s · 射程 ${detail.range}`;
+    }
+    renderHelp(state.abilities);
   }
 
   function renderUnits(state) {
@@ -152,15 +236,18 @@
         label.className = `unit-label ${unit.team}`;
         label.hidden = true;
         const name = document.createElement("strong");
-        name.textContent = unit.id === state.player_id ? "旅者" : unit.name;
+        name.textContent = unit.name;
         const bar = document.createElement("div");
         bar.className = "bar";
         bar.appendChild(document.createElement("i"));
-        label.append(name, bar);
+        const statuses = document.createElement("div");
+        statuses.className = "status-badges";
+        label.append(name, bar, statuses);
         $("unit-labels").appendChild(label);
         labels.set(unit.id, label);
       }
       label.querySelector("i").style.width = `${100 * unit.health / unit.max_health}%`;
+      renderStatuses(label.querySelector(".status-badges"), unit);
     }
     for (const [id, label] of labels) {
       if (!present.has(id)) { label.remove(); labels.delete(id); }
@@ -171,6 +258,7 @@
       $("target-name").textContent = selected.name;
       $("target-health").textContent = `${Math.ceil(selected.health)} / ${selected.max_health} HP`;
     }
+    renderStatuses($("target-statuses"), selected);
   }
 
   // Position belongs to the render frame. The slower HUD snapshot updates

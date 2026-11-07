@@ -1,9 +1,5 @@
-//! Projectile collision, damage, death and respawn. Rendering never decides hits.
-use super::{
-    damage::DamageRequest,
-    model::{Movement, PendingDamage},
-    *,
-};
+//! Delivery geometry, health and life transitions. Effects resolve elsewhere.
+use super::{effects::PendingImpacts, *};
 use bevy::prelude::*;
 
 pub(super) fn advance_projectiles(
@@ -11,19 +7,22 @@ pub(super) fn advance_projectiles(
     map: Res<NavigationMap>,
     units: Query<(Entity, &Unit, &UnitState, &UnitPose)>,
     mut projectiles: Query<(Entity, &mut Projectile)>,
-    mut damage: ResMut<PendingDamage>,
+    mut impacts: ResMut<PendingImpacts>,
 ) {
     for (entity, mut projectile) in &mut projectiles {
         if let Some(target) = projectile.homing {
-            let Ok((_, _, state, pose)) = units.get(target) else {
+            let Ok((_, _, state, pose)) = units.get(target.entity()) else {
                 commands.entity(entity).despawn();
                 continue;
             };
-            if !state.alive() {
+            if !state.alive() || state.life_ref(target.entity()) != target {
                 commands.entity(entity).despawn();
                 continue;
             }
-            projectile.direction = (pose.position - projectile.position).normalize_or_zero();
+            projectile.direction = super::effects::direction(
+                pose.position - projectile.position,
+                projectile.direction,
+            );
         }
         projectile.previous = projectile.position;
         let distance = (projectile.speed * TICK_SECONDS).min(projectile.remaining);
@@ -32,8 +31,10 @@ pub(super) fn advance_projectiles(
         let mut hit = None;
         for (id, unit, state, pose) in &units {
             if !state.alive()
-                || unit.team == projectile.team
-                || projectile.homing.is_some_and(|target| target != id)
+                || unit.team == projectile.payload.team
+                || projectile
+                    .homing
+                    .is_some_and(|target| target != state.life_ref(id))
             {
                 continue;
             }
@@ -42,9 +43,8 @@ pub(super) fn advance_projectiles(
                 end,
                 pose.position,
                 unit.stats.radius + projectile.radius,
-            ) && hit.is_none_or(|(old_fraction, old_id): (f32, Entity)| {
-                fraction < old_fraction
-                    || (fraction == old_fraction && id.to_bits() < old_id.to_bits())
+            ) && hit.is_none_or(|(old, old_id): (f32, Entity)| {
+                fraction < old || (fraction == old && id.to_bits() < old_id.to_bits())
             }) {
                 hit = Some((fraction, id));
             }
@@ -52,11 +52,17 @@ pub(super) fn advance_projectiles(
         projectile.position = end;
         projectile.remaining -= distance;
         if let Some((_, target)) = hit {
-            damage.0.push(DamageRequest {
-                source: projectile.source,
-                target,
-                damage: projectile.damage,
-            });
+            let state = units.get(target).expect("hit unit").2;
+            // Projectile centers retain the caster's committed origin;
+            // AlongImpact separately follows the actual collision direction.
+            impacts.hit(
+                1,
+                projectile.payload.clone(),
+                projectile.carrier,
+                state.life_ref(target),
+                projectile.payload.position,
+                projectile.direction,
+            );
         }
         if hit.is_some() || projectile.remaining <= 0.001 || end.distance_squared(requested) > 1e-6
         {
@@ -64,7 +70,6 @@ pub(super) fn advance_projectiles(
         }
     }
 }
-
 fn segment_circle(start: Vec2, end: Vec2, center: Vec2, radius: f32) -> Option<f32> {
     let delta = end - start;
     let offset = start - center;
@@ -84,108 +89,124 @@ fn segment_circle(start: Vec2, end: Vec2, center: Vec2, radius: f32) -> Option<f
     let t = (-b - discriminant.sqrt()) / a;
     (0.0..=1.0).contains(&t).then_some(t)
 }
-
 pub(super) fn advance_areas(
     mut commands: Commands,
     units: Query<(Entity, &Unit, &UnitState, &UnitPose)>,
     mut areas: Query<(Entity, &mut AreaEffect)>,
-    mut damage: ResMut<PendingDamage>,
+    mut impacts: ResMut<PendingImpacts>,
 ) {
     for (entity, mut area) in &mut areas {
         area.remaining -= TICK_SECONDS;
         if area.remaining > 1e-5 {
             continue;
         }
+        // Packet keys sort recipients by entity, independent of this iteration.
         for (target, unit, state, pose) in &units {
             if state.alive()
-                && unit.team != area.team
+                && unit.team != area.payload.team
                 && pose.position.distance(area.position) <= area.radius + unit.stats.radius
             {
-                damage.0.push(DamageRequest {
-                    source: area.source,
-                    target,
-                    damage: area.damage,
-                });
+                // Areas use their frozen impact center, never the live caster.
+                impacts.hit(
+                    2,
+                    area.payload.clone(),
+                    area.carrier,
+                    state.life_ref(target),
+                    area.position,
+                    area.payload.facing,
+                );
             }
         }
         commands.entity(entity).despawn();
     }
 }
-
-pub(super) fn resolve_damage(world: &mut World) {
-    let damage = std::mem::take(&mut world.resource_mut::<PendingDamage>().0);
-    for DamageRequest {
-        source,
-        target,
-        damage,
-    } in damage
-    {
-        let Some(unit) = world.get::<Unit>(target) else {
-            continue;
-        };
-        let attributes = *unit.attributes();
-        let Some(mut state) = world.get_mut::<UnitState>(target) else {
-            continue;
-        };
-        if !state.alive() {
-            continue;
-        }
-        let new_health = damage.health_after(&attributes, state.health);
-        let amount = state.health - new_health;
-        if amount <= 0.0 {
-            continue;
-        }
-        state.health = new_health;
-        let died = !state.alive();
-        world.write_message(SimulationEvent::Damaged {
-            source,
-            target,
-            amount,
-            kind: damage.kind(),
-            origin: damage.origin(),
-        });
-        if died {
-            let delay = world.get::<Unit>(target).expect("unit").respawn_delay;
-            super::attributes::clear_on_death(&mut world.get_mut::<Unit>(target).expect("unit"));
-            world
-                .get_mut::<UnitState>(target)
-                .expect("unit state")
-                .respawn_remaining = delay;
-            *world.get_mut::<UnitAction>(target).expect("unit action") = UnitAction::Ready;
-            *world.get_mut::<UnitOrder>(target).expect("unit order") = UnitOrder::Idle;
-            *world.get_mut::<Movement>(target).expect("unit movement") = Movement::default();
-            world.write_message(SimulationEvent::Died { unit: target });
-        }
+pub(super) fn apply_damage(
+    world: &mut World,
+    source: UnitLifeRef,
+    target: UnitLifeRef,
+    damage: DamageSnapshot,
+) {
+    if !target.is_current(world) {
+        return;
+    }
+    let attributes = *world
+        .get::<Unit>(target.entity())
+        .expect("unit")
+        .attributes();
+    let mut state = world
+        .get_mut::<UnitState>(target.entity())
+        .expect("unit state");
+    let new_health = damage.health_after(&attributes, state.health);
+    let amount = state.health - new_health;
+    if amount <= 0.0 {
+        return;
+    }
+    state.health = new_health;
+    let died = !state.alive();
+    world.write_message(SimulationEvent::Damaged {
+        source: source.entity(),
+        target: target.entity(),
+        amount,
+        kind: damage.kind(),
+        origin: damage.origin(),
+    });
+    if died {
+        die(world, target.entity());
     }
 }
-
-pub(super) fn respawn_units(
-    mut units: Query<(
-        Entity,
-        &Unit,
-        &mut UnitState,
-        &mut UnitPose,
-        &mut AbilitySlots,
-    )>,
-    mut events: MessageWriter<SimulationEvent>,
-) {
-    for (entity, unit, mut state, mut pose, mut slots) in &mut units {
-        if state.alive() {
-            continue;
-        }
-        let Some(remaining) = state.respawn_remaining.as_mut() else {
-            continue;
+fn die(world: &mut World, target: Entity) {
+    let delay = world.get::<Unit>(target).expect("unit").respawn_delay;
+    super::movement::clear_all(world, target);
+    super::statuses::clear(world, target);
+    super::attributes::clear_on_death(&mut world.get_mut::<Unit>(target).expect("unit"));
+    world
+        .get_mut::<UnitState>(target)
+        .expect("unit state")
+        .respawn_remaining = delay;
+    *world.get_mut::<UnitAction>(target).expect("unit action") = UnitAction::Ready;
+    *world.get_mut::<UnitOrder>(target).expect("unit order") = UnitOrder::Idle;
+    world.write_message(SimulationEvent::Died { unit: target });
+}
+pub(super) fn respawn_units(world: &mut World) {
+    let units: Vec<_> = world
+        .query_filtered::<Entity, With<Unit>>()
+        .iter(world)
+        .collect();
+    for entity in units {
+        let due = {
+            let mut state = world.get_mut::<UnitState>(entity).expect("unit state");
+            if state.alive() {
+                continue;
+            }
+            let Some(remaining) = state.respawn_remaining.as_mut() else {
+                continue;
+            };
+            *remaining -= TICK_SECONDS;
+            *remaining <= 1e-5
         };
-        *remaining -= TICK_SECONDS;
-        if *remaining > 1e-5 {
+        if !due {
             continue;
         }
-        state.health = unit.stats.max_health;
-        state.mana = unit.stats.max_mana;
-        state.respawn_remaining = None;
-        state.attack_cooldown = 0;
-        slots.cooldowns = [0.0; 4];
-        super::movement::reset_pose(&mut pose, unit.home);
-        events.write(SimulationEvent::Respawned { unit: entity });
+        let unit = world.get::<Unit>(entity).expect("unit");
+        let (health, mana, home) = (unit.stats.max_health, unit.stats.max_mana, unit.home);
+        {
+            let mut state = world.get_mut::<UnitState>(entity).expect("unit state");
+            state.life_epoch = state
+                .life_epoch
+                .checked_add(1)
+                .expect("life epoch space exhausted");
+            state.health = health;
+            state.mana = mana;
+            state.respawn_remaining = None;
+            state.attack_cooldown = 0;
+        }
+        world
+            .get_mut::<AbilitySlots>(entity)
+            .expect("slots")
+            .cooldowns = [0.0; 4];
+        super::movement::clear_all(world, entity);
+        super::movement::reset_pose(&mut world.get_mut::<UnitPose>(entity).expect("pose"), home);
+        super::statuses::clear(world, entity);
+        world.write_message(SimulationEvent::Respawned { unit: entity });
     }
 }

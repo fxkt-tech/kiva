@@ -45,12 +45,17 @@ h1 span { font-size: 10px; letter-spacing: 0; margin-left: 13px; color: var(--mu
   background: linear-gradient(135deg, #142324ee, #101c20f5);
   border: 1px solid var(--line); box-shadow: 0 6px 32px #0003; backdrop-filter: blur(12px);
 }
-.help { position: fixed; z-index: 4; right: 30px; top: 84px; padding: 25px; width: 315px; }
+.help { position: fixed; z-index: 4; right: 30px; top: 84px; padding: 25px; width: 315px; max-height: calc(100vh - 110px); overflow-y: auto; }
 .help h2 { font-size: 18px; font-weight: 500; margin: 10px 0 24px; }
 .help dl { display: grid; grid-template-columns: 110px 1fr; font-size: 11px; gap: 13px 8px; }
 .help dt { color: #d6c296; }
 .help dd { margin: 0; color: var(--muted); }
 .help p { font-size: 10px; line-height: 1.9; color: #81938a; border-top: 1px solid var(--line); padding-top: 15px; }
+.help-abilities { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 14px; }
+.help-abilities > div { display: grid; gap: 4px; }
+.help-abilities strong { color: #d6c296; font-size: 11px; font-weight: 500; }
+.help-abilities span { color: #bdcec0; font-size: 10px; }
+.help-abilities small { color: #91a29b; font-size: 9px; line-height: 1.7; }
 .hero-hud {
   position: fixed; z-index: 3; bottom: var(--hud-bottom); left: 50%; transform: translateX(-50%);
   min-height: var(--hud-height); display: flex; align-items: center; padding: 16px 18px 20px 16px;
@@ -98,6 +103,21 @@ h1 span { font-size: 10px; letter-spacing: 0; margin-left: 13px; color: var(--mu
 .ability .cooldown { position: absolute; inset: 0; display: grid; place-items: center; background: #0b171ac9; font-size: 21px; color: #cfd8cf; visibility: hidden; }
 .ability.cooling .cooldown { visibility: visible; }
 .ability.no-energy { color: #536e77; border-color: #385260; }
+.ability.unavailable { border-color: #66757155; color: #83928b; }
+.ability:disabled { cursor: default; }
+.ability-detail { position: fixed; z-index: 4; left: 50%; bottom: calc(var(--hud-bottom) + var(--hud-height) + 76px); transform: translateX(-50%); width: min(360px, calc(100vw - 32px)); padding: 14px 18px; pointer-events: none; }
+.ability-detail strong { color: #e0c990; font-size: 12px; font-weight: 500; }
+.ability-detail > span { float: right; color: #a6c2b5; font-size: 10px; }
+.ability-detail p { margin: 10px 0; font-size: 11px; line-height: 1.8; }
+.ability-detail > small { color: #a6b3a5; font-size: 9px; }
+.status-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.status-badges > span { padding: 2px 5px; border: 1px solid #c4b58e55; border-radius: 2px; background: #17282bf2; color: #dcc9a8; font-size: 9px; font-weight: 400; white-space: nowrap; }
+.status-badges > [data-status="Slow"] { color: #b0d6df; border-color: #7babb555; }
+.status-badges > [data-status="Airborne"] { color: #d3c3ef; border-color: #a38abc66; }
+.hero-statuses { position: absolute; top: -28px; left: 12px; right: 12px; pointer-events: auto; }
+.target .status-badges { flex-direction: row; }
+.target .status-badges > span { color: #dcc9a8; font-size: 9px; }
+.unit-label .status-badges { position: absolute; bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%); flex-wrap: nowrap; }
 .camera-hint { position: fixed; left: 32px; bottom: calc(var(--hud-bottom) + var(--hud-height) + 20px); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .camera-hint > span:first-child { font-size: 11px; color: #ccd7c8; letter-spacing: 2px; }
 .camera-hint > span:last-child { font-size: 9px; color: var(--muted); }

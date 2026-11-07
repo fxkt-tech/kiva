@@ -1,5 +1,5 @@
 //! Human and demo AI adapters both submit the public simulation commands.
-use super::{camera::GameCamera, pointer::GamePointer, web};
+use super::{abilities, camera::GameCamera, pointer::GamePointer, web};
 use crate::simulation::*;
 use bevy::{
     prelude::*,
@@ -79,28 +79,9 @@ fn update_pointer(world: &mut World, cursor: Option<Vec2>) {
         let point = ray.get_point(distance);
         Some(Vec2::new(point.x, point.z))
     });
-    let hovered = if over_ui {
-        None
-    } else {
-        ray.and_then(|ray| {
-            let cast = RayCast3d::from_ray(ray, 200.0);
-            world
-                .query::<(Entity, &UnitState, &UnitPose, &Pickable)>()
-                .iter(world)
-                .filter(|(_, state, _, _)| state.alive())
-                .filter_map(|(id, _, pose, bounds)| {
-                    let position = pose.position();
-                    let center = Vec3::new(position.x, 0.0, position.y) + bounds.offset;
-                    cast.aabb_intersection_at(&Aabb3d::new(center, bounds.half_size))
-                        .map(|distance| (id, distance))
-                })
-                .min_by(|a, b| {
-                    a.1.total_cmp(&b.1)
-                        .then_with(|| a.0.to_bits().cmp(&b.0.to_bits()))
-                })
-                .map(|(id, _)| id)
-        })
-    };
+    let hovered = (!over_ui)
+        .then(|| ray.and_then(|ray| hovered_unit(world, ray)))
+        .flatten();
     *world.resource_mut::<PointerState>() = PointerState {
         position: cursor,
         ground,
@@ -109,14 +90,62 @@ fn update_pointer(world: &mut World, cursor: Option<Vec2>) {
     };
 }
 
+/// Pick the body that was actually displayed, including airborne height and
+/// the same root transform used for its label. Simulation still validates hits.
+fn hovered_unit(world: &mut World, ray: Ray3d) -> Option<Entity> {
+    let cast = RayCast3d::from_ray(ray, 200.0);
+    world
+        .query::<(Entity, &UnitState, &GlobalTransform, &Pickable)>()
+        .iter(world)
+        .filter(|(_, state, _, _)| state.alive())
+        .filter_map(|(id, _, transform, bounds)| {
+            let center = transform.transform_point(bounds.offset);
+            let half_size = transform.affine().matrix3.abs() * bounds.half_size;
+            cast.aabb_intersection_at(&Aabb3d::new(center, half_size))
+                .map(|distance| (id, distance))
+        })
+        .min_by(|a, b| {
+            a.1.total_cmp(&b.1)
+                .then_with(|| a.0.to_bits().cmp(&b.0.to_bits()))
+        })
+        .map(|(id, _)| id)
+}
+
+fn skill_unavailable(world: &World, player: Entity, slot: usize) -> Option<&'static str> {
+    let Some(state) = world.get::<UnitState>(player) else {
+        return Some("无法操控当前单位");
+    };
+    let (Some(control), Some(slots)) = (
+        world.get::<ControlState>(player),
+        world.get::<AbilitySlots>(player),
+    ) else {
+        return Some("当前单位尚未准备就绪");
+    };
+    let Some(definition) = slots
+        .ability(slot)
+        .and_then(|id| world.resource::<AbilityCatalog>().get(id))
+    else {
+        return Some("该槽位没有装配技能");
+    };
+    abilities::unavailable_reason(state, control, slots, slot, definition)
+}
+
 fn select_ability(world: &mut World, slot: usize) {
     let player = world.resource::<PlayerController>().player;
+    if let Some(reason) = skill_unavailable(world, player, slot) {
+        let expires = world.resource::<Time>().elapsed_secs() + 2.0;
+        let mut feedback = world.resource_mut::<ClientFeedback>();
+        feedback.message = reason.into();
+        feedback.expires = expires;
+        return;
+    }
     let definition = world
         .get::<AbilitySlots>(player)
         .and_then(|slots| slots.ability(slot))
         .and_then(|id| world.resource::<AbilityCatalog>().get(id));
     if let Some(definition) = definition {
         if definition.targeting == Targeting::SelfCast {
+            world.resource_mut::<PlayerController>().aim = None;
             submit(
                 world,
                 player,
@@ -128,6 +157,30 @@ fn select_ability(world: &mut World, slot: usize) {
         } else {
             world.resource_mut::<PlayerController>().aim = Some(Aim::Ability(slot));
         }
+    }
+}
+
+fn valid_enemy_pick(world: &World, player: Entity, target: Entity) -> bool {
+    world.get::<UnitState>(target).is_some_and(UnitState::alive)
+        && world
+            .get::<Unit>(target)
+            .zip(world.get::<Unit>(player))
+            .is_some_and(|(target, player)| target.team() != player.team())
+}
+
+/// New control must invalidate an existing aim even without a new input event.
+pub(super) fn refresh_aim(world: &mut World) {
+    let controller = world.resource::<PlayerController>();
+    let (unit, aim) = (controller.player, controller.aim);
+    let unavailable = match aim {
+        Some(Aim::Ability(slot)) => skill_unavailable(world, unit, slot).is_some(),
+        Some(Aim::AttackMove) => world
+            .get::<ControlState>(unit)
+            .is_none_or(|control| !control.can_move()),
+        None => false,
+    };
+    if unavailable {
+        world.resource_mut::<PlayerController>().aim = None;
     }
 }
 
@@ -192,11 +245,8 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
     match button {
         MouseButton::Right => {
             world.resource_mut::<PlayerController>().aim = None;
-            if let Some(target) = hovered.filter(|target| {
-                world
-                    .get::<Unit>(*target)
-                    .is_some_and(|u| u.team() == Team::Enemy)
-            }) {
+            if let Some(target) = hovered.filter(|target| valid_enemy_pick(world, player, *target))
+            {
                 submit(world, player, UnitCommand::AttackTarget(target));
                 world.resource_mut::<PlayerController>().selected = Some(target);
             } else if let Some(point) = ground {
@@ -217,21 +267,25 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
                         .and_then(|slots| slots.ability(slot))
                         .and_then(|id| world.resource::<AbilityCatalog>().get(id));
                     let target = definition.and_then(|definition| match definition.targeting {
-                        Targeting::Direction => ground.map(|point| {
-                            AbilityTarget::Direction(
-                                point
-                                    - world
-                                        .get::<UnitPose>(player)
-                                        .expect("player pose")
-                                        .position(),
-                            )
+                        Targeting::Direction => ground.and_then(|point| {
+                            let direction = point
+                                - world
+                                    .get::<UnitPose>(player)
+                                    .expect("player pose")
+                                    .position();
+                            (direction.length_squared() > 1e-6)
+                                .then_some(AbilityTarget::Direction(direction))
                         }),
                         Targeting::Point => ground.map(AbilityTarget::Point),
-                        Targeting::Enemy => hovered.map(AbilityTarget::Unit),
+                        Targeting::Enemy => hovered
+                            .filter(|target| valid_enemy_pick(world, player, *target))
+                            .map(AbilityTarget::Unit),
                         Targeting::SelfCast => Some(AbilityTarget::SelfCast),
                     });
                     if let Some(target) = target {
                         submit(world, player, UnitCommand::CastAbility { slot, target });
+                    } else {
+                        return;
                     }
                 }
                 None => world.resource_mut::<PlayerController>().selected = hovered,
@@ -371,6 +425,7 @@ pub(super) fn receive_feedback(
                     Rejection::Dead => "Waiting to respawn",
                     Rejection::Busy => "Action already in progress",
                     Rejection::InvalidDamage => "Ability damage cannot be resolved",
+                    Rejection::Controlled => "受控制限制，当前操作不可用",
                     _ => "Choose a valid target",
                 }
                 .into();

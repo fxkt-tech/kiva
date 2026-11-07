@@ -1,7 +1,8 @@
 //! Read-only projections for the browser HUD and native debug overlay.
 use super::{
+    abilities::AbilityView,
     camera::{CameraRig, GameCamera},
-    controls::{Aim, ClientFeedback, PlayerController},
+    controls::{Aim, ClientFeedback, Pickable, PlayerController},
     web,
 };
 use crate::simulation::*;
@@ -33,29 +34,67 @@ impl From<&EffectiveAttributes> for AttributesView {
 }
 
 #[derive(Serialize)]
+struct StatusInfo {
+    kind: &'static str,
+    remaining: f32,
+    duration: f32,
+    slow_fraction: Option<f32>,
+}
+impl From<&StatusView> for StatusInfo {
+    fn from(status: &StatusView) -> Self {
+        Self {
+            kind: match status.kind() {
+                StatusKind::Stun => "Stun",
+                StatusKind::Root => "Root",
+                StatusKind::Slow => "Slow",
+                StatusKind::Airborne => "Airborne",
+            },
+            remaining: status.remaining_seconds(),
+            duration: status.duration_seconds(),
+            slow_fraction: status.fraction(),
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct ControlView {
+    can_move: bool,
+    can_attack: bool,
+    can_cast: bool,
+    can_dash: bool,
+    is_displaced: bool,
+}
+impl From<&ControlState> for ControlView {
+    fn from(control: &ControlState) -> Self {
+        Self {
+            can_move: control.can_move(),
+            can_attack: control.can_attack(),
+            can_cast: control.can_cast(),
+            can_dash: control.can_dash(),
+            is_displaced: control.forced_motion(),
+        }
+    }
+}
+
+#[derive(Serialize)]
 struct UnitView {
     id: String,
     name: String,
     team: &'static str,
     position: [f32; 2],
     screen: Option<[f32; 2]>,
+    body_screen: Option<[f32; 2]>,
+    visual_height: f32,
     health: f32,
     max_health: f32,
     mana: f32,
     max_mana: f32,
     attributes: AttributesView,
+    statuses: Vec<StatusInfo>,
+    control: ControlView,
     alive: bool,
     action: &'static str,
     order: &'static str,
-}
-#[derive(Serialize)]
-struct AbilityView {
-    slot: usize,
-    name: String,
-    cooldown: f32,
-    total_cooldown: f32,
-    cost: f32,
-    range: f32,
 }
 #[derive(Serialize)]
 struct HudView {
@@ -75,11 +114,26 @@ struct HudView {
     obstacles: Vec<[f32; 4]>,
 }
 
+type ProjectedUnit = (
+    Entity,
+    &'static Unit,
+    &'static UnitState,
+    &'static UnitPose,
+    &'static UnitAction,
+    &'static UnitOrder,
+    &'static AbilitySlots,
+    &'static GlobalTransform,
+    &'static Pickable,
+    &'static UnitStatuses,
+    &'static ControlState,
+);
+
 #[cfg(target_arch = "wasm32")]
 #[derive(Serialize)]
 struct LabelPosition {
     id: String,
     screen: Option<[f32; 2]>,
+    body_screen: Option<[f32; 2]>,
     alive: bool,
 }
 
@@ -88,7 +142,7 @@ struct LabelPosition {
 #[cfg(target_arch = "wasm32")]
 pub(super) fn publish_labels(
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
-    units: Query<(Entity, &GlobalTransform, &UnitState), With<super::scene::UnitVisual>>,
+    units: Query<(Entity, &GlobalTransform, &Pickable, &UnitState), With<super::scene::UnitVisual>>,
 ) {
     let (camera, camera_transform) = *camera;
     let Some(viewport) = camera.logical_viewport_size() else {
@@ -96,12 +150,16 @@ pub(super) fn publish_labels(
     };
     let positions: Vec<_> = units
         .iter()
-        .map(|(id, transform, state)| LabelPosition {
+        .map(|(id, transform, pickable, state)| LabelPosition {
             id: id.to_bits().to_string(),
-            screen: camera
-                .world_to_viewport(camera_transform, transform.transform_point(Vec3::Y * 2.2))
-                .ok()
-                .map(|point| web::viewport_to_css(point, viewport).to_array()),
+            screen: project_display(camera, camera_transform, transform, Vec3::Y * 2.2, viewport),
+            body_screen: project_display(
+                camera,
+                camera_transform,
+                transform,
+                pickable.offset,
+                viewport,
+            ),
             alive: state.alive(),
         })
         .collect();
@@ -110,13 +168,25 @@ pub(super) fn publish_labels(
     }
 }
 
+fn project_display(
+    camera: &Camera,
+    camera_transform: &GlobalTransform,
+    unit_transform: &GlobalTransform,
+    offset: Vec3,
+    viewport: Vec2,
+) -> Option<[f32; 2]> {
+    camera
+        .world_to_viewport(camera_transform, unit_transform.transform_point(offset))
+        .ok()
+        .map(|point| web::viewport_to_css(point, viewport).to_array())
+}
+
 #[expect(
     clippy::too_many_arguments,
     reason = "Bevy system parameters declare independent ECS access"
 )]
 pub(super) fn publish(
     time: Res<Time>,
-    fixed: Res<Time<Fixed>>,
     mut next_publish: Local<f32>,
     player: Res<PlayerController>,
     control: Res<SimulationControl>,
@@ -127,74 +197,65 @@ pub(super) fn publish(
     map: Res<NavigationMap>,
     window: Single<&Window>,
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
-    units: Query<(
-        Entity,
-        &Unit,
-        &UnitState,
-        &UnitPose,
-        &UnitAction,
-        &UnitOrder,
-        &AbilitySlots,
-    )>,
+    units: Query<ProjectedUnit>,
 ) {
     if time.elapsed_secs() < *next_publish {
         return;
     }
     *next_publish = time.elapsed_secs() + 0.08;
     let (camera, transform) = *camera;
-    let viewport = Vec2::new(window.width(), window.height());
+    let viewport = camera
+        .logical_viewport_size()
+        .unwrap_or(Vec2::new(window.width(), window.height()));
     let views = units
         .iter()
-        .map(|(id, unit, state, pose, action, order, _)| {
-            let point = pose.position();
-            let visual = pose.interpolated(if control.paused {
-                1.0
-            } else {
-                fixed.overstep_fraction()
-            });
-            UnitView {
-                id: id.to_bits().to_string(),
-                name: unit.name().into(),
-                team: if unit.team() == Team::Ally {
-                    "ally"
-                } else {
-                    "enemy"
-                },
-                position: point.to_array(),
-                screen: camera
-                    .world_to_viewport(transform, Vec3::new(visual.x, 2.2, visual.y))
-                    .ok()
-                    .map(|point| web::viewport_to_css(point, viewport).to_array()),
-                health: state.health(),
-                max_health: unit.definition().max_health,
-                mana: state.mana(),
-                max_mana: unit.definition().max_mana,
-                attributes: unit.attributes().into(),
-                alive: state.alive(),
-                action: action.label(),
-                order: match order {
-                    UnitOrder::Idle => "Idle",
-                    UnitOrder::MoveTo(_) => "Moving",
-                    UnitOrder::AttackTarget(_) => "Attacking",
-                    UnitOrder::AttackMove { .. } => "Attack move",
-                },
-            }
-        })
+        .map(
+            |(id, unit, state, pose, action, order, _, display, pickable, statuses, control)| {
+                let point = pose.position();
+                UnitView {
+                    id: id.to_bits().to_string(),
+                    name: unit.name().into(),
+                    team: if unit.team() == Team::Ally {
+                        "ally"
+                    } else {
+                        "enemy"
+                    },
+                    position: point.to_array(),
+                    screen: project_display(camera, transform, display, Vec3::Y * 2.2, viewport),
+                    body_screen: project_display(
+                        camera,
+                        transform,
+                        display,
+                        pickable.offset,
+                        viewport,
+                    ),
+                    visual_height: display.translation().y,
+                    health: state.health(),
+                    max_health: unit.definition().max_health,
+                    mana: state.mana(),
+                    max_mana: unit.definition().max_mana,
+                    attributes: unit.attributes().into(),
+                    statuses: statuses.iter().map(Into::into).collect(),
+                    control: control.into(),
+                    alive: state.alive(),
+                    action: action.label(),
+                    order: match order {
+                        UnitOrder::Idle => "Idle",
+                        UnitOrder::MoveTo(_) => "Moving",
+                        UnitOrder::AttackTarget(_) => "Attacking",
+                        UnitOrder::AttackMove { .. } => "Attack move",
+                    },
+                }
+            },
+        )
         .collect();
     let abilities = units
         .get(player.player)
-        .map(|(_, _, _, _, _, _, slots)| {
+        .map(|(_, _, state, _, _, _, slots, _, _, _, control)| {
             (0..4)
                 .filter_map(|slot| {
                     let definition = catalog.get(slots.ability(slot)?)?;
-                    Some(AbilityView {
-                        slot,
-                        name: definition.name.clone(),
-                        cooldown: slots.cooldown(slot).unwrap_or(0.0),
-                        total_cooldown: definition.cooldown,
-                        cost: definition.mana_cost,
-                        range: definition.range,
-                    })
+                    Some(AbilityView::new(slot, definition, state, control, slots))
                 })
                 .collect()
         })
@@ -257,13 +318,30 @@ pub(super) fn native_hud(mut commands: Commands) {
 pub(super) fn update_native_hud(
     player: Res<PlayerController>,
     control: Res<SimulationControl>,
-    units: Query<(&Unit, &UnitState, &AbilitySlots)>,
+    catalog: Res<AbilityCatalog>,
+    units: Query<(&Unit, &UnitState, &AbilitySlots, &UnitStatuses)>,
     mut hud: Single<&mut Text, With<NativeHud>>,
 ) {
-    if let Ok((unit, state, slots)) = units.get(player.player) {
+    if let Ok((unit, state, slots, statuses)) = units.get(player.player) {
         let attributes = unit.attributes();
+        let loadout = ["Q", "W", "E", "R"]
+            .into_iter()
+            .enumerate()
+            .filter_map(|(slot, key)| {
+                slots
+                    .ability(slot)
+                    .and_then(|id| catalog.get(id))
+                    .map(|definition| format!("{key}: {}", definition.name))
+            })
+            .collect::<Vec<_>>()
+            .join(" · ");
+        let statuses = statuses
+            .iter()
+            .map(|status| format!("{:?} {:.1}s", status.kind(), status.remaining_seconds()))
+            .collect::<Vec<_>>()
+            .join(" · ");
         hud.0 = format!(
-            "KIVA / THE PROVING GROUNDS\nRight click: move / attack · A + click: attack move · S: stop\nQ: bolt · W: area · E: dash · R: channel · Left click confirms\nY: camera lock · Space: center · Arrows / edges: pan · Scroll: zoom · Esc: pause\nHP {:.0}   Energy {:.0}   Q {:.1}  W {:.1}  E {:.1}  R {:.1}\nAD {:.1}   AP {:.1}   Armor {:.1}   MR {:.1}\nMove {:.2} units/s   Range {:.2} units   Attack speed {:.2}/s{}",
+            "KIVA / THE PROVING GROUNDS\nRight click: move / attack · A + click: attack move · S: stop\n{loadout}\nLeft click confirms target; self-cast skills release immediately\nY: camera lock · Space: center · Arrows / edges: pan · Scroll: zoom · Esc: pause\nHP {:.0}   Energy {:.0}   Q {:.1}  W {:.1}  E {:.1}  R {:.1}\nAD {:.1}   AP {:.1}   Armor {:.1}   MR {:.1}\nMove {:.2} units/s   Range {:.2} units   Attack speed {:.2}/s\n{statuses}{}",
             state.health(),
             state.mana(),
             slots.cooldown(0).unwrap_or(0.0),

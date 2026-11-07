@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/index.md", "reason": "Project architecture, quality gates and user-managed development service rule."}
+{"file": ".trellis/spec/simulation/index.md", "reason": "Simulation ownership and behavioral testing checklist."}
+{"file": ".trellis/spec/simulation/runtime.md", "reason": "Current tick chain, commit/interruption/respawn contracts."}
+{"file": ".trellis/spec/simulation/attributes-and-damage.md", "reason": "Modifier identity, damage snapshots, integer attack timing and backswing guarantees."}
+{"file": ".trellis/spec/client/index.md", "reason": "Client and browser migration quality checks."}
+{"file": ".trellis/spec/client/browser.md", "reason": "Read-only HUD, actual display coordinates, pointer lock and pause pose invariants."}
+{"file": ".trellis/spec/client/attributes-hud.md", "reason": "Preserve144px short-label HUD without units."}
+{"file": "docs/architecture.md", "reason": "Authoritative existing module/data-flow contracts."}
+{"file": ".trellis/tasks/11-07-abilities-status/research/control-and-effect-seams.md", "reason": "Code-backed seams, one-tick expiry counterexample, slow math alternatives, life epochs, picking and scope constraints."}
+{"file": ".trellis/spec/simulation/abilities-and-statuses.md", "reason": "Implemented execution/status public interfaces, tick ordering, control/Slow/life/forced-motion contracts."}

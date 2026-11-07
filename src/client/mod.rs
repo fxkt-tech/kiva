@@ -1,4 +1,5 @@
 //! Application adapters. Gameplay imports never point back into this module.
+mod abilities;
 mod camera;
 mod content;
 mod controls;
@@ -56,9 +57,11 @@ pub(super) fn run() {
         (
             scene::attach_unit_visuals,
             scene::sync_units,
+            scene::sync_ground_bases,
             scene::sync_unit_models,
             scene::sync_effects,
             controls::receive_feedback,
+            controls::refresh_aim,
         )
             .chain(),
     )

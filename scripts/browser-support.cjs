@@ -71,16 +71,16 @@ async function resumeGame(page) {
 }
 
 async function movePointer(page, x, y) {
-  const captured = await page.evaluate(() => document.pointerLockElement?.id === "game");
-  if (!captured) {
+  const cursor = await page.evaluate(() => {
+    if (document.pointerLockElement?.id !== "game") return null;
+    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
+    return { x: matrix.m41, y: matrix.m42, scale: devicePixelRatio };
+  });
+  if (!cursor) {
     await page.mouse.move(x, y);
     physicalPositions.set(page, { x, y });
     return;
   }
-  const cursor = await page.evaluate(() => {
-    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
-    return { x: matrix.m41, y: matrix.m42, scale: devicePixelRatio };
-  });
   const last = physicalPositions.get(page);
   assertPhysicalPosition(last);
   const next = { x: last.x + (x - cursor.x) * cursor.scale, y: last.y + (y - cursor.y) * cursor.scale };
@@ -145,16 +145,19 @@ async function clickWorld(page, position, button = "left") {
 }
 
 async function reportFailure(page) {
-  console.error("Browser state:", await page.evaluate(() => ({
+  const state = await page.evaluate(() => ({
     startup: window.__kivaStartup,
     paused: window.__kivaState?.paused,
     tick: window.__kivaState?.tick,
     aim: window.__kivaState?.aim,
+    selected: window.__kivaState?.selected,
     units: window.__kivaState?.units,
+    abilities: window.__kivaState?.abilities,
     notice: window.__kivaState?.notice,
     focused: document.hasFocus(),
     activeElement: document.activeElement?.id,
-  })).catch(() => "page unavailable"));
+  })).catch(() => "page unavailable");
+  console.error("Browser state:", JSON.stringify(state, null, 2));
 }
 
 module.exports = { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickPointer, clickUi, worldPoint, clickWorld, reportFailure, serveBuild };

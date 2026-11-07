@@ -4,7 +4,7 @@
 
 适用于构造单位、修改属性、定义伤害、普攻时序和命中结算。实现位于
 `src/simulation/attributes.rs`、`damage.rs`、`actions.rs`、`combat.rs`。
-本规范描述基础属性阶段的实现，装备与完整状态效果的生命周期尚未实现。
+本规范描述基础属性与伤害实现；状态计时和控制规则由[状态规范](abilities-and-statuses.md)约束，装备生命周期尚未实现。
 
 ## 2. 接口
 
@@ -26,6 +26,7 @@ pub struct AttributeModifier {
     pub flat: AttributeDelta,
     pub additive_percent: AttributeDelta,
     pub removal: ModifierRemoval,
+    pub move_speed_multiplier: f32, // 默认1，有限[0,1]
 }
 pub struct DamageSpec {
     pub kind: DamageType,
@@ -52,6 +53,9 @@ pub struct DamageSpec {
 - 成功出手进入 `UnitAction::AttackBackswing { remaining: u32, duration: u32 }`，两个计时值均来自本次剩余间隔。
   后摇自然结束不额外增加攻击周期；移动/停止/换目标/技能可以取消，独立攻击间隔不变。
   同目标重复指令和无效请求保留后摇，暂停冻结、死亡清理；技能 `Recovery` 保持独立。
+- `AttributeModifier.move_speed_multiplier`默认1且有限[0,1]，仅对最终移速乘算；在f64中乘完再做最终饱和。
+- Slow模块聚合最强强度，只维护一个私有来源：20%加速+30%Slow是1.2×0.7=0.84倍。
+- 状态末段变更同步复用属性内部校验/提交，不能等下一步公开队列才更新最终值。
 - `Explicit` 来源仅显式移除；`OnDeath` 在死亡时清理。状态计时不属于属性模块。
 - 伤害提交快照 `base + ad_ratio * AD + ap_ratio * AP`；命中时读取目标对应最终抗性。
 - 来源死亡/移除不改变已提交效果；引导后续脉冲复用同一攻方快照。
@@ -64,7 +68,7 @@ pub struct DamageSpec {
 |---|---|
 | 非有限基础值、负攻击力/法强/移速/距离/攻速 | 构造拒绝 |
 | 有限负护甲/魔抗 | 合法，增加对应类型受到的伤害 |
-| 非有限修正值 | `AttributeChangeRejected` / `InvalidModifier`，原集合和最终值保留 |
+| 非有限修正值或非法最终移速系数 | `AttributeChangeRejected` / `InvalidModifier`，原集合和最终值保留 |
 | 无效目标或来源 | `InvalidUnit` / `InvalidSource`，不变更状态 |
 | 死亡单位添加 OnDeath 来源 | `Dead`，不带入重生 |
 | 死亡单位更新 Explicit 来源 | 可更新，重生不重复叠加 |

@@ -6,6 +6,7 @@ use std::collections::{BTreeMap, VecDeque};
 const ARMOR: usize = 2;
 const MAGIC_RESISTANCE: usize = 3;
 const ATTACK_SPEED: usize = 6;
+const MOVE_SPEED: usize = 4;
 /// Technical limits imposed by integer attack clocks, independent of balance.
 pub const MIN_ATTACK_SPEED: f32 = (TICK_RATE / u32::MAX as f64) as f32;
 pub const MAX_ATTACK_SPEED: f32 = (TICK_RATE / 2.0) as f32;
@@ -96,7 +97,7 @@ impl EffectiveAttributes {
         self.0[MAGIC_RESISTANCE]
     }
     pub fn move_speed(&self) -> f32 {
-        self.0[4]
+        self.0[MOVE_SPEED]
     }
     pub fn attack_range(&self) -> f32 {
         self.0[5]
@@ -126,15 +127,30 @@ pub enum ModifierRemoval {
     Explicit,
     OnDeath,
 }
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AttributeModifier {
     pub flat: AttributeDelta,
     pub additive_percent: AttributeDelta,
     pub removal: ModifierRemoval,
+    /// Final movement-speed factor. Statuses aggregate their slows before using it.
+    pub move_speed_multiplier: f32,
+}
+impl Default for AttributeModifier {
+    fn default() -> Self {
+        Self {
+            flat: AttributeDelta::default(),
+            additive_percent: AttributeDelta::default(),
+            removal: ModifierRemoval::Explicit,
+            move_speed_multiplier: 1.0,
+        }
+    }
 }
 impl AttributeModifier {
     fn valid(self) -> bool {
-        self.flat.valid() && self.additive_percent.valid()
+        self.flat.valid()
+            && self.additive_percent.valid()
+            && self.move_speed_multiplier.is_finite()
+            && (0.0..=1.0).contains(&self.move_speed_multiplier)
     }
 }
 
@@ -196,7 +212,9 @@ fn compute(
 ) -> EffectiveAttributes {
     let mut flat = [0.0_f64; 7];
     let mut percent = [0.0_f64; 7];
+    let mut move_multiplier = 1.0_f64;
     for modifier in modifiers.values() {
+        move_multiplier *= f64::from(modifier.move_speed_multiplier);
         for (total, value) in flat.iter_mut().zip(modifier.flat.values()) {
             *total += f64::from(value);
         }
@@ -209,6 +227,9 @@ fn compute(
         // All inputs are finite f32. Even usize::MAX such terms and their
         // product fit f64, so removal/death cleanup cannot overflow aggregation.
         let mut value = (f64::from(value) + flat[index]) * (1.0 + percent[index]).max(0.0);
+        if index == MOVE_SPEED {
+            value *= move_multiplier;
+        }
         if index == ATTACK_SPEED && value > 0.0 {
             value = value.clamp(f64::from(MIN_ATTACK_SPEED), f64::from(MAX_ATTACK_SPEED));
         }
@@ -260,6 +281,20 @@ fn apply(
         unit.attributes.effective = effective;
     }
     Ok(())
+}
+
+pub(super) fn set_immediate(
+    world: &mut World,
+    unit: Entity,
+    source: ModifierSourceId,
+    modifier: Option<AttributeModifier>,
+) -> Result<(), AttributeRejection> {
+    apply(
+        world,
+        unit,
+        source,
+        modifier.map_or(Change::Remove, Change::Upsert),
+    )
 }
 
 pub(super) fn consume_changes(world: &mut World) {

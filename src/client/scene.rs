@@ -20,9 +20,14 @@ pub(super) struct SceneAssets {
 #[derive(Component)]
 pub(super) struct UnitVisual;
 #[derive(Component)]
+pub(super) struct UnitGroundBase;
+#[derive(Component)]
 pub(super) struct UnitModel;
 #[derive(Component)]
 pub(super) struct ProjectileVisual;
+
+const AIRBORNE_PEAK_HEIGHT: f32 = 1.8;
+type GroundBaseFilter = (With<UnitGroundBase>, Without<UnitVisual>);
 
 pub(super) fn setup(
     mut commands: Commands,
@@ -162,9 +167,15 @@ pub(super) fn setup(
 pub(super) fn attach_unit_visuals(
     mut commands: Commands,
     assets: Res<SceneAssets>,
-    units: Query<(Entity, &Unit), Without<UnitVisual>>,
+    units: Query<(Entity, &Unit, &UnitPose, &UnitState, &UnitStatuses), Without<UnitVisual>>,
 ) {
-    for (entity, unit) in &units {
+    for (entity, unit, pose, state, statuses) in &units {
+        let point = pose.position();
+        let height = if state.alive() {
+            statuses.airborne_height(0.0) * AIRBORNE_PEAK_HEIGHT
+        } else {
+            0.0
+        };
         let material = if unit.team() == Team::Ally {
             assets.ally.clone()
         } else {
@@ -182,18 +193,25 @@ pub(super) fn attach_unit_visuals(
                         unit.definition().radius + 0.1,
                     ),
                 },
-                Transform::default(),
-                Visibility::default(),
+                Transform::from_xyz(point.x, height, point.y).with_rotation(Quat::from_rotation_y(
+                    (-pose.facing().x).atan2(-pose.facing().y),
+                )),
+                if state.alive() {
+                    Visibility::Inherited
+                } else {
+                    Visibility::Hidden
+                },
                 Name::new(unit.name().to_owned()),
             ))
             .with_children(|parent| {
                 parent.spawn((
+                    UnitGroundBase,
                     Mesh3d(assets.base.clone()),
                     MeshMaterial3d(assets.dark.clone()),
-                    Transform::from_xyz(0.0, 0.12, 0.0),
+                    Transform::from_xyz(0.0, 0.12 - height, 0.0),
                 ));
-                // Pose only the model child. The simulated root, pick bounds,
-                // base and overhead label anchor keep their existing transforms.
+                // Backswing poses only the model child. Airborne height belongs
+                // to the display root shared by the body, pick and label.
                 parent
                     .spawn((
                         UnitModel,
@@ -225,22 +243,46 @@ pub(super) fn attach_unit_visuals(
 pub(super) fn sync_units(
     fixed: Res<Time<Fixed>>,
     control: Res<SimulationControl>,
-    mut units: Query<(&UnitPose, &UnitState, &mut Transform, &mut Visibility), With<UnitVisual>>,
+    mut units: Query<
+        (
+            &UnitPose,
+            &UnitState,
+            &UnitStatuses,
+            &mut Transform,
+            &mut Visibility,
+        ),
+        With<UnitVisual>,
+    >,
 ) {
-    let fraction = if control.paused {
-        1.0
-    } else {
-        fixed.overstep_fraction()
-    };
-    for (pose, state, mut transform, mut visibility) in &mut units {
+    if control.paused {
+        return;
+    }
+    let fraction = fixed.overstep_fraction();
+    for (pose, state, statuses, mut transform, mut visibility) in &mut units {
         let point = pose.interpolated(fraction);
-        transform.translation = Vec3::new(point.x, 0.0, point.y);
+        let height = if state.alive() {
+            statuses.airborne_height(fraction) * AIRBORNE_PEAK_HEIGHT
+        } else {
+            0.0
+        };
+        transform.translation = Vec3::new(point.x, height, point.y);
         transform.rotation = Quat::from_rotation_y((-pose.facing().x).atan2(-pose.facing().y));
         *visibility = if state.alive() {
             Visibility::Inherited
         } else {
             Visibility::Hidden
         };
+    }
+}
+
+pub(super) fn sync_ground_bases(
+    units: Query<&Transform, With<UnitVisual>>,
+    mut bases: Query<(&ChildOf, &mut Transform), GroundBaseFilter>,
+) {
+    for (parent, mut transform) in &mut bases {
+        if let Ok(root) = units.get(parent.parent()) {
+            transform.translation.y = 0.12 - root.translation.y;
+        }
     }
 }
 
@@ -340,10 +382,11 @@ pub(super) fn sync_effects(
         }
         let point = pose.interpolated(fraction);
         if let UnitAction::Channeling {
-            radius, remaining, ..
+            pulse, remaining, ..
         } = action
+            && let Delivery::Area { radius, .. } = pulse.delivery()
         {
-            ring(&mut gizmos, point, *radius, Color::srgb_u8(140, 212, 190));
+            ring(&mut gizmos, point, radius, Color::srgb_u8(140, 212, 190));
             ring(
                 &mut gizmos,
                 point,
@@ -422,10 +465,11 @@ pub(super) fn sync_effects(
                         } else {
                             Color::srgb_u8(240, 117, 101)
                         };
-                        match definition.effect {
-                            AbilityEffect::Area { radius, .. } => {
-                                ring(&mut gizmos, point, radius, color)
-                            }
+                        match &definition.execution {
+                            AbilityExecution::Impact(ImpactDefinition {
+                                delivery: Delivery::Area { radius, .. },
+                                ..
+                            }) => ring(&mut gizmos, point, *radius, color),
                             _ => {
                                 let end =
                                     origin + (point - origin).clamp_length_max(definition.range);
@@ -447,6 +491,154 @@ pub(super) fn sync_effects(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn airborne_display_keeps_ground_base_and_freezes_until_landing_or_respawn() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, TransformPlugin, SimulationPlugin))
+            .insert_resource(NavigationMap::new(20.0, 1.0, vec![]))
+            .add_systems(Update, (sync_units, sync_ground_bases).chain());
+        let airborne = AbilityId(100);
+        let kill = AbilityId(101);
+        for (id, effect) in [
+            (
+                airborne,
+                Effect::ApplyStatus(StatusSpec::Airborne {
+                    duration: StatusDuration::from_millis(800).unwrap(),
+                }),
+            ),
+            (
+                kill,
+                Effect::Damage(DamageSpec {
+                    kind: DamageType::True,
+                    base: 1000.0,
+                    ad_ratio: 0.0,
+                    ap_ratio: 0.0,
+                }),
+            ),
+        ] {
+            app.world_mut()
+                .resource_mut::<AbilityCatalog>()
+                .register(
+                    id,
+                    AbilityDefinition {
+                        name: "Display test".into(),
+                        targeting: Targeting::Enemy,
+                        range: 10.0,
+                        windup: 0.0,
+                        recovery: 0.0,
+                        cooldown: 0.0,
+                        mana_cost: 0.0,
+                        execution: AbilityExecution::Impact(ImpactDefinition {
+                            delivery: Delivery::Direct,
+                            effects: vec![effect],
+                        }),
+                    },
+                )
+                .unwrap();
+        }
+        let caster = spawn_unit(
+            app.world_mut(),
+            UnitSpec {
+                name: "Display source".into(),
+                team: Team::Ally,
+                position: Vec2::ZERO,
+                stats: UnitStats::default(),
+                abilities: [Some(airborne), Some(kill), None, None],
+                respawn_delay: None,
+            },
+        )
+        .unwrap();
+        let target = spawn_unit(
+            app.world_mut(),
+            UnitSpec {
+                name: "Visible target".into(),
+                team: Team::Enemy,
+                position: Vec2::X * 2.0,
+                stats: UnitStats::default(),
+                abilities: [None; 4],
+                respawn_delay: Some(0.1),
+            },
+        )
+        .unwrap();
+        app.world_mut().entity_mut(target).insert((
+            UnitVisual,
+            Transform::from_xyz(2.0, 0.0, 0.0),
+            Visibility::Inherited,
+        ));
+        let base = app
+            .world_mut()
+            .spawn((
+                UnitGroundBase,
+                ChildOf(target),
+                Transform::from_xyz(0.0, 0.12, 0.0),
+            ))
+            .id();
+        app.world_mut().resource_mut::<CommandQueue>().submit(
+            caster,
+            UnitCommand::CastAbility {
+                slot: 0,
+                target: AbilityTarget::Unit(target),
+            },
+        );
+        for _ in 0..12 {
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+        app.world_mut().run_schedule(Update);
+        app.world_mut().run_schedule(PostUpdate);
+        let displayed = *app.world().get::<Transform>(target).unwrap();
+        assert!(displayed.translation.y > 0.5);
+        assert_eq!(displayed.translation.x, 2.0);
+        assert!(
+            (app.world()
+                .get::<GlobalTransform>(base)
+                .unwrap()
+                .translation()
+                .y
+                - 0.12)
+                .abs()
+                < 1e-5,
+            "the body's display root rises while its ground base stays down"
+        );
+        app.world_mut().resource_mut::<SimulationControl>().paused = true;
+        let mut fixed = app.world_mut().resource_mut::<Time<Fixed>>();
+        let extra = fixed.timestep().mul_f32(0.9);
+        fixed.accumulate_overstep(extra);
+        app.world_mut().run_schedule(Update);
+        assert_eq!(*app.world().get::<Transform>(target).unwrap(), displayed);
+        app.world_mut().resource_mut::<SimulationControl>().paused = false;
+        app.world_mut()
+            .resource_mut::<Time<Fixed>>()
+            .discard_overstep(extra);
+        app.world_mut().resource_mut::<CommandQueue>().submit(
+            caster,
+            UnitCommand::CastAbility {
+                slot: 1,
+                target: AbilityTarget::Unit(target),
+            },
+        );
+        app.world_mut().run_schedule(FixedUpdate);
+        app.world_mut().run_schedule(Update);
+        assert!(!app.world().get::<UnitState>(target).unwrap().alive());
+        assert_eq!(
+            *app.world().get::<Visibility>(target).unwrap(),
+            Visibility::Hidden
+        );
+        assert_eq!(
+            app.world().get::<Transform>(target).unwrap().translation.y,
+            0.0
+        );
+        for _ in 0..10 {
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+        app.world_mut().run_schedule(Update);
+        assert!(app.world().get::<UnitState>(target).unwrap().alive());
+        assert_eq!(
+            app.world().get::<Transform>(target).unwrap().translation,
+            Vec3::X * 2.0
+        );
+        assert!(app.world().get::<UnitStatuses>(target).unwrap().is_empty());
+    }
 
     #[test]
     fn pause_retains_rendered_backswing_pose_until_presentation_resumes() {

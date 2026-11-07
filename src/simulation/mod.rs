@@ -5,24 +5,33 @@ mod actions;
 mod attributes;
 mod combat;
 mod damage;
+mod effects;
 mod model;
 mod movement;
 mod navigation;
 mod orders;
-pub use abilities::{AbilityCatalog, AbilityDefinition, AbilityEffect, AbilityId, Targeting};
+mod statuses;
+pub use abilities::{
+    AbilityCatalog, AbilityDefinition, AbilityExecution, AbilityId, Delivery,
+    DisplacementDirection, DisplacementSpec, Effect, ImpactDefinition, Targeting,
+};
 pub use attributes::{
     AttributeChanges, AttributeDelta, AttributeModifier, AttributeRejection, BaseAttributes,
     EffectiveAttributes, MAX_ATTACK_SPEED, MIN_ATTACK_SPEED, ModifierRemoval, ModifierSourceId,
 };
 use bevy::prelude::*;
 pub use damage::{DamageOrigin, DamageSnapshot, DamageSpec, DamageType};
+pub use effects::ImpactSnapshot;
+use model::Movement;
 pub use model::{
     AbilitySlots, AbilityTarget, AreaEffect, CommandQueue, Projectile, Rejection,
     SimulationControl, SimulationEvent, SimulationTick, Team, Unit, UnitAction, UnitCommand,
-    UnitOrder, UnitPose, UnitSpec, UnitState, UnitStats,
+    UnitLifeRef, UnitOrder, UnitPose, UnitSpec, UnitState, UnitStats,
 };
-use model::{Movement, PendingDamage};
 pub use navigation::{NavigationMap, Obstacle, PathError};
+pub use statuses::{
+    ControlState, StatusDuration, StatusKind, StatusSpec, StatusView, UnitStatuses,
+};
 
 pub const TICK_RATE: f64 = 60.0;
 pub const TICK_SECONDS: f32 = 1.0 / TICK_RATE as f32;
@@ -35,7 +44,8 @@ impl Plugin for SimulationPlugin {
             .init_resource::<AbilityCatalog>()
             .init_resource::<SimulationControl>()
             .init_resource::<SimulationTick>()
-            .init_resource::<PendingDamage>()
+            .init_resource::<effects::PendingImpacts>()
+            .init_resource::<statuses::StatusSequence>()
             .add_message::<SimulationEvent>()
             .add_systems(
                 FixedUpdate,
@@ -49,7 +59,8 @@ impl Plugin for SimulationPlugin {
                     movement::move_units,
                     combat::advance_projectiles,
                     combat::advance_areas,
-                    combat::resolve_damage,
+                    statuses::advance_old,
+                    effects::resolve,
                 )
                     .chain()
                     .run_if(|control: Res<SimulationControl>| !control.paused),
@@ -84,6 +95,10 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
     {
         return Err("unknown equipped ability");
     }
+    let slow_source = world
+        .resource_mut::<AttributeChanges>()
+        .allocate_source()
+        .ok_or("attribute source space exhausted")?;
     let health = spec.stats.max_health;
     let mana = spec.stats.max_mana;
     Ok(world
@@ -98,6 +113,7 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
             },
             UnitState {
                 health,
+                life_epoch: 1,
                 mana,
                 attack_cooldown: 0,
                 respawn_remaining: None,
@@ -114,6 +130,8 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
             UnitOrder::default(),
             UnitAction::default(),
             Movement::default(),
+            UnitStatuses::new(slow_source),
+            ControlState::default(),
         ))
         .id())
 }

@@ -14,6 +14,10 @@ pub(super) fn valid_enemy(world: &World, source: Entity, target: Entity) -> bool
     }
 }
 
+pub(super) fn valid_enemy_life(world: &World, source: Entity, target: UnitLifeRef) -> bool {
+    target.is_current(world) && valid_enemy(world, source, target.entity())
+}
+
 pub(super) fn validate_target(
     world: &World,
     unit: Entity,
@@ -53,14 +57,21 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
     if !state.alive() {
         return Err(Rejection::Dead);
     }
-    if world
-        .get::<Movement>(entity)
-        .is_some_and(|m| m.dash.is_some())
+    if !matches!(command, UnitCommand::Stop)
+        && world
+            .get::<Movement>(entity)
+            .is_some_and(|m| m.dash.is_some())
     {
         return Err(Rejection::Busy);
     }
     match command {
         UnitCommand::MoveTo(point) | UnitCommand::AttackMove(point) => {
+            if !world
+                .get::<ControlState>(entity)
+                .is_some_and(ControlState::can_move)
+            {
+                return Err(Rejection::Controlled);
+            }
             let pose = world
                 .get::<UnitPose>(entity)
                 .ok_or(Rejection::InvalidUnit)?;
@@ -98,10 +109,20 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
             });
         }
         UnitCommand::AttackTarget(target) => {
+            if !world
+                .get::<ControlState>(entity)
+                .is_some_and(ControlState::can_attack)
+            {
+                return Err(Rejection::Controlled);
+            }
             if !valid_enemy(world, entity, target) {
                 return Err(Rejection::InvalidTarget);
             }
-            if matches!(world.get::<UnitOrder>(entity), Some(UnitOrder::AttackTarget(current)) if *current == target)
+            let target_life = world
+                .get::<UnitState>(target)
+                .expect("validated target state")
+                .life_ref(target);
+            if matches!(world.get::<UnitOrder>(entity), Some(UnitOrder::AttackTarget(current)) if *current == target_life)
                 && matches!(
                     world.get::<UnitAction>(entity),
                     Some(
@@ -115,13 +136,15 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
             }
             *world
                 .get_mut::<UnitOrder>(entity)
-                .ok_or(Rejection::InvalidUnit)? = UnitOrder::AttackTarget(target);
+                .ok_or(Rejection::InvalidUnit)? = UnitOrder::AttackTarget(target_life);
             *world
                 .get_mut::<UnitAction>(entity)
                 .ok_or(Rejection::InvalidUnit)? = UnitAction::Ready;
-            *world
-                .get_mut::<Movement>(entity)
-                .ok_or(Rejection::InvalidUnit)? = Movement::default();
+            super::movement::clear_route(
+                &mut *world
+                    .get_mut::<Movement>(entity)
+                    .ok_or(Rejection::InvalidUnit)?,
+            );
         }
         UnitCommand::CastAbility { slot, target } => {
             let slots = world
@@ -135,6 +158,12 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
                 .resource::<AbilityCatalog>()
                 .get(id)
                 .ok_or(Rejection::NoAbility)?;
+            if !world
+                .get::<ControlState>(entity)
+                .is_some_and(|control| control.permits(definition))
+            {
+                return Err(Rejection::Controlled);
+            }
             if state.mana < definition.mana_cost {
                 return Err(Rejection::InsufficientMana);
             }
@@ -151,17 +180,30 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
             }
             validate_target(world, entity, definition, target)?;
             let windup = definition.windup;
+            let target_life = if let AbilityTarget::Unit(target) = target {
+                Some(
+                    world
+                        .get::<UnitState>(target)
+                        .expect("validated target")
+                        .life_ref(target),
+                )
+            } else {
+                None
+            };
             *world
                 .get_mut::<UnitAction>(entity)
                 .ok_or(Rejection::InvalidUnit)? = UnitAction::Casting {
                 slot,
                 ability: id,
                 target,
+                target_life,
                 remaining: windup,
             };
-            *world
-                .get_mut::<Movement>(entity)
-                .ok_or(Rejection::InvalidUnit)? = Movement::default();
+            super::movement::clear_route(
+                &mut *world
+                    .get_mut::<Movement>(entity)
+                    .ok_or(Rejection::InvalidUnit)?,
+            );
         }
         UnitCommand::Stop => {
             *world
@@ -170,9 +212,11 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
             *world
                 .get_mut::<UnitAction>(entity)
                 .ok_or(Rejection::InvalidUnit)? = UnitAction::Ready;
-            *world
-                .get_mut::<Movement>(entity)
-                .ok_or(Rejection::InvalidUnit)? = Movement::default();
+            super::movement::clear_route(
+                &mut *world
+                    .get_mut::<Movement>(entity)
+                    .ok_or(Rejection::InvalidUnit)?,
+            );
         }
     }
     Ok(())
@@ -187,30 +231,42 @@ pub(super) fn consume_commands(world: &mut World) {
     }
 }
 
+type OrderActor<'a> = (
+    Entity,
+    &'a Unit,
+    &'a UnitState,
+    &'a UnitPose,
+    &'a ControlState,
+    &'a mut UnitOrder,
+    &'a mut UnitAction,
+    &'a mut Movement,
+);
+
 pub(super) fn resolve_orders(
     map: Res<NavigationMap>,
     targets: Query<(Entity, &Unit, &UnitState, &UnitPose)>,
-    mut actors: Query<(
-        Entity,
-        &Unit,
-        &UnitState,
-        &UnitPose,
-        &mut UnitOrder,
-        &mut UnitAction,
-        &mut Movement,
-    )>,
+    mut actors: Query<OrderActor<'_>>,
     mut events: MessageWriter<SimulationEvent>,
 ) {
-    for (entity, unit, state, pose, mut order, mut action, mut movement) in &mut actors {
-        if !state.alive() || !matches!(*action, UnitAction::Ready) || movement.dash.is_some() {
+    for (entity, unit, state, pose, control, mut order, mut action, mut movement) in &mut actors {
+        if !state.alive()
+            || !matches!(*action, UnitAction::Ready)
+            || movement.dash.is_some()
+            || movement.forced.is_some()
+            || (!control.can_move() && !control.can_attack())
+        {
             continue;
         }
         movement.repath_remaining = (movement.repath_remaining - TICK_SECONDS).max(0.0);
-        let valid = |target: Entity| {
+        let valid = |target: UnitLifeRef| {
             targets
-                .get(target)
+                .get(target.entity())
                 .ok()
-                .filter(|(_, other, life, _)| other.team != unit.team && life.alive())
+                .filter(|(_, other, life, _)| {
+                    other.team != unit.team
+                        && life.alive()
+                        && life.life_ref(target.entity()) == target
+                })
         };
         let target = match &mut *order {
             UnitOrder::AttackTarget(target) => {
@@ -245,14 +301,14 @@ pub(super) fn resolve_orders(
                                 .total_cmp(&b.3.position.distance_squared(pose.position))
                                 .then_with(|| a.0.to_bits().cmp(&b.0.to_bits()))
                         })
-                        .map(|(id, _, _, _)| id);
+                        .map(|(id, _, state, _)| state.life_ref(id));
                 }
                 *target
             }
             _ => None,
         };
         let goal = if let Some(target) = target {
-            let Ok((_, other, _, target_pose)) = targets.get(target) else {
+            let Ok((_, other, _, target_pose)) = targets.get(target.entity()) else {
                 continue;
             };
             let reach = unit.attributes().attack_range() + unit.stats.radius + other.stats.radius;
@@ -261,7 +317,8 @@ pub(super) fn resolve_orders(
             {
                 movement.route.clear();
                 movement.goal = None;
-                if state.attack_cooldown == 0
+                if control.can_attack()
+                    && state.attack_cooldown == 0
                     && let Some((windup, interval)) = unit
                         .attributes()
                         .attack_timing(unit.stats.attack_windup_fraction)
@@ -281,6 +338,10 @@ pub(super) fn resolve_orders(
                 _ => None,
             }
         };
+        if !control.can_move() {
+            super::movement::clear_route(&mut movement);
+            continue;
+        }
         let Some(goal) = goal else {
             movement.route.clear();
             movement.goal = None;
