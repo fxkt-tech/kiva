@@ -108,3 +108,38 @@
 ### Next Steps
 
 - 按用户要求推送main；后续功能另行规划。
+
+
+## Session 4: 技能组合与状态效果系统
+<!-- trellis-session: v=2 fp=a250dd074b011b4e -->
+
+**Date**: 2026-11-07
+**Task**: 技能组合与状态效果系统
+**Branch**: `main`
+
+### Summary
+
+实现可组合技能与五类控制，保持模拟与客户端单向依赖；完整质量检查和浏览器验收通过，按用户指令提交并推送。
+
+### Main Changes
+
+- 分离执行、投递、有序效果和不可变快照，统一稳定命中队列。
+- 实现控制叠加、最强减速、强制位移及生命代次，明确中断与Stop规则。
+- 统一击飞显示、拾取和血条投影，动态装配HUD与技能说明；同步架构及规范。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ef5fac6` | feat: add composable abilities and crowd control |
+
+### Testing
+
+- [OK] make check通过：109项Rust测试，包含原65项回归；原生Clippy和WASM check通过。
+- [OK] WASM Clippy -D warnings、最终Trunk构建、JavaScript语法与文档检查通过。
+- [OK] 有窗口技能三分辨率/DPR、smoke、stats、cursor通过；逐帧血条90/90与48/48帧更新。
+- [OK] 独立全范围复核通过，无未解决架构/规则问题。
+
+### Status
+
+[OK] **Completed**
