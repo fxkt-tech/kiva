@@ -3,7 +3,7 @@
   "name": "dash-range",
   "title": "地点冲刺超距按最大范围释放",
   "description": "让流风步等地点冲刺接受超距鼠标目标，在模拟提交时沿原方向截取到最大射程，统一角色与装备主动及瞄准提示。",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": "fullstack",
   "scope": "simulation/client",
   "package": null,
@@ -11,11 +11,11 @@
   "creator": "asuka",
   "assignee": "asuka",
   "createdAt": "2026-11-07",
-  "completedAt": null,
+  "completedAt": "2026-11-07",
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "008f5468ecd2322255464fc1a2d3872fe4376ea5",
   "pr_url": null,
   "subtasks": [],
   "children": [],
@@ -32,12 +32,12 @@
     "README.md",
     "docs/architecture.md"
   ],
-  "notes": "实现、独立复核及验收完成；用户现已明确授权提交两项修复并推送。",
+  "notes": "实现、独立复核及验收完成，已按用户授权提交；归档任务并随本次会话推送。",
   "meta": {
     "baseline_commit": "18e3589",
     "tests_rust": 162,
     "quality_gate": "passed: make check (162), WASM Clippy, Trunk, JS checks, public dash regression, skills/equipment three-size browser scenarios and headed smoke, independent review",
-    "ready_for_commit": true,
+    "ready_for_commit": false,
     "commit_push_authorized": true,
     "preceding_pointer_fix_commit": "a12ecb552c71a6e3d40f426d12f23278f2c0e7e4"
   }
