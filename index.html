@@ -48,7 +48,16 @@
     </aside>
     <footer>
       <div class="camera-hint"><span id="camera-mode">自由镜头</span><span><kbd>Y</kbd> 切换 · <kbd>Space</kbd> 跟随</span></div>
-      <section id="hero-hud" class="hero-hud panel" data-ui aria-label="角色与技能">
+      <section id="hero-hud" class="hero-hud panel" data-ui aria-label="角色属性与技能">
+        <dl id="hero-stats" class="hero-stats" aria-label="当前战斗属性">
+          <div class="hero-stat" title="攻击力"><dt>攻击</dt><dd><span data-stat="attack_damage">—</span></dd></div>
+          <div class="hero-stat" title="法术强度"><dt>法强</dt><dd><span data-stat="ability_power">—</span></dd></div>
+          <div class="hero-stat"><dt>护甲</dt><dd><span data-stat="armor">—</span></dd></div>
+          <div class="hero-stat"><dt>魔抗</dt><dd><span data-stat="magic_resistance">—</span></dd></div>
+          <div class="hero-stat" title="移动速度"><dt>移速</dt><dd><span data-stat="move_speed">—</span></dd></div>
+          <div class="hero-stat" title="攻击速度"><dt>攻速</dt><dd><span data-stat="attack_speed">—</span></dd></div>
+          <div class="hero-stat" title="攻击距离"><dt>攻距</dt><dd><span data-stat="attack_range">—</span></dd></div>
+        </dl>
         <div class="portrait"><span>◇</span><small>01</small></div>
         <div class="hero-info">
           <div class="hero-title"><strong>旅者</strong><span id="hero-action">准备就绪</span></div>

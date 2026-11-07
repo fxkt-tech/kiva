@@ -19,7 +19,7 @@ pub(super) fn advance_actions(world: &mut World) {
             let unit = world.get::<Unit>(entity).expect("unit");
             let (max_mana, regen) = (unit.stats.max_mana, unit.stats.mana_regen);
             let mut state = world.get_mut::<UnitState>(entity).expect("unit state");
-            state.attack_cooldown = (state.attack_cooldown - TICK_SECONDS).max(0.0);
+            state.attack_cooldown = state.attack_cooldown.saturating_sub(1);
             state.mana = (state.mana + regen * TICK_SECONDS).min(max_mana);
         }
         for cooldown in &mut world
@@ -41,17 +41,41 @@ pub(super) fn advance_actions(world: &mut World) {
                 }
             }
             UnitAction::Recovery { .. } => UnitAction::Ready,
-            UnitAction::AttackWindup { target, remaining } => {
-                if !valid_enemy(world, entity, target) {
-                    UnitAction::Ready
-                } else if remaining > TICK_SECONDS + 1e-6 {
-                    UnitAction::AttackWindup {
-                        target,
-                        remaining: remaining - TICK_SECONDS,
+            UnitAction::AttackBackswing {
+                remaining,
+                duration,
+            } => {
+                if remaining > 1 {
+                    UnitAction::AttackBackswing {
+                        remaining: remaining - 1,
+                        duration,
                     }
                 } else {
-                    release_attack(world, entity, target);
                     UnitAction::Ready
+                }
+            }
+            UnitAction::AttackWindup {
+                target,
+                remaining,
+                interval,
+            } => {
+                if !valid_enemy(world, entity, target) {
+                    UnitAction::Ready
+                } else if remaining > 1 {
+                    UnitAction::AttackWindup {
+                        target,
+                        remaining: remaining - 1,
+                        interval,
+                    }
+                } else {
+                    if release_attack(world, entity, target, interval) {
+                        UnitAction::AttackBackswing {
+                            remaining: interval,
+                            duration: interval,
+                        }
+                    } else {
+                        UnitAction::Ready
+                    }
                 }
             }
             UnitAction::Casting {
@@ -116,24 +140,33 @@ pub(super) fn advance_actions(world: &mut World) {
     }
 }
 
-fn release_attack(world: &mut World, entity: Entity, target: Entity) {
+fn release_attack(world: &mut World, entity: Entity, target: Entity, interval: u32) -> bool {
     let unit = world.get::<Unit>(entity).expect("unit");
-    let stats = unit.stats.clone();
+    let attributes = *unit.attributes();
+    let radius = unit.stats.radius;
     let team = unit.team;
     let origin = world.get::<UnitPose>(entity).expect("unit pose").position;
     let target_position = world.get::<UnitPose>(target).expect("target pose").position;
-    let radius = world.get::<Unit>(target).expect("target").stats.radius;
-    if origin.distance(target_position) > stats.attack_range + stats.radius + radius
+    let target_radius = world.get::<Unit>(target).expect("target").stats.radius;
+    if origin.distance(target_position) > attributes.attack_range() + radius + target_radius
         || !world
             .resource::<NavigationMap>()
             .line_clear(origin, target_position, 0.05)
     {
-        return;
+        return false;
     }
+    let damage = DamageSpec {
+        kind: DamageType::Physical,
+        base: 0.0,
+        ad_ratio: 1.0,
+        ap_ratio: 0.0,
+    }
+    .snapshot(&attributes, DamageOrigin::BasicAttack)
+    .expect("finite attack damage");
     world
         .get_mut::<UnitState>(entity)
         .expect("unit state")
-        .attack_cooldown = (stats.attack_period - stats.attack_windup).max(TICK_SECONDS);
+        .attack_cooldown = interval;
     world.spawn(Projectile {
         source: entity,
         team,
@@ -143,13 +176,14 @@ fn release_attack(world: &mut World, entity: Entity, target: Entity) {
         remaining: 100.0,
         speed: 22.0,
         radius: 0.12,
-        damage: stats.attack_damage,
+        damage,
         homing: Some(target),
     });
     world.write_message(SimulationEvent::AttackReleased {
         source: entity,
         target,
     });
+    true
 }
 
 fn commit_ability(
@@ -176,6 +210,24 @@ fn commit_ability(
         });
         return UnitAction::Ready;
     }
+    let damage_snapshot = match &definition.effect {
+        AbilityEffect::Projectile { damage, .. }
+        | AbilityEffect::Area { damage, .. }
+        | AbilityEffect::Channel { damage, .. } => {
+            let Some(snapshot) = damage.snapshot(
+                world.get::<Unit>(entity).expect("unit").attributes(),
+                DamageOrigin::Ability(id),
+            ) else {
+                world.write_message(SimulationEvent::CommandRejected {
+                    unit: entity,
+                    reason: Rejection::InvalidDamage,
+                });
+                return UnitAction::Ready;
+            };
+            Some(snapshot)
+        }
+        AbilityEffect::Dash { .. } => None,
+    };
     // This is the only commit point. Cancellation before it spends nothing;
     // interruption after it never refunds costs or removes released effects.
     world.get_mut::<UnitState>(entity).expect("unit state").mana -= definition.mana_cost;
@@ -207,7 +259,7 @@ fn commit_ability(
         AbilityEffect::Projectile {
             speed,
             radius,
-            damage,
+            damage: _,
         } => {
             let AbilityTarget::Direction(direction) = target else {
                 unreachable!("registered projectile targeting");
@@ -221,7 +273,7 @@ fn commit_ability(
                 remaining: definition.range,
                 speed,
                 radius,
-                damage,
+                damage: damage_snapshot.expect("damaging effect snapshot"),
                 homing: None,
             });
             recovery
@@ -229,7 +281,7 @@ fn commit_ability(
         AbilityEffect::Area {
             radius,
             delay,
-            damage,
+            damage: _,
         } => {
             world.spawn(AreaEffect {
                 source: entity,
@@ -238,7 +290,7 @@ fn commit_ability(
                 radius,
                 remaining: delay,
                 duration: delay,
-                damage,
+                damage: damage_snapshot.expect("damaging effect snapshot"),
             });
             recovery
         }
@@ -253,13 +305,13 @@ fn commit_ability(
             duration,
             interval,
             radius,
-            damage,
+            damage: _,
         } => UnitAction::Channeling {
             remaining: duration,
             next_pulse: interval,
             interval,
             radius,
-            damage,
+            damage: damage_snapshot.expect("damaging effect snapshot"),
             recovery: definition.recovery,
         },
     }

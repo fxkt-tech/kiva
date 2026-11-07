@@ -104,7 +104,11 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
             if matches!(world.get::<UnitOrder>(entity), Some(UnitOrder::AttackTarget(current)) if *current == target)
                 && matches!(
                     world.get::<UnitAction>(entity),
-                    Some(UnitAction::Ready | UnitAction::AttackWindup { .. })
+                    Some(
+                        UnitAction::Ready
+                            | UnitAction::AttackWindup { .. }
+                            | UnitAction::AttackBackswing { .. }
+                    )
                 )
             {
                 return Ok(());
@@ -140,6 +144,7 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
                     UnitAction::Ready
                         | UnitAction::Recovery { .. }
                         | UnitAction::AttackWindup { .. }
+                        | UnitAction::AttackBackswing { .. }
                 )
             ) {
                 return Err(Rejection::Busy);
@@ -220,7 +225,7 @@ pub(super) fn resolve_orders(
             UnitOrder::AttackMove { target, .. } => {
                 if target.is_some_and(|id| {
                     valid(id).is_none_or(|(_, _, _, p)| {
-                        p.position.distance(pose.position) > unit.stats.attack_range + 6.0
+                        p.position.distance(pose.position) > unit.attributes().attack_range() + 6.0
                     })
                 }) {
                     *target = None;
@@ -232,7 +237,7 @@ pub(super) fn resolve_orders(
                             other.team != unit.team
                                 && life.alive()
                                 && p.position.distance(pose.position)
-                                    <= unit.stats.attack_range + 3.0
+                                    <= unit.attributes().attack_range() + 3.0
                         })
                         .min_by(|a, b| {
                             a.3.position
@@ -250,16 +255,21 @@ pub(super) fn resolve_orders(
             let Ok((_, other, _, target_pose)) = targets.get(target) else {
                 continue;
             };
-            let reach = unit.stats.attack_range + unit.stats.radius + other.stats.radius;
+            let reach = unit.attributes().attack_range() + unit.stats.radius + other.stats.radius;
             if pose.position.distance(target_pose.position) <= reach
                 && map.line_clear(pose.position, target_pose.position, 0.05)
             {
                 movement.route.clear();
                 movement.goal = None;
-                if state.attack_cooldown <= 1e-5 {
+                if state.attack_cooldown == 0
+                    && let Some((windup, interval)) = unit
+                        .attributes()
+                        .attack_timing(unit.stats.attack_windup_fraction)
+                {
                     *action = UnitAction::AttackWindup {
                         target,
-                        remaining: unit.stats.attack_windup,
+                        remaining: windup,
+                        interval,
                     };
                 }
                 continue;

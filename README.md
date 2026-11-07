@@ -66,6 +66,18 @@ sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 首版为本地单人测试场景，包含固定靶和巡逻靶。单位暂不互相阻挡；
 尚未加入装备、经济、兵线、战争迷雾或联网。
 
+## 基础属性
+
+底部角色卡片左侧以紧凑布局显示七项当前生效的属性，文案依次为：攻击、法强、护甲、魔抗、移速、攻速、攻距。
+移动速度以世界单位/秒表示，攻击距离表示双方碰撞边缘之间的距离，攻击速度以次/秒表示。
+显示值直接来自模拟结果，后续装备和状态效果共用带来源的属性修正接口。
+
+普攻造成物理伤害；Q/W/R 造成魔法伤害并具有法强加成。护甲抵御物理伤害，魔抗抵御魔法伤害，
+100 对应抗性将伤害减半，负抗性增加受到的对应伤害。真实伤害忽略两种抗性。
+当前演示单位默认法强、护甲、魔抗均为 0，保留示例技能的基础伤害。
+普攻具有前摇和后摇，出手后进入收招；移动、停止、换目标或施法可以取消后摇，已发射攻击继续生效。
+改变攻速从下一次新普攻生效，取消后摇不会刷新已提交的普攻间隔。
+
 ## 检查
 
 ```bash
@@ -76,10 +88,10 @@ make check
 `make check` 依次运行格式检查、Clippy、Rust 测试和 WASM 类型检查，GitHub Actions 使用相同入口。
 也可单独执行 `make fmt`、`make lint`、`make test`、`make wasm`。
 
-`tests/simulation.rs` 使用相同的公开角色指令接口，验证寻路、攻击、施法提交、冷却、
-中断、伤害、死亡重生等规则，不创建窗口、相机或 GPU。
+`tests/simulation.rs` 使用相同的公开指令和属性变更接口，验证来源修正、伤害类型与抗性、
+攻击时序、寻路、施法提交、冷却、中断、死亡重生等规则，不创建窗口、相机或 GPU。
 
-浏览器集成测试需要已运行的开发服务，以及额外的测试工具：
+浏览器集成测试需要额外的测试工具，可使用现有开发服务，或设置 `KIVA_SITE_DIR` 测试独立构建：
 
 ```bash
 npm install --prefix /tmp/kiva-browser-tests playwright@1.65.0 pngjs@7.0.0
@@ -123,6 +135,15 @@ NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-s
 同时检查完整 HUD 状态仍按较低频率发布。
 光标测试覆盖捕获、越界移动、边缘滚屏与回移停止、Esc 释放与重新进入、
 技能按钮、点地移动、高 DPI 以及捕获失败提示。
+
+属性面板回归使用同一份构建，验证七项显示值与模拟一致、大小窗口和高 DPI 布局、
+捕获鼠标下属性区的输入隔离，以及暂停和恢复：
+
+```bash
+NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-stats.cjs
+```
+
+`browser-smoke.cjs` 和 `browser-startup.cjs` 也支持 `KIVA_SITE_DIR`，自行创建并关闭临时静态测试入口。
 
 ## 构建部署
 

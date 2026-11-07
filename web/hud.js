@@ -6,11 +6,15 @@
   const canvas = $("game");
   const labels = new Map();
   const actionNames = {
-    Ready: "准备就绪", Attacking: "攻击中", Casting: "施法中",
+    Ready: "准备就绪", Attacking: "攻击前摇", AttackBackswing: "攻击后摇", Casting: "施法中",
     Channeling: "引导中", Recovery: "收招中",
   };
   let ready = false;
   let entered = false;
+  const statFields = [
+    ["attack_damage", 1], ["ability_power", 1], ["armor", 1], ["magic_resistance", 1],
+    ["move_speed", 2], ["attack_speed", 2], ["attack_range", 2],
+  ].map(([key, digits]) => ({ key, digits, element: document.querySelector(`[data-stat="${key}"]`) }));
   window.__kivaStartup = "loading";
 
   function setPaused(paused) {
@@ -101,7 +105,17 @@
   window.addEventListener("unhandledrejection", startupFailed);
   if (!navigator.gpu) startupFailed();
 
+  function formatAttribute(value, digits) {
+    if (!Number.isFinite(value)) return "—";
+    const rounded = Number(value.toFixed(digits));
+    return (value !== 0 && rounded === 0) || Math.abs(value) >= 1e6
+      ? value.toExponential(1) : String(rounded);
+  }
+
   function renderHero(player) {
+    for (const { key, digits, element } of statFields) {
+      element.textContent = formatAttribute(player?.attributes?.[key], digits);
+    }
     if (!player) return;
     $("health-fill").style.width = `${100 * player.health / player.max_health}%`;
     $("mana-fill").style.width = `${100 * player.mana / player.max_mana}%`;

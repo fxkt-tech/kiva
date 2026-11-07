@@ -1,4 +1,8 @@
-use super::abilities::AbilityId;
+use super::{
+    AttributeRejection, BaseAttributes, DamageOrigin, DamageSnapshot, DamageType,
+    EffectiveAttributes, ModifierSourceId, abilities::AbilityId, attributes::AttributeState,
+    damage::DamageRequest,
+};
 use bevy::prelude::*;
 use std::collections::VecDeque;
 
@@ -12,12 +16,9 @@ pub struct UnitStats {
     pub max_health: f32,
     pub max_mana: f32,
     pub mana_regen: f32,
-    pub move_speed: f32,
     pub radius: f32,
-    pub attack_range: f32,
-    pub attack_damage: f32,
-    pub attack_period: f32,
-    pub attack_windup: f32,
+    pub base_attributes: BaseAttributes,
+    pub attack_windup_fraction: f32,
 }
 impl Default for UnitStats {
     fn default() -> Self {
@@ -25,35 +26,23 @@ impl Default for UnitStats {
             max_health: 600.0,
             max_mana: 300.0,
             mana_regen: 8.0,
-            move_speed: 5.5,
             radius: 0.45,
-            attack_range: 5.5,
-            attack_damage: 40.0,
-            attack_period: 0.8,
-            attack_windup: 0.22,
+            base_attributes: BaseAttributes::default(),
+            attack_windup_fraction: 0.275,
         }
     }
 }
 impl UnitStats {
     pub(super) fn valid(&self) -> bool {
-        [
-            self.max_health,
-            self.move_speed,
-            self.radius,
-            self.attack_range,
-            self.attack_period,
-        ]
-        .into_iter()
-        .all(|v| v.is_finite() && v > 0.0)
-            && [
-                self.max_mana,
-                self.mana_regen,
-                self.attack_damage,
-                self.attack_windup,
-            ]
+        [self.max_health, self.radius]
             .into_iter()
-            .all(|v| v.is_finite() && v >= 0.0)
-            && self.attack_windup <= self.attack_period
+            .all(|v| v.is_finite() && v > 0.0)
+            && [self.max_mana, self.mana_regen]
+                .into_iter()
+                .all(|v| v.is_finite() && v >= 0.0)
+            && self.attack_windup_fraction.is_finite()
+            && (0.0..=1.0).contains(&self.attack_windup_fraction)
+            && self.base_attributes.valid()
     }
 }
 #[derive(Clone, Debug)]
@@ -70,6 +59,7 @@ pub struct Unit {
     pub(super) name: String,
     pub(super) team: Team,
     pub(super) stats: UnitStats,
+    pub(super) attributes: AttributeState,
     pub(super) home: Vec2,
     pub(super) respawn_delay: Option<f32>,
 }
@@ -80,15 +70,18 @@ impl Unit {
     pub fn team(&self) -> Team {
         self.team
     }
-    pub fn stats(&self) -> &UnitStats {
+    pub fn definition(&self) -> &UnitStats {
         &self.stats
+    }
+    pub fn attributes(&self) -> &EffectiveAttributes {
+        self.attributes.effective()
     }
 }
 #[derive(Component, Debug)]
 pub struct UnitState {
     pub(super) health: f32,
     pub(super) mana: f32,
-    pub(super) attack_cooldown: f32,
+    pub(super) attack_cooldown: u32,
     pub(super) respawn_remaining: Option<f32>,
 }
 impl UnitState {
@@ -102,7 +95,7 @@ impl UnitState {
         self.health > 0.0
     }
     pub fn attack_cooldown(&self) -> f32 {
-        self.attack_cooldown
+        self.attack_cooldown as f32 * super::TICK_SECONDS
     }
 }
 #[derive(Component, Debug)]
@@ -180,7 +173,14 @@ pub enum UnitAction {
     Ready,
     AttackWindup {
         target: Entity,
-        remaining: f32,
+        remaining: u32,
+        interval: u32,
+    },
+    /// Cancellable recovery pose after a committed basic attack. The separate
+    /// attack cooldown remains authoritative even if this action is cancelled.
+    AttackBackswing {
+        remaining: u32,
+        duration: u32,
     },
     Casting {
         slot: usize,
@@ -193,7 +193,7 @@ pub enum UnitAction {
         next_pulse: f32,
         interval: f32,
         radius: f32,
-        damage: f32,
+        damage: DamageSnapshot,
         recovery: f32,
     },
     Recovery {
@@ -205,6 +205,7 @@ impl UnitAction {
         match self {
             Self::Ready => "Ready",
             Self::AttackWindup { .. } => "Attacking",
+            Self::AttackBackswing { .. } => "AttackBackswing",
             Self::Casting { .. } => "Casting",
             Self::Channeling { .. } => "Channeling",
             Self::Recovery { .. } => "Recovery",
@@ -229,9 +230,15 @@ pub enum Rejection {
     InsufficientMana,
     NoPath,
     Busy,
+    InvalidDamage,
 }
 #[derive(Message, Clone, Debug)]
 pub enum SimulationEvent {
+    AttributeChangeRejected {
+        unit: Entity,
+        source: ModifierSourceId,
+        reason: AttributeRejection,
+    },
     CommandRejected {
         unit: Entity,
         reason: Rejection,
@@ -253,6 +260,8 @@ pub enum SimulationEvent {
         source: Entity,
         target: Entity,
         amount: f32,
+        kind: DamageType,
+        origin: DamageOrigin,
     },
     Died {
         unit: Entity,
@@ -271,7 +280,7 @@ pub struct Projectile {
     pub(super) remaining: f32,
     pub(super) speed: f32,
     pub(super) radius: f32,
-    pub(super) damage: f32,
+    pub(super) damage: DamageSnapshot,
     pub(super) homing: Option<Entity>,
 }
 impl Projectile {
@@ -296,7 +305,7 @@ pub struct AreaEffect {
     pub(super) radius: f32,
     pub(super) remaining: f32,
     pub(super) duration: f32,
-    pub(super) damage: f32,
+    pub(super) damage: DamageSnapshot,
 }
 impl AreaEffect {
     pub fn position(&self) -> Vec2 {
@@ -310,7 +319,7 @@ impl AreaEffect {
     }
 }
 #[derive(Resource, Default)]
-pub(super) struct PendingDamage(pub Vec<(Entity, Entity, f32)>);
+pub(super) struct PendingDamage(pub Vec<DamageRequest>);
 #[derive(Resource, Default)]
 pub struct SimulationControl {
     pub paused: bool,

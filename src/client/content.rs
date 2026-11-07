@@ -82,7 +82,12 @@ pub(super) fn setup(world: &mut World) {
                 effect: AbilityEffect::Projectile {
                     speed: 22.0,
                     radius: 0.28,
-                    damage: 75.0,
+                    damage: DamageSpec {
+                        kind: DamageType::Magical,
+                        base: 75.0,
+                        ad_ratio: 0.0,
+                        ap_ratio: 0.6,
+                    },
                 },
             },
         ),
@@ -99,7 +104,12 @@ pub(super) fn setup(world: &mut World) {
                 effect: AbilityEffect::Area {
                     radius: 2.8,
                     delay: 0.65,
-                    damage: 120.0,
+                    damage: DamageSpec {
+                        kind: DamageType::Magical,
+                        base: 120.0,
+                        ad_ratio: 0.0,
+                        ap_ratio: 0.8,
+                    },
                 },
             },
         ),
@@ -130,7 +140,12 @@ pub(super) fn setup(world: &mut World) {
                     duration: 2.0,
                     interval: 0.5,
                     radius: 4.5,
-                    damage: 35.0,
+                    damage: DamageSpec {
+                        kind: DamageType::Magical,
+                        base: 35.0,
+                        ad_ratio: 0.0,
+                        ap_ratio: 0.2,
+                    },
                 },
             },
         ),
@@ -179,7 +194,10 @@ pub(super) fn setup(world: &mut World) {
             position: Vec2::new(-5.0, -6.0),
             stats: UnitStats {
                 max_health: 400.0,
-                move_speed: 2.5,
+                base_attributes: BaseAttributes {
+                    move_speed: 2.5,
+                    ..default()
+                },
                 ..default()
             },
             abilities: [None; 4],

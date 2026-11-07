@@ -20,6 +20,8 @@ pub(super) struct SceneAssets {
 #[derive(Component)]
 pub(super) struct UnitVisual;
 #[derive(Component)]
+pub(super) struct UnitModel;
+#[derive(Component)]
 pub(super) struct ProjectileVisual;
 
 pub(super) fn setup(
@@ -174,7 +176,11 @@ pub(super) fn attach_unit_visuals(
                 UnitVisual,
                 Pickable {
                     offset: Vec3::Y,
-                    half_size: Vec3::new(unit.stats().radius + 0.1, 1.0, unit.stats().radius + 0.1),
+                    half_size: Vec3::new(
+                        unit.definition().radius + 0.1,
+                        1.0,
+                        unit.definition().radius + 0.1,
+                    ),
                 },
                 Transform::default(),
                 Visibility::default(),
@@ -186,21 +192,32 @@ pub(super) fn attach_unit_visuals(
                     MeshMaterial3d(assets.dark.clone()),
                     Transform::from_xyz(0.0, 0.12, 0.0),
                 ));
-                parent.spawn((
-                    Mesh3d(assets.body.clone()),
-                    MeshMaterial3d(material),
-                    Transform::from_xyz(0.0, 0.95, 0.0),
-                ));
-                parent.spawn((
-                    Mesh3d(assets.head.clone()),
-                    MeshMaterial3d(assets.gold.clone()),
-                    Transform::from_xyz(0.0, 1.65, 0.0),
-                ));
-                parent.spawn((
-                    Mesh3d(assets.body.clone()),
-                    MeshMaterial3d(assets.gold.clone()),
-                    Transform::from_xyz(0.43, 0.85, -0.15).with_scale(Vec3::new(0.17, 1.15, 0.17)),
-                ));
+                // Pose only the model child. The simulated root, pick bounds,
+                // base and overhead label anchor keep their existing transforms.
+                parent
+                    .spawn((
+                        UnitModel,
+                        Transform::from_xyz(0.0, 0.45, 0.0),
+                        Visibility::Inherited,
+                    ))
+                    .with_children(|model| {
+                        model.spawn((
+                            Mesh3d(assets.body.clone()),
+                            MeshMaterial3d(material),
+                            Transform::from_xyz(0.0, 0.5, 0.0),
+                        ));
+                        model.spawn((
+                            Mesh3d(assets.head.clone()),
+                            MeshMaterial3d(assets.gold.clone()),
+                            Transform::from_xyz(0.0, 1.2, 0.0),
+                        ));
+                        model.spawn((
+                            Mesh3d(assets.body.clone()),
+                            MeshMaterial3d(assets.gold.clone()),
+                            Transform::from_xyz(0.43, 0.4, -0.15)
+                                .with_scale(Vec3::new(0.17, 1.15, 0.17)),
+                        ));
+                    });
             });
     }
 }
@@ -224,6 +241,37 @@ pub(super) fn sync_units(
         } else {
             Visibility::Hidden
         };
+    }
+}
+
+pub(super) fn sync_unit_models(
+    fixed: Res<Time<Fixed>>,
+    control: Res<SimulationControl>,
+    units: Query<(&UnitAction, &UnitState), With<UnitVisual>>,
+    mut models: Query<(&ChildOf, &mut Transform), With<UnitModel>>,
+) {
+    // Keep the exact pose from the last rendered frame while paused. Replacing
+    // its interpolation fraction with zero would rewind a short backswing.
+    if control.paused {
+        return;
+    }
+    let fraction = fixed.overstep_fraction();
+    for (parent, mut transform) in &mut models {
+        let recovery = match units.get(parent.parent()) {
+            Ok((
+                UnitAction::AttackBackswing {
+                    remaining,
+                    duration,
+                },
+                state,
+            )) if state.alive() => {
+                ((*remaining as f32 - fraction) / (*duration).max(1) as f32).clamp(0.0, 1.0)
+            }
+            _ => 0.0,
+        };
+        // Local -Z is forward; an attack leans into its release and then
+        // settles back. Simulation action ticks, never animation, set the pace.
+        transform.rotation = Quat::from_rotation_x(-0.2 * recovery);
     }
 }
 
@@ -308,12 +356,12 @@ pub(super) fn sync_effects(
         } else {
             Color::srgb_u8(211, 121, 100)
         };
-        ring(&mut gizmos, point, unit.stats().radius + 0.16, color);
+        ring(&mut gizmos, point, unit.definition().radius + 0.16, color);
         if player.selected == Some(id) || pointer.hovered == Some(id) {
             ring(
                 &mut gizmos,
                 point,
-                unit.stats().radius + 0.28,
+                unit.definition().radius + 0.28,
                 Color::srgb_u8(242, 207, 137),
             );
         }
@@ -355,7 +403,7 @@ pub(super) fn sync_effects(
             Aim::AttackMove => ring(
                 &mut gizmos,
                 origin,
-                unit.stats().attack_range + unit.stats().radius,
+                unit.attributes().attack_range() + unit.definition().radius,
                 Color::srgb_u8(229, 177, 105),
             ),
             Aim::Ability(slot) => {
@@ -393,5 +441,100 @@ pub(super) fn sync_effects(
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pause_retains_rendered_backswing_pose_until_presentation_resumes() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin))
+            .insert_resource(NavigationMap::new(20.0, 1.0, vec![]))
+            .add_systems(Update, sync_unit_models);
+        let mut spawn = |team, position| {
+            spawn_unit(
+                app.world_mut(),
+                UnitSpec {
+                    name: "Presentation test".into(),
+                    team,
+                    position,
+                    stats: UnitStats {
+                        base_attributes: BaseAttributes {
+                            attack_speed: MAX_ATTACK_SPEED,
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    abilities: [None; 4],
+                    respawn_delay: None,
+                },
+            )
+            .expect("valid test unit")
+        };
+        let attacker = spawn(Team::Ally, Vec2::ZERO);
+        let target = spawn(Team::Enemy, Vec2::X * 2.0);
+        app.world_mut().entity_mut(attacker).insert(UnitVisual);
+        let model = app
+            .world_mut()
+            .spawn((UnitModel, ChildOf(attacker), Transform::default()))
+            .id();
+        app.world_mut()
+            .resource_mut::<CommandQueue>()
+            .submit(attacker, UnitCommand::AttackTarget(target));
+        app.world_mut().run_schedule(FixedUpdate);
+        app.world_mut().run_schedule(FixedUpdate);
+        assert!(matches!(
+            app.world().get::<UnitAction>(attacker),
+            Some(UnitAction::AttackBackswing {
+                remaining: 1,
+                duration: 1,
+            })
+        ));
+
+        // Draw near the end of a one-tick backswing, where resetting alpha
+        // during pause would visibly return the body to its release pose.
+        let mut fixed = app.world_mut().resource_mut::<Time<Fixed>>();
+        let overstep = fixed.timestep().mul_f32(0.9);
+        fixed.accumulate_overstep(overstep);
+        app.world_mut().run_schedule(Update);
+        let rendered = *app
+            .world()
+            .get::<Transform>(model)
+            .expect("model transform");
+        assert_ne!(rendered.rotation, Quat::IDENTITY);
+
+        app.world_mut().resource_mut::<SimulationControl>().paused = true;
+        app.world_mut().run_schedule(Update);
+        assert_eq!(
+            *app.world()
+                .get::<Transform>(model)
+                .expect("model transform"),
+            rendered,
+            "pausing must retain the already displayed pose"
+        );
+
+        app.world_mut().resource_mut::<SimulationControl>().paused = false;
+        app.world_mut()
+            .resource_mut::<Time<Fixed>>()
+            .discard_overstep(overstep);
+        app.world_mut().run_schedule(Update);
+        assert_ne!(
+            app.world().get::<Transform>(model).unwrap().rotation,
+            rendered.rotation,
+            "resuming permits the presentation to update"
+        );
+        app.world_mut()
+            .resource_mut::<CommandQueue>()
+            .submit(attacker, UnitCommand::Stop);
+        app.world_mut().run_schedule(FixedUpdate);
+        app.world_mut().run_schedule(Update);
+        assert_eq!(
+            app.world().get::<Transform>(model).unwrap().rotation,
+            Quat::IDENTITY,
+            "an interrupted backswing returns the model to neutral"
+        );
     }
 }

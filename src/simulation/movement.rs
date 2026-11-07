@@ -33,7 +33,7 @@ pub(super) fn move_units(
         if !matches!(action, UnitAction::Ready) {
             continue;
         }
-        let mut budget = unit.stats.move_speed * TICK_SECONDS;
+        let mut budget = unit.attributes().move_speed() * TICK_SECONDS;
         while let Some(&destination) = movement.route.front() {
             let delta = destination - pose.position;
             let distance = delta.length();

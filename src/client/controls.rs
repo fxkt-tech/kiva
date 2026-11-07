@@ -370,6 +370,7 @@ pub(super) fn receive_feedback(
                     Rejection::InsufficientMana => "Not enough energy",
                     Rejection::Dead => "Waiting to respawn",
                     Rejection::Busy => "Action already in progress",
+                    Rejection::InvalidDamage => "Ability damage cannot be resolved",
                     _ => "Choose a valid target",
                 }
                 .into();

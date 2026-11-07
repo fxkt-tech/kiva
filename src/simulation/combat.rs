@@ -1,5 +1,6 @@
 //! Projectile collision, damage, death and respawn. Rendering never decides hits.
 use super::{
+    damage::DamageRequest,
     model::{Movement, PendingDamage},
     *,
 };
@@ -51,9 +52,11 @@ pub(super) fn advance_projectiles(
         projectile.position = end;
         projectile.remaining -= distance;
         if let Some((_, target)) = hit {
-            damage
-                .0
-                .push((projectile.source, target, projectile.damage));
+            damage.0.push(DamageRequest {
+                source: projectile.source,
+                target,
+                damage: projectile.damage,
+            });
         }
         if hit.is_some() || projectile.remaining <= 0.001 || end.distance_squared(requested) > 1e-6
         {
@@ -98,7 +101,11 @@ pub(super) fn advance_areas(
                 && unit.team != area.team
                 && pose.position.distance(area.position) <= area.radius + unit.stats.radius
             {
-                damage.0.push((area.source, target, area.damage));
+                damage.0.push(DamageRequest {
+                    source: area.source,
+                    target,
+                    damage: area.damage,
+                });
             }
         }
         commands.entity(entity).despawn();
@@ -107,23 +114,39 @@ pub(super) fn advance_areas(
 
 pub(super) fn resolve_damage(world: &mut World) {
     let damage = std::mem::take(&mut world.resource_mut::<PendingDamage>().0);
-    for (source, target, amount) in damage {
+    for DamageRequest {
+        source,
+        target,
+        damage,
+    } in damage
+    {
+        let Some(unit) = world.get::<Unit>(target) else {
+            continue;
+        };
+        let attributes = *unit.attributes();
         let Some(mut state) = world.get_mut::<UnitState>(target) else {
             continue;
         };
         if !state.alive() {
             continue;
         }
-        let amount = amount.min(state.health);
-        state.health -= amount;
+        let new_health = damage.health_after(&attributes, state.health);
+        let amount = state.health - new_health;
+        if amount <= 0.0 {
+            continue;
+        }
+        state.health = new_health;
         let died = !state.alive();
         world.write_message(SimulationEvent::Damaged {
             source,
             target,
             amount,
+            kind: damage.kind(),
+            origin: damage.origin(),
         });
         if died {
             let delay = world.get::<Unit>(target).expect("unit").respawn_delay;
+            super::attributes::clear_on_death(&mut world.get_mut::<Unit>(target).expect("unit"));
             world
                 .get_mut::<UnitState>(target)
                 .expect("unit state")
@@ -160,7 +183,7 @@ pub(super) fn respawn_units(
         state.health = unit.stats.max_health;
         state.mana = unit.stats.max_mana;
         state.respawn_remaining = None;
-        state.attack_cooldown = 0.0;
+        state.attack_cooldown = 0;
         slots.cooldowns = [0.0; 4];
         super::movement::reset_pose(&mut pose, unit.home);
         events.write(SimulationEvent::Respawned { unit: entity });

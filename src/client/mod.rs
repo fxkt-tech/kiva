@@ -56,6 +56,7 @@ pub(super) fn run() {
         (
             scene::attach_unit_visuals,
             scene::sync_units,
+            scene::sync_unit_models,
             scene::sync_effects,
             controls::receive_feedback,
         )

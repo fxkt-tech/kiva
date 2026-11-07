@@ -1,14 +1,16 @@
-// Optional integration suite. Connects to an already running Trunk/static server.
+// Set KIVA_SITE_DIR to test a build with a temporary fixture; otherwise use KIVA_TEST_URL.
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { PNG } = require("pngjs");
-const { launchBrowser, enterGame, resumeGame, movePointer, clickUi, clickWorld, reportFailure } = require("./browser-support.cjs");
+const { launchBrowser, enterGame, resumeGame, movePointer, clickUi, clickWorld, reportFailure, serveBuild } = require("./browser-support.cjs");
 
 async function main() {
   const browser = await launchBrowser();
   let page;
+  let site;
   try {
+    if (process.env.KIVA_SITE_DIR) site = await serveBuild(process.env.KIVA_SITE_DIR);
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
     page = await context.newPage();
     page.setDefaultTimeout(20000);
@@ -33,7 +35,7 @@ async function main() {
       const s = window.__kivaState;
       return s.units.find((u) => u.id === s.player_id).order === "Idle";
     });
-    await enterGame(page);
+    await enterGame(page, site?.url);
     assert.equal(await page.evaluate(() => document.pointerLockElement?.id), "game");
     assert(webgpu, "must use the WebGPU renderer");
 
@@ -93,8 +95,16 @@ async function main() {
 
     await clickWorld(page, [3, -2, 1.3], "right");
     await page.waitForFunction(() => window.__kivaState.units.some((u) => u.name === "训练哨兵" && u.health < 205));
+    await page.waitForFunction(() => {
+      const s = window.__kivaState;
+      return s.units.find((u) => u.id === s.player_id).action === "AttackBackswing";
+    });
+    assert.equal(await page.locator("#hero-action").textContent(), "攻击后摇");
     await page.keyboard.press("s");
     await waitIdle();
+    const stoppedState = await state();
+    const stoppedPlayer = stoppedState.units.find((u) => u.id === stoppedState.player_id);
+    assert.equal(stoppedPlayer.action, "Ready", "stop must cancel the backswing action");
     await page.keyboard.press("a");
     await page.waitForFunction(() => window.__kivaState.attack_move);
     await clickWorld(page, [3, -4]);
@@ -104,7 +114,7 @@ async function main() {
     });
     await page.keyboard.press("s");
     await waitIdle();
-    console.log("PASS chase attack, attack move and stop");
+    console.log("PASS chase attack, visible backswing, attack move and stop");
 
     const beforeHud = await playerPosition();
     await clickUi(page, '[data-slot="0"]');
@@ -163,7 +173,7 @@ async function main() {
     const highDpiPage = await highDpiContext.newPage();
     page = highDpiPage;
     highDpiPage.on("pageerror", (error) => errors.push(error.message));
-    await enterGame(highDpiPage);
+    await enterGame(highDpiPage, site?.url);
     await clickWorld(highDpiPage, [-2, 6], "right");
     await highDpiPage.waitForFunction(() => {
       const s = window.__kivaState;
@@ -178,7 +188,8 @@ async function main() {
     if (page) await reportFailure(page);
     throw error;
   } finally {
-    await browser.close();
+    try { await browser.close(); }
+    finally { if (site) await site.close(); }
   }
 }
 

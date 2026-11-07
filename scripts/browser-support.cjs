@@ -52,6 +52,22 @@ async function resumeGame(page) {
   physicalPositions.set(page, { x: box.x + box.width / 2, y: box.y + box.height / 2 });
   await page.waitForFunction(() => document.pointerLockElement?.id === "game"
     && window.__kivaState && !window.__kivaState.paused && !document.getElementById("game-cursor").hidden);
+  const center = await page.evaluate(() => {
+    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
+    const canvas = document.getElementById("game");
+    const expected = [canvas.clientWidth / 2, canvas.clientHeight / 2];
+    if (Math.abs(matrix.m41 - expected[0]) > 1 || Math.abs(matrix.m42 - expected[1]) > 1) {
+      throw new Error(`Capture must center the game cursor before test calibration: ${matrix.m41},${matrix.m42}`);
+    }
+    return expected;
+  });
+  // Headed Chromium resets its synthetic movement anchor on capture; headless
+  // keeps the entry-click anchor. Normalize it, then restore the visible center.
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.evaluate(() => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  }));
+  await movePointer(page, ...center);
 }
 
 async function movePointer(page, x, y) {

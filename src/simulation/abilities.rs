@@ -1,4 +1,5 @@
 //! Definitions contain rules, never key codes, meshes, or UI state.
+use super::DamageSpec;
 use bevy::prelude::*;
 use std::collections::BTreeMap;
 
@@ -16,12 +17,12 @@ pub enum AbilityEffect {
     Projectile {
         speed: f32,
         radius: f32,
-        damage: f32,
+        damage: DamageSpec,
     },
     Area {
         radius: f32,
         delay: f32,
-        damage: f32,
+        damage: DamageSpec,
     },
     Dash {
         speed: f32,
@@ -30,7 +31,7 @@ pub enum AbilityEffect {
         duration: f32,
         interval: f32,
         radius: f32,
-        damage: f32,
+        damage: DamageSpec,
     },
 }
 #[derive(Clone, Debug)]
@@ -78,7 +79,7 @@ impl AbilityCatalog {
                 definition.targeting == Targeting::Direction
                     && positive(speed)
                     && positive(radius)
-                    && nonnegative(damage)
+                    && damage.valid()
                     && positive(definition.range)
             }
             AbilityEffect::Area {
@@ -91,7 +92,7 @@ impl AbilityCatalog {
                     Targeting::Point | Targeting::Enemy | Targeting::SelfCast
                 ) && positive(radius)
                     && nonnegative(delay)
-                    && nonnegative(damage)
+                    && damage.valid()
             }
             AbilityEffect::Dash { speed } => {
                 definition.targeting == Targeting::Point
@@ -110,7 +111,7 @@ impl AbilityCatalog {
                     && interval >= super::TICK_SECONDS
                     && interval <= duration
                     && positive(radius)
-                    && nonnegative(damage)
+                    && damage.valid()
             }
         };
         if !valid {

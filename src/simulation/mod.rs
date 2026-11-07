@@ -2,13 +2,20 @@
 //! interface. No system reads a keyboard, window, camera, mesh or browser object.
 mod abilities;
 mod actions;
+mod attributes;
 mod combat;
+mod damage;
 mod model;
 mod movement;
 mod navigation;
 mod orders;
 pub use abilities::{AbilityCatalog, AbilityDefinition, AbilityEffect, AbilityId, Targeting};
+pub use attributes::{
+    AttributeChanges, AttributeDelta, AttributeModifier, AttributeRejection, BaseAttributes,
+    EffectiveAttributes, MAX_ATTACK_SPEED, MIN_ATTACK_SPEED, ModifierRemoval, ModifierSourceId,
+};
 use bevy::prelude::*;
+pub use damage::{DamageOrigin, DamageSnapshot, DamageSpec, DamageType};
 pub use model::{
     AbilitySlots, AbilityTarget, AreaEffect, CommandQueue, Projectile, Rejection,
     SimulationControl, SimulationEvent, SimulationTick, Team, Unit, UnitAction, UnitCommand,
@@ -24,6 +31,7 @@ impl Plugin for SimulationPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Time::<Fixed>::from_hz(TICK_RATE))
             .init_resource::<CommandQueue>()
+            .init_resource::<AttributeChanges>()
             .init_resource::<AbilityCatalog>()
             .init_resource::<SimulationControl>()
             .init_resource::<SimulationTick>()
@@ -34,6 +42,7 @@ impl Plugin for SimulationPlugin {
                 (
                     begin_tick,
                     combat::respawn_units,
+                    attributes::consume_changes,
                     orders::consume_commands,
                     actions::advance_actions,
                     orders::resolve_orders,
@@ -82,6 +91,7 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
             Unit {
                 name: spec.name,
                 team: spec.team,
+                attributes: attributes::AttributeState::new(spec.stats.base_attributes),
                 stats: spec.stats,
                 home: spec.position,
                 respawn_delay: spec.respawn_delay,
@@ -89,7 +99,7 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
             UnitState {
                 health,
                 mana,
-                attack_cooldown: 0.0,
+                attack_cooldown: 0,
                 respawn_remaining: None,
             },
             UnitPose {

@@ -9,6 +9,30 @@ use bevy::prelude::*;
 use serde::Serialize;
 
 #[derive(Serialize)]
+struct AttributesView {
+    attack_damage: f32,
+    ability_power: f32,
+    armor: f32,
+    magic_resistance: f32,
+    move_speed: f32,
+    attack_range: f32,
+    attack_speed: f32,
+}
+impl From<&EffectiveAttributes> for AttributesView {
+    fn from(attributes: &EffectiveAttributes) -> Self {
+        Self {
+            attack_damage: attributes.attack_damage(),
+            ability_power: attributes.ability_power(),
+            armor: attributes.armor(),
+            magic_resistance: attributes.magic_resistance(),
+            move_speed: attributes.move_speed(),
+            attack_range: attributes.attack_range(),
+            attack_speed: attributes.attack_speed(),
+        }
+    }
+}
+
+#[derive(Serialize)]
 struct UnitView {
     id: String,
     name: String,
@@ -19,6 +43,7 @@ struct UnitView {
     max_health: f32,
     mana: f32,
     max_mana: f32,
+    attributes: AttributesView,
     alive: bool,
     action: &'static str,
     order: &'static str,
@@ -141,9 +166,10 @@ pub(super) fn publish(
                     .ok()
                     .map(|point| web::viewport_to_css(point, viewport).to_array()),
                 health: state.health(),
-                max_health: unit.stats().max_health,
+                max_health: unit.definition().max_health,
                 mana: state.mana(),
-                max_mana: unit.stats().max_mana,
+                max_mana: unit.definition().max_mana,
+                attributes: unit.attributes().into(),
                 alive: state.alive(),
                 action: action.label(),
                 order: match order {
@@ -231,18 +257,26 @@ pub(super) fn native_hud(mut commands: Commands) {
 pub(super) fn update_native_hud(
     player: Res<PlayerController>,
     control: Res<SimulationControl>,
-    units: Query<(&UnitState, &AbilitySlots)>,
+    units: Query<(&Unit, &UnitState, &AbilitySlots)>,
     mut hud: Single<&mut Text, With<NativeHud>>,
 ) {
-    if let Ok((state, slots)) = units.get(player.player) {
+    if let Ok((unit, state, slots)) = units.get(player.player) {
+        let attributes = unit.attributes();
         hud.0 = format!(
-            "KIVA / THE PROVING GROUNDS\nRight click: move / attack · A + click: attack move · S: stop\nQ: bolt · W: area · E: dash · R: channel · Left click confirms\nY: camera lock · Space: center · Arrows / edges: pan · Scroll: zoom · Esc: pause\nHP {:.0}   Energy {:.0}   Q {:.1}  W {:.1}  E {:.1}  R {:.1}{}",
+            "KIVA / THE PROVING GROUNDS\nRight click: move / attack · A + click: attack move · S: stop\nQ: bolt · W: area · E: dash · R: channel · Left click confirms\nY: camera lock · Space: center · Arrows / edges: pan · Scroll: zoom · Esc: pause\nHP {:.0}   Energy {:.0}   Q {:.1}  W {:.1}  E {:.1}  R {:.1}\nAD {:.1}   AP {:.1}   Armor {:.1}   MR {:.1}\nMove {:.2} units/s   Range {:.2} units   Attack speed {:.2}/s{}",
             state.health(),
             state.mana(),
             slots.cooldown(0).unwrap_or(0.0),
             slots.cooldown(1).unwrap_or(0.0),
             slots.cooldown(2).unwrap_or(0.0),
             slots.cooldown(3).unwrap_or(0.0),
+            attributes.attack_damage(),
+            attributes.ability_power(),
+            attributes.armor(),
+            attributes.magic_resistance(),
+            attributes.move_speed(),
+            attributes.attack_range(),
+            attributes.attack_speed(),
             if control.paused {
                 "\nPAUSED · Press Escape to resume"
             } else {
