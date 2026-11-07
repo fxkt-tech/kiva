@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 9
+- **Total Sessions**: 10
 - **Last Active**: 2026-11-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~330 | Active |
+| `journal-1.md` | ~362 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 10 | 2026-11-08 | 皇子与寒冰完整技能及基础数值替换 | `61855cb` | `main` |
 | 9 | 2026-11-08 | 单中路对局、逐个兵线与英雄AI | `b861288` | `main` |
 | 8 | 2026-11-07 | 恢复 act 骨骼角色与动作表现 | `8491980` | `main` |
 | 7 | 2026-11-07 | 鼠标响应与冲刺最大范围修复 | `a12ecb5`, `008f546` | `main` |

@@ -328,3 +328,35 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 10: 皇子与寒冰完整技能及基础数值替换
+<!-- trellis-session: v=2 fp=e1bc8153453e5bd1 -->
+
+**Date**: 2026-11-08
+**Task**: 皇子与寒冰完整技能及基础数值替换
+**Branch**: `main`
+
+### Summary
+
+完成皇子与寒冰被动及QWER、一级英雄与近远程兵基础数值替换，同步AI、骨骼武器、HUD和团队视野；完善临时围墙下的出兵与复活，用户授权提交与推送。
+
+### Main Changes
+
+- 模拟机制按护盾、攻击被动、充能、场上对象、视野和临时地形分层实现，保持统一命令与结算链；架构、规范及数值来源同步。
+- 选角、枪弓动作、技能状态、装备和敌方AI接入新套件，保留单中路兵线、基地胜负、暂停与整局重开。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `61855cb` | feat: replace heroes with Jarvan IV and Ashe |
+
+### Testing
+
+- [OK] make check通过：280项Rust测试，2项默认忽略长跑已分别显式通过；WASM Clippy与Web构建通过。
+- [OK] 19项Node测试及浏览器回归通过，最终v4有窗口技能深测与smoke通过；两个方向各31波、108150tick、372次出兵长跑通过。
+
+### Status
+
+[OK] **Completed**
