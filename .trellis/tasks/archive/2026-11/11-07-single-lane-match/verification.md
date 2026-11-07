@@ -6,7 +6,7 @@
 
 四个子切片已落地：通用战斗基础、地图/对局、兵线、英雄AI。
 依赖方向为`client → gameplay → simulation`；模拟仍唯一拥有战斗运行态。
-具体接口见[集成契约](research/integration-contract.md)与[玩法规范](../../spec/gameplay/index.md)。
+具体接口见[集成契约](research/integration-contract.md)与[玩法规范](../../../../spec/gameplay/index.md)。
 
 ## 已通过的规则与构建检查
 

@@ -1,9 +1,9 @@
 {
-  "id": "lane-combat-foundation",
-  "name": "lane-combat-foundation",
-  "title": "单中路战斗基础扩展",
-  "description": "普攻近战/弹丸投递、结构受效、受限恢复和AI共用只读查询。",
-  "status": "in_progress",
+  "id": "lane-map-match",
+  "name": "lane-map-match",
+  "title": "单中路地图、基地与胜负闭环",
+  "description": "建立模式数据与对局生命周期，接入地图显示、基地生命和结果重开。",
+  "status": "completed",
   "dev_type": "fullstack",
   "scope": "gameplay/simulation/client",
   "package": null,
@@ -11,22 +11,23 @@
   "creator": "asuka",
   "assignee": "asuka",
   "createdAt": "2026-11-07",
-  "completedAt": null,
+  "completedAt": "2026-11-08",
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "b8612880642c63418b5b6ee5059f4f60fef51f1d",
   "pr_url": null,
   "subtasks": [],
   "children": [],
   "parent": "11-07-single-lane-match",
   "relatedFiles": [],
-  "notes": "战斗基础实现、10项新增行为测试及整体223项测试/WASM检查通过；独立复核问题已修复，未提交。",
+  "notes": "切片已随完整单中路实现提交并完成归档。",
   "meta": {
     "planning_only": false,
     "implementation_authorized": true,
     "commit_push_authorized": true,
+    "implementation_complete": true,
     "quality_gate": "passed",
-    "ready_for_commit": true
+    "ready_for_commit": false
   }
 }

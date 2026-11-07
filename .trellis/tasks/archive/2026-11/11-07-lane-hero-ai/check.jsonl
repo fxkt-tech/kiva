@@ -6,5 +6,5 @@
 {"file": ".trellis/spec/client/character-animation.md", "reason": "小兵和建筑需不同表现种类"}
 {"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "配置到模拟到投影全流"}
 {"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复用规则并避免模式耦合"}
-{"file": ".trellis/tasks/11-07-single-lane-match/research/match-foundation.md", "reason": "对局、终局、地图与结构边界研究"}
-{"file": ".trellis/tasks/11-07-single-lane-match/research/lane-and-hero-ai.md", "reason": "兵线、近战、AI与恢复研究"}
+{"file": ".trellis/tasks/archive/2026-11/11-07-single-lane-match/research/match-foundation.md", "reason": "对局、终局、地图与结构边界研究"}
+{"file": ".trellis/tasks/archive/2026-11/11-07-single-lane-match/research/lane-and-hero-ai.md", "reason": "兵线、近战、AI与恢复研究"}
