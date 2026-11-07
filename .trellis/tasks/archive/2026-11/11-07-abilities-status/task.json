@@ -3,7 +3,7 @@
   "name": "abilities-status",
   "title": "技能组合与状态效果系统",
   "description": "实现目标/投递/效果分离，以及五类控制、生命周期、权限、强制位移、状态显示与演示装配。",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": "fullstack",
   "scope": "simulation/client",
   "package": null,
@@ -11,11 +11,11 @@
   "creator": "asuka",
   "assignee": "asuka",
   "createdAt": "2026-11-07",
-  "completedAt": null,
+  "completedAt": "2026-11-07",
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "ef5fac69fa13f9db9fd17c88f21895a712aa50dd",
   "pr_url": null,
   "subtasks": [],
   "children": [],
@@ -30,7 +30,7 @@
     "index.html",
     "scripts/browser-*.cjs"
   ],
-  "notes": "Implementation, AC1–18 verification and spec sync completed. User explicitly requested commit and push; submit work, archive task, record journal, then push main to origin. No persistent services managed.",
+  "notes": "Implementation, AC1–18 verification, spec sync and work commit completed. User authorized commit and push. Task archived after the work commit; journal and push complete the delivery. No persistent services managed.",
   "meta": {
     "baseline_commit": "d078410",
     "source_requirement": "docs/TODO.md:3",
@@ -39,7 +39,8 @@
     "implementation": "complete",
     "quality": "passed: make check, WASM Clippy, 109 tests, independent full-scope review",
     "browser": "passed: headed skills (3 sizes/DPR), smoke, stats, cursor; headless healthbar per-frame metrics",
-    "ready_for_commit": true,
-    "commit_push_authorized": true
+    "ready_for_commit": false,
+    "commit_push_authorized": true,
+    "delivery": "work committed; task archived; user-authorized push follows bookkeeping commits"
   }
 }
