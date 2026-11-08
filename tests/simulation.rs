@@ -444,6 +444,78 @@ fn dash_uses_the_same_swept_collision_as_walking() {
 }
 
 #[test]
+fn accepted_casts_do_not_resume_an_old_ground_destination() {
+    for order in [
+        UnitCommand::MoveTo(Vec2::new(-12.0, 0.0)),
+        UnitCommand::AttackMove(Vec2::new(-12.0, 0.0)),
+    ] {
+        for (slot, target, expected) in [
+            (0, AbilityTarget::Direction(Vec2::X), None),
+            (
+                2,
+                AbilityTarget::Point(Vec2::new(7.0, 0.0)),
+                Some(Vec2::new(7.0, 0.0)),
+            ),
+        ] {
+            let mut a = Arena::new(vec![]);
+            let actor = a.unit(Team::Ally, Vec2::ZERO);
+            a.command(actor, order);
+            a.step();
+            let before = a.position(actor);
+            a.cast(actor, slot, target);
+            a.advance(2.0);
+            let expected = expected.unwrap_or(before);
+            assert!(
+                a.position(actor).distance(expected) < 0.01,
+                "cast {slot} must not walk back to {order:?}: expected {expected:?}, got {:?}",
+                a.position(actor)
+            );
+            assert!(matches!(
+                a.app.world().get::<UnitOrder>(actor),
+                Some(UnitOrder::Idle)
+            ));
+            a.command(actor, UnitCommand::MoveTo(Vec2::new(9.0, 0.0)));
+            a.advance(0.2);
+            assert!(
+                a.position(actor).x > expected.x,
+                "fresh movement must still work"
+            );
+        }
+    }
+}
+
+#[test]
+fn committed_dash_does_not_resume_an_old_enemy_chase() {
+    let mut a = Arena::new(vec![]);
+    let actor = a.unit(Team::Ally, Vec2::ZERO);
+    let enemy = a.unit(Team::Enemy, Vec2::new(-8.0, 0.0));
+    a.command(actor, UnitCommand::AttackTarget(enemy));
+    a.step();
+    a.cast(actor, 2, AbilityTarget::Point(Vec2::new(7.0, 0.0)));
+    a.advance(2.0);
+    assert!(a.position(actor).distance(Vec2::new(7.0, 0.0)) < 0.01);
+    assert!(matches!(
+        a.app.world().get::<UnitOrder>(actor),
+        Some(UnitOrder::Idle)
+    ));
+}
+
+#[test]
+fn ordinary_casts_preserve_explicit_attacks_instead_of_clearing_all_purposes() {
+    let mut a = Arena::new(vec![]);
+    let actor = a.unit(Team::Ally, Vec2::ZERO);
+    let enemy = a.unit(Team::Enemy, Vec2::new(-8.0, 0.0));
+    a.command(actor, UnitCommand::AttackTarget(enemy));
+    a.step();
+    let before = a.position(actor);
+    a.cast(actor, 0, AbilityTarget::Direction(Vec2::X));
+    a.advance(1.0);
+    assert!(a.position(actor).x < before.x - 0.5);
+    assert!(matches!(a.app.world().get::<UnitOrder>(actor),
+        Some(UnitOrder::AttackTarget(life)) if life.entity() == enemy));
+}
+
+#[test]
 fn channel_pulses_stop_on_a_new_move_without_refunding_costs() {
     let mut a = Arena::new(vec![]);
     let p = a.unit(Team::Ally, Vec2::ZERO);
@@ -532,6 +604,8 @@ fn death_cancels_actions_and_respawns_with_a_clean_state() {
     a.command(p, UnitCommand::AttackTarget(enemy));
     a.advance(0.6);
     assert_eq!(a.health(enemy), 0.0);
+    // Isolate the respawned unit's clean state from fresh automatic attacks.
+    a.command(p, UnitCommand::Stop);
     a.command(enemy, UnitCommand::MoveTo(Vec2::new(8.0, 0.0)));
     a.advance(1.1);
     assert_eq!(a.health(enemy), 40.0);
@@ -2203,4 +2277,147 @@ fn invalid_dash_targets_preserve_the_existing_move_and_resources() {
         assert_eq!(a.cooldown(player, 2), 0.0);
         assert!(a.events().iter().any(|event| matches!(event, SimulationEvent::CommandRejected { unit, reason: Rejection::InvalidTarget } if *unit == player)));
     }
+}
+
+fn continuing_attacker(a: &mut Arena, vision_radius: f32) -> Entity {
+    a.spawn(
+        Team::Ally,
+        Vec2::ZERO,
+        UnitStats {
+            attack_delivery: BasicAttackDelivery::Direct,
+            vision_radius,
+            base_attributes: BaseAttributes {
+                attack_range: 2.0,
+                attack_speed: 2.0,
+                ..default()
+            },
+            ..default()
+        },
+        None,
+    )
+}
+
+#[test]
+fn automatic_attack_retargets_nearby_after_kills_without_resetting_cooldown_or_chasing_far_units() {
+    let mut a = Arena::new(vec![]);
+    let player = continuing_attacker(&mut a, 0.0);
+    let first = a.spawn(
+        Team::Enemy,
+        Vec2::X * 1.5,
+        UnitStats {
+            max_health: 40.0,
+            ..default()
+        },
+        None,
+    );
+    let second = a.spawn(
+        Team::Enemy,
+        Vec2::X * 2.5,
+        UnitStats {
+            max_health: 80.0,
+            ..default()
+        },
+        None,
+    );
+    let far = a.spawn(
+        Team::Enemy,
+        Vec2::X * 12.0,
+        UnitStats {
+            max_health: 40.0,
+            ..default()
+        },
+        None,
+    );
+    let ally = a.unit(Team::Ally, Vec2::NEG_X * 1.5);
+    a.command(player, UnitCommand::AttackTarget(first));
+    let released = a.attack_ticks(player, 180);
+    assert_eq!(released.len(), 3);
+    assert!(released.windows(2).all(|pair| pair[1] - pair[0] >= 30));
+    assert_eq!(a.health(first), 0.0);
+    assert_eq!(a.health(second), 0.0);
+    assert_eq!(a.health(far), 40.0);
+    assert_eq!(a.health(ally), 600.0);
+    assert_eq!(a.position(player), Vec2::ZERO);
+    assert!(matches!(
+        a.app.world().get::<UnitOrder>(player),
+        Some(UnitOrder::AutoAttack { target: None })
+    ));
+}
+
+#[test]
+fn continuing_attack_waits_for_visible_enemies_instead_of_following_hidden_targets() {
+    let mut a = Arena::new(vec![]);
+    let player = continuing_attacker(&mut a, 3.0);
+    let first = a.spawn(
+        Team::Enemy,
+        Vec2::X * 1.5,
+        UnitStats {
+            max_health: 40.0,
+            ..default()
+        },
+        None,
+    );
+    let hidden = a.unit(Team::Enemy, Vec2::X * 4.5);
+    a.command(player, UnitCommand::AttackTarget(first));
+    a.advance(2.0);
+    assert_eq!(a.health(hidden), 600.0);
+    assert_eq!(a.position(player), Vec2::ZERO);
+    a.command(hidden, UnitCommand::MoveTo(Vec2::X * 2.5));
+    a.advance(2.0);
+    assert!(
+        a.health(hidden) < 600.0,
+        "the continuing intent acquires a newly visible nearby enemy"
+    );
+}
+
+#[test]
+fn stop_and_movement_replace_continuing_attack_intent() {
+    for command in [UnitCommand::Stop, UnitCommand::MoveTo(Vec2::Y)] {
+        let mut a = Arena::new(vec![]);
+        let player = continuing_attacker(&mut a, 0.0);
+        let first = a.spawn(
+            Team::Enemy,
+            Vec2::X * 1.5,
+            UnitStats {
+                max_health: 40.0,
+                ..default()
+            },
+            None,
+        );
+        a.command(player, UnitCommand::AttackTarget(first));
+        a.advance(1.0);
+        assert!(matches!(
+            a.app.world().get::<UnitOrder>(player),
+            Some(UnitOrder::AutoAttack { .. })
+        ));
+        let next = a.unit(Team::Enemy, Vec2::X * 2.5);
+        a.command(player, command);
+        a.advance(2.0);
+        assert_eq!(
+            a.health(next),
+            600.0,
+            "new command supersedes auto attack: {command:?}"
+        );
+        assert!(!matches!(
+            a.app.world().get::<UnitOrder>(player),
+            Some(UnitOrder::AutoAttack { .. })
+        ));
+    }
+}
+
+#[test]
+fn target_removed_during_windup_reacquires_a_fresh_target_and_repeated_commands_do_not_cancel_it() {
+    let mut a = Arena::new(vec![]);
+    let player = continuing_attacker(&mut a, 0.0);
+    let first = a.unit(Team::Enemy, Vec2::X * 1.5);
+    let next = a.unit(Team::Enemy, Vec2::X * 2.5);
+    a.command(player, UnitCommand::AttackTarget(first));
+    a.step();
+    a.app.world_mut().despawn(first);
+    a.step();
+    for _ in 0..90 {
+        a.command(player, UnitCommand::AttackTarget(next));
+        a.step();
+    }
+    assert!(a.health(next) < 600.0);
 }

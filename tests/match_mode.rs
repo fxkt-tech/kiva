@@ -870,7 +870,7 @@ fn dead_creep_cleanup_keeps_committed_projectile_and_area_effects_alive() {
 }
 
 #[test]
-fn base_recovery_obeys_combat_delay_and_applies_the_same_rules_to_both_heroes() {
+fn base_recovery_heals_immediately_under_fire_with_nearby_enemies_for_both_heroes() {
     for team in [Team::Ally, Team::Enemy] {
         let mut app = arena(MatchDefinition::default());
         begin(&mut app);
@@ -912,16 +912,22 @@ fn base_recovery_obeys_combat_delay_and_applies_the_same_rules_to_both_heroes() 
             },
         );
         step(&mut app, 1);
-        assert_eq!(
-            app.world().get::<UnitState>(hero).unwrap().health(),
-            maximum - 60.0
+        let health = app.world().get::<UnitState>(hero).unwrap().health();
+        assert!((health - (maximum - 60.0 + maximum * 0.20 / 60.0)).abs() < 0.001);
+        step(&mut app, 10);
+        let before_hit = app.world().get::<UnitState>(hero).unwrap().health();
+        assert!((before_hit - (health + 10.0 * (regen + maximum * 0.20) / 60.0)).abs() < 0.005);
+        submit(
+            &mut app,
+            source,
+            UnitCommand::CastAbility {
+                slot: 0,
+                target: AbilityTarget::Unit(hero),
+            },
         );
-        step(&mut app, 119);
-        let before_recovery = app.world().get::<UnitState>(hero).unwrap().health();
-        assert!((before_recovery - (maximum - 60.0 + 119.0 * regen / 60.0)).abs() < 0.005);
         step(&mut app, 1);
         let health = app.world().get::<UnitState>(hero).unwrap().health();
-        assert!((health - (before_recovery + (regen + maximum * 0.20) / 60.0)).abs() < 0.001);
+        assert!((health - (before_hit - 60.0 + (regen + maximum * 0.20) / 60.0)).abs() < 0.001);
         step(&mut app, 200);
         assert_eq!(
             app.world().get::<UnitState>(hero).unwrap().health(),

@@ -486,16 +486,19 @@ fn wounded_hero_retreats_through_real_recovery_then_rejoins_the_lane() {
         },
     );
     a.ticks(1);
-    assert!((a.state(a.hero).health() - 96.0).abs() < 0.001);
+    let after_hit = a.state(a.hero).health();
+    assert!(
+        (after_hit - 97.6).abs() < 0.001,
+        "base recovery applies on the damage tick"
+    );
     a.app.world_mut().despawn(caster);
     a.app.world_mut().despawn(a.target);
     let map = a.app.world().resource::<MapDefinition>().clone();
     a.ticks(60);
     assert!(a.point(a.hero).distance(map.base_position(Team::Enemy)) < 1.5);
-    assert_eq!(
-        a.state(a.hero).health(),
-        96.0,
-        "AI cannot invent recovery before the out-of-combat window"
+    assert!(
+        a.state(a.hero).health() > after_hit,
+        "being near the base restores health without an out-of-combat wait"
     );
     a.ticks(900);
     assert!(a.state(a.hero).health() >= 480.0 * 0.75);
@@ -1053,11 +1056,10 @@ fn actual_jarvan_ai_uses_a_defensive_shield_then_a_landed_standard_line_combo() 
         "taking real damage should cause a defensive shield"
     );
     assert!(a.state(a.hero).mana() < 300.0);
-    // The earlier dodge MoveTo is still a valid persistent order until the R
-    // wall cuts its destination off. The planner rejects it exactly once, and
-    // the next decision must resume attacking inside the actual ring.
-    assert_eq!(a.rejections, [Rejection::NoPath]);
-    assert_eq!(a.path_losses_inside_own_wall, [true]);
+    // Committed skills replace the earlier dodge destination. The AI must not
+    // try walking back through its own R wall before resuming its attack.
+    assert!(a.rejections.is_empty());
+    assert!(a.path_losses_inside_own_wall.is_empty());
     assert!(!a.releases.is_empty());
     assert!(
         matches!(a.app.world().get::<UnitOrder>(a.hero), Some(UnitOrder::AttackTarget(life)) if life.entity() == a.target)

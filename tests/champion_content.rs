@@ -172,8 +172,18 @@ fn real_standard_then_strike_dashes_to_the_flag_and_knocks_up_enemies_on_the_pat
     let target = arena.target(UnitKind::Hero, Vec2::new(3.0, 0.0));
     arena.cast(jarvan, 2, AbilityTarget::Point(Vec2::new(6.0, 0.0)));
     arena.ticks(35);
+    let old_target = arena.target(UnitKind::Hero, Vec2::new(-8.0, 0.0));
+    arena.command(jarvan, UnitCommand::AttackTarget(old_target));
     arena.cast(jarvan, 0, AbilityTarget::Direction(Vec2::X));
-    arena.ticks(50);
+    arena.ticks(25);
+    assert!(is_dashing(arena.app.world(), jarvan));
+    for _ in 0..60 {
+        if !is_dashing(arena.app.world(), jarvan) {
+            break;
+        }
+        arena.ticks(1);
+    }
+    assert!(!is_dashing(arena.app.world(), jarvan));
     assert!(
         arena
             .app
@@ -183,6 +193,13 @@ fn real_standard_then_strike_dashes_to_the_flag_and_knocks_up_enemies_on_the_pat
             .position()
             .distance(Vec2::new(6.0, 0.0))
             < 1e-4
+    );
+    assert!(
+        matches!(
+            arena.app.world().get::<UnitOrder>(jarvan),
+            Some(UnitOrder::AutoAttack { target: None })
+        ),
+        "the real flag link must not resume its previous chase"
     );
     assert!((arena.health(target) - 910.0).abs() < 1e-4);
     assert!(
@@ -194,6 +211,217 @@ fn real_standard_then_strike_dashes_to_the_flag_and_knocks_up_enemies_on_the_pat
             .iter()
             .any(|status| status.kind() == StatusKind::Airborne)
     );
+}
+
+#[test]
+fn same_tick_strike_is_not_rejected_while_the_instant_standard_commits() {
+    let mut arena = Arena::new();
+    let jarvan = arena.hero(1, Team::Ally, Vec2::ZERO);
+    arena.cast(jarvan, 2, AbilityTarget::Point(Vec2::new(6.0, 0.0)));
+    arena.cast(jarvan, 0, AbilityTarget::Direction(Vec2::X));
+    arena.ticks(1);
+    assert!(
+        arena.committed(jarvan, AbilityId(13)),
+        "E must commit before the later Q"
+    );
+    arena.ticks(60);
+    assert!(
+        arena
+            .app
+            .world()
+            .get::<UnitPose>(jarvan)
+            .unwrap()
+            .position()
+            .distance(Vec2::new(6.0, 0.0))
+            < 0.01
+    );
+    assert!(arena.committed(jarvan, AbilityId(11)));
+}
+
+#[test]
+fn fast_standard_strike_connects_to_a_deployed_flag_before_its_landing_effects() {
+    for gap in [1, 3, 6, 12, 24, 30] {
+        let mut arena = Arena::new();
+        let jarvan = arena.hero(1, Team::Ally, Vec2::ZERO);
+        arena.cast(jarvan, 2, AbilityTarget::Point(Vec2::new(6.0, 0.0)));
+        arena.ticks(gap);
+        arena.cast(jarvan, 0, AbilityTarget::Direction(Vec2::X));
+        arena.ticks(60);
+        assert!(
+            arena
+                .app
+                .world()
+                .get::<UnitPose>(jarvan)
+                .unwrap()
+                .position()
+                .distance(Vec2::new(6.0, 0.0))
+                < 0.01,
+            "EQ must connect when inputs are {gap} ticks apart"
+        );
+    }
+}
+
+#[test]
+fn linking_a_deployed_flag_does_not_advance_its_damage_or_aura_clock() {
+    let mut arena = Arena::new();
+    let jarvan = arena.hero(1, Team::Ally, Vec2::ZERO);
+    let target = arena.target(UnitKind::Hero, Vec2::new(6.0, 0.0));
+    let initial_speed = arena
+        .app
+        .world()
+        .get::<Unit>(jarvan)
+        .unwrap()
+        .attributes()
+        .attack_speed();
+    arena.cast(jarvan, 2, AbilityTarget::Point(Vec2::new(6.0, 0.0)));
+    arena.ticks(1);
+    arena.cast(jarvan, 0, AbilityTarget::Direction(Vec2::X));
+    arena.ticks(24);
+    assert!(is_dashing(arena.app.world(), jarvan));
+    assert!(
+        (arena.health(target) - 910.0).abs() < 0.01,
+        "only Q has hit; E still waits for landing"
+    );
+    assert!(
+        (arena
+            .app
+            .world()
+            .get::<Unit>(jarvan)
+            .unwrap()
+            .attributes()
+            .attack_speed()
+            - initial_speed)
+            .abs()
+            < 0.001
+    );
+    let tick = arena.app.world().resource::<SimulationTick>().0;
+    assert!(
+        arena
+            .app
+            .world_mut()
+            .query::<&BattlefieldObject>()
+            .iter(arena.app.world())
+            .all(|object| !object.active(tick))
+    );
+    arena.ticks(6);
+    assert!(
+        (arena.health(target) - 830.0).abs() < 0.01,
+        "E lands on its original 0.5-second clock"
+    );
+    assert!(
+        arena
+            .app
+            .world()
+            .get::<Unit>(jarvan)
+            .unwrap()
+            .attributes()
+            .attack_speed()
+            > initial_speed
+    );
+}
+
+#[test]
+fn instant_cast_fifo_keeps_other_units_responsive_and_later_stop_cancels_the_following_windup() {
+    let mut arena = Arena::new();
+    let jarvan = arena.hero(1, Team::Ally, Vec2::ZERO);
+    let other = arena.hero(1, Team::Ally, Vec2::new(0.0, 8.0));
+    arena.cast(jarvan, 2, AbilityTarget::Point(Vec2::new(6.0, 0.0)));
+    arena.cast(jarvan, 0, AbilityTarget::Direction(Vec2::X));
+    arena.command(jarvan, UnitCommand::Stop);
+    arena.cast(other, 1, AbilityTarget::SelfCast);
+    arena.ticks(1);
+    assert!(
+        arena
+            .app
+            .world()
+            .get::<UnitMechanics>(other)
+            .unwrap()
+            .shield()
+            > 0.0,
+        "one actor's instantaneous sequence cannot delay another actor"
+    );
+    assert!(arena.committed(jarvan, AbilityId(13)));
+    arena.ticks(40);
+    assert!(!arena.committed(jarvan, AbilityId(11)));
+    assert_eq!(
+        arena
+            .app
+            .world()
+            .get::<AbilitySlots>(jarvan)
+            .unwrap()
+            .cooldown(0),
+        Some(0.0)
+    );
+    assert!(matches!(
+        arena.app.world().get::<UnitOrder>(jarvan),
+        Some(UnitOrder::Idle)
+    ));
+    assert_eq!(
+        arena
+            .app
+            .world()
+            .get::<UnitPose>(jarvan)
+            .unwrap()
+            .position(),
+        Vec2::ZERO
+    );
+}
+
+#[test]
+fn linked_motion_starts_a_fresh_nearby_attack_and_stop_can_cancel_it_before_landing() {
+    for stop in [false, true] {
+        let mut arena = Arena::new();
+        let jarvan = arena.hero(1, Team::Ally, Vec2::ZERO);
+        let old_target = arena.target(UnitKind::Hero, Vec2::new(-8.0, 0.0));
+        let nearby = arena.target(UnitKind::Hero, Vec2::new(6.8, 0.0));
+        arena.cast(jarvan, 2, AbilityTarget::Point(Vec2::new(6.0, 0.0)));
+        arena.ticks(35);
+        arena.command(jarvan, UnitCommand::AttackTarget(old_target));
+        arena.cast(jarvan, 0, AbilityTarget::Direction(Vec2::X));
+        arena.ticks(25);
+        assert!(is_dashing(arena.app.world(), jarvan));
+        assert!(
+            matches!(
+                arena.app.world().get::<UnitOrder>(jarvan),
+                Some(UnitOrder::AutoAttack { target: None })
+            ),
+            "EQ must replace the old chase with fresh local acquisition"
+        );
+        if stop {
+            arena.command(jarvan, UnitCommand::Stop);
+        }
+        arena.ticks(85);
+        let attacks: Vec<_> = arena
+            .events
+            .read(arena.app.world().resource::<Messages<SimulationEvent>>())
+            .filter_map(|event| match event {
+                SimulationEvent::AttackReleased { source, target, .. } if *source == jarvan => {
+                    Some(*target)
+                }
+                _ => None,
+            })
+            .collect();
+        if stop {
+            assert!(attacks.is_empty());
+            assert!(matches!(
+                arena.app.world().get::<UnitOrder>(jarvan),
+                Some(UnitOrder::Idle)
+            ));
+        } else {
+            assert!(!attacks.is_empty());
+            assert!(attacks.iter().all(|target| *target == nearby));
+        }
+        assert!(
+            arena
+                .app
+                .world()
+                .get::<UnitPose>(jarvan)
+                .unwrap()
+                .position()
+                .x
+                > 5.9
+        );
+    }
 }
 
 #[test]
@@ -415,8 +643,19 @@ fn real_cataclysm_creates_a_blocking_ring_and_recast_removes_it_without_another_
     let mut arena = Arena::new();
     let jarvan = arena.hero(1, Team::Ally, Vec2::ZERO);
     let target = arena.target(UnitKind::Hero, Vec2::new(4.0, 0.0));
+    let old_target = arena.target(UnitKind::Hero, Vec2::new(-8.0, 0.0));
+    arena.command(jarvan, UnitCommand::AttackTarget(old_target));
     arena.cast(jarvan, 3, AbilityTarget::Unit(target));
-    arena.ticks(85);
+    arena.ticks(1);
+    assert!(is_dashing(arena.app.world(), jarvan));
+    assert!(
+        matches!(
+            arena.app.world().get::<UnitOrder>(jarvan),
+            Some(UnitOrder::Idle)
+        ),
+        "a committed leap must replace the old chase before landing"
+    );
+    arena.ticks(84);
     assert!(arena.committed(jarvan, AbilityId(14)));
     assert!((arena.health(target) - 800.0).abs() < 1e-4);
     assert!(!arena.app.world().resource::<NavigationMap>().line_clear(

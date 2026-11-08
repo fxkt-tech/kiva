@@ -807,16 +807,17 @@ fn another_valid_targeted_request_replaces_the_previous_target() {
 }
 
 #[test]
-fn in_range_cast_keeps_existing_persistent_movement_continuation() {
+fn in_range_cast_replaces_the_old_ground_destination() {
     let mut a = Arena::new(vec![]);
     let caster = a.spawn(Team::Ally, Vec2::ZERO);
     let target = a.spawn(Team::Enemy, Vec2::X * 2.0);
     a.command(caster, UnitCommand::MoveTo(Vec2::new(-5.0, 4.0)));
     a.step();
+    let cast_position = a.position(caster);
     a.cast(caster, target);
     a.steps(160);
     assert_eq!(committed(&a.drain(), caster), 1);
-    assert!(a.position(caster).distance(Vec2::new(-5.0, 4.0)) < 0.1);
+    assert!(a.position(caster).distance(cast_position) < 0.01);
     assert_eq!(a.mana(caster), 260.0);
 }
 
