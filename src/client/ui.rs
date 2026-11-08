@@ -584,7 +584,7 @@ pub(super) fn publish(
                     order: match order {
                         UnitOrder::Idle => "Idle",
                         UnitOrder::MoveTo(_) => "Moving",
-                        UnitOrder::AttackTarget(_) => "Attacking",
+                        UnitOrder::AttackTarget(_) | UnitOrder::AutoAttack { .. } => "Attacking",
                         UnitOrder::AttackMove { .. } => "Attack move",
                         UnitOrder::CastTarget { .. } => "Approaching cast",
                     },

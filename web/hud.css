@@ -87,8 +87,10 @@ html[data-session-phase="Active"] .top-right .status { display: none; }
 .ability small { position: absolute; top: 42px; left: -5px; right: -5px; font-size: 8px; line-height: 9px; color: #a7b8a9; white-space: nowrap; }
 .ability .cooldown { position: absolute; inset: 0; display: grid; place-items: center; background: #0b171ac9; font-size: 18px; color: #cfd8cf; visibility: hidden; }
 .ability.cooling .cooldown { visibility: visible; }
-.ability.no-energy { color: #536e77; border-color: #385260; }
 .ability.unavailable { border-color: #66757155; color: #83928b; }
+.ability.no-energy { color: #536e77; border-color: #4b95bb; }
+.ability.no-energy .ability-art, .ability.no-energy svg { filter: grayscale(1) brightness(.4); }
+.ability.no-energy::after { content: "缺蓝"; position: absolute; right: 1px; bottom: 1px; padding: 0 3px; background: #123e57; color: #b9e5ff; font-size: 8px; line-height: 11px; pointer-events: none; }
 .ability:disabled { cursor: default; }
 .ability.recast { border-color: #e1b56a; }
 .ability.empowered { box-shadow: 0 0 14px #8ad7ec55; }

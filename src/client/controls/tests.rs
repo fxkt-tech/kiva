@@ -32,6 +32,12 @@ fn selecting_app() -> (App, Entity) {
     super::super::content::setup(app.world_mut());
     super::super::test_support::generic_control_roster(app.world_mut());
     super::super::session::setup(app.world_mut());
+    // Existing adapter scenarios explicitly exercise normal cast. Production
+    // defaults to quick cast; the new scenarios below opt into that default.
+    app.world_mut()
+        .resource_mut::<PlayerController>()
+        .casting
+        .mode = CastMode::Normal;
     (app, window)
 }
 
@@ -235,15 +241,183 @@ fn attack_move_click_rechecks_friendly_and_no_longer_visible_candidates() {
 }
 
 fn press(app: &mut App, window: Entity, key: KeyCode) {
+    key_event(app, window, key, ButtonState::Pressed, false);
+}
+
+fn key_event(app: &mut App, window: Entity, key: KeyCode, state: ButtonState, repeat: bool) {
     app.world_mut()
         .write_message(WindowEvent::KeyboardInput(KeyboardInput {
             key_code: key,
             logical_key: Key::Character("test".into()),
-            state: ButtonState::Pressed,
+            state,
             text: None,
-            repeat: false,
+            repeat,
             window,
         }));
+}
+
+fn move_cursor(app: &mut App, window: Entity, point: Vec2) {
+    app.world_mut()
+        .write_message(WindowEvent::CursorMoved(bevy::window::CursorMoved {
+            window,
+            position: point,
+            delta: None,
+        }));
+}
+
+#[test]
+fn quick_cast_uses_the_ordered_keydown_position_and_ignores_key_repeats() {
+    let (mut app, window) = app();
+    app.world_mut().resource_mut::<PlayerController>().casting = CastInput::default();
+    assert_eq!(
+        app.world().resource::<PlayerController>().casting.mode(),
+        CastMode::Quick
+    );
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let origin = app.world().get::<UnitPose>(player).unwrap().position();
+    install_picking_camera(&mut app, Vec3::new(origin.x, 0.0, origin.y));
+    let first = picking_screen(&mut app, Vec3::new(origin.x + 3.0, 0.0, origin.y));
+    let later = picking_screen(&mut app, Vec3::new(origin.x, 0.0, origin.y + 3.0));
+    move_cursor(&mut app, window, first);
+    press(&mut app, window, KeyCode::KeyR);
+    move_cursor(&mut app, window, later);
+    key_event(&mut app, window, KeyCode::KeyR, ButtonState::Pressed, true);
+    app.update();
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    step(&mut app, 30);
+    let mut cursor = bevy::ecs::message::MessageCursor::<SimulationEvent>::default();
+    let commits: Vec<_> = cursor
+        .read(app.world().resource::<Messages<SimulationEvent>>())
+        .filter_map(|event| match event {
+            SimulationEvent::AbilityCommitted { unit, target, .. } if *unit == player => {
+                Some(*target)
+            }
+            _ => None,
+        })
+        .collect();
+    assert_eq!(commits.len(), 1);
+    assert!(
+        matches!(commits[0], AbilityTarget::Direction(direction) if direction.distance(Vec2::X) < 0.001)
+    );
+}
+
+#[test]
+fn normal_mode_and_shift_override_wait_for_left_click_and_keep_event_order() {
+    for mode in [CastMode::Normal, CastMode::Quick] {
+        let (mut app, window) = app();
+        app.world_mut()
+            .resource_mut::<PlayerController>()
+            .casting
+            .mode = mode;
+        let player = app.world().resource::<ClientSession>().player().unwrap();
+        let origin = app.world().get::<UnitPose>(player).unwrap().position();
+        install_picking_camera(&mut app, Vec3::new(origin.x, 0.0, origin.y));
+        let point = picking_screen(&mut app, Vec3::new(origin.x + 3.0, 0.0, origin.y));
+        move_cursor(&mut app, window, point);
+        if mode == CastMode::Quick {
+            press(&mut app, window, KeyCode::ShiftRight);
+        }
+        press(&mut app, window, KeyCode::KeyR);
+        key_event(
+            &mut app,
+            window,
+            KeyCode::ShiftRight,
+            ButtonState::Released,
+            false,
+        );
+        app.update();
+        step(&mut app, 25);
+        assert!(matches!(
+            app.world().resource::<PlayerController>().aim,
+            Some(Aim::Ability(3))
+        ));
+        assert_eq!(
+            app.world().get::<AbilitySlots>(player).unwrap().cooldown(3),
+            Some(0.0)
+        );
+        assert_eq!(
+            app.world().resource::<PlayerController>().casting.mode(),
+            mode
+        );
+        app.world_mut().resource_mut::<PointerState>().ground = Some(origin + Vec2::Y * 3.0);
+        mouse_pressed(app.world_mut(), MouseButton::Left);
+        step(&mut app, 30);
+        let mut cursor = bevy::ecs::message::MessageCursor::<SimulationEvent>::default();
+        assert!(cursor.read(app.world().resource::<Messages<SimulationEvent>>()).any(|event|
+            matches!(event, SimulationEvent::AbilityCommitted { unit, target: AbilityTarget::Direction(direction), .. }
+                if *unit == player && direction.distance(Vec2::Y) < 0.001)));
+    }
+}
+
+#[test]
+fn quick_point_casts_share_clamping_for_hero_and_equipment_and_icons_still_aim() {
+    for equipment in [false, true] {
+        let (mut app, window) = app();
+        app.world_mut()
+            .resource_mut::<PlayerController>()
+            .casting
+            .mode = CastMode::Quick;
+        let player = app.world().resource::<ClientSession>().player().unwrap();
+        if equipment {
+            equip_equipment(app.world_mut(), player, 1, EquipmentId(8)).unwrap();
+        }
+        let origin = app.world().get::<UnitPose>(player).unwrap().position();
+        install_picking_camera(&mut app, Vec3::new(origin.x + 6.0, 0.0, origin.y));
+        let point = picking_screen(&mut app, Vec3::new(origin.x + 12.0, 0.0, origin.y));
+        move_cursor(&mut app, window, point);
+        press(
+            &mut app,
+            window,
+            if equipment {
+                KeyCode::Digit2
+            } else {
+                KeyCode::KeyE
+            },
+        );
+        app.update();
+        assert!(app.world().resource::<PlayerController>().aim.is_none());
+        step(&mut app, 60);
+        let mut cursor = bevy::ecs::message::MessageCursor::<SimulationEvent>::default();
+        assert!(cursor.read(app.world().resource::<Messages<SimulationEvent>>()).any(|event|
+            matches!(event, SimulationEvent::AbilityCommitted { unit, target: AbilityTarget::Point(point), cast_source, .. }
+                if *unit == player && point.distance(origin + Vec2::X * 6.0) < 0.001
+                    && matches!((equipment, cast_source), (false, CastSource::AbilitySlot(2)) | (true, CastSource::EquipmentSlot { slot: 1, .. })))));
+        // A HUD selection always opens normal targeting, even in quick mode.
+        queued_skill_request(app.world_mut(), Some(0), false);
+        assert!(matches!(
+            app.world().resource::<PlayerController>().aim,
+            Some(Aim::Ability(0))
+        ));
+    }
+}
+
+#[test]
+fn quick_enemy_cast_without_a_target_does_not_leave_aim_or_spend_resources() {
+    let (mut app, window) = app();
+    app.world_mut()
+        .resource_mut::<PlayerController>()
+        .casting
+        .mode = CastMode::Quick;
+    press(&mut app, window, KeyCode::KeyQ);
+    app.update();
+    step(&mut app, 30);
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    assert_eq!(
+        app.world().get::<AbilitySlots>(player).unwrap().cooldown(0),
+        Some(0.0)
+    );
+    assert_eq!(app.world().get::<UnitState>(player).unwrap().mana(), 300.0);
+    app.world_mut().resource_mut::<PointerState>().over_ui = true;
+    let origin = app.world().get::<UnitPose>(player).unwrap().position();
+    app.world_mut().resource_mut::<PointerState>().ground = Some(origin + Vec2::X);
+    cast_hotkey(app.world_mut(), player, CastHotkey::Ability(2));
+    step(&mut app, 30);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    assert_eq!(
+        app.world().get::<AbilitySlots>(player).unwrap().cooldown(2),
+        Some(0.0)
+    );
 }
 
 #[test]
@@ -367,7 +541,7 @@ fn enemy_skill_keeps_aim_on_empty_ground_or_friendly_body_without_submitting() {
     }
 }
 
-fn out_of_range_enemy_click(equipment: bool) {
+fn out_of_range_enemy_click(equipment: bool, quick: bool) {
     let (mut app, _) = app();
     let player = app.world().resource::<ClientSession>().player().unwrap();
     let origin = app.world().get::<UnitPose>(player).unwrap().position();
@@ -409,14 +583,30 @@ fn out_of_range_enemy_click(equipment: bool) {
         Err(Rejection::OutOfRange),
         "AI's immediate preflight stays strict"
     );
-    select_cast(app.world_mut(), source);
     *app.world_mut().resource_mut::<PointerState>() = PointerState {
         ground: Some(position),
         hovered: Some(enemy),
         candidates: vec![enemy],
         ..default()
     };
-    mouse_pressed(app.world_mut(), MouseButton::Left);
+    if quick {
+        app.world_mut()
+            .resource_mut::<PlayerController>()
+            .casting
+            .mode = CastMode::Quick;
+        cast_hotkey(
+            app.world_mut(),
+            player,
+            if equipment {
+                CastHotkey::Equipment(0)
+            } else {
+                CastHotkey::Ability(0)
+            },
+        );
+    } else {
+        select_cast(app.world_mut(), source);
+        mouse_pressed(app.world_mut(), MouseButton::Left);
+    }
     assert!(
         app.world().resource::<PlayerController>().aim.is_none(),
         "a valid distant enemy click must submit its intent and leave aim"
@@ -435,12 +625,18 @@ fn out_of_range_enemy_click(equipment: bool) {
 
 #[test]
 fn distant_enemy_click_submits_hero_skill_instead_of_remaining_in_aim() {
-    out_of_range_enemy_click(false);
+    out_of_range_enemy_click(false, false);
 }
 
 #[test]
 fn distant_enemy_click_submits_equipment_skill_through_the_same_adapter() {
-    out_of_range_enemy_click(true);
+    out_of_range_enemy_click(true, false);
+}
+
+#[test]
+fn quick_cast_submits_the_same_distant_enemy_and_equipment_approach() {
+    out_of_range_enemy_click(false, true);
+    out_of_range_enemy_click(true, true);
 }
 
 fn control_caster(app: &mut App, ability: AbilityId) -> Entity {

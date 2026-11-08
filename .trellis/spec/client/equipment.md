@@ -50,9 +50,9 @@ equipment_aim: null | usize
   不缓存整场运行态，不在startup.js混入目录，不增加World写接口或投影ack。运行时格/CD/权限来自Rust。
 - `AbilityDescription`提供无slot的共用说明；旧`AbilityMetadata/AbilityView`仍为扁平字段。
   装备active用实际格，原`abilities`仍是四技能，原`aim`仍只表示角色技能。
-- `1–6`或真实游戏光标点击`[data-equipment-slot]`，共用`select_cast/submit_cast`；
+- `1–6`遵循普通/智能默认模式与Shift覆盖，真实游戏光标点击`[data-equipment-slot]`继续普通瞄准；共用`select_cast/cast_at_pointer/submit_cast`，见[施法输入](casting.md)；
   目标、范围和可用性按`CastSource`解析，瞄准携带实例，卸装后失效。
-  自身目标立即提交，其余复用现有目标交互，Enemy点空地/友方保持瞄准。
+  自身目标立即提交，其余复用现有目标交互，普通Enemy点空地/友方保持瞄准，智能无合法目标不提交也不残留aim。
 - `data-equipment-skill`独立于原`data-skill`，HUD点击在同一个鼠标事件内消费。
   无玩家、暂停、just_captured边界排空旧意图，不能恢复后重放或释放新实例。
 - P或暂停菜单打开装配界面并释放捕获；关闭/Esc回到暂停菜单，继续对局才恢复捕获。

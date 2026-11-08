@@ -306,6 +306,11 @@ pub enum UnitOrder {
     Idle,
     MoveTo(Vec2),
     AttackTarget(UnitLifeRef),
+    /// Continue acquiring nearby enemies after an explicit attack target ends.
+    /// Unlike AttackMove, this intent has no destination to return to.
+    AutoAttack {
+        target: Option<UnitLifeRef>,
+    },
     /// One targeted cast awaiting a reachable position inside its range.
     CastTarget {
         source: CastSource,

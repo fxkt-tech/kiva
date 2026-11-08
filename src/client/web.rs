@@ -122,6 +122,8 @@ extern "C" {
     fn browser_pointer_position() -> Vec<f32>;
     #[wasm_bindgen(js_namespace = ["window", "kivaPointer"], js_name = takePress)]
     fn browser_pointer_press(button: u16) -> Vec<f32>;
+    #[wasm_bindgen(js_namespace = ["window", "kivaPointer"], js_name = takeKeyPress)]
+    fn browser_key_press(code: &str) -> Vec<f32>;
     #[wasm_bindgen(js_namespace = ["window", "kivaPointer"], js_name = clearPresses)]
     fn browser_pointer_clear();
 }
@@ -156,6 +158,48 @@ pub(super) fn game_pointer_position() -> Option<Vec2> {
 pub(super) struct PointerPress {
     pub position: Vec2,
     pub captured_by_ui: bool,
+}
+
+pub(super) struct KeyPress {
+    pub pointer: PointerPress,
+    pub shift: bool,
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn decode_key_press(values: &[f32]) -> Option<KeyPress> {
+    let [x, y, captured_by_ui, shift] = *values else {
+        return None;
+    };
+    if shift != 0.0 && shift != 1.0 {
+        return None;
+    }
+    Some(KeyPress {
+        pointer: decode_pointer_press(&[x, y, captured_by_ui])?,
+        shift: shift == 1.0,
+    })
+}
+
+pub(super) fn take_key_press(code: &str) -> Option<KeyPress> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        decode_key_press(&browser_key_press(code))
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let _ = code;
+        None
+    }
+}
+
+pub(super) fn cast_mode() -> Option<String> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        root()?.get_attribute("data-cast-mode")
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        None
+    }
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
@@ -331,6 +375,23 @@ fn dispatch_json(name: &str, json: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn key_press_bridge_preserves_shift_and_rejects_malformed_snapshots() {
+        let press = decode_key_press(&[20.5, 90.25, 1.0, 1.0]).unwrap();
+        assert_eq!(press.pointer.position, Vec2::new(20.5, 90.25));
+        assert!(press.pointer.captured_by_ui && press.shift);
+        for values in [
+            &[][..],
+            &[1.0, 2.0, 0.0][..],
+            &[1.0, 2.0, 0.0, 2.0][..],
+            &[1.0, 2.0, 0.0, f32::NAN][..],
+            &[f32::NAN, 2.0, 0.0, 0.0][..],
+            &[1.0, 2.0, -1.0, 0.0][..],
+        ] {
+            assert!(decode_key_press(values).is_none());
+        }
+    }
 
     #[test]
     fn press_bridge_preserves_position_and_event_time_ui_ownership() {

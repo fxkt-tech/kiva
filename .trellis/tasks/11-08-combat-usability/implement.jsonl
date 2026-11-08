@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/simulation/runtime.md", "reason": "持续指令、固定步及生命"}
+{"file": ".trellis/spec/simulation/combat-foundation.md", "reason": "受限恢复与普攻"}
+{"file": ".trellis/spec/gameplay/match.md", "reason": "基地恢复策略"}
+{"file": ".trellis/spec/client/browser.md", "reason": "只读HUD展示"}
+{"file": ".trellis/spec/client/champion-presentation.md", "reason": "技能费用与免蓝重施"}
+{"file": ".trellis/spec/guides/index.md", "reason": "跨层与复用边界"}

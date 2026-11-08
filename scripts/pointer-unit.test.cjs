@@ -95,6 +95,57 @@ test("a mismatched press discards the remaining batch rather than replaying it",
   assert.deepEqual(f.take(0), []);
 });
 
+test("skill keys capture their own event-time position and Shift independently of mouse presses", () => {
+  const f = fixture();
+  f.capture();
+  const key = (code, shiftKey = false) => f.document.emit("keydown", { isTrusted: true, repeat: false, code, shiftKey });
+  f.down(0);
+  f.move({ movementX: 25 });
+  key("KeyQ", true);
+  f.move({ movementX: 40 });
+  key("Digit2");
+  f.move({ movementX: 60 });
+  assert.deepEqual(Array.from(f.api.takeKeyPress("KeyQ")), [525, 360, 0, 1]);
+  assert.deepEqual(f.take(0), [500, 360, 0]);
+  assert.deepEqual(Array.from(f.api.takeKeyPress("Digit2")), [565, 360, 0, 0]);
+  assert.deepEqual(Array.from(f.api.takeKeyPress("Digit2")), []);
+});
+
+test("key snapshots ignore repeats, untrusted events and keys outside the skill bindings", () => {
+  const f = fixture();
+  f.capture();
+  for (const override of [{ repeat: true }, { isTrusted: false }, { code: "ShiftLeft" }]) {
+    f.document.emit("keydown", { isTrusted: true, repeat: false, code: "KeyQ", shiftKey: false, ...override });
+  }
+  assert.deepEqual(Array.from(f.api.takeKeyPress("KeyQ")), []);
+  f.document.emit("keydown", { isTrusted: true, code: "KeyW", shiftKey: false });
+  f.document.emit("keydown", { isTrusted: true, code: "KeyQ", shiftKey: false });
+  assert.deepEqual(Array.from(f.api.takeKeyPress("KeyQ")), [], "a mismatch clears stale key positions");
+  assert.deepEqual(Array.from(f.api.takeKeyPress("KeyQ")), []);
+});
+
+test("key snapshots retain UI gesture ownership and clear at pause and capture boundaries", () => {
+  const f = fixture();
+  f.capture();
+  const key = () => f.document.emit("keydown", { isTrusted: true, code: "KeyE", shiftKey: false });
+  f.api.setUiCapture(true);
+  key();
+  f.api.setUiCapture(false);
+  assert.deepEqual(Array.from(f.api.takeKeyPress("KeyE")), [500, 360, 1, 0]);
+  key();
+  f.api.clearPresses();
+  assert.deepEqual(Array.from(f.api.takeKeyPress("KeyE")), []);
+  key();
+  f.root.dataset.paused = "true";
+  f.flushMutations();
+  f.root.dataset.paused = "false";
+  f.api.sync(true);
+  assert.deepEqual(Array.from(f.api.takeKeyPress("KeyE")), []);
+  f.window.emit("blur");
+  key();
+  assert.deepEqual(Array.from(f.api.takeKeyPress("KeyE")), []);
+});
+
 for (const [label, dpr, units] of [["CSS", 2, 1], ["physical", 1.5, 1.5]]) {
   test(`${label} movement calibrates against the actual unlocked CSS displacement`, () => {
     const f = fixture(dpr);

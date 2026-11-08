@@ -86,7 +86,7 @@ impl Default for MatchDefinition {
                 radius: 2.5,
                 health_fraction_per_second: 0.20,
                 mana_fraction_per_second: 0.20,
-                out_of_combat_ticks: (2.0 * TICK_RATE) as u32,
+                out_of_combat_ticks: 0,
             },
         }
     }

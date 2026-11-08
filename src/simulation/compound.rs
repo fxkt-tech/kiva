@@ -165,7 +165,9 @@ pub(super) fn execute(
                     .filter(|object| {
                         object.kind == ObjectKind::Standard
                             && object.owner == life
-                            && object.active_at <= tick
+                            // Deployment is enough to link. Landing still
+                            // gates the standard's damage, aura and vision.
+                            && object.until > tick
                     })
                     .filter_map(|object| {
                         let delta = object.position - position;

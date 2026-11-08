@@ -157,5 +157,8 @@ noscript { position: fixed; top: 20px; left: 20px; color: white; z-index: 20; }
 .audio-settings label { display: flex; align-items: center; gap: 8px; }
 .audio-settings input { accent-color: #b6d4b8; }
 .audio-settings input[type="range"] { width: 100px; }
+.casting-settings { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 12px 0; font-size: 12px; color: var(--muted); }
+.casting-settings select { max-width: 100%; padding: 6px 8px; border: 1px solid #44635d; border-radius: 4px; background: #142724; color: #d7e3de; font: inherit; }
+.casting-settings small { flex-basis: 100%; }
 .choice-portrait { float: left; width: 42px; height: 42px; object-fit: cover; margin-right: 12px; border-radius: 4px; }
 .preview-skill-icon { width: 32px; height: 32px; object-fit: cover; float: left; margin-right: 8px; border-radius: 3px; }

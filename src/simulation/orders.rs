@@ -157,7 +157,7 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
                 .get::<UnitState>(target)
                 .expect("validated target state")
                 .life_ref(target);
-            if matches!(world.get::<UnitOrder>(entity), Some(UnitOrder::AttackTarget(current)) if *current == target_life)
+            if matches!(world.get::<UnitOrder>(entity), Some(UnitOrder::AttackTarget(current) | UnitOrder::AutoAttack { target: Some(current) }) if *current == target_life)
                 && matches!(
                     world.get::<UnitAction>(entity),
                     Some(
@@ -216,6 +216,16 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
 pub(super) fn consume_commands(world: &mut World) {
     let commands: Vec<_> = world.resource_mut::<CommandQueue>().drain().collect();
     for (unit, command) in commands {
+        // Zero-windup casts commit in the action phase of this tick. Keep this
+        // actor's later inputs in FIFO order until then, instead of rejecting
+        // the next spell as Busy (or erasing the instant cast with a move).
+        // Other actors still consume their commands in this same tick.
+        if matches!(world.get::<UnitAction>(unit),
+            Some(UnitAction::Casting { remaining, .. }) if *remaining == 0.0)
+        {
+            world.resource_mut::<CommandQueue>().submit(unit, command);
+            continue;
+        }
         if let Err(reason) = apply_command(world, unit, command) {
             world.write_message(SimulationEvent::CommandRejected { unit, reason });
         }
@@ -272,14 +282,24 @@ pub(super) fn resolve_orders(
         let target = match &mut *order {
             UnitOrder::AttackTarget(target) => {
                 if valid(*target).is_none() {
-                    *order = UnitOrder::Idle;
-                    movement.route.clear();
-                    movement.goal = None;
-                    continue;
+                    let ended = !targets.get(target.entity()).is_ok_and(|(_, _, life, _)| {
+                        life.alive() && life.life_ref(target.entity()) == *target
+                    });
+                    if ended {
+                        let next = nearest_enemy(&targets, &vision, unit, pose);
+                        *order = UnitOrder::AutoAttack { target: next };
+                        next
+                    } else {
+                        *order = UnitOrder::Idle;
+                        movement.route.clear();
+                        movement.goal = None;
+                        continue;
+                    }
+                } else {
+                    Some(*target)
                 }
-                Some(*target)
             }
-            UnitOrder::AttackMove { target, .. } => {
+            UnitOrder::AttackMove { target, .. } | UnitOrder::AutoAttack { target } => {
                 if target.is_some_and(|id| {
                     valid(id).is_none_or(|(_, _, _, p)| {
                         p.position.distance(pose.position) > unit.attributes().attack_range() + 6.0
@@ -288,22 +308,7 @@ pub(super) fn resolve_orders(
                     *target = None;
                 }
                 if target.is_none() {
-                    *target = targets
-                        .iter()
-                        .filter(|(_, other, life, p)| {
-                            other.team != unit.team
-                                && life.alive()
-                                && vision.point_visible(unit.team, p.position)
-                                && p.position.distance(pose.position)
-                                    <= unit.attributes().attack_range() + 3.0
-                        })
-                        .min_by(|a, b| {
-                            a.3.position
-                                .distance_squared(pose.position)
-                                .total_cmp(&b.3.position.distance_squared(pose.position))
-                                .then_with(|| a.0.to_bits().cmp(&b.0.to_bits()))
-                        })
-                        .map(|(id, _, state, _)| state.life_ref(id));
+                    *target = nearest_enemy(&targets, &vision, unit, pose);
                 }
                 *target
             }
@@ -376,4 +381,29 @@ pub(super) fn resolve_orders(
             }
         }
     }
+}
+
+/// Shared acquisition policy for attack-move and continuing basic attacks.
+/// Stable ties and visibility checks belong to the simulation, not controllers.
+fn nearest_enemy(
+    targets: &Query<(Entity, &Unit, &UnitState, &UnitPose)>,
+    vision: &TeamVision,
+    unit: &Unit,
+    pose: &UnitPose,
+) -> Option<UnitLifeRef> {
+    targets
+        .iter()
+        .filter(|(_, other, life, p)| {
+            other.team != unit.team
+                && life.alive()
+                && vision.point_visible(unit.team, p.position)
+                && p.position.distance(pose.position) <= unit.attributes().attack_range() + 3.0
+        })
+        .min_by(|a, b| {
+            a.3.position
+                .distance_squared(pose.position)
+                .total_cmp(&b.3.position.distance_squared(pose.position))
+                .then_with(|| a.0.to_bits().cmp(&b.0.to_bits()))
+        })
+        .map(|(id, _, state, _)| state.life_ref(id))
 }

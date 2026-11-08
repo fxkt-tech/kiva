@@ -498,6 +498,7 @@ pub(super) fn describe_effects(effects: &[Effect]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bevy::prelude::*;
 
     #[test]
     fn homing_description_follows_targeting_instead_of_the_projectile_shape() {
@@ -526,5 +527,76 @@ mod tests {
             }),
         ]);
         assert_eq!(text, "75魔法伤害；眩晕0.75秒");
+    }
+    #[test]
+    fn actual_mana_consumption_and_regeneration_update_the_read_only_skill_view() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin));
+        app.insert_resource(NavigationMap::new(10.0, 1.0, vec![]));
+        let id = AbilityId(90);
+        app.world_mut()
+            .resource_mut::<AbilityCatalog>()
+            .register(
+                id,
+                AbilityDefinition {
+                    name: "Mana test".into(),
+                    targeting: Targeting::Point,
+                    range: 5.0,
+                    windup: 0.0,
+                    recovery: 0.0,
+                    cooldown: 0.0,
+                    mana_cost: 60.0,
+                    execution: AbilityExecution::Dash { speed: 20.0 },
+                },
+            )
+            .unwrap();
+        let player = spawn_unit(
+            app.world_mut(),
+            UnitSpec {
+                name: "Caster".into(),
+                team: Team::Ally,
+                position: Vec2::ZERO,
+                stats: UnitStats {
+                    max_mana: 60.0,
+                    mana_regen: 30.0,
+                    ..default()
+                },
+                abilities: [Some(id), None, None, None],
+                respawn_delay: None,
+            },
+        )
+        .unwrap();
+        let view = |world: &World| {
+            serde_json::to_value(AbilityView::new(
+                0,
+                id,
+                world.resource::<AbilityCatalog>().get(id).unwrap(),
+                world.get::<UnitState>(player).unwrap(),
+                world.get::<ControlState>(player).unwrap(),
+                world.get::<AbilitySlots>(player).unwrap(),
+            ))
+            .unwrap()
+        };
+        assert_eq!(
+            view(app.world())["available"],
+            true,
+            "exactly enough mana is usable"
+        );
+        app.world_mut().resource_mut::<CommandQueue>().submit(
+            player,
+            UnitCommand::CastAbility {
+                slot: 0,
+                target: AbilityTarget::Point(Vec2::X),
+            },
+        );
+        app.world_mut().run_schedule(FixedUpdate);
+        assert_eq!(app.world().get::<UnitState>(player).unwrap().mana(), 0.0);
+        assert_eq!(view(app.world())["available"], false);
+        assert_eq!(view(app.world())["unavailable_reason"], "能量不足");
+        for _ in 0..120 {
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+        assert_eq!(view(app.world())["available"], true);
+        assert!(view(app.world())["unavailable_reason"].is_null());
     }
 }

@@ -15,6 +15,7 @@
   let uiCaptured = false;
   let enemyTarget = false;
   const presses = [];
+  const keyPresses = [];
 
   const captured = () => document.pointerLockElement === canvas;
   const permitted = () => captured() && document.hasFocus()
@@ -54,6 +55,7 @@
     uiCaptured = false;
     enemyTarget = false;
     presses.length = 0;
+    keyPresses.length = 0;
     cursor.hidden = true;
     updateHover();
   }
@@ -127,6 +129,12 @@
   document.addEventListener("pointerdown", (event) => {
     if (event.isTrusted && event.pointerType === "mouse") press(event);
   }, true);
+  document.addEventListener("keydown", (event) => {
+    if (!event.isTrusted || event.repeat || !active || !permitted()
+      || !/^(Key[QWER]|Digit[1-6])$/.test(event.code)) return;
+    if (keyPresses.length >= 64) keyPresses.shift();
+    keyPresses.push({ code: event.code, point: [...point], uiCaptured, shift: event.shiftKey });
+  }, true);
   document.addEventListener("pointerleave", () => { previous = null; });
   document.addEventListener("pointerlockchange", () => {
     previous = null;
@@ -156,6 +164,7 @@
       if (!active) {
         active = true;
         presses.length = 0;
+        keyPresses.length = 0;
         size = [canvas.clientWidth, canvas.clientHeight];
         point = size.map((value) => value / 2);
         clamp();
@@ -171,12 +180,20 @@
       }
       return [...next.point, Number(next.uiCaptured)];
     },
+    takeKeyPress(code) {
+      const next = keyPresses.shift();
+      if (!active || !permitted() || next?.code !== code) {
+        keyPresses.length = 0;
+        return [];
+      }
+      return [...next.point, Number(next.uiCaptured), Number(next.shift)];
+    },
     // The UI gesture owns subsequent button presses even if it is released
     // before Rust consumes this frame's ordered window events.
     setUiCapture(enabled) {
       uiCaptured = Boolean(enabled && active && permitted());
       updateCursorTarget();
     },
-    clearPresses() { presses.length = 0; },
+    clearPresses() { presses.length = 0; keyPresses.length = 0; },
   });
 })();

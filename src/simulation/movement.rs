@@ -88,6 +88,15 @@ pub(super) fn start_compound(
     unit: Entity,
     motion: super::compound::CompoundMotion,
 ) {
+    // A link approaches combat, but must not revive a distant previous chase.
+    // Resolve fresh nearby targets only after motion finishes. Keeping this as
+    // the ordinary purpose also lets Stop cancel it during committed motion.
+    *world.get_mut::<UnitOrder>(unit).expect("unit order") =
+        if matches!(&motion.kind, super::compound::MotionKind::Link { .. }) {
+            UnitOrder::AutoAttack { target: None }
+        } else {
+            UnitOrder::Idle
+        };
     clear_route(&mut world.get_mut::<Movement>(unit).expect("movement"));
     world.entity_mut(unit).insert(motion);
 }
@@ -158,6 +167,7 @@ pub(super) fn apply_terrain_relocations(world: &mut World, plan: Vec<(Entity, Ve
     }
 }
 pub(super) fn start_dash(world: &mut World, unit: Entity, destination: Vec2, speed: f32) {
+    *world.get_mut::<UnitOrder>(unit).expect("unit order") = UnitOrder::Idle;
     let mut movement = world.get_mut::<Movement>(unit).expect("unit movement");
     clear_route(&mut movement);
     movement.dash = Some((destination, speed));

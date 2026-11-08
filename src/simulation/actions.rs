@@ -478,6 +478,14 @@ fn commit_cast(
         }
     };
     // All targets, permissions and every effect snapshot are valid before costs.
+    // Only a committed cast replaces a ground destination; a rejected windup
+    // must retain the old purpose. Ordinary spells preserve explicit attacks.
+    // Autonomous movement separately replaces those when it actually starts.
+    if let Some(mut order) = world.get_mut::<UnitOrder>(entity)
+        && matches!(*order, UnitOrder::MoveTo(_) | UnitOrder::AttackMove { .. })
+    {
+        *order = UnitOrder::Idle;
+    }
     world.get_mut::<UnitState>(entity).expect("unit state").mana -= definition.mana_cost;
     commit_cooldown(world, entity, source, definition.cooldown);
     let origin = world.get::<UnitPose>(entity).expect("unit pose").position;

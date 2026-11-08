@@ -74,7 +74,15 @@ pub(super) fn current_target(seen: &[SeenUnit], target: UnitLifeRef) -> Option<&
 
 pub(super) fn redundant(world: &World, unit: Entity, command: UnitCommand) -> bool {
     match (world.get::<UnitOrder>(unit), command) {
-        (Some(UnitOrder::AttackTarget(current)), UnitCommand::AttackTarget(target)) => {
+        (
+            Some(
+                UnitOrder::AttackTarget(current)
+                | UnitOrder::AutoAttack {
+                    target: Some(current),
+                },
+            ),
+            UnitCommand::AttackTarget(target),
+        ) => {
             current.entity() == target
                 && world
                     .get::<UnitState>(target)

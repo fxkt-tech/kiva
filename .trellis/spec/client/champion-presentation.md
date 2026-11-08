@@ -22,10 +22,12 @@ UnitView另有passives、shield、focus和empowered。所有值来自实际定�
 charges/max_charges/recharge、recast/recast_ready。静态预览没有伪运行时计数。
 `HudView.objects`只包含可见的Standard/Terrain/Scout/Reveal及position/radius/remaining/active，owner不可见时为null。
 
+技能缺蓝沿用实际player.mana与投影cost的no-energy状态：原图与SVG去色变暗、蓝边并标注“缺蓝”；冷却遮罩、层数/充能徽标保持独立。不能只改currentColor，因为原PNG不会随文字颜色变化；重施投影cost=0，不因原始费用误标缺蓝。
+
 ## 3. 输入与生命周期
 
-键盘QWER与鼠标按钮共用select_cast。实际slot有recast时，无目标提交SelfCast；根据recast_ready启用，
-不受普通长CD/二次费用阻挡。普通Enemy目标由preview_cast统一预检；只将OutOfRange放行成一次原Unit命令，由模拟追近，随后退出aim。错误类型、隐藏/无效候选仍保留aim。
+键盘QWER与鼠标按钮共用select_cast；智能按键随后与普通左键共用cast_at_pointer，模式见[施法输入](casting.md)。实际slot有recast时，无目标提交SelfCast；根据recast_ready启用，
+不受普通长CD/二次费用阻挡。普通Enemy目标由preview_cast统一预检；只将OutOfRange放行成一次原Unit命令，由模拟追近，随后退出aim。错误类型、隐藏/无效候选在普通模式保留aim，智能模式不残留aim。
 只读order使用Approaching cast展示待放目的；Enemy提示说明超距自动走近，射程外预览用黄色，其它非法超距仍用红色。
 Empower层不足不可释放，提示先普攻；Scout按实际charges/cooldown启用。JS不得补算层数或恢复充能。
 

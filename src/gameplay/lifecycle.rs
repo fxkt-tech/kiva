@@ -173,7 +173,7 @@ pub(super) fn recover_heroes(world: &mut World) {
         else {
             continue;
         };
-        // Out of range, dead, and in combat are normal eligibility outcomes;
+        // Out of range and dead are normal eligibility outcomes;
         // the authoritative boundary alone decides and applies any recovery.
         let _ = restore_in_zone(world, source_life, target_life, spec);
     }

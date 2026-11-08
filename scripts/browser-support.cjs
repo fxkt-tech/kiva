@@ -43,12 +43,15 @@ async function launchBrowser() {
   });
 }
 
-async function openSelection(page, url = process.env.KIVA_TEST_URL || "http://127.0.0.1:3221") {
+async function openSelection(page, url = process.env.KIVA_TEST_URL || "http://127.0.0.1:3221", castMode = "normal") {
   await page.goto(url, { timeout: 120000 });
   await page.locator("#enter").waitFor({ state: "visible", timeout: 120000 });
   await page.bringToFront();
   await page.waitForFunction(() => window.__kivaState?.session?.phase === "Selecting"
     && window.__kivaState.session.selection?.can_start, undefined, { timeout: 120000 });
+  // Existing scenarios explicitly confirm targets with left click. Select
+  // their mode through the real menu rather than relying on the user default.
+  await page.locator("#cast-mode").selectOption(castMode);
 }
 
 async function selectCharacter(page, characterId) {

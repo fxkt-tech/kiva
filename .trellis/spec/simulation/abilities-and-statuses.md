@@ -44,6 +44,7 @@ orders::resolve_target(&World, unit, &AbilityDefinition, AbilityTarget) -> Resul
   角色/装备共用resolve_target；碰墙/地图边界仍由movement的sweep处理，不在客户端缩短命令目标。
   其它Point保留严格射程校验。Enemy的preview/commit同样严格，但命令入口将单独OutOfRange转为CastTarget走近目的；到范围后再走原begin/commit。规则按targeting/execution，不匹配技能ID。
 - 效果列表非空且有序，整组快照验证先于消耗/冷却。命中后逐项执行，死亡后跳过目标其余效果。
+- commit_cast在全部目标/权限/快照校验成功后清旧MoveTo/AttackMove，拒绝不能提前清目的；普通技能保留明确普攻/持续普攻。movement的start_dash/start_compound在自主运动提交时替换旧目的并清路线，Dash/Leap用Idle，Link用无旧目标的AutoAttack，避免落地后重规划回旧目标；start_forced不采用该规则。
 - 直接命中也入统一末段队列；actor和命中包显式稳定排序。同一步双方已经提交的技能均保留。
 - 旧状态在移动后、新命中前递减。末段新应用N tick，准确限制后续N个动作步；到期后不补跑动作。
 - Stun/Root同来源生命+完整DamageOrigin+效果索引取较晚到期；不同来源独立。

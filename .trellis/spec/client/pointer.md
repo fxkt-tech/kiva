@@ -13,11 +13,13 @@
 window.kivaPointer.sync(active: boolean): void
 window.kivaPointer.position(): [] | [x, y]
 window.kivaPointer.takePress(button: number): [] | [x, y, capturedByUi]
+window.kivaPointer.takeKeyPress(code: string): [] | [x, y, capturedByUi, shiftKey]
 window.kivaPointer.setUiCapture(enabled: boolean): void
 window.kivaPointer.clearPresses(): void
 web::sync_game_pointer(active: bool)
 web::game_pointer_position() -> Option<Vec2>
 web::take_pointer_press(MouseButton) -> Option<PointerPress { position: Vec2, captured_by_ui: bool }>
+web::take_key_press(&str) -> Option<KeyPress { pointer: PointerPress, shift: bool }>
 web::clear_pointer_presses()
 GamePointer::observe(point: Vec2) // 输入帧内镜像，非浏览器实时坐标写入入口
 ```
@@ -25,6 +27,11 @@ GamePointer::observe(point: Vec2) // 输入帧内镜像，非浏览器实时坐�
 桥通过wasm-bindgen调用浏览器适配，位置数组转为有限Vec2；按下三元组的capturedByUi只能是0或1，非法长度/坐标/标记拒绝；空数组表示无有效样本。
 button对应DOM编号：Left0/Middle1/Right2/Back3/Forward4，其它保持编号。
 这些接口不提供写World或模拟运行态的权限。
+
+QWER/1–6的可信非重复keydown使用独立最多64条FIFO保存当时CSS位置、UI手势和Shift。
+键码不匹配时清空键队列；坐标必须有限，UI/Shift均为0或1。Rust按有序WindowEvent消费，
+先镜像坐标再执行拾取/施法，不使用帧末最新坐标；Native仍使用原有序绝对坐标。
+clearPresses、stop和首次捕获同步清两类队列，不能在暂停/恢复后重放旧技能。
 
 `kiva-camera`的逐显示帧只读`enemy_hovered:boolean`来自Rust模型命中与当前可见/存活/阵营复核。pointer.js唯一拥有光标形状，控制`#game-cursor[data-target=enemy|none]`的剑/箭头；完整HUD的80ms节流不影响它。UI命中/手势捕获即时压回箭头，stop清旧敌方状态，反馈不得改变坐标、按下快照或DPR校准；模型候选契约见[unit-picking.md](unit-picking.md)。
 

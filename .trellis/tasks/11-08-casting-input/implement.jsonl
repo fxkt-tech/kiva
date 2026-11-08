@@ -1,0 +1,5 @@
+{"file":".trellis/spec/client/browser.md","reason":"按顺序窗口输入、HUD桥和分层"}
+{"file":".trellis/spec/client/pointer.md","reason":"唯一CSS坐标与事件时刻快照"}
+{"file":".trellis/spec/client/skill-presentation.md","reason":"共用目标资格与指示器"}
+{"file":".trellis/spec/simulation/runtime.md","reason":"持续指令、动作与路线生命周期"}
+{"file":".trellis/spec/simulation/abilities-and-statuses.md","reason":"提交、拒绝与自主/强制运动"}
