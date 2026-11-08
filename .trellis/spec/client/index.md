@@ -15,6 +15,7 @@
 9. 修改地图、基地、波次、终局/重开、角色类型表现时阅读 [lane-match.md](lane-match.md)。
 10. 修改角色套件、视野、护盾、充能或重施时阅读 [champion-presentation.md](champion-presentation.md)。
 11. 修改角色模型、骨骼、动作或其生命周期时阅读 [character-animation.md](character-animation.md)。
+12. 修改HUD布局、默认镜头/人物屏幕比例或小地图取景框时阅读 [hud-layout.md](hud-layout.md)。
 
 ## Quality Check
 
@@ -26,5 +27,6 @@
 - 装备变更执行 `scripts/browser-equipment.cjs`，并按影响回归属性、技能、捕获及重开入口。
 - 按变动运行 `scripts/browser-skills.cjs`、`browser-cursor.cjs`、`browser-healthbars.cjs` 或 `browser-smoke.cjs`。
 - 在 Pointer Lock 下验证 HUD 交互；检查 800×600、高 DPI 和窗口缩放。
+- 小地图改动运行 `node --test scripts/minimap-unit.test.cjs` 与 `scripts/browser-minimap.cjs`，覆盖真实镜头点击/拖动、完整地图、逐帧矩形、输入隔离和清理。
 - 指针变更运行 `node --test scripts/pointer-unit.test.cjs` 和 `scripts/browser-pointer-response.cjs`，独立对比正常移动比例及同事件响应。
 - 浏览器脚本使用临时构建和自有 fixture，结束时清理。截图使用已验证的有窗口 Chromium 环境。

@@ -110,7 +110,7 @@ session/controls/UI测试不创建GPU窗口；用同一协调函数和捕获事�
 
 `#character-select`/`[data-character-id]`/`#character-preview [data-preview-stat]`是稳定选择器，
 预览不使用实际HUD的[data-stat]。错误分别在#selection-error和#pointer-error，#enter保持开局/恢复入口。
-800×600可滚动选择区且开始可达；实际HUD仍144px七项短标签无单位。
+800×600可滚动选择区且开始可达；实际HUD七项短标签无单位，宽度与响应式遵循[hud-layout.md](hud-layout.md)。
 复用browser-support的openSelection/selectCharacter/enterGame/resumeGame，恢复辅助函数强制校验玩家ID不变，
 保留合成鼠标校准前的真实居中断言。构建到临时目录、fixture在finally清理，不接管用户开发服务。
 

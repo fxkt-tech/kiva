@@ -1,7 +1,7 @@
 //! Read-only projections for the browser HUD and native debug overlay.
 use super::{
     abilities::{AbilityMetadata, AbilityView},
-    camera::{CameraRig, GameCamera},
+    camera::{CameraRig, GameCamera, ground_footprint},
     controls::{Aim, ClientFeedback, Pickable, PlayerController},
     equipment::{self, EquipmentAdapter, EquipmentDefinitionView, EquipmentView},
     match_view::{self, MapView, MatchProjection, MatchView},
@@ -144,6 +144,7 @@ struct HudView {
     notice: String,
     camera_locked: bool,
     camera_center: [f32; 2],
+    camera_footprint: Option<[[f32; 2]; 4]>,
     view_projection: [f32; 16],
     viewport: [f32; 2],
     obstacles: Vec<[f32; 4]>,
@@ -288,6 +289,28 @@ type DisplayedLabel<'a> = (
     &'a Unit,
     Option<&'a UnitRole>,
 );
+
+/// Independent per-display-frame projection; the minimap frame must not wait
+/// for the throttled full HUD snapshot. Existing label payloads stay unchanged.
+#[cfg(target_arch = "wasm32")]
+pub(super) fn publish_camera(
+    rig: Res<CameraRig>,
+    camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
+) {
+    #[derive(Serialize)]
+    struct CameraView {
+        center: [f32; 2],
+        footprint: Option<[[f32; 2]; 4]>,
+    }
+    let (camera, transform) = *camera;
+    let view = CameraView {
+        center: rig.center.to_array(),
+        footprint: ground_footprint(camera, transform),
+    };
+    if let Ok(json) = serde_json::to_string(&view) {
+        web::publish_camera(&json);
+    }
+}
 
 /// Visible positions and minimal label metadata cross this bridge every frame.
 /// Newly observed units gain a label immediately; hidden identities stay local.
@@ -582,6 +605,7 @@ pub(super) fn publish(
         },
         camera_locked: rig.locked,
         camera_center: rig.center.to_array(),
+        camera_footprint: ground_footprint(camera, transform),
         view_projection: (camera.clip_from_view() * transform.to_matrix().inverse())
             .to_cols_array(),
         viewport: web::canvas_size().unwrap_or(viewport).to_array(),

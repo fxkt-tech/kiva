@@ -153,7 +153,27 @@ pub(super) fn game_pointer_position() -> Option<Vec2> {
     }
 }
 
-pub(super) fn take_pointer_press(button: MouseButton) -> Option<Vec2> {
+pub(super) struct PointerPress {
+    pub position: Vec2,
+    pub captured_by_ui: bool,
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn decode_pointer_press(values: &[f32]) -> Option<PointerPress> {
+    let [x, y, captured_by_ui] = *values else {
+        return None;
+    };
+    let position = Vec2::new(x, y);
+    if !position.is_finite() || (captured_by_ui != 0.0 && captured_by_ui != 1.0) {
+        return None;
+    }
+    Some(PointerPress {
+        position,
+        captured_by_ui: captured_by_ui == 1.0,
+    })
+}
+
+pub(super) fn take_pointer_press(button: MouseButton) -> Option<PointerPress> {
     #[cfg(target_arch = "wasm32")]
     {
         let button = match button {
@@ -164,7 +184,7 @@ pub(super) fn take_pointer_press(button: MouseButton) -> Option<Vec2> {
             MouseButton::Forward => 4,
             MouseButton::Other(value) => value,
         };
-        pointer_point(browser_pointer_press(button))
+        decode_pointer_press(&browser_pointer_press(button))
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
@@ -246,6 +266,22 @@ pub(super) fn take_equipment_requests() -> Option<String> {
 pub(super) fn take_equipment_skill_request() -> Option<String> {
     take_attribute("data-equipment-skill")
 }
+/// Latest minimap navigation intent; consuming also discards rejected/stale input.
+pub(super) fn take_camera_request() -> Option<String> {
+    take_attribute("data-camera-request")
+}
+pub(super) fn minimap_dragging() -> bool {
+    #[cfg(target_arch = "wasm32")]
+    {
+        root().is_some_and(|root| {
+            root.get_attribute("data-minimap-dragging").as_deref() == Some("true")
+        })
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        false
+    }
+}
 fn take_attribute(name: &str) -> Option<String> {
     #[cfg(target_arch = "wasm32")]
     {
@@ -275,6 +311,10 @@ pub(super) fn publish(json: &str) {
 pub(super) fn publish_labels(json: &str) {
     dispatch_json("kiva-labels", json);
 }
+#[cfg(target_arch = "wasm32")]
+pub(super) fn publish_camera(json: &str) {
+    dispatch_json("kiva-camera", json);
+}
 fn dispatch_json(name: &str, json: &str) {
     #[cfg(target_arch = "wasm32")]
     if let Some(window) = web_sys::window() {
@@ -286,4 +326,29 @@ fn dispatch_json(name: &str, json: &str) {
     }
     #[cfg(not(target_arch = "wasm32"))]
     let _ = (name, json);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn press_bridge_preserves_position_and_event_time_ui_ownership() {
+        for captured_by_ui in [false, true] {
+            let press = decode_pointer_press(&[120.5, 72.25, f32::from(captured_by_ui)]).unwrap();
+            assert_eq!(press.position, Vec2::new(120.5, 72.25));
+            assert_eq!(press.captured_by_ui, captured_by_ui);
+        }
+        for values in [
+            &[][..],
+            &[1.0, 2.0][..],
+            &[1.0, 2.0, 0.0, 1.0][..],
+            &[f32::NAN, 2.0, 0.0][..],
+            &[1.0, f32::INFINITY, 0.0][..],
+            &[1.0, 2.0, f32::NAN][..],
+            &[1.0, 2.0, 2.0][..],
+        ] {
+            assert!(decode_pointer_press(values).is_none());
+        }
+    }
 }

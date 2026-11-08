@@ -12,16 +12,20 @@
     <script src="equipment.js"></script>
     <link data-trunk rel="rust" data-bin="kiva" />
     <link data-trunk rel="copy-file" href="web/style.css" />
+    <link data-trunk rel="copy-file" href="web/hud.css" />
     <link data-trunk rel="copy-file" href="web/hud.js" />
     <link data-trunk rel="copy-file" href="web/skill-state.js" />
     <link data-trunk rel="copy-file" href="web/pointer.js" />
     <link data-trunk rel="copy-file" href="web/match.js" />
     <link data-trunk rel="copy-file" href="web/match.css" />
+    <link data-trunk rel="copy-file" href="web/minimap.js" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="match.css" />
+    <link rel="stylesheet" href="hud.css" />
     <script src="pointer.js" defer></script>
     <script src="match.js" defer></script>
     <script src="skill-state.js" defer></script>
+    <script src="minimap.js" defer></script>
     <script src="hud.js" defer></script>
   </head>
   <body>
@@ -31,12 +35,12 @@
       <span class="brand-mark">◇</span>
       <div><div class="eyebrow">KIVA / SINGLE LANE</div><h1>中路对决<span>01</span></h1></div>
     </header>
-    <section id="match-hud" class="match-hud" data-ui aria-label="对局状态" hidden>
-      <div class="base-score"><strong>我方基地</strong><span id="ally-base-health">—</span><div class="base-meter"><i id="ally-base-fill"></i></div></div>
-      <div class="match-timing"><strong id="match-clock">0:00</strong><small>第 <span id="wave-count">1</span> 波</small><small>下波 <span id="next-wave">60s</span></small></div>
-      <div class="base-score enemy"><strong>敌方基地</strong><span id="enemy-base-health">—</span><div class="base-meter"><i id="enemy-base-fill"></i></div></div>
-    </section>
     <div class="top-right" data-ui>
+      <section id="match-hud" class="match-hud" data-ui aria-label="对局状态" hidden>
+        <div class="base-score"><strong>我方基地</strong><span id="ally-base-health">—</span><div class="base-meter"><i id="ally-base-fill"></i></div></div>
+        <div class="match-timing"><strong id="match-clock">0:00</strong><small>第 <span id="wave-count">1</span> 波</small><small>下波 <span id="next-wave">60s</span></small></div>
+        <div class="base-score enemy"><strong>敌方基地</strong><span id="enemy-base-health">—</span><div class="base-meter"><i id="enemy-base-fill"></i></div></div>
+      </section>
       <button id="equipment-toggle" class="subtle" hidden>装备 <kbd>P</kbd></button>
       <span class="status"><i></i><span id="session-status">正在准备</span></span>
       <button id="help-toggle" class="subtle" aria-expanded="false" aria-controls="help">操作指南 <kbd>?</kbd></button>
@@ -53,6 +57,7 @@
         <dt>P</dt><dd>暂停并调整本局装备</dd>
         <dt>Y / 空格</dt><dd>锁定镜头 / 按住跟随</dd>
         <dt>边缘 / 方向键</dt><dd>平移镜头</dd>
+        <dt>小地图左键</dt><dd>点击定位镜头 / 拖动视野框平移</dd>
         <dt>滚轮</dt><dd>缩放</dd>
         <dt>Esc</dt><dd>释放鼠标并暂停</dd>
       </dl>
@@ -79,20 +84,24 @@
           <div class="hero-stat" title="攻击速度"><dt>攻速</dt><dd><span data-stat="attack_speed">—</span></dd></div>
           <div class="hero-stat" title="攻击距离"><dt>攻距</dt><dd><span data-stat="attack_range">—</span></dd></div>
         </dl>
-        <div class="portrait"><span>◇</span><small>01</small></div>
-        <div class="hero-info">
+        <div class="hero-identity">
+          <div class="portrait"><span>◇</span><small title="当前使用一级基础属性">Ⅰ</small></div>
+          <div class="hero-traits"><button id="hero-passive" type="button" aria-label="查看角色被动">被动</button><span id="shield-text" hidden></span></div>
+        </div>
+        <div class="hero-core">
           <div class="hero-title"><strong id="hero-name">—</strong><span id="hero-action">—</span></div>
-          <div class="meter health"><i id="health-fill"></i><span id="health-text">—</span></div>
-          <div class="meter energy"><i id="mana-fill"></i><span id="mana-text">—</span></div>
-          <div class="hero-traits"><span id="hero-passive">被动</span><span id="shield-text" hidden></span></div>
+          <div id="abilities" class="abilities">
+            <button class="ability" data-slot="0" aria-label="Q 技能槽位" disabled><kbd>Q</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
+            <button class="ability" data-slot="1" aria-label="W 技能槽位" disabled><kbd>W</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
+            <button class="ability" data-slot="2" aria-label="E 技能槽位" disabled><kbd>E</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
+            <button class="ability" data-slot="3" aria-label="R 技能槽位" disabled><kbd>R</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
+          </div>
+          <div class="hero-info">
+            <div class="meter health"><i id="health-fill"></i><span id="health-text">—</span></div>
+            <div class="meter energy"><i id="mana-fill"></i><span id="mana-text">—</span></div>
+          </div>
         </div>
         <div id="hero-statuses" class="status-badges hero-statuses" aria-label="角色状态" hidden></div>
-        <div id="abilities" class="abilities">
-          <button class="ability" data-slot="0" aria-label="Q 技能槽位" disabled><kbd>Q</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
-          <button class="ability" data-slot="1" aria-label="W 技能槽位" disabled><kbd>W</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
-          <button class="ability" data-slot="2" aria-label="E 技能槽位" disabled><kbd>E</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
-          <button class="ability" data-slot="3" aria-label="R 技能槽位" disabled><kbd>R</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
-        </div>
         <div id="equipment-hud" class="equipment-hud" aria-label="六个装备格">
           <span id="equipment-count">装备 0 / 6</span>
           <div class="equipment-grid">
@@ -105,9 +114,12 @@
           </div>
         </div>
       </section>
-      <div class="map-wrap panel" data-ui>
-        <div class="map-heading"><span>中路战场</span><small>LOCAL SESSION</small></div>
-        <canvas id="minimap" width="180" height="180" aria-label="地图预览"></canvas>
+      <div class="map-wrap panel" data-ui aria-label="战场小地图">
+        <div class="map-heading"><span>全图</span><small>点击或拖动视野</small></div>
+        <div id="minimap-stage" data-ui>
+          <canvas id="minimap" width="180" height="180" aria-label="完整战场地图：左键点击定位镜头，拖动视野框平移镜头。"></canvas>
+          <div id="minimap-viewport" data-ui hidden aria-hidden="true"></div>
+        </div>
       </div>
     </footer>
     <div id="loading" class="overlay" role="status" data-ui>

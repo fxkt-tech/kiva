@@ -16,6 +16,9 @@ async function measureTracking(page, selector, duration) {
     let hudEvents = 0;
     let labelEvents = 0;
     let visibleFrames = 0;
+    let cameraTravel = 0;
+    let lastCamera;
+    let minCameraMargin = Infinity;
     let start;
     const onHud = () => hudEvents++;
     const onLabels = () => labelEvents++;
@@ -27,6 +30,10 @@ async function measureTracking(page, selector, duration) {
       if (lastPosition) {
         frames++;
         const bounds = label.getBoundingClientRect();
+        const state = window.__kivaState;
+        if (lastCamera) cameraTravel += Math.hypot(...state.camera_center.map((v, i) => v - lastCamera[i]));
+        lastCamera = state.camera_center;
+        minCameraMargin = Math.min(minCameraMargin, state.map.half_size - 5 - Math.max(...state.camera_center.map(Math.abs)));
         if (!label.hidden && bounds.x + bounds.width > 0 && bounds.x < innerWidth
           && bounds.y + bounds.height > 0 && bounds.y < innerHeight) visibleFrames++;
         if (position !== lastPosition) { updates++; stale = 0; }
@@ -39,12 +46,55 @@ async function measureTracking(page, selector, duration) {
       else {
         window.removeEventListener("kiva-state", onHud);
         window.removeEventListener("kiva-labels", onLabels);
-        resolve({ frames, updates, maxStale, hudEvents, labelEvents, visibleFrames,
+        resolve({ frames, updates, maxStale, hudEvents, labelEvents, visibleFrames, cameraTravel, minCameraMargin,
           elapsedMs: now - start, updateRatio: updates / frames });
       }
     }
     requestAnimationFrame(sample);
   }), { selector, duration });
+}
+
+async function measureBoundedCameraPan(page, selector) {
+  let active = true;
+  let key = "ArrowRight";
+  let pending = Promise.resolve();
+  await page.exposeBinding("__trackingPanKey", (_source, requested) => {
+    pending = pending.then(async () => {
+      if (!active || requested === key) return;
+      assert(["ArrowLeft", "ArrowRight"].includes(requested));
+      await page.keyboard.down(requested);
+      await page.keyboard.up(key);
+      key = requested;
+    });
+    return pending;
+  });
+  await page.keyboard.down(key);
+  await page.evaluate((selector) => {
+    let running = true;
+    let direction = "ArrowRight";
+    window.__stopTrackingPan = () => { running = false; };
+    function monitor() {
+      if (!running) return;
+      const bounds = document.querySelector(selector).getBoundingClientRect();
+      const x = bounds.x + bounds.width / 2;
+      const next = x < innerWidth * 0.20 ? "ArrowLeft"
+        : x > innerWidth * 0.35 ? "ArrowRight" : direction;
+      if (next !== direction) {
+        direction = next;
+        window.__trackingPanKey(next);
+      }
+      requestAnimationFrame(monitor);
+    }
+    requestAnimationFrame(monitor);
+  }, selector);
+  try { return await measureTracking(page, selector, 800); }
+  finally {
+    active = false;
+    await page.evaluate(() => window.__stopTrackingPan());
+    await pending;
+    await page.keyboard.up("ArrowLeft");
+    await page.keyboard.up("ArrowRight");
+  }
 }
 
 function assertTracking(metrics, scenario) {
@@ -69,6 +119,25 @@ async function main() {
     assert.equal(await page.evaluate(() => typeof window.__laneSetFrameStep), "undefined",
       "tracking evidence must use the native browser clock");
     await page.locator('.unit-label.ally[data-role="Hero"]').waitFor({ state: "visible" });
+    // The new close default is covered by browser-stats. This native-clock
+    // sample needs a long route visible at once, so use the real wheel to
+    // restore roughly the previous field of view before tracking 20 frames.
+    await page.waitForFunction(() => window.__kivaState.camera_footprint?.length === 4);
+    const beforeZoomArea = await page.evaluate(() => {
+      const p = window.__kivaState.camera_footprint;
+      return Math.abs(p.reduce((sum, [x,z], i) => {
+        const next = p[(i + 1) % p.length]; return sum + x * next[1] - z * next[0];
+      }, 0)) / 2;
+    });
+    await page.mouse.wheel(0, 11);
+    await page.waitForFunction((before) => {
+      const p = window.__kivaState.camera_footprint;
+      if (!p) return false;
+      const area = Math.abs(p.reduce((sum, [x,z], i) => {
+        const next = p[(i + 1) % p.length]; return sum + x * next[1] - z * next[0];
+      }, 0)) / 2;
+      return area > before * 3.4 && area < before * 5.2;
+    }, beforeZoomArea);
     // Keep both endpoints visible from a real intermediate free camera. The
     // long flank route gives the human hero several native seconds of actual
     // movement; AI stop/cast decisions are not a continuous-motion fixture.
@@ -86,26 +155,22 @@ async function main() {
     });
     assertTracking(await measureTracking(page, '.unit-label.ally[data-role="Hero"]', 1500), "Moving unit");
 
-    // Start the static allied base toward the right edge, then pan right across
-    // it. This leaves enough map-boundary room and visible travel for 20 real
-    // frames; the enemy base is legitimately far outside the initial camera.
+    // Reverse real arrow-key input before the label reaches the edge. On a
+    // slow software GPU, 20 native frames can span several seconds; holding a
+    // single direction would leave the label offscreen or hit the map bound.
     const current = await state(page);
     const home = current.map.ally_base;
     const bound = current.map.half_size - 6;
-    const cameraStart = [home[0] - 18 * 2 / Math.sqrt(5), home[1] + 18 / Math.sqrt(5)]
+    const cameraStart = [home[0] + 6 * 2 / Math.sqrt(5), home[1] - 6 / Math.sqrt(5)]
       .map((value) => Math.max(-bound, Math.min(bound, value)));
     await panTo(page, cameraStart);
     await page.locator('.unit-label.ally[data-role="Base"]').waitFor({ state: "visible" });
-    const beforePan = (await state(page)).camera_center;
-    await page.keyboard.down("ArrowRight");
-    try {
-      assertTracking(await measureTracking(page, '.unit-label.ally[data-role="Base"]', 800), "Moving camera");
-    } finally {
-      await page.keyboard.up("ArrowRight");
-    }
+    const cameraMetrics = await measureBoundedCameraPan(page, '.unit-label.ally[data-role="Base"]');
+    assertTracking(cameraMetrics, "Moving camera");
     const afterPan = await state(page);
-    assert(Math.hypot(...afterPan.camera_center.map((value, i) => value - beforePan[i])) > 0.8,
+    assert(cameraMetrics.cameraTravel > 0.8,
       "the camera sample must contain actual translation");
+    assert(cameraMetrics.minCameraMargin > 0.2, "the entire camera sample must stay clear of map clamping");
     assert(afterPan.camera_center.every((value) => Math.abs(value) < afterPan.map.half_size - 5 - 0.2),
       "camera tracking must not spend its sample clamped at a map boundary");
     console.log("PASS per-frame health-bar tracking and throttled HUD snapshots");

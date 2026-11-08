@@ -123,7 +123,10 @@ pub(super) fn run() {
     )
     .add_systems(PostStartup, web::ready);
     #[cfg(target_arch = "wasm32")]
-    app.add_systems(PostUpdate, ui::publish_labels.after(ui::publish));
+    app.add_systems(
+        PostUpdate,
+        (ui::publish_labels, ui::publish_camera).after(ui::publish),
+    );
     #[cfg(not(target_arch = "wasm32"))]
     app.add_systems(
         Startup,

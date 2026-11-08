@@ -79,7 +79,7 @@ Playwright模拟的DOM焦点不能代替Chromium的原生焦点检查；生产�
 
 JS展示状态和Rust生成的技能说明，不推导控制权限、减速数值或状态倒计时。
 状态区域为`#hero-statuses`、`#target-statuses`，单位标签包含`.status-badges`；
-徽章使用`[data-status=kind]`。144px无单位七属性面板保持原契约。
+徽章使用`[data-status=kind]`。七属性无单位面板保持数值契约，布局和相机取景见[hud-layout.md](hud-layout.md)。
 动态装配更新按钮名称、图标、标签和说明；不得按Q/R或具体技能ID推断目标方式。
 Point Dash超距仍显示可释放颜色，预览线终点截到射程圈；角色与装备共用execution.is_dash()和技能描述。
 鼠标输入仍提交原点击点，权威终点由模拟提交时解析，不能只在Web输入侧截短来绕过模拟校验。

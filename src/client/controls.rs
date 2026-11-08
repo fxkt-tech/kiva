@@ -541,10 +541,13 @@ pub(super) fn collect_input(
             }
             WindowEvent::MouseButtonInput(event) if event.state.is_pressed() => {
                 if capture.is_some() {
-                    let Some(point) = web::take_pointer_press(event.button) else {
+                    let Some(press) = web::take_pointer_press(event.button) else {
                         continue;
                     };
-                    world.resource_mut::<GamePointer>().observe(point);
+                    world.resource_mut::<GamePointer>().observe(press.position);
+                    if press.captured_by_ui {
+                        continue;
+                    }
                 }
                 let point = world.resource::<GamePointer>().position();
                 update_pointer(world, point);

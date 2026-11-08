@@ -106,3 +106,5 @@ Rust保留原56项客户端回归，并增加真实对局重开/失败/终局输
 角色外观仅在weapon表现模块按身份选择枪/弓；controls/abilities按通用execution与真实UnitMechanics读取状态。
 技能按钮显示层数/充能/重施，R重施以SelfCast无需另点目标且忽略原始法力/CD；仍受真实重施时机和控制权限约束。
 Standard和Dash超距预览使用统一clamps_point_target，原点击点交给模拟在commit重算最大端点。
+
+HUD构图、默认zoom0.5/最近0.4/最远1.5与实际camera_footprint见[hud-layout.md](hud-layout.md)。小地图固定右下，完整快照仅更新HP/MP等值，位置仍由逐帧标签提供。

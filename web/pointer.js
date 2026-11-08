@@ -12,6 +12,7 @@
   let cssMotion = 0;
   let rawMotion = 0;
   let hovered = null;
+  let uiCaptured = false;
   const presses = [];
 
   const captured = () => document.pointerLockElement === canvas;
@@ -42,6 +43,7 @@
   function stop() {
     if (active) previous = null;
     active = false;
+    uiCaptured = false;
     presses.length = 0;
     cursor.hidden = true;
     updateHover();
@@ -86,7 +88,7 @@
     // Additional buttons generate pointermove rather than another pointerdown.
     const mask = [1, 4, 2, 8, 16][event.button];
     if (event.type === "pointerdown" || (mask && (event.buttons & mask))) {
-      presses.push({ button: event.button, point: [...point] });
+      presses.push({ button: event.button, point: [...point], uiCaptured });
     }
   }
 
@@ -152,8 +154,11 @@
         presses.length = 0;
         return [];
       }
-      return next.point;
+      return [...next.point, Number(next.uiCaptured)];
     },
+    // The UI gesture owns subsequent button presses even if it is released
+    // before Rust consumes this frame's ordered window events.
+    setUiCapture(enabled) { uiCaptured = Boolean(enabled && active && permitted()); },
     clearPresses() { presses.length = 0; },
   });
 })();

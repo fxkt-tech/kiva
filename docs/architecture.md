@@ -46,7 +46,7 @@ src/client/abilities.rs       输入与HUD共用的只读技能可用性和描�
 src/client/controls.rs        玩家输入、施法预检、指令反馈
 src/client/pointer.rs         Web输入帧指针镜像、Native绝对坐标与捕获边界
 src/client/controls/tests.rs  同帧事件顺序、暂停与焦点恢复回归测试
-src/client/camera.rs          固定角度俯视镜头
+src/client/camera.rs          统一取景参数、镜头控制与实际地面覆盖范围
 src/client/scene.rs           过程生成场景、显示根插值和指示器
 src/client/world_scene.rs     由模式地图派生的地面、中路和静态装饰
 src/client/unit_appearance.rs 英雄/兵种/基地的模型、拾取和标签参数
@@ -61,7 +61,11 @@ src/client/character/poses.rs 源动作上的骨骼姿态与持武器手势
 src/client/character/animation.rs 只读模拟到动作、过渡与生命缓存
 src/client/ui.rs              HUD 的只读状态投影
 src/client/web.rs             浏览器交互适配
-web/hud.js                    DOM 展示、暂停菜单、技能按钮
+web/hud.js                    DOM 展示、暂停菜单、技能/被动说明与单位资源标签
+web/hud.css                   游戏内布局、底栏/地图/浮层/标签与响应式
+web/style.css                 基础主题、选角与装备管理菜单
+web/match.css                 对局事实、结算与兵种样式
+web/minimap.js                全图投影、逐帧视野矩形与小地图相机导航意图
 web/startup.js                Trunk前同步捕获启动结果，向迟到HUD回放，无DOM依赖
 web/equipment.js              首份只读目录缓存、六格HUD、装配面板和装备意图
 web/match.js                  对局时钟、基地生命、波次和结算展示
@@ -143,6 +147,19 @@ HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件�
 头顶血条的位置走独立的 `kiva-labels` 轻量通道，每个显示帧根据人物实际显示变换投影，
 与插值后的模型和当前镜头保持同步。完整 HUD 快照不能覆盖血条坐标。
 固定步长不承诺跨平台浮点确定性。
+
+对局HUD按属性/角色标记/技能与资源/六格装备划分，资源条位于技能下方；七个中文短属性仍不显示单位。
+游戏内布局统一在hud.css，约110px高的底栏和右下小地图均距底8px，尺寸变量协调二者空间；800×600也不隐藏地图或将它抬入主画面。
+目标信息在左上，比赛与操作收紧到右上，Active隐藏大品牌；基础菜单和比赛事实样式分别留在style.css/match.css。
+所有原稳定选择器、data-ui隔离及暂停/捕获/装备/会话协议保留。英雄头顶能量条只读完整快照，坐标仍走逐帧标签。
+
+CameraRig默认zoom=0.5、最近0.4、最远1.5，保持原视角、FOV与18*zoom平移速度；初始化/逐帧更新复用同一变换构造。
+以近景取得约2倍英雄屏幕比例，不缩放模拟单位或独立挪动拾取/血条。Y/Space、自由平移、首次开局/重开居中和普通恢复语义保持。
+HudView.camera_footprint为null或按左上/右上/右下/左下排列的4个world[x,z]：由实际逻辑viewport角点射线与地面求交，包含DPR/viewport偏移约定。
+minimap.js固定投影完整地图，8 CSS px内边距以内显示全图边界/中路/基地/当前可见单位，后备画布跟随CSS尺寸与DPR。
+视野矩形使用真实地面四角的轴对齐外接范围并裁到地图边界；透视轮廓仍是梯形，不为矩形改主相机投影。独立kiva-camera每显示帧发布{center,footprint}，更新框不等待约80ms完整快照，也不重绘底图。
+小地图使用kivaPointer的事件时CSS位置进行左键点击/偏移拖动，只提交最新data-camera-request {player_id,center}及拖动状态；camera统一复核玩家身份、暂停和有限坐标，夹紧既有边界，退出锁定但保持zoom。暂停/失焦/失锁/重选清旧拖动与意图，拖动中屏蔽其它平移。既有拾取、kiva-labels数组、view_projection与viewport保持，CSS不裁切游戏canvas。
+完整布局/投影契约和验证入口见[HUD与取景规范](../.trellis/spec/client/hud-layout.md)。
 
 ## 单中路模式与自主决策
 

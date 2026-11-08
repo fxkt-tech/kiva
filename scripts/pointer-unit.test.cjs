@@ -91,7 +91,7 @@ test("a mismatched press discards the remaining batch rather than replaying it",
   assert.deepEqual(f.take(0), []);
   f.move({ movementX: 10 });
   f.down(0);
-  assert.deepEqual(f.take(0), [520, 360], "a future press must not consume the stale left snapshot");
+  assert.deepEqual(f.take(0), [520, 360, 0], "a future press must not consume the stale left snapshot");
   assert.deepEqual(f.take(0), []);
 });
 
@@ -163,8 +163,8 @@ test("presses retain event-time coordinates across subsequent motion and chorded
   f.move({ movementX: 30, button: 2, buttons: 3 });
   f.move({ movementX: 10, button: 2, buttons: 1 });
   f.move({ movementX: 10, button: -1, buttons: 1 });
-  assert.deepEqual(f.take(0), [500, 360]);
-  assert.deepEqual(f.take(2), [530, 360]);
+  assert.deepEqual(f.take(0), [500, 360, 0]);
+  assert.deepEqual(f.take(2), [530, 360, 0]);
   assert.deepEqual(f.take(0), [], "button release and ordinary motion are not new presses");
   assert.deepEqual(f.position(), [550, 360]);
 });
@@ -208,4 +208,43 @@ test("unconfirmed capture and explicit press clearing cannot replay input", () =
   f.api.clearPresses();
   assert.deepEqual(f.take(0), []);
   assert.deepEqual(f.position(), [500, 360]);
+});
+
+test("UI gesture ownership survives chorded presses and release before the input frame", () => {
+  const f = fixture();
+  f.capture();
+  f.down();
+  f.api.setUiCapture(true);
+  f.move({ movementX: 30, button: 2, buttons: 3 });
+  f.api.setUiCapture(false);
+  f.move({ movementX: 10 });
+  f.down(2);
+  assert.deepEqual(f.take(0), [500, 360, 0], "the first press retains its normal UI hit position");
+  assert.deepEqual(f.take(2), [530, 360, 1], "a queued gesture press keeps ownership after release");
+  assert.deepEqual(f.take(2), [540, 360, 0], "a later press must return to normal world input");
+});
+
+test("pause, loss of capture and focus reset UI gesture capture before recapture", () => {
+  const f = fixture();
+  for (const boundary of ["pause", "capture", "focus"]) {
+    f.root.dataset.paused = "false";
+    f.document.focused = true;
+    f.capture();
+    f.api.setUiCapture(true);
+    if (boundary === "pause") {
+      f.root.dataset.paused = "true";
+      f.flushMutations();
+    } else if (boundary === "capture") {
+      f.document.pointerLockElement = null;
+      f.document.emit("pointerlockchange");
+    } else {
+      f.document.focused = false;
+      f.window.emit("blur");
+    }
+    f.root.dataset.paused = "false";
+    f.document.focused = true;
+    f.capture();
+    f.down();
+    assert.deepEqual(f.take(0), [500, 360, 0], `${boundary} cannot leave a captured UI gesture behind`);
+  }
 });

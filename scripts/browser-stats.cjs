@@ -3,8 +3,8 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
-const { launchBrowser, enterGame, resumeGame, movePointer, clickPointer, clickUi,
-  clickWorld, reportFailure, serveBuild, installFrameClock, state, nearHome } = require("./browser-lane-support.cjs");
+const { launchBrowser, enterGame, resumeGame, selectCharacter, movePointer, clickPointer, clickUi,
+  clickWorld, clickUnit, reportFailure, serveBuild, installFrameClock, state, nearHome } = require("./browser-lane-support.cjs");
 
 const expected = {
   attack_damage: 64, ability_power: 0, armor: 36, magic_resistance: 32,
@@ -20,6 +20,16 @@ async function observeHud(page) {
       const { x, y, width, height } = element.getBoundingClientRect();
       return width && height ? { x, y, width, height } : null;
     }
+    const project = (x, y, z) => {
+      const m = state.view_projection;
+      const w = m[3] * x + m[7] * y + m[11] * z + m[15];
+      return [(m[0] * x + m[4] * y + m[8] * z + m[12]) / w * state.viewport[0] / 2 + state.viewport[0] / 2,
+        state.viewport[1] / 2 - (m[1] * x + m[5] * y + m[9] * z + m[13]) / w * state.viewport[1] / 2];
+    };
+    const [x, z] = player.position;
+    const bottom = project(x, player.visual_height, z);
+    const top = project(x, player.visual_height + 2, z);
+    const minimap = document.getElementById("minimap");
     return {
       attributes: player.display_attributes,
       values: Object.fromEntries(fields.map((field) => [field,
@@ -32,7 +42,17 @@ async function observeHud(page) {
       panel: box(document.getElementById("hero-stats")),
       card: box(document.getElementById("hero-hud")),
       abilities: [...document.querySelectorAll(".ability")].map(box),
+      skillNames: [...document.querySelectorAll(".ability small")].map(box),
+      skillsRegion: box(document.getElementById("abilities")),
+      health: box(document.getElementById("health-fill").parentElement),
+      mana: box(document.getElementById("mana-fill").parentElement),
+      equipment: [...document.querySelectorAll("[data-equipment-slot]")].map(box),
+      match: box(document.getElementById("match-hud")),
       minimap: box(document.querySelector(".map-wrap")),
+      mapCanvas: { cssWidth: minimap.clientWidth, cssHeight: minimap.clientHeight,
+        width: minimap.width, height: minimap.height, dpr: devicePixelRatio },
+      footprint: state.camera_footprint?.map(([x, z]) => project(x, 0, z)),
+      heroReferenceHeight: Math.abs(top[1] - bottom[1]),
       hint: box(document.querySelector(".camera-hint")),
       viewport: { width: innerWidth, height: innerHeight },
       documentWidth: document.documentElement.scrollWidth,
@@ -74,6 +94,44 @@ function assertHud(hud, scenario) {
   assert(!overlaps(hud.card, hud.minimap), `${scenario}: the card must not overlap the minimap`);
   assert(!overlaps(hud.card, hud.hint), `${scenario}: the camera hint must remain readable`);
   assert(hud.documentWidth <= hud.viewport.width + 1, `${scenario}: no horizontal page overflow`);
+  assert(hud.card.height <= 122, `${scenario}: the bottom action bar must stay compact`);
+  assert(hud.viewport.height - hud.card.y - hud.card.height <= 10,
+    `${scenario}: the action bar belongs against the bottom edge`);
+  assert(inside(hud.minimap, viewport), `${scenario}: the minimap must remain visible inside the viewport`);
+  assert(hud.viewport.width - hud.minimap.x - hud.minimap.width <= 12,
+    `${scenario}: the minimap belongs against the right edge`);
+  assert(hud.viewport.height - hud.minimap.y - hud.minimap.height <= 12,
+    `${scenario}: the minimap must stay at the bottom, rather than above the action bar`);
+  assert(hud.match.height <= 56, `${scenario}: the top match display must stay compact`);
+  assert(hud.health.y >= hud.skillsRegion.y + hud.skillsRegion.height - 1,
+    `${scenario}: health must be below the skill row`);
+  assert(hud.mana.y >= hud.health.y + hud.health.height - 1,
+    `${scenario}: mana must be below health`);
+  for (const name of hud.skillNames) {
+    assert(inside(name, hud.card), `${scenario}: skill names must remain readable inside the action bar`);
+    assert(!overlaps(name, hud.health), `${scenario}: resource bars must not cover skill names`);
+  }
+  assert.equal(hud.equipment.length, 6);
+  for (const slot of hud.equipment) {
+    assert(inside(slot, hud.card), `${scenario}: all equipment slots must stay inside the action bar`);
+    assert(slot.width >= 24 && slot.height >= 24, `${scenario}: equipment controls must remain usable`);
+    assert(!overlaps(slot, hud.health) && !overlaps(slot, hud.mana), `${scenario}: equipment must not cover resources`);
+  }
+  assert.equal(new Set(hud.equipment.map((slot) => Math.round(slot.x))).size, 3,
+    `${scenario}: equipment must have three columns`);
+  assert.equal(new Set(hud.equipment.map((slot) => Math.round(slot.y))).size, 2,
+    `${scenario}: equipment must have two rows`);
+  const fraction = hud.heroReferenceHeight / hud.viewport.height;
+  assert(fraction >= 0.075 && fraction <= 0.13,
+    `${scenario}: default two-meter hero framing must be close to the reference (${fraction})`);
+  assert.equal(hud.footprint?.length, 4, `${scenario}: actual camera footprint is required`);
+  const corners = [[0, 0], [hud.viewport.width, 0], [hud.viewport.width, hud.viewport.height], [0, hud.viewport.height]];
+  for (let index = 0; index < 4; index++) {
+    assert(Math.hypot(...hud.footprint[index].map((value, axis) => value - corners[index][axis])) < 2,
+      `${scenario}: camera footprint must project back to the viewport corner`);
+  }
+  assert(Math.abs(hud.mapCanvas.width / hud.mapCanvas.cssWidth - hud.mapCanvas.dpr) < 0.05,
+    `${scenario}: minimap backing resolution must follow display density`);
 }
 
 async function nextState(page) {
@@ -122,18 +180,83 @@ async function assertUiIsolation(page) {
   assertHud(await observeHud(page), "resumed");
 }
 
+async function exerciseCompactControls(page) {
+  const original = await state(page);
+  const passive = await page.locator("#hero-passive").boundingBox();
+  await movePointer(page, passive.x + passive.width / 2, passive.y + passive.height / 2);
+  await page.waitForFunction(() => {
+    const s = window.__kivaState;
+    const p = s.units.find((u) => u.id === s.player_id);
+    const detail = document.getElementById("ability-detail");
+    return !detail.hidden && p.passives.every((text) => detail.textContent.includes(text));
+  });
+  await clickUi(page, "#hero-passive");
+  assert.equal((await state(page)).aim, null, "passive controls must not select an active ability");
+  await clickUi(page, "#equipment-toggle");
+  await page.waitForFunction(() => window.__kivaState.equipment.can_manage
+    && !document.getElementById("equipment-editor").hidden && !document.pointerLockElement);
+  await page.locator('[data-equip-id="8"]').click();
+  await page.waitForFunction(() => window.__kivaState.equipment.slots[0].item?.id === 8
+    && document.querySelector('[data-stat="attack_damage"]').textContent === "74");
+  await page.locator("#equipment-close").click();
+  await resumeGame(page);
+  assert.equal((await state(page)).player_id, original.player_id);
+  await clickUi(page, '[data-equipment-slot="0"]');
+  await page.waitForFunction(() => window.__kivaState.equipment_aim === 0);
+  const start = await state(page);
+  const player = start.units.find((u) => u.id === start.player_id);
+  const delta = start.map.enemy_base.map((v, i) => v - start.map.ally_base[i]);
+  const length = Math.hypot(...delta);
+  const goal = player.position.map((v, i) => v + delta[i] / length * 2.5);
+  await clickWorld(page, goal);
+  await page.waitForFunction((goal) => {
+    const s = window.__kivaState;
+    const p = s.units.find((u) => u.id === s.player_id);
+    return s.equipment.slots[0].item.active.cooldown > 0
+      && Math.hypot(...p.position.map((v, i) => v - goal[i])) < 0.15;
+  }, goal);
+  assert.equal((await state(page)).abilities[0].cooldown, 0, "item controls retain an independent cast source");
+  console.log("PASS passive hover, compact equipment control and real item cast");
+}
+
+async function exerciseReselection(page) {
+  const before = await state(page);
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
+  await page.locator("#reselect").click();
+  await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting"
+    && !document.getElementById("enter").disabled);
+  assert(await page.locator("#hero-hud").isHidden(), "the new layout must hide the previous hero during selection");
+  await selectCharacter(page, 2);
+  await resumeGame(page);
+  const after = await state(page);
+  assert.notEqual(after.player_id, before.player_id);
+  assert(after.equipment.slots.every(({item}) => item === null));
+  assert.equal(after.units.find((u) => u.id === after.player_id).name, "寒冰射手");
+  assert.equal(await page.locator("#hero-name").textContent(), "寒冰射手");
+  assert.equal(await page.locator('[data-slot="0"] small').textContent(), "射手的专注");
+  assert(await page.locator(".map-wrap").isVisible());
+  console.log("PASS compact HUD and minimap through real hero reselection");
+}
+
 async function main() {
-  const browser = await launchBrowser();
+  let browser;
   let site;
   let page;
   const errors = [];
   try {
     site = await serveBuild(process.env.KIVA_SITE_DIR || "dist");
-    for (const { width, height, scale } of [
+    const cases = [
+      { width: 1920, height: 1080, scale: 1 },
       { width: 1280, height: 800, scale: 1 },
       { width: 800, height: 600, scale: 1 },
       { width: 1000, height: 720, scale: 2 },
-    ]) {
+    ];
+    const requested = process.env.KIVA_STATS_CASE;
+    const selected = cases.filter(({width,height,scale}) => !requested || `${width}x${height}@${scale}` === requested);
+    assert(selected.length, "unknown KIVA_STATS_CASE");
+    for (const { width, height, scale } of selected) {
+      browser = await launchBrowser();
       const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale });
       page = await context.newPage();
       page.setDefaultTimeout(120000);
@@ -142,16 +265,27 @@ async function main() {
       await enterGame(page, site.url);
       await page.locator('#hero-stats [data-stat="attack_speed"]').waitFor();
       await nextState(page);
+      await page.waitForFunction(() => window.__kivaState.camera_footprint?.length === 4);
       const scenario = `${width}x${height} DPR=${scale}`;
       assertHud(await observeHud(page), scenario);
       if (width === 1280) await assertUiIsolation(page);
+      if (width === 1280) {
+        await clickUnit(page, (await state(page)).player_id);
+        await page.waitForFunction(() => !document.getElementById("target-panel").hidden);
+        const target = await page.locator("#target-panel").boundingBox();
+        assert(target.x <= 16 && target.y <= 16, "selected target belongs in the top-left corner");
+        await exerciseCompactControls(page);
+      }
       if (process.env.KIVA_BROWSER_HEADED === "1") {
         const directory = process.env.KIVA_SCREENSHOT_DIR || "/tmp/kiva-browser-tests/artifacts";
         await fs.mkdir(directory, { recursive: true });
         await page.screenshot({ path: path.join(directory, `stats-${width}x${height}-dpr${scale}.png`) });
       }
+      if (width === 1280) await exerciseReselection(page);
       await context.close();
       page = null;
+      await browser.close();
+      browser = null;
       console.log(`PASS effective attribute snapshot, readable HUD and layout at ${scenario}`);
     }
     assert.deepEqual(errors, [], "no uncaught browser errors");
@@ -160,7 +294,7 @@ async function main() {
     if (page) await reportFailure(page);
     throw error;
   } finally {
-    try { await browser.close(); }
+    try { if (browser) await browser.close(); }
     finally { if (site) await site.close(); }
   }
 }

@@ -5,6 +5,7 @@
   const $ = (id) => document.getElementById(id);
   const canvas = $("game");
   const labels = new Map();
+  const minimap = window.createMinimap($("minimap"));
   const actionNames = {
     Ready: "准备就绪", Attacking: "攻击前摇", AttackBackswing: "攻击后摇", Casting: "施法中",
     Channeling: "引导中", Recovery: "收招中",
@@ -390,6 +391,7 @@
       }
     }
     session = nextSession;
+    root.dataset.sessionPhase = nextSession.phase;
     activePlayerId = playerId;
     if (session.phase === "Active") {
       if (captureAttempt?.phase === "Selecting") clearCaptureAttempt(captureAttempt);
@@ -418,8 +420,8 @@
     $("shield-text").hidden = !(player.shield > 0);
     $("shield-text").textContent = `护盾 ${Math.ceil(player.shield || 0)}`;
     document.querySelector('[data-stat="attack_speed"]').closest(".hero-stat").title = `基础攻速 ${player.base_attack_speed}`;
-    $("health-fill").style.width = `${100 * player.health / player.max_health}%`;
-    $("mana-fill").style.width = `${100 * player.mana / player.max_mana}%`;
+    $("health-fill").style.width = resourceWidth(player.health, player.max_health);
+    $("mana-fill").style.width = resourceWidth(player.mana, player.max_mana);
     $("health-text").textContent = `${Math.ceil(player.health)} / ${player.max_health}`;
     $("mana-text").textContent = `${Math.floor(player.mana)} / ${player.max_mana}`;
     $("hero-action").textContent = !player.alive ? "等待重生"
@@ -508,7 +510,11 @@
         return ability ? `${ability.name}：${ability.target_hint}` : "";
       })();
     const hovered = document.querySelector(".ability[data-virtual-hover]");
-    const detail = equipmentUi.detail() || state.abilities.find((ability) => ability.slot === (hovered ? Number(hovered.dataset.slot) : state.aim));
+    const passiveHovered = document.querySelector("#hero-passive[data-virtual-hover]");
+    const passive = passiveHovered && player?.passives?.length ? {
+      name: "角色被动", target_hint: "常驻效果", description: player.passives.join("；"), note: "被动效果",
+    } : null;
+    const detail = passive || equipmentUi.detail() || state.abilities.find((ability) => ability.slot === (hovered ? Number(hovered.dataset.slot) : state.aim));
     $("ability-detail").hidden = !detail || state.paused;
     if (detail) {
       $("ability-detail").querySelector("strong").textContent = detail.name;
@@ -517,6 +523,11 @@
       $("ability-detail").querySelector("small").textContent = detail.note || detail.unavailable_reason || `能量 ${detail.cost} · 冷却 ${detail.total_cooldown}s · 射程 ${detail.display_range ?? detail.range}`;
     }
     renderHelp(state.abilities);
+  }
+
+  function resourceWidth(value, maximum) {
+    return `${Number.isFinite(value) && Number.isFinite(maximum) && maximum > 0
+      ? Math.min(100, Math.max(0, 100 * value / maximum)) : 0}%`;
   }
 
   function unitLabel(unit) {
@@ -528,8 +539,9 @@
       label.hidden=true;
       const name=document.createElement("strong"); name.textContent=unit.name;
       const bar=document.createElement("div"); bar.className="bar"; bar.appendChild(document.createElement("i"));
+      const mana=document.createElement("div"); mana.className="bar mana-bar"; mana.hidden=true; mana.appendChild(document.createElement("i"));
       const statuses=document.createElement("div"); statuses.className="status-badges";
-      label.append(name,bar,statuses);
+      label.append(name,bar,mana,statuses);
       $("unit-labels").appendChild(label); labels.set(unit.id,label);
     }
     return label;
@@ -540,7 +552,10 @@
     for (const unit of state.units) {
       present.add(unit.id);
       const label = unitLabel(unit);
-      label.querySelector("i").style.width = `${100 * unit.health / unit.max_health}%`;
+      label.querySelector("i").style.width = resourceWidth(unit.health, unit.max_health);
+      const mana = label.querySelector(".mana-bar");
+      mana.hidden = unit.role !== "Hero" || !(Number.isFinite(unit.max_mana) && unit.max_mana > 0);
+      if (!mana.hidden) mana.querySelector("i").style.width = resourceWidth(unit.mana, unit.max_mana);
       renderStatuses(label.querySelector(".status-badges"), unit);
     }
     for (const [id, label] of labels) {
@@ -564,7 +579,7 @@
       present.add(unit.id);
       const label = unit.unit ? unitLabel({ id:unit.id, ...unit.unit }) : labels.get(unit.id);
       if (!label) continue;
-      if (unit.unit) label.querySelector("i").style.width=`${100*unit.unit.health/unit.unit.max_health}%`;
+      if (unit.unit) label.querySelector("i").style.width=resourceWidth(unit.unit.health,unit.unit.max_health);
       label.hidden = !unit.alive || !unit.screen;
       if (unit.screen) {
         label.style.left = `${unit.screen[0]}px`;
@@ -574,39 +589,6 @@
     for (const [id, label] of labels) if (!present.has(id)) label.hidden = true;
     if (window.__kivaState?.selected && !present.has(window.__kivaState.selected)) $("target-panel").hidden=true;
   });
-
-  function renderMinimap(state) {
-    const ctx = $("minimap").getContext("2d");
-    const half = state.map.half_size;
-    const scale = 180 / (half * 2);
-    const point = ([x, z]) => [(x + half) * scale, (z + half) * scale];
-    ctx.fillStyle = "#203b2e";
-    ctx.fillRect(0, 0, 180, 180);
-    const ally = point(state.map.ally_base);
-    const enemy = point(state.map.enemy_base);
-    ctx.strokeStyle = "#718069";
-    ctx.lineWidth = state.map.lane_width * scale;
-    ctx.beginPath(); ctx.moveTo(...ally); ctx.lineTo(...enemy); ctx.stroke();
-    ctx.fillStyle = "#718069";
-    for (const [x, z, hx, hz] of state.obstacles) {
-      ctx.fillRect((x - hx + half) * scale, (z - hz + half) * scale, hx * 2 * scale, hz * 2 * scale);
-    }
-    for (const [location, color] of [[ally, "#8cddc3"], [enemy, "#df9a7c"]]) {
-      ctx.strokeStyle = color; ctx.lineWidth = 2;
-      ctx.strokeRect(location[0] - 5, location[1] - 5, 10, 10);
-    }
-    ctx.strokeStyle = "#e2d6b680";
-    ctx.lineWidth = 1;
-    const center = point(state.camera_center);
-    ctx.strokeRect(center[0] - 13, center[1] - 10, 26, 20);
-    for (const unit of state.units) {
-      if (!unit.alive) continue;
-      ctx.fillStyle = unit.team === "ally" ? "#8cddc3" : "#df9a7c";
-      const [x, z] = point(unit.position);
-      const radius = unit.role === "Hero" ? 3 : unit.role === "Base" ? 4 : 1.5;
-      ctx.beginPath(); ctx.arc(x, z, radius, 0, Math.PI * 2); ctx.fill();
-    }
-  }
 
   window.addEventListener("kiva-state", (event) => {
     const state = JSON.parse(event.detail);
@@ -620,12 +602,12 @@
     syncMenu();
     const player = state.units.find((unit) => unit.id === state.player_id);
     $("session-status").textContent = state.session.phase === "Selecting"
-      ? "选择角色" : matchUi.ended() ? "对局结束" : state.paused ? "对局暂停" : "本地对局 · WEBGPU";
+      ? "选择角色" : matchUi.ended() ? "对局结束" : state.paused ? "对局暂停" : "对局进行中";
     $("camera-mode").textContent = state.camera_locked ? "跟随镜头" : "自由镜头";
     $("notice").textContent = state.notice || state.match.error || "";
     renderHero(player);
     renderAbilities(state, player);
     renderUnits(state);
-    renderMinimap(state);
+    minimap.render(state);
   });
 })();

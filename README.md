@@ -53,6 +53,7 @@ sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 | 空格 | 按住时镜头跟随角色；松开保留位置 |
 | 鼠标靠近画布边缘 / 方向键 | 自由模式下平移镜头 |
 | 滚轮 | 有限范围内缩放 |
+| 左键小地图 / 拖动视野框 | 定位或平移镜头，切换为自由镜头 |
 | Esc | 释放鼠标并暂停 |
 | ? / 操作指南按钮 | 展开操作说明 |
 
@@ -62,8 +63,14 @@ sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 地点冲刺与皇子军旗支持超距点击，沿该方向取最大距离；普通移动仍受障碍和临时地形约束。
 点击底部技能/装备按钮同样可以释放；单位、地点、方向目标进入瞄准，自身目标立即释放。
 前摇取消不消耗能量和冷却，出手后移动不会重置冷却。
-地图预览只读，不下达移动指令。暂停菜单的“重新选择角色”会重开整场对局，
+小地图固定展示完整地图，点击或拖动只移动镜头。暂停菜单的“重新选择角色”会重开整场对局，
 重置双方英雄、基地、兵线和装备；普通继续保留本局状态。
+
+## 画面与HUD
+
+底部操作栏集中显示属性、角色标记、技能、生命/能量与六格装备，小地图固定在右下角，目标信息位于左上。
+默认镜头更近，英雄显示约为原来的两倍；滚轮仍可拉远，Y、空格与自由平移保持原操作。
+小地图矩形框逐帧跟随实际相机，大小随缩放和窗口尺寸变化。透视视野的地面轮廓为梯形，矩形框取四角的外接范围；高DPI只影响绘制分辨率。
 
 ## 对局规则
 
@@ -195,6 +202,13 @@ NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-s
 
 ```bash
 NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-stats.cjs
+```
+
+小地图回归覆盖全图投影、矩形框逐帧更新、点击定位、偏移拖动、边界、缩放和暂停/重选清理：
+
+```bash
+node --test scripts/minimap-unit.test.cjs
+NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-minimap.cjs
 ```
 
 `browser-smoke.cjs` 和 `browser-startup.cjs` 也支持 `KIVA_SITE_DIR`，自行创建并关闭临时静态测试入口。

@@ -1,20 +1,20 @@
+/* Match facts and results. In-game placement is owned by hud.css. */
 .match-hud {
-  position: fixed; z-index: 3; top: 22px; left: 50%; transform: translateX(-50%);
-  width: 360px; display: grid; grid-template-columns: 1fr 72px 1fr;
-  align-items: center; gap: 12px; padding: 10px 14px;
+  display: grid; grid-template-columns: 1fr 64px 1fr; align-items: center;
+  gap: 10px; padding: 7px 10px; width: 300px;
   background: linear-gradient(135deg, #142624ee, #101c20ee);
   border: 1px solid var(--line); font-variant-numeric: tabular-nums;
 }
-.base-score { display: grid; gap: 5px; min-width: 0; }
-.base-score strong { font-size: 10px; font-weight: 500; color: #a4d9ca; }
+.base-score { display: grid; grid-template-columns: auto 1fr; gap: 4px 6px; align-items: baseline; min-width: 0; }
+.base-score strong { font-size: 9px; font-weight: 500; color: #a4d9ca; }
 .base-score.enemy strong { color: #e1a18e; }
-.base-score > span { font-size: 9px; color: #bac7b7; }
-.base-score .base-meter { height: 3px; background: #0b1717; }
+.base-score > span { font-size: 9px; text-align: right; color: #bac7b7; white-space: nowrap; }
+.base-score .base-meter { grid-column: 1 / -1; height: 3px; background: #0b1717; }
 .base-meter i { display: block; height: 100%; max-width: 100%; background: #78bba6; }
 .enemy .base-meter i { background: #ca8c76; }
-.match-timing { text-align: center; display: grid; gap: 5px; }
-#match-clock { font-size: 19px; color: #e0d6b8; letter-spacing: 1px; }
-.match-timing small { font-size: 8px; color: var(--muted); white-space: nowrap; }
+.match-timing { text-align: center; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 4px; }
+#match-clock { grid-column: 1 / -1; font-size: 15px; color: #e0d6b8; letter-spacing: 1px; }
+.match-timing small { font-size: 7px; color: var(--muted); white-space: nowrap; }
 .match-result-card { padding: 44px 54px; min-width: 340px; max-width: calc(100vw - 40px); text-align: center; }
 .match-result-card h2 { margin: 16px 0 10px; font-size: 40px; font-weight: 500; letter-spacing: 9px; color: #bbdeca; }
 #match-result[data-outcome="Defeat"] h2 { color: #dda58e; }
@@ -24,29 +24,9 @@
 .match-result-actions button { border: 1px solid #cbb78277; background: #cbb78211; color: #dfd0a7; padding: 11px 20px; font-size: 12px; }
 .match-result-actions button:hover:enabled { background: #cbb78222; }
 .match-result-actions button:disabled { opacity: .45; cursor: default; }
-.unit-label[data-role="MeleeMinion"], .unit-label[data-role="RangedMinion"] { width: 44px; }
-.unit-label[data-role="MeleeMinion"] > strong, .unit-label[data-role="RangedMinion"] > strong { display: none; }
-.unit-label[data-role="Base"] { width: 108px; }
-@media (max-width: 1200px) { .top-right .status { display: none; } }
-@media (max-width: 850px) {
-  .match-hud { width: 320px; grid-template-columns: 1fr 65px 1fr; padding: 9px 11px; gap: 8px; }
-  .brand-mark { font-size: 40px; }
-  .brand { gap: 10px; }
-  h1 { font-size: 20px; letter-spacing: 3px; }
-  .brand .eyebrow { font-size: 8px; letter-spacing: 2px; }
-}
 @media (max-width: 700px) {
-  .match-hud { top: 78px; width: min(360px, calc(100vw - 32px)); }
   .match-result-card { padding: 30px 24px; min-width: 0; }
   .match-result-actions { flex-wrap: wrap; }
 }
-
-.hero-traits {display:flex;gap:8px;margin-top:4px;font-size:9px;color:#b0bca8;}
-#shield-text {color:#efd185;}
-.preview-passive {font-size:11px;line-height:1.6;color:#b8cbb9;margin:12px 0;}
-.skill-state {position:absolute;right:-4px;top:-7px;min-width:24px;padding:2px 4px;background:#152d35;border:1px solid #78bace;color:#bbeaff;font-size:9px;line-height:13px;z-index:2;}
-.ability.recast {border-color:#e1b56a;}
-.ability.empowered {box-shadow:0 0 14px #8ad7ec55;}
-.vision-hint {font-size:9px;color:#8ea7a4;}
 
 .base-score.unknown .base-meter i {background:repeating-linear-gradient(120deg,#98aaa755 0 4px,#98aaa711 4px 8px);}
