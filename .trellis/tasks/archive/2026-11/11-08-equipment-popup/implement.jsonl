@@ -1,0 +1,4 @@
+{"file":".trellis/spec/client/equipment.md","reason":"现有装备协议、目录缓存与装卸行为；本任务按PRD改变暂停门控"}
+{"file":".trellis/spec/client/browser.md","reason":"只读投影与浏览器UI所有权"}
+{"file":".trellis/spec/client/pointer.md","reason":"唯一CSS指针和事件时刻UI归属"}
+{"file":".trellis/spec/client/character-selection.md","reason":"原有捕获/暂停/重开边界"}

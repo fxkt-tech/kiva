@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 20
+- **Total Sessions**: 25
 - **Last Active**: 2026-11-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~687 | Active |
+| `journal-1.md` | ~856 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,11 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 25 | 2026-11-08 | 提交装备与设置角色选择实现 | `50d80a3` | `main` |
+| 24 | 2026-11-08 | 设置角色分类内直接选角与确认重开 | - | `main` |
+| 23 | 2026-11-08 | Esc非暂停分类设置弹窗 | - | `main` |
+| 22 | 2026-11-08 | 装备列表弹窗与运行中装卸 | - | `main` |
+| 21 | 2026-11-08 | 撤回Bevy HUD迁移并恢复Web HUD | - | `main` |
 | 20 | 2026-11-08 | 提交施法与战斗体验改进 | `054b384864cbca245c99256026845ebf0ff09183`, `298795bb2d8ffcf9d1ed26cbdd24b4ccd539e53a` | `main` |
 | 19 | 2026-11-08 | 快速EQ与落点附近自动攻击 | - | `main` |
 | 18 | 2026-11-08 | 普通与智能施法及位移后回走修复 | - | `main` |

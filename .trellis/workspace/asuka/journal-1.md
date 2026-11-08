@@ -685,3 +685,172 @@ simulation只增加真实提交/接触/激活/单箭终止和独立来源视图�
 ### Next Steps
 
 - 将工作、任务归档与日志提交一起推送origin/main，并核对远端与工作区。
+
+
+## Session 21: 撤回Bevy HUD迁移并恢复Web HUD
+<!-- trellis-session: v=2 fp=efb5394f40f88d46 -->
+
+**Date**: 2026-11-08
+**Task**: 撤回Bevy HUD迁移并恢复Web HUD
+**Branch**: `main`
+
+### Summary
+
+按用户要求恢复迁移前的Web HUD，撤回Bevy UI相关源码、依赖、资源、测试及规范修改；性能数据和完整迁移备份移至仓库外临时目录。
+
+### Main Changes
+
+- 27个已跟踪文件恢复为06a3493版本，9个本次新增路径移出工作区；原有技能、装备、血条、小地图与Web菜单实现恢复。
+- 清除已撤销任务的活动引用；迁移代码、任务和性能记录备份于/tmp/kiva-bevy-hud-rollback-9x1sxxlg，未启动或关闭用户服务，未提交推送。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 恢复后git diff --exit-code HEAD通过，确认全部已跟踪代码与迁移前完全一致。
+- [OK] Node 46项测试通过；cargo check --locked --target wasm32-unknown-unknown通过。
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 22: 装备列表弹窗与运行中装卸
+<!-- trellis-session: v=2 fp=728ff12540605f3f -->
+
+**Date**: 2026-11-08
+**Task**: 装备列表弹窗与运行中装卸
+**Branch**: `main`
+
+### Summary
+
+装备入口改T，目录弹窗不暂停或释放鼠标；去除重复库存，弹窗开启时底部六格右键卸装，保持原主动与捕获规则。
+
+### Main Changes
+
+- Web保留唯一暂停/捕获和CSS指针所有者；仅弹窗卡片隔离输入，支持锁定目录滚动。暂停入口只隐藏原菜单展示底部，关闭恢复原暂停菜单。
+- Rust移除装备管理的暂停/未捕获门控，保留Active玩家、可继续对局、严格请求/回执/实例校验；核心装卸规则不变。
+- 原生锁定次键按事件CSS命中真实DOM按钮，UI右键不穿透或取消瞄准；同步规范、README、架构与旧浏览器夹具。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] make check通过：413项Rust，2项既有soak忽略；WASM Clippy通过。新增运行中移动/tick保持、终局拒绝与次键UI隔离回归。
+- [OK] 全Node54项通过，其中8项新装备UI回归；修改JS语法和diff检查通过。未执行浏览器测试或启停用户服务。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 实现与验证已完成，任务11-08-equipment-popup保留，等待后续用户授权提交推送。
+
+
+## Session 23: Esc非暂停分类设置弹窗
+<!-- trellis-session: v=2 fp=1b9f0c55689b7e17 -->
+
+**Date**: 2026-11-08
+**Task**: Esc非暂停分类设置弹窗
+**Branch**: `main`
+
+### Summary
+
+Esc改为操作/声音/对局分类设置，所有现有设置集中；模拟与游戏输入门控拆分，设置期间已有订单与战斗继续，关闭等待捕获确认。
+
+### Main Changes
+
+- settings.js/settings.css拥有分类和DOM；hud保持捕获/暂停唯一协调。原偏好控件各一份，切分类保留值；T装备目录独立保留。
+- GameplayInput屏蔽英雄/手动相机输入并清旧队列，设置不发Stop；保留锁定跟随、运行中声音与静音/音量绑定、设置边界重新选角和原生Esc恢复。
+- 真实失焦仍暂停，捕获拒绝/迟到保持正确状态；选角和终局清理。同步规范、架构、README和普通浏览器夹具入口。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] make check通过：419项Rust、2项既有soak忽略；WASM Clippy通过。包含早解锁、订单/tick保持、相机隔离、设置重选、Native恢复回归。
+- [OK] 全Node70项通过，含6项分类组件、9项实际HUD生命周期与设置音频；JS语法、diff和任务上下文校验通过。未运行浏览器或启停用户服务。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 本轮与前轮装备弹窗实现均未提交；任务11-08-settings-dialog及11-08-equipment-popup保留，待用户授权提交推送。
+
+
+## Session 24: 设置角色分类内直接选角与确认重开
+<!-- trellis-session: v=2 fp=e3859e539538f67f -->
+
+**Date**: 2026-11-08
+**Task**: 设置角色分类内直接选角与确认重开
+**Branch**: `main`
+
+### Summary
+
+设置对局分类改角色，直接列表/预览/确认；移除设置装备及跳转按钮，初始选角共用同一DOM，浏览不改局，确认才整场重开。
+
+### Main Changes
+
+- Rust CharacterPreview统一构造初始与全角色目录，publisher统一一次静态发布；characters.js在WASM前缓存目录，Active不重复发送。
+- 新增严格ChangeCharacter当前match/player/角色和设置捕获校验；与RestartMatch共用recreate_match，旧局清理、失败回退、修订递增及批次尾隔离一致。
+- 前端冻结确认选择、等待新玩家投影关闭，处理捕获/拒绝/结算竞态；确认清旧DOM暂停但保留设置输入门控；初次设置内启动错误可见。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] make check通过：422项Rust，2项既有soak忽略；WASM Clippy通过。目录预览一致、真实整局替换/旧单位装备清理、非法身份/角色/捕获拒绝、结算同异角色重开回归通过。
+- [OK] 全Node79项通过，相关32项覆盖实际组件/HUD/装备；JS语法、diff及任务上下文检查通过。未运行浏览器或启停用户服务。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 本轮和前轮设置/装备实现均未提交，三个任务保留待用户授权提交推送。
+
+
+## Session 25: 提交装备与设置角色选择实现
+<!-- trellis-session: v=2 fp=0463d02ae7d1abae -->
+
+**Date**: 2026-11-08
+**Task**: 提交装备与设置角色选择实现
+**Branch**: `main`
+
+### Summary
+
+按用户授权提交装备弹窗、非暂停分类设置和内嵌角色选择，三个关联任务已归档；合并普通质量检查通过，准备推送origin/main。
+
+### Main Changes
+
+- 功能提交50d80a3包括T实时装备目录、操作/声音/角色设置、共享选角与权威整场重开；同时记录此前HUD迁移撤回及三轮实施日志。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `50d80a3` | feat: add live settings and inline character selection |
+
+### Testing
+
+- [OK] 最终make check422项Rust通过、2项既有soak忽略；全Node79项通过、WASM Clippy与JS语法/diff检查通过，未重复浏览器测试。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 推送功能及任务/日志记录提交，核对origin/main与本地HEAD一致并确认工作区干净。

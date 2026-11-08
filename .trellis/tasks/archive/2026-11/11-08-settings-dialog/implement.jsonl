@@ -1,0 +1,5 @@
+{"file":".trellis/spec/client/character-selection.md","reason":"会话/捕获/暂停边界按本任务设计拆开"}
+{"file":".trellis/spec/client/browser.md","reason":"DOM投影与控件所有权"}
+{"file":".trellis/spec/client/casting.md","reason":"施法偏好与输入快照"}
+{"file":".trellis/spec/client/combat-audio.md","reason":"声音控件唯一性与生命周期"}
+{"file":".trellis/spec/client/equipment.md","reason":"保留上轮T弹窗与底部装卸"}

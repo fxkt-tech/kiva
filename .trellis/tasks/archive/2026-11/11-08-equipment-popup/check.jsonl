@@ -1,0 +1,2 @@
+{"file":".trellis/spec/client/equipment.md","reason":"检查装卸/回执/目录与UI隔离"}
+{"file":".trellis/spec/client/pointer.md","reason":"检查锁定输入及次键分派"}
