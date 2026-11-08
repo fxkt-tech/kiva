@@ -429,3 +429,41 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 13: 统一模型命中、剑形光标与A点击锁定
+<!-- trellis-session: v=2 fp=727ff096049c0c67 -->
+
+**Date**: 2026-11-08
+**Task**: 统一模型命中、剑形光标与A点击锁定
+**Branch**: `main`
+
+### Summary
+
+按用户最新约束完成纯模型命中和敌方剑形，血条与名字不参与；同步修复A+左键点模型误走自动索敌，按用户授权提交、归档并推送。
+
+### Main Changes
+
+- 新增picking模块，读取实际显示Mesh部件的凸投影与6 CSS像素容错；命中候选与操作资格分离，未来友方技能可复用，视野/死亡/实体复核保留。
+- 逐帧enemy_hovered驱动pointer所有者的剑/箭头，HUD与小地图手势、暂停/失焦/失锁/重选清理旧形状，保持位移和按下三元组协议。
+- 右键及A+左键点敌模型锁定同一目标并更新selected，只有空地保留AttackMove；同步操作提示、架构与规范。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f52cf2b` | fix: improve model picking and attack-click targeting |
+
+### Testing
+
+- [OK] make check通过：322 Rust，2项既有长跑默认忽略；WASM Clippy与32项Node通过，94项client含真实皇子/寒冰身体武器接线和A分流回归。
+- [OK] 三视口真实模型/剑形/标签负向与A点击分流、smoke、四场景pointer-response、原生RAF血条全部通过；92源码身份与最终WASM一致。
+- [OK] 原生血条人物20/20帧、相机19/20帧更新且全程可见；JS语法、diff、任务上下文与文档链接检查通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- docs/TODO.md音效待办为用户并行新增，本轮未提交，保留工作区供用户后续安排。

@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 12
+- **Total Sessions**: 13
 - **Last Active**: 2026-11-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~431 | Active |
+| `journal-1.md` | ~469 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 13 | 2026-11-08 | 统一模型命中、剑形光标与A点击锁定 | `f52cf2b` | `main` |
 | 12 | 2026-11-08 | HUD布局、近景镜头与交互小地图 | `a69ded6` | `main` |
 | 11 | 2026-11-08 | 通用指向性技能超距追近施法修复 | `49b34fa` | `main` |
 | 10 | 2026-11-08 | 皇子与寒冰完整技能及基础数值替换 | `61855cb` | `main` |
