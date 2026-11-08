@@ -30,8 +30,8 @@ async function normalLateHud(browser, url) {
     assert.equal(await page.evaluate(() => window.__kivaStartup), "ready");
     await selectCharacter(page, 1);
     await resumeGame(page);
-    await page.keyboard.press("p");
-    await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement
+    await page.keyboard.press("t");
+    await page.waitForFunction(() => !window.__kivaState.paused && document.pointerLockElement?.id === "game"
       && !document.getElementById("equipment-editor").hidden);
     assert.equal(await page.locator("#equipment-catalog [data-equipment-id]").count(), 9,
       "a late HUD must retain the nine real equipment definitions sent before it subscribed");

@@ -12,7 +12,7 @@
   }
   window.addEventListener("kiva-state", retainCatalog);
 
-  window.createEquipmentUi = ({ pause, blocked }) => {
+  window.createEquipmentUi = ({ blocked, onToggle = () => {} }) => {
     const root = document.documentElement;
     const $ = (id) => document.getElementById(id);
     let state = null;
@@ -21,24 +21,26 @@
     let opened = false;
     let requestId = 0;
     let pending = null;
-    let inventorySignature = "";
     let catalogSignature = "";
 
     function close() {
+      if (!opened) return;
       opened = false;
       $("equipment-editor").hidden = true;
       $("equipment-toggle").setAttribute("aria-expanded", "false");
-      $("equipment-manage").focus();
+      renderSlots();
+      onToggle();
     }
 
     function open() {
-      if (blocked() || state?.session.phase !== "Active") return;
+      if (opened || blocked() || state?.session.phase !== "Active" || state.match?.phase === "Finished") return;
       opened = true;
-      pause();
       $("equipment-editor").hidden = false;
       $("equipment-toggle").setAttribute("aria-expanded", "true");
+      renderSlots();
       renderEditor();
-      $("equipment-close").focus();
+      onToggle();
+      if (document.pointerLockElement !== $("game")) $("equipment-close").focus();
     }
 
     function submit(request) {
@@ -55,36 +57,11 @@
         $("equipment-status").classList.add("error");
         return;
       }
+      renderSlots();
       renderEditor();
     }
 
     function itemDefinition(id) { return catalog.find((item) => item.id === id); }
-
-    function renderInventory() {
-      const slots = state?.equipment?.slots || [];
-      const signature = JSON.stringify(slots.map(({ slot, item }) => [slot, item?.id, item?.instance_id]));
-      if (signature === inventorySignature) return;
-      inventorySignature = signature;
-      $("equipment-inventory").replaceChildren(...slots.map(({ slot, item }) => {
-        const cell = document.createElement("div");
-        cell.className = "inventory-slot";
-        cell.dataset.inventorySlot = slot;
-        const number = document.createElement("span");
-        const name = document.createElement("strong");
-        number.textContent = `装备格 ${slot + 1}`;
-        name.textContent = item?.name || "空槽";
-        cell.append(number, name);
-        if (item) {
-          const remove = document.createElement("button");
-          remove.textContent = "卸下";
-          remove.dataset.unequipSlot = slot;
-          remove.setAttribute("aria-label", `卸下装备格 ${slot + 1} 的${item.name}`);
-          remove.addEventListener("click", () => submit({ type: "Unequip", slot, instance_id: item.instance_id }));
-          cell.append(remove);
-        }
-        return cell;
-      }));
-    }
 
     function descriptionLines(item) {
       return [
@@ -132,7 +109,6 @@
 
     function renderEditor() {
       if (!opened) return;
-      renderInventory();
       renderCatalog();
       const equipment = state?.equipment;
       const waiting = pending !== null;
@@ -142,12 +118,11 @@
         button.disabled = !enabled || full;
         button.textContent = full ? "装备格已满" : "装备";
       }
-      for (const button of $("equipment-inventory").querySelectorAll("[data-unequip-slot]")) button.disabled = !enabled;
       const error = !waiting && equipment?.ack?.error;
       $("equipment-status").classList.toggle("error", Boolean(error));
       $("equipment-status").textContent = waiting ? "正在确认装备调整…" : error
         || (!equipment?.can_manage ? "正在准备装备配置…" : full
-          ? "六个装备格已满，请先卸下一件装备。" : "装备调整即时生效，返回后可继续试炼。");
+          ? "装备格已满，右键底部装备可卸下。" : "装备即时生效 · 右键底部装备可卸下 · T 关闭");
     }
 
     function renderSlots() {
@@ -162,37 +137,39 @@
         button.classList.toggle("cooling", Boolean(active && active.cooldown > 0.01));
         button.classList.toggle("aiming", state?.equipment_aim === slot);
         button.classList.toggle("unavailable", Boolean(item && (!active || !active.available)));
-        button.disabled = !active || state.paused || !active.available;
+        const removable = opened && item && state?.equipment?.can_manage && pending === null;
+        button.disabled = !removable && (!active || state.paused || !active.available);
+        button.classList.toggle("manageable", Boolean(removable));
         button.querySelector(".equipment-symbol").textContent = item?.name.slice(0, 1) || "◇";
         button.querySelector(".equipment-cooldown").textContent = active
           ? active.cooldown >= 1 ? String(Math.ceil(active.cooldown)) : active.cooldown.toFixed(1) : "";
-        button.title = item ? [item.name, ...(definition ? descriptionLines(definition) : [])].join("\n") : `空装备格 ${slot + 1}`;
+        button.title = item ? [item.name, ...(definition ? descriptionLines(definition) : []),
+          ...(removable ? ["右键卸下"] : [])].join("\n") : `空装备格 ${slot + 1}`;
         button.setAttribute("aria-label", `${slot + 1} ${item?.name || "空装备格"}${active ? ` · ${active.target_hint}` : ""}`);
       }
     }
 
     function render(nextState) {
-      if (nextState.match?.phase === "Finished") { opened = false; pending = null; }
       const wasActive = state?.session.phase === "Active";
+      const ownerChanged = state?.player_id !== nextState.player_id;
+      const ended = nextState.match?.phase === "Finished";
+      if (ownerChanged || ended || nextState.session.phase !== "Active"
+        || (!state?.paused && nextState.paused)) close();
       state = nextState;
       if (Array.isArray(state.equipment_catalog)) {
         catalog = state.equipment_catalog;
         window.__kivaEquipmentCatalog = catalog; // Read-only diagnostic projection.
       }
-      if (state.session.phase !== "Active") {
-        opened = false;
+      if (state.session.phase !== "Active" || ownerChanged || ended) {
         pending = null;
-        if (wasActive) requestId = 0;
+        if (wasActive && (ownerChanged || state.session.phase !== "Active")) requestId = 0;
         delete root.dataset.equipmentSkill;
-        $("equipment-editor").hidden = true;
-        $("equipment-toggle").setAttribute("aria-expanded", "false");
       } else if (pending !== null && !root.hasAttribute("data-equipment-requests")) {
         const ack = state.equipment?.ack;
         if (ack?.request_id === pending || (ack?.request_id == null && ack?.error)) pending = null;
       }
-      $("equipment-toggle").hidden = state.session.phase !== "Active";
+      $("equipment-toggle").hidden = state.session.phase !== "Active" || ended;
       $("equipment-toggle").disabled = blocked();
-      $("equipment-manage").disabled = blocked();
       renderSlots();
       renderEditor();
     }
@@ -212,17 +189,27 @@
     }
 
     $("equipment-toggle").addEventListener("click", open);
-    $("equipment-manage").addEventListener("click", open);
     $("equipment-close").addEventListener("click", close);
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && opened) {
         event.preventDefault();
         close();
-      } else if (event.code === "KeyP" && !event.repeat && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      } else if (event.code === "KeyT" && !event.repeat && !event.ctrlKey && !event.metaKey && !event.altKey
+        && !event.target?.closest?.("input, textarea, select, [contenteditable]")) {
         event.preventDefault();
         if (opened) close(); else open();
       }
     });
+    window.addEventListener("wheel", (event) => {
+      if (!opened || document.pointerLockElement !== $("game")) return;
+      const point = window.kivaPointer?.position();
+      if (!point?.length) return;
+      const scroll = $("equipment-catalog-scroll");
+      if (!scroll.contains(document.elementFromPoint(point[0], point[1]))) return;
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? scroll.clientHeight : 1;
+      scroll.scrollTop += event.deltaY * unit;
+      event.preventDefault();
+    }, { passive: false });
     for (const button of document.querySelectorAll("[data-equipment-slot]")) {
       button.addEventListener("click", () => {
         if (!state || state.session.phase !== "Active" || root.dataset.paused !== "false") return;
@@ -232,7 +219,16 @@
         root.dataset.equipmentSkill = JSON.stringify({ slot, instance_id: item.instance_id });
         $("game").focus();
       });
+      const remove = (event) => {
+        event.preventDefault();
+        if (!opened || blocked()) return;
+        const slot = Number(button.dataset.equipmentSlot);
+        const item = state?.equipment?.slots[slot]?.item;
+        if (item) submit({ type: "Unequip", slot, instance_id: item.instance_id });
+      };
+      button.addEventListener("contextmenu", remove);
+      button.addEventListener("kiva-contextmenu", remove);
     }
-    return { render, detail, isOpen: () => opened, isPending: () => pending !== null };
+    return { render, detail, close, isOpen: () => opened, isPending: () => pending !== null };
   };
 })();

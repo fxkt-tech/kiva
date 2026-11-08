@@ -7,7 +7,7 @@
 鼠标技能/装备图标始终走普通选择；SelfCast和合法重施不需要目标确认。
 
 `web/casting.js`在WASM前读取`kiva-cast-mode`本地偏好，向根发布封闭的
-`data-cast-mode=quick|normal`，DOMContentLoaded后绑定`#cast-mode`菜单。
+`data-cast-mode=quick|normal`，DOMContentLoaded后绑定设置操作面板中的唯一`#cast-mode`。
 未知值回退Quick；存储不可用仍可当场切换。Rust只镜像客户端模式，模拟不读取DOM或按键。
 模式跨暂停/重选保留；修饰键在暂停、失焦、无玩家和捕获边界清理。
 

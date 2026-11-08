@@ -74,6 +74,7 @@ pub(super) fn run() {
     .init_resource::<character::AnimationLibrary>()
     .init_resource::<camera::CameraRig>()
     .init_resource::<controls::PointerState>()
+    .init_resource::<controls::GameplayInput>()
     .init_resource::<pointer::GamePointer>()
     .init_resource::<controls::ClientFeedback>()
     .init_resource::<controls::PlayerController>()

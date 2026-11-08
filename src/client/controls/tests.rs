@@ -18,6 +18,7 @@ fn selecting_app() -> (App, Entity) {
     ))
     .add_message::<WindowEvent>()
     .init_resource::<PointerState>()
+    .init_resource::<GameplayInput>()
     .init_resource::<GamePointer>()
     .init_resource::<ClientFeedback>()
     .init_resource::<PlayerController>()
@@ -421,6 +422,88 @@ fn quick_enemy_cast_without_a_target_does_not_leave_aim_or_spend_resources() {
 }
 
 #[test]
+fn secondary_ui_click_does_not_cancel_aim_or_replace_the_current_order() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let destination = app.world().get::<UnitPose>(player).unwrap().position() + Vec2::X;
+    app.world_mut()
+        .entity_mut(player)
+        .insert(UnitOrder::MoveTo(destination));
+    app.world_mut().resource_mut::<PlayerController>().aim = Some(Aim::Ability(0));
+    let mut pointer = app.world_mut().resource_mut::<PointerState>();
+    pointer.position = Some(Vec2::new(500.0, 500.0));
+    pointer.ground = Some(destination + Vec2::X);
+    pointer.over_ui = true;
+    mouse_pressed(app.world_mut(), MouseButton::Right);
+    assert!(matches!(
+        app.world().resource::<PlayerController>().aim,
+        Some(Aim::Ability(0))
+    ));
+    assert!(
+        matches!(app.world().get::<UnitOrder>(player), Some(UnitOrder::MoveTo(point)) if *point == destination)
+    );
+    app.world_mut().run_schedule(FixedUpdate);
+    assert!(
+        matches!(app.world().get::<UnitOrder>(player), Some(UnitOrder::MoveTo(point)) if *point == destination)
+    );
+    assert!(!app.world().resource::<SimulationControl>().paused);
+}
+
+#[test]
+fn settings_input_gate_keeps_existing_movement_and_ticks_running() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let start = app.world().get::<UnitPose>(player).unwrap().position();
+    let destination = start + Vec2::X * 4.0;
+    submit(app.world_mut(), player, UnitCommand::MoveTo(destination));
+    app.world_mut().run_schedule(FixedUpdate);
+    let position = app.world().get::<UnitPose>(player).unwrap().position();
+    let tick = app.world().resource::<SimulationTick>().0;
+    app.world_mut().resource_mut::<PlayerController>().aim = Some(Aim::Ability(0));
+    apply_access(
+        app.world_mut(),
+        &Access::new(
+            true,
+            true,
+            false,
+            Some(web::PointerCapture::default()),
+            true,
+        ),
+    );
+    assert!(!app.world().resource::<SimulationControl>().paused);
+    assert!(app.world().resource::<GameplayInput>().blocked);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    app.world_mut().run_schedule(FixedUpdate);
+    assert_eq!(app.world().resource::<SimulationTick>().0, tick + 1);
+    assert!(
+        app.world()
+            .get::<UnitPose>(player)
+            .unwrap()
+            .position()
+            .distance(position)
+            > 0.0
+    );
+    assert!(
+        matches!(app.world().get::<UnitOrder>(player), Some(UnitOrder::MoveTo(point)) if *point == destination)
+    );
+    apply_access(
+        app.world_mut(),
+        &Access::new(
+            true,
+            true,
+            false,
+            Some(web::PointerCapture {
+                actual: true,
+                event_confirmed: true,
+            }),
+            false,
+        ),
+    );
+    assert!(!app.world().resource::<GameplayInput>().blocked);
+    assert!(!app.world().resource::<SimulationControl>().paused);
+}
+
+#[test]
 fn stop_then_skill_in_one_frame_preserves_the_later_skill_selection() {
     let (mut app, window) = app();
     press(&mut app, window, KeyCode::KeyS);
@@ -440,6 +523,19 @@ fn skill_then_escape_in_one_frame_cancels_aim_without_pausing() {
     app.update();
     assert!(app.world().resource::<PlayerController>().aim.is_none());
     assert!(!app.world().resource::<SimulationControl>().paused);
+}
+
+#[test]
+fn desktop_escape_can_resume_after_the_gameplay_input_gate_is_blocked() {
+    let (mut app, window) = app();
+    press(&mut app, window, KeyCode::Escape);
+    app.update();
+    assert!(app.world().resource::<SimulationControl>().paused);
+    press(&mut app, window, KeyCode::KeyQ);
+    press(&mut app, window, KeyCode::Escape);
+    app.update();
+    assert!(!app.world().resource::<SimulationControl>().paused);
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
 }
 
 #[test]
@@ -1132,6 +1228,7 @@ fn champion_app(character: CharacterId) -> (App, Entity) {
     ))
     .add_message::<WindowEvent>()
     .init_resource::<PointerState>()
+    .init_resource::<GameplayInput>()
     .init_resource::<GamePointer>()
     .init_resource::<ClientFeedback>()
     .init_resource::<PlayerController>()

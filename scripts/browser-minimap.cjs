@@ -1,3 +1,4 @@
+const { resetToSelection } = require("./browser-support.cjs");
 // Real captured-pointer minimap navigation; no camera/World writes.
 // The display-frame clock stabilizes interaction timing, not performance.
 const assert = require("node:assert/strict");
@@ -264,7 +265,7 @@ async function exercise(page, scenario, extended) {
     await waitTicks(page, 6);
     assertFrame(await geometry(page), initial.map.half_size);
     await pause(page);
-    await page.locator("#reselect").click();
+    await resetToSelection(page);
     await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting"
       && !document.getElementById("enter").disabled);
     await selectCharacter(page, 2);

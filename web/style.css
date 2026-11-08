@@ -43,16 +43,11 @@ kbd {
 .entry-card #enter, .entry-card #retry { margin: 24px auto 30px; padding: 14px 24px; width: 240px; background: linear-gradient(100deg, #c6b17b, #d8c497); color: #1b2e2b; border: 1px solid #e4d7ae; font-size: 12px; font-weight: 600; letter-spacing: 3px; display: block; }
 .entry-card #enter:hover:enabled, .entry-card #retry:hover { filter: brightness(1.1); }
 .entry-card #enter:disabled { opacity: .5; cursor: default; }
-.entry-card #reselect, .entry-card #equipment-manage { display: block; width: 240px; margin: 0 auto 8px; padding: 11px 20px; border: 1px solid var(--line); background: transparent; color: #d4c89f; font-size: 12px; letter-spacing: 2px; }
-.entry-card #reselect:hover:enabled, .entry-card #equipment-manage:hover:enabled { border-color: var(--gold); background: #d8c4970a; }
-.entry-card #reselect:disabled, .entry-card #equipment-manage:disabled { opacity: .5; cursor: default; }
-.entry-card #reselection-note { margin: 0 0 16px; font-size: 10px; line-height: 1.6; letter-spacing: 0; }
 .entry-controls { display: flex; justify-content: center; gap: 20px; font-size: 9px; color: #9bad9e; white-space: nowrap; }
 .entry-controls kbd { margin-right: 5px; }
 .entry-note { display: block; font-size: 9px; letter-spacing: 2px; color: #688276; margin-top: 33px; }
 #entry { padding: 16px; }
 #entry .entry-card { max-height: calc(100dvh - 32px); display: flex; flex-direction: column; overflow: hidden; }
-#entry[data-phase="Active"] .entry-card { padding: 30px 28px; overflow-y: auto; }
 #entry[data-phase="Selecting"] .entry-card { width: min(920px, 100%); padding: 28px 32px 24px; text-align: left; }
 .entry-heading, .entry-actions { flex-shrink: 0; }
 #entry .entry-heading h2 { margin: 12px 0 8px; font-size: 26px; }
@@ -88,20 +83,12 @@ kbd {
 .entry-card .entry-actions > #selection-error, .entry-card .entry-actions > #pointer-error { color: #e1b59a; }
 .entry-card .entry-actions #enter { margin: 10px auto 16px; padding-block: 12px; }
 .entry-actions .entry-note { margin-top: 15px; line-height: 1.7; letter-spacing: 1px; }
-#equipment-editor { z-index: 12; padding: 16px; }
-.equipment-editor-card { width: min(900px, 100%); max-height: calc(100dvh - 32px); padding: 26px 28px 20px; display: flex; flex-direction: column; }
+#equipment-editor { position: fixed; top: 80px; bottom: 132px; left: 12px; width: min(760px, calc(100vw - 24px)); z-index: 12; pointer-events: none; display: flex; align-items: flex-start; }
+.equipment-editor-card { width: 100%; max-height: 100%; padding: 18px 20px 14px; display: flex; flex-direction: column; pointer-events: auto; }
 .equipment-editor-card > header, .equipment-editor-card > footer { flex-shrink: 0; }
-.equipment-editor-card h2 { margin: 12px 0 8px; font-size: 25px; font-weight: 400; letter-spacing: 2px; }
-.equipment-editor-card header p { font-size: 11px; color: var(--muted); margin: 0 0 18px; }
+.equipment-editor-card h2 { margin: 8px 0; font-size: 20px; font-weight: 400; letter-spacing: 2px; }
+.equipment-editor-card header p { font-size: 11px; color: var(--muted); margin: 0 0 12px; }
 .equipment-editor-scroll { overflow-y: auto; min-height: 0; padding-right: 4px; scrollbar-color: #516c5d #142525; }
-.equipment-editor-card h3 { font-size: 10px; font-weight: 500; color: #c9b17a; letter-spacing: 2px; margin: 12px 0; }
-.equipment-inventory { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
-.inventory-slot { border: 1px solid var(--line); padding: 10px 7px; min-width: 0; display: grid; gap: 8px; text-align: center; }
-.inventory-slot > span { color: #96aca0; font-size: 9px; }
-.inventory-slot > strong { font-size: 11px; font-weight: 400; color: #dacfaa; }
-.inventory-slot button { border: 0; background: transparent; color: #a5b4a4; font-size: 10px; padding: 4px; }
-.inventory-slot button:hover:enabled { color: #e3cfa0; }
-.inventory-slot button:disabled { opacity: .35; cursor: default; }
 .equipment-catalog { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding-bottom: 6px; }
 .equipment-card { border: 1px solid var(--line); padding: 13px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .equipment-card > strong { font-size: 12px; font-weight: 500; color: #dfd0a7; }
@@ -115,7 +102,7 @@ kbd {
 .equipment-editor-card > footer { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; text-align: center; }
 #equipment-status { min-height: 17px; font-size: 10px; color: #a5b8a8; margin: 0 0 10px; }
 #equipment-status.error { color: #e1b59a; }
-#equipment-close { min-width: 220px; }
+#equipment-close { min-width: 160px; }
 .failed .loading-gem { animation: none; color: #d1977d; }
 .failed h2 { color: #e1b59a; }
 noscript { position: fixed; top: 20px; left: 20px; color: white; z-index: 20; }
@@ -130,12 +117,9 @@ noscript { position: fixed; top: 20px; left: 20px; color: white; z-index: 20; }
 @media (max-width: 800px) {
   .entry-controls { gap: 10px; }
   .entry-card h2 { font-size: 23px; }
-  .equipment-editor-card { padding: 20px 20px 16px; }
-  .equipment-editor-card h2 { font-size: 21px; }
+  .equipment-editor-card { padding: 14px 16px 12px; }
+  .equipment-editor-card h2 { font-size: 18px; }
   .equipment-catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 700px) {
-  .equipment-inventory { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
   #entry[data-phase="Selecting"] .entry-card { padding-inline: 16px; }
@@ -144,21 +128,5 @@ noscript { position: fixed; top: 20px; left: 20px; color: white; z-index: 20; }
   .preview-abilities { grid-template-columns: minmax(0, 1fr); }
   .entry-controls { flex-wrap: wrap; row-gap: 8px; }
 }
-:root .audio-settings {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px 24px;
-  margin: 12px 0;
-  color: var(--muted, #9aaca9);
-  font-size: 12px;
-}
-.audio-settings label { display: flex; align-items: center; gap: 8px; }
-.audio-settings input { accent-color: #b6d4b8; }
-.audio-settings input[type="range"] { width: 100px; }
-.casting-settings { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 12px 0; font-size: 12px; color: var(--muted); }
-.casting-settings select { max-width: 100%; padding: 6px 8px; border: 1px solid #44635d; border-radius: 4px; background: #142724; color: #d7e3de; font: inherit; }
-.casting-settings small { flex-basis: 100%; }
 .choice-portrait { float: left; width: 42px; height: 42px; object-fit: cover; margin-right: 12px; border-radius: 4px; }
 .preview-skill-icon { width: 32px; height: 32px; object-fit: cover; float: left; margin-right: 8px; border-radius: 3px; }

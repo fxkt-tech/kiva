@@ -1,4 +1,8 @@
-use super::{controls::PointerState, session::ClientSession, web};
+use super::{
+    controls::{GameplayInput, PointerState},
+    session::ClientSession,
+    web,
+};
 use crate::simulation::{NavigationMap, SimulationControl, UnitPose};
 use bevy::{input::mouse::MouseWheel, prelude::*};
 use serde::Deserialize;
@@ -121,6 +125,7 @@ pub(super) fn update(
     time: Res<Time>,
     fixed: Res<Time<Fixed>>,
     control: Res<SimulationControl>,
+    input: Res<GameplayInput>,
     keys: Res<ButtonInput<KeyCode>>,
     mut wheel: MessageReader<MouseWheel>,
     window: Single<&Window>,
@@ -153,9 +158,10 @@ pub(super) fn update(
     }
     let size = web::canvas_size().unwrap_or(Vec2::new(window.width(), window.height()));
     let scroll: f32 = wheel.read().map(|event| event.y).sum();
+    let blocked = control.paused || input.blocked;
     let minimap_navigation =
-        rig.apply_minimap_input(request.as_deref(), dragging, player, control.paused, &map);
-    if !control.paused && session.player().is_some() {
+        rig.apply_minimap_input(request.as_deref(), dragging, player, blocked, &map);
+    if !blocked && session.player().is_some() {
         if !minimap_navigation && keys.just_pressed(KeyCode::KeyY) {
             rig.locked = !rig.locked;
         }
@@ -207,6 +213,15 @@ pub(super) fn update(
             rig.center += (right * direction.x + down * direction.y).clamp_length_max(1.0) * speed;
         }
         rig.clamp_to_map(&map);
+    } else if !control.paused
+        && rig.locked
+        && let Some(player) = player
+        && let Ok(pose) = poses.get(player)
+    {
+        // Settings block manual view changes, while an already locked camera
+        // can continue following the hero's existing movement.
+        rig.center = pose.interpolated(fixed.overstep_fraction());
+        rig.clamp_to_map(&map);
     }
     **camera = rig.transform();
     web::set_camera_lock(rig.locked);
@@ -240,6 +255,7 @@ mod tests {
             crate::gameplay::GameplayPlugin,
         ))
         .init_resource::<PointerState>()
+        .init_resource::<GameplayInput>()
         .init_resource::<ButtonInput<KeyCode>>()
         .init_resource::<CameraRig>()
         .add_message::<MouseWheel>()
@@ -336,6 +352,33 @@ mod tests {
                 "the rendered camera transform, not only its rig, must move 1.75 times farther"
             );
         }
+    }
+
+    #[test]
+    fn settings_block_manual_camera_keys_and_scroll_without_pausing() {
+        let mut app = pan_app();
+        app.world_mut().resource_mut::<GameplayInput>().blocked = true;
+        app.world_mut().write_message(MouseWheel {
+            unit: MouseScrollUnit::Line,
+            x: 0.0,
+            y: 5.0,
+            window: Entity::PLACEHOLDER,
+            phase: TouchPhase::Moved,
+        });
+        let (center, camera_motion) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                keys: &[KeyCode::ArrowRight, KeyCode::KeyY, KeyCode::Space],
+                cursor: Some(Vec2::ONE),
+                ..default()
+            },
+        );
+        assert_eq!(center, Vec2::ZERO);
+        assert_eq!(camera_motion, Vec3::ZERO);
+        assert_eq!(app.world().resource::<CameraRig>().zoom, 0.5);
+        assert!(!app.world().resource::<CameraRig>().locked);
+        assert!(!app.world().resource::<SimulationControl>().paused);
     }
 
     #[test]
@@ -685,6 +728,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin))
             .init_resource::<PointerState>()
+            .init_resource::<GameplayInput>()
             .init_resource::<ButtonInput<KeyCode>>()
             .init_resource::<CameraRig>()
             .add_message::<MouseWheel>()
@@ -790,6 +834,7 @@ mod tests {
             crate::gameplay::GameplayPlugin,
         ))
         .init_resource::<PointerState>()
+        .init_resource::<GameplayInput>()
         .init_resource::<ButtonInput<KeyCode>>()
         .init_resource::<CameraRig>()
         .add_message::<MouseWheel>()
@@ -824,6 +869,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin))
             .init_resource::<PointerState>()
+            .init_resource::<GameplayInput>()
             .init_resource::<ButtonInput<KeyCode>>()
             .add_message::<MouseWheel>()
             .insert_resource(CameraRig {
@@ -866,6 +912,7 @@ mod tests {
             crate::gameplay::GameplayPlugin,
         ))
         .init_resource::<PointerState>()
+        .init_resource::<GameplayInput>()
         .init_resource::<ButtonInput<KeyCode>>()
         .init_resource::<CameraRig>()
         .add_message::<MouseWheel>()

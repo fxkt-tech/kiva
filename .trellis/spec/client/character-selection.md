@@ -20,8 +20,9 @@ Web桥接读取并移除`data-session-requests`，JSON数组最多32条，严格
 
 character_id是u16，request_id是u32关联值，selection_revision是Rust分配的u64修订。
 角色请求不能携带属性、技能数组或额外字段。JS回显修订，不计算角色规则。
-暂停菜单还可提交`{"type":"ReturnToSelection","player_id":"4294966763"}`。
+设置的角色分类在确认捕获后提交`{"type":"ChangeCharacter","match_id":"1","player_id":"4294966763","character_id":2}`。
 player_id回显Rust的Entity字符串，避免在JS中将实体身份转成有精度限制的数字。
+初始选角仍使用SelectCharacter/Launch；旧ReturnToSelection保留适配/测试兼容，不用于角色分类的浏览或确认。
 
 HUD保持原字段并增加session：
 
@@ -43,8 +44,9 @@ Native通过相同创建入口自动采用默认角色，不等待DOM；Simulati
 
 ### 重新选择与整场重开
 
-暂停菜单“重新选择角色”会重开整场对局，旁边明确说明重置本局进度；普通“继续对局”仍保留当前局。
-ReturnToSelection只接受当前玩家身份、实际未捕获鼠标且已经暂停/请求暂停/失焦的状态。
+设置“角色”分类直接展示角色列表和预览，浏览时不重置当前局；确认“以此角色重开”才提交ChangeCharacter并重开整场，普通完成设置保留当前局。
+ChangeCharacter须当前match/player、设置打开、真实聚焦与事件确认的捕获、角色存在且无构造错误。Running或Finished均允许；未知角色/旧身份/未确认捕获拒绝且不动原局。与RestartMatch共用recreate_match，角色/修订和失败Selecting回退不维护第二份逻辑。成功换玩家后本批次尾部丢弃。
+ReturnToSelection只接受当前玩家身份、实际未捕获鼠标且设置打开或已经暂停/请求暂停/失焦的状态。
 成功返回是本批次边界，丢弃剩余旧局意图；Selecting重复返回无副作用，旧玩家返回不能重置新玩家。
 SelectCharacter是当前Selecting界面的同步意图，不携带局代次；其旧局隔离保证为返回批次尾部丢弃。
 后续若新增异步发送，需要扩展上下文标识；不能假定无上下文的Select可识别其创建于哪一局。
@@ -69,7 +71,7 @@ DOM等待Rust的Selecting投影后才切换界面，重置本地request_id=0关�
 适配层区分实际捕获与本次事件已确认的捕获：Selecting不能提前释放等待事件的锁，
 事件已确认、处理完请求仍无玩家时才释放无效/单独捕获。Launch仍复核实际捕获和焦点。
 
-controls集中处理运行时暂停与输入：Web须Active+MatchState.can_advance()+真实聚焦+事件已确认的canvas捕获+无暂停请求才跑固定步。
+controls集中处理运行时暂停与输入：Web须Active+MatchState.can_advance()+真实聚焦+无暂停请求才跑固定步；设置/未确认捕获只屏蔽人类输入，不中止已有订单，详见[设置边界](settings.md)。
 Selecting排空窗口/技能意图和游戏命令，不向假Entity发Stop；Active暂停保留原清队列/一次Stop规则。
 GamePointer仅在已确认且允许运行时视为捕获；暂停清除其捕获边界，恢复重新居中。
 just_captured不仅丢旧WindowEvent，也要排空并忽略旧DOM技能请求，防止启动/恢复当帧误瞄准或施法。
@@ -86,7 +88,8 @@ just_captured不仅丢旧WindowEvent，也要排空并忽略旧DOM技能请求�
 | 单独捕获但无有效Launch | Selecting继续冻结，释放捕获 |
 | 实际捕获成功、通知尚未分发 | 等待事件确认，保持暂停，不抢先释放或消耗just_captured |
 | 重复启动/局内Select | 不多创建、不换人、不刷新生命/冷却/NPC |
-| Esc/真实失焦/丢捕获 | 暂停并清输入；恢复仍为同Entity/角色/实际装配 |
+| Esc/聚焦丢捕获 | 打开设置并清人类输入，模拟继续；关闭仍为同Entity/角色/实际装配 |
+| 真实失焦 | 暂停并清输入，设置保持；捕获确认后才恢复 |
 | 死亡/重生 | 仍为Active，不显示选角，不重套默认技能 |
 | 明确点击重新选择 | 整场清理、清空对局、tick0冻结，预选上局角色；下次开局创建新玩家 |
 | 旧玩家返回请求/旧版本Launch | 不影响新玩家/不创建旧角色 |
@@ -99,13 +102,15 @@ just_captured不仅丢旧WindowEvent，也要排空并忽略旧DOM技能请求�
 
 ## 6. 验证
 
+角色目录与Selecting预览共用CharacterPreview::new，Rust检查两角色目录和实际初始属性/技能一致；静态目录与装备目录发送标记由publish的Local Publication拥有，不隶属于EquipmentProjection。characters.js同步缓存只读目录，角色UI节点在初始和设置宿主之间移动，ID各一份。
+
 session/controls/UI测试不创建GPU窗口；用同一协调函数和捕获事实验证资格、版本、批次、重试、重复及纯投影。
 原有有序输入、捕获、暂停、选角和装备断言保留，角色公开测试及旧simulation/status场景继续执行。
 `browser-characters.cjs`验证真实按钮/捕获、三分辨率、键盘、过期/非法混合意图、旧Promise、真实失焦和同实例恢复。
-其中延迟真实捕获通知跨四个显示帧，验证开始/恢复等待期间不丢锁、不推进tick，通知后不重放旧技能。
+其中延迟真实捕获通知跨四个显示帧，验证开始/显式暂停后的恢复等待期间不丢锁、不推进tick，通知后不重放旧技能；运行中设置关闭等待不应暂停tick。
 浏览器只可通过现有意图通道构造非法请求，不设置World/运行态；core显式技能装配通过公开Rust创建接口测试。
-`browser-reselection.cjs`覆盖三尺寸反复重开、同角色/切角色、旧版本与旧玩家请求、对局单位身份/生命/波次和普通恢复，
-通过真实延迟技能提交后暂停再重选，验证全根替换、干净属性/CD/状态与普通恢复身份；performance.timeOrigin保持证明没有刷新页面。
+既有`browser-reselection.cjs`通过保留的ReturnToSelection公共意图夹具覆盖三尺寸重置、同角色/切角色、旧版本与旧玩家请求、对局单位身份/生命/波次和普通恢复；此夹具不代表新内嵌角色页的UI验收。
+该夹具通过真实延迟技能提交后暂停再重选，验证全根替换、干净属性/CD/状态与普通恢复身份；performance.timeOrigin保持证明没有刷新页面。
 该浏览器技能位于安全侧翼，不单独证明旧区域命中已清理；旧区域/旧生命投递和重置清理由Rust reset/match模式场景验证。
 
 `#character-select`/`[data-character-id]`/`#character-preview [data-preview-stat]`是稳定选择器，

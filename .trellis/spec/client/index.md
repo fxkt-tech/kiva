@@ -21,6 +21,7 @@
 15. 修改战斗音效、手势解锁、音频队列或音量控制时阅读 [combat-audio.md](combat-audio.md)。
 16. 修改技能原素材、特效生命周期、瞄准几何或共享目标资格时阅读 [skill-presentation.md](skill-presentation.md)。
 17. 修改施法模式、技能快捷键或按键目标快照时阅读 [casting.md](casting.md)。
+18. 修改设置弹窗、Esc或模拟运行/输入门控时阅读 [settings.md](settings.md)。
 
 ## Quality Check
 

@@ -14,6 +14,9 @@ use serde::Deserialize;
 
 mod casting;
 use casting::{CastHotkey, CastInput, CastMode};
+mod access;
+use access::Access;
+pub(super) use access::GameplayInput;
 
 #[cfg(test)]
 mod tests;
@@ -98,6 +101,19 @@ fn set_paused(world: &mut World, paused: bool) {
             .casting
             .clear_modifiers();
         *world.resource_mut::<PointerState>() = PointerState::default();
+    }
+}
+
+fn apply_access(world: &mut World, access: &Access) {
+    set_paused(world, access.paused);
+    world.resource_mut::<GameplayInput>().blocked = !access.gameplay;
+    if !access.gameplay {
+        let mut player = world.resource_mut::<PlayerController>();
+        player.aim = None;
+        player.casting.clear_modifiers();
+        if let Some(mut keys) = world.get_resource_mut::<ButtonInput<KeyCode>>() {
+            keys.reset_all();
+        }
     }
 }
 
@@ -339,14 +355,14 @@ fn queued_skill_request(world: &mut World, slot: Option<usize>, just_captured: b
 fn sync_pointer(
     world: &mut World,
     capture: Option<web::PointerCapture>,
-    paused: bool,
+    blocked: bool,
     size: Vec2,
     cursor: Option<Vec2>,
 ) -> (Option<bool>, bool) {
     let captured = capture.map(web::PointerCapture::confirmed);
-    web::sync_game_pointer(captured.unwrap_or(false) && !paused);
+    web::sync_game_pointer(captured.unwrap_or(false) && !blocked);
     let just_captured = world.resource_mut::<GamePointer>().sync(
-        captured.unwrap_or(false) && !paused,
+        captured.unwrap_or(false) && !blocked,
         size,
         cursor,
     );
@@ -394,10 +410,8 @@ pub(super) fn refresh_aim(world: &mut World) {
 
 fn key_pressed(world: &mut World, key: KeyCode) {
     if key == KeyCode::Escape {
-        if let Some(captured) = web::pointer_captured() {
-            if captured {
-                set_paused(world, true);
-            }
+        if web::pointer_captured().is_some() {
+            // Web owns the settings/capture transition. Esc does not pause.
             return;
         }
         let mut player = world.resource_mut::<PlayerController>();
@@ -438,10 +452,10 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
     let pointer = world.resource::<PointerState>();
     let (ground, hovered, over_ui) = (pointer.ground, pointer.hovered, pointer.over_ui);
     if over_ui {
+        if let Some(point) = pointer.position {
+            web::click_ui(point, button);
+        }
         if button == MouseButton::Left {
-            if let Some(point) = pointer.position {
-                web::click_ui(point);
-            }
             if let Some(slot) = web::take_skill_request() {
                 select_ability(world, slot);
             }
@@ -518,19 +532,34 @@ pub(super) fn collect_input(
         world.resource_mut::<PlayerController>().casting.mode = mode;
     }
     let focused = web::document_focused().unwrap_or(focused);
-    let paused = world.resource::<ClientSession>().player().is_none()
-        || !focused
-        || capture.map(web::PointerCapture::confirmed) == Some(false)
-        || web::paused().unwrap_or(world.resource::<SimulationControl>().paused);
-    set_paused(world, paused);
-    let (_, just_captured) = sync_pointer(world, capture, paused, size, current_cursor);
+    let access = Access::new(
+        world.resource::<ClientSession>().player().is_some()
+            && world
+                .resource::<crate::gameplay::MatchState>()
+                .can_advance(),
+        focused,
+        web::paused().unwrap_or(world.resource::<SimulationControl>().paused),
+        capture,
+        web::settings_open(),
+    );
+    apply_access(world, &access);
+    let (_, just_captured) = sync_pointer(world, capture, !access.gameplay, size, current_cursor);
     let mut events: Vec<_> = cursor
         .read(world.resource::<Messages<WindowEvent>>())
         .cloned()
         .collect();
     // Motion used to reach Enter/resume belongs to the unlocked session.
-    if just_captured || world.resource::<ClientSession>().player().is_none() {
-        events.clear();
+    if just_captured || !access.gameplay {
+        if !just_captured && capture.is_none() && focused {
+            // Desktop retains its native Esc pause/resume control. Every
+            // gameplay event received while blocked is still discarded.
+            events.retain(|event| {
+                matches!(event, WindowEvent::KeyboardInput(event)
+                if event.key_code == KeyCode::Escape && event.state.is_pressed() && !event.repeat)
+            });
+        } else {
+            events.clear();
+        }
         web::clear_pointer_presses();
         world
             .resource_mut::<PlayerController>()
@@ -598,10 +627,14 @@ pub(super) fn collect_input(
         }
     }
     let skill_request = web::take_skill_request();
-    queued_skill_request(world, skill_request, just_captured);
+    queued_skill_request(world, skill_request, just_captured || !access.gameplay);
     let equipment_request = web::take_equipment_skill_request();
-    queued_equipment_request(world, equipment_request.as_deref(), just_captured);
-    if !world.resource::<SimulationControl>().paused {
+    queued_equipment_request(
+        world,
+        equipment_request.as_deref(),
+        just_captured || !access.gameplay,
+    );
+    if !world.resource::<SimulationControl>().paused && access.gameplay {
         if let Some(point) = web::game_pointer_position() {
             world.resource_mut::<GamePointer>().observe(point);
         }

@@ -1,3 +1,4 @@
+const { resetToSelection } = require("./browser-support.cjs");
 // Exercise the common unit picker through real Pointer Lock input and public
 // gameplay state. No World writes, target teleports or extra combat rules.
 const assert = require("node:assert/strict");
@@ -181,7 +182,7 @@ async function exerciseLifecycle(page, original) {
   assert.equal((await state(page)).player_id, original);
   await page.locator("#game-cursor").waitFor();
   await pause(page);
-  await page.locator("#reselect").click();
+  await resetToSelection(page);
   await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting"
     && !document.getElementById("enter").disabled);
   await selectCharacter(page, 2);

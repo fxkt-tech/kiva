@@ -142,6 +142,7 @@ struct HudView {
     equipment_aim: Option<usize>,
     equipment: EquipmentView,
     equipment_catalog: Option<Vec<EquipmentDefinitionView>>,
+    character_catalog: Option<Vec<CharacterPreview>>,
     attack_move: bool,
     units: Vec<UnitView>,
     objects: Vec<ObjectView>,
@@ -190,6 +191,57 @@ struct CharacterPreview {
     passives: Vec<String>,
     abilities: Vec<AbilityMetadata>,
 }
+impl CharacterSummary {
+    fn new(id: CharacterId, definition: &CharacterDefinition) -> Self {
+        Self {
+            id: id.0,
+            name: definition.name.clone(),
+            description: definition.description.clone(),
+            portrait: super::imported_models::portrait(id),
+        }
+    }
+}
+
+impl CharacterPreview {
+    fn new(
+        id: CharacterId,
+        characters: &CharacterCatalog,
+        abilities: &AbilityCatalog,
+    ) -> Option<Self> {
+        let definition = characters.get(id)?;
+        let attributes =
+            definition.initial_attributes_with_loadout(abilities, &definition.default_loadout)?;
+        Some(Self {
+            character: CharacterSummary::new(id, definition),
+            max_health: definition.stats.max_health,
+            max_mana: definition.stats.max_mana,
+            attributes: (&attributes).into(),
+            display_attributes: AttributesView::display(&attributes),
+            base_attack_speed: definition.stats.base_attributes.attack_speed,
+            passives: super::abilities::describe_passives(&definition.stats),
+            abilities: definition
+                .default_loadout
+                .iter()
+                .enumerate()
+                .filter_map(|(slot, id)| {
+                    let id = (*id)?;
+                    Some(AbilityMetadata::new(slot, id, abilities.get(id)?))
+                })
+                .collect(),
+        })
+    }
+}
+
+fn character_catalog(
+    characters: &CharacterCatalog,
+    abilities: &AbilityCatalog,
+) -> Vec<CharacterPreview> {
+    characters
+        .iter()
+        .filter_map(|(id, _)| CharacterPreview::new(id, characters, abilities))
+        .collect()
+}
+
 impl SessionView {
     fn new(
         session: &ClientSession,
@@ -202,41 +254,15 @@ impl SessionView {
                 selection: None,
             };
         };
-        let summary = |id: CharacterId, definition: &CharacterDefinition| CharacterSummary {
-            id: id.0,
-            name: definition.name.clone(),
-            description: definition.description.clone(),
-            portrait: super::imported_models::portrait(id),
-        };
-        let selected = selection.selected.and_then(|choice| {
-            let definition = characters.get(choice.character_id)?;
-            let attributes = definition
-                .initial_attributes_with_loadout(abilities, &definition.default_loadout)?;
-            Some(CharacterPreview {
-                character: summary(choice.character_id, definition),
-                max_health: definition.stats.max_health,
-                max_mana: definition.stats.max_mana,
-                attributes: (&attributes).into(),
-                display_attributes: AttributesView::display(&attributes),
-                base_attack_speed: definition.stats.base_attributes.attack_speed,
-                passives: super::abilities::describe_passives(&definition.stats),
-                abilities: definition
-                    .default_loadout
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(slot, id)| {
-                        let id = (*id)?;
-                        Some(AbilityMetadata::new(slot, id, abilities.get(id)?))
-                    })
-                    .collect(),
-            })
-        });
+        let selected = selection
+            .selected
+            .and_then(|choice| CharacterPreview::new(choice.character_id, characters, abilities));
         Self {
             phase: "Selecting",
             selection: Some(SelectionView {
                 choices: characters
                     .iter()
-                    .map(|(id, definition)| summary(id, definition))
+                    .map(|(id, definition)| CharacterSummary::new(id, definition))
                     .collect(),
                 selected,
                 selection_revision: selection.selected.map(|choice| choice.revision),
@@ -475,7 +501,12 @@ pub(super) struct EquipmentProjection<'w, 's> {
             &'static ControlState,
         ),
     >,
-    sent_catalog: Local<'s, bool>,
+}
+
+#[derive(Default)]
+pub(super) struct Publication {
+    next_publish: f32,
+    sent_catalogs: bool,
 }
 
 #[expect(
@@ -484,7 +515,7 @@ pub(super) struct EquipmentProjection<'w, 's> {
 )]
 pub(super) fn publish(
     time: Res<Time>,
-    mut next_publish: Local<f32>,
+    mut publication: Local<Publication>,
     input: InputProjection,
     session: Res<ClientSession>,
     control: Res<SimulationControl>,
@@ -496,7 +527,7 @@ pub(super) fn publish(
     map: Res<NavigationMap>,
     window: Single<&Window>,
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
-    mut equipment: EquipmentProjection,
+    equipment: EquipmentProjection,
     game: MatchProjection,
     observed: ObservedProjection,
 ) {
@@ -505,11 +536,11 @@ pub(super) fn publish(
     if !session.is_changed()
         && !game.changed()
         && !equipment.adapter.is_changed()
-        && time.elapsed_secs() < *next_publish
+        && time.elapsed_secs() < publication.next_publish
     {
         return;
     }
-    *next_publish = time.elapsed_secs() + 0.08;
+    publication.next_publish = time.elapsed_secs() + 0.08;
     let (camera, transform) = *camera;
     let viewport = camera
         .logical_viewport_size()
@@ -633,11 +664,13 @@ pub(super) fn publish(
             session.player().and_then(|id| equipment.units.get(id).ok()),
             &equipment.catalog,
             &catalog,
-            equipment::paused_unlocked(&control) && game.can_manage(),
+            game.can_manage(),
             &equipment.adapter.ack,
         ),
-        equipment_catalog: (!*equipment.sent_catalog)
+        equipment_catalog: (!publication.sent_catalogs)
             .then(|| equipment::catalog_view(&equipment.catalog, &catalog)),
+        character_catalog: (!publication.sent_catalogs)
+            .then(|| character_catalog(&characters, &catalog)),
         attack_move: matches!(player.aim, Some(Aim::AttackMove)),
         units: views,
         objects: observed.objects(tick.0),
@@ -663,7 +696,7 @@ pub(super) fn publish(
     };
     if let Ok(json) = serde_json::to_string(&view) {
         web::publish(&json);
-        *equipment.sent_catalog = true;
+        publication.sent_catalogs = true;
     }
 }
 
@@ -788,6 +821,22 @@ mod tests {
                 [1, 2]
             );
             let preview = &json["selection"]["selected"];
+            let directory = serde_json::to_value(character_catalog(
+                app.world().resource::<CharacterCatalog>(),
+                app.world().resource::<AbilityCatalog>(),
+            ))
+            .unwrap();
+            assert_eq!(directory.as_array().unwrap().len(), 2);
+            assert_eq!(
+                directory
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|entry| entry["id"] == id.0)
+                    .unwrap(),
+                preview,
+                "initial selection and inline settings share the same authoritative preview"
+            );
             assert_eq!(preview["id"], id.0);
             assert!(
                 preview.get("health").is_none(),

@@ -1,3 +1,4 @@
+const { resetToSelection } = require("./browser-support.cjs");
 // Real champion kits through normal captured input; no simulation write bridge.
 const assert=require("node:assert/strict");
 const fs=require("node:fs/promises");
@@ -8,7 +9,7 @@ const {launchBrowser,serveBuild,installFrameClock,selectAndEnter,selectCharacter
 async function fresh(page,id) {
   const old=await state(page);
   if (!old.paused) await pause(page);
-  await page.locator("#reselect").click();
+  await resetToSelection(page);
   await page.waitForFunction(()=>window.__kivaState.session.phase==="Selecting"&&!document.getElementById("enter").disabled);
   if(process.env.KIVA_EXPECT_SKILL_VISUALS==="1")assert.equal((await state(page)).effects.active.length,0,"new selection clears all dynamic skill visuals");
   await selectCharacter(page,id); await resumeGame(page);
@@ -182,7 +183,9 @@ async function jarvan(page,url,deep) {
 }
 async function defensiveEquipment(page) {
   const initial=hero(await state(page));
-  await page.keyboard.press("p");
+  // Freeze this combat fixture explicitly; opening the T popup never pauses.
+  await pause(page);
+  await page.keyboard.press("t");
   await page.waitForFunction(()=>window.__kivaState.equipment.can_manage&&!document.getElementById("equipment-editor").hidden);
   await page.evaluate(()=>window.__laneSetFrameStep(250));
   try {

@@ -1,3 +1,4 @@
+const { resetToSelection } = require("./browser-support.cjs");
 // Captured skill-slot interaction across the actual champion kits. Exact old
 // generic Root/Stun/Dash/channel behavior remains in native and equipment tests;
 // browser-champions covers the new field objects, vision and compound casts.
@@ -5,7 +6,7 @@ const assert=require("node:assert/strict");
 const {launchBrowser,serveBuild,installFrameClock,selectAndEnter,selectCharacter,resumeGame,pause,state,hero,
   nearHome,clickUi,clickWorld,reportFailure}=require("./browser-lane-support.cjs");
 async function chooseNext(page,id){
-  await pause(page);await page.locator("#reselect").click();
+  await pause(page);await resetToSelection(page);
   await page.waitForFunction(()=>window.__kivaState.session.phase==="Selecting"&&!document.getElementById("enter").disabled);
   await selectCharacter(page,id);await resumeGame(page);return state(page);
 }

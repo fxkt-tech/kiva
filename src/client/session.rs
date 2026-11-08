@@ -75,6 +75,11 @@ enum SessionRequest {
         match_id: String,
         player_id: String,
     },
+    ChangeCharacter {
+        match_id: String,
+        player_id: String,
+        character_id: u16,
+    },
 }
 
 #[derive(Clone, Copy)]
@@ -82,6 +87,7 @@ struct CaptureFacts {
     focused: bool,
     capture: web::PointerCapture,
     pause_requested: bool,
+    settings_open: bool,
 }
 
 pub(super) fn setup(world: &mut World) {
@@ -120,6 +126,7 @@ pub(super) fn start_native(world: &mut World) {
                 event_confirmed: true,
             },
             pause_requested: false,
+            settings_open: false,
         },
     )
     .expect("valid default match character spawn");
@@ -160,6 +167,22 @@ fn apply_request(
     } = &request
     {
         let result = restart_match(world, match_id, player_id, facts);
+        world.resource_mut::<ClientSession>().set_changed();
+        return result;
+    }
+    if let SessionRequest::ChangeCharacter {
+        match_id,
+        player_id,
+        character_id,
+    } = &request
+    {
+        let result = change_character(
+            world,
+            match_id,
+            player_id,
+            CharacterId(*character_id),
+            facts,
+        );
         world.resource_mut::<ClientSession>().set_changed();
         return result;
     }
@@ -246,7 +269,9 @@ fn apply_request(
                 }
             }
         }
-        SessionRequest::ReturnToSelection { .. } | SessionRequest::RestartMatch { .. } => {
+        SessionRequest::ReturnToSelection { .. }
+        | SessionRequest::RestartMatch { .. }
+        | SessionRequest::ChangeCharacter { .. } => {
             unreachable!("handled before the Active gate")
         }
     }
@@ -271,8 +296,8 @@ fn return_to_selection(
     }
     let paused =
         world.resource::<SimulationControl>().paused || facts.pause_requested || !facts.focused;
-    if facts.capture.actual || !paused {
-        return Err("请先暂停对局并释放鼠标。".into());
+    if facts.capture.actual || !(paused || facts.settings_open) {
+        return Err("请先打开设置并释放鼠标。".into());
     }
     let character_id = world
         .get::<CharacterIdentity>(player)
@@ -325,6 +350,50 @@ fn restart_match(
     let revision = selection_revision
         .checked_add(1)
         .ok_or("选择版本已耗尽。")?;
+    recreate_match(world, character, revision)
+}
+
+fn change_character(
+    world: &mut World,
+    expected_match: &str,
+    expected_player: &str,
+    character: CharacterId,
+    facts: CaptureFacts,
+) -> Result<(), String> {
+    let ClientSession::Active {
+        player,
+        match_id,
+        selection_revision,
+    } = *world.resource::<ClientSession>()
+    else {
+        return Err("请先开始对局。".into());
+    };
+    let state = world.resource::<MatchState>();
+    if player.to_bits().to_string() != expected_player
+        || match_id.to_string() != expected_match
+        || state.id() != Some(match_id)
+        || state.wave_error().is_some()
+    {
+        return Err("对局已经变更，请重新选择。".into());
+    }
+    if !facts.settings_open || !facts.focused || !facts.capture.confirmed() {
+        return Err("请在角色设置中确认并捕获鼠标。".into());
+    }
+    if world
+        .resource::<CharacterCatalog>()
+        .get(character)
+        .is_none()
+    {
+        return Err("该角色不可用，请重新选择。".into());
+    }
+    let revision = selection_revision
+        .checked_add(1)
+        .ok_or("选择版本已耗尽。")?;
+    recreate_match(world, character, revision)
+}
+
+/// Every whole-match replacement shares one cleanup and failure boundary.
+fn recreate_match(world: &mut World, character: CharacterId, revision: u64) -> Result<(), String> {
     gameplay::reset_match(world);
     match gameplay::start_match(world, character) {
         Ok(handle) => {
@@ -363,6 +432,7 @@ pub(super) fn process_requests(world: &mut World) {
         focused: web::document_focused().unwrap_or(false),
         capture: web::pointer_capture().unwrap_or_default(),
         pause_requested: web::paused().unwrap_or(world.resource::<SimulationControl>().paused),
+        settings_open: web::settings_open(),
     };
     if process_frame(world, raw.as_deref(), facts) {
         web::release_pointer();
@@ -390,8 +460,8 @@ fn process_batch(world: &mut World, raw: &str, facts: CaptureFacts) {
                 if previous_player.is_some()
                     && world.resource::<ClientSession>().player() != previous_player
                 {
-                    // Returning ends this round's input batch. Later queued
-                    // requests cannot act on the new selection screen.
+                    // Replacing the player ends this input batch. Later
+                    // requests cannot act on the new selection or match.
                     break;
                 }
             }

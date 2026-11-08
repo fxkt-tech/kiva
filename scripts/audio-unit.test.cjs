@@ -120,6 +120,24 @@ test("trusted activation creates one device, preloads before entry and plays one
   assert(game.diagnostics().peak > 0);
 });
 
+test("running settings keep combat audio available without Pointer Lock", async () => {
+  const game = fixture();
+  await game.start();
+  game.root.dataset.settingsOpen = "true";
+  game.document.pointerLockElement = null;
+  game.document.emit("pointerlockchange");
+  game.frame([game.cue()]);
+  assert.equal(game.diagnostics().active, 1);
+  game.controls["audio-volume"].value = "30";
+  game.controls["audio-volume"].emit("input", { target: game.controls["audio-volume"] });
+  assert.equal(game.diagnostics().volume, 0.3);
+  game.controls["audio-muted"].checked = true;
+  game.controls["audio-muted"].emit("change", { target: game.controls["audio-muted"] });
+  assert.equal(game.diagnostics().active, 0);
+  assert.equal(game.diagnostics().muted, true);
+  assert.equal(game.root.dataset.paused, "false");
+});
+
 test("missing decode readiness drops the cue permanently instead of playing it late", async () => {
   const game = fixture({ slowDecode: true });
   await game.start();

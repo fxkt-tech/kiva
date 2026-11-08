@@ -7,6 +7,7 @@ const CAPTURED: CaptureFacts = CaptureFacts {
         event_confirmed: true,
     },
     pause_requested: false,
+    settings_open: false,
 };
 const PAUSED_UNLOCKED: CaptureFacts = CaptureFacts {
     focused: true,
@@ -15,7 +16,222 @@ const PAUSED_UNLOCKED: CaptureFacts = CaptureFacts {
         event_confirmed: false,
     },
     pause_requested: true,
+    settings_open: false,
 };
+
+fn change_request(app: &App, character_id: u16) -> SessionRequest {
+    let ClientSession::Active {
+        player, match_id, ..
+    } = *app.world().resource::<ClientSession>()
+    else {
+        panic!("active test match")
+    };
+    SessionRequest::ChangeCharacter {
+        match_id: match_id.to_string(),
+        player_id: player.to_bits().to_string(),
+        character_id,
+    }
+}
+
+#[test]
+fn inline_character_confirmation_replaces_the_whole_match_and_discards_old_batch_tail() {
+    let mut app = app();
+    let selected = choice(&app);
+    apply_request(app.world_mut(), launch(selected), CAPTURED).unwrap();
+    let old_player = app.world().resource::<ClientSession>().player().unwrap();
+    let old_match = app.world().resource::<MatchState>().id().unwrap();
+    let old_units: Vec<Entity> = app
+        .world_mut()
+        .query_filtered::<Entity, With<Unit>>()
+        .iter(app.world())
+        .collect();
+    let old_revision = match *app.world().resource::<ClientSession>() {
+        ClientSession::Active {
+            selection_revision, ..
+        } => selection_revision,
+        _ => unreachable!(),
+    };
+    equip_equipment(app.world_mut(), old_player, 0, EquipmentId(1)).unwrap();
+    app.world_mut().run_schedule(FixedUpdate);
+    let raw = serde_json::json!([
+        {"type":"ChangeCharacter", "match_id":old_match.to_string(), "player_id":old_player.to_bits().to_string(), "character_id":2},
+        {"type":"ReturnToSelection", "player_id":old_player.to_bits().to_string()}
+    ]).to_string();
+    process_batch(
+        app.world_mut(),
+        &raw,
+        CaptureFacts {
+            settings_open: true,
+            ..CAPTURED
+        },
+    );
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    assert_ne!(player, old_player);
+    assert_ne!(app.world().resource::<MatchState>().id(), Some(old_match));
+    assert_eq!(
+        app.world().resource::<MatchState>().player_character(),
+        Some(CharacterId(2))
+    );
+    assert_eq!(app.world().resource::<SimulationTick>().0, 0);
+    assert!(!app.world().resource::<SimulationControl>().paused);
+    assert!(
+        old_units
+            .iter()
+            .all(|id| app.world().get::<Unit>(*id).is_none())
+    );
+    assert!(
+        app.world()
+            .get::<EquipmentSlots>(player)
+            .unwrap()
+            .item(0)
+            .is_none()
+    );
+    assert_eq!(
+        app.world().get::<CharacterIdentity>(player).unwrap().id(),
+        CharacterId(2)
+    );
+    assert_eq!(
+        match *app.world().resource::<ClientSession>() {
+            ClientSession::Active {
+                selection_revision, ..
+            } => selection_revision,
+            _ => unreachable!(),
+        },
+        old_revision + 1
+    );
+}
+
+#[test]
+fn inline_character_rejects_stale_identity_unknown_role_and_unconfirmed_capture_without_resetting()
+{
+    let mut app = app();
+    let selected = choice(&app);
+    apply_request(app.world_mut(), launch(selected), CAPTURED).unwrap();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let initial_match = app.world().resource::<MatchState>().id();
+    for facts in [
+        CAPTURED,
+        CaptureFacts {
+            settings_open: true,
+            capture: web::PointerCapture {
+                actual: true,
+                event_confirmed: false,
+            },
+            ..CAPTURED
+        },
+        CaptureFacts {
+            settings_open: true,
+            focused: false,
+            ..CAPTURED
+        },
+        CaptureFacts {
+            settings_open: true,
+            capture: web::PointerCapture::default(),
+            ..CAPTURED
+        },
+    ] {
+        let request = change_request(&app, 2);
+        assert!(apply_request(app.world_mut(), request, facts).is_err());
+        assert_eq!(
+            app.world().resource::<ClientSession>().player(),
+            Some(player)
+        );
+    }
+    let facts = CaptureFacts {
+        settings_open: true,
+        ..CAPTURED
+    };
+    let unknown = change_request(&app, 999);
+    assert!(apply_request(app.world_mut(), unknown, facts).is_err());
+    for (match_id, player_id) in [
+        ("old-match".to_owned(), player.to_bits().to_string()),
+        (initial_match.unwrap().to_string(), "old-player".into()),
+    ] {
+        assert!(
+            apply_request(
+                app.world_mut(),
+                SessionRequest::ChangeCharacter {
+                    match_id,
+                    player_id,
+                    character_id: 2
+                },
+                facts
+            )
+            .is_err()
+        );
+    }
+    assert_eq!(app.world().resource::<MatchState>().id(), initial_match);
+    assert_eq!(
+        app.world().resource::<ClientSession>().player(),
+        Some(player)
+    );
+    assert!(!app.world().resource::<SimulationControl>().paused);
+}
+
+#[test]
+fn result_character_selection_can_restart_with_the_same_or_another_hero() {
+    for character in [1, 2] {
+        let mut app = app();
+        let selected = choice(&app);
+        apply_request(app.world_mut(), launch(selected), CAPTURED).unwrap();
+        let old_player = app.world().resource::<ClientSession>().player();
+        super::super::test_support::finish_match(&mut app, Team::Ally);
+        let request = change_request(&app, character);
+        apply_request(
+            app.world_mut(),
+            request,
+            CaptureFacts {
+                settings_open: true,
+                ..CAPTURED
+            },
+        )
+        .unwrap();
+        assert_ne!(app.world().resource::<ClientSession>().player(), old_player);
+        assert_eq!(
+            app.world().resource::<MatchState>().phase(),
+            MatchPhase::Running
+        );
+        assert_eq!(
+            app.world().resource::<MatchState>().player_character(),
+            Some(CharacterId(character))
+        );
+        assert_eq!(app.world().resource::<SimulationTick>().0, 0);
+        assert!(!process_frame(app.world_mut(), None, CAPTURED));
+    }
+}
+
+#[test]
+fn settings_allow_current_player_to_reselect_while_the_match_is_running() {
+    let mut app = app();
+    let selected = choice(&app);
+    apply_request(app.world_mut(), launch(selected), CAPTURED).unwrap();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    assert!(!app.world().resource::<SimulationControl>().paused);
+    apply_request(
+        app.world_mut(),
+        SessionRequest::ReturnToSelection {
+            player_id: player.to_bits().to_string(),
+        },
+        CaptureFacts {
+            pause_requested: false,
+            settings_open: true,
+            ..PAUSED_UNLOCKED
+        },
+    )
+    .unwrap();
+    assert!(
+        app.world()
+            .resource::<ClientSession>()
+            .selection()
+            .is_some()
+    );
+    assert_eq!(
+        app.world().resource::<MatchState>().phase(),
+        MatchPhase::Waiting
+    );
+    assert_eq!(unit_count(&mut app), 0);
+    assert!(app.world().resource::<SimulationControl>().paused);
+}
 
 fn app() -> App {
     let mut app = App::new();
@@ -23,7 +239,8 @@ fn app() -> App {
         MinimalPlugins,
         SimulationPlugin,
         crate::gameplay::GameplayPlugin,
-    ));
+    ))
+    .init_resource::<super::super::controls::GameplayInput>();
     super::super::content::setup(app.world_mut());
     setup(app.world_mut());
     app
@@ -159,6 +376,7 @@ fn lost_capture_focus_and_spawn_failure_leave_a_valid_choice_retryable() {
                 event_confirmed: true,
             },
             pause_requested: false,
+            settings_open: false,
         },
         CaptureFacts {
             focused: true,
@@ -167,6 +385,7 @@ fn lost_capture_focus_and_spawn_failure_leave_a_valid_choice_retryable() {
                 event_confirmed: true,
             },
             pause_requested: false,
+            settings_open: false,
         },
     ] {
         assert!(apply_request(app.world_mut(), launch(selected), facts).is_err());
@@ -311,6 +530,7 @@ fn native_capture_waits_for_its_event_before_stray_cleanup_or_launch() {
             event_confirmed: false,
         },
         pause_requested: false,
+        settings_open: false,
     };
     for _ in 0..4 {
         assert!(
@@ -353,6 +573,7 @@ fn confirmed_stray_or_rejected_capture_releases_without_creating_a_player() {
             event_confirmed: true,
         },
         pause_requested: false,
+        settings_open: false,
     };
     assert!(!process_frame(
         app.world_mut(),

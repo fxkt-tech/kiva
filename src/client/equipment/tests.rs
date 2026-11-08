@@ -24,12 +24,8 @@ fn unequip(player: Entity, slot: usize, instance: impl ToString, request_id: u32
     json!({"type":"Unequip","player_id":player.to_bits().to_string(),"slot":slot,
         "instance_id":instance.to_string(),"request_id":request_id})
 }
-fn batch(app: &mut App, requests: Value, paused: bool, captured: bool) {
-    process_batch(
-        app.world_mut(),
-        &requests.to_string(),
-        ManagementFacts { paused, captured },
-    );
+fn batch(app: &mut App, requests: Value) {
+    process_batch(app.world_mut(), &requests.to_string());
 }
 fn ack(app: &App) -> Value {
     serde_json::to_value(&app.world().resource::<EquipmentAdapter>().ack).unwrap()
@@ -54,7 +50,7 @@ fn projection(app: &App) -> Value {
 }
 
 #[test]
-fn paused_fifo_management_updates_real_attributes_and_projects_six_actual_slots() {
+fn fifo_management_updates_real_attributes_and_projects_six_actual_slots() {
     let (mut app, player) = app();
     let baseline = app
         .world()
@@ -65,8 +61,6 @@ fn paused_fifo_management_updates_real_attributes_and_projects_six_actual_slots(
     batch(
         &mut app,
         json!([equip(player, 0, 1, 1), equip(player, 1, 1, 2)]),
-        true,
-        false,
     );
     assert_eq!(
         ack(&app),
@@ -86,7 +80,7 @@ fn paused_fifo_management_updates_real_attributes_and_projects_six_actual_slots(
     let first = view["slots"][0]["item"]["instance_id"].as_str().unwrap();
     let second = view["slots"][1]["item"]["instance_id"].as_str().unwrap();
     assert_ne!(first, second);
-    batch(&mut app, json!([unequip(player, 0, first, 3)]), true, false);
+    batch(&mut app, json!([unequip(player, 0, first, 3)]));
     assert_eq!(
         app.world()
             .get::<Unit>(player)
@@ -100,24 +94,95 @@ fn paused_fifo_management_updates_real_attributes_and_projects_six_actual_slots(
 }
 
 #[test]
-fn running_capture_old_player_and_stale_instances_cannot_mutate_inventory() {
+fn live_management_keeps_the_move_order_and_simulation_advancing() {
     let (mut app, player) = app();
-    for (paused, captured) in [(false, false), (true, true)] {
-        batch(&mut app, json!([equip(player, 0, 1, 1)]), paused, captured);
-        assert_eq!(ack(&app)["accepted"], false);
-        assert!(
-            app.world()
-                .get::<EquipmentSlots>(player)
-                .unwrap()
-                .item(0)
-                .is_none()
-        );
-    }
+    app.world_mut().resource_mut::<SimulationControl>().paused = false;
+    let start = app.world().get::<UnitPose>(player).unwrap().position();
+    let destination = start + Vec2::X * 4.0;
+    app.world_mut()
+        .resource_mut::<CommandQueue>()
+        .submit(player, UnitCommand::MoveTo(destination));
+    app.world_mut().run_schedule(FixedUpdate);
+    let before = app.world().get::<UnitPose>(player).unwrap().position();
+    let tick = app.world().resource::<SimulationTick>().0;
+    batch(&mut app, json!([equip(player, 0, 1, 1)]));
+    assert_eq!(ack(&app)["accepted"], true);
+    assert!(!app.world().resource::<SimulationControl>().paused);
+    assert!(matches!(
+        app.world().get::<UnitOrder>(player),
+        Some(UnitOrder::MoveTo(point)) if *point == destination
+    ));
+    app.world_mut().run_schedule(FixedUpdate);
+    assert_eq!(app.world().resource::<SimulationTick>().0, tick + 1);
+    assert!(
+        app.world()
+            .get::<UnitPose>(player)
+            .unwrap()
+            .position()
+            .distance(before)
+            > 0.0
+    );
+
+    let instance = app
+        .world()
+        .get::<EquipmentSlots>(player)
+        .unwrap()
+        .item(0)
+        .unwrap()
+        .instance();
+    batch(&mut app, json!([unequip(player, 0, instance, 2)]));
+    assert_eq!(ack(&app)["accepted"], true);
+    assert!(
+        app.world()
+            .get::<EquipmentSlots>(player)
+            .unwrap()
+            .item(0)
+            .is_none()
+    );
+    assert!(!app.world().resource::<SimulationControl>().paused);
+    assert!(matches!(
+        app.world().get::<UnitOrder>(player),
+        Some(UnitOrder::MoveTo(point)) if *point == destination
+    ));
+}
+
+#[test]
+fn finished_match_rejects_management_even_with_the_current_player() {
+    let (mut app, player) = app();
+    app.add_plugins(crate::gameplay::GameplayPlugin);
+    let base = app
+        .world()
+        .resource::<crate::gameplay::MatchState>()
+        .base(Team::Enemy)
+        .unwrap();
+    app.world_mut().despawn(base);
+    app.world_mut().resource_mut::<SimulationControl>().paused = false;
+    app.world_mut().run_schedule(FixedUpdate);
+    assert!(matches!(
+        app.world()
+            .resource::<crate::gameplay::MatchState>()
+            .phase(),
+        crate::gameplay::MatchPhase::Finished(_)
+    ));
+    batch(&mut app, json!([equip(player, 0, 1, 1)]));
+    assert_eq!(ack(&app)["accepted"], false);
+    assert!(
+        app.world()
+            .get::<EquipmentSlots>(player)
+            .unwrap()
+            .item(0)
+            .is_none()
+    );
+}
+
+#[test]
+fn old_player_and_stale_instances_cannot_mutate_inventory() {
+    let (mut app, player) = app();
     let mut old = equip(player, 0, 1, 2);
     old["player_id"] = json!("old-player");
-    batch(&mut app, json!([old]), true, false);
+    batch(&mut app, json!([old]));
     assert_eq!(ack(&app)["accepted"], false);
-    batch(&mut app, json!([equip(player, 0, 7, 3)]), true, false);
+    batch(&mut app, json!([equip(player, 0, 7, 3)]));
     let original = app
         .world()
         .get::<EquipmentSlots>(player)
@@ -130,7 +195,7 @@ fn running_capture_old_player_and_stale_instances_cannot_mutate_inventory() {
         equip(player, 6, 1, 5),
         unequip(player, 0, "stale", 6),
     ] {
-        batch(&mut app, json!([request]), true, false);
+        batch(&mut app, json!([request]));
         assert_eq!(ack(&app)["accepted"], false);
         assert!(
             ack(&app)["error"]
@@ -159,14 +224,7 @@ fn malformed_batches_are_consumed_without_executing_a_valid_prefix() {
         json!([equip(player, 0, 1, 1), extra]).to_string(),
         json!(vec![equip(player, 0, 1, 1); 33]).to_string(),
     ] {
-        process_batch(
-            app.world_mut(),
-            &raw,
-            ManagementFacts {
-                paused: true,
-                captured: false,
-            },
-        );
+        process_batch(app.world_mut(), &raw);
         assert_eq!(ack(&app)["request_id"], Value::Null);
         assert_eq!(ack(&app)["accepted"], false);
         assert!(
@@ -180,8 +238,6 @@ fn malformed_batches_are_consumed_without_executing_a_valid_prefix() {
     batch(
         &mut app,
         json!([equip(player, 0, 1, 8), equip(player, 0, 2, 9)]),
-        true,
-        false,
     );
     assert_eq!(ack(&app)["request_id"], 9);
     assert_eq!(ack(&app)["accepted"], false);
@@ -200,7 +256,7 @@ fn malformed_batches_are_consumed_without_executing_a_valid_prefix() {
 #[test]
 fn selection_and_new_player_reset_ack_and_reject_an_old_round_request() {
     let (mut app, player) = app();
-    batch(&mut app, json!([equip(player, 0, 1, 1)]), true, false);
+    batch(&mut app, json!([equip(player, 0, 1, 1)]));
     crate::gameplay::reset_match(app.world_mut());
     session::setup(app.world_mut());
     process_requests(app.world_mut());
@@ -222,7 +278,7 @@ fn selection_and_new_player_reset_ack_and_reject_an_old_round_request() {
     process_requests(app.world_mut());
     let new_player = app.world().resource::<ClientSession>().player().unwrap();
     assert_ne!(player, new_player);
-    batch(&mut app, json!([equip(player, 0, 1, 2)]), true, false);
+    batch(&mut app, json!([equip(player, 0, 1, 2)]));
     assert_eq!(ack(&app)["accepted"], false);
     assert!(
         app.world()
@@ -251,7 +307,7 @@ fn catalog_and_runtime_share_slot_free_active_metadata_and_never_equip_defaults(
             .contains("20%")
     );
     assert!(catalog[6]["active"].get("slot").is_none());
-    batch(&mut app, json!([equip(player, 4, 7, 1)]), true, false);
+    batch(&mut app, json!([equip(player, 4, 7, 1)]));
     let view = projection(&app);
     let runtime = &view["slots"][4]["item"]["active"];
     assert_eq!(runtime["slot"], 4);

@@ -97,7 +97,7 @@ pub(super) fn release_pointer() {
         document.exit_pointer_lock();
     }
 }
-pub(super) fn click_ui(point: Vec2) {
+pub(super) fn click_ui(point: Vec2, mouse_button: MouseButton) {
     #[cfg(target_arch = "wasm32")]
     {
         use wasm_bindgen::JsCast;
@@ -107,11 +107,21 @@ pub(super) fn click_ui(point: Vec2) {
             .and_then(|element| element.closest("[data-ui] button").ok().flatten())
             .and_then(|element| element.dyn_into::<web_sys::HtmlElement>().ok())
         {
-            button.click();
+            match mouse_button {
+                MouseButton::Left => button.click(),
+                MouseButton::Right => {
+                    // Native locked events target the canvas. Deliver a
+                    // secondary action to the button under the saved CSS hit.
+                    if let Ok(event) = web_sys::CustomEvent::new("kiva-contextmenu") {
+                        let _ = button.dispatch_event(&event);
+                    }
+                }
+                _ => {}
+            }
         }
     }
     #[cfg(not(target_arch = "wasm32"))]
-    let _ = point;
+    let _ = (point, mouse_button);
 }
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen::prelude::wasm_bindgen]
@@ -250,6 +260,18 @@ pub(super) fn paused() -> Option<bool> {
     #[cfg(not(target_arch = "wasm32"))]
     {
         None
+    }
+}
+
+pub(super) fn settings_open() -> bool {
+    #[cfg(target_arch = "wasm32")]
+    {
+        root()
+            .is_some_and(|root| root.get_attribute("data-settings-open").as_deref() == Some("true"))
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        false
     }
 }
 pub(super) fn set_paused(paused: bool) {

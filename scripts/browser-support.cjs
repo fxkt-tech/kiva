@@ -51,7 +51,10 @@ async function openSelection(page, url = process.env.KIVA_TEST_URL || "http://12
     && window.__kivaState.session.selection?.can_start, undefined, { timeout: 120000 });
   // Existing scenarios explicitly confirm targets with left click. Select
   // their mode through the real menu rather than relying on the user default.
+  await page.locator("#settings-toggle").click();
+  await page.locator('[data-settings-tab="controls"]').click();
   await page.locator("#cast-mode").selectOption(castMode);
+  await page.locator("#settings-close").click();
 }
 
 async function selectCharacter(page, characterId) {
@@ -72,11 +75,30 @@ async function enterGame(page, url = process.env.KIVA_TEST_URL || "http://127.0.
 }
 
 async function resumeGame(page, activation = "mouse") {
-  return captureWithButton(page, "#enter", activation, false);
+  const active = await page.evaluate(() => window.__kivaState?.session.phase === "Active");
+  return captureWithButton(page, active ? "#settings-close" : "#enter", activation, false);
 }
 
 async function restartGame(page, activation = "mouse") {
   return captureWithButton(page, "#restart", activation, true);
+}
+
+// Legacy combat/reset fixtures use the retained public session intent to
+// inspect Selecting cleanup. This is not the settings role chooser UI check.
+async function resetToSelection(page) {
+  await page.evaluate(() => {
+    const root = document.documentElement;
+    const snapshot = window.__kivaState;
+    if (snapshot?.session.phase !== "Active" || document.pointerLockElement
+      || (root.dataset.settingsOpen !== "true" && root.dataset.paused !== "true")) {
+      throw new Error("Reset fixture requires an unlocked settings or paused boundary");
+    }
+    const queued = JSON.parse(root.dataset.sessionRequests || "[]");
+    if (!Array.isArray(queued) || queued.length >= 32) throw new Error("Session intent queue unavailable");
+    queued.push({ type: "ReturnToSelection", player_id: snapshot.player_id });
+    root.dataset.sessionRequests = JSON.stringify(queued);
+  });
+  await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting");
 }
 
 async function captureWithButton(page, selector, activation, replacement) {
@@ -217,6 +239,7 @@ async function clickUi(page, selector, delay = 90) {
     await page.locator(selector).click({ delay });
     return;
   }
+  await page.locator(selector).scrollIntoViewIfNeeded();
   const box = await page.locator(selector).boundingBox();
   await movePointer(page, box.x + box.width / 2, box.y + box.height / 2);
   await clickPointer(page, "left", delay);
@@ -266,4 +289,4 @@ async function reportFailure(page) {
   console.error("Browser state:", JSON.stringify(state, null, 2));
 }
 
-module.exports = { launchBrowser, openSelection, selectCharacter, enterGame, resumeGame, restartGame, movePointer, moveRelative, clickPointer, clickAndMovePointer, clickUi, worldPoint, clickWorld, reportFailure, serveBuild };
+module.exports = { launchBrowser, openSelection, selectCharacter, enterGame, resumeGame, restartGame, resetToSelection, movePointer, moveRelative, clickPointer, clickAndMovePointer, clickUi, worldPoint, clickWorld, reportFailure, serveBuild };

@@ -31,10 +31,10 @@
   let activePlayerId = null;
   let matchState = null;
   let matchUi;
-  let returnPending = false;
   let captureAttempt = null;
   let latestSelectionRequest = 0;
   let requestedCharacter = null;
+  let characterDraft = null;
   let selectionError = "";
   let choicesSignature = "";
   let previewSignature = "";
@@ -47,20 +47,46 @@
     element: document.querySelector(`[data-stat="${key}"]`),
     previewElement: document.querySelector(`[data-preview-stat="${key}"]`),
   }));
+  const settingsUi = window.createSettingsUi({
+    requestClose: () => {
+      if (session?.phase === "Active" && !matchUi.ended()) enterGame();
+      else settingsUi.close();
+    },
+    onToggle: syncMenu,
+  });
   const equipmentUi = window.createEquipmentUi({
-    pause: () => setPaused(true),
-    blocked: () => !ready || Boolean(captureAttempt) || returnPending || Boolean(matchUi?.blocked()),
+    blocked: () => !ready || Boolean(captureAttempt) || Boolean(matchUi?.blocked()),
+    onToggle: syncMenu,
   });
 
-  matchUi = window.createMatchUi({ restart: restartMatch, reselect: returnToSelection });
+  matchUi = window.createMatchUi({ restart: restartMatch, reselect: () => {
+    openSettings("characters");
+    return false; // Browsing roles is not a pending match mutation.
+  } });
 
   function setPaused(paused) {
     root.dataset.paused = String(paused);
     if (paused) {
+      equipmentUi.close();
       delete root.dataset.skill;
       delete root.dataset.equipmentSkill;
+      if (ready && session?.phase === "Active" && !matchUi.ended()) settingsUi.open();
     }
     if (paused && document.pointerLockElement === canvas) document.exitPointerLock();
+  }
+
+  function openSettings(category) {
+    if (!ready || captureAttempt || matchState?.error) return;
+    equipmentUi.close();
+    $("help").hidden = true;
+    $("help-toggle").setAttribute("aria-expanded", "false");
+    settingsUi.open();
+    if (category) settingsUi.select(category);
+    delete root.dataset.skill;
+    delete root.dataset.equipmentSkill;
+    window.kivaPointer?.sync(false);
+    if (document.pointerLockElement === canvas) document.exitPointerLock();
+    syncMenu();
   }
 
   function enqueueSessionRequest(request) {
@@ -86,7 +112,15 @@
   }
 
   function selectCharacter(characterId) {
-    if (!ready || session?.phase !== "Selecting" || captureAttempt) return;
+    if (!ready || captureAttempt) return;
+    if (session?.phase === "Active") {
+      if (!window.kivaCharacters.catalog().some((choice) => choice.id === characterId)) return;
+      characterDraft = characterId;
+      settingsUi.setError("");
+      syncMenu();
+      return;
+    }
+    if (session?.phase !== "Selecting") return;
     const requestId = latestSelectionRequest === 0xffffffff ? 1 : latestSelectionRequest + 1;
     if (!enqueueSessionRequest({ type: "SelectCharacter", character_id: characterId, request_id: requestId })) {
       selectionError = "选择请求暂未完成，请稍后重试。";
@@ -106,16 +140,28 @@
   }
 
   function enterGame() {
-    if (!ready || captureAttempt || returnPending || equipmentUi.isOpen() || equipmentUi.isPending() || !session || matchUi.blocked()) return;
+    if (!ready || captureAttempt || equipmentUi.isPending() || !session || matchUi.blocked()) return;
     const choice = confirmedChoice();
     if (session.phase === "Selecting" && !choice) return;
     requestCapture({ phase: session.phase, choice, stage: "requesting" });
   }
 
   function restartMatch(matchId) {
-    if (!ready || captureAttempt || returnPending || !activePlayerId || !matchUi.ended()
-      || equipmentUi.isOpen() || equipmentUi.isPending()) return false;
+    if (!ready || captureAttempt || !activePlayerId || !matchUi.ended()
+      || equipmentUi.isPending()) return false;
     return requestCapture({ phase: "Restarting", matchId, playerId: activePlayerId, stage: "requesting" });
+  }
+
+  function applyCharacter() {
+    if (session?.phase === "Selecting") {
+      enterGame();
+      return;
+    }
+    if (!ready || captureAttempt || equipmentUi.isPending() || !settingsUi.isOpen()
+      || !activePlayerId || !matchState?.id || matchState.error
+      || !window.kivaCharacters.catalog().some((choice) => choice.id === characterDraft)) return;
+    requestCapture({ phase: "ChangingCharacter", playerId: activePlayerId,
+      matchId: matchState.id, characterId: characterDraft, stage: "requesting" });
   }
 
   function requestCapture(attempt) {
@@ -124,11 +170,12 @@
     root.dataset.pointerLocked = "false";
     document.addEventListener("pointerlockerror", attempt.onError);
     $("pointer-error").hidden = true;
+    settingsUi.setError("");
     syncMenu();
     canvas.focus();
     try {
       // Capture is requested by this trusted click. A native capture event,
-      // rather than Promise settlement, authorizes Launch or RestartMatch.
+      // rather than Promise settlement, authorizes session mutation.
       const request = canvas.requestPointerLock();
       if (request?.catch) request.catch(() => captureFailed(attempt));
       return true;
@@ -142,23 +189,28 @@
     if (captureAttempt !== attempt || attempt.stage !== "requesting") return;
     clearCaptureAttempt(attempt);
     if (attempt.phase === "Restarting") matchUi.rejected();
-    setPaused(true);
-    $("pointer-error").textContent = "鼠标捕获未成功，请点击进入按钮重试。";
-    $("pointer-error").hidden = false;
+    const message = "鼠标捕获未成功，请点击返回游戏重试。";
+    if (attempt.phase === "Active" || attempt.phase === "ChangingCharacter") {
+      settingsUi.open();
+      if (attempt.phase === "ChangingCharacter") settingsUi.select("characters");
+      settingsUi.setError(message);
+    } else {
+      setPaused(true);
+      if (settingsUi.isOpen()) settingsUi.setError(message);
+      $("pointer-error").textContent = message;
+      $("pointer-error").hidden = false;
+    }
     syncMenu();
   }
 
-  function returnToSelection() {
-    if (!ready || session?.phase !== "Active" || !activePlayerId || returnPending
-      || captureAttempt || equipmentUi.isOpen() || equipmentUi.isPending()
-      || root.dataset.paused !== "true" || document.pointerLockElement === canvas) return false;
-    if (!enqueueSessionRequest({ type: "ReturnToSelection", player_id: activePlayerId })) return false;
-    returnPending = true;
-    delete root.dataset.skill;
-    delete root.dataset.equipmentSkill;
-    $("pointer-error").hidden = true;
+  function characterChangeFailed(attempt, message) {
+    if (captureAttempt !== attempt) return;
+    clearCaptureAttempt(attempt);
+    settingsUi.open();
+    settingsUi.select("characters");
+    settingsUi.setError(message);
+    if (document.pointerLockElement === canvas) document.exitPointerLock();
     syncMenu();
-    return true;
   }
 
   function pointerLockChanged() {
@@ -169,11 +221,24 @@
       clearCaptureAttempt(captureAttempt);
       if (restarting) matchUi.rejected();
       delete root.dataset.skill;
-      setPaused(true);
+      if (session?.phase === "Active" && document.hasFocus()
+        && root.dataset.paused === "false" && !matchUi.blocked()) openSettings();
+      else setPaused(true);
       syncMenu();
       return;
     }
     const attempt = captureAttempt;
+    if (attempt?.phase === "ChangingCharacter" && attempt.stage === "requesting"
+      && document.hasFocus() && settingsUi.isOpen()) {
+      if (enqueueSessionRequest({ type: "ChangeCharacter", match_id: attempt.matchId,
+        player_id: attempt.playerId, character_id: attempt.characterId })) {
+        attempt.stage = "launching";
+        document.removeEventListener("pointerlockerror", attempt.onError);
+        setPaused(false);
+      } else characterChangeFailed(attempt, "角色切换请求暂未完成，请重试。");
+      syncMenu();
+      return;
+    }
     if (attempt?.phase === "Restarting" && attempt.stage === "requesting"
       && matchUi.ended() && document.hasFocus()) {
       if (enqueueSessionRequest({ type: "RestartMatch", match_id: attempt.matchId, player_id: attempt.playerId })) {
@@ -188,15 +253,24 @@
       syncMenu();
       return;
     }
-    if (returnPending || equipmentUi.isOpen() || matchUi.blocked()) {
+    if (!document.hasFocus()) {
       setPaused(true);
       return;
     }
     if (attempt?.stage === "launching") return;
+    if (matchUi.blocked()) {
+      setPaused(true);
+      return;
+    }
     if (session?.phase === "Active") {
+      if (settingsUi.isOpen() && attempt?.phase !== "Active") {
+        document.exitPointerLock();
+        return;
+      }
       clearCaptureAttempt(attempt);
       $("pointer-error").hidden = true;
       setPaused(false);
+      settingsUi.close();
     } else if (session?.phase === "Selecting" && attempt?.phase === "Selecting"
       && attempt.stage === "requesting" && document.hasFocus()) {
       if (!enqueueSessionRequest({ type: "Launch", ...attempt.choice })) {
@@ -218,21 +292,16 @@
 
   function syncMenu() {
     const active = session?.phase === "Active";
-    $("entry").hidden = !ready || matchUi.ended() || (active && root.dataset.paused === "false");
-    $("entry").dataset.phase = active ? "Active" : "Selecting";
-    $("character-select").hidden = active;
-    $("entry-title").textContent = active ? "片刻停留，再出发。" : "选择你的旅程。";
-    $("entry-description").textContent = active
-      ? "继续推进兵线，保护基地，寻找进攻机会。"
-      : "选择角色，查看初始属性与技能，再进入试炼。";
+    if (active && root.dataset.paused === "true" && !matchUi.ended() && !settingsUi.isOpen()) settingsUi.open();
+    $("entry").hidden = !ready || matchUi.ended() || active || settingsUi.isOpen();
+    if (settingsUi.isOpen()) $("settings-dialog").hidden = equipmentUi.isOpen();
+    $("settings-toggle").disabled = !ready || Boolean(captureAttempt) || Boolean(matchState?.error);
+    settingsUi.setBusy(!ready || Boolean(captureAttempt) || equipmentUi.isPending());
+    $("entry").dataset.phase = "Selecting";
     $("enter").textContent = captureAttempt
       ? (captureAttempt.stage === "launching" ? "正在进入…" : "正在捕获鼠标…")
-      : (active ? "继续对局 →" : "进入对局 →");
-    $("enter").disabled = !ready || matchUi.blocked() || Boolean(captureAttempt) || returnPending || equipmentUi.isPending() || (!active && !confirmedChoice());
-    $("reselection-actions").hidden = !active;
-    $("reselect").textContent = returnPending ? "正在返回选角…" : "重新选择角色";
-    $("reselect").disabled = !ready || !activePlayerId || returnPending || Boolean(captureAttempt) || equipmentUi.isPending()
-      || root.dataset.paused !== "true" || document.pointerLockElement === canvas;
+      : "进入对局 →";
+    $("enter").disabled = !ready || matchUi.blocked() || Boolean(captureAttempt) || equipmentUi.isPending() || (!active && !confirmedChoice());
     const selection = session?.selection;
     const waiting = selection?.selection_ack.request_id !== latestSelectionRequest;
     $("selection-status").hidden = active;
@@ -241,11 +310,33 @@
       : confirmedChoice() ? "准备就绪，进入试炼后开始。" : "请选择一个角色。";
     $("selection-error").textContent = selectionError || selection?.error || "";
     $("selection-error").hidden = active || !$("selection-error").textContent;
-    $("character-preview").setAttribute("aria-busy", String(waiting));
+    renderCharacterView();
+    const catalog = window.kivaCharacters.catalog();
+    $("character-apply").disabled = !ready || Boolean(captureAttempt) || equipmentUi.isPending()
+      || Boolean(matchState?.error) || (active ? !catalog.some((choice) => choice.id === characterDraft) : !confirmedChoice());
+    $("character-apply").textContent = captureAttempt?.phase === "ChangingCharacter"
+      ? (captureAttempt.stage === "launching" ? "正在重开…" : "正在捕获鼠标…")
+      : active ? "以此角色重开" : "以此角色开始";
+    $("character-status").textContent = active
+      ? catalog.length ? "浏览角色不会改变当前对局，确认后重开。" : "正在读取角色配置…"
+      : selectionError || selection?.error || (waiting ? "正在确认角色选择…" : "选择角色，查看初始属性与技能。");
+    $("character-preview").setAttribute("aria-busy", String(active ? Boolean(captureAttempt) : waiting));
     for (const button of $("character-choices").querySelectorAll("[data-character-id]")) {
       button.disabled = Boolean(captureAttempt);
-      button.setAttribute("aria-pressed", String(Number(button.dataset.characterId) === selection?.selected?.id));
+      button.setAttribute("aria-pressed", String(Number(button.dataset.characterId) === (active ? characterDraft : selection?.selected?.id)));
     }
+  }
+
+  function renderCharacterView() {
+    const active = session?.phase === "Active";
+    const widget = $("character-select");
+    const host = $(settingsUi.isOpen() ? "settings-character-host" : "entry-character-host");
+    if (widget.parentElement !== host) host.append(widget);
+    widget.hidden = active && !settingsUi.isOpen();
+    const catalog = window.kivaCharacters.catalog();
+    const selected = active ? catalog.find((choice) => choice.id === characterDraft) : session?.selection?.selected;
+    renderCharacterChoices(active ? catalog : session?.selection?.choices || []);
+    renderCharacterPreview(selected || null);
   }
 
   function toggleHelp() {
@@ -266,7 +357,7 @@
     attributes: true, attributeFilter: ["data-paused"],
   });
   $("enter").addEventListener("click", enterGame);
-  $("reselect").addEventListener("click", returnToSelection);
+  $("character-apply").addEventListener("click", applyCharacter);
   document.addEventListener("pointerlockchange", pointerLockChanged);
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
   canvas.addEventListener("pointerdown", () => canvas.focus());
@@ -277,8 +368,14 @@
     syncMenu();
   });
   $("help-toggle").addEventListener("click", toggleHelp);
+  $("settings-toggle").addEventListener("click", () => {
+    if (settingsUi.isOpen()) {
+      if (session?.phase === "Active" && !matchUi.ended()) enterGame();
+      else settingsUi.close();
+    } else openSettings();
+  });
   window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && document.pointerLockElement === canvas) setPaused(true);
+    if (event.key === "Escape") openSettings();
     if (event.key === "?") toggleHelp();
   });
   document.querySelectorAll("[data-slot]").forEach((button) => {
@@ -377,23 +474,19 @@
   }
 
   function renderSession(nextSession, playerId) {
-    if (session?.phase === "Active" && nextSession.phase === "Selecting") {
+    const previousPlayer = activePlayerId;
+    const confirmedCharacter = captureAttempt?.phase === "ChangingCharacter" && captureAttempt.stage === "launching"
+      ? captureAttempt.characterId : captureAttempt?.phase === "Selecting"
+        ? captureAttempt.choice?.character_id : session?.selection?.selected?.id;
+    const returning = session?.phase === "Active" && nextSession.phase === "Selecting";
+    if (returning) {
       clearCaptureAttempt(captureAttempt);
       latestSelectionRequest = 0;
       requestedCharacter = null;
       selectionError = "";
       delete root.dataset.skill;
       root.dataset.pointerLocked = "false";
-      setPaused(true);
       $("pointer-error").hidden = true;
-    }
-    if (returnPending && !root.hasAttribute("data-session-requests")) {
-      returnPending = false;
-      if (nextSession.phase === "Active") {
-        matchUi.rejected();
-        $("pointer-error").textContent = "暂时无法重新选择角色，请重试。";
-        $("pointer-error").hidden = false;
-      }
     }
     if (captureAttempt?.phase === "Restarting" && captureAttempt.stage === "launching") {
       if (playerId !== captureAttempt.playerId && nextSession.phase === "Active") {
@@ -407,16 +500,43 @@
     session = nextSession;
     root.dataset.sessionPhase = nextSession.phase;
     activePlayerId = playerId;
+    if (returning) {
+      setPaused(true);
+      settingsUi.close();
+    }
     if (session.phase === "Active") {
-      if (captureAttempt?.phase === "Selecting") clearCaptureAttempt(captureAttempt);
+      if (playerId !== previousPlayer) {
+        characterDraft = window.__kivaState.units.find((unit) => unit.id === playerId)?.character_id
+          ?? confirmedCharacter ?? null;
+      } else if (characterDraft === null) {
+        characterDraft = window.__kivaState.units.find((unit) => unit.id === playerId)?.character_id ?? null;
+      }
+      const attempt = captureAttempt;
+      if (attempt?.phase === "ChangingCharacter") {
+        const replaced = playerId !== attempt.playerId && matchState?.id !== attempt.matchId;
+        if (replaced && attempt.stage === "launching") {
+          clearCaptureAttempt(attempt);
+          if (document.pointerLockElement === canvas && document.hasFocus()) {
+            setPaused(false);
+            settingsUi.close();
+          }
+        } else if (playerId !== attempt.playerId || matchState?.id !== attempt.matchId) {
+          characterChangeFailed(attempt, "当前对局已变更，请重新选择角色。");
+        } else if (attempt.stage === "launching" && !root.hasAttribute("data-session-requests")) {
+          characterChangeFailed(attempt, "角色切换未成功，请重新确认。");
+        }
+      }
+      if (captureAttempt?.phase === "Selecting") {
+        clearCaptureAttempt(captureAttempt);
+        settingsUi.close();
+      }
       selectionError = "";
     } else {
       const selection = session.selection;
       if (latestSelectionRequest === 0 && requestedCharacter === null) {
         requestedCharacter = selection?.selected?.id ?? null;
       }
-      renderCharacterChoices(selection?.choices || []);
-      renderCharacterPreview(selection?.selected || null);
+      characterDraft = null;
     }
     syncMenu();
   }
@@ -630,9 +750,11 @@
     const state = JSON.parse(event.detail);
     // Read-only diagnostics allow tests to assert actual simulation results.
     window.__kivaState = state;
+    const justFinished = state.match.phase === "Finished"
+      && (matchState?.phase !== "Finished" || matchState?.id !== state.match.id);
     matchState = state.match;
     matchUi.render(state.match);
-    if (matchUi.ended()) setPaused(true);
+    if (justFinished && captureAttempt?.phase !== "ChangingCharacter") { settingsUi.close(); setPaused(true); }
     renderSession(state.session, state.player_id);
     equipmentUi.render(state);
     syncMenu();

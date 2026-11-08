@@ -1,10 +1,11 @@
+const { resetToSelection } = require("./browser-support.cjs");
 // Exercise the real simulation snapshot and captured-pointer HUD together.
 // Build first; the test owns and closes its ephemeral static HTTP fixture.
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { launchBrowser, enterGame, resumeGame, selectCharacter, movePointer, clickPointer, clickUi,
-  clickWorld, clickUnit, reportFailure, serveBuild, installFrameClock, state, nearHome } = require("./browser-lane-support.cjs");
+  clickWorld, clickUnit, reportFailure, serveBuild, installFrameClock, state, nearHome, pause } = require("./browser-lane-support.cjs");
 
 const expected = {
   attack_damage: 64, ability_power: 0, armor: 36, magic_resistance: 32,
@@ -173,7 +174,7 @@ async function assertUiIsolation(page) {
     const player = snapshot.units.find((unit) => unit.id === snapshot.player_id);
     return Math.hypot(player.position[0] - x, player.position[1] - z) < 0.12;
   }, destination);
-  await page.keyboard.press("Escape");
+  await pause(page);
   await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
   assertHud(await observeHud(page), "paused");
   await resumeGame(page);
@@ -194,12 +195,13 @@ async function exerciseCompactControls(page) {
   assert.equal((await state(page)).aim, null, "passive controls must not select an active ability");
   await clickUi(page, "#equipment-toggle");
   await page.waitForFunction(() => window.__kivaState.equipment.can_manage
-    && !document.getElementById("equipment-editor").hidden && !document.pointerLockElement);
-  await page.locator('[data-equip-id="8"]').click();
+    && !document.getElementById("equipment-editor").hidden && document.pointerLockElement?.id === "game"
+    && !window.__kivaState.paused);
+  await clickUi(page, '[data-equip-id="8"]');
   await page.waitForFunction(() => window.__kivaState.equipment.slots[0].item?.id === 8
     && document.querySelector('[data-stat="attack_damage"]').textContent === "74");
-  await page.locator("#equipment-close").click();
-  await resumeGame(page);
+  await clickUi(page, "#equipment-close");
+  assert.equal(await page.evaluate(() => document.pointerLockElement?.id), "game");
   assert.equal((await state(page)).player_id, original.player_id);
   await clickUi(page, '[data-equipment-slot="0"]');
   await page.waitForFunction(() => window.__kivaState.equipment_aim === 0);
@@ -221,9 +223,10 @@ async function exerciseCompactControls(page) {
 
 async function exerciseReselection(page) {
   const before = await state(page);
-  await page.keyboard.press("Escape");
+  await pause(page);
   await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
-  await page.locator("#reselect").click();
+  await page.locator('[data-settings-tab="characters"]').click();
+  await resetToSelection(page);
   await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting"
     && !document.getElementById("enter").disabled);
   assert(await page.locator("#hero-hud").isHidden(), "the new layout must hide the previous hero during selection");

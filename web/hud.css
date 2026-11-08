@@ -107,6 +107,7 @@ html[data-session-phase="Active"] .top-right .status { display: none; }
 .equipment-grid { display: grid; grid-template-columns: repeat(3, var(--hud-item-size)); gap: 4px; }
 .equipment-slot { position: relative; width: var(--hud-item-size); height: var(--hud-item-size); padding: 0; border: 1px solid #b5a57544; color: #dfd1a7; background: #182a2c; }
 .equipment-slot.filled { background: linear-gradient(135deg, #31473e, #1c3030); border-color: #b5a57588; }
+.equipment-slot.manageable { cursor: pointer; border-color: #cbb78288; }
 .equipment-slot.aiming, .equipment-slot[data-virtual-hover] { border-color: #e5cd91; box-shadow: 0 0 12px #ceb77e22; }
 .equipment-slot:disabled { cursor: default; }
 .equipment-slot.unavailable { color: #83928b; }

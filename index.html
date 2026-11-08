@@ -10,6 +10,8 @@
     <script src="startup.js"></script>
     <link data-trunk rel="copy-file" href="web/equipment.js" />
     <script src="equipment.js"></script>
+    <link data-trunk rel="copy-file" href="web/characters.js" />
+    <script src="characters.js"></script>
     <link data-trunk rel="copy-file" href="web/audio.js" />
     <script src="audio.js"></script>
     <link data-trunk rel="copy-file" href="web/casting.js" />
@@ -24,17 +26,21 @@
     <link data-trunk rel="copy-file" href="web/match.js" />
     <link data-trunk rel="copy-file" href="web/match.css" />
     <link data-trunk rel="copy-file" href="web/minimap.js" />
+    <link data-trunk rel="copy-file" href="web/settings.js" />
+    <link data-trunk rel="copy-file" href="web/settings.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="match.css" />
     <link rel="stylesheet" href="hud.css" />
+    <link rel="stylesheet" href="settings.css" />
     <script src="pointer.js" defer></script>
     <script src="match.js" defer></script>
     <script src="skill-state.js" defer></script>
     <script src="minimap.js" defer></script>
+    <script src="settings.js" defer></script>
     <script src="hud.js" defer></script>
   </head>
   <body>
-    <canvas id="game" tabindex="0" aria-label="试炼之境：右键移动或攻击，A 加左键点敌人锁定攻击、点空地攻击移动，QWER 技能，Y 锁定镜头，空格回到角色，Esc 释放鼠标并暂停。"></canvas>
+    <canvas id="game" tabindex="0" aria-label="试炼之境：右键移动或攻击，A 加左键点敌人锁定攻击、点空地攻击移动，QWER 技能，Y 锁定镜头，空格回到角色，Esc 打开设置，游戏继续运行。"></canvas>
     <div id="game-cursor" hidden aria-hidden="true">
       <svg class="cursor-arrow" viewBox="0 0 24 28"><path d="M1 1v21l6-6 5 10 5-2-5-10h10Z"/></svg>
       <svg class="cursor-sword" viewBox="0 0 24 28"><path class="sword-blade" d="M1 1l10 5 5 10-4 4-9-10Z"/><path class="sword-guard" d="M9 17l3-3 9 7-3 3Z"/><path class="sword-grip" d="M16 22l3-3 4 5-3 3Z"/></svg>
@@ -49,7 +55,8 @@
         <div class="match-timing"><strong id="match-clock">0:00</strong><small>第 <span id="wave-count">1</span> 波</small><small>下波 <span id="next-wave">60s</span></small></div>
         <div class="base-score enemy"><strong>敌方基地</strong><span id="enemy-base-health">—</span><div class="base-meter"><i id="enemy-base-fill"></i></div></div>
       </section>
-      <button id="equipment-toggle" class="subtle" hidden>装备 <kbd>P</kbd></button>
+      <button id="equipment-toggle" class="subtle" hidden aria-controls="equipment-editor" aria-expanded="false">装备 <kbd>T</kbd></button>
+      <button id="settings-toggle" class="subtle" aria-controls="settings-dialog" aria-expanded="false">设置 <kbd>Esc</kbd></button>
       <span class="status"><i></i><span id="session-status">正在准备</span></span>
       <button id="help-toggle" class="subtle" aria-expanded="false" aria-controls="help">操作指南 <kbd>?</kbd></button>
     </div>
@@ -60,15 +67,15 @@
         <dt>左键</dt><dd>选择 / 确认技能目标</dd>
         <dt>A → 左键</dt><dd>点敌人锁定攻击，点空地攻击移动</dd>
         <dt>S</dt><dd>停止当前指令</dd>
-        <dt>Q / W / E / R</dt><dd>智能施法按下即释放，普通施法再左键确认；可在暂停菜单切换</dd>
+        <dt>Q / W / E / R</dt><dd>智能施法按下即释放，普通施法再左键确认；可在设置中切换</dd>
         <dt>Shift + 技能键</dt><dd>临时普通施法；点击图标也可瞄准，自身技能直接释放</dd>
         <dt>1 / 2 / 3 / 4 / 5 / 6</dt><dd>使用对应格主动装备，遵循施法模式，也可鼠标点击</dd>
-        <dt>P</dt><dd>暂停并调整本局装备</dd>
+        <dt>T</dt><dd>打开或关闭装备列表，游戏继续运行；右键底部装备格可卸下</dd>
         <dt>Y / 空格</dt><dd>锁定镜头 / 按住跟随</dd>
         <dt>边缘 / 方向键</dt><dd>平移镜头</dd>
         <dt>小地图左键</dt><dd>点击定位镜头 / 拖动视野框平移</dd>
         <dt>滚轮</dt><dd>缩放</dd>
-        <dt>Esc</dt><dd>释放鼠标并暂停</dd>
+        <dt>Esc</dt><dd>打开设置，游戏继续运行</dd>
       </dl>
       <div id="help-abilities" class="help-abilities" aria-label="当前装配技能"></div>
       <p>金色圆环表示选中，青色表示可施法范围。障碍物会阻挡移动、冲刺和弹丸。</p>
@@ -142,7 +149,8 @@
           <h2 id="entry-title">选择你的旅程。</h2>
           <p id="entry-description">选择角色，查看初始属性与技能，再进入试炼。</p>
         </div>
-        <div id="character-select" class="character-select" aria-label="开局角色选择">
+        <div id="entry-character-host" class="entry-character-host">
+        <div id="character-select" class="character-select" aria-label="角色选择">
           <div id="character-choices" class="character-choices" role="group" aria-label="可选角色"></div>
           <section id="character-preview" class="character-preview" aria-label="角色初始预览" aria-busy="true">
             <div class="preview-heading"><span class="eyebrow">初始配置</span><h3 id="preview-name">正在读取角色</h3><p id="preview-description"></p></div>
@@ -163,44 +171,62 @@
             <div id="preview-abilities" class="preview-abilities" aria-label="初始装配技能"></div>
           </section>
         </div>
+        </div>
         <div class="entry-actions">
           <p id="selection-status" role="status" aria-live="polite">正在读取角色配置…</p>
           <p id="selection-error" role="status" aria-live="polite" hidden></p>
           <button id="enter" disabled>进入试炼 <span>→</span></button>
-          <div id="reselection-actions" hidden>
-            <button id="equipment-manage">调整装备</button>
-            <button id="reselect" aria-describedby="reselection-note">重新选择角色</button>
-            <p id="reselection-note">重开整场对局，重置双方英雄、基地和兵线。</p>
-          </div>
           <p id="pointer-error" role="status" aria-live="polite" hidden></p>
-          <div class="casting-settings">
-            <label for="cast-mode">施法模式</label>
-            <select id="cast-mode">
-              <option value="quick">智能施法（按下即释放）</option>
-              <option value="normal">普通施法（左键确认）</option>
-            </select>
-            <small>Shift + 技能键临时普通施法；点击图标可瞄准。</small>
-          </div>
-          <div class="audio-settings" aria-label="声音设置">
-            <label><input id="audio-muted" type="checkbox" />静音</label>
-            <label for="audio-volume">音量<input id="audio-volume" type="range" min="0" max="100" value="65" /></label>
-          </div>
           <div class="entry-controls"><span><kbd>右键</kbd> 移动 / 攻击</span><span><kbd>QWER</kbd> 技能 · <kbd>Shift</kbd> 普通施法</span><span><kbd>Y</kbd> 锁定镜头</span></div>
-          <small class="entry-note">进入后鼠标限制在游戏区域 · Esc 释放并暂停</small>
+          <small class="entry-note">进入后鼠标限制在游戏区域 · Esc 打开设置</small>
         </div>
       </div>
+    </div>
+    <div id="settings-dialog" class="settings-overlay" data-ui role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+      <section class="settings-card panel">
+        <header class="settings-heading"><span class="eyebrow">PREFERENCES</span><h2 id="settings-title">设置</h2></header>
+        <div class="settings-body">
+          <nav class="settings-nav" role="tablist" aria-label="设置分类" aria-orientation="vertical">
+            <button id="settings-tab-controls" type="button" role="tab" data-settings-tab="controls" aria-controls="settings-panel-controls" aria-selected="true">操作</button>
+            <button id="settings-tab-audio" type="button" role="tab" data-settings-tab="audio" aria-controls="settings-panel-audio" aria-selected="false" tabindex="-1">声音</button>
+            <button id="settings-tab-characters" type="button" role="tab" data-settings-tab="characters" aria-controls="settings-panel-characters" aria-selected="false" tabindex="-1">角色</button>
+          </nav>
+          <div class="settings-content">
+            <section id="settings-panel-controls" class="settings-panel" role="tabpanel" data-settings-panel="controls" aria-labelledby="settings-tab-controls">
+              <h3>操作</h3><p>选择习惯的施法方式，修改即时生效。</p>
+              <div class="casting-settings">
+                <label for="cast-mode">施法模式</label>
+                <select id="cast-mode"><option value="quick">智能施法（按下即释放）</option><option value="normal">普通施法（左键确认）</option></select>
+                <small>Shift + 技能键临时普通施法；点击图标可瞄准。</small>
+              </div>
+            </section>
+            <section id="settings-panel-audio" class="settings-panel" role="tabpanel" data-settings-panel="audio" aria-labelledby="settings-tab-audio" hidden>
+              <h3>声音</h3><p>调整对局音效，偏好会自动保存。</p>
+              <div class="audio-settings" aria-label="声音设置">
+                <label><input id="audio-muted" type="checkbox" />静音</label>
+                <label for="audio-volume">音量<input id="audio-volume" type="range" min="0" max="100" value="65" /></label>
+              </div>
+            </section>
+            <section id="settings-panel-characters" class="settings-panel settings-characters" role="tabpanel" data-settings-panel="characters" aria-labelledby="settings-tab-characters" hidden>
+              <h3>角色</h3><p id="character-status" role="status" aria-live="polite">选择角色，查看初始属性与技能。</p>
+              <div id="settings-character-host" class="settings-character-host"></div>
+              <div class="character-change-actions"><button id="character-apply" disabled>以此角色重开</button><small>确认后重开整场对局，重置双方英雄、基地和兵线。</small></div>
+            </section>
+          </div>
+        </div>
+        <footer class="settings-footer"><div><p id="settings-error" role="status" aria-live="polite" hidden></p><p>修改即时生效</p></div><button id="settings-close">完成</button></footer>
+      </section>
     </div>
     <div id="match-result" class="overlay" data-ui role="dialog" aria-modal="true" aria-labelledby="match-result-title" hidden>
       <section class="match-result-card panel"><span class="eyebrow">MATCH COMPLETE</span><h2 id="match-result-title">对局结束</h2><p id="match-result-detail"></p><div class="match-result-actions"><button id="restart">再来一局</button><button id="result-reselect">重新选择角色</button></div></section>
     </div>
-    <div id="equipment-editor" class="overlay" data-ui role="dialog" aria-modal="true" aria-labelledby="equipment-title" hidden>
-      <section class="equipment-editor-card panel">
-        <header><span class="eyebrow">FIELD EQUIPMENT</span><h2 id="equipment-title">为下一次交锋做好准备。</h2><p>选择装备放入空格，每个角色最多装备六件。</p></header>
-        <div class="equipment-editor-scroll">
-          <section aria-label="当前六格装备"><h3>当前装备</h3><div id="equipment-inventory" class="equipment-inventory"></div></section>
-          <section aria-label="训练场装备目录"><h3>可选装备</h3><div id="equipment-catalog" class="equipment-catalog"></div></section>
+    <div id="equipment-editor" role="dialog" aria-modal="false" aria-labelledby="equipment-title" hidden>
+      <section class="equipment-editor-card panel" data-ui>
+        <header><span class="eyebrow">FIELD EQUIPMENT</span><h2 id="equipment-title">装备列表</h2><p>选择装备放入空格，最多六件，调整即时生效。</p></header>
+        <div id="equipment-catalog-scroll" class="equipment-editor-scroll">
+          <div id="equipment-catalog" class="equipment-catalog" aria-label="可选装备"></div>
         </div>
-        <footer><p id="equipment-status" role="status" aria-live="polite">正在读取装备配置…</p><button id="equipment-close">返回暂停菜单</button></footer>
+        <footer><p id="equipment-status" role="status" aria-live="polite">正在读取装备配置…</p><button id="equipment-close">关闭 <kbd>T</kbd></button></footer>
       </section>
     </div>
     <noscript>请启用 JavaScript 后运行游戏。</noscript>

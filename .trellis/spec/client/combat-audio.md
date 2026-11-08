@@ -19,7 +19,7 @@
 - `publish(&mut World)` 位于 `PostUpdate`、`camera::update` 之后，按显示帧发布。
 - 同步经典脚本 `audio.js` 在 Rust/WASM 启动前安装 `kiva-audio` 监听器；不得依赖 defer HUD
   及时注册。本地 `assets/audio/` 随 Trunk 构建复制，不在游戏启动时导入或访问外部音源。
-- 设置绑定 DOM 就绪后的 `#audio-muted` 和 `#audio-volume`；后者范围 0–100，默认 65。
+- 分类设置的声音面板在DOM就绪后绑定 `#audio-muted` 和 `#audio-volume`；后者范围0–100，默认65，控件各一份。
 - `window.kivaAudio = Object.freeze({unlock,setMuted,setVolume})` 只有音频副作用。
   `window.__kivaAudio` 是冻结的只读诊断快照，不公开 AudioContext、节点或写 World 入口。
 
@@ -85,12 +85,12 @@ Rust 和 Web 都丢弃超过 15 tick 的 cue，长显示停顿不能在重生后
 `audio.js` 的 document capture/passive `pointerdown`、`keydown` 监听器只接受 `isTrusted`，
 同步创建/调用 `AudioContext.resume()`，再等待其 Promise。不能先 await 资源或另开定时器再解锁，
 不能 preventDefault、消费或改写游戏输入。音频解锁成功也不代表游戏已进入：播放仍要求当前会话、
-未暂停、文档聚焦和 `#game` 实际 Pointer Lock。
+未暂停、文档聚焦，且`#game`实际Pointer Lock或设置打开。
 
 文件可提前 fetch；上下文存在后异步 decode。未解锁、未解码、静音、音量 0 或暂停的 cue 直接丢弃，
 资源后来就绪/恢复音量不补播。设备激活失败不阻断进入游戏，后续可信手势可再次尝试 resume。
 
-暂停、`data-paused=true`、丢失捕获、blur、document hidden 都停止并断开全部 active voice。
+暂停、`data-paused=true`、非设置丢失捕获、blur、document hidden都停止并断开全部active voice；运行中设置允许未捕获时继续新cue和已有voice。
 Rust 暂停也清空待发布 cue。普通继续复用当前会话和 AudioContext，不重播旧事实。
 session 改变时两端清理待播/活动声音，Web 同时清空生命表和 sequence；Rust 显示 `frame` 不归零。
 同源出现新生命 epoch 时，停止该源旧生命仍在播放的节点，保留其他源声音。

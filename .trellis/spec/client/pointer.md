@@ -6,6 +6,10 @@
 `web/pointer.js`唯一拥有Web的CSS位置、边界、单位校准和按下快照；
 `GamePointer`是Rust输入帧的镜像，Native仍读取Window的绝对逻辑坐标。
 捕获与开局确认仍遵循[会话契约](character-selection.md)，不由指针模块启动游戏。
+设置打开时GameplayInput门控停用游戏指针并排空旧输入，使用系统光标操作分类控件；模拟仍可推进。关闭等待原捕获确认并居中，详见[设置边界](settings.md)。
+
+锁定时原生鼠标事件目标仍为canvas，UI按下由controls使用事件CSS快照命中真实DOM按钮。
+`web::click_ui(point, button)`左键沿原click，右键向命中按钮分发`kiva-contextmenu`，用于装备弹窗开启时底部格卸装；原生未捕获右键继续使用contextmenu。两者共用同一处理，不制造第二套坐标或世界指令。
 
 ## 2. 接口
 

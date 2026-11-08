@@ -5,7 +5,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const {
   launchBrowser, openSelection, selectCharacter, resumeGame, clickWorld,
-  reportFailure, serveBuild, installFrameClock, nearHome,
+  reportFailure, serveBuild, installFrameClock, nearHome, pause,
 } = require("./browser-lane-support.cjs");
 
 const fields = ["attack_damage", "ability_power", "armor", "magic_resistance", "move_speed", "attack_speed", "attack_range"];
@@ -320,7 +320,7 @@ async function exerciseSelection(page, url, config, failures) {
   assert(repeated.abilities[3].cooldown <= committed.abilities[3].cooldown + 0.001,
     "repeated launch must not restart an ability cooldown");
   assert(repeated.abilities[3].cooldown > 0);
-  await page.keyboard.press("Escape");
+  await pause(page);
   await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
   const paused = await state(page);
   await page.waitForTimeout(250);
@@ -410,7 +410,7 @@ async function exerciseLateCaptureCallback(browser, url) {
     await selectCharacter(page, 1);
     await resumeGame(page);
     const playerId = (await state(page)).player_id;
-    await page.keyboard.press("Escape");
+    await pause(page);
     await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
     await resumeGame(page);
     assert.equal(await page.evaluate(() => window.__testRejectedOldCapture), true);

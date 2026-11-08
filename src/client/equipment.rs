@@ -1,4 +1,4 @@
-//! Paused equipment intents and read-only projections; simulation owns items.
+//! Equipment intents and read-only projections; simulation owns items.
 use super::{
     abilities::{self, AbilityDescription, AbilityView},
     session::ClientSession,
@@ -62,27 +62,13 @@ impl EquipmentRequest {
     }
 }
 
-#[derive(Clone, Copy)]
-struct ManagementFacts {
-    paused: bool,
-    captured: bool,
-}
-
-pub(super) fn paused_unlocked(control: &SimulationControl) -> bool {
-    (control.paused || web::paused() == Some(true)) && web::pointer_captured() != Some(true)
-}
-
 pub(super) fn process_requests(world: &mut World) {
     let owner = world.resource::<ClientSession>().player();
     if world.resource::<EquipmentAdapter>().owner != owner {
         *world.resource_mut::<EquipmentAdapter>() = EquipmentAdapter { owner, ..default() };
     }
     if let Some(raw) = web::take_equipment_requests() {
-        let facts = ManagementFacts {
-            paused: world.resource::<SimulationControl>().paused || web::paused() == Some(true),
-            captured: web::pointer_captured().unwrap_or(false),
-        };
-        process_batch(world, &raw, facts);
+        process_batch(world, &raw);
     }
 }
 
@@ -98,12 +84,12 @@ fn parse_requests(raw: &str) -> Result<Vec<EquipmentRequest>, &'static str> {
         .collect()
 }
 
-fn process_batch(world: &mut World, raw: &str, facts: ManagementFacts) {
+fn process_batch(world: &mut World, raw: &str) {
     match parse_requests(raw) {
         Ok(requests) => {
             for request in requests {
                 let request_id = request.request_id();
-                let result = apply_request(world, request, facts);
+                let result = apply_request(world, request);
                 world.resource_mut::<EquipmentAdapter>().ack = EquipmentAck {
                     request_id: Some(request_id),
                     accepted: result.is_ok(),
@@ -121,11 +107,7 @@ fn process_batch(world: &mut World, raw: &str, facts: ManagementFacts) {
     }
 }
 
-fn apply_request(
-    world: &mut World,
-    request: EquipmentRequest,
-    facts: ManagementFacts,
-) -> Result<(), String> {
+fn apply_request(world: &mut World, request: EquipmentRequest) -> Result<(), String> {
     let player = world
         .resource::<ClientSession>()
         .player()
@@ -138,9 +120,6 @@ fn apply_request(
     }
     if player.to_bits().to_string() != request.player_id() {
         return Err("这场试炼已经结束，请重新操作。".into());
-    }
-    if !facts.paused || facts.captured {
-        return Err("请先暂停试炼并释放鼠标。".into());
     }
     match request {
         EquipmentRequest::Equip {

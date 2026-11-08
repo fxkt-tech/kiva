@@ -41,7 +41,7 @@
   function canPlay() {
     return session !== null && !paused && !muted && volume > 0
       && root.dataset.paused !== "true" && document.hasFocus()
-      && document.pointerLockElement?.id === "game";
+      && (document.pointerLockElement?.id === "game" || root.dataset.settingsOpen === "true");
   }
 
   function diagnostics() {
@@ -252,7 +252,7 @@
   document.addEventListener("pointerdown", gesture, { capture: true, passive: true });
   document.addEventListener("keydown", gesture, { capture: true, passive: true });
   document.addEventListener("pointerlockchange", () => {
-    if (document.pointerLockElement?.id !== "game") stopAll();
+    if (document.pointerLockElement?.id !== "game" && root.dataset.settingsOpen !== "true") stopAll();
   });
   window.addEventListener("blur", stopAll);
   document.addEventListener("visibilitychange", () => {

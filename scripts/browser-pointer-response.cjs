@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { launchBrowser, serveBuild, openSelection, selectCharacter, resumeGame,
   moveRelative, movePointer, clickPointer, worldPoint, reportFailure } = require("./browser-support.cjs");
 
-const { installFrameClock, state, nearHome } = require("./browser-lane-support.cjs");
+const { installFrameClock, state, nearHome, pause } = require("./browser-lane-support.cjs");
 
 async function observe(page, physicalUnits) {
   await page.addInitScript(({ physicalUnits }) => {
@@ -118,7 +118,7 @@ async function exercise(page, url) {
     const player = state.units.find((unit) => unit.id === state.player_id);
     return Math.hypot(player.position[0] - x, player.position[1] - z) < 0.1;
   }, destinationWorld);
-  await page.keyboard.press("Escape");
+  await pause(page);
   await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
   assert(await page.locator("#game-cursor").isHidden());
   await resumeGame(page);

@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickUi, clickWorld, reportFailure, serveBuild, installFrameClock, state, hero, observed, nearHome, waitTicks } = require("./browser-lane-support.cjs");
+const { launchBrowser, enterGame, resumeGame, movePointer, moveRelative, clickUi, clickWorld, reportFailure, serveBuild, installFrameClock, state, hero, observed, nearHome, waitTicks, pause } = require("./browser-lane-support.cjs");
 
 async function main() {
   const browser = await launchBrowser();
@@ -33,7 +33,7 @@ async function main() {
     assert.equal(await page.evaluate(() => document.pointerLockElement?.id), "game");
     console.log("PASS bounded visible cursor, edge scrolling and immediate recovery after overshoot");
 
-    await page.keyboard.press("Escape");
+    await pause(page);
     await page.waitForFunction(() => !document.pointerLockElement && window.__kivaState.paused);
     assert(await page.locator("#game-cursor").isHidden());
     await resumeGame(page);

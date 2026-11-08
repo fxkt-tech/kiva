@@ -1,3 +1,4 @@
+const { resetToSelection } = require("./browser-support.cjs");
 // Real application inputs, simulation commits and decoded browser audio.
 // Diagnostics are read-only; no fabricated simulation events or World writes.
 const assert = require("node:assert/strict");
@@ -89,6 +90,7 @@ async function main() {
     await ownCue(page, "jarvan.w", () => page.keyboard.press("w"), true);
     await pause(page);
     assert.equal((await audio(page)).active, 0, "pause must disconnect all voices");
+    await page.locator('[data-settings-tab="audio"]').click();
     await page.locator("#audio-muted").check();
     assert.equal((await audio(page)).muted, true);
     await resumeGame(page);
@@ -109,7 +111,8 @@ async function main() {
 
     await pause(page);
     const oldSession = (await audio(page)).session;
-    await page.locator("#reselect").click();
+    await page.locator('[data-settings-tab="characters"]').click();
+    await resetToSelection(page);
     await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting"
       && window.__kivaAudio.session === null);
     assert.equal((await audio(page)).active, 0);

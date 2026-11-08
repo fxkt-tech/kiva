@@ -1,3 +1,4 @@
+const { resetToSelection } = require("./browser-support.cjs");
 // Real equipment management and combat through the production input adapters.
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
@@ -15,11 +16,13 @@ function progress(stage, snapshot) {
 }
 
 async function openEditor(page) {
-  await page.keyboard.press("p");
+  // The long combat fixture pauses explicitly; T itself never pauses.
+  if (!(await state(page)).paused) await pause(page);
+  await page.keyboard.press("t");
   await page.waitForFunction(() => !document.getElementById("equipment-editor").hidden
-    && window.__kivaState.equipment.can_manage && !document.pointerLockElement);
-  // Paused management has no short combat window. Speed up publication only;
-  // the simulation remains paused and retains every combat tick on resume.
+    && window.__kivaState.equipment.can_manage && !document.pointerLockElement
+    && document.getElementById("entry").hidden);
+  // Advance publication only while this test's explicitly paused setup is frozen.
   await page.evaluate(() => window.__laneSetFrameStep(250));
 }
 
@@ -28,7 +31,7 @@ async function equip(page, id) {
   const slot = before.equipment.first_empty_slot;
   assert.notEqual(slot, null);
   const previous = before.equipment.ack.request_id;
-  await page.locator(`[data-equip-id="${id}"]`).click();
+  await clickUi(page, `[data-equip-id="${id}"]`);
   return observed(page, ({ slot, id, previous }) => {
     const snapshot = window.__kivaState;
     return snapshot.equipment.slots[slot]?.item?.id === id
@@ -37,7 +40,7 @@ async function equip(page, id) {
 }
 
 async function unequip(page, slot) {
-  await page.locator(`[data-unequip-slot="${slot}"]`).click();
+  await page.locator(`[data-equipment-slot="${slot}"]`).click({ button: "right" });
   return observed(page, (slot) => {
     const snapshot = window.__kivaState;
     return snapshot.equipment.slots[slot].item === null && snapshot.equipment.ack.accepted ? snapshot : false;
@@ -147,6 +150,14 @@ async function exercise(page, url, deep) {
   assert.equal(original.equipment.slots.length, 6);
   assert(original.equipment.slots.every(({ item }) => item === null));
   assert.equal((await page.evaluate(() => window.__kivaEquipmentCatalog)).length, 9);
+  await page.keyboard.press("t");
+  await page.waitForFunction(() => !document.getElementById("equipment-editor").hidden
+    && !window.__kivaState.paused && document.pointerLockElement?.id === "game");
+  const popupTick = (await state(page)).tick;
+  await page.waitForFunction((tick) => window.__kivaState.tick > tick && !window.__kivaState.paused, popupTick);
+  assert.equal(await page.locator("#equipment-inventory").count(), 0);
+  await clickUi(page, "#equipment-close");
+  assert.equal(await page.evaluate(() => document.pointerLockElement?.id), "game");
   await layout(page);
   await openEditor(page);
   if (deep) {
@@ -158,7 +169,7 @@ async function exercise(page, url, deep) {
         { type: "WorldWrite", stats: { attack_damage: 999999 } },
       ]);
     }, { once: true }));
-    await page.locator('[data-equip-id="1"]').click();
+    await clickUi(page, '[data-equip-id="1"]');
     await page.waitForFunction(() => window.__kivaState.equipment.ack.error
       && !document.querySelector('[data-equip-id="1"]').disabled);
     assert((await state(page)).equipment.slots.every(({ item }) => item === null));
@@ -382,7 +393,7 @@ async function exercise(page, url, deep) {
   } else {
     await pause(page);
   }
-  await page.locator("#reselect").click();
+  await resetToSelection(page);
   await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting" && !document.getElementById("enter").disabled);
   assert((await state(page)).equipment.slots.every(({ item }) => item === null));
   assert(await page.locator("#equipment-editor").isHidden());

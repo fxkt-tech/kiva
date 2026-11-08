@@ -64,6 +64,9 @@ async function waitTicks(page, count = 6) {
 
 async function pause(page) {
   await page.keyboard.press("Escape");
+  // Esc opens live settings. Long combat fixtures explicitly use the existing
+  // pause intent when they need a frozen observation, rather than changing UI.
+  await page.evaluate(() => { document.documentElement.dataset.paused = "true"; });
   await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
 }
 

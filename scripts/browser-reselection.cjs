@@ -1,4 +1,5 @@
-// Exercise the production pause-menu intents and complete lane-match lifecycle.
+const { resetToSelection } = require("./browser-support.cjs");
+// Exercise retained public reset intents and complete lane-match lifecycle.
 // The fixture observes projections and sends ordinary UI/input intents only.
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
@@ -11,7 +12,8 @@ const {
 
 async function pause(page) {
   await pauseGame(page);
-  await page.waitForFunction(() => !document.getElementById("reselect").disabled);
+  await page.locator('[data-settings-tab="characters"]').click();
+  await page.waitForFunction(() => !document.getElementById("settings-close").disabled);
 }
 
 async function screenshot(page, name) {
@@ -42,20 +44,10 @@ function assertFreshMatch(snapshot, oldIds, characterId) {
   assert.equal(snapshot.aim, null);
 }
 
-async function returnToSelection(page, oldPlayer, keyboard = false) {
-  const button = page.locator("#reselect");
-  assert(await button.isVisible());
-  assert((await page.locator("#reselection-note").textContent()).includes("重开"));
-  const box = await button.boundingBox();
-  const viewport = page.viewportSize();
-  assert(box && box.y >= 0 && box.y + box.height <= viewport.height, "reselection must fit the pause menu");
-  await screenshot(page, "reselection-pause");
-  if (keyboard) {
-    await button.focus();
-    await page.keyboard.press("Enter");
-  } else {
-    await button.click();
-  }
+async function returnToSelection(page, oldPlayer) {
+  // Retained public reset intent; the new inline role chooser has Node coverage.
+  await screenshot(page, "reselection-settings");
+  await resetToSelection(page);
   await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting"
     && window.__kivaState.player_id === null && window.__kivaState.tick === 0
     && !document.getElementById("enter").disabled && document.querySelectorAll(".unit-label").length === 0);
@@ -77,7 +69,7 @@ async function returnToSelection(page, oldPlayer, keyboard = false) {
   assert.equal(selecting.session.selection.selection_ack.accepted, true);
   assert.deepEqual(selecting.units, [], "Waiting must have no hidden default player or old NPCs");
   assert(await page.locator("#hero-hud").isHidden());
-  assert(await page.locator("#reselection-actions").isHidden());
+  assert(await page.locator("#settings-dialog").isHidden());
   assert(await page.locator("#match-hud").isHidden());
   assert.equal(await page.locator(".unit-label").count(), 0, `labels from player ${oldPlayer} and every old root must be removed`);
   await page.waitForTimeout(250);
@@ -155,7 +147,7 @@ async function exercise(page, url, config) {
   await page.waitForFunction(() => window.__kivaState.aim === 1);
   await clickWorld(page, nearHome(first, 4, -3));
   await page.waitForFunction(() => window.__reselectionCommitted && window.__kivaState.paused
-    && !document.pointerLockElement && !document.getElementById("reselect").disabled);
+    && !document.pointerLockElement && !document.getElementById("settings-close").disabled);
   const committed = await page.evaluate(() => window.__reselectionCommitted);
   assert(committed.cooldown > first.abilities[1].total_cooldown - 0.3,
     "pause must happen during the actual real launched volley, shortly after commit");

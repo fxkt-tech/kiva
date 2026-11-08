@@ -1,3 +1,4 @@
+const { resetToSelection } = require("./browser-support.cjs");
 // Exercise actual packaged GLBs/images and the hero death lifecycle through
 // normal controls. The fixture clock advances every simulation step; it does
 // not replace the separate native-clock healthbar/performance checks.
@@ -114,7 +115,7 @@ async function caseRun(browser, site, sample, output) {
     if (sample.death) await captureDeath(page, output);
     await pause(page);
     const old = (await state(page)).player_id;
-    await page.locator("#reselect").click();
+    await resetToSelection(page);
     await page.waitForFunction(() => window.__kivaState.session.phase === "Selecting" && window.__kivaState.units.length === 0);
     await selectCharacter(page, sample.character === 1 ? 2 : 1);
     await resumeGame(page);
