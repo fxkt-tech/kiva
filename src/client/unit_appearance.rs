@@ -106,14 +106,17 @@ pub(super) fn spawn_simple_model(
                 Mesh3d(assets.platform.clone()),
                 MeshMaterial3d(assets.dark.clone()),
                 Transform::from_xyz(0.0, 0.15, 0.0).with_scale(Vec3::new(1.9, 0.3, 1.9)),
+                super::picking::PickGeometry,
             ));
             unit.spawn((
                 Mesh3d(assets.platform.clone()),
                 MeshMaterial3d(assets.gold.clone()),
                 Transform::from_xyz(0.0, 0.34, 0.0).with_scale(Vec3::new(1.4, 0.1, 1.4)),
+                super::picking::PickGeometry,
             ));
             unit.spawn((
                 BaseCore { owner },
+                super::picking::PickGeometry,
                 Visibility::Inherited,
                 Mesh3d(assets.crystal.clone()),
                 MeshMaterial3d(material),
@@ -124,6 +127,7 @@ pub(super) fn spawn_simple_model(
         let ranged = appearance.kind == ModelKind::RangedMinion;
         unit.spawn((
             MinionModel { owner },
+            super::picking::PickGeometry,
             Transform::default(),
             Visibility::Inherited,
         ))

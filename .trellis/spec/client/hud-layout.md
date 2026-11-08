@@ -42,7 +42,7 @@ JS按MapDefinition将真实四角的轴对齐外接范围显示为矩形，裁�
 minimap.js拥有固定全图绘制、双向坐标转换与拖动手势；camera.rs唯一写CameraRig。地图不跟随主镜头裁切，单位仍来自经过视野过滤的只读快照。
 
 ### 2. 接口
-`kiva-camera`每显示帧在相机变换/投影更新后发布JSON字符串`{center:[x,z],footprint:[[x,z];4]|null}`；既有完整快照camera_center/camera_footprint及kiva-labels数组保持。
+`kiva-camera`每显示帧在相机变换/投影更新后发布JSON字符串`{center:[x,z],footprint:[[x,z];4]|null,enemy_hovered:boolean}`；enemy_hovered来自模型命中/当前生命视野复核，供pointer所有者显示剑形，地图只消费前两项。既有完整快照camera_center/camera_footprint及kiva-labels数组保持。
 Web在root覆盖最新`data-camera-request` JSON `{player_id:string,center:[x,z]}`，通过`web::take_camera_request()`消费并移除；`data-minimap-dragging=true`由`web::minimap_dragging()`读取。不排队、不提供写World或英雄指令入口。
 
 ### 3. 坐标与行为

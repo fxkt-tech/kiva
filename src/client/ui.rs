@@ -2,9 +2,10 @@
 use super::{
     abilities::{AbilityMetadata, AbilityView},
     camera::{CameraRig, GameCamera, ground_footprint},
-    controls::{Aim, ClientFeedback, Pickable, PlayerController},
+    controls::{Aim, ClientFeedback, PlayerController, PointerState},
     equipment::{self, EquipmentAdapter, EquipmentDefinitionView, EquipmentView},
     match_view::{self, MapView, MatchProjection, MatchView},
+    picking::Pickable,
     session::{ClientSession, SelectionAck},
     unit_appearance::UnitAppearance,
     visibility::VisibleWorld,
@@ -133,6 +134,7 @@ struct HudView {
     game: MatchView,
     map: MapView,
     selected: Option<String>,
+    hovered: Option<String>,
     aim: Option<usize>,
     equipment_aim: Option<usize>,
     equipment: EquipmentView,
@@ -296,16 +298,33 @@ type DisplayedLabel<'a> = (
 pub(super) fn publish_camera(
     rig: Res<CameraRig>,
     camera: Single<(&Camera, &GlobalTransform), With<GameCamera>>,
+    pointer: Res<PointerState>,
+    session: Res<ClientSession>,
+    visible: Res<VisibleWorld>,
+    units: Query<(&Unit, &UnitState)>,
 ) {
     #[derive(Serialize)]
     struct CameraView {
         center: [f32; 2],
         footprint: Option<[[f32; 2]; 4]>,
+        enemy_hovered: bool,
     }
     let (camera, transform) = *camera;
     let view = CameraView {
         center: rig.center.to_array(),
         footprint: ground_footprint(camera, transform),
+        enemy_hovered: !pointer.over_ui
+            && pointer.hovered.is_some_and(|target| {
+                session
+                    .player()
+                    .and_then(|player| units.get(player).ok())
+                    .zip(units.get(target).ok())
+                    .is_some_and(|((player, _), (target_unit, target_state))| {
+                        target_state.alive()
+                            && visible.contains(target)
+                            && player.team() != target_unit.team()
+                    })
+            }),
     };
     if let Ok(json) = serde_json::to_string(&view) {
         web::publish_camera(&json);
@@ -427,6 +446,12 @@ impl ObservedProjection<'_, '_> {
 }
 
 #[derive(SystemParam)]
+pub(super) struct InputProjection<'w> {
+    player: Res<'w, PlayerController>,
+    pointer: Res<'w, PointerState>,
+}
+
+#[derive(SystemParam)]
 pub(super) struct EquipmentProjection<'w, 's> {
     adapter: Res<'w, EquipmentAdapter>,
     catalog: Res<'w, EquipmentCatalog>,
@@ -449,7 +474,7 @@ pub(super) struct EquipmentProjection<'w, 's> {
 pub(super) fn publish(
     time: Res<Time>,
     mut next_publish: Local<f32>,
-    player: Res<PlayerController>,
+    input: InputProjection,
     session: Res<ClientSession>,
     control: Res<SimulationControl>,
     tick: Res<SimulationTick>,
@@ -464,6 +489,8 @@ pub(super) fn publish(
     game: MatchProjection,
     observed: ObservedProjection,
 ) {
+    let player = &input.player;
+    let pointer = &input.pointer;
     if !session.is_changed()
         && !game.changed()
         && !equipment.adapter.is_changed()
@@ -577,6 +604,7 @@ pub(super) fn publish(
         game: game.view(tick.0),
         map: game.map_view(),
         selected: player.selected.map(|id| id.to_bits().to_string()),
+        hovered: pointer.hovered.map(|id| id.to_bits().to_string()),
         aim: match player.aim {
             Some(Aim::Ability(slot)) => Some(slot),
             _ => None,

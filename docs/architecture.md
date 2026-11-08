@@ -47,6 +47,7 @@ src/client/controls.rs        玩家输入、施法预检、指令反馈
 src/client/pointer.rs         Web输入帧指针镜像、Native绝对坐标与捕获边界
 src/client/controls/tests.rs  同帧事件顺序、暂停与焦点恢复回归测试
 src/client/camera.rs          统一取景参数、镜头控制与实际地面覆盖范围
+src/client/picking.rs         实际模型部件屏幕命中与公共目标候选
 src/client/scene.rs           过程生成场景、显示根插值和指示器
 src/client/world_scene.rs     由模式地图派生的地面、中路和静态装饰
 src/client/unit_appearance.rs 英雄/兵种/基地的模型、拾取和标签参数
@@ -141,8 +142,10 @@ HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件�
 相机和表现逐帧更新，人物根使用上一模拟位置与当前位置插值，并加上击飞表现高度。
 `PresentationFrame`为显示根、骨骼、弹丸和兵种模型提供同一个采样分数；普通暂停保持最后显示帧，
 首次观察终局允许同步最终状态一次，此后冻结，不能随继续变化的overstep抖动。
-底座通过反向局部高度留在地面，模型子层只负责骨骼姿态。拾取读取最后实际显示的
-`UnitVisual GlobalTransform + Pickable.offset`，与输入时可见画面一致；不读取未插值的战斗位置。
+底座通过反向局部高度留在地面，模型子层只负责骨骼姿态。picking读取最后实际显示的模型子树Mesh3d部件Aabb与GlobalTransform，逐部件投影为凸区域，提供6 CSS px容错；不读取未插值的战斗位置。
+PickGeometry标记模型子树，技能特效/范围/弹丸不加入；UnitGroundBase装饰排除，基地平台仍是模型。根Pickable仅在模型边界未就绪时fallback，血条/名字不参与命中。公共候选不判断敌友或射程，controls按操作资格选目标，模拟继续复核攻击/技能规则，未来友方技能复用相同几何入口。
+A+左键明确命中敌方模型时和右键一样发AttackTarget并更新selected；只有空地才发AttackMove自动索敌，不把旧selected当作新点击目标。攻击移动的模拟索敌规则保持在simulation。
+HudView.hovered是只读悬停身份，selected仍为持久点击结果；逐帧kiva-camera.enemy_hovered驱动pointer所有者的箭头/剑形，UI手势、暂停、失锁和失焦清掉旧形状，不等待80ms完整快照。细节见[模型拾取规范](../.trellis/spec/client/unit-picking.md)。
 浏览器 HUD 在相机投影和世界变换更新后读取数据，约每 80 ms 发布一次完整状态。
 头顶血条的位置走独立的 `kiva-labels` 轻量通道，每个显示帧根据人物实际显示变换投影，
 与插值后的模型和当前镜头保持同步。完整 HUD 快照不能覆盖血条坐标。
@@ -157,7 +160,7 @@ CameraRig默认zoom=0.5、最近0.4、最远1.5，保持原视角、FOV与18*zoo
 以近景取得约2倍英雄屏幕比例，不缩放模拟单位或独立挪动拾取/血条。Y/Space、自由平移、首次开局/重开居中和普通恢复语义保持。
 HudView.camera_footprint为null或按左上/右上/右下/左下排列的4个world[x,z]：由实际逻辑viewport角点射线与地面求交，包含DPR/viewport偏移约定。
 minimap.js固定投影完整地图，8 CSS px内边距以内显示全图边界/中路/基地/当前可见单位，后备画布跟随CSS尺寸与DPR。
-视野矩形使用真实地面四角的轴对齐外接范围并裁到地图边界；透视轮廓仍是梯形，不为矩形改主相机投影。独立kiva-camera每显示帧发布{center,footprint}，更新框不等待约80ms完整快照，也不重绘底图。
+视野矩形使用真实地面四角的轴对齐外接范围并裁到地图边界；透视轮廓仍是梯形，不为矩形改主相机投影。独立kiva-camera每显示帧发布{center,footprint,enemy_hovered}，更新框与光标不等待约80ms完整快照，也不重绘底图。
 小地图使用kivaPointer的事件时CSS位置进行左键点击/偏移拖动，只提交最新data-camera-request {player_id,center}及拖动状态；camera统一复核玩家身份、暂停和有限坐标，夹紧既有边界，退出锁定但保持zoom。暂停/失焦/失锁/重选清旧拖动与意图，拖动中屏蔽其它平移。既有拾取、kiva-labels数组、view_projection与viewport保持，CSS不裁切游戏canvas。
 完整布局/投影契约和验证入口见[HUD与取景规范](../.trellis/spec/client/hud-layout.md)。
 
@@ -335,7 +338,7 @@ final = (base + sum(flat)) * max(0, 1 + sum(additive_percent))
 固定步量化使周期最多多出不足一个 tick，默认 1.25 次/秒对应 48 tick。
 
 客户端将后摇显示为“攻击后摇”，并根据模拟中的剩余 tick 对模型子层做收招姿态插值。
-身体、头部和武器位于 `CharacterModel` 骨骼子树，角色根位置、底座、拾取范围和血条锚点不参与该姿态变换。
+身体、头部和武器位于 `CharacterModel` 骨骼子树，角色根位置、底座、模拟碰撞和血条锚点不参与该姿态变换；客户端命中读取已显示的各模型部件，随实际姿态变化。
 动画只读取规则，不能决定命中、冷却或动作结束。
 
 ## 统一伤害

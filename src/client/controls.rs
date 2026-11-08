@@ -1,10 +1,9 @@
 //! Human and demo AI adapters both submit the public simulation commands.
-use super::{abilities, camera::GameCamera, pointer::GamePointer, session::ClientSession, web};
-use crate::simulation::*;
-use bevy::{
-    prelude::*,
-    shape::{Aabb3d, RayCast3d},
+use super::{
+    abilities, camera::GameCamera, picking, pointer::GamePointer, session::ClientSession, web,
 };
+use crate::simulation::*;
+use bevy::prelude::*;
 use serde::Deserialize;
 
 #[cfg(test)]
@@ -46,12 +45,8 @@ pub(super) struct PointerState {
     pub position: Option<Vec2>,
     pub ground: Option<Vec2>,
     pub hovered: Option<Entity>,
+    pub candidates: Vec<Entity>,
     pub over_ui: bool,
-}
-#[derive(Component)]
-pub(super) struct Pickable {
-    pub offset: Vec3,
-    pub half_size: Vec3,
 }
 #[derive(Resource, Default)]
 pub(super) struct ClientFeedback {
@@ -107,43 +102,29 @@ fn update_pointer(world: &mut World, cursor: Option<Vec2>) {
         let point = ray.get_point(distance);
         Some(Vec2::new(point.x, point.z))
     });
-    let hovered = (!over_ui)
-        .then(|| ray.and_then(|ray| hovered_unit(world, ray)))
-        .flatten();
+    let candidates = if over_ui {
+        Vec::new()
+    } else {
+        cursor
+            .map(|point| picking::candidates(world, point))
+            .unwrap_or_default()
+    };
+    let player = world.resource::<ClientSession>().player();
+    let hovered = player
+        .and_then(|player| {
+            candidates
+                .iter()
+                .copied()
+                .find(|target| valid_enemy_pick(world, player, *target))
+        })
+        .or_else(|| candidates.first().copied());
     *world.resource_mut::<PointerState>() = PointerState {
         position: cursor,
         ground,
         hovered,
+        candidates,
         over_ui,
     };
-}
-
-/// Pick the body that was actually displayed, including airborne height and
-/// the same root transform used for its label. Simulation still validates hits.
-fn hovered_unit(world: &mut World, ray: Ray3d) -> Option<Entity> {
-    let cast = RayCast3d::from_ray(ray, 200.0);
-    let team = world
-        .resource::<ClientSession>()
-        .player()
-        .and_then(|player| world.get::<Unit>(player))
-        .map(Unit::team);
-    world
-        .query::<(Entity, &UnitState, &GlobalTransform, &Pickable)>()
-        .iter(world)
-        .filter(|(id, state, _, _)| {
-            state.alive() && team.is_none_or(|team| team_can_see(world, team, *id))
-        })
-        .filter_map(|(id, _, transform, bounds)| {
-            let center = transform.transform_point(bounds.offset);
-            let half_size = transform.affine().matrix3.abs() * bounds.half_size;
-            cast.aabb_intersection_at(&Aabb3d::new(center, half_size))
-                .map(|distance| (id, distance))
-        })
-        .min_by(|a, b| {
-            a.1.total_cmp(&b.1)
-                .then_with(|| a.0.to_bits().cmp(&b.0.to_bits()))
-        })
-        .map(|(id, _)| id)
 }
 
 fn cast_info(world: &World, player: Entity, source: CastSource) -> Option<abilities::CastInfo<'_>> {
@@ -421,11 +402,16 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
     let Some(player) = world.resource::<ClientSession>().player() else {
         return;
     };
+    let enemy = world
+        .resource::<PointerState>()
+        .candidates
+        .iter()
+        .copied()
+        .find(|target| valid_enemy_pick(world, player, *target));
     match button {
         MouseButton::Right => {
             world.resource_mut::<PlayerController>().aim = None;
-            if let Some(target) = hovered.filter(|target| valid_enemy_pick(world, player, *target))
-            {
+            if let Some(target) = enemy {
                 submit(world, player, UnitCommand::AttackTarget(target));
                 world.resource_mut::<PlayerController>().selected = Some(target);
             } else if let Some(point) = ground {
@@ -436,7 +422,10 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
             let aim = world.resource::<PlayerController>().aim;
             match aim {
                 Some(Aim::AttackMove) => {
-                    if let Some(point) = ground {
+                    if let Some(target) = enemy {
+                        submit(world, player, UnitCommand::AttackTarget(target));
+                        world.resource_mut::<PlayerController>().selected = Some(target);
+                    } else if let Some(point) = ground {
                         submit(world, player, UnitCommand::AttackMove(point));
                     }
                 }
@@ -454,9 +443,7 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
                                     .then_some(AbilityTarget::Direction(direction))
                             }),
                             Targeting::Point => ground.map(AbilityTarget::Point),
-                            Targeting::Enemy => hovered
-                                .filter(|target| valid_enemy_pick(world, player, *target))
-                                .map(AbilityTarget::Unit),
+                            Targeting::Enemy => enemy.map(AbilityTarget::Unit),
                             Targeting::SelfCast => Some(AbilityTarget::SelfCast),
                         }
                     });

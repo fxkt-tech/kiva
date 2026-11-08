@@ -106,6 +106,7 @@ pub(in crate::client) fn spawn_model(
     commands.entity(owner).with_children(|root| {
         root.spawn((
             CharacterModel,
+            crate::client::picking::PickGeometry,
             Name::new("Skeletal character"),
             Transform::default(),
             Visibility::Inherited,

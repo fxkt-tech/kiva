@@ -44,7 +44,8 @@ sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 | 右键地面 | 移动到指定位置，自动绕过静态障碍 |
 | 右键敌人 | 追击并持续普攻 |
 | 左键单位 | 选择单位并查看信息 |
-| A → 左键 | 攻击移动，途中获取附近敌人 |
+| 悬停敌方模型 | 显示剑形光标；血条与名字不参与命中 |
+| A → 左键 | 点敌方模型锁定攻击；点空地攻击移动，途中获取附近敌人 |
 | S | 停止并取消当前可中断动作 |
 | Q / W / E / R | 选择或释放当前角色对应技能，目标方式见按钮说明 |
 | 1–6 / 点击装备格 | 选择或释放该格装备主动，自身目标直接释放 |
@@ -71,6 +72,7 @@ sudo apt-get install -y build-essential pkg-config libx11-dev libxkbcommon-dev
 底部操作栏集中显示属性、角色标记、技能、生命/能量与六格装备，小地图固定在右下角，目标信息位于左上。
 默认镜头更近，英雄显示约为原来的两倍；滚轮仍可拉远，Y、空格与自由平移保持原操作。
 小地图矩形框逐帧跟随实际相机，大小随缩放和窗口尺寸变化。透视视野的地面轮廓为梯形，矩形框取四角的外接范围；高DPI只影响绘制分辨率。
+单位命中读取实际显示的身体、动作肢体和武器部件，并提供固定像素边缘容错；鼠标覆盖敌方模型时显示剑形，点击才执行选择或攻击。
 
 ## 对局规则
 
@@ -209,6 +211,13 @@ NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-s
 ```bash
 node --test scripts/minimap-unit.test.cjs
 NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-minimap.cjs
+```
+
+模型命中与剑形光标回归包含实际敌方模型、标签不参与、远距离右键追近、暂停/重选及DPR2：
+
+```bash
+cargo test --locked --lib client::picking
+NODE_PATH=/tmp/kiva-browser-tests/node_modules KIVA_SITE_DIR=/tmp/kiva-browser-site node scripts/browser-picking.cjs
 ```
 
 `browser-smoke.cjs` 和 `browser-startup.cjs` 也支持 `KIVA_SITE_DIR`，自行创建并关闭临时静态测试入口。

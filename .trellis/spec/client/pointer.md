@@ -26,6 +26,8 @@ GamePointer::observe(point: Vec2) // 输入帧内镜像，非浏览器实时坐�
 button对应DOM编号：Left0/Middle1/Right2/Back3/Forward4，其它保持编号。
 这些接口不提供写World或模拟运行态的权限。
 
+`kiva-camera`的逐显示帧只读`enemy_hovered:boolean`来自Rust模型命中与当前可见/存活/阵营复核。pointer.js唯一拥有光标形状，控制`#game-cursor[data-target=enemy|none]`的剑/箭头；完整HUD的80ms节流不影响它。UI命中/手势捕获即时压回箭头，stop清旧敌方状态，反馈不得改变坐标、按下快照或DPR校准；模型候选契约见[unit-picking.md](unit-picking.md)。
+
 ## 3. 坐标、时序与生命周期
 
 - 所有Web位置使用CSS像素。正常未捕获的可信pointermove，以client差值和movement样本估计raw→CSS比例，

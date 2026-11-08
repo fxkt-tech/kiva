@@ -24,7 +24,7 @@
 [动画资源](../../../assets/animations/README.md)。
 
 `UnitVisual`继续唯一拥有世界平面插值、朝向和Airborne/公开leap_progress派生高度；底座抵消高度，模型容器本身不改变世界根。
-拾取与标签读取同一实际显示根，骨骼手脚摆动不能移动拾取框、血条或模拟位置。
+标签读取同一实际显示根，骨骼手脚摆动不能移动血条锚点或模拟位置。模型命中跟随PickGeometry子树各实际部件的GlobalTransform/Aabb，动作伸出的肢体/武器仍可选，不再只用固定根框；见[模型拾取](unit-picking.md)。
 
 播放时间取`(SimulationTick + PresentationFrame.fraction()) / TICK_RATE`，暂停不累计宿主时间。
 `presentation::prepare`为根、骨骼、附着和特效提供同一个采样分数；正常运行使用overstep，

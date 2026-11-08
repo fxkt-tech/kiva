@@ -97,6 +97,147 @@ fn weapon_socket(app: &mut App, owner: Entity) -> (Entity, Transform) {
         .unwrap()
 }
 
+#[test]
+fn actual_champion_meshes_and_weapon_descendants_use_the_shared_model_picker() {
+    use crate::client::{
+        camera::GameCamera,
+        picking::{self, PickGeometry, Pickable},
+    };
+    use bevy::camera::{CameraProjection, RenderTargetInfo, primitives::MeshAabb};
+    let mut outside_root_profile = false;
+    for character in [CharacterId(1), CharacterId(2)] {
+        let mut app = app();
+        crate::gameplay::prepare_world(app.world_mut());
+        let hero = spawn_character(
+            app.world_mut(),
+            CharacterSpawnSpec {
+                character,
+                team: Team::Enemy,
+                position: Vec2::ZERO,
+                loadout: LoadoutSelection::CharacterDefault,
+                respawn_delay: None,
+            },
+        )
+        .unwrap();
+        app.world_mut().run_schedule(Update);
+        app.world_mut().run_schedule(PostUpdate);
+        // The fixture has no renderer. Use the actual generated Mesh assets
+        // for the same CPU bounds Bevy calculates, with visible model trees.
+        let bounds: Vec<_> = app
+            .world_mut()
+            .query::<(Entity, &Mesh3d)>()
+            .iter(app.world())
+            .filter_map(|(id, mesh)| {
+                app.world()
+                    .resource::<Assets<Mesh>>()
+                    .get(mesh)
+                    .and_then(MeshAabb::get_aabb)
+                    .map(|bounds| (id, bounds))
+            })
+            .collect();
+        for (id, bounds) in bounds {
+            app.world_mut().entity_mut(id).insert(bounds);
+        }
+        let visible: Vec<_> = app
+            .world_mut()
+            .query_filtered::<Entity, With<InheritedVisibility>>()
+            .iter(app.world())
+            .collect();
+        for id in visible {
+            *app.world_mut().get_mut::<InheritedVisibility>(id).unwrap() =
+                InheritedVisibility::VISIBLE;
+        }
+        let root_model = app
+            .world_mut()
+            .query_filtered::<Entity, With<CharacterModel>>()
+            .single(app.world())
+            .unwrap();
+        assert!(app.world().get::<PickGeometry>(root_model).is_some());
+        let camera_transform =
+            GlobalTransform::from(Transform::from_xyz(12.0, 1.0, 0.0).looking_at(Vec3::Y, Vec3::Y));
+        let mut camera = Camera::default();
+        camera.computed.target_info = Some(RenderTargetInfo {
+            physical_size: UVec2::new(1280, 800),
+            scale_factor: 1.0,
+        });
+        camera.computed.clip_from_view = PerspectiveProjection {
+            aspect_ratio: 1.6,
+            ..default()
+        }
+        .get_clip_from_view();
+        app.world_mut()
+            .spawn((GameCamera, camera.clone(), camera_transform));
+        let head = app
+            .world_mut()
+            .query::<(&BoneVisual, &GlobalTransform)>()
+            .iter(app.world())
+            .find(|(visual, _)| {
+                visual.owner == hero && matches!(visual.attachment, Attachment::Head { .. })
+            })
+            .unwrap()
+            .1
+            .translation();
+        let point = camera.world_to_viewport(&camera_transform, head).unwrap();
+        assert_eq!(picking::candidates(app.world_mut(), point), vec![hero]);
+
+        let profile = app.world().get::<Pickable>(hero).unwrap();
+        let root = app.world().get::<GlobalTransform>(hero).unwrap();
+        let mut profile_min = Vec2::splat(f32::INFINITY);
+        let mut profile_max = Vec2::splat(f32::NEG_INFINITY);
+        for x in [-1.0, 1.0] {
+            for y in [-1.0, 1.0] {
+                for z in [-1.0, 1.0] {
+                    let world = root
+                        .transform_point(profile.offset + profile.half_size * Vec3::new(x, y, z));
+                    let point = camera.world_to_viewport(&camera_transform, world).unwrap();
+                    profile_min = profile_min.min(point);
+                    profile_max = profile_max.max(point);
+                }
+            }
+        }
+        let (socket, _) = weapon_socket(&mut app, hero);
+        let mut descendants = vec![socket];
+        let mut weapon_points = Vec::new();
+        while let Some(id) = descendants.pop() {
+            if let Some(children) = app.world().get::<Children>(id) {
+                descendants.extend(children.iter());
+            }
+            if let Some(bounds) = app.world().get::<bevy::camera::primitives::Aabb>(id) {
+                let transform = app.world().get::<GlobalTransform>(id).unwrap();
+                for x in [-1.0, 1.0] {
+                    for y in [-1.0, 1.0] {
+                        for z in [-1.0, 1.0] {
+                            let world = transform.transform_point(
+                                Vec3::from(bounds.center)
+                                    + Vec3::from(bounds.half_extents) * Vec3::new(x, y, z),
+                            );
+                            weapon_points
+                                .push(camera.world_to_viewport(&camera_transform, world).unwrap());
+                        }
+                    }
+                }
+            }
+        }
+        let point = weapon_points
+            .into_iter()
+            .max_by(|a, b| {
+                let outside = |p: Vec2| p.distance(p.clamp(profile_min, profile_max));
+                outside(*a).total_cmp(&outside(*b))
+            })
+            .expect("actual spear/bow must have mesh descendants below its hand socket");
+        outside_root_profile |= point.distance(point.clamp(profile_min, profile_max)) > 8.0;
+        assert_eq!(
+            picking::candidates(app.world_mut(), point),
+            vec![hero],
+            "actual {character:?} weapon endpoint must be selectable"
+        );
+    }
+    assert!(
+        outside_root_profile,
+        "the real integration must include an endpoint outside the old root profile and padding"
+    );
+}
+
 fn direct(effect: Effect) -> AbilityDefinition {
     AbilityDefinition {
         name: "Rig status".into(),
@@ -801,7 +942,7 @@ fn match_roles_use_separate_models_and_terminal_roots_and_bones_sync_once_then_f
         .query::<(
             &UnitRole,
             &crate::client::unit_appearance::UnitAppearance,
-            &crate::client::controls::Pickable,
+            &crate::client::picking::Pickable,
             Option<&RigPose>,
         )>()
         .iter(app.world())

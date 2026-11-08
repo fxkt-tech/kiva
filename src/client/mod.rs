@@ -8,6 +8,7 @@ mod controls;
 mod equipment;
 mod match_view;
 mod motion_view;
+mod picking;
 mod pointer;
 mod presentation;
 mod scene;

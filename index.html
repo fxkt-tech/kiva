@@ -29,8 +29,11 @@
     <script src="hud.js" defer></script>
   </head>
   <body>
-    <canvas id="game" tabindex="0" aria-label="试炼之境：右键移动或攻击，A 加左键攻击移动，QWER 技能，Y 锁定镜头，空格回到角色，Esc 释放鼠标并暂停。"></canvas>
-    <div id="game-cursor" hidden aria-hidden="true"><svg viewBox="0 0 24 28"><path d="M1 1v21l6-6 5 10 5-2-5-10h10Z"/></svg></div>
+    <canvas id="game" tabindex="0" aria-label="试炼之境：右键移动或攻击，A 加左键点敌人锁定攻击、点空地攻击移动，QWER 技能，Y 锁定镜头，空格回到角色，Esc 释放鼠标并暂停。"></canvas>
+    <div id="game-cursor" hidden aria-hidden="true">
+      <svg class="cursor-arrow" viewBox="0 0 24 28"><path d="M1 1v21l6-6 5 10 5-2-5-10h10Z"/></svg>
+      <svg class="cursor-sword" viewBox="0 0 24 28"><path class="sword-blade" d="M1 1l10 5 5 10-4 4-9-10Z"/><path class="sword-guard" d="M9 17l3-3 9 7-3 3Z"/><path class="sword-grip" d="M16 22l3-3 4 5-3 3Z"/></svg>
+    </div>
     <header class="brand">
       <span class="brand-mark">◇</span>
       <div><div class="eyebrow">KIVA / SINGLE LANE</div><h1>中路对决<span>01</span></h1></div>
@@ -50,7 +53,7 @@
       <dl>
         <dt>右键</dt><dd>移动 / 追击并普攻</dd>
         <dt>左键</dt><dd>选择 / 确认技能目标</dd>
-        <dt>A → 左键</dt><dd>攻击移动</dd>
+        <dt>A → 左键</dt><dd>点敌人锁定攻击，点空地攻击移动</dd>
         <dt>S</dt><dd>停止当前指令</dd>
         <dt>Q / W / E / R</dt><dd>按装配技能选择单位、地点或方向；自身技能直接释放</dd>
         <dt>1 / 2 / 3 / 4 / 5 / 6</dt><dd>使用对应格的主动装备，也可鼠标点击</dd>

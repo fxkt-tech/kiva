@@ -502,7 +502,7 @@
     }
     $("aim-hint").hidden = state.aim === null && state.equipment_aim == null && !state.attack_move;
     $("aim-text").textContent = state.attack_move
-      ? "攻击移动：选择前进方向"
+      ? "点击敌方模型锁定攻击，点击空地攻击移动"
       : (() => {
         const ability = state.equipment_aim != null
           ? state.equipment?.slots[state.equipment_aim]?.item?.active

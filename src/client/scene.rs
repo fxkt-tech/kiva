@@ -2,7 +2,8 @@
 use super::{
     abilities,
     character::{self, AnimationLibrary, ModelAssets, RigPose},
-    controls::{Aim, ClientFeedback, Pickable, PlayerController, PointerState},
+    controls::{Aim, ClientFeedback, PlayerController, PointerState},
+    picking::Pickable,
     presentation::PresentationFrame,
     session::ClientSession,
     unit_appearance::{self, ModelKind, UnitAppearance, UnitModelAssets},

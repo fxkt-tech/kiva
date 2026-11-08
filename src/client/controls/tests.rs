@@ -1,4 +1,5 @@
 //! Adapter regressions use real ordered window messages, without a GPU/window runner.
+use super::super::picking::Pickable;
 use super::*;
 use bevy::{
     input::{
@@ -38,6 +39,199 @@ fn app() -> (App, Entity) {
     let (mut app, window) = selecting_app();
     super::super::session::start_native(app.world_mut());
     (app, window)
+}
+
+fn install_picking_camera(app: &mut App, target: Vec3) {
+    use bevy::camera::{CameraProjection, RenderTargetInfo};
+    let transform = GlobalTransform::from(
+        Transform::from_translation(target + Vec3::new(0.0, 12.0, 18.0))
+            .looking_at(target, Vec3::Y),
+    );
+    let mut camera = Camera::default();
+    camera.computed.target_info = Some(RenderTargetInfo {
+        physical_size: UVec2::new(1280, 800),
+        scale_factor: 1.0,
+    });
+    camera.computed.clip_from_view = PerspectiveProjection {
+        aspect_ratio: 1.6,
+        ..default()
+    }
+    .get_clip_from_view();
+    app.world_mut().spawn((GameCamera, camera, transform));
+}
+
+fn picking_screen(app: &mut App, point: Vec3) -> Vec2 {
+    let mut cameras = app
+        .world_mut()
+        .query_filtered::<(&Camera, &GlobalTransform), With<GameCamera>>();
+    let (camera, transform) = cameras.single(app.world()).unwrap();
+    camera.world_to_viewport(transform, point).unwrap()
+}
+
+#[test]
+fn right_click_resolves_an_enemy_behind_a_friendly_from_the_same_pointer_hit() {
+    use bevy::camera::{CameraProjection, RenderTargetInfo};
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let point = app.world().get::<UnitPose>(player).unwrap().position();
+    let enemy = spawn_unit(
+        app.world_mut(),
+        UnitSpec {
+            name: "Overlapping enemy".into(),
+            team: Team::Enemy,
+            position: point,
+            stats: UnitStats::default(),
+            abilities: [None; 4],
+            respawn_delay: None,
+        },
+    )
+    .unwrap();
+    for (id, z) in [(player, 0.6), (enemy, 0.0)] {
+        app.world_mut().entity_mut(id).insert((
+            GlobalTransform::from_translation(Vec3::new(point.x, 0.0, point.y + z)),
+            Pickable {
+                offset: Vec3::Y,
+                half_size: Vec3::new(0.6, 1.0, 0.6),
+            },
+        ));
+    }
+    let target = Vec3::new(point.x, 1.0, point.y);
+    let transform = GlobalTransform::from(
+        Transform::from_translation(target + Vec3::new(0.0, 12.0, 18.0))
+            .looking_at(target, Vec3::Y),
+    );
+    let mut camera = Camera::default();
+    camera.computed.target_info = Some(RenderTargetInfo {
+        physical_size: UVec2::new(1280, 800),
+        scale_factor: 1.0,
+    });
+    camera.computed.clip_from_view = PerspectiveProjection {
+        aspect_ratio: 1.6,
+        ..default()
+    }
+    .get_clip_from_view();
+    app.world_mut().spawn((GameCamera, camera, transform));
+    update_pointer(app.world_mut(), Some(Vec2::new(640.0, 400.0)));
+    mouse_pressed(app.world_mut(), MouseButton::Right);
+    assert_eq!(
+        app.world().resource::<PlayerController>().selected,
+        Some(enemy),
+        "a friendly body cannot erase the overlapping legal enemy candidate"
+    );
+}
+
+fn attack_click_enemy(app: &mut App, offset: Vec2) -> Entity {
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let origin = app.world().get::<UnitPose>(player).unwrap().position();
+    spawn_unit(
+        app.world_mut(),
+        UnitSpec {
+            name: "Attack-click target".into(),
+            team: Team::Enemy,
+            position: origin + offset,
+            stats: UnitStats {
+                max_health: 10000.0,
+                ..default()
+            },
+            abilities: [None; 4],
+            respawn_delay: None,
+        },
+    )
+    .unwrap()
+}
+
+#[test]
+fn attack_move_click_on_a_model_locks_that_enemy_instead_of_the_closer_enemy() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let nearby = attack_click_enemy(&mut app, Vec2::X);
+    let clicked = attack_click_enemy(&mut app, Vec2::X * 5.0);
+    for target in [nearby, clicked] {
+        let point = app.world().get::<UnitPose>(target).unwrap().position();
+        app.world_mut().entity_mut(target).insert((
+            GlobalTransform::from_translation(Vec3::new(point.x, 0.0, point.y)),
+            Pickable {
+                offset: Vec3::Y,
+                half_size: Vec3::new(0.4, 1.0, 0.4),
+            },
+        ));
+    }
+    let point = app.world().get::<UnitPose>(clicked).unwrap().position();
+    install_picking_camera(&mut app, Vec3::new(point.x, 1.0, point.y));
+    update_pointer(app.world_mut(), Some(Vec2::new(640.0, 400.0)));
+    assert_eq!(
+        app.world().resource::<PointerState>().hovered,
+        Some(clicked)
+    );
+    app.world_mut().resource_mut::<PlayerController>().selected = Some(nearby);
+    app.world_mut().resource_mut::<PlayerController>().aim = Some(Aim::AttackMove);
+    mouse_pressed(app.world_mut(), MouseButton::Left);
+    app.world_mut().run_schedule(FixedUpdate);
+    assert!(
+        matches!(app.world().get::<UnitOrder>(player), Some(UnitOrder::AttackTarget(target)) if target.entity() == clicked),
+        "A+click on an enemy model must issue an explicit attack order, not automatic acquisition: {:?}",
+        app.world().get::<UnitOrder>(player)
+    );
+    assert_eq!(
+        app.world().resource::<PlayerController>().selected,
+        Some(clicked)
+    );
+    assert!(app.world().resource::<PlayerController>().aim.is_none());
+    for _ in 0..12 {
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    assert!(
+        matches!(app.world().get::<UnitOrder>(player), Some(UnitOrder::AttackTarget(target)) if target.entity() == clicked)
+    );
+}
+
+#[test]
+fn attack_move_click_on_ground_does_not_reuse_the_old_selection() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let nearby = attack_click_enemy(&mut app, Vec2::X);
+    let previously_selected = attack_click_enemy(&mut app, Vec2::X * 5.0);
+    let origin = app.world().get::<UnitPose>(player).unwrap().position();
+    *app.world_mut().resource_mut::<PointerState>() = PointerState {
+        ground: Some(origin - Vec2::Y * 3.0),
+        ..default()
+    };
+    app.world_mut().resource_mut::<PlayerController>().selected = Some(previously_selected);
+    app.world_mut().resource_mut::<PlayerController>().aim = Some(Aim::AttackMove);
+    mouse_pressed(app.world_mut(), MouseButton::Left);
+    app.world_mut().run_schedule(FixedUpdate);
+    assert!(
+        matches!(app.world().get::<UnitOrder>(player), Some(UnitOrder::AttackMove { target: Some(target), .. }) if target.entity() == nearby),
+        "ground attack-move must retain normal nearest-enemy acquisition, not the old selected target: {:?}",
+        app.world().get::<UnitOrder>(player)
+    );
+}
+
+#[test]
+fn attack_move_click_rechecks_friendly_and_no_longer_visible_candidates() {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let hidden = attack_click_enemy(&mut app, Vec2::X * 16.0);
+    assert!(!team_can_see(app.world(), Team::Ally, hidden));
+    let origin = app.world().get::<UnitPose>(player).unwrap().position();
+    *app.world_mut().resource_mut::<PointerState>() = PointerState {
+        ground: Some(origin - Vec2::Y * 3.0),
+        hovered: Some(hidden),
+        candidates: vec![player, hidden],
+        ..default()
+    };
+    app.world_mut().resource_mut::<PlayerController>().selected = Some(hidden);
+    app.world_mut().resource_mut::<PlayerController>().aim = Some(Aim::AttackMove);
+    mouse_pressed(app.world_mut(), MouseButton::Left);
+    app.world_mut().run_schedule(FixedUpdate);
+    assert!(
+        matches!(
+            app.world().get::<UnitOrder>(player),
+            Some(UnitOrder::AttackMove { target: None, .. })
+        ),
+        "invalid candidates cannot turn A+click into an explicit attack: {:?}",
+        app.world().get::<UnitOrder>(player)
+    );
 }
 
 fn press(app: &mut App, window: Entity, key: KeyCode) {
@@ -132,10 +326,16 @@ fn picking_uses_the_displayed_body_transform_and_local_offset() {
             half_size: Vec3::splat(0.4),
         },
     ));
-    let visible_body = Ray3d::new(Vec3::new(4.0, 4.0, 15.0), Dir3::NEG_Z);
-    assert_eq!(hovered_unit(app.world_mut(), visible_body), Some(player));
-    let old_ground_body = Ray3d::new(Vec3::new(4.0, 1.0, 15.0), Dir3::NEG_Z);
-    assert_eq!(hovered_unit(app.world_mut(), old_ground_body), None);
+    install_picking_camera(&mut app, Vec3::new(4.0, 4.0, 5.0));
+    let visible = picking_screen(&mut app, Vec3::new(4.0, 4.0, 5.0));
+    assert_eq!(
+        picking::candidates(app.world_mut(), visible)
+            .first()
+            .copied(),
+        Some(player)
+    );
+    let old_ground = picking_screen(&mut app, Vec3::new(4.0, 1.0, 5.0));
+    assert!(picking::candidates(app.world_mut(), old_ground).is_empty());
 }
 
 #[test]
@@ -148,6 +348,7 @@ fn enemy_skill_keeps_aim_on_empty_ground_or_friendly_body_without_submitting() {
         *app.world_mut().resource_mut::<PointerState>() = PointerState {
             ground: Some(Vec2::new(1.0, 6.0)),
             hovered,
+            candidates: hovered.into_iter().collect(),
             ..default()
         };
         mouse_pressed(app.world_mut(), MouseButton::Left);
@@ -212,6 +413,7 @@ fn out_of_range_enemy_click(equipment: bool) {
     *app.world_mut().resource_mut::<PointerState>() = PointerState {
         ground: Some(position),
         hovered: Some(enemy),
+        candidates: vec![enemy],
         ..default()
     };
     mouse_pressed(app.world_mut(), MouseButton::Left);
@@ -549,6 +751,7 @@ fn keyboard_and_mouse_item_selection_share_target_validation_and_commit_the_item
         *app.world_mut().resource_mut::<PointerState>() = PointerState {
             ground: Some(Vec2::new(1.0, 6.0)),
             hovered,
+            candidates: hovered.into_iter().collect(),
             ..default()
         };
         mouse_pressed(app.world_mut(), MouseButton::Left);
@@ -563,6 +766,7 @@ fn keyboard_and_mouse_item_selection_share_target_validation_and_commit_the_item
     assert!(matches!(app.world().resource::<PlayerController>().aim,
         Some(Aim::Equipment { slot:1, instance:id }) if id == instance));
     app.world_mut().resource_mut::<PointerState>().hovered = Some(enemy);
+    app.world_mut().resource_mut::<PointerState>().candidates = vec![enemy];
     mouse_pressed(app.world_mut(), MouseButton::Left);
     assert!(app.world().resource::<PlayerController>().aim.is_none());
     for _ in 0..20 {
@@ -699,6 +903,7 @@ fn enemy_skill_and_item_keep_aim_when_clicking_a_structure() {
         app.world_mut().resource_mut::<PlayerController>().aim = Some(aim);
         *app.world_mut().resource_mut::<PointerState>() = PointerState {
             hovered: Some(base),
+            candidates: vec![base],
             ground: Some(Vec2::new(4.0, -12.0)),
             ..default()
         };
@@ -811,6 +1016,7 @@ fn real_hero_target_leap_keeps_aim_on_minions_and_recasts_without_enemy_or_secon
     .unwrap();
     select_ability(app.world_mut(), 3);
     app.world_mut().resource_mut::<PointerState>().hovered = Some(minion);
+    app.world_mut().resource_mut::<PointerState>().candidates = vec![minion];
     mouse_pressed(app.world_mut(), MouseButton::Left);
     assert!(matches!(
         app.world().resource::<PlayerController>().aim,
@@ -828,6 +1034,7 @@ fn real_hero_target_leap_keeps_aim_on_minions_and_recasts_without_enemy_or_secon
     )
     .unwrap();
     app.world_mut().resource_mut::<PointerState>().hovered = Some(enemy);
+    app.world_mut().resource_mut::<PointerState>().candidates = vec![enemy];
     mouse_pressed(app.world_mut(), MouseButton::Left);
     step(&mut app, 25);
     assert!(app.world().get::<UnitMechanics>(player).unwrap().recast(3));
@@ -841,6 +1048,10 @@ fn real_hero_target_leap_keeps_aim_on_minions_and_recasts_without_enemy_or_secon
     );
     step(&mut app, 46);
     app.world_mut().resource_mut::<PointerState>().hovered = None;
+    app.world_mut()
+        .resource_mut::<PointerState>()
+        .candidates
+        .clear();
     let mana = app.world().get::<UnitState>(player).unwrap().mana();
     select_ability(app.world_mut(), 3);
     assert!(app.world().resource::<PlayerController>().aim.is_none());
@@ -940,13 +1151,14 @@ fn picking_rejects_a_hidden_enemy_body_then_accepts_it_when_shared_team_vision_r
             half_size: Vec3::splat(0.5),
         },
     ));
-    let ray = Ray3d::new(Vec3::new(point.x, 1.0, point.y + 10.0), Dir3::NEG_Z);
+    install_picking_camera(&mut app, Vec3::new(point.x, 1.0, point.y));
+    let cursor = Vec2::new(640.0, 400.0);
     assert!(!team_can_see(
         app.world(),
         app.world().get::<Unit>(player).unwrap().team(),
         enemy
     ));
-    assert_eq!(hovered_unit(app.world_mut(), ray), None);
+    assert!(picking::candidates(app.world_mut(), cursor).is_empty());
     spawn_unit(
         app.world_mut(),
         UnitSpec {
@@ -962,5 +1174,10 @@ fn picking_rejects_a_hidden_enemy_body_then_accepts_it_when_shared_team_vision_r
         },
     )
     .unwrap();
-    assert_eq!(hovered_unit(app.world_mut(), ray), Some(enemy));
+    assert_eq!(
+        picking::candidates(app.world_mut(), cursor)
+            .first()
+            .copied(),
+        Some(enemy)
+    );
 }

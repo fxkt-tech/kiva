@@ -25,7 +25,7 @@ function fixture(dpr = 1) {
   const canvas = { clientWidth: 1000, clientHeight: 720 };
   let transformWrites = 0;
   let transform = "";
-  const cursor = { hidden: true, style: {
+  const cursor = { hidden: true, dataset: {}, style: {
     set transform(value) { transform = value; transformWrites++; },
     get transform() { return transform; },
     setProperty() {},
@@ -246,5 +246,52 @@ test("pause, loss of capture and focus reset UI gesture capture before recapture
     f.capture();
     f.down();
     assert.deepEqual(f.take(0), [500, 360, 0], `${boundary} cannot leave a captured UI gesture behind`);
+  }
+});
+
+test("enemy model feedback changes only the cursor shape and respects UI gesture capture", () => {
+  const f = fixture();
+  f.capture();
+  const before = f.position();
+  f.window.emit("kiva-camera", { detail: JSON.stringify({ enemy_hovered: true }) });
+  assert.equal(f.cursor.dataset.target, "enemy");
+  assert.deepEqual(f.position(), before, "target feedback must never reposition the pointer");
+  f.api.setUiCapture(true);
+  assert.equal(f.cursor.dataset.target, "none");
+  f.api.setUiCapture(false);
+  assert.equal(f.cursor.dataset.target, "enemy");
+  f.document.elementFromPoint = () => ({ closest: (selector) => selector === "[data-ui]" ? {} : null });
+  f.move({ movementX: 2 });
+  assert.equal(f.cursor.dataset.target, "none", "panels must immediately keep the normal cursor");
+  f.document.elementFromPoint = () => null;
+  f.window.emit("kiva-camera", { detail: JSON.stringify({ enemy_hovered: false }) });
+  assert.equal(f.cursor.dataset.target, "none");
+});
+
+test("pause, unlock and blur discard an old sword cursor before a centered recapture", () => {
+  const f = fixture();
+  for (const boundary of ["pause", "capture", "focus"]) {
+    f.root.dataset.paused = "false";
+    f.document.focused = true;
+    f.capture();
+    f.window.emit("kiva-camera", { detail: JSON.stringify({ enemy_hovered: true }) });
+    assert.equal(f.cursor.dataset.target, "enemy");
+    if (boundary === "pause") {
+      f.root.dataset.paused = "true";
+      f.flushMutations();
+    } else if (boundary === "capture") {
+      f.document.pointerLockElement = null;
+      f.document.emit("pointerlockchange");
+    } else {
+      f.document.focused = false;
+      f.window.emit("blur");
+    }
+    assert.equal(f.cursor.dataset.target, "none");
+    assert.equal(f.cursor.hidden, true);
+    f.root.dataset.paused = "false";
+    f.document.focused = true;
+    f.capture();
+    assert.equal(f.cursor.dataset.target, "none", `${boundary} cannot replay a stale target cursor`);
+    assert.deepEqual(f.position(), [500, 360]);
   }
 });

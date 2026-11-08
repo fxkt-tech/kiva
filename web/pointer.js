@@ -13,6 +13,7 @@
   let rawMotion = 0;
   let hovered = null;
   let uiCaptured = false;
+  let enemyTarget = false;
   const presses = [];
 
   const captured = () => document.pointerLockElement === canvas;
@@ -25,12 +26,19 @@
   }
 
   function updateHover() {
+    updateCursorTarget();
     const next = active && permitted()
       ? document.elementFromPoint(...point)?.closest("[data-ui] button") : null;
     if (next === hovered) return;
     hovered?.removeAttribute("data-virtual-hover");
     next?.setAttribute("data-virtual-hover", "");
     hovered = next;
+  }
+
+  function updateCursorTarget() {
+    const attack = active && permitted() && enemyTarget && !uiCaptured
+      && !document.elementFromPoint(...point)?.closest("[data-ui]");
+    cursor.dataset.target = attack ? "enemy" : "none";
   }
 
   function draw() {
@@ -44,6 +52,7 @@
     if (active) previous = null;
     active = false;
     uiCaptured = false;
+    enemyTarget = false;
     presses.length = 0;
     cursor.hidden = true;
     updateHover();
@@ -131,6 +140,12 @@
     if (active && permitted()) draw();
   });
   window.addEventListener("kiva-state", updateHover);
+  // Target eligibility comes from Rust's model picker every display frame.
+  // The pointer owner only gates the shape against real UI/capture state.
+  window.addEventListener("kiva-camera", (event) => {
+    enemyTarget = JSON.parse(event.detail).enemy_hovered === true;
+    updateCursorTarget();
+  });
   new MutationObserver(() => { if (!permitted()) stop(); }).observe(root, {
     attributes: true, attributeFilter: ["data-paused", "data-pointer-locked"],
   });
@@ -158,7 +173,10 @@
     },
     // The UI gesture owns subsequent button presses even if it is released
     // before Rust consumes this frame's ordered window events.
-    setUiCapture(enabled) { uiCaptured = Boolean(enabled && active && permitted()); },
+    setUiCapture(enabled) {
+      uiCaptured = Boolean(enabled && active && permitted());
+      updateCursorTarget();
+    },
     clearPresses() { presses.length = 0; },
   });
 })();
