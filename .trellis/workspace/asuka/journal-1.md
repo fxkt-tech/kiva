@@ -360,3 +360,38 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 11: 通用指向性技能超距追近施法修复
+<!-- trellis-session: v=2 fp=b7c1049de30f3657 -->
+
+**Date**: 2026-11-08
+**Task**: 通用指向性技能超距追近施法修复
+**Branch**: `main`
+
+### Summary
+
+按Enemy目标类型统一追踪走近后施法，英雄和装备主动共用；修复零前摇多等一tick和移动目标旧射程边界停步，保留方向及地点最大范围规则。
+
+### Main Changes
+
+- CastTarget保存来源/技能/目标生命，统一导航、视野/生命周期复核、替换和取消，复用原动作提交。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `49b34fa` | fix: approach targeted enemies before casting abilities |
+
+### Testing
+
+- [OK] 最终CARGO_BUILD_JOBS=2 make check通过301项测试，WASM Clippy及Web构建通过。
+- [OK] 真实10.82距离皇子R追近/费用/围墙/重施通过，寒冰定向和最终smoke退出0；独立全范围及增量检查完成。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 按docs/TODO.md和hud_lol_game.png规划并实现HUD、镜头和人物屏幕比例调整。
