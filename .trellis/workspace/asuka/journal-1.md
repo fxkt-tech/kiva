@@ -854,3 +854,72 @@ Esc改为操作/声音/对局分类设置，所有现有设置集中；模拟与
 ### Next Steps
 
 - 推送功能及任务/日志记录提交，核对origin/main与本地HEAD一致并确认工作区干净。
+
+
+## Session 26: 俯视WASD与鼠标转向Demo重建
+<!-- trellis-session: v=2 fp=03a3d103a6f43a75 -->
+
+**Date**: 2026-11-09
+**Task**: 俯视WASD与鼠标转向Demo重建
+**Branch**: `main`
+
+### Summary
+
+从lol备份后的旧MOBA重建最小Bevy/Web俯视探索Demo，按用户最新要求停止继续测试。
+
+### Main Changes
+
+- 清理旧对局/角色资源/HUD，按simulation→gameplay→client边界重建固定步运动、同源碰撞/场景及偏下跟随镜头。
+- Web捕获期间WASD、CSS鼠标水平转向、失焦清理；原生消费中间失焦事件；更新README和Trellis活跃规范。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 已完成make check：Rust 10项、Node 8项；原生/WASM Clippy及Trunk Web构建通过。
+- [OK] 短浏览器尝试捕获成功，但场景截图仍是背景，移动画面断言未通过；用户随后要求停止测试，未继续定位，未宣称浏览器验收通过。专用进程已回收。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 用户自行make run试手感；如画面未出现需另行检查渲染就绪。当前未提交/推送，任务未归档。
+
+
+## Session 27: 提交俯视操作Demo并归档交付
+<!-- trellis-session: v=2 fp=dcf80f7305470596 -->
+
+**Date**: 2026-11-09
+**Task**: 提交俯视操作Demo并归档交付
+**Branch**: `main`
+
+### Summary
+
+按用户授权提交俯视操作Demo，归档本轮任务与规范记录；不追加测试。
+
+### Main Changes
+
+- 提交旧MOBA清理与三层Demo重建，包括WASD、水平转向、偏下跟随镜头、程序化庭院和基础碰撞。
+- 归档11-09-topdown-demo，保留浏览器画面尚未完成验收的观察，不启停用户服务。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5aab14f` | feat: rebuild as top-down movement demo |
+
+### Testing
+
+- [OK] 本轮按用户要求不再运行测试；此前make check、原生/WASM Clippy和Web构建已通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 用户本地体验；浏览器未出图观察保留供后续需要时定位。

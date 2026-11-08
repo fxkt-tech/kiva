@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 25
-- **Last Active**: 2026-11-08
+- **Total Sessions**: 27
+- **Last Active**: 2026-11-09
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~856 | Active |
+| `journal-1.md` | ~925 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 27 | 2026-11-09 | 提交俯视操作Demo并归档交付 | `5aab14f` | `main` |
+| 26 | 2026-11-09 | 俯视WASD与鼠标转向Demo重建 | - | `main` |
 | 25 | 2026-11-08 | 提交装备与设置角色选择实现 | `50d80a3` | `main` |
 | 24 | 2026-11-08 | 设置角色分类内直接选角与确认重开 | - | `main` |
 | 23 | 2026-11-08 | Esc非暂停分类设置弹窗 | - | `main` |

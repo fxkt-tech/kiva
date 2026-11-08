@@ -1,0 +1,2 @@
+{"file":"AGENTS.md","reason":"Bevy单crate分层、服务和提交边界"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"保持事实与输入/表现的单一所有者；MOBA细则由本任务明确替换"}
