@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 11
+- **Total Sessions**: 12
 - **Last Active**: 2026-11-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~397 | Active |
+| `journal-1.md` | ~431 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 12 | 2026-11-08 | HUD布局、近景镜头与交互小地图 | `a69ded6` | `main` |
 | 11 | 2026-11-08 | 通用指向性技能超距追近施法修复 | `49b34fa` | `main` |
 | 10 | 2026-11-08 | 皇子与寒冰完整技能及基础数值替换 | `61855cb` | `main` |
 | 9 | 2026-11-08 | 单中路对局、逐个兵线与英雄AI | `b861288` | `main` |

@@ -395,3 +395,37 @@
 ### Next Steps
 
 - 按docs/TODO.md和hud_lol_game.png规划并实现HUD、镜头和人物屏幕比例调整。
+
+
+## Session 12: HUD布局、近景镜头与交互小地图
+<!-- trellis-session: v=2 fp=2f236f1ccc5ae364 -->
+
+**Date**: 2026-11-08
+**Task**: HUD布局、近景镜头与交互小地图
+**Branch**: `main`
+
+### Summary
+
+完成参考图HUD布局与近景取景，追加完整小地图、逐帧矩形视野框和点击/偏移拖动镜头；按用户授权提交、归档并推送。
+
+### Main Changes
+
+- HUD布局集中在hud.css，小地图绘制与交互独立为minimap.js；底部操作栏、右下全图、左上目标及顶部状态适配大小窗口。
+- CameraRig统一默认取景与地图边界，真实相机四角由Rust只读发布；kiva-camera逐帧更新矩形外接范围，导航请求严格校验当前玩家和有限坐标。
+- 指针按下快照记录事件时UI捕获归属，修正地图外组合按键穿透、偏移抓取边界与组合按键释放；架构规范、TODO和验收记录同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a69ded6` | feat: redesign HUD and add minimap camera navigation |
+
+### Testing
+
+- [OK] make check通过：311项Rust，2项既有长跑默认忽略；标准WASM Clippy与30项Node通过。
+- [OK] 真实WebGPU小地图1280×800、800×600、1000×720 DPR2通过；smoke、四场景pointer-response、原生RAF血条全部通过。
+- [OK] 血条人物20/20帧、相机19/20帧更新且全程可见；90文件源码清单与最终验收构建一致，JS语法、文档路径和diff检查通过。
+
+### Status
+
+[OK] **Completed**
