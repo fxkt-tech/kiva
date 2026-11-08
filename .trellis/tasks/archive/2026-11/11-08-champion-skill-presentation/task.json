@@ -3,7 +3,7 @@
   "name": "champion-skill-presentation",
   "title": "英雄技能特效、指示器与边缘滚屏",
   "description": "接入皇子原皮和源计划寒冰技能特效及瞄准指示器，提升边缘滚屏速度，保持只读表现和输入架构。用户授权自主方案与实施，不再逐项询问。",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": null,
@@ -11,11 +11,11 @@
   "creator": "asuka",
   "assignee": "asuka",
   "createdAt": "2026-11-08",
-  "completedAt": null,
+  "completedAt": "2026-11-08",
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "73994e27a292655178026c534c20ed522ebbc239",
   "pr_url": null,
   "subtasks": [],
   "children": [
@@ -25,6 +25,6 @@
   ],
   "parent": null,
   "relatedFiles": [],
-  "notes": "实现与本轮相关验收完成；新增工作未提交，待后续提交后归档。最终验证见父任务verification.md。",
+  "notes": "实现与相关验收完成；用户已授权本次提交推送，工作提交73994e2，随父任务完成归档。",
   "meta": {}
 }

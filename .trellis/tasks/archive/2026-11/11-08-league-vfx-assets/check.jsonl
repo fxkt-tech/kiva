@@ -2,5 +2,5 @@
 {"file": ".trellis/spec/client/browser.md", "reason": "时钟/输入/观察/浏览器"}
 {"file": ".trellis/spec/client/champion-presentation.md", "reason": "技能和对象表现"}
 {"file": ".trellis/spec/client/unit-picking.md", "reason": "纯模型拾取隔离"}
-{"file": ".trellis/tasks/11-08-champion-skill-presentation/design.md", "reason": "父任务共同方案"}
-{"file": ".trellis/tasks/11-08-champion-skill-presentation/research/league-vfx-assets.md", "reason": "实际资源/代码/契约研究"}
+{"file": ".trellis/tasks/archive/2026-11/11-08-champion-skill-presentation/design.md", "reason": "父任务共同方案"}
+{"file": ".trellis/tasks/archive/2026-11/11-08-champion-skill-presentation/research/league-vfx-assets.md", "reason": "实际资源/代码/契约研究"}
