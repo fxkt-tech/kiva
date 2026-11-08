@@ -467,3 +467,37 @@
 ### Next Steps
 
 - docs/TODO.md音效待办为用户并行新增，本轮未提交，保留工作区供用户后续安排。
+
+
+## Session 14: League models, combat audio and hero lifecycle delivery
+<!-- trellis-session: v=2 fp=4a94400e44a1a0da -->
+
+**Date**: 2026-11-08
+**Task**: League models, combat audio and hero lifecycle delivery
+**Branch**: `main`
+
+### Summary
+
+交付皇子原皮/源计划寒冰模型及真实音效、小兵和地图纹理、尸体与模拟复活倒计时；完整代码与浏览器质量门通过。用户授权提交推送后归档。
+
+### Main Changes
+
+- 模型、音频、输入与模拟保持独立，资源来源/哈希/导入器及规范落地
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e0fa8bc` | feat: add League models, combat audio and hero death presentation |
+
+### Testing
+
+- [OK] 343 Rust通过、2既有soak忽略；40 Node、native/WASM Clippy、真实WebGPU/音频/拾取/技能/鼠标/重选/启动/血条通过
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 按新增TODO研究并实现两英雄技能特效、技能指示器和边缘滚屏提速，用户授权自主决策及连续实施
