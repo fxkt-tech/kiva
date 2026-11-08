@@ -1,7 +1,11 @@
 //! Screen-space unit hits. Action adapters decide which candidate is legal.
 use super::{camera::GameCamera, session::ClientSession, web};
 use crate::simulation::{Unit, UnitState, team_can_see};
-use bevy::{camera::primitives::Aabb, prelude::*};
+use bevy::{
+    camera::primitives::Aabb,
+    mesh::skinning::{SkinnedMesh, SkinnedMeshInverseBindposes},
+    prelude::*,
+};
 use std::cmp::Ordering;
 
 /// Root profile used only while actual model mesh bounds are not ready.
@@ -109,6 +113,15 @@ pub(super) fn candidates(world: &mut World, point: Vec2) -> Vec<Entity> {
                 bounded_model = true;
                 continue;
             }
+            if let Some(skin) = world.get::<SkinnedMesh>(part) {
+                bounded_model = true;
+                if let Some(hit) = skinned_hit(world, &view, id, part, skin, point)
+                    && best.as_ref().is_none_or(|old| hit.compare(old).is_lt())
+                {
+                    best = Some(hit);
+                }
+                continue;
+            }
             let Some(bounds) = world.get::<Aabb>(part) else {
                 continue;
             };
@@ -143,6 +156,52 @@ pub(super) fn candidates(world: &mut World, point: Vec2) -> Vec<Entity> {
     }
     hits.sort_by(Hit::compare);
     hits.into_iter().map(|hit| hit.id).collect()
+}
+
+/// Skinning moves vertices relative to their mesh node. Per-joint bounds retain
+/// the same displayed-part contract as rigid limbs instead of making the empty
+/// space between an extended weapon and a body selectable.
+fn skinned_hit(
+    world: &World,
+    view: &PickingView<'_>,
+    owner: Entity,
+    part: Entity,
+    skin: &SkinnedMesh,
+    point: Vec2,
+) -> Option<Hit> {
+    let meshes = world.get_resource::<Assets<Mesh>>()?;
+    let poses = world.get_resource::<Assets<SkinnedMeshInverseBindposes>>()?;
+    let mesh = meshes.get(&world.get::<Mesh3d>(part)?.0)?;
+    let inverse = poses.get(&skin.inverse_bindposes)?;
+    let bounds = mesh.skinned_mesh_bounds()?;
+    let mut best: Option<Hit> = None;
+    for (index, bounds) in bounds.iter() {
+        let index = usize::from(index.0);
+        let Some(joint) = skin.joints.get(index) else {
+            continue;
+        };
+        let Some(bind) = inverse.get(index) else {
+            continue;
+        };
+        let Some(transform) = world.get::<GlobalTransform>(*joint) else {
+            continue;
+        };
+        let matrix = transform.to_matrix() * *bind;
+        if !matrix.is_finite() || matrix.determinant().abs() < 1e-12 {
+            continue;
+        }
+        if let Some(hit) = view.part_hit(
+            owner,
+            point,
+            &GlobalTransform::from(matrix),
+            bounds.center,
+            bounds.half_size,
+        ) && best.as_ref().is_none_or(|old| hit.compare(old).is_lt())
+        {
+            best = Some(hit);
+        }
+    }
+    best
 }
 
 fn visible(world: &World, entity: Entity) -> bool {

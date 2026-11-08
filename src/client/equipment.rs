@@ -220,18 +220,16 @@ impl EquipmentView {
                         id: item.equipment().0,
                         instance_id: item.instance().to_string(),
                         name: definition.name.clone(),
-                        active: definition
-                            .active
-                            .and_then(|id| abilities.get(id))
-                            .map(|ability| {
-                                AbilityView::with_cooldown(
-                                    slot,
-                                    ability,
-                                    state,
-                                    control,
-                                    item.cooldown(),
-                                )
-                            }),
+                        active: definition.active.and_then(|id| {
+                            Some(AbilityView::with_cooldown(
+                                slot,
+                                id,
+                                abilities.get(id)?,
+                                state,
+                                control,
+                                item.cooldown(),
+                            ))
+                        }),
                     })
                 }),
             })
@@ -286,8 +284,7 @@ pub(super) fn catalog_view(
                 .collect(),
             active: definition
                 .active
-                .and_then(|id| abilities.get(id))
-                .map(AbilityDescription::new),
+                .and_then(|id| Some(AbilityDescription::new(id, abilities.get(id)?))),
         })
         .collect()
 }

@@ -251,10 +251,12 @@ fn die(world: &mut World, target: Entity) {
     super::mechanics::clear_life(world, target);
     super::statuses::clear(world, target);
     super::attributes::clear_on_death(&mut world.get_mut::<Unit>(target).expect("unit"));
-    world
-        .get_mut::<UnitState>(target)
-        .expect("unit state")
-        .respawn_remaining = delay;
+    let tick = world.resource::<SimulationTick>().0;
+    {
+        let mut state = world.get_mut::<UnitState>(target).expect("unit state");
+        state.respawn_remaining = delay;
+        state.death_tick = Some(tick);
+    }
     *world.get_mut::<UnitAction>(target).expect("unit action") = UnitAction::Ready;
     *world.get_mut::<UnitOrder>(target).expect("unit order") = UnitOrder::Idle;
     world.write_message(SimulationEvent::Died { unit: target });
@@ -273,8 +275,13 @@ pub(super) fn respawn_units(world: &mut World) {
             let Some(remaining) = state.respawn_remaining.as_mut() else {
                 continue;
             };
-            *remaining -= TICK_SECONDS;
-            *remaining <= 1e-5
+            *remaining = (*remaining - TICK_SECONDS).max(0.0);
+            if *remaining <= 1e-5 {
+                *remaining = 0.0;
+                true
+            } else {
+                false
+            }
         };
         if !due {
             continue;
@@ -303,6 +310,7 @@ pub(super) fn respawn_units(world: &mut World) {
             state.health = health;
             state.mana = mana;
             state.respawn_remaining = None;
+            state.death_tick = None;
             state.attack_cooldown = 0;
             state.last_damaged_tick = None;
             state.last_recovery_tick = None;

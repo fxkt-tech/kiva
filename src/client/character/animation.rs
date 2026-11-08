@@ -116,7 +116,14 @@ pub(in crate::client) fn record_events(
                     });
                 }
             }
-            SimulationEvent::Died { unit } | SimulationEvent::Respawned { unit } => {
+            SimulationEvent::Died { unit } => {
+                if let Ok((_, _, mut rig)) = rigs.get_mut(*unit) {
+                    // The current life's visible pose is the fall origin.
+                    // Keep a pending reset from an unseen newer life, if any.
+                    rig.cast = None;
+                }
+            }
+            SimulationEvent::Respawned { unit } => {
                 if let Ok((_, _, mut rig)) = rigs.get_mut(*unit) {
                     rig.cast = None;
                     rig.reset_pending = true;
@@ -149,6 +156,32 @@ pub(in crate::client) fn sync_poses(
     let fraction = frame.fraction();
     for (id, pose, state, action, order, statuses, permissions, mut rig) in &mut units {
         if !state.alive() {
+            if rig.gesture != Gesture::Death || rig.reset_pending {
+                rig.from = if rig.reset_pending {
+                    // A new life can die before it is displayed. Its corpse
+                    // starts from that idle life, never the old life's pose.
+                    poses::sample_weapon(&library, Gesture::Idle, 0.0, 0.0, rig.weapon)
+                } else {
+                    rig.local.clone()
+                };
+                rig.gesture = Gesture::Death;
+                rig.cast = None;
+                rig.reset_pending = false;
+            }
+            let elapsed = state.death_tick().map_or(0.0, |died| {
+                ((tick.0.saturating_sub(died) as f32 + fraction) * TICK_SECONDS).max(0.0)
+            });
+            let weight = poses::smooth(elapsed / 0.45);
+            let target = poses::sample_weapon(&library, Gesture::Death, 1.0, 0.0, rig.weapon);
+            rig.local = rig
+                .from
+                .iter()
+                .copied()
+                .zip(target)
+                .map(|(a, b)| blend(a, b, weight))
+                .collect();
+            rig.model = library.model_pose(&rig.local);
+            rig.last_time = now;
             continue;
         }
         if rig.reset_pending {

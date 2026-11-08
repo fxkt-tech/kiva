@@ -8,7 +8,7 @@
 ## 2. 分工与公开投影
 
 - `character/weapon.rs`独立选择Sword/Spear/Bow表现；角色身份1/2只在这一外观映射使用。
-- `character/poses.rs`保留23骨骼/源动作，枪使用前刺、弓使用双臂拉弦；模型子树和武器手socket仍随根清理。
+- 生产英雄使用[导入源模型](imported-models.md)；`character/poses.rs`保留23骨骼/源动作作为加载回退，枪使用前刺、弓使用双臂拉弦；两种模型子树均随单位根清理。
 - `visibility.rs::VisibleWorld`按模拟`team_can_see/point_visible`采样，统一模型、轻标签、完整HUD和场上效果。
 - `motion_view.rs`读取`is_dashing/leap_progress`，只转换为姿态/跃击显示高度，不写UnitPose。
 - `battlefield.rs`只读旗、地形、鹰灵、揭示和护盾，实际寿命、光环、寻路障碍由模拟管理。

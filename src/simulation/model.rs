@@ -171,6 +171,7 @@ pub struct UnitState {
     pub(super) mana: f32,
     pub(super) attack_cooldown: u32,
     pub(super) respawn_remaining: Option<f32>,
+    pub(super) death_tick: Option<u64>,
     pub(super) last_damaged_tick: Option<u64>,
     pub(super) last_recovery_tick: Option<u64>,
 }
@@ -209,6 +210,14 @@ impl UnitState {
     }
     pub fn alive(&self) -> bool {
         self.health > 0.0
+    }
+    /// Fixed-step time of the current life's death, cleared only by respawn.
+    pub fn death_tick(&self) -> Option<u64> {
+        self.death_tick
+    }
+    /// Remaining simulation seconds; zero means waiting for a safe birth point.
+    pub fn respawn_remaining(&self) -> Option<f32> {
+        self.respawn_remaining
     }
     pub fn attack_cooldown(&self) -> f32 {
         self.attack_cooldown as f32 * super::TICK_SECONDS

@@ -37,7 +37,7 @@ impl UnitAppearance {
     }
 
     pub fn visible(self, alive: bool) -> Visibility {
-        if alive || self.kind == ModelKind::Base {
+        if alive || matches!(self.kind, ModelKind::Hero | ModelKind::Base) {
             Visibility::Inherited
         } else {
             Visibility::Hidden

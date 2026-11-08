@@ -44,6 +44,18 @@
 - 在构造和指令校验处拒绝非有限数值；不要依靠显示层过滤错误。
 - 不承诺跨平台浮点确定性；相等距离的目标选择已有实体 ID 排序。
 
+## 死亡事实与重生倒计时
+
+`UnitState::death_tick() -> Option<u64>`由`combat::die`在实际致死时写入，
+`UnitState::respawn_remaining() -> Option<f32>`公开现有模拟倒计时，客户端不能写这两个字段。
+存活时两者均为None；死亡时记录tick，只有配置了重生的单位才有remaining。
+暂停不推进它们，实际重生才清除death_tick/remaining并推进生命代次。
+
+计时到0但`NavigationMap::resolve_placement`暂时找不到安全点时，仍保留同一死亡生命，
+remaining夹到0并在后续tick重试，不能为HUD伪造新倒计时或假复活。
+HUD对正值向上取整显示秒数，0显示等待安全位置；倒地动画时长不影响模拟。
+`tests/simulation.rs`覆盖致死事实、暂停、真实复活及安全落点阻塞/恢复。
+
 ## 显式结束本局
 
 `reset_simulation(&mut World)`是整场试炼重开的模拟清理入口：设置paused=true、tick=0，

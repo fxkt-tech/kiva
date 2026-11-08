@@ -1,11 +1,13 @@
 //! Application adapters. Gameplay imports never point back into this module.
 mod abilities;
+mod audio;
 mod battlefield;
 mod camera;
 mod character;
 mod content;
 mod controls;
 mod equipment;
+mod imported_models;
 mod match_view;
 mod motion_view;
 mod picking;
@@ -52,6 +54,8 @@ pub(super) fn run() {
         SimulationPlugin,
         crate::gameplay::GameplayPlugin,
         crate::gameplay::AiPlugin,
+        audio::CombatAudioPlugin,
+        imported_models::ImportedModelsPlugin,
     ))
     .insert_resource(SimulationControl {
         paused: cfg!(target_arch = "wasm32"),

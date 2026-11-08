@@ -319,6 +319,13 @@
       const description = document.createElement("span");
       name.textContent = choice.name;
       description.textContent = choice.description;
+      if (choice.portrait) {
+        const portrait = document.createElement("img");
+        portrait.className = "choice-portrait";
+        portrait.src = choice.portrait;
+        portrait.alt = "";
+        button.append(portrait);
+      }
       button.append(name, description);
       button.addEventListener("click", () => selectCharacter(choice.id));
       return button;
@@ -335,6 +342,13 @@
       name.textContent = `${key} · ${ability?.name || "未装配"}`;
       item.append(name);
       if (ability) {
+        if (ability.icon_asset) {
+          const icon = document.createElement("img");
+          icon.className = "preview-skill-icon";
+          icon.src = ability.icon_asset;
+          icon.alt = "";
+          item.prepend(icon);
+        }
         const target = document.createElement("span");
         const description = document.createElement("p");
         const details = document.createElement("small");
@@ -413,6 +427,16 @@
       element.textContent = formatAttribute(player?.display_attributes?.[key], digits);
     }
     renderStatuses($("hero-statuses"), player);
+    const respawn = $("respawn-status");
+    const waiting = player && !player.alive && Number.isFinite(player.respawn_remaining);
+    respawn.hidden = !waiting;
+    respawn.textContent = !waiting ? "" : player.respawn_remaining > 0
+      ? `复活倒计时 ${Math.ceil(player.respawn_remaining)} 秒`
+      : "正在等待复活位置";
+    const portrait = $("hero-portrait");
+    portrait.hidden = !player?.portrait;
+    portrait.nextElementSibling.hidden = Boolean(player?.portrait);
+    if (player?.portrait && portrait.getAttribute("src") !== player.portrait) portrait.src = player.portrait;
     if (!player) return;
     $("hero-name").textContent = player.name;
     $("hero-passive").title = (player.passives || []).join("；");
@@ -476,6 +500,8 @@
       button.querySelector("small").textContent = "未装配";
       window.renderSkillState(button,null);
       button.querySelector("svg").replaceChildren();
+      button.querySelector("svg").removeAttribute("hidden");
+      button.querySelector(".ability-art")?.remove();
       button.querySelector(".cooldown").textContent = "";
       button.removeAttribute("data-icon");
       button.removeAttribute("title");
@@ -491,9 +517,19 @@
       button.disabled = state.paused || !ability.available;
       button.querySelector("small").textContent = ability.name;
       button.setAttribute("aria-label", `${skillKeys[ability.slot]} ${ability.name}`);
-      if (button.dataset.icon !== ability.icon) {
+      const iconKey = ability.icon_asset || ability.icon;
+      if (button.dataset.icon !== iconKey) {
+        button.querySelector(".ability-art")?.remove();
+        button.querySelector("svg").toggleAttribute("hidden", Boolean(ability.icon_asset));
+        if (ability.icon_asset) {
+          const icon = document.createElement("img");
+          icon.className = "ability-art";
+          icon.src = ability.icon_asset;
+          icon.alt = "";
+          button.prepend(icon);
+        }
         button.querySelector("svg").innerHTML = skillIcons[ability.icon] || skillIcons.enemy;
-        button.dataset.icon = ability.icon;
+        button.dataset.icon = iconKey;
       }
       button.querySelector(".cooldown").textContent = ability.cooldown >= 1
         ? String(Math.ceil(ability.cooldown)) : ability.cooldown.toFixed(1);

@@ -10,6 +10,9 @@
     <script src="startup.js"></script>
     <link data-trunk rel="copy-file" href="web/equipment.js" />
     <script src="equipment.js"></script>
+    <link data-trunk rel="copy-file" href="web/audio.js" />
+    <script src="audio.js"></script>
+    <link data-trunk rel="copy-dir" href="assets" />
     <link data-trunk rel="rust" data-bin="kiva" />
     <link data-trunk rel="copy-file" href="web/style.css" />
     <link data-trunk rel="copy-file" href="web/hud.css" />
@@ -88,11 +91,12 @@
           <div class="hero-stat" title="攻击距离"><dt>攻距</dt><dd><span data-stat="attack_range">—</span></dd></div>
         </dl>
         <div class="hero-identity">
-          <div class="portrait"><span>◇</span><small title="当前使用一级基础属性">Ⅰ</small></div>
+          <div class="portrait"><img id="hero-portrait" alt="" hidden /><span>◇</span><small title="当前使用一级基础属性">Ⅰ</small></div>
           <div class="hero-traits"><button id="hero-passive" type="button" aria-label="查看角色被动">被动</button><span id="shield-text" hidden></span></div>
         </div>
         <div class="hero-core">
           <div class="hero-title"><strong id="hero-name">—</strong><span id="hero-action">—</span></div>
+          <div id="respawn-status" class="respawn-status" data-ui role="status" aria-live="polite" hidden></div>
           <div id="abilities" class="abilities">
             <button class="ability" data-slot="0" aria-label="Q 技能槽位" disabled><kbd>Q</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
             <button class="ability" data-slot="1" aria-label="W 技能槽位" disabled><kbd>W</kbd><svg viewBox="0 0 40 40" aria-hidden="true"></svg><span class="cooldown"></span><small>未装配</small></button>
@@ -166,6 +170,10 @@
             <p id="reselection-note">重开整场对局，重置双方英雄、基地和兵线。</p>
           </div>
           <p id="pointer-error" role="status" aria-live="polite" hidden></p>
+          <div class="audio-settings" aria-label="声音设置">
+            <label><input id="audio-muted" type="checkbox" />静音</label>
+            <label for="audio-volume">音量<input id="audio-volume" type="range" min="0" max="100" value="65" /></label>
+          </div>
           <div class="entry-controls"><span><kbd>右键</kbd> 移动 / 攻击</span><span><kbd>QWER</kbd> 技能</span><span><kbd>Y</kbd> 锁定镜头</span></div>
           <small class="entry-note">进入后鼠标限制在游戏区域 · Esc 释放并暂停</small>
         </div>

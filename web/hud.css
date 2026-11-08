@@ -63,6 +63,7 @@ html[data-session-phase="Active"] .top-right .status { display: none; }
   box-shadow: inset 0 0 0 3px #101d2077, 0 0 0 3px #b6a16c22;
 }
 .portrait > span { font: 44px/1 Georgia, serif; color: #b2dcd0; }
+.portrait > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; border-radius: inherit; }
 .portrait small { position: absolute; bottom: -3px; right: -2px; background: #263731; color: #d8c38b; border: 1px solid #9c8c5c77; padding: 2px 4px; font-size: 9px; }
 .hero-traits { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 5px; font-size: 8px; line-height: 11px; color: #b0bca8; }
 #hero-passive { border: 0; padding: 0 3px; background: transparent; color: #b0bca8; font-size: inherit; line-height: inherit; cursor: help; }
@@ -81,6 +82,7 @@ html[data-session-phase="Active"] .top-right .status { display: none; }
 .ability:hover, .ability.aiming, .ability[data-virtual-hover] { border-color: #e5cd91; background: #3b5145; }
 .ability.aiming { box-shadow: 0 0 20px #ceb77e30; }
 .ability svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.ability-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .ability kbd { position: absolute; left: 2px; top: -6px; background: #18272a; color: #e2d1a6; font-size: 8px; padding: 0 3px; }
 .ability small { position: absolute; top: 42px; left: -5px; right: -5px; font-size: 8px; line-height: 9px; color: #a7b8a9; white-space: nowrap; }
 .ability .cooldown { position: absolute; inset: 0; display: grid; place-items: center; background: #0b171ac9; font-size: 18px; color: #cfd8cf; visibility: hidden; }
@@ -136,6 +138,12 @@ html[data-session-phase="Active"] .top-right .status { display: none; }
 .status-badges > [data-status="Slow"] { color: #b0d6df; border-color: #7babb555; }
 .status-badges > [data-status="Airborne"] { color: #d3c3ef; border-color: #a38abc66; }
 .hero-statuses { position: absolute; bottom: calc(100% + 6px); left: 8px; right: 8px; pointer-events: auto; }
+.respawn-status {
+  position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+  padding: 9px 18px; border: 1px solid #c6ab6e88; border-radius: 4px;
+  color: var(--gold); background: #112024f2; font-size: 14px; white-space: nowrap;
+  font-variant-numeric: tabular-nums; pointer-events: none;
+}
 .target { position: fixed; z-index: 2; left: var(--hud-inset); top: var(--hud-inset); display: flex; gap: 10px; padding: 9px 12px; width: 218px; }
 .target-dot { width: 7px; height: 7px; background: #cf9078; transform: rotate(45deg); margin-top: 14px; flex-shrink: 0; }
 .target > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }

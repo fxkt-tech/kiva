@@ -181,7 +181,13 @@ pub(super) fn sync_units(
     }
     let fraction = frame.fraction();
     for (id, pose, state, statuses, appearance, mut transform, mut visibility) in &mut units {
-        let point = pose.interpolated(fraction);
+        // A corpse belongs to the death location, never the previous movement
+        // sample. Respawn resets both pose samples before making it alive.
+        let point = if state.alive() {
+            pose.interpolated(fraction)
+        } else {
+            pose.position()
+        };
         let height = if state.alive() {
             (statuses.airborne_height(fraction) * AIRBORNE_PEAK_HEIGHT)
                 .max(motion.as_ref().map_or(0.0, |motion| motion.height(id)))
@@ -211,12 +217,19 @@ pub(super) fn sync_units(
 }
 
 pub(super) fn sync_ground_bases(
-    units: Query<&Transform, With<UnitVisual>>,
-    mut bases: Query<(&ChildOf, &mut Transform), GroundBaseFilter>,
+    units: Query<(&Transform, &UnitState), With<UnitVisual>>,
+    mut bases: Query<(&ChildOf, &mut Transform, Option<&mut Visibility>), GroundBaseFilter>,
 ) {
-    for (parent, mut transform) in &mut bases {
-        if let Ok(root) = units.get(parent.parent()) {
+    for (parent, mut transform, visibility) in &mut bases {
+        if let Ok((root, state)) = units.get(parent.parent()) {
             transform.translation.y = 0.12 - root.translation.y;
+            if let Some(mut visibility) = visibility {
+                *visibility = if state.alive() {
+                    Visibility::Inherited
+                } else {
+                    Visibility::Hidden
+                };
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ pub(super) enum Gesture {
     Airborne,
     Stunned,
     Forced,
+    Death,
 }
 
 #[derive(Clone, Copy)]
@@ -122,55 +123,74 @@ pub(super) fn sample_weapon(
             body_gesture(library, Clip::Hit, 0.08 + clock.min(0.18)),
             Grip::new(0.20, 0.14, -0.10, 150.0, 30.0),
         ),
+        Gesture::Death => (library.bones.iter().map(|bone| bone.rest).collect(), GUARD),
     };
-    // Keep eyes facing the unit's gameplay forward even in a twisting gesture.
-    let model = library.model_pose(&local);
-    let head = library.bone("Head");
-    let parent = library.bones[head].parent.expect("head parent");
-    local[head].rotation = (model[parent].rotation.inverse()
-        * Quat::from_rotation_y(std::f32::consts::PI))
-    .normalize();
-    let grip = match weapon {
-        WeaponStyle::Sword => grip,
-        WeaponStyle::Spear => {
-            let guard = Grip::new(0.18, 0.32, -0.12, 175.0, -5.0);
-            let contact = Grip::new(0.08, 0.32, -0.65, 180.0, 0.0);
-            match gesture {
-                Gesture::Windup => {
-                    if progress < 0.65 {
-                        guard.mix(
-                            Grip::new(0.32, 0.3, 0.12, 145.0, 0.0),
-                            smooth(progress / 0.65),
-                        )
-                    } else {
-                        Grip::new(0.32, 0.3, 0.12, 145.0, 0.0)
-                            .mix(contact, smooth((progress - 0.65) / 0.35))
+    // A corpse relaxes its arms and legs. Rotating the armed guard pose alone
+    // leaves its bent limbs pointing upward, and live grip IK would restore it.
+    if gesture != Gesture::Death {
+        // Keep eyes facing the unit's gameplay forward even in a twisting gesture.
+        let model = library.model_pose(&local);
+        let head = library.bone("Head");
+        let parent = library.bones[head].parent.expect("head parent");
+        local[head].rotation = (model[parent].rotation.inverse()
+            * Quat::from_rotation_y(std::f32::consts::PI))
+        .normalize();
+        let grip = match weapon {
+            WeaponStyle::Sword => grip,
+            WeaponStyle::Spear => {
+                let guard = Grip::new(0.18, 0.32, -0.12, 175.0, -5.0);
+                let contact = Grip::new(0.08, 0.32, -0.65, 180.0, 0.0);
+                match gesture {
+                    Gesture::Windup => {
+                        if progress < 0.65 {
+                            guard.mix(
+                                Grip::new(0.32, 0.3, 0.12, 145.0, 0.0),
+                                smooth(progress / 0.65),
+                            )
+                        } else {
+                            Grip::new(0.32, 0.3, 0.12, 145.0, 0.0)
+                                .mix(contact, smooth((progress - 0.65) / 0.35))
+                        }
                     }
+                    Gesture::Backswing => contact.mix(guard, p),
+                    Gesture::Cast | Gesture::Channel => {
+                        guard.mix(Grip::new(0.18, 0.65, -0.12, 180.0, -40.0), p)
+                    }
+                    Gesture::Dash => contact,
+                    _ => guard,
                 }
-                Gesture::Backswing => contact.mix(guard, p),
-                Gesture::Cast | Gesture::Channel => {
-                    guard.mix(Grip::new(0.18, 0.65, -0.12, 180.0, -40.0), p)
-                }
-                Gesture::Dash => contact,
-                _ => guard,
             }
-        }
-        WeaponStyle::Bow => {
-            let draw = match gesture {
-                Gesture::Windup => p,
-                Gesture::Backswing => 1.0 - p,
-                _ => 0.15,
-            };
-            place_hand(
-                library,
-                &mut local,
-                Grip::new(-0.12, 0.4, -0.36 + draw * 0.36, 180.0, 0.0),
-                true,
-            );
-            Grip::new(0.15, 0.4, -0.48, 180.0, 0.0)
-        }
-    };
-    place_hand(library, &mut local, grip, false);
+            WeaponStyle::Bow => {
+                let draw = match gesture {
+                    Gesture::Windup => p,
+                    Gesture::Backswing => 1.0 - p,
+                    _ => 0.15,
+                };
+                place_hand(
+                    library,
+                    &mut local,
+                    Grip::new(-0.12, 0.4, -0.36 + draw * 0.36, 180.0, 0.0),
+                    true,
+                );
+                Grip::new(0.15, 0.4, -0.48, 180.0, 0.0)
+            }
+        };
+        place_hand(library, &mut local, grip, false);
+    }
+    if gesture == Gesture::Death {
+        // The bundled fallback rig has no death clip. Rotate only its visual
+        // skeleton; the authoritative/display world root stays at the body.
+        local[0].rotation = (Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2 * p)
+            * local[0].rotation)
+            .normalize();
+        let model = library.model_pose(&local);
+        let floor = model
+            .iter()
+            .map(|bone| bone.translation.y)
+            .fold(f32::INFINITY, f32::min);
+        let source_scale = model[0].scale.y / local[0].scale.y;
+        local[0].translation.y += (0.12 - floor) * p / source_scale;
+    }
     local
 }
 

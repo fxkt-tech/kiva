@@ -1,0 +1,30 @@
+{
+  "id": "battle-presentation",
+  "name": "battle-presentation",
+  "title": "完善对局音画与死亡表现",
+  "description": "实现英雄尸体和复活倒计时、战斗音效与英雄联盟资源接入；寒冰优先源计划，皇子使用原皮。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "asuka",
+  "assignee": "asuka",
+  "createdAt": "2026-11-08",
+  "completedAt": null,
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "11-08-hero-lifecycle",
+    "11-08-combat-audio",
+    "11-08-league-assets"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "2026-11-08 实现与独立审查完成，最终make check（343 Rust通过/2既有soak忽略）、WASM Clippy、40 Node及有窗口浏览器全部通过。见父任务verification.md；代码未提交/推送，保留in_progress等待用户后续提交授权和归档收尾。",
+  "meta": {}
+}

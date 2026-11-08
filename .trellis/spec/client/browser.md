@@ -27,8 +27,8 @@
 模拟接口变动必须同步更新演示内容、Rust 测试内容及依赖伤害/位置数值的浏览器断言。
 新增 HUD 区域提供可读标签和稳定选择器，实际值来自 Rust 快照。
 
-英雄采用`client/character`的刚性骨骼火柴人；小兵与基地使用显式角色的轻量模型，见[中路对局](lane-match.md)。待机、真实移动、普攻前后摇、技能及控制姿态均只读模拟。
-骨骼采样、时间、暂停和生命周期契约见[骨骼角色](character-animation.md)。
+英雄和小兵使用本地源模型，基地保留轻量模型；`client/character`的刚性骨骼承担加载回退，见[中路对局](lane-match.md)。待机、真实移动、普攻前后摇、技能及控制姿态均只读模拟。
+骨骼采样、时间、暂停和生命周期契约见[导入模型](imported-models.md)和[回退骨骼](character-animation.md)。
 姿态不能改动`UnitVisual`世界根、底座、模拟碰撞或血条锚点，也不能触发伤害或结束冷却。模型命中跟随实际部件，见[模型拾取](unit-picking.md)。
 
 `scripts/browser-lane-support.cjs`按真实地图派生近家/中线位置，等待固定步分批兵线，并在目标离开画布时先用真实箭头平移；不可伪造offscreen点击。
@@ -75,7 +75,7 @@ Playwright模拟的DOM焦点不能代替Chromium的原生焦点检查；生产�
 `UnitStatuses::airborne_height`提供归一化连续曲线，峰值配置属于客户端。
 拾取由picking逐个实际模型部件的Aabb/GlobalTransform投影判断，使用6 CSS px有限容错；根Pickable仅在无Mesh边界时fallback。
 标签、完整快照和拾取仍读取同一可见根/其实际子树，不另用战斗位置重算；血条和名字不参与命中。公共候选与操作目标资格分离，详见[模型拾取](unit-picking.md)。
-暂停保持根和模型实际Transform，死亡隐藏、重生清零，战斗范围/指示仍使用平面位置。
+暂停保持根和模型实际Transform；死英雄根位于死亡点并保留尸体，真实重生后复位，战斗范围/指示仍使用平面位置。
 
 JS展示状态和Rust生成的技能说明，不推导控制权限、减速数值或状态倒计时。
 状态区域为`#hero-statuses`、`#target-statuses`，单位标签包含`.status-badges`；

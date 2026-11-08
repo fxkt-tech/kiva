@@ -53,8 +53,9 @@ Rust同时验证当前Active的玩家/对局身份、实际MatchState为相同Fi
 `camera::update`只观察当前player身份：首次启动或Active→Active重开绑定新实体时自由镜头居中一次并locked=false，
 保留用户缩放；普通恢复不重复定位，用户平移/Y/Space继续按原规则运行。Selecting仍复位默认CameraRig。
 
-英雄保留23骨骼及原动作；近战/远程兵使用共享轻量几何和不同武器；基地为低台与可隐藏核心。
-所有类型共用UnitVisual根及Airborne高度、逐帧标签和实际根拾取；小兵/基地不创建英雄RigPose。
+英雄使用皇子原皮/源计划寒冰，近战/远程兵使用蓝红双方本地GLB和源动作；回退模型见[骨骼角色](character-animation.md)，完整装配见[导入模型](imported-models.md)。基地为低台与可隐藏核心。
+所有类型共用UnitVisual根及Airborne高度、逐帧标签和实际模型拾取；小兵/基地不创建英雄回退RigPose。
+英雄死亡后保留尸体到真实复活，死亡根取实际死亡点且隐藏地面标记，玩家倒计时只读模拟；死兵仍按原规则回收。
 基地死亡后保留平台、隐藏核心，其他死单位由相应生命周期处理；表现不写血量或胜负。
 Finished首次显示以fraction1.0同步最终权威根和骨骼一次，之后保持精确显示姿态；普通暂停直接保留原姿态。
 

@@ -1,6 +1,105 @@
 //! The visible single lane is derived from the same map as navigation/spawns.
 use crate::{gameplay::MapDefinition, simulation::Team};
-use bevy::prelude::*;
+use bevy::{
+    asset::RenderAssetUsages, mesh::Indices, prelude::*, render::render_resource::PrimitiveTopology,
+};
+
+#[derive(Component, Clone, Copy)]
+pub(super) enum TerrainSurface {
+    Ground,
+    Road,
+}
+
+#[derive(Resource)]
+pub(super) struct TerrainTexture(Handle<Image>);
+
+pub(super) fn load_texture(mut commands: Commands, server: Res<AssetServer>) {
+    commands.insert_resource(TerrainTexture(server.load("textures/league-rift.png")));
+}
+
+/// Keep navigation and map geometry authoritative. The painted source tile is
+/// sampled through bounded grass/stone UV patches, not used as a second map.
+pub(super) fn apply_texture(
+    mut commands: Commands,
+    texture: Res<TerrainTexture>,
+    images: Res<Assets<Image>>,
+    map: Res<MapDefinition>,
+    surfaces: Query<(Entity, &TerrainSurface)>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    if images.get(&texture.0).is_none() || surfaces.is_empty() {
+        return;
+    }
+    let material = materials.add(StandardMaterial {
+        base_color_texture: Some(texture.0.clone()),
+        unlit: true,
+        perceptual_roughness: 1.0,
+        ..default()
+    });
+    for (entity, surface) in &surfaces {
+        let mesh = match surface {
+            TerrainSurface::Ground => texture_tiles(
+                map.half_size() * 2.0,
+                map.half_size() * 2.0,
+                32,
+                32,
+                [[0.905, 0.235], [0.98, 0.235], [0.905, 0.31], [0.98, 0.31]],
+            ),
+            TerrainSurface::Road => texture_tiles(
+                map.lane_length() + 2.4,
+                map.lane_width(),
+                10,
+                1,
+                [
+                    [0.445, 0.945],
+                    [0.725, 0.685],
+                    [0.355, 0.855],
+                    [0.635, 0.595],
+                ],
+            ),
+        };
+        commands
+            .entity(entity)
+            .insert((Mesh3d(meshes.add(mesh)), MeshMaterial3d(material.clone())))
+            .remove::<TerrainSurface>();
+    }
+}
+
+fn texture_tiles(length: f32, width: f32, columns: usize, rows: usize, uv: [[f32; 2]; 4]) -> Mesh {
+    let mut positions = Vec::with_capacity(columns * rows * 4);
+    let mut normals = Vec::with_capacity(columns * rows * 4);
+    let mut uvs = Vec::with_capacity(columns * rows * 4);
+    let mut indices = Vec::with_capacity(columns * rows * 6);
+    for row in 0..rows {
+        for column in 0..columns {
+            let x0 = (column as f32 / columns as f32 - 0.5) * length;
+            let x1 = ((column + 1) as f32 / columns as f32 - 0.5) * length;
+            let z0 = (row as f32 / rows as f32 - 0.5) * width;
+            let z1 = ((row + 1) as f32 / rows as f32 - 0.5) * width;
+            let base = positions.len() as u32;
+            positions.extend([[x0, 0.0, z0], [x1, 0.0, z0], [x0, 0.0, z1], [x1, 0.0, z1]]);
+            normals.extend([[0.0, 1.0, 0.0]; 4]);
+            // This is a painted atlas patch, not a seamless repeat texture.
+            // Mirror adjacent tiles so every shared world edge samples the
+            // same texels, including the road's slanted grass/stone boundary.
+            for corner in 0..4 {
+                let horizontal = (corner % 2) ^ (column % 2);
+                let vertical = (corner / 2) ^ (row % 2);
+                uvs.push(uv[vertical * 2 + horizontal]);
+            }
+            indices.extend([base, base + 2, base + 1, base + 1, base + 2, base + 3]);
+        }
+    }
+    Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::default(),
+    )
+    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
+    .with_inserted_indices(Indices::U32(indices))
+}
 
 pub(super) fn spawn_map(
     commands: &mut Commands,
@@ -11,11 +110,11 @@ pub(super) fn spawn_map(
     let half = map.half_size();
     let ground = materials.add(Color::srgb_u8(35, 61, 54));
     let road = materials.add(Color::srgb_u8(76, 88, 73));
-    let paving = materials.add(Color::srgb_u8(100, 111, 91));
     let stone = materials.add(Color::srgb_u8(73, 87, 76));
     let foliage = materials.add(Color::srgb_u8(27, 70, 51));
     let foliage_light = materials.add(Color::srgb_u8(39, 86, 61));
     commands.spawn((
+        TerrainSurface::Ground,
         Mesh3d(meshes.add(Plane3d::default().mesh().size(half * 2.0, half * 2.0))),
         MeshMaterial3d(ground),
         Transform::default(),
@@ -25,9 +124,9 @@ pub(super) fn spawn_map(
     let end = map.base_position(Team::Enemy);
     let center = (start + end) * 0.5;
     let direction = map.lane_direction(Team::Ally);
-    let lateral = map.lane_lateral(Team::Ally);
     let rotation = Quat::from_rotation_y(-direction.y.atan2(direction.x));
     commands.spawn((
+        TerrainSurface::Road,
         Mesh3d(meshes.add(Cuboid::new(
             map.lane_length() + 2.4,
             0.035,
@@ -36,21 +135,6 @@ pub(super) fn spawn_map(
         MeshMaterial3d(road),
         Transform::from_xyz(center.x, 0.02, center.y).with_rotation(rotation),
     ));
-    let tile = meshes.add(Cuboid::new(1.05, 0.035, 1.05));
-    let steps = (map.lane_length() / 1.3).floor() as i32;
-    for step in 1..steps {
-        for row in [-1, 0, 1] {
-            if (step + row) % 3 != 0 {
-                continue;
-            }
-            let point = start + direction * (step as f32 * 1.3) + lateral * (row as f32 * 1.2);
-            commands.spawn((
-                Mesh3d(tile.clone()),
-                MeshMaterial3d(paving.clone()),
-                Transform::from_xyz(point.x, 0.047, point.y).with_rotation(rotation),
-            ));
-        }
-    }
 
     let border_long = meshes.add(Cuboid::new(half * 2.0 + 0.5, 0.45, 0.45));
     let border_cross = meshes.add(Cuboid::new(0.45, 0.45, half * 2.0 + 0.5));
@@ -111,6 +195,42 @@ pub(super) fn spawn_map(
                     1.0,
                 )),
             ));
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy::mesh::VertexAttributeValues;
+
+    #[test]
+    fn painted_terrain_has_identical_uvs_on_both_sides_of_every_tile_edge() {
+        // A slanted source patch exercises both the grass and road cases.
+        let mesh = texture_tiles(
+            12.0,
+            8.0,
+            3,
+            2,
+            [[0.4, 0.9], [0.7, 0.65], [0.3, 0.8], [0.6, 0.55]],
+        );
+        let Some(VertexAttributeValues::Float32x2(uvs)) = mesh.attribute(Mesh::ATTRIBUTE_UV_0)
+        else {
+            panic!("terrain UVs");
+        };
+        for row in 0..2 {
+            for column in 0..2 {
+                let left = (row * 3 + column) * 4;
+                let right = left + 4;
+                assert_eq!(uvs[left + 1], uvs[right]);
+                assert_eq!(uvs[left + 3], uvs[right + 2]);
+            }
+        }
+        for column in 0..3 {
+            let top = column * 4;
+            let bottom = top + 3 * 4;
+            assert_eq!(uvs[top + 2], uvs[bottom]);
+            assert_eq!(uvs[top + 3], uvs[bottom + 1]);
         }
     }
 }

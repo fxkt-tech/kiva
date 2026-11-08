@@ -207,6 +207,7 @@ pub fn spawn_unit(world: &mut World, spec: UnitSpec) -> Result<Entity, &'static 
                 mana,
                 attack_cooldown: 0,
                 respawn_remaining: None,
+                death_tick: None,
                 last_damaged_tick: None,
                 last_recovery_tick: None,
             },

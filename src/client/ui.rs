@@ -98,6 +98,8 @@ impl From<&ControlState> for ControlView {
 struct UnitView {
     id: String,
     character_id: Option<u16>,
+    portrait: Option<&'static str>,
+    model: Option<super::imported_models::ImportedModelView>,
     role: Option<&'static str>,
     wave: Option<u64>,
     formation_slot: Option<u8>,
@@ -121,6 +123,7 @@ struct UnitView {
     statuses: Vec<StatusInfo>,
     control: ControlView,
     alive: bool,
+    respawn_remaining: Option<f32>,
     action: &'static str,
     order: &'static str,
 }
@@ -171,6 +174,7 @@ struct CharacterSummary {
     id: u16,
     name: String,
     description: String,
+    portrait: Option<&'static str>,
 }
 #[derive(Serialize)]
 struct CharacterPreview {
@@ -200,6 +204,7 @@ impl SessionView {
             id: id.0,
             name: definition.name.clone(),
             description: definition.description.clone(),
+            portrait: super::imported_models::portrait(id),
         };
         let selected = selection.selected.and_then(|choice| {
             let definition = characters.get(choice.character_id)?;
@@ -218,7 +223,8 @@ impl SessionView {
                     .iter()
                     .enumerate()
                     .filter_map(|(slot, id)| {
-                        Some(AbilityMetadata::new(slot, abilities.get((*id)?)?))
+                        let id = (*id)?;
+                        Some(AbilityMetadata::new(slot, id, abilities.get(id)?))
                     })
                     .collect(),
             })
@@ -258,6 +264,7 @@ type ProjectedUnit = (
         Option<&'static WaveMember>,
         Option<&'static UnitAppearance>,
         Option<&'static UnitMechanics>,
+        Option<&'static super::imported_models::ImportedModelView>,
     ),
 );
 
@@ -520,12 +527,15 @@ pub(super) fn publish(
                 pickable,
                 statuses,
                 control,
-                (character, role, wave, appearance, mechanics),
+                (character, role, wave, appearance, mechanics, model),
             )| {
                 let point = pose.position();
                 UnitView {
                     id: id.to_bits().to_string(),
                     character_id: character.map(|identity| identity.id().0),
+                    portrait: character
+                        .and_then(|identity| super::imported_models::portrait(identity.id())),
+                    model: model.cloned(),
                     role: role.copied().map(match_view::role_name),
                     wave: wave.map(WaveMember::wave),
                     formation_slot: wave.map(WaveMember::slot),
@@ -565,6 +575,7 @@ pub(super) fn publish(
                     statuses: statuses.iter().map(Into::into).collect(),
                     control: control.into(),
                     alive: state.alive(),
+                    respawn_remaining: state.respawn_remaining(),
                     action: action.label(),
                     order: match order {
                         UnitOrder::Idle => "Idle",
@@ -581,12 +592,13 @@ pub(super) fn publish(
         .player()
         .and_then(|id| units.get(id).ok())
         .map(
-            |(_, _, state, _, _, _, slots, _, _, _, control, (_, _, _, _, mechanics))| {
+            |(_, _, state, _, _, _, slots, _, _, _, control, (_, _, _, _, mechanics, _))| {
                 (0..4)
                     .filter_map(|slot| {
-                        let definition = catalog.get(slots.ability(slot)?)?;
+                        let id = slots.ability(slot)?;
+                        let definition = catalog.get(id)?;
                         Some(
-                            AbilityView::new(slot, definition, state, control, slots)
+                            AbilityView::new(slot, id, definition, state, control, slots)
                                 .with_mechanics(
                                     definition, state, control, mechanics, slot, tick.0,
                                 ),
@@ -698,8 +710,17 @@ pub(super) fn update_native_hud(
             .map(|status| format!("{:?} {:.1}s", status.kind(), status.remaining_seconds()))
             .collect::<Vec<_>>()
             .join(" · ");
+        let respawn = state
+            .respawn_remaining()
+            .map_or_else(String::new, |remaining| {
+                if remaining > 0.0 {
+                    format!("\n复活倒计时 {:.0} 秒", remaining.ceil())
+                } else {
+                    "\n正在等待复活位置".into()
+                }
+            });
         hud.0 = format!(
-            "KIVA / THE PROVING GROUNDS\nRight click: move / attack · A + click: attack move · S: stop\n{loadout}\nLeft click confirms target; self-cast skills release immediately\nY: camera lock · Space: center · Arrows / edges: pan · Scroll: zoom · Esc: pause\nHP {:.0}   Energy {:.0}   Q {:.1}  W {:.1}  E {:.1}  R {:.1}\nAD {:.1}   AP {:.1}   Armor {:.1}   MR {:.1}\nMove {:.0}   Range {:.0}   Attack speed {:.2}/s\n{statuses}{}",
+            "KIVA / THE PROVING GROUNDS\nRight click: move / attack · A + click: attack move · S: stop\n{loadout}\nLeft click confirms target; self-cast skills release immediately\nY: camera lock · Space: center · Arrows / edges: pan · Scroll: zoom · Esc: pause\nHP {:.0}   Energy {:.0}   Q {:.1}  W {:.1}  E {:.1}  R {:.1}\nAD {:.1}   AP {:.1}   Armor {:.1}   MR {:.1}\nMove {:.0}   Range {:.0}   Attack speed {:.2}/s\n{statuses}{respawn}{}",
             state.health(),
             state.mana(),
             slots.cooldown(0).unwrap_or(0.0),
@@ -816,7 +837,15 @@ mod tests {
                     .get(slots.ability(slot).unwrap())
                     .unwrap();
                 let runtime = serde_json::to_value(
-                    AbilityView::new(slot, definition, state, control, slots).with_mechanics(
+                    AbilityView::new(
+                        slot,
+                        slots.ability(slot).unwrap(),
+                        definition,
+                        state,
+                        control,
+                        slots,
+                    )
+                    .with_mechanics(
                         definition,
                         state,
                         control,

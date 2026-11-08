@@ -8,7 +8,11 @@ const mousePositions = new WeakMap();
 
 async function serveBuild(directory) {
   const root = path.resolve(directory);
-  const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".wasm": "application/wasm" };
+  const types = {
+    ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".wasm": "application/wasm",
+    ".json": "application/json", ".glb": "model/gltf-binary", ".png": "image/png",
+    ".jpg": "image/jpeg", ".ogg": "audio/ogg", ".mp3": "audio/mpeg",
+  };
   const server = http.createServer(async (request, response) => {
     const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
     const file = path.resolve(root, `.${pathname === "/" ? "/index.html" : pathname}`);

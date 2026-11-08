@@ -543,6 +543,90 @@ fn death_cancels_actions_and_respawns_with_a_clean_state() {
 }
 
 #[test]
+fn death_clock_freezes_on_pause_and_waits_at_zero_until_respawn_is_safe() {
+    let mut a = Arena::new(vec![]);
+    let source = a.unit(Team::Ally, Vec2::ZERO);
+    let target = a.spawn(
+        Team::Enemy,
+        Vec2::X * 3.0,
+        UnitStats {
+            max_health: 40.0,
+            ..default()
+        },
+        Some(1.0),
+    );
+    let original_life = a
+        .app
+        .world()
+        .get::<UnitState>(target)
+        .unwrap()
+        .life_ref(target);
+    assert_eq!(
+        a.app.world().get::<UnitState>(target).unwrap().death_tick(),
+        None
+    );
+    assert_eq!(
+        a.app
+            .world()
+            .get::<UnitState>(target)
+            .unwrap()
+            .respawn_remaining(),
+        None
+    );
+    a.command(source, UnitCommand::AttackTarget(target));
+    a.advance(0.6);
+    let state = a.app.world().get::<UnitState>(target).unwrap();
+    assert!(!state.alive());
+    let died = state.death_tick().unwrap();
+    let tick = a.app.world().resource::<SimulationTick>().0;
+    let remaining = state.respawn_remaining().unwrap();
+    assert!((remaining - (1.0 - (tick - died) as f32 * TICK_SECONDS)).abs() < 0.00001);
+    a.app.world_mut().resource_mut::<SimulationControl>().paused = true;
+    a.advance(2.0);
+    assert_eq!(a.app.world().resource::<SimulationTick>().0, tick);
+    assert_eq!(
+        a.app
+            .world()
+            .get::<UnitState>(target)
+            .unwrap()
+            .respawn_remaining(),
+        Some(remaining)
+    );
+    assert_eq!(
+        a.app.world().get::<UnitState>(target).unwrap().death_tick(),
+        Some(died)
+    );
+
+    // A configured navigation change can make the due birth point unsafe.
+    // Time may reach zero, but that must not publish a new life or negative UI time.
+    a.app.world_mut().insert_resource(NavigationMap::new(
+        20.0,
+        1.0,
+        vec![Obstacle {
+            center: Vec2::X * 3.0,
+            half_size: Vec2::splat(2.0),
+        }],
+    ));
+    a.app.world_mut().resource_mut::<SimulationControl>().paused = false;
+    a.advance(2.0);
+    let state = a.app.world().get::<UnitState>(target).unwrap();
+    assert!(!state.alive());
+    assert_eq!(state.respawn_remaining(), Some(0.0));
+    assert_eq!(state.death_tick(), Some(died));
+    assert_eq!(state.life_ref(target), original_life);
+    a.app
+        .world_mut()
+        .insert_resource(NavigationMap::new(20.0, 1.0, vec![]));
+    a.step();
+    let state = a.app.world().get::<UnitState>(target).unwrap();
+    assert!(state.alive());
+    assert_eq!(state.respawn_remaining(), None);
+    assert_eq!(state.death_tick(), None);
+    assert_ne!(state.life_ref(target), original_life);
+    assert_eq!(a.position(target), Vec2::X * 3.0);
+}
+
+#[test]
 fn pause_freezes_timers_positions_and_queued_commands() {
     let mut a = Arena::new(vec![]);
     let p = a.unit(Team::Ally, Vec2::ZERO);

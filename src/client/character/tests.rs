@@ -880,6 +880,298 @@ fn commit_death_respawn_in_one_display_frame_drops_old_dash_and_reset_cleans_hie
 }
 
 #[test]
+fn unseen_respawned_life_does_not_inherit_previous_running_pose_when_it_dies() {
+    let mut app = app();
+    let kill = AbilityId(206);
+    app.world_mut()
+        .resource_mut::<AbilityCatalog>()
+        .register(
+            kill,
+            direct(Effect::Damage(DamageSpec {
+                kind: DamageType::True,
+                base: 1000.0,
+                ad_ratio: 0.0,
+                ap_ratio: 0.0,
+            })),
+        )
+        .unwrap();
+    let hero = spawn(
+        &mut app,
+        Team::Ally,
+        Vec2::ZERO,
+        [None; 4],
+        UnitStats::default(),
+    );
+    let enemy = spawn(
+        &mut app,
+        Team::Enemy,
+        Vec2::Y * 2.0,
+        [Some(kill), None, None, None],
+        UnitStats::default(),
+    );
+    app.world_mut().run_schedule(Update);
+    command(&mut app, hero, UnitCommand::MoveTo(Vec2::X * 4.0));
+    step(&mut app, 12);
+    assert_eq!(gesture(&app, hero), Gesture::Run);
+    let idle = poses::sample(
+        app.world().resource::<AnimationLibrary>(),
+        Gesture::Idle,
+        0.0,
+        0.0,
+    );
+    assert_ne!(app.world().get::<RigPose>(hero).unwrap().local, idle);
+    let previous_life = app.world().get::<UnitState>(hero).unwrap().life_ref(hero);
+    let cast = UnitCommand::CastAbility {
+        slot: 0,
+        target: AbilityTarget::Unit(hero),
+    };
+    command(&mut app, enemy, cast);
+    app.world_mut().run_schedule(FixedUpdate);
+    assert!(!app.world().get::<UnitState>(hero).unwrap().alive());
+    for _ in 0..12 {
+        if app.world().get::<UnitState>(hero).unwrap().alive() {
+            break;
+        }
+        app.world_mut().run_schedule(FixedUpdate);
+    }
+    let state = app.world().get::<UnitState>(hero).unwrap();
+    assert!(state.alive());
+    assert_ne!(state.life_ref(hero), previous_life);
+    command(&mut app, enemy, cast);
+    app.world_mut().run_schedule(FixedUpdate);
+    assert!(!app.world().get::<UnitState>(hero).unwrap().alive());
+    // No display update has seen the intervening death or respawn. The new
+    // life was idle, so its first falling sample must not reuse the old run.
+    app.world_mut().run_schedule(Update);
+    assert_eq!(gesture(&app, hero), Gesture::Death);
+    let local = &app.world().get::<RigPose>(hero).unwrap().local;
+    assert_eq!(local.len(), idle.len());
+    for (actual, expected) in local.iter().zip(&idle) {
+        assert!(actual.translation.distance(expected.translation) < 0.00001);
+        assert!(actual.rotation.dot(expected.rotation).abs() > 0.99999);
+        assert!(actual.scale.distance(expected.scale) < 0.00001);
+    }
+}
+
+#[test]
+fn fallback_death_pose_is_flat_and_grounded_for_every_weapon_style() {
+    let library = AnimationLibrary::default();
+    for weapon in [
+        super::weapon::WeaponStyle::Sword,
+        super::weapon::WeaponStyle::Spear,
+        super::weapon::WeaponStyle::Bow,
+    ] {
+        let local = poses::sample_weapon(&library, Gesture::Death, 1.0, 0.0, weapon);
+        let model = library.model_pose(&local);
+        let bottom = model
+            .iter()
+            .map(|bone| bone.translation.y)
+            .fold(f32::INFINITY, f32::min);
+        let top = model
+            .iter()
+            .map(|bone| bone.translation.y)
+            .fold(f32::NEG_INFINITY, f32::max);
+        assert!((bottom - 0.12).abs() < 0.0001);
+        assert!(top - bottom < 0.35, "dead limbs must lie on the ground");
+    }
+}
+
+#[test]
+fn hero_corpse_stays_at_death_position_is_unpickable_and_freezes_until_respawn() {
+    use crate::client::{camera::GameCamera, picking};
+    use bevy::camera::{CameraProjection, RenderTargetInfo, primitives::MeshAabb};
+    let mut app = app();
+    let kill = AbilityId(205);
+    app.world_mut()
+        .resource_mut::<AbilityCatalog>()
+        .register(
+            kill,
+            direct(Effect::Damage(DamageSpec {
+                kind: DamageType::True,
+                base: 1000.0,
+                ad_ratio: 0.0,
+                ap_ratio: 0.0,
+            })),
+        )
+        .unwrap();
+    let hero = spawn_unit(
+        app.world_mut(),
+        UnitSpec {
+            name: "Corpse hero".into(),
+            team: Team::Enemy,
+            position: Vec2::ZERO,
+            stats: UnitStats::default(),
+            abilities: [None; 4],
+            respawn_delay: Some(1.2),
+        },
+    )
+    .unwrap();
+    let source = spawn(
+        &mut app,
+        Team::Ally,
+        Vec2::Y * 4.0,
+        [Some(kill), None, None, None],
+        UnitStats::default(),
+    );
+    command(&mut app, hero, UnitCommand::MoveTo(Vec2::X * 4.0));
+    step(&mut app, 12);
+    app.world_mut().run_schedule(PostUpdate);
+    let original_life = app.world().get::<UnitState>(hero).unwrap().life_ref(hero);
+    let socket = weapon_socket(&mut app, hero).0;
+    let bounds: Vec<_> = app
+        .world_mut()
+        .query::<(Entity, &Mesh3d)>()
+        .iter(app.world())
+        .filter_map(|(id, mesh)| {
+            app.world()
+                .resource::<Assets<Mesh>>()
+                .get(mesh)
+                .and_then(MeshAabb::get_aabb)
+                .map(|bounds| (id, bounds))
+        })
+        .collect();
+    for (id, bounds) in bounds {
+        app.world_mut().entity_mut(id).insert(bounds);
+    }
+    let visible: Vec<_> = app
+        .world_mut()
+        .query_filtered::<Entity, With<InheritedVisibility>>()
+        .iter(app.world())
+        .collect();
+    for id in visible {
+        *app.world_mut().get_mut::<InheritedVisibility>(id).unwrap() = InheritedVisibility::VISIBLE;
+    }
+    let camera_transform =
+        GlobalTransform::from(Transform::from_xyz(5.0, 8.0, 12.0).looking_at(Vec3::Y, Vec3::Y));
+    let mut camera = Camera::default();
+    camera.computed.target_info = Some(RenderTargetInfo {
+        physical_size: UVec2::new(1280, 800),
+        scale_factor: 1.0,
+    });
+    camera.computed.clip_from_view = PerspectiveProjection {
+        aspect_ratio: 1.6,
+        ..default()
+    }
+    .get_clip_from_view();
+    app.world_mut()
+        .spawn((GameCamera, camera.clone(), camera_transform));
+    let head = |app: &mut App| {
+        app.world_mut()
+            .query::<(&BoneVisual, &GlobalTransform)>()
+            .iter(app.world())
+            .find(|(visual, _)| {
+                visual.owner == hero && matches!(visual.attachment, Attachment::Head { .. })
+            })
+            .unwrap()
+            .1
+            .translation()
+    };
+    let point = camera
+        .world_to_viewport(&camera_transform, head(&mut app))
+        .unwrap();
+    assert!(picking::candidates(app.world_mut(), point).contains(&hero));
+    command(
+        &mut app,
+        source,
+        UnitCommand::CastAbility {
+            slot: 0,
+            target: AbilityTarget::Unit(hero),
+        },
+    );
+    step(&mut app, 1);
+    app.world_mut().run_schedule(PostUpdate);
+    assert!(!app.world().get::<UnitState>(hero).unwrap().alive());
+    let death_position = app.world().get::<UnitPose>(hero).unwrap().position();
+    assert!(
+        death_position.x > 0.1,
+        "death occurs away from the birth point"
+    );
+    assert_eq!(
+        *app.world().get::<Visibility>(hero).unwrap(),
+        Visibility::Inherited
+    );
+    assert_eq!(
+        app.world().get::<Transform>(hero).unwrap().translation,
+        Vec3::new(death_position.x, 0.0, death_position.y)
+    );
+    assert_eq!(gesture(&app, hero), Gesture::Death);
+    step(&mut app, 30);
+    app.world_mut().run_schedule(PostUpdate);
+    let fallen = app.world().get::<RigPose>(hero).unwrap().model().to_vec();
+    assert!(
+        fallen
+            .iter()
+            .map(|bone| bone.translation.y)
+            .fold(f32::NEG_INFINITY, f32::max)
+            < 0.6,
+        "fallback body must lie down, not remain upright"
+    );
+    let point = camera
+        .world_to_viewport(&camera_transform, head(&mut app))
+        .unwrap();
+    assert!(
+        !picking::candidates(app.world_mut(), point).contains(&hero),
+        "visible corpse is not a living target"
+    );
+    let remaining = app
+        .world()
+        .get::<UnitState>(hero)
+        .unwrap()
+        .respawn_remaining();
+    let corpse_root = *app.world().get::<Transform>(hero).unwrap();
+    app.world_mut().resource_mut::<SimulationControl>().paused = true;
+    app.world_mut()
+        .resource_mut::<Time<Fixed>>()
+        .accumulate_overstep(std::time::Duration::from_millis(13));
+    step(&mut app, 120);
+    assert_eq!(app.world().get::<RigPose>(hero).unwrap().model(), fallen);
+    assert_eq!(*app.world().get::<Transform>(hero).unwrap(), corpse_root);
+    assert_eq!(
+        app.world()
+            .get::<UnitState>(hero)
+            .unwrap()
+            .respawn_remaining(),
+        remaining
+    );
+    app.world_mut().resource_mut::<SimulationControl>().paused = false;
+    step(&mut app, 80);
+    let state = app.world().get::<UnitState>(hero).unwrap();
+    assert!(state.alive());
+    assert_ne!(state.life_ref(hero), original_life);
+    assert_eq!(state.death_tick(), None);
+    assert_eq!(state.respawn_remaining(), None);
+    assert_eq!(gesture(&app, hero), Gesture::Idle);
+    assert_eq!(
+        app.world().get::<Transform>(hero).unwrap().translation,
+        Vec3::ZERO
+    );
+    assert_eq!(
+        weapon_socket(&mut app, hero).0,
+        socket,
+        "respawn reuses the model hierarchy"
+    );
+    command(
+        &mut app,
+        source,
+        UnitCommand::CastAbility {
+            slot: 0,
+            target: AbilityTarget::Unit(hero),
+        },
+    );
+    step(&mut app, 1);
+    assert!(!app.world().get::<UnitState>(hero).unwrap().alive());
+    reset_simulation(app.world_mut());
+    assert!(app.world().get_entity(socket).is_err());
+    assert_eq!(
+        app.world_mut()
+            .query::<&CharacterModel>()
+            .iter(app.world())
+            .count(),
+        0
+    );
+}
+
+#[test]
 fn match_roles_use_separate_models_and_terminal_roots_and_bones_sync_once_then_freeze() {
     use crate::{
         client::{

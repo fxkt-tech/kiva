@@ -79,6 +79,72 @@ fn screen(app: &mut App, point: Vec3) -> Vec2 {
 }
 
 #[test]
+fn skinned_model_uses_the_displayed_joint_instead_of_its_bind_pose_mesh_box() {
+    use bevy::mesh::{
+        VertexAttributeValues,
+        skinning::{SkinnedMesh, SkinnedMeshInverseBindposes},
+    };
+    let mut app = app(10.0, 1.0);
+    app.init_resource::<Assets<Mesh>>()
+        .init_resource::<Assets<SkinnedMeshInverseBindposes>>();
+    let owner = actor(&mut app, crate::simulation::Team::Enemy);
+    let joint = app
+        .world_mut()
+        .spawn(GlobalTransform::from_translation(Vec3::new(2.4, 1.0, 0.0)))
+        .id();
+    let mut mesh = Mesh::from(Cuboid::new(0.3, 0.3, 0.3));
+    let count = mesh.count_vertices();
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_JOINT_INDEX,
+        VertexAttributeValues::Uint16x4(vec![[0, 0, 0, 0]; count]),
+    );
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_JOINT_WEIGHT,
+        vec![[1.0, 0.0, 0.0, 0.0]; count],
+    );
+    mesh.generate_skinned_mesh_bounds().unwrap();
+    let mesh = app.world_mut().resource_mut::<Assets<Mesh>>().add(mesh);
+    let inverse = app
+        .world_mut()
+        .resource_mut::<Assets<SkinnedMeshInverseBindposes>>()
+        .add(vec![Mat4::IDENTITY]);
+    let part = app
+        .world_mut()
+        .spawn((
+            Mesh3d(mesh),
+            PickGeometry,
+            SkinnedMesh {
+                inverse_bindposes: inverse,
+                joints: vec![joint],
+            },
+            Aabb::from_min_max(-Vec3::splat(0.15), Vec3::splat(0.15)),
+            GlobalTransform::IDENTITY,
+            InheritedVisibility::VISIBLE,
+        ))
+        .id();
+    app.world_mut().entity_mut(owner).add_child(part);
+    let actual = screen(&mut app, Vec3::new(2.4, 1.0, 0.0));
+    let stale = screen(&mut app, Vec3::new(0.0, 0.0, 0.0));
+    assert_eq!(candidates(app.world_mut(), actual), vec![owner]);
+    assert!(candidates(app.world_mut(), stale).is_empty());
+    app.world_mut()
+        .entity_mut(joint)
+        .insert(GlobalTransform::from_translation(Vec3::new(-2.2, 2.0, 0.0)));
+    assert!(candidates(app.world_mut(), actual).is_empty());
+    let moved = screen(&mut app, Vec3::new(-2.2, 2.0, 0.0));
+    assert_eq!(candidates(app.world_mut(), moved), vec![owner]);
+    app.world_mut()
+        .entity_mut(joint)
+        .insert(GlobalTransform::from(
+            Transform::from_xyz(-2.2, 2.0, 0.0).with_scale(Vec3::ZERO),
+        ));
+    assert!(
+        candidates(app.world_mut(), moved).is_empty(),
+        "an authored hidden attachment must not leave a clickable point"
+    );
+}
+
+#[test]
 fn real_model_parts_replace_the_root_box_and_follow_the_last_displayed_transform() {
     let mut app = app(10.0, 1.0);
     let id = actor(&mut app, crate::simulation::Team::Enemy);

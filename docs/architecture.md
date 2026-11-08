@@ -60,6 +60,8 @@ src/client/character/model.rs 分段模型、头眼与武器socket
 src/client/character/weapon.rs 展示身份到剑/枪/弓几何，不参与战斗规则
 src/client/character/poses.rs 源动作上的骨骼姿态与持武器手势
 src/client/character/animation.rs 只读模拟到动作、过渡与生命缓存
+src/client/imported_models/   本地模型目录、异步装配和显式源动作采样
+src/client/audio.rs           已发生的模拟事实到有限、带生命身份的音频 cue
 src/client/ui.rs              HUD 的只读状态投影
 src/client/web.rs             浏览器交互适配
 web/hud.js                    DOM 展示、暂停菜单、技能/被动说明与单位资源标签
@@ -71,6 +73,7 @@ web/startup.js                Trunk前同步捕获启动结果，向迟到HUD回
 web/equipment.js              首份只读目录缓存、六格HUD、装配面板和装备意图
 web/match.js                  对局时钟、基地生命、波次和结算展示
 web/pointer.js                Web实时CSS指针、正常位移校准、按下坐标与即时显示
+web/audio.js                  唯一 WebAudio 上下文、手势解锁、播放预算和清理
 tests/simulation.rs           既有属性、攻击、技能生命周期无窗口回归
 tests/status_effects.rs       多效果、控制组合、生命身份和强制运动行为测试
 tests/characters.rs           角色构造、装配、实例独立和重生保持测试
@@ -142,7 +145,7 @@ HUD 按钮通过游戏光标命中后激活，技能请求在该次鼠标事件�
 相机和表现逐帧更新，人物根使用上一模拟位置与当前位置插值，并加上击飞表现高度。
 `PresentationFrame`为显示根、骨骼、弹丸和兵种模型提供同一个采样分数；普通暂停保持最后显示帧，
 首次观察终局允许同步最终状态一次，此后冻结，不能随继续变化的overstep抖动。
-底座通过反向局部高度留在地面，模型子层只负责骨骼姿态。picking读取最后实际显示的模型子树Mesh3d部件Aabb与GlobalTransform，逐部件投影为凸区域，提供6 CSS px容错；不读取未插值的战斗位置。
+底座通过反向局部高度留在地面，模型子层只负责骨骼姿态。picking读取最后实际显示的模型子树：刚性部件使用Aabb与GlobalTransform，蒙皮部件使用逐关节动态边界及当前关节变换，逐部件投影为凸区域，提供6 CSS px容错；不读取未插值的战斗位置。
 PickGeometry标记模型子树，技能特效/范围/弹丸不加入；UnitGroundBase装饰排除，基地平台仍是模型。根Pickable仅在模型边界未就绪时fallback，血条/名字不参与命中。公共候选不判断敌友或射程，controls按操作资格选目标，模拟继续复核攻击/技能规则，未来友方技能复用相同几何入口。
 A+左键明确命中敌方模型时和右键一样发AttackTarget并更新selected；只有空地才发AttackMove自动索敌，不把旧selected当作新点击目标。攻击移动的模拟索敌规则保持在simulation。
 HudView.hovered是只读悬停身份，selected仍为持久点击结果；逐帧kiva-camera.enemy_hovered驱动pointer所有者的箭头/剑形，UI手势、暂停、失锁和失焦清掉旧形状，不等待80ms完整快照。细节见[模型拾取规范](../.trellis/spec/client/unit-picking.md)。
@@ -225,26 +228,41 @@ movement先在包含全部旧墙与新圈的导航副本中为所有受影响Act
 已提交载体的命中按几何和生命身份裁决，不因之后丢视野而撤销。
 客户端VisibleWorld集合将同一事实供模型、逐帧血条、HUD和拾取使用；AI也按自身阵营过滤观察。
 
-## 骨骼角色表现
+## 模型、动作与生命周期表现
 
-双方英雄采用act分支的23骨骼刚性火柴人和CC0动作资源，原生/WASM内嵌同一份数据。
-`character::rig`校验和采样源局部变换，`poses`提供小型持剑姿态，`model`将17骨段、14关节、
-头眼和当前武器绑定到骨骼；皇子使用长枪，寒冰使用弓，独立姿态负责双臂配合。全部几何位于单位的`CharacterModel`子树，整场重开随根递归删除。
+生产对局使用本地 GLB：皇子原皮、源计划寒冰，以及蓝/红双方近战和远程兵。
+`imported_models::catalog`集中映射角色/兵种、模型比例、源动作名、技能图标和头像；
+`runtime`共享资源句柄，为每单位创建独立骨骼和播放器，完整就绪后原子替换程序模型。
+加载失败保留回退并提供只读错误，不能出现两套身体。地图原纹理铺在既有模式几何上，
+地图边界、导航和取景仍由原所有者决定。资源来源、哈希与离线重建见[模型资源](../assets/models/README.md)。
 
-`character::animation`只读UnitAction、真实步位移、控制、目录与模拟事件。它用模拟tick和插值分数推进
-待机、步态及平滑过渡，不从宿主时间重建战斗时钟。普攻准备缓存首次观察到的前摇剩余，
-后摇直接读取冻结的duration；前摇末段姿势衔接CONTACT，实际出手、命中和后摇阶段只由模拟推进。动画不驱动位移、伤害或冷却。
+客户端以模拟 tick 和统一表现分数显式采样待机、真实移动、普攻前后摇、实际技能和死亡动作。
+普攻准备缓存首次观察到的前摇长度，后摇读取冻结的 duration；真实提交事件识别瞬发技能。
+源动画不驱动伤害、冷却、移动或复活；UnitVisual 继续唯一拥有世界位置与跃击高度，
+源 root motion 在导入/动画后处理中去重。生命或动作阶段切换先恢复绑定姿态，避免源 clip
+省略轨道时继承旧尸体动作。普通暂停保持已显示姿态，终局首次同步最终步后冻结。
+蒙皮拾取使用实际显示的逐关节边界，血条不参与。详见[导入模型规范](../.trellis/spec/client/imported-models.md)。
 
-独立MessageReader读取`AbilityCommitted`，因此瞬发或装备主动不必经过可见Casting帧；
-冲刺姿态由已提交类型与实际运动共同决定，可以超出技能Recovery，但不能延长运动。
-提交、死亡、重生按通知顺序清记忆，life_ref变化补充清理旧生命缓存；不会从旧生命恢复冲刺。
-暂停仅消费通知并标记待重置，保留实际骨骼、socket和播放缓存，恢复后再更新。
-资源出处与重建方式见[动画资源](../assets/animations/README.md)，可执行约定见
-[骨骼角色规范](../.trellis/spec/client/character-animation.md)。
+`client/character`保留 act 分支的23骨骼刚性模型，承担加载回退和无模式测试演员。
+原内嵌动作、枪弓 socket 和规则只读边界仍成立，详见[回退骨骼规范](../.trellis/spec/client/character-animation.md)。
+基地继续使用低台与阵营水晶；`unit_appearance`统一角色类型、标签高度和死亡可见性，
+模型层不写生命或胜负。
 
-小兵采用共享轻量几何，近战盾剑和远程法杖外观分开；基地采用低台与阵营水晶。
-`unit_appearance`按显式`UnitRole`集中决定模型、拾取边界和标签高度，不能把所有Unit隐式套成英雄。
-模型层只读，基地受效和兵种攻击方式均由模拟定义决定。
+致死由模拟记录 `UnitState::death_tick()`，`respawn_remaining()`只读返回真实剩余时间。
+死英雄停留在死亡位置，倒地后保留尸体，地面标记隐藏；到真实复活时同一实体恢复新生命并重置动作。
+阻塞复活点时保持0秒并等待安全落点，HUD不自行启动计时器或假定复活。
+小兵仍立即回收，基地保留原终局外观；整局重开统一随单位根清理模型子树。
+
+## 战斗音频
+
+`CombatAudioPlugin`在每个完整模拟步后、玩法回收前捕获英雄的实际攻击、技能提交、死亡和复活，
+并立即快照生命身份、位置和团队可见性。有限 cue 队列在显示帧派发；客户端按相机距离/方向调整听感，
+过旧、旧局、旧生命或不可见来源不能迟到补播。表现随机数独立于模拟。
+
+`web/audio.js`是唯一播放后端，提前同步注册目录监听；首次可信用户手势解锁同一个 WebAudio 上下文。
+音量、静音和声道预算只影响播放。暂停、失焦、失锁或重开立即停止节点，恢复不补播旧声音。
+源计划寒冰和皇子原皮使用各自实际 SFX，全部 OGG 本地发布；来源、提取和解码复现见
+[音频资源](../assets/audio/README.md)，跨层字段与边界见[音频规范](../.trellis/spec/client/combat-audio.md)。
 
 
 ## 指令与动作

@@ -4,6 +4,7 @@ use serde::Serialize;
 
 #[derive(Serialize)]
 pub(super) struct AbilityDescription {
+    id: u16,
     name: String,
     total_cooldown: f32,
     cost: f32,
@@ -12,10 +13,11 @@ pub(super) struct AbilityDescription {
     targeting: &'static str,
     target_hint: &'static str,
     icon: &'static str,
+    icon_asset: Option<&'static str>,
     description: String,
 }
 impl AbilityDescription {
-    pub fn new(definition: &AbilityDefinition) -> Self {
+    pub fn new(id: AbilityId, definition: &AbilityDefinition) -> Self {
         let (targeting, target_hint) = match definition.targeting {
             Targeting::Enemy if matches!(&definition.execution, AbilityExecution::Leap(spec) if spec.heroes_only) => {
                 ("Enemy", "点选可见敌方英雄，超距自动走近")
@@ -27,6 +29,7 @@ impl AbilityDescription {
         };
         let (icon, description) = describe_execution(definition.targeting, &definition.execution);
         Self {
+            id: id.0,
             name: definition.name.clone(),
             total_cooldown: definition.cooldown,
             cost: definition.mana_cost,
@@ -35,6 +38,7 @@ impl AbilityDescription {
             targeting,
             target_hint,
             icon,
+            icon_asset: super::imported_models::ability_icon(id),
             description,
         }
     }
@@ -47,10 +51,10 @@ pub(super) struct AbilityMetadata {
     description: AbilityDescription,
 }
 impl AbilityMetadata {
-    pub fn new(slot: usize, definition: &AbilityDefinition) -> Self {
+    pub fn new(slot: usize, id: AbilityId, definition: &AbilityDefinition) -> Self {
         Self {
             slot,
-            description: AbilityDescription::new(definition),
+            description: AbilityDescription::new(id, definition),
         }
     }
 }
@@ -79,6 +83,7 @@ struct AbilityRuntimeView {
 impl AbilityView {
     pub fn new(
         slot: usize,
+        id: AbilityId,
         definition: &AbilityDefinition,
         state: &UnitState,
         control: &ControlState,
@@ -86,6 +91,7 @@ impl AbilityView {
     ) -> Self {
         Self::with_cooldown(
             slot,
+            id,
             definition,
             state,
             control,
@@ -94,6 +100,7 @@ impl AbilityView {
     }
     pub fn with_cooldown(
         slot: usize,
+        id: AbilityId,
         definition: &AbilityDefinition,
         state: &UnitState,
         control: &ControlState,
@@ -101,7 +108,7 @@ impl AbilityView {
     ) -> Self {
         let unavailable_reason = unavailable_reason(state, control, cooldown, definition);
         Self {
-            metadata: AbilityMetadata::new(slot, definition),
+            metadata: AbilityMetadata::new(slot, id, definition),
             cooldown,
             available: unavailable_reason.is_none(),
             unavailable_reason,
