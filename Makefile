@@ -13,6 +13,7 @@ lint:
 
 test:
 	cargo test --locked
+	node --test scripts/*-unit.test.cjs
 
 wasm:
 	cargo check --locked --target wasm32-unknown-unknown

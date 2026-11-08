@@ -1,93 +1,106 @@
-//! Headless single-lane mode. This layer composes public simulation commands;
-//! it does not own a second copy of combat health, clocks or unit positions.
-mod ai;
-mod content;
-mod definition;
-mod lifecycle;
-mod map;
-mod match_state;
-mod spawn;
-pub mod units;
+//! The demo's level data and player assembly, independent of rendering and input.
 
-pub use ai::AiPlugin;
-pub use definition::MatchDefinition;
-pub use map::{MapDefinition, opponent};
-pub use match_state::{
-    Controller, MatchFinished, MatchHandle, MatchId, MatchOutcome, MatchPhase, MatchState,
-    UnitRole, WaveMember,
-};
-pub use spawn::{MatchError, reset_match, start_match};
-
-use crate::simulation::*;
 use bevy::prelude::*;
 
+use crate::simulation::{Body, CollisionWorld, MoveIntent, SolidBox};
+
+#[derive(Component)]
+pub struct Player;
+
 #[derive(Resource)]
-struct Prepared;
-
-/// Explicit ordering seams for mode AI. Decisions submit commands before the
-/// complete simulation set; lifecycle always settles outcome before waves.
-#[derive(SystemSet, Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum GameplaySet {
-    Decisions,
-    Outcome,
-    Waves,
-    Cleanup,
-    Recovery,
+pub struct Level {
+    pub half_size: f32,
+    pub props: Vec<Prop>,
 }
 
-pub struct GameplayPlugin;
-impl Plugin for GameplayPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<MatchState>()
-            .init_resource::<match_state::MatchSequence>()
-            .init_resource::<MapDefinition>()
-            .init_resource::<MatchDefinition>()
-            .add_message::<MatchFinished>()
-            .configure_sets(
-                FixedUpdate,
-                (
-                    GameplaySet::Decisions,
-                    SimulationSet::Step,
-                    GameplaySet::Outcome,
-                    GameplaySet::Waves,
-                    GameplaySet::Cleanup,
-                    GameplaySet::Recovery,
-                )
-                    .chain(),
-            )
-            .configure_sets(
-                FixedUpdate,
-                (
-                    GameplaySet::Decisions.run_if(lifecycle::running),
-                    SimulationSet::Step.run_if(lifecycle::running),
-                ),
-            )
-            .add_systems(FixedUpdate, lifecycle::outcome.in_set(GameplaySet::Outcome))
-            .add_systems(FixedUpdate, lifecycle::waves.in_set(GameplaySet::Waves))
-            .add_systems(FixedUpdate, lifecycle::cleanup.in_set(GameplaySet::Cleanup))
-            .add_systems(
-                FixedUpdate,
-                lifecycle::recover_heroes.in_set(GameplaySet::Recovery),
-            );
+#[derive(Clone, Copy, Debug)]
+pub struct Prop {
+    pub center: Vec2,
+    pub size: Vec3,
+    pub kind: PropKind,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum PropKind {
+    Crate,
+    Pillar,
+    Stone,
+}
+
+impl Level {
+    fn courtyard() -> Self {
+        use PropKind::{Crate, Pillar, Stone};
+
+        let prop = |x, z, size, kind| Prop {
+            center: Vec2::new(x, z),
+            size,
+            kind,
+        };
+
+        Self {
+            half_size: 25.0,
+            props: vec![
+                prop(-5.0, -5.0, Vec3::new(1.6, 1.4, 1.6), Crate),
+                prop(-3.0, -7.0, Vec3::new(1.2, 1.0, 1.2), Crate),
+                prop(5.0, -4.0, Vec3::new(1.8, 1.5, 1.6), Crate),
+                prop(6.0, -6.2, Vec3::new(1.2, 1.0, 1.2), Crate),
+                prop(8.0, 3.0, Vec3::new(1.5, 1.2, 1.5), Crate),
+                prop(9.0, 5.0, Vec3::new(1.2, 1.6, 1.2), Crate),
+                prop(-8.0, 7.0, Vec3::new(1.7, 1.4, 1.7), Crate),
+                prop(-10.0, 6.0, Vec3::new(1.2, 0.9, 1.2), Crate),
+                prop(-10.0, -12.0, Vec3::new(1.8, 3.2, 1.8), Pillar),
+                prop(10.0, -12.0, Vec3::new(1.8, 3.2, 1.8), Pillar),
+                prop(-15.0, 0.0, Vec3::new(2.0, 2.6, 2.0), Pillar),
+                prop(15.0, 0.0, Vec3::new(2.0, 2.6, 2.0), Pillar),
+                prop(-9.0, 14.0, Vec3::new(1.8, 3.2, 1.8), Pillar),
+                prop(9.0, 14.0, Vec3::new(1.8, 3.2, 1.8), Pillar),
+                prop(-5.0, 11.0, Vec3::new(2.6, 0.8, 1.8), Stone),
+                prop(3.0, 12.0, Vec3::new(2.0, 0.65, 2.4), Stone),
+                prop(-18.0, -17.0, Vec3::new(2.8, 1.1, 2.0), Stone),
+                prop(17.0, -17.0, Vec3::new(2.0, 0.9, 2.8), Stone),
+                prop(17.0, 15.0, Vec3::new(2.6, 0.8, 1.8), Stone),
+                prop(-17.0, 16.0, Vec3::new(2.0, 1.1, 2.6), Stone),
+                prop(-2.0, -13.0, Vec3::new(5.0, 1.0, 1.2), Stone),
+            ],
+        }
+    }
+
+    fn collision_world(&self) -> CollisionWorld {
+        let solids = self
+            .props
+            .iter()
+            .map(|prop| SolidBox::new(prop.center, Vec2::new(prop.size.x, prop.size.z) * 0.5))
+            .collect();
+        CollisionWorld::new(self.half_size, solids)
     }
 }
 
-/// Initializes trusted builtin definitions once. Repeated calls neither reset
-/// an active match nor replace its catalogs/navigation/identity allocators.
-pub fn prepare_world(world: &mut World) {
-    if world.contains_resource::<Prepared>() {
-        return;
+pub fn setup(world: &mut World) {
+    let level = Level::courtyard();
+    world.insert_resource(level.collision_world());
+    world.insert_resource(level);
+    world.spawn((
+        Player,
+        Body::new(Vec2::ZERO, 6.0, 0.35),
+        MoveIntent::default(),
+    ));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn courtyard_has_open_spawn_and_matching_prop_collisions() {
+        let level = Level::courtyard();
+        let collision_world = level.collision_world();
+
+        assert!(collision_world.is_clear(Vec2::ZERO, 2.0));
+        for prop in &level.props {
+            assert!(prop.size.is_finite() && prop.size.min_element() > 0.0);
+            let extent = prop.center.abs() + Vec2::new(prop.size.x, prop.size.z) * 0.5;
+            assert!(extent.max_element() < level.half_size);
+            assert!(!collision_world.is_clear(prop.center, 0.35));
+        }
     }
-    world.init_resource::<MatchState>();
-    world.init_resource::<match_state::MatchSequence>();
-    world.init_resource::<MapDefinition>();
-    world.init_resource::<MatchDefinition>();
-    world.init_resource::<Messages<MatchFinished>>();
-    world.init_resource::<AbilityCatalog>();
-    world.init_resource::<CharacterCatalog>();
-    world.init_resource::<EquipmentCatalog>();
-    content::register(world);
-    let navigation = world.resource::<MapDefinition>().navigation();
-    world.insert_resource(navigation);
-    world.insert_resource(Prepared);
 }

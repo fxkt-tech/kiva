@@ -1,29 +1,26 @@
 # Kiva 开发规范
 
-本项目是 Rust / Bevy 单 crate 游戏，通过 Trunk 构建 WebAssembly。这里记录已经存在的代码约定；
-待实现功能以 `.trellis/tasks/` 中的方案为准。[架构文档](../../docs/architecture.md)定义游戏规则与状态所有权。
+Rust / Bevy 单 crate，Trunk 构建 WebAssembly。这里只记录当前俯视探索 Demo 的事实；
+未实现方案写在 `.trellis/tasks/`，旧 MOBA 规则查看 `lol` 分支。
 
-## 规范入口
-
-| 层 | 入口 | 涉及路径 |
+| 层 | 入口 | 路径 |
 |---|---|---|
-| 模拟 | [simulation/index.md](simulation/index.md) | `src/simulation/`、`tests/simulation.rs` |
-| 玩法 | [gameplay/index.md](gameplay/index.md) | `src/gameplay/`、`tests/{match_mode,minions,hero_ai}.rs` |
-| 客户端 | [client/index.md](client/index.md) | `src/client/`、`web/`、`index.html`、`scripts/browser-*.cjs` |
-| 跨层检查 | [guides/index.md](guides/index.md) | 模拟接口、HUD 数据和输入之间的改动 |
+| 模拟 | [simulation/index.md](simulation/index.md) | `src/simulation/` |
+| 玩法 | [gameplay/index.md](gameplay/index.md) | `src/gameplay/` |
+| 客户端 | [client/index.md](client/index.md) | `src/client/`、`web/`、`index.html` |
+| 跨层检查 | [guides/index.md](guides/index.md) | 模块边界与输入 / 显示时序 |
 
 ## Pre-Development Checklist
 
-1. 阅读任务的 `prd.md`、`design.md`、`implement.md`，区分已批准范围与建议。
-2. 按修改路径加载对应规范，先用 `rg` 找齐同一字段和接口的使用者。
-3. 保持 `client → gameplay → simulation` 的依赖方向；客户端可直接读取模拟视图，不将 DOM、按键或模型放入玩法和模拟规则。
-4. 使用无窗口行为测试验证规则，浏览器测试验证实际交互和显示。
+1. 阅读当前任务的 `prd.md`、`design.md`、`implement.md`，再读涉及层的规范。
+2. 用 `rg` 找接口和已有行为，保持 `client → gameplay → simulation` 依赖方向。
+3. 以 [架构文档](../../docs/architecture.md) 为状态所有权依据；DOM、相机、模型和按键属于客户端。
 
 ## Quality Check
 
-- 功能改动执行 `make check`：格式、原生 Clippy、Rust 测试、WASM 检查。
-- Web 专属 Rust 改动增加 `cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings`。
-- HUD 或交互改动执行对应浏览器回归；构建使用 `trunk build --dist <临时目录>`。
-- 文档改动检查路径、链接、任务 JSON/JSONL 和 `git diff --check`，不为纯方案改动重跑游戏测试。
-- 用户自行运行开发服务。测试自建临时 HTTP fixture 后自行关闭，不接管用户的 Trunk 进程。
-- `.trellis/spec/` 写已实现约定，任务设计写拟议改动，二者不得混为既成事实。
+- 功能变更执行 `make check`：格式、原生 Clippy、Rust / Node 测试、WASM 检查。
+- Web 专属 Rust 代码增加 `cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings`。
+- 发布入口变更执行 `trunk build --locked --dist <临时目录>`；构建和纯代码测试不能宣称完成画面 / 手感验收。
+- 文档检查链接、任务 JSON / JSONL 和 `git diff --check`。
+- 用户自行启动和关闭开发服务。可以自建并回收测试专用临时 HTTP fixture，不能接管用户进程。
+- 提交与推送按本次用户授权执行，任务记录关闭自动提交。

@@ -1,4 +1,4 @@
-/* Install synchronously before Trunk's module; the HUD may not exist yet. */
+/* Install synchronously before Trunk's module; the DOM may not exist yet. */
 (() => {
   "use strict";
   let state = "loading";

@@ -1,25 +1,47 @@
-# 模拟层规范
+# 模拟层
 
-适用：`src/simulation/` 及无窗口规则测试。
+## Scope / Trigger
 
-## Pre-Development Checklist
+`src/simulation/` 拥有权威运动和碰撞；变更位移、速度、占地或固定步时阅读本规范。
+不依赖客户端、浏览器、窗口、相机、Transform 或具体关卡。
 
-1. 阅读 [runtime.md](runtime.md) 和 [docs/architecture.md](../../../docs/architecture.md)。
-2. 从 `src/simulation/mod.rs` 查看公开接口、构造入口和固定步系统顺序。
-3. 为变动明确唯一写入者、指令拒绝行为、提交时机、死亡/重生行为。
-4. 查阅 `tests/simulation.rs` 的 `Arena`，优先通过公开接口描述可观察结果。
-5. 涉及属性、伤害和攻速时阅读 [attributes-and-damage.md](attributes-and-damage.md)。
-6. 涉及技能、控制、生命身份或强制运动时阅读 [abilities-and-statuses.md](abilities-and-statuses.md)。
-7. 涉及角色定义、创建或装配时阅读 [characters.md](characters.md)。
-8. 涉及装备装卸、主动来源或普攻被动时阅读 [equipment.md](equipment.md)。
-9. 涉及近战/结构/恢复、AI预检或模式调度时阅读 [combat-foundation.md](combat-foundation.md)。
-10. 涉及普攻特性、护盾、旗/光环、强化、侦察或地形时阅读 [champion-primitives.md](champion-primitives.md)。
-11. 涉及技能提交/命中事实或载体、对象、附着来源视图时阅读 [skill-facts.md](skill-facts.md)。
+## Signatures
 
-## Quality Check
+- `SimulationPlugin` 注册 60Hz `FixedUpdate`。
+- `Body::new(position: Vec2, speed: f32, half_extent: f32)`；`position()`、`interpolated(alpha)` 只读。
+- `MoveIntent::set(direction: Vec2)` / `stop()`。
+- `CollisionWorld::new(half_size: f32, solids: Vec<SolidBox>)`；`is_clear(point, half_extent)`。
+- `SolidBox::new(center: Vec2, half_size: Vec2)`。
 
-- `cargo test --locked --test simulation` 验证模拟行为；`make check` 验证整个 crate 及 WASM。
-- 改动系统顺序、伤害或动作时机时，检查同一步提交/死亡、取消施法、走砍、暂停和重生回归。
-- 整场清理以 `tests/reset.rs` 验证实体/待结算/事件清除、静态内容保留及身份分配器不复用。
-- 装备以 `tests/equipment.rs` 验证原子装卸、独立来源/冷却、被动快照和跨死亡/卸装的生命周期。
-- 模拟不读取浏览器、相机、设备输入或显示 Transform；客户端不能直接写入模拟运行态。
+## Contracts
+
+Vec2 表示世界 `(x,z)`，速度单位 m/s。Body 字段私有；每固定步先存 previous 再进行扫掠与滑动。
+MoveIntent 只传世界方向，长度不超过 1。模型和相机共用 previous / current 的显示插值。
+碰撞把静态盒扩张人物半宽，最多处理四次接触；世界边界限制整个占地，滑动保留切向位移。
+
+## Validation & Error Matrix
+
+| 输入 | 行为 |
+|---|---|
+| 构造配置非有限 / 非正尺寸与速度 | assert，属于内容错误 |
+| 运行时方向非有限 | 归零 |
+| 方向长度大于 1 | 限制到 1 |
+| 撞墙 / 到地图边缘 | 阻挡法线运动，保留可行切向运动 |
+
+出生点必须由装配者保证可容纳整个占地；不支持把 Body 直接生成在实体内部。
+
+## Good / Base / Bad Cases
+
+Good：斜向扫掠很长距离仍停在墙前，继续沿墙滑行。
+Base：1 秒直行或斜行都为 6m。
+Bad：NaN 输入不移动，内容无效时构造失败。
+
+## Tests Required / Quality Check
+
+执行 `make check`。固定步测试直接推进实际 FixedUpdate；验证一秒位移、静止、无效输入、
+长步防穿透、贴面离开 / 滑行、角落和地图边界，不能只复制实现公式。
+
+## Wrong vs Correct
+
+错误：在按键系统修改 Body / Transform 作为物理位置。
+正确：提交 MoveIntent，由 FixedUpdate 唯一推进 Body，显示只读插值。

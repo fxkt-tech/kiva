@@ -1,26 +1,37 @@
-# 玩法层规范
+# 玩法层
 
-适用于`src/gameplay/`及`tests/{match_mode,minions,hero_ai}.rs`。
-本层组合通用模拟，不依赖窗口、客户端、浏览器或模型。
+## Scope / Trigger
 
-## 阅读入口
+`src/gameplay/mod.rs` 定义确定性的 50m 庭院及玩家装配，修改关卡或出生配置时阅读。
+依赖模拟，不导入客户端、窗口、材质和网格。
 
-- [match.md](match.md)：地图、原子构造、阶段、兵波、终局与恢复。
-- [ai.md](ai.md)：兵线与英雄战术、观察边界、技能语义、有限追击和普通避让。
-- [模拟基础](../simulation/combat-foundation.md)：结构受效、普攻投递、施法预检、估伤和受限恢复。
-- [客户端对局](../client/lane-match.md)：会话、投影、模型和结算交互。
+## Signatures
 
-## Pre-Development Checklist
+`setup(&mut World)` 创建 `Player + Body + MoveIntent`，插入 `Level` 和 `CollisionWorld`。
+`Level { half_size: f32, props: Vec<Prop> }`；
+`Prop { center: Vec2, size: Vec3, kind: PropKind }`；kind 为 Crate / Pillar / Stone。
 
-1. 阅读本入口和目标模块规范；内容定义集中在`content/`，模式配置集中在`MatchDefinition`。
-2. 明确事实所有者：模式写阶段/波次，AI写Brain记忆，模拟写战斗状态。
-3. 使用真实生命引用和实际装配，复用构造、指令、预检及恢复入口。
-4. 时序基于SimulationTick，终局先于兵波；暂停/新局不得遗留决策和旧身份。
+## Contracts
 
-## Quality Check
+Level.props 是渲染几何和静态碰撞的共同来源。size 是完整三维尺寸，碰撞取 x/z 各一半。
+玩家出生在原点，速度 6m/s，半宽 0.35m；角色朝向由客户端表达。
 
-- `make check`与WASM Clippy通过；公开行为测试不篡改私有运行态。
-- 涉及波次、恢复、终局或重置时运行`tests/match_mode.rs`。
-- 涉及自主决策或普通避让时运行`tests/minions.rs`与`tests/hero_ai.rs`；长局变化显式运行ai规范中的30分钟场景。
-- 地图/投影/会话联动须运行对应浏览器回归，包括完整对局和重选。
-- 无客户端依赖、隐形活兵上限、墙钟波次或AI战斗写入口。
+## Validation & Error Matrix
+
+内容是程序内可信配置；尺寸须有限且为正，障碍完全位于关卡内。
+原点 2m 范围保持空地，内容错误在回归和模拟构造时暴露，不在客户端偷偷修正。
+
+## Good / Base / Bad Cases
+
+Good：添加一个 Prop 会同时改变碰撞和模型。
+Base：空出生区能移动到附近障碍。
+Bad：只加可见箱子不加碰撞，或分别手写两套坐标。
+
+## Tests Required / Quality Check
+
+`make check`。纯数据测试检查出生区、尺寸、范围和每个 Prop 中心实际不可通过，无需窗口。
+
+## Wrong vs Correct
+
+错误：客户端决定地图碰撞，玩法创建 Mesh。
+正确：玩法提供 Level 和 CollisionWorld，客户端读取 Level 生成表现。

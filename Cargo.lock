@@ -928,7 +928,6 @@ dependencies = [
  "bevy_render",
  "bevy_shader",
  "bevy_shape",
- "bevy_sprite_render",
  "bevy_transform",
  "bevy_utils",
  "bytemuck",
@@ -1084,8 +1083,6 @@ dependencies = [
  "bevy_text",
  "bevy_time",
  "bevy_transform",
- "bevy_ui",
- "bevy_ui_render",
  "bevy_utils",
  "bevy_window",
  "bevy_winit",
@@ -3173,10 +3170,7 @@ name = "kiva"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "serde",
- "serde_json",
  "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
