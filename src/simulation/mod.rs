@@ -5,6 +5,7 @@ mod actions;
 mod attack_traits;
 mod attributes;
 mod battlefield;
+mod cast_orders;
 mod characters;
 mod combat;
 mod compound;
@@ -95,6 +96,7 @@ impl Plugin for SimulationPlugin {
                     compound::advance_objects,
                     vision::refresh,
                     orders::consume_commands,
+                    cast_orders::advance,
                     actions::advance_actions,
                     orders::resolve_orders,
                     movement::move_units,

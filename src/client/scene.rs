@@ -436,6 +436,8 @@ pub(super) fn sync_effects(
                             || origin.distance(point) <= definition.range;
                         let color = if valid {
                             Color::srgb_u8(153, 236, 214)
+                        } else if definition.targeting == Targeting::Enemy {
+                            Color::srgb_u8(229, 177, 105)
                         } else {
                             Color::srgb_u8(240, 117, 101)
                         };

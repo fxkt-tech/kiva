@@ -463,6 +463,7 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
                     if let Some(target) = target {
                         if matches!(target, AbilityTarget::Unit(_))
                             && let Err(reason) = preview_cast(world, player, source, target)
+                            && reason != Rejection::OutOfRange
                         {
                             let now = world.resource::<Time>().elapsed_secs();
                             let mut feedback = world.resource_mut::<ClientFeedback>();

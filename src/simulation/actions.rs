@@ -333,7 +333,7 @@ pub(super) fn begin_cast(
     Ok(())
 }
 
-fn cast_binding(
+pub(super) fn cast_binding(
     world: &World,
     unit: Entity,
     source: CastSource,
@@ -386,6 +386,7 @@ pub(super) fn cancel_equipment_cast(
     unit: Entity,
     instance: EquipmentInstanceId,
 ) {
+    super::cast_orders::cancel_equipment(world, unit, instance);
     let cancel = match world.get::<UnitAction>(unit) {
         Some(UnitAction::Casting {
             source: CastSource::EquipmentSlot {

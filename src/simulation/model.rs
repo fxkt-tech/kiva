@@ -297,6 +297,12 @@ pub enum UnitOrder {
     Idle,
     MoveTo(Vec2),
     AttackTarget(UnitLifeRef),
+    /// One targeted cast awaiting a reachable position inside its range.
+    CastTarget {
+        source: CastSource,
+        ability: AbilityId,
+        target: UnitLifeRef,
+    },
     AttackMove {
         destination: Vec2,
         target: Option<UnitLifeRef>,

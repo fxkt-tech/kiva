@@ -521,6 +521,7 @@ pub(super) fn publish(
                         UnitOrder::MoveTo(_) => "Moving",
                         UnitOrder::AttackTarget(_) => "Attacking",
                         UnitOrder::AttackMove { .. } => "Attack move",
+                        UnitOrder::CastTarget { .. } => "Approaching cast",
                     },
                 }
             },

@@ -18,9 +18,9 @@ impl AbilityDescription {
     pub fn new(definition: &AbilityDefinition) -> Self {
         let (targeting, target_hint) = match definition.targeting {
             Targeting::Enemy if matches!(&definition.execution, AbilityExecution::Leap(spec) if spec.heroes_only) => {
-                ("Enemy", "点选可见敌方英雄")
+                ("Enemy", "点选可见敌方英雄，超距自动走近")
             }
-            Targeting::Enemy => ("Enemy", "点选可见敌方单位"),
+            Targeting::Enemy => ("Enemy", "点选可见敌方单位，超距自动走近"),
             Targeting::Direction => ("Direction", "选择释放方向"),
             Targeting::Point => ("Point", "选择目标地点"),
             Targeting::SelfCast => ("SelfCast", "以自身为中心立即释放"),

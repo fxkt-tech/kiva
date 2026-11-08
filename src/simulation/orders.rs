@@ -182,14 +182,14 @@ fn apply_command(world: &mut World, entity: Entity, command: UnitCommand) -> Res
             );
         }
         UnitCommand::CastAbility { slot, target } => {
-            super::actions::begin_cast(world, entity, CastSource::AbilitySlot(slot), target)?;
+            super::cast_orders::request(world, entity, CastSource::AbilitySlot(slot), target)?;
         }
         UnitCommand::UseEquipment {
             slot,
             instance,
             target,
         } => {
-            super::actions::begin_cast(
+            super::cast_orders::request(
                 world,
                 entity,
                 CastSource::EquipmentSlot { slot, instance },
@@ -245,6 +245,7 @@ pub(super) fn resolve_orders(
         &mut actors
     {
         if !state.alive()
+            || matches!(*order, UnitOrder::CastTarget { .. })
             || !matches!(*action, UnitAction::Ready)
             || compound.is_some()
             || movement.dash.is_some()

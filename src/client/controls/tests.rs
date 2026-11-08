@@ -166,6 +166,81 @@ fn enemy_skill_keeps_aim_on_empty_ground_or_friendly_body_without_submitting() {
     }
 }
 
+fn out_of_range_enemy_click(equipment: bool) {
+    let (mut app, _) = app();
+    let player = app.world().resource::<ClientSession>().player().unwrap();
+    let origin = app.world().get::<UnitPose>(player).unwrap().position();
+    let position = origin + Vec2::X * 14.0;
+    // A real allied observer reveals the distant enemy; the caster's own
+    // vision is shorter than this fixture's targeted ability range.
+    for (team, point) in [(Team::Ally, position + Vec2::Y), (Team::Enemy, position)] {
+        spawn_unit(
+            app.world_mut(),
+            UnitSpec {
+                name: "Distant click fixture".into(),
+                team,
+                position: point,
+                stats: UnitStats {
+                    vision_radius: 3.0,
+                    ..default()
+                },
+                abilities: [None; 4],
+                respawn_delay: None,
+            },
+        )
+        .unwrap();
+    }
+    let enemy = app
+        .world_mut()
+        .query::<(Entity, &Unit, &UnitPose)>()
+        .iter(app.world())
+        .find(|(_, unit, pose)| unit.team() == Team::Enemy && pose.position() == position)
+        .map(|(entity, _, _)| entity)
+        .unwrap();
+    let source = if equipment {
+        let instance = equip_equipment(app.world_mut(), player, 0, EquipmentId(7)).unwrap();
+        CastSource::EquipmentSlot { slot: 0, instance }
+    } else {
+        CastSource::AbilitySlot(0)
+    };
+    assert_eq!(
+        preview_cast(app.world(), player, source, AbilityTarget::Unit(enemy)),
+        Err(Rejection::OutOfRange),
+        "AI's immediate preflight stays strict"
+    );
+    select_cast(app.world_mut(), source);
+    *app.world_mut().resource_mut::<PointerState>() = PointerState {
+        ground: Some(position),
+        hovered: Some(enemy),
+        ..default()
+    };
+    mouse_pressed(app.world_mut(), MouseButton::Left);
+    assert!(
+        app.world().resource::<PlayerController>().aim.is_none(),
+        "a valid distant enemy click must submit its intent and leave aim"
+    );
+    app.world_mut().run_schedule(FixedUpdate);
+    assert!(
+        app.world()
+            .get::<UnitPose>(player)
+            .unwrap()
+            .position()
+            .distance(origin)
+            > 0.0,
+        "the submitted targeted ability must start walking into range"
+    );
+}
+
+#[test]
+fn distant_enemy_click_submits_hero_skill_instead_of_remaining_in_aim() {
+    out_of_range_enemy_click(false);
+}
+
+#[test]
+fn distant_enemy_click_submits_equipment_skill_through_the_same_adapter() {
+    out_of_range_enemy_click(true);
+}
+
 fn control_caster(app: &mut App, ability: AbilityId) -> Entity {
     let player = app.world().resource::<ClientSession>().player().unwrap();
     let position = app.world().get::<UnitPose>(player).unwrap().position() + Vec2::X;

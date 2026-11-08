@@ -25,7 +25,8 @@ charges/max_charges/recharge、recast/recast_ready。静态预览没有伪运行
 ## 3. 输入与生命周期
 
 键盘QWER与鼠标按钮共用select_cast。实际slot有recast时，无目标提交SelfCast；根据recast_ready启用，
-不受普通长CD/二次费用阻挡。普通Enemy目标由preview_cast统一预检；错误类型、隐藏/无效候选保留aim。
+不受普通长CD/二次费用阻挡。普通Enemy目标由preview_cast统一预检；只将OutOfRange放行成一次原Unit命令，由模拟追近，随后退出aim。错误类型、隐藏/无效候选仍保留aim。
+只读order使用Approaching cast展示待放目的；Enemy提示说明超距自动走近，射程外预览用黄色，其它非法超距仍用红色。
 Empower层不足不可释放，提示先普攻；Scout按实际charges/cooldown启用。JS不得补算层数或恢复充能。
 
 地点截断预览使用`clamps_point_target`（Dash/Standard），实际原点击点仍交模拟解析；不在输入端写最终位置。

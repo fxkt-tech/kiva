@@ -166,7 +166,7 @@ impl NavigationMap {
     }
     /// Smoothed route excluding the start. Blocked clicks project at most 3 cells.
     pub fn path(&self, start: Vec2, requested: Vec2, radius: f32) -> Result<Vec<Vec2>, PathError> {
-        self.path_policy(start, requested, radius, true)
+        self.path_policy(start, requested, radius, true, None)
     }
     /// Configuration reachability uses the current static map; temporary walls
     /// may interrupt a route during play without making the mode invalid.
@@ -176,7 +176,18 @@ impl NavigationMap {
         requested: Vec2,
         radius: f32,
     ) -> Result<Vec<Vec2>, PathError> {
-        self.path_policy(start, requested, radius, false)
+        self.path_policy(start, requested, radius, false, None)
+    }
+    /// Find a reachable casting position, rather than requiring access to the
+    /// target's center. All transit and endpoint geometry uses ordinary walking.
+    pub(super) fn path_to_range(
+        &self,
+        start: Vec2,
+        target: Vec2,
+        range: f32,
+        radius: f32,
+    ) -> Result<Vec<Vec2>, PathError> {
+        self.path_policy(start, target, radius, true, Some(range))
     }
     fn path_policy(
         &self,
@@ -184,6 +195,7 @@ impl NavigationMap {
         requested: Vec2,
         radius: f32,
         temporary: bool,
+        arrival_range: Option<f32>,
     ) -> Result<Vec<Vec2>, PathError> {
         let walkable = |point| {
             if temporary {
@@ -196,12 +208,23 @@ impl NavigationMap {
         if !start.is_finite()
             || !requested.is_finite()
             || !walkable(start)
+            || arrival_range.is_some_and(|range| !range.is_finite() || range < 0.0)
             || requested.abs().cmpgt(Vec2::splat(self.half_size)).any()
         {
             return Err(PathError::InvalidPosition);
         }
-        if line_clear(start, requested) {
-            return Ok(vec![requested]);
+        let approach = |point: Vec2, range: f32| {
+            let offset = point.as_dvec2() - requested.as_dvec2();
+            let distance = offset.length();
+            if distance <= f64::from(range) {
+                point
+            } else {
+                (requested.as_dvec2() + offset * (f64::from(range) / distance)).as_vec2()
+            }
+        };
+        let direct = arrival_range.map_or(requested, |range| approach(start, range));
+        if line_clear(start, direct) {
+            return Ok(vec![direct]);
         }
         let width = ((self.half_size * 2.0) / self.cell_size).ceil() as usize;
         let center = |index: usize| {
@@ -226,10 +249,15 @@ impl NavigationMap {
         } else {
             center(goal)
         };
-        if destination.distance(requested) > self.cell_size * 3.0 {
+        if arrival_range.is_none() && destination.distance(requested) > self.cell_size * 3.0 {
             return Err(PathError::Unreachable);
         }
         let heuristic = |i: usize| {
+            if let Some(range) = arrival_range {
+                // 9.8/cell stays below the diagonal grid cost (14/sqrt(2)).
+                return ((center(i).distance(requested) - range).max(0.0) / self.cell_size * 9.8)
+                    as u32;
+            }
             let dx = (i % width).abs_diff(goal % width) as u32;
             let dy = (i / width).abs_diff(goal / width) as u32;
             10 * dx.max(dy) + 4 * dx.min(dy)
@@ -239,11 +267,20 @@ impl NavigationMap {
         let mut previous = vec![usize::MAX; width * width];
         costs[source] = 0;
         open.push(Reverse((heuristic(source), 0_u32, source)));
+        let mut range_reached = false;
         while let Some(Reverse((_, cost, current))) = open.pop() {
             if cost != costs[current] {
                 continue;
             }
-            if current == goal {
+            if let Some(range) = arrival_range {
+                let endpoint = approach(center(current), range);
+                if line_clear(center(current), endpoint) {
+                    goal = current;
+                    destination = endpoint;
+                    range_reached = true;
+                    break;
+                }
+            } else if current == goal {
                 break;
             }
             let x = (current % width) as isize;
@@ -269,6 +306,9 @@ impl NavigationMap {
                     }
                 }
             }
+        }
+        if arrival_range.is_some() && !range_reached {
+            return Err(PathError::Unreachable);
         }
         if costs[goal] == u32::MAX {
             if walkable(requested) {

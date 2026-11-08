@@ -42,7 +42,7 @@ orders::resolve_target(&World, unit, &AbilityDefinition, AbilityTarget) -> Resul
   begin仅验证并保存原目标，commit从当前UnitPose解析实际终点，再统一提交消耗/CD、AbilityCommitted.position和运动。
   方向/距离使用f64中间值，有限极大点击不能因f32求长溢出而丢失方向。
   角色/装备共用resolve_target；碰墙/地图边界仍由movement的sweep处理，不在客户端缩短命令目标。
-  其它Point/Enemy执行保留严格射程校验；规则依据既有execution.is_dash()，不匹配技能ID。
+  其它Point保留严格射程校验。Enemy的preview/commit同样严格，但命令入口将单独OutOfRange转为CastTarget走近目的；到范围后再走原begin/commit。规则按targeting/execution，不匹配技能ID。
 - 效果列表非空且有序，整组快照验证先于消耗/冷却。命中后逐项执行，死亡后跳过目标其余效果。
 - 直接命中也入统一末段队列；actor和命中包显式稳定排序。同一步双方已经提交的技能均保留。
 - 旧状态在移动后、新命中前递减。末段新应用N tick，准确限制后续N个动作步；到期后不补跑动作。
@@ -70,7 +70,8 @@ Direct/Projectile的中心是施法者提交位置，Area的中心是冻结的�
 | 位移距离/速度非有限或≤0 | 注册拒绝 |
 | 速度虽为有限正数，但一步不能产生可表示位置变化 | 移动阶段结束运动并释放其锁；不能永久受控 |
 | 有限超距Point Dash | 解析为最大距离终点，正常校验并提交 |
-| 非Dash地点/单位目标超距 | OutOfRange，不部分扣费/启冷却 |
+| 普通非截断地点目标超距 | OutOfRange，不部分扣费/启冷却 |
+| 可见合法Enemy目标超距 | 严格preview返回OutOfRange；实际命令在可移动/区域可达时保存CastTarget并走近，不扣费/CD |
 | 非有限/错误类型目标，或前摇结束权限/生命/资源失效 | 拒绝提交，不部分扣费/启冷却 |
 | 合法定义但伤害快照溢出 | InvalidDamage，不部分扣费/启冷却 |
 | 受限新移动/攻击/施法 | Controlled，原有效意图/动作保留 |
@@ -102,3 +103,5 @@ browser-skills和browser-equipment使用真实鼠标点两倍射程，断言最�
 
 正确：提交不可变命中包到末段统一结算；权限由所有活动状态和运动锁重新派生。
 新增技能通过内容装配复用相同执行/投递/效果，不复制扣费、扣血或中断逻辑。
+
+Enemy走近施法回归见`tests/cast_approach.rs`：移动目标、区域可达而中心不可达、原子拒绝、新指令取消、目标生命/视野、控制/暂停/死亡/重开及装备实例；Direction和Point最大距离语义必须保留。

@@ -37,7 +37,8 @@ CastSource::AbilitySlot(usize) | EquipmentSlot { slot, instance: EquipmentInstan
   每实例贡献一个`Explicit`来源，移速乘数固定1；卸装只删除该来源。
 - 占用格不隐式替换；同种装备可重复，属性、被动和主动冷却按实例独立。
   训练场每次穿戴创建新实例且初始CD为0；没有唯一组或共享冷却规则。
-- `CastAbility`和`UseEquipment`统一进入`actions::begin_cast/commit_cast`。
+- `CastAbility`和`UseEquipment`统一经过cast_orders请求入口，再进入`actions::begin_cast/commit_cast`。
+  Enemy超距待放目的保存实际技能和完整装备实例；尚未开始不启CD/扣费，卸装仅取消同实例待放及其普通路线。
   目标、生命、控制、忙碌、能量、快照、前摇/恢复、冲刺/引导走同一流程。
   提交前再次解析来源、复核实例，成功才扣能量并启动该来源冷却。
   `AbilityCommitted`继续报告所复用的技能；装备归因由完整`DamageOrigin`保存。
