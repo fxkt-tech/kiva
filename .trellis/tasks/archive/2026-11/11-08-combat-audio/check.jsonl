@@ -1,5 +1,5 @@
 {"file": ".trellis/spec/client/browser.md", "reason": "对应交付模块的已实现契约"}
 {"file": ".trellis/spec/client/character-selection.md", "reason": "对应交付模块的已实现契约"}
 {"file": ".trellis/spec/client/champion-presentation.md", "reason": "对应交付模块的已实现契约"}
-{"file": ".trellis/tasks/11-08-battle-presentation/design.md", "reason": "跨任务状态所有权与集成边界"}
-{"file": ".trellis/tasks/11-08-combat-audio/research/sources.md", "reason": "实际下载、事件映射、SFX/VO区别与WebAudio选择"}
+{"file": ".trellis/tasks/archive/2026-11/11-08-battle-presentation/design.md", "reason": "跨任务状态所有权与集成边界"}
+{"file": ".trellis/tasks/archive/2026-11/11-08-combat-audio/research/sources.md", "reason": "实际下载、事件映射、SFX/VO区别与WebAudio选择"}

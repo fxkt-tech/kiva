@@ -1,5 +1,0 @@
-{"file": ".trellis/spec/client/character-animation.md", "reason": "对应交付模块的已实现契约"}
-{"file": ".trellis/spec/client/unit-picking.md", "reason": "对应交付模块的已实现契约"}
-{"file": ".trellis/spec/client/lane-match.md", "reason": "对应交付模块的已实现契约"}
-{"file": ".trellis/tasks/11-08-battle-presentation/design.md", "reason": "跨任务状态所有权与集成边界"}
-{"file": ".trellis/tasks/11-08-league-assets/research/models.md", "reason": "实际下载和解析的GLB、隐藏primitive/关节边界与地图纹理来源"}
