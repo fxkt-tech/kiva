@@ -12,11 +12,12 @@ mod compound;
 mod damage;
 mod effects;
 mod equipment;
+mod facts;
 mod mechanics;
 mod mechanics_defs;
 mod model;
 mod vision;
-pub use mechanics::{BattlefieldObject, ObjectKind, UnitMechanics};
+pub use mechanics::{BattlefieldObject, ObjectKind, ShieldView, UnitMechanics};
 pub use mechanics_defs::{
     ArrowSpec, AttackPassive, DashLinkSpec, EmpowerSpec, LeapSpec, LineSpec, RingTerrainSpec,
     ScoutSpec, ShieldSpec, StandardSpec, UnitKind, VolleySpec,
@@ -48,6 +49,7 @@ pub use equipment::{
     EquipmentInstanceId, EquipmentPassive, EquipmentSlots, EquippedItem, equip_equipment,
     unequip_equipment,
 };
+pub use facts::{ImpactKind, ProjectileEndReason};
 use model::Movement;
 pub use model::{
     AbilitySlots, AbilityTarget, AreaEffect, BasicAttackDelivery, CastSource, CommandQueue,

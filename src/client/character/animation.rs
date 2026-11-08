@@ -105,7 +105,15 @@ pub(in crate::client) fn record_events(
                 unit,
                 ability,
                 position,
+                recast,
+                ..
             } => {
+                if *recast {
+                    if let Ok((_, _, mut rig)) = rigs.get_mut(*unit) {
+                        rig.cast = None;
+                    }
+                    continue;
+                }
                 if let Ok((_, _, mut rig)) = rigs.get_mut(*unit)
                     && let Some(definition) = catalog.get(*ability)
                 {

@@ -82,11 +82,14 @@ async function beginFrameDrag(page) {
     view.map.y + view.frame.y + view.frame.height * 0.65];
   await movePointer(page, ...point);
   const actual = await page.evaluate(() => window.kivaPointer.position());
-  const before = (await state(page)).camera_center;
+  // Camera/frame gestures use the display-frame channel. The full HUD may
+  // still hold the preceding pan sample for up to its 80 ms publication period.
+  const before = await page.evaluate(() => window.__minimapCamera.center.slice());
   await page.mouse.down();
   await page.waitForFunction(() => document.documentElement.dataset.minimapDragging === "true");
   await waitTicks(page, 6);
-  assert(distance((await state(page)).camera_center, before) < 0.02,
+  const after = await page.evaluate(() => window.__minimapCamera.center.slice());
+  assert(distance(after, before) < 0.02,
     "grabbing inside the rectangle must not jump the camera to the pointer");
   return { view, point: actual, before };
 }

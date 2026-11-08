@@ -264,9 +264,12 @@ fn capture(world: &mut World) {
         for event in events {
             let (source, trigger) = match event {
                 SimulationEvent::AttackReleased { source, .. } => (source, CueTrigger::Attack),
-                SimulationEvent::AbilityCommitted { unit, ability, .. } => {
-                    (unit, CueTrigger::Ability(ability))
-                }
+                SimulationEvent::AbilityCommitted {
+                    unit,
+                    ability,
+                    recast: false,
+                    ..
+                } => (unit, CueTrigger::Ability(ability)),
                 SimulationEvent::Died { unit } => (unit, CueTrigger::Death),
                 SimulationEvent::Respawned { unit } => (unit, CueTrigger::Respawn),
                 _ => continue,

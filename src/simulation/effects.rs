@@ -15,6 +15,7 @@ pub struct ImpactSnapshot {
     pub(super) source: UnitLifeRef,
     pub(super) team: Team,
     pub(super) origin: DamageOrigin,
+    pub(super) empower_origin: Option<DamageOrigin>,
     pub(super) position: Vec2,
     pub(super) facing: Vec2,
     pub(super) sequence: u64,
@@ -154,6 +155,7 @@ pub(super) fn snapshot(
         source: life,
         team,
         origin,
+        empower_origin: None,
         position,
         facing,
         sequence,
@@ -175,6 +177,9 @@ pub(super) fn snapshot_attack(
     payload.attack_arrows = world
         .get::<UnitMechanics>(source)
         .map_or(1, UnitMechanics::arrows);
+    payload.empower_origin = world
+        .get::<UnitMechanics>(source)
+        .and_then(UnitMechanics::empower_origin);
     payload.attack_passives = super::equipment::snapshot_passives(world, source)?.into();
     Some(payload)
 }
@@ -273,11 +278,27 @@ pub(super) fn resolve(world: &mut World) {
 }
 
 fn resolve_payload(world: &mut World, packet: &HitPacket, payload: &ImpactSnapshot) -> bool {
-    if world
-        .get::<Unit>(packet.target.entity())
-        .is_none_or(|unit| !unit.class().accepts(payload.origin))
+    if !packet.target.is_current(world)
+        || world
+            .get::<Unit>(packet.target.entity())
+            .is_none_or(|unit| !unit.class().accepts(payload.origin))
     {
         return false;
+    }
+    if !payload.effects.is_empty() {
+        let position = world
+            .get::<UnitPose>(packet.target.entity())
+            .expect("recipient pose")
+            .position;
+        world.write_message(super::facts::impact(
+            payload,
+            packet.carrier,
+            position,
+            packet.direction,
+            ImpactKind::Contact {
+                target: packet.target,
+            },
+        ));
     }
     let mut damaged = false;
     for (index, effect) in payload.effects.iter().copied().enumerate() {

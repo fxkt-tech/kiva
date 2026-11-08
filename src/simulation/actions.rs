@@ -292,12 +292,15 @@ pub(super) fn begin_cast(
     if super::compound::is_recast(world, entity, source) {
         super::compound::recast(world, entity, source)?;
         let (ability, _, _) = cast_binding(world, entity, source)?;
-        let position = world.get::<UnitPose>(entity).expect("pose").position;
-        world.write_message(SimulationEvent::AbilityCommitted {
-            unit: entity,
+        super::facts::ability_committed(
+            world,
+            entity,
             ability,
-            position,
-        });
+            source,
+            AbilityTarget::SelfCast,
+            None,
+            true,
+        );
         return Ok(());
     }
     let (ability, _, _) = cast_binding(world, entity, source).expect("validated binding");
@@ -418,7 +421,7 @@ fn commit_cast(
     target_life: Option<UnitLifeRef>,
 ) -> UnitAction {
     let binding = cast_binding(world, entity, source);
-    let (current, cooldown, origin) = match binding {
+    let (current, cooldown, damage_origin) = match binding {
         Ok(binding) if binding.0 == id => binding,
         _ => return reject_cast(world, entity, Rejection::NoAbility),
     };
@@ -453,7 +456,7 @@ fn commit_cast(
     };
     let impact = match &definition.execution {
         AbilityExecution::Impact(impact) | AbilityExecution::Channel { pulse: impact, .. } => {
-            let Some(snapshot) = effects::snapshot(world, entity, origin, impact) else {
+            let Some(snapshot) = effects::snapshot(world, entity, damage_origin, impact) else {
                 world.write_message(SimulationEvent::CommandRejected {
                     unit: entity,
                     reason: Rejection::InvalidDamage,
@@ -464,7 +467,8 @@ fn commit_cast(
         }
         _ => {
             if let Some(impact) = super::compound::impact_definition(&definition.execution) {
-                let Some(snapshot) = effects::snapshot(world, entity, origin, &impact) else {
+                let Some(snapshot) = effects::snapshot(world, entity, damage_origin, &impact)
+                else {
                     return reject_cast(world, entity, Rejection::InvalidDamage);
                 };
                 Some(snapshot)
@@ -482,11 +486,7 @@ fn commit_cast(
         AbilityTarget::Unit(t) => world.get::<UnitPose>(t).expect("validated pose").position,
         _ => origin,
     };
-    world.write_message(SimulationEvent::AbilityCommitted {
-        unit: entity,
-        ability: id,
-        position: point,
-    });
+    super::facts::ability_committed(world, entity, id, source, target, target_life, false);
     let recovery = UnitAction::Recovery {
         remaining: definition.recovery,
     };
@@ -523,7 +523,15 @@ fn commit_cast(
             recovery: definition.recovery,
         },
         _ => {
-            super::compound::execute(world, entity, source, &definition, target, impact);
+            super::compound::execute(
+                world,
+                entity,
+                source,
+                damage_origin,
+                &definition,
+                target,
+                impact,
+            );
             recovery
         }
     }

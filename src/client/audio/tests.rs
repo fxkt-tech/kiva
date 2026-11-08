@@ -15,6 +15,57 @@ fn arena() -> (App, Entity) {
     (app, handle.player)
 }
 
+#[test]
+fn terrain_recast_does_not_replay_the_initial_leap_sound() {
+    let (mut app, player) = arena();
+    let origin = app.world().get::<UnitPose>(player).unwrap().position();
+    let target = hero(
+        &mut app,
+        2,
+        Team::Enemy,
+        origin + Vec2::NEG_Y * 4.0,
+        LoadoutSelection::CharacterDefault,
+    );
+    command(
+        &mut app,
+        player,
+        UnitCommand::CastAbility {
+            slot: 3,
+            target: AbilityTarget::Unit(target),
+        },
+    );
+    step(&mut app, 100);
+    let tick = app.world().resource::<SimulationTick>().0;
+    assert!(
+        app.world()
+            .get::<UnitMechanics>(player)
+            .unwrap()
+            .recast_ready(3, tick)
+    );
+    let initial = pending(&app)
+        .iter()
+        .filter(|cue| cue.cue == "jarvan.r")
+        .count();
+    assert_eq!(initial, 1);
+    command(
+        &mut app,
+        player,
+        UnitCommand::CastAbility {
+            slot: 3,
+            target: AbilityTarget::SelfCast,
+        },
+    );
+    step(&mut app, 1);
+    assert!(!app.world().get::<UnitMechanics>(player).unwrap().recast(3));
+    assert_eq!(
+        pending(&app)
+            .iter()
+            .filter(|cue| cue.cue == "jarvan.r")
+            .count(),
+        initial
+    );
+}
+
 fn command(app: &mut App, actor: Entity, command: UnitCommand) {
     app.world_mut()
         .resource_mut::<CommandQueue>()

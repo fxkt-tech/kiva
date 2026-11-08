@@ -22,6 +22,7 @@ src/simulation/vision.rs      团队可见性快照与共享查询
 src/simulation/characters.rs  角色目录、身份、默认/显式装配解析与统一角色创建
 src/simulation/equipment.rs   装备目录、六格实例、来源装卸、装备CD与被动收集
 src/simulation/effects.rs     不可变命中快照、投递创建与稳定排序结算
+src/simulation/facts.rs       已提交技能与真实命中/激活/终止的中性事实
 src/simulation/statuses.rs    状态实例、计时、叠加、控制权限与减速归并
 src/simulation/orders.rs      指令校验、持续指令、目标获取与追击
 src/simulation/cast_orders.rs 单位目标的走近施法目的、复核和路线规划
@@ -43,12 +44,16 @@ src/client/content.rs         客户端默认选择与玩法准备接线
 src/client/session.rs         选角/开局阶段、选择校验与唯一活动玩家引用
 src/client/equipment.rs       暂停装卸适配、严格请求/回执和只读装备投影
 src/client/abilities.rs       输入与HUD共用的只读技能可用性和描述
+src/client/ability_targeting.rs 控制与指示器共用的只读目标资格/解析意图
+src/client/skill_assets/      本地原技能素材、来源元数据和共享加载句柄
+src/client/skill_effects/     实际提交/载体/对象/附着事实驱动的技能表现
+src/client/skill_indicators/  实际定义几何与当前相机下的瞄准指示器
 src/client/controls.rs        玩家输入、施法预检、指令反馈
 src/client/pointer.rs         Web输入帧指针镜像、Native绝对坐标与捕获边界
 src/client/controls/tests.rs  同帧事件顺序、暂停与焦点恢复回归测试
 src/client/camera.rs          统一取景参数、镜头控制与实际地面覆盖范围
 src/client/picking.rs         实际模型部件屏幕命中与公共目标候选
-src/client/scene.rs           过程生成场景、显示根插值和指示器
+src/client/scene.rs           场景、显示根插值和通用载体/单位标记回退
 src/client/world_scene.rs     由模式地图派生的地面、中路和静态装饰
 src/client/unit_appearance.rs 英雄/兵种/基地的模型、拾取和标签参数
 src/client/presentation.rs    普通暂停与终局的统一表现采样帧
@@ -79,6 +84,7 @@ tests/status_effects.rs       多效果、控制组合、生命身份和强制�
 tests/characters.rs           角色构造、装配、实例独立和重生保持测试
 tests/champion_content.rs     内置皇子/寒冰真实内容配线与命令行为
 tests/champion_mechanics.rs   通用被动/复合技能/视野/地形边界
+tests/skill_facts.rs          真实提交/接触/空区域/单箭/独立来源事实
 tests/equipment.rs            装卸/施法/被动/归因/生命周期公开行为测试
 tests/reset.rs                整局实体/队列清理与静态资源/分配器保留测试
 tests/combat_foundation.rs    结构受效、普攻投递、施法预检和恢复行为
@@ -159,13 +165,29 @@ HudView.hovered是只读悬停身份，selected仍为持久点击结果；逐帧
 目标信息在左上，比赛与操作收紧到右上，Active隐藏大品牌；基础菜单和比赛事实样式分别留在style.css/match.css。
 所有原稳定选择器、data-ui隔离及暂停/捕获/装备/会话协议保留。英雄头顶能量条只读完整快照，坐标仍走逐帧标签。
 
-CameraRig默认zoom=0.5、最近0.4、最远1.5，保持原视角、FOV与18*zoom平移速度；初始化/逐帧更新复用同一变换构造。
+CameraRig默认zoom=0.5、最近0.4、最远1.5，保持原视角/FOV；键盘18*zoom平移，有效画布内边缘输入31.5*zoom（原1.75倍），均乘dt；初始化/逐帧更新复用同一变换构造。
 以近景取得约2倍英雄屏幕比例，不缩放模拟单位或独立挪动拾取/血条。Y/Space、自由平移、首次开局/重开居中和普通恢复语义保持。
 HudView.camera_footprint为null或按左上/右上/右下/左下排列的4个world[x,z]：由实际逻辑viewport角点射线与地面求交，包含DPR/viewport偏移约定。
 minimap.js固定投影完整地图，8 CSS px内边距以内显示全图边界/中路/基地/当前可见单位，后备画布跟随CSS尺寸与DPR。
 视野矩形使用真实地面四角的轴对齐外接范围并裁到地图边界；透视轮廓仍是梯形，不为矩形改主相机投影。独立kiva-camera每显示帧发布{center,footprint,enemy_hovered}，更新框与光标不等待约80ms完整快照，也不重绘底图。
 小地图使用kivaPointer的事件时CSS位置进行左键点击/偏移拖动，只提交最新data-camera-request {player_id,center}及拖动状态；camera统一复核玩家身份、暂停和有限坐标，夹紧既有边界，退出锁定但保持zoom。暂停/失焦/失锁/重选清旧拖动与意图，拖动中屏蔽其它平移。既有拾取、kiva-labels数组、view_projection与viewport保持，CSS不裁切游戏canvas。
 完整布局/投影契约和验证入口见[HUD与取景规范](../.trellis/spec/client/hud-layout.md)。
+
+## 技能原素材与只读表现
+
+`skill_assets`集中本地原PNG/标准GLB和共享模板；离线importer记录版本、来源、像素/产物哈希、图集、轴与bounds。
+运行时不解析League私有格式、不联网。`skill_effects`在完整固定步后捕获真实AbilityCommitted/ImpactResolved及对象过渡，
+再按统一PresentationFrame采样真实弹丸、区域、旗、墙、侦察、盾与强化。瞬时表现有界且及时丢弃旧事实，
+独立载体不依赖来源当前生命，附着效果核对原source_life；暂停冻结，重开清队列、显示组和临时材质。
+普通普攻的DamageOrigin仍是BasicAttack，强化来源另外冻结在投递快照中。
+
+`ability_targeting`让输入与指示器共用实际装配及preview_cast资格，按模型候选选择首个合法目标；
+Point原点击点和Enemy追近语义仍交模拟处理。`skill_indicators`在当前相机及传播之后更新独立显示根，
+按实际range/width/angle/count/radius绘图，不写PointerState或人物根。成功创建原效果后才移除通用回退，
+透明层不投影、不加入PickGeometry，共享素材模板不随单次技能销毁。
+已接入皇子原皮与源计划寒冰的关键素材和配方；噪声/扭曲/层级发射器有简化，不是完整League粒子引擎。
+接口、观察/时间/资源所有权及验收见[技能表现](../.trellis/spec/client/skill-presentation.md)和
+[模拟事实](../.trellis/spec/simulation/skill-facts.md)。
 
 ## 单中路模式与自主决策
 

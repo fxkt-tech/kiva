@@ -5,9 +5,24 @@ use super::{
 };
 use bevy::prelude::*;
 
+#[derive(Clone, Copy)]
+pub(super) struct ObjectSource {
+    pub owner: UnitLifeRef,
+    pub team: Team,
+    pub origin: DamageOrigin,
+}
+impl From<&ImpactSnapshot> for ObjectSource {
+    fn from(payload: &ImpactSnapshot) -> Self {
+        Self {
+            owner: payload.source,
+            team: payload.team,
+            origin: payload.origin,
+        }
+    }
+}
+
 pub(super) fn object(
-    owner: UnitLifeRef,
-    team: Team,
+    source: ObjectSource,
     position: Vec2,
     kind: ObjectKind,
     radius: f32,
@@ -16,8 +31,9 @@ pub(super) fn object(
 ) -> BattlefieldObject {
     BattlefieldObject {
         kind,
-        owner,
-        team,
+        owner: source.owner,
+        team: source.team,
+        origin: source.origin,
         position,
         previous: position,
         radius,
@@ -32,8 +48,7 @@ pub(super) fn object(
 }
 pub(super) fn spawn_standard(
     world: &mut World,
-    owner: UnitLifeRef,
-    team: Team,
+    source: ObjectSource,
     position: Vec2,
     spec: &StandardSpec,
 ) {
@@ -45,8 +60,7 @@ pub(super) fn spawn_standard(
     };
     let active = tick + mechanics::ticks(delay);
     let mut object = object(
-        owner,
-        team,
+        source,
         position,
         ObjectKind::Standard,
         0.2,
@@ -60,16 +74,14 @@ pub(super) fn spawn_standard(
 }
 pub(super) fn spawn_scout(
     world: &mut World,
-    owner: UnitLifeRef,
-    team: Team,
+    source: ObjectSource,
     position: Vec2,
     destination: Vec2,
     spec: ScoutSpec,
 ) {
     let tick = world.resource::<SimulationTick>().0;
     let mut object = object(
-        owner,
-        team,
+        source,
         position,
         ObjectKind::Scout,
         0.2,
@@ -84,16 +96,14 @@ pub(super) fn spawn_scout(
 }
 pub(super) fn reveal(
     world: &mut World,
-    owner: UnitLifeRef,
-    team: Team,
+    source: ObjectSource,
     position: Vec2,
     radius: f32,
     seconds: f32,
 ) {
     let tick = world.resource::<SimulationTick>().0;
     world.spawn(object(
-        owner,
-        team,
+        source,
         position,
         ObjectKind::Reveal,
         radius,
@@ -103,8 +113,7 @@ pub(super) fn reveal(
 }
 pub(super) fn spawn_ring(
     world: &mut World,
-    owner: UnitLifeRef,
-    team: Team,
+    source: ObjectSource,
     position: Vec2,
     spec: RingTerrainSpec,
     slot: Option<usize>,
@@ -118,7 +127,7 @@ pub(super) fn spawn_ring(
     else {
         world.despawn(id);
         world.write_message(SimulationEvent::TerrainPlacementFailed {
-            unit: owner.entity(),
+            unit: source.owner.entity(),
             position,
         });
         return;
@@ -129,8 +138,7 @@ pub(super) fn spawn_ring(
     *world.resource_mut::<NavigationMap>() = proposed;
     super::movement::apply_terrain_relocations(world, relocations);
     world.entity_mut(id).insert(object(
-        owner,
-        team,
+        source,
         position,
         ObjectKind::Terrain,
         spec.radius,
@@ -138,7 +146,7 @@ pub(super) fn spawn_ring(
         tick + mechanics::ticks(spec.duration),
     ));
     if let Some(slot) = slot
-        && let Some(mut state) = world.get_mut::<UnitMechanics>(owner.entity())
+        && let Some(mut state) = world.get_mut::<UnitMechanics>(source.owner.entity())
     {
         state.recasts[slot] = Some(RecastState {
             object: id,
@@ -172,8 +180,11 @@ pub(super) fn advance(world: &mut World) {
                 object.trail_distance %= 1.0;
                 reveal(
                     world,
-                    object.owner,
-                    object.team,
+                    ObjectSource {
+                        owner: object.owner,
+                        team: object.team,
+                        origin: object.origin,
+                    },
                     object.position,
                     spec.vision_radius,
                     spec.path_duration,

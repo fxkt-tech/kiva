@@ -1,6 +1,6 @@
 use super::{
     AttributeRejection, BaseAttributes, DamageOrigin, DamageType, EffectiveAttributes,
-    EquipmentInstanceId, ModifierSourceId, StatusKind,
+    EquipmentInstanceId, ImpactKind, ModifierSourceId, StatusKind,
     abilities::{AbilityId, AbilityLoadout},
     attributes::AttributeState,
     effects::ImpactSnapshot,
@@ -428,6 +428,23 @@ pub enum SimulationEvent {
         unit: Entity,
         ability: AbilityId,
         position: Vec2,
+        source_life: UnitLifeRef,
+        cast_source: CastSource,
+        origin: Vec2,
+        target: AbilityTarget,
+        target_life: Option<UnitLifeRef>,
+        recast: bool,
+    },
+    ImpactResolved {
+        source_life: UnitLifeRef,
+        team: Team,
+        origin: DamageOrigin,
+        empower_origin: Option<DamageOrigin>,
+        /// Submission/delivery group, shared by e.g. all arrows of one volley.
+        carrier: u64,
+        position: Vec2,
+        direction: Vec2,
+        kind: ImpactKind,
     },
     /// The landing remains committed, but nearby actors cannot safely leave
     /// the proposed terrain. No wall or partial relocation was applied.
@@ -464,6 +481,18 @@ pub struct Projectile {
     pub(super) arrows: u8,
 }
 impl Projectile {
+    pub fn source_life(&self) -> UnitLifeRef {
+        self.payload.source
+    }
+    pub fn origin(&self) -> DamageOrigin {
+        self.payload.origin
+    }
+    pub fn carrier(&self) -> u64 {
+        self.carrier
+    }
+    pub fn empower_origin(&self) -> Option<DamageOrigin> {
+        self.payload.empower_origin
+    }
     pub fn arrows(&self) -> u8 {
         self.arrows
     }
@@ -499,6 +528,18 @@ pub struct AreaEffect {
     pub(super) duration: f32,
 }
 impl AreaEffect {
+    pub fn source_life(&self) -> UnitLifeRef {
+        self.payload.source
+    }
+    pub fn origin(&self) -> DamageOrigin {
+        self.payload.origin
+    }
+    pub fn carrier(&self) -> u64 {
+        self.carrier
+    }
+    pub fn empower_origin(&self) -> Option<DamageOrigin> {
+        self.payload.empower_origin
+    }
     pub fn team(&self) -> Team {
         self.payload.team
     }

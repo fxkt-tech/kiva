@@ -67,6 +67,37 @@ async function pause(page) {
   await page.waitForFunction(() => window.__kivaState.paused && !document.pointerLockElement);
 }
 
+// Freeze a real visible skill through the existing pause intent. All selection
+// and combat still happen through normal input; the observer never writes World.
+async function pauseOnSkillVisual(page, id, phase, action, delayTicks = 0, minLayers = 1) {
+  await page.evaluate(({id,phase,delayTicks,minLayers}) => {
+    window.__vfxCaptured = null;
+    let firstTick;
+    function observe(event) {
+      const s = typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
+      if (s.paused || !s.effects?.active.some((effect) => effect.ability_id === id
+        && effect.phase === phase && effect.layers >= minLayers)) return;
+      firstTick ??= s.tick;
+      if(s.tick < firstTick + delayTicks)return;
+      window.__vfxCaptured = s;
+      document.documentElement.dataset.paused = "true";
+      document.exitPointerLock();
+      window.removeEventListener("kiva-state", observe);
+    }
+    window.addEventListener("kiva-state", observe);
+  }, {id,phase,delayTicks,minLayers});
+  await action();
+  await page.waitForFunction(() => Boolean(window.__vfxCaptured) && window.__kivaState.paused);
+  const frozen = await state(page);
+  const frame = await page.evaluate(() => window.__laneDiagnostics.frames);
+  await page.waitForFunction((frame) => window.__laneDiagnostics.frames >= frame+4, frame);
+  const stable = await state(page);
+  assert.equal(stable.tick, frozen.tick);
+  assert.deepEqual(stable.effects.active, frozen.effects.active, "pause freezes actual effect instances");
+  assert.deepEqual(stable.effects.errors, []);
+  return frozen;
+}
+
 async function firstWaveStart(page) {
   const snapshot = await page.evaluate(() => window.__laneStarts?.get(window.__kivaState.match.id));
   assert(snapshot, "the fixture must observe the first authoritative Running projection");
@@ -223,5 +254,5 @@ function nearMiddle(snapshot, forwardOffset = -0.65, lateral = -3) {
 }
 
 module.exports = { ...support, installFrameClock, state, hero, enemyHero, base, minions,
-  observed, waitTicks, pause, selectAndEnter, firstWaveStart, waitForFirstWave,
+  observed, waitTicks, pause, pauseOnSkillVisual, selectAndEnter, firstWaveStart, waitForFirstWave,
   clickUnit, clickWorld, moveTo, panTo, nearHome, nearMiddle };

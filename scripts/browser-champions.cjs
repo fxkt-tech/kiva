@@ -3,19 +3,29 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs/promises");
 const path=require("node:path");
 const {launchBrowser,serveBuild,installFrameClock,selectAndEnter,selectCharacter,resumeGame,pause,state,hero,enemyHero,
-  nearHome,nearMiddle,moveTo,clickWorld,clickUnit,clickUi,observed,waitTicks,reportFailure}=require("./browser-lane-support.cjs");
+  nearHome,nearMiddle,moveTo,clickWorld,clickUnit,clickUi,observed,waitTicks,reportFailure,pauseOnSkillVisual}=require("./browser-lane-support.cjs");
 
 async function fresh(page,id) {
   const old=await state(page);
   if (!old.paused) await pause(page);
   await page.locator("#reselect").click();
   await page.waitForFunction(()=>window.__kivaState.session.phase==="Selecting"&&!document.getElementById("enter").disabled);
+  if(process.env.KIVA_EXPECT_SKILL_VISUALS==="1")assert.equal((await state(page)).effects.active.length,0,"new selection clears all dynamic skill visuals");
   await selectCharacter(page,id); await resumeGame(page);
+  if(process.env.KIVA_EXPECT_SKILL_VISUALS==="1")await page.waitForFunction(()=>window.__kivaState.effects?.ready
+    &&window.__kivaState.units.find((u)=>u.id===window.__kivaState.player_id)?.model?.ready);
   assert.notEqual((await state(page)).player_id,old.player_id);
   return state(page);
 }
 async function shot(page,name) {
   if(process.env.KIVA_BROWSER_HEADED!=="1")return;
+  if(process.env.KIVA_EXPECT_SKILL_VISUALS==="1") {
+    const expected={"jarvan-spear-shield":[12,"shield"],"jarvan-flag-combo":[13,"standard"],"jarvan-terrain":[14,"terrain"],"ashe-focus":[21,"empowered"]}[name];
+    const current=await state(page);
+    assert(current.effects.ready,"actual VFX resources must be loaded");
+    assert.deepEqual(current.effects.errors,[]);
+    if(expected)assert(current.effects.active.some((effect)=>effect.ability_id===expected[0]&&effect.phase===expected[1]),`${name}: actual source visual is present`);
+  }
   const directory=process.env.KIVA_SCREENSHOT_DIR||"/tmp/kiva-browser-tests/artifacts/champions";
   await fs.mkdir(directory,{recursive:true});
   const size=page.viewportSize();
@@ -39,6 +49,8 @@ async function approach(page,offset=0,lateral=-3) {
 }
 async function jarvan(page,url,deep) {
   const initial=await selectAndEnter(page,url,1);
+  if(process.env.KIVA_EXPECT_SKILL_VISUALS==="1")await page.waitForFunction(()=>window.__kivaState.effects?.ready
+    &&window.__kivaState.units.find((u)=>u.id===window.__kivaState.player_id)?.model?.ready);
   assert.equal(hero(initial).name,"德玛西亚皇子");
   assert.equal(hero(initial).display_attributes.move_speed,340);
   assert.equal(hero(initial).display_attributes.attack_range,175);
@@ -155,7 +167,11 @@ async function jarvan(page,url,deep) {
     await pause(page); await shot(page,"jarvan-terrain"); await resumeGame(page);
     await page.waitForFunction(()=>window.__kivaState.abilities[3].mechanics.recast_ready);
     const before=hero(await state(page)).mana;
-    await clickUi(page,'[data-slot="3"]');
+    if(process.env.KIVA_EXPECT_SKILL_VISUALS==="1") {
+      await pauseOnSkillVisual(page,14,"burst",()=>clickUi(page,'[data-slot="3"]'),0,24);
+      await shot(page,"jarvan-r-collapse");
+      await resumeGame(page);
+    } else await clickUi(page,'[data-slot="3"]');
     await page.waitForFunction(()=>!window.__kivaState.abilities[3].mechanics.recast);
     const removed=await state(page);
     assert(!removed.objects.some((o)=>o.kind==="Terrain"&&o.owner===removed.player_id));
@@ -230,10 +246,22 @@ async function ashe(page,deep){
     assert.equal(empowered.aim,null);
     assert(hero(empowered).attributes.attack_speed>0.78);
     await pause(page); await shot(page,"ashe-focus"); await resumeGame(page);
+    if(process.env.KIVA_EXPECT_SKILL_VISUALS==="1") {
+      const target=enemyHero(await state(page));
+      assert(target?.alive,"enhanced arrows need a real target");
+      await pauseOnSkillVisual(page,21,"projectile",()=>clickUnit(page,target.id,"right"),0,10);
+      await shot(page,"ashe-q-enhanced-arrows");
+      await resumeGame(page);
+      await page.keyboard.press("s");
+    }
     const ready=await state(page); const target=enemyHero(ready);
     assert(target?.alive,"actual R needs a visible enemy hero");
     await page.keyboard.press("r"); await page.waitForFunction(()=>window.__kivaState.aim===3);
-    await clickWorld(page,target.position);
+    if(process.env.KIVA_EXPECT_SKILL_VISUALS==="1") {
+      await pauseOnSkillVisual(page,24,"burst",()=>clickWorld(page,target.position),12,4);
+      await shot(page,"ashe-r-impact");
+      await resumeGame(page);
+    } else await clickWorld(page,target.position);
     const stunned=await observed(page,(id)=>{
       const s=window.__kivaState; const target=s.units.find((u)=>u.id===id);
       return target?.statuses.some((status)=>status.kind==="Stun")&&s.abilities[3].cooldown>0?s:false;
@@ -279,5 +307,5 @@ async function main(){
   }throw error;}
   finally{try{await browser.close();}finally{if(site)await site.close();}}
 }
-module.exports={main};
+module.exports={main,fresh,shot,approach,defensiveEquipment};
 if(require.main===module)main().catch((error)=>{console.error(error);process.exitCode=1;});

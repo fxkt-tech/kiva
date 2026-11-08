@@ -1119,7 +1119,7 @@ fn equipment_dash_uses_the_same_maximum_range_and_committed_endpoint() {
     a.step(8);
     let events = a.drain();
     assert!(events.iter().any(|event| matches!(event,
-        SimulationEvent::AbilityCommitted { unit, ability, position }
+        SimulationEvent::AbilityCommitted { unit, ability, position, .. }
             if *unit == actor && *ability == DASH && position.distance(Vec2::new(15.0, 0.0)) < 0.001)));
     assert!(a.slots(actor).item(0).unwrap().cooldown() > 0.0);
     assert_eq!(

@@ -2154,6 +2154,7 @@ fn dash_resolves_near_and_distant_points_before_committing_costs_and_event_posit
                     unit,
                     ability,
                     position,
+                    ..
                 } if *unit == player && *ability == DASH => Some(*position),
                 _ => None,
             })

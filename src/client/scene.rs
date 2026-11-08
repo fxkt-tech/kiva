@@ -1,6 +1,5 @@
 //! Procedural presentation. Visual transforms interpolate authoritative poses.
 use super::{
-    abilities,
     character::{self, AnimationLibrary, ModelAssets, RigPose},
     controls::{Aim, ClientFeedback, PlayerController, PointerState},
     picking::Pickable,
@@ -300,6 +299,21 @@ pub(super) fn attach_projectiles(
     }
 }
 
+pub(super) fn sync_projectiles(
+    frame: Res<PresentationFrame>,
+    visible: Option<Res<VisibleWorld>>,
+    mut visuals: Query<
+        (Entity, &Projectile, &mut Transform, &mut Visibility),
+        With<ProjectileVisual>,
+    >,
+) {
+    let fraction = frame.fraction();
+    for (id, projectile, mut transform, mut visibility) in &mut visuals {
+        *visibility = projectile_visibility(visible.as_deref(), id);
+        *transform = projectile_transform(projectile, fraction);
+    }
+}
+
 #[expect(
     clippy::too_many_arguments,
     reason = "Bevy system parameters declare independent ECS access"
@@ -311,30 +325,16 @@ pub(super) fn sync_effects(
     session: Res<ClientSession>,
     pointer: Res<PointerState>,
     feedback: Res<ClientFeedback>,
-    catalog: Res<AbilityCatalog>,
-    equipment: Res<EquipmentCatalog>,
-    units: Query<(
+    units: Query<(Entity, &Unit, &UnitPose, &UnitState, &UnitAction)>,
+    areas: Query<(
         Entity,
-        &Unit,
-        &UnitPose,
-        &UnitState,
-        &AbilitySlots,
-        &EquipmentSlots,
-        &UnitAction,
+        &AreaEffect,
+        Option<&super::skill_effects::ManagedEffect>,
     )>,
-    mut visuals: Query<
-        (Entity, &Projectile, &mut Transform, &mut Visibility),
-        With<ProjectileVisual>,
-    >,
-    areas: Query<(Entity, &AreaEffect)>,
     visible: Option<Res<VisibleWorld>>,
     mut gizmos: Gizmos,
 ) {
     let fraction = frame.fraction();
-    for (id, projectile, mut transform, mut visibility) in &mut visuals {
-        *visibility = projectile_visibility(visible.as_deref(), id);
-        *transform = projectile_transform(projectile, fraction);
-    }
     let ring = |gizmos: &mut Gizmos, point: Vec2, radius: f32, color: Color| {
         gizmos.circle(
             Isometry3d::new(
@@ -345,7 +345,7 @@ pub(super) fn sync_effects(
             color,
         );
     };
-    for (id, unit, pose, state, _, _, action) in &units {
+    for (id, unit, pose, state, action) in &units {
         if !state.alive()
             || visible
                 .as_ref()
@@ -382,7 +382,10 @@ pub(super) fn sync_effects(
             );
         }
     }
-    for (id, area) in &areas {
+    for (id, area, managed) in &areas {
+        if managed.is_some() {
+            continue;
+        }
         if visible
             .as_ref()
             .is_some_and(|visible| !visible.contains(id))
@@ -417,69 +420,16 @@ pub(super) fn sync_effects(
             );
         }
     }
-    if let Some(aim) = player.aim
+    if matches!(player.aim, Some(Aim::AttackMove))
         && let Some(player) = session.player()
-        && let Ok((_, unit, pose, _, slots, items, _)) = units.get(player)
+        && let Ok((_, unit, pose, _, _)) = units.get(player)
     {
-        let origin = pose.position();
-        match aim {
-            Aim::AttackMove => ring(
-                &mut gizmos,
-                origin,
-                unit.attributes().attack_range() + unit.definition().radius,
-                Color::srgb_u8(229, 177, 105),
-            ),
-            aim @ (Aim::Ability(_) | Aim::Equipment { .. }) => {
-                if let Some(info) = abilities::resolve(
-                    aim.source().expect("cast aim"),
-                    slots,
-                    items,
-                    &catalog,
-                    &equipment,
-                ) {
-                    let definition = info.definition;
-                    ring(
-                        &mut gizmos,
-                        origin,
-                        definition.range,
-                        Color::srgb_u8(99, 204, 204),
-                    );
-                    if let Some(point) = pointer.ground {
-                        let valid = definition.targeting == Targeting::Direction
-                            || abilities::clamps_point_target(definition)
-                            || origin.distance(point) <= definition.range;
-                        let color = if valid {
-                            Color::srgb_u8(153, 236, 214)
-                        } else if definition.targeting == Targeting::Enemy {
-                            Color::srgb_u8(229, 177, 105)
-                        } else {
-                            Color::srgb_u8(240, 117, 101)
-                        };
-                        match &definition.execution {
-                            AbilityExecution::Impact(ImpactDefinition {
-                                delivery: Delivery::Area { radius, .. },
-                                ..
-                            }) => ring(&mut gizmos, point, *radius, color),
-                            AbilityExecution::Standard(spec) => {
-                                let end =
-                                    origin + (point - origin).clamp_length_max(definition.range);
-                                ring(&mut gizmos, end, spec.aura_radius, color);
-                            }
-                            _ => {
-                                let end =
-                                    origin + (point - origin).clamp_length_max(definition.range);
-                                gizmos.line(
-                                    Vec3::new(origin.x, 0.1, origin.y),
-                                    Vec3::new(end.x, 0.1, end.y),
-                                    color,
-                                );
-                                ring(&mut gizmos, end, 0.25, color);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        ring(
+            &mut gizmos,
+            pose.position(),
+            unit.attributes().attack_range() + unit.definition().radius,
+            Color::srgb_u8(229, 177, 105),
+        );
     }
 }
 

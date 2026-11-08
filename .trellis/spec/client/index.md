@@ -19,6 +19,7 @@
 13. 修改模型悬停、鼠标命中或右键/指向技能选目标时阅读 [unit-picking.md](unit-picking.md)。
 14. 修改导入 GLB、源动作、模型比例、地图纹理或图标映射时阅读 [imported-models.md](imported-models.md)。
 15. 修改战斗音效、手势解锁、音频队列或音量控制时阅读 [combat-audio.md](combat-audio.md)。
+16. 修改技能原素材、特效生命周期、瞄准几何或共享目标资格时阅读 [skill-presentation.md](skill-presentation.md)。
 
 ## Quality Check
 

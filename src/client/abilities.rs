@@ -166,6 +166,7 @@ impl AbilityView {
 }
 
 pub(super) struct CastInfo<'a> {
+    pub ability: AbilityId,
     pub definition: &'a AbilityDefinition,
     pub cooldown: f32,
 }
@@ -189,6 +190,7 @@ pub(super) fn resolve<'a>(
         }
     };
     Some(CastInfo {
+        ability,
         definition: abilities.get(ability)?,
         cooldown,
     })
@@ -253,10 +255,6 @@ pub(super) fn runtime_unavailable_reason(
         }
     }
     unavailable_reason(state, control, cooldown, definition)
-}
-
-pub(super) fn clamps_point_target(definition: &AbilityDefinition) -> bool {
-    definition.execution.is_dash() || matches!(definition.execution, AbilityExecution::Standard(_))
 }
 
 pub(super) fn describe_passives(stats: &UnitStats) -> Vec<String> {

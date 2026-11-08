@@ -308,9 +308,14 @@ fn record_events(
 ) {
     for event in events.read() {
         match event {
-            SimulationEvent::AbilityCommitted { unit, ability, .. } => {
+            SimulationEvent::AbilityCommitted {
+                unit,
+                ability,
+                recast,
+                ..
+            } => {
                 if let Ok(mut instance) = instances.get_mut(*unit) {
-                    instance.last_cast = Some((*ability, tick.0 as f64 / TICK_RATE));
+                    instance.last_cast = (!recast).then_some((*ability, tick.0 as f64 / TICK_RATE));
                 }
             }
             SimulationEvent::Died { unit }

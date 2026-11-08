@@ -145,6 +145,8 @@ struct HudView {
     attack_move: bool,
     units: Vec<UnitView>,
     objects: Vec<ObjectView>,
+    indicator: Option<super::skill_indicators::IndicatorView>,
+    effects: Option<super::skill_effects::SkillEffectsView>,
     abilities: Vec<AbilityView>,
     notice: String,
     camera_locked: bool,
@@ -420,6 +422,8 @@ pub(super) struct ObservedProjection<'w, 's> {
     visible: Res<'w, VisibleWorld>,
     units: Query<'w, 's, ProjectedUnit>,
     objects: Query<'w, 's, (Entity, &'static BattlefieldObject)>,
+    indicator: Option<Res<'w, super::skill_indicators::IndicatorView>>,
+    effects: Option<Res<'w, super::skill_effects::SkillEffectsView>>,
 }
 impl ObservedProjection<'_, '_> {
     fn objects(&self, tick: u64) -> Vec<ObjectView> {
@@ -637,6 +641,8 @@ pub(super) fn publish(
         attack_move: matches!(player.aim, Some(Aim::AttackMove)),
         units: views,
         objects: observed.objects(tick.0),
+        indicator: observed.indicator.as_ref().map(|view| (**view).clone()),
+        effects: observed.effects.as_ref().map(|view| (**view).clone()),
         abilities,
         notice: if time.elapsed_secs() < feedback.expires {
             feedback.message.clone()

@@ -120,21 +120,37 @@ async function captureWithButton(page, selector, activation, replacement) {
 }
 
 async function movePointer(page, x, y) {
-  const cursor = await page.evaluate(() => {
+  const readCursor = () => page.evaluate(() => {
     if (document.pointerLockElement?.id !== "game") return null;
-    const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
-    return { x: matrix.m41, y: matrix.m42 };
+    const point = window.kivaPointer.position();
+    if (!Array.isArray(point) || point.length !== 2 || !point.every(Number.isFinite)) {
+      throw new Error("Captured game pointer must expose a finite CSS position");
+    }
+    return { x: point[0], y: point[1] };
   });
+  let cursor = await readCursor();
   if (!cursor) {
     await page.mouse.move(x, y);
     mousePositions.set(page, { x, y });
     return;
   }
-  const last = mousePositions.get(page);
-  assertMousePosition(last);
-  const next = { x: last.x + x - cursor.x, y: last.y + y - cursor.y };
-  await page.mouse.move(next.x, next.y);
-  mousePositions.set(page, next);
+  const samples = [];
+  // Absolute fixture placement closes the loop through the production owner.
+  // CDP's integer motion and learned gain need not produce an exact 1:1 delta.
+  // Relative motion/response tests intentionally keep their single input path.
+  for (let attempt = 0; attempt < 6 && (Math.abs(cursor.x-x) >= 2 || Math.abs(cursor.y-y) >= 2); attempt++) {
+    const last = mousePositions.get(page);
+    assertMousePosition(last);
+    const next = { x: last.x + x - cursor.x, y: last.y + y - cursor.y };
+    await page.mouse.move(next.x, next.y);
+    mousePositions.set(page, next);
+    cursor = await readCursor();
+    if (!cursor) throw new Error("Pointer capture was lost during absolute fixture placement");
+    samples.push({ next, cursor });
+  }
+  if (Math.abs(cursor.x-x) >= 2 || Math.abs(cursor.y-y) >= 2) {
+    throw new Error(`Captured pointer did not reach ${x},${y} after six inputs: ${JSON.stringify(samples)}`);
+  }
   await page.waitForFunction(([x, y]) => {
     const matrix = new DOMMatrix(getComputedStyle(document.getElementById("game-cursor")).transform);
     return Math.abs(matrix.m41 - x) < 2 && Math.abs(matrix.m42 - y) < 2;

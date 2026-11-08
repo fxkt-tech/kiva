@@ -1,6 +1,12 @@
 //! Human and demo AI adapters both submit the public simulation commands.
 use super::{
-    abilities, camera::GameCamera, picking, pointer::GamePointer, session::ClientSession, web,
+    abilities,
+    ability_targeting::{self, TargetState},
+    camera::GameCamera,
+    picking,
+    pointer::GamePointer,
+    session::ClientSession,
+    web,
 };
 use crate::simulation::*;
 use bevy::prelude::*;
@@ -431,35 +437,27 @@ fn mouse_pressed(world: &mut World, button: MouseButton) {
                 }
                 Some(aim @ (Aim::Ability(_) | Aim::Equipment { .. })) => {
                     let source = aim.source().expect("cast aim");
-                    let target = cast_info(world, player, source).and_then(|info| {
-                        match info.definition.targeting {
-                            Targeting::Direction => ground.and_then(|point| {
-                                let direction = point
-                                    - world
-                                        .get::<UnitPose>(player)
-                                        .expect("player pose")
-                                        .position();
-                                (direction.length_squared() > 1e-6)
-                                    .then_some(AbilityTarget::Direction(direction))
-                            }),
-                            Targeting::Point => ground.map(AbilityTarget::Point),
-                            Targeting::Enemy => enemy.map(AbilityTarget::Unit),
-                            Targeting::SelfCast => Some(AbilityTarget::SelfCast),
-                        }
-                    });
-                    if let Some(target) = target {
-                        if matches!(target, AbilityTarget::Unit(_))
-                            && let Err(reason) = preview_cast(world, player, source, target)
-                            && reason != Rejection::OutOfRange
+                    let pointer = world.resource::<PointerState>();
+                    let intent = ability_targeting::resolve_intent(
+                        world,
+                        player,
+                        source,
+                        ground,
+                        &pointer.candidates,
+                    );
+                    if let Some(target) = intent.as_ref().and_then(|intent| intent.submission()) {
+                        submit_cast(world, player, source, target);
+                    } else {
+                        if let Some(ability_targeting::TargetIntent {
+                            state: TargetState::Invalid(reason),
+                            ..
+                        }) = intent
                         {
                             let now = world.resource::<Time>().elapsed_secs();
                             let mut feedback = world.resource_mut::<ClientFeedback>();
                             feedback.message = rejection_message(&reason).into();
                             feedback.expires = now + 2.0;
-                            return;
                         }
-                        submit_cast(world, player, source, target);
-                    } else {
                         return;
                     }
                 }

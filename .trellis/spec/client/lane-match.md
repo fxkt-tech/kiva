@@ -106,6 +106,6 @@ Rust保留原56项客户端回归，并增加真实对局重开/失败/终局输
 `battlefield`独立负责旗、墙、鹰与盾；冻结采样仍用PresentationFrame，场上对象寿命全部来自模拟。
 角色外观仅在weapon表现模块按身份选择枪/弓；controls/abilities按通用execution与真实UnitMechanics读取状态。
 技能按钮显示层数/充能/重施，R重施以SelfCast无需另点目标且忽略原始法力/CD；仍受真实重施时机和控制权限约束。
-Standard和Dash超距预览使用统一clamps_point_target，原点击点交给模拟在commit重算最大端点。
+Standard和Dash等目标预览统一使用ability_targeting与preview_cast，原点击点交给模拟在commit重算实际端点。原素材及实际execution指示器见[技能表现规范](skill-presentation.md)。
 
 HUD构图、默认zoom0.5/最近0.4/最远1.5与实际camera_footprint见[hud-layout.md](hud-layout.md)。小地图固定右下，完整快照仅更新HP/MP等值，位置仍由逐帧标签提供。

@@ -79,6 +79,7 @@ document capture记录before、window bubble记录after，断言同一事件内�
 专项还持有真实游戏RAF并核对kiva-labels计数未变，验证光标继续响应、快速点击保留按下点、暂停与恢复；不写World或改模拟时钟。
 原cursor/skills/equipment/characters/reselection及有窗口smoke按影响回归；Rust执行make check和WASM Clippy。
 `browser-minimap.cjs`持有真实游戏RAF后发送地图外chord按下和释放，再恢复同一个Rust帧，验证已结束UI手势的旧按下不会穿透世界。
+绝对定位夹具movePointer读取生产position完整精度，最多6次用真实CDP移动纠正残差，最后仍检查DOM每轴<2px；失锁、非法位置和耗尽均失败。合成整数事件/学习gain曾留下2.135635px残差，不能假定一次CSS差值就是精确实际位移。该闭环仅用于摆放绝对位置，moveRelative和速度/同事件响应测量保持单次输入，以免掩盖生产单位或延迟回归。
 
 ## 7. 错误与正确
 

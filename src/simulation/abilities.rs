@@ -139,6 +139,11 @@ impl ImpactDefinition {
 #[derive(Resource, Default)]
 pub struct AbilityCatalog(BTreeMap<AbilityId, AbilityDefinition>);
 impl AbilityCatalog {
+    /// Read-only registered definitions for content-driven presentation setup.
+    pub fn iter(&self) -> impl Iterator<Item = (AbilityId, &AbilityDefinition)> {
+        self.0.iter().map(|(id, definition)| (*id, definition))
+    }
+
     pub fn register(
         &mut self,
         id: AbilityId,

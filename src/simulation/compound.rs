@@ -125,6 +125,7 @@ pub(super) fn execute(
     world: &mut World,
     entity: Entity,
     source: CastSource,
+    damage_origin: DamageOrigin,
     definition: &AbilityDefinition,
     target: AbilityTarget,
     payload: Option<ImpactSnapshot>,
@@ -135,6 +136,11 @@ pub(super) fn execute(
         .expect("state")
         .life_ref(entity);
     let team = world.get::<Unit>(entity).expect("unit").team;
+    let object_source = super::battlefield::ObjectSource {
+        owner: life,
+        team,
+        origin: damage_origin,
+    };
     let tick = world.resource::<SimulationTick>().0;
     match &definition.execution {
         AbilityExecution::Line(spec) => {
@@ -214,6 +220,7 @@ pub(super) fn execute(
                 .push(mechanics::ShieldInstance {
                     amount,
                     until: tick + mechanics::ticks(spec.duration),
+                    origin: damage_origin,
                 });
             if let Some(payload) = payload {
                 queue_area(world, &payload, position, spec.radius, None);
@@ -230,7 +237,7 @@ pub(super) fn execute(
                 position,
                 definition.range,
             );
-            super::battlefield::spawn_standard(world, life, team, point, spec);
+            super::battlefield::spawn_standard(world, object_source, point, spec);
         }
         AbilityExecution::Leap(spec) => {
             let AbilityTarget::Unit(target) = target else {
@@ -271,6 +278,7 @@ pub(super) fn execute(
                 state.focus = 0;
                 state.focus_until = 0;
                 state.empowered_until = tick + mechanics::ticks(spec.duration);
+                state.empower_origin = Some(damage_origin);
                 state.multiplier = spec.attack_damage_multiplier;
                 state.arrows = spec.arrows;
                 state.empower_source
@@ -337,7 +345,7 @@ pub(super) fn execute(
                     charge.next = Some(tick + charge.recharge);
                 }
             }
-            super::battlefield::spawn_scout(world, life, team, position, destination, *spec);
+            super::battlefield::spawn_scout(world, object_source, position, destination, *spec);
         }
         AbilityExecution::Arrow(spec) => {
             let AbilityTarget::Direction(value) = target else {
@@ -397,6 +405,16 @@ pub(super) fn queue_area(
     radius: f32,
     exclude: Option<Entity>,
 ) {
+    world.write_message(super::facts::impact(
+        payload,
+        payload.sequence,
+        center,
+        payload.facing,
+        ImpactKind::AreaActivated {
+            carrier_entity: None,
+            radius,
+        },
+    ));
     let targets: Vec<_> = world
         .query::<(Entity, &Unit, &UnitState, &UnitPose)>()
         .iter(world)
@@ -489,8 +507,7 @@ pub(super) fn advance_motion_impacts(world: &mut World) {
                 if let Some(spec) = *terrain {
                     super::battlefield::spawn_ring(
                         world,
-                        motion.source,
-                        motion.payload.team,
+                        (&motion.payload).into(),
                         position,
                         spec,
                         *slot,

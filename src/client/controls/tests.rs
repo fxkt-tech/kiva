@@ -1034,7 +1034,16 @@ fn real_hero_target_leap_keeps_aim_on_minions_and_recasts_without_enemy_or_secon
     )
     .unwrap();
     app.world_mut().resource_mut::<PointerState>().hovered = Some(enemy);
-    app.world_mut().resource_mut::<PointerState>().candidates = vec![enemy];
+    app.world_mut().resource_mut::<PointerState>().candidates = vec![minion, enemy];
+    let intent = ability_targeting::resolve_intent(
+        app.world(),
+        player,
+        CastSource::AbilitySlot(3),
+        None,
+        &[minion, enemy],
+    )
+    .unwrap();
+    assert_eq!(intent.submission(), Some(AbilityTarget::Unit(enemy)));
     mouse_pressed(app.world_mut(), MouseButton::Left);
     step(&mut app, 25);
     assert!(app.world().get::<UnitMechanics>(player).unwrap().recast(3));

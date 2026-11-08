@@ -1,5 +1,6 @@
 //! Application adapters. Gameplay imports never point back into this module.
 mod abilities;
+mod ability_targeting;
 mod audio;
 mod battlefield;
 mod camera;
@@ -15,6 +16,9 @@ mod pointer;
 mod presentation;
 mod scene;
 mod session;
+mod skill_assets;
+mod skill_effects;
+mod skill_indicators;
 #[cfg(test)]
 mod test_support;
 mod ui;
@@ -56,6 +60,9 @@ pub(super) fn run() {
         crate::gameplay::AiPlugin,
         audio::CombatAudioPlugin,
         imported_models::ImportedModelsPlugin,
+        skill_assets::SkillAssetsPlugin,
+        skill_effects::SkillEffectsPlugin,
+        skill_indicators::SkillIndicatorsPlugin,
     ))
     .insert_resource(SimulationControl {
         paused: cfg!(target_arch = "wasm32"),
@@ -110,9 +117,16 @@ pub(super) fn run() {
             unit_appearance::sync_simple_models,
             battlefield::attach,
             battlefield::sync,
-            (scene::attach_projectiles, scene::sync_effects).chain(),
+            (scene::attach_projectiles, scene::sync_projectiles).chain(),
             controls::receive_feedback,
             controls::refresh_aim,
+            (
+                scene::sync_effects,
+                battlefield::draw_fallback,
+                battlefield::sync_shields,
+            )
+                .chain()
+                .after(skill_effects::SkillEffectsSet::Render),
         )
             .chain(),
     )
@@ -123,6 +137,7 @@ pub(super) fn run() {
     .add_systems(
         PostUpdate,
         ui::publish
+            .after(skill_indicators::SkillIndicatorsSet::Project)
             .after(bevy::transform::TransformSystems::Propagate)
             .after(bevy::camera::CameraUpdateSystems),
     )

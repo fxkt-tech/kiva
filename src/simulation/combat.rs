@@ -2,6 +2,10 @@
 use super::{effects::PendingImpacts, *};
 use bevy::prelude::*;
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "Bevy system parameters declare independent ECS access"
+)]
 pub(super) fn advance_projectiles(
     mut commands: Commands,
     map: Res<NavigationMap>,
@@ -10,14 +14,35 @@ pub(super) fn advance_projectiles(
     mut projectiles: Query<(Entity, &mut Projectile)>,
     mut impacts: ResMut<PendingImpacts>,
     mut memory: ResMut<super::mechanics::MechanicMemory>,
+    mut events: MessageWriter<SimulationEvent>,
 ) {
     for (entity, mut projectile) in &mut projectiles {
         if let Some(target) = projectile.homing {
             let Ok((_, _, state, pose)) = units.get(target.entity()) else {
+                events.write(super::facts::impact(
+                    &projectile.payload,
+                    projectile.carrier,
+                    projectile.position,
+                    projectile.direction,
+                    ImpactKind::ProjectileEnded {
+                        carrier_entity: entity,
+                        reason: ProjectileEndReason::InvalidTarget,
+                    },
+                ));
                 commands.entity(entity).despawn();
                 continue;
             };
             if !state.alive() || state.life_ref(target.entity()) != target {
+                events.write(super::facts::impact(
+                    &projectile.payload,
+                    projectile.carrier,
+                    projectile.position,
+                    projectile.direction,
+                    ImpactKind::ProjectileEnded {
+                        carrier_entity: entity,
+                        reason: ProjectileEndReason::InvalidTarget,
+                    },
+                ));
                 commands.entity(entity).despawn();
                 continue;
             }
@@ -129,13 +154,30 @@ pub(super) fn advance_projectiles(
         }
         if hit.is_some() || projectile.remaining <= 0.001 || end.distance_squared(requested) > 1e-6
         {
+            let position = hit.map_or(end, |(fraction, _)| projectile.previous.lerp(end, fraction));
+            let reason = if let Some((_, target)) = hit {
+                ProjectileEndReason::Hit(units.get(target).expect("hit").2.life_ref(target))
+            } else if end.distance_squared(requested) > 1e-6 {
+                ProjectileEndReason::Blocked
+            } else {
+                ProjectileEndReason::Expired
+            };
+            events.write(super::facts::impact(
+                &projectile.payload,
+                projectile.carrier,
+                position,
+                projectile.direction,
+                ImpactKind::ProjectileEnded {
+                    carrier_entity: entity,
+                    reason,
+                },
+            ));
             if let super::mechanics::ProjectileBehavior::Arrow { spec, .. } = &behavior {
                 let center = hit.map_or(end, |(_, target)| {
                     units.get(target).expect("hit").3.position
                 });
                 commands.spawn(super::battlefield::object(
-                    projectile.payload.source,
-                    projectile.payload.team,
+                    (&projectile.payload).into(),
                     center,
                     ObjectKind::Reveal,
                     spec.vision_radius,
@@ -172,12 +214,23 @@ pub(super) fn advance_areas(
     units: Query<(Entity, &Unit, &UnitState, &UnitPose)>,
     mut areas: Query<(Entity, &mut AreaEffect)>,
     mut impacts: ResMut<PendingImpacts>,
+    mut events: MessageWriter<SimulationEvent>,
 ) {
     for (entity, mut area) in &mut areas {
         area.remaining -= TICK_SECONDS;
         if area.remaining > 1e-5 {
             continue;
         }
+        events.write(super::facts::impact(
+            &area.payload,
+            area.carrier,
+            area.position,
+            area.payload.facing,
+            ImpactKind::AreaActivated {
+                carrier_entity: Some(entity),
+                radius: area.radius,
+            },
+        ));
         // Packet keys sort recipients by entity, independent of this iteration.
         for (target, unit, state, pose) in &units {
             if state.alive()

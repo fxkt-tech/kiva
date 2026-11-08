@@ -14,6 +14,7 @@
 8. 涉及装备装卸、主动来源或普攻被动时阅读 [equipment.md](equipment.md)。
 9. 涉及近战/结构/恢复、AI预检或模式调度时阅读 [combat-foundation.md](combat-foundation.md)。
 10. 涉及普攻特性、护盾、旗/光环、强化、侦察或地形时阅读 [champion-primitives.md](champion-primitives.md)。
+11. 涉及技能提交/命中事实或载体、对象、附着来源视图时阅读 [skill-facts.md](skill-facts.md)。
 
 ## Quality Check
 

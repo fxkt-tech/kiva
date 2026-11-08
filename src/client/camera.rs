@@ -16,6 +16,8 @@ const DEFAULT_ZOOM: f32 = 0.5;
 const MIN_ZOOM: f32 = 0.4;
 const MAX_ZOOM: f32 = 1.5;
 const OFFSET: Vec3 = Vec3::new(10.0, 25.0, 20.0);
+const KEYBOARD_PAN_SPEED: f32 = 18.0;
+const EDGE_PAN_SPEED: f32 = KEYBOARD_PAN_SPEED * 1.75;
 
 impl Default for CameraRig {
     fn default() -> Self {
@@ -173,26 +175,35 @@ pub(super) fn update(
                 f32::from(keys.pressed(KeyCode::ArrowDown))
                     - f32::from(keys.pressed(KeyCode::ArrowUp)),
             );
+            let mut edge_direction = Vec2::ZERO;
             if !pointer.over_ui
                 && let Some(cursor) = pointer.position
+                && cursor.cmpge(Vec2::ZERO).all()
+                && cursor.cmple(size).all()
             {
                 let margin = 14.0;
-                if cursor.x >= 0.0 && cursor.x < margin {
-                    direction.x -= 1.0;
+                if cursor.x < margin {
+                    edge_direction.x -= 1.0;
                 }
-                if cursor.x <= size.x && cursor.x > size.x - margin {
-                    direction.x += 1.0;
+                if cursor.x > size.x - margin {
+                    edge_direction.x += 1.0;
                 }
-                if cursor.y >= 0.0 && cursor.y < margin {
-                    direction.y -= 1.0;
+                if cursor.y < margin {
+                    edge_direction.y -= 1.0;
                 }
-                if cursor.y <= size.y && cursor.y > size.y - margin {
-                    direction.y += 1.0;
+                if cursor.y > size.y - margin {
+                    edge_direction.y += 1.0;
                 }
             }
+            direction += edge_direction;
             let right = Vec2::new(OFFSET.z, -OFFSET.x).normalize();
             let down = Vec2::new(OFFSET.x, OFFSET.z).normalize();
-            let speed = 18.0 * rig.zoom * time.delta_secs();
+            let pan_speed = if edge_direction != Vec2::ZERO {
+                EDGE_PAN_SPEED
+            } else {
+                KEYBOARD_PAN_SPEED
+            };
+            let speed = pan_speed * rig.zoom * time.delta_secs();
             rig.center += (right * direction.x + down * direction.y).clamp_length_max(1.0) * speed;
         }
         rig.clamp_to_map(&map);
@@ -210,6 +221,313 @@ mod tests {
         camera::{CameraProjection, RenderTargetInfo, Viewport},
         input::{mouse::MouseScrollUnit, touch::TouchPhase},
     };
+    use std::time::Duration;
+
+    #[derive(Default)]
+    struct PanInput<'a> {
+        keys: &'a [KeyCode],
+        cursor: Option<Vec2>,
+        over_ui: bool,
+        paused: bool,
+        locked: bool,
+    }
+
+    fn pan_app() -> App {
+        let mut app = App::new();
+        app.add_plugins((
+            MinimalPlugins,
+            SimulationPlugin,
+            crate::gameplay::GameplayPlugin,
+        ))
+        .init_resource::<PointerState>()
+        .init_resource::<ButtonInput<KeyCode>>()
+        .init_resource::<CameraRig>()
+        .add_message::<MouseWheel>()
+        .add_systems(Startup, setup)
+        .add_systems(Update, update);
+        content::setup(app.world_mut());
+        session::setup(app.world_mut());
+        session::start_native(app.world_mut());
+        app.world_mut().spawn(Window::default());
+        app.world_mut().run_schedule(Startup);
+        // Observe the new player once before tests position the free camera.
+        app.world_mut().run_schedule(Update);
+        app
+    }
+
+    fn pan_window_size(app: &mut App) -> Vec2 {
+        let mut windows = app.world_mut().query::<&Window>();
+        let window = windows.single(app.world()).unwrap();
+        Vec2::new(window.width(), window.height())
+    }
+
+    fn pan_frame(app: &mut App, zoom: f32, input: PanInput<'_>) -> (Vec2, Vec3) {
+        *app.world_mut().resource_mut::<CameraRig>() = CameraRig {
+            center: Vec2::ZERO,
+            locked: false,
+            zoom,
+        };
+        *app.world_mut().resource_mut::<PointerState>() = PointerState::default();
+        app.world_mut()
+            .resource_mut::<ButtonInput<KeyCode>>()
+            .reset_all();
+        app.world_mut().resource_mut::<SimulationControl>().paused = false;
+        app.world_mut()
+            .resource_mut::<Time>()
+            .advance_by(Duration::ZERO);
+        app.world_mut().run_schedule(Update);
+        let camera = app
+            .world_mut()
+            .query_filtered::<Entity, With<GameCamera>>()
+            .single(app.world())
+            .unwrap();
+        let before = app.world().get::<Transform>(camera).unwrap().translation;
+
+        for key in input.keys {
+            app.world_mut()
+                .resource_mut::<ButtonInput<KeyCode>>()
+                .press(*key);
+        }
+        *app.world_mut().resource_mut::<PointerState>() = PointerState {
+            position: input.cursor,
+            over_ui: input.over_ui,
+            ..default()
+        };
+        app.world_mut().resource_mut::<SimulationControl>().paused = input.paused;
+        app.world_mut().resource_mut::<CameraRig>().locked = input.locked;
+        app.world_mut()
+            .resource_mut::<Time>()
+            .advance_by(Duration::from_millis(100));
+        app.world_mut().run_schedule(Update);
+        (
+            app.world().resource::<CameraRig>().center,
+            app.world().get::<Transform>(camera).unwrap().translation - before,
+        )
+    }
+
+    #[test]
+    fn edge_pan_moves_the_rendered_camera_faster_without_changing_keyboard_speed() {
+        let mut app = pan_app();
+        let size = pan_window_size(&mut app);
+        for zoom in [0.4, 0.5, 1.2] {
+            let (keyboard, keyboard_camera) = pan_frame(
+                &mut app,
+                zoom,
+                PanInput {
+                    keys: &[KeyCode::ArrowRight],
+                    ..default()
+                },
+            );
+            let (edge, edge_camera) = pan_frame(
+                &mut app,
+                zoom,
+                PanInput {
+                    cursor: Some(Vec2::new(size.x - 1.0, size.y * 0.5)),
+                    ..default()
+                },
+            );
+            assert!(
+                (keyboard.length() - 1.8 * zoom).abs() < 0.0001,
+                "the real 100ms keyboard pan must retain its prior distance"
+            );
+            assert!(edge.abs_diff_eq(keyboard * 1.75, 0.0001));
+            assert!(
+                edge_camera.abs_diff_eq(keyboard_camera * 1.75, 0.0001),
+                "the rendered camera transform, not only its rig, must move 1.75 times farther"
+            );
+        }
+    }
+
+    #[test]
+    fn edge_pan_keeps_combined_direction_normalization_and_opposite_input_cancellation() {
+        let mut app = pan_app();
+        let size = pan_window_size(&mut app);
+        let right_edge = Some(Vec2::new(size.x - 1.0, size.y * 0.5));
+        let left_edge = Some(Vec2::new(1.0, size.y * 0.5));
+        let corner = Some(size - Vec2::ONE);
+        let (edge, _) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                cursor: right_edge,
+                ..default()
+            },
+        );
+        let (diagonal, diagonal_camera) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                cursor: corner,
+                ..default()
+            },
+        );
+        let (same_direction, _) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                keys: &[KeyCode::ArrowRight],
+                cursor: right_edge,
+                ..default()
+            },
+        );
+        let (opposite, opposite_camera) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                keys: &[KeyCode::ArrowRight],
+                cursor: left_edge,
+                ..default()
+            },
+        );
+        let (mixed_diagonal, _) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                keys: &[KeyCode::ArrowRight],
+                cursor: Some(Vec2::new(size.x * 0.5, size.y - 1.0)),
+                ..default()
+            },
+        );
+        assert!((diagonal.length() - edge.length()).abs() < 0.0001);
+        assert!((diagonal_camera.length() - edge.length()).abs() < 0.0001);
+        assert!(same_direction.abs_diff_eq(edge, 0.0001));
+        assert!(opposite.abs_diff_eq(Vec2::ZERO, 0.0001));
+        assert!(opposite_camera.abs_diff_eq(Vec3::ZERO, 0.0001));
+        assert!(mixed_diagonal.abs_diff_eq(diagonal, 0.0001));
+    }
+
+    #[test]
+    fn edge_pan_requires_an_in_canvas_non_ui_pointer_and_retains_the_14_pixel_band() {
+        let mut app = pan_app();
+        let size = pan_window_size(&mut app);
+        for cursor in [
+            None,
+            Some(size * 0.5),
+            Some(Vec2::new(14.0, size.y * 0.5)),
+            Some(Vec2::new(size.x - 14.0, size.y * 0.5)),
+            Some(Vec2::new(-1.0, 1.0)),
+            Some(Vec2::new(1.0, size.y + 1.0)),
+        ] {
+            let (center, camera) = pan_frame(
+                &mut app,
+                0.5,
+                PanInput {
+                    cursor,
+                    ..default()
+                },
+            );
+            assert_eq!(center, Vec2::ZERO, "invalid or non-edge cursor {cursor:?}");
+            assert_eq!(camera, Vec3::ZERO);
+        }
+        let edge = Some(Vec2::new(size.x - 1.0, size.y * 0.5));
+        let (ui_only, _) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                cursor: edge,
+                over_ui: true,
+                ..default()
+            },
+        );
+        let (keyboard, _) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                keys: &[KeyCode::ArrowRight],
+                ..default()
+            },
+        );
+        let (ui_and_keyboard, _) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                keys: &[KeyCode::ArrowRight],
+                cursor: edge,
+                over_ui: true,
+                ..default()
+            },
+        );
+        assert_eq!(ui_only, Vec2::ZERO);
+        assert!(ui_and_keyboard.abs_diff_eq(keyboard, 0.0001));
+    }
+
+    #[test]
+    fn faster_edge_pan_keeps_pause_follow_and_map_boundaries() {
+        let mut app = pan_app();
+        let size = pan_window_size(&mut app);
+        let edge = Some(Vec2::new(size.x - 1.0, size.y * 0.5));
+        let (paused, paused_camera) = pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                keys: &[KeyCode::ArrowRight],
+                cursor: edge,
+                paused: true,
+                ..default()
+            },
+        );
+        assert_eq!(paused, Vec2::ZERO);
+        assert_eq!(paused_camera, Vec3::ZERO);
+        let player = app.world().resource::<ClientSession>().player().unwrap();
+        let hero = app.world().get::<UnitPose>(player).unwrap().position();
+        for input in [
+            PanInput {
+                keys: &[KeyCode::ArrowRight],
+                cursor: edge,
+                locked: true,
+                ..default()
+            },
+            PanInput {
+                keys: &[KeyCode::Space, KeyCode::ArrowRight],
+                cursor: edge,
+                ..default()
+            },
+            PanInput {
+                keys: &[KeyCode::KeyY, KeyCode::ArrowRight],
+                cursor: edge,
+                ..default()
+            },
+        ] {
+            let (followed, _) = pan_frame(&mut app, 0.5, input);
+            assert_eq!(
+                followed, hero,
+                "follow must take precedence over an active fast edge"
+            );
+        }
+        pan_frame(
+            &mut app,
+            0.5,
+            PanInput {
+                cursor: edge,
+                ..default()
+            },
+        );
+        let bound = app.world().resource::<NavigationMap>().half_size() - 5.0;
+        for _ in 0..100 {
+            app.world_mut()
+                .resource_mut::<Time>()
+                .advance_by(Duration::from_millis(100));
+            app.world_mut().run_schedule(Update);
+            assert!(
+                app.world()
+                    .resource::<CameraRig>()
+                    .center
+                    .abs()
+                    .cmple(Vec2::splat(bound))
+                    .all()
+            );
+        }
+        assert!(
+            (app.world()
+                .resource::<CameraRig>()
+                .center
+                .abs()
+                .max_element()
+                - bound)
+                .abs()
+                < 0.0001
+        );
+    }
 
     fn perspective_camera(size: Vec2, scale: f32, offset: UVec2) -> Camera {
         let physical_size = (size * scale).as_uvec2();

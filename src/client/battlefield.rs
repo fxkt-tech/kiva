@@ -150,9 +150,6 @@ pub(super) fn sync(
         (Entity, &BattlefieldObject, &mut Transform, &mut Visibility),
         With<ObjectVisual>,
     >,
-    mechanics: Query<&UnitMechanics>,
-    mut shields: Query<(&ShieldVisual, &mut Visibility), Without<ObjectVisual>>,
-    mut gizmos: Gizmos,
 ) {
     for (id, object, mut transform, mut visibility) in &mut objects {
         let shown = visible.contains(id) && object.active(tick.0);
@@ -171,38 +168,68 @@ pub(super) fn sync(
                 }
             }
         }
-        if shown {
-            let color = match object.kind() {
-                ObjectKind::Terrain => Color::srgb_u8(232, 180, 89),
-                _ => Color::srgb_u8(107, 205, 231),
-            };
-            let radius = if matches!(object.kind(), ObjectKind::Scout | ObjectKind::Reveal) {
-                object.vision_radius()
-            } else if object.kind() == ObjectKind::Standard {
-                object.aura_radius()
-            } else {
-                object.radius()
-            };
-            gizmos.circle(
-                Isometry3d::new(
-                    transform.translation + Vec3::Y * 0.07,
-                    Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2),
-                ),
-                radius,
-                color,
-            );
-        }
     }
+}
+
+/// Draw generic field geometry only after original layers have atomically
+/// taken ownership for this frame. A failed asset group keeps the fallback.
+pub(super) fn sync_shields(
+    frame: Res<PresentationFrame>,
+    mechanics: Query<&UnitMechanics>,
+    originals: Query<&super::skill_effects::OriginalShield>,
+    mut shields: Query<(&ShieldVisual, &mut Visibility)>,
+) {
     if frame.should_sync() {
         for (shield, mut visibility) in &mut shields {
-            *visibility = if mechanics
-                .get(shield.0)
-                .is_ok_and(|state| state.shield() > 0.0)
+            let replaced = originals.iter().any(|original| original.0 == shield.0);
+            *visibility = if !replaced
+                && mechanics
+                    .get(shield.0)
+                    .is_ok_and(|state| state.shield() > 0.0)
             {
                 Visibility::Inherited
             } else {
                 Visibility::Hidden
             };
         }
+    }
+}
+
+pub(super) fn draw_fallback(
+    tick: Res<SimulationTick>,
+    visible: Res<VisibleWorld>,
+    objects: Query<
+        (
+            Entity,
+            &BattlefieldObject,
+            &Transform,
+            Option<&super::skill_effects::ManagedEffect>,
+        ),
+        With<ObjectVisual>,
+    >,
+    mut gizmos: Gizmos,
+) {
+    for (id, object, transform, managed) in &objects {
+        if managed.is_some() || !visible.contains(id) || !object.active(tick.0) {
+            continue;
+        }
+        let color = if object.kind() == ObjectKind::Terrain {
+            Color::srgb_u8(232, 180, 89)
+        } else {
+            Color::srgb_u8(107, 205, 231)
+        };
+        let radius = match object.kind() {
+            ObjectKind::Scout | ObjectKind::Reveal => object.vision_radius(),
+            ObjectKind::Standard => object.aura_radius(),
+            ObjectKind::Terrain => object.radius(),
+        };
+        gizmos.circle(
+            Isometry3d::new(
+                transform.translation + Vec3::Y * 0.07,
+                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2),
+            ),
+            radius,
+            color,
+        );
     }
 }

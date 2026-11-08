@@ -20,6 +20,14 @@ pub(super) struct RecastState {
 pub(super) struct ShieldInstance {
     pub amount: f32,
     pub until: u64,
+    pub origin: DamageOrigin,
+}
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ShieldView {
+    pub amount: f32,
+    pub origin: DamageOrigin,
+    /// Absolute simulation tick; display time must not extend this lifetime.
+    pub expires_at: u64,
 }
 #[derive(Clone, Debug)]
 pub(super) struct ArmorDebuff {
@@ -34,6 +42,7 @@ pub struct UnitMechanics {
     pub(super) focus: u8,
     pub(super) focus_until: u64,
     pub(super) empowered_until: u64,
+    pub(super) empower_origin: Option<DamageOrigin>,
     pub(super) multiplier: f32,
     pub(super) arrows: u8,
     pub(super) charges: [Option<ChargeState>; 4],
@@ -43,6 +52,19 @@ pub struct UnitMechanics {
     pub(super) armor: Vec<ArmorDebuff>,
 }
 impl UnitMechanics {
+    pub fn shields(&self) -> impl Iterator<Item = ShieldView> + '_ {
+        self.shields
+            .iter()
+            .filter(|shield| shield.amount > 0.0)
+            .map(|shield| ShieldView {
+                amount: shield.amount,
+                origin: shield.origin,
+                expires_at: shield.until,
+            })
+    }
+    pub fn empower_origin(&self) -> Option<DamageOrigin> {
+        self.empower_origin
+    }
     pub fn shield(&self) -> f32 {
         self.shields
             .iter()
@@ -91,6 +113,7 @@ pub enum ObjectKind {
 pub struct BattlefieldObject {
     pub(super) kind: ObjectKind,
     pub(super) owner: UnitLifeRef,
+    pub(super) origin: DamageOrigin,
     pub(super) team: Team,
     pub(super) position: Vec2,
     pub(super) previous: Vec2,
@@ -104,6 +127,12 @@ pub struct BattlefieldObject {
     pub(super) trail_distance: f32,
 }
 impl BattlefieldObject {
+    pub fn origin(&self) -> DamageOrigin {
+        self.origin
+    }
+    pub fn activates_at(&self) -> u64 {
+        self.active_at
+    }
     pub fn active(&self, tick: u64) -> bool {
         self.active_at <= tick && self.until > tick
     }
@@ -215,6 +244,7 @@ pub(super) fn initialize(world: &mut World, entity: Entity) -> Result<(), &'stat
         focus: 0,
         focus_until: 0,
         empowered_until: 0,
+        empower_origin: None,
         multiplier: 1.0,
         arrows: 1,
         charges,
@@ -293,6 +323,7 @@ pub(super) fn before_commands(world: &mut World) {
             let expired = state.empowered_until > 0 && (state.empowered_until <= tick || !alive);
             if expired {
                 state.empowered_until = 0;
+                state.empower_origin = None;
                 state.multiplier = 1.0;
                 state.arrows = 1;
             }
@@ -340,6 +371,7 @@ pub(super) fn clear_life(world: &mut World, entity: Entity) {
         state.focus = 0;
         state.focus_until = 0;
         state.empowered_until = 0;
+        state.empower_origin = None;
         state.multiplier = 1.0;
         state.arrows = 1;
         state.armor.clear();
