@@ -564,3 +564,124 @@ simulation只增加真实提交/接触/激活/单箭终止和独立来源视图�
 ### Status
 
 [OK] **Completed**
+
+
+## Session 17: 基地恢复、缺蓝图标与连续普攻
+<!-- trellis-session: v=2 fp=d7def391f30686d4 -->
+
+**Date**: 2026-11-08
+**Task**: 基地恢复、缺蓝图标与连续普攻
+**Branch**: `main`
+
+### Summary
+
+完成基地范围内战斗中恢复、缺蓝图标去色变暗及标记、目标死亡后自动获取附近可见敌人；复用持续指令与索敌，不复制规则。396Rust及原生/WASM代码门禁通过，按要求未跑浏览器，新增未提交。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 18: 普通与智能施法及位移后回走修复
+<!-- trellis-session: v=2 fp=a9a3b74a79019228 -->
+
+**Date**: 2026-11-08
+**Task**: 普通与智能施法及位移后回走修复
+**Branch**: `main`
+
+### Summary
+
+默认智能施法、菜单普通模式及Shift覆盖；按键时刻鼠标快照；成功施法取消旧目的地、自主运动清旧追击，保留提交失败原子性。
+
+### Main Changes
+
+- 施法模式仅属于客户端，两种模式共用目标解析与模拟指令，图标继续普通瞄准。
+- 修复路线已清但旧UnitOrder重规划造成回走，覆盖实际皇子EQ/R和AI。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 405 Rust和46 Node通过，make check及WASM Clippy通过；按用户要求不运行浏览器测试。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 本轮与上一任务代码均未提交，待用户提交推送授权；不启停用户服务。
+
+
+## Session 19: 快速EQ与落点附近自动攻击
+<!-- trellis-session: v=2 fp=78a3c30dc42517b3 -->
+
+**Date**: 2026-11-08
+**Task**: 快速EQ与落点附近自动攻击
+**Branch**: `main`
+
+### Summary
+
+修复同固定步Q被瞬发E暂时的Casting状态Busy拒绝，以及未落地旗不能连接；EQ建立新的附近普攻意图。
+
+### Main Changes
+
+- CommandQueue保留瞬发后的FIFO输入；旗部署连接与落地伤害/光环/视野分离。
+- Link用无旧目标AutoAttack，落地重新索敌；运动期间Stop清后续攻击，不恢复远处旧追击。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 410 Rust通过、0失败、2既有ignored；make check与WASM Clippy通过；无浏览器测试。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 本轮与之前两项任务的代码均未提交，待后续提交推送授权。
+
+
+## Session 20: 提交施法与战斗体验改进
+<!-- trellis-session: v=2 fp=05fc39d429c5e2bb -->
+
+**Date**: 2026-11-08
+**Task**: 提交施法与战斗体验改进
+**Branch**: `main`
+
+### Summary
+
+用户授权提交推送。功能与公开行为回归已提交，基地恢复/缺蓝/连续普攻与普通智能施法/快速EQ两项任务已归档。
+
+### Main Changes
+
+- 功能提交054b384；回归测试提交298795b，覆盖基地恢复、连续攻击、施法模式与快速EQ和落点自动攻击。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `054b384864cbca245c99256026845ebf0ff09183` | feat: add quick casting and improve combat behavior |
+| `298795bb2d8ffcf9d1ed26cbdd24b4ccd539e53a` | test: cover combat continuation and rapid ability combos |
+
+### Testing
+
+- [OK] 沿用最终已通过的410 Rust、46 Node、make check与WASM Clippy；提交前diff和任务上下文校验通过，无浏览器测试。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 将工作、任务归档与日志提交一起推送origin/main，并核对远端与工作区。

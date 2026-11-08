@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 16
+- **Total Sessions**: 20
 - **Last Active**: 2026-11-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~566 | Active |
+| `journal-1.md` | ~687 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,10 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 20 | 2026-11-08 | 提交施法与战斗体验改进 | `054b384864cbca245c99256026845ebf0ff09183`, `298795bb2d8ffcf9d1ed26cbdd24b4ccd539e53a` | `main` |
+| 19 | 2026-11-08 | 快速EQ与落点附近自动攻击 | - | `main` |
+| 18 | 2026-11-08 | 普通与智能施法及位移后回走修复 | - | `main` |
+| 17 | 2026-11-08 | 基地恢复、缺蓝图标与连续普攻 | - | `main` |
 | 16 | 2026-11-08 | 技能特效与指示器提交归档 | `73994e2` | `main` |
 | 15 | 2026-11-08 | 英雄技能原素材、指示器与滚屏提速交付 | - | `main` |
 | 14 | 2026-11-08 | League models, combat audio and hero lifecycle delivery | `e0fa8bc` | `main` |
