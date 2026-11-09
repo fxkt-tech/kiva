@@ -1,11 +1,13 @@
 //! Read-only combat presentation. Meshes and materials are shared, effects are transient.
-use bevy::prelude::*;
+use avian3d::prelude::{Sensor, SpatialQuery};
+use bevy::{ecs::system::SystemParam, prelude::*};
 
+use super::{ActorView, PlayerView};
 use crate::{
     gameplay::Player,
     simulation::{
         Body, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, MotionState,
-        SimulationActive, WeaponMode, WeaponSet,
+        SimulationActive, SurfaceHit, WeaponMode, WeaponSet, surface_below,
     },
 };
 
@@ -27,6 +29,8 @@ pub(super) struct WeaponVisual(WeaponSet, WeaponMode);
 #[derive(Component)]
 pub(super) struct EnemyBody(Entity);
 #[derive(Component)]
+pub(super) struct EnemyView;
+#[derive(Component)]
 pub(super) struct EnemyHealthBar(Entity);
 #[derive(Component)]
 pub(super) enum Marker {
@@ -43,6 +47,27 @@ pub(super) struct Effect {
 }
 #[derive(Resource, Default)]
 pub(super) struct EffectCursor(u64);
+
+type SurfaceExclusions = Or<(With<Body>, With<Sensor>)>;
+
+#[derive(SystemParam)]
+pub(super) struct SurfaceQueries<'w, 's> {
+    spatial: SpatialQuery<'w, 's>,
+    excluded: Query<'w, 's, Entity, SurfaceExclusions>,
+}
+
+impl SurfaceQueries<'_, '_> {
+    fn effect_transform(&self, position: Vec3) -> Transform {
+        surface_below(&self.spatial, position, 32.0, self.excluded.iter()).map_or_else(
+            || Transform::from_translation(position),
+            |surface| {
+                Transform::from_translation(surface.position + surface.normal * 0.06).with_rotation(
+                    Quat::from_rotation_arc(Vec3::Y, surface.normal.normalize_or(Vec3::Y)),
+                )
+            },
+        )
+    }
+}
 
 pub(super) fn setup(world: &mut World) {
     let (cube, ring, sphere) = {
@@ -78,10 +103,16 @@ pub(super) fn setup(world: &mut World) {
         .iter(world)
         .collect();
     for enemy in enemies {
-        world
-            .entity_mut(enemy)
-            .insert((Transform::default(), Visibility::default()));
-        for part in super::stickman::spawn(world, enemy, &assets.enemy, &assets.gold) {
+        let position = world.get::<Body>(enemy).unwrap().world_position();
+        let view = world
+            .spawn((
+                ActorView { owner: enemy },
+                EnemyView,
+                Transform::from_translation(position),
+                Visibility::default(),
+            ))
+            .id();
+        for part in super::stickman::spawn(world, view, &assets.enemy, &assets.gold) {
             world.entity_mut(part).insert(EnemyBody(enemy));
         }
         let bar = mesh(world, &assets.cube, &assets.teal, Transform::default());
@@ -89,7 +120,7 @@ pub(super) fn setup(world: &mut World) {
     }
 
     let player = world
-        .query_filtered::<Entity, With<Player>>()
+        .query_filtered::<Entity, With<PlayerView>>()
         .single(world)
         .expect("one player");
     for (set, mode) in [
@@ -175,22 +206,16 @@ pub(super) fn sync_enemies(
     time: Res<Time<Fixed>>,
     active: Res<SimulationActive>,
     assets: Res<VisualAssets>,
-    mut enemies: Query<(
-        &Body,
-        &MotionState,
-        &Facing,
-        &Health,
-        &Enemy,
-        &mut Transform,
-        &mut Visibility,
-    )>,
+    enemies: Query<(&Body, &Facing, &Health, &Enemy)>,
+    mut views: Query<(&ActorView, &mut Transform, &mut Visibility), With<EnemyView>>,
     mut parts: Query<(&EnemyBody, &mut MeshMaterial3d<StandardMaterial>)>,
 ) {
     let alpha = super::display_alpha(&time, &active);
-    for (body, motion, facing, _, _, mut transform, mut visibility) in &mut enemies {
-        let position = body.interpolated(alpha);
-        transform.translation =
-            Vec3::new(position.x, motion.interpolated_height(alpha), position.y);
+    for (view, mut transform, mut visibility) in &mut views {
+        let Ok((body, facing, _, _)) = enemies.get(view.owner) else {
+            continue;
+        };
+        transform.translation = body.interpolated_world(alpha);
         let direction = facing.direction();
         transform.rotation = Quat::from_rotation_y((-direction.x).atan2(-direction.y));
         // Defeated actors remain visible so their imported death pose can play.
@@ -198,7 +223,7 @@ pub(super) fn sync_enemies(
         *visibility = Visibility::Visible;
     }
     for (part, mut material) in &mut parts {
-        if let Ok((_, _, _, health, enemy, _, _)) = enemies.get(part.0) {
+        if let Ok((_, _, health, enemy)) = enemies.get(part.0) {
             material.0 = if health.hit_remaining() > 0.0 {
                 assets.hit.clone()
             } else if enemy.is_winding_up() {
@@ -214,20 +239,15 @@ pub(super) fn sync_health_bars(
     time: Res<Time<Fixed>>,
     active: Res<SimulationActive>,
     view: Res<super::controls::ViewYaw>,
-    enemies: Query<(&Body, &MotionState, &Health), With<Enemy>>,
+    enemies: Query<(&Body, &Health), With<Enemy>>,
     mut bars: Query<(&EnemyHealthBar, &mut Transform, &mut Visibility)>,
 ) {
     let alpha = super::display_alpha(&time, &active);
     for (bar, mut transform, mut visibility) in &mut bars {
-        let Ok((body, motion, health)) = enemies.get(bar.0) else {
+        let Ok((body, health)) = enemies.get(bar.0) else {
             continue;
         };
-        let position = body.interpolated(alpha);
-        transform.translation = Vec3::new(
-            position.x,
-            motion.interpolated_height(alpha) + 2.0,
-            position.y,
-        );
+        transform.translation = body.interpolated_world(alpha) + Vec3::Y * 2.0;
         transform.scale = Vec3::new(0.7 * health.current() / health.maximum(), 0.035, 0.06);
         transform.rotation = Quat::from_rotation_y(view.yaw());
         *visibility = if health.is_alive() {
@@ -254,34 +274,62 @@ pub(super) fn sync_weapons(
 pub(super) fn sync_markers(
     time: Res<Time<Fixed>>,
     active: Res<SimulationActive>,
+    surfaces: SurfaceQueries,
     player: Single<(&Body, &MotionState, &Combatant, &Health), With<Player>>,
-    targets: Query<(&Body, &Health), With<Enemy>>,
+    targets: Query<(&Body, &MotionState, &Health), With<Enemy>>,
     mut markers: Query<(&Marker, &mut Transform, &mut Visibility)>,
 ) {
     let (body, motion, combat, health) = *player;
     let alpha = super::display_alpha(&time, &active);
+    let excluded: Vec<_> = surfaces.excluded.iter().collect();
     for (marker, mut transform, mut visibility) in &mut markers {
         let point = match marker {
             Marker::Target => combat
                 .target()
                 .and_then(|entity| targets.get(entity).ok())
-                .filter(|(_, health)| health.is_alive())
-                .map(|(body, _)| body.interpolated(alpha)),
+                .filter(|(_, _, health)| health.is_alive())
+                .and_then(|(body, motion, _)| {
+                    marker_surface(&surfaces.spatial, &excluded, body, motion, alpha)
+                }),
             Marker::Aim
                 if combat.weapon_set() == WeaponSet::AxeCannon
                     && combat.weapon_mode() == WeaponMode::Ranged =>
             {
-                Some(combat.aim())
+                combat.aim_surface()
             }
-            Marker::Guard if motion.is_blocking() => Some(body.interpolated(alpha)),
+            Marker::Guard if motion.is_blocking() => {
+                marker_surface(&surfaces.spatial, &excluded, body, motion, alpha)
+            }
             _ => None,
         };
-        if let Some(point) = point.filter(|_| health.is_alive()) {
-            transform.translation = Vec3::new(point.x, 0.05, point.y);
+        if let Some(surface) = point.filter(|_| health.is_alive()) {
+            transform.translation = surface.position + surface.normal * 0.04;
+            transform.rotation =
+                Quat::from_rotation_arc(Vec3::Y, surface.normal.normalize_or(Vec3::Y));
             *visibility = Visibility::Visible;
         } else {
             *visibility = Visibility::Hidden;
         }
+    }
+}
+
+fn marker_surface(
+    spatial: &SpatialQuery,
+    excluded: &[Entity],
+    body: &Body,
+    motion: &MotionState,
+    alpha: f32,
+) -> Option<SurfaceHit> {
+    if let Some(mut surface) = motion.surface() {
+        surface.position += body.interpolated_world(alpha) - body.world_position();
+        Some(surface)
+    } else {
+        surface_below(
+            spatial,
+            body.interpolated_world(alpha) + Vec3::Y * 0.05,
+            32.0,
+            excluded.iter().copied(),
+        )
     }
 }
 
@@ -291,6 +339,7 @@ pub(super) fn effects(
     feedback: Res<CombatFeedback>,
     assets: Res<VisualAssets>,
     mut cursor: ResMut<EffectCursor>,
+    surfaces: SurfaceQueries,
     mut effects: Query<(Entity, &mut Effect, &mut Transform)>,
 ) {
     for (entity, mut effect, mut transform) in &mut effects {
@@ -323,11 +372,11 @@ pub(super) fn effects(
                 } else {
                     &assets.gold
                 },
-                Transform::from_translation(if matches!(event.kind, CombatEffect::Spin) {
-                    event.position
+                if matches!(event.kind, CombatEffect::Spin) {
+                    Transform::from_translation(event.position)
                 } else {
-                    Vec3::new(event.position.x, 0.06, event.position.z)
-                })
+                    surfaces.effect_transform(event.position)
+                }
                 .with_scale(Vec3::splat(event.radius.max(0.4))),
                 0.35,
                 0.25,
@@ -335,7 +384,8 @@ pub(super) fn effects(
             CombatEffect::EnemyWindup => (
                 &assets.ring,
                 &assets.gold,
-                Transform::from_translation(Vec3::new(event.position.x, 0.04, event.position.z))
+                surfaces
+                    .effect_transform(event.position)
                     .with_scale(Vec3::splat(event.radius.max(0.6))),
                 0.4,
                 0.15,
@@ -394,7 +444,7 @@ mod tests {
         client::{
             animation, camera, controls::ViewYaw, scene, skeleton::AnimationLibrary, stickman,
         },
-        simulation::{CombatIntent, SimulationPlugin},
+        simulation::{CombatIntent, SimulationPlugin, teleport_actor},
     };
     use std::time::Duration;
 
@@ -413,6 +463,7 @@ mod tests {
                 Update,
                 (
                     scene::sync_player,
+                    scene::sync_props,
                     sync_enemies,
                     sync_health_bars,
                     sync_weapons,
@@ -424,8 +475,242 @@ mod tests {
                 )
                     .chain(),
             );
+        app.finish();
         app.update();
         app
+    }
+
+    fn physical_player(app: &mut App) -> Entity {
+        app.world_mut()
+            .query_filtered::<Entity, With<Player>>()
+            .single(app.world())
+            .unwrap()
+    }
+
+    fn fixed_ticks(app: &mut App, count: usize) {
+        app.world_mut()
+            .resource_mut::<Time<Fixed>>()
+            .advance_by(Duration::from_secs_f64(1.0 / 60.0));
+        for _ in 0..count {
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+    }
+
+    fn surface_at_effect_origin(app: &mut App, origin: Vec3) -> SurfaceHit {
+        let excluded: Vec<_> = app
+            .world_mut()
+            .query_filtered::<Entity, SurfaceExclusions>()
+            .iter(app.world())
+            .collect();
+        let mut query = bevy::ecs::system::SystemState::<SpatialQuery>::new(app.world_mut());
+        let spatial = query.get_mut(app.world_mut()).unwrap();
+        surface_below(&spatial, origin, 32.0, excluded).unwrap()
+    }
+
+    #[test]
+    fn view_and_camera_follow_actual_elevation_without_writing_the_physical_actor() {
+        use avian3d::prelude::Position;
+        let mut app = headless_app();
+        let player = physical_player(&mut app);
+        let view = app
+            .world_mut()
+            .query::<(Entity, &ActorView)>()
+            .iter(app.world())
+            .find(|(_, view)| view.owner == player)
+            .unwrap()
+            .0;
+        assert!(app.world().get::<animation::RigPose>(player).is_none());
+        assert!(app.world().get::<Body>(view).is_none());
+        assert!(app.world().get::<animation::RigPose>(view).is_some());
+        let feet = Vec3::new(16.5, 2.7, 8.5);
+        teleport_actor(app.world_mut(), player, feet);
+        let physical = app.world().get::<Position>(player).unwrap().0;
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        app.world_mut()
+            .get_mut::<Transform>(view)
+            .unwrap()
+            .translation = Vec3::splat(999.0);
+        app.world_mut().run_schedule(Update);
+        assert_eq!(app.world().get::<Position>(player).unwrap().0, physical);
+        assert!(
+            app.world()
+                .get::<Transform>(view)
+                .unwrap()
+                .translation
+                .distance(feet)
+                < 0.001
+        );
+        let camera = app
+            .world_mut()
+            .query_filtered::<&Transform, With<camera::GameCamera>>()
+            .single(app.world())
+            .unwrap();
+        assert!((camera.translation.y - (feet.y + 0.9 + 5.0)).abs() < 0.001);
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        fixed_ticks(&mut app, 1);
+        assert!(
+            app.world()
+                .get::<Position>(player)
+                .unwrap()
+                .0
+                .distance(physical)
+                < 0.2
+        );
+    }
+
+    #[test]
+    fn cannon_marker_matches_the_resolved_hill_surface_and_normal() {
+        let mut app = headless_app();
+        let player = physical_player(&mut app);
+        teleport_actor(app.world_mut(), player, Vec3::new(11.0, 0.0, 8.5));
+        let mut intent = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
+        intent.request_set(WeaponSet::AxeCannon);
+        intent.request_switch_weapon();
+        intent.set_aim(Vec2::new(14.0, 8.5));
+        fixed_ticks(&mut app, 2);
+        let surface = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .aim_surface()
+            .unwrap();
+        assert!(surface.position.y > 0.5);
+        assert!(surface.normal.y < 0.99 && surface.normal.y > 0.7);
+        app.world_mut().run_schedule(Update);
+        let (_, transform, visibility) = app
+            .world_mut()
+            .query::<(&Marker, &Transform, &Visibility)>()
+            .iter(app.world())
+            .find(|(marker, _, _)| matches!(marker, Marker::Aim))
+            .unwrap();
+        assert_eq!(*visibility, Visibility::Visible);
+        assert!(
+            transform
+                .translation
+                .distance(surface.position + surface.normal * 0.04)
+                < 0.001
+        );
+        assert!((transform.rotation * Vec3::Y).dot(surface.normal) > 0.999);
+    }
+
+    #[test]
+    fn attacks_and_enemy_windups_project_effects_onto_the_actual_hill_surface() {
+        let mut app = headless_app();
+        let player = physical_player(&mut app);
+        let enemy = app
+            .world_mut()
+            .query_filtered::<Entity, With<Enemy>>()
+            .iter(app.world())
+            .next()
+            .unwrap();
+        teleport_actor(app.world_mut(), player, Vec3::new(14.0, 1.75, 8.5));
+        teleport_actor(app.world_mut(), enemy, Vec3::new(13.0, 1.05, 8.5));
+        app.world_mut()
+            .get_mut::<Facing>(player)
+            .unwrap()
+            .set(Vec2::NEG_X);
+        fixed_ticks(&mut app, 52);
+        assert!(app.world().get::<Enemy>(enemy).unwrap().is_winding_up());
+        let event_origin = app
+            .world()
+            .resource::<CombatFeedback>()
+            .events()
+            .find(|event| event.actor == enemy && event.kind == CombatEffect::EnemyWindup)
+            .unwrap()
+            .position;
+        let support = surface_at_effect_origin(&mut app, event_origin);
+        assert!(support.position.y > 0.5);
+        app.world_mut().run_schedule(Update);
+        let windup = app
+            .world_mut()
+            .query::<(&Effect, &Transform)>()
+            .iter(app.world())
+            .find(|(effect, _)| effect.duration == 0.4)
+            .unwrap()
+            .1;
+        assert!(windup.translation.y > 0.5);
+        assert!(
+            windup
+                .translation
+                .distance(support.position + support.normal * 0.06)
+                < 0.001
+        );
+        assert!((windup.rotation * Vec3::Y).dot(support.normal) > 0.999);
+
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_attack();
+        fixed_ticks(&mut app, 1);
+        let event_origin = app
+            .world()
+            .resource::<CombatFeedback>()
+            .events()
+            .find(|event| event.actor == player && event.kind == CombatEffect::Melee)
+            .unwrap()
+            .position;
+        let support = surface_at_effect_origin(&mut app, event_origin);
+        assert!(support.position.y > 1.0);
+        app.world_mut().run_schedule(Update);
+        let attack = app
+            .world_mut()
+            .query::<(&Effect, &Transform)>()
+            .iter(app.world())
+            .find(|(effect, _)| effect.duration == 0.35)
+            .unwrap()
+            .1;
+        assert!(attack.translation.y > 1.0);
+        assert!(
+            attack
+                .translation
+                .distance(support.position + support.normal * 0.06)
+                < 0.001
+        );
+        assert!((attack.rotation * Vec3::Y).dot(support.normal) > 0.999);
+    }
+
+    #[test]
+    fn prop_views_and_local_straps_follow_the_same_physical_rotation() {
+        use crate::{
+            client::PropView,
+            gameplay::{Prop, PropKind},
+            simulation::PhysicsPose,
+        };
+        use avian3d::prelude::{Position, Rotation};
+        let mut app = headless_app();
+        let prop = app
+            .world_mut()
+            .query::<(Entity, &Prop)>()
+            .iter(app.world())
+            .find(|(_, prop)| prop.kind == PropKind::Crate)
+            .unwrap()
+            .0;
+        let view = app
+            .world_mut()
+            .query::<(Entity, &PropView)>()
+            .iter(app.world())
+            .find(|(_, view)| view.owner == prop)
+            .unwrap()
+            .0;
+        let children: Vec<_> = app.world().get::<Children>(view).unwrap().iter().collect();
+        assert_eq!(children.len(), 5);
+        let local: Vec<_> = children
+            .iter()
+            .map(|&entity| *app.world().get::<Transform>(entity).unwrap())
+            .collect();
+        app.world_mut().get_mut::<Position>(prop).unwrap().0.y += 1.0;
+        app.world_mut().get_mut::<Rotation>(prop).unwrap().0 = Quat::from_rotation_z(0.4);
+        fixed_ticks(&mut app, 1);
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        app.world_mut().run_schedule(Update);
+        let pose = app.world().get::<PhysicsPose>(prop).unwrap();
+        let transform = app.world().get::<Transform>(view).unwrap();
+        assert!(transform.translation.distance(pose.position()) < 0.001);
+        assert!(transform.rotation.dot(pose.rotation()).abs() > 0.9999);
+        for (&child, before) in children.iter().zip(local) {
+            assert_eq!(app.world().get::<ChildOf>(child).unwrap().parent(), view);
+            assert_eq!(*app.world().get::<Transform>(child).unwrap(), before);
+        }
     }
 
     #[test]
@@ -506,8 +791,19 @@ mod tests {
             .unwrap()
             .target()
             .unwrap();
+        let enemy_view = app
+            .world_mut()
+            .query::<(Entity, &ActorView)>()
+            .iter(app.world())
+            .find(|(_, view)| view.owner == enemy)
+            .unwrap()
+            .0;
         let head = app.world().resource::<AnimationLibrary>().bone("Head");
-        let standing = app.world().get::<animation::RigPose>(enemy).unwrap().model[head]
+        let standing = app
+            .world()
+            .get::<animation::RigPose>(enemy_view)
+            .unwrap()
+            .model[head]
             .translation
             .y;
         app.world_mut().entity_mut(enemy).insert(Health::new(1.0));
@@ -523,10 +819,14 @@ mod tests {
             .advance_by(Duration::from_secs_f32(1.0));
         app.world_mut().run_schedule(Update);
         assert_eq!(
-            *app.world().get::<Visibility>(enemy).unwrap(),
+            *app.world().get::<Visibility>(enemy_view).unwrap(),
             Visibility::Visible
         );
-        let fallen = app.world().get::<animation::RigPose>(enemy).unwrap().model[head]
+        let fallen = app
+            .world()
+            .get::<animation::RigPose>(enemy_view)
+            .unwrap()
+            .model[head]
             .translation
             .y;
         assert!(

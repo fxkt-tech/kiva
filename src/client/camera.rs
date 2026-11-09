@@ -1,5 +1,5 @@
+use super::PlayerView;
 use super::controls::ViewYaw;
-use crate::gameplay::Player;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -24,7 +24,7 @@ fn camera_pose(body_center: Vec3, yaw: f32) -> Transform {
 pub(super) fn setup(
     mut commands: Commands,
     yaw: Res<ViewYaw>,
-    player: Single<&Transform, With<Player>>,
+    player: Single<&Transform, With<PlayerView>>,
 ) {
     commands.spawn((
         GameCamera,
@@ -39,8 +39,8 @@ pub(super) fn setup(
 
 pub(super) fn follow(
     yaw: Res<ViewYaw>,
-    player: Single<&Transform, (With<Player>, Without<GameCamera>)>,
-    mut camera: Single<&mut Transform, (With<GameCamera>, Without<Player>)>,
+    player: Single<&Transform, (With<PlayerView>, Without<GameCamera>)>,
+    mut camera: Single<&mut Transform, (With<GameCamera>, Without<PlayerView>)>,
 ) {
     **camera = camera_pose(player.translation + BODY_CENTER, yaw.yaw());
 }

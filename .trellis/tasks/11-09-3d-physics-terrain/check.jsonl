@@ -1,0 +1,10 @@
+{"file":".trellis/spec/index.md","reason":"完整质量门、层间依赖与构建限制"}
+{"file":".trellis/spec/simulation/index.md","reason":"检查原有玩法回归与固定步权威；有意迁移的二维契约以设计为准"}
+{"file":".trellis/spec/simulation/physics.md","reason":"核对物理唯一权威、支撑和 CCD、插件 finish、同一步查询与暂停首步"}
+{"file":".trellis/spec/gameplay/index.md","reason":"检查共享几何、出生净空、确定性场景装配"}
+{"file":".trellis/spec/client/index.md","reason":"检查显示不反写物理、actor 事件归属、相机、动画和 Web 边界"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"逐层核对意图、接触、落点、命中、显示和暂停流转"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"排查重复位置求解、重复地形公式和遗留二维遮挡"}
+{"file":".trellis/tasks/11-09-3d-physics-terrain/research/baseline-and-decisions.md","reason":"区分原有未提交改动与本次迁移，核对已确认交付边界"}
+{"file":".trellis/tasks/11-09-3d-physics-terrain/research/avian-integration.md","reason":"重点审查暂停首步、休眠接触、动态支撑、脚底锚点、CCD 和同一步查询"}
+{"file":".trellis/tasks/11-09-3d-physics-terrain/research/terrain-and-callers.md","reason":"核对小山与坡道、几何一致性、绝对高度旧判断及三维标记回归"}

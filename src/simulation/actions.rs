@@ -2,8 +2,8 @@
 
 use bevy::prelude::*;
 
-const GRAVITY: f32 = 18.0;
-const JUMP_VELOCITY: f32 = 6.0;
+pub(super) const GRAVITY: f32 = 18.0;
+const JUMP_VELOCITY: f32 = 6.4;
 const SPRINT_MULTIPLIER: f32 = 1.6;
 const BLOCK_MULTIPLIER: f32 = 0.35;
 const CROUCH_SPEED: f32 = 1.6;
@@ -89,10 +89,9 @@ impl Facing {
 }
 
 struct Leap {
-    velocity: Vec2,
+    velocity: Vec3,
     elapsed: f32,
     duration: f32,
-    peak: f32,
 }
 
 struct Dodge {
@@ -121,11 +120,12 @@ fn dodge_distance(elapsed: f32) -> f32 {
     progress * progress * (3.0 - 2.0 * progress) * DODGE_DISTANCE
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 pub struct MotionState {
     previous_height: f32,
     height: f32,
     vertical_velocity: f32,
+    jumps_used: u8,
     dodge_cooldown: f32,
     dodge: Option<Dodge>,
     dodge_protected: bool,
@@ -136,6 +136,37 @@ pub struct MotionState {
     crouched: bool,
     slide: Option<Slide>,
     leap: Option<Leap>,
+    pub(super) support: Option<super::physics::Support>,
+    pub(super) pending_vertical_velocity: Option<f32>,
+    pub(super) pending_planar_velocity: Option<Vec2>,
+    pub(super) capsule_height: f32,
+    pub(super) steep_normal: Option<Vec3>,
+}
+
+impl Default for MotionState {
+    fn default() -> Self {
+        Self {
+            previous_height: 0.0,
+            height: 0.0,
+            vertical_velocity: 0.0,
+            jumps_used: 0,
+            dodge_cooldown: 0.0,
+            dodge: None,
+            dodge_protected: false,
+            blocking: false,
+            sprinting: false,
+            sprint_hold_time: 0.0,
+            sprint_latched: false,
+            crouched: false,
+            slide: None,
+            leap: None,
+            support: None,
+            pending_vertical_velocity: None,
+            pending_planar_velocity: None,
+            capsule_height: super::physics::STANDING_HEIGHT,
+            steep_normal: None,
+        }
+    }
 }
 
 impl MotionState {
@@ -149,7 +180,15 @@ impl MotionState {
     }
 
     pub fn is_grounded(&self) -> bool {
-        self.height == 0.0 && self.vertical_velocity <= 0.0 && self.leap.is_none()
+        self.support.is_some() && self.pending_vertical_velocity.is_none()
+    }
+
+    pub fn surface(&self) -> Option<super::SurfaceHit> {
+        self.support.map(|support| support.hit)
+    }
+
+    pub fn support_normal(&self) -> Vec3 {
+        self.support.map_or(Vec3::Y, |support| support.hit.normal)
     }
 
     pub fn is_dodging(&self) -> bool {
@@ -205,6 +244,12 @@ impl MotionState {
         self.leap.is_some()
     }
 
+    pub(super) fn leap_drive_ended(&self) -> bool {
+        self.leap
+            .as_ref()
+            .is_some_and(|leap| leap.elapsed >= leap.duration)
+    }
+
     pub fn dodge_remaining(&self) -> f32 {
         self.dodge
             .as_ref()
@@ -229,30 +274,49 @@ impl MotionState {
         self.vertical_velocity
     }
 
+    pub fn jumps_used(&self) -> u8 {
+        self.jumps_used
+    }
+
+    /// Legacy planar adapter. The former peak parameter is validated for
+    /// compatibility; the ballistic arc uses flight duration and shared gravity.
     pub fn start_leap(&mut self, origin: Vec2, target: Vec2, duration: f32, peak: f32) -> bool {
+        if !peak.is_finite() || peak <= 0.0 {
+            return false;
+        }
+        self.start_leap_to(
+            Vec3::new(origin.x, self.height, origin.y),
+            Vec3::new(target.x, self.height, target.y),
+            duration,
+        )
+    }
+
+    /// Launch toward a world-space destination using the shared physical gravity.
+    pub fn start_leap_to(&mut self, origin: Vec3, target: Vec3, duration: f32) -> bool {
         if !self.is_grounded()
             || self.is_dodging()
             || !origin.is_finite()
             || !target.is_finite()
             || !duration.is_finite()
             || duration <= 0.0
-            || !peak.is_finite()
-            || peak <= 0.0
         {
             return false;
         }
-        let velocity = (target - origin) / duration;
-        if !velocity.is_finite() || !(4.0 * peak / duration).is_finite() {
+        let mut velocity = (target - origin) / duration;
+        velocity.y += 0.5 * GRAVITY * duration;
+        if !velocity.is_finite() {
             return false;
         }
         self.blocking = false;
         self.sprinting = false;
         self.exit_crouch();
+        self.pending_vertical_velocity = Some(velocity.y);
+        self.pending_planar_velocity = Some(velocity.xz());
+        self.support = None;
         self.leap = Some(Leap {
             velocity,
             elapsed: 0.0,
             duration,
-            peak,
         });
         true
     }
@@ -262,6 +326,8 @@ impl MotionState {
             return false;
         }
         self.vertical_velocity = self.vertical_velocity.max(velocity);
+        self.pending_vertical_velocity = Some(self.vertical_velocity);
+        self.support = None;
         self.dodge = None;
         self.dodge_protected = false;
         self.leap = None;
@@ -273,6 +339,34 @@ impl MotionState {
 
     pub fn reset(&mut self) {
         *self = Self::default();
+    }
+
+    pub(super) fn reset_at(&mut self, height: f32) {
+        self.reset();
+        self.height = height;
+        self.previous_height = height;
+    }
+
+    /// Publish the result of the sole physical solver, never integrate height here.
+    pub(super) fn publish(
+        &mut self,
+        height: f32,
+        velocity: f32,
+        support: Option<super::physics::Support>,
+    ) {
+        let landed = self.support.is_none() && support.is_some();
+        self.previous_height = self.height;
+        self.height = height;
+        self.vertical_velocity = velocity;
+        self.support = support;
+        if landed {
+            self.jumps_used = 0;
+            self.leap = None;
+        }
+    }
+
+    pub(super) fn keep_crouched(&mut self) {
+        self.crouched = true;
     }
 
     pub(super) fn advance(
@@ -287,7 +381,6 @@ impl MotionState {
             self.cancel_sprint();
             self.exit_crouch();
         }
-        self.previous_height = self.height;
         self.dodge_cooldown = (self.dodge_cooldown - dt).max(0.0);
         let jump = std::mem::take(&mut intent.jump);
         let dodge = std::mem::take(&mut intent.dodge);
@@ -314,18 +407,14 @@ impl MotionState {
         }
 
         if let Some(leap) = &mut self.leap {
-            let elapsed = (leap.elapsed + dt).min(leap.duration);
-            let delta = leap.velocity * (elapsed - leap.elapsed);
-            leap.elapsed = elapsed;
-            let progress = elapsed / leap.duration;
-            self.height = 4.0 * leap.peak * progress * (1.0 - progress);
-            self.vertical_velocity = 4.0 * leap.peak * (1.0 - 2.0 * progress) / leap.duration;
-            if elapsed >= leap.duration {
-                self.leap = None;
-                self.height = 0.0;
-                self.vertical_velocity = 0.0;
-            }
-            return delta;
+            leap.elapsed += dt;
+            // Flight ends only on a real landing; the committed direction is bounded
+            // to its requested travel time, then horizontal momentum is released.
+            return if leap.elapsed <= leap.duration {
+                leap.velocity.xz() * dt
+            } else {
+                Vec2::ZERO
+            };
         }
 
         if self.is_grounded() && !self.is_dodging() {
@@ -356,13 +445,20 @@ impl MotionState {
                     held: false,
                 });
                 self.dodge_cooldown = DODGE_COOLDOWN;
-            } else if jump {
-                self.exit_crouch();
-                self.vertical_velocity = JUMP_VELOCITY;
             }
         }
 
-        let delta = if let Some(dodge) = &mut self.dodge {
+        // act's second jump replaces falling speed; only landing refills the pair.
+        if jump && !self.is_dodging() && self.jumps_used < 2 {
+            self.exit_crouch();
+            self.jumps_used += 1;
+            self.vertical_velocity = JUMP_VELOCITY;
+            self.pending_vertical_velocity =
+                Some(JUMP_VELOCITY + self.support.map_or(0.0, |support| support.velocity.y));
+            self.support = None;
+        }
+
+        if let Some(dodge) = &mut self.dodge {
             if intent.shift_held && self.sprint_hold_time >= SPRINT_HOLD_TIME {
                 dodge.held = true;
             }
@@ -410,16 +506,6 @@ impl MotionState {
                 speed
             };
             direction * move_speed * dt
-        };
-
-        if !self.is_grounded() {
-            self.height += self.vertical_velocity * dt - 0.5 * GRAVITY * dt * dt;
-            self.vertical_velocity -= GRAVITY * dt;
-            if self.height <= 0.0 {
-                self.height = 0.0;
-                self.vertical_velocity = 0.0;
-            }
         }
-        delta
     }
 }

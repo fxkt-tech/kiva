@@ -1,4 +1,4 @@
-//! Swept square footprints against static boxes, with tangential sliding.
+//! Legacy planar fixture descriptions. Product motion and queries use Avian's 3D world.
 use bevy::prelude::*;
 
 #[derive(Clone, Copy, Debug)]
@@ -18,12 +18,31 @@ impl SolidBox {
 pub struct CollisionWorld {
     half_size: f32,
     solids: Vec<SolidBox>,
+    fixture: bool,
+}
+
+impl Default for CollisionWorld {
+    fn default() -> Self {
+        Self {
+            half_size: 25.0,
+            solids: Vec::new(),
+            fixture: false,
+        }
+    }
 }
 
 impl CollisionWorld {
     pub fn new(half_size: f32, solids: Vec<SolidBox>) -> Self {
         assert!(half_size.is_finite() && half_size > 0.0);
-        Self { half_size, solids }
+        Self {
+            half_size,
+            solids,
+            fixture: true,
+        }
+    }
+
+    pub(super) fn fixture_geometry(&self) -> Option<(f32, Vec<SolidBox>)> {
+        self.fixture.then(|| (self.half_size, self.solids.clone()))
     }
 
     pub fn half_size(&self) -> f32 {
@@ -46,6 +65,7 @@ impl CollisionWorld {
             })
     }
 
+    #[cfg(test)]
     pub(super) fn slide(&self, start: Vec2, displacement: Vec2, half_extent: f32) -> Vec2 {
         if !displacement.is_finite() {
             return start;
@@ -77,11 +97,13 @@ impl CollisionWorld {
     }
 }
 
+#[cfg(test)]
 struct Hit {
     time: f32,
     normal: Vec2,
 }
 
+#[cfg(test)]
 fn cast(origin: Vec2, delta: Vec2, solid: SolidBox, extent: f32) -> Option<Hit> {
     let min = solid.center - solid.half_size - Vec2::splat(extent);
     let max = solid.center + solid.half_size + Vec2::splat(extent);

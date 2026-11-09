@@ -3,7 +3,10 @@ mod poses;
 
 use bevy::prelude::*;
 
-use super::skeleton::{AnimationLibrary, blend};
+use super::{
+    ActorView,
+    skeleton::{AnimationLibrary, blend},
+};
 use crate::simulation::{
     Body, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, MotionState,
     SimulationActive, WeaponMode, WeaponSet,
@@ -15,7 +18,7 @@ enum PoseState {
     Idle,
     Walk,
     Run,
-    Air,
+    Air(u8),
     Land,
     Dodge,
     Crouch,
@@ -42,6 +45,7 @@ pub(super) struct RigPose {
     transition: f32,
     air_time: f32,
     was_airborne: bool,
+    jumps_used: u8,
     crouch_weight: f32,
     event_sequence: u64,
     playback: Option<Playback>,
@@ -61,6 +65,7 @@ impl RigPose {
             transition: 1.0,
             air_time: 0.0,
             was_airborne: false,
+            jumps_used: 0,
             crouch_weight: 0.0,
             event_sequence: 0,
             playback: None,
@@ -103,8 +108,10 @@ impl RigPose {
     fn advance(&mut self, library: &AnimationLibrary, input: Inputs, dt: f32) {
         let landed = self.was_airborne && !input.airborne;
         self.was_airborne = input.airborne;
+        let jumped = input.jumps_used > self.jumps_used;
+        self.jumps_used = input.jumps_used;
         self.air_time = if input.airborne {
-            self.air_time + dt
+            if jumped { dt } else { self.air_time + dt }
         } else {
             0.0
         };
@@ -133,7 +140,7 @@ impl RigPose {
         } else if let Some(playback) = &self.playback {
             PoseState::Attack(playback.kind)
         } else if input.airborne {
-            PoseState::Air
+            PoseState::Air(input.jumps_used)
         } else if landed || (self.state == PoseState::Land && self.clock < 0.16) {
             PoseState::Land
         } else if input.crouched {
@@ -176,7 +183,7 @@ impl RigPose {
                 self.gait_time,
                 true,
             ),
-            PoseState::Air => airborne_pose(library, self.air_time),
+            PoseState::Air(jumps) => airborne_pose(library, self.air_time, jumps),
             PoseState::Land => library.sample("Jump_Land", 0.15 + self.clock * 4.0, false),
             PoseState::Dodge => {
                 let mut pose = library.sample(
@@ -223,11 +230,20 @@ impl RigPose {
                 false,
             ),
         };
-        if state == PoseState::Air {
+        if matches!(state, PoseState::Air(_)) {
             poses::hold_guard(library, &mut target, input.mode);
         }
-        if input.airborne && !matches!(state, PoseState::Air | PoseState::Dodge | PoseState::Down) {
-            replace_lower_body(library, &mut target, &airborne_pose(library, self.air_time));
+        if input.airborne
+            && !matches!(
+                state,
+                PoseState::Air(_) | PoseState::Dodge | PoseState::Down
+            )
+        {
+            replace_lower_body(
+                library,
+                &mut target,
+                &airborne_pose(library, self.air_time, input.jumps_used),
+            );
         } else if state == PoseState::Block && input.speed > 0.01 {
             replace_lower_body(
                 library,
@@ -278,6 +294,7 @@ impl RigPose {
 struct Inputs {
     alive: bool,
     airborne: bool,
+    jumps_used: u8,
     speed: f32,
     sprinting: bool,
     dodging: bool,
@@ -291,7 +308,10 @@ struct Inputs {
     mode: WeaponMode,
 }
 
-fn airborne_pose(library: &AnimationLibrary, clock: f32) -> Vec<Transform> {
+fn airborne_pose(library: &AnimationLibrary, clock: f32, jumps: u8) -> Vec<Transform> {
+    if jumps >= 2 {
+        return library.sample("NinjaJump_Idle_Loop", clock, true);
+    }
     let start = library.sample("Jump_Start", 0.30 + clock.min(0.14) * 3.5, false);
     let air = library.sample("Jump_Loop", (clock - 0.14).max(0.0), true);
     let weight = ((clock - 0.14) / 0.10).clamp(0.0, 1.0);
@@ -322,14 +342,12 @@ fn pin_airborne_pelvis(library: &AnimationLibrary, local: &mut [Transform]) {
 }
 
 type AnimatedActors = (
-    Entity,
     &'static Body,
     &'static MotionState,
     &'static Health,
     &'static Facing,
     Option<&'static Combatant>,
     Option<&'static Enemy>,
-    &'static mut RigPose,
 );
 
 pub(super) fn animate(
@@ -338,19 +356,23 @@ pub(super) fn animate(
     active: Res<SimulationActive>,
     library: Res<AnimationLibrary>,
     feedback: Res<CombatFeedback>,
-    mut actors: Query<AnimatedActors>,
+    actors: Query<AnimatedActors>,
+    mut views: Query<(&ActorView, &mut RigPose)>,
 ) {
     if !active.0 {
         return;
     }
     let latest_sequence = feedback.events().last().map_or(0, |event| event.sequence);
-    for (entity, body, motion, health, facing, combat, _, mut rig) in &mut actors {
+    for (view, mut rig) in &mut views {
+        let Ok((body, motion, health, facing, combat, _)) = actors.get(view.owner) else {
+            continue;
+        };
         let set = combat.map_or(WeaponSet::HammerSniper, Combatant::weapon_set);
         let mode = combat.map_or(WeaponMode::Melee, Combatant::weapon_mode);
         let previous_sequence = rig.event_sequence;
         for event in feedback
             .events()
-            .filter(|event| event.sequence > previous_sequence && event.actor == entity)
+            .filter(|event| event.sequence > previous_sequence && event.actor == view.owner)
         {
             rig.observe(&library, event.kind, set, motion.is_leaping());
         }
@@ -367,6 +389,7 @@ pub(super) fn animate(
             Inputs {
                 alive: health.is_alive(),
                 airborne: !motion.is_grounded(),
+                jumps_used: motion.jumps_used(),
                 speed,
                 sprinting: motion.is_sprinting(),
                 dodging: motion.is_dodging(),
@@ -398,12 +421,14 @@ mod tests {
             .insert_resource(CollisionWorld::new(100.0, vec![]))
             .init_resource::<AnimationLibrary>()
             .add_systems(Update, animate);
+        app.finish();
         app
     }
 
     fn actor(app: &mut App) -> Entity {
         let rig = RigPose::new(app.world().resource::<AnimationLibrary>());
-        app.world_mut()
+        let actor = app
+            .world_mut()
             .spawn((
                 Body::new(Vec2::ZERO, 6.0, 0.35),
                 MoveIntent::default(),
@@ -414,9 +439,22 @@ mod tests {
                 Combatant::new(WeaponSet::HammerSniper),
                 CombatIntent::default(),
                 SpawnPoint(Vec2::ZERO),
-                rig,
             ))
-            .id()
+            .id();
+        let view = app
+            .world_mut()
+            .spawn((ActorView { owner: actor }, rig))
+            .id();
+        app.world_mut().entity_mut(actor).insert(TestView(view));
+        actor
+    }
+
+    #[derive(Component)]
+    struct TestView(Entity);
+
+    fn actor_rig(app: &App, actor: Entity) -> &RigPose {
+        let view = app.world().get::<TestView>(actor).unwrap().0;
+        app.world().get::<RigPose>(view).unwrap()
     }
 
     fn frame(app: &mut App, fixed: bool) {
@@ -449,6 +487,7 @@ mod tests {
         Inputs {
             alive: true,
             airborne: false,
+            jumps_used: 0,
             speed: 0.0,
             sprinting: false,
             dodging: false,
@@ -464,10 +503,71 @@ mod tests {
     }
 
     #[test]
+    fn second_jump_uses_act_pose_and_restarts_air_time_without_adding_root_height() {
+        let mut app = app();
+        let actor = actor(&mut app);
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_jump();
+        for _ in 0..25 {
+            frame(&mut app, true);
+        }
+        let first = actor_rig(&app, actor).model.clone();
+        let height = app.world().get::<MotionState>(actor).unwrap().height();
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_jump();
+        frame(&mut app, true);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert_eq!(motion.jumps_used(), 2);
+        assert!(motion.height() > height);
+        let rig = actor_rig(&app, actor);
+        assert_eq!(rig.state, PoseState::Air(2));
+        assert!(rig.air_time < 0.02);
+        assert!(rig.clock < 0.02);
+        for _ in 0..10 {
+            frame(&mut app, true);
+        }
+        let library = app.world().resource::<AnimationLibrary>();
+        let pelvis = library.bone("pelvis");
+        let standing = library.model_pose(&library.sample("Sword_Idle", 0.0, false));
+        let rig = actor_rig(&app, actor);
+        assert!(pose_difference(&first, &rig.model) > 0.05);
+        assert!((rig.model[pelvis].translation.y - standing[pelvis].translation.y).abs() < 0.001);
+        assert_eq!(
+            app.world().get::<Body>(actor).unwrap().position(),
+            Vec2::ZERO
+        );
+        finite(&rig.model);
+        let clock = rig.clock;
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_jump();
+        frame(&mut app, true);
+        let rig = actor_rig(&app, actor);
+        assert_eq!(rig.state, PoseState::Air(2));
+        assert!(rig.clock > clock);
+        for _ in 0..90 {
+            frame(&mut app, true);
+            if app.world().get::<MotionState>(actor).unwrap().is_grounded() {
+                break;
+            }
+        }
+        assert_eq!(actor_rig(&app, actor).state, PoseState::Land);
+        assert_eq!(
+            app.world().get::<MotionState>(actor).unwrap().jumps_used(),
+            0
+        );
+    }
+
+    #[test]
     fn real_fixed_motion_drives_walk_run_jump_land_block_and_roll_poses() {
         let mut app = app();
         let actor = actor(&mut app);
-        let idle = app.world().get::<RigPose>(actor).unwrap().model.clone();
+        let idle = actor_rig(&app, actor).model.clone();
         app.world_mut()
             .get_mut::<MoveIntent>(actor)
             .unwrap()
@@ -475,7 +575,7 @@ mod tests {
         for _ in 0..12 {
             frame(&mut app, true);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.state, PoseState::Walk);
         assert!(pose_difference(&idle, &rig.model) > 0.05);
         let walking = rig.model.clone();
@@ -486,7 +586,7 @@ mod tests {
         for _ in 0..18 {
             frame(&mut app, true);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.state, PoseState::Run);
         assert!(pose_difference(&walking, &rig.model) > 0.05);
         app.world_mut()
@@ -494,10 +594,7 @@ mod tests {
             .unwrap()
             .request_jump();
         frame(&mut app, true);
-        assert_eq!(
-            app.world().get::<RigPose>(actor).unwrap().state,
-            PoseState::Air
-        );
+        assert_eq!(actor_rig(&app, actor).state, PoseState::Air(1));
         assert!(app.world().get::<MotionState>(actor).unwrap().height() > 0.0);
         let position = app.world().get::<Body>(actor).unwrap().position();
         let height = app.world().get::<MotionState>(actor).unwrap().height();
@@ -512,7 +609,7 @@ mod tests {
         let library = app.world().resource::<AnimationLibrary>();
         let pelvis = library.bone("pelvis");
         let standing = library.model_pose(&library.sample("Sword_Idle", 0.0, false));
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert!((rig.model[pelvis].translation.y - standing[pelvis].translation.y).abs() < 0.001);
         finite(&rig.model);
         for _ in 0..80 {
@@ -521,19 +618,13 @@ mod tests {
                 break;
             }
         }
-        assert_eq!(
-            app.world().get::<RigPose>(actor).unwrap().state,
-            PoseState::Land
-        );
+        assert_eq!(actor_rig(&app, actor).state, PoseState::Land);
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
             .set_held(false, true);
         frame(&mut app, true);
-        assert_eq!(
-            app.world().get::<RigPose>(actor).unwrap().state,
-            PoseState::Block
-        );
+        assert_eq!(actor_rig(&app, actor).state, PoseState::Block);
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
@@ -541,7 +632,7 @@ mod tests {
         for _ in 0..8 {
             frame(&mut app, true);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.state, PoseState::Dodge);
         assert!(pose_difference(&idle, &rig.model) > 0.1);
         finite(&rig.model);
@@ -558,10 +649,7 @@ mod tests {
         frame(&mut app, true);
         for _ in 0..4 {
             frame(&mut app, false);
-            assert_eq!(
-                app.world().get::<RigPose>(actor).unwrap().state,
-                PoseState::Walk
-            );
+            assert_eq!(actor_rig(&app, actor).state, PoseState::Walk);
         }
         app.world_mut().insert_resource(CollisionWorld::new(
             100.0,
@@ -573,10 +661,7 @@ mod tests {
         for _ in 0..30 {
             frame(&mut app, true);
         }
-        assert_eq!(
-            app.world().get::<RigPose>(actor).unwrap().state,
-            PoseState::Idle
-        );
+        assert_eq!(actor_rig(&app, actor).state, PoseState::Idle);
     }
 
     #[test]
@@ -623,25 +708,30 @@ mod tests {
 
     #[test]
     fn actor_tagged_feedback_animates_only_the_performer_even_at_the_same_position() {
+        use avian3d::prelude::CollisionLayers;
         let mut app = app();
         let performer = actor(&mut app);
         let bystander = actor(&mut app);
+        // Isolate event ownership from capsule depenetration while keeping
+        // both actors in the real physics world and colliding with the floor.
+        for actor in [performer, bystander] {
+            app.world_mut()
+                .entity_mut(actor)
+                .insert(CollisionLayers::new(0b01, 0b10));
+        }
         app.world_mut()
             .get_mut::<CombatIntent>(performer)
             .unwrap()
             .request_attack();
         frame(&mut app, true);
         assert_eq!(
-            app.world().get::<RigPose>(performer).unwrap().state,
+            actor_rig(&app, performer).state,
             PoseState::Attack(Gesture::Slash)
         );
-        assert_eq!(
-            app.world().get::<RigPose>(bystander).unwrap().state,
-            PoseState::Idle
-        );
-        let clock = app.world().get::<RigPose>(performer).unwrap().clock;
+        assert_eq!(actor_rig(&app, bystander).state, PoseState::Idle);
+        let clock = actor_rig(&app, performer).clock;
         frame(&mut app, false);
-        assert!(app.world().get::<RigPose>(performer).unwrap().clock > clock);
+        assert!(actor_rig(&app, performer).clock > clock);
     }
 
     #[test]
@@ -655,7 +745,7 @@ mod tests {
         frame(&mut app, true);
         let position = app.world().get::<Body>(actor).unwrap().position();
         let height = app.world().get::<MotionState>(actor).unwrap().height();
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         let before = rig.model.clone();
         let clock = rig.clock;
         let sequence = rig.event_sequence;
@@ -663,7 +753,7 @@ mod tests {
         for _ in 0..30 {
             frame(&mut app, false);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(pose_difference(&before, &rig.model), 0.0);
         assert_eq!(rig.clock, clock);
         assert_eq!(rig.event_sequence, sequence);
@@ -671,7 +761,7 @@ mod tests {
         for _ in 0..12 {
             frame(&mut app, false);
         }
-        assert!(pose_difference(&before, &app.world().get::<RigPose>(actor).unwrap().model) > 0.01);
+        assert!(pose_difference(&before, &actor_rig(&app, actor).model) > 0.01);
         assert_eq!(app.world().get::<Body>(actor).unwrap().position(), position);
         assert_eq!(
             app.world().get::<MotionState>(actor).unwrap().height(),
@@ -746,25 +836,23 @@ mod tests {
     }
 
     #[test]
-    fn fixed_crouch_lowers_only_the_pose_then_walks_and_smoothly_stands_without_foot_drift() {
+    fn fixed_crouch_keeps_its_foot_anchor_then_walks_and_smoothly_stands_without_foot_drift() {
         let mut app = app();
         let actor = actor(&mut app);
         let head = app.world().resource::<AnimationLibrary>().bone("Head");
-        let standing_head = app.world().get::<RigPose>(actor).unwrap().model[head]
-            .translation
-            .y;
+        let standing_head = actor_rig(&app, actor).model[head].translation.y;
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
             .request_crouch_toggle();
         frame(&mut app, true);
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.state, PoseState::Crouch);
         assert!(rig.crouch_weight > 0.0 && rig.crouch_weight < 1.0);
         for _ in 0..12 {
             frame(&mut app, true);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.crouch_weight, 1.0);
         assert!(rig.model[head].translation.y < standing_head - 0.2);
         let library = app.world().resource::<AnimationLibrary>();
@@ -773,11 +861,15 @@ mod tests {
             let foot = library.bone(&format!("foot_{side}"));
             assert!(rig.model[foot].translation.distance(base[foot].translation) < 0.002);
         }
-        assert_eq!(app.world().get::<MotionState>(actor).unwrap().height(), 0.0);
-        assert_eq!(
-            app.world().get::<Body>(actor).unwrap().position(),
-            Vec2::ZERO
+        assert!(
+            app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .height()
+                .abs()
+                < 0.002
         );
+        assert!(app.world().get::<Body>(actor).unwrap().position().length() < 0.001);
         let crouched = rig.model.clone();
         app.world_mut()
             .get_mut::<MoveIntent>(actor)
@@ -786,7 +878,7 @@ mod tests {
         for _ in 0..30 {
             frame(&mut app, true);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.state, PoseState::Crouch);
         assert!(pose_difference(&crouched, &rig.model) > 0.01);
         finite(&rig.model);
@@ -795,7 +887,7 @@ mod tests {
             .unwrap()
             .request_crouch_toggle();
         frame(&mut app, true);
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert!(rig.crouch_weight > 0.0 && rig.crouch_weight < 1.0);
         let weight = rig.crouch_weight;
         let paused = rig.model.clone();
@@ -804,7 +896,7 @@ mod tests {
         for _ in 0..30 {
             frame(&mut app, false);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.crouch_weight, weight);
         assert_eq!(pose_difference(&paused, &rig.model), 0.0);
         assert_eq!(app.world().get::<Body>(actor).unwrap().position(), position);
@@ -813,11 +905,18 @@ mod tests {
         for _ in 0..12 {
             frame(&mut app, true);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.crouch_weight, 0.0);
         assert_eq!(rig.state, PoseState::Idle);
         assert!(rig.model[head].translation.y > standing_head - 0.1);
-        assert_eq!(app.world().get::<MotionState>(actor).unwrap().height(), 0.0);
+        assert!(
+            app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .height()
+                .abs()
+                < 0.002
+        );
     }
 
     #[test]
@@ -848,13 +947,13 @@ mod tests {
             .unwrap()
             .request_crouch_toggle();
         frame(&mut app, true);
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.state, PoseState::Slide);
         assert!(rig.crouch_weight > 0.0);
         for _ in 0..12 {
             frame(&mut app, true);
         }
-        let rig = app.world().get::<RigPose>(actor).unwrap();
+        let rig = actor_rig(&app, actor);
         assert_eq!(rig.state, PoseState::Slide);
         assert_eq!(rig.crouch_weight, 1.0);
         finite(&rig.model);
@@ -863,10 +962,14 @@ mod tests {
         }
         assert!(app.world().get::<MotionState>(actor).unwrap().is_crouched());
         assert!(!app.world().get::<MotionState>(actor).unwrap().is_sliding());
-        assert_eq!(
-            app.world().get::<RigPose>(actor).unwrap().state,
-            PoseState::Crouch
+        assert_eq!(actor_rig(&app, actor).state, PoseState::Crouch);
+        assert!(
+            app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .height()
+                .abs()
+                < 0.002
         );
-        assert_eq!(app.world().get::<MotionState>(actor).unwrap().height(), 0.0);
     }
 }

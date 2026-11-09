@@ -1,17 +1,21 @@
-use super::CollisionWorld;
-use super::actions::{ActionIntent, Facing, MotionState};
 use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Body {
-    previous: Vec2,
-    position: Vec2,
-    speed: f32,
-    half_extent: f32,
+    pub(super) previous: Vec3,
+    pub(super) position: Vec3,
+    pub(super) velocity: Vec3,
+    pub(super) speed: f32,
+    pub(super) half_extent: f32,
+    pub(super) teleport_request: Option<Vec3>,
 }
 
 impl Body {
     pub fn new(position: Vec2, speed: f32, half_extent: f32) -> Self {
+        Self::at(Vec3::new(position.x, 0.0, position.y), speed, half_extent)
+    }
+
+    pub fn at(position: Vec3, speed: f32, half_extent: f32) -> Self {
         assert!(
             position.is_finite()
                 && speed.is_finite()
@@ -22,30 +26,51 @@ impl Body {
         Self {
             previous: position,
             position,
+            velocity: Vec3::ZERO,
             speed,
             half_extent,
+            teleport_request: None,
         }
     }
     pub fn position(&self) -> Vec2 {
+        self.position.xz()
+    }
+    pub fn world_position(&self) -> Vec3 {
         self.position
+    }
+    pub fn velocity(&self) -> Vec3 {
+        self.velocity
+    }
+    pub fn radius(&self) -> f32 {
+        self.half_extent
+    }
+    pub fn interpolated_world(&self, alpha: f32) -> Vec3 {
+        self.previous.lerp(self.position, alpha.clamp(0.0, 1.0))
     }
     /// Actual displacement of the last fixed step, including collision resolution.
     pub fn step_displacement(&self) -> Vec2 {
-        self.position - self.previous
+        (self.position - self.previous).xz()
     }
     pub fn interpolated(&self, alpha: f32) -> Vec2 {
-        self.previous.lerp(self.position, alpha.clamp(0.0, 1.0))
+        self.interpolated_world(alpha).xz()
     }
 
+    #[cfg(test)]
     pub(super) fn teleport(&mut self, position: Vec2) {
+        self.teleport_to(Vec3::new(position.x, 0.0, position.y));
+    }
+
+    pub fn teleport_to(&mut self, position: Vec3) {
         assert!(position.is_finite());
         self.previous = position;
         self.position = position;
+        self.velocity = Vec3::ZERO;
+        self.teleport_request = Some(position);
     }
 }
 
 #[derive(Component, Default)]
-pub struct MoveIntent(Vec2);
+pub struct MoveIntent(pub(super) Vec2);
 impl MoveIntent {
     pub fn set(&mut self, direction: Vec2) {
         self.0 = if direction.is_finite() {
@@ -59,56 +84,16 @@ impl MoveIntent {
     }
 }
 
-type MovementComponents = (
-    &'static mut Body,
-    &'static MoveIntent,
-    Option<&'static mut MotionState>,
-    Option<&'static mut ActionIntent>,
-    Option<&'static Facing>,
-    Option<&'static super::combat::Health>,
-);
-
-pub(super) fn advance(
-    time: Res<Time<Fixed>>,
-    world: Res<CollisionWorld>,
-    mut bodies: Query<MovementComponents>,
-) {
-    for (mut body, intent, motion, mut actions, facing, health) in &mut bodies {
-        body.previous = body.position;
-        if health.is_some_and(|health| !health.is_alive()) {
-            if let Some(mut motion) = motion {
-                motion.reset();
-            }
-            if let Some(mut actions) = actions {
-                actions.clear();
-            }
-            continue;
-        }
-        let delta = if let Some(mut motion) = motion {
-            let mut idle = ActionIntent::default();
-            motion.advance(
-                actions.as_deref_mut().unwrap_or(&mut idle),
-                intent.0,
-                facing.map_or(Vec2::NEG_Y, Facing::direction),
-                body.speed,
-                time.delta_secs(),
-            )
-        } else {
-            intent.0 * body.speed * time.delta_secs()
-        };
-        body.position = world.slide(body.position, delta, body.half_extent);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::SimulationPlugin;
+    use crate::simulation::{ActionIntent, CollisionWorld, Facing, MotionState, SimulationPlugin};
 
     fn walk(direction: Vec2) -> Vec2 {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin))
             .insert_resource(CollisionWorld::new(100.0, vec![]));
+        app.finish();
         let mut intent = MoveIntent::default();
         intent.set(direction);
         let actor = app
@@ -119,10 +104,14 @@ mod tests {
         app.world_mut()
             .resource_mut::<Time<Fixed>>()
             .advance_by(std::time::Duration::from_secs_f64(1.0 / 60.0));
+        for _ in 0..6 {
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+        let start = app.world().get::<Body>(actor).unwrap().position();
         for _ in 0..60 {
             app.world_mut().run_schedule(FixedUpdate);
         }
-        app.world().get::<Body>(actor).unwrap().position()
+        app.world().get::<Body>(actor).unwrap().position() - start
     }
 
     #[test]
@@ -133,14 +122,15 @@ mod tests {
 
     #[test]
     fn released_or_invalid_input_does_not_move() {
-        assert_eq!(walk(Vec2::ZERO), Vec2::ZERO);
-        assert_eq!(walk(Vec2::new(f32::NAN, 1.0)), Vec2::ZERO);
+        assert!(walk(Vec2::ZERO).length() < 0.0001);
+        assert!(walk(Vec2::new(f32::NAN, 1.0)).length() < 0.0001);
     }
 
     fn actor(world: CollisionWorld) -> (App, Entity) {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin))
             .insert_resource(world);
+        app.finish();
         let actor = app
             .world_mut()
             .spawn((
@@ -154,6 +144,8 @@ mod tests {
         app.world_mut()
             .resource_mut::<Time<Fixed>>()
             .advance_by(std::time::Duration::from_secs_f64(1.0 / 60.0));
+        // Let the actual solver register the collider and establish its support.
+        tick(&mut app, 2);
         (app, actor)
     }
 
@@ -223,50 +215,121 @@ mod tests {
             .get_mut::<ActionIntent>(actor)
             .unwrap()
             .set_held(true, true);
+        tick(&mut app, 6); // Measure the configured speed after finite braking.
+        let block_start = app.world().get::<Body>(actor).unwrap().position().x;
         tick(&mut app, 60);
         let block_end = app.world().get::<Body>(actor).unwrap().position().x;
-        assert!((block_end - sprint_end - 2.1).abs() < 0.001);
+        assert!((block_end - block_start - 2.1).abs() < 0.001);
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert!(motion.is_blocking());
         assert!(!motion.is_sprinting());
     }
 
     #[test]
-    fn jump_is_latched_until_fixed_step_and_airborne_requests_do_not_restart_it() {
-        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
-        app.world_mut()
-            .get_mut::<ActionIntent>(actor)
-            .unwrap()
-            .request_jump();
-        assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
-        tick(&mut app, 1);
-        let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!(motion.height() > 0.0);
-        assert_eq!(motion.interpolated_height(0.0), 0.0);
-        assert_eq!(motion.interpolated_height(1.0), motion.height());
-        tick(&mut app, 20);
-        let falling_speed = app
-            .world()
-            .get::<MotionState>(actor)
-            .unwrap()
-            .vertical_velocity();
-        assert!(falling_speed < 0.0);
-        app.world_mut()
-            .get_mut::<ActionIntent>(actor)
-            .unwrap()
-            .request_jump();
-        tick(&mut app, 1);
-        assert!(
-            app.world()
-                .get::<MotionState>(actor)
+    fn two_jumps_are_latched_third_is_rejected_and_landing_refills_them() {
+        for delay in [8, 24] {
+            let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+            let mut intent = app.world_mut().get_mut::<ActionIntent>(actor).unwrap();
+            intent.request_jump();
+            intent.request_jump(); // Multiple samples before a fixed step are one request.
+            let motion = app.world().get::<MotionState>(actor).unwrap();
+            assert!(motion.is_grounded());
+            assert_eq!(motion.jumps_used(), 0);
+            tick(&mut app, 1);
+            let motion = app.world().get::<MotionState>(actor).unwrap();
+            assert!(motion.height() > 0.0);
+            assert_eq!(motion.jumps_used(), 1);
+            assert!(motion.interpolated_height(0.0).abs() < 0.001);
+            assert_eq!(motion.interpolated_height(1.0), motion.height());
+            tick(&mut app, delay);
+            let motion = app.world().get::<MotionState>(actor).unwrap();
+            let height = motion.height();
+            let velocity = motion.vertical_velocity();
+            assert_eq!(velocity > 0.0, delay == 8);
+            app.world_mut()
+                .get_mut::<ActionIntent>(actor)
                 .unwrap()
-                .vertical_velocity()
-                < falling_speed
+                .request_jump();
+            tick(&mut app, 1);
+            let motion = app.world().get::<MotionState>(actor).unwrap();
+            assert_eq!(motion.jumps_used(), 2);
+            assert!(motion.height() > height);
+            assert_eq!(motion.interpolated_height(0.0), height);
+            assert!(motion.vertical_velocity() > velocity);
+            for _ in 0..3 {
+                let velocity = app
+                    .world()
+                    .get::<MotionState>(actor)
+                    .unwrap()
+                    .vertical_velocity();
+                app.world_mut()
+                    .get_mut::<ActionIntent>(actor)
+                    .unwrap()
+                    .request_jump();
+                tick(&mut app, 1);
+                let motion = app.world().get::<MotionState>(actor).unwrap();
+                assert_eq!(motion.jumps_used(), 2);
+                assert!(motion.vertical_velocity() < velocity);
+            }
+            tick(&mut app, 90);
+            let motion = app.world().get::<MotionState>(actor).unwrap();
+            assert!(motion.is_grounded());
+            assert!(motion.height().abs() < 0.001);
+            assert_eq!(motion.jumps_used(), 0);
+            for expected in 1..=2 {
+                app.world_mut()
+                    .get_mut::<ActionIntent>(actor)
+                    .unwrap()
+                    .request_jump();
+                tick(&mut app, 1);
+                assert_eq!(
+                    app.world().get::<MotionState>(actor).unwrap().jumps_used(),
+                    expected
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn knockup_and_input_cleanup_preserve_spent_jumps_but_reset_refills_them() {
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        for _ in 0..2 {
+            app.world_mut()
+                .get_mut::<ActionIntent>(actor)
+                .unwrap()
+                .request_jump();
+            tick(&mut app, 1);
+        }
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .clear();
+        assert!(
+            app.world_mut()
+                .get_mut::<MotionState>(actor)
+                .unwrap()
+                .launch_up(8.0)
         );
-        tick(&mut app, 60);
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_jump();
+        tick(&mut app, 1);
         let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!(motion.is_grounded());
-        assert_eq!(motion.height(), 0.0);
+        assert_eq!(motion.jumps_used(), 2);
+        assert!(motion.vertical_velocity() > 6.4);
+        app.world_mut()
+            .get_mut::<MotionState>(actor)
+            .unwrap()
+            .reset();
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_jump();
+        tick(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert_eq!(motion.jumps_used(), 1);
+        assert!(motion.height() > 0.0);
     }
 
     #[test]
@@ -291,7 +354,15 @@ mod tests {
                 .unwrap()
                 .is_invulnerable()
         );
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_jump();
         tick(&mut app, 3);
+        assert_eq!(
+            app.world().get::<MotionState>(actor).unwrap().jumps_used(),
+            0
+        );
         assert!(
             app.world()
                 .get::<MotionState>(actor)
@@ -307,9 +378,12 @@ mod tests {
         assert!(motion.is_dodging());
         assert!(!motion.is_invulnerable());
         tick(&mut app, 8);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(motion.is_grounded());
+        assert_eq!(motion.jumps_used(), 0);
         let position = app.world().get::<Body>(actor).unwrap().position();
         assert!((position.x - 2.4).abs() < 0.001);
-        assert_eq!(position.y, 0.0);
+        assert!(position.y.abs() < 0.0001);
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
@@ -359,11 +433,7 @@ mod tests {
             tick(&mut app, 60);
             let position = app.world().get::<Body>(actor).unwrap().position();
             assert!((position.x - 1.15).abs() < 0.001, "{position:?}");
-            assert!(
-                app.world()
-                    .resource::<CollisionWorld>()
-                    .is_clear(position, 0.35)
-            );
+            assert!(position.x + 0.35 <= 1.5 + 0.001);
             assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
         }
     }
@@ -380,7 +450,8 @@ mod tests {
         assert!(app.world().get::<MotionState>(actor).unwrap().is_leaping());
         tick(&mut app, 18);
         let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!((motion.height() - 2.0).abs() < 0.001);
+        // With shared gravity, a 0.6s ballistic flight has a real ~0.81m apex.
+        assert!((motion.height() - 0.81).abs() < 0.02);
         assert!(motion.interpolated_height(0.0) <= motion.interpolated_height(0.5));
         assert!(motion.interpolated_height(0.5) <= motion.height());
         assert!(
@@ -393,20 +464,35 @@ mod tests {
             .get_mut::<ActionIntent>(actor)
             .unwrap()
             .request_jump();
-        tick(&mut app, 42);
+        for _ in 0..42 {
+            tick(&mut app, 1);
+            if app.world().get::<MotionState>(actor).unwrap().is_grounded() {
+                break;
+            }
+        }
         assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
+        assert_eq!(
+            app.world().get::<MotionState>(actor).unwrap().jumps_used(),
+            0
+        );
         assert!(
             app.world()
                 .get::<Body>(actor)
                 .unwrap()
                 .position()
                 .distance(Vec2::X * 6.0)
-                < 0.001
+                < 0.18
         );
+        let landed = app.world().get::<Body>(actor).unwrap().position();
+        tick(&mut app, 30);
+        let stopped = app.world().get::<Body>(actor).unwrap();
+        assert!(stopped.position().x >= landed.x);
+        assert!(stopped.position().x - landed.x < 0.4);
+        assert!(stopped.velocity().xz().length() < 0.001);
     }
 
     #[test]
-    fn knockup_interrupts_leap_without_changing_horizontal_authority() {
+    fn knockup_interrupts_leap_without_erasing_physical_horizontal_momentum() {
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         app.world_mut()
             .get_mut::<MotionState>(actor)
@@ -423,7 +509,9 @@ mod tests {
         );
         assert!(!app.world().get::<MotionState>(actor).unwrap().is_leaping());
         tick(&mut app, 1);
-        assert_eq!(app.world().get::<Body>(actor).unwrap().position(), position);
+        let next = app.world().get::<Body>(actor).unwrap().position();
+        assert!(next.x > position.x);
+        assert!(next.x - position.x < 10.0 / 60.0 + 0.001);
         assert!(app.world().get::<MotionState>(actor).unwrap().height() > height);
         tick(&mut app, 120);
         assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
@@ -462,6 +550,8 @@ mod tests {
         let mut motion = app.world_mut().get_mut::<MotionState>(actor).unwrap();
         assert!(!motion.start_leap(Vec2::ZERO, Vec2::X, 0.0, 2.0));
         assert!(!motion.start_leap(Vec2::ZERO, Vec2::splat(f32::NAN), 0.6, 2.0));
+        assert!(!motion.start_leap(Vec2::ZERO, Vec2::X, 0.6, f32::NAN));
+        assert!(!motion.start_leap(Vec2::ZERO, Vec2::X, 0.6, 0.0));
         assert!(!motion.launch_up(f32::NAN));
         tick(&mut app, 1);
         let motion = app.world().get::<MotionState>(actor).unwrap();
@@ -479,6 +569,11 @@ mod tests {
             .unwrap()
             .request_jump();
         tick(&mut app, 5);
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_jump();
+        tick(&mut app, 1);
         let height = app.world().get::<MotionState>(actor).unwrap().height();
         let velocity = app
             .world()
@@ -494,15 +589,17 @@ mod tests {
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert_eq!(motion.height(), height);
         assert_eq!(motion.vertical_velocity(), velocity);
+        assert_eq!(motion.jumps_used(), 2);
         app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        tick(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert_eq!(motion.jumps_used(), 2);
+        assert!(motion.vertical_velocity() < velocity);
         tick(&mut app, 90);
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert!(motion.is_grounded());
         assert!(!motion.is_dodging());
-        assert_eq!(
-            app.world().get::<Body>(actor).unwrap().position(),
-            Vec2::ZERO
-        );
+        assert!(app.world().get::<Body>(actor).unwrap().position().length() < 0.0001);
 
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
@@ -530,7 +627,7 @@ mod tests {
         tick(&mut app, 120);
         let position = app.world().get::<Body>(actor).unwrap().position();
         assert!((position.length() - 2.4).abs() < 0.001);
-        assert_eq!(position.x, 0.0);
+        assert!(position.x.abs() < 0.0001);
         assert!(!app.world().get::<MotionState>(actor).unwrap().is_dodging());
     }
 
@@ -553,7 +650,7 @@ mod tests {
         assert!(!motion.sprint_latched());
         let position = app.world().get::<Body>(actor).unwrap().position();
         assert!(position.x < 0.0);
-        assert_eq!(position.y, 0.0);
+        assert!(position.y.abs() < 0.0001);
         set_shift(&mut app, actor, false);
         tick(&mut app, 25);
         let position = app.world().get::<Body>(actor).unwrap().position();
@@ -580,6 +677,8 @@ mod tests {
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert!(!motion.is_sprinting());
         assert!(!motion.sprint_latched());
+        tick(&mut app, 6);
+        let position = app.world().get::<Body>(actor).unwrap().position();
         tick(&mut app, 60);
         let walked = app.world().get::<Body>(actor).unwrap().position().x - position.x;
         assert!((walked - 6.0).abs() < 0.001);
@@ -643,6 +742,8 @@ mod tests {
                 .sprint_latched()
         );
         set_movement(&mut app, actor, Vec2::Y, true);
+        tick(&mut app, 6);
+        let walk_start = app.world().get::<Body>(actor).unwrap().position();
         tick(&mut app, 60);
         assert!(
             !app.world()
@@ -651,7 +752,7 @@ mod tests {
                 .is_sprinting()
         );
         let position = app.world().get::<Body>(actor).unwrap().position();
-        assert!((position.y - 6.0).abs() < 0.001);
+        assert!((position.y - walk_start.y - 6.0).abs() < 0.001);
     }
 
     #[test]
@@ -669,12 +770,24 @@ mod tests {
         );
         set_movement(&mut app, actor, Vec2::ZERO, true); // W + S, both still physically held.
         let start = app.world().get::<Body>(actor).unwrap().position();
-        tick(&mut app, 15);
-        assert_eq!(app.world().get::<Body>(actor).unwrap().position(), start);
+        tick(&mut app, 6);
+        let stopped = app.world().get::<Body>(actor).unwrap().position();
+        assert!(stopped.distance(start) < 0.4);
+        tick(&mut app, 9);
+        assert!(
+            app.world()
+                .get::<Body>(actor)
+                .unwrap()
+                .position()
+                .distance(stopped)
+                < 0.001
+        );
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert!(motion.sprint_latched());
         assert!(!motion.is_sprinting());
         set_movement(&mut app, actor, Vec2::NEG_X, true);
+        tick(&mut app, 6);
+        let start = app.world().get::<Body>(actor).unwrap().position();
         tick(&mut app, 60);
         let position = app.world().get::<Body>(actor).unwrap().position();
         assert!((start.x - position.x - 9.6).abs() < 0.001);
@@ -746,6 +859,7 @@ mod tests {
         );
         set_movement(&mut app, actor, Vec2::ZERO, false);
         set_movement(&mut app, actor, Vec2::Y, true);
+        tick(&mut app, 6);
         let start = app.world().get::<Body>(actor).unwrap().position();
         tick(&mut app, 60);
         let motion = app.world().get::<MotionState>(actor).unwrap();
@@ -899,6 +1013,7 @@ mod tests {
         assert!(motion.sprint_latched());
         assert!(!motion.is_sliding());
         assert!(!motion.is_sprinting());
+        tick(&mut app, 6);
         let start = app.world().get::<Body>(actor).unwrap().position().x;
         tick(&mut app, 60);
         let end = app.world().get::<Body>(actor).unwrap().position().x;
@@ -921,15 +1036,12 @@ mod tests {
         assert!(motion.slide_elapsed() > 0.0);
         set_movement(&mut app, actor, Vec2::Y, true);
         tick(&mut app, 6);
-        assert_eq!(
-            app.world().get::<Body>(actor).unwrap().position().y,
-            start.y
-        );
+        assert!((app.world().get::<Body>(actor).unwrap().position().y - start.y).abs() < 0.0001);
         set_movement(&mut app, actor, Vec2::ZERO, false);
         tick(&mut app, 40);
         let end = app.world().get::<Body>(actor).unwrap().position();
         assert!((end.x - start.x - 1.375).abs() < 0.001);
-        assert_eq!(end.y, start.y);
+        assert!((end.y - start.y).abs() < 0.0001);
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert!(!motion.is_sliding());
         assert!(motion.is_crouched());
@@ -951,7 +1063,9 @@ mod tests {
         assert!(!motion.is_crouched());
         assert!(!motion.is_sliding());
         tick(&mut app, 60);
-        assert_eq!(app.world().get::<Body>(actor).unwrap().position(), position);
+        let body = app.world().get::<Body>(actor).unwrap();
+        assert!(body.position().distance(position) < 0.06);
+        assert!(body.velocity().xz().length() < 0.001);
     }
 
     #[test]
@@ -978,11 +1092,8 @@ mod tests {
             let position = app.world().get::<Body>(actor).unwrap().position();
             assert!(position.x > start.x);
             assert!(position.x < start.x + 0.5);
-            assert!(
-                app.world()
-                    .resource::<CollisionWorld>()
-                    .is_clear(position, 0.35)
-            );
+            let face = start.x + if wall { 0.5 } else { 0.8 };
+            assert!(position.x + 0.35 <= face + 0.001);
         }
     }
 

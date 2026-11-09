@@ -1,13 +1,18 @@
 //! Procedural display only. Collision geometry is supplied by the level data.
 
-use bevy::{light::CascadeShadowConfigBuilder, prelude::*};
-
-use crate::{
-    gameplay::{Level, Player, Prop, PropKind},
-    simulation::{Body, MotionState, SimulationActive},
+use bevy::{
+    asset::RenderAssetUsages,
+    light::CascadeShadowConfigBuilder,
+    mesh::{Indices, PrimitiveTopology},
+    prelude::*,
 };
 
-use super::controls::ViewYaw;
+use crate::{
+    gameplay::{Boundary, Level, Player, Prop, PropKind, TerrainGeometry},
+    simulation::{Body, PhysicsPose, SimulationActive},
+};
+
+use super::{ActorView, PlayerView, PropView, controls::ViewYaw};
 
 struct SceneAssets {
     cube: Handle<Mesh>,
@@ -51,9 +56,9 @@ impl SceneAssets {
 
 pub(super) fn setup(world: &mut World) {
     let assets = SceneAssets::new(world);
-    let (half_size, props) = {
+    let (half_size, ground, ramp) = {
         let level = world.resource::<Level>();
-        (level.half_size, level.props.clone())
+        (level.half_size, level.ground.clone(), level.ramp.clone())
     };
 
     world.insert_resource(ClearColor(Color::srgb(0.065, 0.09, 0.12)));
@@ -80,8 +85,31 @@ pub(super) fn setup(world: &mut World) {
     ));
 
     spawn_ground(world, &assets, half_size);
-    for prop in &props {
-        spawn_prop(world, &assets, prop);
+    spawn_terrain(world, &assets, &ground, true);
+    spawn_terrain(world, &assets, &ramp, false);
+    let props: Vec<_> = world
+        .query::<(Entity, &Prop, &PhysicsPose)>()
+        .iter(world)
+        .map(|(entity, prop, pose)| (entity, *prop, pose.position()))
+        .collect();
+    for (owner, prop, position) in props {
+        spawn_prop(world, &assets, owner, &prop, position);
+    }
+    let boundaries: Vec<_> = world
+        .query::<(Entity, &Boundary)>()
+        .iter(world)
+        .map(|(entity, boundary)| (entity, *boundary))
+        .collect();
+    for (owner, boundary) in boundaries {
+        let root = world
+            .spawn((
+                PropView { owner },
+                Transform::from_translation(boundary.center),
+                Visibility::default(),
+            ))
+            .id();
+        let body = spawn_box(world, &assets, &assets.slate, Vec3::ZERO, boundary.size);
+        world.entity_mut(root).add_child(body);
     }
     spawn_player(world, &assets);
 }
@@ -90,15 +118,90 @@ pub(super) fn sync_player(
     time: Res<Time<Fixed>>,
     active: Res<SimulationActive>,
     view: Res<ViewYaw>,
-    mut players: Query<(&Body, &MotionState, &mut Transform), With<Player>>,
+    players: Query<&Body, With<Player>>,
+    mut views: Query<(&ActorView, &mut Transform), With<PlayerView>>,
 ) {
     let alpha = super::display_alpha(&time, &active);
-    for (body, motion, mut transform) in &mut players {
-        let position = body.interpolated(alpha);
-        transform.translation =
-            Vec3::new(position.x, motion.interpolated_height(alpha), position.y);
+    for (view_root, mut transform) in &mut views {
+        let Ok(body) = players.get(view_root.owner) else {
+            continue;
+        };
+        transform.translation = body.interpolated_world(alpha);
         transform.rotation = Quat::from_rotation_y(view.yaw());
     }
+}
+
+pub(super) fn sync_props(
+    time: Res<Time<Fixed>>,
+    active: Res<SimulationActive>,
+    props: Query<&PhysicsPose>,
+    mut views: Query<(&PropView, &mut Transform)>,
+) {
+    let alpha = super::display_alpha(&time, &active);
+    for (view, mut transform) in &mut views {
+        if let Ok(pose) = props.get(view.owner) {
+            transform.translation = pose.interpolated_position(alpha);
+            transform.rotation = pose.interpolated_rotation(alpha);
+        }
+    }
+}
+
+fn spawn_terrain(
+    world: &mut World,
+    assets: &SceneAssets,
+    geometry: &TerrainGeometry,
+    ground: bool,
+) {
+    let mut mesh = Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::default(),
+    );
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        geometry
+            .vertices
+            .iter()
+            .map(|vertex| vertex.to_array())
+            .collect::<Vec<_>>(),
+    );
+    mesh.insert_indices(Indices::U32(
+        geometry.triangles.iter().flatten().copied().collect(),
+    ));
+    mesh.compute_smooth_normals();
+    if ground {
+        let colors: Vec<[f32; 4]> = geometry
+            .vertices
+            .iter()
+            .map(|vertex| {
+                let hill = (vertex.y / 2.6).clamp(0.0, 1.0);
+                let contour = if vertex.y > 0.08 && (vertex.y * 2.0).fract() < 0.08 {
+                    0.04
+                } else {
+                    0.0
+                };
+                [
+                    0.19 + hill * 0.13 + contour,
+                    0.24 + hill * 0.18 + contour,
+                    0.27 + hill * 0.10 + contour,
+                    1.0,
+                ]
+            })
+            .collect();
+        mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
+    }
+    let mesh = world.resource_mut::<Assets<Mesh>>().add(mesh);
+    let material = if ground {
+        world
+            .resource_mut::<Assets<StandardMaterial>>()
+            .add(StandardMaterial {
+                base_color: Color::WHITE,
+                perceptual_roughness: 0.86,
+                ..default()
+            })
+    } else {
+        assets.slate.clone()
+    };
+    spawn_mesh(world, &mesh, &material, Transform::default());
 }
 
 fn spawn_ground(world: &mut World, assets: &SceneAssets, half_size: f32) {
@@ -107,7 +210,7 @@ fn spawn_ground(world: &mut World, assets: &SceneAssets, half_size: f32) {
         world,
         assets,
         &assets.floor,
-        Vec3::new(0.0, -0.15, 0.0),
+        Vec3::new(0.0, -0.16, 0.0),
         Vec3::new(diameter + 1.0, 0.3, diameter + 1.0),
     );
 
@@ -131,22 +234,8 @@ fn spawn_ground(world: &mut World, assets: &SceneAssets, half_size: f32) {
         );
     }
 
-    // The rim's inside faces coincide with CollisionWorld's playable bounds.
+    // Painted caps remain decoration; the physical rim uses shared Boundary data.
     for sign in [-1.0, 1.0] {
-        spawn_box(
-            world,
-            assets,
-            &assets.slate,
-            Vec3::new(sign * (half_size + 0.25), 0.35, 0.0),
-            Vec3::new(0.5, 0.7, diameter + 1.0),
-        );
-        spawn_box(
-            world,
-            assets,
-            &assets.slate,
-            Vec3::new(0.0, 0.35, sign * (half_size + 0.25)),
-            Vec3::new(diameter, 0.7, 0.5),
-        );
         for offset in [-18.0, -6.0, 6.0, 18.0] {
             spawn_box(
                 world,
@@ -177,35 +266,72 @@ fn spawn_ground(world: &mut World, assets: &SceneAssets, half_size: f32) {
             );
         }
     }
+    // Flush route marks guide players to the two terrain test areas.
+    for x in [-2.5, -3.5, -4.5] {
+        spawn_box(
+            world,
+            assets,
+            &assets.teal,
+            Vec3::new(x, 0.012, 0.0),
+            Vec3::new(0.42, 0.006, 0.12),
+        );
+    }
+    for x in [2.5, 4.5, 6.5, 8.5, 10.5] {
+        spawn_box(
+            world,
+            assets,
+            &assets.accent,
+            Vec3::new(x, 0.012, 0.0),
+            Vec3::new(0.42, 0.006, 0.12),
+        );
+    }
+    for z in [1.5, 3.5, 5.5, 7.5] {
+        spawn_box(
+            world,
+            assets,
+            &assets.accent,
+            Vec3::new(11.0, 0.012, z),
+            Vec3::new(0.12, 0.006, 0.42),
+        );
+    }
 }
 
-fn spawn_prop(world: &mut World, assets: &SceneAssets, prop: &Prop) {
-    let base = Vec3::new(prop.center.x, 0.0, prop.center.y);
+fn spawn_prop(world: &mut World, assets: &SceneAssets, owner: Entity, prop: &Prop, position: Vec3) {
+    let root = world
+        .spawn((
+            PropView { owner },
+            Transform::from_translation(position),
+            Visibility::default(),
+        ))
+        .id();
+    let base = Vec3::NEG_Y * prop.size.y * 0.5;
     let material = match prop.kind {
         PropKind::Crate => &assets.copper,
         PropKind::Pillar => &assets.slate,
         PropKind::Stone => &assets.stone,
     };
-    spawn_box(
+    let body = spawn_box(
         world,
         assets,
         material,
         base + Vec3::Y * prop.size.y * 0.5,
         prop.size,
     );
+    world.entity_mut(root).add_child(body);
 
     match prop.kind {
         PropKind::Crate => {
             // Packing straps stay within the same horizontal collision footprint.
             for sign in [-1.0, 1.0] {
-                spawn_box(
+                let strap = spawn_box(
                     world,
                     assets,
                     &assets.dark,
                     base + Vec3::new(sign * prop.size.x * 0.30, prop.size.y + 0.015, 0.0),
                     Vec3::new(0.10, 0.03, prop.size.z),
                 );
-                spawn_box(
+                world.entity_mut(root).add_child(strap);
+                let strap = spawn_box(
                     world,
                     assets,
                     &assets.dark,
@@ -216,32 +342,36 @@ fn spawn_prop(world: &mut World, assets: &SceneAssets, prop: &Prop) {
                     ),
                     Vec3::new(0.10, prop.size.y, 0.03),
                 );
+                world.entity_mut(root).add_child(strap);
             }
         }
         PropKind::Pillar => {
-            spawn_box(
+            let foot = spawn_box(
                 world,
                 assets,
                 &assets.dark,
                 base + Vec3::Y * 0.12,
                 Vec3::new(prop.size.x, 0.24, prop.size.z),
             );
-            spawn_box(
+            world.entity_mut(root).add_child(foot);
+            let cap = spawn_box(
                 world,
                 assets,
                 &assets.teal,
                 base + Vec3::Y * (prop.size.y + 0.025),
                 Vec3::new(prop.size.x * 0.75, 0.05, prop.size.z * 0.75),
             );
+            world.entity_mut(root).add_child(cap);
         }
         PropKind::Stone => {
-            spawn_box(
+            let cap = spawn_box(
                 world,
                 assets,
                 &assets.slate,
                 base + Vec3::Y * (prop.size.y + 0.035),
                 Vec3::new(prop.size.x * 0.78, 0.07, prop.size.z * 0.72),
             );
+            world.entity_mut(root).add_child(cap);
         }
     }
 }
@@ -249,12 +379,16 @@ fn spawn_prop(world: &mut World, assets: &SceneAssets, prop: &Prop) {
 fn spawn_player(world: &mut World, assets: &SceneAssets) {
     let mut players = world.query_filtered::<(Entity, &Body), With<Player>>();
     let (player, body) = players.single(world).expect("one demo player");
-    let position = body.position();
-    world.entity_mut(player).insert((
-        Transform::from_xyz(position.x, 0.0, position.y),
-        Visibility::default(),
-    ));
-    super::stickman::spawn(world, player, &assets.teal, &assets.accent);
+    let position = body.world_position();
+    let view = world
+        .spawn((
+            ActorView { owner: player },
+            PlayerView,
+            Transform::from_translation(position),
+            Visibility::default(),
+        ))
+        .id();
+    super::stickman::spawn(world, view, &assets.teal, &assets.accent);
 }
 
 fn spawn_box(

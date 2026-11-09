@@ -1,0 +1,10 @@
+{"file":".trellis/spec/index.md","reason":"单 crate、层间依赖、检查与用户服务约束"}
+{"file":".trellis/spec/simulation/index.md","reason":"现有意图锁存、动作与战斗契约；二维部分按本任务设计迁移"}
+{"file":".trellis/spec/simulation/physics.md","reason":"已落地三维姿态、胶囊、支撑、暂停门控、查询与真实物理夹具契约"}
+{"file":".trellis/spec/gameplay/index.md","reason":"关卡几何同源、确定性装配与出生净空"}
+{"file":".trellis/spec/client/index.md","reason":"显示只读、骨骼事件归属、相机与插值以及 Web 输入生命周期"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查输入、物理、战斗、显示与镜头的数据流和时序"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"物理姿态与地形几何保持唯一来源"}
+{"file":".trellis/tasks/11-09-3d-physics-terrain/research/baseline-and-decisions.md","reason":"保留入口和二段跳未提交基线，遵循用户已确认范围"}
+{"file":".trellis/tasks/11-09-3d-physics-terrain/research/avian-integration.md","reason":"Avian 0.8 最小特性、权威实体、支撑、暂停、CCD 与查询调度"}
+{"file":".trellis/tasks/11-09-3d-physics-terrain/research/terrain-and-callers.md","reason":"坡道和小山几何、安全布局、三维战斗及表面标记迁移"}

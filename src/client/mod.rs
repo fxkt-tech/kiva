@@ -11,6 +11,20 @@ mod web;
 
 use bevy::prelude::*;
 
+/// Rendering owns these roots; their owners are simulation entities.
+#[derive(Component, Clone, Copy)]
+pub(super) struct ActorView {
+    pub owner: Entity,
+}
+
+#[derive(Component)]
+pub(super) struct PlayerView;
+
+#[derive(Component)]
+pub(super) struct PropView {
+    pub owner: Entity,
+}
+
 fn display_alpha(time: &Time<Fixed>, active: &crate::simulation::SimulationActive) -> f32 {
     if active.0 {
         time.overstep_fraction()
@@ -60,6 +74,7 @@ pub(super) fn run() {
         Update,
         (
             scene::sync_player,
+            scene::sync_props,
             combat::sync_enemies,
             combat::sync_health_bars,
             combat::sync_weapons,
