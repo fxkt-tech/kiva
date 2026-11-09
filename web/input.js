@@ -5,8 +5,14 @@
   let confirmed = false;
   let request = null;
   let look = 0;
+  let aim = 0;
   let keys = 0;
-  const movementKeys = Object.freeze({ KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8 });
+  let actions = 0;
+  let blocking = false;
+  let lastWheel = null;
+  const pressed = new Set();
+  const heldKeys = Object.freeze({ KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8, ShiftLeft: 16, ShiftRight: 16 });
+  const actionKeys = Object.freeze({ Space: 1, KeyE: 8, Tab: 16, Digit1: 64, Digit2: 128, KeyQ: 256 });
   let error = "";
   let previous = null;
   let pixelRatio = window.devicePixelRatio;
@@ -17,12 +23,26 @@
   const isActive = () => ready && confirmed && document.hasFocus()
     && document.pointerLockElement === canvas();
 
+  function clearInputs() {
+    look = 0;
+    aim = 0;
+    keys = 0;
+    actions = 0;
+    blocking = false;
+    lastWheel = null;
+    pressed.clear();
+    previous = null;
+  }
+
   function clearCapture() {
     confirmed = false;
     request = null;
-    look = 0;
+    clearInputs();
+  }
+
+  function refreshKeys() {
     keys = 0;
-    previous = null;
+    for (const code of pressed) keys |= heldKeys[code] || 0;
   }
 
   function render() {
@@ -63,8 +83,7 @@
     if (document.pointerLockElement === canvas() && document.hasFocus() && (request || confirmed)) {
       confirmed = true;
       request = null;
-      look = 0;
-      previous = null;
+      clearInputs();
       error = "";
     } else {
       clearCapture();
@@ -85,11 +104,47 @@
   });
   window.addEventListener("focus", render);
   document.addEventListener("keydown", (event) => {
-    if (event.isTrusted && !event.repeat && isActive()) keys |= movementKeys[event.code] || 0;
+    if (!event.isTrusted || !isActive()) return;
+    if (heldKeys[event.code] || actionKeys[event.code]) event.preventDefault?.();
+    if (event.repeat || pressed.has(event.code)) return;
+    const firstShift = heldKeys[event.code] === 16 && (keys & 16) === 0;
+    pressed.add(event.code);
+    refreshKeys();
+    if (firstShift) actions |= 2;
+    // A rapid change of pair has one unambiguous final selection.
+    if (event.code === "Digit1" || event.code === "Digit2") actions &= ~(64 | 128);
+    actions |= actionKeys[event.code] || 0;
   }, true);
   document.addEventListener("keyup", (event) => {
-    if (event.isTrusted) keys &= ~(movementKeys[event.code] || 0);
+    if (!event.isTrusted) return;
+    if (isActive() && (heldKeys[event.code] || actionKeys[event.code])) event.preventDefault?.();
+    pressed.delete(event.code);
+    refreshKeys();
   }, true);
+  document.addEventListener("pointerdown", (event) => {
+    if (!event.isTrusted || event.pointerType !== "mouse" || !isActive()) return;
+    if (event.button === 0) actions |= 4;
+    if (event.button === 2) blocking = true;
+    if (event.button === 0 || event.button === 2) event.preventDefault?.();
+  }, true);
+  document.addEventListener("pointerup", (event) => {
+    if (event.isTrusted && event.pointerType === "mouse" && event.button === 2) blocking = false;
+  }, true);
+  document.addEventListener("pointercancel", (event) => {
+    if (event.isTrusted) blocking = false;
+  });
+  document.addEventListener("contextmenu", (event) => {
+    if (event.isTrusted && isActive()) event.preventDefault?.();
+  }, true);
+  document.addEventListener("wheel", (event) => {
+    if (!event.isTrusted || !isActive()) return;
+    event.preventDefault?.();
+    if (!Number.isFinite(event.deltaY) || event.deltaY === 0) return;
+    const now = Number.isFinite(event.timeStamp) ? event.timeStamp : Date.now();
+    // Trackpad inertia is one gesture until the stream is quiet for 160ms.
+    if (lastWheel === null || now - lastWheel >= 160) actions |= 32;
+    lastWheel = now;
+  }, { capture: true, passive: false });
   document.addEventListener("pointerleave", () => { previous = null; });
 
   document.addEventListener("pointermove", (event) => {
@@ -105,6 +160,7 @@
     const raw = samples.reduce((sum, sample) => sum + (Number.isFinite(sample.movementX) ? sample.movementX : 0), 0);
     if (isActive()) {
       look += raw * gain;
+      aim += samples.reduce((sum, sample) => sum + (Number.isFinite(sample.movementY) ? sample.movementY : 0), 0) * gain;
       return;
     }
     // Browser movementX may use physical pixels while clientX uses CSS pixels.
@@ -124,10 +180,20 @@
 
   window.kivaInput = Object.freeze({
     isActive,
-    keys: () => isActive() ? keys : 0,
+    keys: () => isActive() ? keys | (blocking ? 32 : 0) : 0,
+    takeActions() {
+      const pending = isActive() ? actions : 0;
+      actions = 0;
+      return pending;
+    },
     takeLook() {
       const delta = isActive() ? look : 0;
       look = 0;
+      return delta;
+    },
+    takeAim() {
+      const delta = isActive() ? aim : 0;
+      aim = 0;
       return delta;
     },
     ready() {

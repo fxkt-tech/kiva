@@ -20,7 +20,8 @@ Rust / Bevy 单 crate，Trunk 构建 WebAssembly。这里只记录当前俯视�
 
 - 功能变更执行 `make check`：格式、原生 Clippy、Rust / Node 测试、WASM 检查。
 - Web 专属 Rust 代码增加 `cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings`。
-- 发布入口变更执行 `trunk build --locked --dist <临时目录>`；构建和纯代码测试不能宣称完成画面 / 手感验收。
+- 发布入口变更执行临时目录 Trunk 构建；本机 0.17.5 不接受 `--locked`，用 `CARGO_NET_OFFLINE=true trunk build --dist <临时目录>` 并验证 Cargo.lock 未变化。
+  构建和纯代码测试不能宣称完成画面 / 手感验收。
 - 文档检查链接、任务 JSON / JSONL 和 `git diff --check`。
 - 用户自行启动和关闭开发服务。可以自建并回收测试专用临时 HTTP fixture，不能接管用户进程。
 - 提交与推送按本次用户授权执行，任务记录关闭自动提交。

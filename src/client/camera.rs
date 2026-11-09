@@ -7,11 +7,18 @@ pub(super) struct GameCamera;
 
 const FOV: f32 = 50.0_f32.to_radians();
 const BODY_CENTER: Vec3 = Vec3::new(0.0, 0.9, 0.0);
+const CAMERA_HEIGHT: f32 = 5.0;
+const CAMERA_BACK: f32 = CAMERA_HEIGHT * 0.7;
+const BODY_SCREEN_Y: f32 = 2.0 / 3.0;
 
 fn camera_pose(body_center: Vec3, yaw: f32) -> Transform {
-    let forward = Quat::from_rotation_y(yaw) * Vec3::NEG_Z;
-    Transform::from_translation(body_center - forward * 12.0 + Vec3::Y * 18.0)
-        .looking_at(body_center + forward * 4.0, Vec3::Y)
+    let heading = Quat::from_rotation_y(yaw);
+    let forward = heading * Vec3::NEG_Z;
+    // Convert the desired screen position into an angle below the optical axis.
+    let body_view_angle = ((2.0 * BODY_SCREEN_Y - 1.0) * (FOV * 0.5).tan()).atan();
+    let pitch = CAMERA_HEIGHT.atan2(CAMERA_BACK) - body_view_angle;
+    Transform::from_translation(body_center - forward * CAMERA_BACK + Vec3::Y * CAMERA_HEIGHT)
+        .with_rotation(heading * Quat::from_rotation_x(-pitch))
 }
 
 pub(super) fn setup(
@@ -44,7 +51,7 @@ mod tests {
     use bevy::camera::CameraProjection;
 
     #[test]
-    fn actual_perspective_places_the_body_center_below_screen_center_at_every_heading() {
+    fn actual_perspective_places_the_body_center_at_the_lower_third_at_every_heading() {
         for aspect in [4.0 / 3.0, 16.0 / 9.0, 1.0] {
             let projection = PerspectiveProjection {
                 fov: FOV,
@@ -65,7 +72,10 @@ mod tests {
                 let ndc = clip.truncate() / clip.w;
                 assert!(ndc.x.abs() < 0.0001);
                 let screen_fraction = (1.0 - ndc.y) * 0.5;
-                assert!((0.64..0.67).contains(&screen_fraction), "{screen_fraction}");
+                assert!(
+                    (screen_fraction - 2.0 / 3.0).abs() < 0.0001,
+                    "{screen_fraction}"
+                );
             }
         }
     }

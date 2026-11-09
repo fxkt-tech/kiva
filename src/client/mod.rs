@@ -1,10 +1,23 @@
 //! Device input and presentation compose the headless demo.
+mod animation;
 mod camera;
+mod combat;
 pub(super) mod controls;
+mod hud;
 mod scene;
+mod skeleton;
+mod stickman;
 mod web;
 
 use bevy::prelude::*;
+
+fn display_alpha(time: &Time<Fixed>, active: &crate::simulation::SimulationActive) -> f32 {
+    if active.0 {
+        time.overstep_fraction()
+    } else {
+        1.0
+    }
+}
 
 pub(super) fn run() {
     let mut app = App::new();
@@ -26,11 +39,14 @@ pub(super) fn run() {
     .insert_resource(ClearColor(Color::srgb_u8(15, 22, 29)))
     .init_resource::<controls::ViewYaw>()
     .init_resource::<controls::CaptureState>()
+    .init_resource::<controls::AimDistance>()
+    .init_resource::<skeleton::AnimationLibrary>()
     .add_systems(
         Startup,
         (
             crate::gameplay::setup,
             scene::setup,
+            combat::setup,
             camera::setup,
             web::ready,
         )
@@ -40,6 +56,21 @@ pub(super) fn run() {
         RunFixedMainLoop,
         controls::sample.in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
     )
-    .add_systems(Update, (scene::sync_player, camera::follow).chain());
+    .add_systems(
+        Update,
+        (
+            scene::sync_player,
+            combat::sync_enemies,
+            combat::sync_health_bars,
+            combat::sync_weapons,
+            animation::animate,
+            stickman::sync_attachments,
+            combat::sync_markers,
+            combat::effects,
+            hud::sync,
+            camera::follow,
+        )
+            .chain(),
+    );
     app.run();
 }

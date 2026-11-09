@@ -3,31 +3,46 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#111a21" />
+    <meta name="theme-color" content="#ececea" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#262727" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="data:," />
     <title>Kiva · 俯视探索 Demo</title>
     <link data-trunk rel="copy-file" href="web/startup.js" />
     <script src="startup.js"></script>
     <link data-trunk rel="copy-file" href="web/input.js" />
     <script src="input.js"></script>
+    <link data-trunk rel="copy-file" href="web/hud.js" />
+    <script src="hud.js"></script>
     <link data-trunk rel="copy-file" href="web/style.css" />
     <link rel="stylesheet" href="style.css" />
     <link data-trunk rel="rust" data-bin="kiva" />
   </head>
   <body>
-    <canvas id="game" tabindex="0" aria-label="俯视探索：WASD 移动，鼠标左右转向，Esc 释放鼠标。"></canvas>
-    <header class="brand"><span>KIVA / MOVEMENT STUDY</span><strong>庭院</strong></header>
-    <aside class="controls"><span><kbd>W A S D</kbd> 移动</span><span>鼠标左右 · 转向</span><span><kbd>Esc</kbd> 释放鼠标</span></aside>
-    <div id="entry" class="overlay" role="dialog" aria-labelledby="entry-title">
-      <section class="card">
-        <span class="eyebrow">KIVA / TOP-DOWN DEMO</span>
-        <h1 id="entry-title">俯视探索</h1>
-        <p id="entry-message" role="status" aria-live="polite">正在准备场景与游戏引擎…</p>
-        <button id="enter" hidden>点击进入 <span>→</span></button>
-        <button id="retry" hidden>重新加载</button>
-        <small>W / S 前进后退，A / D 横移<br />鼠标左右旋转视角，Esc 释放鼠标</small>
-      </section>
-    </div>
-    <noscript>请启用 JavaScript 后运行游戏。</noscript>
+    <main class="game-shell">
+      <div class="game-frame">
+        <canvas id="game" tabindex="0" aria-label="俯视探索：WASD 移动，鼠标左右转向，Esc 释放鼠标。"></canvas>
+        <header class="brand"><span>KIVA / MOVEMENT STUDY</span><strong>庭院</strong></header>
+        <aside class="combat-hud" aria-label="战斗状态">
+          <span id="hud-persona" class="eyebrow">哥哥 · 近战</span>
+          <strong id="hud-weapon">重锤</strong>
+          <div class="health-line"><progress id="hud-health-bar" max="1" value="1" aria-label="生命值"></progress><span id="hud-health">100</span></div>
+          <span id="hud-cooldown">E · 就绪</span>
+          <span id="hud-status">滚轮切换人格 · 1/2 切换套装</span>
+          <div id="hud-combo" class="combo-prompt" hidden><kbd>Tab</kbd> 释放联动 <span id="hud-combo-time"></span></div>
+        </aside>
+        <aside class="controls"><span><kbd>W A S D</kbd> 移动 · <kbd>Shift</kbd> 点按闪避 / 长按疾跑 · <kbd>Space</kbd> 跳跃</span><span>左键普攻 · 右键格挡 · <kbd>E</kbd> 技能 · <kbd>Tab</kbd> 联动</span><span>滚轮切近远程 · <kbd>1 / 2</kbd> 套装 · <kbd>Q</kbd> 锁定 · <kbd>Esc</kbd> 暂停</span></aside>
+        <div id="entry" class="overlay" role="dialog" aria-labelledby="entry-title">
+          <section class="card">
+            <span class="eyebrow">KIVA / TOP-DOWN DEMO</span>
+            <h1 id="entry-title">俯视探索</h1>
+            <p id="entry-message" role="status" aria-live="polite">正在准备场景与游戏引擎…</p>
+            <button id="enter" hidden>点击进入 <span>→</span></button>
+            <button id="retry" hidden>重新加载</button>
+            <small>WASD 移动 · 鼠标左右转向<br />Shift 点按闪避 / 长按疾跑 · 空格跳跃 · 右键格挡<br />松开 Shift 继续疾跑，松开所有方向键停止<br />滚轮切换人格 · 1/2 切换武器套装<br />左键普攻 · E 起手技能 · Tab 联动 · Q 锁定<br />重锤击飞 → Tab 狙击；火炮跃进 → Tab 斧旋<br />火炮模式鼠标上下调整落点距离<br />Esc 释放鼠标并暂停</small>
+          </section>
+        </div>
+        <noscript>请启用 JavaScript 后运行游戏。</noscript>
+      </div>
+    </main>
   </body>
 </html>

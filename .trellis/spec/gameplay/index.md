@@ -7,14 +7,18 @@
 
 ## Signatures
 
-`setup(&mut World)` 创建 `Player + Body + MoveIntent`，插入 `Level` 和 `CollisionWorld`。
+`setup(&mut World)` 插入 `Level` / `CollisionWorld`，装配玩家和四个练习敌人。
+所有战斗实体含 Body / MoveIntent / ActionIntent / MotionState / Facing / Health / SpawnPoint；
+玩家另含 Player / Combatant / CombatIntent，敌人另含 Enemy::default()。
 `Level { half_size: f32, props: Vec<Prop> }`；
 `Prop { center: Vec2, size: Vec3, kind: PropKind }`；kind 为 Crate / Pillar / Stone。
 
 ## Contracts
 
 Level.props 是渲染几何和静态碰撞的共同来源。size 是完整三维尺寸，碰撞取 x/z 各一半。
-玩家出生在原点，速度 6m/s，半宽 0.35m；角色朝向由客户端表达。
+玩家出生在原点，速度 6m/s，半宽 0.35m；玩家 Facing 由客户端输入表达，敌人 Facing 由模拟决策。
+玩家生命 100、默认锤子近战；四个敌人速度 2m/s、半宽 0.3m、生命 120。
+出生点由玩法指定，复活规则由模拟执行；客户端不能另造目标或生命数据。
 
 ## Validation & Error Matrix
 
@@ -30,6 +34,7 @@ Bad：只加可见箱子不加碰撞，或分别手写两套坐标。
 ## Tests Required / Quality Check
 
 `make check`。纯数据测试检查出生区、尺寸、范围和每个 Prop 中心实际不可通过，无需窗口。
+装配测试验证五个实体状态齐全、生命有效、处于地面，出生点与位置一致且不在静态碰撞内。
 
 ## Wrong vs Correct
 

@@ -8,24 +8,34 @@
 | 模块 | 唯一负责的状态 / 行为 |
 |---|---|
 | `simulation/movement.rs` | `Body` 权威位置、前一固定帧位置；`MoveIntent` 世界平面移动意图 |
+| `simulation/actions.rs` | `ActionIntent`、`Facing`、`MotionState`；疾跑 / 跳跃 / 闪避 / 格挡、空中轨迹 |
+| `simulation/combat.rs` | `CombatIntent`、武器状态、联动窗口、生命、敌人攻击、复活与有界反馈历史 |
+| `simulation/weapons.rs` | 两套武器及近远程普攻的具体数据 |
 | `simulation/geometry.rs` | `CollisionWorld` 静态扩张 AABB 扫掠与滑动 |
-| `gameplay/mod.rs` | `Level`、`Prop`、`Player`，关卡和玩家创建 |
+| `gameplay/mod.rs` | `Level`、`Prop`、`Player`，关卡、玩家和四个练习敌人的完整装配 |
 | `client/controls.rs` | `ViewYaw`，设备输入转世界方向；捕获失效时停止意图 |
 | `client/scene.rs` | 几何网格、材质、灯光和插值后的显示 `Transform` |
+| `client/stickman.rs` | 玩家与敌人共用的火柴人圆头、杆件、关节和网格缓存 |
+| `client/skeleton.rs` | 随包 CC0 动画的解码、局部采样、父子骨骼求值 |
+| `client/animation.rs`、`animation/poses.rs` | 根据只读模拟快照与明确 actor 的事件选择 / 混合身体姿态 |
 | `client/camera.rs` | 从相同显示位置与朝向派生跟随镜头 |
+| `client/combat.rs` | 只读敌人 / 武器 / 标记 / 特效，按反馈序号消费并回收临时实体 |
+| `client/hud.rs`、`web/hud.js` | 把模拟快照显示为人格、武器、生命、冷却、联动提示 |
 | `web/input.js` | 浏览器锁定确认、焦点、鼠标位移单位与一次性消费 |
 | `web/startup.js` | 在 WASM 加载前记录成功 / 失败，给晚订阅者重放 |
 
-`Body` 字段私有，只提供读取；客户端只写 `MoveIntent`，不能用模型 `Transform` 反写权威位置。
+`Body` 字段私有；位置重置仅模拟内部可用。客户端只提交移动、动作和战斗意图，不能用模型 `Transform` 反写权威位置。
 `Level.props` 同时生成模型尺寸与 `SolidBox`，避免两份障碍坐标漂移。地面边框内侧与关卡边界一致。
 
 ## 一帧中的顺序
 
-1. Startup 顺序执行：玩法装配 → 三维场景 → 相机 → 通知 Web 引擎就绪。
+1. Startup 顺序执行：玩法装配 → 三维场景 → 战斗表现 → 相机 → 通知 Web 引擎就绪。
 2. Bevy 输入更新后，在 `RunFixedMainLoopSystems::BeforeFixedMainLoop` 采样控制。
-   鼠标位移直接改 `ViewYaw`；WASD 按该朝向换算后提交 `MoveIntent`。
-3. `FixedUpdate` 以 60Hz 推进运动和碰撞，保存前后两次权威位置。无论显示帧执行零个或多个固定步，输入只采样一次。
-4. Update 顺序执行场景同步和相机跟随。模型用 `Time<Fixed>::overstep_fraction()` 插值，
+   鼠标位移直接改 `ViewYaw`；提交世界方向 `MoveIntent` / `Facing`、持续动作和锁存的离散指令。
+3. `FixedUpdate` 以 60Hz 顺序推进动作与碰撞、战斗与敌人决策。离散指令在实际固定步消费，显示帧无固定步时保留、多固定步时不重复。
+   `SimulationActive` 随控制捕获暂停整条模拟，菜单期间不会受伤或消耗冷却。
+4. Update 顺序执行人物 / 敌人显示根、武器显隐、身体姿态、骨骼附件、HUD、相机。平面位置和高度用相同 fixed overstep 插值；
+   暂停时统一取当前状态，避免 fixed overstep 持续循环导致模型 / 镜头往复抖动。
    相机读取同一个显示根位置，朝向使用当前 `ViewYaw`，不追加平滑延迟。
 5. Bevy 完成全局变换传播和渲染。
 
@@ -36,22 +46,60 @@
 移动意图长度不超过 1，速度为 6m/s。人物使用半宽 0.35m 的保守方形占地，扫掠可防长步穿透，
 去掉法线方向的剩余位移保留沿墙滑行；地图边界也约束整个占地。
 
-固定相机距离：相对人物身体中心后方 12m、上方 18m，望向身体中心前方 4m，垂直 FOV 50°。
-人物身体中心为显示根上方 0.9m，实际投影在屏幕高度约 65%，不通过偏移人物模型来伪造构图。
+固定相机距离：相对人物身体中心后方 3.5m、上方 5m，垂直 FOV 50°。
+后退距离固定为高度的 0.7 倍，调整高度时同比缩放，保持镜头俯角。
+人物身体中心为显示根上方 0.9m，实际投影固定在水平 50%、从顶部算垂直 2/3 的下三分点。
+俯角由相机偏移、FOV 和目标屏幕位置推导，不通过偏移人物模型来伪造构图。
+
+## 动作与联动
+
+Shift 参考 `origin/act`（`bd3e344`）：按下立即沿当前移动方向闪避，静止时向 Facing 的反方向后闪。
+短按闪避持续 0.42s，以 smoothstep 累计移动 2.4m；0.06–0.28s 为无敌窗口，冷却仍为 0.8s。
+按住 Shift 满 0.16s 且有物理方向键按住时锁定疾跑，初始闪避在 0.26s 提前结束后衔接。
+疾跑为步行的 1.6 倍，松开 Shift 不停止，松开所有方向键才解除；W+S 等抵消为零不算松开方向键。
+失焦 / 暂停通过清理动作意图请求取消疾跑锁存，在恢复的首个固定步执行，客户端不直接写 MotionState。
+Space 地面跳跃；右键地面格挡，移动速度为步行 0.35 倍，正面受击由 12 降至 2。
+高度在固定步积分并保存前后快照；所有水平位移（包括闪避和火炮跃进）仍使用现有二维扫掠，不能越过静态障碍。
+玩家和四个练习敌人都使用共用火柴人几何：细杆四肢、球形关节与圆头，使用原 act 骨架比例，待机头顶约 1.73m。
+网格只创建一次并跨角色复用，武器绑定右手腕，眼睛跟随头部；敌人杆件、关节和头部共用受击 / 蓄力变色规则。
+姿态从 `act` 的 CC0 23 骨骼 / 19 动画资源采样，带局部混合、走跑步频、跳跃阶段、翻滚和受击 / 倒地反馈。
+资源嵌入 WASM / 原生二进制，不在运行时联网加载；根位移已剥离，空中骨盆高度校正避免与 MotionState 的跳高重复叠加。
+动画只写 RigPose，附件同步只写肢体与武器 Transform，不写人物显示根、Body 或相机。
+暂停时冻结动画时钟；倒地敌人身体保留以播放死亡姿态，生命 / 选中 / 伤害规则仍按死亡状态处理。
+
+滚轮在同套装内切换哥哥近战 / 妹妹远程；1/2 选择锤子+狙击枪 / 斧子+火炮。
+Q 切换可见目标；默认在面朝方向自动锁定可见敌人。左键普攻、E 起手、Tab 消费一次有效联动：
+
+- 锤子：选中 4.5m 内敌人，击飞其周围 3m 内敌人；0.85s 内且原目标仍存活并处于空中时，Tab 自动切妹妹狙击原目标。
+- 火炮：鼠标上下选择落点距离（默认 6m、1–8m），左右定方向；E 跃向标记点，模拟限制范围并校验碰撞。
+  起跳后冻结选定落点；0.9s 跃进期间 Tab 自动切哥哥旋斧，沿途范围内每个敌人只命中一次。
+
+窗口过期、目标死亡 / 落地、切套装或手动切武器均使旧联动失效。技能起手共享冷却，不因切换套装刷新。
+敌人接近后有 0.5s 攻击预警；练习敌人和玩家倒地 3s 后回到出生点，复活不重放死亡期间排队的指令。
+`CombatFeedback` 持有最多 128 条单调序号反馈，显示按游标消费，避免零个 / 多个固定步丢失命中特效。
+反馈 `actor: Entity` 明确动作归属：攻击事件标识发起者，受击 / 防御 / 倒地 / 恢复事件标识接受者。
+身体动画按 actor 和 sequence 消费，不通过距离或中文 HUD 状态推断是哪一角色发生动作。
 
 ## 浏览器边界
 
-`startup.js`、`input.js` 必须同步安装在 Trunk 生成的模块之前，脚本不依赖 DOM 已创建。
-`window.kivaInput` 只暴露 `isActive(): boolean`、`takeLook(): number`、`keys(): number`、`ready(): void`。
-`takeLook()` 返回并清空本显示帧水平位移；引擎在启动完成后调用 `ready()`。
+`startup.js`、`input.js`、`hud.js` 必须同步安装在 Trunk 生成的模块之前，脚本不依赖 DOM 已创建。
+`window.kivaInput` 暴露 `isActive(): boolean`、`takeLook(): number`、`takeAim(): number`、`keys(): number`、`takeActions(): number`、`ready(): void`。
+`takeLook()` / `takeAim()` 分别返回并清空本显示帧水平 / 垂直位移；引擎在启动完成后调用 `ready()`。
+垂直样本只在火炮远程且未跃进时调整落点，绝不调整镜头俯角；其余模式消费后丢弃，避免切武器时重放。
 只有收到 `pointerlockchange` 确认且页面有焦点才能操作，Promise 完成不代表捕获成立。
 Esc 解锁或失焦会清累计，失焦后必须重新点击，延迟到达的旧请求不能恢复控制。
 
 未锁定时从可信鼠标的 `clientX` 与 `movementX` 学习 CSS 单位增益；DPR 只用于判定校准是否失效，
 不直接用于除法。合并事件与父事件二选一，排除窗口边缘截断样本。浏览器保留系统鼠标加速。
-Web 桥记录有效捕获期间的可信 WASD 按键，keys() 返回 W=1 / S=2 / A=4 / D=8 的位掩码；失锁清零，
+Web 桥记录有效捕获期间的可信按键，keys() 返回 W=1 / S=2 / A=4 / D=8 / sprint=16 / block=32；失锁清零，
 忽略新的重复 keydown，防止快速失焦再捕获重放旧按键。原生按 WindowFocused 事件消费中间的失焦，
 不能只看最终 Window.focused。原生版使用 Bevy 输入及 `CursorOptions`，Windows 使用 Confined，其他平台使用 Locked。
+`takeActions()` 返回并清空 jump=1 / dodge=2 / attack=4 / skill=8 / combo=16 / switch=32 / pair1=64 / pair2=128 / target=256。
+滚轮事件流安静 160ms 才视为新手势；捕获点击不同时触发普攻；Tab、空格、滚轮等仅在已捕获时阻止默认行为。
+HUD 只使用 textContent / progress.value；就绪前的最新快照在 DOMContentLoaded 后重放，不回传游戏规则。
+
+Web 画面固定 16:9，按窗口最大可容纳面积缩放并保留 12–24px 最小留白；外表面采用 kiva-agent 下拉框的明暗配色、
+3px 双向凸起阴影和 1px 描边，随系统切换明暗。
 
 ## 扩展原则
 
