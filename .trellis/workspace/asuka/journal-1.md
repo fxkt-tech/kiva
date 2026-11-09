@@ -959,3 +959,41 @@ Esc改为操作/声音/对局分类设置，所有现有设置集中；模拟与
 ### Next Steps
 
 - 代码已合并main；后续设备手感反馈按需记录。
+
+
+## Session 29: Choulingke avatar, source motions and bamboo boss encounter
+<!-- trellis-session: v=2 fp=bfbd34f59db8878f -->
+
+**Date**: 2026-11-10
+**Task**: Choulingke avatar, source motions and bamboo boss encounter
+**Branch**: `main`
+
+### Summary
+
+Delivered the skinned avatar and blade, named source motions, verified PBR materials, bamboo arena, timed parry and a single-boss adaptation. Recorded source fidelity limits and real WebGPU captures.
+
+### Main Changes
+
+- Preserve client -> gameplay -> simulation ownership; source animations never drive physical position or damage.
+- Import 986 source joints and 35 named clips, material provenance, environment textures and camera-near leaf fading.
+- Adapt recovered P1/P2 decision pools, weights and cooldowns; keep full original AI and original audio incomplete in TODO.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6e41a05` | feat: add Choulingke avatar and bamboo boss encounter |
+
+### Testing
+
+- [OK] make check: 179 library tests, 9 physics tests and 49 Node tests passed.
+- [OK] WASM Clippy, Trunk build, converter checks, deterministic animation rebuild and real WebGPU smoke tests passed.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Recover original skill-slot/clip/hit-frame mapping, phase triggers and combo mechanics.
+- Resolve HD/v2 codec6 data and identify verified original combat audio/BGM.

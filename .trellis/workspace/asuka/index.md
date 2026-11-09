@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 28
-- **Last Active**: 2026-11-09
+- **Total Sessions**: 29
+- **Last Active**: 2026-11-10
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~961 | Active |
+| `journal-1.md` | ~999 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 29 | 2026-11-10 | Choulingke avatar, source motions and bamboo boss encounter | `6e41a05` | `main` |
 | 28 | 2026-11-09 | 三维物理与非平地场景交付 | `65f14ec` | `main` |
 | 27 | 2026-11-09 | 提交俯视操作Demo并归档交付 | `5aab14f` | `main` |
 | 26 | 2026-11-09 | 俯视WASD与鼠标转向Demo重建 | - | `main` |
