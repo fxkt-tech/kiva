@@ -997,3 +997,33 @@ Delivered the skinned avatar and blade, named source motions, verified PBR mater
 
 - Recover original skill-slot/clip/hit-frame mapping, phase triggers and combo mechanics.
 - Resolve HD/v2 codec6 data and identify verified original combat audio/BGM.
+
+
+## Session 30: Bamboo reference terrain and real WebGPU reflection passes
+<!-- trellis-session: v=2 fp=340b13b779b53ce8 -->
+
+**Date**: 2026-11-10
+**Task**: Bamboo reference terrain and real WebGPU reflection passes
+**Branch**: `main`
+
+### Summary
+
+Added eight source terrain/grass maps, layered wet ground, irregular grass, mip generation, deferred SSR and shared leaf prepass clipping; captured same-camera comparison and GPU GBuffer evidence.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `eb69202` | feat: improve bamboo terrain materials and wet-ground rendering |
+
+### Testing
+
+- [OK] make check: 188 library, 9 physics, 49 Node; WASM Clippy and temporary Trunk build pass; browser shader errors empty.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Continue original Choulingke audio/BGM identity and HD-v2 decoding investigation; audio TODO remains open.
