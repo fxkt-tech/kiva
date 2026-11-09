@@ -4,7 +4,9 @@ use avian3d::collision::collider::contact_query::contact_manifolds;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use super::{ActionIntent, Body, CollisionWorld, Facing, Health, MotionState, MoveIntent};
+use super::{
+    ActionIntent, Body, CollisionWorld, Combatant, Facing, Health, MotionState, MoveIntent,
+};
 
 pub const STANDING_HEIGHT: f32 = 1.73;
 pub const CROUCHED_HEIGHT: f32 = 1.40;
@@ -122,7 +124,10 @@ pub fn spawn_terrain(world: &mut World, vertices: Vec<Vec3>, triangles: Vec<[u32
 /// Immediate simulation teleport for fixtures and explicit reset flows.
 pub fn teleport_actor(world: &mut World, entity: Entity, feet: Vec3) {
     assert!(feet.is_finite());
-    let Some(radius) = world.get::<Body>(entity).map(Body::radius) else {
+    let Some((radius, height)) = world
+        .get::<Body>(entity)
+        .map(|body| (body.radius(), body.standing_height()))
+    else {
         return;
     };
     let mut target = world.entity_mut(entity);
@@ -134,13 +139,14 @@ pub fn teleport_actor(world: &mut World, entity: Entity, feet: Vec3) {
     }
     if let Some(mut motion) = target.get_mut::<MotionState>() {
         motion.reset_at(feet.y);
+        motion.capsule_height = height;
     }
     target.insert((
-        Position(feet + Vec3::Y * STANDING_HEIGHT * 0.5),
+        Position(feet + Vec3::Y * height * 0.5),
         Rotation::IDENTITY,
         LinearVelocity::ZERO,
         AngularVelocity::ZERO,
-        character_collider(radius, STANDING_HEIGHT),
+        character_collider(radius, height),
     ));
     target.remove::<Sleeping>();
 }
@@ -206,11 +212,11 @@ pub(super) fn install(world: &mut World) {
     let actors: Vec<_> = world
         .query_filtered::<(Entity, &Body), Without<RigidBody>>()
         .iter(world)
-        .map(|(entity, body)| (entity, body.position, body.half_extent))
+        .map(|(entity, body)| (entity, body.position, body.radius(), body.standing_height()))
         .collect();
-    for (entity, feet, radius) in actors {
-        let shape = character_collider(radius, STANDING_HEIGHT);
-        let center = feet + Vec3::Y * STANDING_HEIGHT * 0.5;
+    for (entity, feet, radius, height) in actors {
+        let shape = character_collider(radius, height);
+        let center = feet + Vec3::Y * height * 0.5;
         // New actors need a genuine support query before their first input is
         // consumed. This queries the same collider shapes as the solver; it does
         // not infer grounding from world height or a terrain formula.
@@ -279,7 +285,7 @@ pub(super) fn install(world: &mut World) {
             RigidBody::Dynamic,
             Position(center),
             Rotation::IDENTITY,
-            character_collider(radius, STANDING_HEIGHT),
+            character_collider(radius, height),
             LockedAxes::ROTATION_LOCKED,
             ColliderDensity(100.0),
             // The motor supplies controlled tangential traction. Solver friction
@@ -292,6 +298,7 @@ pub(super) fn install(world: &mut World) {
                 .with_threshold(0.05),
         ));
         if let Some(mut motion) = world.get_mut::<MotionState>(entity) {
+            motion.capsule_height = height;
             motion.publish(feet.y, 0.0, support);
         }
     }
@@ -312,6 +319,7 @@ type Motors = (
     Option<&'static mut ActionIntent>,
     Option<&'static Facing>,
     Option<&'static Health>,
+    Option<&'static Combatant>,
 );
 
 pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
@@ -319,7 +327,7 @@ pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
     if dt <= 0.0 {
         return;
     }
-    for (mut body, mut velocity, intent, motion, actions, facing, health) in &mut actors {
+    for (mut body, mut velocity, intent, motion, actions, facing, health, combat) in &mut actors {
         body.previous = body.position;
         if health.is_some_and(|health| !health.is_alive()) {
             velocity.x = 0.0;
@@ -345,6 +353,11 @@ pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
         };
         let mut idle = ActionIntent::default();
         let mut actions = actions;
+        if combat.is_some_and(|combat| combat.is_sniping() || combat.is_spinning())
+            && let Some(actions) = actions.as_deref_mut()
+        {
+            actions.discard_parry_request();
+        }
         let delta = motion.advance(
             actions.as_deref_mut().unwrap_or(&mut idle),
             direction,
@@ -405,9 +418,9 @@ pub(super) fn resize_characters(world: &mut World) {
         .iter(world)
         .filter_map(|(entity, body, position, motion)| {
             let wanted = if motion.is_crouched() {
-                CROUCHED_HEIGHT
+                body.crouched_height()
             } else {
-                STANDING_HEIGHT
+                body.standing_height()
             };
             (wanted != motion.capsule_height).then_some((
                 entity,
@@ -486,7 +499,7 @@ pub(super) fn publish(
     for (entity, position, velocity, mut body, motion) in &mut actors {
         let height = motion
             .as_ref()
-            .map_or(STANDING_HEIGHT, |motion| motion.capsule_height);
+            .map_or(body.standing_height(), |motion| motion.capsule_height);
         let feet = position.0 - Vec3::Y * height * 0.5;
         body.position = feet;
         body.velocity = velocity.0;

@@ -5,7 +5,7 @@ use bevy::prelude::*;
 pub(super) const GRAVITY: f32 = 18.0;
 const JUMP_VELOCITY: f32 = 6.4;
 const SPRINT_MULTIPLIER: f32 = 1.6;
-const BLOCK_MULTIPLIER: f32 = 0.35;
+const PARRY_MULTIPLIER: f32 = 0.35;
 const CROUCH_SPEED: f32 = 1.6;
 const SLIDE_DURATION: f32 = 0.55;
 const SLIDE_SPEED: f32 = 5.0;
@@ -23,7 +23,7 @@ pub struct ActionIntent {
     shift_released: bool,
     movement_held: bool,
     movement_released: bool,
-    block: bool,
+    parry: bool,
     jump: bool,
     dodge: bool,
     crouch_toggle: bool,
@@ -31,12 +31,11 @@ pub struct ActionIntent {
 }
 
 impl ActionIntent {
-    pub fn set_held(&mut self, physical_shift: bool, block: bool) {
+    pub fn set_shift_held(&mut self, physical_shift: bool) {
         self.shift_held = physical_shift;
         if !physical_shift {
             self.shift_released = true;
         }
-        self.block = block;
     }
 
     pub fn set_movement_held(&mut self, held: bool) {
@@ -56,6 +55,16 @@ impl ActionIntent {
 
     pub fn request_crouch_toggle(&mut self) {
         self.crouch_toggle = !self.crouch_toggle;
+    }
+
+    /// One physical press remains latched until the next simulation step.
+    pub fn request_parry(&mut self) {
+        self.parry = true;
+    }
+
+    /// Linked combat actions reject this press without queuing or starting a cooldown.
+    pub(super) fn discard_parry_request(&mut self) {
+        self.parry = false;
     }
 
     pub fn clear(&mut self) {
@@ -129,7 +138,8 @@ pub struct MotionState {
     dodge_cooldown: f32,
     dodge: Option<Dodge>,
     dodge_protected: bool,
-    blocking: bool,
+    parry_remaining: f32,
+    parry_cooldown: f32,
     sprinting: bool,
     sprint_hold_time: f32,
     sprint_latched: bool,
@@ -153,7 +163,8 @@ impl Default for MotionState {
             dodge_cooldown: 0.0,
             dodge: None,
             dodge_protected: false,
-            blocking: false,
+            parry_remaining: 0.0,
+            parry_cooldown: 0.0,
             sprinting: false,
             sprint_hold_time: 0.0,
             sprint_latched: false,
@@ -170,6 +181,9 @@ impl Default for MotionState {
 }
 
 impl MotionState {
+    pub const PARRY_WINDOW: f32 = 0.25;
+    pub const PARRY_COOLDOWN: f32 = 0.65;
+
     pub fn height(&self) -> f32 {
         self.height
     }
@@ -199,8 +213,24 @@ impl MotionState {
         self.dodge_protected
     }
 
-    pub fn is_blocking(&self) -> bool {
-        self.blocking
+    pub fn is_parrying(&self) -> bool {
+        self.parry_remaining > 0.0
+            && self.is_grounded()
+            && !self.is_dodging()
+            && !self.is_leaping()
+            && !self.is_sliding()
+    }
+
+    pub fn parry_remaining(&self) -> f32 {
+        self.parry_remaining
+    }
+
+    pub fn parry_cooldown(&self) -> f32 {
+        self.parry_cooldown
+    }
+
+    pub(super) fn cancel_parry(&mut self) {
+        self.parry_remaining = 0.0;
     }
 
     pub fn is_sprinting(&self) -> bool {
@@ -307,7 +337,7 @@ impl MotionState {
         if !velocity.is_finite() {
             return false;
         }
-        self.blocking = false;
+        self.cancel_parry();
         self.sprinting = false;
         self.exit_crouch();
         self.pending_vertical_velocity = Some(velocity.y);
@@ -331,14 +361,16 @@ impl MotionState {
         self.dodge = None;
         self.dodge_protected = false;
         self.leap = None;
-        self.blocking = false;
+        self.cancel_parry();
         self.sprinting = false;
         self.exit_crouch();
         true
     }
 
     pub fn reset(&mut self) {
+        let actual_capsule_height = self.capsule_height;
         *self = Self::default();
+        self.capsule_height = actual_capsule_height;
     }
 
     pub(super) fn reset_at(&mut self, height: f32) {
@@ -359,6 +391,9 @@ impl MotionState {
         self.height = height;
         self.vertical_velocity = velocity;
         self.support = support;
+        if support.is_none() {
+            self.cancel_parry();
+        }
         if landed {
             self.jumps_used = 0;
             self.leap = None;
@@ -380,12 +415,24 @@ impl MotionState {
         if std::mem::take(&mut intent.cancel_stances) {
             self.cancel_sprint();
             self.exit_crouch();
+            self.cancel_parry();
         }
         self.dodge_cooldown = (self.dodge_cooldown - dt).max(0.0);
+        // Clamp the final fraction so exact fixed-step boundaries do not gain a
+        // protection tick from floating-point subtraction residue.
+        let decay = |remaining: f32| {
+            if remaining <= dt + f32::EPSILON * 8.0 {
+                0.0
+            } else {
+                remaining - dt
+            }
+        };
+        self.parry_remaining = decay(self.parry_remaining);
+        self.parry_cooldown = decay(self.parry_cooldown);
         let jump = std::mem::take(&mut intent.jump);
         let dodge = std::mem::take(&mut intent.dodge);
+        let parry = std::mem::take(&mut intent.parry);
         let crouch_toggle = std::mem::take(&mut intent.crouch_toggle);
-        self.blocking = false;
         self.sprinting = false;
         self.dodge_protected = false;
         // Physical direction presence survives opposing keys that cancel the vector.
@@ -422,7 +469,7 @@ impl MotionState {
                 self.crouched = !self.crouched;
                 self.slide = if self.crouched
                     && self.sprint_latched
-                    && !intent.block
+                    && !self.is_parrying()
                     && direction != Vec2::ZERO
                 {
                     Some(Slide {
@@ -458,6 +505,15 @@ impl MotionState {
             self.support = None;
         }
 
+        let can_parry =
+            self.is_grounded() && !self.is_dodging() && !self.is_sliding() && !self.is_leaping();
+        if !can_parry {
+            self.cancel_parry();
+        } else if parry && self.parry_cooldown == 0.0 {
+            self.parry_remaining = Self::PARRY_WINDOW;
+            self.parry_cooldown = Self::PARRY_COOLDOWN;
+        }
+
         if let Some(dodge) = &mut self.dodge {
             if intent.shift_held && self.sprint_hold_time >= SPRINT_HOLD_TIME {
                 dodge.held = true;
@@ -486,20 +542,20 @@ impl MotionState {
             }
             delta
         } else {
-            self.blocking = intent.block && self.is_grounded();
+            let parrying = self.is_parrying();
             self.sprinting = self.sprint_latched
                 && self.is_grounded()
-                && !self.blocking
+                && !parrying
                 && !self.crouched
                 && direction != Vec2::ZERO;
             let move_speed = if self.crouched {
-                if self.blocking {
-                    CROUCH_SPEED.min(speed * BLOCK_MULTIPLIER)
+                if parrying {
+                    CROUCH_SPEED.min(speed * PARRY_MULTIPLIER)
                 } else {
                     CROUCH_SPEED
                 }
-            } else if self.blocking {
-                speed * BLOCK_MULTIPLIER
+            } else if parrying {
+                speed * PARRY_MULTIPLIER
             } else if self.sprinting {
                 speed * SPRINT_MULTIPLIER
             } else {

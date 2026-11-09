@@ -1,10 +1,100 @@
 (() => {
   "use strict";
 
-  const MAX_VOICES = 2;
+  const MAX_VOICES = 4;
   const voices = new Set();
   let context = null;
   let shot = null;
+  let active = false;
+  let samples = new Map();
+  let loading = null;
+  let music = null;
+  let musicOffset = 0;
+  let musicStart = 0;
+  const files = Object.freeze({ attack: "attack.ogg", hit: "hit.ogg", deflect: "deflect.ogg" });
+
+  function stopMusic(preserve = true) {
+    if (!music) return;
+    const buffer = samples.get("bgm");
+    if (preserve && buffer?.duration > 0) {
+      musicOffset = (musicOffset + Math.max(0, context.currentTime - musicStart)) % buffer.duration;
+    } else musicOffset = 0;
+    stop(music);
+    music = null;
+  }
+
+  function startMusic() {
+    const buffer = samples.get("bgm");
+    if (music || !active || document.hidden || !buffer || context?.state !== "running") return;
+    musicStart = context.currentTime;
+    music = playBuffer(buffer, 0.18, true, musicOffset);
+  }
+
+  function loadSamples(audio) {
+    if (loading || typeof fetch !== "function" || typeof audio.decodeAudioData !== "function") return;
+    async function decode(name, file) {
+      try {
+        const response = await fetch(`audio/${file}`);
+        if (!response.ok) return;
+        const buffer = await audio.decodeAudioData(await response.arrayBuffer());
+        if (context !== audio) return;
+        samples.set(name, buffer);
+        if (name === "bgm") startMusic();
+      } catch { /* Missing/unsupported audio never queues an old effect. */ }
+    }
+    loading = Promise.all([
+      ...Object.entries(files).map(([name, file]) => decode(name, file)),
+      (async () => {
+        try {
+          const response = await fetch("audio/music.json");
+          if (!response.ok) return;
+          const { file } = await response.json();
+          // Optional, verified local music only. No guessed song or missing-file request.
+          if (typeof file === "string" && /^[a-z0-9][a-z0-9_-]*\.ogg$/.test(file)) {
+            await decode("bgm", file);
+          }
+        } catch { /* Optional music does not gate startup. */ }
+      })(),
+    ]);
+  }
+
+  function playBuffer(buffer, volume, loop = false, offset = 0) {
+    if (!active || !context || context.state !== "running" || !buffer) return null;
+    let source;
+    let gain;
+    let voice;
+    try {
+      if (!loop) while (voices.size >= MAX_VOICES) stop(voices.values().next().value);
+      source = context.createBufferSource();
+      gain = context.createGain();
+      source.buffer = buffer;
+      source.loop = loop;
+      // Four effect voices plus music have a total peak budget below one.
+      gain.gain.value = volume;
+      source.connect(gain);
+      gain.connect(context.destination);
+      let released = false;
+      voice = { source, release() {
+        if (released) return;
+        released = true;
+        source.onended = null;
+        source.disconnect();
+        gain.disconnect();
+        voices.delete(voice);
+      } };
+      source.onended = voice.release;
+      if (!loop) voices.add(voice);
+      source.start(0, offset);
+      return voice;
+    } catch {
+      if (voice) voice.release();
+      else {
+        source?.disconnect();
+        gain?.disconnect();
+      }
+      return null;
+    }
+  }
 
   function synthesize(audio) {
     const rate = audio.sampleRate;
@@ -60,7 +150,10 @@
       if (!context || context.state === "closed" || !shot) {
         // A new gesture can observe "closed" before the old statechange event
         // arrives. Release that graph before replacing the context reference.
+        stopMusic(false);
         for (const voice of [...voices]) stop(voice);
+        samples = new Map();
+        loading = null;
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
         context = new AudioContext();
@@ -68,9 +161,14 @@
         const current = context;
         current.addEventListener("statechange", () => {
           // A suspended old tail must not wait to sound on a later gesture.
-          if (context === current && current.state !== "running") for (const voice of [...voices]) stop(voice);
+          if (context !== current) return;
+          if (current.state !== "running") {
+            stopMusic(current.state !== "closed");
+            for (const voice of [...voices]) stop(voice);
+          } else startMusic();
         });
       }
+      loadSamples(context);
       if (context.state !== "running") {
         Promise.resolve(context.resume()).catch(() => {});
       }
@@ -79,45 +177,31 @@
     }
   }
 
-  window.kivaAudio = {
+  window.kivaAudio = Object.freeze({
     playSniperShot() {
-      // Never create/resume a context or queue a sound outside a trusted gesture.
-      if (!context || context.state !== "running" || !shot) return false;
-      let source;
-      let gain;
-      let voice;
-      try {
-        while (voices.size >= MAX_VOICES) stop(voices.values().next().value);
-        source = context.createBufferSource();
-        gain = context.createGain();
-        source.buffer = shot;
-        // Even the maximum two concurrent normalized voices stay below full scale.
-        gain.gain.value = 0.5;
-        source.connect(gain);
-        gain.connect(context.destination);
-        let released = false;
-        voice = { source, release() {
-          if (released) return;
-          released = true;
-          source.onended = null;
-          source.disconnect();
-          gain.disconnect();
-          voices.delete(voice);
-        } };
-        source.onended = voice.release;
-        voices.add(voice);
-        source.start();
-        return true;
-      } catch {
-        if (voice) voice.release();
-        else {
-          if (source) source.disconnect();
-          if (gain) gain.disconnect();
-        }
-        return false;
+      return playBuffer(shot, 0.18) !== null;
+    },
+    playEffect(name) {
+      if (!Object.hasOwn(files, name) || name === "bgm") return false;
+      return playBuffer(samples.get(name), 0.18) !== null;
+    },
+    setActive(value) {
+      active = value === true && !document.hidden;
+      if (active) startMusic();
+      else {
+        stopMusic();
+        for (const voice of [...voices]) stop(voice);
       }
     },
-  };
+  });
+  // Capture loss can occur between two engine frames.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) window.kivaAudio.setActive(false);
+  });
+  document.addEventListener("pointerlockchange", () => {
+    if (document.pointerLockElement !== document.getElementById("game")) window.kivaAudio.setActive(false);
+  });
+  window.addEventListener?.("blur", () => window.kivaAudio.setActive(false));
 
   function mount() {
     document.getElementById("enter")?.addEventListener("click", unlock);

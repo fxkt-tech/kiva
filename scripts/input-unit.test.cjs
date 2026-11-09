@@ -193,24 +193,33 @@ test("action presses are consumed once and repeat cannot replay an action", () =
   assert.equal(f.input.takeActions(), 128);
 });
 
-test("held sprint and block require fresh trusted presses and release independently", () => {
+test("right click latches a single parry and never creates held defense", () => {
   const f = fixture(); f.parse(); f.capture();
   const press = (code) => emit(f.document, "keydown", { code, isTrusted: true });
   const release = (code) => emit(f.document, "keyup", { code, isTrusted: true });
   press("ShiftLeft"); press("ShiftRight"); press("KeyW");
   emit(f.document, "pointerdown", { isTrusted: true, pointerType: "mouse", button: 2 });
-  assert.equal(f.input.keys(), 1 | 16 | 32);
+  assert.equal(f.input.keys(), 1 | 16);
+  assert.equal(f.input.takeActions(), 2 | 1024);
+  emit(f.document, "pointerdown", { isTrusted: true, pointerType: "mouse", button: 2 });
+  assert.equal(f.input.takeActions(), 0);
   release("ShiftLeft");
-  assert.equal(f.input.keys(), 1 | 16 | 32);
+  assert.equal(f.input.keys(), 1 | 16);
   release("ShiftRight");
   emit(f.document, "pointerup", { isTrusted: true, pointerType: "mouse", button: 2 });
   assert.equal(f.input.keys(), 1);
   emit(f.document, "pointerdown", { isTrusted: false, pointerType: "mouse", button: 2 });
   emit(f.document, "keydown", { code: "ShiftLeft", isTrusted: false });
   assert.equal(f.input.keys(), 1);
+  assert.equal(f.input.takeActions(), 0);
+  // A complete tap before Rust samples still reaches one fixed step.
+  emit(f.document, "pointerdown", { isTrusted: true, pointerType: "mouse", button: 2 });
+  emit(f.document, "pointerup", { isTrusted: true, pointerType: "mouse", button: 2 });
+  assert.equal(f.input.takeActions(), 1024);
+  assert.equal(f.input.takeActions(), 0);
 });
 
-test("loss of capture discards queued actions, block and sprint without replay after recapture", () => {
+test("loss of capture discards queued actions, parry and sprint without replay after recapture", () => {
   const f = fixture(); f.parse(); f.capture();
   emit(f.document, "keydown", { code: "Tab", isTrusted: true });
   emit(f.document, "keydown", { code: "ShiftLeft", isTrusted: true });

@@ -1,4 +1,4 @@
-//! Cross-layer acceptance uses the real courtyard geometry and physics schedule.
+//! Cross-layer acceptance uses the real woodland geometry and physics schedule.
 use bevy::{prelude::*, transform::TransformPlugin};
 use kiva::{
     gameplay,
@@ -17,6 +17,123 @@ fn tick(app: &mut App, count: usize) {
             .advance_by(Duration::from_secs_f64(1.0 / 60.0));
         app.world_mut().run_schedule(FixedUpdate);
     }
+}
+
+#[test]
+fn the_shared_bamboo_mesh_really_blocks_the_motor_near_the_clearing() {
+    let (mut app, actor) = courtyard_actor(Vec3::ZERO);
+    let center = Vec2::new(0.0, -4.0);
+    let stem = *app
+        .world()
+        .resource::<gameplay::Level>()
+        .bamboo
+        .iter()
+        .min_by(|a, b| {
+            a.base
+                .xz()
+                .distance_squared(center)
+                .total_cmp(&b.base.xz().distance_squared(center))
+        })
+        .unwrap();
+    let direction = (stem.base.xz() - center).normalize();
+    let start = stem.base.xz() - direction * 1.15;
+    kiva::simulation::teleport_actor(app.world_mut(), actor, Vec3::new(start.x, 0.0, start.y));
+    tick(&mut app, 10);
+    move_actor(&mut app, actor, direction);
+    let mut minimum = f32::INFINITY;
+    for _ in 0..35 {
+        tick(&mut app, 1);
+        minimum = minimum.min(feet(&app, actor).xz().distance(stem.base.xz()));
+    }
+    assert!(
+        minimum < 0.75,
+        "fixture did not actually reach the bamboo: {minimum}"
+    );
+    assert!(
+        minimum >= stem.radius + 0.35 - 0.08,
+        "motor crossed the rendered trunk: {minimum}"
+    );
+    assert!(feet(&app, actor).y.abs() < 0.10);
+}
+
+#[test]
+fn scaled_capsules_keep_feet_through_crouch_headroom_teleport_and_revival() {
+    use avian3d::prelude::Position;
+    let (mut app, old_actor) = courtyard_actor(Vec3::ZERO);
+    app.world_mut().despawn(old_actor);
+    let actor = app
+        .world_mut()
+        .spawn((
+            Body::at(Vec3::ZERO, 6.0, 0.35).scaled(1.45),
+            MoveIntent::default(),
+            ActionIntent::default(),
+            MotionState::default(),
+            Facing::default(),
+        ))
+        .id();
+    tick(&mut app, 12);
+    let standing = app.world().get::<Body>(actor).unwrap().standing_height();
+    let crouched = app.world().get::<Body>(actor).unwrap().crouched_height();
+    assert!((app.world().get::<Position>(actor).unwrap().y - standing * 0.5).abs() < 0.03);
+    app.world_mut()
+        .get_mut::<ActionIntent>(actor)
+        .unwrap()
+        .request_crouch_toggle();
+    tick(&mut app, 3);
+    assert!(app.world().get::<MotionState>(actor).unwrap().is_crouched());
+    assert!(feet(&app, actor).y.abs() < 0.03);
+    assert!((app.world().get::<Position>(actor).unwrap().y - crouched * 0.5).abs() < 0.03);
+    let roof = spawn_box(
+        app.world_mut(),
+        Vec3::new(0.0, 2.35, 0.0),
+        Vec3::new(3.0, 0.2, 3.0),
+        false,
+    );
+    tick(&mut app, 2);
+    app.world_mut()
+        .get_mut::<ActionIntent>(actor)
+        .unwrap()
+        .request_crouch_toggle();
+    tick(&mut app, 3);
+    assert!(
+        app.world().get::<MotionState>(actor).unwrap().is_crouched(),
+        "scaled standing capsule ignored the roof"
+    );
+    app.world_mut().despawn(roof);
+    tick(&mut app, 2);
+    app.world_mut()
+        .get_mut::<ActionIntent>(actor)
+        .unwrap()
+        .request_crouch_toggle();
+    tick(&mut app, 3);
+    assert!(!app.world().get::<MotionState>(actor).unwrap().is_crouched());
+    assert!(feet(&app, actor).y.abs() < 0.03);
+    let destination = Vec3::new(5.0, 3.0, -2.0);
+    kiva::simulation::teleport_actor(app.world_mut(), actor, destination);
+    assert_eq!(feet(&app, actor), destination);
+    assert_eq!(
+        app.world().get::<Position>(actor).unwrap().0,
+        destination + Vec3::Y * standing * 0.5
+    );
+    assert_eq!(app.world().get::<Body>(actor).unwrap().scale(), 1.45);
+    assert_eq!(
+        app.world().get::<Body>(actor).unwrap().velocity(),
+        Vec3::ZERO
+    );
+    app.world_mut().entity_mut(actor).insert((
+        Health::new(100.0),
+        Combatant::new(WeaponSet::HammerSniper),
+        CombatIntent::default(),
+        SpawnPoint(Vec2::ZERO),
+    ));
+    kiva::simulation::teleport_actor(app.world_mut(), actor, Vec3::new(30.0, -13.0, 0.0));
+    tick(&mut app, 1);
+    assert!(!app.world().get::<Health>(actor).unwrap().is_alive());
+    tick(&mut app, 190);
+    assert!(app.world().get::<Health>(actor).unwrap().is_alive());
+    assert!(feet(&app, actor).length() < 0.03);
+    assert!((app.world().get::<Position>(actor).unwrap().y - standing * 0.5).abs() < 0.03);
+    assert_eq!(app.world().get::<Body>(actor).unwrap().scale(), 1.45);
 }
 
 fn courtyard_actor(feet: Vec3) -> (App, Entity) {

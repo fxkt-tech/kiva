@@ -10,8 +10,8 @@
   const number = value => Math.ceil(nonnegative(value)).toLocaleString("en-US");
   const node = id => document.getElementById(id);
   const sets = Object.freeze({
-    1: { melee: "锤子", ranged: "狙击枪", meleeIcon: "hammer", rangedIcon: "sniper", starter: "重锤击飞", finisher: "狙击追击", starterMode: 0 },
-    2: { melee: "战斧", ranged: "火炮", meleeIcon: "axe", rangedIcon: "cannon", starter: "火炮跃进", finisher: "空中旋斧", starterMode: 1 },
+    1: { melee: "愁铃长刀", ranged: "狙击枪", meleeIcon: "blade", rangedIcon: "sniper", starter: "重刀震击", finisher: "狙击追击", starterMode: 0 },
+    2: { melee: "愁铃长刀", ranged: "火炮", meleeIcon: "blade", rangedIcon: "cannon", starter: "火炮跃进", finisher: "空中旋刀", starterMode: 1 },
   });
 
   function text(id, value) {
@@ -57,6 +57,7 @@
     const selected = alive ? target : null;
     hidden("hud-target", !selected);
     text("hud-target-name", selected?.name || "");
+    text("hud-target-status", selected?.status || "");
     text("hud-target-health", number(selected?.health));
     text("hud-target-max", number(selected?.maximum));
     progress("hud-target-bar", selected ? selected.health / selected.maximum : 0, selected?.health, selected?.maximum);
@@ -67,7 +68,7 @@
     icon("hud-melee-icon", set.meleeIcon);
     icon("hud-ranged-icon", set.rangedIcon);
     icon("hud-start-icon", set.starterMode === 0 ? set.meleeIcon : set.rangedIcon);
-    icon("hud-combo-icon", loadout.set === 1 ? "sniper" : "axe");
+    icon("hud-combo-icon", loadout.set === 1 ? "sniper" : set.meleeIcon);
     for (const [id, active] of [["hud-melee", loadout.mode === 0], ["hud-ranged", loadout.mode === 1], ["hud-pair1", loadout.set === 1], ["hud-pair2", loadout.set === 2]]) {
       toggle(id, "active", active);
       attribute(id, "aria-current", active);
@@ -112,11 +113,11 @@
       };
       paint();
     },
-    renderTarget(name, current, maximum) {
+    renderTarget(name, current, maximum, status = "锁定目标") {
       const health = nonnegative(current);
       const max = nonnegative(maximum);
       target = label(name) && health > 0 && max > 0
-        ? { name: label(name), health: Math.min(health, max), maximum: max } : null;
+        ? { name: label(name), health: Math.min(health, max), maximum: max, status: label(status) } : null;
       paint();
     },
   });

@@ -6,8 +6,8 @@ use super::{ActorView, PlayerView};
 use crate::{
     gameplay::Player,
     simulation::{
-        Body, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, HitStop, MotionState,
-        SimulationActive, SurfaceHit, WeaponMode, WeaponSet, surface_below,
+        Body, Boss, BossState, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health,
+        HitStop, MotionState, SimulationActive, SurfaceHit, WeaponMode, WeaponSet, surface_below,
     },
 };
 
@@ -130,18 +130,7 @@ pub(super) fn setup(world: &mut World) {
             ))
             .id();
         let parts: &[(Vec3, Vec3, bool)] = match (set, mode) {
-            (WeaponSet::HammerSniper, WeaponMode::Melee) => &[
-                (Vec3::ZERO, Vec3::new(0.08, 0.8, 0.08), false),
-                (Vec3::new(0.0, 0.38, 0.0), Vec3::new(0.65, 0.30, 0.32), true),
-            ],
-            (WeaponSet::AxeCannon, WeaponMode::Melee) => &[
-                (Vec3::ZERO, Vec3::new(0.08, 0.8, 0.08), false),
-                (
-                    Vec3::new(-0.18, 0.28, 0.0),
-                    Vec3::new(0.46, 0.38, 0.08),
-                    true,
-                ),
-            ],
+            (_, WeaponMode::Melee) => &[],
             (WeaponSet::HammerSniper, WeaponMode::Ranged) => &[
                 (Vec3::ZERO, Vec3::new(0.14, 0.16, 0.85), false),
                 (
@@ -173,6 +162,9 @@ pub(super) fn setup(world: &mut World) {
             );
             world.entity_mut(root).add_child(child);
         }
+        if mode == WeaponMode::Melee {
+            super::avatar::spawn_blade(world, root);
+        }
         world.entity_mut(player).add_child(root);
         super::stickman::attach_weapon(world, player, root, mode);
     }
@@ -196,18 +188,26 @@ pub(super) fn setup(world: &mut World) {
 }
 
 fn spawn_enemy_view(world: &mut World, enemy: Entity, assets: &VisualAssets) {
-    let position = world.get::<Body>(enemy).unwrap().world_position();
+    let body = world.get::<Body>(enemy).unwrap();
+    let position = body.world_position();
+    let scale = body.scale();
     let view = world
         .spawn((
             ActorView { owner: enemy },
             EnemyView,
-            Transform::from_translation(position),
+            Transform::from_translation(position).with_scale(Vec3::splat(scale)),
             Visibility::default(),
         ))
         .id();
     for part in super::stickman::spawn(world, view, &assets.enemy, &assets.gold) {
         world.entity_mut(part).insert(EnemyBody(enemy));
     }
+    let blade = world
+        .spawn((Transform::IDENTITY, Visibility::default()))
+        .id();
+    super::avatar::spawn_blade(world, blade);
+    world.entity_mut(view).add_child(blade);
+    super::stickman::attach_weapon(world, view, blade, WeaponMode::Melee);
     let bar = mesh(world, &assets.cube, &assets.teal, Transform::default());
     world.entity_mut(bar).insert(EnemyHealthBar(enemy));
 }
@@ -245,32 +245,34 @@ pub(super) fn sync_enemies(
     time: Res<Time<Fixed>>,
     active: Res<SimulationActive>,
     hit_stop: Res<HitStop>,
-    assets: Res<VisualAssets>,
-    enemies: Query<(&Body, &Facing, &Health, &Enemy)>,
+    enemies: Query<(&Body, &Facing, &Health, &Enemy, Option<&Boss>)>,
     mut views: Query<(&ActorView, &mut Transform, &mut Visibility), With<EnemyView>>,
-    mut parts: Query<(&EnemyBody, &mut MeshMaterial3d<StandardMaterial>)>,
+    mut parts: Query<(
+        &EnemyBody,
+        &super::avatar::AvatarSurface,
+        &mut MeshMaterial3d<StandardMaterial>,
+    )>,
 ) {
     let alpha = super::display_alpha(&time, &active, &hit_stop);
     for (view, mut transform, mut visibility) in &mut views {
-        let Ok((body, facing, _, _)) = enemies.get(view.owner) else {
+        let Ok((body, facing, _, _, _)) = enemies.get(view.owner) else {
             continue;
         };
         transform.translation = body.interpolated_world(alpha);
+        transform.scale = Vec3::splat(body.scale());
         let direction = facing.direction();
         transform.rotation = Quat::from_rotation_y((-direction.x).atan2(-direction.y));
         // Defeated actors remain visible so their imported death pose can play.
         // Health bars and selection still use authoritative health separately.
         *visibility = Visibility::Visible;
     }
-    for (part, mut material) in &mut parts {
-        if let Ok((_, _, health, enemy)) = enemies.get(part.0) {
-            material.0 = if health.hit_remaining() > 0.0 {
-                assets.hit.clone()
-            } else if enemy.is_winding_up() {
-                assets.gold.clone()
-            } else {
-                assets.enemy.clone()
-            };
+    for (part, surface, mut material) in &mut parts {
+        if let Ok((_, _, health, enemy, boss)) = enemies.get(part.0) {
+            let telegraph = boss.map_or_else(
+                || enemy.is_winding_up(),
+                |boss| boss.state() == BossState::Telegraph,
+            );
+            material.0 = surface.material_for(health.hit_remaining() > 0.0, telegraph);
         }
     }
 }
@@ -288,7 +290,7 @@ pub(super) fn sync_health_bars(
         let Ok((body, health)) = enemies.get(bar.0) else {
             continue;
         };
-        transform.translation = body.interpolated_world(alpha) + Vec3::Y * 2.0;
+        transform.translation = body.interpolated_world(alpha) + Vec3::Y * (2.0 * body.scale());
         transform.scale = Vec3::new(0.7 * health.current() / health.maximum(), 0.035, 0.06);
         transform.rotation = Quat::from_rotation_y(view.yaw());
         *visibility = if health.is_alive() {
@@ -339,7 +341,7 @@ pub(super) fn sync_markers(
             {
                 combat.aim_surface()
             }
-            Marker::Guard if motion.is_blocking() => {
+            Marker::Guard if motion.is_parrying() => {
                 marker_surface(&surfaces.spatial, &excluded, body, motion, alpha)
             }
             _ => None,
@@ -377,13 +379,23 @@ fn marker_surface(
 
 pub(super) fn effects(
     mut commands: Commands,
-    time: Res<Time>,
+    (time, active): (Res<Time>, Res<SimulationActive>),
     feedback: Res<CombatFeedback>,
     assets: Res<VisualAssets>,
     mut cursor: ResMut<EffectCursor>,
     surfaces: SurfaceQueries,
     mut effects: Query<(Entity, &mut Effect, &mut Transform)>,
 ) {
+    let latest = feedback
+        .events()
+        .last()
+        .map_or(cursor.0, |event| event.sequence);
+    if !active.0 {
+        // Freeze existing effects and discard unpresented feedback, as audio
+        // does, so returning to the game cannot replay an old attack.
+        cursor.0 = latest;
+        return;
+    }
     for (entity, mut effect, mut transform) in &mut effects {
         effect.remaining -= time.delta_secs();
         if effect.remaining <= 0.0 {
@@ -437,7 +449,7 @@ pub(super) fn effects(
                 &assets.sphere,
                 if matches!(
                     event.kind,
-                    CombatEffect::Block | CombatEffect::Dodge | CombatEffect::Respawn
+                    CombatEffect::Deflect | CombatEffect::Dodge | CombatEffect::Respawn
                 ) {
                     &assets.teal
                 } else {
@@ -460,9 +472,7 @@ pub(super) fn effects(
             },
         ));
     }
-    if let Some(event) = feedback.events().last() {
-        cursor.0 = event.sequence;
-    }
+    cursor.0 = latest;
 }
 
 fn mesh(
@@ -514,6 +524,7 @@ mod tests {
                     sync_markers,
                     effects,
                     animation::animate,
+                    super::super::avatar::sync,
                     stickman::sync_attachments,
                     camera::follow,
                 )
@@ -552,6 +563,69 @@ mod tests {
     }
 
     #[test]
+    fn default_dummy_remains_selected_and_its_view_projects_ahead_of_the_player() {
+        use bevy::camera::CameraProjection;
+        use bevy::mesh::skinning::SkinnedMesh;
+
+        let mut app = headless_app();
+        let player = physical_player(&mut app);
+        fixed_ticks(&mut app, 600);
+        app.world_mut().run_schedule(Update);
+        let world = app.world_mut();
+        let dummy = world
+            .query_filtered::<Entity, With<Enemy>>()
+            .single(world)
+            .unwrap();
+        let feet = world.get::<Body>(dummy).unwrap().world_position();
+        assert!(feet.distance(Vec3::new(0.0, 0.0, -4.0)) < 0.03);
+        assert_eq!(
+            world.get::<Combatant>(player).unwrap().target(),
+            Some(dummy)
+        );
+        let (view_entity, _, root, visibility) = world
+            .query_filtered::<(Entity, &ActorView, &Transform, &Visibility), With<EnemyView>>()
+            .single(world)
+            .unwrap();
+        assert_eq!(*visibility, Visibility::Visible);
+        assert!(root.translation.distance(feet) < 0.001);
+        assert_eq!(root.scale, Vec3::splat(1.45));
+        let center = root.translation + Vec3::Y * 1.2;
+        let camera = world
+            .query_filtered::<&Transform, With<camera::GameCamera>>()
+            .single(world)
+            .unwrap();
+        let clip = PerspectiveProjection {
+            fov: 50.0_f32.to_radians(),
+            aspect_ratio: 16.0 / 9.0,
+            ..default()
+        }
+        .get_clip_from_view()
+            * camera.to_matrix().inverse()
+            * center.extend(1.0);
+        let ndc = clip.truncate() / clip.w;
+        assert!(clip.w > 0.0 && ndc.x.abs() < 1.0 && ndc.y.abs() < 1.0);
+        let skins: Vec<_> = world
+            .get::<Children>(view_entity)
+            .unwrap()
+            .iter()
+            .filter_map(|entity| world.get::<SkinnedMesh>(entity))
+            .collect();
+        assert_eq!(skins.len(), 15);
+        for skin in skins {
+            for &joint in &skin.joints {
+                assert_eq!(world.get::<ChildOf>(joint).unwrap().parent(), view_entity);
+                assert!(
+                    world
+                        .get::<Transform>(joint)
+                        .unwrap()
+                        .translation
+                        .is_finite()
+                );
+            }
+        }
+    }
+
+    #[test]
     fn switching_enemy_modes_recycles_views_skeletons_and_health_bars() {
         use crate::gameplay::{EnemyMode, set_enemy_mode};
 
@@ -570,7 +644,7 @@ mod tests {
             set_enemy_mode(world, mode);
             app.update();
             let world = app.world_mut();
-            let expected = if mode == EnemyMode::Target { 1 } else { 4 };
+            let expected = 1;
             assert_eq!(
                 world
                     .query_filtered::<Entity, With<EnemyView>>()
@@ -585,11 +659,21 @@ mod tests {
                     .count(),
                 expected
             );
-            for view in world
-                .query_filtered::<&ActorView, With<EnemyView>>()
+            for (view_entity, view, transform) in world
+                .query_filtered::<(Entity, &ActorView, &Transform), With<EnemyView>>()
                 .iter(world)
             {
                 assert!(world.get::<Enemy>(view.owner).is_some());
+                let scale = world.get::<Body>(view.owner).unwrap().scale();
+                assert_eq!(transform.scale, Vec3::splat(scale));
+                assert_eq!(scale, if mode == EnemyMode::Target { 1.45 } else { 1.0 });
+                assert!(
+                    world
+                        .get::<Children>(view_entity)
+                        .unwrap()
+                        .iter()
+                        .any(|child| { world.get::<stickman::BoneVisual>(child).is_some() })
+                );
             }
             for part in world.query::<&EnemyBody>().iter(world) {
                 assert!(world.get::<Enemy>(part.0).is_some());
@@ -708,8 +792,16 @@ mod tests {
             .get_mut::<Facing>(player)
             .unwrap()
             .set(Vec2::NEG_X);
-        fixed_ticks(&mut app, 52);
-        assert!(app.world().get::<Enemy>(enemy).unwrap().is_winding_up());
+        for _ in 0..240 {
+            fixed_ticks(&mut app, 1);
+            if app.world().get::<Boss>(enemy).unwrap().state() == BossState::Telegraph {
+                break;
+            }
+        }
+        assert_eq!(
+            app.world().get::<Boss>(enemy).unwrap().state(),
+            BossState::Telegraph
+        );
         let event_origin = app
             .world()
             .resource::<CombatFeedback>()
@@ -769,30 +861,28 @@ mod tests {
     }
 
     #[test]
-    fn prop_views_and_local_straps_follow_the_same_physical_rotation() {
+    fn prop_snapshots_move_display_roots_without_changing_local_children() {
         use crate::{
             client::PropView,
-            gameplay::{Prop, PropKind},
-            simulation::PhysicsPose,
+            simulation::{PhysicsPose, spawn_box},
         };
         use avian3d::prelude::{Position, Rotation};
         let mut app = headless_app();
-        let prop = app
-            .world_mut()
-            .query::<(Entity, &Prop)>()
-            .iter(app.world())
-            .find(|(_, prop)| prop.kind == PropKind::Crate)
-            .unwrap()
-            .0;
+        // The bamboo arena has no decorative crates. Keep this snapshot/child
+        // regression independent of whichever props the current level includes.
+        let prop = spawn_box(app.world_mut(), Vec3::new(5.0, 0.5, 0.0), Vec3::ONE, true);
         let view = app
             .world_mut()
-            .query::<(Entity, &PropView)>()
-            .iter(app.world())
-            .find(|(_, view)| view.owner == prop)
-            .unwrap()
-            .0;
+            .spawn((PropView { owner: prop }, Transform::IDENTITY))
+            .id();
+        for position in [Vec3::new(0.1, 0.3, 0.0), Vec3::new(-0.4, 0.0, 0.2)] {
+            let child = app
+                .world_mut()
+                .spawn(Transform::from_translation(position))
+                .id();
+            app.world_mut().entity_mut(view).add_child(child);
+        }
         let children: Vec<_> = app.world().get::<Children>(view).unwrap().iter().collect();
-        assert_eq!(children.len(), 5);
         let local: Vec<_> = children
             .iter()
             .map(|&entity| *app.world().get::<Transform>(entity).unwrap())
@@ -854,9 +944,24 @@ mod tests {
         );
 
         app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        let frozen: Vec<_> = app
+            .world_mut()
+            .query::<(Entity, &Effect, &Transform)>()
+            .iter(app.world())
+            .map(|(entity, effect, transform)| (entity, effect.remaining, *transform))
+            .collect();
         app.world_mut()
             .resource_mut::<Time>()
             .advance_by(Duration::from_secs(1));
+        app.world_mut().run_schedule(Update);
+        for (entity, remaining, transform) in frozen {
+            assert_eq!(
+                app.world().get::<Effect>(entity).unwrap().remaining,
+                remaining
+            );
+            assert_eq!(*app.world().get::<Transform>(entity).unwrap(), transform);
+        }
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
         app.world_mut().run_schedule(Update);
         assert_eq!(
             app.world_mut()

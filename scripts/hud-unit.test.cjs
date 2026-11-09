@@ -7,7 +7,7 @@ const { test } = require("node:test");
 const source = fs.readFileSync(path.join(__dirname, "../web/hud.js"), "utf8");
 const ids = [
   "hud-persona", "hud-weapon", "hud-health", "hud-health-max", "hud-health-bar", "hud-status", "hud-cooldown",
-  "hud-combo", "hud-combo-name", "hud-combo-time", "hud-target", "hud-target-name", "hud-target-health", "hud-target-max", "hud-target-bar",
+  "hud-combo", "hud-combo-name", "hud-combo-time", "hud-target", "hud-target-name", "hud-target-status", "hud-target-health", "hud-target-max", "hud-target-bar",
   "hud-skill-start", "hud-skill-attack", "hud-skill-guard", "hud-skill-combo", "hud-skill-caption", "hud-start-icon", "hud-combo-icon",
   "hud-melee", "hud-ranged", "hud-melee-name", "hud-ranged-name", "hud-melee-icon", "hud-ranged-icon", "hud-pair1", "hud-pair2",
 ];
@@ -43,7 +43,7 @@ function fixture(ready = false) {
 }
 
 function player(f, overrides = {}) {
-  const data = { persona: "哥哥", weapon: "锤子", fraction: 1, health: 100, combo: 0, cooldown: 0, context: "准备就绪", ...overrides };
+  const data = { persona: "哥哥", weapon: "愁铃长刀", fraction: 1, health: 100, combo: 0, cooldown: 0, context: "准备就绪", ...overrides };
   f.hud.render(data.persona, data.weapon, data.fraction, data.health, data.combo, data.cooldown, data.context);
 }
 
@@ -65,7 +65,7 @@ test("player, loadout and selected target snapshots before DOM readiness replay 
   assert.equal(f.at("hud-target").hidden, false);
   assert.equal(f.at("hud-cooldown").textContent, "3.2");
   assert.equal(f.at("hud-cooldown").hidden, false);
-  assert.equal(f.at("hud-combo-name").textContent, "空中旋斧");
+  assert.equal(f.at("hud-combo-name").textContent, "空中旋刀");
   assert.equal(f.at("hud-combo-time").textContent, "0.8s");
   assert.equal(f.at("hud-status").hidden, true);
 });
@@ -115,14 +115,14 @@ test("weapon-set and persona identity use explicit enum fields and readiness sna
   player(f, { weapon: "可更名的武器" });
   f.hud.renderLoadout(1, 0, 100, true, true, true, false);
   assert.equal(f.at("hud-melee").classList.contains("active"), true);
-  assert.equal(f.at("hud-start-icon").attributes.href, "#hud-icon-hammer");
+  assert.equal(f.at("hud-start-icon").attributes.href, "#hud-icon-blade");
   assert.equal(f.at("hud-combo-icon").attributes.href, "#hud-icon-sniper");
   assert.equal(f.at("hud-skill-start").attributes["aria-disabled"], "false");
   f.hud.renderLoadout(2, 0, 100, true, false, true, false);
-  assert.equal(f.at("hud-melee-name").textContent, "战斧");
+  assert.equal(f.at("hud-melee-name").textContent, "愁铃长刀");
   assert.equal(f.at("hud-ranged-name").textContent, "火炮");
   assert.equal(f.at("hud-start-icon").attributes.href, "#hud-icon-cannon");
-  assert.equal(f.at("hud-combo-icon").attributes.href, "#hud-icon-axe");
+  assert.equal(f.at("hud-combo-icon").attributes.href, "#hud-icon-blade");
   assert.match(f.at("hud-skill-start").attributes.title, /切换远程/);
   assert.equal(f.at("hud-pair2").attributes["aria-current"], "true");
   f.hud.renderLoadout(2, 1, 100, false, true, false, false);
@@ -174,8 +174,8 @@ test("HUD strings remain inert text and absent elements are harmless", () => {
   const hostile = '<img src=x onerror="throw 1">';
   f.nodes.delete("hud-health");
   player(f, { persona: hostile, weapon: hostile, context: hostile });
-  f.hud.renderTarget(hostile, 120, 120);
-  for (const id of ["hud-persona", "hud-weapon", "hud-status", "hud-target-name"]) {
+  f.hud.renderTarget(hostile, 120, 120, hostile);
+  for (const id of ["hud-persona", "hud-weapon", "hud-status", "hud-target-name", "hud-target-status"]) {
     assert.equal(f.at(id).textContent, hostile);
     assert.equal(f.at(id).innerHTML, undefined);
   }

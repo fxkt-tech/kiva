@@ -1,0 +1,6044 @@
+{
+  "format": "KIVASR01",
+  "binary_sha256": "24cc5f3ed886ec93c4ef7aaff02a7555b778a403f719227b72494b889652d1e1",
+  "bytes": 9421265,
+  "skeleton_vfs": "Char/c_77_boss_yulingke/yulingke.skeleton",
+  "skeleton_sha256": "9cdad595333f0fe4c48ea3b32eb0001d87446c92d402f55d70336097bf7b2249",
+  "joint_count": 986,
+  "clip_count": 35,
+  "source_scale": 0.660275281421734,
+  "source_floor": -0.0049139996990561485,
+  "source_yaw_degrees": 180,
+  "maximum_local_matrix_TRS_error": 6.650776194216945e-07,
+  "quaternion_encoding": "20-bit smallest-three cyclic component order, source milliseconds retained; no temporal resampling",
+  "quaternion_component_quantization_half_step": 6.74350219284789e-07,
+  "root_motion": "Runtime strips planar Bip001 translation only; vertical waist motion retained, initial yaw aligned to rest. Simulation owns actor movement.",
+  "runtime_adaptations": [
+    {
+      "state": "melee",
+      "clip": "skill_ylk_1",
+      "range_seconds": [
+        0.9,
+        1.8
+      ],
+      "playback_seconds": 0.42,
+      "role": "Kiva visual crop, original skill-slot/hit-frame mapping unresolved"
+    },
+    {
+      "state": "heavy melee",
+      "clip": "skill_ylk_1",
+      "range_seconds": [
+        0.9,
+        1.8
+      ],
+      "playback_seconds": 0.6,
+      "role": "Kiva visual crop"
+    },
+    {
+      "state": "hit",
+      "clip": "weakhit_b",
+      "range_seconds": [
+        0,
+        0.3
+      ],
+      "playback_seconds": 0.24,
+      "role": "Kiva reaction crop"
+    },
+    {
+      "state": "parry",
+      "clip": "skill_huajie_01__shuangqiangt",
+      "range_seconds": [
+        0.1,
+        0.65
+      ],
+      "playback_seconds": 0.25,
+      "role": "original shared player parry, Kiva timing/limb-length retarget"
+    },
+    {
+      "state": "air start/loop/land",
+      "clips": [
+        "b_fight_env_jump_01_start_Lfoot__zuiquan",
+        "b_fight_env_jump_02_loop__zuiquan",
+        "b_fight_env_jump_03_to_idle__zuiquan"
+      ],
+      "role": "original male shared jump sequence, physics owns root height"
+    },
+    {
+      "state": "dodge",
+      "clip": "skill_shoujia_dodge_f",
+      "range_seconds": [
+        0.2,
+        1.0
+      ],
+      "playback_seconds": 0.42,
+      "role": "original NPC dodge, Kiva crop and facing adaptation"
+    }
+  ],
+  "unresolved": [
+    "FC/FD/FE/FF shared bone-name dictionary",
+    "target-specific locomotion/jump/dodge/guard shared bone-name dictionary; selected common named jump/dodge/huajie clips are humanoid retargets",
+    "boss skill-slot to original clip/hit-frame mapping",
+    "independent accessory skeletons and cloth physics (fallback)"
+  ],
+  "clips": [
+    {
+      "name": "dr_Skill_01_atk_loop",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_01_atk_loop.anim",
+      "duration_ms": 967,
+      "registered_duration_ms": 967,
+      "source_sha256": "fd4de3c8a78dedc27d50970edae050ab881c3f244de06e5fbf86adb4ffbfb405",
+      "physical": {
+        "key": 9793796558107406131,
+        "pack": 30,
+        "offset": 644433695,
+        "stored_size": 40528,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 237,
+      "mapped_track_count": 154,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 54948,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 624,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 3736,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_002",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "dr_Skill_01_atk_out",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_01_atk_out.anim",
+      "duration_ms": 2634,
+      "registered_duration_ms": 2634,
+      "source_sha256": "cc5238d3433f880a61f6fc747dfb7f10425ea98dae597207341b68c866cbc647",
+      "physical": {
+        "key": 12414307777939599154,
+        "pack": 30,
+        "offset": 644474223,
+        "stored_size": 91031,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 237,
+      "mapped_track_count": 153,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 111228,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1492,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 8588,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_rollpoint",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_002",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "dr_Skill_01_in",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_01_in.anim",
+      "duration_ms": 1734,
+      "registered_duration_ms": 1734,
+      "source_sha256": "e2ff08d60505d3747262f343b7ee6d3c544ecc00f46a8f5ff9c0293c3e35fd64",
+      "physical": {
+        "key": 7314287461074034477,
+        "pack": 30,
+        "offset": 644565254,
+        "stored_size": 52063,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 237,
+      "mapped_track_count": 154,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 67138,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 750,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 5163,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_002",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "dr_Skill_01_loop",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_01_loop.anim",
+      "duration_ms": 2001,
+      "registered_duration_ms": 2001,
+      "source_sha256": "d2a59159dce2d251c92a6d27671ec5afd3ec21d2636cc4d5bcb130d0b23d86ef",
+      "physical": {
+        "key": 14331150410766577455,
+        "pack": 30,
+        "offset": 644617317,
+        "stored_size": 50033,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 236,
+      "mapped_track_count": 153,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 67779,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 92,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 5294,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_002",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "dr_Skill_02",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_02.anim",
+      "duration_ms": 5301,
+      "registered_duration_ms": 5301,
+      "source_sha256": "cae35d11acbc9e91bcbc66d149e1cef03b53733bc2458f855d73f87144a074d7",
+      "physical": {
+        "key": 17271957041764654890,
+        "pack": 30,
+        "offset": 644667350,
+        "stored_size": 171325,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 237,
+      "mapped_track_count": 154,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 205614,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2794,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 16666,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_002",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "dr_Skill_03",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_03.anim",
+      "duration_ms": 2467,
+      "registered_duration_ms": 2467,
+      "source_sha256": "5255b2cdefb338cf05adce465749d7879674e146e5896b70b78d535a5135c711",
+      "physical": {
+        "key": 3937993735751622442,
+        "pack": 30,
+        "offset": 644838675,
+        "stored_size": 73838,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 233,
+      "mapped_track_count": 152,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 91278,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1464
+      },
+      "imported_key_count": 7610,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "dr_Skill_04",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_04.anim",
+      "duration_ms": 3134,
+      "registered_duration_ms": 3134,
+      "source_sha256": "0501585aa53b26cfb63236d457e55860dd697887a62037a5b1a8a1a99ff04bc3",
+      "physical": {
+        "key": 685953707370635050,
+        "pack": 30,
+        "offset": 644912513,
+        "stored_size": 89105,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 233,
+      "mapped_track_count": 152,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 107068,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1744
+      },
+      "imported_key_count": 9157,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "dr_Skill_05_in",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_05_in.anim",
+      "duration_ms": 5834,
+      "registered_duration_ms": 5834,
+      "source_sha256": "51a7804271f0f27679b5c8ab4d55690f05cfac5c75c0cac36f5926ee4318bc6a",
+      "physical": {
+        "key": 6632630504286412589,
+        "pack": 30,
+        "offset": 645001618,
+        "stored_size": 217101,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 237,
+      "mapped_track_count": 154,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 286634,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3592,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 21445,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_002",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "dr_Skill_05_loop_out",
+      "source_vfs": "Char/c_77_boss_yulingke/duoren/dr_Skill_05_loop_out.anim",
+      "duration_ms": 5834,
+      "registered_duration_ms": 5834,
+      "source_sha256": "2f1d10a0f536e821631e0d95adae59692b177351753206d276b7428ec289be70",
+      "physical": {
+        "key": 12603935287047188275,
+        "pack": 30,
+        "offset": 645218719,
+        "stored_size": 217100,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 237,
+      "mapped_track_count": 154,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 286634,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3592,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 21445,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_gmhj_m_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_002",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_1",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_1.anim",
+      "duration_ms": 6267,
+      "registered_duration_ms": 6267,
+      "source_sha256": "29156368f8a520458e4fdee8c6ef4c42eafe125b0c28d6fd043df7eaf12046f5",
+      "physical": {
+        "key": 5891456019990539047,
+        "pack": 133,
+        "offset": 667863154,
+        "stored_size": 204098,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 88,
+      "mapped_track_count": 82,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 224101,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3900
+      },
+      "imported_key_count": 18623,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Sphere001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere002",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere003",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bip001 Prop1",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_10",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_10.anim",
+      "duration_ms": 4401,
+      "registered_duration_ms": 4401,
+      "source_sha256": "3ed39655d5228c11b13be1e195da20285f7785e5bf4ec97c8ec47a4bfb98e0fd",
+      "physical": {
+        "key": 9721974752401252136,
+        "pack": 113,
+        "offset": 671797557,
+        "stored_size": 172715,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 1000,
+      "mapped_track_count": 977,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 233459,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2836,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 17217,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_szn_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_szn_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bip001 Prop1",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_06",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_12",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_12.anim",
+      "duration_ms": 3967,
+      "registered_duration_ms": 3967,
+      "source_sha256": "7035dfcc8895c7d2ca3bee99652e7158ff0c7bf691750d541d6fb5fc4dbb12e9",
+      "physical": {
+        "key": 10500087174222929704,
+        "pack": 133,
+        "offset": 668250186,
+        "stored_size": 110941,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 81,
+      "mapped_track_count": 77,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 124400,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2542,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "imported_key_count": 11488,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Sphere002",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere001",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_4",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_4.anim",
+      "duration_ms": 9401,
+      "registered_duration_ms": 9401,
+      "source_sha256": "6921aaac7e76a09be68d69a7b9d2a0b5a1ed2a064b63d0b4ad77a97483ad0b74",
+      "physical": {
+        "key": 3825865767604153127,
+        "pack": 113,
+        "offset": 672177929,
+        "stored_size": 307087,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 1000,
+      "mapped_track_count": 978,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 387007,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 5174,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "imported_key_count": 32226,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_szn_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_szn_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_06",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_5",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_5.anim",
+      "duration_ms": 5234,
+      "registered_duration_ms": 5234,
+      "source_sha256": "ef243cab4b08b429742536a3bd1ab295aedf8a74cf46af53047d87a71ed6d1d6",
+      "physical": {
+        "key": 1864849739684473639,
+        "pack": 133,
+        "offset": 668809544,
+        "stored_size": 133911,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 85,
+      "mapped_track_count": 77,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 148468,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2906,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 13797,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Sphere002",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "刀初始位置",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "对齐反手刀?",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "手对齐鞘，正手刀入鞘",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "手对齐鞘，反手拿刀",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_5_1",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_5_1.anim",
+      "duration_ms": 4834,
+      "registered_duration_ms": 4834,
+      "source_sha256": "7d9e5265c62951dc0fa125948eb00ff7721f7d1b40e0123a254b331a57a4e127",
+      "physical": {
+        "key": 5889118552759153961,
+        "pack": 133,
+        "offset": 668943455,
+        "stored_size": 124988,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 85,
+      "mapped_track_count": 77,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 138436,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2444,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 12866,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Sphere002",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "刀初始位置",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "对齐反手刀?",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "手对齐鞘，正手刀入鞘",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "手对齐鞘，反手拿刀",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_6",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_6.anim",
+      "duration_ms": 9734,
+      "registered_duration_ms": 9734,
+      "source_sha256": "fa958c42d0f7dfd762b002a362dbbd8a98f2f7a411bbb2834d739b7b4995709d",
+      "physical": {
+        "key": 5436008814604151591,
+        "pack": 113,
+        "offset": 672796216,
+        "stored_size": 291734,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 999,
+      "mapped_track_count": 977,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 368361,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 5370,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 31054,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_szn_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_szn_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_06",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_7",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_7.anim",
+      "duration_ms": 9567,
+      "registered_duration_ms": 9567,
+      "source_sha256": "701867d5d4184c726b7d5b37edd10b4b79d91a9356276a41758fa65e1d691a5f",
+      "physical": {
+        "key": 10315985114858744615,
+        "pack": 113,
+        "offset": 673087950,
+        "stored_size": 310988,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 999,
+      "mapped_track_count": 977,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 409107,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 5314
+      },
+      "imported_key_count": 33711,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_szn_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_szn_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_06",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_10",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_10.anim",
+      "duration_ms": 9501,
+      "registered_duration_ms": 9501,
+      "source_sha256": "f5d4234d8392ded8939a5efe22f58350f807316c52fce33476df49f46c63c2d7",
+      "physical": {
+        "key": 15294011820376940331,
+        "pack": 133,
+        "offset": 669398038,
+        "stored_size": 290484,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 115,
+      "mapped_track_count": 115,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 322892,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 5398,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 29916,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": []
+    },
+    {
+      "name": "skill_ylk_P2_11",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_11.anim",
+      "duration_ms": 5501,
+      "registered_duration_ms": 5501,
+      "source_sha256": "92f6329e344ae6898473c175b15dbb6d0f407a2cd594169ef67bfe42ee6cd1ef",
+      "physical": {
+        "key": 17477291246257004331,
+        "pack": 133,
+        "offset": 669688522,
+        "stored_size": 179994,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 115,
+      "mapped_track_count": 115,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 199746,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3494,
+        "TRACKS_DATA": [
+          3,
+          3
+        ]
+      },
+      "imported_key_count": 18503,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": []
+    },
+    {
+      "name": "skill_ylk_P2_13",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_13.anim",
+      "duration_ms": 5934,
+      "registered_duration_ms": 5934,
+      "source_sha256": "d3dee199d891861724ea1cd341159f5f76aa5a6ae44f423d68399be6859515d9",
+      "physical": {
+        "key": 1219505052015746859,
+        "pack": 133,
+        "offset": 669986886,
+        "stored_size": 177001,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 118,
+      "mapped_track_count": 113,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 198741,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3662,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 18595,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Sphere001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "刀初始位置",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "对齐反手刀?",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "手对齐鞘，正手刀入鞘",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "手对齐鞘，反手拿刀",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_14",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_14.anim",
+      "duration_ms": 5834,
+      "registered_duration_ms": 5834,
+      "source_sha256": "df86c9e3288d0d9acce78e8dd725fae4a7ad36f6ce6af642e4a2be0e74135b67",
+      "physical": {
+        "key": 10285331770005085995,
+        "pack": 133,
+        "offset": 670163887,
+        "stored_size": 152137,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 66,
+      "mapped_track_count": 64,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 167828,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3872
+      },
+      "imported_key_count": 15606,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_2",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_2.anim",
+      "duration_ms": 5667,
+      "registered_duration_ms": 5667,
+      "source_sha256": "fd3198d04f3ffbc41e31755caf010048abbd1ab696619fb2a1240d1fc89c4760",
+      "physical": {
+        "key": 15977272509399511594,
+        "pack": 113,
+        "offset": 673504756,
+        "stored_size": 193719,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 999,
+      "mapped_track_count": 977,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 257769,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3186,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "imported_key_count": 20737,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_szn_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_szn_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_06",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_4",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_4.anim",
+      "duration_ms": 7301,
+      "registered_duration_ms": 7301,
+      "source_sha256": "00df304fb7da26873302f4012761837662fc9343de9f9202bcb8a380008a7019",
+      "physical": {
+        "key": 13500167361463792170,
+        "pack": 133,
+        "offset": 670599092,
+        "stored_size": 211067,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 81,
+      "mapped_track_count": 77,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 238476,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4810
+      },
+      "imported_key_count": 21872,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Sphere002",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere001",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_6",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_6.anim",
+      "duration_ms": 5501,
+      "registered_duration_ms": 5501,
+      "source_sha256": "4bca91994cac190ea8bd65e2bbf4d920d65862731e5a2768ad45031498fbae78",
+      "physical": {
+        "key": 15595373337585332778,
+        "pack": 113,
+        "offset": 673913358,
+        "stored_size": 190174,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 999,
+      "mapped_track_count": 977,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 255629,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3172
+      },
+      "imported_key_count": 20489,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "HP_Head_slot_E",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_szn_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 L Forearm",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_szn_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 R Forearm",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_jian_001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_B_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_C_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_sta_jiansui_A_06",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_7",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_7.anim",
+      "duration_ms": 5501,
+      "registered_duration_ms": 5501,
+      "source_sha256": "ea62a3390845e28cd3eed469c5ae90634dc1c213dcd529eb89cb962ebbf092fd",
+      "physical": {
+        "key": 3950433966860743210,
+        "pack": 133,
+        "offset": 670810159,
+        "stored_size": 150960,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 70,
+      "mapped_track_count": 58,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 171280,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3368
+      },
+      "imported_key_count": 15301,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Sphere004",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere003",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere007",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere002",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere006",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere009",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_L_Pel to Thigh",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Pelvis",
+          "rig_parent": "Point_T_L_P"
+        },
+        {
+          "name": "Bone_R_Pel to Thigh",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Pelvis",
+          "rig_parent": "Point_T_R_P"
+        },
+        {
+          "name": "Sphere001",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere008",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_9",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_9.anim",
+      "duration_ms": 6134,
+      "registered_duration_ms": 6134,
+      "source_sha256": "11e31826dd5f4cd9f666f050768824879d362afccdae649c4fb2e5e83032b7a9",
+      "physical": {
+        "key": 15299330673670566442,
+        "pack": 133,
+        "offset": 670961119,
+        "stored_size": 168195,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 70,
+      "mapped_track_count": 58,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 183194,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3508
+      },
+      "imported_key_count": 16518,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Sphere004",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere003",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere009",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere002",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere008",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere007",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Sphere006",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_L_Pel to Thigh",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Pelvis",
+          "rig_parent": "Point_T_L_P"
+        },
+        {
+          "name": "Bone_R_Pel to Thigh",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Pelvis",
+          "rig_parent": "Point_T_R_P"
+        },
+        {
+          "name": "Sphere001",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_9_hit",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_9_hit.anim",
+      "duration_ms": 5334,
+      "registered_duration_ms": 5334,
+      "source_sha256": "3f77b931fcbf6a2facb613d35900a05df6ddafc6d2e653faa83e1ad639b6cd2d",
+      "physical": {
+        "key": 9040454621531301934,
+        "pack": 133,
+        "offset": 671129314,
+        "stored_size": 136048,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 80,
+      "mapped_track_count": 78,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 149565,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3186,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 13881,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        }
+      ]
+    },
+    {
+      "name": "skill_ylk_P2_executebehit",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/skill_ylk_P2_executebehit.anim",
+      "duration_ms": 17467,
+      "registered_duration_ms": 17467,
+      "source_sha256": "250493623a237052a576934fa781513573bfdb4c7e7c4b4fa7ed6ad70902e3b6",
+      "physical": {
+        "key": 4437431002384132149,
+        "pack": 133,
+        "offset": 671425662,
+        "stored_size": 413506,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 84,
+      "mapped_track_count": 82,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 450136,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 9832,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 42394,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        }
+      ]
+    },
+    {
+      "name": "weakhit_b",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/weakhit_b.anim",
+      "duration_ms": 834,
+      "registered_duration_ms": 834,
+      "source_sha256": "fdea18dd520f642552ad7e746c50c2236e51fd784471a8eeadd16dd618bed67d",
+      "physical": {
+        "key": 8759191360635892773,
+        "pack": 133,
+        "offset": 672279361,
+        "stored_size": 20437,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 86,
+      "mapped_track_count": 79,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 24911,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 554,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "imported_key_count": 2097,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_jian_root",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_rollpoint",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_hand1",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_hand2",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "LookAtNode",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "weakhit_far_b",
+      "source_vfs": "Char/c_77_boss_yulingke/ani/weakhit_far_b.anim",
+      "duration_ms": 834,
+      "registered_duration_ms": 834,
+      "source_sha256": "fdea18dd520f642552ad7e746c50c2236e51fd784471a8eeadd16dd618bed67d",
+      "physical": {
+        "key": 13380776733219713577,
+        "pack": 133,
+        "offset": 672332713,
+        "stored_size": 20437,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 86,
+      "mapped_track_count": 79,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 24911,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 554,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "imported_key_count": 2097,
+      "shared_humanoid_retarget": false,
+      "omitted_tracks": [
+        {
+          "name": "Bone_ershi_root_L",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "lf_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_ershi_root_R",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "rt_earlobe_faceskin"
+        },
+        {
+          "name": "Bone_jian_root",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_rollpoint",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_hand1",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_jian_hand2",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "LookAtNode",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "skill_huajie_01__shuangqiangt",
+      "source_vfs": "Char/b_01_char_male/11_qiang/8_skill/skill_huajie_01.anim",
+      "duration_ms": 4001,
+      "registered_duration_ms": 4001,
+      "source_sha256": "927f8557023c33169afd741dc841ea2eb8fa950544942f8fea040ca4743bda04",
+      "physical": {
+        "key": 15152545265634795316,
+        "pack": 99,
+        "offset": 37356826,
+        "stored_size": 117452,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 344,
+      "mapped_track_count": 246,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 140575,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1590,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 11833,
+      "shared_humanoid_retarget": true,
+      "omitted_tracks": [
+        {
+          "name": "Bone_xiuzi_L_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bone L ForeArm Twist1",
+          "rig_parent": "Bone_lf_sec"
+        },
+        {
+          "name": "Bone_xiuzi_L_UpperArm_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_L_UpperArm_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_L_UpperArm_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_L_UpperArm_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_L_UpperArm_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_L_UpperArm_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_L_UpperArm_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_L_UpperArm_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_R_Forearm_01",
+          "reason": "different explicit parent",
+          "clip_parent": "Bone R ForeArm Twist1",
+          "rig_parent": "Bone_rt_sec"
+        },
+        {
+          "name": "Bone_xiuzi_R_UpperArm_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_R_UpperArm_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_R_UpperArm_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_R_UpperArm_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_R_UpperArm_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_R_UpperArm_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_R_UpperArm_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_xiuzi_R_UpperArm_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_B_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_L_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_R_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_01",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_02",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_03",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_04",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_05",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_06",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_07",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_08",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_09",
+          "reason": "not in target skeleton"
+        },
+        {
+          "name": "Bone_qunbai_F_Pelvis_10",
+          "reason": "not in target skeleton"
+        }
+      ]
+    },
+    {
+      "name": "b_fight_env_jump_01_start_Lfoot__zuiquan",
+      "source_vfs": "Char/b_01_char_male/19_shoujia/1_base/b_fight_env_jump_01_start_Lfoot.anim",
+      "duration_ms": 734,
+      "registered_duration_ms": 734,
+      "source_sha256": "1dd96ff7883a19c8232277c68c5172c5f7bcbdc271a8df9b6a48f657d04bcd29",
+      "physical": {
+        "key": 9491515381197532997,
+        "pack": 199,
+        "offset": 87092432,
+        "stored_size": 19214,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 67,
+      "mapped_track_count": 67,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 22729,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 526,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 1964,
+      "shared_humanoid_retarget": true,
+      "omitted_tracks": []
+    },
+    {
+      "name": "b_fight_env_jump_02_loop__zuiquan",
+      "source_vfs": "Char/b_01_char_male/19_shoujia/1_base/b_fight_env_jump_02_loop.anim",
+      "duration_ms": 1267,
+      "registered_duration_ms": 1267,
+      "source_sha256": "0f243ac48e27dd3f7e6a81b974506ec2c492b51c4001b7268a778bdd45f5f446",
+      "physical": {
+        "key": 5872043782482915134,
+        "pack": 199,
+        "offset": 87142000,
+        "stored_size": 24296,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 67,
+      "mapped_track_count": 67,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 30195,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 8,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 2731,
+      "shared_humanoid_retarget": true,
+      "omitted_tracks": []
+    },
+    {
+      "name": "b_fight_env_jump_03_to_idle__zuiquan",
+      "source_vfs": "Char/b_01_char_male/19_shoujia/1_base/b_fight_env_jump_03_to_idle.anim",
+      "duration_ms": 1301,
+      "registered_duration_ms": 1301,
+      "source_sha256": "556088df55634c08aa16671adaf1fb72a8dfe99ae68a3e2899c070af2a8175f3",
+      "physical": {
+        "key": 9120132144430867521,
+        "pack": 199,
+        "offset": 87254693,
+        "stored_size": 30798,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 67,
+      "mapped_track_count": 67,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 35375,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 8,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 3189,
+      "shared_humanoid_retarget": true,
+      "omitted_tracks": []
+    },
+    {
+      "name": "skill_shoujia_dodge_f",
+      "source_vfs": "Char/c_03_npc/1_male/ani_shoujia/skill_shoujia_dodge_f.anim",
+      "duration_ms": 2934,
+      "registered_duration_ms": 2934,
+      "source_sha256": "4ab4ac0dc493c64acb478333342833295cb455a99e31bdf520584a32477e84d0",
+      "physical": {
+        "key": 4560904826507978038,
+        "pack": 119,
+        "offset": 165402704,
+        "stored_size": 89569,
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "source_track_count": 105,
+      "mapped_track_count": 103,
+      "source_sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 102277,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1786,
+        "TRACKS_DATA": 3
+      },
+      "imported_key_count": 9385,
+      "shared_humanoid_retarget": true,
+      "omitted_tracks": [
+        {
+          "name": "lf_eyeBall_faceskin",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "head_base_faceskin"
+        },
+        {
+          "name": "rt_eyeBall_faceskin",
+          "reason": "different explicit parent",
+          "clip_parent": "Bip001 Head",
+          "rig_parent": "head_base_faceskin"
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "name": "AIR_HIT_FLY_BACKUP_01",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "HIT_LEVITATE_LIGHT_F",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "HIT_LEVITATE_POWER_F",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "HIT_LEVITATE_STRONG_F",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "Hit_Atk_ex_shuangdao",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "attack_02_01",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 320,
+      "referenced": 155
+    },
+    {
+      "name": "b_idle",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "c_jnzx_sq003_jj_female_150_jn_jj_yulingke",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "c_jnzx_sq003_jj_female_160_jn_jj_yulingke",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "c_jnzx_sq003_jj_female_170_jn_jj_yulingke",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "c_jnzx_sq003_jj_female_210a_jn_jj_yulingke",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "c_jnzx_sq003_jj_female_210b_jn_jj_yulingke",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "c_jnzx_sq003_jj_female_220_jn_jj_yulingke",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "c_jnzx_sq003_jj_female_240_jn_jj_yulingke",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "cilent_tk_l",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "cilent_tk_r",
+      "reason": "exact VFS not present in extracted indexes"
+    },
+    {
+      "name": "client_b_fight",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_fight_run",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_fight_turn_L_135",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_fight_turn_L_180",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_fight_turn_L_45",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_fight_turn_L_90",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_fight_turn_R_135",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_fight_turn_R_180",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_fight_turn_R_45",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_fight_turn_R_90",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_lock_move_b",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_lock_move_f",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_lock_move_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_lock_move_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_skill_fg_b",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_skill_fg_f",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_skill_fg_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_skill_fg_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "client_skill_gd_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_skill_gd_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_tk_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "client_tk_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "cq_jian_skill_zs_01_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "cq_q_skill_zs_01_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "hit_Atk_CJ_01",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "hit_common_repel_heavy_b",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_heavy_f",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_heavy_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "hit_common_repel_heavy_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_light_b",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_light_f",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_light_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_light_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_medium_b",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_medium_f",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_medium_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_medium_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_power_b",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_common_repel_power_f",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_fly_backup_01",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "hit_guardbreak",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "hit_levitate_F_loop",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_weak_01",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_weak_02",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "hit_weak_03",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "skill_huajie_01",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 319,
+      "referenced": 156
+    },
+    {
+      "name": "skill_huajie_01_jian_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 319,
+      "referenced": 156
+    },
+    {
+      "name": "skill_huajie_01_modao_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 319,
+      "referenced": 156
+    },
+    {
+      "name": "skill_huajie_01_shan_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 319,
+      "referenced": 156
+    },
+    {
+      "name": "skill_huajie_01_shengbiao_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 319,
+      "referenced": 156
+    },
+    {
+      "name": "skill_huajie_01_shuangdao_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 319,
+      "referenced": 156
+    },
+    {
+      "name": "skill_modao_zs_01_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "skill_rtd_01",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "skill_shengbiao_zs_01_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "skill_wmgd_03",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "skill_ylk_11",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 3,
+      "referenced": 113
+    },
+    {
+      "name": "skill_ylk_1_2",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 3,
+      "referenced": 107
+    },
+    {
+      "name": "skill_ylk_2",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 308,
+      "referenced": 156
+    },
+    {
+      "name": "skill_ylk_3",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 308,
+      "referenced": 156
+    },
+    {
+      "name": "skill_ylk_5_1_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 5,
+      "referenced": 81
+    },
+    {
+      "name": "skill_ylk_8",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 3,
+      "referenced": 109
+    },
+    {
+      "name": "skill_ylk_9",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 4,
+      "referenced": 85
+    },
+    {
+      "name": "skill_ylk_P2_12",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 2,
+      "referenced": 113
+    },
+    {
+      "name": "skill_ylk_P2_1_behit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 310,
+      "referenced": 154
+    },
+    {
+      "name": "skill_ylk_P2_3",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 2,
+      "referenced": 109
+    },
+    {
+      "name": "skill_ylk_P2_5",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 84,
+      "referenced": 177
+    },
+    {
+      "name": "skill_ylk_P2_8",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 2,
+      "referenced": 62
+    },
+    {
+      "name": "skill_ylk_P2_8_behit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 5,
+      "referenced": 85
+    },
+    {
+      "name": "skill_ylk_P2_break",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 2,
+      "referenced": 107
+    },
+    {
+      "name": "skill_ylk_huajie_6_1",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 4,
+      "referenced": 81
+    },
+    {
+      "name": "skill_ylk_p2_1",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 2,
+      "referenced": 109
+    },
+    {
+      "name": "skill_ylkzl_skill_1",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 3,
+      "referenced": 113
+    },
+    {
+      "name": "skill_ylkzl_skill_2",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 3,
+      "referenced": 113
+    },
+    {
+      "name": "skill_ylkzl_skill_3",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 3,
+      "referenced": 113
+    },
+    {
+      "name": "skill_ylkzl_skill_4",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 3,
+      "referenced": 113
+    },
+    {
+      "name": "skill_yw_01",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 319,
+      "referenced": 156
+    },
+    {
+      "name": "skill_zs_01_shan_hit",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 156
+    },
+    {
+      "name": "weakhit_f",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "weakhit_far_f",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "weakhit_far_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "weakhit_far_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "weakhit_l",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    },
+    {
+      "name": "weakhit_r",
+      "reason": "unresolved FC/FD/FE/FF bone-name dictionary",
+      "explicit": 318,
+      "referenced": 155
+    }
+  ],
+  "reproduce": "research/.venv/bin/python scripts/import-choulingke-animations.py --source research"
+}

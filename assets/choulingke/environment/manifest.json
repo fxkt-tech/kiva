@@ -1,0 +1,102 @@
+{
+  "source": "verified Repository Model\u2192Material\u2192Texture references; source shader not ported wholesale",
+  "alpha": "source base-map alpha preserved; leaves alpha<128 ratio88.58%, ground litter78.65%",
+  "textures": [
+    {
+      "name": "leaves",
+      "guid": "cdb24925-7412-4e33-a8a1-7402a44d2577",
+      "physical_vfs": "cd/cdb24925-7412-4e33-a8a1-7402a44d2577.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "b3b87f8daedc64fe1b1153059276e70060583dd36def14701ac5a7c31ae4b1ad",
+      "embedded_sha256": "45cc9d5180cb637cc53d78902791d1bda439f6612d1f3be4e2fb17ec66c2d8aa",
+      "embedded_size": [
+        512,
+        512
+      ],
+      "color_space": "sRGB"
+    },
+    {
+      "name": "leaves_normal",
+      "guid": "2c603ec7-60f8-4ae6-ae34-1604040ba726",
+      "physical_vfs": "2c/2c603ec7-60f8-4ae6-ae34-1604040ba726.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "30173687fe624dbacc017532bf68ee10b8a473b8605ef2a67a0521b5cd89625e",
+      "embedded_sha256": "6ee95c36ee8f554badc3053d664a380b9512289407b2d6096ff1158b38a8879e",
+      "embedded_size": [
+        512,
+        512
+      ],
+      "color_space": "linear"
+    },
+    {
+      "name": "bamboo",
+      "guid": "9bd517c7-c0d2-490b-a1b5-3d992e789ce2",
+      "physical_vfs": "9b/9bd517c7-c0d2-490b-a1b5-3d992e789ce2.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "2ee01d54bd98e3bdcd60a736e8f0da474144eea6efe1cca6113ae3eacb7660f2",
+      "embedded_sha256": "8d203d60fda885ac5c6d09757152b45cbe4dff7c7ace84e2ad3bb3ce4b1c86b8",
+      "embedded_size": [
+        512,
+        512
+      ],
+      "color_space": "sRGB"
+    },
+    {
+      "name": "bamboo_normal",
+      "guid": "d403e3d2-2986-4ca0-9940-296cd0221b75",
+      "physical_vfs": "d4/d403e3d2-2986-4ca0-9940-296cd0221b75.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "06202625b33f55fb52d4cc25a57d61dd844fcfea01848403611dd6f5f7842181",
+      "embedded_sha256": "203a69ec62aeab718b1ff675a8562a9d736d8c702ccffba04c76717cc9f258ae",
+      "embedded_size": [
+        512,
+        512
+      ],
+      "color_space": "linear"
+    },
+    {
+      "name": "litter",
+      "guid": "ecc01030-6087-4f2f-bd5e-adc6fefeaace",
+      "physical_vfs": "ec/ecc01030-6087-4f2f-bd5e-adc6fefeaace.6",
+      "source_size": [
+        512,
+        512
+      ],
+      "source_sha256": "8434925d93fa9bf22c38dfe213f6c258d88874ea4b3c0bbcce85bf46269e58ad",
+      "embedded_sha256": "7fba349bd4b322046d4bc6047b2630b02ff07925d9256acc8e52fb7e20f914fe",
+      "embedded_size": [
+        512,
+        512
+      ],
+      "color_space": "sRGB"
+    },
+    {
+      "name": "litter_normal",
+      "guid": "ff9fb06c-07ca-43c5-8e9d-d5047456b207",
+      "physical_vfs": "ff/ff9fb06c-07ca-43c5-8e9d-d5047456b207.6",
+      "source_size": [
+        512,
+        512
+      ],
+      "source_sha256": "3f38d6b0b5fd6188a00e5f18551058fe656a583f65bb64923bf687960d1ad23f",
+      "embedded_sha256": "a16e089e0f4c174991007d947e429033911847c3132aae90eddf39e207374ec3",
+      "embedded_size": [
+        512,
+        512
+      ],
+      "color_space": "linear"
+    }
+  ]
+}

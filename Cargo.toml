@@ -7,7 +7,7 @@ rust-version = "1.97.1"
 [dependencies]
 avian3d = { version = "0.8", default-features = false, features = ["3d", "parry-f32"] }
 bevy = { version = "0.20.1", default-features = false, features = [
-    "std", "default_app", "bevy_winit", "3d_bevy_render",
+    "std", "default_app", "bevy_winit", "3d_bevy_render", "png",
 ] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

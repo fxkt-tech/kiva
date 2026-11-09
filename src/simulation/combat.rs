@@ -8,8 +8,8 @@ use avian3d::prelude::{
 use bevy::{ecs::system::SystemParam, prelude::*};
 
 use super::{
-    ActionIntent, Body, Facing, HitStop, MotionState, MoveIntent, PhysicsPose, STANDING_HEIGHT,
-    SurfaceHit, WeaponMode, WeaponSet, character_collider,
+    ActionIntent, Body, Facing, HitStop, MotionState, MoveIntent, PhysicsPose, SurfaceHit,
+    WeaponMode, WeaponSet, character_collider,
 };
 
 const TARGET_RANGE: f32 = 22.0;
@@ -20,6 +20,7 @@ const LEAP_DURATION: f32 = 0.9;
 const SPIN_RADIUS: f32 = 2.8;
 const RESPAWN_DELAY: f32 = 3.0;
 const HISTORY_LIMIT: usize = 128;
+const DEFLECT_RECOVERY: f32 = 0.45;
 const ATTACK: u8 = 1;
 const SKILL: u8 = 2;
 const COMBO: u8 = 4;
@@ -61,7 +62,13 @@ impl Health {
         self.respawn_remaining
     }
 
-    fn tick(&mut self, dt: f32) -> bool {
+    pub(super) fn refill(&mut self) {
+        self.current = self.maximum;
+        self.hit_remaining = 0.0;
+        self.respawn_remaining = 0.0;
+    }
+
+    pub(super) fn tick(&mut self, dt: f32) -> bool {
         self.hit_remaining = (self.hit_remaining - dt).max(0.0);
         if self.is_alive() {
             return false;
@@ -75,7 +82,7 @@ impl Health {
         }
     }
 
-    fn damage(&mut self, amount: f32) -> bool {
+    pub(super) fn damage(&mut self, amount: f32) -> bool {
         if !self.is_alive() {
             return false;
         }
@@ -97,6 +104,7 @@ pub struct Enemy {
     passive: bool,
     cooldown: f32,
     windup: f32,
+    recovery: f32,
     attack_target: Option<Entity>,
 }
 
@@ -106,6 +114,7 @@ impl Default for Enemy {
             passive: false,
             cooldown: 0.8,
             windup: 0.0,
+            recovery: 0.0,
             attack_target: None,
         }
     }
@@ -137,6 +146,14 @@ impl Enemy {
     pub fn windup_remaining(&self) -> f32 {
         self.windup
     }
+
+    pub fn is_recovering(&self) -> bool {
+        self.recovery > 0.0
+    }
+
+    pub fn recovery_remaining(&self) -> f32 {
+        self.recovery
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -149,7 +166,7 @@ pub enum CombatEffect {
     Cannon,
     Spin,
     Hit,
-    Block,
+    Deflect,
     Dodge,
     Defeat,
     Respawn,
@@ -179,7 +196,14 @@ impl CombatFeedback {
         self.events.iter()
     }
 
-    fn push(&mut self, actor: Entity, kind: CombatEffect, position: Vec3, end: Vec3, radius: f32) {
+    pub(super) fn push(
+        &mut self,
+        actor: Entity,
+        kind: CombatEffect,
+        position: Vec3,
+        end: Vec3,
+        radius: f32,
+    ) {
         self.next_sequence += 1;
         self.events.push_back(CombatEvent {
             sequence: self.next_sequence,
@@ -320,7 +344,10 @@ impl Combatant {
         self.mode
     }
     pub fn weapon_name(&self) -> &'static str {
-        self.set.weapon_name(self.mode)
+        match self.mode {
+            WeaponMode::Melee => "愁铃长刀",
+            WeaponMode::Ranged => self.set.weapon_name(self.mode),
+        }
     }
     pub fn persona(&self) -> &'static str {
         self.mode.persona()
@@ -408,6 +435,7 @@ type Enemies<'w, 's> = Query<'w, 's, EnemyData<'static>, With<Enemy>>;
 struct Target {
     entity: Entity,
     position: Vec3,
+    aim_position: Vec3,
 }
 
 fn point(position: Vec3) -> Vec3 {
@@ -419,6 +447,7 @@ pub(super) struct CombatWorld<'w, 's> {
     spatial: SpatialQuery<'w, 's>,
     sensors: Query<'w, 's, (), With<Sensor>>,
     actors: Query<'w, 's, (), With<Body>>,
+    bosses: Query<'w, 's, &'static super::Boss>,
 }
 
 impl CombatWorld<'_, '_> {
@@ -452,6 +481,7 @@ impl CombatWorld<'_, '_> {
         origin: Vec3,
         requested: Vec2,
         radius: f32,
+        standing_height: f32,
     ) -> Option<SurfaceHit> {
         let offset = (requested - origin.xz()).clamp_length_max(8.0);
         let start = origin + Vec3::new(offset.x, 8.0, offset.y);
@@ -472,8 +502,8 @@ impl CombatWorld<'_, '_> {
             position: start - Vec3::Y * hit.distance,
             normal: hit.normal,
         };
-        let standing = character_collider(radius, STANDING_HEIGHT);
-        let center = surface.position + Vec3::Y * (STANDING_HEIGHT * 0.5 + 0.04);
+        let standing = character_collider(radius, standing_height);
+        let center = surface.position + Vec3::Y * (standing_height * 0.5 + 0.04);
         let clearance = SpatialQueryFilter::from_excluded_entities([observer, surface.entity]);
         if self
             .spatial
@@ -514,17 +544,32 @@ fn select_target(
         .map(|(entity, _)| entity)
 }
 
-fn hurt_enemy(target: Entity, amount: f32, enemies: &mut Enemies, feedback: &mut CombatFeedback) {
+fn hurt_enemy(
+    target: Entity,
+    amount: f32,
+    enemies: &mut Enemies,
+    feedback: &mut CombatFeedback,
+    world: &CombatWorld,
+) -> bool {
+    if world
+        .bosses
+        .get(target)
+        .is_ok_and(super::Boss::is_invulnerable)
+    {
+        return false;
+    }
     let Ok((_, body, _, _, _, _, mut health, _, _)) = enemies.get_mut(target) else {
-        return;
+        return false;
     };
     if health.damage(amount) {
-        let position = point(body.world_position());
+        let position = body.aim_position();
         feedback.push(target, CombatEffect::Hit, position, position, 0.45);
         if !health.is_alive() {
             feedback.push(target, CombatEffect::Defeat, position, position, 0.8);
         }
+        return true;
     }
+    false
 }
 
 fn link_is_valid(combo: ComboWindow, motion: &MotionState, enemies: &mut Enemies) -> bool {
@@ -543,7 +588,7 @@ fn link_is_valid(combo: ComboWindow, motion: &MotionState, enemies: &mut Enemies
 fn fall_defeat(entity: Entity, body: &Body, health: &mut Health, feedback: &mut CombatFeedback) {
     if body.world_position().y < -12.0 && health.is_alive() {
         health.damage(health.maximum());
-        let position = point(body.world_position());
+        let position = body.aim_position();
         feedback.push(entity, CombatEffect::Defeat, position, position, 0.9);
     }
 }
@@ -589,6 +634,9 @@ pub(super) fn advance(
         spawn,
     ) in &mut enemies
     {
+        if world.bosses.contains(entity) {
+            continue;
+        }
         fall_defeat(entity, &body, &mut health, &mut feedback);
         if health.tick(dt) {
             body.teleport_to(Vec3::new(spawn.0.x, 0.0, spawn.0.y));
@@ -596,7 +644,7 @@ pub(super) fn advance(
             actions.clear();
             movement.stop();
             enemy.reset();
-            let position = point(body.world_position());
+            let position = body.aim_position();
             feedback.push(entity, CombatEffect::Respawn, position, position, 0.8);
         }
     }
@@ -626,12 +674,13 @@ pub(super) fn advance(
             actor.attack_cooldown = 0.0;
             actor.skill_cooldown = 0.0;
             actor.notify("已恢复，继续练习");
-            let position = point(body.world_position());
+            let position = body.aim_position();
             feedback.push(entity, CombatEffect::Respawn, position, position, 0.8);
         }
         if !health.is_alive() {
             intent.clear();
             actions.clear();
+            motion.cancel_parry();
             movement.stop();
             actor.cancel_link();
             actor.notify("倒地，3 秒后恢复");
@@ -655,11 +704,18 @@ pub(super) fn advance(
         }
 
         let origin = body.world_position();
+        let aim_origin = body.aim_position();
         let direction = facing.direction();
         if !motion.is_leaping() {
             let requested_aim = intent.aim.unwrap_or(origin.xz() + direction * 6.0);
             // A leap commits its landing point; later look input only changes facing.
-            actor.aim_surface = world.landing(entity, origin, requested_aim, body.radius());
+            actor.aim_surface = world.landing(
+                entity,
+                origin,
+                requested_aim,
+                body.radius(),
+                body.standing_height(),
+            );
             if let Some(surface) = actor.aim_surface {
                 actor.aim = surface.position;
             }
@@ -669,11 +725,12 @@ pub(super) fn advance(
             .filter(|(target, body, _, _, _, _, health, _, _)| {
                 health.is_alive()
                     && body.world_position().distance(origin) <= TARGET_RANGE
-                    && world.visible(point(origin), point(body.world_position()), entity, *target)
+                    && world.visible(aim_origin, body.aim_position(), entity, *target)
             })
             .map(|(entity, body, _, _, _, _, _, _, _)| Target {
                 entity,
                 position: body.world_position(),
+                aim_position: body.aim_position(),
             })
             .collect();
         targets.sort_by_key(|target| target.entity.to_bits());
@@ -705,7 +762,7 @@ pub(super) fn advance(
             let target = enemies.get_mut(sniper.target).ok().map(
                 |(_, body, motion, _, _, _, health, _, _)| {
                     (
-                        point(body.world_position()),
+                        body.aim_position(),
                         health.is_alive(),
                         !motion.is_grounded(),
                     )
@@ -713,7 +770,7 @@ pub(super) fn advance(
             );
             if let Some((end, alive, airborne)) = target {
                 let can_aim = !motion.is_dodging()
-                    && !motion.is_blocking()
+                    && !motion.is_parrying()
                     && !motion.is_sliding()
                     && !actor.is_spinning();
                 let mut keep = true;
@@ -725,12 +782,12 @@ pub(super) fn advance(
                         sniper.aim_position = end;
                     }
                     if !sniper.fired && sniper.elapsed >= SniperSequence::AIM_DURATION {
-                        if world.visible(point(origin), end, entity, sniper.target) {
+                        if world.visible(aim_origin, end, entity, sniper.target) {
                             sniper.fired = true;
                             actor.attack_cooldown = 0.9;
                             actor.notify("妹妹 · 联动狙击");
-                            feedback.push(entity, CombatEffect::Shot, point(origin), end, 0.12);
-                            hurt_enemy(sniper.target, 85.0, &mut enemies, &mut feedback);
+                            feedback.push(entity, CombatEffect::Shot, aim_origin, end, 0.12);
+                            hurt_enemy(sniper.target, 85.0, &mut enemies, &mut feedback, &world);
                             if actor.target == Some(sniper.target)
                                 && enemies.get(sniper.target).is_ok_and(
                                     |(_, _, _, _, _, _, health, _, _)| !health.is_alive(),
@@ -741,18 +798,12 @@ pub(super) fn advance(
                                 // the fired sequence keeps its own final aim point.
                                 actor.target = None;
                             }
-                            feedback.push(
-                                entity,
-                                CombatEffect::SniperShot,
-                                point(origin),
-                                end,
-                                0.12,
-                            );
+                            feedback.push(entity, CombatEffect::SniperShot, aim_origin, end, 0.12);
                             feedback.push(
                                 sniper.target,
                                 CombatEffect::SniperImpact,
                                 end,
-                                point(origin),
+                                aim_origin,
                                 0.65,
                             );
                             hit_stop.request_sniper();
@@ -780,17 +831,17 @@ pub(super) fn advance(
                         && !actor.spin_hits.contains(&target.entity)
                     {
                         actor.spin_hits.push(target.entity);
-                        hurt_enemy(target.entity, 42.0, &mut enemies, &mut feedback);
+                        hurt_enemy(target.entity, 42.0, &mut enemies, &mut feedback, &world);
                     }
                 }
                 for (prop, mut forces) in &mut props {
                     let position = forces.position();
-                    if position.distance(point(origin)) <= SPIN_RADIUS
+                    if position.distance(aim_origin) <= SPIN_RADIUS
                         && !actor.spin_hits.contains(&prop)
-                        && world.visible(point(origin), position, entity, prop)
+                        && world.visible(aim_origin, position, entity, prop)
                     {
                         actor.spin_hits.push(prop);
-                        let impulse = (position - point(origin)).normalize_or(Vec3::Y) * 30.0;
+                        let impulse = (position - aim_origin).normalize_or(Vec3::Y) * 30.0;
                         forces.apply_linear_impulse_at_point(impulse, position + Vec3::Y * 0.3);
                     }
                 }
@@ -805,7 +856,7 @@ pub(super) fn advance(
             commands
         };
         let can_act = !motion.is_dodging()
-            && !motion.is_blocking()
+            && !motion.is_parrying()
             && !motion.is_sliding()
             && !actor.is_spinning()
             && !actor.is_sniping();
@@ -826,20 +877,26 @@ pub(super) fn advance(
                                 for nearby in &targets {
                                     if nearby.position.distance(target.position) <= HAMMER_RADIUS
                                         && world.visible(
-                                            point(target.position),
-                                            point(nearby.position),
+                                            target.aim_position,
+                                            nearby.aim_position,
                                             target.entity,
                                             nearby.entity,
                                         )
                                     {
-                                        hurt_enemy(
+                                        let hit = hurt_enemy(
                                             nearby.entity,
                                             20.0,
                                             &mut enemies,
                                             &mut feedback,
+                                            &world,
                                         );
-                                        if let Ok((_, _, mut state, _, _, _, health, _, _)) =
-                                            enemies.get_mut(nearby.entity)
+                                        if hit
+                                            && world
+                                                .bosses
+                                                .get(nearby.entity)
+                                                .map_or(true, super::Boss::can_be_launched)
+                                            && let Ok((_, _, mut state, _, _, _, health, _, _)) =
+                                                enemies.get_mut(nearby.entity)
                                             && health.is_alive()
                                         {
                                             state.launch_up(
@@ -861,11 +918,11 @@ pub(super) fn advance(
                                     &world,
                                     &mut props,
                                     entity,
-                                    point(target.position),
+                                    target.aim_position,
                                     HAMMER_RADIUS,
                                     65.0,
                                 );
-                                let position = point(target.position);
+                                let position = target.aim_position;
                                 feedback.push(
                                     entity,
                                     CombatEffect::Hammer,
@@ -874,7 +931,7 @@ pub(super) fn advance(
                                     HAMMER_RADIUS,
                                 );
                             } else {
-                                actor.notify("锤击目标距离过远");
+                                actor.notify("重刀目标距离过远");
                             }
                         } else {
                             actor.notify("面向敌人或按 Q 锁定目标");
@@ -890,17 +947,17 @@ pub(super) fn advance(
                             });
                             actor.skill_cooldown = 3.5;
                             actor.attack_cooldown = LEAP_DURATION;
-                            actor.notify("火炮跃迁！空中 Tab 衔接旋斧");
+                            actor.notify("火炮跃迁！空中 Tab 衔接旋刀");
                             feedback.push(
                                 entity,
                                 CombatEffect::Cannon,
-                                point(origin),
+                                aim_origin,
                                 point(actor.aim),
                                 1.5,
                             );
                         }
                     }
-                    _ => actor.notify("滚轮切换至锤子或火炮释放起手技"),
+                    _ => actor.notify("滚轮切换至重刀或火炮释放起手技"),
                 }
             }
         }
@@ -914,8 +971,8 @@ pub(super) fn advance(
                             if let Ok((_, target_body, _, _, _, _, _, _, _)) =
                                 enemies.get_mut(target)
                             {
-                                let end = point(target_body.world_position());
-                                if world.visible(point(origin), end, entity, target) {
+                                let end = target_body.aim_position();
+                                if world.visible(aim_origin, end, entity, target) {
                                     actor.mode = WeaponMode::Ranged;
                                     actor.attack_cooldown = 0.9;
                                     actor.sniper = Some(SniperSequence {
@@ -934,11 +991,11 @@ pub(super) fn advance(
                             actor.mode = WeaponMode::Melee;
                             actor.spin_remaining = combo.remaining;
                             actor.spin_hits.clear();
-                            actor.notify("哥哥 · 空中旋斧");
+                            actor.notify("哥哥 · 空中旋刀");
                             feedback.push(
                                 entity,
                                 CombatEffect::Spin,
-                                point(origin),
+                                aim_origin,
                                 point(actor.aim),
                                 SPIN_RADIUS,
                             );
@@ -963,19 +1020,19 @@ pub(super) fn advance(
                 let target =
                     selected.filter(|target| target.position.distance(origin) <= attack.range);
                 let forward = Vec3::new(direction.x, 0.0, direction.y);
-                let missed_end = point(origin) + forward * attack.range;
+                let missed_end = aim_origin + forward * attack.range;
                 let hit = world.hit(
-                    point(origin),
-                    target.map_or(missed_end, |target| point(target.position)),
+                    aim_origin,
+                    target.map_or(missed_end, |target| target.aim_position),
                     &[entity],
                 );
                 let end = target.map_or(hit.map_or(missed_end, |hit| hit.position), |target| {
-                    point(target.position)
+                    target.aim_position
                 });
                 if let Some(hit) = hit
                     && let Ok((_, mut forces)) = props.get_mut(hit.entity)
                 {
-                    let impulse = (end - point(origin)).normalize_or(forward)
+                    let impulse = (end - aim_origin).normalize_or(forward)
                         * if actor.mode == WeaponMode::Melee {
                             35.0
                         } else {
@@ -988,14 +1045,14 @@ pub(super) fn advance(
                 } else {
                     CombatEffect::Shot
                 };
-                feedback.push(entity, effect, point(origin), end, attack.range);
+                feedback.push(entity, effect, aim_origin, end, attack.range);
                 if let Some(target) = target {
                     if attack.splash > 0.0 {
                         for nearby in &targets {
                             if nearby.position.distance(target.position) <= attack.splash
                                 && world.visible(
-                                    point(target.position),
-                                    point(nearby.position),
+                                    target.aim_position,
+                                    nearby.aim_position,
                                     target.entity,
                                     nearby.entity,
                                 )
@@ -1005,13 +1062,20 @@ pub(super) fn advance(
                                     attack.damage,
                                     &mut enemies,
                                     &mut feedback,
+                                    &world,
                                 );
                             }
                         }
                         feedback.push(entity, CombatEffect::Cannon, end, end, attack.splash);
                         push_props(&world, &mut props, entity, end, attack.splash, 40.0);
                     } else {
-                        hurt_enemy(target.entity, attack.damage, &mut enemies, &mut feedback);
+                        hurt_enemy(
+                            target.entity,
+                            attack.damage,
+                            &mut enemies,
+                            &mut feedback,
+                            &world,
+                        );
                     }
                     actor.notify("命中");
                 } else {
@@ -1034,9 +1098,25 @@ fn advance_enemies(
     for (entity, body, motion, mut facing, mut movement, mut actions, health, mut enemy, _) in
         enemies
     {
+        if world.bosses.contains(entity) {
+            continue;
+        }
         actions.clear();
         enemy.cooldown = (enemy.cooldown - dt).max(0.0);
         if enemy.is_passive() || !health.is_alive() || !motion.is_grounded() {
+            movement.stop();
+            enemy.windup = 0.0;
+            enemy.attack_target = None;
+            enemy.recovery = 0.0;
+            continue;
+        }
+
+        if enemy.is_recovering() {
+            enemy.recovery = if enemy.recovery <= dt + f32::EPSILON * 8.0 {
+                0.0
+            } else {
+                enemy.recovery - dt
+            };
             movement.stop();
             enemy.windup = 0.0;
             enemy.attack_target = None;
@@ -1051,21 +1131,19 @@ fn advance_enemies(
                 feedback.push(
                     entity,
                     CombatEffect::Melee,
-                    point(body.world_position()),
-                    point(
-                        body.world_position()
-                            + Vec3::new(facing.direction().x, 0.0, facing.direction().y) * 2.0,
-                    ),
+                    body.aim_position(),
+                    body.aim_position()
+                        + Vec3::new(facing.direction().x, 0.0, facing.direction().y) * 2.0,
                     2.0,
                 );
                 if let Some(target) = enemy.attack_target.take()
                     && let Ok((
                         _,
                         target_body,
-                        target_motion,
+                        mut target_motion,
                         target_facing,
                         _,
-                        _,
+                        mut target_actions,
                         mut target_health,
                         _,
                         _,
@@ -1076,34 +1154,38 @@ fn advance_enemies(
                     if target_health.is_alive()
                         && offset.length() <= 2.0
                         && world.visible(
-                            point(body.world_position()),
-                            point(target_body.world_position()),
+                            body.aim_position(),
+                            target_body.aim_position(),
                             entity,
                             target,
                         )
                     {
-                        let position = point(target_body.world_position());
+                        let position = target_body.aim_position();
                         if target_motion.is_invulnerable() {
                             feedback.push(target, CombatEffect::Dodge, position, position, 0.65);
                         } else {
-                            let blocked = target_motion.is_blocking()
+                            let deflected = target_motion.is_parrying()
                                 && target_facing
                                     .direction()
                                     .dot(offset.xz().normalize_or_zero())
                                     > 0.25;
-                            target_health.damage(if blocked { 2.0 } else { 12.0 });
-                            feedback.push(
-                                target,
-                                if blocked {
-                                    CombatEffect::Block
-                                } else {
-                                    CombatEffect::Hit
-                                },
-                                position,
-                                position,
-                                0.65,
-                            );
+                            if deflected {
+                                enemy.recovery = DEFLECT_RECOVERY;
+                                movement.stop();
+                                feedback.push(
+                                    target,
+                                    CombatEffect::Deflect,
+                                    position,
+                                    body.aim_position(),
+                                    0.65,
+                                );
+                            } else {
+                                target_health.damage(12.0);
+                                feedback.push(target, CombatEffect::Hit, position, position, 0.65);
+                            }
                             if !target_health.is_alive() {
+                                target_actions.clear();
+                                target_motion.cancel_parry();
                                 feedback.push(
                                     target,
                                     CombatEffect::Defeat,
@@ -1122,13 +1204,15 @@ fn advance_enemies(
         let target = players
             .iter()
             .filter(|(_, _, _, _, _, _, health, _, _, _)| health.is_alive())
-            .map(|(entity, body, _, _, _, _, _, _, _, _)| (entity, body.world_position()))
-            .filter(|(_, position)| position.distance(body.world_position()) < 12.0)
+            .map(|(entity, body, _, _, _, _, _, _, _, _)| {
+                (entity, body.world_position(), body.aim_position())
+            })
+            .filter(|(_, position, _)| position.distance(body.world_position()) < 12.0)
             .min_by(|a, b| {
                 a.1.distance_squared(body.world_position())
                     .total_cmp(&b.1.distance_squared(body.world_position()))
             });
-        let Some((target, position)) = target else {
+        let Some((target, position, aim_position)) = target else {
             movement.stop();
             continue;
         };
@@ -1139,16 +1223,11 @@ fn advance_enemies(
         } else {
             movement.stop();
             if enemy.cooldown == 0.0
-                && world.visible(
-                    point(body.world_position()),
-                    point(position),
-                    entity,
-                    target,
-                )
+                && world.visible(body.aim_position(), aim_position, entity, target)
             {
                 enemy.windup = 0.5;
                 enemy.attack_target = Some(target);
-                let position = point(body.world_position());
+                let position = body.aim_position();
                 feedback.push(entity, CombatEffect::EnemyWindup, position, position, 2.0);
             }
         }
@@ -1161,7 +1240,8 @@ mod tests {
 
     use super::*;
     use crate::simulation::{
-        CollisionWorld, SimulationActive, SimulationPlugin, SolidBox, spawn_box, teleport_actor,
+        CollisionWorld, STANDING_HEIGHT, SimulationActive, SimulationPlugin, SolidBox, spawn_box,
+        teleport_actor,
     };
 
     fn arena() -> App {
@@ -1211,6 +1291,328 @@ mod tests {
         for _ in 0..count {
             app.world_mut().run_schedule(FixedUpdate);
         }
+    }
+
+    fn parry_arena() -> (App, Entity, Entity) {
+        let mut app = arena();
+        let player = player(&mut app, WeaponSet::HammerSniper);
+        let attacker = enemy(&mut app, Vec2::new(0.0, -1.2));
+        ticks(&mut app, 2);
+        (app, player, attacker)
+    }
+
+    fn strike_next_tick(app: &mut App, attacker: Entity, target: Entity) {
+        let mut enemy = app.world_mut().get_mut::<Enemy>(attacker).unwrap();
+        enemy.windup = 1.0 / 120.0;
+        enemy.attack_target = Some(target);
+    }
+
+    fn deflect_count(app: &App, recipient: Entity) -> usize {
+        app.world()
+            .resource::<CombatFeedback>()
+            .events()
+            .filter(|event| event.actor == recipient && event.kind == CombatEffect::Deflect)
+            .count()
+    }
+
+    #[test]
+    fn parry_window_has_exact_fixed_tick_boundaries_without_held_repeats() {
+        for (hit_tick, protected) in [(15, true), (16, false)] {
+            let (mut app, player, attacker) = parry_arena();
+            {
+                let mut intent = app.world_mut().get_mut::<ActionIntent>(player).unwrap();
+                intent.request_parry();
+                // Input snapshots cannot overwrite the pending press or renew it.
+                intent.set_shift_held(false);
+            }
+            assert!(
+                !app.world()
+                    .get::<MotionState>(player)
+                    .unwrap()
+                    .is_parrying()
+            );
+            ticks(&mut app, 1);
+            assert_eq!(
+                app.world()
+                    .get::<MotionState>(player)
+                    .unwrap()
+                    .parry_remaining(),
+                0.25
+            );
+            ticks(&mut app, hit_tick - 2);
+            strike_next_tick(&mut app, attacker, player);
+            ticks(&mut app, 1);
+            assert_eq!(health(&app, player), if protected { 100.0 } else { 88.0 });
+            assert_eq!(deflect_count(&app, player), usize::from(protected));
+            app.world_mut().get_mut::<Enemy>(attacker).unwrap().passive = true;
+            ticks(&mut app, 80);
+            let motion = app.world().get::<MotionState>(player).unwrap();
+            assert!(!motion.is_parrying());
+            assert_eq!(motion.parry_remaining(), 0.0);
+            assert_eq!(motion.parry_cooldown(), 0.0);
+        }
+    }
+
+    #[test]
+    fn parry_failed_presses_are_consumed_and_cannot_extend_or_replay_the_window() {
+        let (mut app, player, attacker) = parry_arena();
+        app.world_mut().get_mut::<Enemy>(attacker).unwrap().passive = true;
+        for _ in 0..20 {
+            app.world_mut()
+                .get_mut::<ActionIntent>(player)
+                .unwrap()
+                .request_parry();
+        }
+        ticks(&mut app, 1);
+        for _ in 0..10 {
+            app.world_mut()
+                .get_mut::<ActionIntent>(player)
+                .unwrap()
+                .request_parry();
+            ticks(&mut app, 1);
+        }
+        let remaining = app
+            .world()
+            .get::<MotionState>(player)
+            .unwrap()
+            .parry_remaining();
+        assert!((remaining - (0.25 - 10.0 / 60.0)).abs() < 0.00001);
+        ticks(&mut app, 27);
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        ticks(&mut app, 1); // The press before the cooldown boundary is rejected.
+        assert!(
+            !app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .is_parrying()
+        );
+        ticks(&mut app, 1); // Cooldown finishes without replaying that failed press.
+        assert_eq!(
+            app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .parry_cooldown(),
+            0.0
+        );
+        assert!(
+            !app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .is_parrying()
+        );
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        ticks(&mut app, 1);
+        assert!(
+            app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .is_parrying()
+        );
+    }
+
+    #[test]
+    fn parry_success_interrupts_the_attacker_and_emits_once_per_accepted_hit() {
+        let (mut app, player, first) = parry_arena();
+        let second = enemy(&mut app, Vec2::new(1.1, -1.0));
+        ticks(&mut app, 2);
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        strike_next_tick(&mut app, first, player);
+        strike_next_tick(&mut app, second, player);
+        ticks(&mut app, 1);
+        assert_eq!(health(&app, player), 100.0);
+        assert_eq!(deflect_count(&app, player), 2);
+        for attacker in [first, second] {
+            let state = app.world().get::<Enemy>(attacker).unwrap();
+            assert!(state.is_recovering());
+            assert_eq!(state.recovery_remaining(), DEFLECT_RECOVERY);
+            assert!(!state.is_winding_up());
+        }
+        strike_next_tick(&mut app, first, player);
+        ticks(&mut app, 26);
+        assert_eq!(health(&app, player), 100.0);
+        assert_eq!(deflect_count(&app, player), 2);
+        assert!(app.world().get::<Enemy>(first).unwrap().is_recovering());
+        ticks(&mut app, 1);
+        assert!(!app.world().get::<Enemy>(first).unwrap().is_recovering());
+    }
+
+    #[test]
+    fn parry_timers_freeze_during_pause_and_hit_stop() {
+        let (mut app, player, attacker) = parry_arena();
+        app.world_mut().get_mut::<Enemy>(attacker).unwrap().passive = true;
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        ticks(&mut app, 1);
+        let before = app.world().get::<MotionState>(player).unwrap();
+        let (window, cooldown) = (before.parry_remaining(), before.parry_cooldown());
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        ticks(&mut app, 20);
+        let frozen = app.world().get::<MotionState>(player).unwrap();
+        assert_eq!(
+            (frozen.parry_remaining(), frozen.parry_cooldown()),
+            (window, cooldown)
+        );
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        app.world_mut().resource_mut::<HitStop>().request_sniper();
+        ticks(&mut app, 3);
+        let frozen = app.world().get::<MotionState>(player).unwrap();
+        assert_eq!(
+            (frozen.parry_remaining(), frozen.parry_cooldown()),
+            (window, cooldown)
+        );
+        ticks(&mut app, 1);
+        let resumed = app.world().get::<MotionState>(player).unwrap();
+        assert!(resumed.parry_remaining() < window && resumed.parry_cooldown() < cooldown);
+    }
+
+    #[test]
+    fn parry_requests_in_air_dodge_leap_slide_or_death_are_discarded() {
+        for state in ["air", "dodge", "leap", "slide", "dead"] {
+            let (mut app, player, attacker) = parry_arena();
+            app.world_mut().get_mut::<Enemy>(attacker).unwrap().passive = true;
+            match state {
+                "air" => {
+                    app.world_mut()
+                        .get_mut::<MotionState>(player)
+                        .unwrap()
+                        .launch_up(6.4);
+                }
+                "dodge" => app
+                    .world_mut()
+                    .get_mut::<ActionIntent>(player)
+                    .unwrap()
+                    .request_dodge(),
+                "leap" => {
+                    assert!(
+                        app.world_mut()
+                            .get_mut::<MotionState>(player)
+                            .unwrap()
+                            .start_leap(Vec2::ZERO, Vec2::new(3.0, 0.0), 0.5, 1.0)
+                    );
+                }
+                "slide" => {
+                    app.world_mut()
+                        .get_mut::<MoveIntent>(player)
+                        .unwrap()
+                        .set(Vec2::X);
+                    app.world_mut()
+                        .get_mut::<ActionIntent>(player)
+                        .unwrap()
+                        .set_shift_held(true);
+                    ticks(&mut app, 12);
+                    app.world_mut()
+                        .get_mut::<ActionIntent>(player)
+                        .unwrap()
+                        .request_crouch_toggle();
+                    ticks(&mut app, 1);
+                    assert!(app.world().get::<MotionState>(player).unwrap().is_sliding());
+                }
+                "dead" => {
+                    app.world_mut()
+                        .get_mut::<Health>(player)
+                        .unwrap()
+                        .damage(100.0);
+                }
+                _ => unreachable!(),
+            }
+            app.world_mut()
+                .get_mut::<ActionIntent>(player)
+                .unwrap()
+                .request_parry();
+            ticks(&mut app, 1);
+            let motion = app.world().get::<MotionState>(player).unwrap();
+            assert!(!motion.is_parrying(), "state {state}");
+            assert_eq!(motion.parry_cooldown(), 0.0, "state {state}");
+            app.world_mut()
+                .get_mut::<ActionIntent>(player)
+                .unwrap()
+                .set_shift_held(false);
+            app.world_mut()
+                .get_mut::<MoveIntent>(player)
+                .unwrap()
+                .stop();
+            ticks(&mut app, 190);
+            assert!(
+                !app.world()
+                    .get::<MotionState>(player)
+                    .unwrap()
+                    .is_parrying(),
+                "state {state}"
+            );
+            assert_eq!(deflect_count(&app, player), 0);
+        }
+    }
+
+    #[test]
+    fn parry_clear_death_and_respawn_remove_queued_presses_and_active_windows() {
+        let (mut app, player, attacker) = parry_arena();
+        app.world_mut().get_mut::<Enemy>(attacker).unwrap().passive = true;
+        {
+            let mut actions = app.world_mut().get_mut::<ActionIntent>(player).unwrap();
+            actions.request_parry();
+            actions.clear();
+        }
+        ticks(&mut app, 1);
+        assert_eq!(
+            app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .parry_cooldown(),
+            0.0
+        );
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        ticks(&mut app, 1);
+        assert!(
+            app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .is_parrying()
+        );
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .clear();
+        ticks(&mut app, 1);
+        let motion = app.world().get::<MotionState>(player).unwrap();
+        assert!(!motion.is_parrying() && motion.parry_cooldown() > 0.0);
+        app.world_mut()
+            .get_mut::<Health>(player)
+            .unwrap()
+            .damage(100.0);
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        ticks(&mut app, 1);
+        let motion = app.world().get::<MotionState>(player).unwrap();
+        assert!(!motion.is_parrying() && motion.parry_cooldown() == 0.0);
+        app.world_mut()
+            .get_mut::<Health>(player)
+            .unwrap()
+            .respawn_remaining = 1.0 / 60.0;
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        ticks(&mut app, 1);
+        assert!(app.world().get::<Health>(player).unwrap().is_alive());
+        ticks(&mut app, 2);
+        let motion = app.world().get::<MotionState>(player).unwrap();
+        assert!(!motion.is_parrying() && motion.parry_cooldown() == 0.0);
     }
 
     fn health(app: &App, entity: Entity) -> f32 {
@@ -1397,6 +1799,10 @@ mod tests {
     }
 
     fn sniper_arena(elevation: f32) -> (App, Entity, Entity) {
+        sniper_arena_with_target_scale(elevation, 1.0)
+    }
+
+    fn sniper_arena_with_target_scale(elevation: f32, scale: f32) -> (App, Entity, Entity) {
         let mut app = arena();
         if elevation > 0.0 {
             spawn_box(
@@ -1408,9 +1814,11 @@ mod tests {
         }
         let player = player(&mut app, WeaponSet::HammerSniper);
         let target = enemy(&mut app, Vec2::new(0.0, -3.0));
-        app.world_mut()
-            .entity_mut(target)
-            .insert((Enemy::target_dummy(), Health::new(500.0)));
+        app.world_mut().entity_mut(target).insert((
+            Body::new(Vec2::new(0.0, -3.0), 0.0001, 0.35).scaled(scale),
+            Enemy::target_dummy(),
+            Health::new(500.0),
+        ));
         teleport_actor(app.world_mut(), player, Vec3::new(0.0, elevation, 0.0));
         teleport_actor(app.world_mut(), target, Vec3::new(0.0, elevation, -3.0));
         ticks(&mut app, 12);
@@ -1429,6 +1837,202 @@ mod tests {
             .events()
             .filter(|event| event.actor == player && event.kind == CombatEffect::Shot)
             .count()
+    }
+
+    #[test]
+    fn ranged_shot_and_hit_feedback_aim_at_the_scaled_targets_chest() {
+        for set in [WeaponSet::HammerSniper, WeaponSet::AxeCannon] {
+            let mut app = arena();
+            let player = player(&mut app, set);
+            let target = enemy(&mut app, Vec2::new(0.0, -3.0));
+            app.world_mut().entity_mut(target).insert((
+                Body::new(Vec2::new(0.0, -3.0), 0.0001, 0.35).scaled(1.45),
+                Enemy::target_dummy(),
+                Health::new(500.0),
+            ));
+            ticks(&mut app, 12);
+            request(&mut app, player, |intent| {
+                intent.request_switch_weapon();
+                intent.request_attack();
+            });
+            ticks(&mut app, 1);
+            assert!(health(&app, target) < 500.0);
+            let body = app.world().get::<Body>(target).unwrap();
+            let chest = body.aim_position();
+            assert!((chest.y - body.world_position().y - 1.305).abs() < 0.001);
+            let feedback = app.world().resource::<CombatFeedback>();
+            let shot = feedback
+                .events()
+                .find(|event| event.actor == player && event.kind == CombatEffect::Shot)
+                .unwrap();
+            assert!(shot.end.distance(chest) < 0.001);
+            let hit = feedback
+                .events()
+                .find(|event| event.actor == target && event.kind == CombatEffect::Hit)
+                .unwrap();
+            assert!(hit.position.distance(chest) < 0.001);
+            assert!(hit.end.distance(chest) < 0.001);
+        }
+    }
+
+    #[test]
+    fn sniper_sequence_and_committed_shot_keep_the_scaled_airborne_chest_anchor() {
+        for elevation in [0.0, 1.5] {
+            let (mut app, player, target) = sniper_arena_with_target_scale(elevation, 1.45);
+            let expected = app.world().get::<Body>(target).unwrap().aim_position();
+            let sequence = app
+                .world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .sniper_sequence()
+                .unwrap();
+            assert!(sequence.aim_position().distance(expected) < 0.001);
+            for _ in 0..25 {
+                ticks(&mut app, 1);
+                if shot_count(&app, player) != 0 {
+                    break;
+                }
+            }
+            assert_eq!(shot_count(&app, player), 1);
+            assert_eq!(health(&app, target), 395.0);
+            let body = app.world().get::<Body>(target).unwrap();
+            let chest = body.aim_position();
+            assert!((chest.y - body.world_position().y - 1.305).abs() < 0.001);
+            let sequence = app
+                .world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .sniper_sequence()
+                .unwrap();
+            assert!(sequence.has_fired());
+            assert!(sequence.aim_position().distance(chest) < 0.001);
+            let feedback = app.world().resource::<CombatFeedback>();
+            for event in feedback.events().filter(|event| {
+                event.actor == player
+                    && matches!(event.kind, CombatEffect::Shot | CombatEffect::SniperShot)
+            }) {
+                assert!(event.end.distance(chest) < 0.001);
+            }
+            let impact = feedback
+                .events()
+                .find(|event| event.actor == target && event.kind == CombatEffect::SniperImpact)
+                .unwrap();
+            assert!(impact.position.distance(chest) < 0.001);
+            let hit = feedback
+                .events()
+                .filter(|event| event.actor == target && event.kind == CombatEffect::Hit)
+                .last()
+                .unwrap();
+            assert!(hit.position.distance(chest) < 0.001);
+        }
+    }
+
+    fn assert_link_discards_parry_without_changing_its_timeline(
+        app: &mut App,
+        player: Entity,
+        reference: &mut App,
+        reference_player: Entity,
+    ) {
+        for _ in 0..70 {
+            let combat = app.world().get::<Combatant>(player).unwrap();
+            if combat.is_sniping() || combat.is_spinning() {
+                app.world_mut()
+                    .get_mut::<ActionIntent>(player)
+                    .unwrap()
+                    .request_parry();
+            }
+            ticks(app, 1);
+            ticks(reference, 1);
+            let combat = app.world().get::<Combatant>(player).unwrap();
+            let expected = reference
+                .world()
+                .get::<Combatant>(reference_player)
+                .unwrap();
+            assert_eq!(combat.is_sniping(), expected.is_sniping());
+            assert_eq!(
+                combat.sniper_sequence().map(SniperSequence::elapsed),
+                expected.sniper_sequence().map(SniperSequence::elapsed)
+            );
+            assert_eq!(combat.spin_remaining, expected.spin_remaining);
+            let motion = app.world().get::<MotionState>(player).unwrap();
+            assert!(!motion.is_parrying());
+            assert_eq!(motion.parry_cooldown(), 0.0);
+        }
+        let combat = app.world().get::<Combatant>(player).unwrap();
+        assert!(!combat.is_sniping() && !combat.is_spinning());
+        assert!(
+            app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .is_grounded()
+        );
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        ticks(app, 1);
+        assert!(
+            app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .is_parrying()
+        );
+    }
+
+    #[test]
+    fn sniper_sequence_discards_parry_presses_without_canceling_delaying_or_replaying() {
+        let (mut app, player, target) = sniper_arena(0.0);
+        let (mut reference, reference_player, _) = sniper_arena(0.0);
+        assert_link_discards_parry_without_changing_its_timeline(
+            &mut app,
+            player,
+            &mut reference,
+            reference_player,
+        );
+        assert_eq!(shot_count(&app, player), 1);
+        assert_eq!(shot_count(&reference, reference_player), 1);
+        assert_eq!(health(&app, target), 395.0);
+    }
+
+    #[test]
+    fn spinning_sequence_discards_parry_presses_without_changing_the_link_or_replaying() {
+        let spinning_arena = || {
+            let mut app = arena();
+            let player = player(&mut app, WeaponSet::AxeCannon);
+            ticks(&mut app, 12);
+            request(&mut app, player, |intent| {
+                intent.request_switch_weapon();
+                intent.set_aim(Vec2::new(0.0, -6.0));
+                intent.request_skill();
+            });
+            ticks(&mut app, 6);
+            request(&mut app, player, CombatIntent::request_combo);
+            ticks(&mut app, 1);
+            assert!(app.world().get::<Combatant>(player).unwrap().is_spinning());
+            (app, player)
+        };
+        let (mut app, player) = spinning_arena();
+        let (mut reference, reference_player) = spinning_arena();
+        assert_link_discards_parry_without_changing_its_timeline(
+            &mut app,
+            player,
+            &mut reference,
+            reference_player,
+        );
+        assert!(
+            app.world()
+                .get::<Body>(player)
+                .unwrap()
+                .world_position()
+                .distance(
+                    reference
+                        .world()
+                        .get::<Body>(reference_player)
+                        .unwrap()
+                        .world_position()
+                )
+                < 0.001
+        );
     }
 
     #[test]
@@ -1517,7 +2121,6 @@ mod tests {
             "target-death",
             "player-death",
             "land",
-            "block",
             "dodge",
             "mode-change",
             "wall",
@@ -1548,11 +2151,6 @@ mod tests {
                         .damage(100.0);
                 }
                 "land" => teleport_actor(app.world_mut(), target, Vec3::new(0.0, 0.0, -3.0)),
-                "block" => app
-                    .world_mut()
-                    .get_mut::<ActionIntent>(player)
-                    .unwrap()
-                    .set_held(false, true),
                 "dodge" => app
                     .world_mut()
                     .get_mut::<ActionIntent>(player)
@@ -1725,7 +2323,7 @@ mod tests {
     }
 
     #[test]
-    fn attempting_a_link_while_blocking_consumes_it_without_delaying_the_shot() {
+    fn attempting_a_link_while_parrying_consumes_it_without_delaying_the_shot() {
         let mut app = arena();
         let player = player(&mut app, WeaponSet::HammerSniper);
         let target = enemy(&mut app, Vec2::new(0.0, -3.0));
@@ -1734,7 +2332,7 @@ mod tests {
         app.world_mut()
             .get_mut::<ActionIntent>(player)
             .unwrap()
-            .set_held(false, true);
+            .request_parry();
         request(&mut app, player, CombatIntent::request_combo);
         ticks(&mut app, 1);
         assert_eq!(
@@ -1758,11 +2356,9 @@ mod tests {
     }
 
     #[test]
-    fn front_block_reduces_damage_but_turning_away_does_not() {
-        let incoming = |block, facing: Vec2| {
-            let mut app = arena();
-            let player = player(&mut app, WeaponSet::HammerSniper);
-            enemy(&mut app, Vec2::new(0.0, -1.2));
+    fn parry_prevents_front_damage_but_side_and_back_hits_remain_full_damage() {
+        for (facing, protected) in [(Vec2::NEG_Y, true), (Vec2::X, false), (Vec2::Y, false)] {
+            let (mut app, player, attacker) = parry_arena();
             app.world_mut()
                 .get_mut::<Facing>(player)
                 .unwrap()
@@ -1770,13 +2366,20 @@ mod tests {
             app.world_mut()
                 .get_mut::<ActionIntent>(player)
                 .unwrap()
-                .set_held(false, block);
-            ticks(&mut app, 85);
-            health(&app, player)
-        };
-        assert_eq!(incoming(false, Vec2::NEG_Y), 88.0);
-        assert_eq!(incoming(true, Vec2::NEG_Y), 98.0);
-        assert_eq!(incoming(true, Vec2::Y), 88.0);
+                .request_parry();
+            strike_next_tick(&mut app, attacker, player);
+            ticks(&mut app, 1);
+            assert_eq!(health(&app, player), if protected { 100.0 } else { 88.0 });
+            assert_eq!(deflect_count(&app, player), usize::from(protected));
+            assert_eq!(
+                app.world().get::<Enemy>(attacker).unwrap().is_recovering(),
+                protected
+            );
+            assert_eq!(
+                app.world().get::<Health>(player).unwrap().hit_remaining() > 0.0,
+                !protected
+            );
+        }
     }
 
     #[test]
@@ -1892,7 +2495,7 @@ mod tests {
     }
 
     #[test]
-    fn crouching_keeps_existing_attacks_and_front_block_available() {
+    fn crouching_keeps_existing_attacks_and_timed_parry_available() {
         let mut app = arena();
         let player = player(&mut app, WeaponSet::HammerSniper);
         let target = enemy(&mut app, Vec2::new(0.0, -1.2));
@@ -1912,11 +2515,16 @@ mod tests {
         app.world_mut()
             .get_mut::<ActionIntent>(player)
             .unwrap()
-            .set_held(false, true);
-        ticks(&mut app, 85);
+            .request_parry();
+        strike_next_tick(&mut app, target, player);
+        ticks(&mut app, 1);
         let motion = app.world().get::<MotionState>(player).unwrap();
-        assert!(motion.is_crouched() && motion.is_blocking());
-        assert!(health(&app, player) > 95.0);
+        assert!(motion.is_crouched() && motion.is_parrying());
+        assert_eq!(health(&app, player), 100.0);
+        assert_eq!(deflect_count(&app, player), 1);
+        ticks(&mut app, 15);
+        let motion = app.world().get::<MotionState>(player).unwrap();
+        assert!(motion.is_crouched() && !motion.is_parrying());
     }
 
     #[test]
@@ -1931,7 +2539,7 @@ mod tests {
         app.world_mut()
             .get_mut::<ActionIntent>(player)
             .unwrap()
-            .set_held(true, false);
+            .set_shift_held(true);
         ticks(&mut app, 30);
         let origin = app.world().get::<Body>(player).unwrap().position();
         app.world_mut()

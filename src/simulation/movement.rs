@@ -7,6 +7,7 @@ pub struct Body {
     pub(super) velocity: Vec3,
     pub(super) speed: f32,
     pub(super) half_extent: f32,
+    scale: f32,
     pub(super) teleport_request: Option<Vec3>,
 }
 
@@ -29,6 +30,7 @@ impl Body {
             velocity: Vec3::ZERO,
             speed,
             half_extent,
+            scale: 1.0,
             teleport_request: None,
         }
     }
@@ -42,7 +44,37 @@ impl Body {
         self.velocity
     }
     pub fn radius(&self) -> f32 {
-        self.half_extent
+        self.half_extent * self.scale
+    }
+    /// Configure uniform actor size before the physics bridge installs it.
+    pub fn scaled(mut self, scale: f32) -> Self {
+        let radius = self.half_extent * scale;
+        let height = super::physics::STANDING_HEIGHT * scale;
+        assert!(
+            scale.is_finite()
+                && scale > 0.0
+                && radius.is_finite()
+                && radius > 0.0
+                && height.is_finite()
+                && height > 0.0
+        );
+        self.scale = scale;
+        self
+    }
+    pub fn scale(&self) -> f32 {
+        self.scale
+    }
+    pub fn standing_height(&self) -> f32 {
+        super::physics::STANDING_HEIGHT * self.scale
+    }
+    pub fn crouched_height(&self) -> f32 {
+        super::physics::CROUCHED_HEIGHT * self.scale
+    }
+    pub fn aim_offset(&self) -> Vec3 {
+        Vec3::Y * (0.9 * self.scale)
+    }
+    pub fn aim_position(&self) -> Vec3 {
+        self.position + self.aim_offset()
     }
     pub fn interpolated_world(&self, alpha: f32) -> Vec3 {
         self.previous.lerp(self.position, alpha.clamp(0.0, 1.0))
@@ -170,7 +202,7 @@ mod tests {
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
-            .set_held(held, false);
+            .set_shift_held(held);
     }
 
     fn begin_sprint(app: &mut App, actor: Entity) {
@@ -190,7 +222,7 @@ mod tests {
     }
 
     #[test]
-    fn sprint_and_block_change_actual_speed_and_block_takes_priority() {
+    fn timed_parry_slows_briefly_and_holding_shift_does_not_renew_it() {
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         app.world_mut()
             .get_mut::<MoveIntent>(actor)
@@ -199,7 +231,7 @@ mod tests {
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
-            .set_held(true, false);
+            .set_shift_held(true);
         tick(&mut app, 12);
         let sprint_start = app.world().get::<Body>(actor).unwrap().position().x;
         tick(&mut app, 60);
@@ -214,15 +246,24 @@ mod tests {
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
-            .set_held(true, true);
-        tick(&mut app, 6); // Measure the configured speed after finite braking.
-        let block_start = app.world().get::<Body>(actor).unwrap().position().x;
-        tick(&mut app, 60);
-        let block_end = app.world().get::<Body>(actor).unwrap().position().x;
-        assert!((block_end - block_start - 2.1).abs() < 0.001);
+            .request_parry();
+        tick(&mut app, 6);
         let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!(motion.is_blocking());
+        assert!(motion.is_parrying());
         assert!(!motion.is_sprinting());
+        assert!((app.world().get::<Body>(actor).unwrap().velocity().x - 2.1).abs() < 0.03);
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .set_shift_held(true); // Holding Shift cannot renew the parry window.
+        tick(&mut app, 30);
+        let resumed = app.world().get::<Body>(actor).unwrap().position().x;
+        tick(&mut app, 60);
+        let end = app.world().get::<Body>(actor).unwrap().position().x;
+        assert!((end - resumed - 9.6).abs() < 0.001);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(!motion.is_parrying());
+        assert!(motion.is_sprinting());
     }
 
     #[test]
@@ -521,14 +562,15 @@ mod tests {
     fn clearing_input_cancels_pending_actions_and_teleport_resets_interpolation() {
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         let mut actions = app.world_mut().get_mut::<ActionIntent>(actor).unwrap();
-        actions.set_held(true, true);
+        actions.set_shift_held(true);
         actions.request_jump();
         actions.request_dodge();
+        actions.request_parry();
         actions.clear();
         tick(&mut app, 1);
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert!(motion.is_grounded());
-        assert!(!motion.is_blocking());
+        assert!(!motion.is_parrying());
         assert!(!motion.is_sprinting());
         assert!(!motion.is_dodging());
         app.world_mut()
@@ -584,6 +626,7 @@ mod tests {
         let mut actions = app.world_mut().get_mut::<ActionIntent>(actor).unwrap();
         actions.request_jump();
         actions.request_dodge();
+        actions.request_parry();
         actions.clear(); // Capture loss clears the pending commands before fixed update.
         tick(&mut app, 120);
         let motion = app.world().get::<MotionState>(actor).unwrap();
@@ -998,18 +1041,20 @@ mod tests {
     }
 
     #[test]
-    fn held_block_crouches_without_sliding_even_with_a_previous_sprint_latch() {
+    fn active_parry_crouches_without_sliding_with_a_previous_sprint_latch() {
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         begin_sprint(&mut app, actor);
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
-            .set_held(false, true);
+            .request_parry();
+        tick(&mut app, 1);
+        set_shift(&mut app, actor, false);
         request_crouch(&mut app, actor);
         tick(&mut app, 1);
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert!(motion.is_crouched());
-        assert!(motion.is_blocking());
+        assert!(motion.is_parrying());
         assert!(motion.sprint_latched());
         assert!(!motion.is_sliding());
         assert!(!motion.is_sprinting());

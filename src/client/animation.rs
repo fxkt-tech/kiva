@@ -6,10 +6,11 @@ use bevy::prelude::*;
 use super::{
     ActorView,
     skeleton::{AnimationLibrary, blend},
+    source_animation::SourceAnimationLibrary,
 };
 use crate::simulation::{
-    Body, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, HitStop, MotionState,
-    SimulationActive, SniperSequence, WeaponMode, WeaponSet,
+    Body, Boss, BossState, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, HitStop,
+    MotionState, SimulationActive, SniperSequence, WeaponMode, WeaponSet,
 };
 use poses::Gesture;
 
@@ -23,11 +24,12 @@ enum PoseState {
     Dodge,
     Crouch,
     Slide,
-    Block,
+    Parry,
     Aim,
     Attack(Gesture),
     Spin,
     Down,
+    Deflected,
 }
 
 struct Playback {
@@ -35,8 +37,18 @@ struct Playback {
     elapsed: f32,
 }
 
+pub(super) struct SourcePose {
+    pub(super) model: Vec<Mat4>,
+    pub(super) weight: f32,
+}
+
 #[derive(Component)]
 pub(super) struct RigPose {
+    pub(super) source: Option<SourcePose>,
+    source_local: Option<Vec<Transform>>,
+    source_from: Option<Vec<Transform>>,
+    source_clip: Option<usize>,
+    source_blend: f32,
     local: Vec<Transform>,
     pub(super) model: Vec<Transform>,
     from: Vec<Transform>,
@@ -57,6 +69,11 @@ impl RigPose {
     pub fn new(library: &AnimationLibrary) -> Self {
         let local = poses::idle(library, 0.0, WeaponMode::Melee);
         Self {
+            source: None,
+            source_local: None,
+            source_from: None,
+            source_clip: None,
+            source_blend: 0.0,
             model: library.model_pose(&local),
             from: local.clone(),
             local,
@@ -71,6 +88,114 @@ impl RigPose {
             event_sequence: 0,
             playback: None,
             restart: false,
+        }
+    }
+
+    /// Uses the already selected display state and clock. These are explicit
+    /// Kiva crops/retargets of source motion, not recovered gameplay hit frames.
+    fn advance_source(&mut self, library: &SourceAnimationLibrary, input: Inputs, dt: f32) {
+        if dt <= 0.0 {
+            return;
+        }
+        let selection = if input.mode == WeaponMode::Ranged
+            || (input.crouched && !input.airborne)
+            || input.sliding
+        {
+            None
+        } else {
+            match self.state {
+                PoseState::Attack(Gesture::Slash | Gesture::Axe | Gesture::Hammer) => {
+                    let duration = if self.state == PoseState::Attack(Gesture::Hammer) {
+                        0.6
+                    } else {
+                        0.42
+                    };
+                    Some((
+                        "skill_ylk_1",
+                        0.9 + (self.clock / duration).clamp(0.0, 1.0) * 0.9,
+                        false,
+                    ))
+                }
+                PoseState::Attack(Gesture::Windup) => Some((
+                    "skill_ylk_1",
+                    0.3 + (self.clock / 0.4).clamp(0.0, 1.0) * 0.6,
+                    false,
+                )),
+                PoseState::Deflected => Some((
+                    "weakhit_b",
+                    input.boss_deflected.map_or(0.0, |(elapsed, duration)| {
+                        elapsed / duration.max(0.001) * 0.8
+                    }),
+                    false,
+                )),
+                PoseState::Attack(Gesture::Hit | Gesture::HeavyHit) => {
+                    Some(("weakhit_b", (self.clock / 0.3).min(1.0) * 0.3, false))
+                }
+                PoseState::Parry | PoseState::Attack(Gesture::Guard) => Some((
+                    "skill_huajie_01__shuangqiangt",
+                    0.1 + (self.clock / 0.25).min(1.0) * 0.55,
+                    false,
+                )),
+                PoseState::Dodge => Some((
+                    "skill_shoujia_dodge_f",
+                    0.2 + (input.dodge_elapsed / 0.42).min(1.0) * 0.8,
+                    false,
+                )),
+                PoseState::Air(_) if self.air_time < 0.18 => Some((
+                    "b_fight_env_jump_01_start_Lfoot__zuiquan",
+                    0.2 + self.air_time / 0.18 * 0.5,
+                    false,
+                )),
+                PoseState::Air(_) => Some((
+                    "b_fight_env_jump_02_loop__zuiquan",
+                    self.air_time - 0.18,
+                    true,
+                )),
+                PoseState::Land => Some((
+                    "b_fight_env_jump_03_to_idle__zuiquan",
+                    0.1 + self.clock * 3.0,
+                    false,
+                )),
+                _ => None,
+            }
+        };
+        let selected = selection
+            .and_then(|(name, time, looping)| library.clip(name).map(|clip| (clip, time, looping)));
+        if let Some((clip, seconds, looping)) = selected {
+            let mut target = library.sample(clip, seconds, looping, input.airborne);
+            // A dodge uses one forward source clip; the simulation's accepted
+            // direction supplies only this display-space facing adjustment.
+            if self.state == PoseState::Dodge {
+                let root = library.bone("Bip001").unwrap();
+                target[root].rotation =
+                    Quat::from_rotation_y(input.dodge_yaw) * target[root].rotation;
+            }
+            if self.source_clip != Some(clip) || self.transition <= dt {
+                self.source_from = self.source_local.clone();
+                self.source_blend = 0.0;
+            }
+            self.source_blend += dt;
+            if let Some(from) = &self.source_from {
+                let weight = poses::smooth(self.source_blend / 0.08);
+                for (value, previous) in target.iter_mut().zip(from) {
+                    *value = blend(*previous, *value, weight);
+                }
+            }
+            let weight = self.source.as_ref().map_or(0.0, |source| source.weight);
+            self.source = Some(SourcePose {
+                model: library.model_pose(&target),
+                weight: (weight + dt / 0.055).min(1.0),
+            });
+            self.source_local = Some(target);
+            self.source_clip = Some(clip);
+        } else if let Some(source) = &mut self.source {
+            source.weight = (source.weight - dt / 0.12).max(0.0);
+            if source.weight == 0.0 {
+                self.source = None;
+                self.source_local = None;
+                self.source_from = None;
+                self.source_clip = None;
+            }
         }
     }
 
@@ -95,7 +220,7 @@ impl RigPose {
             CombatEffect::Cannon => Gesture::Shot,
             CombatEffect::Hit => Gesture::Hit,
             CombatEffect::SniperImpact => Gesture::HeavyHit,
-            CombatEffect::Block => Gesture::Guard,
+            CombatEffect::Deflect => Gesture::Guard,
             CombatEffect::EnemyWindup => Gesture::Windup,
             CombatEffect::Respawn => {
                 *self = Self::new(library);
@@ -136,6 +261,9 @@ impl RigPose {
         }
         let state = if !input.alive {
             PoseState::Down
+        } else if input.boss_deflected.is_some() {
+            self.playback = None;
+            PoseState::Deflected
         } else if let Some(playback) = self
             .playback
             .as_ref()
@@ -148,8 +276,8 @@ impl RigPose {
             PoseState::Spin
         } else if input.sliding {
             PoseState::Slide
-        } else if input.blocking {
-            PoseState::Block
+        } else if input.parrying {
+            PoseState::Parry
         } else if input.sniper.is_some_and(|sniper| sniper.aiming) {
             PoseState::Aim
         } else if let Some(playback) = &self.playback {
@@ -184,7 +312,7 @@ impl RigPose {
                 PoseState::Run => 1.6 * input.speed / 6.0,
                 PoseState::Walk => 1.2 * input.speed / 3.8,
                 PoseState::Crouch => 1.2 * input.speed / 3.8,
-                PoseState::Block => 0.85 * input.speed / 3.8,
+                PoseState::Parry => 0.85 * input.speed / 3.8,
                 _ => 0.0,
             };
         let mut target = match state {
@@ -224,7 +352,7 @@ impl RigPose {
                 pose[0].rotation = Quat::from_rotation_y(input.slide_yaw) * pose[0].rotation;
                 pose
             }
-            PoseState::Block => library.sample("Sword_Block", 0.2 + self.clock.min(0.2), false),
+            PoseState::Parry => library.sample("Sword_Block", 0.2 + self.clock.min(0.2), false),
             PoseState::Aim => poses::idle(library, self.clock, WeaponMode::Ranged),
             PoseState::Attack(kind) => poses::gesture(
                 library,
@@ -240,6 +368,7 @@ impl RigPose {
                 (self.clock % Gesture::Axe.duration()).min(0.28),
                 WeaponMode::Melee,
             ),
+            PoseState::Deflected => poses::gesture(library, Gesture::HeavyHit, 0.18, input.mode),
             PoseState::Down => library.sample(
                 "Death01",
                 self.clock / 0.8 * library.duration("Death01"),
@@ -260,7 +389,7 @@ impl RigPose {
                 &mut target,
                 &airborne_pose(library, self.air_time, input.jumps_used),
             );
-        } else if matches!(state, PoseState::Block | PoseState::Aim) && input.speed > 0.01 {
+        } else if matches!(state, PoseState::Parry | PoseState::Aim) && input.speed > 0.01 {
             replace_lower_body(
                 library,
                 &mut target,
@@ -336,10 +465,11 @@ struct Inputs {
     crouched: bool,
     sliding: bool,
     slide_yaw: f32,
-    blocking: bool,
+    parrying: bool,
     spinning: bool,
     sniper: Option<SniperPose>,
     mode: WeaponMode,
+    boss_deflected: Option<(f32, f32)>,
 }
 
 fn airborne_pose(library: &AnimationLibrary, clock: f32, jumps: u8) -> Vec<Transform> {
@@ -382,6 +512,7 @@ type AnimatedActors = (
     &'static Facing,
     Option<&'static Combatant>,
     Option<&'static Enemy>,
+    Option<&'static Boss>,
 );
 
 pub(super) fn animate(
@@ -392,6 +523,7 @@ pub(super) fn animate(
         Res<HitStop>,
     ),
     library: Res<AnimationLibrary>,
+    source_library: Option<Res<SourceAnimationLibrary>>,
     feedback: Res<CombatFeedback>,
     actors: Query<AnimatedActors>,
     mut views: Query<(&ActorView, &mut RigPose)>,
@@ -402,7 +534,7 @@ pub(super) fn animate(
     }
     let latest_sequence = feedback.events().last().map_or(0, |event| event.sequence);
     for (view, mut rig) in &mut views {
-        let Ok((body, motion, health, facing, combat, _)) = actors.get(view.owner) else {
+        let Ok((body, motion, health, facing, combat, _, boss)) = actors.get(view.owner) else {
             continue;
         };
         let set = combat.map_or(WeaponSet::HammerSniper, Combatant::weapon_set);
@@ -422,43 +554,47 @@ pub(super) fn animate(
         let slide_yaw = (-slide_direction.x).atan2(-slide_direction.y)
             - (-facing.direction().x).atan2(-facing.direction().y);
         let speed = body.step_displacement().length() / fixed.delta_secs().max(0.0001);
-        rig.advance(
-            &library,
-            Inputs {
-                alive: health.is_alive(),
-                airborne: !motion.is_grounded(),
-                jumps_used: motion.jumps_used(),
-                speed,
-                sprinting: motion.is_sprinting(),
-                dodging: motion.is_dodging(),
-                dodge_elapsed: motion.dodge_elapsed(),
-                dodge_yaw,
-                crouched: motion.is_crouched(),
-                sliding: motion.is_sliding(),
-                slide_yaw,
-                blocking: motion.is_blocking(),
-                spinning: combat.is_some_and(Combatant::is_spinning),
-                sniper: combat.and_then(Combatant::sniper_sequence).map(|sequence| {
-                    let offset = sequence.aim_position() - (body.world_position() + Vec3::Y * 0.9);
-                    let shot_time = sequence.elapsed() - SniperSequence::AIM_DURATION;
-                    SniperPose {
-                        pitch: offset.y.atan2(offset.xz().length().max(0.001)),
-                        aiming: !sequence.has_fired(),
-                        recoil: if sequence.has_fired() {
-                            (1.0 - (shot_time - 0.05).abs() / 0.05).max(0.0) * 0.06
-                        } else {
-                            0.0
-                        },
-                    }
-                }),
-                mode,
-            },
-            if hit_stop.is_active() {
-                0.0
-            } else {
-                time.delta_secs()
-            },
-        );
+        let input = Inputs {
+            boss_deflected: boss
+                .filter(|boss| boss.state() == BossState::Deflected)
+                .map(|boss| (boss.elapsed(), boss.duration())),
+            alive: health.is_alive(),
+            airborne: !motion.is_grounded(),
+            jumps_used: motion.jumps_used(),
+            speed,
+            sprinting: motion.is_sprinting(),
+            dodging: motion.is_dodging(),
+            dodge_elapsed: motion.dodge_elapsed(),
+            dodge_yaw,
+            crouched: motion.is_crouched(),
+            sliding: motion.is_sliding(),
+            slide_yaw,
+            parrying: motion.is_parrying(),
+            spinning: combat.is_some_and(Combatant::is_spinning),
+            sniper: combat.and_then(Combatant::sniper_sequence).map(|sequence| {
+                let offset = sequence.aim_position() - body.aim_position();
+                let shot_time = sequence.elapsed() - SniperSequence::AIM_DURATION;
+                SniperPose {
+                    pitch: offset.y.atan2(offset.xz().length().max(0.001)),
+                    aiming: !sequence.has_fired(),
+                    recoil: if sequence.has_fired() {
+                        (1.0 - (shot_time - 0.05).abs() / 0.05).max(0.0) * 0.06
+                    } else {
+                        0.0
+                    },
+                }
+            }),
+            mode,
+        };
+        let dt = if hit_stop.is_active() {
+            0.0
+        } else {
+            time.delta_secs()
+        };
+        rig.advance(&library, input, dt);
+        if let Some(source) = &source_library {
+            rig.advance_source(source, input, dt);
+        }
     }
 }
 
@@ -540,6 +676,7 @@ mod tests {
 
     fn idle_input() -> Inputs {
         Inputs {
+            boss_deflected: None,
             alive: true,
             airborne: false,
             jumps_used: 0,
@@ -551,11 +688,156 @@ mod tests {
             crouched: false,
             sliding: false,
             slide_yaw: 0.0,
-            blocking: false,
+            parrying: false,
             spinning: false,
             sniper: None,
             mode: WeaponMode::Melee,
         }
+    }
+
+    #[test]
+    fn original_named_motion_uses_state_priority_and_keeps_shared_moves_distinct() {
+        let library = AnimationLibrary::default();
+        let source = SourceAnimationLibrary::default();
+        let mut rig = RigPose::new(&library);
+        let mut input = idle_input();
+        let step = |rig: &mut RigPose, input, dt| {
+            rig.advance(&library, input, dt);
+            rig.advance_source(&source, input, dt);
+        };
+        rig.observe(
+            &library,
+            CombatEffect::Melee,
+            WeaponSet::HammerSniper,
+            false,
+        );
+        for _ in 0..6 {
+            step(&mut rig, input, 1.0 / 60.0);
+        }
+        assert_eq!(rig.source_clip, source.clip("skill_ylk_1"));
+        assert_eq!(rig.source.as_ref().unwrap().weight, 1.0);
+        let held = rig.source.as_ref().unwrap().model.clone();
+        step(&mut rig, input, 0.0);
+        assert_eq!(held, rig.source.as_ref().unwrap().model);
+        input.parrying = true;
+        step(&mut rig, input, 1.0 / 60.0);
+        assert_eq!(
+            rig.source_clip,
+            source.clip("skill_huajie_01__shuangqiangt")
+        );
+        input.dodging = true;
+        step(&mut rig, input, 1.0 / 60.0);
+        assert_eq!(rig.source_clip, source.clip("skill_shoujia_dodge_f"));
+        input.dodging = false;
+        input.parrying = false;
+        rig.playback = None;
+        input.airborne = true;
+        input.jumps_used = 1;
+        step(&mut rig, input, 1.0 / 60.0);
+        assert_eq!(
+            rig.source_clip,
+            source.clip("b_fight_env_jump_01_start_Lfoot__zuiquan")
+        );
+        for _ in 0..20 {
+            step(&mut rig, input, 1.0 / 60.0);
+        }
+        assert_eq!(
+            rig.source_clip,
+            source.clip("b_fight_env_jump_02_loop__zuiquan")
+        );
+        input.jumps_used = 2;
+        step(&mut rig, input, 1.0 / 60.0);
+        assert_eq!(
+            rig.source_clip,
+            source.clip("b_fight_env_jump_01_start_Lfoot__zuiquan")
+        );
+        input.airborne = false;
+        step(&mut rig, input, 1.0 / 60.0);
+        assert_eq!(
+            rig.source_clip,
+            source.clip("b_fight_env_jump_03_to_idle__zuiquan")
+        );
+        input.mode = WeaponMode::Ranged;
+        for _ in 0..10 {
+            step(&mut rig, input, 1.0 / 60.0);
+        }
+        assert!(rig.source.is_none());
+        rig.observe(
+            &library,
+            CombatEffect::Respawn,
+            WeaponSet::HammerSniper,
+            false,
+        );
+        assert!(rig.source.is_none());
+    }
+
+    #[test]
+    fn actual_boss_deflection_ends_source_attack_without_a_boss_hit_event() {
+        let mut app = app();
+        app.init_resource::<SourceAnimationLibrary>();
+        let player = actor(&mut app);
+        app.world_mut()
+            .entity_mut(player)
+            .insert(Health::new(10_000.0));
+        let boss = actor(&mut app);
+        app.world_mut()
+            .entity_mut(boss)
+            .remove::<(Combatant, CombatIntent)>()
+            .insert((
+                Body::new(Vec2::new(0.0, -4.0), 5.2, 0.3),
+                Boss::default(),
+                Enemy::default(),
+                Health::new(Boss::PHASE_HEALTH),
+            ));
+        for _ in 0..500 {
+            if app.world().get::<Boss>(boss).unwrap().state() == BossState::Attacking {
+                break;
+            }
+            frame(&mut app, true);
+        }
+        assert_eq!(
+            app.world().get::<Boss>(boss).unwrap().state(),
+            BossState::Attacking
+        );
+        let direction = app.world().get::<Body>(boss).unwrap().world_position()
+            - app.world().get::<Body>(player).unwrap().world_position();
+        app.world_mut()
+            .get_mut::<Facing>(player)
+            .unwrap()
+            .set(direction.xz());
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_parry();
+        for _ in 0..12 {
+            frame(&mut app, true);
+        }
+        assert_eq!(
+            app.world().get::<Boss>(boss).unwrap().state(),
+            BossState::Deflected
+        );
+        let rig = actor_rig(&app, boss);
+        assert_eq!(rig.state, PoseState::Deflected);
+        assert!(rig.playback.is_none());
+        assert_eq!(
+            rig.source_clip,
+            app.world()
+                .resource::<SourceAnimationLibrary>()
+                .clip("weakhit_b")
+        );
+        assert_eq!(rig.source.as_ref().unwrap().weight, 1.0);
+        assert!(
+            !app.world()
+                .resource::<CombatFeedback>()
+                .events()
+                .any(|event| event.actor == boss && event.kind == CombatEffect::Hit)
+        );
+        let pose = rig.source.as_ref().unwrap().model.clone();
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        for _ in 0..20 {
+            frame(&mut app, false);
+        }
+        assert_eq!(pose, actor_rig(&app, boss).source.as_ref().unwrap().model);
     }
 
     #[test]
@@ -654,7 +936,7 @@ mod tests {
     }
 
     #[test]
-    fn real_fixed_motion_drives_walk_run_jump_land_block_and_roll_poses() {
+    fn real_fixed_motion_drives_walk_run_jump_land_parry_and_roll_poses() {
         let mut app = app();
         let actor = actor(&mut app);
         let idle = actor_rig(&app, actor).model.clone();
@@ -672,7 +954,7 @@ mod tests {
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
-            .set_held(true, false);
+            .set_shift_held(true);
         for _ in 0..18 {
             frame(&mut app, true);
         }
@@ -712,9 +994,9 @@ mod tests {
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
-            .set_held(false, true);
+            .request_parry();
         frame(&mut app, true);
-        assert_eq!(actor_rig(&app, actor).state, PoseState::Block);
+        assert_eq!(actor_rig(&app, actor).state, PoseState::Parry);
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
@@ -1105,7 +1387,7 @@ mod tests {
         {
             let mut intent = app.world_mut().get_mut::<ActionIntent>(actor).unwrap();
             intent.set_movement_held(true);
-            intent.set_held(true, false);
+            intent.set_shift_held(true);
             intent.request_dodge();
         }
         for _ in 0..18 {

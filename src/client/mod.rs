@@ -1,14 +1,18 @@
 //! Device input and presentation compose the headless demo.
 mod animation;
 mod audio;
+mod avatar;
 mod camera;
 mod combat;
 pub(super) mod controls;
 mod enemies;
+mod environment;
+mod forest_material;
 mod hud;
 mod impact;
 mod scene;
 mod skeleton;
+mod source_animation;
 mod stickman;
 mod web;
 
@@ -56,12 +60,14 @@ pub(super) fn run() {
         }),
         ..default()
     }))
+    .add_plugins(forest_material::ForestMaterialPlugin)
     .add_plugins(crate::simulation::SimulationPlugin)
     .insert_resource(ClearColor(Color::srgb_u8(15, 22, 29)))
     .init_resource::<controls::ViewYaw>()
     .init_resource::<controls::CaptureState>()
     .init_resource::<controls::AimDistance>()
     .init_resource::<skeleton::AnimationLibrary>()
+    .init_resource::<source_animation::SourceAnimationLibrary>()
     .add_systems(
         Startup,
         (
@@ -70,6 +76,7 @@ pub(super) fn run() {
             combat::setup,
             impact::setup,
             camera::setup,
+            environment::setup_camera_fog,
             web::ready,
         )
             .chain(),
@@ -85,11 +92,13 @@ pub(super) fn run() {
         (
             scene::sync_player,
             scene::sync_props,
+            environment::animate_foliage,
             combat::reconcile_enemies,
             combat::sync_enemies,
             combat::sync_health_bars,
             combat::sync_weapons,
             animation::animate,
+            avatar::sync,
             stickman::sync_attachments,
             combat::sync_markers,
             combat::effects,

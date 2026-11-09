@@ -2,23 +2,23 @@
 
 ## Scope / Trigger
 
-`src/client/`、`web/`、`index.html` 拥有输入、程序化表现和镜头，修改控制 / 构图 / Web 启动时阅读。
+`src/client/`、`web/`、`index.html` 拥有输入、蒙皮角色/环境表现和镜头，修改控制 / 构图 / Web 启动时阅读。
 
 ## Signatures
 
 - `controls::ViewYaw::yaw()` 供 scene 和 camera 读取；鼠标样本只能由 controls 消费一次。
 - `controls::AimDistance` 是客户端落点选择状态（默认 6m），随客户端插件初始化；最终落点仍由模拟校验。
-- `stickman::spawn(world, owner, body_material, eyes_material)` 为玩家 / 敌人共用的纯显示构造器，创建 RigPose 和骨骼附件，返回可关联受击变色的身体部件。
+- `stickman::spawn(world, owner, body_material, eyes_material)` 为玩家 / 敌人共用的纯显示构造器，创建 RigPose、愁铃客蒙皮和骨骼附件，返回可关联受击变色的身体部件。
 - `AnimationLibrary::{bone,duration,sample,model_pose}` / `blend` 采样随包骨骼资产；`RigPose::new(&AnimationLibrary)` 保存局部混合及模型空间姿态。
 - `stickman::{attach_weapon,sync_attachments}` 绑定右手腕，并在姿态采样后同步几何；WeaponMode 分别校正近战柄轴和远程枪轴。
-- `scene::sync_player` → 敌人显示根 / 武器显隐 → `animation::animate` → `stickman::sync_attachments` → HUD → `camera::follow` 在 Update 链式执行。
+- `scene::sync_player` → 敌人显示根 / 武器显隐 → `animation::animate` → `avatar::sync` → `stickman::sync_attachments` → HUD → `camera::follow` 在 Update 链式执行。
 - `ActorView { owner }` / `PlayerView` / `PropView { owner }` 标记纯显示根；输入、战斗身份留在物理实体。
 - Web 桥 `window.kivaInput.isActive(): boolean` / `takeLook(): number` / `takeAim(): number` / `keys(): number` / `takeActions(): number` / `ready(): void`。
 - wasm-bindgen 绑定在 `client/web.rs`，原生不需要 JS；加载观察器为 `window.kivaStartup.subscribe(callback)`。
 - `window.kivaHud.render(persona, weapon, healthFraction, health, combo, cooldown, context)`；绑定在 `client/hud.rs`，只有显示方向。
-- `window.kivaHud.renderLoadout(set, mode, maximum, attackReady, skillReady, guardReady, comboReady)`；set 为 1 锤狙 / 2 斧炮，mode 为 0 近战 / 1 远程。`renderTarget(name, current, maximum)` 接收当前锁定敌人，空名称清理目标条。Rust 每帧先发送套装和目标，再发送玩家快照。
+- `window.kivaHud.renderLoadout(set, mode, maximum, attackReady, skillReady, guardReady, comboReady)`；set 为 1 锤狙 / 2 斧炮，mode 为 0 近战 / 1 远程。`renderTarget(name, current, maximum, status)` 接收当前锁定敌人，空名称清理目标条。Rust 每帧先发送套装和目标，再发送玩家快照。
 - `window.kivaEnemies.takeMode(): number`（0=无请求、1=靶子、2=实战）/ `render(mode)`；绑定在 `client/enemies.rs`，固定循环前把选择交给 `gameplay::set_enemy_mode`。
-- `window.kivaAudio.playSniperShot(): boolean`；绑定在 `client/audio.rs`，只消费玩家实际 `SniperShot`，返回浏览器是否成功开始播放。
+- `window.kivaAudio.{playSniperShot(): boolean, playEffect(name): boolean, setActive(bool)}`；绑定在 `client/audio.rs`，消费已结算攻击/命中/卸势和玩家射击；Shot 及伴随 SniperShot 不重复发声。
 
 ## Contracts
 
@@ -39,18 +39,19 @@ scene 根据 Body 的三维脚底前后快照和 fixed overstep 插值，camera 
 狙击白金枪口和弹道读取本帧 ActorView Transform × 武器局部 Transform × 枪口偏移，不使用尚未传播的 GlobalTransform；命中环和火花保留真实浮空命中高度，平面垂直于入射方向。
 冲击发光材质使用 StandardMaterial.emissive 且保留 PBR 路径；当前 Bevy 的 unlit=true 路径只输出 base_color，会忽略 emissive，导致爆闪变成暗色实体。
 `impact::update` 在骨骼附件之后、相机之前消费专用事件；粒子和镜头后坐在 HitStop 期间继续表现，失锁暂停时冻结，临时实体到期回收并复用共享资产。普通特效系统忽略这两种专用事件。
-网格 / 材质复用；使用随包 CC0 动画资源，无运行时网络资源加载，移动权威在模拟。
+网格 / 材质 / 纹理复用；使用随包角色二进制和 CC0 动画资源，音频仅加载同源随包文件，移动权威在模拟。
 
 Web startup / input / hud / enemies / audio 五个 head 脚本先于 Trunk 模块同步安装，DOM 就绪后才绑定元素。
-音效仅在可信进入点击或画布按下时创建 / 恢复 Web Audio；缓冲生成一次，叠加低频、爆音、短命中与回声，至多 2 声部并回收节点。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
+音效仅在可信进入点击或画布按下时创建 / 恢复 Web Audio；随包音频异步解码一次，原有枪声保留合成缓存。至多 4 个短音效声部及 1 个 BGM 循环，gain 各 0.18，暂停立即停止/回收短音效并保存 BGM 播放位置；恢复只创建一条循环。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
 进入卡片可选择靶子 / 实战，捕获期间 F2 切换；按钮请求在暂停或引擎加载时保留至一次消费，模式权威在玩法层。
 原生 F2 在有焦点时切换，窗口标题显示当前模式。模式改变后先回收失效敌人的显示树与血条，再用共享网格 / 材质创建新表现。
 捕获必须收到 pointerlockchange 且文档有焦点，requestPointerLock Promise 完成不算确认。
 失锁清水平 / 垂直累计；失焦失效整个请求，重新点击才能恢复。takeLook / takeAim 各返回并清空，合并事件和父事件不能重复计数。
-Web keys() 的 u32 位掩码为 W=1 / S=2 / A=4 / D=8 / sprint=16 / block=32，仅捕获期间可信非重复输入建立按住状态；
+Web keys() 的 u32 位掩码为 W=1 / S=2 / A=4 / D=8 / sprint=16，仅捕获期间可信非重复输入建立按住状态；
 失锁清零，keyup 释放。原生消费 WindowFocused 的中间失焦事件，避免同帧失焦恢复遗漏清理。
 自由鼠标用 clientX / movementX 校准 CSS 增益，丢弃边缘截断样本；DPR 改变清校准，不盲目用它换算。
-takeActions() 一次返回并清空 jump=1 / dodge=2 / attack=4 / skill=8 / combo=16 / switch=32 / pair1=64 / pair2=128 / target=256 / crouch=512。
+takeActions() 一次返回并清空 jump=1 / dodge=2 / attack=4 / skill=8 / combo=16 / switch=32 / pair1=64 / pair2=128 / target=256 / crouch=512 / parry=1024。
+右键卸势只在可信按下沿提交 parry；松开不清排队请求，长按/重复 pointerdown 不再次提交。原生按 MouseButtonInput 顺序处理完整短按和松开再按下，失锁、捕获首帧和其他窗口不建立按压。
 KeyC 是切换指令：完整按压按 XOR 奇偶性锁存，keyup 不取消，重复按住不能多次切换；原生 C 同样消费有序 KeyboardInput。
 Rust 将离散位提交到 Intent 锁存，直到真实固定步消费；失锁清移动 / 动作 / 战斗意图并暂停模拟。
 Shift 位表示物理按住而非已进入疾跑；聚合左右 Shift 的首次按下另提交一次 dodge 位，Ctrl 不再绑定闪避。
@@ -65,11 +66,11 @@ Web HUD 顶部居中为米金边框、暗红填充的锁定敌人长血条；底
 套装和近远模式使用明确数字枚举，不解析中文武器名；技能可用性是当前 Health / MotionState / Combatant 的只读提示，模拟仍负责范围、落点和动作结算。
 HUD 脚本只更新 textContent、progress.value、图标 href、可见性、样式类和无障碍属性，不使用 innerHTML 或独立计时器；暂停后冷却与联动显示随模拟快照冻结。
 HUD 为 pointer-events:none 的纯显示层，E / Tab / 滚轮 / 1 / 2 沿用已有输入桥；不能带入预览 HTML 的点击演示和模拟计时。HUD CSS 使用 hud-* 名称和 .game-hud 作用域，不能污染入口的 button / kbd / progress / p 样式。
-火柴人使用 act 的骨架比例（待机头顶约 1.73m），手部挂点由骨骼动态计算；模型替换不能反写 Body 或改变相机锚点。
+愁铃客标准高度1.73m，原主骨架986节点已恢复；source_animation对35个具名原clip有界解码、稀疏T/R/S采样与层级求值，按原骨名驱动独立Skin调色板，CC0回退仍用23个明确结构锚点。`avatar::sync` 只更新显示骨骼；挂点位置用适配后的手腕，枪轴方向沿用原动作。13个穿戴部件、17个材质槽中的皮肤及长刀使用原主色/法线纹理，PNG显式sRGB/linear；未知原作材质参数不猜测为已恢复。靶子从 Body.scale() 读取1.45比例，模型替换不能反写 Body 或改变玩家相机锚点。
 资产为 `assets/animations/stickman.anim`（23 骨骼 / 19 动画），保留同目录 CC0 许可证；`include_bytes!` 嵌入，显式小端解码。
 身体姿态通过 ActorView.owner 读取 Body 的实际固定步位移、MotionState、Health 和 Combatant，动画反馈按物理 CombatEvent.actor/sequence 归属与去重。
 禁止把动画根位移叠加到权威位置；空中不重复抬升骨盆。暂停冻结姿态、尸体保留可见播放 Death01，复活清理旧姿态。
-跳跃姿态读取 MotionState::jumps_used()，第二次起跳重启空中姿态计时并使用 NinjaJump_Idle_Loop；落地继续播放 Jump_Land。
+跳跃读取MotionState::jumps_used()，第二次起跳重启空中计时；近战优先原作共用跳起/循环/落地三段，枪姿等缺源状态回退到CC0 NinjaJump/Jump_Land。
 锤狙转场的瞄准姿态覆盖旧锤击，通过现有双手 IK 向真实目标仰角抬枪；实际 Shot 到达后才播放射击反馈和局部后坐，骨盆 / 脚底和物理位置保持原有权威。
 `SniperImpact` 仅为受击 actor 选择 0.30s 重受击姿态，保留骨盆和下肢落点；HitStop 期间仍消费反馈但姿态时钟 dt=0，恢复后再播放反应，不修改身体物理高度。
 蹲姿和滑铲根据 MotionState 只读状态选择，0.12s 平滑权重调用 act 的 crouch_pose 腿部 IK，下移骨盆 0.33m 且保持脚掌和腿长。
@@ -110,7 +111,7 @@ Rust 无窗口回归通过真实固定步验证选中目标的当前血量、目
 客户端无窗口场景测试验证装配、武器切换显示、反馈消费及特效回收和资产复用；真实画面 / 手感不由这些测试代替。
 模式切换回归检查多次切换的敌人显示根 / 血条数量、无孤立骨骼、资产数量不增长；Node 检查早期选择、一次消费和 F2 捕获 / 重复过滤。
 Shift 输入回归覆盖完整点按先于采样结束、左右键重叠 / 换手、帧间松开再按下，以及捕获 / 重复事件隔离。
-火柴人无窗口测试覆盖杆件端点连接、跨角色网格复用、父子关系及不改变物理姿态。
+蒙皮无窗口测试覆盖绑定姿态抵消、实际走跑/蹲伏/跳跃/攻击/暂停、跨角色网格/纹理/材质复用、挂点、父子关系及不改变物理姿态。
 骨骼测试覆盖全部动画有限性 / 无根位移、走跑跳跃等实际姿态变化、事件归属、武器跟手、死亡 / 复活 / 暂停及不改模拟高度。
 C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失焦清理；蹲伏 IK 验证多片段的脚掌位置 / 旋转 / 腿长和武器握持。
 
@@ -118,3 +119,14 @@ C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失
 
 错误：独立平滑相机、把显示 Transform 写回物理 Position，或将 view 实体 ID 当作战斗 actor。
 正确：JS 只管理输入边界，物理实体消费 Intent；owner 关联的显示根读取快照，模型和相机共用显示位置。
+
+`environment` 只消费Level同源地形/竹干/岩石，11个聚合网格、5个ForestMaterial；原竹叶/竹皮/落叶base与normal随包复用，sRGB/linear显式区分，alpha卡片有UV/tangent。ForestMaterial=ExtendedMaterial<StandardMaterial,ForestSurface>，自写WESL只扩展片元细节，保留标准PBR/雾、蒙皮/阴影/深度路径。叶片风动只移动4组装饰，不改变碰撞竹干，暂停冻结时钟。半球环境光/冷色填光/指数雾为Kiva美术适配；原编译shader用于验证mix通道，不冒称原HLSL/完整BRDF已移植。场景是主题重建，不能声称恢复原版实例布局；来源与局限见assets/choulingke/README.md。
+
+当前BGM来源未证实，audio/music.json.file为null；播放器跳过音乐，不请求不存在的文件。攻击/命中/卸势随包Ogg为自制程序音效，不能称为燕云原声。只有确认曲目身份后才配置本目录简单文件名并随包复制。
+
+实战预警颜色与HUD阶段/行动文字直接读Boss只读快照，不能依赖普通Enemy.is_winding_up镜像。HUD不显示内部行动槽ID；无Boss的被动演武靶继续使用原目标血条。
+
+SourceAnimationLibrary与RigPose源姿态仅在client，不能让simulation导入资产名或播放时钟。KIVASR01保留原毫秒键、祖先索引和带符号非零尺度；读入检查边界/有限/单位quat/时间单调，缺轨回原rest。原根XZ去掉、地面保留腰身Y，空中Y不与物理高度叠加。共用jump/huajie/dodge按骨名和明确父关系retarget，省略轨记录来源，不能说成愁铃客专属；具体裁剪和比例适配写animation_manifest。原手腕global相对rest的delta校正到既有CC0握柄frame，两路姿态平滑混合，远程瞄准IK优先；源骨架缺失独立附件不猜绑定。原技能槽→clip仍未恢复，Boss.clip_name=None不凭名字补造精确映射。
+普通Effect暂停冻结寿命/变换并前移游标，恢复不补播；HitStop不等于失锁，普通视觉效果可继续推进。
+
+竹枝叶kind=3在相机3m内裁除、3–5.5m固定像素dither渐入，使用真实view.world_position，仅影响主可见片元；远处枝叶和地面落叶保持。当前未启用独立DepthPrepass；未来启用时须把同一裁切规则同步到对应depth prepass，避免隐藏近叶先写深度。原叶atlas阴影保留，不以退隐改变碰撞或源alpha。

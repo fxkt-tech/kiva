@@ -10,14 +10,111 @@ pub const RAMP_RIGHT: f32 = -3.0;
 pub const RAMP_START: f32 = 1.0;
 const GRID_SPACING: f32 = 0.5;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct TerrainGeometry {
     pub vertices: Vec<Vec3>,
     pub triangles: Vec<[u32; 3]>,
 }
 
 impl TerrainGeometry {
-    /// One continuous surface includes the flat courtyard and its small hill.
+    pub fn bamboo_trunks(stems: &[super::Bamboo]) -> Self {
+        let mut geometry = Self {
+            vertices: Vec::new(),
+            triangles: Vec::new(),
+        };
+        for stem in stems {
+            let offset = geometry.vertices.len() as u32;
+            for level in 0..=4 {
+                let fraction = level as f32 / 4.0;
+                let center = stem.center_at(fraction);
+                let radius = stem.radius_at(fraction);
+                for side in 0..8 {
+                    let angle = side as f32 * std::f32::consts::TAU / 8.0;
+                    geometry
+                        .vertices
+                        .push(center + Vec3::new(angle.cos() * radius, 0.0, angle.sin() * radius));
+                }
+            }
+            for level in 0..4 {
+                for side in 0..8 {
+                    let a = offset + level * 8 + side;
+                    let b = offset + level * 8 + (side + 1) % 8;
+                    geometry
+                        .triangles
+                        .extend([[a, a + 8, b], [b, a + 8, b + 8]]);
+                }
+            }
+            let bottom = geometry.vertices.len() as u32;
+            geometry.vertices.push(stem.base);
+            let top = geometry.vertices.len() as u32;
+            geometry.vertices.push(stem.center_at(1.0));
+            for side in 0..8 {
+                let next = (side + 1) % 8;
+                geometry
+                    .triangles
+                    .push([bottom, offset + side, offset + next]);
+                geometry
+                    .triangles
+                    .push([top, offset + 32 + next, offset + 32 + side]);
+            }
+        }
+        geometry
+    }
+
+    pub fn forest_rocks() -> Self {
+        let mut geometry = Self {
+            vertices: Vec::new(),
+            triangles: Vec::new(),
+        };
+        for (center, size) in [
+            (Vec2::new(-19.0, -17.0), Vec3::new(2.8, 1.3, 2.1)),
+            (Vec2::new(18.0, -18.0), Vec3::new(2.0, 1.6, 3.1)),
+            (Vec2::new(-18.0, 17.0), Vec3::new(2.7, 1.2, 2.3)),
+            (Vec2::new(20.0, 19.0), Vec3::new(2.8, 1.7, 2.2)),
+            (Vec2::new(-11.0, 18.0), Vec3::new(1.8, 0.7, 2.3)),
+            (Vec2::new(6.0, 20.0), Vec3::new(2.7, 1.1, 1.9)),
+        ] {
+            let base = Vec3::new(center.x, hill_height(center) - 0.03, center.y);
+            let offset = geometry.vertices.len() as u32;
+            for (height, width) in [(0.0, 0.86), (0.48, 1.0), (0.9, 0.58)] {
+                for side in 0..8 {
+                    let angle = side as f32 * std::f32::consts::TAU / 8.0;
+                    geometry.vertices.push(
+                        base + Vec3::new(
+                            angle.cos() * size.x * width * 0.5,
+                            size.y * height,
+                            angle.sin() * size.z * width * 0.5,
+                        ),
+                    );
+                }
+            }
+            for level in 0..2 {
+                for side in 0..8 {
+                    let a = offset + level * 8 + side;
+                    let b = offset + level * 8 + (side + 1) % 8;
+                    geometry
+                        .triangles
+                        .extend([[a, a + 8, b], [b, a + 8, b + 8]]);
+                }
+            }
+            let bottom = geometry.vertices.len() as u32;
+            geometry.vertices.push(base);
+            let top = geometry.vertices.len() as u32;
+            geometry.vertices.push(base + Vec3::Y * size.y);
+            for side in 0..8 {
+                let next = (side + 1) % 8;
+                geometry
+                    .triangles
+                    .push([bottom, offset + side, offset + next]);
+                geometry
+                    .triangles
+                    .push([top, offset + 16 + next, offset + 16 + side]);
+            }
+        }
+        geometry
+    }
+
+    /// One continuous surface includes the woodland clearing and its small hill.
     /// The extra half metre matches the existing visible ground and low rim.
     pub fn ground(half_size: f32) -> Self {
         assert!(half_size.is_finite() && half_size > 0.0);
@@ -88,7 +185,7 @@ pub fn ramp_summit() -> f32 {
     RAMP_START + RAMP_HEIGHT / RAMP_ANGLE.tan()
 }
 
-fn hill_height(point: Vec2) -> f32 {
+pub fn hill_height(point: Vec2) -> f32 {
     let dx = point.x - HILL_PEAK.x;
     let dz = point.y - HILL_PEAK.z;
     let radius_x = if dx < 0.0 { 5.5 } else { 3.0 };

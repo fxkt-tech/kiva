@@ -1,4 +1,4 @@
-# 俯视探索 Demo 架构
+# Kiva 竹林演武架构
 
 本项目是单 crate 的 Bevy / Avian 三维物理游戏。依赖保持 `client → gameplay → simulation`，客户端可以直接读取模拟状态。
 旧 MOBA 实现、资源和活跃规范已移出当前版本，完整历史在 `lol` 分支；Trellis 归档只作历史参考。
@@ -11,20 +11,25 @@
 | `simulation/movement.rs` | `Body` 只读三维脚底快照与平面投影；`MoveIntent` 世界 x/z 移动意图 |
 | `simulation/actions.rs` | `ActionIntent`、`Facing`、`MotionState`；动作计时、跳跃额度及接触结果 |
 | `simulation/combat.rs` | `CombatIntent`、武器状态、联动窗口、生命、敌人攻击、复活与有界反馈历史 |
+| `simulation/boss.rs` | 单愁铃客的原作决策池/权重/行动冷却，以及Kiva适配的阶段、预警、命中和复活 |
 | `simulation/impact.rs` | 狙击命中停顿预算、固定步门控与恢复 |
 | `simulation/weapons.rs` | 两套武器及近远程普攻的具体数据 |
 | `simulation/geometry.rs` | 旧无窗口夹具的几何描述适配，产品碰撞由 Avian 结算 |
 | `gameplay/mod.rs`、`gameplay/terrain.rs` | `Level`、`Prop`、`Boundary`、`Player`、`EnemyMode`、共享地形几何及实体装配 |
 | `client/controls.rs` | `ViewYaw`，设备输入转世界方向；捕获失效时停止意图 |
 | `client/enemies.rs`、`web/enemies.js` | 进入卡片 / F2 的敌人模式请求及模式显示，调用玩法装配接口 |
-| `client/scene.rs` | 几何网格、材质、灯光和插值后的显示 `Transform` |
-| `client/stickman.rs` | 玩家与敌人共用的火柴人圆头、杆件、关节和网格缓存 |
+| `client/scene.rs` | 玩家显示根和插值后的显示 `Transform` |
+| `client/stickman.rs` | 角色构造兼容入口及动态右手挂点 |
+| `client/avatar.rs` | 随包愁铃客蒙皮、纹理、共享材质和绑定姿态适配；只写显示骨骼 |
+| `client/environment.rs` | 玩法同源竹干/地形、装饰枝叶、雾和灯光 |
+| `client/source_animation.rs` | 986节点原主骨架与35个具名原作片段的有界解码、稀疏采样和层级求值 |
+| `client/forest_material.rs`、`assets/shaders/forest.wesl` | 标准PBR片元扩展、共享环境材质，不改变蒙皮/阴影/碰撞 |
 | `client/skeleton.rs` | 随包 CC0 动画的解码、局部采样、父子骨骼求值 |
 | `client/animation.rs`、`animation/poses.rs` | 根据只读模拟快照与明确 actor 的事件选择 / 混合身体姿态 |
 | `client/camera.rs` | 从相同显示位置与朝向派生跟随镜头 |
 | `client/combat.rs` | 只读敌人 / 武器 / 标记 / 特效，按反馈序号消费并回收临时实体 |
 | `client/impact.rs` | 狙击枪口、弹道、空中命中火花和镜头后坐的共享资产及显示时钟 |
-| `client/audio.rs`、`web/audio.js` | 实际狙击事件到浏览器 Web Audio 的一次消费与声音合成 |
+| `client/audio.rs`、`web/audio.js` | 实际战斗反馈的一次消费、短音效与暂停同步的音乐循环 |
 | `client/hud.rs`、`web/hud.js` | 把玩家与当前选中敌人的真实快照显示为血条、人格 / 武器、技能可用性、冷却和联动提示 |
 | `web/input.js` | 浏览器锁定确认、焦点、鼠标位移单位与一次性消费 |
 | `web/startup.js` | 在 WASM 加载前记录成功 / 失败，给晚订阅者重放 |
@@ -32,7 +37,7 @@
 Avian 的 Position / Rotation / 速度是唯一运动权威；`Body` 和 `PhysicsPose` 只保存物理结果快照。
 客户端使用 `ActorView { owner }`、`PlayerView` 和 `PropView { owner }` 的独立显示根，不能用模型 `Transform` 反写物理实体。
 角色物理中心与脚底相差当前胶囊半高；显示和相机使用脚底锚点，箱子显示使用中心位置与完整转动。
-`Level.props` 装配真实三维道具；`Level.ground/ramp` 原始顶点 / 三角形同时生成 Collider 和 Mesh，围墙使用共享 Boundary 尺寸。
+`Level.props` 装配真实三维道具；`Level.ground/ramp/forest_trunks/forest_rocks` 原始顶点 / 三角形同时生成 Collider 和 Mesh，围墙使用共享 Boundary 尺寸。
 
 ## 一帧中的顺序
 
@@ -43,7 +48,7 @@ Avian 的 Position / Rotation / 速度是唯一运动权威；`Body` 和 `Physic
    离散指令在实际固定步消费，显示帧无固定步时保留、多固定步时不重复；支撑发布排在当前空间查询刷新之后。
    `SimulationActive` 共同门控物理 StepSimulation 和全部规则，菜单期间角色、箱体、冷却及 AI 一起停止。
    `HitStop` 在步头锁定同一步的执行决定，狙击命中后停顿后续 3 个固定步（约 50ms），同时冻结动作 / 物理 / 战斗而保留速度；失锁保留预算，恢复无补算。
-4. Update 先回收失效敌人的显示树和血条、补齐新敌人表现，再同步人物 / 箱体 / 敌人显示根、武器显隐、身体姿态、骨骼附件、HUD、相机。三维脚底与箱体中心姿态按 fixed overstep 插值；
+4. Update 先回收失效敌人的显示树和血条、补齐新敌人表现，再同步人物 / 箱体 / 敌人显示根、武器显隐、身体姿态、蒙皮骨骼、骨骼附件、HUD、相机。三维脚底与箱体中心姿态按 fixed overstep 插值；
    暂停或命中停顿时统一取当前状态，避免 fixed overstep 持续循环导致模型 / 镜头往复抖动；命中停顿冻结骨骼时钟。
    专用冲击表现及音效消费在骨骼附件后、HUD / 相机前执行；冲击粒子和后坐可在命中停顿中继续，失锁时冻结。
    相机读取同一个显示根位置，朝向使用当前 `ViewYaw`，不追加平滑延迟。
@@ -67,7 +72,7 @@ Avian 的 Position / Rotation / 速度是唯一运动权威；`Body` 和 `Physic
 
 ## 场景与地形
 
-原有道具与出生点保留。箱子为有质量、摩擦和转动的动态刚体，石柱、石块及围墙固定；箱体装饰随同一显示根运动。
+场景为确定性 50×50m 竹林重建，包含中央战斗空地、曲径、密集竹海、岩石与可见低岸；不声称已恢复原版关卡实例布局。竹干和岩石使用玩法层的共享三角几何生成碰撞及显示，枝叶、竹节、落叶只作装饰，环境合并为 11 个网格 / 5 个扩展材质。旧箱子/石柱不再装配到默认地图，通用箱体控制和道具姿态接口仍由物理层提供。
 西侧坡道宽 3m、坡度约 20°，连接 1.5m 高台；东侧小山顶约在 `(16.5,2.6,8.5)`，西侧缓坡可登顶，东侧较陡用于测试行走上限。
 地面与小山由一份连续三角网格构成，客户端 Mesh 与物理 Collider 使用同一原始顶点和索引，不创建共面的第二块碰撞地板。
 坡道与高台为连续闭合几何。接缝、法线、出生净空和缓坡 / 陡坡由几何与真实控制器回归共同验证。
@@ -81,18 +86,18 @@ Shift 参考 `origin/act`（`bd3e344`）：按下立即沿当前移动方向闪�
 失焦 / 暂停通过清理动作意图请求取消疾跑锁存，在恢复的首个固定步执行，客户端不直接写 MotionState。
 Space 参考 `act` 的两次跳跃：每次把竖直速度设为 6.4m/s，空中可再次起跳，第三次无效，落地恢复次数。
 持续按住不重复起跳，暂停保留已用次数，死亡 / 复活重置；火炮跃进期间不接受普通跳跃。
-动画读取已用次数，二段跳使用随包的 `NinjaJump_Idle_Loop`，不额外叠加模型高度。
-右键地面格挡，移动速度为步行 0.35 倍，正面受击由 12 降至 2。
+动画读取已用次数，二段跳重启原作共用跳跃阶段；远程/缺源动作回退到CC0的NinjaJump等姿态，不额外叠加模型高度。
+右键点按提交卸势请求，地面有效窗口 0.25s、起手冷却 0.65s；窗口内正面近战免伤并打断攻击者，后者进入 0.45s 恢复。窗口内移动速度为步行 0.35 倍，结束后恢复；按住不重复触发，窗口外和侧后方正常受伤。暂停/HitStop 冻结计时，失活清理、死亡和复活取消窗口及排队输入。
 C 点按切换蹲伏 / 站立，松开保持，蹲行固定 1.6m/s；疾跑按 C 启动锁定方向的 0.55s 滑铲，
 初始目标速度 5m/s 线性衰减，理想运动目标总长 1.375m；实际位移由接触求解限制。
-滑铲结束后保持蹲姿，C 可提前起身结束。蹲姿兼容当前普攻和格挡；滑铲中不能起手攻击 / 技能 / 联动。
+滑铲结束后保持蹲姿，C 可提前起身结束。蹲姿兼容当前普攻和卸势；滑铲中不能起手攻击 / 技能 / 联动。
 跳跃、有效闪避、跃进、击飞、死亡复活和暂停清理退出蹲伏；空中或闪避中按 C 不排队到落地后执行。
 蹲伏胶囊总高为 1.40m，改变姿态时保住脚底；起身前检查净空。重力统一为沿 -Y 的 18m/s²，
 跳跃与跃进提供速度，落地依赖实际支撑，不强制回到世界 y=0。箱子为可转动动态刚体，石块 / 石柱 / 地形为固定刚体。
-玩家和敌人都使用共用火柴人几何：细杆四肢、球形关节与圆头，使用原 act 骨架比例，待机头顶约 1.73m。
-网格只创建一次并跨角色复用，武器绑定右手腕，眼睛跟随头部；敌人杆件、关节和头部共用受击 / 蓄力变色规则。
-姿态从 `act` 的 CC0 23 骨骼 / 19 动画资源采样，带局部混合、走跑步频、跳跃阶段、翻滚和受击 / 倒地反馈。
-资源嵌入 WASM / 原生二进制，不在运行时联网加载；根位移已剥离，空中骨盆高度校正避免与 MotionState 的跳高重复叠加。
+玩家和敌人使用随包愁铃客蒙皮模型、原始 UV/四权重、主色与法线贴图。`assets/choulingke/character.bin` 由离线工具生成，记录原始 GUID、材质槽和来源哈希；不在运行时读取游戏目录。13 个穿戴部件与配件共用网格、纹理和不可变受击/蓄力材质变体。专属长刀替换两套近战外观，刀鞘和腰刀为配件；远程保留原有狙击枪和火炮。原主骨架986节点已恢复，原mix图经DXIL家族证据转换成线性ORM；布料/发丝物理及完整原BRDF尚未移植，使用Standard PBR近似。
+`avatar::sync` 位于动画与挂点同步之间，用源绑定矩阵和既有动作增量更新独立显示骨骼；武器位置使用适配后的手腕，不能反写 Body。角色标准高度 1.73m，靶子由 `Body::scaled(1.45)` 同时放大显示和胶囊；胶囊半径、站立/蹲伏高、瞬移和复活使用实际尺寸。
+RigPose沿现有状态优先级与只读反馈选择原作长刀/卸势/跳跃/闪避/受击片段；source_animation解码35个具名clip，完整原层级求值并按骨名驱动调色板。共享动作保留愁铃客rest骨长，未恢复原技能槽和命中帧，裁剪/时长属于Kiva适配。移动、蹲滑、枪姿、旋转与倒地等继续用CC0的23骨骼/19片段和现有IK；两路平滑混合，独立附件缺失部分保留结构映射。
+资源嵌入WASM/原生二进制，运行时不读取游戏目录或联网加载。原动作平面根位移剔除，地面保留腰身竖直起伏，空中根高归模拟；原手腕相对rest的旋转增量用于握柄校正，避免将源轴约定直接套到旧枪轴。
 动画只写 RigPose，附件同步只写肢体与武器 Transform，不写人物显示根、Body 或相机。
 蹲伏复用 act 的模型空间腿部 IK：骨盆平滑下移 0.33m，保持脚掌位置 / 朝向和腿长，0.12s 蹲下 / 起身。
 RigPose.local 保存蹲伏 IK 前姿态，IK 只作用于生成 model 的副本，避免状态过渡反复累加下移。
@@ -112,7 +117,7 @@ Q 切换可见目标；默认在面朝方向自动锁定可见敌人。左键普
 窗口过期、目标死亡 / 落地、切套装或手动切武器均使旧联动失效。技能起手共享冷却，不因切换套装刷新。
 狙击在实际发射前重新验证原目标、动作和视线，只发一次 Shot / 85 伤害；死亡、目标移除、模式替换或手动切换会取消尚未发射的狙击。序列中不排队新攻击，暂停同时冻结镜头与发射；射击击倒目标后仍完成短暂恢复。
 成功命中追加 SniperShot（射手）和 SniperImpact（受击者）专用反馈，不增加伤害。当前显示枪口生成白金爆闪与双层弹道，真实空中命中点生成入射方向环和火花；后坐在 0.12s 内衰减并重新检查相机净空。目标播放保留下肢落点的重受击姿态。
-默认使用靶子模式，装配 1 名 100 万生命的被动敌人，关闭追击和攻击，保留碰撞、伤害、击飞与复活。实战模式装配 4 名 120 生命的敌人，接近后有 0.5s 攻击预警。
+默认使用靶子模式，装配 1 名 1.45 倍愁铃客、100 万生命的被动敌人，关闭追击和攻击，保留碰撞、伤害、击飞与复活。实战模式装配单个标准身高的愁铃客Boss，采用已恢复P1/P2决策池、权重、行动槽与冷却。650×2条生命、0.72s预警、命中体积和14/18伤害为Kiva适配，完整原技能槽到动作/数值尚未恢复。Boss组件独占阶段和行动状态，普通Enemy主动AI/复活跳过它；转阶段无敌、正面卸势破绽、玩家倒地重置和击败后重开均在固定步结算。
 进入卡片或 F2 提交模式选择，由 `gameplay::set_enemy_mode` 替换敌人，清理玩家旧目标和联动，保留玩家物理状态、生命、武器与冷却；暂停时也能切换。
 敌人和玩家倒地 3s 后回到出生点，靶子复活仍为被动，复活不重放死亡期间排队的指令。
 `CombatFeedback` 持有最多 128 条单调序号反馈，显示按游标消费，避免零个 / 多个固定步丢失命中特效。
@@ -122,7 +127,7 @@ Q 切换可见目标；默认在面朝方向自动锁定可见敌人。左键普
 ## 浏览器边界
 
 `startup.js`、`input.js`、`hud.js`、`enemies.js`、`audio.js` 必须同步安装在 Trunk 生成的模块之前，脚本不依赖 DOM 已创建。
-`window.kivaAudio.playSniperShot()` 消费实际玩家狙击事件；可信进入点击 / 画布按下解锁 Web Audio，一次合成缓存低频爆音、短命中与回声，限制并回收并发声部。不支持或未运行时丢弃旧声，原生播放为空操作，无新增音频依赖。
+`window.kivaAudio.playEffect(name)` 消费已结算的挥刀、命中和卸势，`playSniperShot()` 消费玩家实际射击/火炮反馈；伴随的狙击特效事件不重复发声。`setActive(bool)` 同步模拟暂停，可信进入点击 / 画布按下解锁 Web Audio 并缓存随包音频。音乐至多一条循环，暂停保留播放位置并释放节点；短音效至多 4 声部，未解锁/暂停/失败的声音丢弃，不延迟重放。原生播放为空操作，无新增平台音频依赖。
 `window.kivaEnemies.takeMode()` 返回并清空待处理模式（0=无、1=靶子、2=实战），`render(mode)` 显示 Rust 当前模式；模式请求在固定循环前处理，不受暂停门控。
 `window.kivaInput` 暴露 `isActive(): boolean`、`takeLook(): number`、`takeAim(): number`、`keys(): number`、`takeActions(): number`、`ready(): void`。
 `takeLook()` / `takeAim()` 分别返回并清空本显示帧水平 / 垂直位移；引擎在启动完成后调用 `ready()`。
@@ -132,13 +137,15 @@ Esc 解锁或失焦会清累计，失焦后必须重新点击，延迟到达的�
 
 未锁定时从可信鼠标的 `clientX` 与 `movementX` 学习 CSS 单位增益；DPR 只用于判定校准是否失效，
 不直接用于除法。合并事件与父事件二选一，排除窗口边缘截断样本。浏览器保留系统鼠标加速。
-Web 桥记录有效捕获期间的可信按键，keys() 返回 W=1 / S=2 / A=4 / D=8 / sprint=16 / block=32；失锁清零，
+Web 桥记录有效捕获期间的可信按键，keys() 返回 W=1 / S=2 / A=4 / D=8 / sprint=16；失锁清零，
 忽略新的重复 keydown，防止快速失焦再捕获重放旧按键。原生按 WindowFocused 事件消费中间的失焦，
 不能只看最终 Window.focused。原生版使用 Bevy 输入及 `CursorOptions`，Windows 使用 Confined，其他平台使用 Locked。
-`takeActions()` 返回并清空 jump=1 / dodge=2 / attack=4 / skill=8 / combo=16 / switch=32 / pair1=64 / pair2=128 / target=256 / crouch=512。
+`takeActions()` 返回并清空 jump=1 / dodge=2 / attack=4 / skill=8 / combo=16 / switch=32 / pair1=64 / pair2=128 / target=256 / crouch=512 / parry=1024。
 蹲伏位按完整按压奇偶性 XOR，持续状态与 keyup 不退出蹲伏，重复 keydown 不切换；原生也按顺序处理 C 按压。
 滚轮事件流安静 160ms 才视为新手势；捕获点击不同时触发普攻；Tab、空格、滚轮等仅在已捕获时阻止默认行为。
-HUD 保留 `render(persona, weapon, healthFraction, health, combo, cooldown, context)`，另以 `renderLoadout(set, mode, maximum, attackReady, skillReady, guardReady, comboReady)` 同步套装 / 近远枚举、玩家生命上限和动作可用提示，以 `renderTarget(name, current, maximum)` 同步当前锁定活敌人。
+普通战斗特效在失锁暂停时冻结已有实体、同时前移反馈游标以免恢复后补播；HitStop中仍可继续显示效果，寿命到期回收共享资产。
+
+HUD 保留 `render(persona, weapon, healthFraction, health, combo, cooldown, context)`，另以 `renderLoadout(set, mode, maximum, attackReady, skillReady, guardReady, comboReady)` 同步套装 / 近远枚举、玩家生命上限和动作可用提示，以 `renderTarget(name, current, maximum, status)` 同步当前锁定活敌人。
 目标严格来自 Combatant.target()，无选中、目标死亡 / 被移除或玩家倒地时清理目标血条；显示层不另选目标。Rust 每帧先发送套装和目标，再发送玩家快照。
 顶部居中为敌人长血条，底部居中为玩家血条与状态，右下角为菱形技能与近远武器；米金、银灰和暗红配色，完整操作指南留在暂停卡片。
 HUD 仅更新安全文字、progress.value、SVG href、显隐 / class 与无障碍属性；就绪前的最新快照在 DOMContentLoaded 后重放。冷却和联动只读模拟计时，暂停不自行倒数。
@@ -152,3 +159,7 @@ Web 画面固定 16:9，按窗口最大可容纳面积缩放并保留 12–24px 
 新游戏规则放在模拟层，玩法层定义关卡和装配，客户端负责意图和表现。添加会改变位置的机制时，
 仍通过模拟驱动物理组件并发布 Body 快照；修改地形时以 Level 共享几何为源。物理接入契约见 [.trellis/spec/simulation/physics.md](../.trellis/spec/simulation/physics.md)。
 新增方向、碰撞或时序行为应有无窗口回归，Web 生命周期使用实际桥接脚本的 Node 测试。
+
+资源、转换命令、地图重建边界与本次验收见[愁铃客方案](plans/choulingke-bamboo-arena.md)。
+
+Body::aim_offset()/aim_position() 统一按标准胸口0.9m×scale给出锚点；范围仍比较脚底，视线/命中/狙击与客户端瞄准使用相同实际锚点，玩家普通相机构图不变。

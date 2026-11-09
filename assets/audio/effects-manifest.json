@@ -1,0 +1,21 @@
+{
+  "effects_origin": "original Kiva procedural synthesis; not extracted game audio",
+  "generator": "scripts/generate-combat-audio.py",
+  "effects": [
+    {
+      "name": "attack",
+      "duration": 0.36,
+      "sha256": "e28389cc6b5d8fa03dcae6b1a7f4240dbbc12a413792aa5bae744776c335d6f5"
+    },
+    {
+      "name": "hit",
+      "duration": 0.19,
+      "sha256": "ca4de524bc2e0e178498066d314a16514c28093de89420e315f2c19ab14c205d"
+    },
+    {
+      "name": "deflect",
+      "duration": 0.65,
+      "sha256": "8dfe753dfa4aacda2a022ad69105b893194d84a43b1417f315f6f97e66941843"
+    }
+  ]
+}

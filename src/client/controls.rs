@@ -7,7 +7,7 @@ use crate::{
     },
 };
 #[cfg(not(target_arch = "wasm32"))]
-use bevy::input::{ButtonState, keyboard::KeyboardInput};
+use bevy::input::{ButtonState, keyboard::KeyboardInput, mouse::MouseButtonInput};
 #[cfg(not(target_arch = "wasm32"))]
 use bevy::window::{CursorGrabMode, WindowFocused};
 use bevy::{
@@ -18,7 +18,6 @@ use bevy::{
 
 const LOOK_SENSITIVITY: f32 = 0.0025;
 const SPRINT: u32 = 16;
-const BLOCK: u32 = 32;
 const JUMP: u32 = 1;
 const DODGE: u32 = 2;
 const ATTACK: u32 = 4;
@@ -29,6 +28,7 @@ const HAMMER_SNIPER: u32 = 64;
 const AXE_CANNON: u32 = 128;
 const CYCLE_TARGET: u32 = 256;
 const CROUCH_TOGGLE: u32 = 512;
+const PARRY: u32 = 1024;
 
 type PlayerIntents = (
     &'static Body,
@@ -80,6 +80,8 @@ pub(super) struct CaptureState {
     shift_keys: [bool; 2],
     #[cfg(not(target_arch = "wasm32"))]
     crouch_key: bool,
+    #[cfg(not(target_arch = "wasm32"))]
+    parry_button: bool,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -90,6 +92,7 @@ impl CaptureState {
             self.last_wheel = None;
             self.shift_keys = [false; 2];
             self.crouch_key = false;
+            self.parry_button = false;
         } else if clicked {
             self.active = true;
         }
@@ -131,6 +134,20 @@ impl CaptureState {
     fn accepts_event(&self, event: &KeyboardInput, window: Entity, receiving: bool) -> bool {
         receiving && self.active && event.window == window && !event.repeat
     }
+
+    fn parry_event(&mut self, event: &MouseButtonInput, window: Entity, receiving: bool) -> bool {
+        if !receiving
+            || !self.active
+            || event.window != window
+            || event.button != MouseButton::Right
+        {
+            return false;
+        }
+        let pressed = event.state == ButtonState::Pressed;
+        let request = pressed && !self.parry_button;
+        self.parry_button = pressed;
+        request
+    }
 }
 
 fn movement_axis([forward, back, left, right]: [bool; 4]) -> Vec2 {
@@ -160,6 +177,7 @@ pub(super) fn sample(
     #[cfg(not(target_arch = "wasm32"))] native_events: (
         MessageReader<WindowFocused>,
         MessageReader<KeyboardInput>,
+        MessageReader<MouseButtonInput>,
     ),
     capture: (
         ResMut<CaptureState>,
@@ -185,7 +203,7 @@ pub(super) fn sample(
     };
     #[cfg(not(target_arch = "wasm32"))]
     let (active, look, aim_delta, held, commands) = {
-        let (mut focus_events, mut keyboard_events) = native_events;
+        let (mut focus_events, mut keyboard_events, mut mouse_events) = native_events;
         let was_active = capture.active;
         let mut lost_focus = false;
         for event in focus_events.read() {
@@ -217,6 +235,7 @@ pub(super) fn sample(
             capture.last_wheel = None;
             capture.shift_keys = [false; 2];
             capture.crouch_key = false;
+            capture.parry_button = false;
         }
         let mut held = 0;
         let mut commands = 0;
@@ -231,6 +250,11 @@ pub(super) fn sample(
                 commands ^= CROUCH_TOGGLE;
             }
         }
+        for event in mouse_events.read() {
+            if capture.parry_event(event, window.0, receiving) {
+                commands |= PARRY;
+            }
+        }
         if was_active && capture.active {
             for (key, bit) in [
                 (KeyCode::KeyW, 1),
@@ -243,9 +267,6 @@ pub(super) fn sample(
                 if keys.pressed(key) {
                     held |= bit;
                 }
-            }
-            if buttons.pressed(MouseButton::Right) {
-                held |= BLOCK;
             }
             for (key, bit) in [
                 (KeyCode::Space, JUMP),
@@ -300,7 +321,7 @@ pub(super) fn sample(
         facing.set(loadout.sniper_sequence().map_or(forward, |sequence| {
             (sequence.aim_position() - body.world_position()).xz()
         }));
-        actions.set_held(held & SPRINT != 0, held & BLOCK != 0);
+        actions.set_shift_held(held & SPRINT != 0);
         actions.set_movement_held(held & 15 != 0);
         if loadout.weapon_set() == WeaponSet::AxeCannon
             && loadout.weapon_mode() == WeaponMode::Ranged
@@ -317,6 +338,9 @@ pub(super) fn sample(
         }
         if commands & CROUCH_TOGGLE != 0 {
             actions.request_crouch_toggle();
+        }
+        if commands & PARRY != 0 {
+            actions.request_parry();
         }
         if commands & ATTACK != 0 {
             combat.request_attack();
@@ -358,6 +382,28 @@ mod tests {
         assert_eq!(distance.0, 1.0);
         distance.adjust(-100_000.0);
         assert_eq!(distance.0, 8.0);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn parry_preserves_short_taps_and_requires_a_fresh_press() {
+        let mut capture = CaptureState::default();
+        capture.update(true, false, false, true);
+        let mut event = MouseButtonInput {
+            button: MouseButton::Right,
+            state: ButtonState::Pressed,
+            window: Entity::PLACEHOLDER,
+        };
+        assert!(!capture.parry_event(&event, event.window, false));
+        assert!(capture.parry_event(&event, event.window, true));
+        assert!(!capture.parry_event(&event, event.window, true));
+        event.state = ButtonState::Released;
+        assert!(!capture.parry_event(&event, event.window, true));
+        event.state = ButtonState::Pressed;
+        assert!(capture.parry_event(&event, event.window, true));
+        capture.update(false, true, false, false);
+        assert!(!capture.parry_button);
+        assert!(!capture.parry_event(&event, event.window, true));
     }
 
     #[cfg(not(target_arch = "wasm32"))]

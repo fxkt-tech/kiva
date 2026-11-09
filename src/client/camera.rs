@@ -141,7 +141,7 @@ pub(super) fn follow(
                 .filter(|(_, health)| health.is_alive())
                 .map_or_else(
                     || sequence.aim_position(),
-                    |(body, _)| body.interpolated_world(alpha) + BODY_CENTER,
+                    |(body, _)| body.interpolated_world(alpha) + body.aim_offset(),
                 );
             let rear = sniper_pose(view.translation, target, yaw.yaw());
             let desired = normal.translation.lerp(rear.translation, weight);
@@ -287,7 +287,7 @@ mod tests {
         let focused = render(&mut app);
         let feet = view_feet(&mut app);
         let target_body = app.world().get::<Body>(target).unwrap();
-        let aim = target_body.interpolated_world(0.0) + BODY_CENTER;
+        let aim = target_body.interpolated_world(0.0) + target_body.aim_offset();
         let expected = sniper_pose(feet, aim, 0.0);
         assert_same_pose(focused, expected);
         assert!((focused.translation.y - feet.y - SNIPER_HEIGHT).abs() < 0.001);
@@ -475,12 +475,8 @@ mod tests {
                 app.world().resource::<SimulationActive>(),
                 app.world().resource::<HitStop>(),
             );
-            let aim = app
-                .world()
-                .get::<Body>(target)
-                .unwrap()
-                .interpolated_world(alpha)
-                + BODY_CENTER;
+            let target_body = app.world().get::<Body>(target).unwrap();
+            let aim = target_body.interpolated_world(alpha) + target_body.aim_offset();
             let base = sniper_pose(feet, aim, 0.0);
             if wall {
                 assert!(kicked.translation.z > 0.9 && kicked.translation.z < 1.25);

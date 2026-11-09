@@ -31,6 +31,7 @@ function fixture(options = {}) {
       if (options.denied) throw new Error("device denied");
       this.state = options.state || "suspended";
       this.sampleRate = options.sampleRate || 48000;
+      this.currentTime = 0;
       this.destination = {};
       this.buffers = [];
       this.sources = [];
@@ -63,12 +64,16 @@ function fixture(options = {}) {
         connections: [], disconnects: 0, starts: 0, stops: 0,
         connect(target) { this.connections.push(target); },
         disconnect() { this.disconnects++; },
-        start() { if (options.startFailure) throw new Error("source unavailable"); this.starts++; },
+        start(...args) { if (options.startFailure) throw new Error("source unavailable"); this.starts++; this.startArgs = args; },
         stop() { this.stops++; this.onended?.(); },
         finish() { this.onended?.(); },
       };
       this.sources.push(node);
       return node;
+    }
+    async decodeAudioData(data) {
+      if (options.decodeFailure) throw new Error("decode failed");
+      return { duration: 120, name: data };
     }
     createGain() {
       const node = {
@@ -80,7 +85,7 @@ function fixture(options = {}) {
       return node;
     }
   }
-  const window = {};
+  const window = new Target();
   if (!options.unsupported) window[options.webkit ? "webkitAudioContext" : "AudioContext"] = AudioContext;
   const document = Object.assign(new Target(), { readyState: options.parsed ? "complete" : "loading" });
   const nodes = new Map();
@@ -89,10 +94,21 @@ function fixture(options = {}) {
     for (const id of ["enter", "game"]) nodes.set(id, new Target());
   };
   if (options.parsed) addNodes();
-  vm.runInContext(source, vm.createContext({ window, document }));
+  const requests = [];
+  const fetch = options.sampleFiles ? async (url) => {
+    requests.push(url);
+    if (options.networkFailure) throw new Error("offline");
+    return { ok: true, arrayBuffer: async () => url,
+      json: async () => ({ file: options.noMusic ? null : "choulingke-bgm.ogg" }) };
+  } : undefined;
+  vm.runInContext(source, vm.createContext({ window, document, fetch }));
   const parse = () => { addNodes(); document.readyState = "interactive"; document.emit("DOMContentLoaded"); };
-  const gesture = (id = "enter", trusted = true) => nodes.get(id).emit(id === "enter" ? "click" : "pointerdown", { isTrusted: trusted });
-  return { audio: window.kivaAudio, document, nodes, contexts, parse, gesture };
+  const gesture = (id = "enter", trusted = true) => {
+    const event = nodes.get(id).emit(id === "enter" ? "click" : "pointerdown", { isTrusted: trusted });
+    if (trusted) window.kivaAudio.setActive(true);
+    return event;
+  };
+  return { audio: window.kivaAudio, window, document, nodes, contexts, requests, parse, gesture };
 }
 
 test("bridge is available before DOM and only trusted entry/canvas gestures unlock audio", () => {
@@ -182,14 +198,14 @@ test("voices are bounded, connected correctly, and disconnected on completion", 
   const f = fixture({ parsed: true }); f.gesture();
   const context = f.contexts[0];
   for (let i = 0; i < 7; i++) assert.equal(f.audio.playSniperShot(), true);
-  assert.equal(context.sources.filter((node) => node.disconnects === 0).length, 2);
+  assert.equal(context.sources.filter((node) => node.disconnects === 0).length, 4);
   assert.equal(context.sources[0].stops, 1);
   for (let i = 0; i < context.sources.length; i++) {
     const source = context.sources[i];
     const gain = context.gains[i];
     assert.equal(source.connections[0], gain);
     assert.equal(gain.connections[0], context.destination);
-    assert.equal(gain.gain.value, 0.5);
+    assert.equal(gain.gain.value, 0.18);
     source.finish(); source.finish();
     assert.equal(source.onended, null);
     assert.equal(source.disconnects, 1);
@@ -237,4 +253,99 @@ test("a failing source start releases its graph and reports unavailable playback
   for (let i = 0; i < 4; i++) assert.equal(f.audio.playSniperShot(), false);
   assert.ok(f.contexts[0].sources.every((node) => node.disconnects === 1));
   assert.ok(f.contexts[0].gains.every((node) => node.disconnects === 1));
+});
+
+
+async function loaded() {
+  await new Promise(setImmediate);
+}
+
+test("bundled effects load once after trusted activation and BGM has a single loop", async () => {
+  const f = fixture({ parsed: true, sampleFiles: true });
+  assert.equal(f.audio.playEffect("attack"), false);
+  f.gesture("enter", false);
+  assert.equal(f.requests.length, 0);
+  f.gesture();
+  await loaded();
+  assert.equal(f.requests.length, 5);
+  const context = f.contexts[0];
+  const music = context.sources[0];
+  assert.equal(music.loop, true);
+  assert.equal(music.buffer.name, "audio/choulingke-bgm.ogg");
+  for (let i = 0; i < 6; i++) { f.audio.setActive(true); f.gesture("game"); }
+  assert.equal(f.requests.length, 5);
+  assert.equal(context.sources.length, 1);
+  for (const name of ["attack", "hit", "deflect"]) {
+    assert.equal(f.audio.playEffect(name), true);
+    assert.equal(context.sources.at(-1).buffer.name, `audio/${name}.ogg`);
+    assert.equal(context.sources.at(-1).loop, false);
+  }
+  assert.equal(f.audio.playEffect("bgm"), false);
+  assert.equal(f.audio.playEffect("__proto__"), false);
+});
+
+test("pause stops voices and resumes music from its offset without overlapping loops", async () => {
+  const f = fixture({ parsed: true, sampleFiles: true });
+  f.gesture(); await loaded();
+  const context = f.contexts[0];
+  f.audio.playEffect("deflect");
+  context.currentTime = 11;
+  f.audio.setActive(false);
+  assert.equal(f.audio.playEffect("attack"), false);
+  assert.ok(context.sources.every((source) => source.stops === 1 && source.disconnects === 1));
+  f.audio.setActive(true);
+  const resumed = context.sources.at(-1);
+  assert.deepEqual(Array.from(resumed.startArgs), [0, 11]);
+  assert.equal(resumed.loop, true);
+  f.window.emit("blur");
+  assert.equal(resumed.stops, 1);
+  assert.equal(f.audio.playSniperShot(), false);
+  f.document.hidden = true;
+  f.audio.setActive(true);
+  assert.equal(f.audio.playEffect("hit"), false);
+});
+
+test("asset loading cannot start paused BGM or replay an effect requested before decode", async () => {
+  const f = fixture({ parsed: true, sampleFiles: true });
+  f.gesture();
+  assert.equal(f.audio.playEffect("attack"), false);
+  f.audio.setActive(false);
+  await loaded();
+  assert.equal(f.contexts[0].sources.length, 0);
+  f.audio.setActive(true);
+  assert.equal(f.contexts[0].sources.length, 1);
+  assert.equal(f.contexts[0].sources[0].loop, true);
+});
+
+test("failed asset loads and decoding leave gameplay and procedural gunshots available", async () => {
+  for (const options of [{ networkFailure: true }, { decodeFailure: true }]) {
+    const f = fixture({ parsed: true, sampleFiles: true, ...options });
+    f.gesture(); await loaded();
+    assert.equal(f.audio.playEffect("attack"), false);
+    assert.equal(f.audio.playSniperShot(), true);
+    assert.equal(f.contexts[0].sources.filter((source) => source.loop).length, 0);
+  }
+});
+
+
+test("unverified music stays absent without requesting a missing or arbitrary track", async () => {
+  const f = fixture({ parsed: true, sampleFiles: true, noMusic: true });
+  f.gesture(); await loaded();
+  assert.equal(f.requests.length, 4);
+  assert.equal(f.contexts[0].sources.length, 0);
+  assert.equal(f.audio.playEffect("attack"), true);
+  assert.equal(f.requests.some((url) => url.includes("choulingke-bgm")), false);
+});
+
+test("all bundled effects are actual Ogg files and Trunk copies their directory", () => {
+  const root = path.join(__dirname, "..");
+  for (const name of ["attack", "hit", "deflect"]) {
+    const bytes = fs.readFileSync(path.join(root, "assets/audio", `${name}.ogg`));
+    assert.equal(bytes.subarray(0, 4).toString("ascii"), "OggS");
+    assert.ok(bytes.length > 1000);
+  }
+  const music = JSON.parse(fs.readFileSync(path.join(root, "assets/audio/music.json")));
+  if (music.file) assert.ok(fs.existsSync(path.join(root, "assets/audio", music.file)));
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  assert.match(html, /data-trunk rel="copy-dir" href="assets\/audio"/);
 });

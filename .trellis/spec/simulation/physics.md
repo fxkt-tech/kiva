@@ -8,6 +8,7 @@ Avian 0.8 使用 `3d` / `parry-f32` 最小特性；原生和 WASM 共用模拟�
 ## Signatures
 
 - `Body::new(Vec2, speed, radius)` 为平面出生快捷构造，`Body::at(Vec3, speed, radius)` 为三维脚底出生位置。
+- `Body::scaled(scale)` 在装配时配置统一尺寸；`scale/radius/standing_height/crouched_height` 只读，后三者返回实际缩放尺寸。
 - `Body::{world_position,interpolated_world,velocity}` 返回物理求解后的三维脚底快照；`position/interpolated/step_displacement` 明确为 x/z 投影。
 - `Body::teleport_to(Vec3)` 排队权威重置；`teleport_actor(&mut World, Entity, Vec3)` 立即重置姿态、速度、动作和显示快照。
 - `spawn_box(&mut World, center: Vec3, size: Vec3, dynamic: bool) -> Entity`，size 为完整尺寸。
@@ -20,7 +21,7 @@ Avian 0.8 使用 `3d` / `parry-f32` 最小特性；原生和 WASM 共用模拟�
 ## Contracts
 
 - 物理组件 Position / Rotation / 速度是唯一运动权威，Body 和 PhysicsPose 只缓存结果。不得在客户端修改物理实体 Transform，也不得重新积分一份高度。
-- 角色为直立动态胶囊，站立总高 1.73m、蹲伏 1.40m，物理中心与脚底相差当前半高。姿态变化保住脚底，起身先检查净空。
+- 角色为直立动态胶囊，标准站立总高 1.73m、蹲伏 1.40m，均乘Body.scale()，物理中心与脚底相差当前半高。姿态变化保住脚底，起身先检查净空。
 - 控制目标沿支撑面切向，以有限加速度追踪；实际位移由接触求解产生。默认重力沿 -Y 为 18m/s²。
 - 支撑根据脚底接触 / 小距离探测、世界法线与相对分离速度判定，包含休眠接触。绝对海拔不能用于判断接地。
 - 动态支撑点速度包含 `linear + angular × (point - center_of_mass)`；停止输入不能抵消脚下物体的移动。
@@ -60,7 +61,7 @@ Bad：只把显示根升高、以 y==0 接地，或者模型插值反馈到 Posi
 `make check`、WASM Clippy、临时目录 Trunk 构建。无窗口夹具运行真实完整 FixedUpdate / Avian 求解，按物理容差断言。
 手动运行 schedule 的 App 夹具应在全部插件安装后调用 `app.finish()`；Avian 的空间查询 / 诊断资源在插件 finish 中建立。
 覆盖箱顶落地、支撑丢失、上下坡、山顶与陡坡、头顶净空、两次额度、动态箱子受力 / 倾倒 / 堆叠、休眠支撑、移动 / 转动随动和高速不穿透。
-首次暂停、暂停中的落体 / 箱体、恢复无补算、瞬移与复活分别验证；外部 `tests/physics_terrain.rs` 使用真实庭院地形。
+首次暂停、暂停中的落体 / 箱体、恢复无补算、瞬移与复活分别验证；外部 `tests/physics_terrain.rs` 使用真实竹林地形。
 构建和代码测试不替代浏览器画面与手感验收。
 
 ## Wrong vs Correct

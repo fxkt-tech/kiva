@@ -1,5 +1,6 @@
 //! Headless 3D physical movement, actions and combat.
 mod actions;
+mod boss;
 mod combat;
 mod geometry;
 mod impact;
@@ -8,6 +9,7 @@ mod physics;
 mod weapons;
 
 pub use actions::{ActionIntent, Facing, MotionState};
+pub use boss::{Boss, BossPhase, BossState};
 pub use combat::{
     CombatEffect, CombatEvent, CombatFeedback, CombatIntent, Combatant, Enemy, Health,
     SniperSequence, SpawnPoint,
@@ -80,7 +82,12 @@ impl Plugin for SimulationPlugin {
             )
             .add_systems(
                 FixedUpdate,
-                (physics::publish, combat::advance, physics::flush_teleports)
+                (
+                    physics::publish,
+                    combat::advance,
+                    boss::advance,
+                    physics::flush_teleports,
+                )
                     .chain()
                     .after(SpatialQuerySystems)
                     .after(PhysicsSystems::Last)

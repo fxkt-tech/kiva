@@ -1,0 +1,582 @@
+{
+  "format": "kiva-choulingke-boss-adaptation-v1",
+  "sources": [
+    {
+      "source": "Sunshine/AI/bt2code/output/51000031_CLK_P2_ComboCondition.lua",
+      "key": 8219333135875139905,
+      "pack": 132,
+      "offset": 84112,
+      "size": 15592,
+      "original_sha256": "dead9e9b2917a25071af36fa465d517a0a2f603990b38c9ef4dd85b7851f2f4a",
+      "functions": 112,
+      "instruction_count": 2158
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_P1_ComboCondition.lua",
+      "key": 13968260119858735425,
+      "pack": 212,
+      "offset": 119175,
+      "size": 17350,
+      "original_sha256": "5814ae751fb5b75aad99d03a1a80171ce96e77499f9278a674cc677287ff8a3e",
+      "functions": 127,
+      "instruction_count": 2450
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_fight_P1.lua",
+      "key": 12968325516813688632,
+      "pack": 312,
+      "offset": 642438,
+      "size": 37337,
+      "original_sha256": "139a88afca064d7bd283ec14c42af16c3ea02c100ee9f73a19dbdd412407db4c",
+      "functions": 274,
+      "instruction_count": 4830
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_fight_Action.lua",
+      "key": 6077943552546924860,
+      "pack": 32,
+      "offset": 8277858,
+      "size": 34650,
+      "original_sha256": "70f0e20a198fac13f114e1e51c33623f53cf7212921353790971110b1cc48929",
+      "functions": 193,
+      "instruction_count": 5021
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000031_CLK_fight_P2.lua",
+      "key": 17704016105905872696,
+      "pack": 32,
+      "offset": 8312508,
+      "size": 35300,
+      "original_sha256": "0a75f7e2b03a5a0ed1109187ab141e5b09518e0dc4bcb8e564b13af1b557c553",
+      "functions": 249,
+      "instruction_count": 4442
+    }
+  ],
+  "source_rules": {
+    "distance_values": [
+      6,
+      12
+    ],
+    "distance_interpretation": "Source distance_type=1 is full 3D length(vector_sub(base_pos,target_pos)), confirmed in decorator_node CheckDisAndAngleDecorator.check_pass_by_dis. Kiva uses actual 3D feet snapshots; unchanged numeric fields, conversion factor 1.0. Original world-unit/model-height scale not independently recovered.",
+    "opening_p1": {
+      "action": 45,
+      "slot": 90021641,
+      "lateral_duration": 2,
+      "lateral_speed_rate": 0.7
+    },
+    "opening_p2": {
+      "action": 21,
+      "slot": 90021604
+    },
+    "weighted_normal_pools": [
+      {
+        "tree": "51000025_CLK_fight_P1",
+        "node": "n023313_ApplyActionByCondition",
+        "source_line": 2635,
+        "actions": [
+          1,
+          10,
+          12,
+          11,
+          19
+        ],
+        "weights": [
+          1,
+          50,
+          50,
+          50,
+          1
+        ]
+      },
+      {
+        "tree": "51000025_CLK_fight_P1",
+        "node": "n0233120_ApplyActionByCondition",
+        "source_line": 2619,
+        "actions": [
+          3,
+          14,
+          16,
+          45
+        ],
+        "weights": [
+          10,
+          50,
+          50,
+          50
+        ]
+      },
+      {
+        "tree": "51000031_CLK_fight_P2",
+        "node": "n02231402_ApplyActionByCondition",
+        "source_line": 2583,
+        "actions": [
+          50,
+          25,
+          53
+        ],
+        "weights": [
+          50,
+          50,
+          50
+        ]
+      },
+      {
+        "tree": "51000031_CLK_fight_P2",
+        "node": "n02231302_ApplyActionByCondition",
+        "source_line": 2405,
+        "actions": [
+          48,
+          49,
+          24,
+          3,
+          21
+        ],
+        "weights": [
+          50,
+          50,
+          50,
+          10,
+          50
+        ]
+      }
+    ],
+    "slot_actions": [
+      {
+        "action_id": 4,
+        "slot": 90021629,
+        "source_line": 1064,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 5,
+        "slot": 90021435,
+        "source_line": 1118,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 6,
+        "slot": 90021632,
+        "source_line": 1172,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 7,
+        "slot": 90021633,
+        "source_line": 1226,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 8,
+        "slot": 90021626,
+        "source_line": 1280,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 9,
+        "slot": 90021627,
+        "source_line": 1334,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 10,
+        "slot": 90021593,
+        "source_line": 1405,
+        "zero_weight_duration": 40.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 11,
+        "slot": 90021594,
+        "source_line": 1476,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 12,
+        "slot": 90021595,
+        "source_line": 1597,
+        "zero_weight_duration": 50.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 13,
+        "slot": 90021596,
+        "source_line": 1668,
+        "zero_weight_duration": 65.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 14,
+        "slot": 90021597,
+        "source_line": 1722,
+        "zero_weight_duration": 60.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 15,
+        "slot": 90021598,
+        "source_line": 1776,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 16,
+        "slot": 90021599,
+        "source_line": 1830,
+        "zero_weight_duration": 50.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 17,
+        "slot": 90021600,
+        "source_line": 1884,
+        "zero_weight_duration": 60.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 18,
+        "slot": 90021601,
+        "source_line": 1938,
+        "zero_weight_duration": 60.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 19,
+        "slot": 90021602,
+        "source_line": 2029,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 20,
+        "slot": 90021603,
+        "source_line": 2083,
+        "zero_weight_duration": 70.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 21,
+        "slot": 90021604,
+        "source_line": 2137,
+        "zero_weight_duration": 65.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 22,
+        "slot": 90021605,
+        "source_line": 2191,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 23,
+        "slot": 90021606,
+        "source_line": 2245,
+        "zero_weight_duration": 80.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 24,
+        "slot": 90021607,
+        "source_line": 2299,
+        "zero_weight_duration": 65.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 25,
+        "slot": 90021608,
+        "source_line": 2353,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 26,
+        "slot": 90021609,
+        "source_line": 2407,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 27,
+        "slot": 90021610,
+        "source_line": 2478,
+        "zero_weight_duration": 75.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 28,
+        "slot": 90021611,
+        "source_line": 2532,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 29,
+        "slot": 90021612,
+        "source_line": 2603,
+        "zero_weight_duration": 75.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 30,
+        "slot": 90021613,
+        "source_line": 2674,
+        "zero_weight_duration": 75.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 31,
+        "slot": 90021614,
+        "source_line": 2728,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 32,
+        "slot": 90021615,
+        "source_line": 2782,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 33,
+        "slot": 90021616,
+        "source_line": 2836,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 34,
+        "slot": 90021625,
+        "source_line": 2890,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 35,
+        "slot": 90021631,
+        "source_line": 2944,
+        "zero_weight_duration": 35.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 36,
+        "slot": 90021634,
+        "source_line": 3015,
+        "zero_weight_duration": 45.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 37,
+        "slot": 90021635,
+        "source_line": 3086,
+        "zero_weight_duration": 60.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 38,
+        "slot": 90021636,
+        "source_line": 3157,
+        "zero_weight_duration": 65.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 39,
+        "slot": 90021637,
+        "source_line": 3228,
+        "zero_weight_duration": 60.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 40,
+        "slot": 90021628,
+        "source_line": 3319,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 41,
+        "slot": 90021639,
+        "source_line": 3373,
+        "zero_weight_duration": 60.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 42,
+        "slot": 90021640,
+        "source_line": 3427,
+        "zero_weight_duration": 45.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 43,
+        "slot": 90021638,
+        "source_line": 3498,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 44,
+        "slot": 90021622,
+        "source_line": 3552,
+        "zero_weight_duration": 85.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 45,
+        "slot": 90021641,
+        "source_line": 3673,
+        "zero_weight_duration": 45.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 46,
+        "slot": 90021623,
+        "source_line": 3727,
+        "zero_weight_duration": 85.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 47,
+        "slot": 90021646,
+        "source_line": 3821,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      },
+      {
+        "action_id": 48,
+        "slot": 90021647,
+        "source_line": 3875,
+        "zero_weight_duration": 65.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 49,
+        "slot": 90021648,
+        "source_line": 3929,
+        "zero_weight_duration": 50.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 50,
+        "slot": 90021649,
+        "source_line": 4000,
+        "zero_weight_duration": 65.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 51,
+        "slot": 90021650,
+        "source_line": 4091,
+        "zero_weight_duration": 65.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 52,
+        "slot": 90021651,
+        "source_line": 4145,
+        "zero_weight_duration": 50.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 53,
+        "slot": 90021652,
+        "source_line": 4199,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 54,
+        "slot": 90021653,
+        "source_line": 4253,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 55,
+        "slot": 90021654,
+        "source_line": 4307,
+        "zero_weight_duration": 60.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 56,
+        "slot": 90021655,
+        "source_line": 4361,
+        "zero_weight_duration": 45.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 57,
+        "slot": 90021656,
+        "source_line": 4415,
+        "zero_weight_duration": 50.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 58,
+        "slot": 90021657,
+        "source_line": 4469,
+        "zero_weight_duration": 40.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 59,
+        "slot": 90021658,
+        "source_line": 4540,
+        "zero_weight_duration": 55.0,
+        "clip_name": null
+      },
+      {
+        "action_id": 60,
+        "slot": 90021645,
+        "source_line": 4594,
+        "zero_weight_duration": 0,
+        "clip_name": null
+      }
+    ],
+    "action_flow": "Suppress source action weight to zero until its timer expires; no fake clip-duration interpretation"
+  },
+  "kiva_tuning": {
+    "phase_rule": "Kiva adaptation: deplete health bar One, 2.2s invulnerable transition, then health bar Two; NOT source 65/75/30-percent buff thresholds",
+    "health_per_bar": 650,
+    "telegraph_seconds": 0.72,
+    "active_seconds": 0.22,
+    "recovery_seconds": 0.65,
+    "deflect_recovery_seconds": 1.1,
+    "transition_seconds": 2.2,
+    "respawn_seconds": 3,
+    "hit_range": 3.2,
+    "hit_half_angle_degrees": 70,
+    "hit_height": 0.9,
+    "damage_one": 14,
+    "damage_two": 18,
+    "pursuit_speed": 5.2,
+    "source_timer_unit_scale": 1.0,
+    "timer_note": "Source AIShell.set_action_flow_value stores dtm.now()+duration; no model/animation-duration scaling applied",
+    "empty_attack_pool": "Reposition while all eligible source action weights are suppressed",
+    "root_motion": "Discarded from presentation; Avian remains movement authority"
+  },
+  "not_yet_ported": [
+    "Original AIComboTagID cancel chains and callback timing",
+    "Buff / dodge-reaction / counter service conditions",
+    "Grab, soul and multiplayer mechanisms",
+    "Original P1-to-P2 spawn/quest transition",
+    "9002xxxx slots -> graph skill IDs -> original clip names",
+    "Original attack hitboxes, damage and active-frame markers"
+  ],
+  "research_only": "Full reconstructed original Lua, frames and disassembly remain outside the game project; no Lua runtime is embedded",
+  "checks": [
+    "4 actual LUAL extraction regressions passed",
+    "9 actual FixedUpdate Boss regressions passed",
+    "170 native library regressions passed",
+    "9 real woodland physics integration regressions passed",
+    "cargo clippy --locked --all-targets -- -D warnings passed"
+  ]
+}

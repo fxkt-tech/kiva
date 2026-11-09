@@ -3,7 +3,9 @@ use bevy::prelude::*;
 
 use crate::{
     gameplay::Player,
-    simulation::{Combatant, Enemy, Health, MotionState, WeaponMode, WeaponSet},
+    simulation::{
+        Boss, BossPhase, BossState, Combatant, Enemy, Health, MotionState, WeaponMode, WeaponSet,
+    },
 };
 
 #[cfg(target_arch = "wasm32")]
@@ -30,7 +32,7 @@ extern "C" {
         combo_ready: bool,
     );
     #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderTarget)]
-    fn render_target(name: &str, current: f32, maximum: f32);
+    fn render_target(name: &str, current: f32, maximum: f32, status: &str);
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
@@ -51,7 +53,7 @@ fn loadout_snapshot(combat: &Combatant, health: &Health, motion: &MotionState) -
     // simulation still owns validation of targets, surfaces and incoming input.
     let can_act = health.is_alive()
         && !motion.is_dodging()
-        && !motion.is_blocking()
+        && !motion.is_parrying()
         && !motion.is_sliding()
         && !combat.is_spinning()
         && !combat.is_sniping();
@@ -73,7 +75,9 @@ fn loadout_snapshot(combat: &Combatant, health: &Health, motion: &MotionState) -
             && !motion.is_dodging()
             && !motion.is_leaping()
             && !motion.is_sliding()
-            && !combat.is_sniping(),
+            && !combat.is_sniping()
+            && !combat.is_spinning()
+            && motion.parry_cooldown() == 0.0,
         combo_ready: can_act && combat.combo_remaining() > 0.0,
     }
 }
@@ -83,31 +87,48 @@ struct TargetSnapshot {
     name: &'static str,
     current: f32,
     maximum: f32,
+    status: &'static str,
 }
 
 fn target_snapshot<'a>(
     combat: &Combatant,
     health: &Health,
-    lookup: impl FnOnce(Entity) -> Option<(&'a Enemy, &'a Health)>,
+    lookup: impl FnOnce(Entity) -> Option<(&'a Enemy, &'a Health, Option<&'a Boss>)>,
 ) -> Option<TargetSnapshot> {
     if !health.is_alive() {
         return None;
     }
-    let (enemy, health) = lookup(combat.target()?)?;
+    let (enemy, health, boss) = lookup(combat.target()?)?;
     health.is_alive().then(|| TargetSnapshot {
-        name: if enemy.is_passive() {
-            "训练靶子"
+        name: if let Some(boss) = boss {
+            match boss.phase() {
+                BossPhase::One => "愁铃客 · 一阶段",
+                BossPhase::Two => "愁铃客 · 二阶段",
+            }
+        } else if enemy.is_passive() {
+            "愁铃客 · 演武"
         } else {
-            "敌人"
+            "愁铃客"
         },
         current: health.current(),
         maximum: health.maximum(),
+        status: boss.map_or("锁定目标", |boss| match boss.state() {
+            BossState::Idle => "伺机而动",
+            BossState::Pursuing => "逼近中",
+            BossState::Strafing => "游走中",
+            BossState::Telegraph => "蓄势 · 留意来袭",
+            BossState::Attacking => "出招中",
+            BossState::Recovering => "收势中",
+            BossState::Deflected => "卸势破绽",
+            BossState::Transition => "转阶段 · 暂时无敌",
+            BossState::Defeated => "已击败",
+        }),
     })
 }
 
 pub(super) fn sync(
     player: Single<(&Combatant, &Health, &MotionState), With<Player>>,
-    enemies: Query<(&Enemy, &Health)>,
+    enemies: Query<(&Enemy, &Health, Option<&Boss>)>,
     mut window: Single<&mut Window>,
     #[cfg(not(target_arch = "wasm32"))] mode: Res<crate::gameplay::EnemyMode>,
 ) {
@@ -124,12 +145,12 @@ pub(super) fn sync(
     } else if combat.is_spinning() {
         "联动 · 空中回旋"
     } else if motion.is_leaping() {
-        "火炮跃进 · Tab 接战斧旋转"
-    } else if motion.is_blocking() {
+        "火炮跃进 · Tab 接长刀旋转"
+    } else if motion.is_parrying() {
         if motion.is_crouched() {
-            "蹲伏格挡 · C 起身"
+            "卸势窗口 · C 起身"
         } else {
-            "格挡 · 防御前方攻击"
+            "卸势窗口 · 迎向来袭"
         }
     } else if motion.is_crouched() {
         "蹲伏 · C 起身"
@@ -159,9 +180,9 @@ pub(super) fn sync(
             loadout.combo_ready,
         );
         if let Some(target) = target {
-            render_target(target.name, target.current, target.maximum);
+            render_target(target.name, target.current, target.maximum, target.status);
         } else {
-            render_target("", 0.0, 0.0);
+            render_target("", 0.0, 0.0, "");
         }
         render(
             persona,
@@ -182,8 +203,8 @@ pub(super) fn sync(
         };
         let target = target.map_or_else(String::new, |target| {
             format!(
-                " · {} {:.0}/{:.0}",
-                target.name, target.current, target.maximum
+                " · {} {:.0}/{:.0} · {}",
+                target.name, target.current, target.maximum, target.status
             )
         });
         window.title = format!(
@@ -232,7 +253,13 @@ mod tests {
         target_snapshot(
             world.get::<Combatant>(player).unwrap(),
             world.get::<Health>(player).unwrap(),
-            |entity| world.get::<Enemy>(entity).zip(world.get::<Health>(entity)),
+            |entity| {
+                Some((
+                    world.get::<Enemy>(entity)?,
+                    world.get::<Health>(entity)?,
+                    world.get::<Boss>(entity),
+                ))
+            },
         )
     }
 
@@ -287,9 +314,10 @@ mod tests {
         assert_eq!(
             target(&app, player),
             Some(TargetSnapshot {
-                name: "训练靶子",
+                name: "愁铃客 · 演武",
                 current: 1_000_000.0,
                 maximum: 1_000_000.0,
+                status: "锁定目标",
             })
         );
         request(&mut app, player, CombatIntent::request_skill);
@@ -306,6 +334,25 @@ mod tests {
             .insert(Health::new(500.0));
         assert_eq!(target(&app, player).unwrap().current, 500.0);
         assert_eq!(target(&app, player).unwrap().maximum, 500.0);
+    }
+
+    #[test]
+    fn combat_target_reports_boss_phase_and_action_state_from_simulation() {
+        let (mut app, player) = arena();
+        gameplay::set_enemy_mode(app.world_mut(), EnemyMode::Combat);
+        tick(&mut app, 1);
+        let snapshot = target(&app, player).unwrap();
+        assert_eq!(snapshot.name, "愁铃客 · 一阶段");
+        assert_eq!(snapshot.maximum, Boss::PHASE_HEALTH);
+        let selected = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .target()
+            .unwrap();
+        let boss = app.world().get::<Boss>(selected).unwrap();
+        assert_eq!(boss.state(), BossState::Strafing);
+        assert_eq!(snapshot.status, "游走中");
     }
 
     #[test]

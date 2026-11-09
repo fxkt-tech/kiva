@@ -7,8 +7,8 @@ use bevy::prelude::*;
 pub use terrain::TerrainGeometry;
 
 use crate::simulation::{
-    ActionIntent, Body, CombatIntent, Combatant, Enemy, Facing, Health, MotionState, MoveIntent,
-    SpawnPoint, WeaponSet, spawn_box, spawn_terrain,
+    ActionIntent, Body, Boss, CombatIntent, Combatant, Enemy, Facing, Health, MotionState,
+    MoveIntent, SpawnPoint, WeaponSet, spawn_box, spawn_terrain,
 };
 
 #[derive(Component)]
@@ -63,28 +63,33 @@ pub fn set_enemy_mode(world: &mut World, mode: EnemyMode) {
 fn spawn_enemies(world: &mut World, mode: EnemyMode) {
     let positions: &[Vec2] = match mode {
         EnemyMode::Target => &[Vec2::new(0.0, -4.0)],
-        EnemyMode::Combat => &[
-            Vec2::new(-1.5, -4.0),
-            Vec2::new(0.0, -5.5),
-            Vec2::new(1.5, -4.5),
-            Vec2::new(1.0, -8.0),
-        ],
+        EnemyMode::Combat => &[Vec2::new(0.0, -6.0)],
     };
     for &position in positions {
         let (enemy, health) = match mode {
             EnemyMode::Target => (Enemy::target_dummy(), 1_000_000.0),
-            EnemyMode::Combat => (Enemy::default(), 120.0),
+            EnemyMode::Combat => (Enemy::default(), Boss::PHASE_HEALTH),
         };
-        world.spawn((
+        let mut facing = Facing::default();
+        facing.set(-position);
+        let mut entity = world.spawn((
             enemy,
-            Body::new(position, 2.0, 0.3),
+            Body::new(
+                position,
+                if mode == EnemyMode::Combat { 5.2 } else { 2.0 },
+                0.3,
+            )
+            .scaled(if mode == EnemyMode::Target { 1.45 } else { 1.0 }),
             MoveIntent::default(),
             ActionIntent::default(),
             MotionState::default(),
-            Facing::default(),
+            facing,
             Health::new(health),
             SpawnPoint(position),
         ));
+        if mode == EnemyMode::Combat {
+            entity.insert(Boss::default());
+        }
     }
 }
 
@@ -94,6 +99,28 @@ pub struct Level {
     pub props: Vec<Prop>,
     pub ground: TerrainGeometry,
     pub ramp: TerrainGeometry,
+    pub bamboo: Vec<Bamboo>,
+    pub forest_trunks: TerrainGeometry,
+    pub forest_rocks: TerrainGeometry,
+}
+
+/// The same leaning trunk geometry is used for contact and presentation.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Bamboo {
+    pub base: Vec3,
+    pub height: f32,
+    pub radius: f32,
+    pub lean: Vec2,
+}
+
+impl Bamboo {
+    pub fn center_at(&self, fraction: f32) -> Vec3 {
+        self.base + Vec3::new(self.lean.x, self.height, self.lean.y) * fraction
+    }
+
+    pub fn radius_at(&self, fraction: f32) -> f32 {
+        self.radius * (1.0 - 0.35 * fraction)
+    }
 }
 
 #[derive(Component, Clone, Copy, Debug)]
@@ -117,42 +144,33 @@ pub struct Boundary {
 }
 
 impl Level {
-    fn courtyard() -> Self {
-        use PropKind::{Crate, Pillar, Stone};
-
-        let prop = |x, z, size, kind| Prop {
-            center: Vec2::new(x, z),
-            size,
-            kind,
-        };
-
+    fn bamboo_forest() -> Self {
+        let mut bamboo = Vec::new();
+        for z in -20_i32..=20 {
+            for x in -20_i32..=20 {
+                let key = ((x + 20) * 41 + z + 20) as u32;
+                let point = Vec2::new(x as f32, z as f32) * 1.18
+                    + Vec2::new(variation(key, 1) - 0.5, variation(key, 2) - 0.5) * 0.62;
+                if forest_clearance(point) || variation(key, 3) < 0.12 {
+                    continue;
+                }
+                bamboo.push(Bamboo {
+                    base: Vec3::new(point.x, terrain::hill_height(point), point.y),
+                    height: 7.0 + variation(key, 4) * 5.0,
+                    radius: 0.065 + variation(key, 5) * 0.07,
+                    lean: Vec2::new(variation(key, 6) - 0.5, variation(key, 7) - 0.5) * 0.9,
+                });
+            }
+        }
+        let forest_trunks = TerrainGeometry::bamboo_trunks(&bamboo);
         Self {
             half_size: 25.0,
             ground: TerrainGeometry::ground(25.0),
             ramp: TerrainGeometry::ramp(),
-            props: vec![
-                prop(-5.0, -5.0, Vec3::new(1.6, 1.4, 1.6), Crate),
-                prop(-3.0, -7.0, Vec3::new(1.2, 1.0, 1.2), Crate),
-                prop(5.0, -4.0, Vec3::new(1.8, 1.5, 1.6), Crate),
-                prop(6.0, -6.2, Vec3::new(1.2, 1.0, 1.2), Crate),
-                prop(8.0, 3.0, Vec3::new(1.5, 1.2, 1.5), Crate),
-                prop(9.0, 5.0, Vec3::new(1.2, 1.6, 1.2), Crate),
-                prop(-8.0, 7.0, Vec3::new(1.7, 1.4, 1.7), Crate),
-                prop(-10.0, 6.0, Vec3::new(1.2, 0.9, 1.2), Crate),
-                prop(-10.0, -12.0, Vec3::new(1.8, 3.2, 1.8), Pillar),
-                prop(10.0, -12.0, Vec3::new(1.8, 3.2, 1.8), Pillar),
-                prop(-15.0, 0.0, Vec3::new(2.0, 2.6, 2.0), Pillar),
-                prop(15.0, 0.0, Vec3::new(2.0, 2.6, 2.0), Pillar),
-                prop(-9.0, 14.0, Vec3::new(1.8, 3.2, 1.8), Pillar),
-                prop(9.0, 14.0, Vec3::new(1.8, 3.2, 1.8), Pillar),
-                prop(-5.0, 11.0, Vec3::new(2.6, 0.8, 1.8), Stone),
-                prop(3.0, 12.0, Vec3::new(2.0, 0.65, 2.4), Stone),
-                prop(-18.0, -17.0, Vec3::new(2.8, 1.1, 2.0), Stone),
-                prop(17.0, -17.0, Vec3::new(2.0, 0.9, 2.8), Stone),
-                prop(17.0, 15.0, Vec3::new(2.6, 0.8, 1.8), Stone),
-                prop(-17.0, 16.0, Vec3::new(2.0, 1.1, 2.6), Stone),
-                prop(-2.0, -13.0, Vec3::new(5.0, 1.0, 1.2), Stone),
-            ],
+            props: Vec::new(),
+            bamboo,
+            forest_trunks,
+            forest_rocks: TerrainGeometry::forest_rocks(),
         }
     }
 
@@ -180,8 +198,31 @@ impl Level {
     }
 }
 
+/// Visual variation is deterministic across native/WASM and independent of time.
+pub fn variation(index: u32, salt: u32) -> f32 {
+    let mut value = index.wrapping_mul(0x9e37_79b9) ^ salt.wrapping_mul(0x85eb_ca6b);
+    value ^= value >> 16;
+    value = value.wrapping_mul(0x7feb_352d);
+    value ^= value >> 15;
+    (value & 0xffff) as f32 / 65535.0
+}
+
+pub fn path_distance(point: Vec2) -> f32 {
+    let north_south = (point.x - 3.0 * (point.y * 0.14).sin()).abs();
+    let east_west = (point.y - 2.7 * (point.x * 0.11).sin()).abs();
+    north_south.min(east_west)
+}
+
+fn forest_clearance(point: Vec2) -> bool {
+    let clearing = (point.x / 8.5).powi(2) + ((point.y + 4.0) / 9.5).powi(2) < 1.0;
+    let ramp = (-7.3..=-1.7).contains(&point.x)
+        && (-0.8..=terrain::ramp_summit() + 4.0).contains(&point.y);
+    let hill = (9.2..=21.5).contains(&point.x) && (2.0..=15.0).contains(&point.y);
+    clearing || ramp || hill || path_distance(point) < 1.9
+}
+
 pub fn setup(world: &mut World) {
-    let level = Level::courtyard();
+    let level = Level::bamboo_forest();
     spawn_terrain(
         world,
         level.ground.vertices.clone(),
@@ -191,6 +232,16 @@ pub fn setup(world: &mut World) {
         world,
         level.ramp.vertices.clone(),
         level.ramp.triangles.clone(),
+    );
+    spawn_terrain(
+        world,
+        level.forest_trunks.vertices.clone(),
+        level.forest_trunks.triangles.clone(),
+    );
+    spawn_terrain(
+        world,
+        level.forest_rocks.vertices.clone(),
+        level.forest_rocks.triangles.clone(),
     );
     for prop in &level.props {
         let center = Vec3::new(prop.center.x, prop.size.y * 0.5, prop.center.y);
@@ -242,7 +293,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin));
         app.finish();
-        let level = Level::courtyard();
+        let level = Level::bamboo_forest();
         spawn_terrain(
             app.world_mut(),
             level.ground.vertices,
@@ -268,8 +319,46 @@ mod tests {
     }
 
     #[test]
-    fn terrain_zones_preserve_existing_props_and_open_spawns() {
-        let level = Level::courtyard();
+    fn dense_forest_is_deterministic_and_keeps_clear_traversal_corridors() {
+        let first = Level::bamboo_forest();
+        let second = Level::bamboo_forest();
+        assert_eq!(first.bamboo, second.bamboo);
+        assert!(
+            first.bamboo.len() > 600,
+            "forest is too sparse: {}",
+            first.bamboo.len()
+        );
+        for stem in &first.bamboo {
+            assert!(stem.base.is_finite() && stem.lean.is_finite());
+            assert!((7.0..=12.0).contains(&stem.height));
+            assert!((0.065..=0.135).contains(&stem.radius));
+            assert!(stem.base.xz().length() > 2.5);
+            assert!(stem.base.xz().distance(Vec2::new(0.0, -4.0)) > 8.0);
+        }
+        for z in (-23..=23).step_by(2) {
+            let z = z as f32;
+            let point = Vec2::new(3.0 * (z * 0.14).sin(), z);
+            assert!(
+                first
+                    .bamboo
+                    .iter()
+                    .all(|stem| stem.base.xz().distance(point) - stem.radius > 1.1)
+            );
+        }
+        assert_eq!(first.forest_trunks.vertices.len(), first.bamboo.len() * 42);
+        for geometry in [&first.forest_trunks, &first.forest_rocks] {
+            assert!(!geometry.triangles.is_empty());
+            for triangle in &geometry.triangles {
+                let [a, b, c] = triangle.map(|index| geometry.vertices[index as usize]);
+                assert!(a.is_finite() && b.is_finite() && c.is_finite());
+                assert!((b - a).cross(c - a).length_squared() > 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn woodland_terrain_preserves_open_spawns_and_controller_routes() {
+        let level = Level::bamboo_forest();
         let zones = [
             (
                 Vec2::new(-6.0, 1.0),
@@ -277,18 +366,16 @@ mod tests {
             ),
             (Vec2::new(11.0, 4.0), Vec2::new(19.5, 13.0)),
         ];
-        assert_eq!(level.props.len(), 21);
-        for prop in &level.props {
-            assert!(prop.size.is_finite() && prop.size.min_element() > 0.0);
-            let half_size = Vec2::new(prop.size.x, prop.size.z) * 0.5;
-            let extent = prop.center.abs() + half_size;
+        assert!(level.props.is_empty());
+        for stem in &level.bamboo {
+            let center = stem.base.xz();
+            let half_size = Vec2::splat(stem.radius + 0.35);
+            let extent = center.abs() + half_size;
             assert!(extent.max_element() < level.half_size);
-            assert!((prop.center.abs() - half_size).max_element() > 2.0);
             for (min, max) in zones {
                 assert!(
-                    (prop.center + half_size).cmple(min).any()
-                        || (prop.center - half_size).cmpge(max).any(),
-                    "prop {prop:?} overlaps a terrain test zone"
+                    (center + half_size).cmple(min).any() || (center - half_size).cmpge(max).any(),
+                    "bamboo {stem:?} obstructs a controller route"
                 );
             }
         }
@@ -311,19 +398,23 @@ mod tests {
     }
 
     #[test]
-    fn level_assembles_dynamic_crates_static_props_and_finite_rim() {
+    fn woodland_assembles_shared_trunk_and_rock_geometry_with_a_finite_rim() {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin));
         app.finish();
         setup(app.world_mut());
         let world = app.world_mut();
-        let mut props = world.query::<(&Prop, &PhysicsPose, &RigidBody)>();
-        let props: Vec<_> = props.iter(world).collect();
-        assert_eq!(props.len(), 21);
-        for (prop, pose, body) in props {
-            assert_eq!(*body == RigidBody::Dynamic, prop.kind == PropKind::Crate);
-            let center = Vec3::new(prop.center.x, prop.size.y * 0.5, prop.center.y);
-            assert!(pose.position().distance(center) < 0.0001);
+        assert_eq!(world.query::<&Prop>().iter(world).count(), 0);
+        let mut terrain = world.query_filtered::<(&PhysicsPose, &RigidBody), Without<Boundary>>();
+        let terrain: Vec<_> = terrain.iter(world).collect();
+        assert_eq!(
+            terrain.len(),
+            4,
+            "ground, ledge, bamboo and rocks are solid"
+        );
+        for (pose, body) in terrain {
+            assert_eq!(*body, RigidBody::Static);
+            assert_eq!(pose.position(), Vec3::ZERO);
         }
         let mut boundaries = world.query::<(&Boundary, &PhysicsPose, &RigidBody)>();
         let boundaries: Vec<_> = boundaries.iter(world).collect();
@@ -350,9 +441,14 @@ mod tests {
             assert!(health.is_alive());
         }
         assert_eq!(*world.resource::<EnemyMode>(), EnemyMode::Target);
-        let (enemy, health) = world.query::<(&Enemy, &Health)>().single(world).unwrap();
+        let (enemy, health, body) = world
+            .query::<(&Enemy, &Health, &Body)>()
+            .single(world)
+            .unwrap();
         assert!(enemy.is_passive());
         assert_eq!(health.maximum(), 1_000_000.0);
+        assert_eq!(body.scale(), 1.45);
+        assert!((body.radius() - 0.435).abs() < 0.001);
         tick(&mut app, 12);
         let world = app.world_mut();
         let mut actors = world.query::<(&Body, &MotionState)>();
@@ -392,6 +488,7 @@ mod tests {
             .single(world)
             .unwrap();
         assert_eq!(world.get::<Health>(dummy).unwrap().maximum(), 1_000_000.0);
+        assert!(world.get::<Boss>(dummy).is_none());
         let origin = world.get::<Body>(dummy).unwrap().position();
         world.resource_mut::<SimulationActive>().0 = true;
         tick(&mut app, 180);
@@ -435,12 +532,14 @@ mod tests {
         assert_eq!(actor.target(), None);
         assert_eq!(actor.combo_remaining(), 0.0);
         assert_eq!(actor.cooldown(), cooldown);
-        let mut enemies = world.query::<(&Enemy, &Health)>();
-        assert_eq!(enemies.iter(world).count(), 4);
-        for (enemy, health) in enemies.iter(world) {
+        let mut enemies = world.query::<(&Enemy, &Health, &Body)>();
+        assert_eq!(enemies.iter(world).count(), 1);
+        for (enemy, health, body) in enemies.iter(world) {
             assert!(!enemy.is_passive());
-            assert_eq!(health.maximum(), 120.0);
+            assert_eq!(health.maximum(), 650.0);
+            assert_eq!(body.scale(), 1.0);
         }
+        assert_eq!(world.query::<&Boss>().iter(world).count(), 1);
     }
 
     #[test]

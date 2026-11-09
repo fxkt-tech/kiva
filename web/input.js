@@ -8,7 +8,7 @@
   let aim = 0;
   let keys = 0;
   let actions = 0;
-  let blocking = false;
+  let rightPressed = false;
   let lastWheel = null;
   const pressed = new Set();
   const heldKeys = Object.freeze({ KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8, ShiftLeft: 16, ShiftRight: 16 });
@@ -28,7 +28,7 @@
     aim = 0;
     keys = 0;
     actions = 0;
-    blocking = false;
+    rightPressed = false;
     lastWheel = null;
     pressed.clear();
     previous = null;
@@ -53,7 +53,7 @@
     document.getElementById("enter").hidden = !ready;
     document.getElementById("retry").hidden = !failed;
     document.getElementById("entry-message").textContent = error || (ready
-      ? "进入庭院，自由移动并观察四周。" : failed
+      ? "进入竹林，迎战愁铃客。" : failed
         ? "加载失败。请使用支持 WebGPU 的浏览器，再重新加载。"
         : "正在准备场景与游戏引擎…");
   }
@@ -125,14 +125,17 @@
   document.addEventListener("pointerdown", (event) => {
     if (!event.isTrusted || event.pointerType !== "mouse" || !isActive()) return;
     if (event.button === 0) actions |= 4;
-    if (event.button === 2) blocking = true;
+    if (event.button === 2 && !rightPressed) {
+      rightPressed = true;
+      actions |= 1024;
+    }
     if (event.button === 0 || event.button === 2) event.preventDefault?.();
   }, true);
   document.addEventListener("pointerup", (event) => {
-    if (event.isTrusted && event.pointerType === "mouse" && event.button === 2) blocking = false;
+    if (event.isTrusted && event.pointerType === "mouse" && event.button === 2) rightPressed = false;
   }, true);
   document.addEventListener("pointercancel", (event) => {
-    if (event.isTrusted) blocking = false;
+    if (event.isTrusted) rightPressed = false;
   });
   document.addEventListener("contextmenu", (event) => {
     if (event.isTrusted && isActive()) event.preventDefault?.();
@@ -181,7 +184,7 @@
 
   window.kivaInput = Object.freeze({
     isActive,
-    keys: () => isActive() ? keys | (blocking ? 32 : 0) : 0,
+    keys: () => isActive() ? keys : 0,
     takeActions() {
       const pending = isActive() ? actions : 0;
       actions = 0;
