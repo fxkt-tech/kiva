@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 27
+- **Total Sessions**: 28
 - **Last Active**: 2026-11-09
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~925 | Active |
+| `journal-1.md` | ~961 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 28 | 2026-11-09 | 三维物理与非平地场景交付 | `65f14ec` | `main` |
 | 27 | 2026-11-09 | 提交俯视操作Demo并归档交付 | `5aab14f` | `main` |
 | 26 | 2026-11-09 | 俯视WASD与鼠标转向Demo重建 | - | `main` |
 | 25 | 2026-11-08 | 提交装备与设置角色选择实现 | `50d80a3` | `main` |

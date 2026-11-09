@@ -923,3 +923,39 @@ Esc改为操作/声音/对局分类设置，所有现有设置集中；模拟与
 ### Next Steps
 
 - 用户本地体验；浏览器未出图观察保留供后续需要时定位。
+
+
+## Session 28: 三维物理与非平地场景交付
+<!-- trellis-session: v=2 fp=6e9d1a2229d09212 -->
+
+**Date**: 2026-11-09
+**Task**: 三维物理与非平地场景交付
+**Branch**: `main`
+
+### Summary
+
+交付三维物理、动态箱体、坡道和小山，保留入口布局及二段跳；按用户授权合并main并完成提交推送收尾。
+
+### Main Changes
+
+- 接入Avian三维碰撞与真实支撑，支持箱体推动、倾倒、堆叠、坡道与连续小山。
+- 适配三维战斗、落点、地表特效和owner显示根，保留既有输入、二段跳及联动。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `65f14ec` | feat: add 3d physics and terrain playground |
+
+### Testing
+
+- [OK] make check通过：120项Rust测试、29项Node测试、原生Clippy及WASM检查。
+- [OK] WASM Clippy、临时Trunk构建和真实Chromium/WebGPU运行检查通过，无JS/WebGPU错误。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 代码已合并main；后续设备手感反馈按需记录。

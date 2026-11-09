@@ -48,5 +48,7 @@ Cargo.lock 在最终构建前后 SHA-256 均为 `f582ba6e933a38619a2f5d29eb54104
 
 ## 交付与后续反馈
 
+代码提交：`65f14ec5fa7efb37accdd7d320733b337393499b`（`feat: add 3d physics and terrain playground`），已快进合并到 `main`。
+
 - 代码与验证已完成，用户已授权本次提交、合并、分支清理和推送；具体提交以 Git 日志和 task.json 的代码提交字段为准。
 - 本任务随交付归档，用户目标设备的后续主观手感反馈可另行记录，不阻塞本次已批准的交付。

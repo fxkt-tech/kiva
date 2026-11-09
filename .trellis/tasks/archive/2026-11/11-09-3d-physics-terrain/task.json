@@ -3,7 +3,7 @@
   "name": "3d-physics-terrain",
   "title": "三维物理迁移与非平地测试场景",
   "description": "统一角色与场景三维物理，支持可推动倾倒堆叠的箱子、坡道高台和连续起伏的小山，并适配现有战斗与相机",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": null,
@@ -11,11 +11,11 @@
   "creator": "asuka",
   "assignee": "asuka",
   "createdAt": "2026-11-09",
-  "completedAt": null,
+  "completedAt": "2026-11-09",
   "branch": "feat/3d-physics-terrain",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "65f14ec5fa7efb37accdd7d320733b337393499b",
   "pr_url": null,
   "subtasks": [],
   "children": [],
@@ -37,6 +37,6 @@
     "docs/architecture.md",
     ".trellis/spec/simulation/physics.md"
   ],
-  "notes": "实施、全范围复核和代码验证完成：120项Rust、29项Node、原生/WASM Clippy、Trunk构建及真实浏览器运行检查通过。详见 validation.md。用户已明确授权提交、合并main、删除临时分支及推送，按本次授权完成交付与归档；后续设备手感反馈不阻塞交付。",
+  "notes": "实施与全范围验证完成：120项Rust、29项Node、原生/WASM Clippy、Trunk构建及真实浏览器运行检查通过。用户已授权提交、合并main、删除临时分支及推送；代码65f14ec已快进合并至main，本次收尾归档并记录日志。",
   "meta": {}
 }
