@@ -13,7 +13,8 @@
 - `MoveIntent::set(direction: Vec2)` / `stop()`。
 - `CollisionWorld::new(half_size: f32, solids: Vec<SolidBox>)`；`is_clear(point, half_extent)`。
 - `SolidBox::new(center: Vec2, half_size: Vec2)`。
-- `ActionIntent::set_held(physical_shift, block)` / `set_movement_held(bool)` / `request_jump()` / `request_dodge()` / `clear()`。
+- `ActionIntent::set_held(physical_shift, block)` / `set_movement_held(bool)` / `request_jump()` / `request_dodge()` / `request_crouch_toggle()` / `clear()`。
+- `MotionState::{is_crouched,is_sliding,slide_elapsed,slide_direction}` 只读蹲伏和滑铲状态。
 - `Facing::set(Vec2)` / `direction()`；`MotionState` 只读状态与高度插值，`start_leap(origin,target,duration,peak)` / `launch_up(velocity)` 由模拟规则调用。
 - `CombatIntent::set_aim(Vec2)`、`request_attack/skill/combo/switch_weapon/cycle_target()`、`request_set(WeaponSet)`、`clear()`。
 - `Combatant::new(WeaponSet)`；`weapon_set()`、`weapon_mode()`、`target()`、`aim()`、`cooldown()`、`combo_remaining()` 等只读。
@@ -34,6 +35,10 @@ Shift 首次按下闪避，按住 0.16s 识别疾跑；长按使闪避由 0.42s 
 清理意图会锁存疾跑取消请求，不能因暂停无固定步或后续 set_held 覆盖而丢失；客户端不能直接修改 MotionState。
 方向键 / Shift 释放也必须锁存到固定步，后续按住状态不能覆盖释放事实；新闪避按压重置连续长按计时但不清已有疾跑锁存。
 闪避时间始终单调增加，长按导致持续时间缩短时不能把已执行时间压回 0.26s，否则 smoothstep 差值会造成反向位移。
+C 按压以 XOR 奇偶性锁存，固定步消费后切换蹲伏；松键保持，蹲行固定 1.6m/s，蹲伏不能疾跑但保留已有疾跑锁存。
+非格挡的疾跑中 C 启动 0.55s 滑铲，5m/s 线性衰减积分、起始世界方向锁定，仍走水平扫掠；结束保持蹲伏，C 可提前站立结束。
+接受跳跃 / 闪避 / 跃进、击飞和重置退出蹲伏；无效动作不能误清姿态。清理 Intent 在恢复首步退出蹲伏 / 滑铲，不重置空中或闪避进度。
+滑铲中禁止新的攻击 / 起手 / 联动，普通蹲伏仍使用现有攻击和格挡规则；不增加躲避伤害或越过障碍的权限。
 锤子联动保存原选中 Entity，Tab 不被当前 Q 目标替换；火炮旋斧沿弧线每个敌人仅伤害一次。
 联动需有效时间和活目标 / 未落地状态；切套装或手动切武器取消；起手技能冷却不被切换刷新。
 火炮跃进期间 aim() 固定为起跳时承诺的落点，不能把之后输入的前方点当成当前落点；格挡中 Tab 消耗窗口且不补放。
@@ -71,6 +76,7 @@ Bad：NaN 输入不移动，内容无效时构造失败。
 Shift 规则测试覆盖短按不锁疾跑、长按衔接、松 Shift 保留 / 松方向取消、抵消方向键、零固定步释放、
 重新按压的独立计时、后段长按不倒退、以及失活取消不重置空中进度。
 战斗测试覆盖两条完整联动、失效和一次消费、沿途旋斧、正背面格挡、倒地复活清理和反馈历史上限。
+蹲伏 / 滑铲测试覆盖按压奇偶性、1.6m/s 实际位移、方向锁定与减速积分、墙体 / 边界、起身 / 动作中断、暂停 / 死亡复活清理，以及现有攻击 / 格挡 / 跃进链路。
 
 ## Wrong vs Correct
 

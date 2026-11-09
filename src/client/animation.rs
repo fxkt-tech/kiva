@@ -18,6 +18,8 @@ enum PoseState {
     Air,
     Land,
     Dodge,
+    Crouch,
+    Slide,
     Block,
     Attack(Gesture),
     Spin,
@@ -40,6 +42,7 @@ pub(super) struct RigPose {
     transition: f32,
     air_time: f32,
     was_airborne: bool,
+    crouch_weight: f32,
     event_sequence: u64,
     playback: Option<Playback>,
     restart: bool,
@@ -58,6 +61,7 @@ impl RigPose {
             transition: 1.0,
             air_time: 0.0,
             was_airborne: false,
+            crouch_weight: 0.0,
             event_sequence: 0,
             playback: None,
             restart: false,
@@ -122,6 +126,8 @@ impl RigPose {
             PoseState::Dodge
         } else if input.spinning {
             PoseState::Spin
+        } else if input.sliding {
+            PoseState::Slide
         } else if input.blocking {
             PoseState::Block
         } else if let Some(playback) = &self.playback {
@@ -130,6 +136,8 @@ impl RigPose {
             PoseState::Air
         } else if landed || (self.state == PoseState::Land && self.clock < 0.16) {
             PoseState::Land
+        } else if input.crouched {
+            PoseState::Crouch
         } else if input.speed > 0.01 {
             if input.sprinting {
                 PoseState::Run
@@ -153,6 +161,7 @@ impl RigPose {
             * match state {
                 PoseState::Run => 1.6 * input.speed / 6.0,
                 PoseState::Walk => 1.2 * input.speed / 3.8,
+                PoseState::Crouch => 1.2 * input.speed / 3.8,
                 PoseState::Block => 0.85 * input.speed / 3.8,
                 _ => 0.0,
             };
@@ -176,6 +185,21 @@ impl RigPose {
                     false,
                 );
                 pose[0].rotation = Quat::from_rotation_y(input.dodge_yaw) * pose[0].rotation;
+                pose
+            }
+            PoseState::Crouch => {
+                if input.speed > 0.01 {
+                    let mut pose = library.sample("Walk_Loop", self.gait_time, true);
+                    poses::hold_guard(library, &mut pose, input.mode);
+                    pose
+                } else {
+                    poses::idle(library, self.clock, input.mode)
+                }
+            }
+            PoseState::Slide => {
+                let mut pose = library.sample("Sword_Idle", 0.0, false);
+                poses::hold_guard(library, &mut pose, input.mode);
+                pose[0].rotation = Quat::from_rotation_y(input.slide_yaw) * pose[0].rotation;
                 pose
             }
             PoseState::Block => library.sample("Sword_Block", 0.2 + self.clock.min(0.2), false),
@@ -233,8 +257,20 @@ impl RigPose {
             posed[0].rotation =
                 Quat::from_rotation_y(self.clock * std::f32::consts::TAU * 2.0) * posed[0].rotation;
         }
+        // Keep the transition source before planted-foot IK; storing the lowered
+        // pose here would apply the pelvis offset again on the next transition.
+        self.local = posed.clone();
+        self.crouch_weight = (self.crouch_weight
+            + if input.crouched || input.sliding {
+                dt / 0.12
+            } else {
+                -dt / 0.12
+            })
+        .clamp(0.0, 1.0);
+        if self.crouch_weight > 0.0 {
+            poses::crouch_pose(library, &mut posed, poses::smooth(self.crouch_weight));
+        }
         self.model = library.model_pose(&posed);
-        self.local = posed;
     }
 }
 
@@ -247,6 +283,9 @@ struct Inputs {
     dodging: bool,
     dodge_elapsed: f32,
     dodge_yaw: f32,
+    crouched: bool,
+    sliding: bool,
+    slide_yaw: f32,
     blocking: bool,
     spinning: bool,
     mode: WeaponMode,
@@ -319,6 +358,9 @@ pub(super) fn animate(
         let direction = motion.dodge_direction();
         let dodge_yaw = (-direction.x).atan2(-direction.y)
             - (-facing.direction().x).atan2(-facing.direction().y);
+        let slide_direction = motion.slide_direction();
+        let slide_yaw = (-slide_direction.x).atan2(-slide_direction.y)
+            - (-facing.direction().x).atan2(-facing.direction().y);
         let speed = body.step_displacement().length() / fixed.delta_secs().max(0.0001);
         rig.advance(
             &library,
@@ -330,6 +372,9 @@ pub(super) fn animate(
                 dodging: motion.is_dodging(),
                 dodge_elapsed: motion.dodge_elapsed(),
                 dodge_yaw,
+                crouched: motion.is_crouched(),
+                sliding: motion.is_sliding(),
+                slide_yaw,
                 blocking: motion.is_blocking(),
                 spinning: combat.is_some_and(Combatant::is_spinning),
                 mode,
@@ -409,6 +454,9 @@ mod tests {
             dodging: false,
             dodge_elapsed: 0.0,
             dodge_yaw: 0.0,
+            crouched: false,
+            sliding: false,
+            slide_yaw: 0.0,
             blocking: false,
             spinning: false,
             mode: WeaponMode::Melee,
@@ -695,5 +743,130 @@ mod tests {
         assert!(rig.gait_time > gait);
         assert!(pose_difference(&before, &rig.model) < 0.05);
         finite(&rig.model);
+    }
+
+    #[test]
+    fn fixed_crouch_lowers_only_the_pose_then_walks_and_smoothly_stands_without_foot_drift() {
+        let mut app = app();
+        let actor = actor(&mut app);
+        let head = app.world().resource::<AnimationLibrary>().bone("Head");
+        let standing_head = app.world().get::<RigPose>(actor).unwrap().model[head]
+            .translation
+            .y;
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_crouch_toggle();
+        frame(&mut app, true);
+        let rig = app.world().get::<RigPose>(actor).unwrap();
+        assert_eq!(rig.state, PoseState::Crouch);
+        assert!(rig.crouch_weight > 0.0 && rig.crouch_weight < 1.0);
+        for _ in 0..12 {
+            frame(&mut app, true);
+        }
+        let rig = app.world().get::<RigPose>(actor).unwrap();
+        assert_eq!(rig.crouch_weight, 1.0);
+        assert!(rig.model[head].translation.y < standing_head - 0.2);
+        let library = app.world().resource::<AnimationLibrary>();
+        let base = library.model_pose(&rig.local);
+        for side in ["l", "r"] {
+            let foot = library.bone(&format!("foot_{side}"));
+            assert!(rig.model[foot].translation.distance(base[foot].translation) < 0.002);
+        }
+        assert_eq!(app.world().get::<MotionState>(actor).unwrap().height(), 0.0);
+        assert_eq!(
+            app.world().get::<Body>(actor).unwrap().position(),
+            Vec2::ZERO
+        );
+        let crouched = rig.model.clone();
+        app.world_mut()
+            .get_mut::<MoveIntent>(actor)
+            .unwrap()
+            .set(Vec2::X);
+        for _ in 0..30 {
+            frame(&mut app, true);
+        }
+        let rig = app.world().get::<RigPose>(actor).unwrap();
+        assert_eq!(rig.state, PoseState::Crouch);
+        assert!(pose_difference(&crouched, &rig.model) > 0.01);
+        finite(&rig.model);
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_crouch_toggle();
+        frame(&mut app, true);
+        let rig = app.world().get::<RigPose>(actor).unwrap();
+        assert!(rig.crouch_weight > 0.0 && rig.crouch_weight < 1.0);
+        let weight = rig.crouch_weight;
+        let paused = rig.model.clone();
+        let position = app.world().get::<Body>(actor).unwrap().position();
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        for _ in 0..30 {
+            frame(&mut app, false);
+        }
+        let rig = app.world().get::<RigPose>(actor).unwrap();
+        assert_eq!(rig.crouch_weight, weight);
+        assert_eq!(pose_difference(&paused, &rig.model), 0.0);
+        assert_eq!(app.world().get::<Body>(actor).unwrap().position(), position);
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        app.world_mut().get_mut::<MoveIntent>(actor).unwrap().stop();
+        for _ in 0..12 {
+            frame(&mut app, true);
+        }
+        let rig = app.world().get::<RigPose>(actor).unwrap();
+        assert_eq!(rig.crouch_weight, 0.0);
+        assert_eq!(rig.state, PoseState::Idle);
+        assert!(rig.model[head].translation.y > standing_head - 0.1);
+        assert_eq!(app.world().get::<MotionState>(actor).unwrap().height(), 0.0);
+    }
+
+    #[test]
+    fn real_sprint_to_slide_uses_a_crouched_pose_then_keeps_crouching_after_the_slide() {
+        let mut app = app();
+        let actor = actor(&mut app);
+        app.world_mut()
+            .get_mut::<MoveIntent>(actor)
+            .unwrap()
+            .set(Vec2::X);
+        {
+            let mut intent = app.world_mut().get_mut::<ActionIntent>(actor).unwrap();
+            intent.set_movement_held(true);
+            intent.set_held(true, false);
+            intent.request_dodge();
+        }
+        for _ in 0..18 {
+            frame(&mut app, true);
+        }
+        assert!(
+            app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .is_sprinting()
+        );
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_crouch_toggle();
+        frame(&mut app, true);
+        let rig = app.world().get::<RigPose>(actor).unwrap();
+        assert_eq!(rig.state, PoseState::Slide);
+        assert!(rig.crouch_weight > 0.0);
+        for _ in 0..12 {
+            frame(&mut app, true);
+        }
+        let rig = app.world().get::<RigPose>(actor).unwrap();
+        assert_eq!(rig.state, PoseState::Slide);
+        assert_eq!(rig.crouch_weight, 1.0);
+        finite(&rig.model);
+        for _ in 0..30 {
+            frame(&mut app, true);
+        }
+        assert!(app.world().get::<MotionState>(actor).unwrap().is_crouched());
+        assert!(!app.world().get::<MotionState>(actor).unwrap().is_sliding());
+        assert_eq!(
+            app.world().get::<RigPose>(actor).unwrap().state,
+            PoseState::Crouch
+        );
+        assert_eq!(app.world().get::<MotionState>(actor).unwrap().height(), 0.0);
     }
 }

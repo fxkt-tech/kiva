@@ -12,7 +12,7 @@
   let lastWheel = null;
   const pressed = new Set();
   const heldKeys = Object.freeze({ KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8, ShiftLeft: 16, ShiftRight: 16 });
-  const actionKeys = Object.freeze({ Space: 1, KeyE: 8, Tab: 16, Digit1: 64, Digit2: 128, KeyQ: 256 });
+  const actionKeys = Object.freeze({ Space: 1, KeyE: 8, Tab: 16, Digit1: 64, Digit2: 128, KeyQ: 256, KeyC: 512 });
   let error = "";
   let previous = null;
   let pixelRatio = window.devicePixelRatio;
@@ -113,7 +113,8 @@
     if (firstShift) actions |= 2;
     // A rapid change of pair has one unambiguous final selection.
     if (event.code === "Digit1" || event.code === "Digit2") actions &= ~(64 | 128);
-    actions |= actionKeys[event.code] || 0;
+    if (event.code === "KeyC") actions ^= 512;
+    else actions |= actionKeys[event.code] || 0;
   }, true);
   document.addEventListener("keyup", (event) => {
     if (!event.isTrusted) return;

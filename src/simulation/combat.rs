@@ -534,7 +534,10 @@ pub(super) fn advance(
             }
         }
 
-        let can_act = !motion.is_dodging() && !motion.is_blocking() && !actor.is_spinning();
+        let can_act = !motion.is_dodging()
+            && !motion.is_blocking()
+            && !motion.is_sliding()
+            && !actor.is_spinning();
         let selected = targets
             .iter()
             .find(|target| Some(target.entity) == actor.target);
@@ -1245,6 +1248,107 @@ mod tests {
             app.world().get::<Combatant>(player).unwrap().weapon_set(),
             WeaponSet::HammerSniper
         );
+    }
+
+    #[test]
+    fn crouching_keeps_existing_attacks_and_front_block_available() {
+        let mut app = arena();
+        let player = player(&mut app, WeaponSet::HammerSniper);
+        let target = enemy(&mut app, Vec2::new(0.0, -1.2));
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_crouch_toggle();
+        request(&mut app, player, CombatIntent::request_attack);
+        ticks(&mut app, 1);
+        assert!(
+            app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .is_crouched()
+        );
+        assert!(health(&app, target) < 100.0);
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .set_held(false, true);
+        ticks(&mut app, 85);
+        let motion = app.world().get::<MotionState>(player).unwrap();
+        assert!(motion.is_crouched() && motion.is_blocking());
+        assert!(health(&app, player) > 95.0);
+    }
+
+    #[test]
+    fn sliding_rejects_weapon_actions_until_the_actor_stands() {
+        let mut app = arena();
+        let player = player(&mut app, WeaponSet::HammerSniper);
+        let target = enemy(&mut app, Vec2::new(0.0, -1.2));
+        app.world_mut()
+            .get_mut::<MoveIntent>(player)
+            .unwrap()
+            .set(Vec2::X);
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .set_held(true, false);
+        ticks(&mut app, 30);
+        let origin = app.world().get::<Body>(player).unwrap().position();
+        app.world_mut()
+            .get_mut::<Body>(target)
+            .unwrap()
+            .teleport(origin + Vec2::NEG_Y * 1.2);
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_crouch_toggle();
+        request(&mut app, player, CombatIntent::request_attack);
+        ticks(&mut app, 1);
+        assert!(app.world().get::<MotionState>(player).unwrap().is_sliding());
+        assert_eq!(health(&app, target), 100.0);
+        assert_eq!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .attack_cooldown(),
+            0.0
+        );
+        request(&mut app, player, CombatIntent::request_skill);
+        ticks(&mut app, 1);
+        assert_eq!(health(&app, target), 100.0);
+        assert_eq!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .combo_remaining(),
+            0.0
+        );
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_crouch_toggle();
+        request(&mut app, player, CombatIntent::request_attack);
+        ticks(&mut app, 1);
+        assert!(!app.world().get::<MotionState>(player).unwrap().is_sliding());
+        assert!(health(&app, target) < 100.0);
+    }
+
+    #[test]
+    fn cannon_leap_exits_crouch_through_the_existing_skill_path() {
+        let mut app = arena();
+        let player = player(&mut app, WeaponSet::AxeCannon);
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_crouch_toggle();
+        request(&mut app, player, |intent| {
+            intent.request_switch_weapon();
+            intent.set_aim(Vec2::NEG_Y * 6.0);
+            intent.request_skill();
+        });
+        ticks(&mut app, 1);
+        let motion = app.world().get::<MotionState>(player).unwrap();
+        assert!(motion.is_leaping());
+        assert!(!motion.is_crouched());
     }
 
     #[test]

@@ -254,7 +254,7 @@ test("game keys and browser gestures prevent defaults only during confirmed capt
   assert.equal(emit(f.document, "wheel", { isTrusted: true, deltaY: 10 }).defaultPrevented, false);
   assert.equal(f.input.takeActions(), 0);
   f.capture();
-  for (const code of ["Tab", "Space", "ShiftLeft", "KeyW"]) assert.equal(key(code).defaultPrevented, true);
+  for (const code of ["Tab", "Space", "ShiftLeft", "KeyW", "KeyC"]) assert.equal(key(code).defaultPrevented, true);
   assert.equal(key("ControlLeft").defaultPrevented, false);
   assert.equal(key("F2").defaultPrevented, false);
   assert.equal(emit(f.document, "contextmenu", { isTrusted: true }).defaultPrevented, true);
@@ -361,5 +361,71 @@ test("inactive, untrusted and repeated Shift cannot dodge; Ctrl is unbound", () 
   emit(f.document, "keydown", { code: "ShiftLeft", isTrusted: true });
   f.blur(); f.focus(); f.click(); f.confirm();
   assert.equal(f.input.keys(), 0);
+  assert.equal(f.input.takeActions(), 0);
+});
+
+test("C tap queues one crouch toggle and keyup does not clear it", () => {
+  const f = fixture(); f.parse(); f.capture();
+  emit(f.document, "keydown", { code: "KeyC", isTrusted: true });
+  assert.equal(f.input.keys(), 0);
+  emit(f.document, "keyup", { code: "KeyC", isTrusted: true });
+  assert.equal(f.input.takeActions(), 512);
+  assert.equal(f.input.takeActions(), 0);
+  assert.equal(f.input.keys(), 0);
+});
+
+test("two C taps before sampling cancel toggle parity without losing other actions", () => {
+  const f = fixture(); f.parse(); f.capture();
+  emit(f.document, "keydown", { code: "Space", isTrusted: true });
+  for (let index = 0; index < 2; index++) {
+    emit(f.document, "keydown", { code: "KeyC", isTrusted: true });
+    emit(f.document, "keyup", { code: "KeyC", isTrusted: true });
+  }
+  assert.equal(f.input.takeActions(), 1);
+  for (let index = 0; index < 3; index++) {
+    emit(f.document, "keydown", { code: "KeyC", isTrusted: true });
+    emit(f.document, "keyup", { code: "KeyC", isTrusted: true });
+  }
+  assert.equal(f.input.takeActions(), 512);
+});
+
+test("holding C or keyboard repeat cannot keep toggling stance", () => {
+  const f = fixture(); f.parse(); f.capture();
+  emit(f.document, "keydown", { code: "KeyC", isTrusted: true });
+  assert.equal(f.input.takeActions(), 512);
+  emit(f.document, "keydown", { code: "KeyC", repeat: true, isTrusted: true });
+  emit(f.document, "keydown", { code: "KeyC", isTrusted: true });
+  assert.equal(f.input.takeActions(), 0);
+  emit(f.document, "keyup", { code: "KeyC", isTrusted: true });
+  assert.equal(f.input.takeActions(), 0);
+  emit(f.document, "keydown", { code: "KeyC", isTrusted: true });
+  assert.equal(f.input.takeActions(), 512);
+});
+
+test("queued crouch toggles clear on blur, lock loss and capture confirmation", () => {
+  const f = fixture(); f.parse(); f.capture();
+  const press = () => emit(f.document, "keydown", { code: "KeyC", isTrusted: true });
+  press(); f.blur(); f.focus(); f.click(); f.confirm();
+  assert.equal(f.input.takeActions(), 0);
+  emit(f.document, "keydown", { code: "KeyC", repeat: true, isTrusted: true });
+  assert.equal(f.input.takeActions(), 0);
+  press(); f.document.pointerLockElement = null;
+  emit(f.document, "pointerlockchange");
+  assert.equal(f.input.takeActions(), 0);
+  f.click(); f.confirm();
+  press(); f.confirm();
+  assert.equal(f.input.takeActions(), 0);
+  press();
+  assert.equal(f.input.takeActions(), 512);
+});
+
+test("inactive and untrusted C presses do not toggle or prevent browser input", () => {
+  const f = fixture(); f.parse();
+  const inactive = emit(f.document, "keydown", { code: "KeyC", isTrusted: true });
+  assert.equal(inactive.defaultPrevented, false);
+  assert.equal(f.input.takeActions(), 0);
+  f.capture();
+  const untrusted = emit(f.document, "keydown", { code: "KeyC", isTrusted: false });
+  assert.equal(untrusted.defaultPrevented, false);
   assert.equal(f.input.takeActions(), 0);
 });

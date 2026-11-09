@@ -828,4 +828,342 @@ mod tests {
         let end = app.world().get::<Body>(actor).unwrap().position().x;
         assert!((end - start - 2.4).abs() < 0.001);
     }
+
+    fn request_crouch(app: &mut App, actor: Entity) {
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_crouch_toggle();
+    }
+
+    #[test]
+    fn crouch_toggle_is_latched_once_and_two_presses_before_fixed_tick_cancel() {
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        request_crouch(&mut app, actor);
+        request_crouch(&mut app, actor);
+        tick(&mut app, 1);
+        assert!(!app.world().get::<MotionState>(actor).unwrap().is_crouched());
+        request_crouch(&mut app, actor);
+        assert!(!app.world().get::<MotionState>(actor).unwrap().is_crouched());
+        tick(&mut app, 1);
+        assert!(app.world().get::<MotionState>(actor).unwrap().is_crouched());
+        tick(&mut app, 60);
+        assert!(app.world().get::<MotionState>(actor).unwrap().is_crouched());
+        request_crouch(&mut app, actor);
+        tick(&mut app, 1);
+        assert!(!app.world().get::<MotionState>(actor).unwrap().is_crouched());
+        request_crouch(&mut app, actor);
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .clear();
+        tick(&mut app, 1);
+        assert!(!app.world().get::<MotionState>(actor).unwrap().is_crouched());
+    }
+
+    #[test]
+    fn crouched_walk_is_absolute_one_point_six_and_a_sprint_latch_does_not_speed_it_up() {
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        set_movement(&mut app, actor, Vec2::X, true);
+        request_crouch(&mut app, actor);
+        tick(&mut app, 1);
+        let start = app.world().get::<Body>(actor).unwrap().position().x;
+        tick(&mut app, 60);
+        let end = app.world().get::<Body>(actor).unwrap().position().x;
+        assert!((end - start - 1.6).abs() < 0.001);
+        set_shift(&mut app, actor, true);
+        tick(&mut app, 12);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(motion.sprint_latched());
+        assert!(!motion.is_sprinting());
+        assert!(!motion.is_sliding());
+        let start = app.world().get::<Body>(actor).unwrap().position().x;
+        tick(&mut app, 60);
+        let end = app.world().get::<Body>(actor).unwrap().position().x;
+        assert!((end - start - 1.6).abs() < 0.001);
+    }
+
+    #[test]
+    fn held_block_crouches_without_sliding_even_with_a_previous_sprint_latch() {
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        begin_sprint(&mut app, actor);
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .set_held(false, true);
+        request_crouch(&mut app, actor);
+        tick(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(motion.is_crouched());
+        assert!(motion.is_blocking());
+        assert!(motion.sprint_latched());
+        assert!(!motion.is_sliding());
+        assert!(!motion.is_sprinting());
+        let start = app.world().get::<Body>(actor).unwrap().position().x;
+        tick(&mut app, 60);
+        let end = app.world().get::<Body>(actor).unwrap().position().x;
+        assert!((end - start - 1.6).abs() < 0.001);
+    }
+
+    #[test]
+    fn sprint_crouch_slides_in_a_locked_direction_and_stays_crouched_after_ending() {
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        begin_sprint(&mut app, actor);
+        set_shift(&mut app, actor, false);
+        let start = app.world().get::<Body>(actor).unwrap().position();
+        request_crouch(&mut app, actor);
+        tick(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(motion.is_sliding());
+        assert!(motion.is_crouched());
+        assert!(!motion.is_sprinting());
+        assert_eq!(motion.slide_direction(), Vec2::X);
+        assert!(motion.slide_elapsed() > 0.0);
+        set_movement(&mut app, actor, Vec2::Y, true);
+        tick(&mut app, 6);
+        assert_eq!(
+            app.world().get::<Body>(actor).unwrap().position().y,
+            start.y
+        );
+        set_movement(&mut app, actor, Vec2::ZERO, false);
+        tick(&mut app, 40);
+        let end = app.world().get::<Body>(actor).unwrap().position();
+        assert!((end.x - start.x - 1.375).abs() < 0.001);
+        assert_eq!(end.y, start.y);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(!motion.is_sliding());
+        assert!(motion.is_crouched());
+        assert_eq!(motion.slide_elapsed(), 0.0);
+    }
+
+    #[test]
+    fn pressing_c_again_stands_up_and_cancels_a_slide_early() {
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        begin_sprint(&mut app, actor);
+        request_crouch(&mut app, actor);
+        tick(&mut app, 6);
+        assert!(app.world().get::<MotionState>(actor).unwrap().is_sliding());
+        set_movement(&mut app, actor, Vec2::ZERO, false);
+        let position = app.world().get::<Body>(actor).unwrap().position();
+        request_crouch(&mut app, actor);
+        tick(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(!motion.is_crouched());
+        assert!(!motion.is_sliding());
+        tick(&mut app, 60);
+        assert_eq!(app.world().get::<Body>(actor).unwrap().position(), position);
+    }
+
+    #[test]
+    fn sliding_respects_walls_and_the_full_body_map_boundary() {
+        use crate::simulation::SolidBox;
+
+        for wall in [false, true] {
+            let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+            begin_sprint(&mut app, actor);
+            let start = app.world().get::<Body>(actor).unwrap().position();
+            let world = if wall {
+                CollisionWorld::new(
+                    100.0,
+                    vec![SolidBox::new(start + Vec2::X * 0.7, Vec2::splat(0.2))],
+                )
+            } else {
+                CollisionWorld::new(start.x + 0.8, vec![])
+            };
+            app.world_mut().insert_resource(world);
+            request_crouch(&mut app, actor);
+            tick(&mut app, 1);
+            set_movement(&mut app, actor, Vec2::ZERO, false);
+            tick(&mut app, 40);
+            let position = app.world().get::<Body>(actor).unwrap().position();
+            assert!(position.x > start.x);
+            assert!(position.x < start.x + 0.5);
+            assert!(
+                app.world()
+                    .resource::<CollisionWorld>()
+                    .is_clear(position, 0.35)
+            );
+        }
+    }
+
+    #[test]
+    fn accepted_jump_dodge_leap_and_knockup_exit_crouch_but_rejected_actions_do_not() {
+        for action in ["jump", "dodge", "leap", "knockup"] {
+            let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+            request_crouch(&mut app, actor);
+            tick(&mut app, 1);
+            match action {
+                "jump" => app
+                    .world_mut()
+                    .get_mut::<ActionIntent>(actor)
+                    .unwrap()
+                    .request_jump(),
+                "dodge" => app
+                    .world_mut()
+                    .get_mut::<ActionIntent>(actor)
+                    .unwrap()
+                    .request_dodge(),
+                "leap" => {
+                    let mut motion = app.world_mut().get_mut::<MotionState>(actor).unwrap();
+                    assert!(!motion.start_leap(Vec2::ZERO, Vec2::X, 0.0, 1.0));
+                    assert!(motion.is_crouched());
+                    assert!(motion.start_leap(Vec2::ZERO, Vec2::X, 0.5, 1.0));
+                }
+                _ => {
+                    let mut motion = app.world_mut().get_mut::<MotionState>(actor).unwrap();
+                    assert!(!motion.launch_up(f32::NAN));
+                    assert!(motion.is_crouched());
+                    assert!(motion.launch_up(6.0));
+                }
+            }
+            tick(&mut app, 1);
+            let motion = app.world().get::<MotionState>(actor).unwrap();
+            assert!(!motion.is_crouched(), "{action}");
+            assert!(!motion.is_sliding(), "{action}");
+        }
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_dodge();
+        tick(&mut app, 27);
+        request_crouch(&mut app, actor);
+        tick(&mut app, 1);
+        assert!(app.world().get::<MotionState>(actor).unwrap().is_crouched());
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_dodge();
+        tick(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(motion.is_crouched());
+        assert!(!motion.is_dodging());
+    }
+
+    #[test]
+    fn airborne_dodge_and_leap_crouch_requests_are_ignored_without_landing_replay() {
+        for action in ["jump", "dodge", "leap"] {
+            let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+            match action {
+                "jump" => app
+                    .world_mut()
+                    .get_mut::<ActionIntent>(actor)
+                    .unwrap()
+                    .request_jump(),
+                "dodge" => app
+                    .world_mut()
+                    .get_mut::<ActionIntent>(actor)
+                    .unwrap()
+                    .request_dodge(),
+                _ => {
+                    app.world_mut()
+                        .get_mut::<MotionState>(actor)
+                        .unwrap()
+                        .start_leap(Vec2::ZERO, Vec2::X, 0.5, 1.0);
+                }
+            }
+            tick(&mut app, 1);
+            request_crouch(&mut app, actor);
+            tick(&mut app, 90);
+            let motion = app.world().get::<MotionState>(actor).unwrap();
+            assert!(motion.is_grounded());
+            assert!(!motion.is_crouched(), "{action}");
+            assert!(!motion.is_sliding());
+        }
+    }
+
+    #[test]
+    fn pause_cleanup_cancels_sticky_slide_and_crouch_on_resume_without_canceling_a_leap() {
+        use crate::simulation::SimulationActive;
+
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        begin_sprint(&mut app, actor);
+        request_crouch(&mut app, actor);
+        tick(&mut app, 6);
+        assert!(app.world().get::<MotionState>(actor).unwrap().is_sliding());
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        request_crouch(&mut app, actor);
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .clear();
+        set_movement(&mut app, actor, Vec2::ZERO, false);
+        tick(&mut app, 120);
+        assert!(app.world().get::<MotionState>(actor).unwrap().is_sliding());
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        tick(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(!motion.is_crouched());
+        assert!(!motion.is_sliding());
+        assert!(!motion.sprint_latched());
+        let origin = app.world().get::<Body>(actor).unwrap().position();
+        assert!(
+            app.world_mut()
+                .get_mut::<MotionState>(actor)
+                .unwrap()
+                .start_leap(origin, origin + Vec2::X * 3.0, 0.6, 2.0)
+        );
+        tick(&mut app, 6);
+        let height = app.world().get::<MotionState>(actor).unwrap().height();
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .clear();
+        tick(&mut app, 120);
+        assert_eq!(
+            app.world().get::<MotionState>(actor).unwrap().height(),
+            height
+        );
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        tick(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(motion.is_leaping());
+        assert!(motion.height() > height);
+        assert!(!motion.is_crouched());
+    }
+
+    #[test]
+    fn death_and_respawn_clear_crouch_and_discard_c_pressed_while_down() {
+        use crate::simulation::{CombatIntent, Combatant, Enemy, Health, SpawnPoint, WeaponSet};
+
+        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
+        app.world_mut().entity_mut(actor).insert((
+            Health::new(1.0),
+            Combatant::new(WeaponSet::HammerSniper),
+            CombatIntent::default(),
+            SpawnPoint(Vec2::ZERO),
+        ));
+        let enemy = app
+            .world_mut()
+            .spawn((
+                Body::new(Vec2::NEG_Y, 2.0, 0.35),
+                MoveIntent::default(),
+                ActionIntent::default(),
+                MotionState::default(),
+                Facing::default(),
+                Health::new(100.0),
+                Enemy::default(),
+                SpawnPoint(Vec2::NEG_Y),
+            ))
+            .id();
+        request_crouch(&mut app, actor);
+        for _ in 0..180 {
+            tick(&mut app, 1);
+            if !app.world().get::<Health>(actor).unwrap().is_alive() {
+                break;
+            }
+        }
+        assert!(!app.world().get::<Health>(actor).unwrap().is_alive());
+        app.world_mut().despawn(enemy);
+        request_crouch(&mut app, actor);
+        tick(&mut app, 1);
+        assert!(!app.world().get::<MotionState>(actor).unwrap().is_crouched());
+        tick(&mut app, 185);
+        assert!(app.world().get::<Health>(actor).unwrap().is_alive());
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(!motion.is_crouched());
+        assert!(!motion.is_sliding());
+        assert!(!motion.sprint_latched());
+    }
 }

@@ -88,6 +88,55 @@ pub(super) fn hold_guard(library: &AnimationLibrary, pose: &mut [Transform], mod
     weapon_pose(library, pose, guard(mode), mode == WeaponMode::Ranged);
 }
 
+/// Ported from act: lower the pelvis, then solve both legs in model space so
+/// imported bone axes cannot turn a crouch into lifted feet or shortened limbs.
+pub(super) fn crouch_pose(library: &AnimationLibrary, local: &mut [Transform], weight: f32) {
+    let standing = library.model_pose(local);
+    let rest_root = Quat::from_rotation_y(std::f32::consts::PI) * library.bones[0].rest.rotation;
+    let forward = standing[0].rotation * rest_root.inverse() * Vec3::NEG_Z;
+    let pelvis = library.bone("pelvis");
+    let parent = library.bones[pelvis].parent.expect("pelvis has a parent");
+    local[pelvis].translation += standing[parent]
+        .compute_affine()
+        .inverse()
+        .transform_vector3(Vec3::NEG_Y * (0.33 * weight));
+    for side in ["l", "r"] {
+        let thigh = library.bone(&format!("thigh_{side}"));
+        let calf = library.bone(&format!("calf_{side}"));
+        let foot = library.bone(&format!("foot_{side}"));
+        let model = library.model_pose(local);
+        let hip = model[thigh].translation;
+        let target = standing[foot].translation;
+        let upper = model[calf].translation.distance(hip);
+        let lower = model[foot].translation.distance(model[calf].translation);
+        let direction = (target - hip).normalize_or(Vec3::NEG_Y);
+        let distance = target.distance(hip).clamp(0.0001, upper + lower - 0.0001);
+        let along = (upper * upper - lower * lower + distance * distance) / (2.0 * distance);
+        let fallback = if direction.y.abs() < 0.9 {
+            Vec3::Y
+        } else {
+            Vec3::X
+        };
+        let bend = (forward - direction * direction.dot(forward))
+            .normalize_or((fallback - direction * direction.dot(fallback)).normalize());
+        let knee = hip + direction * along + bend * (upper * upper - along * along).max(0.0).sqrt();
+        aim_bone(library, local, &model, thigh, model[calf].translation, knee);
+        let model = library.model_pose(local);
+        aim_bone(
+            library,
+            local,
+            &model,
+            calf,
+            model[foot].translation,
+            target,
+        );
+        let model = library.model_pose(local);
+        // Preserve the authored foot orientation as well as its position.
+        // Toes therefore keep following the same ground trajectory.
+        local[foot].rotation = model[calf].rotation.inverse() * standing[foot].rotation;
+    }
+}
+
 pub(super) fn gesture(
     library: &AnimationLibrary,
     kind: Gesture,
@@ -286,4 +335,86 @@ fn arm(
     );
     let model = library.model_pose(local);
     local[hand].rotation = (model[lower].rotation.inverse() * rotation).normalize();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn crouch_ik_preserves_feet_rotation_and_leg_lengths_across_authored_ground_poses() {
+        let library = AnimationLibrary::default();
+        let pelvis = library.bone("pelvis");
+        for clip in [
+            "Sword_Idle",
+            "Walk_Loop",
+            "Jog_Fwd_Loop",
+            "Sword_Block",
+            "Sword_Regular_A",
+            "Sword_Regular_B",
+            "Sword_Regular_C",
+            "Sword_Attack",
+            "Sword_Dash",
+            "Hit_Chest",
+            "Sword_Heavy_Combo",
+        ] {
+            for frame in 0..=8 {
+                let base = library.sample(clip, library.duration(clip) * frame as f32 / 8.0, false);
+                let before = library.model_pose(&base);
+                for weight in [0.15, 0.5, 1.0] {
+                    let mut local = base.clone();
+                    crouch_pose(&library, &mut local, weight);
+                    let after = library.model_pose(&local);
+                    assert!(after[pelvis].translation.y < before[pelvis].translation.y);
+                    for bone in &after {
+                        assert!(bone.translation.is_finite(), "{clip} frame {frame}");
+                        assert!(bone.rotation.is_finite(), "{clip} frame {frame}");
+                    }
+                    for side in ["l", "r"] {
+                        let thigh = library.bone(&format!("thigh_{side}"));
+                        let calf = library.bone(&format!("calf_{side}"));
+                        let foot = library.bone(&format!("foot_{side}"));
+                        assert!(
+                            after[foot].translation.distance(before[foot].translation) < 0.002,
+                            "foot drift: {clip} frame {frame}, weight {weight}, side {side}"
+                        );
+                        assert!(
+                            after[foot].rotation.dot(before[foot].rotation).abs() > 0.9999,
+                            "foot rotation: {clip} frame {frame}, side {side}"
+                        );
+                        for (a, b) in [(thigh, calf), (calf, foot)] {
+                            let expected = before[a].translation.distance(before[b].translation);
+                            let actual = after[a].translation.distance(after[b].translation);
+                            assert!(
+                                (actual - expected).abs() < 0.001,
+                                "leg stretch: {clip} frame {frame}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn crouch_moves_the_weapon_grip_with_the_pelvis_without_changing_two_handed_alignment() {
+        let library = AnimationLibrary::default();
+        for mode in [WeaponMode::Melee, WeaponMode::Ranged] {
+            let mut local = idle(&library, 0.0, mode);
+            let before = library.model_pose(&local);
+            crouch_pose(&library, &mut local, 1.0);
+            let after = library.model_pose(&local);
+            let right = library.bone("hand_r");
+            let left = library.bone("hand_l");
+            let pelvis = library.bone("pelvis");
+            let right_offset = before[right].translation - before[pelvis].translation;
+            assert!(
+                (after[right].translation - after[pelvis].translation).distance(right_offset)
+                    < 0.0001
+            );
+            let hands = before[left].translation - before[right].translation;
+            assert!((after[left].translation - after[right].translation).distance(hands) < 0.0001);
+            assert!(after[right].rotation.dot(before[right].rotation).abs() > 0.9999);
+        }
+    }
 }

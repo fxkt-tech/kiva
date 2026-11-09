@@ -32,12 +32,20 @@ pub(super) fn sync(
         "倒地 · 即将回到出生点"
     } else if motion.is_dodging() {
         "闪避中"
+    } else if motion.is_sliding() {
+        "滑铲中 · C 起身"
     } else if combat.is_spinning() {
         "联动 · 空中回旋"
     } else if motion.is_leaping() {
         "火炮跃进 · Tab 接战斧旋转"
     } else if motion.is_blocking() {
-        "格挡 · 防御前方攻击"
+        if motion.is_crouched() {
+            "蹲伏格挡 · C 起身"
+        } else {
+            "格挡 · 防御前方攻击"
+        }
+    } else if motion.is_crouched() {
+        "蹲伏 · C 起身"
     } else if motion.is_sprinting() {
         "疾跑中 · 松开方向键停止"
     } else if !motion.is_grounded() {

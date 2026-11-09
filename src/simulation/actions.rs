@@ -6,6 +6,9 @@ const GRAVITY: f32 = 18.0;
 const JUMP_VELOCITY: f32 = 6.0;
 const SPRINT_MULTIPLIER: f32 = 1.6;
 const BLOCK_MULTIPLIER: f32 = 0.35;
+const CROUCH_SPEED: f32 = 1.6;
+const SLIDE_DURATION: f32 = 0.55;
+const SLIDE_SPEED: f32 = 5.0;
 const SPRINT_HOLD_TIME: f32 = 0.16;
 const DODGE_DURATION: f32 = 0.42;
 const SPRINT_DODGE_DURATION: f32 = 0.26;
@@ -23,7 +26,8 @@ pub struct ActionIntent {
     block: bool,
     jump: bool,
     dodge: bool,
-    cancel_sprint: bool,
+    crouch_toggle: bool,
+    cancel_stances: bool,
 }
 
 impl ActionIntent {
@@ -50,9 +54,13 @@ impl ActionIntent {
         self.dodge = true;
     }
 
+    pub fn request_crouch_toggle(&mut self) {
+        self.crouch_toggle = !self.crouch_toggle;
+    }
+
     pub fn clear(&mut self) {
         *self = Self {
-            cancel_sprint: true,
+            cancel_stances: true,
             ..Self::default()
         };
     }
@@ -93,6 +101,11 @@ struct Dodge {
     held: bool,
 }
 
+struct Slide {
+    elapsed: f32,
+    direction: Vec2,
+}
+
 impl Dodge {
     fn duration(&self) -> f32 {
         if self.held {
@@ -120,6 +133,8 @@ pub struct MotionState {
     sprinting: bool,
     sprint_hold_time: f32,
     sprint_latched: bool,
+    crouched: bool,
+    slide: Option<Slide>,
     leap: Option<Leap>,
 }
 
@@ -153,6 +168,24 @@ impl MotionState {
         self.sprinting
     }
 
+    pub fn is_crouched(&self) -> bool {
+        self.crouched
+    }
+
+    pub fn is_sliding(&self) -> bool {
+        self.slide.is_some()
+    }
+
+    pub fn slide_elapsed(&self) -> f32 {
+        self.slide.as_ref().map_or(0.0, |slide| slide.elapsed)
+    }
+
+    pub fn slide_direction(&self) -> Vec2 {
+        self.slide
+            .as_ref()
+            .map_or(Vec2::ZERO, |slide| slide.direction)
+    }
+
     pub fn sprint_latched(&self) -> bool {
         self.sprint_latched
     }
@@ -161,6 +194,11 @@ impl MotionState {
         self.sprint_hold_time = 0.0;
         self.sprint_latched = false;
         self.sprinting = false;
+    }
+
+    fn exit_crouch(&mut self) {
+        self.crouched = false;
+        self.slide = None;
     }
 
     pub fn is_leaping(&self) -> bool {
@@ -209,6 +247,7 @@ impl MotionState {
         }
         self.blocking = false;
         self.sprinting = false;
+        self.exit_crouch();
         self.leap = Some(Leap {
             velocity,
             elapsed: 0.0,
@@ -228,6 +267,7 @@ impl MotionState {
         self.leap = None;
         self.blocking = false;
         self.sprinting = false;
+        self.exit_crouch();
         true
     }
 
@@ -243,13 +283,15 @@ impl MotionState {
         speed: f32,
         dt: f32,
     ) -> Vec2 {
-        if std::mem::take(&mut intent.cancel_sprint) {
+        if std::mem::take(&mut intent.cancel_stances) {
             self.cancel_sprint();
+            self.exit_crouch();
         }
         self.previous_height = self.height;
         self.dodge_cooldown = (self.dodge_cooldown - dt).max(0.0);
         let jump = std::mem::take(&mut intent.jump);
         let dodge = std::mem::take(&mut intent.dodge);
+        let crouch_toggle = std::mem::take(&mut intent.crouch_toggle);
         self.blocking = false;
         self.sprinting = false;
         self.dodge_protected = false;
@@ -287,7 +329,23 @@ impl MotionState {
         }
 
         if self.is_grounded() && !self.is_dodging() {
+            if crouch_toggle {
+                self.crouched = !self.crouched;
+                self.slide = if self.crouched
+                    && self.sprint_latched
+                    && !intent.block
+                    && direction != Vec2::ZERO
+                {
+                    Some(Slide {
+                        elapsed: 0.0,
+                        direction: direction.normalize_or_zero(),
+                    })
+                } else {
+                    None
+                };
+            }
             if dodge && self.dodge_cooldown == 0.0 {
+                self.exit_crouch();
                 self.dodge = Some(Dodge {
                     elapsed: 0.0,
                     direction: if direction.length_squared() > 0.0001 {
@@ -299,6 +357,7 @@ impl MotionState {
                 });
                 self.dodge_cooldown = DODGE_COOLDOWN;
             } else if jump {
+                self.exit_crouch();
                 self.vertical_velocity = JUMP_VELOCITY;
             }
         }
@@ -317,20 +376,40 @@ impl MotionState {
                 self.dodge = None;
             }
             delta
+        } else if let Some(slide) = &mut self.slide {
+            let previous = slide.elapsed;
+            slide.elapsed = (slide.elapsed + dt).min(SLIDE_DURATION);
+            // Integrate the reference's linearly decaying velocity over this tick.
+            let distance = SLIDE_SPEED
+                * ((slide.elapsed - previous)
+                    - (slide.elapsed * slide.elapsed - previous * previous)
+                        / (2.0 * SLIDE_DURATION));
+            let delta = slide.direction * distance;
+            if slide.elapsed >= SLIDE_DURATION {
+                self.slide = None;
+            }
+            delta
         } else {
             self.blocking = intent.block && self.is_grounded();
             self.sprinting = self.sprint_latched
                 && self.is_grounded()
                 && !self.blocking
+                && !self.crouched
                 && direction != Vec2::ZERO;
-            let multiplier = if self.blocking {
-                BLOCK_MULTIPLIER
+            let move_speed = if self.crouched {
+                if self.blocking {
+                    CROUCH_SPEED.min(speed * BLOCK_MULTIPLIER)
+                } else {
+                    CROUCH_SPEED
+                }
+            } else if self.blocking {
+                speed * BLOCK_MULTIPLIER
             } else if self.sprinting {
-                SPRINT_MULTIPLIER
+                speed * SPRINT_MULTIPLIER
             } else {
-                1.0
+                speed
             };
-            direction * speed * multiplier * dt
+            direction * move_speed * dt
         };
 
         if !self.is_grounded() {

@@ -34,7 +34,8 @@ Web startup / input / hud 三个 head 脚本先于 Trunk 模块同步安装，DO
 Web keys() 的 u32 位掩码为 W=1 / S=2 / A=4 / D=8 / sprint=16 / block=32，仅捕获期间可信非重复输入建立按住状态；
 失锁清零，keyup 释放。原生消费 WindowFocused 的中间失焦事件，避免同帧失焦恢复遗漏清理。
 自由鼠标用 clientX / movementX 校准 CSS 增益，丢弃边缘截断样本；DPR 改变清校准，不盲目用它换算。
-takeActions() 一次返回并清空 jump=1 / dodge=2 / attack=4 / skill=8 / combo=16 / switch=32 / pair1=64 / pair2=128 / target=256。
+takeActions() 一次返回并清空 jump=1 / dodge=2 / attack=4 / skill=8 / combo=16 / switch=32 / pair1=64 / pair2=128 / target=256 / crouch=512。
+KeyC 是切换指令：完整按压按 XOR 奇偶性锁存，keyup 不取消，重复按住不能多次切换；原生 C 同样消费有序 KeyboardInput。
 Rust 将离散位提交到 Intent 锁存，直到真实固定步消费；失锁清移动 / 动作 / 战斗意图并暂停模拟。
 Shift 位表示物理按住而非已进入疾跑；聚合左右 Shift 的首次按下另提交一次 dodge 位，Ctrl 不再绑定闪避。
 原生按事件顺序消费当前窗口 KeyboardInput，不能只比较相邻帧 pressed 快照，否则会漏掉帧间松开再按下；
@@ -47,6 +48,8 @@ Shift 位表示物理按住而非已进入疾跑；聚合左右 Shift 的首次�
 资产为 `assets/animations/stickman.anim`（23 骨骼 / 19 动画），保留同目录 CC0 许可证；`include_bytes!` 嵌入，显式小端解码。
 身体姿态只读 Body 的实际固定步位移、MotionState、Health 和 Combatant，动画反馈按 CombatEvent.actor/sequence 归属与去重。
 禁止把动画根位移叠加到权威位置；空中不重复抬升骨盆。暂停冻结姿态、尸体保留可见播放 Death01，复活清理旧姿态。
+蹲姿和滑铲根据 MotionState 只读状态选择，0.12s 平滑权重调用 act 的 crouch_pose 腿部 IK，下移骨盆 0.33m 且保持脚掌和腿长。
+局部混合缓存必须保存 IK 前姿态，对副本做蹲姿 IK 后生成模型空间骨骼，避免蹲起过渡重复降低骨盆。
 外框固定 16:9，按窗口最大可容纳面积缩放，最小留白 12–24px；新拟态使用参考下拉框的 3px 双向阴影和 1px 描边，随系统明暗。
 
 ## Validation & Error Matrix
@@ -77,6 +80,7 @@ Rust 测试验证相对方向、斜向速度、分帧转角一致和真实透视
 Shift 输入回归覆盖完整点按先于采样结束、左右键重叠 / 换手、帧间松开再按下，以及捕获 / 重复事件隔离。
 火柴人无窗口测试覆盖杆件端点连接、跨角色网格复用、父子关系及不改变 Body 权威位置。
 骨骼测试覆盖全部动画有限性 / 无根位移、走跑跳跃等实际姿态变化、事件归属、武器跟手、死亡 / 复活 / 暂停及不改模拟高度。
+C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失焦清理；蹲伏 IK 验证多片段的脚掌位置 / 旋转 / 腿长和武器握持。
 
 ## Wrong vs Correct
 

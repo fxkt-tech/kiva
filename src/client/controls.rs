@@ -28,6 +28,7 @@ const SWITCH_WEAPON: u32 = 32;
 const HAMMER_SNIPER: u32 = 64;
 const AXE_CANNON: u32 = 128;
 const CYCLE_TARGET: u32 = 256;
+const CROUCH_TOGGLE: u32 = 512;
 
 type PlayerIntents = (
     &'static Body,
@@ -77,6 +78,8 @@ pub(super) struct CaptureState {
     last_wheel: Option<f64>,
     #[cfg(not(target_arch = "wasm32"))]
     shift_keys: [bool; 2],
+    #[cfg(not(target_arch = "wasm32"))]
+    crouch_key: bool,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -86,6 +89,7 @@ impl CaptureState {
             self.active = false;
             self.last_wheel = None;
             self.shift_keys = [false; 2];
+            self.crouch_key = false;
         } else if clicked {
             self.active = true;
         }
@@ -101,7 +105,7 @@ impl CaptureState {
     }
 
     fn shift_event(&mut self, event: &KeyboardInput, window: Entity, receiving: bool) -> bool {
-        if !receiving || !self.active || event.window != window || event.repeat {
+        if !self.accepts_event(event, window, receiving) {
             return false;
         }
         let index = match event.key_code {
@@ -112,6 +116,20 @@ impl CaptureState {
         let previously_held = self.shift_keys.iter().any(|held| *held);
         self.shift_keys[index] = event.state == ButtonState::Pressed;
         event.state == ButtonState::Pressed && !previously_held
+    }
+
+    fn crouch_event(&mut self, event: &KeyboardInput, window: Entity, receiving: bool) -> bool {
+        if !self.accepts_event(event, window, receiving) || event.key_code != KeyCode::KeyC {
+            return false;
+        }
+        let pressed = event.state == ButtonState::Pressed;
+        let toggle = pressed && !self.crouch_key;
+        self.crouch_key = pressed;
+        toggle
+    }
+
+    fn accepts_event(&self, event: &KeyboardInput, window: Entity, receiving: bool) -> bool {
+        receiving && self.active && event.window == window && !event.repeat
     }
 }
 
@@ -198,6 +216,7 @@ pub(super) fn sample(
             buttons.reset_all();
             capture.last_wheel = None;
             capture.shift_keys = [false; 2];
+            capture.crouch_key = false;
         }
         let mut held = 0;
         let mut commands = 0;
@@ -207,6 +226,9 @@ pub(super) fn sample(
         for event in keyboard_events.read() {
             if capture.shift_event(event, window.0, receiving) {
                 commands |= DODGE;
+            }
+            if capture.crouch_event(event, window.0, receiving) {
+                commands ^= CROUCH_TOGGLE;
             }
         }
         if was_active && capture.active {
@@ -283,6 +305,9 @@ pub(super) fn sample(
         }
         if commands & DODGE != 0 {
             actions.request_dodge();
+        }
+        if commands & CROUCH_TOGGLE != 0 {
+            actions.request_crouch_toggle();
         }
         if commands & ATTACK != 0 {
             combat.request_attack();
@@ -361,8 +386,8 @@ mod tests {
     fn native_shift_repress_between_frames_preserves_the_new_edge() {
         let mut capture = CaptureState::default();
         capture.update(true, false, false, true);
-        let press = shift_event(KeyCode::ShiftLeft, ButtonState::Pressed);
-        let release = shift_event(KeyCode::ShiftLeft, ButtonState::Released);
+        let press = key_event(KeyCode::ShiftLeft, ButtonState::Pressed);
+        let release = key_event(KeyCode::ShiftLeft, ButtonState::Released);
         assert!(capture.shift_event(&press, Entity::PLACEHOLDER, true));
         // Previous render ended held; next render receives release+press but
         // its final ButtonInput snapshot would also be held.
@@ -376,10 +401,10 @@ mod tests {
     fn native_shift_handoff_requires_all_shift_keys_released_before_another_dodge() {
         let mut capture = CaptureState::default();
         capture.update(true, false, false, true);
-        let left_down = shift_event(KeyCode::ShiftLeft, ButtonState::Pressed);
-        let right_down = shift_event(KeyCode::ShiftRight, ButtonState::Pressed);
-        let left_up = shift_event(KeyCode::ShiftLeft, ButtonState::Released);
-        let right_up = shift_event(KeyCode::ShiftRight, ButtonState::Released);
+        let left_down = key_event(KeyCode::ShiftLeft, ButtonState::Pressed);
+        let right_down = key_event(KeyCode::ShiftRight, ButtonState::Pressed);
+        let left_up = key_event(KeyCode::ShiftLeft, ButtonState::Released);
+        let right_up = key_event(KeyCode::ShiftRight, ButtonState::Released);
         assert!(capture.shift_event(&left_down, Entity::PLACEHOLDER, true));
         assert!(!capture.shift_event(&right_down, Entity::PLACEHOLDER, true));
         assert!(!capture.shift_event(&left_up, Entity::PLACEHOLDER, true));
@@ -394,8 +419,8 @@ mod tests {
     fn native_shift_short_tap_is_preserved_even_when_final_snapshot_is_released() {
         let mut capture = CaptureState::default();
         capture.update(true, false, false, true);
-        let press = shift_event(KeyCode::ShiftLeft, ButtonState::Pressed);
-        let release = shift_event(KeyCode::ShiftLeft, ButtonState::Released);
+        let press = key_event(KeyCode::ShiftLeft, ButtonState::Pressed);
+        let release = key_event(KeyCode::ShiftLeft, ButtonState::Released);
         let mut queued = false;
         for event in [&press, &release] {
             queued |= capture.shift_event(event, Entity::PLACEHOLDER, true);
@@ -408,7 +433,7 @@ mod tests {
     #[test]
     fn native_shift_ignores_inactive_capture_frame_repeats_and_other_windows() {
         let mut capture = CaptureState::default();
-        let mut press = shift_event(KeyCode::ShiftLeft, ButtonState::Pressed);
+        let mut press = key_event(KeyCode::ShiftLeft, ButtonState::Pressed);
         assert!(!capture.shift_event(&press, Entity::PLACEHOLDER, true));
         capture.update(true, false, false, true);
         assert!(!capture.shift_event(&press, Entity::PLACEHOLDER, false));
@@ -427,10 +452,69 @@ mod tests {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    fn shift_event(key_code: KeyCode, state: ButtonState) -> KeyboardInput {
+    #[test]
+    fn native_crouch_short_tap_keeps_one_toggle_while_release_and_repeats_do_not_toggle() {
+        let mut capture = CaptureState::default();
+        capture.update(true, false, false, true);
+        let mut press = key_event(KeyCode::KeyC, ButtonState::Pressed);
+        let release = key_event(KeyCode::KeyC, ButtonState::Released);
+        assert!(capture.crouch_event(&press, Entity::PLACEHOLDER, true));
+        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, true));
+        press.repeat = true;
+        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, true));
+        assert!(!capture.crouch_event(&release, Entity::PLACEHOLDER, true));
+        assert!(!capture.crouch_key);
+        press.repeat = false;
+        assert!(capture.crouch_event(&press, Entity::PLACEHOLDER, true));
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_crouch_two_complete_taps_cancel_without_changing_a_queued_dodge() {
+        let mut capture = CaptureState::default();
+        capture.update(true, false, false, true);
+        let press = key_event(KeyCode::KeyC, ButtonState::Pressed);
+        let release = key_event(KeyCode::KeyC, ButtonState::Released);
+        let mut commands = DODGE;
+        for event in [&press, &release, &press, &release] {
+            if capture.crouch_event(event, Entity::PLACEHOLDER, true) {
+                commands ^= CROUCH_TOGGLE;
+            }
+        }
+        assert_eq!(commands, DODGE);
+        assert!(!capture.crouch_key);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_crouch_clears_on_focus_loss_and_rejects_capture_frame_or_other_window() {
+        let mut capture = CaptureState::default();
+        let mut press = key_event(KeyCode::KeyC, ButtonState::Pressed);
+        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, true));
+        capture.update(true, false, false, true);
+        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, false));
+        let other_window = World::new().spawn_empty().id();
+        assert!(!capture.crouch_event(&press, other_window, true));
+        assert!(capture.crouch_event(&press, Entity::PLACEHOLDER, true));
+        capture.update(false, true, false, false);
+        assert!(!capture.crouch_key);
+        capture.update(true, false, false, true);
+        press.repeat = true;
+        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, true));
+        assert!(!capture.crouch_key);
+        press.repeat = false;
+        assert!(capture.crouch_event(&press, Entity::PLACEHOLDER, true));
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn key_event(key_code: KeyCode, state: ButtonState) -> KeyboardInput {
         KeyboardInput {
             key_code,
-            logical_key: bevy::input::keyboard::Key::Shift,
+            logical_key: if key_code == KeyCode::KeyC {
+                bevy::input::keyboard::Key::Character("c".into())
+            } else {
+                bevy::input::keyboard::Key::Shift
+            },
             state,
             text: None,
             repeat: false,

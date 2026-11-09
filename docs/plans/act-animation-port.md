@@ -51,3 +51,5 @@
 - `make check` 通过：67 项 Rust、24 项 Node、格式 / 原生 Clippy / WASM 检查。
 - WASM Clippy 与临时 Trunk 构建通过，验证构建后的 WASM 包含动画数据，Cargo.lock 未变化；临时产物已清理。
 - 代码审查未发现阻塞问题；未使用浏览器、未启动或关闭服务、未提交代码。
+
+后续用户追加的 C 蹲伏、滑铲和脚部 IK 见[蹲伏移植](crouch-port.md)，原动画移植时未开放的蹲伏行为已在该扩展中接入。
