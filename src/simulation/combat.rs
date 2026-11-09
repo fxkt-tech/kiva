@@ -8,13 +8,14 @@ use avian3d::prelude::{
 use bevy::{ecs::system::SystemParam, prelude::*};
 
 use super::{
-    ActionIntent, Body, Facing, MotionState, MoveIntent, PhysicsPose, STANDING_HEIGHT, SurfaceHit,
-    WeaponMode, WeaponSet, character_collider,
+    ActionIntent, Body, Facing, HitStop, MotionState, MoveIntent, PhysicsPose, STANDING_HEIGHT,
+    SurfaceHit, WeaponMode, WeaponSet, character_collider,
 };
 
 const TARGET_RANGE: f32 = 22.0;
 const HAMMER_RANGE: f32 = 4.5;
 const HAMMER_RADIUS: f32 = 3.0;
+const HAMMER_KNOCKUP_HEIGHT: f32 = 3.0;
 const LEAP_DURATION: f32 = 0.9;
 const SPIN_RADIUS: f32 = 2.8;
 const RESPAWN_DELAY: f32 = 3.0;
@@ -93,6 +94,7 @@ pub struct SpawnPoint(pub Vec2);
 /// Each enemy owns its attack timing; no client timer can create damage.
 #[derive(Component)]
 pub struct Enemy {
+    passive: bool,
     cooldown: f32,
     windup: f32,
     attack_target: Option<Entity>,
@@ -101,6 +103,7 @@ pub struct Enemy {
 impl Default for Enemy {
     fn default() -> Self {
         Self {
+            passive: false,
             cooldown: 0.8,
             windup: 0.0,
             attack_target: None,
@@ -109,6 +112,25 @@ impl Default for Enemy {
 }
 
 impl Enemy {
+    pub fn target_dummy() -> Self {
+        Self {
+            passive: true,
+            ..default()
+        }
+    }
+
+    pub fn is_passive(&self) -> bool {
+        self.passive
+    }
+
+    fn reset(&mut self) {
+        *self = if self.passive {
+            Self::target_dummy()
+        } else {
+            Self::default()
+        };
+    }
+
     pub fn is_winding_up(&self) -> bool {
         self.windup > 0.0
     }
@@ -121,6 +143,8 @@ impl Enemy {
 pub enum CombatEffect {
     Melee,
     Shot,
+    SniperShot,
+    SniperImpact,
     Hammer,
     Cannon,
     Spin,
@@ -220,6 +244,40 @@ struct ComboWindow {
     remaining: f32,
 }
 
+/// The fixed-step timeline for the hammer's committed sniper follow-up.
+/// Presentation reads this snapshot; it cannot advance or discharge the shot.
+#[derive(Clone, Copy, Debug)]
+pub struct SniperSequence {
+    target: Entity,
+    elapsed: f32,
+    aim_position: Vec3,
+    fired: bool,
+}
+
+impl SniperSequence {
+    pub const AIM_DURATION: f32 = 0.30;
+    pub const HOLD_DURATION: f32 = 0.14;
+    pub const RETURN_DURATION: f32 = 0.28;
+    pub const TOTAL_DURATION: f32 =
+        Self::AIM_DURATION + Self::HOLD_DURATION + Self::RETURN_DURATION;
+
+    pub fn target(self) -> Entity {
+        self.target
+    }
+
+    pub fn elapsed(self) -> f32 {
+        self.elapsed
+    }
+
+    pub fn aim_position(self) -> Vec3 {
+        self.aim_position
+    }
+
+    pub fn has_fired(self) -> bool {
+        self.fired
+    }
+}
+
 #[derive(Component)]
 pub struct Combatant {
     set: WeaponSet,
@@ -230,6 +288,7 @@ pub struct Combatant {
     attack_cooldown: f32,
     skill_cooldown: f32,
     combo: Option<ComboWindow>,
+    sniper: Option<SniperSequence>,
     spin_remaining: f32,
     spin_hits: Vec<Entity>,
     status: &'static str,
@@ -247,6 +306,7 @@ impl Combatant {
             attack_cooldown: 0.0,
             skill_cooldown: 0.0,
             combo: None,
+            sniper: None,
             spin_remaining: 0.0,
             spin_hits: Vec::new(),
             status: "准备就绪",
@@ -289,8 +349,20 @@ impl Combatant {
     pub fn is_spinning(&self) -> bool {
         self.spin_remaining > 0.0
     }
+    pub fn sniper_sequence(&self) -> Option<SniperSequence> {
+        self.sniper
+    }
+    pub fn is_sniping(&self) -> bool {
+        self.sniper.is_some()
+    }
     pub fn status(&self) -> &'static str {
         self.status
+    }
+
+    /// A roster change invalidates entity references, while preserving the loadout and cooldowns.
+    pub fn clear_targets(&mut self) {
+        self.target = None;
+        self.cancel_link();
     }
 
     fn notify(&mut self, status: &'static str) {
@@ -300,6 +372,7 @@ impl Combatant {
 
     fn cancel_link(&mut self) {
         self.combo = None;
+        self.sniper = None;
         self.spin_remaining = 0.0;
         self.spin_hits.clear();
     }
@@ -497,6 +570,7 @@ pub(super) fn advance(
     time: Res<Time<Fixed>>,
     world: CombatWorld,
     mut feedback: ResMut<CombatFeedback>,
+    mut hit_stop: ResMut<HitStop>,
     mut players: Players,
     mut enemies: Enemies,
     mut props: Query<(Entity, Forces), With<PhysicsPose>>,
@@ -521,7 +595,7 @@ pub(super) fn advance(
             motion.reset();
             actions.clear();
             movement.stop();
-            *enemy = Enemy::default();
+            enemy.reset();
             let position = point(body.world_position());
             feedback.push(entity, CombatEffect::Respawn, position, position, 0.8);
         }
@@ -606,7 +680,7 @@ pub(super) fn advance(
         let commands = intent.commands;
         intent.commands = 0;
         if let Some(set) = intent.requested_set.take()
-            && actor.set != set
+            && (actor.set != set || actor.is_sniping())
         {
             actor.set = set;
             actor.mode = WeaponMode::Melee;
@@ -625,6 +699,76 @@ pub(super) fn advance(
             direction,
             commands & CYCLE != 0,
         );
+
+        if let Some(mut sniper) = actor.sniper.take() {
+            sniper.elapsed += dt;
+            let target = enemies.get_mut(sniper.target).ok().map(
+                |(_, body, motion, _, _, _, health, _, _)| {
+                    (
+                        point(body.world_position()),
+                        health.is_alive(),
+                        !motion.is_grounded(),
+                    )
+                },
+            );
+            if let Some((end, alive, airborne)) = target {
+                let can_aim = !motion.is_dodging()
+                    && !motion.is_blocking()
+                    && !motion.is_sliding()
+                    && !actor.is_spinning();
+                let mut keep = true;
+                if !sniper.fired && (!alive || !airborne || !can_aim) {
+                    actor.notify("狙击联动已取消");
+                    keep = false;
+                } else {
+                    if alive {
+                        sniper.aim_position = end;
+                    }
+                    if !sniper.fired && sniper.elapsed >= SniperSequence::AIM_DURATION {
+                        if world.visible(point(origin), end, entity, sniper.target) {
+                            sniper.fired = true;
+                            actor.attack_cooldown = 0.9;
+                            actor.notify("妹妹 · 联动狙击");
+                            feedback.push(entity, CombatEffect::Shot, point(origin), end, 0.12);
+                            hurt_enemy(sniper.target, 85.0, &mut enemies, &mut feedback);
+                            if actor.target == Some(sniper.target)
+                                && enemies.get(sniper.target).is_ok_and(
+                                    |(_, _, _, _, _, _, health, _, _)| !health.is_alive(),
+                                )
+                            {
+                                // Target selection precedes damage. Clear a killed
+                                // selection before hit stop freezes the next ticks;
+                                // the fired sequence keeps its own final aim point.
+                                actor.target = None;
+                            }
+                            feedback.push(
+                                entity,
+                                CombatEffect::SniperShot,
+                                point(origin),
+                                end,
+                                0.12,
+                            );
+                            feedback.push(
+                                sniper.target,
+                                CombatEffect::SniperImpact,
+                                end,
+                                point(origin),
+                                0.65,
+                            );
+                            hit_stop.request_sniper();
+                        } else {
+                            actor.notify("狙击视线被障碍阻挡");
+                            keep = false;
+                        }
+                    }
+                }
+                if keep && sniper.elapsed < SniperSequence::TOTAL_DURATION {
+                    actor.sniper = Some(sniper);
+                }
+            } else {
+                actor.notify("狙击目标已失效");
+            }
+        }
 
         if actor.is_spinning() {
             actor.spin_remaining = (actor.spin_remaining - dt).max(0.0);
@@ -653,10 +797,18 @@ pub(super) fn advance(
             }
         }
 
+        // Commands have already been consumed; do not queue an extra action or
+        // replace the aiming feedback when Tab/attack is pressed repeatedly.
+        let commands = if actor.is_sniping() {
+            commands & !(ATTACK | SKILL | COMBO)
+        } else {
+            commands
+        };
         let can_act = !motion.is_dodging()
             && !motion.is_blocking()
             && !motion.is_sliding()
-            && !actor.is_spinning();
+            && !actor.is_spinning()
+            && !actor.is_sniping();
         let selected = targets
             .iter()
             .find(|target| Some(target.entity) == actor.target);
@@ -690,7 +842,11 @@ pub(super) fn advance(
                                             enemies.get_mut(nearby.entity)
                                             && health.is_alive()
                                         {
-                                            state.launch_up(8.0);
+                                            state.launch_up(
+                                                (2.0 * super::actions::GRAVITY
+                                                    * HAMMER_KNOCKUP_HEIGHT)
+                                                    .sqrt(),
+                                            );
                                         }
                                     }
                                 }
@@ -762,15 +918,13 @@ pub(super) fn advance(
                                 if world.visible(point(origin), end, entity, target) {
                                     actor.mode = WeaponMode::Ranged;
                                     actor.attack_cooldown = 0.9;
-                                    actor.notify("妹妹 · 联动狙击");
-                                    feedback.push(
-                                        entity,
-                                        CombatEffect::Shot,
-                                        point(origin),
-                                        end,
-                                        0.12,
-                                    );
-                                    hurt_enemy(target, 85.0, &mut enemies, &mut feedback);
+                                    actor.sniper = Some(SniperSequence {
+                                        target,
+                                        elapsed: 0.0,
+                                        aim_position: end,
+                                        fired: false,
+                                    });
+                                    actor.notify("妹妹 · 瞄准浮空目标");
                                 } else {
                                     actor.notify("狙击视线被障碍阻挡");
                                 }
@@ -882,7 +1036,7 @@ fn advance_enemies(
     {
         actions.clear();
         enemy.cooldown = (enemy.cooldown - dt).max(0.0);
-        if !health.is_alive() || !motion.is_grounded() {
+        if enemy.is_passive() || !health.is_alive() || !motion.is_grounded() {
             movement.stop();
             enemy.windup = 0.0;
             enemy.attack_target = None;
@@ -1068,6 +1222,82 @@ mod tests {
     }
 
     #[test]
+    fn hammer_knockup_rises_three_meters_above_the_launch_surface() {
+        for elevation in [0.0, 1.5] {
+            let mut app = arena();
+            if elevation > 0.0 {
+                spawn_box(
+                    app.world_mut(),
+                    Vec3::new(0.0, elevation * 0.5, -2.0),
+                    Vec3::new(8.0, elevation, 8.0),
+                    false,
+                );
+            }
+            let player = player(&mut app, WeaponSet::HammerSniper);
+            let target = enemy(&mut app, Vec2::new(0.0, -3.0));
+            app.world_mut()
+                .entity_mut(target)
+                .insert(Enemy::target_dummy());
+            teleport_actor(app.world_mut(), player, Vec3::new(0.0, elevation, 0.0));
+            teleport_actor(app.world_mut(), target, Vec3::new(0.0, elevation, -3.0));
+            ticks(&mut app, 12);
+            let origin = app.world().get::<Body>(target).unwrap().world_position().y;
+            assert!(
+                app.world()
+                    .get::<MotionState>(target)
+                    .unwrap()
+                    .is_grounded()
+            );
+            request(&mut app, player, CombatIntent::request_skill);
+            let mut peak = origin;
+            for _ in 0..100 {
+                ticks(&mut app, 1);
+                peak = peak.max(app.world().get::<Body>(target).unwrap().world_position().y);
+            }
+            assert!(
+                (peak - origin - 3.0).abs() < 0.04,
+                "origin={origin}, peak={peak}"
+            );
+            assert!(
+                app.world()
+                    .get::<MotionState>(target)
+                    .unwrap()
+                    .is_grounded()
+            );
+            assert!(
+                (app.world().get::<Body>(target).unwrap().world_position().y - origin).abs() < 0.03
+            );
+        }
+    }
+
+    #[test]
+    fn target_dummy_remains_passive_after_defeat_and_respawn() {
+        let mut app = arena();
+        let player = player(&mut app, WeaponSet::HammerSniper);
+        let target = enemy(&mut app, Vec2::new(0.0, -1.3));
+        app.world_mut()
+            .entity_mut(target)
+            .insert(Enemy::target_dummy());
+        app.world_mut()
+            .get_mut::<Health>(target)
+            .unwrap()
+            .damage(100.0);
+        ticks(&mut app, 500);
+        assert!(app.world().get::<Health>(target).unwrap().is_alive());
+        assert!(app.world().get::<Enemy>(target).unwrap().is_passive());
+        assert_eq!(health(&app, player), 100.0);
+        assert!(
+            !app.world()
+                .resource::<CombatFeedback>()
+                .events()
+                .any(|event| {
+                    event.actor == target
+                        && matches!(event.kind, CombatEffect::EnemyWindup | CombatEffect::Melee)
+                })
+        );
+    }
+
+    #[test]
     fn hammer_launches_a_group_and_tab_snipes_the_original_target_once() {
         let mut app = arena();
         let player = player(&mut app, WeaponSet::HammerSniper);
@@ -1095,14 +1325,39 @@ mod tests {
             intent.request_combo();
         });
         ticks(&mut app, 1);
-        assert_eq!(health(&app, selected), 0.0);
+        assert_eq!(health(&app, selected), 80.0);
         assert_eq!(health(&app, nearby), 80.0);
         let actor = app.world().get::<Combatant>(player).unwrap();
         assert_eq!(actor.weapon_mode(), WeaponMode::Ranged);
         assert_eq!(actor.combo_remaining(), 0.0);
-        request(&mut app, player, CombatIntent::request_combo);
-        ticks(&mut app, 1);
+        assert_eq!(actor.sniper_sequence().unwrap().target(), selected);
+        assert!(!actor.sniper_sequence().unwrap().has_fired());
+        assert!(
+            !app.world()
+                .resource::<CombatFeedback>()
+                .events()
+                .any(|event| event.kind == CombatEffect::Shot)
+        );
+        request(&mut app, player, |intent| {
+            intent.request_cycle_target();
+            intent.request_combo();
+            intent.request_attack();
+        });
+        ticks(&mut app, 16);
+        assert_eq!(health(&app, selected), 80.0);
+        ticks(&mut app, 4);
+        assert_eq!(health(&app, selected), 0.0);
         assert_eq!(health(&app, nearby), 80.0);
+        assert!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .sniper_sequence()
+                .unwrap()
+                .has_fired()
+        );
+        ticks(&mut app, 35);
+        assert!(!app.world().get::<Combatant>(player).unwrap().is_sniping());
         let shots = app
             .world()
             .resource::<CombatFeedback>()
@@ -1138,6 +1393,197 @@ mod tests {
                     .combo_remaining(),
                 0.0
             );
+        }
+    }
+
+    fn sniper_arena(elevation: f32) -> (App, Entity, Entity) {
+        let mut app = arena();
+        if elevation > 0.0 {
+            spawn_box(
+                app.world_mut(),
+                Vec3::new(0.0, elevation * 0.5, -2.0),
+                Vec3::new(8.0, elevation, 8.0),
+                false,
+            );
+        }
+        let player = player(&mut app, WeaponSet::HammerSniper);
+        let target = enemy(&mut app, Vec2::new(0.0, -3.0));
+        app.world_mut()
+            .entity_mut(target)
+            .insert((Enemy::target_dummy(), Health::new(500.0)));
+        teleport_actor(app.world_mut(), player, Vec3::new(0.0, elevation, 0.0));
+        teleport_actor(app.world_mut(), target, Vec3::new(0.0, elevation, -3.0));
+        ticks(&mut app, 12);
+        request(&mut app, player, CombatIntent::request_skill);
+        ticks(&mut app, 4);
+        request(&mut app, player, CombatIntent::request_combo);
+        ticks(&mut app, 1);
+        assert!(app.world().get::<Combatant>(player).unwrap().is_sniping());
+        assert_eq!(health(&app, target), 480.0);
+        (app, player, target)
+    }
+
+    fn shot_count(app: &App, player: Entity) -> usize {
+        app.world()
+            .resource::<CombatFeedback>()
+            .events()
+            .filter(|event| event.actor == player && event.kind == CombatEffect::Shot)
+            .count()
+    }
+
+    #[test]
+    fn sniper_sequence_delays_its_only_shot_and_preserves_relative_elevation() {
+        for elevation in [0.0, 1.5] {
+            let (mut app, player, target) = sniper_arena(elevation);
+            let sequence = app
+                .world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .sniper_sequence()
+                .unwrap();
+            assert_eq!(sequence.elapsed(), 0.0);
+            assert_eq!(sequence.target(), target);
+            assert!(sequence.aim_position().y > elevation + 0.9);
+            assert_eq!(shot_count(&app, player), 0);
+            ticks(&mut app, 16);
+            assert_eq!(shot_count(&app, player), 0);
+            assert_eq!(health(&app, target), 480.0);
+            let current = app.world().get::<Body>(target).unwrap().world_position() + Vec3::Y * 0.9;
+            let sequence = app
+                .world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .sniper_sequence()
+                .unwrap();
+            assert!(sequence.aim_position().distance(current) < 0.001);
+            ticks(&mut app, 4);
+            assert_eq!(shot_count(&app, player), 1);
+            assert_eq!(health(&app, target), 395.0);
+            let sequence = app
+                .world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .sniper_sequence()
+                .unwrap();
+            assert!(sequence.has_fired());
+            assert!(sequence.elapsed() >= SniperSequence::AIM_DURATION);
+            request(&mut app, player, |intent| {
+                intent.request_combo();
+                intent.request_attack();
+                intent.request_skill();
+            });
+            ticks(&mut app, 30);
+            assert_eq!(shot_count(&app, player), 1);
+            assert_eq!(health(&app, target), 395.0);
+            assert!(!app.world().get::<Combatant>(player).unwrap().is_sniping());
+        }
+    }
+
+    #[test]
+    fn pausing_before_sniper_discharge_freezes_the_committed_sequence() {
+        let (mut app, player, target) = sniper_arena(0.0);
+        ticks(&mut app, 8);
+        let before = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .sniper_sequence()
+            .unwrap();
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        ticks(&mut app, 180);
+        let frozen = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .sniper_sequence()
+            .unwrap();
+        assert_eq!(frozen.elapsed(), before.elapsed());
+        assert_eq!(frozen.aim_position(), before.aim_position());
+        assert_eq!(health(&app, target), 480.0);
+        assert_eq!(shot_count(&app, player), 0);
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        ticks(&mut app, 12);
+        assert_eq!(health(&app, target), 395.0);
+        assert_eq!(shot_count(&app, player), 1);
+    }
+
+    #[test]
+    fn pending_sniper_shots_cancel_without_replay_when_the_commitment_becomes_invalid() {
+        for cause in [
+            "weapon",
+            "set",
+            "same-set",
+            "target-despawn",
+            "target-death",
+            "player-death",
+            "land",
+            "block",
+            "dodge",
+            "mode-change",
+            "wall",
+        ] {
+            let (mut app, player, target) = sniper_arena(0.0);
+            ticks(&mut app, 4);
+            match cause {
+                "weapon" => request(&mut app, player, CombatIntent::request_switch_weapon),
+                "set" => request(&mut app, player, |intent| {
+                    intent.request_set(WeaponSet::AxeCannon)
+                }),
+                "same-set" => request(&mut app, player, |intent| {
+                    intent.request_set(WeaponSet::HammerSniper)
+                }),
+                "target-despawn" => {
+                    app.world_mut().despawn(target);
+                }
+                "target-death" => {
+                    app.world_mut()
+                        .get_mut::<Health>(target)
+                        .unwrap()
+                        .damage(500.0);
+                }
+                "player-death" => {
+                    app.world_mut()
+                        .get_mut::<Health>(player)
+                        .unwrap()
+                        .damage(100.0);
+                }
+                "land" => teleport_actor(app.world_mut(), target, Vec3::new(0.0, 0.0, -3.0)),
+                "block" => app
+                    .world_mut()
+                    .get_mut::<ActionIntent>(player)
+                    .unwrap()
+                    .set_held(false, true),
+                "dodge" => app
+                    .world_mut()
+                    .get_mut::<ActionIntent>(player)
+                    .unwrap()
+                    .request_dodge(),
+                "mode-change" => crate::gameplay::set_enemy_mode(
+                    app.world_mut(),
+                    crate::gameplay::EnemyMode::Combat,
+                ),
+                "wall" => {
+                    spawn_box(
+                        app.world_mut(),
+                        Vec3::new(0.0, 3.0, -1.5),
+                        Vec3::new(4.0, 8.0, 0.5),
+                        false,
+                    );
+                }
+                _ => unreachable!(),
+            }
+            ticks(&mut app, 25);
+            assert!(
+                !app.world().get::<Combatant>(player).unwrap().is_sniping(),
+                "cause: {cause}"
+            );
+            assert_eq!(shot_count(&app, player), 0, "cause: {cause}");
+            app.world_mut()
+                .get_mut::<ActionIntent>(player)
+                .unwrap()
+                .clear();
+            ticks(&mut app, 50);
+            assert_eq!(shot_count(&app, player), 0, "replayed after cause: {cause}");
         }
     }
 
@@ -1383,8 +1829,13 @@ mod tests {
         request(&mut app, player, CombatIntent::request_skill);
         ticks(&mut app, 1);
         request(&mut app, player, CombatIntent::request_combo);
-        ticks(&mut app, 1);
+        ticks(&mut app, 21);
         assert!(!app.world().get::<Health>(target).unwrap().is_alive());
+        assert!(app.world().resource::<HitStop>().is_active());
+        assert_ne!(
+            app.world().get::<Combatant>(player).unwrap().target(),
+            Some(target)
+        );
         ticks(&mut app, 1);
         assert_ne!(
             app.world().get::<Combatant>(player).unwrap().target(),

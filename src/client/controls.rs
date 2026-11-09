@@ -285,12 +285,21 @@ pub(super) fn sample(
         }
         return;
     }
-    yaw.turn(look);
+    // Consume mouse samples during the brief authored shot, without buffering a
+    // turn that would be applied suddenly when the top-down camera returns.
+    if !players
+        .iter()
+        .any(|(_, _, _, _, _, loadout, _)| loadout.is_sniping())
+    {
+        yaw.turn(look);
+    }
     let axis = movement_axis([held & 1 != 0, held & 2 != 0, held & 4 != 0, held & 8 != 0]);
     let forward = movement_direction(Vec2::Y, yaw.yaw());
     for (body, mut intent, mut actions, mut facing, mut combat, loadout, motion) in &mut players {
         intent.set(movement_direction(axis, yaw.yaw()));
-        facing.set(forward);
+        facing.set(loadout.sniper_sequence().map_or(forward, |sequence| {
+            (sequence.aim_position() - body.world_position()).xz()
+        }));
         actions.set_held(held & SPRINT != 0, held & BLOCK != 0);
         actions.set_movement_held(held & 15 != 0);
         if loadout.weapon_set() == WeaponSet::AxeCannon

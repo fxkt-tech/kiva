@@ -12,6 +12,7 @@ pub(super) enum Gesture {
     Cannon,
     Windup,
     Hit,
+    HeavyHit,
     Guard,
 }
 
@@ -23,6 +24,7 @@ impl Gesture {
             Self::Shot | Self::Cannon => 0.32,
             Self::Windup => 0.4,
             Self::Hit => 0.24,
+            Self::HeavyHit => 0.30,
             Self::Guard => 0.2,
         }
     }
@@ -88,6 +90,20 @@ pub(super) fn hold_guard(library: &AnimationLibrary, pose: &mut [Transform], mod
     weapon_pose(library, pose, guard(mode), mode == WeaponMode::Ranged);
 }
 
+/// Point the same two-handed grip up at the physical target. Recoil is local
+/// hand motion; it never translates the actor or its planted lower body.
+pub(super) fn aim_ranged(
+    library: &AnimationLibrary,
+    pose: &mut [Transform],
+    pitch: f32,
+    recoil: f32,
+) {
+    let mut key = guard(WeaponMode::Ranged);
+    key.pitch = -pitch.to_degrees().clamp(-60.0, 75.0);
+    key.grip.z += recoil.clamp(0.0, 0.08);
+    weapon_pose(library, pose, key, true);
+}
+
 /// Ported from act: lower the pelvis, then solve both legs in model space so
 /// imported bone axes cannot turn a crouch into lifted feet or shortened limbs.
 pub(super) fn crouch_pose(library: &AnimationLibrary, local: &mut [Transform], weight: f32) {
@@ -143,12 +159,25 @@ pub(super) fn gesture(
     elapsed: f32,
     mode: WeaponMode,
 ) -> Vec<Transform> {
-    if kind == Gesture::Hit {
-        return library.sample(
+    if matches!(kind, Gesture::Hit | Gesture::HeavyHit) {
+        let mut pose = library.sample(
             "Hit_Chest",
             elapsed / kind.duration() * library.duration("Hit_Chest"),
             false,
         );
+        if kind == Gesture::HeavyHit {
+            let standing = idle(library, 0.0, mode);
+            super::replace_lower_body(library, &mut pose, &standing);
+            let model = library.model_pose(&pose);
+            let spine = library.bone("spine_01");
+            let parent = library.bones[spine].parent.expect("spine has a parent");
+            let weight = ((elapsed / kind.duration()).clamp(0.0, 1.0) * std::f32::consts::PI).sin();
+            pose[spine].rotation = (model[parent].rotation.inverse()
+                * Quat::from_rotation_x(weight * 0.24)
+                * model[spine].rotation)
+                .normalize();
+        }
+        return pose;
     }
     if kind == Gesture::Guard {
         return library.sample("Sword_Block", 0.2 + elapsed.min(0.2), false);
@@ -190,7 +219,7 @@ pub(super) fn gesture(
             k(0.10, 0.31, -0.17, 180.0, -5.0, 0.0),
             k(0.10, 0.30, -0.25, 180.0, 0.0, 0.0),
         ),
-        Gesture::Hit | Gesture::Guard => unreachable!(),
+        Gesture::Hit | Gesture::HeavyHit | Gesture::Guard => unreachable!(),
     };
     let progress = (elapsed / kind.duration()).clamp(0.0, 1.0);
     let (key, source_time, recovery) = if progress < 0.35 {
@@ -340,6 +369,57 @@ fn arm(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn heavy_hit_adds_a_torso_reaction_without_displacing_the_pelvis_or_feet() {
+        let library = AnimationLibrary::default();
+        let standing = library.model_pose(&idle(&library, 0.0, WeaponMode::Melee));
+        for elapsed in [0.0, 0.04, 0.15, 0.29] {
+            let local = gesture(&library, Gesture::HeavyHit, elapsed, WeaponMode::Melee);
+            let model = library.model_pose(&local);
+            for name in ["pelvis", "foot_l", "foot_r"] {
+                let bone = library.bone(name);
+                assert!(model[bone].translation.distance(standing[bone].translation) < 0.001);
+                assert!(model[bone].rotation.angle_between(standing[bone].rotation) < 0.001);
+            }
+            if elapsed == 0.15 {
+                let authored = library.model_pose(&library.sample(
+                    "Hit_Chest",
+                    library.duration("Hit_Chest") * 0.5,
+                    false,
+                ));
+                let spine = library.bone("spine_01");
+                assert!(
+                    model[spine]
+                        .rotation
+                        .angle_between(authored[spine].rotation)
+                        > 0.2
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn sniper_aim_raises_the_rifle_without_moving_planted_feet() {
+        let library = AnimationLibrary::default();
+        let mut local = idle(&library, 0.0, WeaponMode::Ranged);
+        let before = library.model_pose(&local);
+        aim_ranged(&library, &mut local, 30.0_f32.to_radians(), 0.04);
+        let after = library.model_pose(&local);
+        let forward = after[library.bone("hand_r")].rotation * Vec3::Z;
+        assert!(
+            forward.y > 0.45 && forward.z < -0.8,
+            "rifle forward: {forward}"
+        );
+        for name in ["pelvis", "foot_l", "foot_r"] {
+            let bone = library.bone(name);
+            assert!(after[bone].translation.distance(before[bone].translation) < 0.001);
+        }
+        for bone in after {
+            assert!(bone.translation.is_finite() && bone.rotation.is_finite());
+            assert!((bone.rotation.length() - 1.0).abs() < 0.001);
+        }
+    }
 
     #[test]
     fn crouch_ik_preserves_feet_rotation_and_leg_lengths_across_authored_ground_poses() {

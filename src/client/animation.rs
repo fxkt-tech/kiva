@@ -8,8 +8,8 @@ use super::{
     skeleton::{AnimationLibrary, blend},
 };
 use crate::simulation::{
-    Body, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, MotionState,
-    SimulationActive, WeaponMode, WeaponSet,
+    Body, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, HitStop, MotionState,
+    SimulationActive, SniperSequence, WeaponMode, WeaponSet,
 };
 use poses::Gesture;
 
@@ -24,6 +24,7 @@ enum PoseState {
     Crouch,
     Slide,
     Block,
+    Aim,
     Attack(Gesture),
     Spin,
     Down,
@@ -93,13 +94,17 @@ impl RigPose {
             CombatEffect::Cannon if leaping => Gesture::Cannon,
             CombatEffect::Cannon => Gesture::Shot,
             CombatEffect::Hit => Gesture::Hit,
+            CombatEffect::SniperImpact => Gesture::HeavyHit,
             CombatEffect::Block => Gesture::Guard,
             CombatEffect::EnemyWindup => Gesture::Windup,
             CombatEffect::Respawn => {
                 *self = Self::new(library);
                 return;
             }
-            CombatEffect::Defeat | CombatEffect::Spin | CombatEffect::Dodge => return,
+            CombatEffect::Defeat
+            | CombatEffect::Spin
+            | CombatEffect::Dodge
+            | CombatEffect::SniperShot => return,
         };
         self.playback = Some(Playback { kind, elapsed: 0.0 });
         self.restart = true;
@@ -121,14 +126,22 @@ impl RigPose {
                 self.playback = None;
             }
         }
+        if input.sniper.is_some_and(|sniper| sniper.aiming)
+            && self
+                .playback
+                .as_ref()
+                .is_some_and(|p| !matches!(p.kind, Gesture::Hit | Gesture::HeavyHit))
+        {
+            self.playback = None;
+        }
         let state = if !input.alive {
             PoseState::Down
-        } else if self
+        } else if let Some(playback) = self
             .playback
             .as_ref()
-            .is_some_and(|playback| playback.kind == Gesture::Hit)
+            .filter(|playback| matches!(playback.kind, Gesture::Hit | Gesture::HeavyHit))
         {
-            PoseState::Attack(Gesture::Hit)
+            PoseState::Attack(playback.kind)
         } else if input.dodging {
             PoseState::Dodge
         } else if input.spinning {
@@ -137,6 +150,8 @@ impl RigPose {
             PoseState::Slide
         } else if input.blocking {
             PoseState::Block
+        } else if input.sniper.is_some_and(|sniper| sniper.aiming) {
+            PoseState::Aim
         } else if let Some(playback) = &self.playback {
             PoseState::Attack(playback.kind)
         } else if input.airborne {
@@ -210,6 +225,7 @@ impl RigPose {
                 pose
             }
             PoseState::Block => library.sample("Sword_Block", 0.2 + self.clock.min(0.2), false),
+            PoseState::Aim => poses::idle(library, self.clock, WeaponMode::Ranged),
             PoseState::Attack(kind) => poses::gesture(
                 library,
                 kind,
@@ -244,15 +260,25 @@ impl RigPose {
                 &mut target,
                 &airborne_pose(library, self.air_time, input.jumps_used),
             );
-        } else if state == PoseState::Block && input.speed > 0.01 {
+        } else if matches!(state, PoseState::Block | PoseState::Aim) && input.speed > 0.01 {
             replace_lower_body(
                 library,
                 &mut target,
                 &library.sample("Walk_Loop", self.gait_time, true),
             );
         }
+        if let Some(sniper) = input.sniper
+            && !matches!(
+                state,
+                PoseState::Down
+                    | PoseState::Dodge
+                    | PoseState::Attack(Gesture::Hit | Gesture::HeavyHit)
+            )
+        {
+            poses::aim_ranged(library, &mut target, sniper.pitch, sniper.recoil);
+        }
         let seconds = match state {
-            PoseState::Attack(Gesture::Hit) => 0.035,
+            PoseState::Attack(Gesture::Hit | Gesture::HeavyHit) => 0.035,
             PoseState::Attack(_) => 0.055,
             _ => 0.12,
         };
@@ -291,6 +317,13 @@ impl RigPose {
 }
 
 #[derive(Clone, Copy)]
+struct SniperPose {
+    pitch: f32,
+    aiming: bool,
+    recoil: f32,
+}
+
+#[derive(Clone, Copy)]
 struct Inputs {
     alive: bool,
     airborne: bool,
@@ -305,6 +338,7 @@ struct Inputs {
     slide_yaw: f32,
     blocking: bool,
     spinning: bool,
+    sniper: Option<SniperPose>,
     mode: WeaponMode,
 }
 
@@ -351,14 +385,18 @@ type AnimatedActors = (
 );
 
 pub(super) fn animate(
-    time: Res<Time>,
-    fixed: Res<Time<Fixed>>,
-    active: Res<SimulationActive>,
+    timing: (
+        Res<Time>,
+        Res<Time<Fixed>>,
+        Res<SimulationActive>,
+        Res<HitStop>,
+    ),
     library: Res<AnimationLibrary>,
     feedback: Res<CombatFeedback>,
     actors: Query<AnimatedActors>,
     mut views: Query<(&ActorView, &mut RigPose)>,
 ) {
+    let (time, fixed, active, hit_stop) = timing;
     if !active.0 {
         return;
     }
@@ -400,9 +438,26 @@ pub(super) fn animate(
                 slide_yaw,
                 blocking: motion.is_blocking(),
                 spinning: combat.is_some_and(Combatant::is_spinning),
+                sniper: combat.and_then(Combatant::sniper_sequence).map(|sequence| {
+                    let offset = sequence.aim_position() - (body.world_position() + Vec3::Y * 0.9);
+                    let shot_time = sequence.elapsed() - SniperSequence::AIM_DURATION;
+                    SniperPose {
+                        pitch: offset.y.atan2(offset.xz().length().max(0.001)),
+                        aiming: !sequence.has_fired(),
+                        recoil: if sequence.has_fired() {
+                            (1.0 - (shot_time - 0.05).abs() / 0.05).max(0.0) * 0.06
+                        } else {
+                            0.0
+                        },
+                    }
+                }),
                 mode,
             },
-            time.delta_secs(),
+            if hit_stop.is_active() {
+                0.0
+            } else {
+                time.delta_secs()
+            },
         );
     }
 }
@@ -498,8 +553,43 @@ mod tests {
             slide_yaw: 0.0,
             blocking: false,
             spinning: false,
+            sniper: None,
             mode: WeaponMode::Melee,
         }
+    }
+
+    #[test]
+    fn sniper_aim_replaces_the_hammer_pose_and_waits_for_the_actual_shot_event() {
+        let library = AnimationLibrary::default();
+        let mut rig = RigPose::new(&library);
+        rig.observe(
+            &library,
+            CombatEffect::Hammer,
+            WeaponSet::HammerSniper,
+            false,
+        );
+        let mut input = idle_input();
+        input.mode = WeaponMode::Ranged;
+        input.sniper = Some(SniperPose {
+            pitch: 30.0_f32.to_radians(),
+            aiming: true,
+            recoil: 0.0,
+        });
+        for _ in 0..12 {
+            rig.advance(&library, input, 1.0 / 60.0);
+        }
+        assert_eq!(rig.state, PoseState::Aim);
+        assert!(rig.playback.is_none());
+        assert!((rig.model[library.bone("hand_r")].rotation * Vec3::Z).y > 0.4);
+        rig.observe(&library, CombatEffect::Shot, WeaponSet::HammerSniper, false);
+        input.sniper = Some(SniperPose {
+            pitch: 30.0_f32.to_radians(),
+            aiming: false,
+            recoil: 0.04,
+        });
+        rig.advance(&library, input, 1.0 / 60.0);
+        assert_eq!(rig.state, PoseState::Attack(Gesture::Shot));
+        finite(&rig.model);
     }
 
     #[test]
@@ -675,6 +765,7 @@ mod tests {
             (Gesture::Cannon, WeaponMode::Ranged),
             (Gesture::Windup, WeaponMode::Melee),
             (Gesture::Hit, WeaponMode::Melee),
+            (Gesture::HeavyHit, WeaponMode::Melee),
             (Gesture::Guard, WeaponMode::Melee),
         ] {
             let a = library.model_pose(&poses::gesture(&library, kind, 0.01, mode));
@@ -732,6 +823,90 @@ mod tests {
         let clock = actor_rig(&app, performer).clock;
         frame(&mut app, false);
         assert!(actor_rig(&app, performer).clock > clock);
+    }
+
+    #[test]
+    fn actual_sniper_hit_freezes_both_rigs_then_plays_the_recipients_heavy_flinch() {
+        use crate::gameplay::{self, Player};
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin))
+            .init_resource::<AnimationLibrary>()
+            .add_systems(Update, animate);
+        app.finish();
+        gameplay::setup(app.world_mut());
+        for _ in 0..12 {
+            frame(&mut app, true);
+        }
+        let player = app
+            .world_mut()
+            .query_filtered::<Entity, With<Player>>()
+            .single(app.world())
+            .unwrap();
+        let target = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .target()
+            .unwrap();
+        for owner in [player, target] {
+            let rig = RigPose::new(app.world().resource::<AnimationLibrary>());
+            let view = app.world_mut().spawn((ActorView { owner }, rig)).id();
+            app.world_mut().entity_mut(owner).insert(TestView(view));
+        }
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_skill();
+        frame(&mut app, true);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_combo();
+        for _ in 0..25 {
+            frame(&mut app, true);
+            if app.world().resource::<HitStop>().is_active() {
+                break;
+            }
+        }
+        assert!(app.world().resource::<HitStop>().is_active());
+        assert_eq!(
+            actor_rig(&app, target).state,
+            PoseState::Attack(Gesture::HeavyHit)
+        );
+        assert_eq!(
+            actor_rig(&app, player).state,
+            PoseState::Attack(Gesture::Shot)
+        );
+        let held: Vec<_> = [player, target]
+            .map(|owner| {
+                let rig = actor_rig(&app, owner);
+                (
+                    rig.clock,
+                    rig.model.clone(),
+                    app.world().get::<Body>(owner).unwrap().world_position(),
+                )
+            })
+            .into();
+        for _ in 0..3 {
+            frame(&mut app, true);
+            for (owner, (clock, pose, position)) in [player, target].into_iter().zip(&held) {
+                let rig = actor_rig(&app, owner);
+                assert_eq!(rig.clock, *clock);
+                assert_eq!(&rig.model, pose);
+                assert_eq!(
+                    app.world().get::<Body>(owner).unwrap().world_position(),
+                    *position
+                );
+            }
+        }
+        for _ in 0..7 {
+            frame(&mut app, true);
+        }
+        let rig = actor_rig(&app, target);
+        assert_eq!(rig.state, PoseState::Attack(Gesture::HeavyHit));
+        assert!(rig.clock > 0.1);
+        assert!(pose_difference(&held[1].1, &rig.model) > 0.02);
+        finite(&rig.model);
     }
 
     #[test]

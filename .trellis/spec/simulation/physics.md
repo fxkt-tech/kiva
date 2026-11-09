@@ -35,6 +35,7 @@ Avian 使用 `PhysicsPlugins::new(FixedUpdate)`，保持固定 60Hz。动作 / m
 
 `SimulationActive` 共同门控 motor、`PhysicsSystems::StepSimulation`、快照发布、战斗及 AI。首次暂停不能只调用物理时钟 pause 后假定旧 delta 已清空。
 恢复只推进当前固定步，不补算暂停期间的重力 / 冷却。客户端暂停时直接取 current，避免插值循环。
+狙击 HitStop 与失锁共用整条规则门控：固定步开头确定 blocked_tick 后，本步门控保持不变；战斗请求下一步开始停顿，不能跳过命中同一步的瞬移清理。0.04s 预算在 60Hz 向上取整为 3 步，失锁不消耗预算，不修改物理时钟倍速或速度；显示在停顿时使用 current。
 
 ## Validation & Error Matrix
 

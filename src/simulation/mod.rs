@@ -2,15 +2,18 @@
 mod actions;
 mod combat;
 mod geometry;
+mod impact;
 mod movement;
 mod physics;
 mod weapons;
 
 pub use actions::{ActionIntent, Facing, MotionState};
 pub use combat::{
-    CombatEffect, CombatEvent, CombatFeedback, CombatIntent, Combatant, Enemy, Health, SpawnPoint,
+    CombatEffect, CombatEvent, CombatFeedback, CombatIntent, Combatant, Enemy, Health,
+    SniperSequence, SpawnPoint,
 };
 pub use geometry::{CollisionWorld, SolidBox};
+pub use impact::HitStop;
 pub use movement::{Body, MoveIntent};
 pub use physics::{
     CROUCHED_HEIGHT, PhysicsPose, STANDING_HEIGHT, SurfaceHit, character_collider, spawn_box,
@@ -51,9 +54,16 @@ impl Plugin for SimulationPlugin {
             .init_resource::<SimulationActive>()
             .init_resource::<CollisionWorld>()
             .init_resource::<CombatFeedback>()
+            .init_resource::<HitStop>()
             .configure_sets(
                 FixedUpdate,
-                PhysicsSystems::StepSimulation.run_if(|active: Res<SimulationActive>| active.0),
+                PhysicsSystems::StepSimulation.run_if(impact::simulation_running),
+            )
+            .add_systems(
+                FixedUpdate,
+                impact::begin_tick
+                    .before(physics::fixed_clock)
+                    .before(PhysicsSystems::StepSimulation),
             )
             .add_systems(
                 FixedUpdate,
@@ -66,7 +76,7 @@ impl Plugin for SimulationPlugin {
                 )
                     .chain()
                     .before(PhysicsSystems::Prepare)
-                    .run_if(|active: Res<SimulationActive>| active.0),
+                    .run_if(impact::simulation_running),
             )
             .add_systems(
                 FixedUpdate,
@@ -74,7 +84,7 @@ impl Plugin for SimulationPlugin {
                     .chain()
                     .after(SpatialQuerySystems)
                     .after(PhysicsSystems::Last)
-                    .run_if(|active: Res<SimulationActive>| active.0),
+                    .run_if(impact::simulation_running),
             );
     }
 }

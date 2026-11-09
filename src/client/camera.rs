@@ -1,15 +1,85 @@
-use super::PlayerView;
 use super::controls::ViewYaw;
-use bevy::prelude::*;
+use super::impact::ImpactState;
+use super::{ActorView, PlayerView};
+use avian3d::prelude::{Collider, Sensor, ShapeCastConfig, SpatialQuery, SpatialQueryFilter};
+use bevy::{ecs::system::SystemParam, prelude::*};
+
+use crate::{
+    gameplay::Player,
+    simulation::{Body, Combatant, Health, HitStop, SimulationActive, SniperSequence},
+};
 
 #[derive(Component)]
 pub(super) struct GameCamera;
 
 const FOV: f32 = 50.0_f32.to_radians();
 const BODY_CENTER: Vec3 = Vec3::new(0.0, 0.9, 0.0);
-const CAMERA_HEIGHT: f32 = 5.0;
+const CAMERA_HEIGHT: f32 = 6.0;
 const CAMERA_BACK: f32 = CAMERA_HEIGHT * 0.7;
 const BODY_SCREEN_Y: f32 = 2.0 / 3.0;
+const SNIPER_ENTER_DURATION: f32 = 0.20;
+const SNIPER_HEIGHT: f32 = 0.70;
+const SNIPER_BACK: f32 = 2.60;
+const SNIPER_SHOULDER: f32 = 0.45;
+const CAMERA_RADIUS: f32 = 0.15;
+const CAMERA_CLEARANCE: f32 = 0.03;
+
+type CameraExclusions = Or<(With<Body>, With<Sensor>)>;
+type PlayerViewFilter = (With<PlayerView>, Without<GameCamera>);
+
+#[derive(SystemParam)]
+pub(super) struct CameraObstacles<'w, 's> {
+    spatial: SpatialQuery<'w, 's>,
+    excluded: Query<'w, 's, Entity, CameraExclusions>,
+}
+
+impl CameraObstacles<'_, '_> {
+    fn clear_position(&self, origin: Vec3, desired: Vec3) -> Vec3 {
+        let offset = desired - origin;
+        let Ok(direction) = Dir3::new(offset) else {
+            return desired;
+        };
+        let filter = SpatialQueryFilter::from_excluded_entities(self.excluded.iter());
+        self.spatial
+            .cast_shape(
+                &Collider::sphere(CAMERA_RADIUS),
+                origin,
+                Quat::IDENTITY,
+                direction,
+                &ShapeCastConfig::from_max_distance(offset.length()),
+                &filter,
+            )
+            .map_or(desired, |hit| {
+                origin + direction * (hit.distance - CAMERA_CLEARANCE).max(0.0)
+            })
+    }
+}
+
+fn smooth(value: f32) -> f32 {
+    let value = value.clamp(0.0, 1.0);
+    value * value * (3.0 - 2.0 * value)
+}
+
+fn sniper_weight(elapsed: f32) -> f32 {
+    let return_start = SniperSequence::AIM_DURATION + SniperSequence::HOLD_DURATION;
+    if elapsed < SNIPER_ENTER_DURATION {
+        smooth(elapsed / SNIPER_ENTER_DURATION)
+    } else if elapsed <= return_start {
+        1.0
+    } else {
+        1.0 - smooth((elapsed - return_start) / SniperSequence::RETURN_DURATION)
+    }
+}
+
+fn sniper_pose(feet: Vec3, target: Vec3, yaw: f32) -> Transform {
+    let fallback = Quat::from_rotation_y(yaw) * Vec3::NEG_Z;
+    let forward = (target - feet).with_y(0.0).normalize_or(fallback);
+    let right = forward.cross(Vec3::Y);
+    Transform::from_translation(
+        feet - forward * SNIPER_BACK + right * SNIPER_SHOULDER + Vec3::Y * SNIPER_HEIGHT,
+    )
+    .looking_at(target, Vec3::Y)
+}
 
 fn camera_pose(body_center: Vec3, yaw: f32) -> Transform {
     let heading = Quat::from_rotation_y(yaw);
@@ -26,6 +96,7 @@ pub(super) fn setup(
     yaw: Res<ViewYaw>,
     player: Single<&Transform, With<PlayerView>>,
 ) {
+    commands.init_resource::<ImpactState>();
     commands.spawn((
         GameCamera,
         Camera3d::default(),
@@ -39,16 +110,142 @@ pub(super) fn setup(
 
 pub(super) fn follow(
     yaw: Res<ViewYaw>,
-    player: Single<&Transform, (With<PlayerView>, Without<GameCamera>)>,
+    timing: (
+        Res<Time<Fixed>>,
+        Res<SimulationActive>,
+        Res<HitStop>,
+        Res<ImpactState>,
+    ),
+    player: Single<(&Transform, &ActorView), PlayerViewFilter>,
+    actors: Query<&Combatant, With<Player>>,
+    targets: Query<(&Body, &Health)>,
+    obstacles: CameraObstacles,
     mut camera: Single<&mut Transform, (With<GameCamera>, Without<PlayerView>)>,
 ) {
-    **camera = camera_pose(player.translation + BODY_CENTER, yaw.yaw());
+    let (fixed, active, hit_stop, impact) = timing;
+    let (view, owner) = *player;
+    let normal = camera_pose(view.translation + BODY_CENTER, yaw.yaw());
+    let sequence = actors
+        .get(owner.owner)
+        .ok()
+        .and_then(Combatant::sniper_sequence);
+    let mut pose = normal;
+    if let Some(sequence) = sequence {
+        let alpha = super::display_alpha(&fixed, &active, &hit_stop);
+        let elapsed = (sequence.elapsed() - fixed.delta_secs() * (1.0 - alpha)).max(0.0);
+        let weight = sniper_weight(elapsed);
+        if weight > 0.0 {
+            let target = targets
+                .get(sequence.target())
+                .ok()
+                .filter(|(_, health)| health.is_alive())
+                .map_or_else(
+                    || sequence.aim_position(),
+                    |(body, _)| body.interpolated_world(alpha) + BODY_CENTER,
+                );
+            let rear = sniper_pose(view.translation, target, yaw.yaw());
+            let desired = normal.translation.lerp(rear.translation, weight);
+            let position =
+                obstacles.clear_position(view.translation + Vec3::Y * SNIPER_HEIGHT, desired);
+            pose = Transform::from_translation(position)
+                .with_rotation(normal.rotation.slerp(rear.rotation, weight));
+            if position.distance_squared(desired) > 0.0001 {
+                pose.look_at(target, Vec3::Y);
+            }
+        }
+    }
+    if let Some((displacement, rotation)) = impact.recoil(owner.owner) {
+        let desired = pose.translation + pose.rotation * displacement;
+        pose.translation =
+            obstacles.clear_position(view.translation + Vec3::Y * SNIPER_HEIGHT, desired);
+        pose.rotation *= rotation;
+    }
+    **camera = pose;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        client::scene,
+        gameplay,
+        simulation::{CombatIntent, Health, SimulationPlugin, spawn_box, teleport_actor},
+    };
     use bevy::camera::CameraProjection;
+    use std::time::Duration;
+
+    fn spawn_view(world: &mut World) {
+        let owner = world
+            .query_filtered::<Entity, With<Player>>()
+            .single(world)
+            .unwrap();
+        world.spawn((PlayerView, ActorView { owner }, Transform::default()));
+    }
+
+    fn arena() -> (App, Entity, Entity) {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin))
+            .init_resource::<ViewYaw>()
+            .add_systems(Startup, (gameplay::setup, spawn_view, setup).chain())
+            .add_systems(Update, (scene::sync_player, follow).chain());
+        app.finish();
+        app.update();
+        tick(&mut app, 12);
+        let player = app
+            .world_mut()
+            .query_filtered::<Entity, With<Player>>()
+            .single(app.world())
+            .unwrap();
+        let target = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .target()
+            .unwrap();
+        (app, player, target)
+    }
+
+    fn tick(app: &mut App, count: usize) {
+        for _ in 0..count {
+            app.world_mut()
+                .resource_mut::<Time<Fixed>>()
+                .advance_by(Duration::from_secs_f64(1.0 / 60.0));
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+    }
+
+    fn request(app: &mut App, player: Entity, command: impl FnOnce(&mut CombatIntent)) {
+        command(&mut app.world_mut().get_mut::<CombatIntent>(player).unwrap());
+        tick(app, 1);
+    }
+
+    fn start_sniping(app: &mut App, player: Entity) {
+        request(app, player, CombatIntent::request_skill);
+        request(app, player, CombatIntent::request_combo);
+        assert!(app.world().get::<Combatant>(player).unwrap().is_sniping());
+    }
+
+    fn render(app: &mut App) -> Transform {
+        app.world_mut().run_schedule(Update);
+        *app.world_mut()
+            .query_filtered::<&Transform, With<GameCamera>>()
+            .single(app.world())
+            .unwrap()
+    }
+
+    fn view_feet(app: &mut App) -> Vec3 {
+        app.world_mut()
+            .query_filtered::<&Transform, With<PlayerView>>()
+            .single(app.world())
+            .unwrap()
+            .translation
+    }
+
+    fn assert_same_pose(actual: Transform, expected: Transform) {
+        assert!(actual.translation.distance(expected.translation) < 0.0001);
+        assert!(actual.rotation.dot(expected.rotation).abs() > 0.99999);
+        assert!(actual.translation.is_finite() && actual.rotation.is_finite());
+    }
 
     #[test]
     fn actual_perspective_places_the_body_center_at_the_lower_third_at_every_heading() {
@@ -76,6 +273,241 @@ mod tests {
                     (screen_fraction - 2.0 / 3.0).abs() < 0.0001,
                     "{screen_fraction}"
                 );
+            }
+        }
+    }
+
+    #[test]
+    fn committed_sniper_camera_reaches_low_rear_aim_before_damage_and_restores_top_down() {
+        let (mut app, player, target) = arena();
+        let normal = render(&mut app);
+        start_sniping(&mut app, player);
+        assert_same_pose(render(&mut app), normal);
+        tick(&mut app, 14);
+        let focused = render(&mut app);
+        let feet = view_feet(&mut app);
+        let target_body = app.world().get::<Body>(target).unwrap();
+        let aim = target_body.interpolated_world(0.0) + BODY_CENTER;
+        let expected = sniper_pose(feet, aim, 0.0);
+        assert_same_pose(focused, expected);
+        assert!((focused.translation.y - feet.y - SNIPER_HEIGHT).abs() < 0.001);
+        assert!((focused.translation - feet).dot(Vec3::NEG_Z) < -2.5);
+        assert!((focused.rotation * Vec3::NEG_Z).y > 0.1);
+        assert_eq!(
+            app.world().get::<Health>(target).unwrap().current(),
+            999_980.0
+        );
+        assert!(normal.translation.distance(focused.translation) > 6.0);
+
+        tick(&mut app, 40);
+        assert!(!app.world().get::<Combatant>(player).unwrap().is_sniping());
+        let restored = render(&mut app);
+        assert_same_pose(
+            restored,
+            camera_pose(view_feet(&mut app) + BODY_CENTER, 0.0),
+        );
+        assert_eq!(
+            app.world().get::<Health>(target).unwrap().current(),
+            999_895.0
+        );
+    }
+
+    #[test]
+    fn cinematic_uses_actual_elevation_and_pause_freezes_its_pose_without_physical_writes() {
+        let (mut app, player, target) = arena();
+        spawn_box(
+            app.world_mut(),
+            Vec3::new(0.0, 0.75, -2.0),
+            Vec3::new(9.0, 1.5, 9.0),
+            false,
+        );
+        teleport_actor(app.world_mut(), player, Vec3::new(0.0, 1.5, 0.0));
+        teleport_actor(app.world_mut(), target, Vec3::new(0.0, 1.5, -4.0));
+        tick(&mut app, 12);
+        start_sniping(&mut app, player);
+        tick(&mut app, 14);
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        let player_position = app.world().get::<Body>(player).unwrap().world_position();
+        let target_position = app.world().get::<Body>(target).unwrap().world_position();
+        let focused = render(&mut app);
+        assert!((focused.translation.y - player_position.y - SNIPER_HEIGHT).abs() < 0.001);
+        assert!(focused.translation.y > 2.0);
+        for _ in 0..3 {
+            tick(&mut app, 60);
+            assert_same_pose(render(&mut app), focused);
+        }
+        assert_eq!(
+            app.world().get::<Body>(player).unwrap().world_position(),
+            player_position
+        );
+        assert_eq!(
+            app.world().get::<Body>(target).unwrap().world_position(),
+            target_position
+        );
+        assert_eq!(
+            app.world().get::<Health>(target).unwrap().current(),
+            999_980.0
+        );
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        tick(&mut app, 40);
+        let restored = render(&mut app);
+        assert_same_pose(
+            restored,
+            camera_pose(view_feet(&mut app) + BODY_CENTER, 0.0),
+        );
+    }
+
+    #[test]
+    fn lethal_sniper_shot_keeps_the_last_live_aim_during_recovery() {
+        let (mut app, player, target) = arena();
+        app.world_mut()
+            .entity_mut(target)
+            .insert(Health::new(100.0));
+        start_sniping(&mut app, player);
+        tick(&mut app, 20);
+        assert!(!app.world().get::<Health>(target).unwrap().is_alive());
+        let sequence = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .sniper_sequence()
+            .unwrap();
+        assert!(sequence.has_fired());
+        let focused = render(&mut app);
+        let expected = sniper_pose(view_feet(&mut app), sequence.aim_position(), 0.0);
+        assert_same_pose(focused, expected);
+
+        tick(&mut app, 30);
+        assert!(!app.world().get::<Combatant>(player).unwrap().is_sniping());
+        let restored = render(&mut app);
+        assert_same_pose(
+            restored,
+            camera_pose(view_feet(&mut app) + BODY_CENTER, 0.0),
+        );
+    }
+
+    #[test]
+    fn cinematic_sphere_sweep_keeps_the_camera_in_front_of_a_wall_behind_the_player() {
+        let (mut app, player, _) = arena();
+        spawn_box(
+            app.world_mut(),
+            Vec3::new(0.0, 0.9, 1.5),
+            Vec3::new(3.0, 1.8, 0.2),
+            false,
+        );
+        tick(&mut app, 1);
+        start_sniping(&mut app, player);
+        tick(&mut app, 14);
+        let camera = render(&mut app);
+        assert!(camera.translation.z > 0.9 && camera.translation.z < 1.25);
+        assert!((camera.translation.y - SNIPER_HEIGHT).abs() < 0.03);
+        assert!((camera.rotation * Vec3::NEG_Z).y > 0.0);
+    }
+
+    #[test]
+    fn ordinary_ranged_and_cannon_actions_keep_the_existing_top_down_camera() {
+        let (mut app, player, _) = arena();
+        request(&mut app, player, CombatIntent::request_switch_weapon);
+        let ranged = render(&mut app);
+        assert_same_pose(ranged, camera_pose(view_feet(&mut app) + BODY_CENTER, 0.0));
+        request(&mut app, player, |intent| {
+            intent.request_set(crate::simulation::WeaponSet::AxeCannon)
+        });
+        request(&mut app, player, CombatIntent::request_switch_weapon);
+        request(&mut app, player, |intent| {
+            intent.set_aim(Vec2::new(3.0, 0.0));
+            intent.request_skill();
+        });
+        tick(&mut app, 10);
+        assert!(
+            app.world()
+                .get::<crate::simulation::MotionState>(player)
+                .unwrap()
+                .is_leaping()
+        );
+        assert!(!app.world().get::<Combatant>(player).unwrap().is_sniping());
+        let cannon = render(&mut app);
+        assert_same_pose(cannon, camera_pose(view_feet(&mut app) + BODY_CENTER, 0.0));
+    }
+
+    #[test]
+    fn actual_sniper_recoil_pauses_decays_exactly_and_keeps_final_wall_clearance() {
+        for wall in [false, true] {
+            let (mut app, player, target) = arena();
+            app.init_resource::<Assets<Mesh>>()
+                .init_resource::<Assets<StandardMaterial>>();
+            super::super::impact::setup(app.world_mut());
+            app.add_systems(
+                Update,
+                super::super::impact::update
+                    .after(scene::sync_player)
+                    .before(follow),
+            );
+            if wall {
+                spawn_box(
+                    app.world_mut(),
+                    Vec3::new(0.0, 0.9, 1.5),
+                    Vec3::new(3.0, 1.8, 0.2),
+                    false,
+                );
+                tick(&mut app, 1);
+            }
+            start_sniping(&mut app, player);
+            tick(&mut app, 14);
+            render(&mut app);
+            assert!(
+                app.world()
+                    .resource::<ImpactState>()
+                    .recoil(player)
+                    .is_none()
+            );
+            tick(&mut app, 6);
+            let kicked = render(&mut app);
+            assert!(
+                app.world()
+                    .resource::<ImpactState>()
+                    .recoil(player)
+                    .is_some()
+            );
+            let feet = view_feet(&mut app);
+            let alpha = super::super::display_alpha(
+                app.world().resource::<Time<Fixed>>(),
+                app.world().resource::<SimulationActive>(),
+                app.world().resource::<HitStop>(),
+            );
+            let aim = app
+                .world()
+                .get::<Body>(target)
+                .unwrap()
+                .interpolated_world(alpha)
+                + BODY_CENTER;
+            let base = sniper_pose(feet, aim, 0.0);
+            if wall {
+                assert!(kicked.translation.z > 0.9 && kicked.translation.z < 1.25);
+            } else {
+                assert!((kicked.translation.distance(base.translation) - 0.152).abs() < 0.005);
+                assert!((kicked.rotation * Vec3::NEG_Z).y > (base.rotation * Vec3::NEG_Z).y);
+            }
+            app.world_mut().resource_mut::<SimulationActive>().0 = false;
+            app.world_mut()
+                .resource_mut::<Time>()
+                .advance_by(Duration::from_secs_f32(1.0));
+            assert_same_pose(render(&mut app), kicked);
+            app.world_mut().resource_mut::<SimulationActive>().0 = true;
+            app.world_mut()
+                .resource_mut::<Time>()
+                .advance_by(Duration::from_secs_f32(0.15));
+            let restored = render(&mut app);
+            assert!(
+                app.world()
+                    .resource::<ImpactState>()
+                    .recoil(player)
+                    .is_none()
+            );
+            if wall {
+                assert!(restored.translation.z > 0.9 && restored.translation.z < 1.25);
+            } else {
+                assert_same_pose(restored, base);
             }
         }
     }

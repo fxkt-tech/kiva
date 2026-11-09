@@ -6,12 +6,12 @@ use super::{ActorView, PlayerView};
 use crate::{
     gameplay::Player,
     simulation::{
-        Body, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, MotionState,
+        Body, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health, HitStop, MotionState,
         SimulationActive, SurfaceHit, WeaponMode, WeaponSet, surface_below,
     },
 };
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub(super) struct VisualAssets {
     cube: Handle<Mesh>,
     ring: Handle<Mesh>,
@@ -26,6 +26,12 @@ pub(super) struct VisualAssets {
 
 #[derive(Component)]
 pub(super) struct WeaponVisual(WeaponSet, WeaponMode);
+
+impl WeaponVisual {
+    pub(super) fn is_sniper(&self) -> bool {
+        self.0 == WeaponSet::HammerSniper && self.1 == WeaponMode::Ranged
+    }
+}
 #[derive(Component)]
 pub(super) struct EnemyBody(Entity);
 #[derive(Component)]
@@ -103,20 +109,7 @@ pub(super) fn setup(world: &mut World) {
         .iter(world)
         .collect();
     for enemy in enemies {
-        let position = world.get::<Body>(enemy).unwrap().world_position();
-        let view = world
-            .spawn((
-                ActorView { owner: enemy },
-                EnemyView,
-                Transform::from_translation(position),
-                Visibility::default(),
-            ))
-            .id();
-        for part in super::stickman::spawn(world, view, &assets.enemy, &assets.gold) {
-            world.entity_mut(part).insert(EnemyBody(enemy));
-        }
-        let bar = mesh(world, &assets.cube, &assets.teal, Transform::default());
-        world.entity_mut(bar).insert(EnemyHealthBar(enemy));
+        spawn_enemy_view(world, enemy, &assets);
     }
 
     let player = world
@@ -202,15 +195,62 @@ pub(super) fn setup(world: &mut World) {
     world.init_resource::<EffectCursor>();
 }
 
+fn spawn_enemy_view(world: &mut World, enemy: Entity, assets: &VisualAssets) {
+    let position = world.get::<Body>(enemy).unwrap().world_position();
+    let view = world
+        .spawn((
+            ActorView { owner: enemy },
+            EnemyView,
+            Transform::from_translation(position),
+            Visibility::default(),
+        ))
+        .id();
+    for part in super::stickman::spawn(world, view, &assets.enemy, &assets.gold) {
+        world.entity_mut(part).insert(EnemyBody(enemy));
+    }
+    let bar = mesh(world, &assets.cube, &assets.teal, Transform::default());
+    world.entity_mut(bar).insert(EnemyHealthBar(enemy));
+}
+
+/// Roster replacement also removes the old skeleton trees and standalone health bars.
+pub(super) fn reconcile_enemies(world: &mut World) {
+    let enemies: Vec<_> = world
+        .query_filtered::<Entity, With<Enemy>>()
+        .iter(world)
+        .collect();
+    let views: Vec<_> = world
+        .query_filtered::<(Entity, &ActorView), With<EnemyView>>()
+        .iter(world)
+        .map(|(entity, view)| (entity, view.owner))
+        .collect();
+    let bars: Vec<_> = world
+        .query::<(Entity, &EnemyHealthBar)>()
+        .iter(world)
+        .map(|(entity, bar)| (entity, bar.0))
+        .collect();
+    for &(entity, owner) in views.iter().chain(&bars) {
+        if !enemies.contains(&owner) {
+            world.despawn(entity);
+        }
+    }
+    let assets = world.resource::<VisualAssets>().clone();
+    for enemy in enemies {
+        if !views.iter().any(|&(_, owner)| owner == enemy) {
+            spawn_enemy_view(world, enemy, &assets);
+        }
+    }
+}
+
 pub(super) fn sync_enemies(
     time: Res<Time<Fixed>>,
     active: Res<SimulationActive>,
+    hit_stop: Res<HitStop>,
     assets: Res<VisualAssets>,
     enemies: Query<(&Body, &Facing, &Health, &Enemy)>,
     mut views: Query<(&ActorView, &mut Transform, &mut Visibility), With<EnemyView>>,
     mut parts: Query<(&EnemyBody, &mut MeshMaterial3d<StandardMaterial>)>,
 ) {
-    let alpha = super::display_alpha(&time, &active);
+    let alpha = super::display_alpha(&time, &active, &hit_stop);
     for (view, mut transform, mut visibility) in &mut views {
         let Ok((body, facing, _, _)) = enemies.get(view.owner) else {
             continue;
@@ -238,11 +278,12 @@ pub(super) fn sync_enemies(
 pub(super) fn sync_health_bars(
     time: Res<Time<Fixed>>,
     active: Res<SimulationActive>,
+    hit_stop: Res<HitStop>,
     view: Res<super::controls::ViewYaw>,
     enemies: Query<(&Body, &Health), With<Enemy>>,
     mut bars: Query<(&EnemyHealthBar, &mut Transform, &mut Visibility)>,
 ) {
-    let alpha = super::display_alpha(&time, &active);
+    let alpha = super::display_alpha(&time, &active, &hit_stop);
     for (bar, mut transform, mut visibility) in &mut bars {
         let Ok((body, health)) = enemies.get(bar.0) else {
             continue;
@@ -274,13 +315,14 @@ pub(super) fn sync_weapons(
 pub(super) fn sync_markers(
     time: Res<Time<Fixed>>,
     active: Res<SimulationActive>,
+    hit_stop: Res<HitStop>,
     surfaces: SurfaceQueries,
     player: Single<(&Body, &MotionState, &Combatant, &Health), With<Player>>,
     targets: Query<(&Body, &MotionState, &Health), With<Enemy>>,
     mut markers: Query<(&Marker, &mut Transform, &mut Visibility)>,
 ) {
     let (body, motion, combat, health) = *player;
-    let alpha = super::display_alpha(&time, &active);
+    let alpha = super::display_alpha(&time, &active, &hit_stop);
     let excluded: Vec<_> = surfaces.excluded.iter().collect();
     for (marker, mut transform, mut visibility) in &mut markers {
         let point = match marker {
@@ -353,6 +395,7 @@ pub(super) fn effects(
     }
     for event in feedback.events().filter(|event| event.sequence > cursor.0) {
         let (mesh, material, transform, duration, expansion) = match event.kind {
+            CombatEffect::SniperShot | CombatEffect::SniperImpact => continue,
             CombatEffect::Shot => {
                 let length = event.position.distance(event.end).max(0.05);
                 let mut transform = Transform::from_translation((event.position + event.end) * 0.5)
@@ -464,6 +507,7 @@ mod tests {
                 (
                     scene::sync_player,
                     scene::sync_props,
+                    reconcile_enemies,
                     sync_enemies,
                     sync_health_bars,
                     sync_weapons,
@@ -508,6 +552,60 @@ mod tests {
     }
 
     #[test]
+    fn switching_enemy_modes_recycles_views_skeletons_and_health_bars() {
+        use crate::gameplay::{EnemyMode, set_enemy_mode};
+
+        let mut app = headless_app();
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        let baseline = app.world_mut().query::<Entity>().iter(app.world()).count();
+        let mesh_count = app.world().resource::<Assets<Mesh>>().len();
+        let material_count = app.world().resource::<Assets<StandardMaterial>>().len();
+        for mode in [
+            EnemyMode::Combat,
+            EnemyMode::Target,
+            EnemyMode::Combat,
+            EnemyMode::Target,
+        ] {
+            let world = app.world_mut();
+            set_enemy_mode(world, mode);
+            app.update();
+            let world = app.world_mut();
+            let expected = if mode == EnemyMode::Target { 1 } else { 4 };
+            assert_eq!(
+                world
+                    .query_filtered::<Entity, With<EnemyView>>()
+                    .iter(world)
+                    .count(),
+                expected
+            );
+            assert_eq!(
+                world
+                    .query_filtered::<Entity, With<EnemyHealthBar>>()
+                    .iter(world)
+                    .count(),
+                expected
+            );
+            for view in world
+                .query_filtered::<&ActorView, With<EnemyView>>()
+                .iter(world)
+            {
+                assert!(world.get::<Enemy>(view.owner).is_some());
+            }
+            for part in world.query::<&EnemyBody>().iter(world) {
+                assert!(world.get::<Enemy>(part.0).is_some());
+            }
+            assert_eq!(world.resource::<Assets<Mesh>>().len(), mesh_count);
+            assert_eq!(
+                world.resource::<Assets<StandardMaterial>>().len(),
+                material_count
+            );
+            if mode == EnemyMode::Target {
+                assert_eq!(world.query::<Entity>().iter(world).count(), baseline);
+            }
+        }
+    }
+
+    #[test]
     fn view_and_camera_follow_actual_elevation_without_writing_the_physical_actor() {
         use avian3d::prelude::Position;
         let mut app = headless_app();
@@ -545,7 +643,7 @@ mod tests {
             .query_filtered::<&Transform, With<camera::GameCamera>>()
             .single(app.world())
             .unwrap();
-        assert!((camera.translation.y - (feet.y + 0.9 + 5.0)).abs() < 0.001);
+        assert!((camera.translation.y - (feet.y + 0.9 + 6.0)).abs() < 0.001);
         app.world_mut().resource_mut::<SimulationActive>().0 = true;
         fixed_ticks(&mut app, 1);
         assert!(
@@ -596,6 +694,7 @@ mod tests {
     #[test]
     fn attacks_and_enemy_windups_project_effects_onto_the_actual_hill_surface() {
         let mut app = headless_app();
+        crate::gameplay::set_enemy_mode(app.world_mut(), crate::gameplay::EnemyMode::Combat);
         let player = physical_player(&mut app);
         let enemy = app
             .world_mut()
@@ -751,7 +850,7 @@ mod tests {
                 .query_filtered::<Entity, With<EnemyHealthBar>>()
                 .iter(app.world())
                 .count(),
-            4
+            1
         );
 
         app.world_mut().resource_mut::<SimulationActive>().0 = false;

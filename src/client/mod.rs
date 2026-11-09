@@ -1,9 +1,12 @@
 //! Device input and presentation compose the headless demo.
 mod animation;
+mod audio;
 mod camera;
 mod combat;
 pub(super) mod controls;
+mod enemies;
 mod hud;
+mod impact;
 mod scene;
 mod skeleton;
 mod stickman;
@@ -25,8 +28,12 @@ pub(super) struct PropView {
     pub owner: Entity,
 }
 
-fn display_alpha(time: &Time<Fixed>, active: &crate::simulation::SimulationActive) -> f32 {
-    if active.0 {
+fn display_alpha(
+    time: &Time<Fixed>,
+    active: &crate::simulation::SimulationActive,
+    hit_stop: &crate::simulation::HitStop,
+) -> f32 {
+    if active.0 && !hit_stop.is_active() {
         time.overstep_fraction()
     } else {
         1.0
@@ -61,6 +68,7 @@ pub(super) fn run() {
             crate::gameplay::setup,
             scene::setup,
             combat::setup,
+            impact::setup,
             camera::setup,
             web::ready,
         )
@@ -68,13 +76,16 @@ pub(super) fn run() {
     )
     .add_systems(
         RunFixedMainLoop,
-        controls::sample.in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
+        (enemies::sample, controls::sample)
+            .chain()
+            .in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
     )
     .add_systems(
         Update,
         (
             scene::sync_player,
             scene::sync_props,
+            combat::reconcile_enemies,
             combat::sync_enemies,
             combat::sync_health_bars,
             combat::sync_weapons,
@@ -82,6 +93,8 @@ pub(super) fn run() {
             stickman::sync_attachments,
             combat::sync_markers,
             combat::effects,
+            impact::update,
+            audio::sync,
             hud::sync,
             camera::follow,
         )

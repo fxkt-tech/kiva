@@ -14,6 +14,80 @@ use crate::simulation::{
 #[derive(Component)]
 pub struct Player;
 
+#[derive(Resource, Default, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EnemyMode {
+    #[default]
+    Target,
+    Combat,
+}
+
+impl EnemyMode {
+    pub fn toggled(self) -> Self {
+        match self {
+            Self::Target => Self::Combat,
+            Self::Combat => Self::Target,
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Target => "靶子",
+            Self::Combat => "实战",
+        }
+    }
+}
+
+/// Replace only the enemy roster. This also works while the simulation is paused.
+pub fn set_enemy_mode(world: &mut World, mode: EnemyMode) {
+    if world.get_resource::<EnemyMode>() == Some(&mode) {
+        return;
+    }
+    let enemies: Vec<_> = world
+        .query_filtered::<Entity, With<Enemy>>()
+        .iter(world)
+        .collect();
+    for enemy in enemies {
+        world.despawn(enemy);
+    }
+    for (mut combat, mut intent) in world
+        .query::<(&mut Combatant, &mut CombatIntent)>()
+        .iter_mut(world)
+    {
+        combat.clear_targets();
+        intent.clear();
+    }
+    world.insert_resource(mode);
+    spawn_enemies(world, mode);
+}
+
+fn spawn_enemies(world: &mut World, mode: EnemyMode) {
+    let positions: &[Vec2] = match mode {
+        EnemyMode::Target => &[Vec2::new(0.0, -4.0)],
+        EnemyMode::Combat => &[
+            Vec2::new(-1.5, -4.0),
+            Vec2::new(0.0, -5.5),
+            Vec2::new(1.5, -4.5),
+            Vec2::new(1.0, -8.0),
+        ],
+    };
+    for &position in positions {
+        let (enemy, health) = match mode {
+            EnemyMode::Target => (Enemy::target_dummy(), 1_000_000.0),
+            EnemyMode::Combat => (Enemy::default(), 120.0),
+        };
+        world.spawn((
+            enemy,
+            Body::new(position, 2.0, 0.3),
+            MoveIntent::default(),
+            ActionIntent::default(),
+            MotionState::default(),
+            Facing::default(),
+            Health::new(health),
+            SpawnPoint(position),
+        ));
+    }
+}
+
 #[derive(Resource)]
 pub struct Level {
     pub half_size: f32,
@@ -140,23 +214,12 @@ pub fn setup(world: &mut World) {
         Health::new(100.0),
         SpawnPoint(Vec2::ZERO),
     ));
-    for position in [
-        Vec2::new(-1.5, -4.0),
-        Vec2::new(0.0, -5.5),
-        Vec2::new(1.5, -4.5),
-        Vec2::new(1.0, -8.0),
-    ] {
-        world.spawn((
-            Enemy::default(),
-            Body::new(position, 2.0, 0.3),
-            MoveIntent::default(),
-            ActionIntent::default(),
-            MotionState::default(),
-            Facing::default(),
-            Health::new(120.0),
-            SpawnPoint(position),
-        ));
-    }
+    let mode = world
+        .get_resource::<EnemyMode>()
+        .copied()
+        .unwrap_or_default();
+    world.insert_resource(mode);
+    spawn_enemies(world, mode);
 }
 
 #[cfg(test)]
@@ -281,17 +344,102 @@ mod tests {
         let world = app.world_mut();
         let mut actors = world.query::<(&Body, &Health, &SpawnPoint)>();
         let actors: Vec<_> = actors.iter(world).collect();
-        assert_eq!(actors.len(), 5);
+        assert_eq!(actors.len(), 2);
         for (body, health, spawn) in actors {
             assert_eq!(body.position(), spawn.0);
             assert!(health.is_alive());
         }
+        assert_eq!(*world.resource::<EnemyMode>(), EnemyMode::Target);
+        let (enemy, health) = world.query::<(&Enemy, &Health)>().single(world).unwrap();
+        assert!(enemy.is_passive());
+        assert_eq!(health.maximum(), 1_000_000.0);
         tick(&mut app, 12);
         let world = app.world_mut();
         let mut actors = world.query::<(&Body, &MotionState)>();
         for (body, motion) in actors.iter(world) {
             assert!(body.world_position().y.abs() < 0.03);
             assert!(motion.is_grounded());
+        }
+    }
+
+    #[test]
+    fn modes_replace_the_roster_while_paused_and_the_dummy_never_attacks_or_chases() {
+        use crate::simulation::{CombatEffect, CombatFeedback, SimulationActive, teleport_actor};
+
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin));
+        app.finish();
+        app.insert_resource(EnemyMode::Combat);
+        setup(app.world_mut());
+        let world = app.world_mut();
+        let player = world
+            .query_filtered::<Entity, With<Player>>()
+            .single(world)
+            .unwrap();
+        let old_enemies: Vec<_> = world
+            .query_filtered::<Entity, With<Enemy>>()
+            .iter(world)
+            .collect();
+        world.resource_mut::<SimulationActive>().0 = false;
+        set_enemy_mode(world, EnemyMode::Target);
+        assert!(
+            old_enemies
+                .iter()
+                .all(|&entity| world.get_entity(entity).is_err())
+        );
+        let dummy = world
+            .query_filtered::<Entity, With<Enemy>>()
+            .single(world)
+            .unwrap();
+        assert_eq!(world.get::<Health>(dummy).unwrap().maximum(), 1_000_000.0);
+        let origin = world.get::<Body>(dummy).unwrap().position();
+        world.resource_mut::<SimulationActive>().0 = true;
+        tick(&mut app, 180);
+        assert!(
+            app.world()
+                .get::<Body>(dummy)
+                .unwrap()
+                .position()
+                .distance(origin)
+                < 0.02
+        );
+
+        // Stand in attack range for several full attack cycles.
+        teleport_actor(app.world_mut(), player, Vec3::new(0.0, 0.0, -2.6));
+        tick(&mut app, 300);
+        assert_eq!(app.world().get::<Health>(player).unwrap().current(), 100.0);
+        assert!(
+            !app.world()
+                .resource::<CombatFeedback>()
+                .events()
+                .any(|event| {
+                    event.actor == dummy
+                        && matches!(event.kind, CombatEffect::EnemyWindup | CombatEffect::Melee)
+                })
+        );
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_skill();
+        tick(&mut app, 4);
+        assert!(app.world().get::<Health>(dummy).unwrap().current() < 1_000_000.0);
+        assert!(!app.world().get::<MotionState>(dummy).unwrap().is_grounded());
+        let cooldown = app.world().get::<Combatant>(player).unwrap().cooldown();
+        assert!(cooldown > 0.0);
+
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        set_enemy_mode(app.world_mut(), EnemyMode::Combat);
+        let world = app.world_mut();
+        assert!(world.get_entity(dummy).is_err());
+        let actor = world.get::<Combatant>(player).unwrap();
+        assert_eq!(actor.target(), None);
+        assert_eq!(actor.combo_remaining(), 0.0);
+        assert_eq!(actor.cooldown(), cooldown);
+        let mut enemies = world.query::<(&Enemy, &Health)>();
+        assert_eq!(enemies.iter(world).count(), 4);
+        for (enemy, health) in enemies.iter(world) {
+            assert!(!enemy.is_passive());
+            assert_eq!(health.maximum(), 120.0);
         }
     }
 

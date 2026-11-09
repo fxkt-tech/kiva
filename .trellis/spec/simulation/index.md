@@ -20,8 +20,11 @@
 - `Facing::set(Vec2)` / `direction()`；`MotionState` 只读接触状态与高度适配器，`start_leap_to(Vec3,Vec3,duration)` / `launch_up(velocity)` 由模拟规则调用；三维跃进按目的地、飞行时间和共享重力计算，旧二维 `start_leap(...,peak)` 仅保留参数校验适配。
 - `CombatIntent::set_aim(Vec2)`、`request_attack/skill/combo/switch_weapon/cycle_target()`、`request_set(WeaponSet)`、`clear()`。
 - `Combatant::new(WeaponSet)`；`aim() -> Vec3` / `aim_surface() -> Option<SurfaceHit>` 保存同源预览与承诺落点，其余武器 / 目标 / 冷却访问器只读。
-- `Health::new(maximum)` / `current/maximum/is_alive()`；`Enemy::default()`、`SpawnPoint(Vec2)`。
+- `Health::new(maximum)` / `current/maximum/is_alive()`；`Enemy::default()` 为实战 AI，`Enemy::target_dummy()` / `is_passive()` 为被动靶子；`SpawnPoint(Vec2)`。
+- `Combatant::clear_targets()` 在敌人集合替换时清理目标和联动，不刷新技能 / 普攻冷却。
+- `Combatant::sniper_sequence() -> Option<SniperSequence>` / `is_sniping()` 暴露锤狙联动的只读固定步时间线；`SniperSequence::{target,elapsed,aim_position,has_fired}` 保存原目标和真实瞄准点。
 - `CombatFeedback::events()` 为只读有界历史；`SimulationActive(bool)` 暂停整条固定步链。
+- `HitStop::is_active()` 暴露冲击停顿状态；模拟请求 0.04s 狙击命中停顿，固定步向上取整（60Hz 为 3 步 / 50ms）。
 
 ## Contracts
 
@@ -44,9 +47,17 @@ C 按压以 XOR 奇偶性锁存，固定步消费后切换蹲伏；松键保持�
 接受跳跃 / 闪避 / 跃进、击飞和重置退出蹲伏；无效动作不能误清姿态。清理 Intent 在恢复首步退出蹲伏 / 滑铲，不重置空中或闪避进度。
 滑铲中禁止新的攻击 / 起手 / 联动，普通蹲伏仍使用现有攻击和格挡规则；不增加躲避伤害或越过障碍的权限。
 锤子联动保存原选中 Entity，Tab 不被当前 Q 目标替换；火炮旋斧沿实际运动轨迹每个敌人仅伤害一次。
+有效锤子 Tab 先消费窗口、切换狙击枪并进入 SniperSequence，0.30s 瞄准后才产生一次 Shot 和 85 伤害；随后保持 0.14s、恢复 0.28s，总计 0.72s。伤害时机由 FixedUpdate 决定，不等待渲染回调。
+开枪前重新检查原目标存活 / 浮空、动作状态与视线；手动切套装 / 武器、倒地、目标移除及模式替换清理未发射的动作，不补射。已由本次狙击击倒的目标保留射后恢复时间。
+序列期间新普攻 / 起手 / Tab 不排队，起手冷却不刷新；暂停冻结序列。狙击 aim_position 随原目标物理位置更新，不因 Q 改选另一个敌人。
+成功狙击保留普通 Shot / Hit，再追加 `SniperShot`（actor=射手、position=射手胸口、end=命中点）和 `SniperImpact`（actor=受击者、position=命中点、end=射手胸口），不重复伤害；取消和普通攻击不生成专用事件。
+HitStop 在固定步开头锁定本步门控，统一冻结 motor、物理求解、快照、战斗 / AI / 冷却及 SniperSequence；命中后请求预算不能改变本步决定，以保证同一步瞬移清理仍执行。失锁不消耗预算，结束只恢复正常固定步，不补算重力或改写速度。
+狙击击倒当前选中目标时，伤害同一步立即清理 Combatant.target，不能等 HitStop 后才移除死亡选择；射后序列独立保留原目标和最后瞄准点。
+锤子击飞按共享重力 18m/s² 提供约 10.3923m/s 的向上初速度，目标从实际起飞高度上升约 3m；地形和顶面碰撞仍由物理决定。
 联动需有效时间和活目标 / 未落地状态；切套装或手动切武器取消；起手技能冷却不被切换刷新。
 火炮跃进期间 aim() 固定为起跳时承诺的落点，不能把之后输入的前方点当成当前落点；格挡中 Tab 消耗窗口且不补放。
 死亡实体不主动移动、不选中、不结算新攻击；3s 后重置权威物理姿态 / 速度与 previous/current，清理排队意图后复活。
+被动靶子每步停止主动移动、不进入蓄力 / 攻击，仍接受伤害、击飞和碰撞；死亡复活保留被动身份。
 反馈最多 128 条，sequence 严格递增，客户端可跨多固定步消费，不能在每个模拟步清空历史。
 每条 CombatEvent 包含明确 actor：攻击为发起者，受击 / 防御 / 倒地 / 复活为接受者；敌人蓄力和实际挥击分别产生事件。
 骨骼动画只读取这些接口，不产生位置、高度或伤害，不把动画片段时长当成技能权威计时。
@@ -81,6 +92,9 @@ Bad：NaN 输入不移动，内容无效时构造失败。
 Shift 规则测试覆盖短按不锁疾跑、长按衔接、松 Shift 保留 / 松方向取消、抵消方向键、零固定步释放、
 重新按压的独立计时、后段长按不倒退、以及失活取消不重置空中进度。
 战斗测试覆盖两条完整联动、失效和一次消费、沿途旋斧、正背面格挡、倒地复活清理和反馈历史上限。
+狙击回归覆盖 Tab 不立即伤害 / 发 Shot、0.30s 后仅命中原目标一次、重复指令、暂停 / 恢复、切套装 / 武器 / 目标移除 / 死亡 / 遮挡取消，以及非零海拔和射后恢复。
+命中停顿用真实 FixedUpdate 验证角色与下落箱体的位置 / 速度 / 快照 / 冷却一起冻结 3 步，第四步恢复；失锁保留预算，普通射击不触发。
+击飞回归通过真实物理测量平地与非零高台的相对最高点为 3m（允许固定步误差），靶子回归覆盖复活后仍不攻击。
 蹲伏 / 滑铲测试覆盖按压奇偶性、1.6m/s 实际位移、方向锁定与减速积分、墙体 / 边界、起身 / 动作中断、暂停 / 死亡复活清理，以及现有攻击 / 格挡 / 跃进链路。
 
 ## Wrong vs Correct
