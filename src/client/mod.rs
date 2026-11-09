@@ -10,10 +10,12 @@ mod environment;
 mod forest_material;
 mod hud;
 mod impact;
+mod rendering;
 mod scene;
 mod skeleton;
 mod source_animation;
 mod stickman;
+mod texture_mips;
 mod web;
 
 use bevy::prelude::*;
@@ -76,6 +78,7 @@ pub(super) fn run() {
             combat::setup,
             impact::setup,
             camera::setup,
+            rendering::setup,
             environment::setup_camera_fog,
             web::ready,
         )

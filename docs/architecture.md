@@ -21,9 +21,10 @@
 | `client/scene.rs` | 玩家显示根和插值后的显示 `Transform` |
 | `client/stickman.rs` | 角色构造兼容入口及动态右手挂点 |
 | `client/avatar.rs` | 随包愁铃客蒙皮、纹理、共享材质和绑定姿态适配；只写显示骨骼 |
-| `client/environment.rs` | 玩法同源竹干/地形、装饰枝叶、雾和灯光 |
+| `client/environment.rs`、`environment/ground_cover.rs` | 玩法同源竹干/地形、共享草叶装饰、雾和灯光 |
+| `client/rendering.rs`、`client/texture_mips.rs` | 相机 deferred/SSR/FXAA pass；重复纹理的线性颜色与单位法线 mip |
 | `client/source_animation.rs` | 986节点原主骨架与35个具名原作片段的有界解码、稀疏采样和层级求值 |
-| `client/forest_material.rs`、`assets/shaders/forest.wesl` | 标准PBR片元扩展、共享环境材质，不改变蒙皮/阴影/碰撞 |
+| `client/forest_material.rs`、`assets/shaders/forest.wesl` | 标准PBR地表分层与干湿响应、共享环境材质和近叶可见/深度裁切，不改变模拟碰撞 |
 | `client/skeleton.rs` | 随包 CC0 动画的解码、局部采样、父子骨骼求值 |
 | `client/animation.rs`、`animation/poses.rs` | 根据只读模拟快照与明确 actor 的事件选择 / 混合身体姿态 |
 | `client/camera.rs` | 从相同显示位置与朝向派生跟随镜头 |
@@ -72,7 +73,7 @@ Avian 的 Position / Rotation / 速度是唯一运动权威；`Body` 和 `Physic
 
 ## 场景与地形
 
-场景为确定性 50×50m 竹林重建，包含中央战斗空地、曲径、密集竹海、岩石与可见低岸；不声称已恢复原版关卡实例布局。竹干和岩石使用玩法层的共享三角几何生成碰撞及显示，枝叶、竹节、落叶只作装饰，环境合并为 11 个网格 / 5 个扩展材质。旧箱子/石柱不再装配到默认地图，通用箱体控制和道具姿态接口仍由物理层提供。
+场景为确定性 50×50m 竹林重建，包含中央战斗空地、曲径、密集竹海、岩石与可见低岸；不声称已恢复原版关卡实例布局。竹干和岩石使用玩法层的共享三角几何生成碰撞及显示，枝叶、竹节、落叶与草丛只作装饰，环境合并为 20 个网格 / 7 个扩展材质，12组植被随模拟暂停风动。地表用原土壤/草苔主色与法线分层，原草叶atlas构造不规则草丛；局部积水为非金属低粗糙度表面，deferred/DepthPrepass/SSR提供屏幕内反射，alpha透光植被保留前向路径。近相机叶片裁切同步到深度prepass；原叶片阴影保留。旧箱子/石柱不再装配到默认地图，通用箱体控制和道具姿态接口仍由物理层提供。
 西侧坡道宽 3m、坡度约 20°，连接 1.5m 高台；东侧小山顶约在 `(16.5,2.6,8.5)`，西侧缓坡可登顶，东侧较陡用于测试行走上限。
 地面与小山由一份连续三角网格构成，客户端 Mesh 与物理 Collider 使用同一原始顶点和索引，不创建共面的第二块碰撞地板。
 坡道与高台为连续闭合几何。接缝、法线、出生净空和缓坡 / 陡坡由几何与真实控制器回归共同验证。

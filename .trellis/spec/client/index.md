@@ -120,7 +120,9 @@ C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失
 错误：独立平滑相机、把显示 Transform 写回物理 Position，或将 view 实体 ID 当作战斗 actor。
 正确：JS 只管理输入边界，物理实体消费 Intent；owner 关联的显示根读取快照，模型和相机共用显示位置。
 
-`environment` 只消费Level同源地形/竹干/岩石，11个聚合网格、5个ForestMaterial；原竹叶/竹皮/落叶base与normal随包复用，sRGB/linear显式区分，alpha卡片有UV/tangent。ForestMaterial=ExtendedMaterial<StandardMaterial,ForestSurface>，自写WESL只扩展片元细节，保留标准PBR/雾、蒙皮/阴影/深度路径。叶片风动只移动4组装饰，不改变碰撞竹干，暂停冻结时钟。半球环境光/冷色填光/指数雾为Kiva美术适配；原编译shader用于验证mix通道，不冒称原HLSL/完整BRDF已移植。场景是主题重建，不能声称恢复原版实例布局；来源与局限见assets/choulingke/README.md。
+`environment` 只消费Level同源地形/竹干/岩石，20个聚合网格、7个ForestMaterial；14张原竹叶/竹皮/落叶/土壤/草苔/草丛base与normal随包复用，sRGB/linear显式区分，alpha卡片有UV/tangent。ForestMaterial=ExtendedMaterial<StandardMaterial,ForestSurface>，保留标准PBR/雾、蒙皮/阴影路径；地表只通过分层纹理和有界mask区分干土/湿土/非金属积水，不用clearcoat或金属度伪造湿地。12组装饰风动不改变碰撞竹干，暂停冻结时钟。重复不透明纹理由texture_mips生成完整mip，颜色在线性空间平均、法线重归一；不直接给裁切atlas平均alpha以免远草消失。半球环境光/冷色填光/指数雾为Kiva美术适配；原编译shader用于验证mix通道，不冒称原HLSL/完整BRDF已移植。场景是主题重建，来源与局限见assets/choulingke/README.md。
+
+rendering仅给GameCamera安装HDR、Msaa::Off、FXAA、DepthPrepass、DeferredPrepass和SSR，默认不透明材质deferred；透光裁切植被显式Forward。不能改变相机姿态/FOV或模拟。SSR只对屏幕内深度/已完成deferred光照有效，前向透光物体和屏幕外物体不保证倒影；验收需要真实GPU pass记录与GBuffer读回，只有shader组合测试不够。湿土粗糙度不进入SSR，仅平滑积水进入，避免高频normal造成随机闪点。
 
 当前BGM来源未证实，audio/music.json.file为null；播放器跳过音乐，不请求不存在的文件。攻击/命中/卸势随包Ogg为自制程序音效，不能称为燕云原声。只有确认曲目身份后才配置本目录简单文件名并随包复制。
 
@@ -129,4 +131,4 @@ C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失
 SourceAnimationLibrary与RigPose源姿态仅在client，不能让simulation导入资产名或播放时钟。KIVASR01保留原毫秒键、祖先索引和带符号非零尺度；读入检查边界/有限/单位quat/时间单调，缺轨回原rest。原根XZ去掉、地面保留腰身Y，空中Y不与物理高度叠加。共用jump/huajie/dodge按骨名和明确父关系retarget，省略轨记录来源，不能说成愁铃客专属；具体裁剪和比例适配写animation_manifest。原手腕global相对rest的delta校正到既有CC0握柄frame，两路姿态平滑混合，远程瞄准IK优先；源骨架缺失独立附件不猜绑定。原技能槽→clip仍未恢复，Boss.clip_name=None不凭名字补造精确映射。
 普通Effect暂停冻结寿命/变换并前移游标，恢复不补播；HitStop不等于失锁，普通视觉效果可继续推进。
 
-竹枝叶kind=3在相机3m内裁除、3–5.5m固定像素dither渐入，使用真实view.world_position，仅影响主可见片元；远处枝叶和地面落叶保持。当前未启用独立DepthPrepass；未来启用时须把同一裁切规则同步到对应depth prepass，避免隐藏近叶先写深度。原叶atlas阴影保留，不以退隐改变碰撞或源alpha。
+竹枝叶kind=3在相机3m内裁除、3–5.5m固定像素dither渐入，使用真实view.world_position；规则共用forest_view.wesl，主片元和forest_prepass.wesl同步可见深度/法线裁切，防止隐藏近叶提前遮挡。阴影pass以LOD主相机位置与阴影view区分，保留原叶atlas阴影；远叶/地面落叶不受近叶退隐影响。不改变碰撞或源alpha。

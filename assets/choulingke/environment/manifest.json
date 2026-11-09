@@ -1,5 +1,5 @@
 {
-  "source": "verified Repository Model\u2192Material\u2192Texture references; source shader not ported wholesale",
+  "source": "verified Repository Model→Material→Texture references; source shader not ported wholesale",
   "alpha": "source base-map alpha preserved; leaves alpha<128 ratio88.58%, ground litter78.65%",
   "textures": [
     {
@@ -97,6 +97,668 @@
         512
       ],
       "color_space": "linear"
+    },
+    {
+      "name": "ground_base",
+      "guid": "a5e476fd-935a-4c23-8cb2-f4c55be10f14",
+      "physical_vfs": "a5/a5e476fd-935a-4c23-8cb2-f4c55be10f14.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_declared_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "60a4d5ae92956c3907147a04a82cc3f59c8b08c4229a81f4c16b8a73a24f6969",
+      "source_png_sha256": "5f10ed624877fbaaed8e41c9f77a43d054c92e26430f724c3fda602a5012c925",
+      "embedded_sha256": "5f10ed624877fbaaed8e41c9f77a43d054c92e26430f724c3fda602a5012c925",
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "color_space": "sRGB",
+      "source_pixel_format": "25 / BC7_UNORM",
+      "source_mip_count": 9,
+      "source_header_byte10": 2,
+      "source_header_observation": "selected base pairs have byte10=2, normals=0; byte retained as evidence, original enum definition not asserted",
+      "physical": {
+        "key": 2683456522624001332,
+        "pack": 172,
+        "offset": 128897508,
+        "stored_size": 900993,
+        "decoded_bytes": 900993,
+        "stored_sha256": "60a4d5ae92956c3907147a04a82cc3f59c8b08c4229a81f4c16b8a73a24f6969",
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "statistics": {
+        "rgba_min": [
+          17,
+          11,
+          1,
+          254
+        ],
+        "rgba_max": [
+          219,
+          217,
+          224,
+          255
+        ],
+        "rgba_mean": [
+          91.50583171844482,
+          78.79450130462646,
+          62.701805114746094,
+          254.96654415130615
+        ],
+        "alpha_below_128_ratio": 0.0
+      },
+      "repository_name": "A_weight007_soil_d",
+      "repository_folder": "G/PreviewMap/W12K/LandTex/TEX",
+      "repository_block": 4730,
+      "repository_offset": 1431,
+      "role": "base RGB plus original alpha",
+      "source_channel_role_evidence": "paired Repository _d/_n identity and shared Material references, inspected base/alpha and measured normal XYZ; standalone Material .4 payload not found",
+      "sampling": {
+        "address": "Repeat",
+        "tile_world_meters": 2.5,
+        "alpha": "opaque material; source alpha retained",
+        "scale_origin": "Kiva visual adaptation; source terrain tiling not recovered"
+      }
+    },
+    {
+      "name": "ground_normal",
+      "guid": "811f0c33-723b-43a7-a4f8-2722b1a97a5f",
+      "physical_vfs": "81/811f0c33-723b-43a7-a4f8-2722b1a97a5f.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_declared_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "83df84262e4fdff406322ccc01f8033118c1d2868fca100228258a07593a97c1",
+      "source_png_sha256": "85dc4b310cbdb19431a2c21fc6d5a5c5f05a6fd785cd2857af5cf1d0bbd08a31",
+      "embedded_sha256": "85dc4b310cbdb19431a2c21fc6d5a5c5f05a6fd785cd2857af5cf1d0bbd08a31",
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "color_space": "linear",
+      "source_pixel_format": "25 / BC7_UNORM",
+      "source_mip_count": 9,
+      "source_header_byte10": 0,
+      "source_header_observation": "selected base pairs have byte10=2, normals=0; byte retained as evidence, original enum definition not asserted",
+      "physical": {
+        "key": 7197208249403257190,
+        "pack": 20,
+        "offset": 245223518,
+        "stored_size": 1238470,
+        "decoded_bytes": 1238470,
+        "stored_sha256": "83df84262e4fdff406322ccc01f8033118c1d2868fca100228258a07593a97c1",
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "statistics": {
+        "rgba_min": [
+          0,
+          0,
+          156,
+          74
+        ],
+        "rgba_max": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "rgba_mean": [
+          126.71706199645996,
+          127.17187023162842,
+          247.30426692962646,
+          131.00410556793213
+        ],
+        "alpha_below_128_ratio": 0.4542427062988281
+      },
+      "repository_name": "A_weight007_soil_n",
+      "repository_folder": "G/PreviewMap/W12K/LandTex/TEX",
+      "repository_block": 4730,
+      "repository_offset": 1525,
+      "role": "normal RGB XYZ; alpha unresolved",
+      "source_channel_role_evidence": "paired Repository _d/_n identity and shared Material references, inspected base/alpha and measured normal XYZ; standalone Material .4 payload not found",
+      "normal_validation": {
+        "encoding": "source RGB XYZ, copied without swizzle/G flip; linear sampling",
+        "visible_length_quantiles": [
+          0.859056293964386,
+          0.9662270545959473,
+          1.0233640670776367,
+          1.0629911422729492
+        ],
+        "visible_positive_z_ratio": 1.0,
+        "vector_length_note": "source RGB vectors are not all unit length; runtime normal direction must be normalized, especially forest-floor layer",
+        "alpha": "preserved for provenance, ignored by runtime normal sampling; role unresolved"
+      }
+    },
+    {
+      "name": "grass_base",
+      "guid": "7b18bb71-f914-4a5c-86e7-231cf82d0d3a",
+      "physical_vfs": "7b/7b18bb71-f914-4a5c-86e7-231cf82d0d3a.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_declared_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "657b7fd33c644d998b6598cf8f90d28a06ebc63574964e732851c5811dd308c0",
+      "source_png_sha256": "d8f8a630f6d40ef324a28a6cf7c3289627b3184be2fbbc0e67bcd369cf479bf4",
+      "embedded_sha256": "d8f8a630f6d40ef324a28a6cf7c3289627b3184be2fbbc0e67bcd369cf479bf4",
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "color_space": "sRGB",
+      "source_pixel_format": "25 / BC7_UNORM",
+      "source_mip_count": 9,
+      "source_header_byte10": 2,
+      "source_header_observation": "selected base pairs have byte10=2, normals=0; byte retained as evidence, original enum definition not asserted",
+      "physical": {
+        "key": 11730503130320875832,
+        "pack": 146,
+        "offset": 31196575,
+        "stored_size": 311674,
+        "decoded_bytes": 311674,
+        "stored_sha256": "657b7fd33c644d998b6598cf8f90d28a06ebc63574964e732851c5811dd308c0",
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "statistics": {
+        "rgba_min": [
+          24,
+          4,
+          4,
+          0
+        ],
+        "rgba_max": [
+          200,
+          183,
+          175,
+          255
+        ],
+        "rgba_mean": [
+          59.92752933502197,
+          76.75154209136963,
+          46.32196044921875,
+          47.7479362487793
+        ],
+        "alpha_below_128_ratio": 0.8127098083496094
+      },
+      "repository_name": "grass_caocong_01_d",
+      "repository_folder": "G/Res/Grass/TEX",
+      "repository_block": 7347,
+      "repository_offset": 3286,
+      "role": "base RGB plus original alpha",
+      "source_channel_role_evidence": "paired Repository _d/_n identity and shared Material references, inspected base/alpha and measured normal XYZ; standalone Material .4 payload not found",
+      "sampling": {
+        "address": "ClampToEdge",
+        "alpha_cutoff": 0.46,
+        "image_uv_rectangle": [
+          0,
+          0.02,
+          1,
+          0.92
+        ],
+        "image_root_uv": [
+          0.52,
+          0.91
+        ],
+        "card_height_meters": [
+          0.26,
+          0.5
+        ],
+        "appearance": "green multi-stem broadleaf understory herb/shrub, not an isolated blade",
+        "scale_origin": "Kiva card placement/UV crop; original mesh/pivot painter not ported"
+      }
+    },
+    {
+      "name": "grass_normal",
+      "guid": "52a61f8f-3c88-44e1-b29d-19832c3ae3fa",
+      "physical_vfs": "52/52a61f8f-3c88-44e1-b29d-19832c3ae3fa.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_declared_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "33534d546fcb6d32b4653204639afbe02ef89181cb67a0185e1df9932dd2795d",
+      "source_png_sha256": "29464bc7c203c8b25b3a7a88267139df4a9f72fe45f32e3d377dd090cd2e7a62",
+      "embedded_sha256": "29464bc7c203c8b25b3a7a88267139df4a9f72fe45f32e3d377dd090cd2e7a62",
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "color_space": "linear",
+      "source_pixel_format": "25 / BC7_UNORM",
+      "source_mip_count": 9,
+      "source_header_byte10": 0,
+      "source_header_observation": "selected base pairs have byte10=2, normals=0; byte retained as evidence, original enum definition not asserted",
+      "physical": {
+        "key": 9741704771386106166,
+        "pack": 178,
+        "offset": 155360490,
+        "stored_size": 665903,
+        "decoded_bytes": 665903,
+        "stored_sha256": "33534d546fcb6d32b4653204639afbe02ef89181cb67a0185e1df9932dd2795d",
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "statistics": {
+        "rgba_min": [
+          0,
+          0,
+          140,
+          254
+        ],
+        "rgba_max": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "rgba_mean": [
+          123.54883289337158,
+          137.56857109069824,
+          205.7758436203003,
+          254.9838514328003
+        ],
+        "alpha_below_128_ratio": 0.0
+      },
+      "repository_name": "grass_caocong_01_n",
+      "repository_folder": "G/Res/Grass/TEX",
+      "repository_block": 2813,
+      "repository_offset": 3812,
+      "role": "normal RGB XYZ; alpha unresolved",
+      "source_channel_role_evidence": "paired Repository _d/_n identity and shared Material references, inspected base/alpha and measured normal XYZ; standalone Material .4 payload not found",
+      "normal_validation": {
+        "encoding": "source RGB XYZ, copied without swizzle/G flip; linear sampling",
+        "visible_length_quantiles": [
+          0.8925507497787476,
+          1.000015377998352,
+          1.017456293106079,
+          1.0364446640014648
+        ],
+        "visible_positive_z_ratio": 1.0,
+        "vector_length_note": "source RGB vectors are not all unit length; runtime normal direction must be normalized, especially forest-floor layer",
+        "alpha": "preserved for provenance, ignored by runtime normal sampling; role unresolved"
+      }
+    },
+    {
+      "name": "grass_blades_base",
+      "guid": "57bc5ac2-15df-47ec-ac3d-00bac2481f86",
+      "physical_vfs": "57/57bc5ac2-15df-47ec-ac3d-00bac2481f86.6",
+      "source_size": [
+        512,
+        512
+      ],
+      "source_declared_size": [
+        512,
+        512
+      ],
+      "source_sha256": "c8d492d69383aa6a5be355ef0626ea01f1bde8464778704db8bdb1a5f7d23399",
+      "source_png_sha256": "ed4f61baee5a3f79fb3cc96dcc15e38f41e608559e1b92b444352702f692f0f1",
+      "embedded_sha256": "ed4f61baee5a3f79fb3cc96dcc15e38f41e608559e1b92b444352702f692f0f1",
+      "embedded_size": [
+        512,
+        512
+      ],
+      "color_space": "sRGB",
+      "source_pixel_format": "25 / BC7_UNORM",
+      "source_mip_count": 8,
+      "source_header_byte10": 2,
+      "source_header_observation": "selected base pairs have byte10=2, normals=0; byte retained as evidence, original enum definition not asserted",
+      "physical": {
+        "key": 1623769059239092835,
+        "pack": 4,
+        "offset": 240607587,
+        "stored_size": 62304,
+        "decoded_bytes": 62304,
+        "stored_sha256": "c8d492d69383aa6a5be355ef0626ea01f1bde8464778704db8bdb1a5f7d23399",
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "statistics": {
+        "rgba_min": [
+          99,
+          89,
+          79,
+          0
+        ],
+        "rgba_max": [
+          160,
+          158,
+          138,
+          255
+        ],
+        "rgba_mean": [
+          114.9062614440918,
+          112.55248641967773,
+          93.93948745727539,
+          35.49995803833008
+        ],
+        "alpha_below_128_ratio": 0.8590583801269531
+      },
+      "repository_name": "grass_gancao_d",
+      "repository_folder": "G/Res/Grass/TEX",
+      "repository_block": 2816,
+      "repository_offset": 537,
+      "role": "base RGB plus original alpha",
+      "source_channel_role_evidence": "paired Repository _d/_n identity and shared Material references, inspected base/alpha and measured normal XYZ; standalone Material .4 payload not found",
+      "sampling": {
+        "address": "ClampToEdge",
+        "usage": "fine grass clumps using five cropped blade strips",
+        "appearance": "source grey-yellow blades; restrained green/dry-grass runtime tint is a Kiva adaptation"
+      }
+    },
+    {
+      "name": "grass_blades_normal",
+      "guid": "5938ef88-4352-43b9-9dbc-fee98455abea",
+      "physical_vfs": "59/5938ef88-4352-43b9-9dbc-fee98455abea.6",
+      "source_size": [
+        512,
+        512
+      ],
+      "source_declared_size": [
+        512,
+        512
+      ],
+      "source_sha256": "4c6ccc0be717356b737ddfccf1174a5cf15d8b240fa56f2c1e96e1e877d07d62",
+      "source_png_sha256": "133c59e69faa793164a184505bc30ae291ffe074563e79c324a15da9f3ffd9b5",
+      "embedded_sha256": "133c59e69faa793164a184505bc30ae291ffe074563e79c324a15da9f3ffd9b5",
+      "embedded_size": [
+        512,
+        512
+      ],
+      "color_space": "linear",
+      "source_pixel_format": "25 / BC7_UNORM",
+      "source_mip_count": 8,
+      "source_header_byte10": 0,
+      "source_header_observation": "selected base pairs have byte10=2, normals=0; byte retained as evidence, original enum definition not asserted",
+      "physical": {
+        "key": 3085730052251923256,
+        "pack": 81,
+        "offset": 320005013,
+        "stored_size": 52367,
+        "decoded_bytes": 52367,
+        "stored_sha256": "4c6ccc0be717356b737ddfccf1174a5cf15d8b240fa56f2c1e96e1e877d07d62",
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "statistics": {
+        "rgba_min": [
+          4,
+          20,
+          163,
+          254
+        ],
+        "rgba_max": [
+          251,
+          247,
+          255,
+          255
+        ],
+        "rgba_mean": [
+          108.81196975708008,
+          128.72142028808594,
+          250.86418914794922,
+          254.99787139892578
+        ],
+        "alpha_below_128_ratio": 0.0
+      },
+      "repository_name": "grass_gancao_n",
+      "repository_folder": "G/Res/Grass/TEX",
+      "repository_block": 2816,
+      "repository_offset": 623,
+      "role": "normal RGB XYZ; alpha unresolved",
+      "source_channel_role_evidence": "paired Repository _d/_n identity and shared Material references, inspected base/alpha and measured normal XYZ; standalone Material .4 payload not found",
+      "normal_validation": {
+        "encoding": "source RGB XYZ, copied without swizzle/G flip; linear sampling",
+        "visible_length_quantiles": [
+          0.7974732840061187,
+          0.998291552066803,
+          1.0312681198120117,
+          1.0645524263381958
+        ],
+        "visible_positive_z_ratio": 1.0,
+        "vector_length_note": "source RGB vectors are not all unit length; runtime normal direction must be normalized, especially forest-floor layer",
+        "alpha": "preserved for provenance, ignored by runtime normal sampling; role unresolved"
+      }
+    },
+    {
+      "name": "forest_floor_base",
+      "guid": "02a7f065-e9c0-4d1d-b7f9-c456042a79f7",
+      "physical_vfs": "02/02a7f065-e9c0-4d1d-b7f9-c456042a79f7.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_declared_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "1f8092deb423aeb88122cdc37374c705d594c55bb260af951e0860b9b5e43c54",
+      "source_png_sha256": "c773b24c6f6338a8e10e51dacc122d1c19b6a6727fe5646b3ff127619cc8fcf7",
+      "embedded_sha256": "c773b24c6f6338a8e10e51dacc122d1c19b6a6727fe5646b3ff127619cc8fcf7",
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "color_space": "sRGB",
+      "source_pixel_format": "25 / BC7_UNORM",
+      "source_mip_count": 9,
+      "source_header_byte10": 2,
+      "source_header_observation": "selected base pairs have byte10=2, normals=0; byte retained as evidence, original enum definition not asserted",
+      "physical": {
+        "key": 5498497298712387895,
+        "pack": 129,
+        "offset": 456271443,
+        "stored_size": 946046,
+        "decoded_bytes": 946046,
+        "stored_sha256": "1f8092deb423aeb88122cdc37374c705d594c55bb260af951e0860b9b5e43c54",
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "statistics": {
+        "rgba_min": [
+          6,
+          6,
+          0,
+          254
+        ],
+        "rgba_max": [
+          173,
+          173,
+          197,
+          255
+        ],
+        "rgba_mean": [
+          47.46272373199463,
+          57.30857181549072,
+          31.90606117248535,
+          254.96424007415771
+        ],
+        "alpha_below_128_ratio": 0.0
+      },
+      "repository_name": "ue_HG_jn_duoren_A_weight010_grass_d",
+      "repository_folder": "G/terrain/TRN/TEX",
+      "repository_block": 13568,
+      "repository_offset": 0,
+      "role": "base RGB plus original alpha",
+      "source_channel_role_evidence": "original G/terrain/TRN/TEX weight010_grass _d/_n pair; inspected opaque ground cover/alpha and measured normal XYZ; no original Boss material/tiling claim",
+      "sampling": {
+        "address": "Repeat",
+        "tile_world_meters": 2.5,
+        "alpha": "opaque material; source alpha retained",
+        "scale_origin": "Kiva visual adaptation; source terrain tiling not recovered"
+      },
+      "appearance": "opaque fine green grass/moss-like forest-floor cover over dirt; original name is weight010_grass, not an alpha vegetation card",
+      "tile_edge_validation": {
+        "horizontal_seam_rgb_rms": 8.997178077697754,
+        "vertical_seam_rgb_rms": 9.466377258300781,
+        "interior_neighbor_rgb_rms": 9.074958801269531,
+        "scope": "measured source edges; runtime scale/mask and original terrain blending remain Kiva adaptation"
+      }
+    },
+    {
+      "name": "forest_floor_normal",
+      "guid": "6ce8b466-5fe3-4690-bee9-3c0440fe7076",
+      "physical_vfs": "6c/6ce8b466-5fe3-4690-bee9-3c0440fe7076.6",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_declared_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "d8f369105b4ba4a4cb1df4a4eb94d6154f668b3638b5a4a7e5c634f4b20abc8b",
+      "source_png_sha256": "994ac938ba18e013011a067ae65edef223e78f8a153e9519aa163ca45e5a1f97",
+      "embedded_sha256": "994ac938ba18e013011a067ae65edef223e78f8a153e9519aa163ca45e5a1f97",
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "color_space": "linear",
+      "source_pixel_format": "25 / BC7_UNORM",
+      "source_mip_count": 9,
+      "source_header_byte10": 0,
+      "source_header_observation": "selected base pairs have byte10=2, normals=0; byte retained as evidence, original enum definition not asserted",
+      "physical": {
+        "key": 18291549580319483192,
+        "pack": 241,
+        "offset": 459453546,
+        "stored_size": 1287546,
+        "decoded_bytes": 1287546,
+        "stored_sha256": "d8f369105b4ba4a4cb1df4a4eb94d6154f668b3638b5a4a7e5c634f4b20abc8b",
+        "index_sources": [
+          "Patch.mpkdb/info0"
+        ]
+      },
+      "statistics": {
+        "rgba_min": [
+          0,
+          0,
+          138,
+          41
+        ],
+        "rgba_max": [
+          255,
+          255,
+          255,
+          247
+        ],
+        "rgba_mean": [
+          116.00165271759033,
+          130.59085941314697,
+          237.34695434570312,
+          134.61803817749023
+        ],
+        "alpha_below_128_ratio": 0.4328193664550781
+      },
+      "repository_name": "ue_HG_jn_duoren_A_weight010_grass_n",
+      "repository_folder": "G/terrain/TRN/TEX",
+      "repository_block": 13568,
+      "repository_offset": 4622,
+      "role": "normal RGB XYZ; alpha unresolved",
+      "source_channel_role_evidence": "original G/terrain/TRN/TEX weight010_grass _d/_n pair; inspected opaque ground cover/alpha and measured normal XYZ; no original Boss material/tiling claim",
+      "normal_validation": {
+        "encoding": "source RGB XYZ, copied without swizzle/G flip; linear sampling",
+        "visible_length_quantiles": [
+          0.7936212420463562,
+          1.0010606050491333,
+          1.2396810054779053,
+          1.332196831703186
+        ],
+        "visible_positive_z_ratio": 1.0,
+        "vector_length_note": "source RGB vectors are not all unit length; runtime normal direction must be normalized, especially forest-floor layer",
+        "alpha": "preserved for provenance, ignored by runtime normal sampling; role unresolved"
+      }
     }
-  ]
+  ],
+  "reference_surface_pass": {
+    "scope": "original shared dirt/undergrowth textures selected for Kiva reference matching; exact Boss map instances/material/tiling are not restored",
+    "original_materials": [
+      {
+        "guid": "610f6b84-a50e-422a-b6ea-046e0c14f380",
+        "name": "PBR_dibiao_ty_41_mat_8df1c088890ac81dc9b7b4376d995da4",
+        "folder": "G/Res/Building/dibiao/MAT",
+        "texture_refs": [
+          "a5e476fd-935a-4c23-8cb2-f4c55be10f14",
+          "21601b8a-4c18-4e8a-8b72-557fd9afeba9",
+          "811f0c33-723b-43a7-a4f8-2722b1a97a5f"
+        ],
+        "standalone_payload_found": false
+      },
+      {
+        "guid": "7d9277f1-19fc-46a4-b942-1ea4b479e4cc",
+        "name": "PBR_grass_caocong_01_id0_mat_31010251d59c93747cbefb634c97f034",
+        "folder": "G/Res/Grass/MAT",
+        "texture_refs": [
+          "7b18bb71-f914-4a5c-86e7-231cf82d0d3a",
+          "52a61f8f-3c88-44e1-b29d-19832c3ae3fa",
+          "7dd49fba-75b4-4bb2-bd34-fe85f2445629",
+          "1d3e97e8-88ea-4075-a973-c98127473ac9",
+          "6d815ef1-94df-4649-9f8d-bbd8781f83b2",
+          "bc1a6101-328c-45ce-a218-fbd8985f8498"
+        ],
+        "standalone_payload_found": false
+      },
+      {
+        "guid": "de0acd9f-46b1-4327-a03a-3e545fbe7507",
+        "name": "kancao_gc02_ljw_mat",
+        "folder": "E/common/jiaohu",
+        "texture_refs": [
+          "a57667ce-3282-4e3a-afaa-bd5ebc87042a",
+          "57bc5ac2-15df-47ec-ac3d-00bac2481f86",
+          "becb3753-07b1-424c-b824-d9ece1c629e2",
+          "5938ef88-4352-43b9-9dbc-fee98455abea",
+          "f6d469a8-2b9f-42c5-ae97-f48f3360e21b"
+        ],
+        "standalone_payload_found": false
+      }
+    ],
+    "pixel_identical_terrain_aliases": [
+      {
+        "name": "ue_HG_jn_duoren_A_weight007_soil_n",
+        "guid": "5444c606-9b55-49ae-811c-9dbc5d6042e4",
+        "png_sha256": "85dc4b310cbdb19431a2c21fc6d5a5c5f05a6fd785cd2857af5cf1d0bbd08a31"
+      },
+      {
+        "name": "ue_HG_jn_duoren_A_weight007_soil_d",
+        "guid": "c6378fdd-3bfb-44c9-b7a1-0f9c9b628ad3",
+        "png_sha256": "5f10ed624877fbaaed8e41c9f77a43d054c92e26430f724c3fda602a5012c925"
+      }
+    ],
+    "shader": "base/normal only; source mix, normal alpha, pivot-position/axis and wind noise are not assigned new meanings",
+    "adaptation": "dry/wet roughness, world wet mask, reflection, vegetation placement and scale remain Kiva material/scene choices",
+    "raw_extractor": "research/environment_surface_probe.py, environment_grass_final_probe.py and environment_forest_floor_probe.py, exact GUID .6 VFS, bounded indexed archive reads",
+    "forest_floor_addition": {
+      "candidate_names": 16,
+      "extracted_pairs": 1,
+      "source_category": "G/terrain/TRN/TEX original ground cover; source base alpha is 254..255 everywhere",
+      "runtime_usage": "additional soil/green forest-floor blend layer; placement, wetness and tiling are Kiva choices"
+    },
+    "texture_decoder_sha256": "cffc265962d872ae12ffdaf21b4611897291ea13b94e1a4b0d3197cd14f159a6",
+    "reproduce": "research/.venv/bin/python scripts/import-bamboo-environment.py --source research"
+  }
 }

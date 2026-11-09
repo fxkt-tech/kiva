@@ -52,7 +52,7 @@ python3 /home/asuka/kiva-asset-research/choulingke/shader_research/recover_shade
 
 ## 竹林材质、贴图和光影
 
-[environment/manifest.json](environment/manifest.json) 记录六张随包 PNG 的原 GUID、`.6` 物理 VFS、原/随包 SHA、尺寸与颜色空间。来源通过已恢复 Repository 条目中的 Model→Material→Texture 引用链核对：
+[environment/manifest.json](environment/manifest.json) 记录14张随包 PNG 的原 GUID、`.6` 物理 VFS、原/随包 SHA、尺寸与颜色空间。来源通过已恢复 Repository 条目中的 Model→Material→Texture 引用链核对：
 
 - 竹子：`tree_xinzhuzi_01_lod0` Model `d3e653d3-c39d-4087-a92a-5ab31f13d1ec`，引用 `Mesh_tree_xinzhuzi_01_lod0`（`c99b5702-9e4d-4b7e-8657-4f09b54812aa`）及材质 `4072463d-d75a-489e-b340-9346c24b24f3`；纹理位于 `G/Res/Tree/TEX`。
 - 地面竹叶：Repository 的 `grass_zhuye_01_lod0` Model `66f63b3e-9f90-47f8-b8be-be8294ad49f2` 引用 `Mesh_grass_zhuye_02_lod0`（`b5c535cc-b3be-4f66-aae2-7f03d19c5b83`）及材质 `a70ddef4-ad1f-42c9-b5b7-0bb9700efec7`；纹理位于 `G/Res/Grass/TEX`。名称差异按实际引用记录保留。
@@ -66,11 +66,20 @@ python3 /home/asuka/kiva-asset-research/choulingke/shader_research/recover_shade
 | litter.png | grass_zhuye_01_d | ecc01030-6087-4f2f-bd5e-adc6fefeaace |
 | litter_normal.png | grass_zhuye_01_n | ff9fb06c-07ca-43c5-8e9d-d5047456b207 |
 
+新增土壤 `A_weight007_soil_d/n`、草苔 `ue_HG_jn_duoren_A_weight010_grass_d/n`、阔叶草 `grass_caocong_01_d/n` 和细草 `grass_gancao_d/n` 共8张。GUID、包偏移、原/随包SHA、atlas裁切及染色适配逐张记录在manifest。新图重跑：
+
+```bash
+/home/asuka/kiva-asset-research/choulingke/.venv/bin/python scripts/import-bamboo-environment.py \
+  --source /home/asuka/kiva-asset-research/choulingke
+```
+
 主色/法线角色由引用链及 `_d`/`_n` 名称核对，环境材质 `.4` 参数本体未在本地索引命中；没有把环境 `_m` 或法线 alpha 的未知打包套用为已验证的角色 ORM。原始纹理、DDS、来源记录与重跑工具位于研究目录 `extracted/environment/`、`environment_textures.py`。
 
-`client/environment.rs` 用这些贴图装饰重建竹林：整簇叶片 atlas 铺在大卡片上，竹皮按重复 UV 采样，地面竹叶使用透明裁切；原 atlas alpha 保留。环境有11个聚合网格、5个共享材质，叶片分成4个风动组。地面/竹干/岩石继续消费玩法层原几何，碰撞竹干不移动；只有装饰枝叶以数厘米幅度缓摆，暂停时冻结，标准阴影随同一显示变换更新。枝叶放置、竹皮 UV、散落竹叶和风动均为本项目制作，并非恢复的原作地图实例或 Pivot Painter 动画。
+`client/environment.rs` 用这些贴图装饰重建竹林：整簇叶片 atlas 铺在大卡片上，竹皮按重复 UV 采样，地面竹叶使用透明裁切；原 atlas alpha 保留。环境有20个聚合网格、7个共享材质，竹叶/阔叶草/细草共12个风动组。草丛按确定性随机斑块散布，保留出生、目标与路径净空；gancao灰黄源图按五组UV切出单叶并加绿色/枯草色，属于Kiva美术适配。地面/竹干/岩石继续消费玩法层原几何，碰撞竹干不移动；只有装饰枝叶以数厘米幅度缓摆，暂停时冻结，标准阴影随同一显示变换更新。枝叶放置、竹皮 UV、散落竹叶和风动均为本项目制作，并非恢复的原作地图实例或 Pivot Painter 动画。
 
-自写 [forest.wesl](../shaders/forest.wesl) 是 Bevy 0.20.1 的 ExtendedMaterial 片元扩展，组合为 WGSL 后保留标准 PBR 输入、透明裁切、光照及雾/色调映射后处理，同时支持前向和 deferred 分支。只增加世界空间土粒/苔斑、竹干纤维和岩石细节，不覆盖顶点/蒙皮/阴影深度流程。光照使用主方向光、冷色填光和半球环境反射，配合指数平方距离雾；材质的环境粗糙度、透光与清漆参数是适配值，不冒充原作材质块。
+自写 [forest.wesl](../shaders/forest.wesl) 是 Bevy 0.20.1 的 ExtendedMaterial 片元扩展，组合为 WGSL 后保留标准 PBR 输入、透明裁切、光照及雾/色调映射后处理，同时支持前向和 deferred 分支。地面使用土壤与草苔原主色/法线的世界空间分层，保留材质粗糙度，再按mask形成干土/湿土/平滑积水；积水metallic为0，湿土不参与SSR以抑制高频闪点。重复不透明纹理生成sRGB线性平均和法线重归一的mip；alpha卡片保留原atlas。主片元和自定义prepass共用近叶裁切，避免隐藏枝叶提前写深度。光照使用主方向光、冷色填光和半球环境反射，配合指数平方距离雾；材质的环境粗糙度、透光与清漆参数是适配值，不冒充原作材质块。
+
+相机使用deferred、HDR、FXAA、DepthPrepass和实际SSR pass；透光裁切叶草前向绘制。SSR只能反射屏幕内且已进入deferred颜色缓冲的物体，前向植被/皮肤与屏幕外物体存在限制。当前较高相机俯角下，非金属水面黑衣倒影较弱，不能称为原图同构图复刻。对照和GPU读回证据见[竹林画面修正](../../docs/plans/bamboo-rendering-reference.md)。
 
 CPU 检查覆盖颜色空间、UV/切线有限性、原碰撞几何一致、装饰风动/暂停；shader 组合测试覆盖前向与 deferred 导入。真实 WebGPU 的 shader 编译、阴影、透明枝簇和新旧同镜头画面对比另由浏览器验收，不能由无窗口测试替代。
 

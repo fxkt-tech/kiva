@@ -5,16 +5,17 @@ use bevy::{
         CompressedImageFormats, ImageAddressMode, ImageSampler, ImageSamplerDescriptor, ImageType,
     },
     light::CascadeShadowConfigBuilder,
+    material::OpaqueRendererMethod,
     mesh::{Indices, PrimitiveTopology},
     prelude::*,
 };
 
-use crate::gameplay::{
-    Bamboo, Boundary, Level, TerrainGeometry, path_distance, terrain, variation,
-};
+use crate::gameplay::{Bamboo, Boundary, Level, TerrainGeometry, path_distance, variation};
 
 use super::forest_material::{ForestMaterial, ForestSurface};
 use crate::simulation::SimulationActive;
+
+mod ground_cover;
 
 #[derive(Resource, Default)]
 pub(super) struct WindClock(f32);
@@ -23,6 +24,7 @@ pub(super) struct WindClock(f32);
 pub(super) struct WindDecoration {
     center: Vec3,
     phase: f32,
+    strength: f32,
 }
 
 #[derive(Resource)]
@@ -34,7 +36,7 @@ fn texture(world: &mut World, bytes: &'static [u8], srgb: bool, repeat: bool) ->
     if repeat {
         sampler.set_address_mode(ImageAddressMode::Repeat);
     }
-    let image = Image::from_buffer(
+    let mut image = Image::from_buffer(
         bytes,
         ImageType::Extension("png"),
         CompressedImageFormats::NONE,
@@ -43,6 +45,9 @@ fn texture(world: &mut World, bytes: &'static [u8], srgb: bool, repeat: bool) ->
         RenderAssetUsages::default(),
     )
     .expect("verified embedded forest texture");
+    if repeat {
+        super::texture_mips::generate(&mut image, !srgb);
+    }
     world.resource_mut::<Assets<Image>>().add(image)
 }
 
@@ -56,14 +61,17 @@ pub(super) enum EnvironmentPart {
     Nodes,
     Leaves,
     Litter,
+    Grass,
+    FineGrass,
+    Pebbles,
 }
 
 pub(super) fn fog() -> DistanceFog {
     DistanceFog {
-        color: Color::srgb(0.22, 0.31, 0.32),
-        directional_light_color: Color::srgba(0.75, 0.80, 0.72, 0.12),
+        color: Color::srgb(0.19, 0.27, 0.34),
+        directional_light_color: Color::srgba(0.83, 0.82, 0.72, 0.10),
         directional_light_exponent: 18.0,
-        falloff: FogFalloff::from_visibility_squared(42.0),
+        falloff: FogFalloff::from_visibility_squared(44.0),
     }
 }
 
@@ -96,16 +104,16 @@ pub(super) fn setup(world: &mut World) {
             level.boundaries(),
         )
     };
-    world.insert_resource(ClearColor(Color::srgb(0.13, 0.20, 0.21)));
+    world.insert_resource(ClearColor(Color::srgb(0.12, 0.19, 0.26)));
     world.insert_resource(GlobalAmbientLight {
-        color: Color::srgb(0.70, 0.82, 0.88),
-        brightness: 240.0,
+        color: Color::srgb(0.63, 0.77, 0.90),
+        brightness: 200.0,
         ..default()
     });
     world.spawn((
         DirectionalLight {
-            color: Color::srgb(1.0, 0.96, 0.87),
-            illuminance: 6_500.0,
+            color: Color::srgb(1.0, 0.97, 0.91),
+            illuminance: 4_800.0,
             shadow_maps_enabled: true,
             ..default()
         },
@@ -120,8 +128,8 @@ pub(super) fn setup(world: &mut World) {
     ));
     world.spawn((
         DirectionalLight {
-            color: Color::srgb(0.65, 0.79, 0.91),
-            illuminance: 950.0,
+            color: Color::srgb(0.57, 0.74, 0.94),
+            illuminance: 850.0,
             ..default()
         },
         Transform::from_xyz(8.0, 6.0, -12.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -131,9 +139,9 @@ pub(super) fn setup(world: &mut World) {
     world.init_resource::<WindClock>();
     let lighting = EnvironmentMapLight::hemispherical_gradient(
         &mut world.resource_mut::<Assets<Image>>(),
-        Color::srgb(0.52, 0.66, 0.72),
-        Color::srgb(0.25, 0.34, 0.28),
-        Color::srgb(0.15, 0.17, 0.10),
+        Color::srgb(0.44, 0.59, 0.73),
+        Color::srgb(0.24, 0.32, 0.31),
+        Color::srgb(0.13, 0.15, 0.13),
     )
     .with_intensity(310.0);
     world.insert_resource(ForestLighting(lighting));
@@ -175,10 +183,36 @@ pub(super) fn setup(world: &mut World) {
         false,
         false,
     );
+    let ground_base = texture(
+        world,
+        include_bytes!("../../assets/choulingke/environment/ground_base.png"),
+        true,
+        true,
+    );
+    let ground_normal = texture(
+        world,
+        include_bytes!("../../assets/choulingke/environment/ground_normal.png"),
+        false,
+        true,
+    );
+    let cover_base = texture(
+        world,
+        include_bytes!("../../assets/choulingke/environment/forest_floor_base.png"),
+        true,
+        true,
+    );
+    let cover_normal = texture(
+        world,
+        include_bytes!("../../assets/choulingke/environment/forest_floor_normal.png"),
+        false,
+        true,
+    );
     let (soil, bamboo_material, stone, foliage, litter_material) = {
         let mut materials = world.resource_mut::<Assets<ForestMaterial>>();
         let mut surface = |kind, roughness, thin| {
-            let maps = if kind == 1.0 {
+            let maps = if kind == 0.0 {
+                Some((&ground_base, &ground_normal))
+            } else if kind == 1.0 {
                 Some((&bamboo_base, &bamboo_normal))
             } else if kind == 3.0 {
                 Some((&leaves_base, &leaves_normal))
@@ -198,6 +232,12 @@ pub(super) fn setup(world: &mut World) {
                     } else {
                         AlphaMode::Opaque
                     },
+                    // Deferred GBuffer cannot retain thin-surface transmission.
+                    opaque_render_method: if cutout {
+                        OpaqueRendererMethod::Forward
+                    } else {
+                        OpaqueRendererMethod::Auto
+                    },
                     perceptual_roughness: roughness,
                     clearcoat: if kind == 1.0 { 0.12 } else { 0.0 },
                     clearcoat_perceptual_roughness: 0.3,
@@ -212,12 +252,20 @@ pub(super) fn setup(world: &mut World) {
                     ..default()
                 },
                 extension: ForestSurface {
-                    style: Vec4::new(if kind == 4.0 { 0.0 } else { kind }, 1.0, 1.0, 0.0),
+                    style: Vec4::new(
+                        if kind == 4.0 { 0.0 } else { kind },
+                        1.0,
+                        1.0,
+                        if kind == 0.0 { 1.0 } else { 0.0 },
+                    ),
+                    cover_base: (kind == 0.0).then(|| cover_base.clone()),
+                    cover_normal: (kind == 0.0).then(|| cover_normal.clone()),
+                    cover_strength: if kind == 0.0 { 0.85 } else { 0.0 },
                 },
             })
         };
         (
-            surface(0.0, 0.93, 0.0),
+            surface(0.0, 0.82, 0.0),
             surface(1.0, 0.6, 0.0),
             surface(2.0, 0.87, 0.0),
             surface(3.0, 0.64, 0.28),
@@ -231,9 +279,17 @@ pub(super) fn setup(world: &mut World) {
         ground_colors,
         &soil,
         EnvironmentPart::Ground,
+        None,
     );
     let ramp_colors = ramp.vertices.iter().map(|v| ground_color(*v)).collect();
-    spawn_mesh(world, &ramp, ramp_colors, &soil, EnvironmentPart::Ledge);
+    spawn_mesh(
+        world,
+        &ramp,
+        ramp_colors,
+        &soil,
+        EnvironmentPart::Ledge,
+        None,
+    );
     let trunk_colors = trunks
         .vertices
         .iter()
@@ -256,6 +312,7 @@ pub(super) fn setup(world: &mut World) {
         trunk_colors,
         &bamboo_material,
         EnvironmentPart::Trunks,
+        None,
     );
     let rock_colors = rocks
         .vertices
@@ -265,7 +322,14 @@ pub(super) fn setup(world: &mut World) {
             [0.18, 0.19 + moss, 0.155, 1.0]
         })
         .collect();
-    spawn_mesh(world, &rocks, rock_colors, &stone, EnvironmentPart::Rocks);
+    spawn_mesh(
+        world,
+        &rocks,
+        rock_colors,
+        &stone,
+        EnvironmentPart::Rocks,
+        None,
+    );
     let perimeter = perimeter_geometry(boundaries);
     let perimeter_colors = perimeter
         .vertices
@@ -284,6 +348,7 @@ pub(super) fn setup(world: &mut World) {
         perimeter_colors,
         &stone,
         EnvironmentPart::Perimeter,
+        None,
     );
     let mut nodes = Decoration::default();
     let mut leaves: [Decoration; 4] = std::array::from_fn(|_| Decoration::default());
@@ -303,28 +368,11 @@ pub(super) fn setup(world: &mut World) {
             WindDecoration {
                 center,
                 phase: index as f32 * 1.7,
+                strength: 1.0,
             },
         ));
     }
-    let mut litter = Decoration::default();
-    for index in 0..260 {
-        let point = Vec2::new(variation(index, 60) - 0.5, variation(index, 61) - 0.5) * 49.0;
-        let center = Vec3::new(point.x, terrain::hill_height(point) + 0.014, point.y);
-        let yaw = variation(index, 62) * std::f32::consts::TAU;
-        let direction = Vec3::new(yaw.cos(), 0.0, yaw.sin()) * (0.3 + variation(index, 63) * 0.35);
-        let side = Vec3::new(-direction.z, 0.0, direction.x);
-        let color = [0.87 + variation(index, 64) * 0.12, 0.95, 0.86, 1.0];
-        litter.quad(
-            [
-                center - direction - side,
-                center - direction + side,
-                center + direction + side,
-                center + direction - side,
-            ],
-            color,
-        );
-    }
-    spawn_decoration(world, litter, &litter_material, EnvironmentPart::Litter);
+    ground_cover::setup(world, &stone, &litter_material);
 }
 
 /// Decorative leaf cohorts sway by a few centimetres. Their actual Transform
@@ -346,8 +394,8 @@ pub(super) fn animate_foliage(
                 phase.sin() * 0.035,
                 (phase * 1.3).sin() * 0.008,
                 (phase * 0.73).cos() * 0.025,
-            );
-        transform.rotation = Quat::from_rotation_z(phase.sin() * 0.0015);
+            ) * leaf.strength;
+        transform.rotation = Quat::from_rotation_z(phase.sin() * 0.0015 * leaf.strength);
     }
 }
 
@@ -393,11 +441,13 @@ fn ground_color(vertex: Vec3) -> [f32; 4] {
     let clearing_radius = ((point.x / 8.5).powi(2) + ((point.y + 4.0) / 9.5).powi(2)).sqrt();
     let clearing = ((1.0 - clearing_radius) * 2.0).clamp(0.0, 0.65);
     let worn = trail.max(clearing);
-    let grain = (point.x * 2.7 + point.y * 1.3).sin() * (point.y * 3.1).cos() * 0.012;
+    // The recovered albedo supplies soil colour and fine detail. Vertex tint
+    // only separates the worn path slightly; it must not recolour it olive.
+    let grain = (point.x * 2.7 + point.y * 1.3).sin() * (point.y * 3.1).cos() * 0.008;
     [
-        0.075 + worn * 0.085 + grain,
-        0.105 + worn * 0.035 + grain,
-        0.065 + worn * 0.025 + grain * 0.5,
+        0.90 + worn * 0.07 + grain,
+        0.93 + worn * 0.04 + grain,
+        0.94 + worn * 0.02 + grain,
         1.0,
     ]
 }
@@ -406,6 +456,7 @@ fn ground_color(vertex: Vec3) -> [f32; 4] {
 struct Decoration {
     geometry: TerrainGeometry,
     colors: Vec<[f32; 4]>,
+    uvs: Option<Vec<[f32; 2]>>,
 }
 
 impl Decoration {
@@ -416,6 +467,22 @@ impl Decoration {
             .triangles
             .extend([[start, start + 1, start + 2], [start, start + 2, start + 3]]);
         self.colors.extend([color; 4]);
+        if let Some(uvs) = &mut self.uvs {
+            uvs.extend([[0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]);
+        }
+    }
+
+    fn atlas_quad(&mut self, vertices: [Vec3; 4], color: [f32; 4], uv: [f32; 4]) {
+        let start = self.geometry.vertices.len();
+        assert!(self.uvs.is_some(), "atlas decoration needs explicit UVs");
+        self.quad(vertices, color);
+        let [left, top, right, bottom] = uv;
+        self.uvs.as_mut().unwrap()[start..].copy_from_slice(&[
+            [left, bottom],
+            [right, bottom],
+            [right, top],
+            [left, top],
+        ]);
     }
 }
 
@@ -441,8 +508,8 @@ fn decorate_bamboo(index: u32, stem: &Bamboo, nodes: &mut Decoration, leaves: &m
             );
         }
     }
-    for branch in 0..6 {
-        let fraction = 0.48 + (branch / 2) as f32 * 0.18;
+    for branch in 0..4 {
+        let fraction = 0.56 + (branch / 2) as f32 * 0.24;
         let angle = variation(index, 30 + branch) * std::f32::consts::TAU;
         let direction = Vec3::new(angle.cos(), 0.22, angle.sin()).normalize();
         let across = Vec3::new(-angle.sin(), 0.0, angle.cos());
@@ -450,7 +517,7 @@ fn decorate_bamboo(index: u32, stem: &Bamboo, nodes: &mut Decoration, leaves: &m
         // The verified alpha atlas contains a whole branch cluster. A broad
         // card preserves its own stems/leaves; one tiny card per leaf would
         // shrink the atlas detail away and destroy coverage.
-        let length = 1.8 + variation(index, 40 + branch) * 1.25;
+        let length = 1.65 + variation(index, 40 + branch) * 1.0;
         let end = start + direction * length;
         let width = across * length * 0.48;
         let shade = 0.85 + variation(index, 70 + branch) * 0.15;
@@ -473,6 +540,7 @@ fn spawn_decoration(
         decoration.colors,
         material,
         part,
+        decoration.uvs,
     )
 }
 
@@ -482,6 +550,7 @@ fn spawn_mesh(
     colors: Vec<[f32; 4]>,
     material: &Handle<ForestMaterial>,
     part: EnvironmentPart,
+    uv_override: Option<Vec<[f32; 2]>>,
 ) -> Entity {
     let mut mesh = Mesh::new(
         PrimitiveTopology::TriangleList,
@@ -497,16 +566,25 @@ fn spawn_mesh(
     );
     mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
     let card_uvs = [[0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]];
-    let uvs: Vec<[f32; 2]> = geometry
-        .vertices
-        .iter()
-        .enumerate()
-        .map(|(index, point)| match part {
-            EnvironmentPart::Leaves | EnvironmentPart::Litter => card_uvs[index % 4],
-            EnvironmentPart::Trunks => [((index % 42) % 8) as f32 / 8.0, -point.y / 3.6],
-            _ => [point.x * 0.25, point.z * 0.25],
-        })
-        .collect();
+    let uvs = uv_override.unwrap_or_else(|| {
+        geometry
+            .vertices
+            .iter()
+            .enumerate()
+            .map(|(index, point)| match part {
+                EnvironmentPart::Leaves | EnvironmentPart::Litter => card_uvs[index % 4],
+                // The verified grass atlas root ends at v≈.91. Crop its transparent
+                // lower padding so stems reach the physical ground.
+                EnvironmentPart::Grass => {
+                    [[0.0, 0.92], [1.0, 0.92], [1.0, 0.02], [0.0, 0.02]][index % 4]
+                }
+                EnvironmentPart::Trunks => [((index % 42) % 8) as f32 / 8.0, -point.y / 3.6],
+                // 2.5m per original 1024px soil tile is a Kiva scale adaptation.
+                EnvironmentPart::Ground | EnvironmentPart::Ledge => [point.x / 2.5, point.z / 2.5],
+                _ => [point.x * 0.25, point.z * 0.25],
+            })
+            .collect()
+    });
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.insert_indices(Indices::U32(
         geometry.triangles.iter().flatten().copied().collect(),
@@ -537,23 +615,43 @@ mod tests {
         world.init_resource::<Assets<Mesh>>();
         world.init_resource::<Assets<StandardMaterial>>();
         crate::gameplay::setup(&mut world);
-        let expected = world.resource::<Level>().forest_trunks.vertices.clone();
+        let level = world.resource::<Level>();
+        let expected = [
+            (EnvironmentPart::Ground, level.ground.clone()),
+            (EnvironmentPart::Ledge, level.ramp.clone()),
+            (EnvironmentPart::Trunks, level.forest_trunks.clone()),
+            (EnvironmentPart::Rocks, level.forest_rocks.clone()),
+            (
+                EnvironmentPart::Perimeter,
+                perimeter_geometry(level.boundaries()),
+            ),
+        ];
         setup(&mut world);
-        let mut query = world.query::<(&EnvironmentPart, &Mesh3d)>();
+        let mut query = world.query::<(
+            &EnvironmentPart,
+            &Mesh3d,
+            Option<&avian3d::prelude::Collider>,
+        )>();
         let parts: Vec<_> = query
             .iter(&world)
-            .map(|(part, mesh)| (*part, mesh.0.clone()))
+            .map(|(part, mesh, collider)| {
+                assert!(
+                    collider.is_none(),
+                    "presentation cannot add collision authority"
+                );
+                (*part, mesh.0.clone())
+            })
             .collect();
-        assert_eq!(parts.len(), 11);
-        assert_eq!(world.resource::<Assets<Mesh>>().len(), 11);
-        assert_eq!(world.resource::<Assets<ForestMaterial>>().len(), 5);
+        assert_eq!(parts.len(), 20);
+        assert_eq!(world.resource::<Assets<Mesh>>().len(), 20);
+        assert_eq!(world.resource::<Assets<ForestMaterial>>().len(), 7);
         let materials = world.resource::<Assets<ForestMaterial>>();
         let images = world.resource::<Assets<Image>>();
         let textured: Vec<_> = materials
             .iter()
             .filter(|(_, material)| material.base.base_color_texture.is_some())
             .collect();
-        assert_eq!(textured.len(), 3);
+        assert_eq!(textured.len(), 6);
         for (_, material) in textured {
             let base = images
                 .get(material.base.base_color_texture.as_ref().unwrap())
@@ -563,21 +661,46 @@ mod tests {
                 .unwrap();
             assert!(base.texture_descriptor.format.is_srgb());
             assert!(!normal.texture_descriptor.format.is_srgb());
+            let ImageSampler::Descriptor(sampler) = &base.sampler else {
+                panic!("forest textures must use explicit samplers");
+            };
+            for image in [base, normal] {
+                let expected_mips = if sampler.address_mode_u == ImageAddressMode::Repeat {
+                    image.texture_descriptor.size.width.ilog2() + 1
+                } else {
+                    1
+                };
+                assert_eq!(image.texture_descriptor.mip_level_count, expected_mips);
+            }
         }
-        let trunks = parts
-            .iter()
-            .find(|(part, _)| *part == EnvironmentPart::Trunks)
-            .unwrap();
-        let mesh = world.resource::<Assets<Mesh>>().get(&trunks.1).unwrap();
-        let VertexAttributeValues::Float32x3(vertices) =
-            mesh.attribute(Mesh::ATTRIBUTE_POSITION).unwrap()
-        else {
-            panic!("trunks must expose their source positions");
-        };
-        assert_eq!(
-            vertices,
-            &expected.iter().map(|v| v.to_array()).collect::<Vec<_>>()
-        );
+        for (part, source) in expected {
+            let (_, handle) = parts.iter().find(|(found, _)| *found == part).unwrap();
+            let mesh = world.resource::<Assets<Mesh>>().get(handle).unwrap();
+            let VertexAttributeValues::Float32x3(vertices) =
+                mesh.attribute(Mesh::ATTRIBUTE_POSITION).unwrap()
+            else {
+                panic!("solid forest parts must expose their source positions");
+            };
+            assert_eq!(
+                vertices,
+                &source
+                    .vertices
+                    .iter()
+                    .map(|v| v.to_array())
+                    .collect::<Vec<_>>(),
+                "{part:?} changed collision-owned positions"
+            );
+            assert_eq!(
+                mesh.indices().unwrap().iter().collect::<Vec<_>>(),
+                source
+                    .triangles
+                    .iter()
+                    .flatten()
+                    .map(|index| *index as usize)
+                    .collect::<Vec<_>>(),
+                "{part:?} changed collision-owned triangles"
+            );
+        }
         for (_, mesh) in parts {
             let mesh = world.resource::<Assets<Mesh>>().get(&mesh).unwrap();
             assert!(mesh.count_vertices() > 0);
@@ -609,6 +732,73 @@ mod tests {
     }
 
     #[test]
+    fn textured_soil_preserves_albedo_and_uses_metric_uvs_with_a_dry_material_baseline() {
+        let mut world = World::new();
+        world.init_resource::<Assets<Mesh>>();
+        crate::gameplay::setup(&mut world);
+        setup(&mut world);
+        let (_, mesh, material) = world
+            .query::<(&EnvironmentPart, &Mesh3d, &MeshMaterial3d<ForestMaterial>)>()
+            .iter(&world)
+            .find(|(part, _, _)| **part == EnvironmentPart::Ground)
+            .unwrap();
+        let material = world
+            .resource::<Assets<ForestMaterial>>()
+            .get(&material.0)
+            .unwrap();
+        assert_eq!(material.base.alpha_mode, AlphaMode::Opaque);
+        assert_eq!(material.base.metallic, 0.0);
+        assert_eq!(material.base.perceptual_roughness, 0.82);
+        assert_eq!(material.extension.style.w, 1.0);
+        assert_eq!(material.extension.cover_strength, 0.85);
+        let image = world
+            .resource::<Assets<Image>>()
+            .get(material.base.base_color_texture.as_ref().unwrap())
+            .unwrap();
+        let ImageSampler::Descriptor(sampler) = &image.sampler else {
+            panic!("soil must use its explicit repeating sampler");
+        };
+        assert_eq!(sampler.address_mode_u, ImageAddressMode::Repeat);
+        assert_eq!(sampler.address_mode_v, ImageAddressMode::Repeat);
+        assert_eq!(image.texture_descriptor.mip_level_count, 11);
+        for (handle, srgb) in [
+            (material.extension.cover_base.as_ref().unwrap(), true),
+            (material.extension.cover_normal.as_ref().unwrap(), false),
+        ] {
+            let image = world.resource::<Assets<Image>>().get(handle).unwrap();
+            assert_eq!(image.texture_descriptor.format.is_srgb(), srgb);
+            assert_eq!(image.texture_descriptor.size.width, 1024);
+            assert_eq!(image.texture_descriptor.size.height, 1024);
+            assert_eq!(image.texture_descriptor.mip_level_count, 11);
+        }
+        let mesh = world.resource::<Assets<Mesh>>().get(&mesh.0).unwrap();
+        let VertexAttributeValues::Float32x3(positions) =
+            mesh.attribute(Mesh::ATTRIBUTE_POSITION).unwrap()
+        else {
+            panic!("soil positions");
+        };
+        let VertexAttributeValues::Float32x2(uvs) = mesh.attribute(Mesh::ATTRIBUTE_UV_0).unwrap()
+        else {
+            panic!("soil UVs");
+        };
+        for (position, uv) in positions.iter().zip(uvs) {
+            assert!((uv[0] * 2.5 - position[0]).abs() < 0.00001);
+            assert!((uv[1] * 2.5 - position[2]).abs() < 0.00001);
+        }
+        let VertexAttributeValues::Float32x4(colors) =
+            mesh.attribute(Mesh::ATTRIBUTE_COLOR).unwrap()
+        else {
+            panic!("soil tint");
+        };
+        assert!(colors.iter().all(|rgba| {
+            rgba[..3]
+                .iter()
+                .all(|channel| (0.88..=1.0).contains(channel))
+                && rgba[3] == 1.0
+        }));
+    }
+
+    #[test]
     fn camera_fog_is_available_without_a_renderer_or_asset_server() {
         let mut world = World::new();
         let camera = world.spawn(Camera3d::default()).id();
@@ -618,7 +808,7 @@ mod tests {
     }
 
     #[test]
-    fn only_decorative_leaves_sway_and_pause_preserves_the_exact_pose() {
+    fn only_decorative_foliage_sways_and_pause_preserves_pose_and_shared_assets() {
         let mut app = App::new();
         app.init_resource::<Assets<Mesh>>()
             .init_resource::<Assets<StandardMaterial>>()
@@ -627,6 +817,11 @@ mod tests {
             .add_systems(Update, animate_foliage);
         crate::gameplay::setup(app.world_mut());
         setup(app.world_mut());
+        let asset_counts = (
+            app.world().resource::<Assets<Mesh>>().len(),
+            app.world().resource::<Assets<ForestMaterial>>().len(),
+            app.world().resource::<Assets<Image>>().len(),
+        );
         let stems: Vec<_> = app
             .world_mut()
             .query::<(Entity, &EnvironmentPart, &Transform)>()
@@ -640,7 +835,7 @@ mod tests {
             .iter(app.world())
             .map(|(entity, transform)| (entity, *transform))
             .collect();
-        assert_eq!(before.len(), 4);
+        assert_eq!(before.len(), 12);
         app.world_mut()
             .resource_mut::<Time>()
             .advance_by(std::time::Duration::from_secs_f32(0.3));
@@ -663,5 +858,13 @@ mod tests {
         for (entity, transform) in posed {
             assert_eq!(*app.world().get::<Transform>(entity).unwrap(), transform);
         }
+        assert_eq!(
+            asset_counts,
+            (
+                app.world().resource::<Assets<Mesh>>().len(),
+                app.world().resource::<Assets<ForestMaterial>>().len(),
+                app.world().resource::<Assets<Image>>().len(),
+            )
+        );
     }
 }
