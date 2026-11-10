@@ -1,21 +1,202 @@
 {
-  "effects_origin": "original Kiva procedural synthesis; not extracted game audio",
-  "generator": "scripts/generate-combat-audio.py",
+  "schema_version": 2,
   "effects": [
     {
       "name": "attack",
-      "duration": 0.36,
-      "sha256": "e28389cc6b5d8fa03dcae6b1a7f4240dbbc12a413792aa5bae744776c335d6f5"
+      "file": "attack.ogg",
+      "duration": 0.71525,
+      "sha256": "d41041393612bbf20265bcf9469d9ea59c1944b9c8407584148fe1f958cc6551",
+      "source": {
+        "kind": "extracted_game_audio",
+        "event_name": "char_skill_qiang_end_swing_fast_1p",
+        "event_id": 1897049250,
+        "animation_cues": [
+          {
+            "clip": "skill_02_01_cq__shuangqiangc",
+            "res": "Char/b_01_char_male/11_qiang/8_skill/skill_02_01_cq.anim",
+            "time_per": 0.41749998927116394,
+            "raw_data": "Sounds/;char_skill_qiang.bnk;char_skill_qiang_end_swing_fast_1p;0;1;0;0;0;0"
+          },
+          {
+            "clip": "skill_02_01_cq__shuangqiangt",
+            "res": "Char/b_01_char_male/11_qiang/8_skill/skill_02_01_cq.anim",
+            "time_per": 0.41749998927116394,
+            "raw_data": "Sounds/;char_skill_qiang.bnk;char_skill_qiang_end_swing_fast_1p;0;1;0;0;0;0"
+          },
+          {
+            "clip": "skill_06_01__shuangqiangc",
+            "res": "Char/b_01_char_male/11_qiang/8_skill/skill_06_01.anim",
+            "time_per": 0.4390079975128174,
+            "raw_data": "Sounds/;char_skill_qiang.bnk;char_skill_qiang_end_swing_fast_1p;0;1;0;0;0;0"
+          },
+          {
+            "clip": "skill_06_01__shuangqiangt",
+            "res": "Char/b_01_char_male/11_qiang/8_skill/skill_06_01.anim",
+            "time_per": 0.4390079975128174,
+            "raw_data": "Sounds/;char_skill_qiang.bnk;char_skill_qiang_end_swing_fast_1p;0;1;0;0;0;0"
+          },
+          {
+            "clip": "skill_gd_03_cq__shuangqiangc",
+            "res": "Char/b_01_char_male/11_qiang/8_skill/skill_gd_03_cq.anim",
+            "time_per": 0.09973499923944473,
+            "raw_data": "Sounds/;char_skill_qiang.bnk;char_skill_qiang_end_swing_fast_1p;0;1;0;0;0;0"
+          },
+          {
+            "clip": "skill_gd_03_cq__shuangqiangt",
+            "res": "Char/b_01_char_male/11_qiang/8_skill/skill_gd_03_cq.anim",
+            "time_per": 0.09973499923944473,
+            "raw_data": "Sounds/;char_skill_qiang.bnk;char_skill_qiang_end_swing_fast_1p;0;1;0;0;0;0"
+          }
+        ],
+        "bank": {
+          "paths": [
+            "Sounds/Event/char_skill_qiang_end_swing_fast_1p.bnk"
+          ],
+          "key": 14838219867545493295,
+          "stored_size": 917,
+          "pack": 18010,
+          "offset": 4685489,
+          "index_sources": [
+            "TinyFiles_common_pkg.2.mpkinfo"
+          ],
+          "stored_sha256": "5f8a35ea6736577cbd00109ba65fc355aeec97232c19a6f606ad003f6154b800",
+          "decoded_bytes": 917,
+          "sha256": "5f8a35ea6736577cbd00109ba65fc355aeec97232c19a6f606ad003f6154b800"
+        },
+        "bank_sha256": "5f8a35ea6736577cbd00109ba65fc355aeec97232c19a6f606ad003f6154b800",
+        "action_id": 814896891,
+        "action_type": 1027,
+        "random_container_id": 893021932,
+        "playlist": {
+          "children_offset_in_object_body": 59,
+          "children": [
+            53244466,
+            58426737,
+            1041100646
+          ],
+          "playlist_count_offset": 75,
+          "playlist": [
+            {
+              "id": 1041100646,
+              "weight": 50000
+            },
+            {
+              "id": 53244466,
+              "weight": 50000
+            },
+            {
+              "id": 58426737,
+              "weight": 50000
+            }
+          ],
+          "opaque_parameter_prefix_bytes": 59
+        },
+        "sound_id": 1041100646,
+        "media_id": 145056080,
+        "media_vfs_path": "Sounds/Media/145056080.wem",
+        "physical": {
+          "paths": [
+            "Sounds/Media/145056080.wem"
+          ],
+          "key": 14963748669473959958,
+          "stored_size": 6472,
+          "pack": 278,
+          "offset": 109633301,
+          "index_sources": [
+            "Patch.mpkdb/info0"
+          ],
+          "stored_sha256": "a1db4110a426cb0c88134cefc1d6a5a3963b1f9401fc1556ae678027e4165fd5",
+          "decoded_bytes": 6472,
+          "sha256": "a1db4110a426cb0c88134cefc1d6a5a3963b1f9401fc1556ae678027e4165fd5"
+        },
+        "wem_sha256": "a1db4110a426cb0c88134cefc1d6a5a3963b1f9401fc1556ae678027e4165fd5",
+        "full_decoded_wav_sha256": "07151daa87f3007a94b9102fc3a9d63d7c2f62e07217cf11f0ce081413e1f522",
+        "evidence_file": "mesh_verified_swing_media.json",
+        "evidence_sha256": "6349c78d33a6bca4f965b5a5bebf39afc7359d0eafdea177b92315f7df504673",
+        "selection": "One verified fast end-swing variant selected from the equal-weight source playlist by source identity, complete duration and signal measurements; not a subjective audition claim."
+      },
+      "conversion": {
+        "importer": "scripts/import-choulingke-effects.py",
+        "decoder": {
+          "tool": "vgmstream-r2168/vgmstream-cli",
+          "sha256": "e736da315053bf91796d01eca18b54cbcc2d5b328eecdaf15786e7838251f581",
+          "arguments": [
+            "-i",
+            "-o",
+            "source.wav",
+            "mesh_swing_145056080_p278_109633301.wem"
+          ],
+          "stdout": "decoding mesh_swing_145056080_p278_109633301.wem\nsample rate: 48000 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 34332 (0:00.715 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 71 kbps\nsample type: float\nplay duration: 34332 samples (0:00.715 seconds)\n"
+        },
+        "command": [
+          "ffmpeg",
+          "-nostdin",
+          "-v",
+          "error",
+          "-y",
+          "-i",
+          "source.wav",
+          "-map",
+          "0:a:0",
+          "-af",
+          "volume=4.0881843534419495:precision=double",
+          "-c:a",
+          "libvorbis",
+          "-q:a",
+          "4",
+          "-map_metadata",
+          "-1",
+          "-fflags",
+          "+bitexact",
+          "attack.ogg"
+        ],
+        "source_frames": 34332,
+        "sample_rate": 48000,
+        "channels": 2,
+        "original_peak_linear": 0.207916259765625,
+        "original_peak_dbfs": -13.642230920406407,
+        "target_pcm_peak_linear": 0.85,
+        "constant_linear_gain": 4.0881843534419495,
+        "vorbis_decoded_float_peak_linear": 0.8364400267601013,
+        "vorbis_decoded_float_frames": 34204,
+        "priming_observation": {
+          "source_and_ogg_granule_frames": 34332,
+          "ffmpeg_float_decode_frames": 34204,
+          "difference_frames": 128,
+          "note": "FFmpeg observes 128 fewer float frames for this Vorbis encode/decode priming; the complete source PCM was supplied to the encoder, with no manual excerpt or truncation. Ogg granule duration and decoded frame count are reported separately."
+        },
+        "full_float_decode_verified": true
+      },
+      "adaptation": [
+        "Shared original polearm/dual-polearm end-swing adapted to Kiva longblade attacks; not Choulingke-exclusive blade audio or a successful-deflection impact.",
+        "Complete 0.71525-second source retained, ignore source loop flags; one constant Kiva gain targets PCM peak 0.85. No cropping, dynamic-range compression, splicing, pitch/tempo changes or fades. Vorbis remains lossy encoding.",
+        "Triggered by the existing authoritative Kiva attack feedback; original animation Cue timing and weighted random variation are not reconstructed.",
+        "Signal statistics and original event provenance are verified; subjective listening was not available in this environment."
+      ]
     },
     {
       "name": "hit",
       "duration": 0.19,
-      "sha256": "ca4de524bc2e0e178498066d314a16514c28093de89420e315f2c19ab14c205d"
+      "sha256": "ca4de524bc2e0e178498066d314a16514c28093de89420e315f2c19ab14c205d",
+      "source": {
+        "kind": "original_kiva_procedural",
+        "generator": "scripts/generate-combat-audio.py",
+        "sample_rate": 48000,
+        "channels": 1
+      },
+      "file": "hit.ogg"
     },
     {
       "name": "deflect",
       "duration": 0.65,
-      "sha256": "8dfe753dfa4aacda2a022ad69105b893194d84a43b1417f315f6f97e66941843"
+      "sha256": "8dfe753dfa4aacda2a022ad69105b893194d84a43b1417f315f6f97e66941843",
+      "source": {
+        "kind": "original_kiva_procedural",
+        "generator": "scripts/generate-combat-audio.py",
+        "sample_rate": 48000,
+        "channels": 1
+      },
+      "file": "deflect.ogg"
     }
   ]
 }

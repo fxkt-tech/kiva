@@ -128,7 +128,7 @@ Q 切换可见目标；默认在面朝方向自动锁定可见敌人。左键普
 ## 浏览器边界
 
 `startup.js`、`input.js`、`hud.js`、`enemies.js`、`audio.js` 必须同步安装在 Trunk 生成的模块之前，脚本不依赖 DOM 已创建。
-`window.kivaAudio.playEffect(name)` 消费已结算的挥刀、命中和卸势，`playSniperShot()` 消费玩家实际射击/火炮反馈；伴随的狙击特效事件不重复发声。`setActive(bool)` 同步模拟暂停，可信进入点击 / 画布按下解锁 Web Audio 并缓存随包音频。音乐至多一条循环，暂停保留播放位置并释放节点；短音效至多 4 声部，未解锁/暂停/失败的声音丢弃，不延迟重放。原生播放为空操作，无新增平台音频依赖。
+`window.kivaAudio.playEffect(name)` 消费已结算的挥刀、命中和卸势，`playSniperShot()` 消费玩家实际射击/火炮反馈；伴随的狙击特效事件不重复发声。`setActive(bool)` 同步模拟暂停，可信进入点击 / 画布按下解锁 Web Audio 并缓存随包音频。随包BGM使用官方愁铃客发行录音《惊惧一夜》，原文件/转码来源记录在assets/audio/music-manifest.json，运行时不连接音乐站点；该循环不是已恢复的原bank分轨/阶段切换。音乐至多一条循环，暂停保留播放位置并释放节点；短音效至多 4 声部，未解锁/暂停/失败的声音丢弃，不延迟重放。原生播放为空操作，无新增平台音频依赖。
 `window.kivaEnemies.takeMode()` 返回并清空待处理模式（0=无、1=靶子、2=实战），`render(mode)` 显示 Rust 当前模式；模式请求在固定循环前处理，不受暂停门控。
 `window.kivaInput` 暴露 `isActive(): boolean`、`takeLook(): number`、`takeAim(): number`、`keys(): number`、`takeActions(): number`、`ready(): void`。
 `takeLook()` / `takeAim()` 分别返回并清空本显示帧水平 / 垂直位移；引擎在启动完成后调用 `ready()`。

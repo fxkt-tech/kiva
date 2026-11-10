@@ -124,7 +124,7 @@ C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失
 
 rendering仅给GameCamera安装HDR、Msaa::Off、FXAA、DepthPrepass、DeferredPrepass和SSR，默认不透明材质deferred；透光裁切植被显式Forward。不能改变相机姿态/FOV或模拟。SSR只对屏幕内深度/已完成deferred光照有效，前向透光物体和屏幕外物体不保证倒影；验收需要真实GPU pass记录与GBuffer读回，只有shader组合测试不够。湿土粗糙度不进入SSR，仅平滑积水进入，避免高频normal造成随机闪点。
 
-当前BGM来源未证实，audio/music.json.file为null；播放器跳过音乐，不请求不存在的文件。攻击/命中/卸势随包Ogg为自制程序音效，不能称为燕云原声。只有确认曲目身份后才配置本目录简单文件名并随包复制。
+当前BGM为官方艺人发行的愁铃客《惊惧一夜》，audio/music.json.file=choulingke-bgm.ogg，原MP3及随包Ogg哈希/来源见music-manifest；加载仅同源、可信点击后解码。不能称其为已恢复的本地WEM映射、原循环点或原阶段切换。attack为已核Cue/事件/媒体的原长兵器共享适配，hit/deflect仍为自制程序声，来源逐项见effects-manifest；原长刀/成功卸势完整映射仍缺。离线导入器只写其拥有的attack，程序生成器只重建hit/deflect并核对保留原attack，不能互相覆写；不得用自制或共用武器声冒称愁铃客专属。新增声音必须逐项注明实际来源，再配置本目录简单文件名并随包复制。
 
 实战预警颜色与HUD阶段/行动文字直接读Boss只读快照，不能依赖普通Enemy.is_winding_up镜像。HUD不显示内部行动槽ID；无Boss的被动演武靶继续使用原目标血条。
 

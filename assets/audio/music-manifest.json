@@ -1,0 +1,115 @@
+{
+  "origin": "official published soundtrack recording; not an extracted game WEM",
+  "song": {
+    "id": 3429659434,
+    "title": "镇守_大雾幽篁_愁铃客_惊惧一夜",
+    "url": "https://music.163.com/song?id=3429659434"
+  },
+  "artist": {
+    "id": 53926051,
+    "name": "燕云十六声",
+    "url": "https://music.163.com/artist?id=53926051"
+  },
+  "album": {
+    "id": 389835995,
+    "title": "江南问情 | 《燕云十六声》游戏原声音乐辑（江南卷）",
+    "publisher": "网易游戏",
+    "url": "https://music.163.com/album?id=389835995"
+  },
+  "source": {
+    "file": "3429659434.mp3",
+    "sha256": "8a4d16cd45864403e882615b154b69dc5b5ff12c4e56c0bc2d58e410357236aa",
+    "md5": "f56a6234007e7b436813c80b113a2725",
+    "bytes": 1259773,
+    "probe": {
+      "programs": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "codec_type": "audio",
+          "sample_rate": "44100",
+          "channels": 2,
+          "channel_layout": "stereo",
+          "duration": "78.706939"
+        }
+      ],
+      "format": {
+        "duration": "78.706939",
+        "size": "1259773"
+      }
+    },
+    "official_metadata_verification": {
+      "detail": {
+        "file": "detail.json",
+        "sha256": "67ca695836c40f1ecf8c637df99c79321728b7c776290b98b4272a63225ed5f1"
+      },
+      "playback": {
+        "file": "urls.json",
+        "sha256": "c9c231e6722a8f3b648fa0d781db8bc6ad274acdc962da4cab45c3415fd139dd"
+      },
+      "response_code": 200,
+      "fee": 0,
+      "free_trial_info": null,
+      "media_host": "m801.music.126.net",
+      "duration_ms": 78666,
+      "media_size": 1259773,
+      "media_md5": "f56a6234007e7b436813c80b113a2725",
+      "note": "Saved official full-play response verified offline; expiring media URL is not a runtime dependency."
+    }
+  },
+  "output": {
+    "file": "choulingke-bgm.ogg",
+    "sha256": "407246d2cf3e5ff3165f5a1bc7ef321e9e3f47dd77950ab409c5143e63ceb7f8",
+    "bytes": 1237948,
+    "probe": {
+      "programs": [],
+      "streams": [
+        {
+          "codec_name": "vorbis",
+          "codec_type": "audio",
+          "sample_rate": "44100",
+          "channels": 2,
+          "channel_layout": "stereo",
+          "duration": "78.666667"
+        }
+      ],
+      "format": {
+        "duration": "78.666667",
+        "size": "1237948"
+      }
+    },
+    "full_decode_verified": true
+  },
+  "conversion": {
+    "importer": "scripts/import-choulingke-music.py",
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "command": [
+      "ffmpeg",
+      "-nostdin",
+      "-v",
+      "error",
+      "-y",
+      "-i",
+      "3429659434.mp3",
+      "-map",
+      "0:a:0",
+      "-vn",
+      "-c:a",
+      "libvorbis",
+      "-q:a",
+      "4",
+      "-map_metadata",
+      "-1",
+      "-fflags",
+      "+bitexact",
+      "choulingke-bgm.ogg"
+    ],
+    "processing": "Vorbis quality 4; source sample rate/channel count; no gain normalization, compression, pitch, tempo, trimming or fades."
+  },
+  "boundaries": [
+    "The official title/artist/album establish this release identity; local WEM, bank/event and sound_no mappings remain unresolved.",
+    "Kiva repeats the complete album recording. Original game loop boundaries, stems and phase-specific switching are not recovered.",
+    "Official recording retains its original rights; it is not original Kiva synthesis or a CC0 asset.",
+    "Only this selected recording is packaged; playback uses a same-origin bundled Ogg and performs no source-site download."
+  ]
+}
