@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 37
+- **Total Sessions**: 39
 - **Last Active**: 2026-11-10
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1269 | Active |
+| `journal-1.md` | ~1339 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 39 | 2026-11-10 | 提交并推送首次进入加载改进 | `af06c14` | `main` |
+| 38 | 2026-11-10 | 首次进入真实加载进度与渲染就绪 | - | `main` |
 | 37 | 2026-11-10 | 提交并推送两件近战模型 | `791c66d` | `main` |
 | 36 | 2026-11-10 | 近战模型接入：伏浪锚与谪星摧山 | - | `main` |
 | 35 | 2026-11-10 | 提交并合并指定模型接入 | `9073157`, `8ee266e` | `main` |

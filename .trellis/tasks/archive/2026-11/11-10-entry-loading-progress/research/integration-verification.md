@@ -57,3 +57,9 @@ headless再次运行首击成功，但用户Trunk自动刷新已载入正在修�
 
 最终检查本地 `dist/index.html`，现有用户Trunk服务生成的产物仍没有 `kivaLoader.load`，说明它仍使用启动时读取的旧模块模板；固定临时Trunk产物已验证新模板。
 本次修改了 Trunk.toml，需要用户重启一次自己的开发服务再刷新，以应用真实下载进度加载器。遵守项目服务所有权，不自行停止或重启用户进程。
+
+## Git交付
+
+用户明确要求提交&推送，代码直接在main提交为 `af06c14`（fix: show loading progress and wait for initial render）。提交前fetch确认与远端一致，没有额外合并或临时分支；运行代码和已验证产物源未再改变。本次加载任务验收完成后归档，既有模型真实GPU验收仍独立保留。
+
+本任务直接在main实施且从未创建PR，归档使用工具支持的 `--skip-branch-validation` 无PR选项；没有改写Git分支或伪造合并记录。

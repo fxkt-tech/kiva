@@ -1267,3 +1267,73 @@ Packaged exact official Choulingke soundtrack and fully traced original shared p
 ### Next Steps
 
 - 真实GPU模型画面复核继续跟踪，任务保留不提前归档。
+
+
+## Session 38: 首次进入真实加载进度与渲染就绪
+<!-- trellis-session: v=2 fp=16e35fdadfef9369 -->
+
+**Date**: 2026-11-10
+**Task**: 首次进入真实加载进度与渲染就绪
+**Branch**: `main`
+
+### Summary
+
+加载按钮展示真实下载进度及初始化/画面阶段，首次渲染准备提交后才可进入；捕获中反馈和重试完善。
+
+### Main Changes
+
+- 专用WASM流加载与Trunk模板，修复拒绝后的取消、占位符碰撞和CORS分母边界；无假进度或全局fetch拦截。
+- Bevy真实主视图可见资源/管线和输出提交门槛，主线程一次最终ready，保持原生/错误策略及规则。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 226 Rust、82 Node、原生和WASM Clippy、WASM check、Trunk/SRI及保护路径通过。
+- [OK] 固定WASM产物冷加载/无总量/重复加载均首击成功，捕获拒绝重试/暂停恢复/故意HTTP503通过；同loader真实缓存流通过，原始硬件延迟不唯一归因。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- main改动尚未提交；此前模型真实GPU外观验收继续单独跟踪。
+
+- 交付补充：现有开发服务仍使用旧Trunk启动模板；本次Trunk.toml变更需用户重启自己的开发服务后刷新。固定临时产物已通过，未接管服务。
+
+
+## Session 39: 提交并推送首次进入加载改进
+<!-- trellis-session: v=2 fp=a80bc74eddca5554 -->
+
+**Date**: 2026-11-10
+**Task**: 提交并推送首次进入加载改进
+**Branch**: `main`
+
+### Summary
+
+按用户授权直接main提交加载进度与渲染就绪门槛，归档已完成任务并推送origin/main。
+
+### Main Changes
+
+- 代码提交af06c14；归档entry-loading-progress并修正归档后的上下文引用，不影响旧模型验收任务。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `af06c14` | fix: show loading progress and wait for initial render |
+
+### Testing
+
+- [OK] 沿用最终226 Rust/82 Node、双平台Clippy、WASM/Trunk/SRI及固定产物浏览器结果；提交期间运行代码和资产未变。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 重启用户开发服务应用Trunk加载模板；既有模型真实GPU外观验收继续独立跟踪。

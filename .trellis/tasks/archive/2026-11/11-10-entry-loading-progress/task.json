@@ -3,7 +3,7 @@
   "name": "entry-loading-progress",
   "title": "首次进入加载进度与就绪门槛",
   "description": "入口按钮展示真实加载进度，首次场景准备就绪前不可点击，修复首次进入缺少反馈及过早就绪问题",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": null,
@@ -11,11 +11,11 @@
   "creator": "asuka",
   "assignee": "asuka",
   "createdAt": "2026-11-10",
-  "completedAt": null,
+  "completedAt": "2026-11-10",
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "af06c14",
   "pr_url": null,
   "subtasks": [],
   "children": [],
@@ -34,6 +34,6 @@
     "scripts/loader-unit.test.cjs",
     ".trellis/spec/client/startup.md"
   ],
-  "notes": "直接main实现真实WASM进度/准备阶段、加载禁用和捕获中反馈；最终ready等待实际GameCamera可见资源/管线准备与输出提交。226Rust+82Node、原生/WASMClippy、Trunk/SRI与保护路径检查通过。固定产物慢速冷载首击45.8ms、无总量34.1ms、重复加载58.5ms、失败重试/Esc恢复通过；真实HTTP缓存以同loader最小原生WASM验证。用户设备唯一延迟原因未归定，模型GPU外观仍独立跟踪。代码未提交或推送，任务保留等待Git交付。 当前用户dev产物仍为旧Trunk启动模板，需用户重启一次开发服务应用新加载器；未接管服务。",
+  "notes": "直接main完成首次加载进度与真实渲染就绪门槛，代码提交af06c14；用户明确授权提交并推送。226Rust+82Node、原生/WASMClippy、Trunk/SRI与保护路径检查通过；固定产物冷载首击/无总量/重复加载/错误重试/Esc恢复及实际缓存流通过。用户设备唯一延迟原因未归定，不混同模型GPU外观验收。代码交付完成，归档本任务；Trunk配置需重启用户开发服务应用，未接管服务。",
   "meta": {}
 }
