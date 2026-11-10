@@ -14,3 +14,8 @@
 {"file": "docs/model-viewer.md", "reason": "User-facing inspection workflow and scope"}
 {"file": ".trellis/tasks/11-10-model-animation-viewer/research/qa.md", "reason": "Final fixed artifact and headed browser QA evidence, software/hardware GPU distinction"}
 {"file": ".trellis/tasks/11-10-model-animation-viewer/research/independent-review.md", "reason": "Independent full-scope review, fixed findings and final quality gates"}
+{"file": ".trellis/tasks/11-10-model-animation-viewer/research/hand-diagnostic.md", "reason": "Reproduced default arm reference mismatch and source finger motion lost in actual target palette"}
+{"file": ".trellis/tasks/11-10-model-animation-viewer/research/hand-asset-facts.md", "reason": "Actual CC0/default provenance, weighted semantic finger chains and target native axes"}
+{"file": ".trellis/tasks/11-10-model-animation-viewer/research/hand-basis-review.md", "reason": "Independent arm/palm/finger calibration mathematics and local blend/FK invariants"}
+{"file": ".trellis/tasks/11-10-model-animation-viewer/research/hand-fix-qa.md", "reason": "Hand-fix red/green contracts and final regression/browser evidence"}
+{"file": ".trellis/tasks/11-10-model-animation-viewer/research/hand-independent-review.md", "reason": "Independent hand fix review and final260Rust/94Node quality gates"}

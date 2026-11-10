@@ -1,0 +1,153 @@
+--- a/src/client/avatar.rs
++++ b/src/client/avatar.rs
+@@ -1326,6 +1326,150 @@
+         );
+     }
+
++    /// Explicit diagnostic only: records actual default-state and hand-skin
++    /// data. It does not turn finite matrices or an assumed anatomical threshold
++    /// into proof that a hand pose looks correct.
++    #[test]
++    #[ignore = "diagnostic export; run explicitly with --ignored --nocapture"]
++    fn hand_diagnostic_default_state() {
++        use std::collections::BTreeSet;
++        let mut app = test_app(false);
++        let world = app.world_mut();
++        let owner = world.spawn(Transform::IDENTITY).id();
++        spawn_with_appearance(world, owner, Appearance::Lihuowang);
++        let assets = AvatarAssets::cached(
++            world.get_resource::<AvatarAssets>(),
++            world.get_resource::<AvatarAssetCache>(),
++            Appearance::Lihuowang,
++        )
++        .unwrap()
++        .clone();
++        let library = world.resource::<AnimationLibrary>();
++        let mut cases = Vec::new();
++        let idle = RigPose::new(library);
++        assert!(idle.source.is_none());
++        println!("HAND-DIAG default trace state={} cc0={:?} source={:?}", idle.trace().state, idle.trace().cc0_clip, idle.trace().source_clip);
++        cases.push(("game_idle", idle.clone()));
++        let mut raw = idle.clone();
++        raw.model = library.model_pose(&library.sample("Sword_Idle", 0.0, false));
++        cases.push(("raw_cc0_Sword_Idle", raw));
++        let mut reference = idle.clone();
++        reference.reference_pose = true;
++        cases.push(("asset_reference", reference));
++        let mut source = idle;
++        let source_library = world.resource::<SourceAnimationLibrary>();
++        source.source = Some(super::super::animation::SourcePose {
++            model: source_library.model_pose(&source_library.sample(source_library.clip("skill_ylk_1").unwrap(), 1.35, false, false)),
++            weight: 1.0,
++        });
++        for side in ["R", "L"] {
++            let hand = source_library.bone(&format!("Bip001 {side} Hand")).unwrap();
++            for finger in 0..5 {
++                let name = format!("Bip001 {side} Finger{finger}");
++                if let Some(joint) = source_library.bone(&name) {
++                    let rest = Transform::from_matrix(source_library.rest_model[hand].inverse() * source_library.rest_model[joint]);
++                    let mut maximum = 0.0_f32;
++                    let mut translation = 0.0_f32;
++                    for seconds in [0.0, 0.25, 0.5, 1.0, 1.35, 1.8, 2.5] {
++                        let model = source_library.model_pose(&source_library.sample(source_library.clip("skill_ylk_1").unwrap(), seconds, false, false));
++                        let current = Transform::from_matrix(model[hand].inverse() * model[joint]);
++                        maximum = maximum.max(rest.rotation.angle_between(current.rotation).to_degrees());
++                        translation = translation.max(rest.translation.distance(current.translation));
++                    }
++                    println!("HAND-DIAG source {name} max_hand_local_rotation_from_rest_degrees={maximum} translation={translation}");
++                } else {
++                    println!("HAND-DIAG source {name} NOT FOUND");
++                }
++            }
++        }
++        cases.push(("source_skill_ylk_1_1.35", source));
++        let mut fingers = BTreeSet::new();
++        let mut hand_bones = BTreeSet::new();
++        for part in assets.parts.iter().filter(|part| !part.blade) {
++            for bone in &part.bones {
++                if [assets.right_hand, assets.left_hand].contains(&bone.driver) {
++                    hand_bones.insert((bone.name.clone(), bone.driver));
++                    if bone.name.to_ascii_lowercase().contains("finger") {
++                        fingers.insert((bone.name.clone(), bone.driver));
++                    }
++                }
++            }
++        }
++        println!("HAND-DIAG hand bones={hand_bones:?}");
++        for side in ["r", "l"] {
++            for end_name in [format!("lowerarm_{side}"), format!("hand_{side}")] {
++                let library = world.resource::<AnimationLibrary>();
++                let end = assets.drivers.iter().position(|driver| library.bones[driver.bone].name == end_name).unwrap();
++                let parent = assets.drivers[end].parent.unwrap();
++                let own = assets.drivers[end].anchor - assets.drivers[parent].anchor;
++                let cc0 = assets.drivers[end].reference.translation - assets.drivers[parent].reference.translation;
++                println!("HAND-DIAG REST {end_name} own={own:?} CC0={cc0:?} direction_gap_degrees={}", own.angle_between(cc0).to_degrees());
++            }
++        }
++        for finger in 0..5 {
++            let names = [format!("naraka::outfit::gMan R Finger{finger}"), format!("naraka::outfit::gMan R Finger{finger}1"), format!("naraka::outfit::gMan R Finger{finger}2")];
++            if let Some(part) = assets.parts.iter().find(|part| names.iter().all(|name| part.bones.iter().any(|bone| &bone.name == name))) {
++                let points = names.map(|name| part.bones.iter().find(|bone| bone.name == name).unwrap().bind.w_axis.xyz());
++                let angle = (points[1] - points[0]).angle_between(points[2] - points[1]).to_degrees();
++                println!("HAND-DIAG REST right finger{finger} joint_bend_degrees={angle} points={points:?}");
++            }
++        }
++        println!("HAND-DIAG finger bones count={} joints={fingers:?}", fingers.len());
++        for (label, rig) in cases {
++            let drivers = assets.evaluated_drivers(&rig);
++            let canonical = &rig.model;
++            let library = world.resource::<AnimationLibrary>();
++            for name in ["upperarm_r", "lowerarm_r", "hand_r", "upperarm_l", "lowerarm_l", "hand_l"] {
++                let i = assets.drivers.iter().position(|driver| library.bones[driver.bone].name == name).unwrap();
++                let driver = &assets.drivers[i];
++                let p = driver.parent.unwrap();
++                println!("HAND-DIAG {label} {name} anchor={:?} actual={:?} cc0={:?} actual_rotation={:?}", driver.anchor, drivers[i].translation, canonical[driver.bone].translation, drivers[i].rotation);
++                if !rig.reference_pose {
++                    let actual_length = drivers[i].translation.distance(drivers[p].translation);
++                    let own_length = driver.anchor.distance(assets.drivers[p].anchor);
++                    assert!((actual_length - own_length).abs() < 0.00001);
++                }
++            }
++            let deltas = assets.pose_deltas(&rig);
++            let source_deltas = assets.source_deltas(&rig);
++            let mut max_hand_rigid_error = 0.0_f32;
++            let mut hand_vertex_count = 0;
++            let mut local_min = Vec3::splat(f32::INFINITY);
++            let mut local_max = Vec3::splat(f32::NEG_INFINITY);
++            let mesh_assets = world.resource::<Assets<Mesh>>();
++            let ibm_assets = world.resource::<Assets<SkinnedMeshInverseBindposes>>();
++            for part in assets.parts.iter().filter(|part| !part.blade) {
++                let inverse = ibm_assets.get(&part.inverse_bindposes).unwrap();
++                for primitive in &part.primitives {
++                    let mesh = mesh_assets.get(&primitive.mesh).unwrap();
++                    let positions = mesh.attribute(Mesh::ATTRIBUTE_POSITION).unwrap().as_float3().unwrap();
++                    let VertexAttributeValues::Uint16x4(joints) = mesh.attribute(Mesh::ATTRIBUTE_JOINT_INDEX).unwrap() else { panic!("indices"); };
++                    let VertexAttributeValues::Float32x4(weights) = mesh.attribute(Mesh::ATTRIBUTE_JOINT_WEIGHT).unwrap() else { panic!("weights"); };
++                    for vertex in 0..positions.len() {
++                        if !(0..4).all(|slot| weights[vertex][slot] <= 0.0 || part.bones[joints[vertex][slot] as usize].driver == assets.right_hand) { continue; }
++                        let position = Vec3::from(positions[vertex]);
++                        let mut posed = Vec3::ZERO;
++                        let mut rest = Vec3::ZERO;
++                        for slot in 0..4 {
++                            let joint = joints[vertex][slot] as usize;
++                            let bone = &part.bones[joint];
++                            let weight = weights[vertex][slot];
++                            posed += (assets.joint_pose(&rig, &deltas, source_deltas.as_deref(), bone).to_matrix() * inverse[joint]).transform_point3(position) * weight;
++                            rest += (bone.bind * inverse[joint]).transform_point3(position) * weight;
++                        }
++                        let d = drivers[assets.right_hand].to_matrix() * Mat4::from_translation(-assets.drivers[assets.right_hand].anchor);
++                        let predicted = if rig.reference_pose { rest } else { d.transform_point3(rest) };
++                        max_hand_rigid_error = max_hand_rigid_error.max(posed.distance(predicted));
++                        let local = drivers[assets.right_hand].compute_affine().inverse().transform_point3(posed);
++                        local_min = local_min.min(local); local_max = local_max.max(local);
++                        hand_vertex_count += 1;
++                    }
++                }
++            }
++            println!("HAND-DIAG {label} pure-right-hand vertices={hand_vertex_count} max-rigid-error={max_hand_rigid_error} local_min={local_min:?} local_max={local_max:?}");
++        }
++    }
++
+     #[test]
+     fn wangxin_hat_follows_the_head_and_is_reclaimed_when_switching_appearance() {
+         let mut app = test_app(false);

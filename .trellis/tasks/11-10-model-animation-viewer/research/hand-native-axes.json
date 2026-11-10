@@ -1,0 +1,2563 @@
+{
+  "lihuowang": {
+    "links": [
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger01",
+        "child": "gMan L Finger02",
+        "child_offset_parent_native": [
+          0.03498655126240158,
+          3.2014862705320724e-08,
+          9.336323059105922e-08
+        ],
+        "native_direction": [
+          0.9999999999960207,
+          9.15061975245277e-07,
+          2.6685462619752644e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128518546473124,
+          0.9128546136904773,
+          0.9128532851008008
+        ],
+        "parent_det3": 0.7606815800936868
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger1",
+        "child": "gMan L Finger11",
+        "child_offset_parent_native": [
+          0.04130237209031051,
+          -3.612516663586973e-08,
+          7.578550323406041e-08
+        ],
+        "native_direction": [
+          0.9999999999979341,
+          -8.7465113521337e-07,
+          1.8348946900239427e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128523193487001,
+          0.9128538876636346,
+          0.9128541689207736
+        ],
+        "parent_det3": 0.7606820988201253
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger11",
+        "child": "gMan L Finger12",
+        "child_offset_parent_native": [
+          0.02918954753939096,
+          -7.333221418992508e-08,
+          3.241323992542178e-08
+        ],
+        "native_direction": [
+          0.9999999999962277,
+          -2.512276495231297e-06,
+          1.1104399573702953e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128539228931822,
+          0.9128522436800136,
+          0.9128541786896218
+        ],
+        "parent_det3": 0.7606820732626729
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger2",
+        "child": "gMan L Finger21",
+        "child_offset_parent_native": [
+          0.04151176510257715,
+          8.969374579170797e-08,
+          4.1768684677645496e-08
+        ],
+        "native_direction": [
+          0.9999999999971595,
+          2.1606825334893987e-06,
+          1.0061890785495353e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128523286408347,
+          0.912853607239231,
+          0.9128540652262098
+        ],
+        "parent_det3": 0.7606817864766662
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger21",
+        "child": "gMan L Finger22",
+        "child_offset_parent_native": [
+          0.029857806655627872,
+          -3.3798510212790234e-08,
+          4.886264684533792e-08
+        ],
+        "native_direction": [
+          0.9999999999980203,
+          -1.131982352305596e-06,
+          1.6365115967428607e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128536165464801,
+          0.9128521939806231,
+          0.9128540790901047
+        ],
+        "parent_det3": 0.7606816935727446
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger3",
+        "child": "gMan L Finger31",
+        "child_offset_parent_native": [
+          0.033030208547180306,
+          1.1291015938885707e-07,
+          -7.537614893360356e-09
+        ],
+        "native_direction": [
+          0.9999999999941313,
+          3.4183907506037603e-06,
+          -2.2820367248209772e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9128523175160952,
+          0.9128537379588105,
+          0.9128540707464786
+        ],
+        "parent_det3": 0.7606818907350834
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger31",
+        "child": "gMan L Finger32",
+        "child_offset_parent_native": [
+          0.029152464605962547,
+          1.4511108870074452e-07,
+          -4.6623785110444516e-09
+        ],
+        "native_direction": [
+          0.9999999999875986,
+          4.9776610883618195e-06,
+          -1.5993085229689418e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9128537118274744,
+          0.9128522335313883,
+          0.912854101775279
+        ],
+        "parent_det3": 0.7606818248315473
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger4",
+        "child": "gMan L Finger41",
+        "child_offset_parent_native": [
+          0.0253234823417825,
+          -1.6944987302203174e-08,
+          4.46952018451352e-08
+        ],
+        "native_direction": [
+          0.9999999999982185,
+          -6.691412766013855e-07,
+          1.7649706008762743e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.912852050155507,
+          0.9128538871643046,
+          0.9128541962189691
+        ],
+        "parent_det3": 0.7606818968321895
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan L Finger41",
+        "child": "gMan L Finger42",
+        "child_offset_parent_native": [
+          0.020157917774490608,
+          4.641422712836629e-08,
+          -1.8404013035766553e-09
+        ],
+        "native_direction": [
+          0.999999999997345,
+          2.3025308291999895e-06,
+          -9.129917703607044e-08
+        ],
+        "parent_basis_column_lengths": [
+          0.9128535354475699,
+          0.9128524036203457,
+          0.9128541801576164
+        ],
+        "parent_det3": 0.7606818849045488
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger0",
+        "child": "gMan R Finger01",
+        "child_offset_parent_native": [
+          0.041915150832801173,
+          -7.869402351978749e-10,
+          -6.102381000516743e-08
+        ],
+        "native_direction": [
+          0.99999999999894,
+          -1.8774601058603655e-08,
+          -1.4558890709597036e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128533534231377,
+          0.9128533413069304,
+          0.912853279985361
+        ],
+        "parent_det3": 0.7606817644860921
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger01",
+        "child": "gMan R Finger02",
+        "child_offset_parent_native": [
+          0.034986741198407834,
+          2.8818725350543417e-08,
+          1.6095190535914128e-07
+        ],
+        "native_direction": [
+          0.999999999989079,
+          8.237041908761758e-07,
+          4.6003685923371475e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128533270960654,
+          0.9128533598897673,
+          0.9128532572029442
+        ],
+        "parent_det3": 0.760681739048191
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger1",
+        "child": "gMan R Finger11",
+        "child_offset_parent_native": [
+          0.04130234817769396,
+          -6.969660798494814e-08,
+          -5.7965816244176516e-08
+        ],
+        "native_direction": [
+          0.9999999999975914,
+          -1.687473256603389e-06,
+          -1.4034508642136315e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.912852717478177,
+          0.9128535667185799,
+          0.9128536252640433
+        ],
+        "parent_det3": 0.7606817101087994
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger11",
+        "child": "gMan R Finger12",
+        "child_offset_parent_native": [
+          0.02918943185303191,
+          2.5331478092915916e-07,
+          7.006425208067046e-08
+        ],
+        "native_direction": [
+          0.9999999999594628,
+          8.678304606760568e-06,
+          2.400329421641438e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128532823992576,
+          0.9128530596498684,
+          0.9128536113147369
+        ],
+        "parent_det3": 0.7606817466931115
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger2",
+        "child": "gMan R Finger21",
+        "child_offset_parent_native": [
+          0.04151167210312101,
+          1.2351061645654582e-08,
+          -1.748669625767363e-08
+        ],
+        "native_direction": [
+          0.999999999999867,
+          2.975322606849252e-07,
+          -4.2124769665340905e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9128526224800618,
+          0.9128538461506049,
+          0.9128536128813466
+        ],
+        "parent_det3": 0.7606818534790922
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger21",
+        "child": "gMan R Finger22",
+        "child_offset_parent_native": [
+          0.029857794926075543,
+          4.8756952475415005e-08,
+          -2.2397265431184366e-09
+        ],
+        "native_direction": [
+          0.999999999998664,
+          1.6329723141332593e-06,
+          -7.501312634307888e-08
+        ],
+        "parent_basis_column_lengths": [
+          0.9128535341863544,
+          0.9128528931357364,
+          0.9128536069055464
+        ],
+        "parent_det3": 0.7606818140767703
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger3",
+        "child": "gMan R Finger31",
+        "child_offset_parent_native": [
+          0.03303034735763921,
+          -6.362849896968115e-08,
+          -2.6262147900801835e-08
+        ],
+        "native_direction": [
+          0.9999999999978284,
+          -1.9263648147747094e-06,
+          -7.950914840945787e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9128527087748155,
+          0.9128536385332545,
+          0.9128534936205397
+        ],
+        "parent_det3": 0.7606816530007846
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger31",
+        "child": "gMan R Finger32",
+        "child_offset_parent_native": [
+          0.029152543531135278,
+          -1.6603676211701668e-09,
+          9.93161425322242e-09
+        ],
+        "native_direction": [
+          0.9999999999999404,
+          -5.695446846333578e-08,
+          3.40677452127453e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9128531638010952,
+          0.9128532217984227,
+          0.9128534640362184
+        ],
+        "parent_det3": 0.7606816602562563
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger4",
+        "child": "gMan R Finger41",
+        "child_offset_parent_native": [
+          0.025323414015711698,
+          7.045701960750606e-08,
+          1.6057946999881167e-08
+        ],
+        "native_direction": [
+          0.9999999999959285,
+          2.7822875526777206e-06,
+          6.341146177941398e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9128526622861192,
+          0.9128535962760268,
+          0.9128534409285954
+        ],
+        "parent_det3": 0.7606815351404346
+      },
+      {
+        "part": "naraka::outfit::body",
+        "parent": "gMan R Finger41",
+        "child": "gMan R Finger42",
+        "child_offset_parent_native": [
+          0.020158092365245017,
+          -9.697324543367358e-08,
+          -7.07169631186666e-09
+        ],
+        "native_direction": [
+          0.9999999999883675,
+          -4.810636030209839e-06,
+          -3.5081178236770336e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.912852856487141,
+          0.9128534088487027,
+          0.9128534717765431
+        ],
+        "parent_det3": 0.7606815664904817
+      },
+      {
+        "part": "naraka::outfit::body02",
+        "parent": "gMan L Finger0",
+        "child": "gMan L Finger01",
+        "child_offset_parent_native": [
+          0.04191515546981561,
+          -6.44903874746916e-09,
+          -3.205065102207527e-09
+        ],
+        "native_direction": [
+          0.9999999999999852,
+          -1.5385935409718844e-07,
+          -7.646554250563487e-08
+        ],
+        "parent_basis_column_lengths": [
+          0.9128518917185688,
+          0.9128545657493721,
+          0.9128532793117605
+        ],
+        "parent_det3": 0.7606815662117505
+      },
+      {
+        "part": "naraka::outfit::body02",
+        "parent": "gMan L Finger01",
+        "child": "gMan L Finger02",
+        "child_offset_parent_native": [
+          0.03498655126240158,
+          3.2014862705320724e-08,
+          9.336323059105922e-08
+        ],
+        "native_direction": [
+          0.9999999999960207,
+          9.15061975245277e-07,
+          2.6685462619752644e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128518546473124,
+          0.9128546136904773,
+          0.9128532851008008
+        ],
+        "parent_det3": 0.7606815800936868
+      },
+      {
+        "part": "naraka::outfit::body02",
+        "parent": "gMan L Finger1",
+        "child": "gMan L Finger11",
+        "child_offset_parent_native": [
+          0.04130237209031051,
+          -3.612516663586973e-08,
+          7.578550323406041e-08
+        ],
+        "native_direction": [
+          0.9999999999979341,
+          -8.7465113521337e-07,
+          1.8348946900239427e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128523193487001,
+          0.9128538876636346,
+          0.9128541689207736
+        ],
+        "parent_det3": 0.7606820988201253
+      },
+      {
+        "part": "naraka::outfit::body02",
+        "parent": "gMan L Finger2",
+        "child": "gMan L Finger21",
+        "child_offset_parent_native": [
+          0.04151176510257715,
+          8.969374579170797e-08,
+          4.1768684677645496e-08
+        ],
+        "native_direction": [
+          0.9999999999971595,
+          2.1606825334893987e-06,
+          1.0061890785495353e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128523286408347,
+          0.912853607239231,
+          0.9128540652262098
+        ],
+        "parent_det3": 0.7606817864766662
+      },
+      {
+        "part": "naraka::outfit::body02",
+        "parent": "gMan L Finger3",
+        "child": "gMan L Finger31",
+        "child_offset_parent_native": [
+          0.033030208547180306,
+          1.1291015938885707e-07,
+          -7.537614893360356e-09
+        ],
+        "native_direction": [
+          0.9999999999941313,
+          3.4183907506037603e-06,
+          -2.2820367248209772e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9128523175160952,
+          0.9128537379588105,
+          0.9128540707464786
+        ],
+        "parent_det3": 0.7606818907350834
+      },
+      {
+        "part": "naraka::outfit::body02",
+        "parent": "gMan L Finger4",
+        "child": "gMan L Finger41",
+        "child_offset_parent_native": [
+          0.0253234823417825,
+          -1.6944987302203174e-08,
+          4.46952018451352e-08
+        ],
+        "native_direction": [
+          0.9999999999982185,
+          -6.691412766013855e-07,
+          1.7649706008762743e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.912852050155507,
+          0.9128538871643046,
+          0.9128541962189691
+        ],
+        "parent_det3": 0.7606818968321895
+      },
+      {
+        "part": "naraka::outfit::body02",
+        "parent": "gMan R Finger0",
+        "child": "gMan R Finger01",
+        "child_offset_parent_native": [
+          0.041915150832801173,
+          -7.869402351978749e-10,
+          -6.102381000516743e-08
+        ],
+        "native_direction": [
+          0.99999999999894,
+          -1.8774601058603655e-08,
+          -1.4558890709597036e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9128533534231377,
+          0.9128533413069304,
+          0.912853279985361
+        ],
+        "parent_det3": 0.7606817644860921
+      }
+    ],
+    "distal_clouds": [
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan L Finger12",
+        "weighted_vertex_slots": 61,
+        "weights255_sum": 10530,
+        "distal_native_weighted_centroid": [
+          0.013114852585504608,
+          -0.00036268686031859276,
+          0.0025976640925831963
+        ],
+        "centroid_direction_native": [
+          0.9805822485245582,
+          -0.02711767400226819,
+          0.1942243178266521
+        ],
+        "positive_native_X_weight_fraction": 0.9016144349477683,
+        "native_bounds": [
+          [
+            -0.012280107622806291,
+            -0.007093988644872984,
+            -0.005685369224395526
+          ],
+          [
+            0.02467991416276083,
+            0.013080711728286065,
+            0.011045441162374547
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128525817907333,
+          0.9128534164246742,
+          0.9128541860564805
+        ],
+        "det3": 0.7606819391082116,
+        "dominant_vertex_slots": 39,
+        "dominant_native_weighted_centroid": [
+          0.015058343906564202,
+          -0.0010003824850652247,
+          0.0026344615895455203
+        ],
+        "dominant_centroid_direction_native": [
+          0.9829363797458308,
+          -0.0653001647679534,
+          0.17196500182722665
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan L Finger42",
+        "weighted_vertex_slots": 62,
+        "weights255_sum": 11078,
+        "distal_native_weighted_centroid": [
+          0.013938730202174442,
+          -0.002113437797852309,
+          -0.0029591965511325375
+        ],
+        "centroid_direction_native": [
+          0.9676135833125071,
+          -0.14671287061492505,
+          -0.20542465038319513
+        ],
+        "positive_native_X_weight_fraction": 0.9419570319552266,
+        "native_bounds": [
+          [
+            -0.007653425478711173,
+            -0.009706862032705654,
+            -0.009810454071419256
+          ],
+          [
+            0.026021071716577776,
+            0.01594807820553723,
+            0.0053412195438821974
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128536176415918,
+          0.9128523259449554,
+          0.9128543636057498
+        ],
+        "det3": 0.7606820415373876,
+        "dominant_vertex_slots": 47,
+        "dominant_native_weighted_centroid": [
+          0.014653477044887907,
+          -0.0024591682226061894,
+          -0.002849946271780433
+        ],
+        "dominant_centroid_direction_native": [
+          0.9685530143670921,
+          -0.16254400150522152,
+          -0.18837331534771648
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan L Finger32",
+        "weighted_vertex_slots": 59,
+        "weights255_sum": 10191,
+        "distal_native_weighted_centroid": [
+          0.01178505246360867,
+          -0.0020405214861491648,
+          0.0010784984721215261
+        ],
+        "centroid_direction_native": [
+          0.9813575863204708,
+          -0.16991704081639955,
+          0.0898080564952707
+        ],
+        "positive_native_X_weight_fraction": 0.854970071631832,
+        "native_bounds": [
+          [
+            -0.010627750195189412,
+            -0.008707025280027092,
+            -0.007568587441159347
+          ],
+          [
+            0.024857648910079244,
+            0.01052667089624304,
+            0.008474267294852511
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128528467106902,
+          0.912853185820066,
+          0.9128540309746603
+        ],
+        "det3": 0.7606818384734121,
+        "dominant_vertex_slots": 39,
+        "dominant_native_weighted_centroid": [
+          0.01343075900497576,
+          -0.002689663464086608,
+          0.001204804470994789
+        ],
+        "dominant_centroid_direction_native": [
+          0.9767601785084021,
+          -0.1956074235518236,
+          0.08762014341264067
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan L Finger22",
+        "weighted_vertex_slots": 59,
+        "weights255_sum": 11006,
+        "distal_native_weighted_centroid": [
+          0.014992036434076221,
+          0.0009221436328324178,
+          0.0027410736668248285
+        ],
+        "centroid_direction_native": [
+          0.9818976340407806,
+          0.060395440959966774,
+          0.1795255607883418
+        ],
+        "positive_native_X_weight_fraction": 0.9318553516263856,
+        "native_bounds": [
+          [
+            -0.006676306680437172,
+            -0.007156912769229473,
+            -0.007092376944288825
+          ],
+          [
+            0.028613673539298223,
+            0.008644506231987648,
+            0.011328029544568463
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128525351225866,
+          0.9128532362813145,
+          0.9128541941362929
+        ],
+        "det3": 0.760681756839007,
+        "dominant_vertex_slots": 43,
+        "dominant_native_weighted_centroid": [
+          0.016703509096222757,
+          0.0009375968892715734,
+          0.002924224164108437
+        ],
+        "dominant_centroid_direction_native": [
+          0.9835171529767381,
+          0.05520652084924792,
+          0.1721808637922723
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan L Finger02",
+        "weighted_vertex_slots": 52,
+        "weights255_sum": 9515,
+        "distal_native_weighted_centroid": [
+          0.018160243355761253,
+          0.005595272879019075,
+          0.001040700507169941
+        ],
+        "centroid_direction_native": [
+          0.9542379597988538,
+          0.29400606985253736,
+          0.05468406503530847
+        ],
+        "positive_native_X_weight_fraction": 0.9342091434576983,
+        "native_bounds": [
+          [
+            -0.004161938348582805,
+            -0.0009040691252339972,
+            -0.009582246529462601
+          ],
+          [
+            0.032721115379773735,
+            0.01737167380252902,
+            0.011727971767846568
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128539303940697,
+          0.9128530485931673,
+          0.9128532686407003
+        ],
+        "det3": 0.760681991900654,
+        "dominant_vertex_slots": 38,
+        "dominant_native_weighted_centroid": [
+          0.02032412720251013,
+          0.005499202598562835,
+          0.0008883385265008356
+        ],
+        "dominant_centroid_direction_native": [
+          0.9644312251528334,
+          0.2609510679917698,
+          0.04215390923935232
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan R Finger12",
+        "weighted_vertex_slots": 69,
+        "weights255_sum": 10468,
+        "distal_native_weighted_centroid": [
+          0.012951378741277636,
+          -0.000361819193731391,
+          -0.002596767978228284
+        ],
+        "centroid_direction_native": [
+          0.9801184217897763,
+          -0.02738130543607876,
+          -0.19651499530807937
+        ],
+        "positive_native_X_weight_fraction": 0.8959686664119221,
+        "native_bounds": [
+          [
+            -0.012794718272361338,
+            -0.007093524610429114,
+            -0.011215400224858396
+          ],
+          [
+            0.02467923690138929,
+            0.017953938410782633,
+            0.005771043577262602
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128535109633342,
+          0.9128527494604436,
+          0.9128536091129157
+        ],
+        "det3": 0.7606816768398935,
+        "dominant_vertex_slots": 39,
+        "dominant_native_weighted_centroid": [
+          0.015043084779461952,
+          -0.0011575931212354164,
+          -0.0026185514330207293
+        ],
+        "dominant_centroid_direction_native": [
+          0.9823666217619542,
+          -0.07559492355155005,
+          -0.1710006666105158
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan R Finger42",
+        "weighted_vertex_slots": 59,
+        "weights255_sum": 11125,
+        "distal_native_weighted_centroid": [
+          0.013977038940600315,
+          -0.0020693243293266254,
+          0.0029991185745178047
+        ],
+        "centroid_direction_native": [
+          0.9676586478988611,
+          -0.14326350460138423,
+          0.20763503894063073
+        ],
+        "positive_native_X_weight_fraction": 0.9435505617977528,
+        "native_bounds": [
+          [
+            -0.007653665072503979,
+            -0.009706694439349794,
+            -0.005342658149164348
+          ],
+          [
+            0.02602052724298054,
+            0.011146783195445487,
+            0.009809045736305422
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128537859510404,
+          0.912852502651269,
+          0.9128534790894807
+        ],
+        "det3": 0.7606815919724774,
+        "dominant_vertex_slots": 47,
+        "dominant_native_weighted_centroid": [
+          0.0146782360879912,
+          -0.002391339213624005,
+          0.002885674829133882
+        ],
+        "dominant_centroid_direction_native": [
+          0.9689159030747029,
+          -0.1578532038752313,
+          0.19048448439507554
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan R Finger32",
+        "weighted_vertex_slots": 59,
+        "weights255_sum": 9804,
+        "distal_native_weighted_centroid": [
+          0.011999253082360077,
+          -0.002308287741751873,
+          -0.0010723028878334936
+        ],
+        "centroid_direction_native": [
+          0.9782357716272585,
+          -0.18818251641928535,
+          -0.08741919481971783
+        ],
+        "positive_native_X_weight_fraction": 0.8481232150142799,
+        "native_bounds": [
+          [
+            -0.010627884105507857,
+            -0.008706884819870697,
+            -0.008475890778423173
+          ],
+          [
+            0.024857048651828584,
+            0.010495843590586862,
+            0.007566940552581669
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128536984477323,
+          0.9128526344030511,
+          0.912853481389548
+        ],
+        "det3": 0.760681630761417,
+        "dominant_vertex_slots": 39,
+        "dominant_native_weighted_centroid": [
+          0.013686159622760494,
+          -0.002976623666736589,
+          -0.0011862422655866507
+        ],
+        "dominant_centroid_direction_native": [
+          0.9736701187391548,
+          -0.2117649946310225,
+          -0.08439245774003279
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan R Finger22",
+        "weighted_vertex_slots": 59,
+        "weights255_sum": 10668,
+        "distal_native_weighted_centroid": [
+          0.01523439276112553,
+          0.0007357329657857359,
+          -0.0026413362869388496
+        ],
+        "centroid_direction_native": [
+          0.9841867115318875,
+          0.047530519891149835,
+          -0.17063811568030848
+        ],
+        "positive_native_X_weight_fraction": 0.9296962879640045,
+        "native_bounds": [
+          [
+            -0.006676551356283977,
+            -0.007156480537201082,
+            -0.011329655857075571
+          ],
+          [
+            0.028612980902496088,
+            0.008633420035419781,
+            0.007090738960837506
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128536412299878,
+          0.9128529680122917,
+          0.9128537305594047
+        ],
+        "det3": 0.7606820687119981,
+        "dominant_vertex_slots": 40,
+        "dominant_native_weighted_centroid": [
+          0.01747735028672763,
+          0.0007104866856252548,
+          -0.002722454068964731
+        ],
+        "dominant_centroid_direction_native": [
+          0.9872880671180146,
+          0.04013508999111439,
+          -0.15379026977601548
+        ]
+      },
+      {
+        "part": "naraka::outfit::body",
+        "name": "gMan R Finger02",
+        "weighted_vertex_slots": 59,
+        "weights255_sum": 9766,
+        "distal_native_weighted_centroid": [
+          0.017689100133650267,
+          0.005895636738839926,
+          -0.0009479761260558313
+        ],
+        "centroid_direction_native": [
+          0.9474712934986379,
+          0.315784665400843,
+          -0.05077591056490903
+        ],
+        "positive_native_X_weight_fraction": 0.9478804013925866,
+        "native_bounds": [
+          [
+            -0.014860174740375931,
+            -0.0008773805339152285,
+            -0.01162904872340087
+          ],
+          [
+            0.03272039645290403,
+            0.02249607276966359,
+            0.00829374620025447
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128531771785194,
+          0.912853401066983,
+          0.9128533854978268
+        ],
+        "det3": 0.7606817553430124,
+        "dominant_vertex_slots": 38,
+        "dominant_native_weighted_centroid": [
+          0.019694788155694806,
+          0.005680755292862811,
+          -0.0009028060964051179
+        ],
+        "dominant_centroid_direction_native": [
+          0.9598986229224127,
+          0.27687270051703927,
+          -0.04400160701676047
+        ]
+      },
+      {
+        "part": "naraka::outfit::body02",
+        "name": "gMan L Finger02",
+        "weighted_vertex_slots": 30,
+        "weights255_sum": 1338,
+        "distal_native_weighted_centroid": [
+          0.0001823478417383626,
+          0.00905857220136141,
+          0.0032427780339346597
+        ],
+        "centroid_direction_native": [
+          0.018948711344289746,
+          0.9413232873975554,
+          0.3369739083986322
+        ],
+        "positive_native_X_weight_fraction": 0.5127055306427504,
+        "native_bounds": [
+          [
+            -0.014800441146861854,
+            -5.499410144654826e-05,
+            -0.011540700282444138
+          ],
+          [
+            0.008097324449460763,
+            0.024865411915423352,
+            0.013636689471296148
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9128539303940697,
+          0.9128530485931673,
+          0.9128532686407003
+        ],
+        "det3": 0.760681991900654
+      }
+    ]
+  },
+  "bailingmiao": {
+    "links": [
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger0",
+        "child": "gMan L Finger01",
+        "child_offset_parent_native": [
+          0.041915056202483814,
+          -5.226358057441871e-08,
+          1.575646502161021e-09
+        ],
+        "native_direction": [
+          0.999999999999222,
+          -1.2468927709866938e-06,
+          3.759142048022412e-08
+        ],
+        "parent_basis_column_lengths": [
+          0.9168102996550404,
+          0.916809826966626,
+          0.9168093798004161
+        ],
+        "parent_det3": 0.7706155907015723
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger01",
+        "child": "gMan L Finger02",
+        "child_offset_parent_native": [
+          0.0349865588756868,
+          6.35940202164953e-08,
+          7.603222229590756e-08
+        ],
+        "native_direction": [
+          0.9999999999959868,
+          1.8176700498668775e-06,
+          2.173183780827313e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9168101881180811,
+          0.9168096684990155,
+          0.9168094917669957
+        ],
+        "parent_det3": 0.770615457864342
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger1",
+        "child": "gMan L Finger11",
+        "child_offset_parent_native": [
+          0.04130220243120575,
+          -5.999343910545463e-08,
+          4.480770884884855e-08
+        ],
+        "native_direction": [
+          0.9999999999983566,
+          -1.4525481832423586e-06,
+          1.0848745638542653e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9168096482864861,
+          0.91680974170826,
+          0.9168093341598876
+        ],
+        "parent_det3": 0.7706149331747545
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger11",
+        "child": "gMan L Finger12",
+        "child_offset_parent_native": [
+          0.029189548192049886,
+          -7.78392411637796e-08,
+          -2.6782415674109217e-08
+        ],
+        "native_direction": [
+          0.9999999999960234,
+          -2.666681945583197e-06,
+          -9.175344372509753e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168099677646437,
+          0.9168093314023971,
+          0.9168093390736397
+        ],
+        "parent_det3": 0.7706148609606503
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger2",
+        "child": "gMan L Finger21",
+        "child_offset_parent_native": [
+          0.0415117011284456,
+          -2.0025216332375528e-08,
+          6.3232657443457185e-09
+        ],
+        "native_direction": [
+          0.999999999999872,
+          -4.823993184574849e-07,
+          1.5232490050888172e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168099886546779,
+          0.9168092034414159,
+          0.9168099078125609
+        ],
+        "parent_det3": 0.7706152490109808
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger21",
+        "child": "gMan L Finger22",
+        "child_offset_parent_native": [
+          0.02985779217472956,
+          2.919165753567654e-08,
+          -1.602303362213675e-08
+        ],
+        "native_direction": [
+          0.9999999999993779,
+          9.77689755653301e-07,
+          -5.366449578173445e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.916809134820868,
+          0.91680999790489,
+          0.9168099082913651
+        ],
+        "parent_det3": 0.770615199510117
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger3",
+        "child": "gMan L Finger31",
+        "child_offset_parent_native": [
+          0.03303023331168853,
+          6.520602519044516e-08,
+          -5.833153682299752e-10
+        ],
+        "native_direction": [
+          0.9999999999980513,
+          1.9741315350395484e-06,
+          -1.7660043836941914e-08
+        ],
+        "parent_basis_column_lengths": [
+          0.9168095411392558,
+          0.9168094125950877,
+          0.9168100101056849
+        ],
+        "parent_det3": 0.7706151346398713
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger31",
+        "child": "gMan L Finger32",
+        "child_offset_parent_native": [
+          0.029152527853430255,
+          5.7809281361898e-08,
+          3.3214546113491394e-09
+        ],
+        "native_direction": [
+          0.9999999999980274,
+          1.9829937785303167e-06,
+          1.1393367422687382e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168097905813577,
+          0.9168092275171794,
+          0.9168099755908476
+        ],
+        "parent_det3": 0.770615159729438
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger4",
+        "child": "gMan L Finger41",
+        "child_offset_parent_native": [
+          0.02532368250202155,
+          2.6466171088035395e-08,
+          1.223807494232787e-08
+        ],
+        "native_direction": [
+          0.9999999999993372,
+          1.045115420551695e-06,
+          4.832660076725734e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.916809678616157,
+          0.9168098812406387,
+          0.9168097698144436
+        ],
+        "parent_det3": 0.7706154421356752
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan L Finger41",
+        "child": "gMan L Finger42",
+        "child_offset_parent_native": [
+          0.020157983134042712,
+          1.9444106191812693e-07,
+          -6.772743949001736e-09
+        ],
+        "native_direction": [
+          0.9999999999534224,
+          9.645858944127159e-06,
+          -3.359832133825183e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168102342254241,
+          0.9168093857297209,
+          0.9168097132118909
+        ],
+        "parent_det3": 0.7706154450740309
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger0",
+        "child": "gMan R Finger01",
+        "child_offset_parent_native": [
+          0.04191512117040197,
+          -1.3867158421554393e-08,
+          -7.783133371130901e-08
+        ],
+        "native_direction": [
+          0.9999999999982212,
+          -3.308390393327053e-07,
+          -1.856879606640158e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9168104900726083,
+          0.9168098512361955,
+          0.9168091327574465
+        ],
+        "parent_det3": 0.77061556350503
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger01",
+        "child": "gMan R Finger02",
+        "child_offset_parent_native": [
+          0.03498663030979743,
+          6.432162844016709e-08,
+          -2.516188324364066e-08
+        ],
+        "native_direction": [
+          0.9999999999980514,
+          1.8384630891998063e-06,
+          -7.191856723779843e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168104333416418,
+          0.9168098772722191,
+          0.9168092348493521
+        ],
+        "parent_det3": 0.7706156235173061
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger1",
+        "child": "gMan R Finger11",
+        "child_offset_parent_native": [
+          0.04130228657121182,
+          -2.611769511773332e-08,
+          -4.4746340882584335e-08
+        ],
+        "native_direction": [
+          0.9999999999992133,
+          -6.323547020255559e-07,
+          -1.0833865288644299e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9168095577844565,
+          0.9168098473109584,
+          0.9168090004616448
+        ],
+        "parent_det3": 0.7706146653808313
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger11",
+        "child": "gMan R Finger12",
+        "child_offset_parent_native": [
+          0.02918952296697941,
+          3.0315547505654905e-07,
+          5.20096225253841e-08
+        ],
+        "native_direction": [
+          0.9999999999444805,
+          1.0385763254256059e-05,
+          1.7817907672328988e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9168096323090151,
+          0.9168097662140446,
+          0.9168090353134342
+        ],
+        "parent_det3": 0.7706146891508192
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger2",
+        "child": "gMan R Finger21",
+        "child_offset_parent_native": [
+          0.041511712499287645,
+          -3.7382624287762845e-08,
+          -1.4977469847687885e-08
+        ],
+        "native_direction": [
+          0.9999999999995295,
+          -9.005319712692352e-07,
+          -3.608010594103497e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168097282690721,
+          0.9168099225140259,
+          0.916809487611966
+        ],
+        "parent_det3": 0.7706152813604392
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger21",
+        "child": "gMan R Finger22",
+        "child_offset_parent_native": [
+          0.029857748997877243,
+          7.660407019827176e-08,
+          1.187680884195963e-08
+        ],
+        "native_direction": [
+          0.9999999999966297,
+          2.565634475775779e-06,
+          3.9777978047722186e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168100276540405,
+          0.9168100583678779,
+          0.9168095952542131
+        ],
+        "parent_det3": 0.7706157376737781
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger3",
+        "child": "gMan R Finger31",
+        "child_offset_parent_native": [
+          0.03303029106307798,
+          -1.2624130407701273e-08,
+          -7.130787293974095e-09
+        ],
+        "native_direction": [
+          0.9999999999999035,
+          -3.821985820104262e-07,
+          -2.1588629904458716e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168095145991859,
+          0.9168094388554834,
+          0.9168098075155396
+        ],
+        "parent_det3": 0.7706149641198234
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger31",
+        "child": "gMan R Finger32",
+        "child_offset_parent_native": [
+          0.02915245343765349,
+          1.7196450707857025e-08,
+          4.323276403539467e-09
+        ],
+        "native_direction": [
+          0.999999999999815,
+          5.898800505635248e-07,
+          1.48298887185759e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168095417162521,
+          0.9168097007012778,
+          0.9168099417858644
+        ],
+        "parent_det3": 0.7706153198642505
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger4",
+        "child": "gMan R Finger41",
+        "child_offset_parent_native": [
+          0.025323308401048905,
+          6.626972387513419e-08,
+          2.5973410894275517e-08
+        ],
+        "native_direction": [
+          0.9999999999960498,
+          2.6169457333674256e-06,
+          1.0256720995072305e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9168093936653917,
+          0.9168101376855442,
+          0.9168094276576403
+        ],
+        "parent_det3": 0.7706151305788674
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "parent": "gMan R Finger41",
+        "child": "gMan R Finger42",
+        "child_offset_parent_native": [
+          0.020158069429559555,
+          -7.516884181768546e-08,
+          -1.9115033639272028e-08
+        ],
+        "native_direction": [
+          0.9999999999925978,
+          -3.7289702806014916e-06,
+          -9.482571585501374e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168099966970927,
+          0.9168098711931271,
+          0.9168096485835576
+        ],
+        "parent_det3": 0.7706155991505771
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "parent": "gMan L Finger01",
+        "child": "gMan L Finger02",
+        "child_offset_parent_native": [
+          0.0349865588756868,
+          6.35940202164953e-08,
+          7.603222229590756e-08
+        ],
+        "native_direction": [
+          0.9999999999959868,
+          1.8176700498668775e-06,
+          2.173183780827313e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9168101881180811,
+          0.9168096684990155,
+          0.9168094917669957
+        ],
+        "parent_det3": 0.770615457864342
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "parent": "gMan L Finger11",
+        "child": "gMan L Finger12",
+        "child_offset_parent_native": [
+          0.029189548192049886,
+          -7.78392411637796e-08,
+          -2.6782415674109217e-08
+        ],
+        "native_direction": [
+          0.9999999999960234,
+          -2.666681945583197e-06,
+          -9.175344372509753e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168099677646437,
+          0.9168093314023971,
+          0.9168093390736397
+        ],
+        "parent_det3": 0.7706148609606503
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "parent": "gMan L Finger21",
+        "child": "gMan L Finger22",
+        "child_offset_parent_native": [
+          0.02985779217472956,
+          2.919165753567654e-08,
+          -1.602303362213675e-08
+        ],
+        "native_direction": [
+          0.9999999999993779,
+          9.77689755653301e-07,
+          -5.366449578173445e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.916809134820868,
+          0.91680999790489,
+          0.9168099082913651
+        ],
+        "parent_det3": 0.770615199510117
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "parent": "gMan L Finger41",
+        "child": "gMan L Finger42",
+        "child_offset_parent_native": [
+          0.020157983134042712,
+          1.9444106191812693e-07,
+          -6.772743949001736e-09
+        ],
+        "native_direction": [
+          0.9999999999534224,
+          9.645858944127159e-06,
+          -3.359832133825183e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168102342254241,
+          0.9168093857297209,
+          0.9168097132118909
+        ],
+        "parent_det3": 0.7706154450740309
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "parent": "gMan R Finger01",
+        "child": "gMan R Finger02",
+        "child_offset_parent_native": [
+          0.03498663030979743,
+          6.432162844016709e-08,
+          -2.516188324364066e-08
+        ],
+        "native_direction": [
+          0.9999999999980514,
+          1.8384630891998063e-06,
+          -7.191856723779843e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168104333416418,
+          0.9168098772722191,
+          0.9168092348493521
+        ],
+        "parent_det3": 0.7706156235173061
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "parent": "gMan R Finger11",
+        "child": "gMan R Finger12",
+        "child_offset_parent_native": [
+          0.02918952296697941,
+          3.0315547505654905e-07,
+          5.20096225253841e-08
+        ],
+        "native_direction": [
+          0.9999999999444805,
+          1.0385763254256059e-05,
+          1.7817907672328988e-06
+        ],
+        "parent_basis_column_lengths": [
+          0.9168096323090151,
+          0.9168097662140446,
+          0.9168090353134342
+        ],
+        "parent_det3": 0.7706146891508192
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "parent": "gMan R Finger21",
+        "child": "gMan R Finger22",
+        "child_offset_parent_native": [
+          0.029857748997877243,
+          7.660407019827176e-08,
+          1.187680884195963e-08
+        ],
+        "native_direction": [
+          0.9999999999966297,
+          2.565634475775779e-06,
+          3.9777978047722186e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168100276540405,
+          0.9168100583678779,
+          0.9168095952542131
+        ],
+        "parent_det3": 0.7706157376737781
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "parent": "gMan R Finger41",
+        "child": "gMan R Finger42",
+        "child_offset_parent_native": [
+          0.020158069429559555,
+          -7.516884181768546e-08,
+          -1.9115033639272028e-08
+        ],
+        "native_direction": [
+          0.9999999999925978,
+          -3.7289702806014916e-06,
+          -9.482571585501374e-07
+        ],
+        "parent_basis_column_lengths": [
+          0.9168099966970927,
+          0.9168098711931271,
+          0.9168096485835576
+        ],
+        "parent_det3": 0.7706155991505771
+      }
+    ],
+    "distal_clouds": [
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan L Finger42",
+        "weighted_vertex_slots": 55,
+        "weights255_sum": 11706,
+        "distal_native_weighted_centroid": [
+          0.01358441468035864,
+          -0.0020222324607902524,
+          0.0011922711243095231
+        ],
+        "centroid_direction_native": [
+          0.9853944862699412,
+          -0.14668992103870324,
+          0.08648568375435153
+        ],
+        "positive_native_X_weight_fraction": 0.9724073124893217,
+        "native_bounds": [
+          [
+            -0.011933287263848319,
+            -0.007640659516844783,
+            -0.008381608756044656
+          ],
+          [
+            0.022976468219349733,
+            0.02328672139754695,
+            0.0067790985184572605
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168096595342741,
+          0.9168100868787981,
+          0.9168099275676775
+        ],
+        "det3": 0.7706157315414933,
+        "dominant_vertex_slots": 50,
+        "dominant_native_weighted_centroid": [
+          0.013813375956881436,
+          -0.0021795685175603112,
+          0.0012374664413306413
+        ],
+        "dominant_centroid_direction_native": [
+          0.9839345666588003,
+          -0.15525189580904097,
+          0.08814543312990081
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan L Finger32",
+        "weighted_vertex_slots": 60,
+        "weights255_sum": 12249,
+        "distal_native_weighted_centroid": [
+          0.014020960190802663,
+          -0.0009869358262903655,
+          0.0006012874016576172
+        ],
+        "centroid_direction_native": [
+          0.9966202759903177,
+          -0.07015213239300466,
+          0.04273995561178536
+        ],
+        "positive_native_X_weight_fraction": 0.9561596865050208,
+        "native_bounds": [
+          [
+            -0.005383887172196178,
+            -0.008376573818119293,
+            -0.0074041974711839265
+          ],
+          [
+            0.024563190870939833,
+            0.008234563355511648,
+            0.007927354952226268
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168092282546996,
+          0.9168096981490311,
+          0.916810123765354
+        ],
+        "det3": 0.7706152072028738,
+        "dominant_vertex_slots": 52,
+        "dominant_native_weighted_centroid": [
+          0.014267225516866652,
+          -0.0011305331231357654,
+          0.0006343576413184217
+        ],
+        "dominant_centroid_direction_native": [
+          0.9958974461155273,
+          -0.07891478611233078,
+          0.04428016885035059
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan L Finger22",
+        "weighted_vertex_slots": 62,
+        "weights255_sum": 12816,
+        "distal_native_weighted_centroid": [
+          0.018538647229612844,
+          -0.0002997071467590767,
+          -0.0006651559507900893
+        ],
+        "centroid_direction_native": [
+          0.9992265520924875,
+          -0.01615410958439191,
+          -0.03585167132637981
+        ],
+        "positive_native_X_weight_fraction": 0.9730024968789014,
+        "native_bounds": [
+          [
+            -0.0046461717448960105,
+            -0.006041589812067705,
+            -0.008783570363794235
+          ],
+          [
+            0.031307345567896716,
+            0.007848473477054974,
+            0.008229394585030164
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168096465191276,
+          0.9168098362294455,
+          0.9168100037506886
+        ],
+        "det3": 0.7706155739556035,
+        "dominant_vertex_slots": 52,
+        "dominant_native_weighted_centroid": [
+          0.01958303998377936,
+          -0.0004308332138721156,
+          -0.0007342689275675063
+        ],
+        "dominant_centroid_direction_native": [
+          0.9990563872173183,
+          -0.021979563668400034,
+          -0.0374597642975324
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan L Finger12",
+        "weighted_vertex_slots": 62,
+        "weights255_sum": 12122,
+        "distal_native_weighted_centroid": [
+          0.009854815023070423,
+          -5.6488076510963545e-05,
+          0.0001186338073816428
+        ],
+        "centroid_direction_native": [
+          0.9999111251682833,
+          -0.005731518654631372,
+          0.012037086799120546
+        ],
+        "positive_native_X_weight_fraction": 0.8590166639168454,
+        "native_bounds": [
+          [
+            -0.008301409415214178,
+            -0.007136787173638304,
+            -0.008376463962977462
+          ],
+          [
+            0.01938463772858845,
+            0.01100811257472245,
+            0.00897055643670032
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168095051780433,
+          0.9168101196907428,
+          0.9168094660969832
+        ],
+        "det3": 0.7706152414941777,
+        "dominant_vertex_slots": 52,
+        "dominant_native_weighted_centroid": [
+          0.010408752429008215,
+          -0.00038000324497916365,
+          0.00010595880703080086
+        ],
+        "dominant_centroid_direction_native": [
+          0.9992825400793237,
+          -0.03648185606018361,
+          0.01017247614982447
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan L Finger02",
+        "weighted_vertex_slots": 65,
+        "weights255_sum": 12047,
+        "distal_native_weighted_centroid": [
+          0.01592977686375816,
+          0.004635719212628577,
+          -0.00030133018321978726
+        ],
+        "centroid_direction_native": [
+          0.9600110556523005,
+          0.2793725067893566,
+          -0.01815972124197614
+        ],
+        "positive_native_X_weight_fraction": 0.9191499958495891,
+        "native_bounds": [
+          [
+            -0.012204515070411426,
+            -0.003847186495813726,
+            -0.010417258876658675
+          ],
+          [
+            0.03128432863816333,
+            0.01983880943340577,
+            0.010515780708640676
+          ]
+        ],
+        "basis_column_lengths": [
+          0.916809837538848,
+          0.9168101662624849,
+          0.9168092689107321
+        ],
+        "det3": 0.7706153942588163,
+        "dominant_vertex_slots": 47,
+        "dominant_native_weighted_centroid": [
+          0.017684241629191855,
+          0.004184255199790049,
+          -0.0005182960943467722
+        ],
+        "dominant_centroid_direction_native": [
+          0.9727355300350592,
+          0.23015822702009342,
+          -0.028509281688238734
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan R Finger42",
+        "weighted_vertex_slots": 55,
+        "weights255_sum": 11706,
+        "distal_native_weighted_centroid": [
+          0.013583751556138144,
+          -0.0020216039567982603,
+          -0.0011937805575256313
+        ],
+        "centroid_direction_native": [
+          0.9853903429788554,
+          -0.14665087241357005,
+          -0.08659903916529699
+        ],
+        "positive_native_X_weight_fraction": 0.9724073124893217,
+        "native_bounds": [
+          [
+            -0.011933204657351953,
+            -0.007640060663055337,
+            -0.006780611160870392
+          ],
+          [
+            0.022975768806929947,
+            0.0232873296160494,
+            0.008380111443288069
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168100659261327,
+          0.9168095867717347,
+          0.9168095420083656
+        ],
+        "det3": 0.7706153286922284,
+        "dominant_vertex_slots": 50,
+        "dominant_native_weighted_centroid": [
+          0.0138127080020613,
+          -0.002178942801591688,
+          -0.0012389763880314947
+        ],
+        "dominant_centroid_direction_native": [
+          0.9839305235013741,
+          -0.15521419341737458,
+          -0.08825689255863124
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan R Finger32",
+        "weighted_vertex_slots": 60,
+        "weights255_sum": 12249,
+        "distal_native_weighted_centroid": [
+          0.014020137754104333,
+          -0.0009865438620233757,
+          -0.0006029487474874153
+        ],
+        "centroid_direction_native": [
+          0.9966167916101896,
+          -0.07012813966571999,
+          -0.042860409559840225
+        ],
+        "positive_native_X_weight_fraction": 0.9561596865050208,
+        "native_bounds": [
+          [
+            -0.005384020589113525,
+            -0.008376195678031273,
+            -0.007929019246749908
+          ],
+          [
+            0.02456230085088107,
+            0.008235003313291411,
+            0.0074026033522625045
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168096002314874,
+          0.9168095170056926,
+          0.9168097918183973
+        ],
+        "det3": 0.770615088591522,
+        "dominant_vertex_slots": 52,
+        "dominant_native_weighted_centroid": [
+          0.01426639104272086,
+          -0.0011301421669129956,
+          -0.0006360203079605576
+        ],
+        "dominant_centroid_direction_native": [
+          0.995893988408548,
+          -0.07889183653422474,
+          -0.04439867092573892
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan R Finger22",
+        "weighted_vertex_slots": 62,
+        "weights255_sum": 12816,
+        "distal_native_weighted_centroid": [
+          0.01853843990686533,
+          -0.0002994829257529987,
+          0.0006636344796740355
+        ],
+        "centroid_direction_native": [
+          0.9992296643482268,
+          -0.01614225495141972,
+          0.035770176007584246
+        ],
+        "positive_native_X_weight_fraction": 0.9730024968789014,
+        "native_bounds": [
+          [
+            -0.004646376662377882,
+            -0.006041178062653918,
+            -0.008231002988789177
+          ],
+          [
+            0.03130713181442979,
+            0.00784863184394824,
+            0.008782047360606837
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168099331303998,
+          0.9168098075343297,
+          0.9168094391046833
+        ],
+        "det3": 0.7706153161372744,
+        "dominant_vertex_slots": 52,
+        "dominant_native_weighted_centroid": [
+          0.019582832368767917,
+          -0.00043063163533161306,
+          0.0007327526326871981
+        ],
+        "dominant_centroid_direction_native": [
+          0.9990594850965648,
+          -0.02196958089407173,
+          0.03738292061791689
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan R Finger12",
+        "weighted_vertex_slots": 62,
+        "weights255_sum": 12122,
+        "distal_native_weighted_centroid": [
+          0.009854537366339055,
+          -5.592012351114176e-05,
+          -0.00012019982774048716
+        ],
+        "centroid_direction_native": [
+          0.9999095235885986,
+          -0.005674042522791073,
+          -0.012196305927253502
+        ],
+        "positive_native_X_weight_fraction": 0.8590166639168454,
+        "native_bounds": [
+          [
+            -0.008301736561290185,
+            -0.00713619467132609,
+            -0.008972202684162184
+          ],
+          [
+            0.019384366610868176,
+            0.011008511293157053,
+            0.008374892916918772
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168100026012365,
+          0.9168094045550823,
+          0.9168090202309337
+        ],
+        "det3": 0.7706146837299348,
+        "dominant_vertex_slots": 52,
+        "dominant_native_weighted_centroid": [
+          0.01040847714487057,
+          -0.00037942866789084914,
+          -0.0001075217249523706
+        ],
+        "dominant_centroid_direction_native": [
+          0.9992829751344949,
+          -0.03642767359950818,
+          -0.010322800127869602
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::1::body",
+        "name": "gMan R Finger02",
+        "weighted_vertex_slots": 65,
+        "weights255_sum": 12047,
+        "distal_native_weighted_centroid": [
+          0.01592937238705682,
+          0.004637186079179731,
+          0.00030110069911374454
+        ],
+        "centroid_direction_native": [
+          0.9599856728969376,
+          0.2794606146684583,
+          0.01814587230588643
+        ],
+        "positive_native_X_weight_fraction": 0.9191499958495891,
+        "native_bounds": [
+          [
+            -0.01220482291391356,
+            -0.0038456680733365833,
+            -0.01051585827260093
+          ],
+          [
+            0.031283910804983384,
+            0.01984042239616507,
+            0.010416962225577198
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168100216784644,
+          0.9168101307171294,
+          0.9168092090457364
+        ],
+        "det3": 0.7706154688394282,
+        "dominant_vertex_slots": 47,
+        "dominant_native_weighted_centroid": [
+          0.017683830358578727,
+          0.004185711416543341,
+          0.0005180380983851633
+        ],
+        "dominant_centroid_direction_native": [
+          0.9727167701899962,
+          0.23023924158333003,
+          0.028495203566128474
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan R Finger42",
+        "weighted_vertex_slots": 48,
+        "weights255_sum": 12167,
+        "distal_native_weighted_centroid": [
+          0.024659162935157058,
+          -0.006457852810573316,
+          -0.002660285072962284
+        ],
+        "centroid_direction_native": [
+          0.9621515353452122,
+          -0.2519725837030703,
+          -0.10379903706128414
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.007700126095398746,
+            -0.008804850156030497,
+            -0.006758691480317408
+          ],
+          [
+            0.061834599446484215,
+            -0.0026869567222149726,
+            0.0016617090629307274
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168100659261327,
+          0.9168095867717347,
+          0.9168095420083656
+        ],
+        "det3": 0.7706153286922284,
+        "dominant_vertex_slots": 48,
+        "dominant_native_weighted_centroid": [
+          0.024659162935157058,
+          -0.006457852810573316,
+          -0.002660285072962284
+        ],
+        "dominant_centroid_direction_native": [
+          0.9621515353452122,
+          -0.2519725837030703,
+          -0.10379903706128414
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan R Finger32",
+        "weighted_vertex_slots": 48,
+        "weights255_sum": 12240,
+        "distal_native_weighted_centroid": [
+          0.025791163901663906,
+          -0.007170109236838361,
+          -0.001837192848617818
+        ],
+        "centroid_direction_native": [
+          0.9612000340716503,
+          -0.2672197838385207,
+          -0.0684695671517838
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.00866097794845766,
+            -0.009860242355056115,
+            -0.0065309433062666344
+          ],
+          [
+            0.06315259289427122,
+            -0.004259247570022717,
+            0.00366894312410615
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168096002314874,
+          0.9168095170056926,
+          0.9168097918183973
+        ],
+        "det3": 0.770615088591522,
+        "dominant_vertex_slots": 48,
+        "dominant_native_weighted_centroid": [
+          0.025791163901663906,
+          -0.007170109236838361,
+          -0.001837192848617818
+        ],
+        "dominant_centroid_direction_native": [
+          0.9612000340716503,
+          -0.2672197838385207,
+          -0.0684695671517838
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan R Finger22",
+        "weighted_vertex_slots": 48,
+        "weights255_sum": 12136,
+        "distal_native_weighted_centroid": [
+          0.02997706562433744,
+          -0.0044680296908422325,
+          -0.0001897807814546471
+        ],
+        "centroid_direction_native": [
+          0.9890546277284967,
+          -0.1474168785542533,
+          -0.006261572180008791
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.012718409461333624,
+            -0.006799843645548531,
+            -0.005861207170081428
+          ],
+          [
+            0.067187606225101,
+            -0.0008491341804122143,
+            0.005295097939907123
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168099331303998,
+          0.9168098075343297,
+          0.9168094391046833
+        ],
+        "det3": 0.7706153161372744,
+        "dominant_vertex_slots": 48,
+        "dominant_native_weighted_centroid": [
+          0.02997706562433744,
+          -0.0044680296908422325,
+          -0.0001897807814546471
+        ],
+        "dominant_centroid_direction_native": [
+          0.9890546277284967,
+          -0.1474168785542533,
+          -0.006261572180008791
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan R Finger12",
+        "weighted_vertex_slots": 48,
+        "weights255_sum": 11863,
+        "distal_native_weighted_centroid": [
+          0.019191237178820122,
+          -0.005375860943598048,
+          -0.0007393466197588904
+        ],
+        "centroid_direction_native": [
+          0.9622719462610163,
+          -0.26955219847596695,
+          -0.037071737696101524
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.00017910080025207442,
+            -0.008364191520227049,
+            -0.006713298251250832
+          ],
+          [
+            0.05979153434160578,
+            -0.0014423203366278337,
+            0.004772280320619174
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168100026012365,
+          0.9168094045550823,
+          0.9168090202309337
+        ],
+        "det3": 0.7706146837299348,
+        "dominant_vertex_slots": 48,
+        "dominant_native_weighted_centroid": [
+          0.019191237178820122,
+          -0.005375860943598048,
+          -0.0007393466197588904
+        ],
+        "dominant_centroid_direction_native": [
+          0.9622719462610163,
+          -0.26955219847596695,
+          -0.037071737696101524
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan L Finger42",
+        "weighted_vertex_slots": 48,
+        "weights255_sum": 12164,
+        "distal_native_weighted_centroid": [
+          0.024654775679677436,
+          -0.006474598580835651,
+          0.002661048371490105
+        ],
+        "centroid_direction_native": [
+          0.9619772245766047,
+          -0.25262514873229586,
+          0.10382848175658746
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.0076742262513008475,
+            -0.008820555076316294,
+            -0.0016606729256742336
+          ],
+          [
+            0.06182730225233604,
+            -0.002702661769387271,
+            0.006759588934601712
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168096595342741,
+          0.9168100868787981,
+          0.9168099275676775
+        ],
+        "det3": 0.7706157315414933,
+        "dominant_vertex_slots": 48,
+        "dominant_native_weighted_centroid": [
+          0.024654775679677436,
+          -0.006474598580835651,
+          0.002661048371490105
+        ],
+        "dominant_centroid_direction_native": [
+          0.9619772245766047,
+          -0.25262514873229586,
+          0.10382848175658746
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan L Finger32",
+        "weighted_vertex_slots": 48,
+        "weights255_sum": 12240,
+        "distal_native_weighted_centroid": [
+          0.025787621528319073,
+          -0.007186331318573974,
+          0.0018390936370390632
+        ],
+        "centroid_direction_native": [
+          0.9610298612057991,
+          -0.26781372535981257,
+          0.06853768583532202
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.008657454631644468,
+            -0.009876514226849209,
+            -0.0036670499073681306
+          ],
+          [
+            0.06314902505033243,
+            -0.004275440223955096,
+            0.006532859802321739
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168092282546996,
+          0.9168096981490311,
+          0.916810123765354
+        ],
+        "det3": 0.7706152072028738,
+        "dominant_vertex_slots": 48,
+        "dominant_native_weighted_centroid": [
+          0.025787621528319073,
+          -0.007186331318573974,
+          0.0018390936370390632
+        ],
+        "dominant_centroid_direction_native": [
+          0.9610298612057991,
+          -0.26781372535981257,
+          0.06853768583532202
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan L Finger22",
+        "weighted_vertex_slots": 48,
+        "weights255_sum": 12136,
+        "distal_native_weighted_centroid": [
+          0.029975388022907862,
+          -0.004484176706646696,
+          0.00019449979632489364
+        ],
+        "centroid_direction_native": [
+          0.988974630169952,
+          -0.14794594140644668,
+          0.00641711006348076
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.012716107505866603,
+            -0.006816007213898967,
+            -0.005290396871091063
+          ],
+          [
+            0.06718614545687662,
+            -0.0008653078188919361,
+            0.00586595021368555
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168096465191276,
+          0.9168098362294455,
+          0.9168100037506886
+        ],
+        "det3": 0.7706155739556035,
+        "dominant_vertex_slots": 48,
+        "dominant_native_weighted_centroid": [
+          0.029975388022907862,
+          -0.004484176706646696,
+          0.00019449979632489364
+        ],
+        "dominant_centroid_direction_native": [
+          0.988974630169952,
+          -0.14794594140644668,
+          0.00641711006348076
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan L Finger12",
+        "weighted_vertex_slots": 48,
+        "weights255_sum": 11861,
+        "distal_native_weighted_centroid": [
+          0.019189022639715232,
+          -0.0053908719125655424,
+          0.0007451150840147989
+        ],
+        "centroid_direction_native": [
+          0.9620578883946252,
+          -0.27027592526128086,
+          0.03735697527682417
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.00015830946122763478,
+            -0.00837918244662994,
+            -0.004765931742003307
+          ],
+          [
+            0.059787011597192796,
+            -0.0014564697363950163,
+            0.006719600453568203
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168095051780433,
+          0.9168101196907428,
+          0.9168094660969832
+        ],
+        "det3": 0.7706152414941777,
+        "dominant_vertex_slots": 48,
+        "dominant_native_weighted_centroid": [
+          0.019189022639715232,
+          -0.0053908719125655424,
+          0.0007451150840147989
+        ],
+        "dominant_centroid_direction_native": [
+          0.9620578883946252,
+          -0.27027592526128086,
+          0.03735697527682417
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan L Finger02",
+        "weighted_vertex_slots": 60,
+        "weights255_sum": 15294,
+        "distal_native_weighted_centroid": [
+          0.03455494803491605,
+          0.0006148651143815124,
+          -0.002746409299748414
+        ],
+        "centroid_direction_native": [
+          0.9966996069039064,
+          0.01773511038661493,
+          -0.07921716642984172
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.016117529162512967,
+            -0.002984175991521454,
+            -0.010503154772108059
+          ],
+          [
+            0.07146381611200758,
+            0.011037513439971391,
+            0.0058769505693700985
+          ]
+        ],
+        "basis_column_lengths": [
+          0.916809837538848,
+          0.9168101662624849,
+          0.9168092689107321
+        ],
+        "det3": 0.7706153942588163,
+        "dominant_vertex_slots": 60,
+        "dominant_native_weighted_centroid": [
+          0.03455494803491605,
+          0.0006148651143815124,
+          -0.002746409299748414
+        ],
+        "dominant_centroid_direction_native": [
+          0.9966996069039064,
+          0.01773511038661493,
+          -0.07921716642984172
+        ]
+      },
+      {
+        "part": "naraka::female::outfit::2::body02",
+        "name": "gMan R Finger02",
+        "weighted_vertex_slots": 60,
+        "weights255_sum": 15294,
+        "distal_native_weighted_centroid": [
+          0.03455440795858862,
+          0.0006154793058188023,
+          0.0027465661538081275
+        ],
+        "centroid_direction_native": [
+          0.9966988336874415,
+          0.017753089765089776,
+          0.07922286746821681
+        ],
+        "positive_native_X_weight_fraction": 1.0,
+        "native_bounds": [
+          [
+            0.01611703848364554,
+            -0.0029834850180634476,
+            -0.005876783960519383
+          ],
+          [
+            0.07146327541729913,
+            0.011038033837503458,
+            0.010503300469470456
+          ]
+        ],
+        "basis_column_lengths": [
+          0.9168100216784644,
+          0.9168101307171294,
+          0.9168092090457364
+        ],
+        "det3": 0.7706154688394282,
+        "dominant_vertex_slots": 60,
+        "dominant_native_weighted_centroid": [
+          0.03455440795858862,
+          0.0006154793058188023,
+          0.0027465661538081275
+        ],
+        "dominant_centroid_direction_native": [
+          0.9966988336874415,
+          0.017753089765089776,
+          0.07922286746821681
+        ]
+      }
+    ]
+  }
+}
