@@ -36,3 +36,12 @@
 - 官方BGM/原挥声导入器重跑产物哈希稳定，坏艺人metadata、坏attack哈希均在写入前被拒绝。两个声音生成器在外部staging按 importer→generator→generator→importer 顺序复跑，原attack与其来源保持不变，程序hit/deflect音频PCM不变。
 
 已交付官方愁铃客发行BGM和原作共享挥声。原长刀专属挥声、命中、成功卸势及bg_sound_no/原分轨/阶段映射仍未确证；TODO父项因此继续未完成，不能把现有可发声与原音频全集恢复混为一谈。
+
+
+## 后续静态调查收束
+
+同游戏已核EZST key的156个AES/RC4/ChaCha小集合检验均未匹配已知字典前8字节流，已知向量控制通过，无候选被当成字典成功；复现见项目外 `audio_hd_followup/fixed_key_results.md`。
+
+另沿官网HTML→官方NieDownload模块→网易CDN的真实安卓下载链，使用HTTP Range读取ZIP中央目录与小成员，未下载约1.99GB整包、未运行游戏。原包身份为release-v1.15.1.3 / r64464 / publish_mobile、2026-10-26；不能将其直接视为PC相同配置版本。libGame.so首4MiB压缩片段可解出约21MB AArch64 ELF前缀，但入口指向追加R-X段；原包配置明确启用so保护等机制，前缀没有可定位的HD/Zstd实现。故没有继续下载54MB完整成员或安装Ghidra盲目分析受保护内容。Resources.mpkinfo的34044条索引也未匹配PC已知HD manifest/data/index或sound_data精确键；未取得直接sound_data地址。
+
+官方来源、Range账本、CRC/版本/ELF前缀证据在项目外 `audio_mobile_followup/`，REA实际CLI/静态结论在 `../rea-research/REPORT.md`。这些结果说明本轮静态调查尚未恢复字典和专属声音配置，不证明它们不可恢复，也不能用工具安装成功代替解码成功。交付范围仍以本方案上述真实播放与来源记录为准。

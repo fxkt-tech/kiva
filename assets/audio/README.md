@@ -48,3 +48,5 @@ python3 scripts/import-choulingke-music.py \
 - `audio_reference/browser-full-game-audio.json` / `browser-real-audio.json`：完整游戏真实挥刀发声、BGM播放、失锁清理/续播及AudioContext挂起恢复。工具不支持音频输入，未宣称人耳主观试听通过。
 - `audio_hd_followup/README.md`：53份codec6字典及定向候选真实解压仍未成功。
 - 项目外 `../rea-research/REPORT.md`：用户建议的[REA](https://github.com/morluto/rea)已实际运行静态检查，但未从受保护磁盘镜像恢复HD装载逻辑。
+
+官方安卓包的分段读取也未找到可用的明文HD实现；版本/索引/保护证据见研究目录 `audio_mobile_followup/`。该入口未解出专属刀声或成功卸势，TODO保留未完成。
