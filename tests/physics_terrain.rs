@@ -5,7 +5,7 @@ use kiva::{
     simulation::{
         ActionIntent, Body, CombatEffect, CombatFeedback, CombatIntent, Combatant, Facing, Health,
         MotionState, MoveIntent, PhysicsPose, SimulationActive, SimulationPlugin, SpawnPoint,
-        WeaponSet, spawn_box,
+        WeaponPair, spawn_box,
     },
 };
 use std::time::Duration;
@@ -122,7 +122,7 @@ fn scaled_capsules_keep_feet_through_crouch_headroom_teleport_and_revival() {
     );
     app.world_mut().entity_mut(actor).insert((
         Health::new(100.0),
-        Combatant::new(WeaponSet::HammerSniper),
+        Combatant::new(WeaponPair::HammerMusket),
         CombatIntent::default(),
         SpawnPoint(Vec2::ZERO),
     ));
@@ -356,7 +356,7 @@ fn an_actual_jump_can_clear_the_low_rim_and_falling_out_respawns_the_actor() {
     let (mut app, actor) = courtyard_actor(Vec3::new(24.0, 0.05, 0.0));
     app.world_mut().entity_mut(actor).insert((
         Health::new(100.0),
-        Combatant::new(WeaponSet::HammerSniper),
+        Combatant::new(WeaponPair::HammerMusket),
         CombatIntent::default(),
         SpawnPoint(Vec2::ZERO),
     ));

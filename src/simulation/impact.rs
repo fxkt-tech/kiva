@@ -48,8 +48,7 @@ mod tests {
     use crate::{
         gameplay::{self, Player},
         simulation::{
-            Body, CombatEffect, CombatFeedback, CombatIntent, Combatant, Health, PhysicsPose,
-            SimulationPlugin, spawn_box,
+            Body, CombatIntent, Combatant, Health, PhysicsPose, SimulationPlugin, spawn_box,
         },
     };
     use avian3d::prelude::{LinearVelocity, Position};
@@ -82,13 +81,18 @@ mod tests {
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
-            .request_skill();
+            .request_toggle_target();
         tick(app, 1);
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
+            .request_melee_skill();
+        tick(app, 13);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
             .request_combo();
-        for _ in 0..25 {
+        for _ in 0..40 {
             tick(app, 1);
             if app.world().resource::<HitStop>().is_active() {
                 return;
@@ -110,7 +114,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             app.world().get::<Health>(target).unwrap().current(),
-            999_895.0
+            999_896.0
         );
         let actor_position = app.world().get::<Body>(target).unwrap().world_position();
         let box_position = app.world().get::<Position>(crate_entity).unwrap().0;
@@ -119,7 +123,7 @@ mod tests {
             .world()
             .get::<Combatant>(player)
             .unwrap()
-            .sniper_sequence()
+            .sequence()
             .unwrap()
             .elapsed();
         for _ in 0..3 {
@@ -147,7 +151,7 @@ mod tests {
                 app.world()
                     .get::<Combatant>(player)
                     .unwrap()
-                    .sniper_sequence()
+                    .sequence()
                     .unwrap()
                     .elapsed(),
                 elapsed
@@ -163,7 +167,7 @@ mod tests {
             app.world()
                 .get::<Combatant>(player)
                 .unwrap()
-                .sniper_sequence()
+                .sequence()
                 .unwrap()
                 .elapsed()
                 > elapsed
@@ -173,27 +177,22 @@ mod tests {
     #[test]
     fn user_pause_preserves_the_hit_stop_budget_and_ordinary_shots_do_not_trigger_it() {
         let (mut app, player) = arena();
-        {
-            let mut intent = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
-            intent.request_switch_weapon();
-            intent.request_attack();
-        }
-        tick(&mut app, 1);
-        assert!(!app.world().resource::<HitStop>().is_active());
-        assert!(
-            !app.world()
-                .resource::<CombatFeedback>()
-                .events()
-                .any(|event| matches!(
-                    event.kind,
-                    CombatEffect::SniperShot | CombatEffect::SniperImpact
-                ))
-        );
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
-            .request_switch_weapon();
-        tick(&mut app, 30);
+            .request_toggle_target();
+        tick(&mut app, 1);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_ranged_skill();
+        tick(&mut app, 26);
+        assert!(!app.world().resource::<HitStop>().is_active());
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_toggle_target();
+        tick(&mut app, 1);
         fire_sniper(&mut app, player);
         let before = app.world().resource::<HitStop>().remaining;
         app.world_mut().resource_mut::<SimulationActive>().0 = false;

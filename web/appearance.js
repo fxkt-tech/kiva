@@ -10,8 +10,8 @@
     document.getElementById("appearance-lihuowang")?.setAttribute("aria-pressed", String(selected === 2));
     const hint = document.getElementById("appearance-hint");
     if (hint) hint.textContent = selected === 1
-      ? "愁铃客 · 愁铃长刀 · F3 切换外观"
-      : "无尘·李火旺 · 横刀·烛泪 · F3 切换外观";
+      ? "愁铃客 · 身体与服饰 · F3 切换"
+      : "李火旺 · 身体与服饰 · F3 切换";
     const status = document.getElementById("hud-appearance");
     if (status) status.textContent = `外观 · ${current === 1 ? "愁铃客" : "李火旺"} · F3 切换`;
   }

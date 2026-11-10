@@ -29,7 +29,7 @@ pub(super) fn sync_player(
         };
         transform.translation = body.interpolated_world(alpha);
         let yaw = combat
-            .sniper_sequence()
+            .sequence()
             .and_then(|sequence| {
                 let direction = (sequence.aim_position() - transform.translation).xz();
                 (direction.length_squared() > 0.0001).then(|| (-direction.x).atan2(-direction.y))

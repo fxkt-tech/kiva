@@ -8,9 +8,9 @@
 ## Signatures
 
 `setup(&mut World)` 插入 `Level`，通过模拟的 `spawn_box` / `spawn_terrain` 装配三维道具、地面、坡道和有限高度围墙，再装配玩家与所选模式的敌人。
-`EnemyMode::{Target,Combat}` 为模式资源，默认 Target；`set_enemy_mode(&mut World, EnemyMode)` 在模式改变时替换敌人，并清理玩家旧目标、联动和战斗意图，保留玩家姿态、生命、武器与冷却；相同模式不重置敌人。
+`EnemyMode::{Target,Combat}` 为模式资源，默认 Target；`set_enemy_mode(&mut World, EnemyMode)` 在模式改变时替换敌人，并清理玩家旧目标、联动和战斗意图，保留玩家姿态、生命、耐力、武器与冷却；相同模式不重置敌人。
 所有战斗实体含 Body / MoveIntent / ActionIntent / MotionState / Facing / Health / SpawnPoint；
-玩家另含 Player / Combatant / CombatIntent，敌人另含 Enemy::default() 或 Enemy::target_dummy()。
+玩家另含 Player / Combatant / CombatIntent / DefenseState / Stamina，敌人另含 Enemy::default() 或 Enemy::target_dummy()。
 `Level { half_size, props, ground, ramp, bamboo, forest_trunks, forest_rocks }`；
 `Prop { center: Vec2, size: Vec3, kind: PropKind }`；kind 为 Crate / Pillar / Stone。
 `TerrainGeometry { vertices: Vec<Vec3>, triangles: Vec<[u32;3]> }` 是碰撞和客户端 Mesh 的同源几何。
@@ -24,9 +24,10 @@ Prop.size 是完整三维尺寸。Crate 为可转动动态刚体；Pillar / Ston
 西侧坡道约 20°，升至 1.5m 高台；东侧小山顶约在 `(16.5,2.6,8.5)`，具有缓坡和超过行走上限的陡坡。
 小山用确定性连续高度函数采样；不能分别在模拟和客户端计算两套山形，也不能用堆叠长方体替代连续山面。
 玩家出生在原点，速度 6m/s，半宽 0.35m；玩家 Facing 由客户端输入表达，敌人 Facing 由模拟决策。
-玩家生命 100、默认长刀震击近战（内部HammerSniper机制）；实战模式仅装配一个 `(0,-6)` 愁铃客，Body 速度5.2m/s、半宽0.3m、标准身高，另含 `Boss::default()`，生命上限 `Boss::PHASE_HEALTH`（当前650）。两条生命阶段和伤害等是Kiva适配；已恢复的原作决策由simulation管理。
+玩家生命 1000、默认 WeaponPair::HammerMusket（锤子＋鸟铳）；实战模式仅装配一个 `(0,-6)` 愁铃客，Body 速度5.2m/s、半宽0.3m、标准身高，另含 `Boss::default()`，生命上限 `Boss::PHASE_HEALTH`（当前650）。两条生命阶段和伤害等是Kiva适配；已恢复的原作决策由simulation管理。
 靶子模式只装配一个 `(0,-4)` 的被动敌人、生命 1,000,000、Body::scaled(1.45)，半宽0.435m和同比胶囊高度；主动移动和攻击由模拟禁用，仍有完整物理与生命状态。
 出生点由玩法指定，复活规则由模拟执行；客户端不能另造目标或生命数据。
+玩家装配时建立逻辑 Companion／CompanionState，无独立 Body 或 Health；妹妹的显示资产属于客户端。模式替换时同步清旧联动、拉力和妹妹可见性，暂停也不能残留。
 
 ## Validation & Error Matrix
 

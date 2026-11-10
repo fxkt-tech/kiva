@@ -27,19 +27,19 @@
   <body>
     <main class="game-shell">
       <div class="game-frame">
-        <canvas id="game" tabindex="0" aria-label="俯视探索：WASD 移动，鼠标左右转向，Esc 释放鼠标。"></canvas>
+        <canvas id="game" tabindex="0" aria-label="俯视探索：WASD 移动，左键近战，E 近战技，Q 妹妹远程技，中键锁定，右键拆招防御弹反，Tab 联动，1/2 换组，Esc 暂停。"></canvas>
         <div class="game-hud" aria-label="战斗状态">
           <div class="hud-shade" aria-hidden="true"></div>
           <svg class="hud-defs" aria-hidden="true"><defs>
-            <symbol id="hud-icon-sniper" viewBox="0 0 40 40"><path d="M5 23h30M9 23v7l7-7M13 19h15v8H13M21 19v-5h7v5M31 21v4M5 21v4"/></symbol>
-            <symbol id="hud-icon-cannon" viewBox="0 0 40 40"><path d="M7 20h23v11H7zM12 20v-5h12v5M30 21l6-3v15l-6-3M8 31l-3 4M15 31l4 4"/></symbol>
-            <symbol id="hud-icon-blade" viewBox="0 0 40 40"><path d="m9 34 5-8L33 5l-4 13-13 11M8 25l8 8M7 35l3 2"/></symbol>
+            <symbol id="hud-icon-musket" viewBox="0 0 40 40"><path d="M5 23h30M9 23v7l7-7M13 19h15v8H13M21 19v-5h7v5M31 21v4M5 21v4"/></symbol>
+            <symbol id="hud-icon-bow" viewBox="0 0 40 40"><path d="M10 4q30 16 0 32l13-16zM5 20h29m-6-5 6 5-6 5"/></symbol>
+            <symbol id="hud-icon-hammer" viewBox="0 0 40 40"><path d="M18 15v22h5V15M6 5h29v12H6zM10 5v12m21-12v12"/></symbol><symbol id="hud-icon-axe" viewBox="0 0 40 40"><path d="M19 6v30m3-25 12-5v17l-12-5m-4-7L6 6v17l12-5M19 36l-4 3"/></symbol>
             <symbol id="hud-icon-attack" viewBox="0 0 40 40"><path d="m9 31 20-24M14 33 34 9M5 23 20 10M8 31l3 3M26 8l4 3"/></symbol>
             <symbol id="hud-icon-guard" viewBox="0 0 40 40"><path d="m7 33 24-26-7 18-13 10zM6 9l28 21M4 17l10-1M26 5l1 9M27 29l8 5"/></symbol>
             <symbol id="hud-icon-target" viewBox="0 0 40 40"><circle cx="20" cy="20" r="10"/><path d="M20 4v10m0 12v10M4 20h10m12 0h10"/></symbol>
           </defs></svg>
           <header class="hud-corner hud-place"><small>KIVA / BAMBOO FOREST</small><strong>幽篁竹林</strong><span id="hud-enemy-mode" class="hud-mode">靶子模式 · F2 切换</span><span id="hud-appearance" class="hud-mode">外观 · 愁铃客 · F3 切换</span></header>
-          <aside class="hud-corner hud-utility"><span><kbd>Q</kbd>切换目标</span><span><kbd>Esc</kbd>暂停</span></aside>
+          <aside class="hud-corner hud-utility"><span><kbd>中键</kbd>锁定 / 解锁</span><span><kbd>Esc</kbd>暂停</span></aside>
           <section id="hud-target" class="hud-target" aria-label="锁定目标生命" hidden>
             <svg class="hud-target-ornament" viewBox="0 0 720 58" preserveAspectRatio="none" aria-hidden="true">
               <path d="M25 35h670M25 36l-10 4 10 5m670-9 10 4-10 5M115 29c27 6 49-7 73-5 18 2 39 4 52-3 8-4 17-3 28-2m337 10c-27 6-49-7-73-5-18 2-39 4-52-3-8-4-17-3-28-2"/>
@@ -52,27 +52,29 @@
           </section>
           <section class="hud-vitals" aria-label="玩家生命">
             <div id="hud-status" class="hud-state">准备就绪</div>
-            <div id="hud-combo" class="hud-state linked" hidden><kbd class="hud-key">Tab</kbd><span id="hud-combo-name">狙击追击</span><span id="hud-combo-time" class="hud-time"></span></div>
-            <div class="hud-vitals-header"><span><span id="hud-persona">哥哥</span> · <span id="hud-weapon">愁铃长刀</span></span><span class="hud-player-number"><b id="hud-health">100</b> / <span id="hud-health-max">100</span></span></div>
+            <div id="hud-combo" class="hud-state linked" hidden><kbd class="hud-key">Tab</kbd><span id="hud-combo-name">妹妹三枪</span><span id="hud-combo-time" class="hud-time"></span></div>
+            <div class="hud-vitals-header"><span><span id="hud-persona">哥哥</span> · <span id="hud-weapon">锤子</span></span><span class="hud-player-number"><b id="hud-health">1000</b> / <span id="hud-health-max">1000</span></span></div>
             <div class="hud-player-hp"><progress id="hud-health-bar" max="1" value="1" aria-label="玩家生命"></progress></div>
             <div class="hud-vitals-line" aria-hidden="true"></div>
           </section>
+          <div class="hud-stamina" aria-label="耐力"><span>耐力 <b id="hud-stamina">100</b> / <span id="hud-stamina-max">100</span></span><progress id="hud-stamina-bar" max="1" value="1" aria-label="耐力"></progress></div>
           <section class="hud-combat" aria-label="技能与武器">
-            <span id="hud-skill-caption" class="hud-skill-caption">重刀震击</span>
+            <span id="hud-skill-caption" class="hud-skill-caption">锤击 · 击飞</span>
             <div class="hud-skills">
               <svg class="hud-skill-lines" viewBox="0 0 220 165" aria-hidden="true"><path d="m49 24 122 122M49 146 171 24m-67 53 6-6 6 6-6 6z"/><path d="m110 3 10 10m-20 0 10-10M15 72l10-10m0 20L15 72m180 0-10-10m0 20 10-10" opacity=".5"/></svg>
-              <div id="hud-skill-start" class="hud-slot hud-start" role="group" aria-label="E 重刀震击" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-start-icon" href="#hud-icon-blade"/></svg><span id="hud-cooldown" class="hud-cooldown" hidden></span><kbd class="hud-key">E</kbd></div>
+              <div id="hud-skill-start" class="hud-slot hud-start" role="group" aria-label="E 锤击 · 击飞" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-start-icon" href="#hud-icon-hammer"/></svg><span id="hud-cooldown" class="hud-cooldown" hidden></span><kbd class="hud-key">E</kbd></div>
               <div id="hud-skill-attack" class="hud-slot hud-attack" role="group" aria-label="左键 普通攻击" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use href="#hud-icon-attack"/></svg><kbd class="hud-key">左键</kbd></div>
-              <div id="hud-skill-guard" class="hud-slot hud-guard" role="group" aria-label="右键 卸势" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use href="#hud-icon-guard"/></svg><kbd class="hud-key">右键</kbd></div>
-              <div id="hud-skill-combo" class="hud-slot hud-combo-slot" role="group" aria-label="Tab 狙击追击" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-combo-icon" href="#hud-icon-sniper"/></svg><kbd class="hud-key">Tab</kbd></div>
+              <div id="hud-skill-guard" class="hud-slot hud-guard" role="group" aria-label="右键 拆招 / 防御 / 弹反" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use href="#hud-icon-guard"/></svg><kbd class="hud-key">右键</kbd></div>
+              <div id="hud-skill-combo" class="hud-slot hud-combo-slot" role="group" aria-label="Tab 妹妹三枪" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-combo-icon" href="#hud-icon-musket"/></svg><kbd class="hud-key">Tab</kbd></div>
             </div>
+            <div id="hud-skill-ranged" class="hud-ranged-slot" role="group" aria-label="Q 妹妹鸟铳" aria-disabled="true"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-ranged-skill-icon" href="#hud-icon-musket"/></svg><span id="hud-ranged-caption">妹妹 · 单发鸟铳</span><span id="hud-ranged-cooldown" hidden></span><kbd>Q</kbd></div>
             <div class="hud-weapons">
-              <div id="hud-melee" class="hud-weapon-choice active" role="group" aria-label="近战武器" aria-current="true"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-melee-icon" href="#hud-icon-blade"/></svg><span class="hud-weapon-name"><small>近战</small><span id="hud-melee-name">愁铃长刀</span></span></div>
-              <div class="hud-switch" aria-label="滚轮切换近战与远程"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="6"/><path d="M12 3v6m-9 0-2 3 2 3m18-6 2 3-2 3"/></svg><small>滚轮</small></div>
-              <div id="hud-ranged" class="hud-weapon-choice" role="group" aria-label="远程武器" aria-current="false"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-ranged-icon" href="#hud-icon-sniper"/></svg><span class="hud-weapon-name"><small>远程</small><span id="hud-ranged-name">狙击枪</span></span></div>
+              <div id="hud-melee" class="hud-weapon-choice active" role="group" aria-label="近战武器" aria-current="true"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-melee-icon" href="#hud-icon-hammer"/></svg><span class="hud-weapon-name"><small>哥哥 · 左键 / E</small><span id="hud-melee-name">锤子</span></span></div>
+              <div class="hud-switch" aria-label="哥哥近战与妹妹远程协同"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg><small>协同</small></div>
+              <div id="hud-ranged" class="hud-weapon-choice" role="group" aria-label="远程武器" aria-current="false"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-ranged-icon" href="#hud-icon-musket"/></svg><span class="hud-weapon-name"><small>妹妹 · Q</small><span id="hud-ranged-name">鸟铳</span></span></div>
             </div>
           </section>
-          <div class="hud-sets" aria-label="武器套装"><span id="hud-pair1" class="hud-set active" aria-current="true"><kbd>1</kbd>刀狙</span><span>·</span><span id="hud-pair2" class="hud-set" aria-current="false"><kbd>2</kbd>刀炮</span></div>
+          <div class="hud-sets" aria-label="武器套装"><span id="hud-pair1" class="hud-set active" aria-current="true"><kbd>1</kbd>锤鸟</span><span>·</span><span id="hud-pair2" class="hud-set" aria-current="false"><kbd>2</kbd>链斧弓</span></div>
         </div>
         <div id="entry" class="overlay" role="dialog" aria-labelledby="entry-title">
           <section class="card">
@@ -89,12 +91,12 @@
                 <span id="enemy-mode-hint">1 个静止靶子 · 100 万生命 · 不会攻击</span>
               </fieldset>
               <fieldset class="appearance-select">
-                <legend>角色与近战外观</legend>
+                <legend>哥哥身体与服饰</legend>
                 <div class="appearance-options">
-                  <button id="appearance-choulingke" type="button" aria-pressed="true"><span>愁铃客</span><small>愁铃长刀</small></button>
-                  <button id="appearance-lihuowang" type="button" aria-pressed="false"><span>李火旺</span><small>横刀 · 烛泪</small></button>
+                  <button id="appearance-choulingke" type="button" aria-pressed="true"><span>愁铃客</span><small>身体与服饰</small></button>
+                  <button id="appearance-lihuowang" type="button" aria-pressed="false"><span>李火旺</span><small>身体与服饰</small></button>
                 </div>
-                <span id="appearance-hint">愁铃客 · 愁铃长刀 · F3 切换外观</span>
+                <span id="appearance-hint">愁铃客 · 身体与服饰 · F3 切换</span>
               </fieldset>
               <div class="entry-actions">
                 <button id="enter" hidden>点击进入 <span aria-hidden="true">→</span></button>
@@ -122,15 +124,15 @@
                 <section class="guide-group" aria-labelledby="combat-title">
                   <h3 id="combat-title">战斗与技能</h3>
                   <dl class="control-list">
-                    <div class="control-row"><dt>普通攻击 / 卸势</dt><dd><kbd>左键</kbd><span>/</span><kbd>右键</kbd></dd></div>
-                    <div class="control-row"><dt>起手技能<span>重刀震击 3 米 · 火炮跃进</span></dt><dd><kbd>E</kbd></dd></div>
-                    <div class="control-row"><dt>释放联动<span>击飞后狙击 · 跃进中旋斧</span></dt><dd><kbd>Tab</kbd></dd></div>
-                    <div class="control-row"><dt>切换近战 / 远程</dt><dd><kbd>滚轮</kbd></dd></div>
-                    <div class="control-row"><dt>切换武器套装<span>长刀震击 / 狙击枪 · 长刀旋斩 / 火炮</span></dt><dd><kbd>1</kbd><span>/</span><kbd>2</kbd></dd></div>
-                    <div class="control-row"><dt>切换锁定目标</dt><dd><kbd>Q</kbd></dd></div>
-                    <div class="control-row"><dt>靶子 / 实战<span>切换时重新生成敌人</span></dt><dd><kbd>F2</kbd></dd></div>
-                    <div class="control-row"><dt>切换角色与近战外观<span>愁铃客 / 李火旺 · 不改变武器玩法</span></dt><dd><kbd>F3</kbd></dd></div>
-                    <div class="control-row"><dt>调整落点距离<span>火炮模式下使用</span></dt><dd><kbd>鼠标上下</kbd></dd></div>
+                    <div class="control-row"><dt>近战普攻</dt><dd><kbd>左键</kbd></dd></div>
+                    <div class="control-row"><dt>拆招 / 防御 / 弹反<span>按下拆招，长按防御，有效防御松开弹反</span></dt><dd><kbd>右键</kbd></dd></div>
+                    <div class="control-row"><dt>近战技能<span>锤击飞 / 链斧减速 · 独立冷却</span></dt><dd><kbd>E</kbd></dd></div>
+                    <div class="control-row"><dt>妹妹远程技能<span>鸟铳单发 / 弓射链斧 · 需要锁定</span></dt><dd><kbd>Q</kbd></dd></div>
+                    <div class="control-row"><dt>释放联动<span>锤 E 浮空后三枪 / 弓 Q 僵直后拉近三箭</span></dt><dd><kbd>Tab</kbd></dd></div>
+                    <div class="control-row"><dt>选择武器组<span>锤子＋鸟铳 / 链斧＋弓箭</span></dt><dd><kbd>1</kbd><span>/</span><kbd>2</kbd></dd></div>
+                    <div class="control-row"><dt>锁定 / 解锁目标</dt><dd><kbd>中键</kbd></dd></div>
+                    <div class="control-row"><dt>靶子 / 实战</dt><dd><kbd>F2</kbd></dd></div>
+                    <div class="control-row"><dt>哥哥身体与服饰<span>愁铃客 / 李火旺 · 保留当前武器</span></dt><dd><kbd>F3</kbd></dd></div>
                   </dl>
                 </section>
               </div>

@@ -5,6 +5,7 @@ mod audio;
 mod avatar;
 mod camera;
 mod combat;
+mod companion;
 pub(super) mod controls;
 mod enemies;
 mod environment;
@@ -17,6 +18,7 @@ mod skeleton;
 mod source_animation;
 mod stickman;
 mod texture_mips;
+mod weapons;
 mod web;
 
 use bevy::prelude::*;
@@ -68,7 +70,6 @@ pub(super) fn run() {
     .insert_resource(ClearColor(Color::srgb_u8(15, 22, 29)))
     .init_resource::<controls::ViewYaw>()
     .init_resource::<controls::CaptureState>()
-    .init_resource::<controls::AimDistance>()
     .init_resource::<skeleton::AnimationLibrary>()
     .init_resource::<source_animation::SourceAnimationLibrary>()
     .init_resource::<appearance::AppearanceSelection>()
@@ -78,6 +79,8 @@ pub(super) fn run() {
             crate::gameplay::setup,
             scene::setup,
             combat::setup,
+            companion::setup,
+            weapons::setup_tether,
             impact::setup,
             camera::setup,
             rendering::setup,
@@ -104,6 +107,8 @@ pub(super) fn run() {
             combat::sync_health_bars,
             combat::sync_weapons,
             animation::animate,
+            companion::sync,
+            weapons::sync_tether,
             avatar::sync,
             stickman::sync_attachments,
             combat::sync_markers,

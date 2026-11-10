@@ -5,11 +5,18 @@
   let confirmed = false;
   let request = null;
   let look = 0;
-  let aim = 0;
   let keys = 0;
   let actions = 0;
-  let rightPressed = false;
-  let lastWheel = null;
+  let defenseEdges = [];
+  let defenseCancelled = false;
+  let rightBlocked = false;
+  const mousePressed = new Set();
+  const MAX_DEFENSE_EDGES = 64;
+  const DEFENSE_PRESSED = 1;
+  const DEFENSE_RELEASED = 2;
+  const DEFENSE_CANCELLED = 3;
+  const MOVEMENT_RELEASED = 1024;
+  const SHIFT_RELEASED = 2048;
   const pressed = new Set();
   const heldKeys = Object.freeze({ KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8, ShiftLeft: 16, ShiftRight: 16 });
   const actionKeys = Object.freeze({ Space: 1, KeyE: 8, Tab: 16, Digit1: 64, Digit2: 128, KeyQ: 256, KeyC: 512 });
@@ -25,13 +32,31 @@
 
   function clearInputs() {
     look = 0;
-    aim = 0;
+    // A blur and recapture may both occur before Rust samples again.
+    actions &= MOVEMENT_RELEASED | SHIFT_RELEASED;
+    if (keys & 15) actions |= MOVEMENT_RELEASED;
+    if (keys & 16) actions |= SHIFT_RELEASED;
     keys = 0;
-    actions = 0;
-    rightPressed = false;
-    lastWheel = null;
+    cancelDefense();
+    mousePressed.clear();
+    rightBlocked = false;
     pressed.clear();
     previous = null;
+  }
+
+  function cancelDefense() {
+    // Retain cancellation even if blur and recapture happen between Rust samples.
+    defenseEdges = [];
+    defenseCancelled = true;
+  }
+
+  function queueDefense(edge) {
+    if (defenseEdges.length + Number(defenseCancelled) >= MAX_DEFENSE_EDGES) {
+      cancelDefense();
+      rightBlocked = mousePressed.has(2);
+      return;
+    }
+    defenseEdges.push(edge);
   }
 
   function clearCapture() {
@@ -105,6 +130,12 @@
   window.addEventListener("focus", render);
   document.addEventListener("keydown", (event) => {
     if (!event.isTrusted || !isActive()) return;
+    if (event.code === "Escape") {
+      clearCapture();
+      if (document.pointerLockElement === canvas()) document.exitPointerLock();
+      render();
+      return;
+    }
     if (heldKeys[event.code] || actionKeys[event.code]) event.preventDefault?.();
     if (event.repeat || pressed.has(event.code)) return;
     const firstShift = heldKeys[event.code] === 16 && (keys & 16) === 0;
@@ -119,35 +150,43 @@
   document.addEventListener("keyup", (event) => {
     if (!event.isTrusted) return;
     if (isActive() && (heldKeys[event.code] || actionKeys[event.code])) event.preventDefault?.();
+    const previouslyHeld = keys;
     pressed.delete(event.code);
     refreshKeys();
+    if (isActive()) {
+      if ((previouslyHeld & 15) && !(keys & 15)) actions |= MOVEMENT_RELEASED;
+      if ((previouslyHeld & 16) && !(keys & 16)) actions |= SHIFT_RELEASED;
+    }
   }, true);
   document.addEventListener("pointerdown", (event) => {
     if (!event.isTrusted || event.pointerType !== "mouse" || !isActive()) return;
+    if (![0, 1, 2].includes(event.button)) return;
+    event.preventDefault?.();
+    if (mousePressed.has(event.button)) return;
+    mousePressed.add(event.button);
     if (event.button === 0) actions |= 4;
-    if (event.button === 2 && !rightPressed) {
-      rightPressed = true;
-      actions |= 1024;
-    }
-    if (event.button === 0 || event.button === 2) event.preventDefault?.();
+    if (event.button === 1) actions ^= 32;
+    if (event.button === 2 && !rightBlocked) queueDefense(DEFENSE_PRESSED);
   }, true);
   document.addEventListener("pointerup", (event) => {
-    if (event.isTrusted && event.pointerType === "mouse" && event.button === 2) rightPressed = false;
+    if (!event.isTrusted || event.pointerType !== "mouse" || !isActive()) return;
+    if (!mousePressed.delete(event.button)) return;
+    if (event.button === 2) {
+      if (rightBlocked) rightBlocked = false;
+      else queueDefense(DEFENSE_RELEASED);
+    }
   }, true);
   document.addEventListener("pointercancel", (event) => {
-    if (event.isTrusted) rightPressed = false;
+    if (!event.isTrusted || event.pointerType !== "mouse" || !isActive()) return;
+    cancelDefense();
+    mousePressed.clear();
+    rightBlocked = false;
   });
   document.addEventListener("contextmenu", (event) => {
     if (event.isTrusted && isActive()) event.preventDefault?.();
   }, true);
   document.addEventListener("wheel", (event) => {
-    if (!event.isTrusted || !isActive()) return;
-    event.preventDefault?.();
-    if (!Number.isFinite(event.deltaY) || event.deltaY === 0) return;
-    const now = Number.isFinite(event.timeStamp) ? event.timeStamp : Date.now();
-    // Trackpad inertia is one gesture until the stream is quiet for 160ms.
-    if (lastWheel === null || now - lastWheel >= 160) actions |= 32;
-    lastWheel = now;
+    if (event.isTrusted && isActive()) event.preventDefault?.();
   }, { capture: true, passive: false });
   document.addEventListener("pointerleave", () => { previous = null; });
 
@@ -164,7 +203,6 @@
     const raw = samples.reduce((sum, sample) => sum + (Number.isFinite(sample.movementX) ? sample.movementX : 0), 0);
     if (isActive()) {
       look += raw * gain;
-      aim += samples.reduce((sum, sample) => sum + (Number.isFinite(sample.movementY) ? sample.movementY : 0), 0) * gain;
       return;
     }
     // Browser movementX may use physical pixels while clientX uses CSS pixels.
@@ -195,10 +233,12 @@
       look = 0;
       return delta;
     },
-    takeAim() {
-      const delta = isActive() ? aim : 0;
-      aim = 0;
-      return delta;
+    takeDefenseEdges() {
+      const pending = defenseCancelled ? [DEFENSE_CANCELLED] : [];
+      if (isActive()) pending.push(...defenseEdges);
+      defenseEdges = [];
+      defenseCancelled = false;
+      return pending;
     },
     ready() {
       ready = true;

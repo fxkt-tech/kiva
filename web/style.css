@@ -192,3 +192,21 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
     .hud-combat { right:15px; bottom:25px; transform:scale(.64); }
     .hud-sets { right:15px; bottom:6px; width:146px; gap:8px; }
   }
+
+/* Action V1: read-only stamina and the independent sister Q slot. */
+.game-hud .hud-stamina { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:280px; display:flex; align-items:center; gap:10px; color:#d9d7b7; font-size:10px; text-shadow:0 1px 3px #000; }
+.game-hud .hud-stamina > span { white-space:nowrap; }
+.game-hud .hud-stamina progress { height:5px; flex:1; width:100%; appearance:none; border:1px solid #acb4a55e; background:#182520; }
+.game-hud .hud-stamina progress::-webkit-progress-bar { background:#182520; }
+.game-hud .hud-stamina progress::-webkit-progress-value { background:#bfb989; }
+.game-hud .hud-stamina progress::-moz-progress-bar { background:#bfb989; }
+.game-hud .hud-ranged-slot { position:absolute; right:0; bottom:49px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; color:#b1b6a5; font-size:11px; opacity:.6; }
+.game-hud .hud-ranged-slot .hud-glyph { width:27px; height:27px; }
+.game-hud .hud-ranged-slot.ready { opacity:1; color:#e6d5a4; }
+.game-hud .hud-ranged-slot.cooling { color:#9b9f94; }
+.game-hud .hud-ranged-slot kbd { border:1px solid #b9bc9b80; padding:2px 5px; }
+.game-hud .hud-skills { top:14px; }
+.game-hud .hud-combat { height:264px; }
+.game-hud .hud-weapon-name small { font-size:8px; white-space:nowrap; }
+@media(max-width:1050px) { .game-hud .hud-stamina { width:230px; bottom:6px; } }
+@media(max-width:680px) { .game-hud .hud-stamina { width:190px; bottom:3px; font-size:9px; } }

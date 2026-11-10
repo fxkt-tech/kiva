@@ -11,7 +11,7 @@
     const hint = document.getElementById("enemy-mode-hint");
     if (hint) hint.textContent = selected === 1
       ? "1 个静止靶子 · 100 万生命 · 不会攻击"
-      : "愁铃客镇守 · 两阶段对战 · 卸势制造破绽";
+      : "愁铃客镇守 · 两阶段对战 · 弹反制造破绽";
     const status = document.getElementById("hud-enemy-mode");
     if (status) status.textContent = `${current === 1 ? "靶子" : "实战"}模式 · F2 切换`;
   }

@@ -320,6 +320,8 @@ type Motors = (
     Option<&'static Facing>,
     Option<&'static Health>,
     Option<&'static Combatant>,
+    Option<&'static super::DefenseState>,
+    Option<&'static super::SlowEffect>,
 );
 
 pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
@@ -327,7 +329,9 @@ pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
     if dt <= 0.0 {
         return;
     }
-    for (mut body, mut velocity, intent, motion, actions, facing, health, combat) in &mut actors {
+    for (mut body, mut velocity, intent, motion, actions, facing, health, combat, defense, slow) in
+        &mut actors
+    {
         body.previous = body.position;
         if health.is_some_and(|health| !health.is_alive()) {
             velocity.x = 0.0;
@@ -344,7 +348,11 @@ pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
             }
             continue;
         }
-        let direction = intent.0;
+        let direction = if combat.is_some_and(Combatant::movement_locked) {
+            Vec2::ZERO
+        } else {
+            intent.0
+        };
         let Some(mut motion) = motion else {
             let change = (direction * body.speed - velocity.xz()).clamp_length_max(120.0 * dt);
             velocity.x += change.x;
@@ -353,32 +361,29 @@ pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
         };
         let mut idle = ActionIntent::default();
         let mut actions = actions;
-        if combat.is_some_and(|combat| combat.is_sniping() || combat.is_spinning())
-            && let Some(actions) = actions.as_deref_mut()
-        {
-            actions.discard_parry_request();
-        }
-        let delta = motion.advance(
+        let mut delta = motion.advance(
             actions.as_deref_mut().unwrap_or(&mut idle),
             direction,
             facing.map_or(Vec2::NEG_Y, Facing::direction),
             body.speed,
             dt,
+            defense.is_some_and(super::DefenseState::is_active),
         );
-        if let Some(planar) = motion.pending_planar_velocity.take() {
-            velocity.x = planar.x;
-            velocity.z = planar.y;
+        if let Some(combat) = combat
+            && let Some(pull) = combat.pull_velocity()
+        {
+            delta = pull * dt;
+        }
+        if defense.is_some_and(super::DefenseState::is_active) {
+            delta = direction
+                * (body.speed * 0.35).min(if motion.is_crouched() { 1.6 } else { f32::MAX })
+                * dt;
+        }
+        if let Some(slow) = slow {
+            delta *= slow.factor();
         }
         if let Some(vertical) = motion.pending_vertical_velocity.take() {
             velocity.y = vertical;
-        }
-        if motion.is_leaping() {
-            if motion.leap_drive_ended() {
-                let brake = velocity.xz().clamp_length_max(36.0 * dt);
-                velocity.x -= brake.x;
-                velocity.z -= brake.y;
-            }
-            continue;
         }
         let support = motion.support;
         let mut target = Vec3::new(delta.x / dt, 0.0, delta.y / dt);

@@ -5,7 +5,6 @@ use bevy::prelude::*;
 pub(super) const GRAVITY: f32 = 18.0;
 const JUMP_VELOCITY: f32 = 6.4;
 const SPRINT_MULTIPLIER: f32 = 1.6;
-const PARRY_MULTIPLIER: f32 = 0.35;
 const CROUCH_SPEED: f32 = 1.6;
 const SLIDE_DURATION: f32 = 0.55;
 const SLIDE_SPEED: f32 = 5.0;
@@ -23,7 +22,6 @@ pub struct ActionIntent {
     shift_released: bool,
     movement_held: bool,
     movement_released: bool,
-    parry: bool,
     jump: bool,
     dodge: bool,
     crouch_toggle: bool,
@@ -57,14 +55,13 @@ impl ActionIntent {
         self.crouch_toggle = !self.crouch_toggle;
     }
 
-    /// One physical press remains latched until the next simulation step.
-    pub fn request_parry(&mut self) {
-        self.parry = true;
+    pub(super) fn movement_requested(&self) -> bool {
+        self.jump || self.dodge
     }
-
-    /// Linked combat actions reject this press without queuing or starting a cooldown.
-    pub(super) fn discard_parry_request(&mut self) {
-        self.parry = false;
+    pub(super) fn discard_movement_actions(&mut self) {
+        self.jump = false;
+        self.dodge = false;
+        self.crouch_toggle = false;
     }
 
     pub fn clear(&mut self) {
@@ -95,12 +92,6 @@ impl Facing {
     pub fn direction(&self) -> Vec2 {
         self.0
     }
-}
-
-struct Leap {
-    velocity: Vec3,
-    elapsed: f32,
-    duration: f32,
 }
 
 struct Dodge {
@@ -138,17 +129,13 @@ pub struct MotionState {
     dodge_cooldown: f32,
     dodge: Option<Dodge>,
     dodge_protected: bool,
-    parry_remaining: f32,
-    parry_cooldown: f32,
     sprinting: bool,
     sprint_hold_time: f32,
     sprint_latched: bool,
     crouched: bool,
     slide: Option<Slide>,
-    leap: Option<Leap>,
     pub(super) support: Option<super::physics::Support>,
     pub(super) pending_vertical_velocity: Option<f32>,
-    pub(super) pending_planar_velocity: Option<Vec2>,
     pub(super) capsule_height: f32,
     pub(super) steep_normal: Option<Vec3>,
 }
@@ -163,17 +150,13 @@ impl Default for MotionState {
             dodge_cooldown: 0.0,
             dodge: None,
             dodge_protected: false,
-            parry_remaining: 0.0,
-            parry_cooldown: 0.0,
             sprinting: false,
             sprint_hold_time: 0.0,
             sprint_latched: false,
             crouched: false,
             slide: None,
-            leap: None,
             support: None,
             pending_vertical_velocity: None,
-            pending_planar_velocity: None,
             capsule_height: super::physics::STANDING_HEIGHT,
             steep_normal: None,
         }
@@ -181,9 +164,6 @@ impl Default for MotionState {
 }
 
 impl MotionState {
-    pub const PARRY_WINDOW: f32 = 0.25;
-    pub const PARRY_COOLDOWN: f32 = 0.65;
-
     pub fn height(&self) -> f32 {
         self.height
     }
@@ -211,26 +191,6 @@ impl MotionState {
 
     pub fn is_invulnerable(&self) -> bool {
         self.dodge_protected
-    }
-
-    pub fn is_parrying(&self) -> bool {
-        self.parry_remaining > 0.0
-            && self.is_grounded()
-            && !self.is_dodging()
-            && !self.is_leaping()
-            && !self.is_sliding()
-    }
-
-    pub fn parry_remaining(&self) -> f32 {
-        self.parry_remaining
-    }
-
-    pub fn parry_cooldown(&self) -> f32 {
-        self.parry_cooldown
-    }
-
-    pub(super) fn cancel_parry(&mut self) {
-        self.parry_remaining = 0.0;
     }
 
     pub fn is_sprinting(&self) -> bool {
@@ -270,16 +230,6 @@ impl MotionState {
         self.slide = None;
     }
 
-    pub fn is_leaping(&self) -> bool {
-        self.leap.is_some()
-    }
-
-    pub(super) fn leap_drive_ended(&self) -> bool {
-        self.leap
-            .as_ref()
-            .is_some_and(|leap| leap.elapsed >= leap.duration)
-    }
-
     pub fn dodge_remaining(&self) -> f32 {
         self.dodge
             .as_ref()
@@ -308,49 +258,6 @@ impl MotionState {
         self.jumps_used
     }
 
-    /// Legacy planar adapter. The former peak parameter is validated for
-    /// compatibility; the ballistic arc uses flight duration and shared gravity.
-    pub fn start_leap(&mut self, origin: Vec2, target: Vec2, duration: f32, peak: f32) -> bool {
-        if !peak.is_finite() || peak <= 0.0 {
-            return false;
-        }
-        self.start_leap_to(
-            Vec3::new(origin.x, self.height, origin.y),
-            Vec3::new(target.x, self.height, target.y),
-            duration,
-        )
-    }
-
-    /// Launch toward a world-space destination using the shared physical gravity.
-    pub fn start_leap_to(&mut self, origin: Vec3, target: Vec3, duration: f32) -> bool {
-        if !self.is_grounded()
-            || self.is_dodging()
-            || !origin.is_finite()
-            || !target.is_finite()
-            || !duration.is_finite()
-            || duration <= 0.0
-        {
-            return false;
-        }
-        let mut velocity = (target - origin) / duration;
-        velocity.y += 0.5 * GRAVITY * duration;
-        if !velocity.is_finite() {
-            return false;
-        }
-        self.cancel_parry();
-        self.sprinting = false;
-        self.exit_crouch();
-        self.pending_vertical_velocity = Some(velocity.y);
-        self.pending_planar_velocity = Some(velocity.xz());
-        self.support = None;
-        self.leap = Some(Leap {
-            velocity,
-            elapsed: 0.0,
-            duration,
-        });
-        true
-    }
-
     pub fn launch_up(&mut self, velocity: f32) -> bool {
         if !velocity.is_finite() || velocity <= 0.0 {
             return false;
@@ -360,8 +267,6 @@ impl MotionState {
         self.support = None;
         self.dodge = None;
         self.dodge_protected = false;
-        self.leap = None;
-        self.cancel_parry();
         self.sprinting = false;
         self.exit_crouch();
         true
@@ -391,12 +296,8 @@ impl MotionState {
         self.height = height;
         self.vertical_velocity = velocity;
         self.support = support;
-        if support.is_none() {
-            self.cancel_parry();
-        }
         if landed {
             self.jumps_used = 0;
-            self.leap = None;
         }
     }
 
@@ -411,27 +312,15 @@ impl MotionState {
         facing: Vec2,
         speed: f32,
         dt: f32,
+        defending: bool,
     ) -> Vec2 {
         if std::mem::take(&mut intent.cancel_stances) {
             self.cancel_sprint();
             self.exit_crouch();
-            self.cancel_parry();
         }
         self.dodge_cooldown = (self.dodge_cooldown - dt).max(0.0);
-        // Clamp the final fraction so exact fixed-step boundaries do not gain a
-        // protection tick from floating-point subtraction residue.
-        let decay = |remaining: f32| {
-            if remaining <= dt + f32::EPSILON * 8.0 {
-                0.0
-            } else {
-                remaining - dt
-            }
-        };
-        self.parry_remaining = decay(self.parry_remaining);
-        self.parry_cooldown = decay(self.parry_cooldown);
         let jump = std::mem::take(&mut intent.jump);
         let dodge = std::mem::take(&mut intent.dodge);
-        let parry = std::mem::take(&mut intent.parry);
         let crouch_toggle = std::mem::take(&mut intent.crouch_toggle);
         self.sprinting = false;
         self.dodge_protected = false;
@@ -453,23 +342,12 @@ impl MotionState {
             self.sprint_hold_time = 0.0;
         }
 
-        if let Some(leap) = &mut self.leap {
-            leap.elapsed += dt;
-            // Flight ends only on a real landing; the committed direction is bounded
-            // to its requested travel time, then horizontal momentum is released.
-            return if leap.elapsed <= leap.duration {
-                leap.velocity.xz() * dt
-            } else {
-                Vec2::ZERO
-            };
-        }
-
         if self.is_grounded() && !self.is_dodging() {
             if crouch_toggle {
                 self.crouched = !self.crouched;
                 self.slide = if self.crouched
                     && self.sprint_latched
-                    && !self.is_parrying()
+                    && !defending
                     && direction != Vec2::ZERO
                 {
                     Some(Slide {
@@ -505,15 +383,6 @@ impl MotionState {
             self.support = None;
         }
 
-        let can_parry =
-            self.is_grounded() && !self.is_dodging() && !self.is_sliding() && !self.is_leaping();
-        if !can_parry {
-            self.cancel_parry();
-        } else if parry && self.parry_cooldown == 0.0 {
-            self.parry_remaining = Self::PARRY_WINDOW;
-            self.parry_cooldown = Self::PARRY_COOLDOWN;
-        }
-
         if let Some(dodge) = &mut self.dodge {
             if intent.shift_held && self.sprint_hold_time >= SPRINT_HOLD_TIME {
                 dodge.held = true;
@@ -542,20 +411,13 @@ impl MotionState {
             }
             delta
         } else {
-            let parrying = self.is_parrying();
             self.sprinting = self.sprint_latched
                 && self.is_grounded()
-                && !parrying
                 && !self.crouched
+                && !defending
                 && direction != Vec2::ZERO;
             let move_speed = if self.crouched {
-                if parrying {
-                    CROUCH_SPEED.min(speed * PARRY_MULTIPLIER)
-                } else {
-                    CROUCH_SPEED
-                }
-            } else if parrying {
-                speed * PARRY_MULTIPLIER
+                CROUCH_SPEED
             } else if self.sprinting {
                 speed * SPRINT_MULTIPLIER
             } else {

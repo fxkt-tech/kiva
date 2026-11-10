@@ -222,51 +222,6 @@ mod tests {
     }
 
     #[test]
-    fn timed_parry_slows_briefly_and_holding_shift_does_not_renew_it() {
-        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
-        app.world_mut()
-            .get_mut::<MoveIntent>(actor)
-            .unwrap()
-            .set(Vec2::X);
-        app.world_mut()
-            .get_mut::<ActionIntent>(actor)
-            .unwrap()
-            .set_shift_held(true);
-        tick(&mut app, 12);
-        let sprint_start = app.world().get::<Body>(actor).unwrap().position().x;
-        tick(&mut app, 60);
-        let sprint_end = app.world().get::<Body>(actor).unwrap().position().x;
-        assert!((sprint_end - sprint_start - 9.6).abs() < 0.001);
-        assert!(
-            app.world()
-                .get::<MotionState>(actor)
-                .unwrap()
-                .is_sprinting()
-        );
-        app.world_mut()
-            .get_mut::<ActionIntent>(actor)
-            .unwrap()
-            .request_parry();
-        tick(&mut app, 6);
-        let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!(motion.is_parrying());
-        assert!(!motion.is_sprinting());
-        assert!((app.world().get::<Body>(actor).unwrap().velocity().x - 2.1).abs() < 0.03);
-        app.world_mut()
-            .get_mut::<ActionIntent>(actor)
-            .unwrap()
-            .set_shift_held(true); // Holding Shift cannot renew the parry window.
-        tick(&mut app, 30);
-        let resumed = app.world().get::<Body>(actor).unwrap().position().x;
-        tick(&mut app, 60);
-        let end = app.world().get::<Body>(actor).unwrap().position().x;
-        assert!((end - resumed - 9.6).abs() < 0.001);
-        let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!(!motion.is_parrying());
-        assert!(motion.is_sprinting());
-    }
-
-    #[test]
     fn two_jumps_are_latched_third_is_rejected_and_landing_refills_them() {
         for delay in [8, 24] {
             let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
@@ -441,104 +396,39 @@ mod tests {
     }
 
     #[test]
-    fn dodge_and_cannon_leap_still_sweep_against_walls() {
+    fn dodge_still_sweeps_against_walls() {
         use crate::simulation::SolidBox;
-
-        for leap in [false, true] {
-            let world = CollisionWorld::new(
-                100.0,
-                vec![SolidBox::new(Vec2::new(2.0, 0.0), Vec2::splat(0.5))],
-            );
-            let (mut app, actor) = actor(world);
-            if leap {
-                assert!(
-                    app.world_mut()
-                        .get_mut::<MotionState>(actor)
-                        .unwrap()
-                        .start_leap(Vec2::ZERO, Vec2::X * 6.0, 0.6, 2.0)
-                );
-            } else {
-                app.world_mut()
-                    .get_mut::<Facing>(actor)
-                    .unwrap()
-                    .set(Vec2::X);
-                app.world_mut()
-                    .get_mut::<MoveIntent>(actor)
-                    .unwrap()
-                    .set(Vec2::X);
-                app.world_mut()
-                    .get_mut::<ActionIntent>(actor)
-                    .unwrap()
-                    .request_dodge();
-            }
-            tick(&mut app, 60);
-            let position = app.world().get::<Body>(actor).unwrap().position();
-            assert!((position.x - 1.15).abs() < 0.001, "{position:?}");
-            assert!(position.x + 0.35 <= 1.5 + 0.001);
-            assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
-        }
-    }
-
-    #[test]
-    fn cannon_leap_has_interpolated_height_lands_at_target_and_rejects_airborne_restarts() {
-        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
-        assert!(
-            app.world_mut()
-                .get_mut::<MotionState>(actor)
-                .unwrap()
-                .start_leap(Vec2::ZERO, Vec2::X * 6.0, 0.6, 2.0)
+        let world = CollisionWorld::new(
+            100.0,
+            vec![SolidBox::new(Vec2::new(2.0, 0.0), Vec2::splat(0.5))],
         );
-        assert!(app.world().get::<MotionState>(actor).unwrap().is_leaping());
-        tick(&mut app, 18);
-        let motion = app.world().get::<MotionState>(actor).unwrap();
-        // With shared gravity, a 0.6s ballistic flight has a real ~0.81m apex.
-        assert!((motion.height() - 0.81).abs() < 0.02);
-        assert!(motion.interpolated_height(0.0) <= motion.interpolated_height(0.5));
-        assert!(motion.interpolated_height(0.5) <= motion.height());
-        assert!(
-            !app.world_mut()
-                .get_mut::<MotionState>(actor)
-                .unwrap()
-                .start_leap(Vec2::ZERO, Vec2::Y * 10.0, 0.6, 2.0)
-        );
+        let (mut app, actor) = actor(world);
+        app.world_mut()
+            .get_mut::<Facing>(actor)
+            .unwrap()
+            .set(Vec2::X);
+        app.world_mut()
+            .get_mut::<MoveIntent>(actor)
+            .unwrap()
+            .set(Vec2::X);
         app.world_mut()
             .get_mut::<ActionIntent>(actor)
             .unwrap()
-            .request_jump();
-        for _ in 0..42 {
-            tick(&mut app, 1);
-            if app.world().get::<MotionState>(actor).unwrap().is_grounded() {
-                break;
-            }
-        }
+            .request_dodge();
+        tick(&mut app, 60);
+        let position = app.world().get::<Body>(actor).unwrap().position();
+        assert!((position.x - 1.15).abs() < 0.001, "{position:?}");
+        assert!(position.x + 0.35 <= 1.5 + 0.001);
         assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
-        assert_eq!(
-            app.world().get::<MotionState>(actor).unwrap().jumps_used(),
-            0
-        );
-        assert!(
-            app.world()
-                .get::<Body>(actor)
-                .unwrap()
-                .position()
-                .distance(Vec2::X * 6.0)
-                < 0.18
-        );
-        let landed = app.world().get::<Body>(actor).unwrap().position();
-        tick(&mut app, 30);
-        let stopped = app.world().get::<Body>(actor).unwrap();
-        assert!(stopped.position().x >= landed.x);
-        assert!(stopped.position().x - landed.x < 0.4);
-        assert!(stopped.velocity().xz().length() < 0.001);
     }
 
     #[test]
-    fn knockup_interrupts_leap_without_erasing_physical_horizontal_momentum() {
+    fn knockup_preserves_physical_horizontal_momentum() {
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         app.world_mut()
-            .get_mut::<MotionState>(actor)
+            .get_mut::<MoveIntent>(actor)
             .unwrap()
-            .start_leap(Vec2::ZERO, Vec2::X * 6.0, 0.6, 2.0);
+            .set(Vec2::X);
         tick(&mut app, 12);
         let position = app.world().get::<Body>(actor).unwrap().position();
         let height = app.world().get::<MotionState>(actor).unwrap().height();
@@ -548,7 +438,7 @@ mod tests {
                 .unwrap()
                 .launch_up(8.0)
         );
-        assert!(!app.world().get::<MotionState>(actor).unwrap().is_leaping());
+        app.world_mut().get_mut::<MoveIntent>(actor).unwrap().stop();
         tick(&mut app, 1);
         let next = app.world().get::<Body>(actor).unwrap().position();
         assert!(next.x > position.x);
@@ -565,12 +455,10 @@ mod tests {
         actions.set_shift_held(true);
         actions.request_jump();
         actions.request_dodge();
-        actions.request_parry();
         actions.clear();
         tick(&mut app, 1);
         let motion = app.world().get::<MotionState>(actor).unwrap();
         assert!(motion.is_grounded());
-        assert!(!motion.is_parrying());
         assert!(!motion.is_sprinting());
         assert!(!motion.is_dodging());
         app.world_mut()
@@ -583,17 +471,13 @@ mod tests {
     }
 
     #[test]
-    fn invalid_facing_and_leap_requests_do_not_poison_motion() {
+    fn invalid_facing_and_knockup_requests_do_not_poison_motion() {
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         let mut facing = app.world_mut().get_mut::<Facing>(actor).unwrap();
         facing.set(Vec2::new(f32::NAN, 1.0));
         facing.set(Vec2::splat(f32::MAX));
         assert_eq!(facing.direction(), Vec2::NEG_Y);
         let mut motion = app.world_mut().get_mut::<MotionState>(actor).unwrap();
-        assert!(!motion.start_leap(Vec2::ZERO, Vec2::X, 0.0, 2.0));
-        assert!(!motion.start_leap(Vec2::ZERO, Vec2::splat(f32::NAN), 0.6, 2.0));
-        assert!(!motion.start_leap(Vec2::ZERO, Vec2::X, 0.6, f32::NAN));
-        assert!(!motion.start_leap(Vec2::ZERO, Vec2::X, 0.6, 0.0));
         assert!(!motion.launch_up(f32::NAN));
         tick(&mut app, 1);
         let motion = app.world().get::<MotionState>(actor).unwrap();
@@ -626,7 +510,6 @@ mod tests {
         let mut actions = app.world_mut().get_mut::<ActionIntent>(actor).unwrap();
         actions.request_jump();
         actions.request_dodge();
-        actions.request_parry();
         actions.clear(); // Capture loss clears the pending commands before fixed update.
         tick(&mut app, 120);
         let motion = app.world().get::<MotionState>(actor).unwrap();
@@ -1041,31 +924,6 @@ mod tests {
     }
 
     #[test]
-    fn active_parry_crouches_without_sliding_with_a_previous_sprint_latch() {
-        let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
-        begin_sprint(&mut app, actor);
-        app.world_mut()
-            .get_mut::<ActionIntent>(actor)
-            .unwrap()
-            .request_parry();
-        tick(&mut app, 1);
-        set_shift(&mut app, actor, false);
-        request_crouch(&mut app, actor);
-        tick(&mut app, 1);
-        let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!(motion.is_crouched());
-        assert!(motion.is_parrying());
-        assert!(motion.sprint_latched());
-        assert!(!motion.is_sliding());
-        assert!(!motion.is_sprinting());
-        tick(&mut app, 6);
-        let start = app.world().get::<Body>(actor).unwrap().position().x;
-        tick(&mut app, 60);
-        let end = app.world().get::<Body>(actor).unwrap().position().x;
-        assert!((end - start - 1.6).abs() < 0.001);
-    }
-
-    #[test]
     fn sprint_crouch_slides_in_a_locked_direction_and_stays_crouched_after_ending() {
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         begin_sprint(&mut app, actor);
@@ -1143,8 +1001,8 @@ mod tests {
     }
 
     #[test]
-    fn accepted_jump_dodge_leap_and_knockup_exit_crouch_but_rejected_actions_do_not() {
-        for action in ["jump", "dodge", "leap", "knockup"] {
+    fn accepted_jump_dodge_and_knockup_exit_crouch_but_rejected_actions_do_not() {
+        for action in ["jump", "dodge", "knockup"] {
             let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
             request_crouch(&mut app, actor);
             tick(&mut app, 1);
@@ -1159,12 +1017,6 @@ mod tests {
                     .get_mut::<ActionIntent>(actor)
                     .unwrap()
                     .request_dodge(),
-                "leap" => {
-                    let mut motion = app.world_mut().get_mut::<MotionState>(actor).unwrap();
-                    assert!(!motion.start_leap(Vec2::ZERO, Vec2::X, 0.0, 1.0));
-                    assert!(motion.is_crouched());
-                    assert!(motion.start_leap(Vec2::ZERO, Vec2::X, 0.5, 1.0));
-                }
                 _ => {
                     let mut motion = app.world_mut().get_mut::<MotionState>(actor).unwrap();
                     assert!(!motion.launch_up(f32::NAN));
@@ -1197,8 +1049,8 @@ mod tests {
     }
 
     #[test]
-    fn airborne_dodge_and_leap_crouch_requests_are_ignored_without_landing_replay() {
-        for action in ["jump", "dodge", "leap"] {
+    fn airborne_and_dodge_crouch_requests_are_ignored_without_landing_replay() {
+        for action in ["jump", "dodge"] {
             let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
             match action {
                 "jump" => app
@@ -1211,12 +1063,7 @@ mod tests {
                     .get_mut::<ActionIntent>(actor)
                     .unwrap()
                     .request_dodge(),
-                _ => {
-                    app.world_mut()
-                        .get_mut::<MotionState>(actor)
-                        .unwrap()
-                        .start_leap(Vec2::ZERO, Vec2::X, 0.5, 1.0);
-                }
+                _ => unreachable!(),
             }
             tick(&mut app, 1);
             request_crouch(&mut app, actor);
@@ -1229,7 +1076,7 @@ mod tests {
     }
 
     #[test]
-    fn pause_cleanup_cancels_sticky_slide_and_crouch_on_resume_without_canceling_a_leap() {
+    fn pause_cleanup_cancels_sticky_slide_and_crouch_without_canceling_a_jump() {
         use crate::simulation::SimulationActive;
 
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
@@ -1252,13 +1099,10 @@ mod tests {
         assert!(!motion.is_crouched());
         assert!(!motion.is_sliding());
         assert!(!motion.sprint_latched());
-        let origin = app.world().get::<Body>(actor).unwrap().position();
-        assert!(
-            app.world_mut()
-                .get_mut::<MotionState>(actor)
-                .unwrap()
-                .start_leap(origin, origin + Vec2::X * 3.0, 0.6, 2.0)
-        );
+        app.world_mut()
+            .get_mut::<ActionIntent>(actor)
+            .unwrap()
+            .request_jump();
         tick(&mut app, 6);
         let height = app.world().get::<MotionState>(actor).unwrap().height();
         app.world_mut().resource_mut::<SimulationActive>().0 = false;
@@ -1274,19 +1118,20 @@ mod tests {
         app.world_mut().resource_mut::<SimulationActive>().0 = true;
         tick(&mut app, 1);
         let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!(motion.is_leaping());
+        assert!(!motion.is_grounded());
+        assert_eq!(motion.jumps_used(), 1);
         assert!(motion.height() > height);
         assert!(!motion.is_crouched());
     }
 
     #[test]
     fn death_and_respawn_clear_crouch_and_discard_c_pressed_while_down() {
-        use crate::simulation::{CombatIntent, Combatant, Enemy, Health, SpawnPoint, WeaponSet};
+        use crate::simulation::{CombatIntent, Combatant, Enemy, Health, SpawnPoint, WeaponPair};
 
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         app.world_mut().entity_mut(actor).insert((
             Health::new(1.0),
-            Combatant::new(WeaponSet::HammerSniper),
+            Combatant::new(WeaponPair::HammerMusket),
             CombatIntent::default(),
             SpawnPoint(Vec2::ZERO),
         ));

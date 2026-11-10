@@ -58,7 +58,7 @@ function fixture(gpu = {}) {
     document.pointerLockElement = nodes.get("game");
     emit(document, "pointerlockchange");
   };
-  const capture = () => { input.ready(); click(); confirm(); };
+  const capture = () => { input.ready(); click(); confirm(); input.takeDefenseEdges(); };
   const move = (x, clientX = 500, extras = {}) => emit(document, "pointermove", {
     isTrusted: true, pointerType: "mouse", movementX: x, movementY: 80, clientX, ...extras,
   });
@@ -193,30 +193,94 @@ test("action presses are consumed once and repeat cannot replay an action", () =
   assert.equal(f.input.takeActions(), 128);
 });
 
-test("right click latches a single parry and never creates held defense", () => {
+const pointer = (f, type, button = 2, extras = {}) => emit(f.document, type, {
+  isTrusted: true, pointerType: "mouse", button, ...extras,
+});
+const defense = (f) => Array.from(f.input.takeDefenseEdges());
+
+test("right edges preserve complete taps and repress ordering without action bits", () => {
   const f = fixture(); f.parse(); f.capture();
-  const press = (code) => emit(f.document, "keydown", { code, isTrusted: true });
-  const release = (code) => emit(f.document, "keyup", { code, isTrusted: true });
-  press("ShiftLeft"); press("ShiftRight"); press("KeyW");
-  emit(f.document, "pointerdown", { isTrusted: true, pointerType: "mouse", button: 2 });
-  assert.equal(f.input.keys(), 1 | 16);
-  assert.equal(f.input.takeActions(), 2 | 1024);
-  emit(f.document, "pointerdown", { isTrusted: true, pointerType: "mouse", button: 2 });
+  pointer(f, "pointerdown"); pointer(f, "pointerdown");
+  pointer(f, "pointerup"); pointer(f, "pointerup");
+  pointer(f, "pointerdown"); pointer(f, "pointerup");
+  assert.deepEqual(defense(f), [1, 2, 1, 2]);
+  assert.deepEqual(defense(f), []);
   assert.equal(f.input.takeActions(), 0);
-  release("ShiftLeft");
-  assert.equal(f.input.keys(), 1 | 16);
-  release("ShiftRight");
-  emit(f.document, "pointerup", { isTrusted: true, pointerType: "mouse", button: 2 });
-  assert.equal(f.input.keys(), 1);
-  emit(f.document, "pointerdown", { isTrusted: false, pointerType: "mouse", button: 2 });
-  emit(f.document, "keydown", { code: "ShiftLeft", isTrusted: false });
-  assert.equal(f.input.keys(), 1);
-  assert.equal(f.input.takeActions(), 0);
-  // A complete tap before Rust samples still reaches one fixed step.
-  emit(f.document, "pointerdown", { isTrusted: true, pointerType: "mouse", button: 2 });
-  emit(f.document, "pointerup", { isTrusted: true, pointerType: "mouse", button: 2 });
-  assert.equal(f.input.takeActions(), 1024);
-  assert.equal(f.input.takeActions(), 0);
+  assert.equal(f.input.keys(), 0);
+});
+
+test("right edges remain queued across unsampled frames and are consumed once", () => {
+  const f = fixture(); f.parse(); f.capture();
+  pointer(f, "pointerdown");
+  for (let frame = 0; frame < 5; frame++) {
+    f.move(5);
+    f.input.takeLook(); f.input.takeActions(); f.input.keys();
+  }
+  pointer(f, "pointerup");
+  assert.deepEqual(defense(f), [1, 2]);
+  for (let step = 0; step < 5; step++) assert.deepEqual(defense(f), []);
+});
+
+test("pointercancel cancels instead of releasing and needs a new physical press", () => {
+  const f = fixture(); f.parse(); f.capture();
+  pointer(f, "pointerdown"); assert.deepEqual(defense(f), [1]);
+  pointer(f, "pointercancel"); pointer(f, "pointerup");
+  assert.deepEqual(defense(f), [3]);
+  pointer(f, "pointerdown"); pointer(f, "pointerup");
+  assert.deepEqual(defense(f), [1, 2]);
+  pointer(f, "pointerdown"); pointer(f, "pointerup"); pointer(f, "pointercancel");
+  assert.deepEqual(defense(f), [3]);
+});
+
+test("blur, Escape and lock loss retain cancellation across immediate recapture", () => {
+  for (const lose of [
+    (f) => { f.blur(); f.focus(); },
+    (f) => emit(f.document, "keydown", { code: "Escape", isTrusted: true }),
+    (f) => { f.document.pointerLockElement = null; emit(f.document, "pointerlockchange"); },
+  ]) {
+    const f = fixture(); f.parse(); f.capture();
+    pointer(f, "pointerdown"); assert.deepEqual(defense(f), [1]);
+    lose(f); pointer(f, "pointerup");
+    f.click(); f.confirm();
+    assert.deepEqual(defense(f), [3]);
+    pointer(f, "pointerup"); assert.deepEqual(defense(f), []);
+    pointer(f, "pointerdown"); pointer(f, "pointerup");
+    assert.deepEqual(defense(f), [1, 2]);
+  }
+});
+
+test("defense cancellation precedes a new gesture without losing it", () => {
+  const f = fixture(); f.parse(); f.capture();
+  pointer(f, "pointerdown"); f.blur(); f.focus(); f.click(); f.confirm();
+  pointer(f, "pointerdown"); pointer(f, "pointerup");
+  assert.deepEqual(defense(f), [3, 1, 2]);
+  assert.deepEqual(defense(f), []);
+});
+
+test("right queue is bounded; overflow cancels the current gesture until a fresh press", () => {
+  const f = fixture(); f.parse(); f.capture();
+  for (let tap = 0; tap < 32; tap++) { pointer(f, "pointerdown"); pointer(f, "pointerup"); }
+  assert.equal(defense(f).length, 64);
+  for (let tap = 0; tap < 32; tap++) { pointer(f, "pointerdown"); pointer(f, "pointerup"); }
+  pointer(f, "pointerdown"); // 65th edge collapses to cancellation.
+  pointer(f, "pointerdown");
+  assert.deepEqual(defense(f), [3]);
+  pointer(f, "pointerup"); assert.deepEqual(defense(f), []);
+  pointer(f, "pointerdown"); pointer(f, "pointerup");
+  assert.deepEqual(defense(f), [1, 2]);
+});
+
+test("untrusted, touch and inactive right edges cannot alter an accepted mouse gesture", () => {
+  const f = fixture(); f.parse();
+  pointer(f, "pointerdown"); pointer(f, "pointerup");
+  assert.deepEqual(defense(f), []);
+  f.capture(); pointer(f, "pointerdown");
+  pointer(f, "pointerup", 2, { isTrusted: false });
+  pointer(f, "pointercancel", 2, { pointerType: "touch" });
+  pointer(f, "pointerdown", 2, { pointerType: "touch" });
+  pointer(f, "pointercancel", 2, { isTrusted: false });
+  pointer(f, "pointerup");
+  assert.deepEqual(defense(f), [1, 2]);
 });
 
 test("loss of capture discards queued actions, parry and sprint without replay after recapture", () => {
@@ -226,7 +290,7 @@ test("loss of capture discards queued actions, parry and sprint without replay a
   emit(f.document, "pointerdown", { isTrusted: true, pointerType: "mouse", button: 2 });
   f.blur(); f.focus(); f.click(); f.confirm();
   assert.equal(f.input.keys(), 0);
-  assert.equal(f.input.takeActions(), 0);
+  assert.equal(f.input.takeActions(), 2048);
   emit(f.document, "keydown", { code: "ShiftLeft", repeat: true, isTrusted: true });
   emit(f.document, "keydown", { code: "Tab", repeat: true, isTrusted: true });
   assert.equal(f.input.keys(), 0);
@@ -239,20 +303,13 @@ test("loss of capture discards queued actions, parry and sprint without replay a
   assert.equal(f.input.takeActions(), 0);
 });
 
-test("wheel inertia is one switch per gesture and starts fresh after capture loss", () => {
+test("wheel has no weapon or attack mapping", () => {
   const f = fixture(); f.parse(); f.capture();
-  const wheel = (timeStamp, deltaY = 10) => emit(f.document, "wheel", { isTrusted: true, timeStamp, deltaY });
-  wheel(0);
-  assert.equal(f.input.takeActions(), 32);
-  for (const at of [20, 60, 120, 200]) wheel(at);
-  assert.equal(f.input.takeActions(), 0);
-  wheel(400, -100);
-  assert.equal(f.input.takeActions(), 32);
-  wheel(700, Number.NaN); wheel(710, 0);
-  assert.equal(f.input.takeActions(), 0);
-  f.blur(); f.focus(); f.click(); f.confirm();
-  wheel(420);
-  assert.equal(f.input.takeActions(), 32);
+  for (const deltaY of [10, -10, 0, Number.NaN]) {
+    emit(f.document, "wheel", { isTrusted: true, deltaY });
+    assert.equal(f.input.takeActions(), 0);
+    assert.deepEqual(defense(f), []);
+  }
 });
 
 test("game keys and browser gestures prevent defaults only during confirmed capture", () => {
@@ -282,51 +339,15 @@ test("untrusted or nonmouse events cannot queue attacks or wheel switches", () =
   assert.equal(f.input.keys(), 0);
 });
 
-test("vertical aiming consumes coalesced samples once independently from horizontal look", () => {
+test("vertical pointer samples have no aim interface and never alter horizontal look", () => {
   const f = fixture(); f.parse(); f.capture();
+  assert.equal(f.input.takeAim, undefined);
   f.move(99, 500, { movementY: 100, getCoalescedEvents: () => [
-    { movementX: 3, movementY: -5 },
-    { movementX: 7, movementY: 15 },
-    { movementX: Number.NaN, movementY: Number.POSITIVE_INFINITY },
+    { movementX: 3, movementY: -5 }, { movementX: 7, movementY: 15 },
   ] });
-  assert.equal(f.input.takeAim(), 10);
-  assert.equal(f.input.takeAim(), 0);
   assert.equal(f.input.takeLook(), 10);
+  f.move(0, 500, { movementY: 1000 });
   assert.equal(f.input.takeLook(), 0);
-  f.move(5, 500, { movementY: -7 });
-  assert.equal(f.input.takeLook(), 5);
-  assert.equal(f.input.takeAim(), -7);
-});
-
-test("vertical aiming uses CSS calibration and discards inactive or untrusted samples", () => {
-  const f = fixture(); f.parse();
-  f.move(0, 100); f.move(150, 200);
-  assert.equal(f.input.takeAim(), 0);
-  f.capture();
-  f.move(30, 500, { movementY: 60 });
-  assert.equal(f.input.takeAim(), 40);
-  assert.equal(f.input.takeLook(), 20);
-  f.move(0, 500, { movementY: 100, isTrusted: false });
-  f.move(0, 500, { movementY: 100, pointerType: "touch" });
-  assert.equal(f.input.takeAim(), 0);
-});
-
-test("capture loss, blur and confirmation clear pending vertical aim", () => {
-  const f = fixture(); f.parse(); f.capture();
-  f.move(0, 500, { movementY: 80 });
-  f.blur();
-  assert.equal(f.input.takeAim(), 0);
-  f.focus(); f.click(); f.confirm();
-  assert.equal(f.input.takeAim(), 0);
-  f.move(0, 500, { movementY: 50 });
-  f.document.pointerLockElement = null;
-  emit(f.document, "pointerlockchange");
-  assert.equal(f.input.takeAim(), 0);
-  f.click(); f.confirm();
-  assert.equal(f.input.takeAim(), 0);
-  f.move(0, 500, { movementY: 20 });
-  f.confirm();
-  assert.equal(f.input.takeAim(), 0);
 });
 
 test("short Shift tap retains one queued dodge after release", () => {
@@ -335,7 +356,7 @@ test("short Shift tap retains one queued dodge after release", () => {
   assert.equal(f.input.keys(), 16);
   emit(f.document, "keyup", { code: "ShiftLeft", isTrusted: true });
   assert.equal(f.input.keys(), 0);
-  assert.equal(f.input.takeActions(), 2);
+  assert.equal(f.input.takeActions(), 2 | 2048);
   assert.equal(f.input.takeActions(), 0);
 });
 
@@ -353,7 +374,7 @@ test("left and right Shift form one physical hold without duplicate dodge", () =
   release("ShiftRight");
   assert.equal(f.input.keys(), 0);
   press("ShiftRight");
-  assert.equal(f.input.takeActions(), 2);
+  assert.equal(f.input.takeActions(), 2 | 2048);
 });
 
 test("inactive, untrusted and repeated Shift cannot dodge; Ctrl is unbound", () => {
@@ -370,7 +391,7 @@ test("inactive, untrusted and repeated Shift cannot dodge; Ctrl is unbound", () 
   emit(f.document, "keydown", { code: "ShiftLeft", isTrusted: true });
   f.blur(); f.focus(); f.click(); f.confirm();
   assert.equal(f.input.keys(), 0);
-  assert.equal(f.input.takeActions(), 0);
+  assert.equal(f.input.takeActions(), 2048);
 });
 
 test("C tap queues one crouch toggle and keyup does not clear it", () => {
@@ -436,5 +457,115 @@ test("inactive and untrusted C presses do not toggle or prevent browser input", 
   f.capture();
   const untrusted = emit(f.document, "keydown", { code: "KeyC", isTrusted: false });
   assert.equal(untrusted.defaultPrevented, false);
+  assert.equal(f.input.takeActions(), 0);
+});
+
+test("E and Q queue distinct ordinary skills on keydown, never on hold or release", () => {
+  const f = fixture(); f.parse(); f.capture();
+  for (const [code, bit] of [["KeyE", 8], ["KeyQ", 256]]) {
+    emit(f.document, "keydown", { code, isTrusted: true });
+    assert.equal(f.input.takeActions(), bit);
+    emit(f.document, "keydown", { code, isTrusted: true, repeat: true });
+    emit(f.document, "keydown", { code, isTrusted: true });
+    assert.equal(f.input.takeActions(), 0);
+    emit(f.document, "keyup", { code, isTrusted: true });
+    assert.equal(f.input.takeActions(), 0);
+    emit(f.document, "keydown", { code, isTrusted: true });
+    assert.equal(f.input.takeActions(), bit);
+  }
+});
+
+test("left attacks and middle lock toggles require fresh button edges", () => {
+  const f = fixture(); f.parse(); f.capture();
+  pointer(f, "pointerdown", 0); pointer(f, "pointerdown", 0);
+  assert.equal(f.input.takeActions(), 4);
+  pointer(f, "pointerdown", 0); assert.equal(f.input.takeActions(), 0);
+  pointer(f, "pointerup", 0); pointer(f, "pointerdown", 0);
+  assert.equal(f.input.takeActions(), 4);
+  pointer(f, "pointerdown", 1); pointer(f, "pointerdown", 1);
+  assert.equal(f.input.takeActions(), 32);
+  pointer(f, "pointerup", 1); pointer(f, "pointerdown", 1);
+  pointer(f, "pointerup", 1); pointer(f, "pointerdown", 1);
+  assert.equal(f.input.takeActions(), 0); // Two toggles retain parity.
+});
+
+test("capture click never attacks; confirmation discards previous device actions", () => {
+  const f = fixture(); f.parse(); f.input.ready();
+  pointer(f, "pointerdown", 0); f.click(); f.confirm();
+  pointer(f, "pointerup", 0);
+  assert.equal(f.input.takeActions(), 0);
+  pointer(f, "pointerdown", 1);
+  emit(f.document, "keydown", { code: "KeyE", isTrusted: true });
+  f.blur(); f.focus(); f.click(); f.confirm();
+  assert.equal(f.input.takeActions(), 0);
+  emit(f.document, "keydown", { code: "KeyE", isTrusted: true, repeat: true });
+  assert.equal(f.input.takeActions(), 0);
+  assert.deepEqual(defense(f), [3]);
+});
+
+test("the last requested pair wins within one browser batch", () => {
+  const f = fixture(); f.parse(); f.capture();
+  emit(f.document, "keydown", { code: "Digit2", isTrusted: true });
+  emit(f.document, "keydown", { code: "Digit1", isTrusted: true });
+  assert.equal(f.input.takeActions(), 64);
+});
+
+test("all-direction release and repress keeps the release fact with the final held snapshot", () => {
+  const f = fixture(); f.parse(); f.capture();
+  emit(f.document, "keydown", { code: "KeyW", isTrusted: true });
+  assert.equal(f.input.takeActions(), 0);
+  emit(f.document, "keyup", { code: "KeyW", isTrusted: true });
+  emit(f.document, "keydown", { code: "KeyW", isTrusted: true });
+  for (let frame = 0; frame < 3; frame++) assert.equal(f.input.keys(), 1);
+  assert.equal(f.input.takeActions(), 1024);
+  assert.equal(f.input.takeActions(), 0);
+});
+
+test("opposing directions and overlapping Shift hands do not end a physical hold", () => {
+  const f = fixture(); f.parse(); f.capture();
+  for (const code of ["KeyW", "KeyS", "ShiftLeft", "ShiftRight"]) {
+    emit(f.document, "keydown", { code, isTrusted: true });
+  }
+  assert.equal(f.input.takeActions(), 2);
+  for (const code of ["KeyW", "ShiftLeft"]) emit(f.document, "keyup", { code, isTrusted: true });
+  assert.equal(f.input.takeActions(), 0);
+  assert.equal(f.input.keys(), 2 | 16);
+  for (const code of ["KeyS", "ShiftRight"]) emit(f.document, "keyup", { code, isTrusted: true });
+  assert.equal(f.input.takeActions(), 1024 | 2048);
+  for (const code of ["KeyS", "ShiftRight"]) emit(f.document, "keyup", { code, isTrusted: true });
+  assert.equal(f.input.takeActions(), 0);
+});
+
+test("Shift release and repress delivers both the release fact and a fresh dodge", () => {
+  const f = fixture(); f.parse(); f.capture();
+  emit(f.document, "keydown", { code: "ShiftLeft", isTrusted: true });
+  assert.equal(f.input.takeActions(), 2);
+  emit(f.document, "keyup", { code: "ShiftLeft", isTrusted: true });
+  emit(f.document, "keydown", { code: "ShiftLeft", isTrusted: true });
+  assert.equal(f.input.keys(), 16);
+  assert.equal(f.input.takeActions(), 2048 | 2);
+  assert.equal(f.input.takeActions(), 0);
+});
+
+test("physical release facts survive blur and recapture between samples", () => {
+  const f = fixture(); f.parse(); f.capture();
+  for (const code of ["KeyW", "ShiftLeft", "KeyE"]) emit(f.document, "keydown", { code, isTrusted: true });
+  assert.equal(f.input.takeActions(), 2 | 8);
+  f.blur(); f.focus(); f.click(); f.confirm();
+  for (const code of ["KeyW", "ShiftLeft"]) emit(f.document, "keydown", { code, isTrusted: true });
+  assert.equal(f.input.keys(), 1 | 16);
+  assert.equal(f.input.takeActions(), 1024 | 2048 | 2);
+  assert.equal(f.input.takeActions(), 0);
+});
+
+test("untrusted or inactive key releases cannot publish release facts", () => {
+  const f = fixture(); f.parse();
+  emit(f.document, "keyup", { code: "KeyW", isTrusted: true });
+  emit(f.document, "keyup", { code: "ShiftLeft", isTrusted: true });
+  assert.equal(f.input.takeActions(), 0);
+  f.capture();
+  emit(f.document, "keydown", { code: "KeyW", isTrusted: true });
+  emit(f.document, "keyup", { code: "KeyW", isTrusted: false });
+  assert.equal(f.input.keys(), 1);
   assert.equal(f.input.takeActions(), 0);
 });

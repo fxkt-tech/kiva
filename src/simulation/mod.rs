@@ -1,19 +1,28 @@
 //! Headless 3D physical movement, actions and combat.
+mod abilities;
 mod actions;
 mod boss;
 mod combat;
+mod defense;
 mod geometry;
 mod impact;
 mod movement;
 mod physics;
+mod resources;
 mod weapons;
 
+pub use abilities::{
+    ActionAvailability, ActionKind, ActionSnapshot, ComboWindow, Companion, CompanionState,
+    SequenceSnapshot,
+};
 pub use actions::{ActionIntent, Facing, MotionState};
 pub use boss::{Boss, BossPhase, BossState};
+pub(crate) use combat::ensure_companions as combat_setup_companions;
 pub use combat::{
-    CombatEffect, CombatEvent, CombatFeedback, CombatIntent, Combatant, Enemy, Health,
-    SniperSequence, SpawnPoint,
+    CombatEffect, CombatEvent, CombatFeedback, CombatIntent, Combatant, Enemy, Health, HitContext,
+    HitOutcome, SpawnPoint,
 };
+pub use defense::{DefenseEdge, DefenseKind, DefenseState};
 pub use geometry::{CollisionWorld, SolidBox};
 pub use impact::HitStop;
 pub use movement::{Body, MoveIntent};
@@ -21,7 +30,8 @@ pub use physics::{
     CROUCHED_HEIGHT, PhysicsPose, STANDING_HEIGHT, SurfaceHit, character_collider, spawn_box,
     spawn_terrain, surface_below, teleport_actor,
 };
-pub use weapons::{WeaponMode, WeaponSet};
+pub use resources::{SlowEffect, Stamina};
+pub use weapons::{WeaponMode, WeaponPair};
 
 use avian3d::physics_transform::PhysicsTransformConfig;
 use avian3d::prelude::*;
@@ -56,6 +66,7 @@ impl Plugin for SimulationPlugin {
             .init_resource::<SimulationActive>()
             .init_resource::<CollisionWorld>()
             .init_resource::<CombatFeedback>()
+            .init_resource::<combat::ActionIds>()
             .init_resource::<HitStop>()
             .configure_sets(
                 FixedUpdate,
@@ -72,6 +83,8 @@ impl Plugin for SimulationPlugin {
                 (
                     physics::fixed_clock,
                     physics::install,
+                    combat::ensure_companions,
+                    combat::prepare,
                     physics::remember_prop_poses,
                     physics::motor,
                     physics::resize_characters,
@@ -86,6 +99,8 @@ impl Plugin for SimulationPlugin {
                     physics::publish,
                     combat::advance,
                     boss::advance,
+                    combat::publish_availability,
+                    combat::finish_resources,
                     physics::flush_teleports,
                 )
                     .chain()
