@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 42
+- **Total Sessions**: 44
 - **Last Active**: 2026-11-11
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1442 | Active |
+| `journal-1.md` | ~1512 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 44 | 2026-11-11 | 提交手臂与手部重定向修复 | `4fcb896` | `main` |
+| 43 | 2026-11-11 | 修复跨骨架手臂、掌轴与源指节传递 | - | `main` |
 | 42 | 2026-11-11 | 提交模型与动作验收页 | `c8bd335` | `main` |
 | 41 | 2026-11-11 | 模型、武器与动作验收页实现与验证 | - | `main` |
 | 40 | 2026-11-10 | 模型、武器与动作验收页规划 | - | `main` |

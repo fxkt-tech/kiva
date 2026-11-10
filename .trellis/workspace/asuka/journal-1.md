@@ -1440,3 +1440,73 @@ Packaged exact official Choulingke soundtrack and fully traced original shared p
 ### Next Steps
 
 - 本轮随后推送origin/main并核对远端与工作区；真实硬件GPU验收继续跟踪。
+
+
+## Session 43: 修复跨骨架手臂、掌轴与源指节传递
+<!-- trellis-session: v=2 fp=7463e7aed0bd74f1 -->
+
+**Date**: 2026-11-11
+**Task**: 修复跨骨架手臂、掌轴与源指节传递
+**Branch**: `main`
+
+### Summary
+
+用户确认默认李火旺手部异常并授权修复；已修正参考臂向、真实掌轴与燕云独立指轨传递，游戏和查看页共用；本轮未提交推送。
+
+### Main Changes
+
+- 建立约49/57度臂向、63度掌向和源91.63度指轨变0的先红后绿证据；保留自身骨长及原sourceRest/IBM，在共用avatar和新hand模块修复。
+- 源三节指链按语义/原生轴映射，局部混合后FK；握柄从真实腕/MCP取值，保留.055与正向柄头，修复皮肤而非只挪武器；原生完整源、妹妹IK和资产不改。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 最终make check通过：251单元+9集成=260 Rust，94 Node，0ignored；原生/WASM Clippy、WASMcheck、固定离线Trunk与SRI通过。
+- [OK] 修复前/臂向单项/最终10条同帧截图、13条完整有界面软件GPU页面回归通过；原游戏入口/Esc、三角色五配置、两近战攻击/妹妹远程/参考及原片段均复核。
+- [OK] 独立审查完成，保护路径无差异，52本地链接/任务清单/diffcheck通过。诊断与截图在hand-fix-qa.md和/tmp/kiva-hand-diagnosis-browser。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 用户刷新验收页复核；本轮修复未提交，硬件GPU和已有原作控制器/美术适配限制继续跟踪，任务保持in_progress。
+
+
+## Session 44: 提交手臂与手部重定向修复
+<!-- trellis-session: v=2 fp=f0a851ea04dfc4ca -->
+
+**Date**: 2026-11-11
+**Task**: 提交手臂与手部重定向修复
+**Branch**: `main`
+
+### Summary
+
+按用户授权直接main提交共享手部修复与诊断证据，交付记录随后提交并推送origin/main。
+
+### Main Changes
+
+- 修复提交4fcb896：参考臂向校准、实际掌轴与握柄、源独立指链及回归；任务记录代码hash并保留硬件GPU待验收状态。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4fcb896` | fix: correct arm and hand animation retargeting |
+
+### Testing
+
+- [OK] 沿用最终260 Rust、94 Node、双平台Clippy、WASM/固定Trunk/SRI、10条同帧诊断与13条整页软件GPU浏览器回归；本轮无运行时代码变更。
+- [OK] fetch后无分歧；资产/规则/锁文件未变，任务清单及提交检查通过；仅清理诊断文本空白且git apply --check仍通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 随后推送origin/main并核对远端与干净工作区；硬件GPU及已有适配限制继续跟踪。

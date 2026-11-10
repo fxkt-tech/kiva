@@ -15,7 +15,7 @@
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": "c8bd335146c69a1dd0e80110c31071c39e9acd59",
+  "commit": "4fcb896e58026953bace64a1c72c279b7f62a0b4",
   "pr_url": null,
   "subtasks": [],
   "children": [],
@@ -58,6 +58,6 @@
     "web/viewer.css",
     "web/viewer.js"
   ],
-  "notes": "验收页已在c8bd335/2f49537交付。用户2026-11-11授权修复默认手部异常并随后授权提交推送main。共享臂向、真实掌轴和源独立指节修复通过260 Rust/94 Node/双平台Clippy/WASM/固定Trunk/SRI/同帧及整页软件GPU回归；硬件GPU与已有美术适配限制继续跟踪，保持in_progress。详见research/hand-fix-qa.md。",
+  "notes": "验收页已在c8bd335/2f49537交付；用户2026-11-11授权手部修复并提交推送main，修复代码已提交4fcb896。共享臂向、真实掌轴和源独立指节通过260 Rust/94 Node/双平台Clippy/WASM/固定Trunk/SRI/同帧及整页软件GPU回归。硬件GPU与已有美术适配限制继续跟踪，保持in_progress，不提前归档。详见research/hand-fix-qa.md。",
   "meta": {}
 }
