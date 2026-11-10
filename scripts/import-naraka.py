@@ -40,6 +40,8 @@ SOURCES = {
     'sheath': ('weapon/zhulei_sheath.glb', '192ea395e59b44dab38ad59cb590fb202887a4dc2797fc363f166035dca144c1'),
     'ornament': ('character/guidao_source_basecolor.glb', '9e50c35b8e9da98576948fea87dd7cab3634efe107675ae3879080af59883e4f'),
 }
+RED_HAT = ('character/red_hat/wangxinli_head_mounted.glb',
+           '6283470eaa4826955dda5ffcaca805c203dd72c648e3e0ac0a8cff363aba0e3a')
 
 
 def require(test, message):
@@ -318,7 +320,7 @@ def verify_binary(path, raw=None):
         double_sided += double
     part_count = reader.read('H')[0]
     vertices, indices, blade_count, source_pose_nonbind_bones = 0, 0, 0, 0
-    posed_points, part_stats = [], []
+    posed_points, headwear_points, part_stats = [], [], []
     for _ in range(part_count):
         name = reader.string()
         blade, bones = reader.read('BH')
@@ -329,6 +331,8 @@ def verify_binary(path, raw=None):
             require(reader.string().startswith('naraka::'), 'unprefixed Naraka palette could alias source animations')
             driver = reader.read('H')[0]
             require(driver < n, 'driver index outside structural map')
+            if name.startswith('naraka::hat::'):
+                require(driver == 6, 'headwear does not follow actual Head structural ancestor')
             inverse = np.array(reader.read('16f')).reshape((4, 4), order='F')
             rest = np.array(reader.read('16f')).reshape((4, 4), order='F')
             require(np.isfinite(inverse).all() and np.isfinite(rest).all(), 'nonfinite matrix')
@@ -352,7 +356,9 @@ def verify_binary(path, raw=None):
                 extent = np.ptp(data['p'], axis=0)
                 require(extent.argmax() == 1 and extent[1] > .9 and data['p'][:, 1].max() > .8,
                         'serialized rigid blade axis is not+Y')
-            if not blade and not name.startswith('naraka::sheath'):
+            if name.startswith('naraka::hat::'):
+                headwear_points.append(posed)
+            elif not blade and not name.startswith('naraka::sheath'):
                 posed_points.append(posed)
             vertices += vc
             indices += ic
@@ -370,12 +376,25 @@ def verify_binary(path, raw=None):
     bounds = [geometry.min(0).tolist(), geometry.max(0).tolist()]
     height = float(np.ptp(geometry[:, 1]))
     require(abs(height - 1.73) < 0.002 and abs(geometry[:, 1].min()) < 0.002, 'actual source-LBS full character is not height1.73/floor0')
+    headwear = None
+    if header.get('headwear'):
+        require(len(headwear_points) == 4, 'expected four confirmed original LOD0 headwear draws')
+        hat = np.concatenate(headwear_points)
+        complete = np.concatenate((geometry, hat))
+        headwear = {'item_id': 3411276, 'bounds': [hat.min(0).tolist(), hat.max(0).tolist()],
+                    'hat_top_m': float(hat[:, 1].max()),
+                    'complete_visible_top_m': float(complete[:, 1].max()),
+                    'extra_above_baseline_height_m': float(max(0, hat[:, 1].max() - 1.73)),
+                    'baseline_character_height_unchanged': True}
+    else:
+        require(not headwear_points, 'unannounced headwear parts')
     return {'file': str(path), 'bytes': len(raw), 'sha256': sha(raw), 'drivers': n,
             'textures': texture_count, 'materials': material_count, 'double_sided_materials': double_sided,
             'parts': part_count, 'vertices': vertices, 'triangles': indices // 3,
             'actual_binary_lbs_character_bounds': bounds, 'actual_binary_character_height': height,
             'part_statistics': part_stats, 'exact_EOF': True,
             'source_pose_nonbind_bones_preserved': source_pose_nonbind_bones,
+            'headwear': headwear,
             'browser_or_screenshot_test': False}
 
 
@@ -387,11 +406,31 @@ def posed_normals(glb, mesh, primitive):
     return value / np.linalg.norm(value, axis=1)[:, None]
 
 
-def build(source, output, max_texture_size):
+def build(source, output, max_texture_size, red_hat=False):
     require(max_texture_size in (512, 1024), 'texture limit must be 512 or1024')
     export = source / 'export' if (source / 'export').is_dir() else source
     declared = json.loads((export / 'manifest.json').read_text())
     models = {role: Glb(export / filename, digest) for role, (filename, digest) in SOURCES.items()}
+    hat_source, hat_identity = None, None
+    if red_hat:
+        models['hat'] = Glb(export / RED_HAT[0], RED_HAT[1])
+        hat_source = json.loads((export / RED_HAT[0]).with_suffix('.source.json').read_text())
+        require(hat_source['identity']['item'] == 3411276 and hat_source['identity']['ornament_config'] == 1102706,
+                'wrong original red hat identity')
+        identity_directory = export.parent / 'identity/red_hat'
+        hat_identity = json.loads((identity_directory / 'identity_manifest.json').read_text())
+        require((hat_identity['item_id'], hat_identity['config_id'], hat_identity['head_type_id'], hat_identity['head_slot_id'])
+                == (3411276, 1102706, 1013, 1200066), 'wrong original headwear configuration chain')
+        for key in ('item_record', 'config_record', 'type_record', 'slot_record'):
+            record = hat_identity[key]
+            raw = (identity_directory / Path(record['record_file']).name).read_bytes()
+            require(sha(raw) == record['record_sha256'] and struct.unpack_from('<I', raw)[0] == record['id'],
+                    'original headwear record hash/ID changed')
+            for field in record['fields']:
+                start = field['relative_length_offset']
+                length = struct.unpack_from('<I', raw, start)[0]
+                require(raw[start + 4:start + 4 + length * 2].decode('utf-16le') == field['value'],
+                        'headwear original string field changed')
     for entry in declared['deliverables']:
         local = export / ('weapon' if '/weapon/' in entry['glb']['file'] else 'character') / Path(entry['glb']['file']).name
         require(sha(local.read_bytes()) == entry['glb']['sha256'], 'source manifest GLB changed')
@@ -472,7 +511,7 @@ def build(source, output, max_texture_size):
         material_keys[key] = index
         return index
 
-    for role in ('outfit', 'hair', 'face'):
+    for role in ('outfit', 'hair', 'face') + (('hat',) if red_hat else ()):
         glb = models[role]
         for mesh in glb.meshes():
             require(mesh['skin'] is not None, 'character component must retain actual source skin')
@@ -563,6 +602,8 @@ def build(source, output, max_texture_size):
                                   'weights': np.tile([255, 0, 0, 0], (len(sheath_positions), 1)).astype(np.uint8)}]})
 
     source_records = [{'role': role, 'file': filename, 'sha256': digest, 'packed': role != 'ornament'} for role, (filename, digest) in SOURCES.items()]
+    if red_hat:
+        source_records.append({'role': 'hat', 'file': RED_HAT[0], 'sha256': RED_HAT[1], 'packed': True})
     hair_source = json.loads((export / 'character/xinsu_reconstructed_binding.source.json').read_text())
     identity = json.loads((export.parent / 'identity/target_parts.json').read_text())
     provenance = {'format': 'KIVAAV03', 'height_m': 1.73, 'source_yaw_degrees': 180,
@@ -579,6 +620,13 @@ def build(source, output, max_texture_size):
                   'sheath': 'Original static source geometry with authored Kiva left-hip placement, following pelvis structural delta.',
                   'ornament': 'Original Guidao source retained as evidence but not packed: dynamic FX shader is not reconstructed.',
                   'structural_driver_adaptation': 'Original l22/current imported source anchor proportions; not the YYSLS rest pose. Source ancestor maps to23 existing structural deltas, preserving each palette original source rest model.'}
+    if red_hat:
+        provenance['headwear'] = {'enabled': True, 'item_id': 3411276, 'name': '道诡异仙·惘心笠', 'ornament_config': 1102706,
+                                  'slot': 'Head', 'body_part_weapon_slot': 1200066,
+                                  'baseline_scale_preserved': scale, 'renormalize_for_hat_height': False,
+                                  'source_palettes': 'Original complete m_Bones/IBMs/local transforms; external root mounted on actual configured l22 Head per original slot.',
+                                  'hair_limit': 'Original mask4, bone-hide threshold0.5 and310-byte spatial payload preserved as evidence; executable limit deformer not recovered. All original Xinsu triangles retained, possible local clipping not hidden by speculative hair deletion.',
+                                  'material': 'Original main RGB/alpha, cutoff and Cull Front/Back; masked PBR approximation, no source silk translucency/emission/cloth physics recovered.'}
     writer = Writer()
     header = json.dumps(provenance, separators=(',', ':')).encode()
     writer.write('I', len(header))
@@ -633,6 +681,10 @@ def build(source, output, max_texture_size):
                          'source_UV_and_finite_unit_normals', 'material_texture_and_doubleSided_flags', 'PNG_size_and_decode',
                          'rigid_blade_pose_bake_and_grip_axis', 'authored_sheath_rest_above_ground', 'exact_binary_EOF'],
               'browser_or_screenshot_test': False}
+    if red_hat:
+        report['headwear'] = binary['headwear']
+        report['checks'].extend(['original_headwear_identity_and_pinned_hash', 'all_hat_palettes_follow_actual_Head_ancestor',
+                                 'body_head_hair_baseline_scale_unchanged', 'headwear_top_reported_separately', 'all_Xinsu_triangles_retained'])
     source_manifest = {'provenance': provenance, 'source_export_manifest_sha256': sha((export / 'manifest.json').read_bytes()),
                        'identity': identity, 'source_textures': texture_evidence,
                        'original_weapon_four_bone_rest_and_IBMs': source_rig,
@@ -642,6 +694,14 @@ def build(source, output, max_texture_size):
                        'source_face_records_sha256': sha((export.parent / 'identity/face_identity_records.json').read_bytes()),
                        'output': binary, 'limits': provenance['face'] + ' ' + provenance['hair'] + ' ' + provenance['shader'],
                        'game_reads': False, 'runtime_external_paths_or_downloads': False}
+    if red_hat:
+        source_manifest['red_hat'] = {'identity': hat_source['identity'], 'source_glb_sha256': RED_HAT[1],
+                                      'original_config_identity': {key: hat_identity[key] for key in ('display_name', 'item_id', 'config_id', 'head_type_id', 'head_slot_id', 'item_record', 'config_record', 'type_record', 'slot_record', 'exact_prefab')},
+                                      'source_manifest_sha256': sha((export / RED_HAT[0]).with_suffix('.source.json').read_bytes()),
+                                      'source_bundle_inputs': hat_source['source_inputs'], 'draws': hat_source['draws'],
+                                      'head_assembly': hat_source['head_assembly'], 'hair_limit': hat_source['hair_limit'],
+                                      'source_textures': hat_source['textures'], 'source_materials': hat_source['materials'],
+                                      'adaptation': provenance['headwear'], 'limits': hat_source['limits']}
     (output.parent / 'conversion-report.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     (output.parent / 'source-manifest.json').write_text(json.dumps(source_manifest, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps({'output': str(output), 'bytes': binary['bytes'], 'sha256': binary['sha256'],
@@ -737,6 +797,7 @@ def main():
     parser.add_argument('--max-texture-size', type=int, default=1024)
     parser.add_argument('--verify', type=Path)
     parser.add_argument('--self-test', action='store_true')
+    parser.add_argument('--red-hat', action='store_true', help='Include confirmed original Wangxin Li3411276 with unchanged baseline body scale')
     args = parser.parse_args()
     if args.self_test:
         self_test(args.verify)
@@ -745,7 +806,7 @@ def main():
     else:
         if args.source is None:
             parser.error('--source is required')
-        build(args.source.resolve(), args.output, args.max_texture_size)
+        build(args.source.resolve(), args.output, args.max_texture_size, args.red_hat)
 
 
 if __name__ == '__main__':

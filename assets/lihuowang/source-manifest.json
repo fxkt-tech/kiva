@@ -72,6 +72,12 @@
         "file": "character/guidao_source_basecolor.glb",
         "sha256": "9e50c35b8e9da98576948fea87dd7cab3634efe107675ae3879080af59883e4f",
         "packed": false
+      },
+      {
+        "role": "hat",
+        "file": "character/red_hat/wangxinli_head_mounted.glb",
+        "sha256": "6283470eaa4826955dda5ffcaca805c203dd72c648e3e0ac0a8cff363aba0e3a",
+        "packed": true
       }
     ],
     "face": "Generic source base face with sampled source hand skin tone and authored neutral brown eyes/charcoal lashes. LiHuowang1415608 facial parameters/1400595 makeup are NOT applied.",
@@ -111,7 +117,20 @@
     ],
     "sheath": "Original static source geometry with authored Kiva left-hip placement, following pelvis structural delta.",
     "ornament": "Original Guidao source retained as evidence but not packed: dynamic FX shader is not reconstructed.",
-    "structural_driver_adaptation": "Original l22/current imported source anchor proportions; not the YYSLS rest pose. Source ancestor maps to23 existing structural deltas, preserving each palette original source rest model."
+    "structural_driver_adaptation": "Original l22/current imported source anchor proportions; not the YYSLS rest pose. Source ancestor maps to23 existing structural deltas, preserving each palette original source rest model.",
+    "headwear": {
+      "enabled": true,
+      "item_id": 3411276,
+      "name": "道诡异仙·惘心笠",
+      "ornament_config": 1102706,
+      "slot": "Head",
+      "body_part_weapon_slot": 1200066,
+      "baseline_scale_preserved": 0.9128533132643297,
+      "renormalize_for_hat_height": false,
+      "source_palettes": "Original complete m_Bones/IBMs/local transforms; external root mounted on actual configured l22 Head per original slot.",
+      "hair_limit": "Original mask4, bone-hide threshold0.5 and310-byte spatial payload preserved as evidence; executable limit deformer not recovered. All original Xinsu triangles retained, possible local clipping not hidden by speculative hair deletion.",
+      "material": "Original main RGB/alpha, cutoff and Cull Front/Back; masked PBR approximation, no source silk translucency/emission/cloth physics recovered."
+    }
   },
   "source_export_manifest_sha256": "ed4463db38604546a3410435d97781e0c79ca610258920cc34769f5ec9a88d0b",
   "identity": {
@@ -470,6 +489,20 @@
       ],
       "embedded_png_sha256": "0d381ff025a49cb135c27f80a1ccb7e145cdcf4bf3956dc0fc435ca4e884d6ec",
       "adaptation": "Authored Kiva neutral eye atlas"
+    },
+    {
+      "name": "hat::ch_ornament_hat_wuchen_s_lhwdouli",
+      "source_png_sha256": "33049ae2bc05174669ac79f34008c38f428e1c67039649dd7ca6214cf06649fc",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "embedded_png_sha256": "1919512065af54f44a39404c6d7c8678fe5ebeaa5661246c57df149dd6b7cebe",
+      "adaptation": "Resize only, source RGB/alpha retained; normal/packed maps not connected."
     },
     {
       "name": "blade::wp_hengdao_manjianghong_d",
@@ -1427,15 +1460,15 @@
   "source_face_records_sha256": "7d6edb55cd86c270496ccfb3b555a174f2f1557581711cc8c21176d2413bc688",
   "output": {
     "file": "/home/asuka/go/src/github.com/fxkt-tech/kiva/assets/lihuowang/character.bin",
-    "bytes": 8931762,
-    "sha256": "52ac24f9e5ccce28eb132b529d7fad7c3b39c23ef850c4448869275caad83fd9",
+    "bytes": 10739759,
+    "sha256": "0e87a9070a7e926e0a9d0fdd085728f149ab9a8ce0e700e7e1b34ea5888e2818",
     "drivers": 23,
-    "textures": 8,
-    "materials": 18,
+    "textures": 9,
+    "materials": 22,
     "double_sided_materials": 5,
-    "parts": 18,
-    "vertices": 42625,
-    "triangles": 57257,
+    "parts": 22,
+    "vertices": 51414,
+    "triangles": 66268,
     "actual_binary_lbs_character_bounds": [
       [
         -0.7197659719314854,
@@ -1547,6 +1580,30 @@
         "vertices": 2247
       },
       {
+        "name": "naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli",
+        "blade": false,
+        "bones": 10,
+        "vertices": 7857
+      },
+      {
+        "name": "naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_01",
+        "blade": false,
+        "bones": 7,
+        "vertices": 542
+      },
+      {
+        "name": "naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cb",
+        "blade": false,
+        "bones": 10,
+        "vertices": 195
+      },
+      {
+        "name": "naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cf",
+        "blade": false,
+        "bones": 10,
+        "vertices": 195
+      },
+      {
         "name": "naraka::zhulei::rigid_blade",
         "blade": true,
         "bones": 1,
@@ -1560,10 +1617,2702 @@
       }
     ],
     "exact_EOF": true,
-    "source_pose_nonbind_bones_preserved": 352,
+    "source_pose_nonbind_bones_preserved": 389,
+    "headwear": {
+      "item_id": 3411276,
+      "bounds": [
+        [
+          -0.2619257339457639,
+          1.2383867123250136,
+          -0.27863551634311157
+        ],
+        [
+          0.3607271530201531,
+          1.6644540753411838,
+          0.28222589832200756
+        ]
+      ],
+      "hat_top_m": 1.6644540753411838,
+      "complete_visible_top_m": 1.7299999676024438,
+      "extra_above_baseline_height_m": 0.0,
+      "baseline_character_height_unchanged": true
+    },
     "browser_or_screenshot_test": false
   },
   "limits": "Generic source base face with sampled source hand skin tone and authored neutral brown eyes/charcoal lashes. LiHuowang1415608 facial parameters/1400595 makeup are NOT applied. Original geometry/UV/weights/IBMs; six uniquely evidenced reconstructed external parent links, not serialized original SMR palettes. RGB data maps suppressed, only source alpha used with neutral black material. Source BaseColor/alpha only; no guessed source normal/packed channels, no source anisotropic/SH/FX/cloth/morph shader. Neutral Kiva PBR adaptations.",
   "game_reads": false,
-  "runtime_external_paths_or_downloads": false
+  "runtime_external_paths_or_downloads": false,
+  "red_hat": {
+    "identity": {
+      "item": 3411276,
+      "name": "道诡异仙·惘心笠",
+      "ornament_config": 1102706,
+      "ornament_type": 1013,
+      "type_name": "Head / 头部",
+      "actor_body_part_weapon_slot": 1200066,
+      "source_prefab": "assets/res/prefab/actor_extra_part/ch_ornament_hat_wuchen_s_lhwdouli.prefab"
+    },
+    "source_glb_sha256": "6283470eaa4826955dda5ffcaca805c203dd72c648e3e0ac0a8cff363aba0e3a",
+    "original_config_identity": {
+      "display_name": "道诡异仙·惘心笠",
+      "item_id": 3411276,
+      "config_id": 1102706,
+      "head_type_id": 1013,
+      "head_slot_id": 1200066,
+      "item_record": {
+        "table": "OrnamentItem",
+        "subtable": "OrnamentItem_OrnamentItem",
+        "id": 3411276,
+        "offset": 287694,
+        "end": 288364,
+        "bytes": 670,
+        "index_offset": 5676,
+        "source_textasset": {
+          "path_id": 8489082000560304989,
+          "name": "OrnamentItem",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/OrnamentItem.bytes",
+          "bytes": 756967,
+          "sha256": "44c067344c28a92509e74c9581e8a1584e6ff220e13d41c2d5f3227dbd0d5875",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "430a12758bb6c20f974ae65ef6a0b366e00fdd10cf196cc45392f169e3126eb8",
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/red_hat/OrnamentItem_OrnamentItem_3411276.bin",
+        "record_sha256": "5e5f2fe73150116c7a8e2bb8b7d61da1d15c05d31d0752cf7c452cf99d08b201",
+        "fields": [
+          {
+            "relative_length_offset": 4,
+            "utf16_code_units": 8,
+            "value": "道诡异仙·惘心笠"
+          },
+          {
+            "relative_length_offset": 168,
+            "utf16_code_units": 31,
+            "value": "icon_ornament_wuchen_s_lhwdouli"
+          },
+          {
+            "relative_length_offset": 234,
+            "utf16_code_units": 4,
+            "value": "无尘专属"
+          },
+          {
+            "relative_length_offset": 573,
+            "utf16_code_units": 8,
+            "value": "道诡异仙联动解锁"
+          }
+        ],
+        "original_config_reference": {
+          "relative_u32_offset": 24,
+          "value": 1102706
+        },
+        "original_type_reference": {
+          "relative_u32_offset": 36,
+          "value": 1013
+        }
+      },
+      "config_record": {
+        "table": "OrnamentConfig",
+        "subtable": "OrnamentConfig_OrnamentConfig",
+        "id": 1102706,
+        "offset": 292770,
+        "end": 292992,
+        "bytes": 222,
+        "index_offset": 74538,
+        "source_textasset": {
+          "path_id": -5589554208489319156,
+          "name": "OrnamentConfig",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/OrnamentConfig.bytes",
+          "bytes": 390690,
+          "sha256": "10c6cf9f39a8f31b32e5f492fd8ec78ad25aa6b1ffdcc3beaa31720b4a4b35cf",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "36fe85404d03413b91f9b4456f8bdc58b062d2f62a9319719ed26c80027668a8",
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/red_hat/OrnamentConfig_OrnamentConfig_1102706.bin",
+        "record_sha256": "51afce1924da0ec34377141e7321a04135898a3b617e419b7ba3acdd2b7b404a",
+        "fields": [
+          {
+            "relative_length_offset": 8,
+            "utf16_code_units": 33,
+            "value": "ch_ornament_hat_wuchen_s_lhwdouli"
+          },
+          {
+            "relative_length_offset": 78,
+            "utf16_code_units": 33,
+            "value": "ch_ornament_hat_wuchen_s_lhwdouli"
+          },
+          {
+            "relative_length_offset": 198,
+            "utf16_code_units": 10,
+            "value": "【占坑】无尘黑纱斗笠"
+          }
+        ],
+        "original_slot_reference": {
+          "relative_u32_offset": 148,
+          "value": 1200066
+        }
+      },
+      "type_record": {
+        "table": "OrnamentItem",
+        "subtable": "OrnamentItem_OrnamentType",
+        "id": 1013,
+        "offset": 755733,
+        "end": 755876,
+        "bytes": 143,
+        "index_offset": 753662,
+        "source_textasset": {
+          "path_id": 8489082000560304989,
+          "name": "OrnamentItem",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/OrnamentItem.bytes",
+          "bytes": 756967,
+          "sha256": "44c067344c28a92509e74c9581e8a1584e6ff220e13d41c2d5f3227dbd0d5875",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "430a12758bb6c20f974ae65ef6a0b366e00fdd10cf196cc45392f169e3126eb8",
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/red_hat/OrnamentItem_OrnamentType_1013.bin",
+        "record_sha256": "4591eec2ee80f6c1fa1796d8f8e3230081f0d669db33de301169d38054c48827",
+        "fields": [
+          {
+            "relative_length_offset": 4,
+            "utf16_code_units": 2,
+            "value": "头部"
+          },
+          {
+            "relative_length_offset": 75,
+            "utf16_code_units": 4,
+            "value": "Head"
+          }
+        ]
+      },
+      "slot_record": {
+        "table": "CharacterConfig",
+        "subtable": "CharacterConfig_ActorBodyPartWeaponSlot",
+        "id": 1200066,
+        "offset": 2990,
+        "end": 3002,
+        "bytes": 12,
+        "index_offset": 726,
+        "source_textasset": {
+          "path_id": -5656608313918041295,
+          "name": "CharacterConfig",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+          "bytes": 623079,
+          "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16",
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/red_hat/CharacterConfig_ActorBodyPartWeaponSlot_1200066.bin",
+        "record_sha256": "d5850de991db3abc673ac3fff44219f8705fd53d5040c4f38ea3c6272189cccf",
+        "fields": [
+          {
+            "relative_length_offset": 4,
+            "utf16_code_units": 2,
+            "value": "头部"
+          }
+        ]
+      },
+      "exact_prefab": {
+        "path": "assets/res/prefab/actor_extra_part/ch_ornament_hat_wuchen_s_lhwdouli.prefab",
+        "string_offset": 23402656,
+        "bundle_index": 9010,
+        "key": "8/a/8a90c33afec6e79e",
+        "declared_size": 6496256,
+        "hash1": "e2e0bff9ff45257d29703a4626f6e323",
+        "hash2": "30c9a10512a60e17b03ae4e25bd31f6a",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/a/8a90c33afec6e79e"
+      }
+    },
+    "source_manifest_sha256": "481b3f10efc05b9648306d2979076bbc94931ffc8ca04de4ce45eadac3109988",
+    "source_bundle_inputs": [
+      {
+        "file": "/home/asuka/kiva-asset-research/naraka/export/rig/589302f25ec7b3dd/converted.unityfs",
+        "bytes": 8082101,
+        "sha256": "b33d68eaea18a7d2e4ba7117a32d259bacf45d015ad97770f9e1a4234b2970de"
+      },
+      {
+        "file": "/home/asuka/kiva-asset-research/naraka/containers/character_mapping/red_hat/data/source_bundle/converted.unityfs",
+        "bytes": 6320119,
+        "sha256": "ed4cf481adf0d3d36083499656e21174425547908869929f89460943953b6ee7"
+      }
+    ],
+    "draws": [
+      {
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli_cf",
+        "renderer": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": -8874728753243517230,
+          "class": "SkinnedMeshRenderer",
+          "raw_bytes": 321,
+          "raw_sha256": "1028be9c621a16e07ffa94f733dceb41998b76c14e05c31c2a7e1d3e302ad679",
+          "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "mesh": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": -2619577408471282804,
+          "class": "Mesh",
+          "raw_bytes": 18776,
+          "raw_sha256": "e5f047a5218b82d7a1e2004a20ae3a8400cdead53a41dd89da8fd6f6ba1105c1",
+          "old_type_hash": "6e586577362a6d19119377919a6d1962",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "vertices": 195,
+        "triangles": 292,
+        "binding": {
+          "renderer": {
+            "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+            "path_id": -8874728753243517230,
+            "class": "SkinnedMeshRenderer",
+            "raw_bytes": 321,
+            "raw_sha256": "1028be9c621a16e07ffa94f733dceb41998b76c14e05c31c2a7e1d3e302ad679",
+            "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "renderer_game_object": {
+            "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+            "path_id": 118584540276254533,
+            "class": "GameObject",
+            "raw_bytes": 99,
+            "raw_sha256": "d20f14aee73d8fb8c31ec3c544e131c180bfb1ba704cd296c28957a37a48b7cb",
+            "old_type_hash": "86e34eb8ee7642b089fb98c9d81dd9b0",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "node": 100,
+          "skin_nodes": [
+            79,
+            90,
+            91,
+            92,
+            80,
+            81,
+            82,
+            97,
+            98,
+            99
+          ],
+          "source_root_bone": {
+            "source": {
+              "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+              "path_id": 901536760865046386,
+              "class": "Transform",
+              "raw_bytes": 164,
+              "raw_sha256": "7080fc4fe6bf456d1b966b9e64fe1575130bd0e06880efde0bcf05d919b72859",
+              "old_type_hash": "761ca81f78491542badc37f810ab3455",
+              "original_type_tree": true,
+              "unity_version": "2019.4.41f2"
+            },
+            "node": 79
+          },
+          "weight_sum_min": 0.9999998807907104,
+          "weight_sum_max": 1.0000001192092896,
+          "bind_world_residual_max": 1.138101429577574,
+          "bind_world_residuals": [
+            1.1381011634763616,
+            1.13810115975199,
+            1.138101099503949,
+            1.138101214863654,
+            1.1381012095449867,
+            1.1381013104122752,
+            1.138101429577574,
+            1.1381012036009843,
+            1.1381010559349536,
+            1.1381012061793851
+          ],
+          "bone_order": "exact original SkinnedMeshRenderer.m_Bones order; no identity-bind replacement"
+        },
+        "material": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": -138610281598054439,
+          "class": "Material",
+          "raw_bytes": 1456,
+          "raw_sha256": "049ffc7abd62c519ce753741025fafe73035d08a76ecee695db60889523dad1d",
+          "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "source_cull": 1.0,
+        "source_cutoff": 0.9760000109672546
+      },
+      {
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli",
+        "renderer": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 2709641479222694988,
+          "class": "SkinnedMeshRenderer",
+          "raw_bytes": 321,
+          "raw_sha256": "4ee8ee2f5d995cc64fb719c0369f344c20f995445e4e4733611df96b12edeb62",
+          "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "mesh": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 173978115705574826,
+          "class": "Mesh",
+          "raw_bytes": 676192,
+          "raw_sha256": "c0fbdcfe3859e3e43ec2dd64ea2cbbc44861e023bfcb356c9caea8c26750af90",
+          "old_type_hash": "6e586577362a6d19119377919a6d1962",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "vertices": 7857,
+        "triangles": 7701,
+        "binding": {
+          "renderer": {
+            "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+            "path_id": 2709641479222694988,
+            "class": "SkinnedMeshRenderer",
+            "raw_bytes": 321,
+            "raw_sha256": "4ee8ee2f5d995cc64fb719c0369f344c20f995445e4e4733611df96b12edeb62",
+            "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "renderer_game_object": {
+            "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+            "path_id": 7956749750072527221,
+            "class": "GameObject",
+            "raw_bytes": 87,
+            "raw_sha256": "ec1fa75b23dc16c2609c6b1ec32270ab5ce2b859bde8a0f0a0530695a852712d",
+            "old_type_hash": "86e34eb8ee7642b089fb98c9d81dd9b0",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "node": 65,
+          "skin_nodes": [
+            79,
+            88,
+            89,
+            93,
+            97,
+            83,
+            85,
+            86,
+            87,
+            95
+          ],
+          "source_root_bone": {
+            "source": {
+              "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+              "path_id": 901536760865046386,
+              "class": "Transform",
+              "raw_bytes": 164,
+              "raw_sha256": "7080fc4fe6bf456d1b966b9e64fe1575130bd0e06880efde0bcf05d919b72859",
+              "old_type_hash": "761ca81f78491542badc37f810ab3455",
+              "original_type_tree": true,
+              "unity_version": "2019.4.41f2"
+            },
+            "node": 79
+          },
+          "weight_sum_min": 0.9999999403953552,
+          "weight_sum_max": 1.0000001192092896,
+          "bind_world_residual_max": 1.1624022490666368,
+          "bind_world_residuals": [
+            1.1381011634763616,
+            1.1624022490666368,
+            1.162402181992631,
+            1.1381011035120812,
+            1.1381012036009843,
+            1.1381012611269516,
+            1.1381012015381802,
+            1.1381009846850663,
+            1.1381010747353244,
+            1.1381011034872865
+          ],
+          "bone_order": "exact original SkinnedMeshRenderer.m_Bones order; no identity-bind replacement"
+        },
+        "material": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 5558903310314169401,
+          "class": "Material",
+          "raw_bytes": 1456,
+          "raw_sha256": "c39f4ce1f3e6117254c34ce5d49985abf6c097ea94ab7ce0c36ebfe3080c32c0",
+          "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "source_cull": 2.0,
+        "source_cutoff": 0.8999999761581421
+      },
+      {
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli_cb",
+        "renderer": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 4450444835060456420,
+          "class": "SkinnedMeshRenderer",
+          "raw_bytes": 321,
+          "raw_sha256": "15bf4c71cf61c9a122bfd68e9fc373f5243902f0b72bb0c3bd128c595e607944",
+          "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "mesh": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": -2619577408471282804,
+          "class": "Mesh",
+          "raw_bytes": 18776,
+          "raw_sha256": "e5f047a5218b82d7a1e2004a20ae3a8400cdead53a41dd89da8fd6f6ba1105c1",
+          "old_type_hash": "6e586577362a6d19119377919a6d1962",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "vertices": 195,
+        "triangles": 292,
+        "binding": {
+          "renderer": {
+            "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+            "path_id": 4450444835060456420,
+            "class": "SkinnedMeshRenderer",
+            "raw_bytes": 321,
+            "raw_sha256": "15bf4c71cf61c9a122bfd68e9fc373f5243902f0b72bb0c3bd128c595e607944",
+            "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "renderer_game_object": {
+            "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+            "path_id": -478318657342986144,
+            "class": "GameObject",
+            "raw_bytes": 99,
+            "raw_sha256": "1a54bc58070f31662cd3730db49dde3093bc2eb99664b74fb74e4ab45c718431",
+            "old_type_hash": "86e34eb8ee7642b089fb98c9d81dd9b0",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "node": 70,
+          "skin_nodes": [
+            79,
+            90,
+            91,
+            92,
+            80,
+            81,
+            82,
+            97,
+            98,
+            99
+          ],
+          "source_root_bone": {
+            "source": {
+              "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+              "path_id": 901536760865046386,
+              "class": "Transform",
+              "raw_bytes": 164,
+              "raw_sha256": "7080fc4fe6bf456d1b966b9e64fe1575130bd0e06880efde0bcf05d919b72859",
+              "old_type_hash": "761ca81f78491542badc37f810ab3455",
+              "original_type_tree": true,
+              "unity_version": "2019.4.41f2"
+            },
+            "node": 79
+          },
+          "weight_sum_min": 0.9999998807907104,
+          "weight_sum_max": 1.0000001192092896,
+          "bind_world_residual_max": 1.138101429577574,
+          "bind_world_residuals": [
+            1.1381011634763616,
+            1.13810115975199,
+            1.138101099503949,
+            1.138101214863654,
+            1.1381012095449867,
+            1.1381013104122752,
+            1.138101429577574,
+            1.1381012036009843,
+            1.1381010559349536,
+            1.1381012061793851
+          ],
+          "bone_order": "exact original SkinnedMeshRenderer.m_Bones order; no identity-bind replacement"
+        },
+        "material": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 8552193042054205082,
+          "class": "Material",
+          "raw_bytes": 1456,
+          "raw_sha256": "9f4f09b77b64cfa01532fe7a2317dce0921ff3e58972605fae50a8a2344245e1",
+          "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "source_cull": 2.0,
+        "source_cutoff": 0.9629999995231628
+      },
+      {
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli_01",
+        "renderer": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 8564586262639017279,
+          "class": "SkinnedMeshRenderer",
+          "raw_bytes": 285,
+          "raw_sha256": "793c08c74b4fbbcac68bb92aaf4d83e98e9e01cba5a4ddf48eae9c087f4951c9",
+          "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "mesh": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 81402044659207937,
+          "class": "Mesh",
+          "raw_bytes": 48848,
+          "raw_sha256": "ce871c89a13eeff8c1f5296cdea3fd316e6b8e0abf2947bf1980a0f9d4a00405",
+          "old_type_hash": "6e586577362a6d19119377919a6d1962",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "vertices": 542,
+        "triangles": 726,
+        "binding": {
+          "renderer": {
+            "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+            "path_id": 8564586262639017279,
+            "class": "SkinnedMeshRenderer",
+            "raw_bytes": 285,
+            "raw_sha256": "793c08c74b4fbbcac68bb92aaf4d83e98e9e01cba5a4ddf48eae9c087f4951c9",
+            "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "renderer_game_object": {
+            "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+            "path_id": -583575063002949520,
+            "class": "GameObject",
+            "raw_bytes": 87,
+            "raw_sha256": "dd71818dcf8f3289dcd5981f330b7c7b9d0096a534d5a2951019ba9543e0f015",
+            "old_type_hash": "86e34eb8ee7642b089fb98c9d81dd9b0",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "node": 66,
+          "skin_nodes": [
+            79,
+            90,
+            91,
+            80,
+            81,
+            82,
+            92
+          ],
+          "source_root_bone": {
+            "source": {
+              "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+              "path_id": 901536760865046386,
+              "class": "Transform",
+              "raw_bytes": 164,
+              "raw_sha256": "7080fc4fe6bf456d1b966b9e64fe1575130bd0e06880efde0bcf05d919b72859",
+              "old_type_hash": "761ca81f78491542badc37f810ab3455",
+              "original_type_tree": true,
+              "unity_version": "2019.4.41f2"
+            },
+            "node": 79
+          },
+          "weight_sum_min": 0.9999999403953552,
+          "weight_sum_max": 1.0000001192092896,
+          "bind_world_residual_max": 1.138101429577574,
+          "bind_world_residuals": [
+            1.1381011634763616,
+            1.13810115975199,
+            1.138101099503949,
+            1.1381012095449867,
+            1.1381013104122752,
+            1.138101429577574,
+            1.138101214863654
+          ],
+          "bone_order": "exact original SkinnedMeshRenderer.m_Bones order; no identity-bind replacement"
+        },
+        "material": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 5558903310314169401,
+          "class": "Material",
+          "raw_bytes": 1456,
+          "raw_sha256": "c39f4ce1f3e6117254c34ce5d49985abf6c097ea94ab7ce0c36ebfe3080c32c0",
+          "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "source_cull": 2.0,
+        "source_cutoff": 0.8999999761581421
+      }
+    ],
+    "head_assembly": {
+      "original_hat_root_node": 63,
+      "source_slot": "Head",
+      "parent_node": 38,
+      "parent_source": {
+        "cab": "CAB-735972d8c50e4d130075dba921e34762",
+        "path_id": -3913719559857735752,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "c843ca9ba02e2d4f0a474b4b4c52d7d4696f7ff0428c17432f7966ea5a171fb9",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "head_world_before_glTF_X_basis_conversion": [
+        [
+          2.3715157066127545e-07,
+          1.352064133708894e-06,
+          -1.000000238417651,
+          6.608425785601764e-08
+        ],
+        [
+          -0.9904180639950098,
+          -0.13810121934256536,
+          -4.216003812548494e-07,
+          1.637583487247303
+        ],
+        [
+          -0.1381012003422489,
+          0.9904182998153304,
+          1.306356029130303e-06,
+          -0.0013074214542301739
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "source_local_root_unchanged": true,
+      "extra_authored_offset": null
+    },
+    "hair_limit": {
+      "source": {
+        "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+        "path_id": 5943361572574884240,
+        "class": "MonoBehaviour",
+        "raw_bytes": 404,
+        "raw_sha256": "1ccba56ea1493dc5e4c92c81508cfb229513215b9150bda1926c20d6c9f27951",
+        "old_type_hash": "716d0f62ca6eaf2745131ef850500c3a",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": -5229916003909268586
+        },
+        "m_Name": "ch_ornament_hat_wuchen_s_lhwdouli_limit",
+        "m_HairHideMask": 4,
+        "m_BoneHideThreshold": 0.5,
+        "m_LimitOffset": 0.004999999888241291,
+        "m_MaxLimitScale": 0.949999988079071,
+        "m_LimitData": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          0,
+          11,
+          25,
+          8,
+          66,
+          97,
+          46,
+          124,
+          90,
+          83,
+          50,
+          72,
+          61,
+          67,
+          118,
+          64,
+          138,
+          210,
+          165,
+          115,
+          129,
+          137,
+          227,
+          216,
+          176,
+          218,
+          245,
+          244,
+          238,
+          243,
+          224,
+          238,
+          234,
+          240,
+          243,
+          240,
+          242,
+          230,
+          160,
+          244,
+          243,
+          246,
+          243,
+          244,
+          237,
+          248,
+          247,
+          247,
+          247,
+          246,
+          161,
+          40,
+          231,
+          227,
+          239,
+          214,
+          240,
+          247,
+          238,
+          238,
+          165,
+          98,
+          212,
+          208,
+          199,
+          126,
+          167,
+          197,
+          181,
+          55,
+          42,
+          22,
+          8,
+          4,
+          0,
+          44,
+          27,
+          6,
+          0,
+          0,
+          4,
+          13,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          10,
+          7,
+          58,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          0,
+          18,
+          25,
+          13,
+          80,
+          97,
+          67,
+          149,
+          106,
+          83,
+          50,
+          75,
+          61,
+          61,
+          118,
+          60,
+          135,
+          179,
+          144,
+          104,
+          113,
+          111,
+          208,
+          216,
+          149,
+          183,
+          239,
+          244,
+          238,
+          222,
+          194,
+          190,
+          157,
+          237,
+          228,
+          217,
+          178,
+          123,
+          72,
+          241,
+          243,
+          238,
+          229,
+          169,
+          100,
+          245,
+          247,
+          242,
+          227,
+          162,
+          47,
+          11,
+          223,
+          227,
+          218,
+          75,
+          199,
+          139,
+          234,
+          238,
+          165,
+          24,
+          99,
+          213,
+          160,
+          41,
+          91,
+          134,
+          151,
+          36,
+          36,
+          22,
+          9,
+          4,
+          0,
+          21,
+          8,
+          0,
+          0,
+          6,
+          3,
+          3,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          11,
+          4,
+          29,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "applied": false,
+      "decision": "Keep every original Xinsu hair triangle. HairLimitData mask4/threshold0.5 plus310-byte spatial data are recovered but executable deformation/hiding semantics are not. Do not delete a hairstyle or guess per-triangle masking."
+    },
+    "source_textures": [
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": -2288953587812716395,
+          "class": "Texture2D",
+          "raw_bytes": 224,
+          "raw_sha256": "7f244ee497f93856c66dd8dd166d57749c8dd768f7e76333cfd61883daa05a55",
+          "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli_mask",
+        "png": "/home/asuka/kiva-asset-research/naraka/export/character/red_hat/textures/ch_ornament_hat_wuchen_s_lhwdouli_mask.png",
+        "png_sha256": "d9aa7ca4a6a8a22ddb56943460471adf9f2df9c47412061aedb6165a56e37315",
+        "source_gpu_sha256": "f655a9aa0463bff50a04ae85cec13badf82fcbe473fffcc6a3e569d77974db75",
+        "width": 1024,
+        "height": 1024,
+        "format": 25,
+        "color_space": 0,
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "alpha_fraction_above_0_9": 0.687774658203125,
+        "pixel_editing": "none; original source decode without resize or recolor"
+      },
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 4796930341018144677,
+          "class": "Texture2D",
+          "raw_bytes": 224,
+          "raw_sha256": "e8e017fc99f2567d7c00ca5e38e6641a35da5fd1d88181feb9808bf70c0d1219",
+          "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli_mrav",
+        "png": "/home/asuka/kiva-asset-research/naraka/export/character/red_hat/textures/ch_ornament_hat_wuchen_s_lhwdouli_mrav.png",
+        "png_sha256": "ae1eafb7cdc43d60e152b7a204c0abf9c173c386000acdd4eb29c9f561506d68",
+        "source_gpu_sha256": "02bbfeac0e234df8756751406e3fc1d5494726267af506a4c934ab304cc9c8e0",
+        "width": 1024,
+        "height": 1024,
+        "format": 25,
+        "color_space": 0,
+        "alpha_min": 254,
+        "alpha_max": 255,
+        "alpha_fraction_above_0_9": 1.0,
+        "pixel_editing": "none; original source decode without resize or recolor"
+      },
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 5077060430531339064,
+          "class": "Texture2D",
+          "raw_bytes": 220,
+          "raw_sha256": "f49d48560f94d62988530e3d65ba80b6aedf4b263fee18fe47a696075366d478",
+          "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli_em",
+        "png": "/home/asuka/kiva-asset-research/naraka/export/character/red_hat/textures/ch_ornament_hat_wuchen_s_lhwdouli_em.png",
+        "png_sha256": "26103c0f33272fe52bcb5b96b95a89eecf750a8c3855b4e7f0fc6bfff9a54ec4",
+        "source_gpu_sha256": "82b645a887b1ab0be027bd4feb529330b5cadc00687ce387505e2bdca24cfa57",
+        "width": 1024,
+        "height": 1024,
+        "format": 25,
+        "color_space": 0,
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "alpha_fraction_above_0_9": 0.08579730987548828,
+        "pixel_editing": "none; original source decode without resize or recolor"
+      },
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 5485322468599550750,
+          "class": "Texture2D",
+          "raw_bytes": 220,
+          "raw_sha256": "67fdab88241a0c963b757fcdabbd20e7cfc49cf906753a03a541ec63d8ef59bd",
+          "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli_n",
+        "png": "/home/asuka/kiva-asset-research/naraka/export/character/red_hat/textures/ch_ornament_hat_wuchen_s_lhwdouli_n.png",
+        "png_sha256": "858393957a10916ef2583ac8b924406555670ecba7f370c2e91d3a1910ce6054",
+        "source_gpu_sha256": "1cab7c58a4827039f99cd72226d5ba2b9b7f8501f8e3a4e59c1617371eb6240c",
+        "width": 1024,
+        "height": 1024,
+        "format": 27,
+        "color_space": 0,
+        "alpha_min": 255,
+        "alpha_max": 255,
+        "alpha_fraction_above_0_9": 1.0,
+        "pixel_editing": "none; original source decode without resize or recolor"
+      },
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 8653467633867555311,
+          "class": "Texture2D",
+          "raw_bytes": 220,
+          "raw_sha256": "ec5fd1d1a24fe34a3d3f13e676dfd607aa1a6d0f590744f3c97e7f2303e1254d",
+          "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "name": "ch_ornament_hat_wuchen_s_lhwdouli_d",
+        "png": "/home/asuka/kiva-asset-research/naraka/export/character/red_hat/textures/ch_ornament_hat_wuchen_s_lhwdouli_d.png",
+        "png_sha256": "33049ae2bc05174669ac79f34008c38f428e1c67039649dd7ca6214cf06649fc",
+        "source_gpu_sha256": "de4cd5929db52da3545d1dc4e9fe38cdd50b6d841f986ee2c51fd9801f1378e1",
+        "width": 1024,
+        "height": 1024,
+        "format": 25,
+        "color_space": 1,
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "alpha_fraction_above_0_9": 0.509394645690918,
+        "pixel_editing": "none; original source decode without resize or recolor"
+      }
+    ],
+    "source_materials": [
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": -138610281598054439,
+          "class": "Material",
+          "raw_bytes": 1456,
+          "raw_sha256": "049ffc7abd62c519ce753741025fafe73035d08a76ecee695db60889523dad1d",
+          "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "tree": {
+          "m_Name": "ch_ornament_hat_wuchen_s_lhwdouli_cf",
+          "m_Shader": {
+            "m_FileID": 1,
+            "m_PathID": -3466609643313248108
+          },
+          "m_ShaderKeywords": "_MFX_EMISSIVE_PERIODIC_2",
+          "m_LightmapFlags": 4,
+          "m_EnableInstancingVariants": false,
+          "m_DoubleSidedGI": false,
+          "m_CustomRenderQueue": -1,
+          "stringTagMap": [],
+          "disabledShaderPasses": [],
+          "disabledShaderPassNames": [
+            "XRayEffect",
+            "Stealth"
+          ],
+          "m_SavedProperties": {
+            "m_TexEnvs": [
+              [
+                "_AdvIDTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": -2288953587812716395
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_BumpMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 5485322468599550750
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_ClothCustomMaskTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_CustomReflectionTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_EmissionMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 5077060430531339064
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MainTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 8653467633867555311
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MatEffectMap0",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MatEffectMap1",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_SpecGlossMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 4796930341018144677
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ]
+            ],
+            "m_Floats": [
+              [
+                "_AnisoAspect",
+                0.029999999329447746
+              ],
+              [
+                "_BumpScale",
+                1.0
+              ],
+              [
+                "_ClothMaterialSrcBlend",
+                5.0
+              ],
+              [
+                "_Culling",
+                1.0
+              ],
+              [
+                "_Cutoff",
+                0.9760000109672546
+              ],
+              [
+                "_Distance",
+                0.4480000138282776
+              ],
+              [
+                "_EmissionWeight",
+                1.0
+              ],
+              [
+                "_GlassPremultiply",
+                0.0
+              ],
+              [
+                "_GlassSpecularIntensity",
+                1.0
+              ],
+              [
+                "_GlossMapScale",
+                1.0
+              ],
+              [
+                "_IridescenceStr",
+                0.11599999666213989
+              ],
+              [
+                "_Mode",
+                0.0
+              ],
+              [
+                "_OffsetFactor",
+                0.0
+              ],
+              [
+                "_OffsetUnit",
+                0.0
+              ],
+              [
+                "_Power",
+                1.0
+              ],
+              [
+                "_SSAOReduce",
+                0.0
+              ],
+              [
+                "_Scale",
+                1.0
+              ],
+              [
+                "_SilkZWrite",
+                0.0
+              ],
+              [
+                "_VELVET_Str",
+                1.0
+              ],
+              [
+                "_shiftPower",
+                1.0
+              ]
+            ],
+            "m_Colors": [
+              [
+                "_Color",
+                {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_DetailWindParam",
+                {
+                  "r": 0.10000000149011612,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_EmissionColor",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectColor0",
+                {
+                  "r": 95.87451171875,
+                  "g": 95.87451171875,
+                  "b": 95.87451171875,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectColor1",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_MatEffectColor2",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectParam0",
+                {
+                  "r": 30.0,
+                  "g": -5.0,
+                  "b": -0.5899999737739563,
+                  "a": 3.0799999237060547
+                }
+              ],
+              [
+                "_MatEffectParam1",
+                {
+                  "r": 15.0,
+                  "g": 2.0,
+                  "b": 0.0,
+                  "a": 4.0
+                }
+              ],
+              [
+                "_MatEffectParam2",
+                {
+                  "r": 1.0,
+                  "g": 0.0,
+                  "b": 21.280000686645508,
+                  "a": 16.639999389648438
+                }
+              ],
+              [
+                "_PassThoughColor",
+                {
+                  "r": 0.9716981053352356,
+                  "g": 0.9716981053352356,
+                  "b": 0.9716981053352356,
+                  "a": 0.10000000149011612
+                }
+              ],
+              [
+                "_PrimaryWindParam",
+                {
+                  "r": 0.10000000149011612,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_ShaderFeatureParam1",
+                {
+                  "r": 0.0,
+                  "g": 1.0,
+                  "b": 0.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_SpecularTint",
+                {
+                  "r": 0.19120171666145325,
+                  "g": 0.2874408960342407,
+                  "b": 0.3005438446998596,
+                  "a": 1.0
+                }
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 5558903310314169401,
+          "class": "Material",
+          "raw_bytes": 1456,
+          "raw_sha256": "c39f4ce1f3e6117254c34ce5d49985abf6c097ea94ab7ce0c36ebfe3080c32c0",
+          "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "tree": {
+          "m_Name": "ch_ornament_hat_wuchen_s_lhwdouli",
+          "m_Shader": {
+            "m_FileID": 1,
+            "m_PathID": -3466609643313248108
+          },
+          "m_ShaderKeywords": "_MFX_EMISSIVE_PERIODIC_2",
+          "m_LightmapFlags": 4,
+          "m_EnableInstancingVariants": false,
+          "m_DoubleSidedGI": false,
+          "m_CustomRenderQueue": -1,
+          "stringTagMap": [],
+          "disabledShaderPasses": [],
+          "disabledShaderPassNames": [
+            "XRayEffect",
+            "Stealth"
+          ],
+          "m_SavedProperties": {
+            "m_TexEnvs": [
+              [
+                "_AdvIDTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": -2288953587812716395
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_BumpMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 5485322468599550750
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_ClothCustomMaskTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_CustomReflectionTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_EmissionMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 5077060430531339064
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MainTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 8653467633867555311
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MatEffectMap0",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MatEffectMap1",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_SpecGlossMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 4796930341018144677
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ]
+            ],
+            "m_Floats": [
+              [
+                "_AnisoAspect",
+                -0.7850000262260437
+              ],
+              [
+                "_BumpScale",
+                1.0
+              ],
+              [
+                "_ClothMaterialSrcBlend",
+                5.0
+              ],
+              [
+                "_Culling",
+                2.0
+              ],
+              [
+                "_Cutoff",
+                0.8999999761581421
+              ],
+              [
+                "_Distance",
+                0.07500000298023224
+              ],
+              [
+                "_EmissionWeight",
+                1.0
+              ],
+              [
+                "_GlassPremultiply",
+                0.0
+              ],
+              [
+                "_GlassSpecularIntensity",
+                1.0
+              ],
+              [
+                "_GlossMapScale",
+                1.0
+              ],
+              [
+                "_IridescenceStr",
+                0.11599999666213989
+              ],
+              [
+                "_Mode",
+                0.0
+              ],
+              [
+                "_OffsetFactor",
+                0.0
+              ],
+              [
+                "_OffsetUnit",
+                0.0
+              ],
+              [
+                "_Power",
+                1.0
+              ],
+              [
+                "_SSAOReduce",
+                0.0
+              ],
+              [
+                "_Scale",
+                1.0
+              ],
+              [
+                "_SilkZWrite",
+                0.0
+              ],
+              [
+                "_VELVET_Str",
+                1.0
+              ],
+              [
+                "_shiftPower",
+                1.0
+              ]
+            ],
+            "m_Colors": [
+              [
+                "_Color",
+                {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_DetailWindParam",
+                {
+                  "r": 0.10000000149011612,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_EmissionColor",
+                {
+                  "r": 383.498046875,
+                  "g": 30.117647171020508,
+                  "b": 12.047059059143066,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectColor0",
+                {
+                  "r": 10.039216041564941,
+                  "g": 92.36078643798828,
+                  "b": 95.87451171875,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectColor1",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_MatEffectColor2",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectParam0",
+                {
+                  "r": 13.0,
+                  "g": 2.0,
+                  "b": -0.5,
+                  "a": 4.0
+                }
+              ],
+              [
+                "_MatEffectParam1",
+                {
+                  "r": 8.0,
+                  "g": 1.5,
+                  "b": -0.699999988079071,
+                  "a": 3.0
+                }
+              ],
+              [
+                "_MatEffectParam2",
+                {
+                  "r": 1.0,
+                  "g": 0.0,
+                  "b": 16.639999389648438,
+                  "a": 16.959999084472656
+                }
+              ],
+              [
+                "_PassThoughColor",
+                {
+                  "r": 0.9716981053352356,
+                  "g": 0.9716981053352356,
+                  "b": 0.9716981053352356,
+                  "a": 0.10000000149011612
+                }
+              ],
+              [
+                "_PrimaryWindParam",
+                {
+                  "r": 0.10000000149011612,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_ShaderFeatureParam1",
+                {
+                  "r": 0.0,
+                  "g": 1.0,
+                  "b": 0.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_SpecularTint",
+                {
+                  "r": 0.9528301954269409,
+                  "g": 0.2651744484901428,
+                  "b": 0.2651744484901428,
+                  "a": 1.0
+                }
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 8552193042054205082,
+          "class": "Material",
+          "raw_bytes": 1456,
+          "raw_sha256": "9f4f09b77b64cfa01532fe7a2317dce0921ff3e58972605fae50a8a2344245e1",
+          "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "tree": {
+          "m_Name": "ch_ornament_hat_wuchen_s_lhwdouli_cb",
+          "m_Shader": {
+            "m_FileID": 1,
+            "m_PathID": -3466609643313248108
+          },
+          "m_ShaderKeywords": "_MFX_EMISSIVE_PERIODIC_2",
+          "m_LightmapFlags": 4,
+          "m_EnableInstancingVariants": false,
+          "m_DoubleSidedGI": false,
+          "m_CustomRenderQueue": -1,
+          "stringTagMap": [],
+          "disabledShaderPasses": [],
+          "disabledShaderPassNames": [
+            "XRayEffect",
+            "Stealth"
+          ],
+          "m_SavedProperties": {
+            "m_TexEnvs": [
+              [
+                "_AdvIDTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": -2288953587812716395
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_BumpMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 5485322468599550750
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_ClothCustomMaskTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_CustomReflectionTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_EmissionMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 5077060430531339064
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MainTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 8653467633867555311
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MatEffectMap0",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MatEffectMap1",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_SpecGlossMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 4796930341018144677
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ]
+            ],
+            "m_Floats": [
+              [
+                "_AnisoAspect",
+                0.23399999737739563
+              ],
+              [
+                "_BumpScale",
+                1.0
+              ],
+              [
+                "_ClothMaterialSrcBlend",
+                5.0
+              ],
+              [
+                "_Culling",
+                2.0
+              ],
+              [
+                "_Cutoff",
+                0.9629999995231628
+              ],
+              [
+                "_Distance",
+                0.07500000298023224
+              ],
+              [
+                "_EmissionWeight",
+                1.0
+              ],
+              [
+                "_GlassPremultiply",
+                0.0
+              ],
+              [
+                "_GlassSpecularIntensity",
+                1.0
+              ],
+              [
+                "_GlossMapScale",
+                1.0
+              ],
+              [
+                "_IridescenceStr",
+                0.11599999666213989
+              ],
+              [
+                "_Mode",
+                0.0
+              ],
+              [
+                "_OffsetFactor",
+                0.0
+              ],
+              [
+                "_OffsetUnit",
+                0.0
+              ],
+              [
+                "_Power",
+                1.0
+              ],
+              [
+                "_SSAOReduce",
+                0.0
+              ],
+              [
+                "_Scale",
+                1.0
+              ],
+              [
+                "_SilkZWrite",
+                0.0
+              ],
+              [
+                "_VELVET_Str",
+                1.0
+              ],
+              [
+                "_shiftPower",
+                1.0
+              ]
+            ],
+            "m_Colors": [
+              [
+                "_Color",
+                {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_DetailWindParam",
+                {
+                  "r": 0.10000000149011612,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_EmissionColor",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectColor0",
+                {
+                  "r": 271.174072265625,
+                  "g": 271.174072265625,
+                  "b": 271.174072265625,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectColor1",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_MatEffectColor2",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectParam0",
+                {
+                  "r": 30.0,
+                  "g": -5.0,
+                  "b": -0.5899999737739563,
+                  "a": 3.0799999237060547
+                }
+              ],
+              [
+                "_MatEffectParam1",
+                {
+                  "r": 15.0,
+                  "g": 2.0,
+                  "b": 0.0,
+                  "a": 4.0
+                }
+              ],
+              [
+                "_MatEffectParam2",
+                {
+                  "r": 1.0,
+                  "g": 0.0,
+                  "b": 21.280000686645508,
+                  "a": 16.639999389648438
+                }
+              ],
+              [
+                "_PassThoughColor",
+                {
+                  "r": 0.9716981053352356,
+                  "g": 0.9716981053352356,
+                  "b": 0.9716981053352356,
+                  "a": 0.10000000149011612
+                }
+              ],
+              [
+                "_PrimaryWindParam",
+                {
+                  "r": 0.10000000149011612,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_ShaderFeatureParam1",
+                {
+                  "r": 0.0,
+                  "g": 1.0,
+                  "b": 0.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_SpecularTint",
+                {
+                  "r": 0.19223923981189728,
+                  "g": 0.2866155207157135,
+                  "b": 0.30188679695129395,
+                  "a": 1.0
+                }
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "source": {
+          "cab": "CAB-ee54185213ea6a251db5fd14661239dd",
+          "path_id": 5558903310314169401,
+          "class": "Material",
+          "raw_bytes": 1456,
+          "raw_sha256": "c39f4ce1f3e6117254c34ce5d49985abf6c097ea94ab7ce0c36ebfe3080c32c0",
+          "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+          "original_type_tree": true,
+          "unity_version": "2019.4.41f2"
+        },
+        "tree": {
+          "m_Name": "ch_ornament_hat_wuchen_s_lhwdouli",
+          "m_Shader": {
+            "m_FileID": 1,
+            "m_PathID": -3466609643313248108
+          },
+          "m_ShaderKeywords": "_MFX_EMISSIVE_PERIODIC_2",
+          "m_LightmapFlags": 4,
+          "m_EnableInstancingVariants": false,
+          "m_DoubleSidedGI": false,
+          "m_CustomRenderQueue": -1,
+          "stringTagMap": [],
+          "disabledShaderPasses": [],
+          "disabledShaderPassNames": [
+            "XRayEffect",
+            "Stealth"
+          ],
+          "m_SavedProperties": {
+            "m_TexEnvs": [
+              [
+                "_AdvIDTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": -2288953587812716395
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_BumpMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 5485322468599550750
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_ClothCustomMaskTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_CustomReflectionTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_EmissionMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 5077060430531339064
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MainTex",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 8653467633867555311
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MatEffectMap0",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_MatEffectMap1",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ],
+              [
+                "_SpecGlossMap",
+                {
+                  "m_Texture": {
+                    "m_FileID": 0,
+                    "m_PathID": 4796930341018144677
+                  },
+                  "m_Scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                  },
+                  "m_Offset": {
+                    "x": 0.0,
+                    "y": 0.0
+                  }
+                }
+              ]
+            ],
+            "m_Floats": [
+              [
+                "_AnisoAspect",
+                -0.7850000262260437
+              ],
+              [
+                "_BumpScale",
+                1.0
+              ],
+              [
+                "_ClothMaterialSrcBlend",
+                5.0
+              ],
+              [
+                "_Culling",
+                2.0
+              ],
+              [
+                "_Cutoff",
+                0.8999999761581421
+              ],
+              [
+                "_Distance",
+                0.07500000298023224
+              ],
+              [
+                "_EmissionWeight",
+                1.0
+              ],
+              [
+                "_GlassPremultiply",
+                0.0
+              ],
+              [
+                "_GlassSpecularIntensity",
+                1.0
+              ],
+              [
+                "_GlossMapScale",
+                1.0
+              ],
+              [
+                "_IridescenceStr",
+                0.11599999666213989
+              ],
+              [
+                "_Mode",
+                0.0
+              ],
+              [
+                "_OffsetFactor",
+                0.0
+              ],
+              [
+                "_OffsetUnit",
+                0.0
+              ],
+              [
+                "_Power",
+                1.0
+              ],
+              [
+                "_SSAOReduce",
+                0.0
+              ],
+              [
+                "_Scale",
+                1.0
+              ],
+              [
+                "_SilkZWrite",
+                0.0
+              ],
+              [
+                "_VELVET_Str",
+                1.0
+              ],
+              [
+                "_shiftPower",
+                1.0
+              ]
+            ],
+            "m_Colors": [
+              [
+                "_Color",
+                {
+                  "r": 1.0,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_DetailWindParam",
+                {
+                  "r": 0.10000000149011612,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_EmissionColor",
+                {
+                  "r": 383.498046875,
+                  "g": 30.117647171020508,
+                  "b": 12.047059059143066,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectColor0",
+                {
+                  "r": 10.039216041564941,
+                  "g": 92.36078643798828,
+                  "b": 95.87451171875,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectColor1",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_MatEffectColor2",
+                {
+                  "r": 0.0,
+                  "g": 0.0,
+                  "b": 0.0,
+                  "a": 1.0
+                }
+              ],
+              [
+                "_MatEffectParam0",
+                {
+                  "r": 13.0,
+                  "g": 2.0,
+                  "b": -0.5,
+                  "a": 4.0
+                }
+              ],
+              [
+                "_MatEffectParam1",
+                {
+                  "r": 8.0,
+                  "g": 1.5,
+                  "b": -0.699999988079071,
+                  "a": 3.0
+                }
+              ],
+              [
+                "_MatEffectParam2",
+                {
+                  "r": 1.0,
+                  "g": 0.0,
+                  "b": 16.639999389648438,
+                  "a": 16.959999084472656
+                }
+              ],
+              [
+                "_PassThoughColor",
+                {
+                  "r": 0.9716981053352356,
+                  "g": 0.9716981053352356,
+                  "b": 0.9716981053352356,
+                  "a": 0.10000000149011612
+                }
+              ],
+              [
+                "_PrimaryWindParam",
+                {
+                  "r": 0.10000000149011612,
+                  "g": 1.0,
+                  "b": 1.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_ShaderFeatureParam1",
+                {
+                  "r": 0.0,
+                  "g": 1.0,
+                  "b": 0.0,
+                  "a": 0.0
+                }
+              ],
+              [
+                "_SpecularTint",
+                {
+                  "r": 0.9528301954269409,
+                  "g": 0.2651744484901428,
+                  "b": 0.2651744484901428,
+                  "a": 1.0
+                }
+              ]
+            ]
+          }
+        }
+      }
+    ],
+    "adaptation": {
+      "enabled": true,
+      "item_id": 3411276,
+      "name": "道诡异仙·惘心笠",
+      "ornament_config": 1102706,
+      "slot": "Head",
+      "body_part_weapon_slot": 1200066,
+      "baseline_scale_preserved": 0.9128533132643297,
+      "renormalize_for_hat_height": false,
+      "source_palettes": "Original complete m_Bones/IBMs/local transforms; external root mounted on actual configured l22 Head per original slot.",
+      "hair_limit": "Original mask4, bone-hide threshold0.5 and310-byte spatial payload preserved as evidence; executable limit deformer not recovered. All original Xinsu triangles retained, possible local clipping not hidden by speculative hair deletion.",
+      "material": "Original main RGB/alpha, cutoff and Cull Front/Back; masked PBR approximation, no source silk translucency/emission/cloth physics recovered."
+    },
+    "limits": [
+      "Original complete m_Bones order, local SRT, geometry, UV, four weights and IBMs are preserved. Source imported pose need not cancel the inverse binds.",
+      "Head mounting follows the original table slot identity on actual configured l22 Head. This external actor assembly is separate from the standalone prefab serialized root.",
+      "Only highest LOD visible; source cf/cb are separate draws with original culling. Simulation-only mesh with no material is excluded.",
+      "Original silk translucency, periodic emission, secondary cloth physics and HairLimitData deformation are not reconstructed. Source base/alpha + cutoff/cull uses neutral masked PBR adaptation.",
+      "No browser/screenshot test performed in this batch."
+    ]
+  }
 }

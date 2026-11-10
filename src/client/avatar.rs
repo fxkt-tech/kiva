@@ -812,6 +812,14 @@ mod tests {
     }
 
     fn sample_surface(world: &mut World, owner: Entity) -> Vec<Vec3> {
+        sample_matching_surface(world, owner, None)
+    }
+
+    fn sample_matching_surface(
+        world: &mut World,
+        owner: Entity,
+        name_prefix: Option<&str>,
+    ) -> Vec<Vec3> {
         let assets = world.resource::<Assets<Mesh>>();
         let binds = world.resource::<Assets<SkinnedMeshInverseBindposes>>();
         let mut result = Vec::new();
@@ -820,6 +828,13 @@ mod tests {
                 continue;
             };
             if surface.owner != owner {
+                continue;
+            }
+            if name_prefix.is_some_and(|prefix| {
+                entity
+                    .get::<Name>()
+                    .is_none_or(|name| !name.as_str().starts_with(prefix))
+            }) {
                 continue;
             }
             let skin = entity.get::<SkinnedMesh>().unwrap();
@@ -866,6 +881,84 @@ mod tests {
             .zip(second)
             .map(|(a, b)| a.distance(*b))
             .fold(0.0, f32::max)
+    }
+
+    #[test]
+    fn wangxin_hat_follows_the_head_and_is_reclaimed_when_switching_appearance() {
+        let mut app = test_app(false);
+        let world = app.world_mut();
+        let root = Transform::from_xyz(2.0, 0.8, -3.0);
+        let owner = world
+            .spawn((Body::at(root.translation, 6.0, 0.35), root))
+            .id();
+        spawn_with_appearance(world, owner, Appearance::Lihuowang);
+        let library = world.resource::<AnimationLibrary>();
+        let head = library.bone("Head");
+        let rest = library.model_pose(
+            &library
+                .bones
+                .iter()
+                .map(|bone| bone.rest)
+                .collect::<Vec<_>>(),
+        );
+        world.get_mut::<RigPose>(owner).unwrap().model = rest;
+        world.run_schedule(Update);
+        let before = sample_matching_surface(world, owner, Some("naraka::hat::"));
+        assert!(
+            !before.is_empty(),
+            "the selected appearance must include the original hat"
+        );
+        assert_eq!(
+            world
+                .query::<(&AvatarSurface, &Name, &SkinnedMesh)>()
+                .iter(world)
+                .filter(|(surface, name, skin)| {
+                    surface.owner == owner
+                        && name.as_str().starts_with("naraka::hat::")
+                        && !skin.joints.is_empty()
+                })
+                .count(),
+            4,
+        );
+        world.get_mut::<RigPose>(owner).unwrap().model[head].rotation *=
+            Quat::from_rotation_y(0.35);
+        world.run_schedule(Update);
+        let turned = sample_matching_surface(world, owner, Some("naraka::hat::"));
+        assert!(changed(&before, &turned) > 0.01);
+        replace(world, owner, Appearance::Choulingke);
+        world.run_schedule(Update);
+        assert!(sample_matching_surface(world, owner, Some("naraka::hat::")).is_empty());
+        replace(world, owner, Appearance::Lihuowang);
+        world.run_schedule(Update);
+        let counts = (
+            world.resource::<Assets<Mesh>>().len(),
+            world.resource::<Assets<Image>>().len(),
+            world.resource::<Assets<StandardMaterial>>().len(),
+            world.entities().len(),
+        );
+        replace(world, owner, Appearance::Choulingke);
+        replace(world, owner, Appearance::Lihuowang);
+        world.run_schedule(Update);
+        assert!(
+            changed(
+                &turned,
+                &sample_matching_surface(world, owner, Some("naraka::hat::")),
+            ) < 0.00001
+        );
+        assert_eq!(
+            counts,
+            (
+                world.resource::<Assets<Mesh>>().len(),
+                world.resource::<Assets<Image>>().len(),
+                world.resource::<Assets<StandardMaterial>>().len(),
+                world.entities().len(),
+            )
+        );
+        assert_eq!(*world.get::<Transform>(owner).unwrap(), root);
+        assert_eq!(
+            world.get::<Body>(owner).unwrap().world_position(),
+            root.translation
+        );
     }
 
     #[test]

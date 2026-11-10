@@ -1,15 +1,15 @@
 {
   "binary": {
     "file": "/home/asuka/go/src/github.com/fxkt-tech/kiva/assets/lihuowang/character.bin",
-    "bytes": 8931762,
-    "sha256": "52ac24f9e5ccce28eb132b529d7fad7c3b39c23ef850c4448869275caad83fd9",
+    "bytes": 10739759,
+    "sha256": "0e87a9070a7e926e0a9d0fdd085728f149ab9a8ce0e700e7e1b34ea5888e2818",
     "drivers": 23,
-    "textures": 8,
-    "materials": 18,
+    "textures": 9,
+    "materials": 22,
     "double_sided_materials": 5,
-    "parts": 18,
-    "vertices": 42625,
-    "triangles": 57257,
+    "parts": 22,
+    "vertices": 51414,
+    "triangles": 66268,
     "actual_binary_lbs_character_bounds": [
       [
         -0.7197659719314854,
@@ -121,6 +121,30 @@
         "vertices": 2247
       },
       {
+        "name": "naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli",
+        "blade": false,
+        "bones": 10,
+        "vertices": 7857
+      },
+      {
+        "name": "naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_01",
+        "blade": false,
+        "bones": 7,
+        "vertices": 542
+      },
+      {
+        "name": "naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cb",
+        "blade": false,
+        "bones": 10,
+        "vertices": 195
+      },
+      {
+        "name": "naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cf",
+        "blade": false,
+        "bones": 10,
+        "vertices": 195
+      },
+      {
         "name": "naraka::zhulei::rigid_blade",
         "blade": true,
         "bones": 1,
@@ -134,7 +158,26 @@
       }
     ],
     "exact_EOF": true,
-    "source_pose_nonbind_bones_preserved": 352,
+    "source_pose_nonbind_bones_preserved": 389,
+    "headwear": {
+      "item_id": 3411276,
+      "bounds": [
+        [
+          -0.2619257339457639,
+          1.2383867123250136,
+          -0.27863551634311157
+        ],
+        [
+          0.3607271530201531,
+          1.6644540753411838,
+          0.28222589832200756
+        ]
+      ],
+      "hat_top_m": 1.6644540753411838,
+      "complete_visible_top_m": 1.7299999676024438,
+      "extra_above_baseline_height_m": 0.0,
+      "baseline_character_height_unchanged": true
+    },
     "browser_or_screenshot_test": false
   },
   "source_pose_checks": [
@@ -281,6 +324,42 @@
       "serialized_f32_weights255_error_max_m": 1.7401153338552446e-07,
       "nondegenerate_UV_triangles": 4090,
       "triangles": 4090
+    },
+    {
+      "role": "hat",
+      "mesh": "ch_ornament_hat_wuchen_s_lhwdouli",
+      "vertices": 7857,
+      "float_C_source_LBS_error_max": 4.440892098500626e-16,
+      "serialized_f32_weights255_error_max_m": 3.7939602181218786e-05,
+      "nondegenerate_UV_triangles": 7699,
+      "triangles": 7701
+    },
+    {
+      "role": "hat",
+      "mesh": "ch_ornament_hat_wuchen_s_lhwdouli_01",
+      "vertices": 542,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 5.666465978564057e-08,
+      "nondegenerate_UV_triangles": 726,
+      "triangles": 726
+    },
+    {
+      "role": "hat",
+      "mesh": "ch_ornament_hat_wuchen_s_lhwdouli_cb",
+      "vertices": 195,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 5.8617126331906236e-08,
+      "nondegenerate_UV_triangles": 292,
+      "triangles": 292
+    },
+    {
+      "role": "hat",
+      "mesh": "ch_ornament_hat_wuchen_s_lhwdouli_cb",
+      "vertices": 195,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 5.8617126331906236e-08,
+      "nondegenerate_UV_triangles": 292,
+      "triangles": 292
     }
   ],
   "maximum_float_C_LBS_error": 8.881784197001252e-16,
@@ -575,7 +654,31 @@
     "PNG_size_and_decode",
     "rigid_blade_pose_bake_and_grip_axis",
     "authored_sheath_rest_above_ground",
-    "exact_binary_EOF"
+    "exact_binary_EOF",
+    "original_headwear_identity_and_pinned_hash",
+    "all_hat_palettes_follow_actual_Head_ancestor",
+    "body_head_hair_baseline_scale_unchanged",
+    "headwear_top_reported_separately",
+    "all_Xinsu_triangles_retained"
   ],
-  "browser_or_screenshot_test": false
+  "browser_or_screenshot_test": false,
+  "headwear": {
+    "item_id": 3411276,
+    "bounds": [
+      [
+        -0.2619257339457639,
+        1.2383867123250136,
+        -0.27863551634311157
+      ],
+      [
+        0.3607271530201531,
+        1.6644540753411838,
+        0.28222589832200756
+      ]
+    ],
+    "hat_top_m": 1.6644540753411838,
+    "complete_visible_top_m": 1.7299999676024438,
+    "extra_above_baseline_height_m": 0.0,
+    "baseline_character_height_unchanged": true
+  }
 }
