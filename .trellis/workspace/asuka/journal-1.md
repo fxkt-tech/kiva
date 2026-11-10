@@ -1129,3 +1129,73 @@ Packaged exact official Choulingke soundtrack and fully traced original shared p
 ### Next Steps
 
 - 在实际GPU复核模型、镜头和手感；任务继续保留未完成的视觉验收，不误标为通过。
+
+
+## Session 34: 指定兄妹及远程武器模型接入
+<!-- trellis-session: v=2 fp=a635f0a99803de5c -->
+
+**Date**: 2026-11-10
+**Task**: 指定兄妹及远程武器模型接入
+**Branch**: `feat/action-v1-models`
+
+### Summary
+
+默认李火旺、白灵淼女性源蒙皮、引冰落与羿之影；离线转换和真实握持适配完成，完整检查及浏览器流程通过，真实GPU画面待复核。
+
+### Main Changes
+
+- 复用冻结的永劫无间准备资源，新增可复现离线转换与三组运行资产，来源与限制完整记录。
+- 女性自身结构和蒙皮、连续锁骨与站姿高度IK、局部瞄准修正；战斗规则和源射击位置不变。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] make check：215 Rust、65 Node、原生Clippy与WASM check；WASM Clippy与Trunk构建通过。
+- [OK] 全部12个导出文件重建一致，原件76/20/33文件校验通过；最终WASM浏览器两条联动和暂停换装/模式切换通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 真实GPU复核模型可见性、握持构图、发片与穿插；当前代码尚未提交，任务保留验收跟踪。
+
+
+## Session 35: 提交并合并指定模型接入
+<!-- trellis-session: v=2 fp=9a6006291c194062 -->
+
+**Date**: 2026-11-10
+**Task**: 提交并合并指定模型接入
+**Branch**: `main`
+
+### Summary
+
+按用户授权提交四个指定模型接入，保留远端独立资源准备提交后合入main，删除本次临时分支并推送。
+
+### Main Changes
+
+- 模型代码9073157，经8ee266e合并main，保留远端e702745准备资源和独立worktree。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9073157` | feat: integrate character and ranged weapon models |
+| `8ee266e` | merge: integrate specified character and weapon models |
+
+### Testing
+
+- [OK] 沿用已通过的215 Rust、65 Node、双平台Clippy、WASM、Trunk和浏览器功能流程；合并后的运行代码/资产逐文件未变。
+- [OK] 合并后离线导出verify再次通过：12文件逐字节一致，源文件哈希和损坏输入拒绝检查通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 真实GPU画面验收待复核，保留任务记录，不提前归档。

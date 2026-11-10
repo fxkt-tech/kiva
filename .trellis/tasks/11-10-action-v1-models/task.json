@@ -15,7 +15,7 @@
   "branch": "feat/action-v1-models",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "9073157",
   "pr_url": null,
   "subtasks": [],
   "children": [],
@@ -30,6 +30,6 @@
     "src/client/ranged_models.rs",
     ".trellis/spec/client/model-assets.md"
   ],
-  "notes": "模型与客户端接入、独立代码复核及全部自动质量门槛通过；215 Rust +65 Node，源资源冻结，输出重建一致。最终打包产物浏览器两条联动、暂停换装与模式切换通过，无运行错误；本机软件GPU仍仅显示背景，真实GPU画面验收单独跟踪，暂不归档。工作区保留在feat/action-v1-models，尚未提交。",
+  "notes": "模型代码9073157已合入main（合并8ee266e），保留远端独立资源准备提交e702745；本次临时分支feat/action-v1-models已删除，按用户授权推送origin/main。215 Rust +65 Node及WASM/Trunk/浏览器流程通过，合并后运行代码和资产与已验证版本一致，导出12文件重建再次通过。真实GPU画面仍待复核，任务暂不归档。",
   "meta": {}
 }
