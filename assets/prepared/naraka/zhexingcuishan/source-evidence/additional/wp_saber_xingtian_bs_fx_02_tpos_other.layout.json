@@ -1,0 +1,23 @@
+{
+  "source_format": 17,
+  "dtype": "<f2",
+  "shape": [
+    72,
+    128,
+    4
+  ],
+  "channels": 4,
+  "row_order": "original GPU byte order, no vertical flip",
+  "mip0_byte_offset": 0,
+  "mip0_bytes": 73728,
+  "source_gpu_bytes": 73728,
+  "mip_count": 1,
+  "npy": "/home/asuka/kiva-asset-research/naraka/export/weapon/zhexingcuishan/numeric_textures/wp_saber_xingtian_bs_fx_02_tpos_other.npy",
+  "npy_sha256": "56aaab50699a898a42631e2e176a7150a760a073f4ffa2c1f5ee152ec7057812",
+  "gpu": "/home/asuka/kiva-asset-research/naraka/export/weapon/zhexingcuishan/textures/wp_saber_xingtian_bs_fx_02_tpos_other.gpu.bin",
+  "gpu_sha256": "3661dd962f430c683521af4d1ea5648b226c57b54927f417b1b1ba9c2b236728",
+  "finite_fraction": 1.0,
+  "finite_min": 0.0261077880859375,
+  "finite_max": 1.0,
+  "semantics": "Exact original IEEE little-endian numeric texture data only; no vertex shader/shape lookup interpretation."
+}

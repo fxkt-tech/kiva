@@ -1,0 +1,1630 @@
+{
+  "schema": "naraka-prepared-v1",
+  "name": "谪星·摧山",
+  "prepared_only": true,
+  "runtime_integrated": false,
+  "identity": {
+    "item_id": 2311638,
+    "name": "谪星·摧山",
+    "weapon_type": "saber",
+    "weapon_temp_ids": [
+      3112012
+    ],
+    "source_identity_file": "/home/asuka/kiva-asset-research/naraka/identity/zhexingcuishan/identity_manifest.json",
+    "source_identity_sha256": "b9f18bf2494e02c231949fea9ad3b3f38a43c007ca72d359c52899e740e554c9"
+  },
+  "models": [
+    {
+      "file": "models/zhexingcuishan_main.glb",
+      "sha256": "687b9274509d2a62319b88bc9bfa5ffdb1d63da974d0b0bc43ded5c8195d74f3",
+      "role": "main",
+      "native_skinned_meshes": 1
+    },
+    {
+      "file": "models/zhexingcuishan_source_variant_input_01.glb",
+      "sha256": "2e202e39dd06fa8a6c1f83ddbcb46bafbab85725c4a19fa52b4aa9d479e1a36e",
+      "role": "source_variant_input_01",
+      "native_skinned_meshes": 0
+    },
+    {
+      "file": "models/zhexingcuishan_source_variant_input_02.glb",
+      "sha256": "3636f29110f5bc062f3a2bd0fc0f8dd23283ae2416a1d5d4cbe443c0a25218d3",
+      "role": "source_variant_input_02",
+      "native_skinned_meshes": 0
+    },
+    {
+      "file": "models/zhexingcuishan_source_variant_input_03.glb",
+      "sha256": "a1b363e1dce2380c6e8b130799228b3fcc1de4758773145be359a617fc15aa01",
+      "role": "source_variant_input_03",
+      "native_skinned_meshes": 0
+    },
+    {
+      "file": "models/zhexingcuishan_source_variant_input_04.glb",
+      "sha256": "ecbc04f4db44e1a4264d825aba4f25debd7f908fce4a38e079a2abd9b69c9bc3",
+      "role": "source_variant_input_04",
+      "native_skinned_meshes": 0
+    },
+    {
+      "file": "models/zhexingcuishan_source_fx_input_01.glb",
+      "sha256": "27f686b54caa9c6dba447e005edd26618e7de4d725b04cbec2362b1c67616c5e",
+      "role": "source_fx_input_01",
+      "native_skinned_meshes": 0
+    },
+    {
+      "file": "models/zhexingcuishan_source_fx_input_02.glb",
+      "sha256": "99f540b2e70c32dcdf8fd9a5b5ef9ba268c01d03812fb8557c453a0a61da24d0",
+      "role": "source_fx_input_02",
+      "native_skinned_meshes": 0
+    }
+  ],
+  "textures": [
+    {
+      "file": "textures/wp_saber_xingtian_bs_01_tnrm_other.png",
+      "sha256": "3ca8a229eaad51bb18e6fa64ae0c97c8f8eb0eebc76eb9b762bf81d0929b20ac",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -206635505444727342,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "251e2413fbcf24475b8bca9b1eac0c0c29731dcea223511ec330df490b6d6697",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaNormalTexture"
+      ],
+      "width": 256,
+      "height": 140,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_01_tpos_other.png",
+      "sha256": "e87502258afefaa0452877a08782af28c39a798125b2953f4f961cc3cc858f49",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 251312248746942995,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "d190220b4a79ba3fa3a72838a8112729d08256679d509034cf5bb05b8e61acee",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaPositionTexture"
+      ],
+      "width": 256,
+      "height": 140,
+      "dimensions_channels": "PNG is a display-only copy; original numerical precision is retained separately in the declared raw/npy/layout evidence, not in this PNG.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed.",
+      "display_only": true,
+      "original_format": "RGBAHalf",
+      "pixel_editing": "8-bit display ONLY: fixed clamp[0,1]*255, NaN->0 and Inf->endpoint, vertical flip only for PNG. Original signed/HDR IEEE data preserved bit-exact in raw GPU + NPY without flip; PNG is not authoritative numeric data"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_em.png",
+      "sha256": "f67a35fabcb9709123e43f643547ec7580c26d3b51eb37d4edbfe115000827c4",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 5817846807884825960,
+        "class": "Texture2D",
+        "raw_bytes": 204,
+        "raw_sha256": "1ace9f24bfb10ae53159e7f93f371e2beaae0b6427a5769760b160f3bb365428",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_EffectMaskTexture"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/fx_wp_saber_xingtian_01_atlas_nx.png",
+      "sha256": "cfb7938302a88a9dc8c9688ee35f2d3e9e398c950477b3ecf020b8a5ea051701",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 350628003436512153,
+        "class": "Texture2D",
+        "raw_bytes": 216,
+        "raw_sha256": "c1862ea604d66926d9b751e340239b821319cee14a8d7cc5bb204802f56ba83c",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_EffectTexture",
+        "_MainTexture"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_d.png",
+      "sha256": "bcf29e7a1b2957e7bb77e1643f57cbb4b9bd6cf3e3d46f00fa254050ac3ba88a",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 4465334325391267220,
+        "class": "Texture2D",
+        "raw_bytes": 204,
+        "raw_sha256": "76c763d7f604c311aa1711f7d7bab434a49ab549393b480ce82642315773cb1b",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_MainTex"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_pm.png",
+      "sha256": "2fc5056ecaedd3e8dcb328fb49dae60b315c7ab440c4ffc58c730a665f61e338",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 4138117552365536768,
+        "class": "Texture2D",
+        "raw_bytes": 204,
+        "raw_sha256": "4af600f56f1de264009ce92f27a7c2e4fdf32552dac005cf9e13ac712f5ba0d8",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_MutateMaskTexture"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_nx.png",
+      "sha256": "25a335a23fe58071b60afcff24b7ac023b2174297af9f79ca013e632d1edaa6f",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 910862617162381727,
+        "class": "Texture2D",
+        "raw_bytes": 204,
+        "raw_sha256": "677ee6a782f655885050755217a3d77f3071e841acd3494e3084d647bf8dd168",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_NormalIridMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_shape_other.png",
+      "sha256": "d789b4a6582871c2f7bfea9772212a583f2373c580e13639e25d6aad2950adab",
+      "source": {
+        "cab": "CAB-111f25bfe833e326ba3af71095456cb8",
+        "path_id": 3993847447295093306,
+        "class": "Texture2D",
+        "raw_bytes": 184,
+        "raw_sha256": "4cf4f26c43d2b735615c417634c28f7e29e039464c6eaad2817fc01ced97178d",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_ShapeTexture"
+      ],
+      "width": 174,
+      "height": 40,
+      "dimensions_channels": "PNG is a display-only copy; original numerical precision is retained separately in the declared raw/npy/layout evidence, not in this PNG.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed.",
+      "display_only": true,
+      "original_format": "RGBAFloat",
+      "pixel_editing": "8-bit display ONLY: fixed clamp[0,1]*255, NaN->0 and Inf->endpoint, vertical flip only for PNG. Original signed/HDR IEEE data preserved bit-exact in raw GPU + NPY without flip; PNG is not authoritative numeric data"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_mrav.png",
+      "sha256": "a782e38542341b41d95ae6f65a29159b27f6e31b1fae3bd8d39e26b17caa8f23",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -1580029780263393718,
+        "class": "Texture2D",
+        "raw_bytes": 208,
+        "raw_sha256": "01158f334c7e74d6148fa8f9224924ea938407cc49b4519d5d27e9950f777ba0",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_SpecGlossMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_tx.png",
+      "sha256": "04b377096921a4bfb8e26ffc0e6e8ffdbcb178fdb53ede1a705fe6ac11cf83a2",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -7191813264388968619,
+        "class": "Texture2D",
+        "raw_bytes": 204,
+        "raw_sha256": "05fbed8f808bfc12a9b7f2feae9cf144db3466692c6dcef419dec072be9e5674",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_TransmissiveMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_tr.png",
+      "sha256": "07369ed327a5fe481ea03cf46f7ce9b69d1eafeaf47300aa1f3ee6dae4f1fcd2",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -3325996160895710591,
+        "class": "Texture2D",
+        "raw_bytes": 204,
+        "raw_sha256": "c07ca582f2950db14f059e706e26e4f5ead1b0acd5de1e72301c904b74757034",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_TransmittanceMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_02_tnrm_other.png",
+      "sha256": "6388703cd961ff174d9c0f73566180d94e8ae2f610c7ebf9b356725995260b9d",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -8926696858370187834,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "7b5b59300b37cc6d94b43f08ae57809f7b6741691170a69b5768d76ef253cabe",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaNormalTexture"
+      ],
+      "width": 256,
+      "height": 124,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_02_tpos_other.png",
+      "sha256": "6f6c7569f5e2aa475483b82a3dd9342ee4336daee9176ddb90875607ebe96d34",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 3888173113296423867,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "1837fc68f70fde4f60209890ff40a906dd2502af8b4b2650abb36c486164ea53",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaPositionTexture"
+      ],
+      "width": 256,
+      "height": 124,
+      "dimensions_channels": "PNG is a display-only copy; original numerical precision is retained separately in the declared raw/npy/layout evidence, not in this PNG.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed.",
+      "display_only": true,
+      "original_format": "RGBAHalf",
+      "pixel_editing": "8-bit display ONLY: fixed clamp[0,1]*255, NaN->0 and Inf->endpoint, vertical flip only for PNG. Original signed/HDR IEEE data preserved bit-exact in raw GPU + NPY without flip; PNG is not authoritative numeric data"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_04_tnrm_other.png",
+      "sha256": "9de66d1474eb8f7d22f182c5ac946359b85caafbd9559edcf7ad7c31ee904a79",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -6170396679955128108,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "d034950ee8ee7405eb1c73a859834148b998a39ce4e649fa2068834a85191ad0",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaNormalTexture"
+      ],
+      "width": 256,
+      "height": 216,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_04_tpos_other.png",
+      "sha256": "81f271919e763d582b9fdcf74c5f3747a57a64b3d47043a44c5480f1a116c0cb",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -3770926749137065045,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "93a8a105ef374d382e308d4ee6694ffb6c9d738ac892a870e86184a141700847",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaPositionTexture"
+      ],
+      "width": 256,
+      "height": 216,
+      "dimensions_channels": "PNG is a display-only copy; original numerical precision is retained separately in the declared raw/npy/layout evidence, not in this PNG.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed.",
+      "display_only": true,
+      "original_format": "RGBAHalf",
+      "pixel_editing": "8-bit display ONLY: fixed clamp[0,1]*255, NaN->0 and Inf->endpoint, vertical flip only for PNG. Original signed/HDR IEEE data preserved bit-exact in raw GPU + NPY without flip; PNG is not authoritative numeric data"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_fx_01_tnrm_other.png",
+      "sha256": "611eeb05215d229e3ceca9f6e6c43f65a0785759f7d0ce15de8e2c0abd85c5a6",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -594504950358429229,
+        "class": "Texture2D",
+        "raw_bytes": 224,
+        "raw_sha256": "6554c935eefa24840e7c8ea9cb9fbf233e05287bded0b5f793cd5c58c6feb933",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaNormalTexture"
+      ],
+      "width": 128,
+      "height": 88,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_fx_01_tpos_other.png",
+      "sha256": "8338eb20991b31cec4a4bdf4d94eba4b71d84d7887187cb84f2e83d11ad8b042",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 372331696975218544,
+        "class": "Texture2D",
+        "raw_bytes": 224,
+        "raw_sha256": "c28c37195386f0b8d56c09c57ff9204a588403f3213765eb2c0bac38821872e2",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaPositionTexture"
+      ],
+      "width": 128,
+      "height": 88,
+      "dimensions_channels": "PNG is a display-only copy; original numerical precision is retained separately in the declared raw/npy/layout evidence, not in this PNG.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed.",
+      "display_only": true,
+      "original_format": "RGBAHalf",
+      "pixel_editing": "8-bit display ONLY: fixed clamp[0,1]*255, NaN->0 and Inf->endpoint, vertical flip only for PNG. Original signed/HDR IEEE data preserved bit-exact in raw GPU + NPY without flip; PNG is not authoritative numeric data"
+    },
+    {
+      "file": "textures/fx_wp_saber_xingtian_01_d_other.png",
+      "sha256": "d9aa224b58704b5db86235ce21328ba567f3ad04affa06d14fa50c06ef1df858",
+      "source": {
+        "cab": "CAB-165bfea82d60bdcd4e1c585d0fd1b50e",
+        "path_id": -3705081000666058012,
+        "class": "Texture2D",
+        "raw_bytes": 216,
+        "raw_sha256": "816c94c2166482ba7cf380ef8b5664820e30eab29679d53646f20a573d52aaa4",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_MaskTexture"
+      ],
+      "width": 512,
+      "height": 512,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_fx_02_tnrm_other.png",
+      "sha256": "e3dd1a75c72b33770f637702b596a662b4c46c36d3e9237c240076079d84a268",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": -1052850561773166803,
+        "class": "Texture2D",
+        "raw_bytes": 224,
+        "raw_sha256": "c0acdb97dd65159fb68010655ddda15256721789b6f762a395f95f58e27e69b7",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaNormalTexture"
+      ],
+      "width": 128,
+      "height": 72,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_fx_02_tpos_other.png",
+      "sha256": "3f59d055ff03ac2ea8e7ab1947f2fb8f12f4f45e18c70f67d091198e3847a845",
+      "source": {
+        "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+        "path_id": 907236384989353654,
+        "class": "Texture2D",
+        "raw_bytes": 224,
+        "raw_sha256": "fe4c23bbe0939293da24ccc84c4ad14092c4f399e0a7ed3a83f6c0785bf509a8",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_DeltaPositionTexture"
+      ],
+      "width": 128,
+      "height": 72,
+      "dimensions_channels": "PNG is a display-only copy; original numerical precision is retained separately in the declared raw/npy/layout evidence, not in this PNG.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed.",
+      "display_only": true,
+      "original_format": "RGBAHalf",
+      "pixel_editing": "8-bit display ONLY: fixed clamp[0,1]*255, NaN->0 and Inf->endpoint, vertical flip only for PNG. Original signed/HDR IEEE data preserved bit-exact in raw GPU + NPY without flip; PNG is not authoritative numeric data"
+    }
+  ],
+  "related_models": [],
+  "identity_documents": [
+    {
+      "file": "source-evidence/identity_manifest.json",
+      "sha256": "b9f18bf2494e02c231949fea9ad3b3f38a43c007ca72d359c52899e740e554c9",
+      "bytes": 190002,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/target_parts.json",
+      "sha256": "bf84ca20ad73e001d09cf61bf72b477a7c550f995ad85ed069cd0739f04734ae",
+      "bytes": 42878,
+      "role": "historical-original-identity-json"
+    }
+  ],
+  "files": [
+    {
+      "file": "models/zhexingcuishan_main.glb",
+      "sha256": "687b9274509d2a62319b88bc9bfa5ffdb1d63da974d0b0bc43ded5c8195d74f3",
+      "bytes": 686296,
+      "role": "original-weapon-glb:main"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_main.cpu-verification.json",
+      "sha256": "e08cfa723a4d365970e4d1efe19fba047dbdfb96c70ebfe32d0d96d2930a75cf",
+      "bytes": 2037,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_main.khronos.json",
+      "sha256": "5740a3b807b19bc8f390bf916f5fb77acf77d98550d43619691af3ec5e3d8cf7",
+      "bytes": 6156,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "models/zhexingcuishan_source_variant_input_01.glb",
+      "sha256": "2e202e39dd06fa8a6c1f83ddbcb46bafbab85725c4a19fa52b4aa9d479e1a36e",
+      "bytes": 786324,
+      "role": "original-weapon-glb:source_variant_input_01"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_variant_input_01.cpu-verification.json",
+      "sha256": "193680453f163b600f452caa40f7b5e43f589552fbd1d02f3444abb7cb74d5f7",
+      "bytes": 411,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_variant_input_01.khronos.json",
+      "sha256": "535e8f10580a10a549bd5473997e134ff6abaa50d3c0870bd7daca2662682d7e",
+      "bytes": 5755,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "models/zhexingcuishan_source_variant_input_02.glb",
+      "sha256": "3636f29110f5bc062f3a2bd0fc0f8dd23283ae2416a1d5d4cbe443c0a25218d3",
+      "bytes": 757356,
+      "role": "original-weapon-glb:source_variant_input_02"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_variant_input_02.cpu-verification.json",
+      "sha256": "86408e181cb7821eedb473f9415e372cd50661bb2de501d84cb21a4768372959",
+      "bytes": 411,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_variant_input_02.khronos.json",
+      "sha256": "39a4aa2ee09c48d40a5e08b5db4f6db241585efad3827c5245f34742d47dd10c",
+      "bytes": 5755,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "models/zhexingcuishan_source_variant_input_03.glb",
+      "sha256": "a1b363e1dce2380c6e8b130799228b3fcc1de4758773145be359a617fc15aa01",
+      "bytes": 729584,
+      "role": "original-weapon-glb:source_variant_input_03"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_variant_input_03.cpu-verification.json",
+      "sha256": "f9e2d5940f5c448fd02f8f967b39f22579a443121c0deb52798a6bf76bebc1cb",
+      "bytes": 411,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_variant_input_03.khronos.json",
+      "sha256": "1ee0b645bc5d80c1b2108307ef114d4de42666858aceb48d5ee06d0a4975f15a",
+      "bytes": 5755,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "models/zhexingcuishan_source_variant_input_04.glb",
+      "sha256": "ecbc04f4db44e1a4264d825aba4f25debd7f908fce4a38e079a2abd9b69c9bc3",
+      "bytes": 914892,
+      "role": "original-weapon-glb:source_variant_input_04"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_variant_input_04.cpu-verification.json",
+      "sha256": "b0e28e3e60fc3b217379d7acef85c54aff89028287fca8e0ac02b3c910252d78",
+      "bytes": 411,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_variant_input_04.khronos.json",
+      "sha256": "5083087167b7aab264933f751bbf1f504c3d5db578cdcb0bac85e58245af1780",
+      "bytes": 5755,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "models/zhexingcuishan_source_fx_input_01.glb",
+      "sha256": "27f686b54caa9c6dba447e005edd26618e7de4d725b04cbec2362b1c67616c5e",
+      "bytes": 2250636,
+      "role": "original-weapon-glb:source_fx_input_01"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_fx_input_01.cpu-verification.json",
+      "sha256": "8c829c092f5f7637a65a545670cb3bdf5b28cdc0daaeb81b4dfd43882f067324",
+      "bytes": 409,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_fx_input_01.khronos.json",
+      "sha256": "401570efb1bcb5a6b6a65826ef4ea1df3dd34a62a814e609aec742d76a86c945",
+      "bytes": 5751,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "models/zhexingcuishan_source_fx_input_02.glb",
+      "sha256": "99f540b2e70c32dcdf8fd9a5b5ef9ba268c01d03812fb8557c453a0a61da24d0",
+      "bytes": 2236616,
+      "role": "original-weapon-glb:source_fx_input_02"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_fx_input_02.cpu-verification.json",
+      "sha256": "73f083d122a4e11a8ae1acd0130b5bc0c99e8befc71ed35bb2d397d9a9f2c3bc",
+      "bytes": 409,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/zhexingcuishan_source_fx_input_02.khronos.json",
+      "sha256": "1e40916012333b2229daec944917cb1a3c0f46a9f0d47ea67ba5c3e6eca55a01",
+      "bytes": 5751,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_01_tnrm_other.png",
+      "sha256": "3ca8a229eaad51bb18e6fa64ae0c97c8f8eb0eebc76eb9b762bf81d0929b20ac",
+      "bytes": 46617,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_01_tpos_other.png",
+      "sha256": "e87502258afefaa0452877a08782af28c39a798125b2953f4f961cc3cc858f49",
+      "bytes": 27863,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_em.png",
+      "sha256": "f67a35fabcb9709123e43f643547ec7580c26d3b51eb37d4edbfe115000827c4",
+      "bytes": 1229492,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/fx_wp_saber_xingtian_01_atlas_nx.png",
+      "sha256": "cfb7938302a88a9dc8c9688ee35f2d3e9e398c950477b3ecf020b8a5ea051701",
+      "bytes": 2136371,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_d.png",
+      "sha256": "bcf29e7a1b2957e7bb77e1643f57cbb4b9bd6cf3e3d46f00fa254050ac3ba88a",
+      "bytes": 526474,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_pm.png",
+      "sha256": "2fc5056ecaedd3e8dcb328fb49dae60b315c7ab440c4ffc58c730a665f61e338",
+      "bytes": 660917,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_nx.png",
+      "sha256": "25a335a23fe58071b60afcff24b7ac023b2174297af9f79ca013e632d1edaa6f",
+      "bytes": 1310586,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_shape_other.png",
+      "sha256": "d789b4a6582871c2f7bfea9772212a583f2373c580e13639e25d6aad2950adab",
+      "bytes": 3716,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_mrav.png",
+      "sha256": "a782e38542341b41d95ae6f65a29159b27f6e31b1fae3bd8d39e26b17caa8f23",
+      "bytes": 1203754,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_tx.png",
+      "sha256": "04b377096921a4bfb8e26ffc0e6e8ffdbcb178fdb53ede1a705fe6ac11cf83a2",
+      "bytes": 216985,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_tr.png",
+      "sha256": "07369ed327a5fe481ea03cf46f7ce9b69d1eafeaf47300aa1f3ee6dae4f1fcd2",
+      "bytes": 1148021,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_02_tnrm_other.png",
+      "sha256": "6388703cd961ff174d9c0f73566180d94e8ae2f610c7ebf9b356725995260b9d",
+      "bytes": 30721,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_02_tpos_other.png",
+      "sha256": "6f6c7569f5e2aa475483b82a3dd9342ee4336daee9176ddb90875607ebe96d34",
+      "bytes": 15381,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_04_tnrm_other.png",
+      "sha256": "9de66d1474eb8f7d22f182c5ac946359b85caafbd9559edcf7ad7c31ee904a79",
+      "bytes": 66470,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_04_tpos_other.png",
+      "sha256": "81f271919e763d582b9fdcf74c5f3747a57a64b3d47043a44c5480f1a116c0cb",
+      "bytes": 32203,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_fx_01_tnrm_other.png",
+      "sha256": "611eeb05215d229e3ceca9f6e6c43f65a0785759f7d0ce15de8e2c0abd85c5a6",
+      "bytes": 6393,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_fx_01_tpos_other.png",
+      "sha256": "8338eb20991b31cec4a4bdf4d94eba4b71d84d7887187cb84f2e83d11ad8b042",
+      "bytes": 8206,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/fx_wp_saber_xingtian_01_d_other.png",
+      "sha256": "d9aa224b58704b5db86235ce21328ba567f3ad04affa06d14fa50c06ef1df858",
+      "bytes": 212206,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_fx_02_tnrm_other.png",
+      "sha256": "e3dd1a75c72b33770f637702b596a662b4c46c36d3e9237c240076079d84a268",
+      "bytes": 4942,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_saber_xingtian_bs_fx_02_tpos_other.png",
+      "sha256": "3f59d055ff03ac2ea8e7ab1947f2fb8f12f4f45e18c70f67d091198e3847a845",
+      "bytes": 4636,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "source-evidence/weapon-export.original.json",
+      "sha256": "dc5feb19e202c864ce4be25e2c406ad48e2ed1ffaec6c249c64c23d672708fdb",
+      "bytes": 7547183,
+      "role": "historical-original-export-manifest"
+    },
+    {
+      "file": "source-evidence/identity_manifest.json",
+      "sha256": "b9f18bf2494e02c231949fea9ad3b3f38a43c007ca72d359c52899e740e554c9",
+      "bytes": 190002,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/target_parts.json",
+      "sha256": "bf84ca20ad73e001d09cf61bf72b477a7c550f995ad85ed069cd0739f04734ae",
+      "bytes": 42878,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_CounterConfig_100146.bin",
+      "sha256": "67a7ec3f7fe3e9b3ea79784570211a60108497a71ceaa6eb4c83581fa025ca29",
+      "bytes": 150,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_CounterConfig_100147.bin",
+      "sha256": "8692593de2d46a2348fdd7c3ce06ede42fc3bae5d78fb727b38d091e67d530b2",
+      "bytes": 150,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_CounterConfig_100148.bin",
+      "sha256": "064657818d11850be347ba40ff59b5df5b95071802fcfd2f9466ff648f4d0987",
+      "bytes": 150,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_CounterConfig_100149.bin",
+      "sha256": "6884b30ebae1709fd7d61844e343b67eb2249fb950c072f8ff3205d2cea1c75d",
+      "bytes": 150,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_CounterConfig_100150.bin",
+      "sha256": "b283c8852c919f5f153f28de77d3db68f9e0732054da459501e99724d5ac315b",
+      "bytes": 112,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_RareSkin_1022.bin",
+      "sha256": "2d2e8090d9cc43a065adbddf212cf419a5be69fce422007ab484f927c823d452",
+      "bytes": 1387,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_Variation_1073.bin",
+      "sha256": "7cc8082d1ad587de2f677915e891c895aed9617a07824bf61f3db48436b343a4",
+      "bytes": 543,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_Variation_1074.bin",
+      "sha256": "10d0dc7f2e5c30face79b325d2bf127408514fd4138fad3a15c2f691148c782b",
+      "bytes": 599,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_Variation_1075.bin",
+      "sha256": "e8046f4e40016b3888f8adf07d3d766a0a82e7a28b15a55e5ff8adfdb06cf38d",
+      "bytes": 573,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/RareSkin_Variation_1076.bin",
+      "sha256": "87381c45bd9a4a11de2103962eccea8aa4901ed063f02f09cf853855f9101c09",
+      "bytes": 302,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponConfig_WeaponTemp_3112012.bin",
+      "sha256": "afe38e3f1179f8c9c7882f922013c3df3bfd83ab08b6e2fc78e2067945c6458c",
+      "bytes": 162,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_SkinBattleEffectGroup_20034.bin",
+      "sha256": "1306562ccd1cfc6e17f369f0d0c6eb67dc4bb275bdf6a305b3320adcbf82686f",
+      "bytes": 32,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_SkinBattleEffect_10035.bin",
+      "sha256": "c526c0d0d76075ea45c313a7e0198c6fdf7e9475e0decb7fa3b3670465989ee7",
+      "bytes": 264,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponBattleSkin_2311638.bin",
+      "sha256": "c656c02b96f8f62e35f72c7eff82c31274ce5b71bf478a582cc537aa19ad06cb",
+      "bytes": 188,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponSkin_2311638.bin",
+      "sha256": "96aeff1f5a813ef7a0f98dcf7056b7a95d1fb9a3f2366557895a85762ae880cd",
+      "bytes": 1440,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.original.bin",
+      "sha256": "c310b890881cd5030ede080a7f91808ca39f885c9998abc50fc6e8c35e96b64a",
+      "bytes": 109076,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.vertices.bin",
+      "sha256": "fe97f8b71ce031443f8fdfa17e901526bf0ff0f6fc816efec826d229119232af",
+      "bytes": 96360,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.indices.bin",
+      "sha256": "53aea2de4d5ba9efaad362eb9870b9d448b9f3889a830e7e36ca9f903b5f61c5",
+      "bytes": 12048,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.layout.json",
+      "sha256": "a3bb4f5d9cffc67e9a41fda3a3f428db0bcc269fab16b3459ac2c6aaf21c64cd",
+      "bytes": 2670,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_01_tpos_other.gpu.bin",
+      "sha256": "93f5a01f73d82e2677d73c78e619834f874a3c5aa6fd06173c735c4760e6c3d4",
+      "bytes": 286720,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_01_tpos_other.npy",
+      "sha256": "ff7d5f48910468117faf641fad79c9eb110c09de6f48d4a32550ababdb629ba3",
+      "bytes": 286848,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_01_tpos_other.layout.json",
+      "sha256": "b392ea5387d3912c620cdad8e2ddefb852fb64aa9926412d6acf8491c2b9c54c",
+      "bytes": 901,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_shape_other.gpu.bin",
+      "sha256": "6fcf772302d72b6a332aeaa7fc0919e4e9e8385fce1568af9a4994f976fbdc53",
+      "bytes": 111360,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_shape_other.npy",
+      "sha256": "83977a817cac354ae0080545f0ecf70aa9acf226616000a408b1fa6797d5527e",
+      "bytes": 111488,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_shape_other.layout.json",
+      "sha256": "013f883271d9be46fc941ce8344e3cde4e765c0ad907c22c96634797cf72bc08",
+      "bytes": 931,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/main.single-indices.u32.bin",
+      "sha256": "9e880ef97cfacf5583517d92a26c8568a24d63855f6479c61114fe6139ec2ac7",
+      "bytes": 6424,
+      "role": "original_single_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.original.bin",
+      "sha256": "baa4c51a523597151b6e82aa713cbdac2855b256ab2111e7dd5c4963369b8eda",
+      "bytes": 272476,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.vertices.bin",
+      "sha256": "b11b5ebf1ea7c228671d1c9ae0524526381bbbd5478f98784b68386d613fde33",
+      "bytes": 241664,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.indices.bin",
+      "sha256": "64f60c52d7db90f091e60bc0f4631c3ccee9c58d5dc6276003b291a3b698dce9",
+      "bytes": 30324,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.layout.json",
+      "sha256": "23f580847b00e71b678c381b98ff2498247ef89afc6b792bb8104aea4e750d57",
+      "bytes": 2475,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.original.bin",
+      "sha256": "a9782a34dc60dabe435ab8005a59d6ed801dbbc76fb9f449dcffce29fe8cf269",
+      "bytes": 238952,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.vertices.bin",
+      "sha256": "6b745850193ed017ffaab99e5ee52e6e42e28ca2d1137bfabef50a1c3f8cb25f",
+      "bytes": 211200,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.indices.bin",
+      "sha256": "e2978c7c254e5b39bccae9e7b029a30136d4df3aa56d8b63bdf65d2009a9f2d9",
+      "bytes": 27264,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.layout.json",
+      "sha256": "9c6cf01b00070590f9cbe046d1280580655340142d0e0981c9ba8c0d7f2015d2",
+      "bytes": 2474,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_02_tpos_other.gpu.bin",
+      "sha256": "57fc68eb49e2b7a5181280e3c979bb5f7aa066a79ea99e81d406ab2cb684c6a2",
+      "bytes": 253952,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_02_tpos_other.npy",
+      "sha256": "bb951c27654457e16dfe646934a65270e4426226b2c3310024f0062351e34acd",
+      "bytes": 254080,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_02_tpos_other.layout.json",
+      "sha256": "3beab7ce7bf04bda0f34e5e609f5b8dc9816b04f5b2599b50add8b70738a1c5d",
+      "bytes": 902,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.original.bin",
+      "sha256": "f03ed24bc65e75e8ce25e2a007ceee5b7085baf8c581c5c9a48f7434c41173bb",
+      "bytes": 211068,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.vertices.bin",
+      "sha256": "73ebe6843c8783263e001fab5f445e10363d3470003a668889732e009b151627",
+      "bytes": 188800,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.indices.bin",
+      "sha256": "ef8d4cde5418c86ff6b3c53a7681d119b52c9c1425d5aa3f4801b98c5e286686",
+      "bytes": 21780,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.layout.json",
+      "sha256": "fe0e1b83bd17cfc1bc594ab52d846e22b577ca5132591d54a3dfb3f27ad697e4",
+      "bytes": 2475,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.original.bin",
+      "sha256": "14b52fe640444227962a427864bb6a3f3a02ac2e331be787b763811bcf20f36d",
+      "bytes": 420600,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.vertices.bin",
+      "sha256": "d66a1fff36eb50b1790283f2b2938bbb9d9ebebafed68b80dffd53f7525d4637",
+      "bytes": 375808,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.indices.bin",
+      "sha256": "9e0076a41804ada7bb598f44782dc30ea11eb68ab1a8a27df46a1e5579e4e672",
+      "bytes": 44304,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.layout.json",
+      "sha256": "be4f65078f1e40abdb061a7c1d095bcbb20bb4f10437988ea198cf3d9a674581",
+      "bytes": 2474,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_04_tpos_other.gpu.bin",
+      "sha256": "ab05e0aff11d9f353c994efefc800a0c7ed5a183151cc4cd825c28f4e2d20e01",
+      "bytes": 442368,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_04_tpos_other.npy",
+      "sha256": "2d628f97b8506d751e0ac577240a04cab816f6d2596f34acc10783e79f5ed963",
+      "bytes": 442496,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_04_tpos_other.layout.json",
+      "sha256": "8211e83347f2a8b21c2828d948f5eee6b83120f53f680fbfd787ce0b406eed41",
+      "bytes": 901,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.original.bin",
+      "sha256": "6a3cdbcc034d5be37d1ee7804e07180f9538f461062122aff817155eb0ec3f06",
+      "bytes": 108152,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.vertices.bin",
+      "sha256": "34c9c49900c72853a61b9026dcb6f03c8a3dbeebc71d1abff8647e7ba691ec3d",
+      "bytes": 95232,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.indices.bin",
+      "sha256": "b060512357732daeac6a0f41a679fa54f1e21900a5cfe8b912ff9cec11ee4f25",
+      "bytes": 12432,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.layout.json",
+      "sha256": "01548a4ed4a6f2af6cf97ad91a77385435f3879f2ebb05a4d6afd7f98480bb75",
+      "bytes": 2473,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/fx_wp_saber_xingtian_refl_other.gpu.bin",
+      "sha256": "0a5fc8ff8cf99e04ec641d3e2553c9b23042cac66b0b06a22609232e387d16e1",
+      "bytes": 524448,
+      "role": "source_cubemap_gpu"
+    },
+    {
+      "file": "source-evidence/additional/fx_wp_saber_xingtian_refl_other.object.bin",
+      "sha256": "0238d498d9a1de55483e4c68ce33d92535fec84f82f609dc59b662c30c328682",
+      "bytes": 292,
+      "role": "source_cubemap_object"
+    },
+    {
+      "file": "source-evidence/additional/fx_wp_saber_xingtian_refl_other.cubemap.layout.json",
+      "sha256": "82b22083e1d214285d2d2509eaf097f2d0ddf36f0efdd6001793b9a8c4c84722",
+      "bytes": 1057,
+      "role": "source_cubemap_layout"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_01_tpos_other.gpu.bin",
+      "sha256": "09e9485add2ea1d7e567f42e446a78f9e4abf2cf5d2826e65ec2ba7f28ab3609",
+      "bytes": 90112,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_01_tpos_other.npy",
+      "sha256": "247a1123ca00383b36d3f1ad316a08ae71d9239fbf867767ba2661911697b178",
+      "bytes": 90240,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_01_tpos_other.layout.json",
+      "sha256": "611b9ff0504d0bd13f83da9967f204f3e201fac12669d73c04feab575670e25c",
+      "bytes": 904,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.original.bin",
+      "sha256": "50e929431306e2e39c60ea7dc403835a2be55c574459d9da4c40ef4a34fe9889",
+      "bytes": 92184,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.vertices.bin",
+      "sha256": "f5e77d0463b48c31a516098a2386bdf1f3623bc001c50d4904ddaaaaef14fad3",
+      "bytes": 80896,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.indices.bin",
+      "sha256": "864c44d51f46c5a2169836b9279bee670d44a5b065868f03419402d4eed97904",
+      "bytes": 10800,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.layout.json",
+      "sha256": "e3da938dab202c08915d67bcb18de0585ebfca431e5ed1d0b7e0ba2e819062ec",
+      "bytes": 2472,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_02_tpos_other.gpu.bin",
+      "sha256": "3661dd962f430c683521af4d1ea5648b226c57b54927f417b1b1ba9c2b236728",
+      "bytes": 73728,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_02_tpos_other.npy",
+      "sha256": "56aaab50699a898a42631e2e176a7150a760a073f4ffa2c1f5ee152ec7057812",
+      "bytes": 73856,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_02_tpos_other.layout.json",
+      "sha256": "d8b83cf44ce4912ef475ee6b23c20a59aee93c09edd6f86d15327dc8ee1718fa",
+      "bytes": 907,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/rule_source.json",
+      "sha256": "31e6e3318e756e49aecd398476e83b09b1a35c5121d5abd34a80d4131753c5fb",
+      "bytes": 2415692,
+      "role": "original_star_rule_tree"
+    },
+    {
+      "file": "source-evidence/additional/rule_source.raw",
+      "sha256": "14c261be0851b337b86eba6bd29b10d29392e17d7617b9cb56a1caaefa91bc6b",
+      "bytes": 242784,
+      "role": "original_star_rule_bytes"
+    },
+    {
+      "file": "source-evidence/additional/controller_source.json",
+      "sha256": "47c8c299f00b165057e0deb4be5af9aaa48bd4d4c574d77caaf34da3b535d690",
+      "bytes": 10778,
+      "role": "original_star_controller_tree"
+    },
+    {
+      "file": "source-evidence/additional/initial_probe.json",
+      "sha256": "1679b424d484afb8d6cc8b7fe3c13dcdbbf89459a068ff7e763fd0bac8bb5d6d",
+      "bytes": 360880,
+      "role": "original_prefab_state_and_materials"
+    },
+    {
+      "file": "verification-report.json",
+      "sha256": "bb37acd2669b3db2f552251f665f76c4a9bfea57559cd2011b062fb3a339c054",
+      "bytes": 6642,
+      "role": "offline-verification-report"
+    },
+    {
+      "file": "README.md",
+      "sha256": "3f3664d095afabddea4e30a2b194e10854928b716c731f2588932082419a8ce9",
+      "bytes": 2610,
+      "role": "readme"
+    }
+  ],
+  "origin_provenance": "Archived original JSON paths are historical evidence, never local verification dependencies.",
+  "limits": [
+    "Prepare-only: one configured WeaponTemp part3112012. Seven GLBs are isolated original serialized inputs, not seven equipped parts or seven recovered final forms.",
+    "Original active/enabled flags retained in source reports, but actual visibility/morph is rule-controlled. Do not display all source inputs stacked and claim the source instance.",
+    "main is the separate serialized base skin, not a claim of complete default star appearance. Four static blade inputs and two static FX inputs have no invented rigs.",
+    "Original star digits, colors/shape/randomness, shader execution, GPU morph, particle effects and presentation switching have NOT been executed or reconstructed.",
+    "RGBAHalf/Float numeric texture data are exact GPU bytes plus bit-preserving NPY with dtype/shape/row-order/mips. Their PNGs are display conversions only and cannot replace source numeric data.",
+    "Ordinary source PNG dimensions/channels retained. No guessed packed ORM, source grip, rescale, new bones, current gameplay integration, browser or screenshots.",
+    "Any non-unit NORMAL/TANGENT shader inputs are retained in additional NPY/raw source evidence and omitted as invalid glTF direction attributes; source positions/UV/topology remain unchanged.",
+    "Original Unity rootBone of the main skin is not an ancestor of every palette joint. The optional glTF skeleton field alone is omitted; original source rootBone PPtr/node remains in sourceBinding.source_original_root_bone, with no hierarchy/joint/SRT/IBM changes."
+  ],
+  "original_coordinate_and_skin_preserved": true,
+  "additional_source_evidence": [
+    {
+      "file": "source-evidence/additional/1013643324579487053.original.bin",
+      "sha256": "c310b890881cd5030ede080a7f91808ca39f885c9998abc50fc6e8c35e96b64a",
+      "bytes": 109076,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.vertices.bin",
+      "sha256": "fe97f8b71ce031443f8fdfa17e901526bf0ff0f6fc816efec826d229119232af",
+      "bytes": 96360,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.indices.bin",
+      "sha256": "53aea2de4d5ba9efaad362eb9870b9d448b9f3889a830e7e36ca9f903b5f61c5",
+      "bytes": 12048,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.layout.json",
+      "sha256": "a3bb4f5d9cffc67e9a41fda3a3f428db0bcc269fab16b3459ac2c6aaf21c64cd",
+      "bytes": 2670,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/1013643324579487053.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_01_tpos_other.gpu.bin",
+      "sha256": "93f5a01f73d82e2677d73c78e619834f874a3c5aa6fd06173c735c4760e6c3d4",
+      "bytes": 286720,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_01_tpos_other.npy",
+      "sha256": "ff7d5f48910468117faf641fad79c9eb110c09de6f48d4a32550ababdb629ba3",
+      "bytes": 286848,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_01_tpos_other.layout.json",
+      "sha256": "b392ea5387d3912c620cdad8e2ddefb852fb64aa9926412d6acf8491c2b9c54c",
+      "bytes": 901,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_shape_other.gpu.bin",
+      "sha256": "6fcf772302d72b6a332aeaa7fc0919e4e9e8385fce1568af9a4994f976fbdc53",
+      "bytes": 111360,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_shape_other.npy",
+      "sha256": "83977a817cac354ae0080545f0ecf70aa9acf226616000a408b1fa6797d5527e",
+      "bytes": 111488,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_shape_other.layout.json",
+      "sha256": "013f883271d9be46fc941ce8344e3cde4e765c0ad907c22c96634797cf72bc08",
+      "bytes": 931,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/main.single-indices.u32.bin",
+      "sha256": "9e880ef97cfacf5583517d92a26c8568a24d63855f6479c61114fe6139ec2ac7",
+      "bytes": 6424,
+      "role": "original_single_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.original.bin",
+      "sha256": "baa4c51a523597151b6e82aa713cbdac2855b256ab2111e7dd5c4963369b8eda",
+      "bytes": 272476,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.vertices.bin",
+      "sha256": "b11b5ebf1ea7c228671d1c9ae0524526381bbbd5478f98784b68386d613fde33",
+      "bytes": 241664,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.indices.bin",
+      "sha256": "64f60c52d7db90f091e60bc0f4631c3ccee9c58d5dc6276003b291a3b698dce9",
+      "bytes": 30324,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.layout.json",
+      "sha256": "23f580847b00e71b678c381b98ff2498247ef89afc6b792bb8104aea4e750d57",
+      "bytes": 2475,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/-6201183846497327796.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.original.bin",
+      "sha256": "a9782a34dc60dabe435ab8005a59d6ed801dbbc76fb9f449dcffce29fe8cf269",
+      "bytes": 238952,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.vertices.bin",
+      "sha256": "6b745850193ed017ffaab99e5ee52e6e42e28ca2d1137bfabef50a1c3f8cb25f",
+      "bytes": 211200,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.indices.bin",
+      "sha256": "e2978c7c254e5b39bccae9e7b029a30136d4df3aa56d8b63bdf65d2009a9f2d9",
+      "bytes": 27264,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.layout.json",
+      "sha256": "9c6cf01b00070590f9cbe046d1280580655340142d0e0981c9ba8c0d7f2015d2",
+      "bytes": 2474,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/7996638505543494287.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_02_tpos_other.gpu.bin",
+      "sha256": "57fc68eb49e2b7a5181280e3c979bb5f7aa066a79ea99e81d406ab2cb684c6a2",
+      "bytes": 253952,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_02_tpos_other.npy",
+      "sha256": "bb951c27654457e16dfe646934a65270e4426226b2c3310024f0062351e34acd",
+      "bytes": 254080,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_02_tpos_other.layout.json",
+      "sha256": "3beab7ce7bf04bda0f34e5e609f5b8dc9816b04f5b2599b50add8b70738a1c5d",
+      "bytes": 902,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.original.bin",
+      "sha256": "f03ed24bc65e75e8ce25e2a007ceee5b7085baf8c581c5c9a48f7434c41173bb",
+      "bytes": 211068,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.vertices.bin",
+      "sha256": "73ebe6843c8783263e001fab5f445e10363d3470003a668889732e009b151627",
+      "bytes": 188800,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.indices.bin",
+      "sha256": "ef8d4cde5418c86ff6b3c53a7681d119b52c9c1425d5aa3f4801b98c5e286686",
+      "bytes": 21780,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.layout.json",
+      "sha256": "fe0e1b83bd17cfc1bc594ab52d846e22b577ca5132591d54a3dfb3f27ad697e4",
+      "bytes": 2475,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/-7349815062883026250.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.original.bin",
+      "sha256": "14b52fe640444227962a427864bb6a3f3a02ac2e331be787b763811bcf20f36d",
+      "bytes": 420600,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.vertices.bin",
+      "sha256": "d66a1fff36eb50b1790283f2b2938bbb9d9ebebafed68b80dffd53f7525d4637",
+      "bytes": 375808,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.indices.bin",
+      "sha256": "9e0076a41804ada7bb598f44782dc30ea11eb68ab1a8a27df46a1e5579e4e672",
+      "bytes": 44304,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.layout.json",
+      "sha256": "be4f65078f1e40abdb061a7c1d095bcbb20bb4f10437988ea198cf3d9a674581",
+      "bytes": 2474,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/-596706628310788450.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_04_tpos_other.gpu.bin",
+      "sha256": "ab05e0aff11d9f353c994efefc800a0c7ed5a183151cc4cd825c28f4e2d20e01",
+      "bytes": 442368,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_04_tpos_other.npy",
+      "sha256": "2d628f97b8506d751e0ac577240a04cab816f6d2596f34acc10783e79f5ed963",
+      "bytes": 442496,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_04_tpos_other.layout.json",
+      "sha256": "8211e83347f2a8b21c2828d948f5eee6b83120f53f680fbfd787ce0b406eed41",
+      "bytes": 901,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.original.bin",
+      "sha256": "6a3cdbcc034d5be37d1ee7804e07180f9538f461062122aff817155eb0ec3f06",
+      "bytes": 108152,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.vertices.bin",
+      "sha256": "34c9c49900c72853a61b9026dcb6f03c8a3dbeebc71d1abff8647e7ba691ec3d",
+      "bytes": 95232,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.indices.bin",
+      "sha256": "b060512357732daeac6a0f41a679fa54f1e21900a5cfe8b912ff9cec11ee4f25",
+      "bytes": 12432,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.layout.json",
+      "sha256": "01548a4ed4a6f2af6cf97ad91a77385435f3879f2ebb05a4d6afd7f98480bb75",
+      "bytes": 2473,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/9111225317028525459.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/fx_wp_saber_xingtian_refl_other.gpu.bin",
+      "sha256": "0a5fc8ff8cf99e04ec641d3e2553c9b23042cac66b0b06a22609232e387d16e1",
+      "bytes": 524448,
+      "role": "source_cubemap_gpu"
+    },
+    {
+      "file": "source-evidence/additional/fx_wp_saber_xingtian_refl_other.object.bin",
+      "sha256": "0238d498d9a1de55483e4c68ce33d92535fec84f82f609dc59b662c30c328682",
+      "bytes": 292,
+      "role": "source_cubemap_object"
+    },
+    {
+      "file": "source-evidence/additional/fx_wp_saber_xingtian_refl_other.cubemap.layout.json",
+      "sha256": "82b22083e1d214285d2d2509eaf097f2d0ddf36f0efdd6001793b9a8c4c84722",
+      "bytes": 1057,
+      "role": "source_cubemap_layout"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_01_tpos_other.gpu.bin",
+      "sha256": "09e9485add2ea1d7e567f42e446a78f9e4abf2cf5d2826e65ec2ba7f28ab3609",
+      "bytes": 90112,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_01_tpos_other.npy",
+      "sha256": "247a1123ca00383b36d3f1ad316a08ae71d9239fbf867767ba2661911697b178",
+      "bytes": 90240,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_01_tpos_other.layout.json",
+      "sha256": "611b9ff0504d0bd13f83da9967f204f3e201fac12669d73c04feab575670e25c",
+      "bytes": 904,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.original.bin",
+      "sha256": "50e929431306e2e39c60ea7dc403835a2be55c574459d9da4c40ef4a34fe9889",
+      "bytes": 92184,
+      "role": "original_mesh_object"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.vertices.bin",
+      "sha256": "f5e77d0463b48c31a516098a2386bdf1f3623bc001c50d4904ddaaaaef14fad3",
+      "bytes": 80896,
+      "role": "original_vertex_stream"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.indices.bin",
+      "sha256": "864c44d51f46c5a2169836b9279bee670d44a5b065868f03419402d4eed97904",
+      "bytes": 10800,
+      "role": "original_index_stream"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.layout.json",
+      "sha256": "e3da938dab202c08915d67bcb18de0585ebfca431e5ed1d0b7e0ba2e819062ec",
+      "bytes": 2472,
+      "role": "original_mesh_channel_layout"
+    },
+    {
+      "file": "source-evidence/additional/4648164346310742518.source_type_tree.json",
+      "sha256": "889fb10e22889cd6bc2ee500ef60fe5ae97d91b3098a1b3d6f6f8d7bdf9aa053",
+      "bytes": 37556,
+      "role": "original_mesh_type_tree"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_02_tpos_other.gpu.bin",
+      "sha256": "3661dd962f430c683521af4d1ea5648b226c57b54927f417b1b1ba9c2b236728",
+      "bytes": 73728,
+      "role": "source_numeric_gpu"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_02_tpos_other.npy",
+      "sha256": "56aaab50699a898a42631e2e176a7150a760a073f4ffa2c1f5ee152ec7057812",
+      "bytes": 73856,
+      "role": "source_numeric_npy"
+    },
+    {
+      "file": "source-evidence/additional/wp_saber_xingtian_bs_fx_02_tpos_other.layout.json",
+      "sha256": "d8b83cf44ce4912ef475ee6b23c20a59aee93c09edd6f86d15327dc8ee1718fa",
+      "bytes": 907,
+      "role": "source_numeric_layout"
+    },
+    {
+      "file": "source-evidence/additional/rule_source.json",
+      "sha256": "31e6e3318e756e49aecd398476e83b09b1a35c5121d5abd34a80d4131753c5fb",
+      "bytes": 2415692,
+      "role": "original_star_rule_tree"
+    },
+    {
+      "file": "source-evidence/additional/rule_source.raw",
+      "sha256": "14c261be0851b337b86eba6bd29b10d29392e17d7617b9cb56a1caaefa91bc6b",
+      "bytes": 242784,
+      "role": "original_star_rule_bytes"
+    },
+    {
+      "file": "source-evidence/additional/controller_source.json",
+      "sha256": "47c8c299f00b165057e0deb4be5af9aaa48bd4d4c574d77caaf34da3b535d690",
+      "bytes": 10778,
+      "role": "original_star_controller_tree"
+    },
+    {
+      "file": "source-evidence/additional/initial_probe.json",
+      "sha256": "1679b424d484afb8d6cc8b7fe3c13dcdbbf89459a068ff7e763fd0bac8bb5d6d",
+      "bytes": 360880,
+      "role": "original_prefab_state_and_materials"
+    }
+  ]
+}

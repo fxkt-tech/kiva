@@ -1,0 +1,2122 @@
+[
+  {
+    "m_Level": 0,
+    "m_Type": "Mesh",
+    "m_Name": "Base",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32768,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "string",
+    "m_Name": "m_Name",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 557057,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 540673,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 524289,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "char",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 524289,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "vector",
+    "m_Name": "m_SubMeshes",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "SubMesh",
+    "m_Name": "data",
+    "m_ByteSize": 48,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "unsigned int",
+    "m_Name": "firstByte",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "unsigned int",
+    "m_Name": "indexCount",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "int",
+    "m_Name": "topology",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "unsigned int",
+    "m_Name": "baseVertex",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "unsigned int",
+    "m_Name": "firstVertex",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "unsigned int",
+    "m_Name": "vertexCount",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "AABB",
+    "m_Name": "localAABB",
+    "m_ByteSize": 24,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "Vector3f",
+    "m_Name": "m_Center",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "Vector3f",
+    "m_Name": "m_Extent",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "BlendShapeData",
+    "m_Name": "m_Shapes",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "vector",
+    "m_Name": "vertices",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "BlendShapeVertex",
+    "m_Name": "data",
+    "m_ByteSize": 40,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "Vector3f",
+    "m_Name": "vertex",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "Vector3f",
+    "m_Name": "normal",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "Vector3f",
+    "m_Name": "tangent",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "unsigned int",
+    "m_Name": "index",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "vector",
+    "m_Name": "shapes",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 49153,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "MeshBlendShape",
+    "m_Name": "data",
+    "m_ByteSize": 10,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "unsigned int",
+    "m_Name": "firstVertex",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "unsigned int",
+    "m_Name": "vertexCount",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "bool",
+    "m_Name": "hasNormals",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "bool",
+    "m_Name": "hasTangents",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "vector",
+    "m_Name": "channels",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 49153,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "MeshBlendShapeChannel",
+    "m_Name": "data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "string",
+    "m_Name": "name",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 6,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 7,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 7,
+    "m_Type": "char",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "unsigned int",
+    "m_Name": "nameHash",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "frameIndex",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "frameCount",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "vector",
+    "m_Name": "fullWeights",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "data",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "vector",
+    "m_Name": "m_BindPose",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "Matrix4x4f",
+    "m_Name": "data",
+    "m_ByteSize": 64,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e00",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e01",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e02",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e03",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e10",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e11",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e12",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e13",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e20",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e21",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e22",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e23",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e30",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e31",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e32",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "float",
+    "m_Name": "e33",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "vector",
+    "m_Name": "m_BoneNameHashes",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "data",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "unsigned int",
+    "m_Name": "m_RootBoneNameHash",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "vector",
+    "m_Name": "m_BonesAABB",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "MinMaxAABB",
+    "m_Name": "data",
+    "m_ByteSize": 24,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Vector3f",
+    "m_Name": "m_Min",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Vector3f",
+    "m_Name": "m_Max",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "VariableBoneCountWeights",
+    "m_Name": "m_VariableBoneCountWeights",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "unsigned int",
+    "m_Name": "data",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "UInt8",
+    "m_Name": "m_MeshCompression",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "bool",
+    "m_Name": "m_IsReadable",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "bool",
+    "m_Name": "m_KeepVertices",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "bool",
+    "m_Name": "m_KeepIndices",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "int",
+    "m_Name": "m_IndexFormat",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "vector",
+    "m_Name": "m_IndexBuffer",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "VertexData",
+    "m_Name": "m_VertexData",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 49153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "unsigned int",
+    "m_Name": "m_VertexCount",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "vector",
+    "m_Name": "m_Channels",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "ChannelInfo",
+    "m_Name": "data",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "stream",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "offset",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "format",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "dimension",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "TypelessData",
+    "m_Name": "m_DataSize",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "CompressedMesh",
+    "m_Name": "m_CompressedMesh",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_Vertices",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Range",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Start",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_UV",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Range",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Start",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_Normals",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Range",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Start",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_Tangents",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Range",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Start",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_Weights",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_NormalSigns",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_TangentSigns",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_FloatColors",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Range",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Start",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_BoneIndices",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_Triangles",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "unsigned int",
+    "m_Name": "m_UVInfo",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_VerticesY",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Range",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Start",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_VerticesZ",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Range",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Start",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "PackedBitVector",
+    "m_Name": "m_LightmapUV",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "unsigned int",
+    "m_Name": "m_NumItems",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Range",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "m_Start",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "vector",
+    "m_Name": "m_Data",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 5,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "m_BitSize",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "AABB",
+    "m_Name": "m_LocalAABB",
+    "m_ByteSize": 24,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Vector3f",
+    "m_Name": "m_Center",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Vector3f",
+    "m_Name": "m_Extent",
+    "m_ByteSize": 12,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "x",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "y",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "float",
+    "m_Name": "z",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 2097153,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "int",
+    "m_Name": "m_MeshUsageFlags",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "vector",
+    "m_Name": "m_BakedConvexCollisionMesh",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "vector",
+    "m_Name": "m_BakedTriangleCollisionMesh",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32769,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "UInt8",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "float",
+    "m_Name": "m_MeshMetrics[0]",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 0,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "float",
+    "m_Name": "m_MeshMetrics[1]",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 16384,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 1,
+    "m_Type": "StreamingInfo",
+    "m_Name": "m_StreamData",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32768,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "unsigned int",
+    "m_Name": "offset",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 0,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "unsigned int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 0,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 2,
+    "m_Type": "string",
+    "m_Name": "path",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 32768,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 3,
+    "m_Type": "Array",
+    "m_Name": "Array",
+    "m_ByteSize": -1,
+    "m_MetaFlag": 16385,
+    "m_TypeFlags": 1
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "int",
+    "m_Name": "size",
+    "m_ByteSize": 4,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  },
+  {
+    "m_Level": 4,
+    "m_Type": "char",
+    "m_Name": "data",
+    "m_ByteSize": 1,
+    "m_MetaFlag": 1,
+    "m_TypeFlags": 0
+  }
+]

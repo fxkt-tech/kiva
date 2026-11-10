@@ -1,0 +1,13 @@
+{
+  "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/zhexingcuishan/zhexingcuishan_source_variant_input_01.glb",
+  "passed": true,
+  "method": "Original static source MeshRenderer world/positions; no fake skin or joint added",
+  "checks": [
+    {
+      "mesh": "m_-505735536@wp_saber_xingtian_01",
+      "vertices": 3776,
+      "source_world_error_max": 0.0,
+      "native_skin": false
+    }
+  ]
+}

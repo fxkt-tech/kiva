@@ -1,0 +1,75 @@
+{
+  "prepared_only": true,
+  "runtime_integrated": false,
+  "identity": {
+    "item_id": 2310478,
+    "name": "伏浪锚",
+    "weapon_type": "blade",
+    "weapon_temp_ids": [
+      3112349
+    ],
+    "source_identity_file": "/home/asuka/kiva-asset-research/naraka/identity/fulangmao/identity_manifest.json",
+    "source_identity_sha256": "497fdcc2c979a1cc97382bcbc6334abe62391893bb1598682bfa7cd237e99705"
+  },
+  "models": [
+    {
+      "file": "fulangmao_main.glb",
+      "sha256": "cf70d33ee341db0063f30dbda955b264f1320298a2267233b5bfa744244c77a9",
+      "vertices": 5437,
+      "triangles": 7838,
+      "meshes": 2,
+      "native_skinned_meshes": 2,
+      "primitive_checks": [
+        {
+          "mesh": "m_1518293717@wp_blade_chuanmaolv1",
+          "vertices": 4989,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.09498253753500857,
+              -0.3462557459015919,
+              -0.6877422928810455
+            ],
+            [
+              0.09498333642172699,
+              0.34625584243328855,
+              1.9313645660879444
+            ]
+          ],
+          "palette_slots": 5,
+          "perturbed_source_joint": "chuanmao_01",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.3856294468463465
+        },
+        {
+          "mesh": "m_1518293717@wp_blade_chuanmaolv1_01",
+          "vertices": 448,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.06608589589504515,
+              -0.24226333662565025,
+              0.18224996724078144
+            ],
+            [
+              0.06608599573466784,
+              0.24226337209644447,
+              0.37779733546280136
+            ]
+          ],
+          "palette_slots": 1,
+          "perturbed_source_joint": "chuanmao_01",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.07892900007949949
+        }
+      ],
+      "original_units_and_poses_preserved": true,
+      "browser_or_screenshot_test": false
+    }
+  ],
+  "related_geometry_not_equipped": [],
+  "original_texture_entries": 9,
+  "source_shader_reconstructed": false,
+  "new_weapon_actions_or_grip_bake": false,
+  "browser_or_screenshot_test": false
+}

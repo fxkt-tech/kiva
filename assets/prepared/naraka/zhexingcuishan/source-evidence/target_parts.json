@@ -1,0 +1,874 @@
+{
+  "scope": "Resources preparation only; no Runtime registration, firing behavior or game execution",
+  "display_name": "谪星·摧山",
+  "item_id": 2311638,
+  "category": "斩马刀",
+  "parts": [
+    {
+      "table": "WeaponConfig",
+      "subtable": "WeaponConfig_WeaponTemp",
+      "id": 3112012,
+      "offset": 417374,
+      "end": 417536,
+      "bytes": 162,
+      "index_offset": 184440,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/zhexingcuishan/WeaponConfig_WeaponTemp_3112012.bin",
+      "record_sha256": "afe38e3f1179f8c9c7882f922013c3df3bfd83ab08b6e2fc78e2067945c6458c",
+      "source_textasset": {
+        "path_id": 6981010548153732578,
+        "name": "WeaponConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponConfig.bytes",
+        "bytes": 512540,
+        "sha256": "35b62eff8fa9275f0cc1166f38bbb4a7c57555069c86a65e892894e9c98aa46c",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "e134650fc0e62422dd682855d62355247f1f04320a5f4ce3233f93f3cc98bc10",
+      "original_string_fields": [
+        {
+          "relative_length_offset": 20,
+          "value": "saber/wp_saber_xingtian"
+        },
+        {
+          "relative_length_offset": 70,
+          "value": "wp_saber_xingtian"
+        },
+        {
+          "relative_length_offset": 112,
+          "value": "wp_ui_saber_xingtian"
+        }
+      ],
+      "battle_prefab_reference": {
+        "relative_length_offset": 20,
+        "value": "saber/wp_saber_xingtian"
+      },
+      "exact_battle_prefab": {
+        "path": "assets/res/prefab/weapon_prefab/saber/wp_saber_xingtian.prefab",
+        "string_offset": 24618935,
+        "bundle_index": 9466,
+        "key": "9/0/90b5026e9943171d",
+        "declared_size": 28672,
+        "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+        "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+      }
+    }
+  ],
+  "drop_prefab": {
+    "path": "assets/res/prefab/drop_item_generate/weapon/weapon_drop_saber_xingtian.prefab",
+    "string_offset": 21272325,
+    "bundle_index": 8185,
+    "key": "7/e/7e26b398a08387a2",
+    "declared_size": 24576,
+    "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+    "hash2": "d42cb5cf048849d709c6aa350bb91245",
+    "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+  },
+  "materials": [
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian.mat",
+      "string_offset": 16311907,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_01.mat",
+      "string_offset": 16311992,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_02.mat",
+      "string_offset": 16312080,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_03.mat",
+      "string_offset": 16312168,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_04.mat",
+      "string_offset": 16312256,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_fx_01.mat",
+      "string_offset": 16312344,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_fx_01_l1.mat",
+      "string_offset": 16312435,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_fx_01_l2.mat",
+      "string_offset": 16312529,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_fx_02.mat",
+      "string_offset": 16312623,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_fx_02_l1.mat",
+      "string_offset": 16312714,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_fx_02_l2.mat",
+      "string_offset": 16312808,
+      "bundle_index": 6277,
+      "key": "6/0/60e204577a67861a",
+      "declared_size": 16384,
+      "hash1": "376f2c9b4c1f3677926468c80df827b5",
+      "hash2": "8e7ba2212c21ba1fdae0f96f17f325d2",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/0/60e204577a67861a"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_01_drop.mat",
+      "string_offset": 21270711,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_01_l1_drop.mat",
+      "string_offset": 21270804,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_01_l2_drop.mat",
+      "string_offset": 21270900,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_01_l3_drop.mat",
+      "string_offset": 21270996,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_02_drop.mat",
+      "string_offset": 21271092,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_02_l1_drop.mat",
+      "string_offset": 21271185,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_02_l2_drop.mat",
+      "string_offset": 21271281,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_02_l3_drop.mat",
+      "string_offset": 21271377,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_03_drop.mat",
+      "string_offset": 21271473,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_03_l1_drop.mat",
+      "string_offset": 21271566,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_03_l2_drop.mat",
+      "string_offset": 21271662,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_03_l3_drop.mat",
+      "string_offset": 21271758,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_04_drop.mat",
+      "string_offset": 21271854,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_04_l1_drop.mat",
+      "string_offset": 21271947,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_04_l2_drop.mat",
+      "string_offset": 21272043,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_04_l3_drop.mat",
+      "string_offset": 21272139,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_drop.mat",
+      "string_offset": 21272235,
+      "bundle_index": 8185,
+      "key": "7/e/7e26b398a08387a2",
+      "declared_size": 24576,
+      "hash1": "f37dc389e559891a6f5e3c41fc8d50bf",
+      "hash2": "d42cb5cf048849d709c6aa350bb91245",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/e/7e26b398a08387a2"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_01_l1.mat",
+      "string_offset": 24617843,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_01_l2.mat",
+      "string_offset": 24617934,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_01_l3.mat",
+      "string_offset": 24618025,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_02_l1.mat",
+      "string_offset": 24618116,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_02_l2.mat",
+      "string_offset": 24618207,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_02_l3.mat",
+      "string_offset": 24618298,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_03_l1.mat",
+      "string_offset": 24618389,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_03_l2.mat",
+      "string_offset": 24618480,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_03_l3.mat",
+      "string_offset": 24618571,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_04_l1.mat",
+      "string_offset": 24618662,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_04_l2.mat",
+      "string_offset": 24618753,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_04_l3.mat",
+      "string_offset": 24618844,
+      "bundle_index": 9466,
+      "key": "9/0/90b5026e9943171d",
+      "declared_size": 28672,
+      "hash1": "3b6103e4ac7348e5a56f7609bc51e7d6",
+      "hash2": "e168aa7c95b2e8f1500529a3fd5fc075",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90b5026e9943171d"
+    }
+  ],
+  "textures": [
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/fx_wp_saber_xingtian_01_atlas_nx.png",
+      "string_offset": 39018163,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_bs_01_tnrm_other.png",
+      "string_offset": 39018362,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_bs_02_tnrm_other.png",
+      "string_offset": 39018566,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_bs_04_tnrm_other.png",
+      "string_offset": 39018770,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_bs_fx_01_tnrm_other.png",
+      "string_offset": 39018974,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_bs_fx_02_tnrm_other.png",
+      "string_offset": 39019184,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_d.png",
+      "string_offset": 39019394,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_em.png",
+      "string_offset": 39019481,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_mrav.png",
+      "string_offset": 39019569,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_nx.png",
+      "string_offset": 39019659,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_pm.png",
+      "string_offset": 39019747,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_tr.png",
+      "string_offset": 39019835,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/saber/wp_saber_xingtian/materials/wp_saber_xingtian_tx.png",
+      "string_offset": 39019923,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    }
+  ],
+  "meshes": [
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-505735536@wp_saber_xingtian_01.mesh",
+      "string_offset": 35283770,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-505735536@wp_saber_xingtian_02.mesh",
+      "string_offset": 35283848,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-505735536@wp_saber_xingtian_03.mesh",
+      "string_offset": 35283926,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-505735536@wp_saber_xingtian_04.mesh",
+      "string_offset": 35284004,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-505735536@wp_saber_xingtian_fx_01.mesh",
+      "string_offset": 35284082,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-505735536@wp_saber_xingtian_fx_02.mesh",
+      "string_offset": 35284163,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-777447206@wp_saber_xingtian_l3_01.mesh",
+      "string_offset": 35287420,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-777447206@wp_saber_xingtian_l3_02.mesh",
+      "string_offset": 35287501,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-777447206@wp_saber_xingtian_l3_03.mesh",
+      "string_offset": 35287582,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_-777447206@wp_saber_xingtian_l3_04.mesh",
+      "string_offset": 35287663,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_1177946611@wp_saber_xingtian_l1_01.mesh",
+      "string_offset": 35288783,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_1177946611@wp_saber_xingtian_l1_02.mesh",
+      "string_offset": 35288864,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_1177946611@wp_saber_xingtian_l1_03.mesh",
+      "string_offset": 35288945,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_1177946611@wp_saber_xingtian_l1_04.mesh",
+      "string_offset": 35289026,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_1177946611@wp_saber_xingtian_l1_fx_01.mesh",
+      "string_offset": 35289107,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_1177946611@wp_saber_xingtian_l1_fx_02.mesh",
+      "string_offset": 35289191,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_2011042670@wp_saber_xingtian_l2_01.mesh",
+      "string_offset": 35292224,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_2011042670@wp_saber_xingtian_l2_02.mesh",
+      "string_offset": 35292305,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_2011042670@wp_saber_xingtian_l2_03.mesh",
+      "string_offset": 35292386,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_2011042670@wp_saber_xingtian_l2_04.mesh",
+      "string_offset": 35292467,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_2011042670@wp_saber_xingtian_l2_fx_01.mesh",
+      "string_offset": 35292548,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_2011042670@wp_saber_xingtian_l2_fx_02.mesh",
+      "string_offset": 35292632,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_321289189@wp_saber_xingtian.mesh",
+      "string_offset": 35293643,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_321289189@wp_saber_xingtian_l1.mesh",
+      "string_offset": 35293717,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_321289189@wp_saber_xingtian_l2.mesh",
+      "string_offset": 35293794,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/saber/m_321289189@wp_saber_xingtian_l3.mesh",
+      "string_offset": 35293871,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    }
+  ],
+  "skeletons": [
+    {
+      "path": "assets/art/characters/_common/avatar/wp_saber_xingtian_skeleton.fbx",
+      "string_offset": 14609614,
+      "bundle_index": 5745,
+      "key": "5/8/589302f25ec7b3dd",
+      "declared_size": 9302016,
+      "hash1": "399bed12635358301ae8cb02c42b7059",
+      "hash2": "d4efad3daec2cc1f9c10069dfb1a51f1",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/8/589302f25ec7b3dd"
+    }
+  ]
+}

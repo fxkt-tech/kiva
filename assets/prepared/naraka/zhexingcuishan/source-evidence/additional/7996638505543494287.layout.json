@@ -1,0 +1,131 @@
+{
+  "source": {
+    "cab": "CAB-c2a22eeca903660c364249d6a2a958e4",
+    "path_id": 7996638505543494287,
+    "class": "Mesh",
+    "raw_bytes": 238952,
+    "raw_sha256": "a9782a34dc60dabe435ab8005a59d6ed801dbbc76fb9f449dcffce29fe8cf269",
+    "old_type_hash": "6e586577362a6d19119377919a6d1962",
+    "original_type_tree": true,
+    "unity_version": "2019.4.41f2"
+  },
+  "vertex_count": 3300,
+  "vertex_bytes": 211200,
+  "vertex_sha256": "6b745850193ed017ffaab99e5ee52e6e42e28ca2d1137bfabef50a1c3f8cb25f",
+  "index_bytes": 27264,
+  "index_format": 0,
+  "channels": [
+    {
+      "index": 0,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 3
+    },
+    {
+      "index": 1,
+      "stream": 0,
+      "offset": 12,
+      "format": 0,
+      "dimension": 3
+    },
+    {
+      "index": 2,
+      "stream": 0,
+      "offset": 24,
+      "format": 0,
+      "dimension": 4
+    },
+    {
+      "index": 3,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    },
+    {
+      "index": 4,
+      "stream": 0,
+      "offset": 40,
+      "format": 0,
+      "dimension": 2
+    },
+    {
+      "index": 5,
+      "stream": 0,
+      "offset": 48,
+      "format": 0,
+      "dimension": 4
+    },
+    {
+      "index": 6,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    },
+    {
+      "index": 7,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    },
+    {
+      "index": 8,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    },
+    {
+      "index": 9,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    },
+    {
+      "index": 10,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    },
+    {
+      "index": 11,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    },
+    {
+      "index": 12,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    },
+    {
+      "index": 13,
+      "stream": 0,
+      "offset": 0,
+      "format": 0,
+      "dimension": 0
+    }
+  ],
+  "streams": [
+    {
+      "index": 0,
+      "offset": 0,
+      "stride": 64,
+      "channel_mask": 55
+    }
+  ],
+  "source_stream_reference": {
+    "path": "",
+    "offset": 0,
+    "size": 0
+  },
+  "semantics": "All original declared channels preserved, including additional UV/color/custom vectors; not restricted to GLB display attributes. No absent channel invented."
+}

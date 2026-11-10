@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "source_size": 1019461632,
+  "full_source_sha256": null,
+  "hash_scope": "Complete original metadata plus inspected first payload block; not unread full source.",
+  "metadata_compressed_sha256": "941123226683fd5d11ed2c4d360f8b73d569e8ea6f8d29c789267772fe96b612",
+  "metadata_raw_sha256": "ab1565562f392a73062c601c7ce2941f3ddd12e5e08f90c6887949540666b337",
+  "recovery": {
+    "parsed_directory_bytes": 117733,
+    "verified_zero_padding_bytes": 1051,
+    "directory_prefix_compressed_bytes": 45044,
+    "complete_compressed_bytes": 45057,
+    "previous_directory_only_body_offset": 49152,
+    "verified_complete_stream_body_offset": 53248,
+    "strict_unique_ending_search_tail_bytes": 64,
+    "directory_sha256": "8eb9144d08227c9b8bb3d5b02271426b7f04d79c16a39171c0313d8c08323e51",
+    "validation": "Strict LZ4 exact padded length; parsed directory prefix identical and all trailing decoded bytes zero; no fixed offset guess or body fill."
+  },
+  "serialized_header": {
+    "cab": "CAB-e764192f0ae199d04a8b184e7c288774",
+    "prefix64_hex": "0000803100077b2c000000150000805000000000323031392e342e34316632001300000001030000008e00000000ffff97da5f4688e45a57c8b42d4f42497297",
+    "metadata_size": 32817,
+    "file_size": 490284,
+    "format": 21,
+    "data_offset": 32848,
+    "unity_version": "2019.4.41f2",
+    "endian_byte": 0
+  },
+  "first_inspected_block": {
+    "index": 0,
+    "uncompressed": 131072,
+    "compressed": 37139,
+    "flags": 6,
+    "source_offset": 53248,
+    "raw_offset": 0,
+    "compressed_sha256": "b9780037fd558782f6ffd3782cbe46e64a174bbadb79c3b3a4ca1146435e723c",
+    "raw_sha256": "3a0f702744985a9d72aaf54d91752f43eabff812700a64a21a257eb1ab088cdd"
+  },
+  "fixture_hashes": {
+    "complete.lz4": "941123226683fd5d11ed2c4d360f8b73d569e8ea6f8d29c789267772fe96b612",
+    "complete.raw": "ab1565562f392a73062c601c7ce2941f3ddd12e5e08f90c6887949540666b337"
+  },
+  "browser_game_or_screenshot": false
+}

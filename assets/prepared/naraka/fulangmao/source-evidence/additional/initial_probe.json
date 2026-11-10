@@ -1,0 +1,2749 @@
+{
+  "prefab": "assets/res/prefab/weapon_prefab/blade/wp_blade_chuanmaolv1.prefab",
+  "root": {
+    "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+    "path_id": -9199594720759568859,
+    "class": "GameObject",
+    "raw_bytes": 83,
+    "raw_sha256": "6bd6dc6b473c02a866f48d20dd970f0d4c5edace61625c274aa2edd1c27f76a6",
+    "old_type_hash": "86e34eb8ee7642b089fb98c9d81dd9b0",
+    "original_type_tree": true,
+    "unity_version": "2019.4.41f2"
+  },
+  "hierarchy": [
+    {
+      "name": "wp_blade_chuanmaolv1",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 4258875004356506794,
+        "class": "Transform",
+        "raw_bytes": 188,
+        "raw_sha256": "db5fb1122fe46ca2dcb1274840750cdb46d64511a5dae166d2062ca12c44605e",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": null,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "body_dummy",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 3878839481466887792,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "79036d652748fb010919a8443c15f8ba016780a7720421e2d7fad961bf63e59b",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "MotionRoot",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 8458489897733628100,
+        "class": "Transform",
+        "raw_bytes": 92,
+        "raw_sha256": "becf21bf92a9f323845a5b60f35b67ae649a5f8339b8355f2a9669e033648192",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          0.9999999999999847,
+          -2.8485957925724034e-14,
+          -1.7484555314694806e-07,
+          -0.0
+        ],
+        [
+          6.477947029348262e-22,
+          0.9999999999999867,
+          -1.6292068494294545e-07,
+          0.0
+        ],
+        [
+          1.748455531469504e-07,
+          1.6292068494294296e-07,
+          0.9999999999999715,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          0.9999999999999847,
+          -2.8485957925724034e-14,
+          -1.7484555314694806e-07,
+          0.0
+        ],
+        [
+          6.477947029348262e-22,
+          0.9999999999999867,
+          -1.6292068494294545e-07,
+          0.0
+        ],
+        [
+          1.748455531469504e-07,
+          1.6292068494294296e-07,
+          0.9999999999999715,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "chuanmao_01",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -3423216263892684168,
+        "class": "Transform",
+        "raw_bytes": 92,
+        "raw_sha256": "d3275f9f1478a0ccb5adf50c02d880c8cd76b927f1ae33a84c64e18ce86b70ba",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 2,
+      "local_matrix": [
+        [
+          3.37174793862971e-07,
+          3.1786507297166564e-08,
+          -0.9999999999999426,
+          -2.954689826140111e-10
+        ],
+        [
+          3.345085640812187e-16,
+          -0.9999999999999993,
+          -3.1786507297168265e-08,
+          8.416716718375756e-24
+        ],
+        [
+          -0.999999999999943,
+          1.0383100475098914e-14,
+          -3.371747936409264e-07,
+          5.1661436116823785e-17
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          5.120203470099039e-07,
+          3.1786535783122187e-08,
+          -0.9999999999998683,
+          -2.954689826140156e-10
+        ],
+        [
+          1.6292068527744474e-07,
+          -0.999999999999986,
+          -3.1786452364420165e-08,
+          -3.03167499245651e-32
+        ],
+        [
+          -0.9999999999998556,
+          -1.6292066900211295e-07,
+          -5.120203519665366e-07,
+          -1.5860897645183965e-24
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "chuanmao_02",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 7979764479351136857,
+        "class": "Transform",
+        "raw_bytes": 80,
+        "raw_sha256": "89415711c1923691c569c510a13d54812ab77114fdb5bc0f15e254fcb3f06e14",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 3,
+      "local_matrix": [
+        [
+          0.9999999999999847,
+          1.7484558156865773e-07,
+          -2.4067109610357528e-14,
+          -0.6136850714683533
+        ],
+        [
+          -1.7484558156865927e-07,
+          0.9999999999999695,
+          -1.748455531469483e-07,
+          9.391950949992435e-18
+        ],
+        [
+          -6.5038628143150355e-15,
+          1.7484555314694984e-07,
+          0.9999999999999847,
+          -1.225686214951008e-15
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          5.120203479560236e-07,
+          -1.4305892783931024e-07,
+          -0.9999999999998586,
+          -3.145147110049517e-07
+        ],
+        [
+          3.377662668460993e-07,
+          -0.9999999999999325,
+          1.4305910078252223e-07,
+          -9.998199239755368e-08
+        ],
+        [
+          -0.9999999999998117,
+          -3.377663400952221e-07,
+          -5.120202994134647e-07,
+          0.6136850714682647
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "chuanmao_03",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 4254824878488891188,
+        "class": "Transform",
+        "raw_bytes": 80,
+        "raw_sha256": "a926018347b5694bc854abdbeb378b03c2f91342a06dcf33c36a501e73699fe6",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 4,
+      "local_matrix": [
+        [
+          0.9999999999999847,
+          1.7484552472524096e-07,
+          9.655335342015201e-15,
+          -0.3967683017253876
+        ],
+        [
+          -1.7484552472524096e-07,
+          0.9999999999999847,
+          -1.6881921494167855e-21,
+          -5.456968088664825e-14
+        ],
+        [
+          -9.655335342015349e-15,
+          -2.4856051862261666e-29,
+          1.0,
+          -4.607869397458761e-14
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          5.120203826245644e-07,
+          -1.4305883831484165e-07,
+          -0.9999999999998586,
+          -5.176681088336034e-07
+        ],
+        [
+          5.126117915713219e-07,
+          -0.9999999999998581,
+          1.4305910078252718e-07,
+          -2.3399688590453027e-07
+        ],
+        [
+          -0.9999999999997373,
+          -5.12611864820425e-07,
+          -5.120203090688e-07,
+          1.0104533731935774
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "chuanmao_04",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 5252101330210633856,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "77c0ee240e846680e6d48f987164c61eecb068ea110fc83b435d61f507cd17a9",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 5,
+      "local_matrix": [
+        [
+          0.9999999999999695,
+          1.7484558156865982e-07,
+          -1.748455957795119e-07,
+          -0.3951636552810669
+        ],
+        [
+          -1.7484558156865718e-07,
+          0.9999999999999847,
+          3.0570980436975e-14,
+          2.281347377675047e-08
+        ],
+        [
+          1.7484559577951454e-07,
+          -5.581869671915947e-22,
+          0.9999999999999847,
+          -6.909268535082447e-08
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          3.3717481185826463e-07,
+          -1.4305874879033732e-07,
+          -0.9999999999999327,
+          -6.509072727227911e-07
+        ],
+        [
+          6.874573981531923e-07,
+          -0.9999999999997532,
+          1.4305898058363044e-07,
+          -4.593759188631149e-07
+        ],
+        [
+          -0.9999999999997067,
+          -6.874574463890311e-07,
+          -3.371747132893419e-07,
+          1.4056170284745642
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "chuanmao_06",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 8328475311137879148,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "3672963f8cbf4ba7dfa6aed39fb84d04472ee2376a9da42875c322d1c1bb0bbb",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 3,
+      "local_matrix": [
+        [
+          1.0,
+          1.6542704636115943e-22,
+          9.4613241395125e-16,
+          0.6906806826591492
+        ],
+        [
+          -1.0935911589167387e-30,
+          0.9999999999999847,
+          -1.748455531469504e-07,
+          7.629394360719743e-08
+        ],
+        [
+          -9.461324139512647e-16,
+          1.748455531469504e-07,
+          0.9999999999999847,
+          -1.4336568199269095e-07
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          5.120203479560363e-07,
+          -1.4305901736380567e-07,
+          -0.9999999999998586,
+          4.967127782433531e-07
+        ],
+        [
+          1.6292068527744477e-07,
+          -0.9999999999999762,
+          1.430591007825284e-07,
+          3.6232231076611987e-08
+        ],
+        [
+          -0.9999999999998556,
+          -1.6292075852659229e-07,
+          -5.120203244267067e-07,
+          -0.6906806826589884
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "effect",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 9100571300768688358,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "d8a4abd02b775d51ba6aee7c6c3295e7a72876a0d7fedf5a14400ce6cb360168",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 2,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          0.9999999999999847,
+          -2.8485957925724034e-14,
+          -1.7484555314694806e-07,
+          0.0
+        ],
+        [
+          6.477947029348262e-22,
+          0.9999999999999867,
+          -1.6292068494294545e-07,
+          0.0
+        ],
+        [
+          1.748455531469504e-07,
+          1.6292068494294296e-07,
+          0.9999999999999715,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "wp_blade_chuanmaolv1",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 9028656305951887030,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "6cee793ef11cdc7dd864e3a39ced7bc3ed01b201d3e7c496673688a357178d38",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "wp_blade_chuanmaolv1_01",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 7583055976130260538,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "9dd4dc08a7fcf0d5c4e5f2c5f5dafe85fc7b4177dd29a086bf4711de049cec39",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "wp_blade_chuanmaolv1_01_L1",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 6815047777499789140,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "6e3e88ef8a223384d87b54d6262f3b172b1898778effa0e2efc0b4484f9f0665",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "wp_blade_chuanmaolv1_01_L2",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -7386787580443012321,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "82c3336983c09ff81fbedb43bb9c4310b35a57b78af1133ddf71b0f4f4fd3afb",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "wp_blade_chuanmaolv1_01_L3",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 1480262570044963217,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "db02a68920f22afd12d0bd16a7eab7ba2c4282718a3207e8bf77edd81f583770",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "wp_blade_chuanmaolv1_L1",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -90040201963827607,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "40ff628257f936702df5ab7665065da4e7182a99ddc358313682e4759d194ac1",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "wp_blade_chuanmaolv1_L2",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -8619676270817992473,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "40bd172369584479cdef6e3da3cf0052b8e4da8bec4570944287eaa61d41d23b",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "wp_blade_chuanmaolv1_L3",
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -5381945448882941808,
+        "class": "Transform",
+        "raw_bytes": 68,
+        "raw_sha256": "966ac1c608ea3c9dd5a8a3f751e05c9bdf84cd93db44e2641ab8f687b5b97e08",
+        "old_type_hash": "761ca81f78491542badc37f810ab3455",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "parent": 0,
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          2.220446049250313e-16,
+          0.9999999999999998,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9999999999999998,
+          2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "components": [
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 2025258169025539001,
+        "class": "MonoBehaviour",
+        "raw_bytes": 412,
+        "raw_sha256": "7892d92e0a894c9cfa91750964911898e4ce30205f890e6854c5a735f6eb1b51",
+        "old_type_hash": "d776abcd0823864e25054d7a4690732a",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": -9199594720759568859
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 3534922765567587786
+        },
+        "m_Name": "",
+        "buffFxGroup": [],
+        "customFxGroups": [],
+        "prefabInstances": [
+          {
+            "m_FileID": 0,
+            "m_PathID": -1575498784859683217
+          }
+        ],
+        "rendererAssistants": [
+          {
+            "m_FileID": 0,
+            "m_PathID": 1653627868400311468
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 3321712053185764788
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": -2172172853692512455
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 1761595815347359466
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 5336557736884908927
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 626853718307322220
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 5704438248265945467
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": -9159100481446296627
+          }
+        ],
+        "lod0RendererAssistants": [
+          {
+            "m_FileID": 0,
+            "m_PathID": 1653627868400311468
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 3321712053185764788
+          }
+        ],
+        "lod1RendererAssistants": [
+          {
+            "m_FileID": 0,
+            "m_PathID": -2172172853692512455
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 626853718307322220
+          }
+        ],
+        "lod2RendererAssistants": [
+          {
+            "m_FileID": 0,
+            "m_PathID": 1761595815347359466
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 5704438248265945467
+          }
+        ],
+        "lod3RendererAssistants": [
+          {
+            "m_FileID": 0,
+            "m_PathID": 5336557736884908927
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": -9159100481446296627
+          }
+        ],
+        "nLodRendererAssistants": [],
+        "meshRenderer": [],
+        "interactiveCollider": [],
+        "visualComponents": [],
+        "ControlPrefabInstaceRender": 0,
+        "EnableWeaponEffect": 0,
+        "weaponEffectAxis": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0
+        },
+        "weaponEffectOffset": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "weaponEffectRadius": 0.10000000149011612,
+        "weaponEffectLength": 1.0,
+        "brokenEffectAxis": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0
+        },
+        "brokenEffectOffset": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "brokenEffectRadius": 0.20000000298023224,
+        "brokenEffectLength": 1.0,
+        "obiAgent": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "cloths": [],
+        "warpCloths": [],
+        "dynamicBones": [],
+        "allOranmentCollideCache": [],
+        "IsRange": 0,
+        "playerColliderCell": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "smoothFollow": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        }
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -3078975465050546799,
+        "class": "MonoBehaviour",
+        "raw_bytes": 32,
+        "raw_sha256": "2af615774eeab2edda5c1094ff4175ab972a5c97fb922581d693a606ecaaa3bf",
+        "old_type_hash": "71bb6a6b6c8f052f948db64c7dd3ca4f",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": -9199594720759568859
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 6565877909398212516
+        },
+        "m_Name": ""
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -8689573647574288405,
+        "class": "MonoBehaviour",
+        "raw_bytes": 116,
+        "raw_sha256": "1d6d1d8c9ce5ac3279f5da94e41b4b0ed8349b26c599d30ca8c8c688a967e2aa",
+        "old_type_hash": "8734eb3268d0cc4ccc42e41567e2b63d",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "effect",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": -2533106109341357725
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 2758523282744839482
+        },
+        "m_Name": "",
+        "path": "Assets/Res/Effect/fashion/weapon/blade/fx_wp_blade_chuanmaolv1.prefab",
+        "poolType": 0,
+        "containsDbs": 0
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -1575498784859683217,
+        "class": "MonoBehaviour",
+        "raw_bytes": 64,
+        "raw_sha256": "f5d1ba2e2a8f76e2eff5ca6f46865607c8c457be1f599fe5505305dda1302dcd",
+        "old_type_hash": "7671de052c359b2e4ea462925a06af17",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "effect",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": -2533106109341357725
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 3857839388593519151
+        },
+        "m_Name": "",
+        "loader": {
+          "m_FileID": 0,
+          "m_PathID": -8689573647574288405
+        },
+        "type": 0,
+        "hideInStealth": 1,
+        "needFadeIn": 1,
+        "dontAutoplayEffect": 0,
+        "visualPart": 4
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 1653627868400311468,
+        "class": "MonoBehaviour",
+        "raw_bytes": 176,
+        "raw_sha256": "85fb42ffb5053206d4755f24cd2c6cdb934ab7b663e1fa3ca4cd3ce5f37b7c79",
+        "old_type_hash": "df4724bba8a60c47a6e1a2d4c4284f35",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": 2969343116108172141
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 8343168694476907056
+        },
+        "m_Name": "",
+        "groupTagVal": 2,
+        "extraBodyVal": 1,
+        "facePart": 0,
+        "gameObjectName": "wp_blade_chuanmaolv1",
+        "lodLvl": 0,
+        "_renderer": {
+          "m_FileID": 0,
+          "m_PathID": 8134082459061125686
+        },
+        "cloth": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "lhmui3DText": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "avatarMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "extraMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "headCollisionData": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "hasFacialExpression": 0,
+        "facialBoneMapping": [],
+        "isFxRenderer": 0,
+        "enableTransparentControl": 1,
+        "IsRange": 0,
+        "isDamagePart": 0,
+        "configPartialDamageMask": 0,
+        "matAnimsShouldDisableRenderer": []
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 3321712053185764788,
+        "class": "MonoBehaviour",
+        "raw_bytes": 180,
+        "raw_sha256": "2d0ad1052aa72e5fdaa1130c2b013ca82a6d490042a3f1a4e498a1bcfa67499a",
+        "old_type_hash": "df4724bba8a60c47a6e1a2d4c4284f35",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1_01",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": -8709720029688286079
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 8343168694476907056
+        },
+        "m_Name": "",
+        "groupTagVal": 2,
+        "extraBodyVal": 1,
+        "facePart": 0,
+        "gameObjectName": "wp_blade_chuanmaolv1_01",
+        "lodLvl": 0,
+        "_renderer": {
+          "m_FileID": 0,
+          "m_PathID": -8106241250894090420
+        },
+        "cloth": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "lhmui3DText": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "avatarMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "extraMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "headCollisionData": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "hasFacialExpression": 0,
+        "facialBoneMapping": [],
+        "isFxRenderer": 0,
+        "enableTransparentControl": 1,
+        "IsRange": 0,
+        "isDamagePart": 0,
+        "configPartialDamageMask": 0,
+        "matAnimsShouldDisableRenderer": []
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -2172172853692512455,
+        "class": "MonoBehaviour",
+        "raw_bytes": 184,
+        "raw_sha256": "c4b6fe9667df47050911d816b1f07e32e0a2c67dcf2da52b71769a28056d9820",
+        "old_type_hash": "df4724bba8a60c47a6e1a2d4c4284f35",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1_01_L1",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": -1300323414399309832
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 8343168694476907056
+        },
+        "m_Name": "",
+        "groupTagVal": 2,
+        "extraBodyVal": 1,
+        "facePart": 0,
+        "gameObjectName": "wp_blade_chuanmaolv1_01_L1",
+        "lodLvl": 1,
+        "_renderer": {
+          "m_FileID": 0,
+          "m_PathID": -4232233537556569549
+        },
+        "cloth": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "lhmui3DText": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "avatarMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "extraMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "headCollisionData": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "hasFacialExpression": 0,
+        "facialBoneMapping": [],
+        "isFxRenderer": 0,
+        "enableTransparentControl": 1,
+        "IsRange": 0,
+        "isDamagePart": 0,
+        "configPartialDamageMask": 0,
+        "matAnimsShouldDisableRenderer": []
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 1761595815347359466,
+        "class": "MonoBehaviour",
+        "raw_bytes": 184,
+        "raw_sha256": "af545938485210921d0909851cfd554614ac740af1974667bdde2eb1d0c5e021",
+        "old_type_hash": "df4724bba8a60c47a6e1a2d4c4284f35",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1_01_L2",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": 6468648263510647785
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 8343168694476907056
+        },
+        "m_Name": "",
+        "groupTagVal": 2,
+        "extraBodyVal": 1,
+        "facePart": 0,
+        "gameObjectName": "wp_blade_chuanmaolv1_01_L2",
+        "lodLvl": 2,
+        "_renderer": {
+          "m_FileID": 0,
+          "m_PathID": 7776759969513897520
+        },
+        "cloth": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "lhmui3DText": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "avatarMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "extraMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "headCollisionData": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "hasFacialExpression": 0,
+        "facialBoneMapping": [],
+        "isFxRenderer": 0,
+        "enableTransparentControl": 1,
+        "IsRange": 0,
+        "isDamagePart": 0,
+        "configPartialDamageMask": 0,
+        "matAnimsShouldDisableRenderer": []
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 5336557736884908927,
+        "class": "MonoBehaviour",
+        "raw_bytes": 184,
+        "raw_sha256": "b9d0cd3871cf4f5ff9954bcc711708c3412fc6f4c0e4593647006c395361cd1b",
+        "old_type_hash": "df4724bba8a60c47a6e1a2d4c4284f35",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1_01_L3",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": 1948379950790917049
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 8343168694476907056
+        },
+        "m_Name": "",
+        "groupTagVal": 2,
+        "extraBodyVal": 1,
+        "facePart": 0,
+        "gameObjectName": "wp_blade_chuanmaolv1_01_L3",
+        "lodLvl": 3,
+        "_renderer": {
+          "m_FileID": 0,
+          "m_PathID": -9145631258187784068
+        },
+        "cloth": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "lhmui3DText": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "avatarMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "extraMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "headCollisionData": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "hasFacialExpression": 0,
+        "facialBoneMapping": [],
+        "isFxRenderer": 0,
+        "enableTransparentControl": 1,
+        "IsRange": 0,
+        "isDamagePart": 0,
+        "configPartialDamageMask": 0,
+        "matAnimsShouldDisableRenderer": []
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 626853718307322220,
+        "class": "MonoBehaviour",
+        "raw_bytes": 180,
+        "raw_sha256": "abc485f8d5a4c2ba760c5be409ec991360e026614974ee9abeff42788a36b4dd",
+        "old_type_hash": "df4724bba8a60c47a6e1a2d4c4284f35",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1_L1",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": -4731895772388209648
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 8343168694476907056
+        },
+        "m_Name": "",
+        "groupTagVal": 2,
+        "extraBodyVal": 1,
+        "facePart": 0,
+        "gameObjectName": "wp_blade_chuanmaolv1_L1",
+        "lodLvl": 1,
+        "_renderer": {
+          "m_FileID": 0,
+          "m_PathID": -8571504091550710820
+        },
+        "cloth": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "lhmui3DText": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "avatarMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "extraMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "headCollisionData": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "hasFacialExpression": 0,
+        "facialBoneMapping": [],
+        "isFxRenderer": 0,
+        "enableTransparentControl": 1,
+        "IsRange": 0,
+        "isDamagePart": 0,
+        "configPartialDamageMask": 0,
+        "matAnimsShouldDisableRenderer": []
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 5704438248265945467,
+        "class": "MonoBehaviour",
+        "raw_bytes": 180,
+        "raw_sha256": "76248b6fcd328186d8b61a8ad191405b21104dcfca17dd45caba197b85dd4400",
+        "old_type_hash": "df4724bba8a60c47a6e1a2d4c4284f35",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1_L2",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": 7957548209029374578
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 8343168694476907056
+        },
+        "m_Name": "",
+        "groupTagVal": 2,
+        "extraBodyVal": 1,
+        "facePart": 0,
+        "gameObjectName": "wp_blade_chuanmaolv1_L2",
+        "lodLvl": 2,
+        "_renderer": {
+          "m_FileID": 0,
+          "m_PathID": 5239514115776750819
+        },
+        "cloth": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "lhmui3DText": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "avatarMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "extraMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "headCollisionData": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "hasFacialExpression": 0,
+        "facialBoneMapping": [],
+        "isFxRenderer": 0,
+        "enableTransparentControl": 1,
+        "IsRange": 0,
+        "isDamagePart": 0,
+        "configPartialDamageMask": 0,
+        "matAnimsShouldDisableRenderer": []
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -9159100481446296627,
+        "class": "MonoBehaviour",
+        "raw_bytes": 180,
+        "raw_sha256": "67e79719f0b48722e47f91bc425ba823e69c859249646911a8c7a917f4e4d618",
+        "old_type_hash": "df4724bba8a60c47a6e1a2d4c4284f35",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "go": "wp_blade_chuanmaolv1_L3",
+      "tree": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": 6467071350522609176
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 0,
+          "m_PathID": 8343168694476907056
+        },
+        "m_Name": "",
+        "groupTagVal": 2,
+        "extraBodyVal": 1,
+        "facePart": 0,
+        "gameObjectName": "wp_blade_chuanmaolv1_L3",
+        "lodLvl": 3,
+        "_renderer": {
+          "m_FileID": 0,
+          "m_PathID": -6913986736377517436
+        },
+        "cloth": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "lhmui3DText": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "avatarMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "extraMeshAsset": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "headCollisionData": {
+          "m_FileID": 0,
+          "m_PathID": 0
+        },
+        "hasFacialExpression": 0,
+        "facialBoneMapping": [],
+        "isFxRenderer": 0,
+        "enableTransparentControl": 1,
+        "IsRange": 0,
+        "isDamagePart": 0,
+        "configPartialDamageMask": 0,
+        "matAnimsShouldDisableRenderer": []
+      }
+    }
+  ],
+  "renderers": [
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 8134082459061125686,
+        "class": "SkinnedMeshRenderer",
+        "raw_bytes": 261,
+        "raw_sha256": "1896f017c9edc722d3e979e096d71079aad4f9cfdf0afdb0f3f4960314eba9f3",
+        "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "name": "wp_blade_chuanmaolv1",
+      "mesh": {
+        "file_id": 3,
+        "path_id": 8230008449851886439
+      },
+      "bones": 5,
+      "materials": [
+        {
+          "file_id": 2,
+          "path_id": -1866275082094654471
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -8106241250894090420,
+        "class": "SkinnedMeshRenderer",
+        "raw_bytes": 213,
+        "raw_sha256": "55828a33869be17dfe18291e20ed62f2c59eee6518001529f5876efffef7e1ad",
+        "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "name": "wp_blade_chuanmaolv1_01",
+      "mesh": {
+        "file_id": 3,
+        "path_id": 3583192603019751291
+      },
+      "bones": 1,
+      "materials": [
+        {
+          "file_id": 2,
+          "path_id": 8848616480852480842
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -4232233537556569549,
+        "class": "SkinnedMeshRenderer",
+        "raw_bytes": 213,
+        "raw_sha256": "8d76d9a632ca07d490a15a064e8167d41e1122c5149704c76a4c5033e0be0a5a",
+        "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "name": "wp_blade_chuanmaolv1_01_L1",
+      "mesh": {
+        "file_id": 3,
+        "path_id": -3356667526614268288
+      },
+      "bones": 1,
+      "materials": [
+        {
+          "file_id": 2,
+          "path_id": 8848616480852480842
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 7776759969513897520,
+        "class": "SkinnedMeshRenderer",
+        "raw_bytes": 213,
+        "raw_sha256": "c9223ac0a83afe839b8b4329609e338099ee3e4243a867ad4ef4dee1a69b2b21",
+        "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "name": "wp_blade_chuanmaolv1_01_L2",
+      "mesh": {
+        "file_id": 3,
+        "path_id": -647867344802735106
+      },
+      "bones": 1,
+      "materials": [
+        {
+          "file_id": 2,
+          "path_id": 8848616480852480842
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -9145631258187784068,
+        "class": "SkinnedMeshRenderer",
+        "raw_bytes": 213,
+        "raw_sha256": "f6c62696e4bbdbafe52e69718d6b5185062ddaa3add9927de8f237454da02133",
+        "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "name": "wp_blade_chuanmaolv1_01_L3",
+      "mesh": {
+        "file_id": 3,
+        "path_id": 8863176398621081988
+      },
+      "bones": 1,
+      "materials": [
+        {
+          "file_id": 2,
+          "path_id": 8848616480852480842
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -8571504091550710820,
+        "class": "SkinnedMeshRenderer",
+        "raw_bytes": 261,
+        "raw_sha256": "276f50b10f67e22f47aa40dab3aee3a4b246bba55161b2f6c42ffdd8f4393cd2",
+        "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "name": "wp_blade_chuanmaolv1_L1",
+      "mesh": {
+        "file_id": 3,
+        "path_id": 7164108271549299773
+      },
+      "bones": 5,
+      "materials": [
+        {
+          "file_id": 2,
+          "path_id": -1866275082094654471
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": 5239514115776750819,
+        "class": "SkinnedMeshRenderer",
+        "raw_bytes": 261,
+        "raw_sha256": "acfc40522c6a9e859225d034d2ad32bb552c8d1f7f0c1c2eee956e8b7345fa4f",
+        "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "name": "wp_blade_chuanmaolv1_L2",
+      "mesh": {
+        "file_id": 3,
+        "path_id": 4251039247975908234
+      },
+      "bones": 5,
+      "materials": [
+        {
+          "file_id": 2,
+          "path_id": -1866275082094654471
+        }
+      ],
+      "enabled": true
+    },
+    {
+      "source": {
+        "cab": "CAB-6e25ddb5ceeafb8b8eaf23c0919abfe8",
+        "path_id": -6913986736377517436,
+        "class": "SkinnedMeshRenderer",
+        "raw_bytes": 261,
+        "raw_sha256": "e4d981e2efbd520c4f72713531ef27c6df60264d756ca34b8314ace9f78b1b96",
+        "old_type_hash": "78128ce9aa96a37a9798ca4df5945260",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "name": "wp_blade_chuanmaolv1_L3",
+      "mesh": {
+        "file_id": 3,
+        "path_id": 5380510088241360821
+      },
+      "bones": 5,
+      "materials": [
+        {
+          "file_id": 2,
+          "path_id": -1866275082094654471
+        }
+      ],
+      "enabled": true
+    }
+  ],
+  "materials": [
+    {
+      "source": {
+        "cab": "CAB-97b76ad958b12f63507b149674bf558b",
+        "path_id": -1866275082094654471,
+        "class": "Material",
+        "raw_bytes": 1168,
+        "raw_sha256": "e39b7a9a2454c70cc813e59453bdf3791b8c1467c60a959670e4f78276fe25a3",
+        "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "tree": {
+        "m_Name": "wp_blade_chuanmaolv1",
+        "m_Shader": {
+          "m_FileID": 1,
+          "m_PathID": -3142759522810718769
+        },
+        "m_ShaderKeywords": "_USE_CUTOUT",
+        "m_LightmapFlags": 4,
+        "m_EnableInstancingVariants": false,
+        "m_DoubleSidedGI": false,
+        "m_CustomRenderQueue": -1,
+        "stringTagMap": [],
+        "disabledShaderPasses": [],
+        "disabledShaderPassNames": [
+          "XRayEffect",
+          "Stealth"
+        ],
+        "m_SavedProperties": {
+          "m_TexEnvs": [
+            [
+              "_AdvIDTex",
+              {
+                "m_Texture": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_BumpMap",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": 8991855498617996036
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_ClothCustomMaskTex",
+              {
+                "m_Texture": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_EmissionMap",
+              {
+                "m_Texture": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_MainTex",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": 2914725641642358024
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_MatEffectMap0",
+              {
+                "m_Texture": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_MatEffectMap1",
+              {
+                "m_Texture": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_SpecGlossMap",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": -8473443971473334459
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ]
+          ],
+          "m_Floats": [
+            [
+              "_AnisoAspect",
+              0.0
+            ],
+            [
+              "_BumpScale",
+              1.0
+            ],
+            [
+              "_Culling",
+              2.0
+            ],
+            [
+              "_Cutoff",
+              0.5
+            ],
+            [
+              "_Distance",
+              0.1599999964237213
+            ],
+            [
+              "_EmissionWeight",
+              1.0
+            ],
+            [
+              "_GlossMapScale",
+              1.0
+            ],
+            [
+              "_IridescenceStr",
+              0.699999988079071
+            ],
+            [
+              "_Mode",
+              0.0
+            ],
+            [
+              "_OffsetFactor",
+              0.0
+            ],
+            [
+              "_OffsetUnit",
+              0.0
+            ],
+            [
+              "_Power",
+              1.0
+            ],
+            [
+              "_Scale",
+              1.0
+            ],
+            [
+              "_VELVET_Str",
+              1.0
+            ],
+            [
+              "_shiftPower",
+              0.0
+            ]
+          ],
+          "m_Colors": [
+            [
+              "_Color",
+              {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              }
+            ],
+            [
+              "_EmissionColor",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            ],
+            [
+              "_MatEffectColor0",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            ],
+            [
+              "_MatEffectColor1",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ],
+            [
+              "_MatEffectColor2",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            ],
+            [
+              "_MatEffectParam0",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ],
+            [
+              "_MatEffectParam1",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ],
+            [
+              "_MatEffectParam2",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ],
+            [
+              "_PassThoughColor",
+              {
+                "r": 0.8999999761581421,
+                "g": 1.0,
+                "b": 0.19999995827674866,
+                "a": 0.10000000149011612
+              }
+            ],
+            [
+              "_ShaderFeatureParam1",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ],
+            [
+              "_SpecularTint",
+              {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              }
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "source": {
+        "cab": "CAB-97b76ad958b12f63507b149674bf558b",
+        "path_id": 8848616480852480842,
+        "class": "Material",
+        "raw_bytes": 1252,
+        "raw_sha256": "386a1762cfdd35a8a3c51f73abc2c5bd3b0e8effde7843f6f4af36a4b454ae45",
+        "old_type_hash": "473b0755862575d404112ddd15b45ea5",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "tree": {
+        "m_Name": "wp_blade_chuanmaolv1_01",
+        "m_Shader": {
+          "m_FileID": 1,
+          "m_PathID": 5086278038938645907
+        },
+        "m_ShaderKeywords": "_MFX_EMISSIVE_CRYSTAL_PERIODIC _USE_CUTOUT",
+        "m_LightmapFlags": 4,
+        "m_EnableInstancingVariants": false,
+        "m_DoubleSidedGI": false,
+        "m_CustomRenderQueue": -1,
+        "stringTagMap": [],
+        "disabledShaderPasses": [],
+        "disabledShaderPassNames": [
+          "XRayEffect",
+          "Stealth"
+        ],
+        "m_SavedProperties": {
+          "m_TexEnvs": [
+            [
+              "_ClothCustomMaskTex",
+              {
+                "m_Texture": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_EmissionMap",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": -628149590640246578
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_MainTex",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": -8085848668959843211
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_MatEffectMap0",
+              {
+                "m_Texture": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_MatEffectMap1",
+              {
+                "m_Texture": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_NormalIridMap",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": -2237500672905845049
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_SpecGlossMap",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": -1689135381143337976
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_TransmissiveMap",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": 7882116831395174280
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ],
+            [
+              "_TransmittanceMap",
+              {
+                "m_Texture": {
+                  "m_FileID": 2,
+                  "m_PathID": -3042044238595196238
+                },
+                "m_Scale": {
+                  "x": 1.0,
+                  "y": 1.0
+                },
+                "m_Offset": {
+                  "x": 0.0,
+                  "y": 0.0
+                }
+              }
+            ]
+          ],
+          "m_Floats": [
+            [
+              "_BumpScale",
+              1.0
+            ],
+            [
+              "_Culling",
+              2.0
+            ],
+            [
+              "_Cutoff",
+              0.5
+            ],
+            [
+              "_EmissionWeight",
+              1.0
+            ],
+            [
+              "_GlossMapScale",
+              1.0
+            ],
+            [
+              "_RefractionThicknessScale",
+              0.013000000268220901
+            ],
+            [
+              "_ScatterAnisotropy",
+              -0.30399999022483826
+            ],
+            [
+              "_ScatterRoughness",
+              0.023000000044703484
+            ],
+            [
+              "_SurfaceRoughnessInfluence",
+              0.0
+            ],
+            [
+              "_UseProgressOrSin",
+              0.0
+            ],
+            [
+              "_VertexAnimationA",
+              5.0
+            ],
+            [
+              "_VertexAnimationB",
+              0.0
+            ],
+            [
+              "_VertexAnimationProgress",
+              0.0
+            ]
+          ],
+          "m_Colors": [
+            [
+              "_Color",
+              {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              }
+            ],
+            [
+              "_EmissionColor",
+              {
+                "r": 95.87451171875,
+                "g": 95.87451171875,
+                "b": 95.87451171875,
+                "a": 1.0
+              }
+            ],
+            [
+              "_MatEffectColor0",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            ],
+            [
+              "_MatEffectColor1",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ],
+            [
+              "_MatEffectColor2",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            ],
+            [
+              "_MatEffectParam0",
+              {
+                "r": 20.0,
+                "g": 2.0,
+                "b": 0.0,
+                "a": 8.0
+              }
+            ],
+            [
+              "_MatEffectParam1",
+              {
+                "r": 1.0,
+                "g": 11.199999809265137,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ],
+            [
+              "_MatEffectParam2",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ],
+            [
+              "_VertexAnimationPhaseByVC",
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 0.0
+              }
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/fulangmao/source_bundles/bc49947304cd366f/converted.unityfs",
+      "bytes": 8693,
+      "sha256": "c545d9a5eaa94c8fdf4256a3fe90277a64465c80040c947179ccae590c008a07"
+    },
+    {
+      "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/fulangmao/source_bundles/b2c026aff1573528/converted.unityfs",
+      "bytes": 3173,
+      "sha256": "4584604bfedc80587e5419f6f7932dda9a6bd72705ac9a0946065db1e3807ea0"
+    }
+  ]
+}

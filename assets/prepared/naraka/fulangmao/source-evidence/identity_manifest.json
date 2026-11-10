@@ -1,0 +1,921 @@
+{
+  "scope": "Resources preparation only; no Runtime registration, firing behavior or game execution",
+  "display_name": "伏浪锚",
+  "item_id": 2310478,
+  "category": "阔刀",
+  "exact_name_matches": [
+    2310478
+  ],
+  "source_validation": [
+    {
+      "table": "WeaponSkin",
+      "source": {
+        "path_id": -5570568234232513021,
+        "name": "WeaponSkin",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponSkin.bytes",
+        "bytes": 1276914,
+        "sha256": "85e3e4d193022cfbed9ba867cec23dd7bfa893e51a1d8945e734bfb77b0af802",
+        "keyword_hits": []
+      },
+      "decoded_sha256": "9ae5061d5d120577ec129237bfed1863fd6440d868867799fc5fa9466f4259df",
+      "subtables": 6,
+      "records": 3157,
+      "complete_framing": true
+    },
+    {
+      "table": "WeaponConfig",
+      "source": {
+        "path_id": 6981010548153732578,
+        "name": "WeaponConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponConfig.bytes",
+        "bytes": 512540,
+        "sha256": "35b62eff8fa9275f0cc1166f38bbb4a7c57555069c86a65e892894e9c98aa46c",
+        "keyword_hits": []
+      },
+      "decoded_sha256": "e134650fc0e62422dd682855d62355247f1f04320a5f4ce3233f93f3cc98bc10",
+      "subtables": 5,
+      "records": 2910,
+      "complete_framing": true
+    }
+  ],
+  "item_record": {
+    "table": "WeaponSkin",
+    "subtable": "WeaponSkin_WeaponSkin",
+    "id": 2310478,
+    "offset": 607198,
+    "end": 608586,
+    "bytes": 1388,
+    "index_offset": 280688,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/fulangmao/WeaponSkin_WeaponSkin_2310478.bin",
+    "record_sha256": "4563180508a8d61246ca4035aa5e6fffe2e03d7ba63e85228ed8b0bf4bc11e81",
+    "source_textasset": {
+      "path_id": -5570568234232513021,
+      "name": "WeaponSkin",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponSkin.bytes",
+      "bytes": 1276914,
+      "sha256": "85e3e4d193022cfbed9ba867cec23dd7bfa893e51a1d8945e734bfb77b0af802",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "9ae5061d5d120577ec129237bfed1863fd6440d868867799fc5fa9466f4259df",
+    "display_name_field": {
+      "relative_length_offset": 4,
+      "value": "伏浪锚"
+    },
+    "original_string_fields": [
+      {
+        "relative_length_offset": 4,
+        "value": "伏浪锚"
+      },
+      {
+        "relative_length_offset": 630,
+        "value": "icon_weapon_chuanmaolv1"
+      },
+      {
+        "relative_length_offset": 680,
+        "value": "icon_weapon_chuanmaolv1"
+      },
+      {
+        "relative_length_offset": 730,
+        "value": "wp_presentation_blade_chuanmaolv1"
+      },
+      {
+        "relative_length_offset": 826,
+        "value": "赛季商店解锁"
+      },
+      {
+        "relative_length_offset": 842,
+        "value": "ui_system_weapon_skin_show_blade_tieqi"
+      },
+      {
+        "relative_length_offset": 922,
+        "value": "ui_system_weapon_skin_show_blade_tieqi_reward"
+      },
+      {
+        "relative_length_offset": 1016,
+        "value": "阔刀"
+      },
+      {
+        "relative_length_offset": 1028,
+        "value": "need_replace"
+      },
+      {
+        "relative_length_offset": 1087,
+        "value": "UILobbyMainPanel"
+      },
+      {
+        "relative_length_offset": 1123,
+        "value": "BattlePassPage"
+      },
+      {
+        "relative_length_offset": 1180,
+        "value": "Pos201"
+      },
+      {
+        "relative_length_offset": 1207,
+        "value": "weapon_presentation_idle"
+      },
+      {
+        "relative_length_offset": 1264,
+        "value": "weapon_presentation_idle"
+      },
+      {
+        "relative_length_offset": 1327,
+        "value": "icon_weapon_chuanmaolv1_384"
+      }
+    ],
+    "category_field": {
+      "relative_length_offset": 1016,
+      "value": "阔刀"
+    }
+  },
+  "same_id_battle_record": {
+    "table": "WeaponSkin",
+    "subtable": "WeaponSkin_WeaponBattleSkin",
+    "id": 2310478,
+    "offset": 115360,
+    "end": 115566,
+    "bytes": 206,
+    "index_offset": 29536,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/fulangmao/WeaponSkin_WeaponBattleSkin_2310478.bin",
+    "record_sha256": "122100f329f6f4cef4611e821f7ebad00723c6d342b6eee21cfc0fb22f29ac63",
+    "source_textasset": {
+      "path_id": -5570568234232513021,
+      "name": "WeaponSkin",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponSkin.bytes",
+      "bytes": 1276914,
+      "sha256": "85e3e4d193022cfbed9ba867cec23dd7bfa893e51a1d8945e734bfb77b0af802",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "9ae5061d5d120577ec129237bfed1863fd6440d868867799fc5fa9466f4259df",
+    "original_part_vector": {
+      "present_flag_offset": 112,
+      "count_offset": 113,
+      "data_offset": 117,
+      "ids": [
+        3112349
+      ]
+    },
+    "runtime_drop_reference": {
+      "relative_length_offset": 121,
+      "value": "weapon/weapon_drop_blade_chuanmaolv1"
+    }
+  },
+  "configured_weapon_parts": [
+    {
+      "table": "WeaponConfig",
+      "subtable": "WeaponConfig_WeaponTemp",
+      "id": 3112349,
+      "offset": 482450,
+      "end": 482630,
+      "bytes": 180,
+      "index_offset": 187112,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/fulangmao/WeaponConfig_WeaponTemp_3112349.bin",
+      "record_sha256": "03f37ff7b915f30fc7ade8519259d3085adfa06e189c2546a8916838f0c2e9e5",
+      "source_textasset": {
+        "path_id": 6981010548153732578,
+        "name": "WeaponConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponConfig.bytes",
+        "bytes": 512540,
+        "sha256": "35b62eff8fa9275f0cc1166f38bbb4a7c57555069c86a65e892894e9c98aa46c",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "e134650fc0e62422dd682855d62355247f1f04320a5f4ce3233f93f3cc98bc10",
+      "original_string_fields": [
+        {
+          "relative_length_offset": 20,
+          "value": "blade/wp_blade_chuanmaolv1"
+        },
+        {
+          "relative_length_offset": 76,
+          "value": "wp_blade_chuanmaolv1"
+        },
+        {
+          "relative_length_offset": 124,
+          "value": "wp_ui_blade_chuanmaolv1"
+        }
+      ],
+      "battle_prefab_reference": {
+        "relative_length_offset": 20,
+        "value": "blade/wp_blade_chuanmaolv1"
+      },
+      "exact_battle_prefab": {
+        "path": "assets/res/prefab/weapon_prefab/blade/wp_blade_chuanmaolv1.prefab",
+        "string_offset": 34271499,
+        "bundle_index": 12250,
+        "key": "b/c/bc49947304cd366f",
+        "declared_size": 20480,
+        "hash1": "081450ef0fc015d4cd6d33a45733cb86",
+        "hash2": "57cb7e61c9f4b57e054edc66946a664d",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/b/c/bc49947304cd366f"
+      }
+    }
+  ],
+  "exact_runtime_drop_prefab": {
+    "path": "assets/res/prefab/drop_item_generate/weapon/weapon_drop_blade_chuanmaolv1.prefab",
+    "string_offset": 17964937,
+    "bundle_index": 6896,
+    "key": "6/b/6b1033af11fa1fa5",
+    "declared_size": 20480,
+    "hash1": "421cc56e07e76d52e6a9c431f05f8c78",
+    "hash2": "67d000a0a7ce5a0941e8d91206b39a86",
+    "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/b/6b1033af11fa1fa5"
+  },
+  "related_original_materials": [
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_drop.mat",
+      "string_offset": 17964742,
+      "bundle_index": 6896,
+      "key": "6/b/6b1033af11fa1fa5",
+      "declared_size": 20480,
+      "hash1": "421cc56e07e76d52e6a9c431f05f8c78",
+      "hash2": "67d000a0a7ce5a0941e8d91206b39a86",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/b/6b1033af11fa1fa5"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_drop.mat",
+      "string_offset": 17964841,
+      "bundle_index": 6896,
+      "key": "6/b/6b1033af11fa1fa5",
+      "declared_size": 20480,
+      "hash1": "421cc56e07e76d52e6a9c431f05f8c78",
+      "hash2": "67d000a0a7ce5a0941e8d91206b39a86",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/b/6b1033af11fa1fa5"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1.mat",
+      "string_offset": 32344380,
+      "bundle_index": 11636,
+      "key": "b/2/b2c026aff1573528",
+      "declared_size": 12288,
+      "hash1": "95b7b99527b64cec976e80569408ee2e",
+      "hash2": "4f1fd8d37979ebbebeb7a194e63ee78e",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/b/2/b2c026aff1573528"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01.mat",
+      "string_offset": 32344471,
+      "bundle_index": 11636,
+      "key": "b/2/b2c026aff1573528",
+      "declared_size": 12288,
+      "hash1": "95b7b99527b64cec976e80569408ee2e",
+      "hash2": "4f1fd8d37979ebbebeb7a194e63ee78e",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/b/2/b2c026aff1573528"
+    }
+  ],
+  "related_original_textures": [
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_d.png",
+      "string_offset": 38942181,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_e.png",
+      "string_offset": 38942277,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_mrav.png",
+      "string_offset": 38942373,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_nx.png",
+      "string_offset": 38942472,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_tr.png",
+      "string_offset": 38942569,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_tx.png",
+      "string_offset": 38942666,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_d.png",
+      "string_offset": 38942763,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_mrav.png",
+      "string_offset": 38942856,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_n.png",
+      "string_offset": 38942952,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    }
+  ],
+  "related_original_meshes": [
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1.mesh",
+      "string_offset": 34888285,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_01.mesh",
+      "string_offset": 34888363,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_01_l1.mesh",
+      "string_offset": 34888444,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_01_l2.mesh",
+      "string_offset": 34888528,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_01_l3.mesh",
+      "string_offset": 34888612,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_l1.mesh",
+      "string_offset": 34888696,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_l2.mesh",
+      "string_offset": 34888777,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_l3.mesh",
+      "string_offset": 34888858,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    }
+  ],
+  "named_original_skeleton_assets": [
+    {
+      "path": "assets/art/characters/_common/avatar/wp_blade_chuanmaolv1_skeleton.fbx",
+      "string_offset": 14576420,
+      "bundle_index": 5745,
+      "key": "5/8/589302f25ec7b3dd",
+      "declared_size": 9302016,
+      "hash1": "399bed12635358301ae8cb02c42b7059",
+      "hash2": "d4efad3daec2cc1f9c10069dfb1a51f1",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/8/589302f25ec7b3dd"
+    }
+  ],
+  "all_related_original_paths": [
+    {
+      "path": "assets/res/gui/art_source/icon_weapon/icon_weapon_chuanmaolv1.png",
+      "string_offset": 1575737,
+      "bundle_index": 361,
+      "key": "0/5/05ac5c0f6ebe47c5",
+      "declared_size": 26214400,
+      "hash1": "edd80c905d2afea49889aa395e4d11cc",
+      "hash2": "f5613b553f3c8b433838544a772ff532",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/0/5/05ac5c0f6ebe47c5"
+    },
+    {
+      "path": "assets/res/gui/art_source/icon_weapon_256/icon_weapon_chuanmaolv1_256.png",
+      "string_offset": 1655841,
+      "bundle_index": 361,
+      "key": "0/5/05ac5c0f6ebe47c5",
+      "declared_size": 26214400,
+      "hash1": "edd80c905d2afea49889aa395e4d11cc",
+      "hash2": "f5613b553f3c8b433838544a772ff532",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/0/5/05ac5c0f6ebe47c5"
+    },
+    {
+      "path": "assets/res/prefab/actor_ui_weapon/wp_ui_blade_chuanmaolv1.prefab",
+      "string_offset": 3733524,
+      "bundle_index": 1066,
+      "key": "1/0/10e4474827da594c",
+      "declared_size": 16384,
+      "hash1": "ec121f8c8f6b4eaa4b334ae28cf8846e",
+      "hash2": "64e509ad01efc8e4778aedfd855c8392",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/1/0/10e4474827da594c"
+    },
+    {
+      "path": "assets/res/effect/fashion/weapon/blade/fx_wp_blade_chuanmaolv1.prefab",
+      "string_offset": 4186433,
+      "bundle_index": 1303,
+      "key": "1/4/146d4d62195cde4c",
+      "declared_size": 42450944,
+      "hash1": "6feca4f8e8546f8e11e940f83ebfb546",
+      "hash2": "76e77a6654b2854cd7a3a4c78f47e275",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/1/4/146d4d62195cde4c"
+    },
+    {
+      "path": "assets/res/animclipadapter/50/male_blade_put_down_weapon_chuanmaolv1.anim",
+      "string_offset": 7267068,
+      "bundle_index": 2843,
+      "key": "2/b/2ba7a2321d1b1a29",
+      "declared_size": 18452480,
+      "hash1": "a8903aad3f600810c4be8eba19cc8284",
+      "hash2": "23efbb604aa2625b79b9bef536b26f42",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/2/b/2ba7a2321d1b1a29"
+    },
+    {
+      "path": "assets/res/animclipadapter/82/male_blade_enchant_chuanmaolv1.anim",
+      "string_offset": 8399562,
+      "bundle_index": 3098,
+      "key": "2/f/2f828dd09022b8d1",
+      "declared_size": 16564224,
+      "hash1": "01cec9b9169e48fdc071f2170d96808f",
+      "hash2": "aa23bd53dc33fc266ed7b4ec0422392e",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/2/f/2f828dd09022b8d1"
+    },
+    {
+      "path": "assets/res/gui/art_source/icon_item/icon_weapon_chuanmaolv1.png",
+      "string_offset": 10838828,
+      "bundle_index": 3873,
+      "key": "3/b/3b9a1e466191a475",
+      "declared_size": 149344256,
+      "hash1": "e1bee00938add734da06aa9b8c0c7d82",
+      "hash2": "dbc7a1de9c7be26affabef93b0fd2868",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/3/b/3b9a1e466191a475"
+    },
+    {
+      "path": "assets/res/animclipadapter/62/male_blade_item_sharpen_01_chuanmaolv1.anim",
+      "string_offset": 13451777,
+      "bundle_index": 5115,
+      "key": "4/f/4f6b761a32370b8e",
+      "declared_size": 18509824,
+      "hash1": "97b62e35ac6c9a252b4dbd8df4b85271",
+      "hash2": "460b74692e8583ded8c358737b975691",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/4/f/4f6b761a32370b8e"
+    },
+    {
+      "path": "assets/res/animclipadapter/08/male_blade_presentation_loop_chuanmaolv1.anim",
+      "string_offset": 13982507,
+      "bundle_index": 5464,
+      "key": "5/4/549ea74fe6c707c9",
+      "declared_size": 17399808,
+      "hash1": "7b4b0307a9e646af1aa54146337c6861",
+      "hash2": "417c457b8e08aa626ec62fa199f7c037",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/4/549ea74fe6c707c9"
+    },
+    {
+      "path": "assets/art/characters/_common/avatar/wp_blade_chuanmaolv1_skeleton.fbx",
+      "string_offset": 14576420,
+      "bundle_index": 5745,
+      "key": "5/8/589302f25ec7b3dd",
+      "declared_size": 9302016,
+      "hash1": "399bed12635358301ae8cb02c42b7059",
+      "hash2": "d4efad3daec2cc1f9c10069dfb1a51f1",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/8/589302f25ec7b3dd"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_drop.mat",
+      "string_offset": 17964742,
+      "bundle_index": 6896,
+      "key": "6/b/6b1033af11fa1fa5",
+      "declared_size": 20480,
+      "hash1": "421cc56e07e76d52e6a9c431f05f8c78",
+      "hash2": "67d000a0a7ce5a0941e8d91206b39a86",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/b/6b1033af11fa1fa5"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_drop.mat",
+      "string_offset": 17964841,
+      "bundle_index": 6896,
+      "key": "6/b/6b1033af11fa1fa5",
+      "declared_size": 20480,
+      "hash1": "421cc56e07e76d52e6a9c431f05f8c78",
+      "hash2": "67d000a0a7ce5a0941e8d91206b39a86",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/b/6b1033af11fa1fa5"
+    },
+    {
+      "path": "assets/res/prefab/drop_item_generate/weapon/weapon_drop_blade_chuanmaolv1.prefab",
+      "string_offset": 17964937,
+      "bundle_index": 6896,
+      "key": "6/b/6b1033af11fa1fa5",
+      "declared_size": 20480,
+      "hash1": "421cc56e07e76d52e6a9c431f05f8c78",
+      "hash2": "67d000a0a7ce5a0941e8d91206b39a86",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/b/6b1033af11fa1fa5"
+    },
+    {
+      "path": "assets/res/animclipadapter/05/male_blade_fast_enchant_chuanmaolv1.anim",
+      "string_offset": 19430437,
+      "bundle_index": 7526,
+      "key": "7/4/74d56cc475c1b7cb",
+      "declared_size": 13115392,
+      "hash1": "117baee128eb4161c48dc618d6c82f06",
+      "hash2": "6e038e4341e979002ee1a35dc1537242",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/4/74d56cc475c1b7cb"
+    },
+    {
+      "path": "assets/res/animclipadapter/05/male_blade_item_fast_sharpen_01_chuanmaolv1.anim",
+      "string_offset": 19430748,
+      "bundle_index": 7526,
+      "key": "7/4/74d56cc475c1b7cb",
+      "declared_size": 13115392,
+      "hash1": "117baee128eb4161c48dc618d6c82f06",
+      "hash2": "6e038e4341e979002ee1a35dc1537242",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/4/74d56cc475c1b7cb"
+    },
+    {
+      "path": "assets/res/animclipadapter/61/male_blade_idle_01_chuanmaolv1.anim",
+      "string_offset": 24412322,
+      "bundle_index": 9315,
+      "key": "8/f/8f6cdcafc0718747",
+      "declared_size": 14233600,
+      "hash1": "c1cbbffa3fb933e09bed9af73ad6843a",
+      "hash2": "0d655f6d65d4ed16237ff6e039896cd8",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/f/8f6cdcafc0718747"
+    },
+    {
+      "path": "assets/res/animclipadapter/87/male_unarmed_idle_01_chuanmaolv1.anim",
+      "string_offset": 24664173,
+      "bundle_index": 9473,
+      "key": "9/0/90c91919ef9874e2",
+      "declared_size": 20213760,
+      "hash1": "458bf6040713fa5800087f4c39d847e3",
+      "hash2": "e61dd286f1a89f8d163883c5df654d60",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/0/90c91919ef9874e2"
+    },
+    {
+      "path": "assets/res/animclipadapter/92/male_blade_interactive_sharpen_01_chuanmaolv1.anim",
+      "string_offset": 27278142,
+      "bundle_index": 10199,
+      "key": "9/c/9c0c14dd3edce6e3",
+      "declared_size": 17276928,
+      "hash1": "6aa855db68e499928d21922abf8539de",
+      "hash2": "dd1d9b1676f197736c3caf3cec656e31",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/9/c/9c0c14dd3edce6e3"
+    },
+    {
+      "path": "assets/res/animclipadapter/99/male_blade_presentation_idle_chuanmaolv1.anim",
+      "string_offset": 31256329,
+      "bundle_index": 11388,
+      "key": "a/e/aed69cc4c21133d3",
+      "declared_size": 17362944,
+      "hash1": "68cfbb19b9342afdc7fe50c7074bd3a5",
+      "hash2": "1a6a00cbc1e9aa737f331f4bcbeec88f",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/a/e/aed69cc4c21133d3"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1.mat",
+      "string_offset": 32344380,
+      "bundle_index": 11636,
+      "key": "b/2/b2c026aff1573528",
+      "declared_size": 12288,
+      "hash1": "95b7b99527b64cec976e80569408ee2e",
+      "hash2": "4f1fd8d37979ebbebeb7a194e63ee78e",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/b/2/b2c026aff1573528"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01.mat",
+      "string_offset": 32344471,
+      "bundle_index": 11636,
+      "key": "b/2/b2c026aff1573528",
+      "declared_size": 12288,
+      "hash1": "95b7b99527b64cec976e80569408ee2e",
+      "hash2": "4f1fd8d37979ebbebeb7a194e63ee78e",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/b/2/b2c026aff1573528"
+    },
+    {
+      "path": "assets/res/prefab/weapon_prefab/blade/wp_blade_chuanmaolv1.prefab",
+      "string_offset": 34271499,
+      "bundle_index": 12250,
+      "key": "b/c/bc49947304cd366f",
+      "declared_size": 20480,
+      "hash1": "081450ef0fc015d4cd6d33a45733cb86",
+      "hash2": "57cb7e61c9f4b57e054edc66946a664d",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/b/c/bc49947304cd366f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1.mesh",
+      "string_offset": 34888285,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_01.mesh",
+      "string_offset": 34888363,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_01_l1.mesh",
+      "string_offset": 34888444,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_01_l2.mesh",
+      "string_offset": 34888528,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_01_l3.mesh",
+      "string_offset": 34888612,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_l1.mesh",
+      "string_offset": 34888696,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_l2.mesh",
+      "string_offset": 34888777,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/blade/m_1518293717@wp_blade_chuanmaolv1_l3.mesh",
+      "string_offset": 34888858,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_d.png",
+      "string_offset": 38942181,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_e.png",
+      "string_offset": 38942277,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_mrav.png",
+      "string_offset": 38942373,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_nx.png",
+      "string_offset": 38942472,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_tr.png",
+      "string_offset": 38942569,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_01_tx.png",
+      "string_offset": 38942666,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_d.png",
+      "string_offset": 38942763,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_mrav.png",
+      "string_offset": 38942856,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/blade/wp_blade_chuanmaolv1/materials/wp_blade_chuanmaolv1_n.png",
+      "string_offset": 38942952,
+      "bundle_index": 13490,
+      "key": "c/o/common_item2_res",
+      "declared_size": 1019461632,
+      "hash1": "a08c89031888da0ab978c29e9765e840",
+      "hash2": "7a5eff1e34e9bd4eb87a276a7281482c",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item2_res"
+    },
+    {
+      "path": "assets/res/animclipadapter/14/male_blade_draw_weapon_chuanmaolv1_02.anim",
+      "string_offset": 41000216,
+      "bundle_index": 13735,
+      "key": "d/3/d37cf08418da1ce1",
+      "declared_size": 18325504,
+      "hash1": "eacdf10b92c57e1bce3007d9bd1840a2",
+      "hash2": "5592ccd55894395bd2a833a95f855576",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/d/3/d37cf08418da1ce1"
+    },
+    {
+      "path": "assets/res/prefab/weapon_presentation_prefab/wp_presentation_blade_chuanmaolv1.prefab",
+      "string_offset": 41619144,
+      "bundle_index": 13975,
+      "key": "d/7/d76238beb9fde3c5",
+      "declared_size": 3551232,
+      "hash1": "fb95bbeb590f5d5a260e8073df33d8a2",
+      "hash2": "197e5518462ca1de940e704203db3126",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/d/7/d76238beb9fde3c5"
+    },
+    {
+      "path": "assets/res/gui/art_source/icon_item_outevacuate/icon_weapon_chuanmaolv1_384.png",
+      "string_offset": 42545815,
+      "bundle_index": 14050,
+      "key": "d/8/d8996cc828922416",
+      "declared_size": 723902464,
+      "hash1": "ccfaab3b990c66088047ee21e8ce41c7",
+      "hash2": "75e55ee513a6b9254c9d63db3bfe10c0",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/d/8/d8996cc828922416"
+    },
+    {
+      "path": "assets/res/animclipadapter/27/male_blade_presentation_show_chuanmaolv1.anim",
+      "string_offset": 48137434,
+      "bundle_index": 14735,
+      "key": "e/3/e32f06ad32e8ed23",
+      "declared_size": 17711104,
+      "hash1": "2668aef4adcdc161f6c8cde369d18c15",
+      "hash2": "a931d61a2ea8a2bb16d5d5813e147bbc",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/e/3/e32f06ad32e8ed23"
+    }
+  ],
+  "original_xls_bundle": {
+    "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/f/a/fab72152d7112058",
+    "source_sha256": "169f641cf0d7d1b105e931b0ed1cf081015cb43ca9fb8a08fed36566c64b426a"
+  },
+  "appres_source_report": "/home/asuka/kiva-asset-research/naraka/identity/appres_index_report.json",
+  "limits": [
+    "Configured part IDs are exact original BattleSkin vectors; all listed parts must be considered for complete preparation.",
+    "Same-stem auxiliary mesh/texture/effect paths do not by themselves prove an extra configured projectile; original prefab/material PPtr traversal is separately verified by container/export owners.",
+    "Original rig, string deformation, alpha/emission and packed-map channels must be preserved or documented by export validation, not guessed from filename.",
+    "AppRes hash1/hash2 remain original unassigned 32-hex metadata, not verified source-file SHA256."
+  ],
+  "requested_name": "伏浪锚",
+  "requested_name_resolution": "Exact original name and category match.",
+  "excluded_same_substring_resources": [],
+  "supplementary_evidence": [],
+  "physical_bundle_verification": [
+    {
+      "key": "6/b/6b1033af11fa1fa5",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/6/b/6b1033af11fa1fa5",
+      "bytes": 20480,
+      "source_sha256": "6079a743c4aef12ab63ab2d3a90905f584faef5d2f2c1e4ae11cb5bd6b2e23e8",
+      "scope": "Complete original bundle, read only; AppRes file-size equality checked."
+    },
+    {
+      "key": "b/2/b2c026aff1573528",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/b/2/b2c026aff1573528",
+      "bytes": 12288,
+      "source_sha256": "e02e6d9450f5c026f87c46d3b3ec294477740db9c8bb23407826f4940973eaf8",
+      "scope": "Complete original bundle, read only; AppRes file-size equality checked."
+    },
+    {
+      "key": "b/c/bc49947304cd366f",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/b/c/bc49947304cd366f",
+      "bytes": 20480,
+      "source_sha256": "30ef44486b53360621d21e7ae6356a2d3d9ef1524cd6520df2e557b2950650a9",
+      "scope": "Complete original bundle, read only; AppRes file-size equality checked."
+    }
+  ]
+}
