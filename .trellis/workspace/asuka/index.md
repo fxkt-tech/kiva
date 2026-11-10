@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 39
-- **Last Active**: 2026-11-10
+- **Total Sessions**: 42
+- **Last Active**: 2026-11-11
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1339 | Active |
+| `journal-1.md` | ~1442 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,9 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 42 | 2026-11-11 | 提交模型与动作验收页 | `c8bd335` | `main` |
+| 41 | 2026-11-11 | 模型、武器与动作验收页实现与验证 | - | `main` |
+| 40 | 2026-11-10 | 模型、武器与动作验收页规划 | - | `main` |
 | 39 | 2026-11-10 | 提交并推送首次进入加载改进 | `af06c14` | `main` |
 | 38 | 2026-11-10 | 首次进入真实加载进度与渲染就绪 | - | `main` |
 | 37 | 2026-11-10 | 提交并推送两件近战模型 | `791c66d` | `main` |

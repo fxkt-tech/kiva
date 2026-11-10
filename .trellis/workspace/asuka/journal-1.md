@@ -1337,3 +1337,106 @@ Packaged exact official Choulingke soundtrack and fully traced original shared p
 ### Next Steps
 
 - 重启用户开发服务应用Trunk加载模板；既有模型真实GPU外观验收继续独立跟踪。
+
+
+## Session 40: 模型、武器与动作验收页规划
+<!-- trellis-session: v=2 fp=a4e4f89183de7938 -->
+
+**Date**: 2026-11-10
+**Task**: 模型、武器与动作验收页规划
+**Branch**: `main`
+
+### Summary
+
+用户确认专页用于检查游戏模型、武器位置和动作，首版限定单角色姿态与动画片段；已创建任务并保存详细方案，保持planning。
+
+### Main Changes
+
+- PRD、技术设计、实施顺序及四份研究：默认共用游戏最终显示计算，源片段用于对照；不写产品代码、不启动实施。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] Trellis上下文校验通过，两份清单各11项；规划文档本地链接与planning状态校验通过。未运行产品构建或测试。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 等待用户评审最新方案；明确批准实施后再进入开发，现有模型真实GPU验收继续单独跟踪。
+
+
+## Session 41: 模型、武器与动作验收页实现与验证
+<!-- trellis-session: v=2 fp=48c9621a11ce34c3 -->
+
+**Date**: 2026-11-11
+**Task**: 模型、武器与动作验收页实现与验证
+**Branch**: `main`
+
+### Summary
+
+已实现独立验收页，共用游戏姿态、蒙皮与挂接，支持三角色、五武器、动作与片段、时间轴、自由相机及检查辅助；未提交，硬件GPU验收仍待完成。
+
+### Main Changes
+
+- 独立App与不可变页面模式，游戏监听器隔离；共享单帧动画与远程握持，完整历史60Hz重放、同帧来源信息、动态取景与版本化真实模型ready。
+- 修复子部件显式Visible绕过父隐藏；增加真实传播、三角色palette/挂点、seek、旧选择与资源复用回归；更新用户说明与执行规范。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] make check通过：241 Rust单元+9集成+94 Node；原生/WASM Clippy、WASM check、固定离线Trunk/SRI、文档42本地链接和任务清单通过。
+- [OK] 固定产物隔离有界面SwiftShader浏览器13条记录通过，成功路径0 JS/console error；根/子路径、五实际配置、拖帧、换装、相机/辅助/复制、原游戏首击/Esc及故意503恢复均通过。
+- [OK] 定位无头截图合成差异：实际GPU surface有完整模型，有界面截图正常；不修改游戏渲染规避环境。浏览器seek样本0.7-2.9ms，硬件GPU未宣称通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 用户可打开/?view=model检查模型、武器位置与动作；当前代码未提交或推送，任务保留in_progress等待真实硬件GPU复核。
+
+
+## Session 42: 提交模型与动作验收页
+<!-- trellis-session: v=2 fp=d9506bb1bacb61b7 -->
+
+**Date**: 2026-11-11
+**Task**: 提交模型与动作验收页
+**Branch**: `main`
+
+### Summary
+
+按用户授权直接main提交模型、武器与动作验收页，并记录本次交付；真实硬件GPU复核继续保留。
+
+### Main Changes
+
+- 功能提交c8bd335，包含独立查看入口、共享显示计算、时间轴/相机/部件/诊断与测试、说明和规范。
+- 任务记录代码commit，保留in_progress；不归档未完成硬件GPU验收的本任务和既有模型任务。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c8bd335` | feat: add model and animation inspection page |
+
+### Testing
+
+- [OK] 沿用最终250 Rust、94 Node、原生/WASM Clippy、WASM/固定Trunk/SRI及隔离有界面浏览器13条验收记录；本轮只更新提交元数据和日志。
+- [OK] 提交前工作范围核对、git diff --check、任务清单校验通过；fetch后main与origin/main无分歧。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 本轮随后推送origin/main并核对远端与工作区；真实硬件GPU验收继续跟踪。
