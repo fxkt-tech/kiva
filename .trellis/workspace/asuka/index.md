@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 30
+- **Total Sessions**: 31
 - **Last Active**: 2026-11-10
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1029 | Active |
+| `journal-1.md` | ~1063 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 31 | 2026-11-10 | Verified Choulingke music and source swing audio | `8e414db` | `main` |
 | 30 | 2026-11-10 | Bamboo reference terrain and real WebGPU reflection passes | `eb69202` | `main` |
 | 29 | 2026-11-10 | Choulingke avatar, source motions and bamboo boss encounter | `6e41a05` | `main` |
 | 28 | 2026-11-09 | 三维物理与非平地场景交付 | `65f14ec` | `main` |

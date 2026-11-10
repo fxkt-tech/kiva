@@ -1027,3 +1027,37 @@ Added eight source terrain/grass maps, layered wet ground, irregular grass, mip 
 ### Next Steps
 
 - Continue original Choulingke audio/BGM identity and HD-v2 decoding investigation; audio TODO remains open.
+
+
+## Session 31: Verified Choulingke music and source swing audio
+<!-- trellis-session: v=2 fp=fcb0b1434dc89870 -->
+
+**Date**: 2026-11-10
+**Task**: Verified Choulingke music and source swing audio
+**Branch**: `main`
+
+### Summary
+
+Packaged exact official Choulingke soundtrack and fully traced original shared polearm swing, with per-item provenance and non-overwriting offline importers. Original blade-specific hit/parry mapping remains open.
+
+### Main Changes
+
+- REA CLI and static native inspection actually used; SoundbanksInfo recovered, original source Cue/Event/Action/container/Sound/WEM chain verified.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8e414db` | feat: add verified Choulingke music and source weapon swing |
+
+### Testing
+
+- [OK] make check: 188 library + 9 physics + 49 Node; full Trunk game WebGPU/WebAudio plays BGM and authoritative attack, stops on capture loss, resumes one music source at saved offset; independent check passed.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Continue bounded official Android artifact investigation as a possible HD codec6 implementation clue; do not claim original success-deflect or all audio recovered.
