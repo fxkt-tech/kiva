@@ -1,0 +1,786 @@
+{
+  "scope": "Resources preparation only; no Runtime entry/integration or game execution",
+  "outfit_item_id": 3402139,
+  "outfit_name": "道诡异仙·白灵淼",
+  "hero_id": 1000022,
+  "hero_name": "玉玲珑",
+  "body_item_reference": {
+    "relative_u32_offset": 40,
+    "value": 1210776
+  },
+  "actor_temp_record": {
+    "table": "CharacterConfig",
+    "subtable": "CharacterConfig_ActorTemp",
+    "id": 1210776,
+    "offset": 170267,
+    "end": 170331,
+    "bytes": 64,
+    "index_offset": 123074,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorTemp_1210776.bin",
+    "record_sha256": "d02e7bca894d430098125852cfd80d3c347e8921732478a9e54f8e4f87484ea7",
+    "source_textasset": {
+      "path_id": -5656608313918041295,
+      "name": "CharacterConfig",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+      "bytes": 623079,
+      "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16"
+  },
+  "actor_temp_body_size_field": {
+    "relative_u32_offset": 16,
+    "value": 90005
+  },
+  "actor_temp_visual_part_vector": {
+    "present_flag_offset": 20,
+    "count_offset": 21,
+    "data_offset": 25,
+    "ids": [
+      11003,
+      11004,
+      11602,
+      11111
+    ]
+  },
+  "parts": [
+    {
+      "actor_visual_part_id": 11003,
+      "original_record": {
+        "table": "CharacterConfig",
+        "subtable": "CharacterConfig_ActorVisualPart",
+        "id": 11003,
+        "offset": 296543,
+        "end": 296649,
+        "bytes": 106,
+        "index_offset": 196871,
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorVisualPart_11003.bin",
+        "record_sha256": "de29d98164ead65d621228a7dfabe62105c5b8102a9d9b52a9bb379d04292cef",
+        "source_textasset": {
+          "path_id": -5656608313918041295,
+          "name": "CharacterConfig",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+          "bytes": 623079,
+          "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16"
+      },
+      "battle_prefab_field": {
+        "relative_length_offset": 20,
+        "absolute_length_offset": 296563,
+        "value": "face/ch_f_face_battle"
+      },
+      "ui_prefab_field": {
+        "relative_length_offset": 66,
+        "absolute_length_offset": 296609,
+        "value": "face/ch_f_face_ui"
+      },
+      "prefabs": [
+        {
+          "path": "assets/res/prefab/actor_visual_part/face/ch_f_face_battle.prefab",
+          "string_offset": 28258334,
+          "bundle_index": 10620,
+          "key": "a/2/a2ddc57ac521814d",
+          "declared_size": 2043904,
+          "hash1": "0a343645e81ec9eb9edb4dc1708a7a23",
+          "hash2": "19ea792ac8f3b7ba5564048de6e34514",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/a/2/a2ddc57ac521814d"
+        },
+        {
+          "path": "assets/res/prefab/actor_visual_part/face/ch_f_face_ui.prefab",
+          "string_offset": 28258399,
+          "bundle_index": 10620,
+          "key": "a/2/a2ddc57ac521814d",
+          "declared_size": 2043904,
+          "hash1": "0a343645e81ec9eb9edb4dc1708a7a23",
+          "hash2": "19ea792ac8f3b7ba5564048de6e34514",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/a/2/a2ddc57ac521814d"
+        }
+      ]
+    },
+    {
+      "actor_visual_part_id": 11004,
+      "original_record": {
+        "table": "CharacterConfig",
+        "subtable": "CharacterConfig_ActorVisualPart",
+        "id": 11004,
+        "offset": 296649,
+        "end": 296799,
+        "bytes": 150,
+        "index_offset": 196879,
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorVisualPart_11004.bin",
+        "record_sha256": "c38add25e3964139f3192f0a4cb52f3238dce432b7b0ee3fc503f9aab4ee6d18",
+        "source_textasset": {
+          "path_id": -5656608313918041295,
+          "name": "CharacterConfig",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+          "bytes": 623079,
+          "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16"
+      },
+      "battle_prefab_field": {
+        "relative_length_offset": 20,
+        "absolute_length_offset": 296669,
+        "value": "leftcuff/ch_f_leftcuff_default"
+      },
+      "ui_prefab_field": {
+        "relative_length_offset": 84,
+        "absolute_length_offset": 296733,
+        "value": "leftcuff/ch_f_leftcuff_default"
+      },
+      "prefabs": [
+        {
+          "path": "assets/res/prefab/actor_visual_part/leftcuff/ch_f_leftcuff_default.prefab",
+          "string_offset": 18921345,
+          "bundle_index": 7358,
+          "key": "7/2/723ba007f7bdd61f",
+          "declared_size": 4526080,
+          "hash1": "10941efb136a8a9584eb0bc47cfeb1d0",
+          "hash2": "8cbcb7078af99af8644381f1449e5592",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/2/723ba007f7bdd61f"
+        }
+      ]
+    },
+    {
+      "actor_visual_part_id": 11602,
+      "original_record": {
+        "table": "CharacterConfig",
+        "subtable": "CharacterConfig_ActorVisualPart",
+        "id": 11602,
+        "offset": 407427,
+        "end": 407655,
+        "bytes": 228,
+        "index_offset": 200999,
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorVisualPart_11602.bin",
+        "record_sha256": "0ecac8d91572a152745cbcfe71af24cff6273021f2a0637666ee7069c8832ea6",
+        "source_textasset": {
+          "path_id": -5656608313918041295,
+          "name": "CharacterConfig",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+          "bytes": 623079,
+          "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16"
+      },
+      "battle_prefab_field": {
+        "relative_length_offset": 20,
+        "absolute_length_offset": 407447,
+        "value": "ch_f_ming_yulinglong/ch_f_ming_yulinglong_lv_s16"
+      },
+      "ui_prefab_field": {
+        "relative_length_offset": 120,
+        "absolute_length_offset": 407547,
+        "value": "ch_f_ming_yulinglong/ch_f_ming_yulinglong_lv_s16_ui"
+      },
+      "prefabs": [
+        {
+          "path": "assets/res/prefab/actor_visual_part/ch_f_ming_yulinglong/ch_f_ming_yulinglong_lv_s16.prefab",
+          "string_offset": 8938671,
+          "bundle_index": 3204,
+          "key": "3/1/312ba9c886d5c842",
+          "declared_size": 830484480,
+          "hash1": "33656ed20333efa0773255ce3ef68db2",
+          "hash2": "2b92b204daa6f55eb7a2d54699b9d0a6",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/3/1/312ba9c886d5c842"
+        },
+        {
+          "path": "assets/res/prefab/actor_visual_part/ch_f_ming_yulinglong/ch_f_ming_yulinglong_lv_s16_ui.prefab",
+          "string_offset": 8938956,
+          "bundle_index": 3204,
+          "key": "3/1/312ba9c886d5c842",
+          "declared_size": 830484480,
+          "hash1": "33656ed20333efa0773255ce3ef68db2",
+          "hash2": "2b92b204daa6f55eb7a2d54699b9d0a6",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/3/1/312ba9c886d5c842"
+        }
+      ]
+    },
+    {
+      "actor_visual_part_id": 11111,
+      "original_record": {
+        "table": "CharacterConfig",
+        "subtable": "CharacterConfig_ActorVisualPart",
+        "id": 11111,
+        "offset": 309003,
+        "end": 309081,
+        "bytes": 78,
+        "index_offset": 197335,
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorVisualPart_11111.bin",
+        "record_sha256": "18137817f73dac91a49965e214cc9ae3d6b51d056cfebda4ec2c148144dc7d7f",
+        "source_textasset": {
+          "path_id": -5656608313918041295,
+          "name": "CharacterConfig",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+          "bytes": 623079,
+          "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16"
+      },
+      "battle_prefab_field": {
+        "relative_length_offset": 20,
+        "absolute_length_offset": 309023,
+        "value": "ch_m_mask_00"
+      },
+      "ui_prefab_field": {
+        "relative_length_offset": 48,
+        "absolute_length_offset": 309051,
+        "value": "ch_m_mask_00"
+      },
+      "prefabs": [
+        {
+          "path": "assets/res/prefab/actor_visual_part/ch_m_mask_00.prefab",
+          "string_offset": 37659225,
+          "bundle_index": 13256,
+          "key": "c/c/cc90d3942158a59a",
+          "declared_size": 143360,
+          "hash1": "461b5ae28ca207451ce7d045c3cdf88f",
+          "hash2": "f562d4e402e90f9d9e4b4dd22664b9c2",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/c/cc90d3942158a59a"
+        }
+      ]
+    }
+  ],
+  "secondary_default_parts": {
+    "present_flag_offset": 41,
+    "ids": [
+      18048
+    ],
+    "parts": [
+      {
+        "actor_visual_part_id": 18048,
+        "original_record": {
+          "table": "CharacterConfig",
+          "subtable": "CharacterConfig_ActorVisualPart",
+          "id": 18048,
+          "offset": 579717,
+          "end": 579937,
+          "bytes": 220,
+          "index_offset": 207511,
+          "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorVisualPart_18048.bin",
+          "record_sha256": "fb4f59a122ecf7d74c0e69091c7bdb8c4a8e1cccac921571b657bed38562ae52",
+          "source_textasset": {
+            "path_id": -5656608313918041295,
+            "name": "CharacterConfig",
+            "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+            "bytes": 623079,
+            "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+            "keyword_hits": []
+          },
+          "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16"
+        },
+        "battle_prefab_field": {
+          "relative_length_offset": 20,
+          "absolute_length_offset": 579737,
+          "value": "ch_f_ming_xiakenv/ch_f_ming_xiakenv_hair_lv_b0"
+        },
+        "ui_prefab_field": {
+          "relative_length_offset": 116,
+          "absolute_length_offset": 579833,
+          "value": "ch_f_ming_xiakenv/ch_f_ming_xiakenv_hair_lv_b0_ui"
+        },
+        "prefabs": [
+          {
+            "path": "assets/res/prefab/actor_visual_part/ch_f_ming_xiakenv/ch_f_ming_xiakenv_hair_lv_b0.prefab",
+            "string_offset": 461934,
+            "bundle_index": 168,
+            "key": "0/2/02cdc35ab30923ae",
+            "declared_size": 1040252928,
+            "hash1": "21d3b6ee3bf1c958ed0989c9f09c384c",
+            "hash2": "51010cab7604471e01ce5402736edf0e",
+            "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/0/2/02cdc35ab30923ae"
+          },
+          {
+            "path": "assets/res/prefab/actor_visual_part/ch_f_ming_xiakenv/ch_f_ming_xiakenv_hair_lv_b0_ui.prefab",
+            "string_offset": 462024,
+            "bundle_index": 168,
+            "key": "0/2/02cdc35ab30923ae",
+            "declared_size": 1040252928,
+            "hash1": "21d3b6ee3bf1c958ed0989c9f09c384c",
+            "hash2": "51010cab7604471e01ce5402736edf0e",
+            "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/0/2/02cdc35ab30923ae"
+          }
+        ]
+      }
+    ],
+    "selection": "Original template secondary list is retained as evidence; explicit Lianmu100408 is the requested hairstyle override."
+  },
+  "body_size_record": {
+    "table": "CharacterConfig",
+    "subtable": "CharacterConfig_ActorBodySize",
+    "id": 90005,
+    "offset": 9682,
+    "end": 9994,
+    "bytes": 312,
+    "index_offset": 8142,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorBodySize_90005.bin",
+    "record_sha256": "fbb914f43f74faeb89dddea721829f7cef323888df8441774e1cd0ce9b7012f9",
+    "source_textasset": {
+      "path_id": -5656608313918041295,
+      "name": "CharacterConfig",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+      "bytes": 623079,
+      "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16",
+    "fields": [
+      {
+        "relative_length_offset": 4,
+        "absolute_length_offset": 9686,
+        "value": "标准女性体型"
+      },
+      {
+        "relative_length_offset": 233,
+        "absolute_length_offset": 9915,
+        "value": "l22_female_skeletonAvatar"
+      }
+    ]
+  },
+  "skeleton_reference": {
+    "value": "l22_female_skeletonAvatar",
+    "source_asset": {
+      "path": "assets/art/characters/_common/avatar/l22_female_skeleton.fbx",
+      "string_offset": 14545887,
+      "bundle_index": 5745,
+      "key": "5/8/589302f25ec7b3dd",
+      "declared_size": 9302016,
+      "hash1": "399bed12635358301ae8cb02c42b7059",
+      "hash2": "d4efad3daec2cc1f9c10069dfb1a51f1",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/8/589302f25ec7b3dd"
+    },
+    "limit": "Use original female Avatar/Transforms/bone hashes; never reuse male Avatar merely by name similarity."
+  },
+  "hair_item": {
+    "table": "HairItem",
+    "subtable": "HairItem_Hair",
+    "id": 100408,
+    "offset": 130809,
+    "end": 131120,
+    "bytes": 311,
+    "index_offset": 4144,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/HairItem_Hair_100408.bin",
+    "record_sha256": "045b5ae568cdd3399858a153f254930ef6916cb1a4b8d42cd6fc5dec485a8048",
+    "source_textasset": {
+      "path_id": 4481616799100803283,
+      "name": "HairItem",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/HairItem.bytes",
+      "bytes": 189185,
+      "sha256": "50a35ad179df4b1375532bb2912e71545991173c83d906e1b2652bdb3dade0e4",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "eabad1d73c34a9f7f568f40a82efd0199fee6b2a7a75d675a2a987f0708a92d2",
+    "fields": [
+      {
+        "relative_length_offset": 4,
+        "absolute_length_offset": 130813,
+        "value": "道诡异仙·莲母"
+      },
+      {
+        "relative_length_offset": 166,
+        "absolute_length_offset": 130975,
+        "value": "ch_f_yulinglong_hair_lv_s19"
+      },
+      {
+        "relative_length_offset": 224,
+        "absolute_length_offset": 131033,
+        "value": "玉玲珑专属"
+      }
+    ],
+    "hair_visual_references": [
+      {
+        "relative_u32_offset": 118,
+        "value": 100471
+      },
+      {
+        "relative_u32_offset": 122,
+        "value": 100471
+      }
+    ],
+    "matching_original_hair_registry_counterpart": {
+      "actor_visual_part_id": 17352,
+      "original_record": {
+        "table": "CharacterConfig",
+        "subtable": "CharacterConfig_ActorVisualPart",
+        "id": 17352,
+        "offset": 527975,
+        "end": 528223,
+        "bytes": 248,
+        "index_offset": 205567,
+        "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorVisualPart_17352.bin",
+        "record_sha256": "097888c8a2c813cae1a118370dedc74f847dda4da79c5ec59d929999f4f9c51d",
+        "source_textasset": {
+          "path_id": -5656608313918041295,
+          "name": "CharacterConfig",
+          "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+          "bytes": 623079,
+          "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+          "keyword_hits": []
+        },
+        "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16"
+      },
+      "battle_prefab_field": {
+        "relative_length_offset": 20,
+        "absolute_length_offset": 527995,
+        "value": "ch_f_ming_yulinglong/ch_f_ming_yulinglong_hair_lv_s19"
+      },
+      "ui_prefab_field": {
+        "relative_length_offset": 130,
+        "absolute_length_offset": 528105,
+        "value": "ch_f_ming_yulinglong/ch_f_ming_yulinglong_hair_lv_s19_ui"
+      },
+      "prefabs": [
+        {
+          "path": "assets/res/prefab/actor_visual_part/ch_f_ming_yulinglong/ch_f_ming_yulinglong_hair_lv_s19.prefab",
+          "string_offset": 8932919,
+          "bundle_index": 3204,
+          "key": "3/1/312ba9c886d5c842",
+          "declared_size": 830484480,
+          "hash1": "33656ed20333efa0773255ce3ef68db2",
+          "hash2": "2b92b204daa6f55eb7a2d54699b9d0a6",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/3/1/312ba9c886d5c842"
+        },
+        {
+          "path": "assets/res/prefab/actor_visual_part/ch_f_ming_yulinglong/ch_f_ming_yulinglong_hair_lv_s19_ui.prefab",
+          "string_offset": 8933016,
+          "bundle_index": 3204,
+          "key": "3/1/312ba9c886d5c842",
+          "declared_size": 830484480,
+          "hash1": "33656ed20333efa0773255ce3ef68db2",
+          "hash2": "2b92b204daa6f55eb7a2d54699b9d0a6",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/3/1/312ba9c886d5c842"
+        }
+      ]
+    },
+    "matching_counterpart_limit": "HairVisual alias and CharacterConfig share exact female/Yulinglong/s19 family; no unsupported numeric HairVisual-to-ActorVisualPart field is invented.",
+    "source_icon_assets": [
+      {
+        "path": "assets/res/gui/art_source/icon_item/ch_f_yulinglong_hair_lv_s19.png",
+        "string_offset": 10460388,
+        "bundle_index": 3873,
+        "key": "3/b/3b9a1e466191a475",
+        "declared_size": 149344256,
+        "hash1": "e1bee00938add734da06aa9b8c0c7d82",
+        "hash2": "dbc7a1de9c7be26affabef93b0fd2868",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/3/b/3b9a1e466191a475"
+      }
+    ]
+  },
+  "hair_visual": {
+    "table": "HairConfig",
+    "subtable": "HairConfig_HairVisual",
+    "id": 100471,
+    "offset": 66536,
+    "end": 66654,
+    "bytes": 118,
+    "index_offset": 3862,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/HairConfig_HairVisual_100471.bin",
+    "record_sha256": "efa4d597e4f5a3844ae49dfa0cb516d320b3626024460bbb5507521826fba25f",
+    "source_textasset": {
+      "path_id": 4814395119489732138,
+      "name": "HairConfig",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/HairConfig.bytes",
+      "bytes": 91238,
+      "sha256": "5ab87512903b288b2deb281a178309be7468140c9bb65f6346bb1a94bd1cd21e",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "06cc7b1205962c2a7f7229a778b6ed6417b47c00a1b648089031c09d084f1e26",
+    "fields": [
+      {
+        "relative_length_offset": 16,
+        "absolute_length_offset": 66552,
+        "value": "female_asian/hair/female_hair_yulinglong_lv_s19"
+      }
+    ]
+  },
+  "requested_hair_part": {
+    "actor_visual_part_id": 17352,
+    "original_record": {
+      "table": "CharacterConfig",
+      "subtable": "CharacterConfig_ActorVisualPart",
+      "id": 17352,
+      "offset": 527975,
+      "end": 528223,
+      "bytes": 248,
+      "index_offset": 205567,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/CharacterConfig_ActorVisualPart_17352.bin",
+      "record_sha256": "097888c8a2c813cae1a118370dedc74f847dda4da79c5ec59d929999f4f9c51d",
+      "source_textasset": {
+        "path_id": -5656608313918041295,
+        "name": "CharacterConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+        "bytes": 623079,
+        "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16"
+    },
+    "battle_prefab_field": {
+      "relative_length_offset": 20,
+      "absolute_length_offset": 527995,
+      "value": "ch_f_ming_yulinglong/ch_f_ming_yulinglong_hair_lv_s19"
+    },
+    "ui_prefab_field": {
+      "relative_length_offset": 130,
+      "absolute_length_offset": 528105,
+      "value": "ch_f_ming_yulinglong/ch_f_ming_yulinglong_hair_lv_s19_ui"
+    },
+    "prefabs": [
+      {
+        "path": "assets/res/prefab/actor_visual_part/ch_f_ming_yulinglong/ch_f_ming_yulinglong_hair_lv_s19.prefab",
+        "string_offset": 8932919,
+        "bundle_index": 3204,
+        "key": "3/1/312ba9c886d5c842",
+        "declared_size": 830484480,
+        "hash1": "33656ed20333efa0773255ce3ef68db2",
+        "hash2": "2b92b204daa6f55eb7a2d54699b9d0a6",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/3/1/312ba9c886d5c842"
+      },
+      {
+        "path": "assets/res/prefab/actor_visual_part/ch_f_ming_yulinglong/ch_f_ming_yulinglong_hair_lv_s19_ui.prefab",
+        "string_offset": 8933016,
+        "bundle_index": 3204,
+        "key": "3/1/312ba9c886d5c842",
+        "declared_size": 830484480,
+        "hash1": "33656ed20333efa0773255ce3ef68db2",
+        "hash2": "2b92b204daa6f55eb7a2d54699b9d0a6",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/3/1/312ba9c886d5c842"
+      }
+    ]
+  },
+  "face_preset": {
+    "table": "AvatarFace",
+    "subtable": "AvatarFace_FacePreset",
+    "id": 1416403,
+    "offset": 264667,
+    "end": 264814,
+    "bytes": 147,
+    "index_offset": 242334,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/AvatarFace_FacePreset_1416403.bin",
+    "record_sha256": "ac4dc807f639d7bff370b7018d5071adfbca518a9789fcbe011a68aa079cd297",
+    "source_textasset": {
+      "path_id": 1696969239772840769,
+      "name": "AvatarFace",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AvatarFace.bytes",
+      "bytes": 274424,
+      "sha256": "dc8fe31d774a72356546f23b61badf33983a1be9c1724c891942a1a9dee052b0",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "ad4ba81c2055cd6c50c4291302d72faaa8affb30f0e8af06f5f02ca94f8fac7a",
+    "fields": [
+      {
+        "relative_length_offset": 10,
+        "absolute_length_offset": 264677,
+        "value": "female_asian_yulinglong_bailingmiao"
+      },
+      {
+        "relative_length_offset": 84,
+        "absolute_length_offset": 264751,
+        "value": "白灵淼"
+      },
+      {
+        "relative_length_offset": 94,
+        "absolute_length_offset": 264761,
+        "value": "icon_face_balingmiao"
+      }
+    ],
+    "source_icon_assets": [
+      {
+        "path": "assets/res/gui/art_source/icon_face/icon_face_balingmiao.png",
+        "string_offset": 30436404,
+        "bundle_index": 11273,
+        "key": "a/d/ad38bc96db6043bd",
+        "declared_size": 602619904,
+        "hash1": "3038c91c402b70a894803b9991c506ec",
+        "hash2": "6b9592d8f4f8f5a25b21f8d2dd08afab",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/a/d/ad38bc96db6043bd"
+      }
+    ],
+    "limit": "Named preset reference is confirmed. Original slider/morph/default-colour payload and complete original face-shader behavior are not restored by this identity manifest."
+  },
+  "cosmetics": [
+    {
+      "table": "AvatarFace",
+      "subtable": "AvatarFace_Cosmetic",
+      "id": 1400584,
+      "offset": 163538,
+      "end": 163818,
+      "bytes": 280,
+      "index_offset": 4872,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/AvatarFace_Cosmetic_1400584.bin",
+      "record_sha256": "da8c86cae66b65c83f3f7c94b45ce4539c80f90f7fa1217c4f128a2625c74b98",
+      "source_textasset": {
+        "path_id": 1696969239772840769,
+        "name": "AvatarFace",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AvatarFace.bytes",
+        "bytes": 274424,
+        "sha256": "dc8fe31d774a72356546f23b61badf33983a1be9c1724c891942a1a9dee052b0",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "ad4ba81c2055cd6c50c4291302d72faaa8affb30f0e8af06f5f02ca94f8fac7a",
+      "fields": [
+        {
+          "relative_length_offset": 4,
+          "absolute_length_offset": 163542,
+          "value": "白灵淼睫毛"
+        },
+        {
+          "relative_length_offset": 32,
+          "absolute_length_offset": 163570,
+          "value": "玉玲珑专属"
+        },
+        {
+          "relative_length_offset": 63,
+          "absolute_length_offset": 163601,
+          "value": "female_asian/eyelash/female_eyelash_yulinglong_bailingmiao"
+        }
+      ],
+      "indexed_source_texture": {
+        "path": "assets/res/character/nielian/female/_cosmetic/eyelash/female_eyelash_yulinglong_bailingmiao_d.png",
+        "string_offset": 24194769,
+        "bundle_index": 9209,
+        "key": "8/d/8dd55936f71e18d2",
+        "declared_size": 248619008,
+        "hash1": "c4364b7c93f1edad9158fb72b460fcd1",
+        "hash2": "4983375f4ff0d19a4920fd2d385bcf92",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/d/8dd55936f71e18d2"
+      },
+      "material_limit": "Source mask/iris pixels are not by themselves the original RGB tint/dye/shader parameters."
+    },
+    {
+      "table": "AvatarFace",
+      "subtable": "AvatarFace_Cosmetic",
+      "id": 1400585,
+      "offset": 163818,
+      "end": 164110,
+      "bytes": 292,
+      "index_offset": 4880,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/AvatarFace_Cosmetic_1400585.bin",
+      "record_sha256": "cd6ed8d6ec5c4b67c6aad7b9c26ad092cc9048cfb635f2d9a2bdef819b3a01fc",
+      "source_textasset": {
+        "path_id": 1696969239772840769,
+        "name": "AvatarFace",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AvatarFace.bytes",
+        "bytes": 274424,
+        "sha256": "dc8fe31d774a72356546f23b61badf33983a1be9c1724c891942a1a9dee052b0",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "ad4ba81c2055cd6c50c4291302d72faaa8affb30f0e8af06f5f02ca94f8fac7a",
+      "fields": [
+        {
+          "relative_length_offset": 4,
+          "absolute_length_offset": 163822,
+          "value": "白灵淼眼影"
+        },
+        {
+          "relative_length_offset": 32,
+          "absolute_length_offset": 163850,
+          "value": "玉玲珑专属"
+        },
+        {
+          "relative_length_offset": 63,
+          "absolute_length_offset": 163881,
+          "value": "female_asian/eyeshadow/female_eyeshadow_yulinglong_bailingmiao"
+        }
+      ],
+      "indexed_source_texture": {
+        "path": "assets/res/character/nielian/female/_cosmetic/eyeshadow/female_eyeshadow_yulinglong_bailingmiao_d.png",
+        "string_offset": 24205607,
+        "bundle_index": 9209,
+        "key": "8/d/8dd55936f71e18d2",
+        "declared_size": 248619008,
+        "hash1": "c4364b7c93f1edad9158fb72b460fcd1",
+        "hash2": "4983375f4ff0d19a4920fd2d385bcf92",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/d/8dd55936f71e18d2"
+      },
+      "material_limit": "Source mask/iris pixels are not by themselves the original RGB tint/dye/shader parameters."
+    },
+    {
+      "table": "AvatarFace",
+      "subtable": "AvatarFace_Cosmetic",
+      "id": 1400586,
+      "offset": 164110,
+      "end": 164360,
+      "bytes": 250,
+      "index_offset": 4888,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/AvatarFace_Cosmetic_1400586.bin",
+      "record_sha256": "db24f76143d435d33068c48a982f56e3a869ceb20cb1cefaab77cdd6735b9bb6",
+      "source_textasset": {
+        "path_id": 1696969239772840769,
+        "name": "AvatarFace",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AvatarFace.bytes",
+        "bytes": 274424,
+        "sha256": "dc8fe31d774a72356546f23b61badf33983a1be9c1724c891942a1a9dee052b0",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "ad4ba81c2055cd6c50c4291302d72faaa8affb30f0e8af06f5f02ca94f8fac7a",
+      "fields": [
+        {
+          "relative_length_offset": 4,
+          "absolute_length_offset": 164114,
+          "value": "白灵淼眼球"
+        },
+        {
+          "relative_length_offset": 32,
+          "absolute_length_offset": 164142,
+          "value": "玉玲珑专属"
+        },
+        {
+          "relative_length_offset": 63,
+          "absolute_length_offset": 164173,
+          "value": "male_asian/iris/ma_iris_yulinglong_bailingmiao"
+        }
+      ],
+      "indexed_source_texture": {
+        "path": "assets/res/character/nielian/male/_cosmetic/iris/female_iris_yulinglong_bailingmiao_d.png",
+        "string_offset": 24284737,
+        "bundle_index": 9209,
+        "key": "8/d/8dd55936f71e18d2",
+        "declared_size": 248619008,
+        "hash1": "c4364b7c93f1edad9158fb72b460fcd1",
+        "hash2": "4983375f4ff0d19a4920fd2d385bcf92",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/d/8dd55936f71e18d2"
+      },
+      "material_limit": "Source mask/iris pixels are not by themselves the original RGB tint/dye/shader parameters.",
+      "alias_limit": "Original ref uses male_asian/ma_iris; indexed PNG uses male/_cosmetic/female_iris. Both original spellings retained; do not substitute Li iris."
+    }
+  ],
+  "colour_limits": {
+    "hair_visual": {
+      "table": "HairConfig",
+      "subtable": "HairConfig_HairVisual",
+      "id": 100471,
+      "offset": 66536,
+      "end": 66654,
+      "bytes": 118,
+      "index_offset": 3862,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/HairConfig_HairVisual_100471.bin",
+      "record_sha256": "efa4d597e4f5a3844ae49dfa0cb516d320b3626024460bbb5507521826fba25f",
+      "source_textasset": {
+        "path_id": 4814395119489732138,
+        "name": "HairConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/HairConfig.bytes",
+        "bytes": 91238,
+        "sha256": "5ab87512903b288b2deb281a178309be7468140c9bb65f6346bb1a94bd1cd21e",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "06cc7b1205962c2a7f7229a778b6ed6417b47c00a1b648089031c09d084f1e26",
+      "fields": [
+        {
+          "relative_length_offset": 16,
+          "absolute_length_offset": 66552,
+          "value": "female_asian/hair/female_hair_yulinglong_lv_s19"
+        }
+      ]
+    },
+    "default_rgb_status": "No identified default RGB colour fields in HairVisual100471; its non-string scalar words are zero and are not assigned a colour meaning.",
+    "source_material_and_icon": "Actual shader/material default colours and original Lianmu Sprite must be checked by model/material owners. Hair ID data is not ordinary RGB albedo.",
+    "cosmetics": "Eyelash/eyeshadow/iris source names are exact; original channel semantics/tints and named face slider/morph payload are separate from mesh assembly.",
+    "reuse_limit": "Do not reuse Li black-hair dye, brown iris or dark eyelash palette as Bai defaults."
+  },
+  "no_new_weapon_requested": true
+}

@@ -1,0 +1,519 @@
+{
+  "prepared_only": true,
+  "runtime_integrated": false,
+  "source_identity": {
+    "body": 3402139,
+    "hair": 100408,
+    "actor_temp": 1210776,
+    "body_size": 90005,
+    "female_avatar": "l22_female_skeletonAvatar",
+    "excluded_alternate_body": 3402140
+  },
+  "components": [
+    {
+      "file": "outfit.glb",
+      "sha256": "3606106f8f8f55e76eab8063f733725f221363c50faa4945469d98feaf3bd8f2",
+      "vertices": 28693,
+      "triangles": 41485,
+      "meshes": 16,
+      "native_skinned_meshes": 16,
+      "primitive_checks": [
+        {
+          "mesh": "body",
+          "vertices": 3970,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.5517490448897908,
+              0.04250925960092256,
+              -0.12415504451835885
+            ],
+            [
+              0.5517491726872658,
+              1.8077446773135606,
+              0.1699868814817196
+            ]
+          ],
+          "palette_slots": 78,
+          "perturbed_source_joint": "gMan Head",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.03413198500433145
+        },
+        {
+          "mesh": "body02",
+          "vertices": 14221,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.5234759428580579,
+              0.0031900560617017623,
+              -0.3602516579284826
+            ],
+            [
+              0.5234934490451066,
+              1.5821113672211944,
+              0.1661152476966828
+            ]
+          ],
+          "palette_slots": 77,
+          "perturbed_source_joint": "gMan Spine",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.10582242537094547
+        },
+        {
+          "mesh": "body03",
+          "vertices": 466,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.32166246837920387,
+              1.2439295996855628,
+              -0.08584860779487738
+            ],
+            [
+              0.32166270219667126,
+              1.5272129577105813,
+              0.012830320417286479
+            ]
+          ],
+          "palette_slots": 18,
+          "perturbed_source_joint": "gMan L UpperArm Twist1",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.012748742648863986
+        },
+        {
+          "mesh": "body04_cb",
+          "vertices": 466,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.3239229097704925,
+              1.2420447679443243,
+              -0.08699781349915375
+            ],
+            [
+              0.323923410513688,
+              1.5272128382426255,
+              0.012830568215362829
+            ]
+          ],
+          "palette_slots": 20,
+          "perturbed_source_joint": "gMan L UpperArm Twist1",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.013000976089417115
+        },
+        {
+          "mesh": "body05",
+          "vertices": 414,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.18509272795307333,
+              0.8843583754984308,
+              -0.13489106334482903
+            ],
+            [
+              0.184273945849716,
+              1.2009080633968985,
+              0.1150501899762022
+            ]
+          ],
+          "palette_slots": 10,
+          "perturbed_source_joint": "gMan Pelvis",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.04912275908509708
+        },
+        {
+          "mesh": "body06_cb",
+          "vertices": 2102,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.36504901009459134,
+              0.5977914401563017,
+              -0.14352485038159343
+            ],
+            [
+              0.36504909617773906,
+              1.5525871124662805,
+              0.1369573871518584
+            ]
+          ],
+          "palette_slots": 28,
+          "perturbed_source_joint": "gMan R Clavicle",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.07022205652529967
+        },
+        {
+          "mesh": "cloth01",
+          "vertices": 246,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.13868208578669317,
+              0.3189270832964307,
+              0.04978381005355804
+            ],
+            [
+              0.1222256664745157,
+              1.1703559384828708,
+              0.1512014999516052
+            ]
+          ],
+          "palette_slots": 7,
+          "perturbed_source_joint": "gMan R Thigh Twist1",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.048689481956195886
+        },
+        {
+          "mesh": "cloth02",
+          "vertices": 708,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.4951502646150571,
+              0.9396252684502385,
+              -0.22442680512064564
+            ],
+            [
+              0.49516841056643573,
+              1.3464643093130741,
+              0.08728299184127193
+            ]
+          ],
+          "palette_slots": 18,
+          "perturbed_source_joint": "gMan L Forearm",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.03704703574198379
+        },
+        {
+          "mesh": "cloth03_cb",
+          "vertices": 766,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.42858703275580073,
+              0.15621486205869317,
+              -0.5076601142540166
+            ],
+            [
+              0.4285869258459206,
+              1.1760127805577472,
+              0.18110406578066174
+            ]
+          ],
+          "palette_slots": 30,
+          "perturbed_source_joint": "gMan Pelvis",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.16733919165466563
+        },
+        {
+          "mesh": "cloth04_cb",
+          "vertices": 678,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.5867263408326595,
+              0.6286246987727134,
+              -0.4624319526915739
+            ],
+            [
+              0.5867270434109311,
+              1.350998679065915,
+              0.1114494595308957
+            ]
+          ],
+          "palette_slots": 23,
+          "perturbed_source_joint": "gMan L Forearm",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.044215048701656594
+        },
+        {
+          "mesh": "cloth05_cb",
+          "vertices": 322,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.40044198775533746,
+              0.15907934762643025,
+              -0.522577139184964
+            ],
+            [
+              0.40044199051788687,
+              1.1738705893478296,
+              -0.011059554250448774
+            ]
+          ],
+          "palette_slots": 16,
+          "perturbed_source_joint": "BR_skirt_A_4",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.04295104243660629
+        },
+        {
+          "mesh": "body04_cb",
+          "vertices": 466,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.3239229097704925,
+              1.2420447679443243,
+              -0.08699781349915375
+            ],
+            [
+              0.323923410513688,
+              1.5272128382426255,
+              0.012830568215362829
+            ]
+          ],
+          "palette_slots": 20,
+          "perturbed_source_joint": "gMan L UpperArm Twist1",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.013000976089417115
+        },
+        {
+          "mesh": "body06_cb",
+          "vertices": 2102,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.36504901009459134,
+              0.5977914401563017,
+              -0.14352485038159343
+            ],
+            [
+              0.36504909617773906,
+              1.5525871124662805,
+              0.1369573871518584
+            ]
+          ],
+          "palette_slots": 28,
+          "perturbed_source_joint": "gMan R Clavicle",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.07022205652529967
+        },
+        {
+          "mesh": "cloth03_cb",
+          "vertices": 766,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.42858703275580073,
+              0.15621486205869317,
+              -0.5076601142540166
+            ],
+            [
+              0.4285869258459206,
+              1.1760127805577472,
+              0.18110406578066174
+            ]
+          ],
+          "palette_slots": 30,
+          "perturbed_source_joint": "gMan Pelvis",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.16733919165466563
+        },
+        {
+          "mesh": "cloth04_cb",
+          "vertices": 678,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.5867263408326595,
+              0.6286246987727134,
+              -0.4624319526915739
+            ],
+            [
+              0.5867270434109311,
+              1.350998679065915,
+              0.1114494595308957
+            ]
+          ],
+          "palette_slots": 23,
+          "perturbed_source_joint": "gMan L Forearm",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.044215048701656594
+        },
+        {
+          "mesh": "cloth05_cb",
+          "vertices": 322,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.40044198775533746,
+              0.15907934762643025,
+              -0.522577139184964
+            ],
+            [
+              0.40044199051788687,
+              1.1738705893478296,
+              -0.011059554250448774
+            ]
+          ],
+          "palette_slots": 16,
+          "perturbed_source_joint": "BR_skirt_A_4",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.04295104243660629
+        }
+      ],
+      "original_units_and_poses_preserved": true,
+      "browser_or_screenshot_test": false
+    },
+    {
+      "file": "lianmu.glb",
+      "sha256": "fddd7ce6283909ff017fc6c0c27d37eb57db8c2f8147529b84b95559971b8d05",
+      "vertices": 11848,
+      "triangles": 11221,
+      "meshes": 3,
+      "native_skinned_meshes": 3,
+      "primitive_checks": [
+        {
+          "mesh": "hair_runtime_mesh",
+          "vertices": 9126,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.22414366464168559,
+              0.8153546923366448,
+              -0.6871679841212877
+            ],
+            [
+              0.21745212098764066,
+              1.8901210114165699,
+              0.12404906020437947
+            ]
+          ],
+          "palette_slots": 12,
+          "perturbed_source_joint": "gMan Head",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.051992384286249076
+        },
+        {
+          "mesh": "hair02_runtime_mesh",
+          "vertices": 2351,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.15293937481394337,
+              1.2271177710292611,
+              -0.3428466972336461
+            ],
+            [
+              0.1536904957398252,
+              1.8901675600341004,
+              0.13030905892892944
+            ]
+          ],
+          "palette_slots": 14,
+          "perturbed_source_joint": "gMan Head",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.05043419375575472
+        },
+        {
+          "mesh": "scalp_runtime_mesh",
+          "vertices": 371,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.07403601420040816,
+              1.628732119654121,
+              -0.07539824794709378
+            ],
+            [
+              0.07414785505480449,
+              1.8085165678247008,
+              0.10390461751732409
+            ]
+          ],
+          "palette_slots": 2,
+          "perturbed_source_joint": "gMan Head",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.03428562762596157
+        }
+      ],
+      "original_units_and_poses_preserved": true,
+      "browser_or_screenshot_test": false
+    },
+    {
+      "file": "generic_female_face.glb",
+      "sha256": "5053332a25a1291465077e389b6f15844c48ad13c1310e03490f63fe466c02a8",
+      "vertices": 3260,
+      "triangles": 5818,
+      "meshes": 3,
+      "native_skinned_meshes": 3,
+      "primitive_checks": [
+        {
+          "mesh": "eyelash_runtime_mesh",
+          "vertices": 582,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.06879995629778175,
+              1.67189676111927,
+              0.0687053725847659
+            ],
+            [
+              0.06880002386633353,
+              1.7039953043070029,
+              0.11529050137826498
+            ]
+          ],
+          "palette_slots": 5,
+          "perturbed_source_joint": "gMan Head",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.02622543772504587
+        },
+        {
+          "mesh": "eyes_runtime_mesh",
+          "vertices": 402,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.043949648377722556,
+              1.6725426130527372,
+              0.07565909582982341
+            ],
+            [
+              0.043949693212448994,
+              1.7017943245581182,
+              0.09173977618781701
+            ]
+          ],
+          "palette_slots": 2,
+          "perturbed_source_joint": "Face_L_Yanqiu",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.0029203871246777494
+        },
+        {
+          "mesh": "face_runtime_mesh",
+          "vertices": 2276,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.08435537703162516,
+              1.5824104164110644,
+              -0.02104755889184569
+            ],
+            [
+              0.08435531929098757,
+              1.7867850799670282,
+              0.1190700926255514
+            ]
+          ],
+          "palette_slots": 6,
+          "perturbed_source_joint": "gMan Head",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.033675192255278465
+        }
+      ],
+      "original_units_and_poses_preserved": true,
+      "browser_or_screenshot_test": false
+    }
+  ],
+  "original_material_pngs": 27,
+  "original_cosmetic_pngs": 3,
+  "specific_face_preset_morph_and_cosmetics_shader_applied": false,
+  "lianmu_shader_dye_recovered": false,
+  "normal_packed_maps_reinterpreted": false,
+  "female_source_avatar": "l22_female_skeletonAvatar",
+  "browser_or_screenshot_test": false
+}

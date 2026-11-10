@@ -1,0 +1,451 @@
+{
+  "scope": "Resources preparation only; no Runtime registration, firing behavior or game execution",
+  "display_name": "羿之影",
+  "item_id": 2310557,
+  "category": "弓箭",
+  "parts": [
+    {
+      "table": "WeaponConfig",
+      "subtable": "WeaponConfig_WeaponTemp",
+      "id": 3112195,
+      "offset": 451870,
+      "end": 452028,
+      "bytes": 158,
+      "index_offset": 185880,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/yizhiying/WeaponConfig_WeaponTemp_3112195.bin",
+      "record_sha256": "920d760e21bf523424c2b97b5cca7715000ad80e63e8ed9e9bcb3a5068b9bff8",
+      "source_textasset": {
+        "path_id": 6981010548153732578,
+        "name": "WeaponConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponConfig.bytes",
+        "bytes": 512540,
+        "sha256": "35b62eff8fa9275f0cc1166f38bbb4a7c57555069c86a65e892894e9c98aa46c",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "e134650fc0e62422dd682855d62355247f1f04320a5f4ce3233f93f3cc98bc10",
+      "original_string_fields": [
+        {
+          "relative_length_offset": 20,
+          "value": "bow/wp_bow_wuzhengong"
+        },
+        {
+          "relative_length_offset": 66,
+          "value": "wp_bow_wuzhengong"
+        },
+        {
+          "relative_length_offset": 108,
+          "value": "wp_ui_bow_wuzhengong"
+        }
+      ],
+      "battle_prefab_reference": {
+        "relative_length_offset": 20,
+        "value": "bow/wp_bow_wuzhengong"
+      },
+      "exact_battle_prefab": {
+        "path": "assets/res/prefab/weapon_prefab/bow/wp_bow_wuzhengong.prefab",
+        "string_offset": 49653210,
+        "bundle_index": 15225,
+        "key": "e/a/eae7703915e1a17f",
+        "declared_size": 20480,
+        "hash1": "d20ede808f28937b66e6db6a8fc4d8bf",
+        "hash2": "4e3fead9ae6f090b62bfbf5440d98499",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/e/a/eae7703915e1a17f"
+      }
+    },
+    {
+      "table": "WeaponConfig",
+      "subtable": "WeaponConfig_WeaponTemp",
+      "id": 3112196,
+      "offset": 452028,
+      "end": 452174,
+      "bytes": 146,
+      "index_offset": 185888,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/yizhiying/WeaponConfig_WeaponTemp_3112196.bin",
+      "record_sha256": "6cb62a2deacd7a0f0a3924eb3d0d93456815040ef992de23e8d0ab015f20827e",
+      "source_textasset": {
+        "path_id": 6981010548153732578,
+        "name": "WeaponConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponConfig.bytes",
+        "bytes": 512540,
+        "sha256": "35b62eff8fa9275f0cc1166f38bbb4a7c57555069c86a65e892894e9c98aa46c",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "e134650fc0e62422dd682855d62355247f1f04320a5f4ce3233f93f3cc98bc10",
+      "original_string_fields": [
+        {
+          "relative_length_offset": 20,
+          "value": "bow/wp_bow_wuzhengong_quiver"
+        },
+        {
+          "relative_length_offset": 80,
+          "value": "wp_bow_wuzhengong_quiver"
+        }
+      ],
+      "battle_prefab_reference": {
+        "relative_length_offset": 20,
+        "value": "bow/wp_bow_wuzhengong_quiver"
+      },
+      "exact_battle_prefab": {
+        "path": "assets/res/prefab/weapon_prefab/bow/wp_bow_wuzhengong_quiver.prefab",
+        "string_offset": 6874129,
+        "bundle_index": 2676,
+        "key": "2/9/294c27bd407c4b1b",
+        "declared_size": 16384,
+        "hash1": "0522474620f7fa715c0cb1c9260c5e30",
+        "hash2": "939f3656c326c252acfd591b64bcad5b",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/2/9/294c27bd407c4b1b"
+      }
+    },
+    {
+      "table": "WeaponConfig",
+      "subtable": "WeaponConfig_WeaponTemp",
+      "id": 3112197,
+      "offset": 452174,
+      "end": 452328,
+      "bytes": 154,
+      "index_offset": 185896,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/yizhiying/WeaponConfig_WeaponTemp_3112197.bin",
+      "record_sha256": "5123e7c2e72832eea3f16d5c431af98f885c509db5259d14b765829f2c9448b0",
+      "source_textasset": {
+        "path_id": 6981010548153732578,
+        "name": "WeaponConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponConfig.bytes",
+        "bytes": 512540,
+        "sha256": "35b62eff8fa9275f0cc1166f38bbb4a7c57555069c86a65e892894e9c98aa46c",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "e134650fc0e62422dd682855d62355247f1f04320a5f4ce3233f93f3cc98bc10",
+      "original_string_fields": [
+        {
+          "relative_length_offset": 20,
+          "value": "bow/wp_bow_wuzhengong_arrowbag"
+        },
+        {
+          "relative_length_offset": 84,
+          "value": "wp_bow_wuzhengong_arrowbag"
+        }
+      ],
+      "battle_prefab_reference": {
+        "relative_length_offset": 20,
+        "value": "bow/wp_bow_wuzhengong_arrowbag"
+      },
+      "exact_battle_prefab": {
+        "path": "assets/res/prefab/weapon_prefab/bow/wp_bow_wuzhengong_arrowbag.prefab",
+        "string_offset": 4747159,
+        "bundle_index": 1606,
+        "key": "1/8/18e89428149f5a4c",
+        "declared_size": 16384,
+        "hash1": "7a1d7df4efdd4b49d93479e9aedd1cb9",
+        "hash2": "47ad6ef190db60429e06839934ad65fe",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/1/8/18e89428149f5a4c"
+      }
+    }
+  ],
+  "drop_prefab": {
+    "path": "assets/res/prefab/drop_item_generate/weapon/weapon_drop_bow_wuzhengong.prefab",
+    "string_offset": 24464320,
+    "bundle_index": 9339,
+    "key": "8/f/8fbb96b6f1fd61b4",
+    "declared_size": 20480,
+    "hash1": "3678c962c2889fca3b8461558a7e5ed9",
+    "hash2": "a235f6955f3eb63e56ead646cdcca58d",
+    "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/f/8fbb96b6f1fd61b4"
+  },
+  "materials": [
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong.mat",
+      "string_offset": 14043471,
+      "bundle_index": 5505,
+      "key": "5/5/55143346e6d5b982",
+      "declared_size": 12288,
+      "hash1": "6e5d993dc5cbfbd1eb155b556234ea96",
+      "hash2": "4be0e429914618983200450da5730a8a",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/5/55143346e6d5b982"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_arrow.mat",
+      "string_offset": 14043554,
+      "bundle_index": 5505,
+      "key": "5/5/55143346e6d5b982",
+      "declared_size": 12288,
+      "hash1": "6e5d993dc5cbfbd1eb155b556234ea96",
+      "hash2": "4be0e429914618983200450da5730a8a",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/5/55143346e6d5b982"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_arrow_drop.mat",
+      "string_offset": 24464138,
+      "bundle_index": 9339,
+      "key": "8/f/8fbb96b6f1fd61b4",
+      "declared_size": 20480,
+      "hash1": "3678c962c2889fca3b8461558a7e5ed9",
+      "hash2": "a235f6955f3eb63e56ead646cdcca58d",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/f/8fbb96b6f1fd61b4"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_drop.mat",
+      "string_offset": 24464232,
+      "bundle_index": 9339,
+      "key": "8/f/8fbb96b6f1fd61b4",
+      "declared_size": 20480,
+      "hash1": "3678c962c2889fca3b8461558a7e5ed9",
+      "hash2": "a235f6955f3eb63e56ead646cdcca58d",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/f/8fbb96b6f1fd61b4"
+    }
+  ],
+  "textures": [
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_arrow_d.png",
+      "string_offset": 38873677,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_arrow_mask.png",
+      "string_offset": 38873768,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_arrow_mrav.png",
+      "string_offset": 38873862,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_arrow_n.png",
+      "string_offset": 38873956,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_d.png",
+      "string_offset": 38874047,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_em.png",
+      "string_offset": 38874132,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_mask.png",
+      "string_offset": 38874218,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_mrav.png",
+      "string_offset": 38874306,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/bow/wp_bow_wuzhengong/materials/wp_bow_wuzhengong_n.png",
+      "string_offset": 38874394,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    }
+  ],
+  "meshes": [
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_1262666129@wp_bow_wuzhengong_quiver.mesh",
+      "string_offset": 34930257,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_1262666129@wp_bow_wuzhengong_quiver_l1.mesh",
+      "string_offset": 34930337,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_1262666129@wp_bow_wuzhengong_quiver_l2.mesh",
+      "string_offset": 34930420,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_1262666129@wp_bow_wuzhengong_quiver_l3.mesh",
+      "string_offset": 34930503,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_2018696530@wp_bow_wuzhengong_arrowbag.mesh",
+      "string_offset": 34937751,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_2018696530@wp_bow_wuzhengong_arrowbag_l1.mesh",
+      "string_offset": 34937833,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_2018696530@wp_bow_wuzhengong_arrowbag_l2.mesh",
+      "string_offset": 34937918,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_2018696530@wp_bow_wuzhengong_arrowbag_l3.mesh",
+      "string_offset": 34938003,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_252424344@wp_bow_wuzhengong.mesh",
+      "string_offset": 34938385,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_252424344@wp_bow_wuzhengong_l1.mesh",
+      "string_offset": 34938457,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_252424344@wp_bow_wuzhengong_l2.mesh",
+      "string_offset": 34938532,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/bow/m_252424344@wp_bow_wuzhengong_l3.mesh",
+      "string_offset": 34938607,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/chain_arrow/m_1421223700@wp_bow_wuzhengong_arrow.mesh",
+      "string_offset": 34950861,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/chain_arrow/m_1421223700@wp_bow_wuzhengong_arrow_l1.mesh",
+      "string_offset": 34950948,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/chain_arrow/m_1421223700@wp_bow_wuzhengong_arrow_l2.mesh",
+      "string_offset": 34951038,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/chain_arrow/m_1421223700@wp_bow_wuzhengong_arrow_l3.mesh",
+      "string_offset": 34951128,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    }
+  ],
+  "skeletons": []
+}

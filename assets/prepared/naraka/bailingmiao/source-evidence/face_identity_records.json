@@ -1,0 +1,197 @@
+[
+  {
+    "table": "AvatarFace",
+    "subtable": "AvatarFace_FacePreset",
+    "id": 1416403,
+    "offset": 264667,
+    "end": 264814,
+    "bytes": 147,
+    "index_offset": 242334,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/AvatarFace_FacePreset_1416403.bin",
+    "record_sha256": "ac4dc807f639d7bff370b7018d5071adfbca518a9789fcbe011a68aa079cd297",
+    "source_textasset": {
+      "path_id": 1696969239772840769,
+      "name": "AvatarFace",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AvatarFace.bytes",
+      "bytes": 274424,
+      "sha256": "dc8fe31d774a72356546f23b61badf33983a1be9c1724c891942a1a9dee052b0",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "ad4ba81c2055cd6c50c4291302d72faaa8affb30f0e8af06f5f02ca94f8fac7a",
+    "fields": [
+      {
+        "relative_length_offset": 10,
+        "absolute_length_offset": 264677,
+        "value": "female_asian_yulinglong_bailingmiao"
+      },
+      {
+        "relative_length_offset": 84,
+        "absolute_length_offset": 264751,
+        "value": "白灵淼"
+      },
+      {
+        "relative_length_offset": 94,
+        "absolute_length_offset": 264761,
+        "value": "icon_face_balingmiao"
+      }
+    ],
+    "source_icon_assets": [
+      {
+        "path": "assets/res/gui/art_source/icon_face/icon_face_balingmiao.png",
+        "string_offset": 30436404,
+        "bundle_index": 11273,
+        "key": "a/d/ad38bc96db6043bd",
+        "declared_size": 602619904,
+        "hash1": "3038c91c402b70a894803b9991c506ec",
+        "hash2": "6b9592d8f4f8f5a25b21f8d2dd08afab",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/a/d/ad38bc96db6043bd"
+      }
+    ],
+    "limit": "Named preset reference is confirmed. Original slider/morph/default-colour payload and complete original face-shader behavior are not restored by this identity manifest."
+  },
+  {
+    "table": "AvatarFace",
+    "subtable": "AvatarFace_Cosmetic",
+    "id": 1400584,
+    "offset": 163538,
+    "end": 163818,
+    "bytes": 280,
+    "index_offset": 4872,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/AvatarFace_Cosmetic_1400584.bin",
+    "record_sha256": "da8c86cae66b65c83f3f7c94b45ce4539c80f90f7fa1217c4f128a2625c74b98",
+    "source_textasset": {
+      "path_id": 1696969239772840769,
+      "name": "AvatarFace",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AvatarFace.bytes",
+      "bytes": 274424,
+      "sha256": "dc8fe31d774a72356546f23b61badf33983a1be9c1724c891942a1a9dee052b0",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "ad4ba81c2055cd6c50c4291302d72faaa8affb30f0e8af06f5f02ca94f8fac7a",
+    "fields": [
+      {
+        "relative_length_offset": 4,
+        "absolute_length_offset": 163542,
+        "value": "白灵淼睫毛"
+      },
+      {
+        "relative_length_offset": 32,
+        "absolute_length_offset": 163570,
+        "value": "玉玲珑专属"
+      },
+      {
+        "relative_length_offset": 63,
+        "absolute_length_offset": 163601,
+        "value": "female_asian/eyelash/female_eyelash_yulinglong_bailingmiao"
+      }
+    ],
+    "indexed_source_texture": {
+      "path": "assets/res/character/nielian/female/_cosmetic/eyelash/female_eyelash_yulinglong_bailingmiao_d.png",
+      "string_offset": 24194769,
+      "bundle_index": 9209,
+      "key": "8/d/8dd55936f71e18d2",
+      "declared_size": 248619008,
+      "hash1": "c4364b7c93f1edad9158fb72b460fcd1",
+      "hash2": "4983375f4ff0d19a4920fd2d385bcf92",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/d/8dd55936f71e18d2"
+    },
+    "material_limit": "Source mask/iris pixels are not by themselves the original RGB tint/dye/shader parameters."
+  },
+  {
+    "table": "AvatarFace",
+    "subtable": "AvatarFace_Cosmetic",
+    "id": 1400585,
+    "offset": 163818,
+    "end": 164110,
+    "bytes": 292,
+    "index_offset": 4880,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/AvatarFace_Cosmetic_1400585.bin",
+    "record_sha256": "cd6ed8d6ec5c4b67c6aad7b9c26ad092cc9048cfb635f2d9a2bdef819b3a01fc",
+    "source_textasset": {
+      "path_id": 1696969239772840769,
+      "name": "AvatarFace",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AvatarFace.bytes",
+      "bytes": 274424,
+      "sha256": "dc8fe31d774a72356546f23b61badf33983a1be9c1724c891942a1a9dee052b0",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "ad4ba81c2055cd6c50c4291302d72faaa8affb30f0e8af06f5f02ca94f8fac7a",
+    "fields": [
+      {
+        "relative_length_offset": 4,
+        "absolute_length_offset": 163822,
+        "value": "白灵淼眼影"
+      },
+      {
+        "relative_length_offset": 32,
+        "absolute_length_offset": 163850,
+        "value": "玉玲珑专属"
+      },
+      {
+        "relative_length_offset": 63,
+        "absolute_length_offset": 163881,
+        "value": "female_asian/eyeshadow/female_eyeshadow_yulinglong_bailingmiao"
+      }
+    ],
+    "indexed_source_texture": {
+      "path": "assets/res/character/nielian/female/_cosmetic/eyeshadow/female_eyeshadow_yulinglong_bailingmiao_d.png",
+      "string_offset": 24205607,
+      "bundle_index": 9209,
+      "key": "8/d/8dd55936f71e18d2",
+      "declared_size": 248619008,
+      "hash1": "c4364b7c93f1edad9158fb72b460fcd1",
+      "hash2": "4983375f4ff0d19a4920fd2d385bcf92",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/d/8dd55936f71e18d2"
+    },
+    "material_limit": "Source mask/iris pixels are not by themselves the original RGB tint/dye/shader parameters."
+  },
+  {
+    "table": "AvatarFace",
+    "subtable": "AvatarFace_Cosmetic",
+    "id": 1400586,
+    "offset": 164110,
+    "end": 164360,
+    "bytes": 250,
+    "index_offset": 4888,
+    "record_file": "/home/asuka/kiva-asset-research/naraka/identity/bailingmiao/AvatarFace_Cosmetic_1400586.bin",
+    "record_sha256": "db24f76143d435d33068c48a982f56e3a869ceb20cb1cefaab77cdd6735b9bb6",
+    "source_textasset": {
+      "path_id": 1696969239772840769,
+      "name": "AvatarFace",
+      "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AvatarFace.bytes",
+      "bytes": 274424,
+      "sha256": "dc8fe31d774a72356546f23b61badf33983a1be9c1724c891942a1a9dee052b0",
+      "keyword_hits": []
+    },
+    "decoded_table_sha256": "ad4ba81c2055cd6c50c4291302d72faaa8affb30f0e8af06f5f02ca94f8fac7a",
+    "fields": [
+      {
+        "relative_length_offset": 4,
+        "absolute_length_offset": 164114,
+        "value": "白灵淼眼球"
+      },
+      {
+        "relative_length_offset": 32,
+        "absolute_length_offset": 164142,
+        "value": "玉玲珑专属"
+      },
+      {
+        "relative_length_offset": 63,
+        "absolute_length_offset": 164173,
+        "value": "male_asian/iris/ma_iris_yulinglong_bailingmiao"
+      }
+    ],
+    "indexed_source_texture": {
+      "path": "assets/res/character/nielian/male/_cosmetic/iris/female_iris_yulinglong_bailingmiao_d.png",
+      "string_offset": 24284737,
+      "bundle_index": 9209,
+      "key": "8/d/8dd55936f71e18d2",
+      "declared_size": 248619008,
+      "hash1": "c4364b7c93f1edad9158fb72b460fcd1",
+      "hash2": "4983375f4ff0d19a4920fd2d385bcf92",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/d/8dd55936f71e18d2"
+    },
+    "material_limit": "Source mask/iris pixels are not by themselves the original RGB tint/dye/shader parameters.",
+    "alias_limit": "Original ref uses male_asian/ma_iris; indexed PNG uses male/_cosmetic/female_iris. Both original spellings retained; do not substitute Li iris."
+  }
+]

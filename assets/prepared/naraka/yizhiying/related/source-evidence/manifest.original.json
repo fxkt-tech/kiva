@@ -1,0 +1,58 @@
+{
+  "identity": {
+    "related_to_item_id": 2310557,
+    "name": "羿之影 related arrow geometry",
+    "equipped_part": false,
+    "configured_weapon_temp_id": null
+  },
+  "glbs": [
+    {
+      "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/yizhiying/related/wp_bow_wuzhengong_arrow_asset_space.glb",
+      "sha256": "f5fef713678c76c596dba583d85fdbbcd5f44ab5599c4929d4ab9e9118ae102f",
+      "role": "related_arrow_geometry",
+      "native_skin": false,
+      "equipped_part": false,
+      "cpu_verification": {
+        "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/yizhiying/related/wp_bow_wuzhengong_arrow_asset_space.cpu-verification.json",
+        "sha256": "71740de6253721519da7bc87a84a0e56372656b099db2145193b1188f8984470",
+        "passed": true
+      },
+      "khronos_validation": {
+        "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/yizhiying/related/wp_bow_wuzhengong_arrow_asset_space.khronos.json",
+        "sha256": "c63fe3c2069bdd1b388f4e8f968d4f0d1529bc4e686c2fa867cb9f44ca6d7bf6",
+        "errors": 0,
+        "warnings": 0
+      }
+    }
+  ],
+  "textures": [],
+  "materials": [],
+  "source_evidence": "/home/asuka/kiva-asset-research/naraka/export/weapon/yizhiying/related/source_evidence.json",
+  "limits": [
+    "Independent exact source Mesh, related by original resource stem; not recovered as a fourth equipped/configured WeaponTemp part.",
+    "One explicit identity presentation frame for asset-space geometry, not an original Actor Transform or invented bone.",
+    "No original material binding restored; no arrow.mat assignment based on name similarity. No skin/joints synthesized. Source skin metadata, if present, is retained only in evidence.",
+    "Original coordinates preserved with exporter X reflection and UV-V reversal; no actor placement, grip, animation or scale inferred."
+  ],
+  "completed": true,
+  "package_validation": {
+    "passed": true,
+    "glbs": [
+      {
+        "role": "related_arrow_geometry",
+        "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/yizhiying/related/wp_bow_wuzhengong_arrow_asset_space.glb",
+        "nodes": 1,
+        "skins": 0,
+        "khronos": {
+          "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/yizhiying/related/wp_bow_wuzhengong_arrow_asset_space.khronos.json",
+          "sha256": "c63fe3c2069bdd1b388f4e8f968d4f0d1529bc4e686c2fa867cb9f44ca6d7bf6",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    ],
+    "original_pngs": 0,
+    "method": "No game/source reread. Actual GLB accessors/topology/weights/joints/IBMs, embedded PNG SHA, CPU source proofs, Khronos errors0 and original-size PNG SHA checked."
+  },
+  "source_skin_encodings": []
+}

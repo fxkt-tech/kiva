@@ -1,0 +1,95 @@
+{
+  "file": "/home/asuka/kiva-asset-research/naraka/export/weapon/yinbingluo/yinbingluo_main.glb",
+  "passed": true,
+  "method": "Original Unity world-space sum(weight * originalBoneWorld * originalInverseBind * originalVertex), compared against emitted GLB for all vertices at imported pose and perturbed source bone. Only audited float weight-sum drift is normalized.",
+  "checks": [
+    {
+      "mesh": "m_978860580@wp_flintlock_bingxueniaochong",
+      "vertices": 4159,
+      "joints": 1,
+      "source_pose_error_max": 0.0,
+      "perturbed_source_pose_error_max": 0.0,
+      "source_pose_bounds": [
+        [
+          -0.06271055866704235,
+          -0.07907351040704357,
+          -0.3352044496826369
+        ],
+        [
+          0.04822891579507686,
+          0.13764690076682962,
+          1.0131230446811663
+        ]
+      ],
+      "rotated_original_bone": "bingxueniaochong_01",
+      "rotation_radians": 0.3,
+      "deformation_max": 0.33247995464760965,
+      "vertices_moved_above_1um": 4159
+    },
+    {
+      "mesh": "m_978860580@wp_flintlock_bingxueniaochong_01",
+      "vertices": 1236,
+      "joints": 2,
+      "source_pose_error_max": 0.0,
+      "perturbed_source_pose_error_max": 0.0,
+      "source_pose_bounds": [
+        [
+          -0.05082891616567407,
+          -0.06268995941231256,
+          -0.3110816790194696
+        ],
+        [
+          0.046995157695553416,
+          0.11285131769819562,
+          1.004949574657817
+        ]
+      ],
+      "rotated_original_bone": "bingxueniaochong_01",
+      "rotation_radians": 0.3,
+      "deformation_max": 0.3292500644792285,
+      "vertices_moved_above_1um": 1236
+    }
+  ],
+  "maximum_source_pose_error": 0.0,
+  "maximum_perturbed_error": 0.0,
+  "no_game_process": true,
+  "all_original_palette_joint_perturbations": {
+    "passed": true,
+    "method": "Each actual source palette joint independently rotated; emitted GLB LBS versus source for every vertex; no names guessed",
+    "checks": [
+      {
+        "mesh": "m_978860580@wp_flintlock_bingxueniaochong",
+        "palette_slot": 0,
+        "joint_node": 3,
+        "name": "bingxueniaochong_01",
+        "weighted_vertices": 4159,
+        "source_pose_error_max": 0.0,
+        "deformation_max": 0.33247995464760965,
+        "vertices_moved_above_1um": 4159,
+        "rotation_radians": 0.3
+      },
+      {
+        "mesh": "m_978860580@wp_flintlock_bingxueniaochong_01",
+        "palette_slot": 0,
+        "joint_node": 3,
+        "name": "bingxueniaochong_01",
+        "weighted_vertices": 1101,
+        "source_pose_error_max": 0.0,
+        "deformation_max": 0.3292500644792285,
+        "vertices_moved_above_1um": 1236,
+        "rotation_radians": 0.3
+      },
+      {
+        "mesh": "m_978860580@wp_flintlock_bingxueniaochong_01",
+        "palette_slot": 1,
+        "joint_node": 4,
+        "name": "bingxueniaochong_02",
+        "weighted_vertices": 135,
+        "source_pose_error_max": 0.0,
+        "deformation_max": 0.035197557266843746,
+        "vertices_moved_above_1um": 134,
+        "rotation_radians": 0.3
+      }
+    ]
+  }
+}

@@ -1,0 +1,363 @@
+{
+  "schema": "naraka-prepared-v1",
+  "name": "引冰落",
+  "prepared_only": true,
+  "runtime_integrated": false,
+  "identity": {
+    "item_id": 2311228,
+    "name": "引冰落",
+    "weapon_type": "flintlock",
+    "weapon_temp_ids": [
+      3110620
+    ],
+    "source_identity_file": "/home/asuka/kiva-asset-research/naraka/identity/yinbingluo/identity_manifest.json",
+    "source_identity_sha256": "bdc2323532c003f1c9f54d3ed5567ce40285bb861b57836d321c44f7a0f4bf6c"
+  },
+  "models": [
+    {
+      "file": "models/yinbingluo_main.glb",
+      "sha256": "b2d29661f95e4783921ad0d0ff7bcd25788c7964f93110ff31abf2e5a38003c5",
+      "role": "main",
+      "native_skinned_meshes": 2
+    }
+  ],
+  "textures": [
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_n.png",
+      "sha256": "29649cac29ca6bee71060c651e698ac867cb52759650c4bf7205de61046206d0",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": -2651311701723877191,
+        "class": "Texture2D",
+        "raw_bytes": 216,
+        "raw_sha256": "6cb9587aca5b1d2b6c68b27870ab0639e40338bbda323d7a4007e735983425dd",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_BumpMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_d.png",
+      "sha256": "5f5e2a8659891831632ce6f752964a7ffe5bba396e9204a2d3d14f5c590b9f54",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": 60271627941932212,
+        "class": "Texture2D",
+        "raw_bytes": 216,
+        "raw_sha256": "edbb17021765ceb9510c73a11f72eeb14005f2af8a7af04db8b498d368e21954",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_MainTex"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_mrav.png",
+      "sha256": "309a6d106c51afd6a478c0910a3e7124f748747d7e2bd14ca4cc1f23360f9c3a",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": 2820285020561991041,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "43b0a04442f601f87a159f2bde990c6d9b900bd8ecb50662e3367b0d06b7bf6b",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_SpecGlossMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_em.png",
+      "sha256": "802bd047153644d3cfe1c42ed513c8dcce2d9c73abfaf7023fce2900e03125c7",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": 6930825568837496507,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "5f20fb4ed1e84cf2f2d921886d276dc5e6adb9a957ccbf1d4169bd6a34741e0c",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_EmissionMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_d.png",
+      "sha256": "2d73103505abc16db7cb26b682c4e99d3fcb344173620f581c0a7dcf2bc424d8",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": -2992263819109554644,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "4daf4e0891e59276d29d1f3085014432dacdac4f3ffc237a355e491e7ad23541",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_MainTex"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_nx.png",
+      "sha256": "20447e22438870fabce84c93680e1f708a4932e58a84ef5f737ad5a9d6f4aa63",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": 8951918356781729915,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "b18a3c61eb3c02195b49f3964cc55ba972637fcec659ba50525f37a4319f7830",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_NormalIridMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_mrav.png",
+      "sha256": "d0258bbd78ff4e402b97c213730079ceaa448108ca900b0fb303e54f19a8ae7a",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": 3535154755268891608,
+        "class": "Texture2D",
+        "raw_bytes": 224,
+        "raw_sha256": "c3b7d7cc12f84c3903780bd1af54538e23d111fd47f09915becc46d01349c7a1",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_SpecGlossMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_tx.png",
+      "sha256": "c534187edfca6a745241f2326197b082d33663821cff77e7700c6dcc2031a3f3",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": -6008409972940646622,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "4949912684fd170c345c1048e2d2b0c3eff597ad94ac399de03097d2546c88e3",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_TransmissiveMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_tr.png",
+      "sha256": "994c362d07ab6a863c39ca074c6988c1dabf706ee010d562a462250ee6f6ec2d",
+      "source": {
+        "cab": "CAB-43dce26fbcbfd7aba91d8c1298e89e5f",
+        "path_id": 687895630478485177,
+        "class": "Texture2D",
+        "raw_bytes": 220,
+        "raw_sha256": "20edce03e1b0d044632e3140f46e83f30f4e4ecd815e3d06dba367cc3f7e3575",
+        "old_type_hash": "512dc6156c2d621c9f03b4db6490f569",
+        "original_type_tree": true,
+        "unity_version": "2019.4.41f2"
+      },
+      "source_binding": [
+        "_TransmittanceMap"
+      ],
+      "width": 1024,
+      "height": 1024,
+      "dimensions_channels": "Original decoded PNG unchanged; no resize/recolor.",
+      "runtime_channel_mapping": "Only source bindings are retained; unknown packed/normal/em/ID semantics are not guessed."
+    }
+  ],
+  "related_models": [],
+  "identity_documents": [
+    {
+      "file": "source-evidence/identity_manifest.json",
+      "sha256": "bdc2323532c003f1c9f54d3ed5567ce40285bb861b57836d321c44f7a0f4bf6c",
+      "bytes": 41031,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/target_parts.json",
+      "sha256": "02f2dc9ef61d9bb3dcc338ab8a011fd96f3914835da983e42ca5a3bce3f06945",
+      "bytes": 13657,
+      "role": "historical-original-identity-json"
+    }
+  ],
+  "files": [
+    {
+      "file": "models/yinbingluo_main.glb",
+      "sha256": "b2d29661f95e4783921ad0d0ff7bcd25788c7964f93110ff31abf2e5a38003c5",
+      "bytes": 1838712,
+      "role": "original-weapon-glb:main"
+    },
+    {
+      "file": "source-evidence/model-checks/yinbingluo_main.cpu-verification.json",
+      "sha256": "b247e67ae85b61952eb44b6d173c52c5e0c355baccc53e51182073abb9697737",
+      "bytes": 3082,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/yinbingluo_main.khronos.json",
+      "sha256": "bf462e02534e543f8238d792dc43167bfbd5df204f2dbf42e102443b613bad69",
+      "bytes": 3147,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_n.png",
+      "sha256": "29649cac29ca6bee71060c651e698ac867cb52759650c4bf7205de61046206d0",
+      "bytes": 984035,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_d.png",
+      "sha256": "5f5e2a8659891831632ce6f752964a7ffe5bba396e9204a2d3d14f5c590b9f54",
+      "bytes": 697686,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_mrav.png",
+      "sha256": "309a6d106c51afd6a478c0910a3e7124f748747d7e2bd14ca4cc1f23360f9c3a",
+      "bytes": 1234971,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_em.png",
+      "sha256": "802bd047153644d3cfe1c42ed513c8dcce2d9c73abfaf7023fce2900e03125c7",
+      "bytes": 209061,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_d.png",
+      "sha256": "2d73103505abc16db7cb26b682c4e99d3fcb344173620f581c0a7dcf2bc424d8",
+      "bytes": 651446,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_nx.png",
+      "sha256": "20447e22438870fabce84c93680e1f708a4932e58a84ef5f737ad5a9d6f4aa63",
+      "bytes": 1164340,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_mrav.png",
+      "sha256": "d0258bbd78ff4e402b97c213730079ceaa448108ca900b0fb303e54f19a8ae7a",
+      "bytes": 915620,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_tx.png",
+      "sha256": "c534187edfca6a745241f2326197b082d33663821cff77e7700c6dcc2031a3f3",
+      "bytes": 391172,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_tr.png",
+      "sha256": "994c362d07ab6a863c39ca074c6988c1dabf706ee010d562a462250ee6f6ec2d",
+      "bytes": 442845,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "source-evidence/weapon-export.original.json",
+      "sha256": "9faf6f54dee1892a8abbdd6cb8e1729a0a8f05a9c2b0bebde6b7c76efa0bc327",
+      "bytes": 2470160,
+      "role": "historical-original-export-manifest"
+    },
+    {
+      "file": "source-evidence/identity_manifest.json",
+      "sha256": "bdc2323532c003f1c9f54d3ed5567ce40285bb861b57836d321c44f7a0f4bf6c",
+      "bytes": 41031,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/target_parts.json",
+      "sha256": "02f2dc9ef61d9bb3dcc338ab8a011fd96f3914835da983e42ca5a3bce3f06945",
+      "bytes": 13657,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/records/WeaponConfig_WeaponTemp_3110620.bin",
+      "sha256": "d952a87377a358ba4fb225c4f3be69ea8466ebb70b13e6d8733a954a9cfbd3b5",
+      "bytes": 242,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponBattleSkin_2311228.bin",
+      "sha256": "b1fb1942748302f75e544be54377b546d600e480784d8035097264b6cf98f154",
+      "bytes": 214,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponSkin_2311228.bin",
+      "sha256": "5d4ad486fc921bc1e2785268b12d8d9cbedfbcf7295bc8c228dd52e8cee6be5c",
+      "bytes": 954,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "verification-report.json",
+      "sha256": "be3ecb15f763a96e89d1c748959584af6c011fa6edec9afac9dccbbfe4515d24",
+      "bytes": 2270,
+      "role": "offline-verification-report"
+    },
+    {
+      "file": "README.md",
+      "sha256": "21903230baea1d4613a42f7df7dfcce9a46494dde1343c5e8737cc95fffaea4d",
+      "bytes": 1851,
+      "role": "readme"
+    }
+  ],
+  "origin_provenance": "Archived original JSON paths are historical evidence, never local verification dependencies.",
+  "limits": [
+    "Prepare-only offline assets; no runtime registration, game execution, browser or screenshots.",
+    "Only exact original LOD0 renderers selected by original root component. Other source LODs/nodes retained in source evidence, no synthesized joints or identity binds.",
+    "Main has actual source skins; original static quiver/arrowbag are exported without fake skins.",
+    "All original PNG dimensions/channels retained. Original Shader/FX, emission behavior, game animation and packed channel semantics are not reconstructed by the neutral GLB material.",
+    "No invented character grip/attachment placement. Configured parts are independent original standalone prefab scenes.",
+    "Additional similarly named arrow Mesh resources do not become a fourth equipped configuration part without original reference evidence.",
+    "Source UInt32/dim1 single-index layout has no serialized weight channel: glTF four-lane weight1 expansion is derived only for this proven single-influence case, preserving every original index, palette and IBM; source raw indices/layout retained, not claimed original four-weight bytes."
+  ],
+  "original_coordinate_and_skin_preserved": true
+}

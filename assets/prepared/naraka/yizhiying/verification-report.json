@@ -1,0 +1,144 @@
+{
+  "prepared_only": true,
+  "runtime_integrated": false,
+  "identity": {
+    "item_id": 2310557,
+    "name": "羿之影",
+    "weapon_type": "bow",
+    "weapon_temp_ids": [
+      3112195,
+      3112196,
+      3112197
+    ],
+    "source_identity_file": "/home/asuka/kiva-asset-research/naraka/identity/yizhiying/identity_manifest.json",
+    "source_identity_sha256": "d5b7b3571358288d9cb8e3d6fd9112817f679b3fb971c82ba766ffd5636ebc4f"
+  },
+  "models": [
+    {
+      "file": "yizhiying_main.glb",
+      "sha256": "5662d347923ff5fc8bf584a4290af47c88f37d1f5052b4b8a2acb05cfd0d06ee",
+      "vertices": 6218,
+      "triangles": 6844,
+      "meshes": 1,
+      "native_skinned_meshes": 1,
+      "primitive_checks": [
+        {
+          "mesh": "m_252424344@wp_bow_wuzhengong",
+          "vertices": 6218,
+          "native_skin": true,
+          "source_pose_bounds": [
+            [
+              -0.12528218914197783,
+              -0.19394835787033698,
+              -1.1759040996871302
+            ],
+            [
+              0.1252823711243336,
+              0.34623733237840926,
+              1.1759039721568876
+            ]
+          ],
+          "palette_slots": 9,
+          "perturbed_source_joint": "bow_gong_002",
+          "radians": 0.2,
+          "maximum_deformation_source_units": 0.20722088269189753
+        }
+      ],
+      "original_units_and_poses_preserved": true,
+      "browser_or_screenshot_test": false
+    },
+    {
+      "file": "yizhiying_quiver.glb",
+      "sha256": "75d13676df9283c4a1aea4347a857585aa3a7a92a03d8178895d3d00d9e04ff1",
+      "vertices": 1862,
+      "triangles": 2356,
+      "meshes": 1,
+      "native_skinned_meshes": 0,
+      "primitive_checks": [
+        {
+          "mesh": "m_1262666129@wp_bow_wuzhengong_quiver",
+          "vertices": 1862,
+          "native_skin": false,
+          "source_pose_bounds": [
+            [
+              -0.012462601411085225,
+              -0.15210626255387466,
+              -0.7262435059327973
+            ],
+            [
+              0.16559174750422803,
+              0.2416138741215164,
+              0.6272473787451172
+            ]
+          ]
+        }
+      ],
+      "original_units_and_poses_preserved": true,
+      "browser_or_screenshot_test": false
+    },
+    {
+      "file": "yizhiying_arrowbag.glb",
+      "sha256": "42171ac417e29058217f017a4d59725099fe00a7e829cca252facfcd66737f54",
+      "vertices": 2148,
+      "triangles": 2474,
+      "meshes": 1,
+      "native_skinned_meshes": 0,
+      "primitive_checks": [
+        {
+          "mesh": "m_2018696530@wp_bow_wuzhengong_arrowbag",
+          "vertices": 2148,
+          "native_skin": false,
+          "source_pose_bounds": [
+            [
+              0.029545599594712257,
+              -0.04129561781883232,
+              -0.7090033292770385
+            ],
+            [
+              0.21601152420043945,
+              0.2113295942544938,
+              0.48583093285560597
+            ]
+          ]
+        }
+      ],
+      "original_units_and_poses_preserved": true,
+      "browser_or_screenshot_test": false
+    }
+  ],
+  "related_geometry_not_equipped": [
+    {
+      "file": "wp_bow_wuzhengong_arrow_asset_space.glb",
+      "sha256": "f5fef713678c76c596dba583d85fdbbcd5f44ab5599c4929d4ab9e9118ae102f",
+      "vertices": 635,
+      "triangles": 658,
+      "meshes": 1,
+      "native_skinned_meshes": 0,
+      "primitive_checks": [
+        {
+          "mesh": "m_1421223700@wp_bow_wuzhengong_arrow",
+          "vertices": 635,
+          "native_skin": false,
+          "source_pose_bounds": [
+            [
+              -0.014144833199679852,
+              -1.0591861009597778,
+              -0.04317082464694977
+            ],
+            [
+              0.014145616441965103,
+              0.13902996480464935,
+              0.03439941257238388
+            ]
+          ]
+        }
+      ],
+      "original_units_and_poses_preserved": true,
+      "browser_or_screenshot_test": false
+    }
+  ],
+  "original_texture_entries": 9,
+  "source_shader_reconstructed": false,
+  "new_weapon_actions_or_grip_bake": false,
+  "browser_or_screenshot_test": false
+}

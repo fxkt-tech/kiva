@@ -1,0 +1,284 @@
+{
+  "scope": "Resources preparation only; no Runtime registration, firing behavior or game execution",
+  "display_name": "引冰落",
+  "item_id": 2311228,
+  "category": "鸟铳",
+  "parts": [
+    {
+      "table": "WeaponConfig",
+      "subtable": "WeaponConfig_WeaponTemp",
+      "id": 3110620,
+      "offset": 297468,
+      "end": 297710,
+      "bytes": 242,
+      "index_offset": 179696,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/yinbingluo/WeaponConfig_WeaponTemp_3110620.bin",
+      "record_sha256": "d952a87377a358ba4fb225c4f3be69ea8466ebb70b13e6d8733a954a9cfbd3b5",
+      "source_textasset": {
+        "path_id": 6981010548153732578,
+        "name": "WeaponConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponConfig.bytes",
+        "bytes": 512540,
+        "sha256": "35b62eff8fa9275f0cc1166f38bbb4a7c57555069c86a65e892894e9c98aa46c",
+        "keyword_hits": []
+      },
+      "decoded_table_sha256": "e134650fc0e62422dd682855d62355247f1f04320a5f4ce3233f93f3cc98bc10",
+      "original_string_fields": [
+        {
+          "relative_length_offset": 20,
+          "value": "flintlock/wp_flintlock_bingxueniaochong"
+        },
+        {
+          "relative_length_offset": 102,
+          "value": "wp_flintlock_bingxueniaochong"
+        },
+        {
+          "relative_length_offset": 168,
+          "value": "wp_ui_flintlock_bingxueniaochong"
+        }
+      ],
+      "battle_prefab_reference": {
+        "relative_length_offset": 20,
+        "value": "flintlock/wp_flintlock_bingxueniaochong"
+      },
+      "exact_battle_prefab": {
+        "path": "assets/res/prefab/weapon_prefab/flintlock/wp_flintlock_bingxueniaochong.prefab",
+        "string_offset": 51607930,
+        "bundle_index": 17831,
+        "key": "f/7/f777cbb204e91ba5",
+        "declared_size": 20480,
+        "hash1": "e67663482a31078b8262bb60d259b643",
+        "hash2": "382452f8d57e0afa688c25f20c72803c",
+        "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/f/7/f777cbb204e91ba5"
+      }
+    }
+  ],
+  "drop_prefab": {
+    "path": "assets/res/prefab/drop_item_generate/weapon/weapon_bingxueniaochong.prefab",
+    "string_offset": 14125797,
+    "bundle_index": 5577,
+    "key": "5/6/560526282f0ce422",
+    "declared_size": 20480,
+    "hash1": "029973f40e9f64dd3801f0b76acbc5ab",
+    "hash2": "6b4780978a4f4e9d1f14ead051d1817e",
+    "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/6/560526282f0ce422"
+  },
+  "materials": [
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong.mat",
+      "string_offset": 13931818,
+      "bundle_index": 5412,
+      "key": "5/3/53cfe29acb6b0ffc",
+      "declared_size": 12288,
+      "hash1": "da74d4aa8d96f9877cf6dc72b4e6032a",
+      "hash2": "ef64b06a6f8f97edba847155eae22a16",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/3/53cfe29acb6b0ffc"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_01.mat",
+      "string_offset": 13931931,
+      "bundle_index": 5412,
+      "key": "5/3/53cfe29acb6b0ffc",
+      "declared_size": 12288,
+      "hash1": "da74d4aa8d96f9877cf6dc72b4e6032a",
+      "hash2": "ef64b06a6f8f97edba847155eae22a16",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/3/53cfe29acb6b0ffc"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_drop.mat",
+      "string_offset": 14125679,
+      "bundle_index": 5577,
+      "key": "5/6/560526282f0ce422",
+      "declared_size": 20480,
+      "hash1": "029973f40e9f64dd3801f0b76acbc5ab",
+      "hash2": "6b4780978a4f4e9d1f14ead051d1817e",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/6/560526282f0ce422"
+    }
+  ],
+  "textures": [
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_01_d.png",
+      "string_offset": 38900289,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_01_em.png",
+      "string_offset": 38900407,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_01_mrav.png",
+      "string_offset": 38900526,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_01_nx.png",
+      "string_offset": 38900647,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_01_tr.png",
+      "string_offset": 38900766,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_01_tx.png",
+      "string_offset": 38900885,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_d.png",
+      "string_offset": 38901004,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_mrav.png",
+      "string_offset": 38901119,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    },
+    {
+      "path": "assets/res/item/weapon_total/flintlock/wp_flintlock_bingxueniaochong/materials/wp_flintlock_bingxueniaochong_n.png",
+      "string_offset": 38901237,
+      "bundle_index": 13489,
+      "key": "c/o/common_item1_res",
+      "declared_size": 723943424,
+      "hash1": "c4d5ea34b49d9805bd332f39a3328e83",
+      "hash2": "a1e335d4426cd36973a72ee51caae124",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/o/common_item1_res"
+    }
+  ],
+  "meshes": [
+    {
+      "path": "assets/raw_resources/weapon_mesh/flintlock/m_978860580@wp_flintlock_bingxueniaochong.mesh",
+      "string_offset": 35080032,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/flintlock/m_978860580@wp_flintlock_bingxueniaochong_01.mesh",
+      "string_offset": 35080122,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/flintlock/m_978860580@wp_flintlock_bingxueniaochong_01_l1.mesh",
+      "string_offset": 35080215,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/flintlock/m_978860580@wp_flintlock_bingxueniaochong_01_l2.mesh",
+      "string_offset": 35080311,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/flintlock/m_978860580@wp_flintlock_bingxueniaochong_01_l3.mesh",
+      "string_offset": 35080407,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/flintlock/m_978860580@wp_flintlock_bingxueniaochong_l1.mesh",
+      "string_offset": 35080503,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/flintlock/m_978860580@wp_flintlock_bingxueniaochong_l2.mesh",
+      "string_offset": 35080596,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    },
+    {
+      "path": "assets/raw_resources/weapon_mesh/flintlock/m_978860580@wp_flintlock_bingxueniaochong_l3.mesh",
+      "string_offset": 35080689,
+      "bundle_index": 12669,
+      "key": "c/3/c3389a3b70aa8f0f",
+      "declared_size": 329330688,
+      "hash1": "9d066427171759a314f50d7764e26570",
+      "hash2": "bb19d845cd456dcc71fdef3df68d8ec4",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/3/c3389a3b70aa8f0f"
+    }
+  ],
+  "skeletons": [
+    {
+      "path": "assets/art/characters/_common/avatar/wp_flintlock_bingxueniaochong_skeleton.fbx",
+      "string_offset": 14590721,
+      "bundle_index": 5745,
+      "key": "5/8/589302f25ec7b3dd",
+      "declared_size": 9302016,
+      "hash1": "399bed12635358301ae8cb02c42b7059",
+      "hash2": "d4efad3daec2cc1f9c10069dfb1a51f1",
+      "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/8/589302f25ec7b3dd"
+    }
+  ]
+}

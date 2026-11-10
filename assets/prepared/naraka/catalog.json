@@ -1,0 +1,149 @@
+{
+  "schema": "naraka-prepared-catalog-v1",
+  "prepared_only": true,
+  "runtime_integrated": false,
+  "groups": [
+    {
+      "directory": "bailingmiao",
+      "identities": [
+        {
+          "type": "FashionBody",
+          "id": 3402139,
+          "name": "道诡异仙·白灵淼"
+        },
+        {
+          "type": "HairItem",
+          "id": 100408,
+          "name": "道诡异仙·莲母"
+        }
+      ],
+      "manifest": "bailingmiao/portable_manifest.json",
+      "manifest_sha256": "bdf24f30a81916a3864e2c62f6a29fbeb2975e4fb20c26e4426b46ca1319a7a6",
+      "files_in_manifest": 76,
+      "package_bytes": 80774708,
+      "png_files": 35,
+      "models": [
+        {
+          "file": "bailingmiao/models/outfit.glb",
+          "sha256": "3606106f8f8f55e76eab8063f733725f221363c50faa4945469d98feaf3bd8f2",
+          "bytes": 11289736,
+          "role": "original-source-skin-glb:outfit",
+          "external_uris": false,
+          "gltf_skin_nodes": 16
+        },
+        {
+          "file": "bailingmiao/models/lianmu.glb",
+          "sha256": "fddd7ce6283909ff017fc6c0c27d37eb57db8c2f8147529b84b95559971b8d05",
+          "bytes": 1804332,
+          "role": "original-source-skin-glb:lianmu",
+          "external_uris": false,
+          "gltf_skin_nodes": 3
+        },
+        {
+          "file": "bailingmiao/models/generic_female_face.glb",
+          "sha256": "5053332a25a1291465077e389b6f15844c48ad13c1310e03490f63fe466c02a8",
+          "bytes": 329480,
+          "role": "original-source-skin-glb:generic_female_face",
+          "external_uris": false,
+          "gltf_skin_nodes": 3
+        }
+      ],
+      "prepared_only": true,
+      "runtime_integrated": false
+    },
+    {
+      "directory": "yinbingluo",
+      "identities": [
+        {
+          "type": "WeaponSkin",
+          "id": 2311228,
+          "name": "引冰落",
+          "category": "鸟铳"
+        }
+      ],
+      "manifest": "yinbingluo/portable_manifest.json",
+      "manifest_sha256": "3ab476488aef89294c1f95a88e42afbc1e7ea6c03ce14d843a7a54f30582d3fc",
+      "files_in_manifest": 20,
+      "package_bytes": 11081421,
+      "png_files": 9,
+      "models": [
+        {
+          "file": "yinbingluo/models/yinbingluo_main.glb",
+          "sha256": "b2d29661f95e4783921ad0d0ff7bcd25788c7964f93110ff31abf2e5a38003c5",
+          "bytes": 1838712,
+          "role": "original-weapon-glb:main",
+          "external_uris": false,
+          "gltf_skin_nodes": 2
+        }
+      ],
+      "prepared_only": true,
+      "runtime_integrated": false
+    },
+    {
+      "directory": "yizhiying",
+      "identities": [
+        {
+          "type": "WeaponSkin",
+          "id": 2310557,
+          "name": "羿之影",
+          "category": "弓箭"
+        }
+      ],
+      "manifest": "yizhiying/portable_manifest.json",
+      "manifest_sha256": "fbe98256865375192c3f97d4b2b7a0452e6352bf22dfa59ac3db25e493ed7136",
+      "files_in_manifest": 33,
+      "package_bytes": 12110933,
+      "png_files": 9,
+      "models": [
+        {
+          "file": "yizhiying/models/yizhiying_main.glb",
+          "sha256": "5662d347923ff5fc8bf584a4290af47c88f37d1f5052b4b8a2acb05cfd0d06ee",
+          "bytes": 1843316,
+          "role": "original-weapon-glb:main",
+          "external_uris": false,
+          "gltf_skin_nodes": 1
+        },
+        {
+          "file": "yizhiying/models/yizhiying_quiver.glb",
+          "sha256": "75d13676df9283c4a1aea4347a857585aa3a7a92a03d8178895d3d00d9e04ff1",
+          "bytes": 1421948,
+          "role": "original-weapon-glb:quiver",
+          "external_uris": false,
+          "gltf_skin_nodes": 0
+        },
+        {
+          "file": "yizhiying/models/yizhiying_arrowbag.glb",
+          "sha256": "42171ac417e29058217f017a4d59725099fe00a7e829cca252facfcd66737f54",
+          "bytes": 436892,
+          "role": "original-weapon-glb:arrowbag",
+          "external_uris": false,
+          "gltf_skin_nodes": 0
+        },
+        {
+          "file": "yizhiying/related/models/wp_bow_wuzhengong_arrow_asset_space.glb",
+          "sha256": "f5fef713678c76c596dba583d85fdbbcd5f44ab5599c4929d4ab9e9118ae102f",
+          "bytes": 41020,
+          "role": "related-original-geometry-not-equipped",
+          "external_uris": false,
+          "gltf_skin_nodes": 0
+        }
+      ],
+      "prepared_only": true,
+      "runtime_integrated": false
+    }
+  ],
+  "total_models": 8,
+  "total_png_files": 53,
+  "total_group_bytes": 103967062,
+  "all_inventory_hashes_and_sizes_verified": true,
+  "all_glb_buffers_and_images_embedded": true,
+  "verification_requires_game_or_research_directory": false,
+  "browser_or_screenshot_test": false,
+  "limits": [
+    "Generic female face is supplementary; exact Bai Lingmiao face preset and complete dye/shader effects are not recreated.",
+    "Lianmu has seven explicitly documented reconstructed external parent links.",
+    "Yinbingluo single-index implicit-one influence is explicitly expanded for glTF, not original four-weight data.",
+    "Yizhiying includes three configured parts; the separate neutral arrow geometry is related and has no recovered Actor/material binding.",
+    "Original units/source poses are preserved; no Kiva motion, grip, weapon gameplay or appearance integration is performed."
+  ]
+}

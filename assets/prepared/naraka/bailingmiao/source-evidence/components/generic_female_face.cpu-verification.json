@@ -1,0 +1,79 @@
+{
+  "file": "/home/asuka/kiva-asset-research/naraka/export/character/bailingmiao/generic_female_face.glb",
+  "passed": true,
+  "method": "Original Unity world-space sum(weight * originalBoneWorld * originalInverseBind * originalVertex), compared against emitted GLB for all vertices at imported pose and perturbed source bone. Only audited float weight-sum drift is normalized.",
+  "checks": [
+    {
+      "mesh": "eyelash_runtime_mesh",
+      "vertices": 582,
+      "joints": 5,
+      "source_pose_error_max": 1.5506657424779746e-07,
+      "perturbed_source_pose_error_max": 1.5771350048154886e-07,
+      "source_pose_bounds": [
+        [
+          -0.06879995873262994,
+          1.6718967545017003,
+          0.06870537347258365
+        ],
+        [
+          0.0688000263011841,
+          1.7039952916112489,
+          0.11529050631740671
+        ]
+      ],
+      "rotated_original_bone": "gMan Head",
+      "rotation_radians": 0.3,
+      "deformation_max": 0.03925620459754063,
+      "vertices_moved_above_1um": 582
+    },
+    {
+      "mesh": "eyes_runtime_mesh",
+      "vertices": 402,
+      "joints": 2,
+      "source_pose_error_max": 0.0,
+      "perturbed_source_pose_error_max": 0.0,
+      "source_pose_bounds": [
+        [
+          -0.043949648377722556,
+          1.6725426130527372,
+          0.07565909582982341
+        ],
+        [
+          0.043949693212448994,
+          1.7017943245581182,
+          0.09173977618781701
+        ]
+      ],
+      "rotated_original_bone": "Face_L_Yanqiu",
+      "rotation_radians": 0.3,
+      "deformation_max": 0.0043714543143576435,
+      "vertices_moved_above_1um": 201
+    },
+    {
+      "mesh": "face_runtime_mesh",
+      "vertices": 2276,
+      "joints": 6,
+      "source_pose_error_max": 1.7886899983388105e-07,
+      "perturbed_source_pose_error_max": 1.8155634040617485e-07,
+      "source_pose_bounds": [
+        [
+          -0.08435537703162516,
+          1.5824104164110644,
+          -0.02104755889184569
+        ],
+        [
+          0.08435531929098757,
+          1.7867850799670282,
+          0.1190700926255514
+        ]
+      ],
+      "rotated_original_bone": "gMan Head",
+      "rotation_radians": 0.3,
+      "deformation_max": 0.05040755288529753,
+      "vertices_moved_above_1um": 2276
+    }
+  ],
+  "maximum_source_pose_error": 1.7886899983388105e-07,
+  "maximum_perturbed_error": 1.8155634040617485e-07,
+  "no_game_process": true
+}
