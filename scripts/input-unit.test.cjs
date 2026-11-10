@@ -8,7 +8,14 @@ const source = (name) => fs.readFileSync(path.join(__dirname, "../web", name), "
 class Target {
   listeners = new Map();
   hidden = false;
+  disabled = false;
   textContent = "";
+  attributes = new Map();
+  setAttribute(name, value) { this.attributes.set(name, String(value)); }
+  getAttribute(name) { return this.attributes.get(name) ?? null; }
+  removeAttribute(name) { this.attributes.delete(name); }
+  set value(value) { this.setAttribute("value", value); }
+  get value() { return Number(this.getAttribute("value")); }
   addEventListener(type, callback, options) {
     const entries = this.listeners.get(type) || [];
     entries.push({ callback, once: options?.once });
@@ -44,7 +51,7 @@ function fixture(gpu = {}) {
   vm.runInContext(source("input.js"), context);
   const input = window.kivaInput;
   const parse = () => {
-    for (const id of ["game", "entry", "enter", "retry", "entry-message"]) nodes.set(id, new Target());
+    for (const id of ["game", "entry", "enter", "enter-label", "enter-progress", "retry", "entry-message"]) nodes.set(id, new Target());
     nodes.get("game").focus = () => { focused = true; };
     nodes.get("game").requestPointerLock = () => {
       requests++;
@@ -88,6 +95,126 @@ test("head scripts retain readiness and failures before DOM exists", () => {
   const unsupported = fixture(null);
   unsupported.parse();
   assert.equal(unsupported.nodes.get("retry").hidden, false);
+});
+
+test("first entry is visible and disabled until real engine readiness", () => {
+  const f = fixture(); f.parse();
+  assert.equal(f.nodes.get("enter").hidden, false);
+  assert.equal(f.nodes.get("enter").disabled, true);
+  assert.match(f.nodes.get("enter-label").textContent, /正在下载/);
+  f.click(); emit(f.nodes.get("game"), "click"); f.confirm();
+  assert.equal(f.requests(), 0);
+  assert.equal(f.input.isActive(), false);
+  f.input.ready();
+  assert.equal(f.nodes.get("enter").disabled, false);
+  assert.equal(f.nodes.get("enter-label").textContent, "点击进入");
+  assert.equal(f.requests(), 0);
+});
+
+test("capture pending has immediate feedback and becomes retryable after failure or blur", async () => {
+  const f = fixture(); f.parse(); f.input.ready(); f.click();
+  assert.equal(f.nodes.get("enter").disabled, true);
+  assert.match(f.nodes.get("enter-label").textContent, /正在进入/);
+  assert.equal(f.nodes.get("enter").getAttribute("aria-busy"), "true");
+  f.click(); emit(f.nodes.get("game"), "click");
+  assert.equal(f.requests(), 1);
+  f.reject(); await Promise.resolve();
+  assert.equal(f.nodes.get("enter").disabled, false);
+  assert.equal(f.nodes.get("enter-label").textContent, "点击进入");
+  f.click(); f.blur(); f.focus();
+  assert.equal(f.nodes.get("enter").disabled, false);
+  f.click(); f.confirm();
+  assert.equal(f.input.isActive(), true);
+});
+
+test("real download progress replays before DOM and never enables entry at 100 percent", () => {
+  const f = fixture();
+  f.window.kivaStartup.progress("download", 512, 1024);
+  f.parse();
+  assert.equal(f.nodes.get("enter-label").textContent, "正在下载 50%");
+  assert.equal(f.nodes.get("enter-progress").value, 512);
+  assert.equal(f.nodes.get("enter-progress").max, 1024);
+  f.window.kivaStartup.progress("download", 1024, 1024);
+  assert.equal(f.nodes.get("enter-label").textContent, "正在下载 100%");
+  assert.equal(f.nodes.get("enter").disabled, true);
+  f.click(); emit(f.nodes.get("game"), "click");
+  assert.equal(f.requests(), 0);
+  f.window.kivaStartup.progress("initialize", 0, 0);
+  assert.match(f.nodes.get("enter-label").textContent, /正在准备游戏/);
+  assert.equal(f.nodes.get("enter-progress").getAttribute("value"), null);
+  f.window.kivaStartup.progress("render", 0, 0);
+  assert.match(f.nodes.get("enter-label").textContent, /正在准备画面/);
+  assert.equal(f.nodes.get("enter").disabled, true);
+  f.input.ready();
+  assert.equal(f.nodes.get("enter").disabled, false);
+  assert.equal(f.nodes.get("enter-progress").hidden, true);
+  assert.equal(f.nodes.get("enter").getAttribute("aria-busy"), "false");
+});
+
+test("unknown and invalid totals show a stage without a fabricated percentage", () => {
+  const f = fixture(); f.parse();
+  for (const [loaded, total] of [[2560, 0], [2560, 2048], [2560, Infinity], [NaN, -1]]) {
+    f.window.kivaStartup.progress("download", loaded, total);
+    assert.equal(f.nodes.get("enter-label").textContent, "正在下载…");
+    assert.equal(f.nodes.get("enter-progress").getAttribute("value"), null);
+    assert.equal(f.nodes.get("enter").disabled, true);
+  }
+  f.window.kivaStartup.progress("download", 2560, 0);
+  assert.match(f.nodes.get("entry-message").textContent, /已接收 2 KB/);
+});
+
+test("startup phases never regress, failed progress cannot reset failure, and real ready wins", () => {
+  const f = fixture();
+  const snapshots = [];
+  const unsubscribe = f.window.kivaStartup.subscribe((state, detail) => snapshots.push({ state, ...detail }));
+  f.window.kivaStartup.progress("render", 0, 0);
+  f.window.kivaStartup.progress("download", 10, 10);
+  f.window.kivaStartup.progress("initialize", 0, 0);
+  f.window.kivaStartup.progress("unrecognized", 0, 0);
+  assert.equal(snapshots.length, 2);
+  f.window.kivaStartup.fail("渲染准备失败，请重新加载后重试。");
+  f.window.kivaStartup.progress("render", 1, 1);
+  f.parse();
+  assert.equal(f.nodes.get("enter-label").textContent, "加载失败");
+  assert.equal(f.nodes.get("enter").disabled, true);
+  assert.equal(f.nodes.get("enter").getAttribute("aria-busy"), "false");
+  assert.equal(f.nodes.get("enter-progress").hidden, true);
+  assert.equal(f.nodes.get("retry").hidden, false);
+  assert.match(f.nodes.get("entry-message").textContent, /渲染准备失败/);
+  unsubscribe();
+  const count = snapshots.length;
+  f.input.ready();
+  for (const failure of ["error", "unhandledrejection", "TrunkApplicationError"]) emit(f.window, failure);
+  f.window.kivaStartup.fail("迟到错误");
+  f.window.kivaStartup.progress("download", 0, 0);
+  assert.equal(snapshots.length, count);
+  assert.equal(f.window.__kivaStartup, "ready");
+  assert.equal(f.nodes.get("enter-label").textContent, "点击进入");
+  assert.equal(f.nodes.get("enter").disabled, false);
+  assert.equal(f.nodes.get("retry").hidden, true);
+});
+
+test("pointer-lock event errors and synchronous rejection restore the entry button", () => {
+  const f = fixture(); f.parse(); f.input.ready(); f.click();
+  emit(f.document, "pointerlockerror");
+  assert.equal(f.nodes.get("enter").disabled, false);
+  assert.match(f.nodes.get("entry-message").textContent, /未能锁定/);
+  f.nodes.get("game").requestPointerLock = () => { throw new Error("denied"); };
+  f.click();
+  assert.equal(f.nodes.get("enter").disabled, false);
+  assert.match(f.nodes.get("entry-message").textContent, /未能锁定/);
+});
+
+test("resume after Escape keeps readiness and ignores delayed first-load notifications", () => {
+  const f = fixture(); f.parse(); f.capture();
+  emit(f.document, "keydown", { code: "Escape", isTrusted: true });
+  f.window.kivaStartup.progress("download", 0, 0);
+  f.window.kivaStartup.fail("迟到错误");
+  assert.equal(f.nodes.get("enter-label").textContent, "点击进入");
+  assert.equal(f.nodes.get("enter").disabled, false);
+  assert.equal(f.nodes.get("enter-progress").hidden, true);
+  f.click(); f.confirm();
+  assert.equal(f.input.isActive(), true);
 });
 
 test("input waits for actual pointerlockchange, not just promise resolution", async () => {

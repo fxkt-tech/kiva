@@ -21,6 +21,7 @@
   const heldKeys = Object.freeze({ KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8, ShiftLeft: 16, ShiftRight: 16 });
   const actionKeys = Object.freeze({ Space: 1, KeyE: 8, Tab: 16, Digit1: 64, Digit2: 128, KeyQ: 256, KeyC: 512 });
   let error = "";
+  let startupDetail = { phase: "download", loaded: 0, total: 0 };
   let previous = null;
   let pixelRatio = window.devicePixelRatio;
   let cross = 0;
@@ -74,13 +75,37 @@
     const entry = document.getElementById("entry");
     if (!entry) return;
     const failed = window.__kivaStartup === "failed" && !ready;
+    const pending = ready && request !== null;
+    const busy = (!ready && !failed) || pending;
+    const measured = !ready && !failed && startupDetail.phase === "download" && startupDetail.total > 0;
+    const percent = measured ? Math.floor(100 * startupDetail.loaded / startupDetail.total) : null;
+    const loadingLabel = startupDetail.phase === "render" ? "正在准备画面…"
+      : startupDetail.phase === "initialize" ? "正在准备游戏…"
+        : measured ? `正在下载 ${percent}%` : "正在下载…";
+    const enterButton = document.getElementById("enter");
+    const progress = document.getElementById("enter-progress");
     entry.hidden = isActive();
-    document.getElementById("enter").hidden = !ready;
+    enterButton.hidden = false;
+    enterButton.disabled = !ready || pending;
+    enterButton.setAttribute("aria-busy", String(busy));
+    document.getElementById("enter-label").textContent = pending ? "正在进入…"
+      : ready ? "点击进入" : failed ? "加载失败" : loadingLabel;
+    progress.hidden = ready || failed;
+    if (measured) {
+      progress.max = startupDetail.total;
+      progress.value = startupDetail.loaded;
+    } else progress.removeAttribute("value");
     document.getElementById("retry").hidden = !failed;
-    document.getElementById("entry-message").textContent = error || (ready
+    const bytes = (value) => value >= 1024 * 1024 ? `${(value / (1024 * 1024)).toFixed(1)} MB`
+      : `${Math.floor(value / 1024)} KB`;
+    const downloading = measured ? `正在下载游戏：${bytes(startupDetail.loaded)} / ${bytes(startupDetail.total)}。`
+      : startupDetail.loaded > 0 ? `正在下载游戏，已接收 ${bytes(startupDetail.loaded)}…` : "正在下载游戏…";
+    document.getElementById("entry-message").textContent = error || (pending
+      ? "正在锁定鼠标，成功后即可进入。" : ready
       ? "进入竹林，迎战愁铃客。" : failed
-        ? "加载失败。请使用支持 WebGPU 的浏览器，再重新加载。"
-        : "正在准备场景与游戏引擎…");
+        ? startupDetail.reason
+        : startupDetail.phase === "render" ? "正在准备首次画面，请稍候…"
+          : startupDetail.phase === "initialize" ? "正在准备场景与游戏引擎…" : downloading);
   }
 
   function enter() {
@@ -91,6 +116,7 @@
     const attempt = {};
     request = attempt;
     error = "";
+    render();
     const rejected = () => {
       if (request !== attempt || confirmed) return;
       clearCapture();
@@ -251,7 +277,10 @@
     document.getElementById("enter").addEventListener("click", enter);
     canvas().addEventListener("click", enter);
     document.getElementById("retry").addEventListener("click", () => window.location.reload());
-    window.kivaStartup.subscribe(render);
+    window.kivaStartup.subscribe((_state, detail) => {
+      startupDetail = detail;
+      render();
+    });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true });
   else bind();

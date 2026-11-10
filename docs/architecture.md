@@ -19,6 +19,7 @@
 | `simulation/geometry.rs` | 旧无窗口夹具的几何描述适配，产品碰撞由 Avian 结算 |
 | `gameplay/mod.rs`、`gameplay/terrain.rs` | `Level`、`Prop`、`Boundary`、`Player`、`EnemyMode`、共享地形几何及实体装配 |
 | `client/controls.rs` | `ViewYaw`，设备输入转世界方向；捕获失效时停止意图 |
+| `client/loading.rs`、`web/loader.js` | WASM真实下载流进度、首次可见场景渲染准备／提交门槛，以及主线程最终就绪通知 |
 | `client/enemies.rs`、`web/enemies.js` | 进入卡片 / F2 的敌人模式请求及模式显示，调用玩法装配接口 |
 | `client/appearance.rs`、`web/appearance.js` | 进入 / 暂停卡片和 F3 的玩家外观选择，只替换显示资产，不改变玩法武器套装 |
 | `client/scene.rs` | 玩家显示根和插值后的显示 `Transform` |
@@ -37,7 +38,7 @@
 | `client/audio.rs`、`web/audio.js` | 实际战斗反馈的一次消费、短音效与暂停同步的音乐循环 |
 | `client/hud.rs`、`web/hud.js` | 把玩家与当前选中敌人的真实快照显示为血条、人格 / 武器、技能可用性、冷却和联动提示 |
 | `web/input.js` | 浏览器锁定确认、焦点、鼠标位移单位与一次性消费 |
-| `web/startup.js` | 在 WASM 加载前记录成功 / 失败，给晚订阅者重放 |
+| `web/startup.js` | 在 WASM 加载前记录真实阶段／进度／成功／失败，给晚订阅者重放；最终ready保持 |
 
 Avian 的 Position / Rotation / 速度是唯一运动权威；`Body` 和 `PhysicsPose` 只保存物理结果快照。
 客户端使用 `ActorView { owner }`、`PlayerView` 和 `PropView { owner }` 的独立显示根，不能用模型 `Transform` 反写物理实体。
@@ -46,7 +47,7 @@ Avian 的 Position / Rotation / 速度是唯一运动权威；`Body` 和 `Physic
 
 ## 一帧中的顺序
 
-1. Startup 顺序执行：玩法 / 物理场景装配 → 独立三维显示根 → 战斗表现 → 相机 → 通知 Web 引擎就绪。
+1. Startup 顺序执行：通知初始化阶段 → 玩法 / 物理场景装配 → 独立三维显示根 → 战斗表现 → 相机 → 通知进入画面准备阶段。最终Web ready不在Startup中发出。
 2. Bevy 输入更新后，在 `RunFixedMainLoopSystems::BeforeFixedMainLoop` 采样控制。
    鼠标位移直接改 `ViewYaw`；提交世界方向 `MoveIntent` / `Facing`、持续动作和锁存的离散指令。
 3. `FixedUpdate` 以 60Hz 执行动作／防御准备 → motor → Avian 求解 → 当前空间查询、接触与快照 → 玩家战斗／普通敌人 → Boss → 耐力恢复／妹妹快照 → 瞬移清理。
@@ -57,7 +58,7 @@ Avian 的 Position / Rotation / 速度是唯一运动权威；`Body` 和 `Physic
    暂停或命中停顿时统一取当前状态，避免 fixed overstep 持续循环导致模型 / 镜头往复抖动；命中停顿冻结骨骼时钟。
    专用冲击表现及音效消费在骨骼附件后、HUD / 相机前执行；冲击粒子和后坐可在命中停顿中继续，失锁时冻结。
    相机读取同一个显示根位置，朝向使用当前 `ViewYaw`，不追加平滑延迟。
-5. Bevy 完成全局变换传播和渲染。
+5. Bevy 完成全局变换传播和渲染。首次进入由渲染子应用在真实提交／present后检查GameCamera输出、非空可见网格／材质准备与管线就绪，再通过跨世界信号由主线程放行Web入口；空队列／实体装配完成不能替代。
 
 ## 控制与构图
 
@@ -138,7 +139,8 @@ RigPose.local 保存蹲伏 IK 前姿态，IK 只作用于生成 model 的副本�
 
 ## 浏览器边界
 
-`startup.js`、`input.js`、`hud.js`、`enemies.js`、`audio.js` 必须同步安装在 Trunk 生成的模块之前，脚本不依赖 DOM 已创建。
+`startup.js`、`loader.js`、`input.js`、`hud.js`、`enemies.js`、`appearance.js`、`audio.js` 必须同步安装在 Trunk 生成的模块之前，脚本不依赖 DOM 已创建。
+Trunk入口通过专用loader包装自身WASM Response，保留流式编译并报告真实下载字节；可用分母才显示百分比，初始化／画面准备显示明确阶段。按钮加载时可见但disabled，最终ready后用户点击申请鼠标捕获，请求期间显示进入中；错误可重载或重试，Esc恢复沿用ready。具体接口与失败边界见[启动规范](../.trellis/spec/client/startup.md)。
 `window.kivaAudio.playEffect(name)` 消费已结算的挥击、命中和防御，`playSniperShot()` 消费妹妹真实鸟铳射击；弓发射临时复用共享 attack cue；伴随的狙击特效事件不重复发声。`setActive(bool)` 同步模拟暂停，可信进入点击 / 画布按下解锁 Web Audio 并缓存随包音频。随包BGM使用官方愁铃客发行录音《惊惧一夜》，原文件/转码来源记录在assets/audio/music-manifest.json，运行时不连接音乐站点；该循环不是已恢复的原bank分轨/阶段切换。音乐至多一条循环，暂停保留播放位置并释放节点；短音效至多 4 声部，未解锁/暂停/失败的声音丢弃，不延迟重放。原生播放为空操作，无新增平台音频依赖。
 `window.kivaEnemies.takeMode()` 返回并清空待处理模式（0=无、1=靶子、2=实战），`render(mode)` 显示 Rust 当前模式；模式请求在固定循环前处理，不受暂停门控。
 输入桥提供 isActive／takeLook／keys／takeActions／takeDefenseEdges／ready；精确位掩码和有序 Pressed／Released／Cancelled 见 [.trellis/spec/client/input.md](../.trellis/spec/client/input.md)。垂直输入不再调整落点；滚轮不切换人格。

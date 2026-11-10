@@ -1,6 +1,14 @@
 [build]
 target = "index.html"
 dist = "dist"
+pattern_script = """
+<script type="module">
+import init, * as bindings from '{base}{js}';
+const wasm = await window.kivaLoader.load(init, '{base}{wasm}');
+window.wasmBindings = bindings;
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: { wasm }}));
+</script>
+"""
 
 [watch]
 ignore = ["README.md", "docs", "tests", "scripts", ".github", "Makefile"]

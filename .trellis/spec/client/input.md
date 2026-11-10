@@ -21,6 +21,7 @@
 movement_released／shift_released 锁存所有方向键／所有 Shift 释放事实；即使同次采样前已重新按下，也必须先 set_*_held(false)，再提交最终 held 状态。否则旧疾跑锁存与长按时长会跨一次完整松键错误延续。原生与 Web 同义，不能只处理最终位掩码。
 右键有序队列保留同帧短按。显示帧零固定步时 Rust 中意图保留，多固定步只消费一次；长按计时不使用 JS 墙钟。
 捕获必须由 pointerlockchange 加焦点共同确认，Promise 完成不代表捕获成功。捕获点击不同时攻击。
+首次入口的ready由必要场景渲染准备与提交决定，不能在Startup末尾提前放行；加载进度和捕获进行中反馈见 [startup.md](startup.md)。ready前按钮与画布都不能申请捕获；恢复不重新加载。
 Esc、blur、pointercancel、丢失捕获均取消，不能开启释放弹反。取消锁存跨过同帧失焦和重新捕获；队列溢出也先取消，保持按住不能自动重建 Pressed，要求一次新按压。
 失活清 MoveIntent、ActionIntent、CombatIntent 和 DefenseState 意图；不改 MotionState、不补跳跃额度、不清已承诺技能／冷却。
 联动期间丢弃转向样本而非累计，Facing 对齐序列原目标；完成后恢复正常视角。

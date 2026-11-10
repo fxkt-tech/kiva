@@ -1,0 +1,13 @@
+{
+  "base_commit": "fe6042ff58a24e8f4569f366660ebef42ad890fd",
+  "branch": "main",
+  "protected_git_oids": {
+    "assets": "360aabe9dfc4a691d7f7c453d1b9fc50c7cb7ed1",
+    "Cargo.lock": "71334160bf83c33a4a0c5b546a95df01dce943bc",
+    "Cargo.toml": "69319456e96b979f6ade993c2da7d919bf5a1d75",
+    "src/simulation": "cfd9c79f794ec6e757a9e9d5aeb40fb0dd7d3112",
+    "src/gameplay": "7d366e5d63973d5ea147487350de7e8e8cca7734",
+    "src/client/camera.rs": "dc6162b78b8b6f49f92ab626035b607ebc379653"
+  },
+  "Cargo.lock_sha256": "f582ba6e933a38619a2f5d29eb5410492b24e4ce7d674d753026b1acdc0d5955"
+}

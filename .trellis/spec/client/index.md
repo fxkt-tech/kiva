@@ -2,7 +2,7 @@
 
 ## Scope / Trigger
 
-`src/client/`、`web/`、`index.html` 拥有输入、蒙皮角色/环境表现和镜头，修改控制 / 构图 / Web 启动时阅读。输入详见 [input.md](input.md)，双角色战斗表现详见 [combat-presentation.md](combat-presentation.md)，指定模型转换／女性驱动／武器格式见 [model-assets.md](model-assets.md)。
+`src/client/`、`web/`、`index.html` 拥有输入、蒙皮角色/环境表现和镜头，修改控制 / 构图 / Web 启动时阅读。首次加载与进入详见 [startup.md](startup.md)，输入详见 [input.md](input.md)，双角色战斗表现详见 [combat-presentation.md](combat-presentation.md)，指定模型转换／女性驱动／武器格式见 [model-assets.md](model-assets.md)。
 
 ## Signatures
 
@@ -38,7 +38,7 @@ scene 根据 Body 的三维脚底前后快照和 fixed overstep 插值，camera 
 `impact::update` 在骨骼附件之后、相机之前消费专用事件；粒子和镜头后坐在 HitStop 期间继续表现，失锁暂停时冻结，临时实体到期回收并复用共享资产。普通特效系统忽略这两种专用事件。
 网格 / 材质 / 纹理复用；使用随包角色二进制和 CC0 动画资源，音频仅加载同源随包文件，移动权威在模拟。
 
-Web startup / input / hud / enemies / audio 五个 head 脚本先于 Trunk 模块同步安装，DOM 就绪后才绑定元素。
+Web startup／loader／input／hud／enemies／appearance／audio 脚本先于 Trunk 模块同步安装，DOM 就绪后才绑定元素。专用WASM流报告真实下载进度；按钮加载时可见但disabled，Rust观察首轮必要渲染准备与提交后才最终ready。捕获进行中有反馈，确认／失败与恢复保持原输入契约；完整门槛见 [startup.md](startup.md)。
 音效仅在可信进入点击或画布按下时创建 / 恢复 Web Audio；随包音频异步解码一次，原有枪声保留合成缓存。至多 4 个短音效声部及 1 个 BGM 循环，gain 各 0.18，暂停立即停止/回收短音效并保存 BGM 播放位置；恢复只创建一条循环。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
 进入卡片可选择靶子 / 实战，捕获期间 F2 切换；按钮请求在暂停或引擎加载时保留至一次消费，模式权威在玩法层。
 外观卡片可选择愁铃客 / 李火旺，捕获期间 F3 切换；外观只决定哥哥身体／服饰，不改变 WeaponPair 或武器。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。哥哥默认李火旺；`Appearance::default()` 仍为愁铃客，供敌人使用。白灵淼仅用于妹妹，不进入 F3 或 Web 选择枚举；换装不影响敌人、妹妹或当前武器。

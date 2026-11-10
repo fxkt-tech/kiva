@@ -12,6 +12,7 @@ mod environment;
 mod forest_material;
 mod hud;
 mod impact;
+mod loading;
 mod model_asset;
 mod rendering;
 mod scene;
@@ -68,6 +69,7 @@ pub(super) fn run() {
         ..default()
     }))
     .add_plugins(forest_material::ForestMaterialPlugin)
+    .add_plugins(loading::StartupPlugin)
     .add_plugins(crate::simulation::SimulationPlugin)
     .insert_resource(ClearColor(Color::srgb_u8(15, 22, 29)))
     .init_resource::<controls::ViewYaw>()
@@ -78,6 +80,7 @@ pub(super) fn run() {
     .add_systems(
         Startup,
         (
+            loading::begin,
             crate::gameplay::setup,
             scene::setup,
             combat::setup,
@@ -87,7 +90,7 @@ pub(super) fn run() {
             camera::setup,
             rendering::setup,
             environment::setup_camera_fog,
-            web::ready,
+            loading::scene_ready,
         )
             .chain(),
     )

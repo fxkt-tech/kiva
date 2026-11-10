@@ -9,6 +9,8 @@
     <title>Kiva · 幽篁竹林</title>
     <link data-trunk rel="copy-file" href="web/startup.js" />
     <script src="startup.js"></script>
+    <link data-trunk rel="copy-file" href="web/loader.js" />
+    <script src="loader.js"></script>
     <link data-trunk rel="copy-file" href="web/input.js" />
     <script src="input.js"></script>
     <link data-trunk rel="copy-file" href="web/hud.js" />
@@ -81,7 +83,7 @@
             <div class="entry-intro">
               <span class="eyebrow">KIVA / BAMBOO FOREST</span>
               <h1 id="entry-title">幽篁竹林</h1>
-              <p id="entry-message" role="status" aria-live="polite">正在准备场景与游戏引擎…</p>
+              <p id="entry-message" role="status" aria-live="polite">正在下载游戏…</p>
               <fieldset class="enemy-mode-select">
                 <legend>敌人模式</legend>
                 <div class="enemy-mode-options">
@@ -99,7 +101,7 @@
                 <span id="appearance-hint">李火旺 · 身体与服饰 · F3 切换</span>
               </fieldset>
               <div class="entry-actions">
-                <button id="enter" hidden>点击进入 <span aria-hidden="true">→</span></button>
+                <button id="enter" type="button" disabled aria-busy="true" aria-describedby="entry-message"><span id="enter-label">正在下载…</span><span class="enter-indicator" aria-hidden="true">→</span><progress id="enter-progress" max="1" aria-label="游戏下载进度"></progress></button>
                 <button id="retry" hidden>重新加载</button>
                 <span class="entry-hint">进入后捕获鼠标，按 <kbd>Esc</kbd> 暂停</span>
               </div>
