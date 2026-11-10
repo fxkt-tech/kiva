@@ -6,7 +6,9 @@ use bevy::{ecs::system::SystemParam, prelude::*};
 
 use crate::{
     gameplay::Player,
-    simulation::{Body, Combatant, Health, HitStop, SimulationActive, SniperSequence},
+    simulation::{
+        ActionKind, Body, Combatant, Health, HitStop, SequenceSnapshot, SimulationActive,
+    },
 };
 
 #[derive(Component)]
@@ -60,14 +62,14 @@ fn smooth(value: f32) -> f32 {
     value * value * (3.0 - 2.0 * value)
 }
 
-fn sniper_weight(elapsed: f32) -> f32 {
-    let return_start = SniperSequence::AIM_DURATION + SniperSequence::HOLD_DURATION;
+fn cinematic_weight(elapsed: f32, duration: f32) -> f32 {
+    let return_start = duration - SequenceSnapshot::RETURN_DURATION;
     if elapsed < SNIPER_ENTER_DURATION {
         smooth(elapsed / SNIPER_ENTER_DURATION)
     } else if elapsed <= return_start {
         1.0
     } else {
-        1.0 - smooth((elapsed - return_start) / SniperSequence::RETURN_DURATION)
+        1.0 - smooth((elapsed - return_start) / SequenceSnapshot::RETURN_DURATION)
     }
 }
 
@@ -125,15 +127,12 @@ pub(super) fn follow(
     let (fixed, active, hit_stop, impact) = timing;
     let (view, owner) = *player;
     let normal = camera_pose(view.translation + BODY_CENTER, yaw.yaw());
-    let sequence = actors
-        .get(owner.owner)
-        .ok()
-        .and_then(Combatant::sniper_sequence);
+    let sequence = actors.get(owner.owner).ok().and_then(Combatant::sequence);
     let mut pose = normal;
     if let Some(sequence) = sequence {
         let alpha = super::display_alpha(&fixed, &active, &hit_stop);
         let elapsed = (sequence.elapsed() - fixed.delta_secs() * (1.0 - alpha)).max(0.0);
-        let weight = sniper_weight(elapsed);
+        let weight = cinematic_weight(elapsed, sequence.duration);
         if weight > 0.0 {
             let target = targets
                 .get(sequence.target())
@@ -143,7 +142,14 @@ pub(super) fn follow(
                     || sequence.aim_position(),
                     |(body, _)| body.interpolated_world(alpha) + body.aim_offset(),
                 );
-            let rear = sniper_pose(view.translation, target, yaw.yaw());
+            let rear = if sequence.kind == ActionKind::ChainCombo {
+                let mut pose = sniper_pose(view.translation, target, yaw.yaw());
+                pose.translation.y = view.translation.y + 1.2;
+                pose.look_at(target, Vec3::Y);
+                pose
+            } else {
+                sniper_pose(view.translation, target, yaw.yaw())
+            };
             let desired = normal.translation.lerp(rear.translation, weight);
             let position =
                 obstacles.clear_position(view.translation + Vec3::Y * SNIPER_HEIGHT, desired);
@@ -154,7 +160,10 @@ pub(super) fn follow(
             }
         }
     }
-    if let Some((displacement, rotation)) = impact.recoil(owner.owner) {
+    if sequence
+        .is_some_and(|sequence| sequence.kind == ActionKind::HammerCombo && !sequence.cancelled)
+        && let Some((displacement, rotation)) = impact.recoil(owner.owner)
+    {
         let desired = pose.translation + pose.rotation * displacement;
         pose.translation =
             obstacles.clear_position(view.translation + Vec3::Y * SNIPER_HEIGHT, desired);
@@ -196,6 +205,7 @@ mod tests {
             .query_filtered::<Entity, With<Player>>()
             .single(app.world())
             .unwrap();
+        request(&mut app, player, CombatIntent::request_toggle_target);
         let target = app
             .world()
             .get::<Combatant>(player)
@@ -220,9 +230,15 @@ mod tests {
     }
 
     fn start_sniping(app: &mut App, player: Entity) {
-        request(app, player, CombatIntent::request_skill);
+        request(app, player, CombatIntent::request_melee_skill);
+        tick(app, 13);
         request(app, player, CombatIntent::request_combo);
-        assert!(app.world().get::<Combatant>(player).unwrap().is_sniping());
+        assert!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .is_combo_active()
+        );
     }
 
     fn render(app: &mut App) -> Transform {
@@ -299,8 +315,13 @@ mod tests {
         );
         assert!(normal.translation.distance(focused.translation) > 6.0);
 
-        tick(&mut app, 40);
-        assert!(!app.world().get::<Combatant>(player).unwrap().is_sniping());
+        tick(&mut app, 60);
+        assert!(
+            !app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .is_combo_active()
+        );
         let restored = render(&mut app);
         assert_same_pose(
             restored,
@@ -308,7 +329,7 @@ mod tests {
         );
         assert_eq!(
             app.world().get::<Health>(target).unwrap().current(),
-            999_895.0
+            999_896.0
         );
     }
 
@@ -349,7 +370,7 @@ mod tests {
             999_980.0
         );
         app.world_mut().resource_mut::<SimulationActive>().0 = true;
-        tick(&mut app, 40);
+        tick(&mut app, 60);
         let restored = render(&mut app);
         assert_same_pose(
             restored,
@@ -360,9 +381,7 @@ mod tests {
     #[test]
     fn lethal_sniper_shot_keeps_the_last_live_aim_during_recovery() {
         let (mut app, player, target) = arena();
-        app.world_mut()
-            .entity_mut(target)
-            .insert(Health::new(100.0));
+        app.world_mut().entity_mut(target).insert(Health::new(45.0));
         start_sniping(&mut app, player);
         tick(&mut app, 20);
         assert!(!app.world().get::<Health>(target).unwrap().is_alive());
@@ -370,15 +389,21 @@ mod tests {
             .world()
             .get::<Combatant>(player)
             .unwrap()
-            .sniper_sequence()
+            .sequence()
             .unwrap();
         assert!(sequence.has_fired());
         let focused = render(&mut app);
-        let expected = sniper_pose(view_feet(&mut app), sequence.aim_position(), 0.0);
-        assert_same_pose(focused, expected);
+        assert!(sequence.aim_position().y > 1.5);
+        teleport_actor(app.world_mut(), target, Vec3::new(0., -5., -4.));
+        assert_same_pose(render(&mut app), focused);
 
-        tick(&mut app, 30);
-        assert!(!app.world().get::<Combatant>(player).unwrap().is_sniping());
+        tick(&mut app, 60);
+        assert!(
+            !app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .is_combo_active()
+        );
         let restored = render(&mut app);
         assert_same_pose(
             restored,
@@ -405,29 +430,37 @@ mod tests {
     }
 
     #[test]
-    fn ordinary_ranged_and_cannon_actions_keep_the_existing_top_down_camera() {
+    fn ordinary_sister_q_keeps_the_existing_top_down_camera() {
         let (mut app, player, _) = arena();
-        request(&mut app, player, CombatIntent::request_switch_weapon);
-        let ranged = render(&mut app);
-        assert_same_pose(ranged, camera_pose(view_feet(&mut app) + BODY_CENTER, 0.0));
-        request(&mut app, player, |intent| {
-            intent.request_set(crate::simulation::WeaponSet::AxeCannon)
-        });
-        request(&mut app, player, CombatIntent::request_switch_weapon);
-        request(&mut app, player, |intent| {
-            intent.set_aim(Vec2::new(3.0, 0.0));
-            intent.request_skill();
-        });
-        tick(&mut app, 10);
+        request(&mut app, player, CombatIntent::request_ranged_skill);
+        tick(&mut app, 14);
         assert!(
-            app.world()
-                .get::<crate::simulation::MotionState>(player)
+            !app.world()
+                .get::<Combatant>(player)
                 .unwrap()
-                .is_leaping()
+                .is_combo_active()
         );
-        assert!(!app.world().get::<Combatant>(player).unwrap().is_sniping());
-        let cannon = render(&mut app);
-        assert_same_pose(cannon, camera_pose(view_feet(&mut app) + BODY_CENTER, 0.0));
+        let actual = render(&mut app);
+        assert_same_pose(actual, camera_pose(view_feet(&mut app) + BODY_CENTER, 0.));
+    }
+
+    #[test]
+    fn chain_combo_uses_level_camera_and_roster_clear_restores_even_when_paused() {
+        let (mut app, player, _) = arena();
+        request(&mut app, player, |i| {
+            i.request_pair(crate::simulation::WeaponPair::ChainAxeBow)
+        });
+        request(&mut app, player, CombatIntent::request_ranged_skill);
+        tick(&mut app, 19);
+        request(&mut app, player, CombatIntent::request_combo);
+        tick(&mut app, 14);
+        let camera = render(&mut app);
+        let feet = view_feet(&mut app);
+        assert!((camera.translation.y - feet.y - 1.2).abs() < 0.02);
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        crate::gameplay::set_enemy_mode(app.world_mut(), crate::gameplay::EnemyMode::Combat);
+        let actual = render(&mut app);
+        assert_same_pose(actual, camera_pose(view_feet(&mut app) + BODY_CENTER, 0.));
     }
 
     #[test]
@@ -485,10 +518,11 @@ mod tests {
                 assert!((kicked.rotation * Vec3::NEG_Z).y > (base.rotation * Vec3::NEG_Z).y);
             }
             app.world_mut().resource_mut::<SimulationActive>().0 = false;
+            let paused = render(&mut app);
             app.world_mut()
                 .resource_mut::<Time>()
                 .advance_by(Duration::from_secs_f32(1.0));
-            assert_same_pose(render(&mut app), kicked);
+            assert_same_pose(render(&mut app), paused);
             app.world_mut().resource_mut::<SimulationActive>().0 = true;
             app.world_mut()
                 .resource_mut::<Time>()
@@ -506,5 +540,31 @@ mod tests {
                 assert_same_pose(restored, base);
             }
         }
+    }
+    #[test]
+    fn paused_roster_replacement_after_a_shot_discards_camera_recoil() {
+        let (mut app, player, _) = arena();
+        app.init_resource::<Assets<Mesh>>()
+            .init_resource::<Assets<StandardMaterial>>();
+        super::super::impact::setup(app.world_mut());
+        app.add_systems(
+            Update,
+            super::super::impact::update
+                .after(scene::sync_player)
+                .before(follow),
+        );
+        start_sniping(&mut app, player);
+        tick(&mut app, 20);
+        render(&mut app);
+        assert!(
+            app.world()
+                .resource::<ImpactState>()
+                .recoil(player)
+                .is_some()
+        );
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        crate::gameplay::set_enemy_mode(app.world_mut(), crate::gameplay::EnemyMode::Combat);
+        let actual = render(&mut app);
+        assert_same_pose(actual, camera_pose(view_feet(&mut app) + BODY_CENTER, 0.));
     }
 }

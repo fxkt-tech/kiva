@@ -41,6 +41,7 @@ struct AvatarPart;
 #[derive(Component)]
 struct BladeSurface;
 
+#[cfg(test)]
 #[derive(Component)]
 struct BladeAppearance(Appearance);
 
@@ -703,10 +704,12 @@ pub(super) fn spawn_blade_with_appearance(
             .id();
         world.entity_mut(parent).add_child(entity);
     }
+    #[cfg(test)]
     world.entity_mut(parent).insert(BladeAppearance(appearance));
 }
 
-pub(super) fn replace_blade(world: &mut World, parent: Entity, appearance: Appearance) {
+#[cfg(test)]
+fn replace_blade(world: &mut World, parent: Entity, appearance: Appearance) {
     if world
         .get::<BladeAppearance>(parent)
         .is_some_and(|current| current.0 == appearance)
@@ -791,7 +794,7 @@ mod tests {
     use super::*;
     use crate::simulation::{
         ActionIntent, Body, CollisionWorld, CombatIntent, Combatant, Facing, MotionState,
-        MoveIntent, SimulationActive, SimulationPlugin, SpawnPoint, WeaponSet,
+        MoveIntent, SimulationActive, SimulationPlugin, SpawnPoint, WeaponPair,
     };
     use std::time::Duration;
 
@@ -1362,7 +1365,7 @@ mod tests {
                 MotionState::default(),
                 Facing::default(),
                 Health::new(100.0),
-                Combatant::new(WeaponSet::HammerSniper),
+                Combatant::new(WeaponPair::HammerMusket),
                 CombatIntent::default(),
                 SpawnPoint(Vec2::ZERO),
             ))

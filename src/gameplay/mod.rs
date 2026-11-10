@@ -8,7 +8,7 @@ pub use terrain::TerrainGeometry;
 
 use crate::simulation::{
     ActionIntent, Body, Boss, CombatIntent, Combatant, Enemy, Facing, Health, MotionState,
-    MoveIntent, SpawnPoint, WeaponSet, spawn_box, spawn_terrain,
+    MoveIntent, SpawnPoint, WeaponPair, spawn_box, spawn_terrain,
 };
 
 #[derive(Component)]
@@ -55,6 +55,18 @@ pub fn set_enemy_mode(world: &mut World, mode: EnemyMode) {
     {
         combat.clear_targets();
         intent.clear();
+    }
+    for mut state in world
+        .query::<&mut crate::simulation::CompanionState>()
+        .iter_mut(world)
+    {
+        state.visible = false;
+    }
+    for mut defense in world
+        .query::<&mut crate::simulation::DefenseState>()
+        .iter_mut(world)
+    {
+        defense.clear();
     }
     world.insert_resource(mode);
     spawn_enemies(world, mode);
@@ -260,9 +272,9 @@ pub fn setup(world: &mut World) {
         ActionIntent::default(),
         MotionState::default(),
         Facing::default(),
-        Combatant::new(WeaponSet::HammerSniper),
+        Combatant::new(WeaponPair::HammerMusket),
         CombatIntent::default(),
-        Health::new(100.0),
+        Health::new(1000.0),
         SpawnPoint(Vec2::ZERO),
     ));
     let mode = world
@@ -271,6 +283,7 @@ pub fn setup(world: &mut World) {
         .unwrap_or_default();
     world.insert_resource(mode);
     spawn_enemies(world, mode);
+    crate::simulation::combat_setup_companions(world);
 }
 
 #[cfg(test)]
@@ -504,7 +517,7 @@ mod tests {
         // Stand in attack range for several full attack cycles.
         teleport_actor(app.world_mut(), player, Vec3::new(0.0, 0.0, -2.6));
         tick(&mut app, 300);
-        assert_eq!(app.world().get::<Health>(player).unwrap().current(), 100.0);
+        assert_eq!(app.world().get::<Health>(player).unwrap().current(), 1000.0);
         assert!(
             !app.world()
                 .resource::<CombatFeedback>()
@@ -517,11 +530,20 @@ mod tests {
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
-            .request_skill();
-        tick(&mut app, 4);
+            .request_toggle_target();
+        tick(&mut app, 1);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_melee_skill();
+        tick(&mut app, 13);
         assert!(app.world().get::<Health>(dummy).unwrap().current() < 1_000_000.0);
         assert!(!app.world().get::<MotionState>(dummy).unwrap().is_grounded());
-        let cooldown = app.world().get::<Combatant>(player).unwrap().cooldown();
+        let cooldown = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .melee_cooldown();
         assert!(cooldown > 0.0);
 
         app.world_mut().resource_mut::<SimulationActive>().0 = false;
@@ -531,7 +553,7 @@ mod tests {
         let actor = world.get::<Combatant>(player).unwrap();
         assert_eq!(actor.target(), None);
         assert_eq!(actor.combo_remaining(), 0.0);
-        assert_eq!(actor.cooldown(), cooldown);
+        assert_eq!(actor.melee_cooldown(), cooldown);
         let mut enemies = world.query::<(&Enemy, &Health, &Body)>();
         assert_eq!(enemies.iter(world).count(), 1);
         for (enemy, health, body) in enemies.iter(world) {

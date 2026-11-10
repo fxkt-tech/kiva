@@ -9,7 +9,7 @@ pub(super) enum Gesture {
     Axe,
     Hammer,
     Shot,
-    Cannon,
+    Bow,
     Windup,
     Hit,
     HeavyHit,
@@ -21,7 +21,7 @@ impl Gesture {
         match self {
             Self::Slash | Self::Axe => 0.42,
             Self::Hammer => 0.6,
-            Self::Shot | Self::Cannon => 0.32,
+            Self::Shot | Self::Bow => 0.32,
             Self::Windup => 0.4,
             Self::Hit => 0.24,
             Self::HeavyHit => 0.30,
@@ -212,7 +212,7 @@ pub(super) fn gesture(
             k(0.02, 0.60, 0.0, 180.0, -75.0, 0.0),
             k(0.02, 0.65, 0.05, 180.0, -100.0, -10.0),
         ),
-        Gesture::Shot | Gesture::Cannon => (
+        Gesture::Shot | Gesture::Bow => (
             "Sword_Dash",
             [0.05, 0.28, 0.60],
             k(0.10, 0.30, -0.25, 180.0, 0.0, 0.0),

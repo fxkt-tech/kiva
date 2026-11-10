@@ -1,9 +1,9 @@
-//! FPS-style local input. Mouse displacement is an angle, not an angular speed.
+//! Local input records device edges; fixed simulation owns action timing.
 use crate::{
     gameplay::Player,
     simulation::{
-        ActionIntent, Body, CombatIntent, Combatant, Facing, MotionState, MoveIntent,
-        SimulationActive, WeaponMode, WeaponSet,
+        ActionIntent, Body, CombatIntent, Combatant, DefenseEdge, DefenseState, Facing, MoveIntent,
+        SimulationActive, WeaponPair,
     },
 };
 #[cfg(not(target_arch = "wasm32"))]
@@ -11,24 +11,29 @@ use bevy::input::{ButtonState, keyboard::KeyboardInput, mouse::MouseButtonInput}
 #[cfg(not(target_arch = "wasm32"))]
 use bevy::window::{CursorGrabMode, WindowFocused};
 use bevy::{
-    input::mouse::{AccumulatedMouseMotion, AccumulatedMouseScroll},
+    input::mouse::AccumulatedMouseMotion,
     prelude::*,
     window::{CursorOptions, PrimaryWindow},
 };
+#[cfg(not(target_arch = "wasm32"))]
+use std::collections::HashSet;
 
 const LOOK_SENSITIVITY: f32 = 0.0025;
 const SPRINT: u32 = 16;
 const JUMP: u32 = 1;
 const DODGE: u32 = 2;
 const ATTACK: u32 = 4;
-const SKILL: u32 = 8;
+const MELEE_SKILL: u32 = 8;
 const COMBO: u32 = 16;
-const SWITCH_WEAPON: u32 = 32;
-const HAMMER_SNIPER: u32 = 64;
-const AXE_CANNON: u32 = 128;
-const CYCLE_TARGET: u32 = 256;
+const TOGGLE_TARGET: u32 = 32;
+const HAMMER_MUSKET: u32 = 64;
+const CHAIN_AXE_BOW: u32 = 128;
+const RANGED_SKILL: u32 = 256;
 const CROUCH_TOGGLE: u32 = 512;
-const PARRY: u32 = 1024;
+const MOVEMENT_RELEASED: u32 = 1024;
+const SHIFT_RELEASED: u32 = 2048;
+#[cfg(not(target_arch = "wasm32"))]
+const MAX_DEFENSE_EDGES: usize = 64;
 
 type PlayerIntents = (
     &'static Body,
@@ -37,23 +42,8 @@ type PlayerIntents = (
     &'static mut Facing,
     &'static mut CombatIntent,
     &'static Combatant,
-    &'static MotionState,
+    &'static mut DefenseState,
 );
-
-#[derive(Resource)]
-pub(super) struct AimDistance(f32);
-impl Default for AimDistance {
-    fn default() -> Self {
-        Self(6.0)
-    }
-}
-impl AimDistance {
-    fn adjust(&mut self, vertical_pixels: f32) {
-        if vertical_pixels.is_finite() {
-            self.0 = (self.0 - vertical_pixels * 0.012).clamp(1.0, 8.0);
-        }
-    }
-}
 
 #[derive(Resource, Default)]
 pub(super) struct ViewYaw(f32);
@@ -75,78 +65,122 @@ pub(super) struct CaptureState {
     #[cfg(not(target_arch = "wasm32"))]
     active: bool,
     #[cfg(not(target_arch = "wasm32"))]
-    last_wheel: Option<f64>,
+    pressed: HashSet<KeyCode>,
     #[cfg(not(target_arch = "wasm32"))]
-    shift_keys: [bool; 2],
+    mouse_pressed: HashSet<MouseButton>,
     #[cfg(not(target_arch = "wasm32"))]
-    crouch_key: bool,
+    defense_edges: Vec<DefenseEdge>,
     #[cfg(not(target_arch = "wasm32"))]
-    parry_button: bool,
+    right_blocked: bool,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
 impl CaptureState {
+    fn clear_inputs(&mut self) {
+        self.pressed.clear();
+        self.mouse_pressed.clear();
+        self.defense_edges.clear();
+        self.defense_edges.push(DefenseEdge::Cancelled);
+        self.right_blocked = false;
+    }
+
     fn update(&mut self, focused: bool, lost_focus: bool, escape: bool, clicked: bool) {
         if !focused || lost_focus || escape {
             self.active = false;
-            self.last_wheel = None;
-            self.shift_keys = [false; 2];
-            self.crouch_key = false;
-            self.parry_button = false;
-        } else if clicked {
+            self.clear_inputs();
+        } else if clicked && !self.active {
+            self.clear_inputs();
             self.active = true;
         }
     }
 
-    fn scroll(&mut self, delta: f32, now: f64) -> bool {
-        if !delta.is_finite() || delta == 0.0 {
-            return false;
+    fn held(&self) -> u32 {
+        let mut held = 0;
+        for (key, bit) in [
+            (KeyCode::KeyW, 1),
+            (KeyCode::KeyS, 2),
+            (KeyCode::KeyA, 4),
+            (KeyCode::KeyD, 8),
+            (KeyCode::ShiftLeft, SPRINT),
+            (KeyCode::ShiftRight, SPRINT),
+        ] {
+            if self.pressed.contains(&key) {
+                held |= bit;
+            }
         }
-        let fresh = self.last_wheel.is_none_or(|last| now - last >= 0.16);
-        self.last_wheel = Some(now);
-        fresh
+        held
     }
 
-    fn shift_event(&mut self, event: &KeyboardInput, window: Entity, receiving: bool) -> bool {
-        if !self.accepts_event(event, window, receiving) {
-            return false;
+    fn keyboard_event(&mut self, event: &KeyboardInput, window: Entity, receiving: bool) -> u32 {
+        if !receiving || !self.active || event.window != window || event.repeat {
+            return 0;
         }
-        let index = match event.key_code {
-            KeyCode::ShiftLeft => 0,
-            KeyCode::ShiftRight => 1,
-            _ => return false,
-        };
-        let previously_held = self.shift_keys.iter().any(|held| *held);
-        self.shift_keys[index] = event.state == ButtonState::Pressed;
-        event.state == ButtonState::Pressed && !previously_held
+        if event.state == ButtonState::Released {
+            let previously_held = self.held();
+            self.pressed.remove(&event.key_code);
+            let held = self.held();
+            let mut released = 0;
+            if previously_held & 15 != 0 && held & 15 == 0 {
+                released |= MOVEMENT_RELEASED;
+            }
+            if previously_held & SPRINT != 0 && held & SPRINT == 0 {
+                released |= SHIFT_RELEASED;
+            }
+            return released;
+        }
+        let shift_held = self.held() & SPRINT != 0;
+        if !self.pressed.insert(event.key_code) {
+            return 0;
+        }
+        match event.key_code {
+            KeyCode::ShiftLeft | KeyCode::ShiftRight if !shift_held => DODGE,
+            KeyCode::Space => JUMP,
+            KeyCode::KeyE => MELEE_SKILL,
+            KeyCode::KeyQ => RANGED_SKILL,
+            KeyCode::Tab => COMBO,
+            KeyCode::Digit1 => HAMMER_MUSKET,
+            KeyCode::Digit2 => CHAIN_AXE_BOW,
+            KeyCode::KeyC => CROUCH_TOGGLE,
+            _ => 0,
+        }
     }
 
-    fn crouch_event(&mut self, event: &KeyboardInput, window: Entity, receiving: bool) -> bool {
-        if !self.accepts_event(event, window, receiving) || event.key_code != KeyCode::KeyC {
-            return false;
+    fn queue_defense(&mut self, edge: DefenseEdge) {
+        if self.defense_edges.len() >= MAX_DEFENSE_EDGES {
+            self.defense_edges.clear();
+            self.defense_edges.push(DefenseEdge::Cancelled);
+            self.right_blocked = self.mouse_pressed.contains(&MouseButton::Right);
+        } else {
+            self.defense_edges.push(edge);
         }
-        let pressed = event.state == ButtonState::Pressed;
-        let toggle = pressed && !self.crouch_key;
-        self.crouch_key = pressed;
-        toggle
     }
 
-    fn accepts_event(&self, event: &KeyboardInput, window: Entity, receiving: bool) -> bool {
-        receiving && self.active && event.window == window && !event.repeat
-    }
-
-    fn parry_event(&mut self, event: &MouseButtonInput, window: Entity, receiving: bool) -> bool {
-        if !receiving
-            || !self.active
-            || event.window != window
-            || event.button != MouseButton::Right
-        {
-            return false;
+    fn mouse_event(&mut self, event: &MouseButtonInput, window: Entity, receiving: bool) -> u32 {
+        if !receiving || !self.active || event.window != window {
+            return 0;
         }
-        let pressed = event.state == ButtonState::Pressed;
-        let request = pressed && !self.parry_button;
-        self.parry_button = pressed;
-        request
+        if event.state == ButtonState::Released {
+            if self.mouse_pressed.remove(&event.button) && event.button == MouseButton::Right {
+                if self.right_blocked {
+                    self.right_blocked = false;
+                } else {
+                    self.queue_defense(DefenseEdge::Released);
+                }
+            }
+            return 0;
+        }
+        if !self.mouse_pressed.insert(event.button) {
+            return 0;
+        }
+        match event.button {
+            MouseButton::Left => ATTACK,
+            MouseButton::Middle => TOGGLE_TARGET,
+            MouseButton::Right if !self.right_blocked => {
+                self.queue_defense(DefenseEdge::Pressed);
+                0
+            }
+            _ => 0,
+        }
     }
 }
 
@@ -171,7 +205,6 @@ pub(super) fn sample(
     mouse: (
         ResMut<ButtonInput<MouseButton>>,
         Res<AccumulatedMouseMotion>,
-        Res<AccumulatedMouseScroll>,
     ),
     mut window: Single<(Entity, &Window, &mut CursorOptions), With<PrimaryWindow>>,
     #[cfg(not(target_arch = "wasm32"))] native_events: (
@@ -179,43 +212,54 @@ pub(super) fn sample(
         MessageReader<KeyboardInput>,
         MessageReader<MouseButtonInput>,
     ),
-    capture: (
-        ResMut<CaptureState>,
-        Res<Time<Real>>,
-        ResMut<SimulationActive>,
-        ResMut<AimDistance>,
-    ),
+    capture: (ResMut<CaptureState>, ResMut<SimulationActive>),
     mut yaw: ResMut<ViewYaw>,
     mut players: Query<PlayerIntents, With<Player>>,
 ) {
-    let (mut buttons, motion, scroll) = mouse;
-    let (mut capture, time, mut simulation_active, mut aim_distance) = capture;
+    let (mut buttons, motion) = mouse;
+    let (mut capture, mut simulation_active) = capture;
     #[cfg(target_arch = "wasm32")]
-    let (active, look, aim_delta, held, commands) = {
-        let _ = (&buttons, &motion, &scroll, &mut window, &mut capture, &time);
+    let (active, look, held, commands, defense_edges) = {
+        let _ = (&buttons, &motion, &mut window, &mut capture);
         (
             super::web::active(),
             super::web::take_look(),
-            super::web::take_aim(),
             super::web::keys(),
             super::web::take_actions(),
+            super::web::take_defense_edges()
+                .into_iter()
+                .filter_map(|edge| match edge {
+                    1 => Some(DefenseEdge::Pressed),
+                    2 => Some(DefenseEdge::Released),
+                    3 => Some(DefenseEdge::Cancelled),
+                    _ => None,
+                })
+                .collect::<Vec<_>>(),
         )
     };
     #[cfg(not(target_arch = "wasm32"))]
-    let (active, look, aim_delta, held, commands) = {
+    let (active, look, held, commands, defense_edges) = {
         let (mut focus_events, mut keyboard_events, mut mouse_events) = native_events;
         let was_active = capture.active;
         let mut lost_focus = false;
         for event in focus_events.read() {
-            if event.window == window.0 && !event.focused {
-                lost_focus = true;
-            }
+            lost_focus |= event.window == window.0 && !event.focused;
         }
+        let keyboard_events = keyboard_events.read().collect::<Vec<_>>();
+        let mouse_events = mouse_events.read().collect::<Vec<_>>();
         capture.update(
             window.1.focused,
             lost_focus,
-            keys.just_pressed(KeyCode::Escape),
-            buttons.just_pressed(MouseButton::Left),
+            keyboard_events.iter().any(|event| {
+                event.window == window.0
+                    && event.key_code == KeyCode::Escape
+                    && event.state == ButtonState::Pressed
+            }),
+            mouse_events.iter().any(|event| {
+                event.window == window.0
+                    && event.button == MouseButton::Left
+                    && event.state == ButtonState::Pressed
+            }),
         );
         window.2.visible = !capture.active;
         window.2.grab_mode = if capture.active {
@@ -227,109 +271,81 @@ pub(super) fn sample(
         } else {
             CursorGrabMode::None
         };
-        // The click that captures the pointer is never also an attack, and held
-        // state from outside the game must require a fresh press after capture.
+        // Capture clicks and all inputs from that frame are consumed without play.
         if !was_active {
             keys.reset_all();
             buttons.reset_all();
-            capture.last_wheel = None;
-            capture.shift_keys = [false; 2];
-            capture.crouch_key = false;
-            capture.parry_button = false;
         }
-        let mut held = 0;
-        let mut commands = 0;
         let receiving = was_active && capture.active;
-        // Preserve every edge: release+repress can happen between two rendered
-        // frames even when ButtonInput ends both frames in the held state.
-        for event in keyboard_events.read() {
-            if capture.shift_event(event, window.0, receiving) {
-                commands |= DODGE;
-            }
-            if capture.crouch_event(event, window.0, receiving) {
+        let mut commands = 0;
+        for event in keyboard_events {
+            let command = capture.keyboard_event(event, window.0, receiving);
+            if command == CROUCH_TOGGLE {
                 commands ^= CROUCH_TOGGLE;
+            } else {
+                if command & (HAMMER_MUSKET | CHAIN_AXE_BOW) != 0 {
+                    commands &= !(HAMMER_MUSKET | CHAIN_AXE_BOW);
+                }
+                commands |= command;
             }
         }
-        for event in mouse_events.read() {
-            if capture.parry_event(event, window.0, receiving) {
-                commands |= PARRY;
-            }
-        }
-        if was_active && capture.active {
-            for (key, bit) in [
-                (KeyCode::KeyW, 1),
-                (KeyCode::KeyS, 2),
-                (KeyCode::KeyA, 4),
-                (KeyCode::KeyD, 8),
-                (KeyCode::ShiftLeft, SPRINT),
-                (KeyCode::ShiftRight, SPRINT),
-            ] {
-                if keys.pressed(key) {
-                    held |= bit;
-                }
-            }
-            for (key, bit) in [
-                (KeyCode::Space, JUMP),
-                (KeyCode::KeyE, SKILL),
-                (KeyCode::Tab, COMBO),
-                (KeyCode::Digit1, HAMMER_SNIPER),
-                (KeyCode::Digit2, AXE_CANNON),
-                (KeyCode::KeyQ, CYCLE_TARGET),
-            ] {
-                if keys.just_pressed(key) {
-                    commands |= bit;
-                }
-            }
-            if buttons.just_pressed(MouseButton::Left) {
-                commands |= ATTACK;
-            }
-            if capture.scroll(scroll.delta.y, time.elapsed_secs_f64()) {
-                commands |= SWITCH_WEAPON;
+        for event in mouse_events {
+            let command = capture.mouse_event(event, window.0, receiving);
+            if command == TOGGLE_TARGET {
+                commands ^= TOGGLE_TARGET;
+            } else {
+                commands |= command;
             }
         }
         (
             capture.active,
-            if was_active { motion.delta.x } else { 0.0 },
-            if was_active { motion.delta.y } else { 0.0 },
-            held,
+            if receiving { motion.delta.x } else { 0.0 },
+            capture.held(),
             commands,
+            std::mem::take(&mut capture.defense_edges),
         )
     };
     simulation_active.0 = active;
     if !active {
         keys.reset_all();
         buttons.reset_all();
-        for (_, mut intent, mut actions, _, mut combat, _, _) in &mut players {
+        for (_, mut intent, mut actions, _, mut combat, _, mut defense) in &mut players {
             intent.stop();
             actions.clear();
             combat.clear();
+            defense.clear();
         }
         return;
     }
-    // Consume mouse samples during the brief authored shot, without buffering a
-    // turn that would be applied suddenly when the top-down camera returns.
+    // Both combo cameras discard look samples and retain the pre-combo yaw.
     if !players
         .iter()
-        .any(|(_, _, _, _, _, loadout, _)| loadout.is_sniping())
+        .any(|(_, _, _, _, _, loadout, _)| loadout.is_combo_active())
     {
         yaw.turn(look);
     }
     let axis = movement_axis([held & 1 != 0, held & 2 != 0, held & 4 != 0, held & 8 != 0]);
     let forward = movement_direction(Vec2::Y, yaw.yaw());
-    for (body, mut intent, mut actions, mut facing, mut combat, loadout, motion) in &mut players {
+    for (body, mut intent, mut actions, mut facing, mut combat, loadout, mut defense) in
+        &mut players
+    {
         intent.set(movement_direction(axis, yaw.yaw()));
-        facing.set(loadout.sniper_sequence().map_or(forward, |sequence| {
+        facing.set(loadout.sequence().map_or(forward, |sequence| {
             (sequence.aim_position() - body.world_position()).xz()
         }));
+        // A release followed by a new press between samples still ends the old
+        // physical hold; Intent keeps that fact until a real fixed tick.
+        if commands & SHIFT_RELEASED != 0 {
+            actions.set_shift_held(false);
+        }
+        if commands & MOVEMENT_RELEASED != 0 {
+            actions.set_movement_held(false);
+        }
         actions.set_shift_held(held & SPRINT != 0);
         actions.set_movement_held(held & 15 != 0);
-        if loadout.weapon_set() == WeaponSet::AxeCannon
-            && loadout.weapon_mode() == WeaponMode::Ranged
-            && !motion.is_leaping()
-        {
-            aim_distance.adjust(aim_delta);
+        for edge in &defense_edges {
+            defense.push_edge(*edge);
         }
-        combat.set_aim(body.position() + forward * aim_distance.0);
         if commands & JUMP != 0 {
             actions.request_jump();
         }
@@ -339,29 +355,26 @@ pub(super) fn sample(
         if commands & CROUCH_TOGGLE != 0 {
             actions.request_crouch_toggle();
         }
-        if commands & PARRY != 0 {
-            actions.request_parry();
-        }
         if commands & ATTACK != 0 {
             combat.request_attack();
         }
-        if commands & SKILL != 0 {
-            combat.request_skill();
+        if commands & MELEE_SKILL != 0 {
+            combat.request_melee_skill();
+        }
+        if commands & RANGED_SKILL != 0 {
+            combat.request_ranged_skill();
         }
         if commands & COMBO != 0 {
             combat.request_combo();
         }
-        if commands & SWITCH_WEAPON != 0 {
-            combat.request_switch_weapon();
+        if commands & HAMMER_MUSKET != 0 {
+            combat.request_pair(WeaponPair::HammerMusket);
         }
-        if commands & HAMMER_SNIPER != 0 {
-            combat.request_set(WeaponSet::HammerSniper);
+        if commands & CHAIN_AXE_BOW != 0 {
+            combat.request_pair(WeaponPair::ChainAxeBow);
         }
-        if commands & AXE_CANNON != 0 {
-            combat.request_set(WeaponSet::AxeCannon);
-        }
-        if commands & CYCLE_TARGET != 0 {
-            combat.request_cycle_target();
+        if commands & TOGGLE_TARGET != 0 {
+            combat.request_toggle_target();
         }
     }
 }
@@ -370,211 +383,546 @@ pub(super) fn sample(
 mod tests {
     use super::*;
 
-    #[test]
-    fn aiming_distance_stays_within_cast_range_and_rejects_invalid_motion() {
-        let mut distance = AimDistance::default();
-        distance.adjust(100.0);
-        assert!(distance.0 < 6.0);
-        distance.adjust(f32::NAN);
-        distance.adjust(f32::INFINITY);
-        assert!(distance.0.is_finite());
-        distance.adjust(100_000.0);
-        assert_eq!(distance.0, 1.0);
-        distance.adjust(-100_000.0);
-        assert_eq!(distance.0, 8.0);
-    }
-
     #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn parry_preserves_short_taps_and_requires_a_fresh_press() {
+    fn captured() -> CaptureState {
         let mut capture = CaptureState::default();
         capture.update(true, false, false, true);
-        let mut event = MouseButtonInput {
-            button: MouseButton::Right,
-            state: ButtonState::Pressed,
-            window: Entity::PLACEHOLDER,
-        };
-        assert!(!capture.parry_event(&event, event.window, false));
-        assert!(capture.parry_event(&event, event.window, true));
-        assert!(!capture.parry_event(&event, event.window, true));
-        event.state = ButtonState::Released;
-        assert!(!capture.parry_event(&event, event.window, true));
-        event.state = ButtonState::Pressed;
-        assert!(capture.parry_event(&event, event.window, true));
-        capture.update(false, true, false, false);
-        assert!(!capture.parry_button);
-        assert!(!capture.parry_event(&event, event.window, true));
+        capture.defense_edges.clear();
+        capture
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn transient_focus_loss_requires_a_new_click_even_when_final_window_is_focused() {
-        let mut capture = CaptureState::default();
-        capture.update(true, false, false, true);
-        assert!(capture.active);
-        capture.update(true, true, false, false);
-        assert!(!capture.active);
-        capture.update(true, false, false, false);
-        assert!(!capture.active);
-        capture.update(true, false, false, true);
-        assert!(capture.active);
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn wheel_inertia_has_one_switch_until_quiet_and_capture_loss_resets_it() {
-        let mut capture = CaptureState::default();
-        capture.update(true, false, false, true);
-        assert!(capture.scroll(1.0, 0.0));
-        assert!(!capture.scroll(1.0, 0.05));
-        assert!(!capture.scroll(-0.5, 0.1));
-        assert!(capture.scroll(-1.0, 0.3));
-        assert!(!capture.scroll(f32::NAN, 1.0));
-        assert!(!capture.scroll(0.0, 1.0));
-        capture.update(false, true, false, false);
-        capture.update(true, false, false, true);
-        assert!(capture.scroll(1.0, 0.31));
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn native_shift_repress_between_frames_preserves_the_new_edge() {
-        let mut capture = CaptureState::default();
-        capture.update(true, false, false, true);
-        let press = key_event(KeyCode::ShiftLeft, ButtonState::Pressed);
-        let release = key_event(KeyCode::ShiftLeft, ButtonState::Released);
-        assert!(capture.shift_event(&press, Entity::PLACEHOLDER, true));
-        // Previous render ended held; next render receives release+press but
-        // its final ButtonInput snapshot would also be held.
-        assert!(!capture.shift_event(&release, Entity::PLACEHOLDER, true));
-        assert!(capture.shift_event(&press, Entity::PLACEHOLDER, true));
-        assert!(!capture.shift_event(&press, Entity::PLACEHOLDER, true));
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn native_shift_handoff_requires_all_shift_keys_released_before_another_dodge() {
-        let mut capture = CaptureState::default();
-        capture.update(true, false, false, true);
-        let left_down = key_event(KeyCode::ShiftLeft, ButtonState::Pressed);
-        let right_down = key_event(KeyCode::ShiftRight, ButtonState::Pressed);
-        let left_up = key_event(KeyCode::ShiftLeft, ButtonState::Released);
-        let right_up = key_event(KeyCode::ShiftRight, ButtonState::Released);
-        assert!(capture.shift_event(&left_down, Entity::PLACEHOLDER, true));
-        assert!(!capture.shift_event(&right_down, Entity::PLACEHOLDER, true));
-        assert!(!capture.shift_event(&left_up, Entity::PLACEHOLDER, true));
-        assert!(!capture.shift_event(&left_down, Entity::PLACEHOLDER, true));
-        assert!(!capture.shift_event(&right_up, Entity::PLACEHOLDER, true));
-        assert!(!capture.shift_event(&left_up, Entity::PLACEHOLDER, true));
-        assert!(capture.shift_event(&right_down, Entity::PLACEHOLDER, true));
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn native_shift_short_tap_is_preserved_even_when_final_snapshot_is_released() {
-        let mut capture = CaptureState::default();
-        capture.update(true, false, false, true);
-        let press = key_event(KeyCode::ShiftLeft, ButtonState::Pressed);
-        let release = key_event(KeyCode::ShiftLeft, ButtonState::Released);
-        let mut queued = false;
-        for event in [&press, &release] {
-            queued |= capture.shift_event(event, Entity::PLACEHOLDER, true);
-        }
-        assert!(queued);
-        assert_eq!(capture.shift_keys, [false; 2]);
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn native_shift_ignores_inactive_capture_frame_repeats_and_other_windows() {
-        let mut capture = CaptureState::default();
-        let mut press = key_event(KeyCode::ShiftLeft, ButtonState::Pressed);
-        assert!(!capture.shift_event(&press, Entity::PLACEHOLDER, true));
-        capture.update(true, false, false, true);
-        assert!(!capture.shift_event(&press, Entity::PLACEHOLDER, false));
-        let other_window = World::new().spawn_empty().id();
-        assert!(!capture.shift_event(&press, other_window, true));
-        press.repeat = true;
-        assert!(!capture.shift_event(&press, Entity::PLACEHOLDER, true));
-        assert_eq!(capture.shift_keys, [false; 2]);
-        press.repeat = false;
-        assert!(capture.shift_event(&press, Entity::PLACEHOLDER, true));
-        capture.update(false, true, false, false);
-        assert_eq!(capture.shift_keys, [false; 2]);
-        capture.update(true, false, false, true);
-        assert!(!capture.shift_event(&press, Entity::PLACEHOLDER, false));
-        assert!(capture.shift_event(&press, Entity::PLACEHOLDER, true));
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn native_crouch_short_tap_keeps_one_toggle_while_release_and_repeats_do_not_toggle() {
-        let mut capture = CaptureState::default();
-        capture.update(true, false, false, true);
-        let mut press = key_event(KeyCode::KeyC, ButtonState::Pressed);
-        let release = key_event(KeyCode::KeyC, ButtonState::Released);
-        assert!(capture.crouch_event(&press, Entity::PLACEHOLDER, true));
-        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, true));
-        press.repeat = true;
-        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, true));
-        assert!(!capture.crouch_event(&release, Entity::PLACEHOLDER, true));
-        assert!(!capture.crouch_key);
-        press.repeat = false;
-        assert!(capture.crouch_event(&press, Entity::PLACEHOLDER, true));
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn native_crouch_two_complete_taps_cancel_without_changing_a_queued_dodge() {
-        let mut capture = CaptureState::default();
-        capture.update(true, false, false, true);
-        let press = key_event(KeyCode::KeyC, ButtonState::Pressed);
-        let release = key_event(KeyCode::KeyC, ButtonState::Released);
-        let mut commands = DODGE;
-        for event in [&press, &release, &press, &release] {
-            if capture.crouch_event(event, Entity::PLACEHOLDER, true) {
-                commands ^= CROUCH_TOGGLE;
-            }
-        }
-        assert_eq!(commands, DODGE);
-        assert!(!capture.crouch_key);
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    #[test]
-    fn native_crouch_clears_on_focus_loss_and_rejects_capture_frame_or_other_window() {
-        let mut capture = CaptureState::default();
-        let mut press = key_event(KeyCode::KeyC, ButtonState::Pressed);
-        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, true));
-        capture.update(true, false, false, true);
-        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, false));
-        let other_window = World::new().spawn_empty().id();
-        assert!(!capture.crouch_event(&press, other_window, true));
-        assert!(capture.crouch_event(&press, Entity::PLACEHOLDER, true));
-        capture.update(false, true, false, false);
-        assert!(!capture.crouch_key);
-        capture.update(true, false, false, true);
-        press.repeat = true;
-        assert!(!capture.crouch_event(&press, Entity::PLACEHOLDER, true));
-        assert!(!capture.crouch_key);
-        press.repeat = false;
-        assert!(capture.crouch_event(&press, Entity::PLACEHOLDER, true));
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    fn key_event(key_code: KeyCode, state: ButtonState) -> KeyboardInput {
+    fn key(key_code: KeyCode, state: ButtonState) -> KeyboardInput {
         KeyboardInput {
             key_code,
-            logical_key: if key_code == KeyCode::KeyC {
-                bevy::input::keyboard::Key::Character("c".into())
-            } else {
-                bevy::input::keyboard::Key::Shift
-            },
+            logical_key: bevy::input::keyboard::Key::Unidentified(
+                bevy::input::keyboard::NativeKey::Unidentified,
+            ),
             state,
             text: None,
             repeat: false,
             window: Entity::PLACEHOLDER,
         }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn mouse(button: MouseButton, state: ButtonState) -> MouseButtonInput {
+        MouseButtonInput {
+            button,
+            state,
+            window: Entity::PLACEHOLDER,
+        }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_skill_keydowns_are_distinct_and_hold_repeat_release_do_not_attack() {
+        let mut capture = captured();
+        for (code, command) in [(KeyCode::KeyE, MELEE_SKILL), (KeyCode::KeyQ, RANGED_SKILL)] {
+            let mut press = key(code, ButtonState::Pressed);
+            assert_eq!(capture.keyboard_event(&press, press.window, true), command);
+            assert_eq!(capture.keyboard_event(&press, press.window, true), 0);
+            press.repeat = true;
+            assert_eq!(capture.keyboard_event(&press, press.window, true), 0);
+            let release = key(code, ButtonState::Released);
+            assert_eq!(capture.keyboard_event(&release, release.window, true), 0);
+            press.repeat = false;
+            assert_eq!(capture.keyboard_event(&press, press.window, true), command);
+        }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_keyboard_events_preserve_short_shift_taps_repress_and_handoff() {
+        let mut capture = captured();
+        let left_down = key(KeyCode::ShiftLeft, ButtonState::Pressed);
+        let right_down = key(KeyCode::ShiftRight, ButtonState::Pressed);
+        let left_up = key(KeyCode::ShiftLeft, ButtonState::Released);
+        let right_up = key(KeyCode::ShiftRight, ButtonState::Released);
+        assert_eq!(
+            capture.keyboard_event(&left_down, left_down.window, true),
+            DODGE
+        );
+        assert_eq!(
+            capture.keyboard_event(&right_down, right_down.window, true),
+            0
+        );
+        assert_eq!(capture.keyboard_event(&left_up, left_up.window, true), 0);
+        assert_eq!(capture.held(), SPRINT);
+        assert_eq!(
+            capture.keyboard_event(&left_down, left_down.window, true),
+            0
+        );
+        assert_eq!(capture.keyboard_event(&left_up, left_up.window, true), 0);
+        assert_eq!(
+            capture.keyboard_event(&right_up, right_up.window, true),
+            SHIFT_RELEASED
+        );
+        assert_eq!(capture.held(), 0);
+        assert_eq!(
+            capture.keyboard_event(&left_down, left_down.window, true),
+            DODGE
+        );
+        assert_eq!(
+            capture.keyboard_event(&left_up, left_up.window, true),
+            SHIFT_RELEASED
+        );
+        assert_eq!(
+            capture.keyboard_event(&left_down, left_down.window, true),
+            DODGE
+        );
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_crouch_taps_keep_parity_without_changing_other_queued_actions() {
+        let mut capture = captured();
+        let mut commands = JUMP;
+        for _ in 0..2 {
+            let mut press = key(KeyCode::KeyC, ButtonState::Pressed);
+            commands ^= capture.keyboard_event(&press, press.window, true);
+            assert_eq!(capture.keyboard_event(&press, press.window, true), 0);
+            press.repeat = true;
+            assert_eq!(capture.keyboard_event(&press, press.window, true), 0);
+            let release = key(KeyCode::KeyC, ButtonState::Released);
+            assert_eq!(capture.keyboard_event(&release, release.window, true), 0);
+        }
+        assert_eq!(commands, JUMP);
+        let press = key(KeyCode::KeyC, ButtonState::Pressed);
+        commands ^= capture.keyboard_event(&press, press.window, true);
+        assert_eq!(commands, JUMP | CROUCH_TOGGLE);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_movement_uses_physical_held_keys_even_when_their_axes_cancel() {
+        let mut capture = captured();
+        for code in [KeyCode::KeyW, KeyCode::KeyS] {
+            let press = key(code, ButtonState::Pressed);
+            capture.keyboard_event(&press, press.window, true);
+        }
+        assert_eq!(capture.held(), 3);
+        assert_eq!(movement_axis([true, true, false, false]), Vec2::ZERO);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_mouse_taps_preserve_defense_order_and_deduplicate_left_and_middle() {
+        let mut capture = captured();
+        for (button, command) in [
+            (MouseButton::Left, ATTACK),
+            (MouseButton::Middle, TOGGLE_TARGET),
+        ] {
+            let press = mouse(button, ButtonState::Pressed);
+            assert_eq!(capture.mouse_event(&press, press.window, true), command);
+            assert_eq!(capture.mouse_event(&press, press.window, true), 0);
+            let release = mouse(button, ButtonState::Released);
+            assert_eq!(capture.mouse_event(&release, release.window, true), 0);
+            assert_eq!(capture.mouse_event(&press, press.window, true), command);
+        }
+        let press = mouse(MouseButton::Right, ButtonState::Pressed);
+        let release = mouse(MouseButton::Right, ButtonState::Released);
+        for _ in 0..2 {
+            assert_eq!(capture.mouse_event(&press, press.window, true), 0);
+            assert_eq!(capture.mouse_event(&press, press.window, true), 0);
+            assert_eq!(capture.mouse_event(&release, release.window, true), 0);
+            assert_eq!(capture.mouse_event(&release, release.window, true), 0);
+        }
+        assert_eq!(
+            std::mem::take(&mut capture.defense_edges),
+            [
+                DefenseEdge::Pressed,
+                DefenseEdge::Released,
+                DefenseEdge::Pressed,
+                DefenseEdge::Released,
+            ]
+        );
+        assert!(capture.defense_edges.is_empty());
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_defense_overflow_cancels_and_requires_release_before_another_press() {
+        let mut capture = captured();
+        let press = mouse(MouseButton::Right, ButtonState::Pressed);
+        let release = mouse(MouseButton::Right, ButtonState::Released);
+        for _ in 0..32 {
+            capture.mouse_event(&press, press.window, true);
+            capture.mouse_event(&release, release.window, true);
+        }
+        assert_eq!(capture.defense_edges.len(), MAX_DEFENSE_EDGES);
+        capture.mouse_event(&press, press.window, true);
+        capture.mouse_event(&press, press.window, true);
+        assert_eq!(
+            std::mem::take(&mut capture.defense_edges),
+            [DefenseEdge::Cancelled]
+        );
+        capture.mouse_event(&release, release.window, true);
+        assert!(capture.defense_edges.is_empty());
+        capture.mouse_event(&press, press.window, true);
+        capture.mouse_event(&release, release.window, true);
+        assert_eq!(
+            capture.defense_edges,
+            [DefenseEdge::Pressed, DefenseEdge::Released]
+        );
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_focus_loss_and_escape_cancel_instead_of_releasing_and_require_a_capture_click() {
+        for escape in [false, true] {
+            let mut capture = captured();
+            let press = mouse(MouseButton::Right, ButtonState::Pressed);
+            let release = mouse(MouseButton::Right, ButtonState::Released);
+            capture.mouse_event(&press, press.window, true);
+            // Final Window.focused may already be true; the intermediate event matters.
+            capture.update(true, !escape, escape, true);
+            assert!(!capture.active);
+            assert_eq!(capture.defense_edges, [DefenseEdge::Cancelled]);
+            assert_eq!(capture.mouse_event(&release, release.window, true), 0);
+            capture.update(true, false, false, false);
+            assert!(!capture.active);
+            capture.update(true, false, false, true);
+            assert!(capture.active);
+            assert_eq!(capture.mouse_event(&release, release.window, true), 0);
+            assert_eq!(capture.defense_edges, [DefenseEdge::Cancelled]);
+            capture.mouse_event(&press, press.window, true);
+            assert_eq!(
+                capture.defense_edges,
+                [DefenseEdge::Cancelled, DefenseEdge::Pressed]
+            );
+        }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_capture_frame_other_windows_and_refocus_repeats_cannot_create_inputs() {
+        let mut capture = CaptureState::default();
+        let mut press = key(KeyCode::KeyQ, ButtonState::Pressed);
+        let mouse_press = mouse(MouseButton::Right, ButtonState::Pressed);
+        assert_eq!(capture.keyboard_event(&press, press.window, true), 0);
+        assert_eq!(
+            capture.mouse_event(&mouse_press, mouse_press.window, true),
+            0
+        );
+        capture.update(true, false, false, true);
+        assert_eq!(capture.keyboard_event(&press, press.window, false), 0);
+        assert_eq!(
+            capture.mouse_event(&mouse_press, mouse_press.window, false),
+            0
+        );
+        let other = World::new().spawn_empty().id();
+        assert_eq!(capture.keyboard_event(&press, other, true), 0);
+        assert_eq!(capture.mouse_event(&mouse_press, other, true), 0);
+        assert!(capture.pressed.is_empty());
+        assert!(capture.mouse_pressed.is_empty());
+        press.repeat = true;
+        assert_eq!(capture.keyboard_event(&press, press.window, true), 0);
+        assert!(capture.pressed.is_empty());
+        press.repeat = false;
+        assert_eq!(
+            capture.keyboard_event(&press, press.window, true),
+            RANGED_SKILL
+        );
+        capture.update(false, true, false, false);
+        assert!(capture.pressed.is_empty());
+        capture.update(true, false, false, true);
+        press.repeat = true;
+        assert_eq!(capture.keyboard_event(&press, press.window, true), 0);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn input_app() -> (App, Entity, Entity) {
+        use crate::simulation::SimulationPlugin;
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin))
+            .add_message::<WindowFocused>()
+            .add_message::<KeyboardInput>()
+            .add_message::<MouseButtonInput>()
+            .init_resource::<ButtonInput<KeyCode>>()
+            .init_resource::<ButtonInput<MouseButton>>()
+            .init_resource::<AccumulatedMouseMotion>()
+            .init_resource::<CaptureState>()
+            .init_resource::<ViewYaw>()
+            .add_systems(Update, sample);
+        app.finish();
+        crate::gameplay::setup(app.world_mut());
+        let window = app
+            .world_mut()
+            .spawn((Window::default(), CursorOptions::default(), PrimaryWindow))
+            .id();
+        let actor = app
+            .world_mut()
+            .query_filtered::<Entity, With<Player>>()
+            .single(app.world())
+            .unwrap();
+        fixed(&mut app, 30);
+        // The capture click is deliberately sent through the real sample system.
+        send_mouse(&mut app, window, MouseButton::Left, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        send_mouse(&mut app, window, MouseButton::Left, ButtonState::Released);
+        app.world_mut().run_schedule(Update);
+        (app, actor, window)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn fixed(app: &mut App, count: usize) {
+        for _ in 0..count {
+            app.world_mut()
+                .resource_mut::<Time<Fixed>>()
+                .advance_by(std::time::Duration::from_secs_f64(1.0 / 60.0));
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn send_mouse(app: &mut App, window: Entity, button: MouseButton, state: ButtonState) {
+        let mut event = mouse(button, state);
+        event.window = window;
+        app.world_mut().write_message(event);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn send_key(app: &mut App, window: Entity, code: KeyCode, state: ButtonState) {
+        let mut event = key(code, state);
+        event.window = window;
+        app.world_mut().write_message(event);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_sample_preserves_a_tap_through_zero_fixed_frames_and_consumes_it_once() {
+        let (mut app, actor, window) = input_app();
+        send_mouse(&mut app, window, MouseButton::Right, ButtonState::Pressed);
+        send_mouse(&mut app, window, MouseButton::Right, ButtonState::Released);
+        app.world_mut().run_schedule(Update);
+        for _ in 0..3 {
+            app.world_mut().run_schedule(Update);
+        }
+        assert!(!app.world().get::<DefenseState>(actor).unwrap().is_active());
+        fixed(&mut app, 1);
+        assert!(
+            app.world()
+                .get::<DefenseState>(actor)
+                .unwrap()
+                .is_deflecting()
+        );
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 20);
+        let defense = app.world().get::<DefenseState>(actor).unwrap();
+        assert!(!defense.is_active());
+        assert!(defense.deflect_cooldown() > 0.0);
+        fixed(&mut app, 25);
+        assert!(!app.world().get::<DefenseState>(actor).unwrap().is_active());
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_sample_focus_loss_cancels_guard_without_a_release_parry_after_recapture() {
+        let (mut app, actor, window) = input_app();
+        send_mouse(&mut app, window, MouseButton::Right, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 14);
+        assert!(
+            app.world()
+                .get::<DefenseState>(actor)
+                .unwrap()
+                .is_guarding()
+        );
+        app.world_mut().write_message(WindowFocused {
+            window,
+            focused: false,
+        });
+        app.world_mut().write_message(WindowFocused {
+            window,
+            focused: true,
+        });
+        send_mouse(&mut app, window, MouseButton::Right, ButtonState::Released);
+        app.world_mut().run_schedule(Update);
+        assert!(!app.world().resource::<SimulationActive>().0);
+        fixed(&mut app, 3);
+        send_mouse(&mut app, window, MouseButton::Left, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 1);
+        let defense = app.world().get::<DefenseState>(actor).unwrap();
+        assert!(!defense.is_active());
+        assert_eq!(defense.parry_cooldown(), 0.0);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_sample_middle_toggles_lock_and_focus_clear_preserves_the_committed_q_action() {
+        use crate::simulation::ActionKind;
+        let (mut app, actor, window) = input_app();
+        assert!(
+            app.world()
+                .get::<Combatant>(actor)
+                .unwrap()
+                .target()
+                .is_none()
+        );
+        send_mouse(&mut app, window, MouseButton::Middle, ButtonState::Pressed);
+        send_mouse(&mut app, window, MouseButton::Middle, ButtonState::Released);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 1);
+        let target = app.world().get::<Combatant>(actor).unwrap().target();
+        assert!(target.is_some());
+        send_key(&mut app, window, KeyCode::KeyQ, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 1);
+        let before = app
+            .world()
+            .get::<Combatant>(actor)
+            .unwrap()
+            .active_action()
+            .unwrap();
+        assert_eq!(before.kind, ActionKind::MusketShot);
+        assert_eq!(
+            app.world().get::<Combatant>(actor).unwrap().target(),
+            target
+        );
+        app.world_mut().write_message(WindowFocused {
+            window,
+            focused: false,
+        });
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 5);
+        let paused = app
+            .world()
+            .get::<Combatant>(actor)
+            .unwrap()
+            .active_action()
+            .unwrap();
+        assert_eq!(paused.action_id, before.action_id);
+        assert_eq!(paused.elapsed, before.elapsed);
+        send_mouse(&mut app, window, MouseButton::Left, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 1);
+        let resumed = app
+            .world()
+            .get::<Combatant>(actor)
+            .unwrap()
+            .active_action()
+            .unwrap();
+        assert_eq!(resumed.action_id, before.action_id);
+        assert!(resumed.elapsed > before.elapsed);
+        // No left attack from the click used to resume capture.
+        assert_eq!(resumed.kind, ActionKind::MusketShot);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_direction_release_fact_requires_the_entire_physical_group_to_be_up() {
+        let mut capture = captured();
+        for code in [KeyCode::KeyW, KeyCode::KeyS] {
+            let press = key(code, ButtonState::Pressed);
+            capture.keyboard_event(&press, press.window, true);
+        }
+        let w_up = key(KeyCode::KeyW, ButtonState::Released);
+        let s_up = key(KeyCode::KeyS, ButtonState::Released);
+        assert_eq!(capture.keyboard_event(&w_up, w_up.window, true), 0);
+        assert_eq!(
+            capture.keyboard_event(&s_up, s_up.window, true),
+            MOVEMENT_RELEASED
+        );
+        assert_eq!(capture.keyboard_event(&s_up, s_up.window, true), 0);
+        let w_down = key(KeyCode::KeyW, ButtonState::Pressed);
+        capture.keyboard_event(&w_down, w_down.window, true);
+        assert_eq!(capture.held(), 1);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_sample_direction_release_and_repress_end_sprint_even_with_zero_fixed_frames() {
+        use crate::simulation::MotionState;
+        let (mut app, actor, window) = input_app();
+        send_key(&mut app, window, KeyCode::KeyW, ButtonState::Pressed);
+        send_key(&mut app, window, KeyCode::ShiftLeft, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 30);
+        assert!(
+            app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .is_sprinting()
+        );
+        send_key(&mut app, window, KeyCode::ShiftLeft, ButtonState::Released);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 1);
+        assert!(
+            app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .sprint_latched()
+        );
+        send_key(&mut app, window, KeyCode::KeyW, ButtonState::Released);
+        send_key(&mut app, window, KeyCode::KeyW, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        // The final device snapshot is unchanged and more render frames may have no tick.
+        assert_eq!(app.world().resource::<CaptureState>().held(), 1);
+        app.world_mut().run_schedule(Update);
+        assert!(
+            app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .sprint_latched()
+        );
+        fixed(&mut app, 1);
+        let motion = app.world().get::<MotionState>(actor).unwrap();
+        assert!(!motion.sprint_latched());
+        assert!(!motion.is_sprinting());
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn native_sample_shift_release_and_repress_restart_hold_when_new_dodges_are_rejected() {
+        use crate::simulation::{ActionKind, MotionState};
+        let (mut app, actor, window) = input_app();
+        // A committed melee action rejects new dodge commands, so only the
+        // physical Shift release can reset continuous-hold timing in this case.
+        send_mouse(&mut app, window, MouseButton::Left, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 1);
+        assert_eq!(
+            app.world()
+                .get::<Combatant>(actor)
+                .unwrap()
+                .active_action()
+                .unwrap()
+                .kind,
+            ActionKind::Melee
+        );
+        send_key(&mut app, window, KeyCode::KeyW, ButtonState::Pressed);
+        send_key(&mut app, window, KeyCode::ShiftLeft, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 6);
+        assert!(!app.world().get::<MotionState>(actor).unwrap().is_dodging());
+        assert!(
+            !app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .sprint_latched()
+        );
+        send_key(&mut app, window, KeyCode::ShiftLeft, ButtonState::Released);
+        send_key(&mut app, window, KeyCode::ShiftLeft, ButtonState::Pressed);
+        app.world_mut().run_schedule(Update);
+        assert_eq!(app.world().resource::<CaptureState>().held(), 1 | SPRINT);
+        app.world_mut().run_schedule(Update);
+        fixed(&mut app, 4);
+        assert!(
+            !app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .sprint_latched()
+        );
+        fixed(&mut app, 6);
+        assert!(
+            app.world()
+                .get::<MotionState>(actor)
+                .unwrap()
+                .sprint_latched()
+        );
+        assert!(!app.world().get::<MotionState>(actor).unwrap().is_dodging());
     }
 
     #[test]

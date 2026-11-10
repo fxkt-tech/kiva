@@ -1,0 +1,71 @@
+# 第一版双角色表现契约
+
+## Scope / Trigger
+
+修改 client/{companion,weapons,animation,combat,camera,impact,hud,audio,appearance}.rs、Web HUD 或相关 World 测试时阅读。
+具体输入见 [input.md](input.md)，权威动作见 [../simulation/combat-v1.md](../simulation/combat-v1.md)。
+
+## Signatures
+
+- CompanionView { owner, performer }：owner 为哥哥，performer 为逻辑 Companion；不要求 performer 有 Body。
+- companion::setup／sync 读取 CompanionState，维护独立 RigPose 和临时妹妹显示根。
+- weapons::spawn／setup_tether／sync_tether 建立共享临时武器、链斧离手实体和绳索。
+- Combatant::sequence() 返回 SequenceSnapshot；kind 区分 HammerCombo 与 ChainCombo，cancelled 及 action_id 用于恢复和冲击归属。
+- kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)，pair=1 锤鸟／2 链斧弓。
+- kivaHud.renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)，defense=0 Idle／1 Deflect／2 Waiting／3 Guard／4 Parry。
+- renderTarget(name,current,maximum,status) 与 render(persona,weapon,fraction,health,combo,cooldown,context) 保留只读方向。
+- CombatEvent.pair 固定记录产生事件时的武器组；声音或弹道不能用当前套装猜历史事件的武器。
+
+## Contracts
+
+哥哥一直使用已有蒙皮身体和近战动作；妹妹使用独立蓝色临时人形与 RigPose，不贴 PlayerView／ActorView 来重放哥哥所有动作。
+妹妹出场位置、射击源、瞄准点和 elapsed 都来自模拟；显示使用相同 fixed overstep，暂停和 HitStop 取当前快照。
+程序化鸟铳以局部原点为枪口，朝 -Z；武器、枪口火花、弹道与模拟 source_position 对齐。弓箭类型按事件 pair 判断，不能因玩家随后切组而改变历史表现。
+锤、鸟铳、链斧、弓为四种有区别的共享临时几何；重复技能不增长网格／材质，不宣称是正式或原作资源。
+链斧离手时哥哥手中武器隐藏，绳索／飞斧读取实际动作时间线与物理位置；收招／取消归还，不能同时出现两把同一链斧。
+F3 只替换哥哥身体和服饰，保留 RigPose／显示根／物理状态；不替换新武器、不影响妹妹与敌人。敌人原刀外观保留。
+
+锤鸟镜头从正常跟随进入低位仰视：约 0.20s 入场，三发为 0.30／0.42／0.54s，0.68–0.96s 回切。
+链斧弓使用约人物胸口高度的平视镜头，0.65–0.93s 回切。两种相机都跟同一个哥哥显示位置，复用球体扫掠净空。
+普通镜头 FOV 50°、高度 6m、后距 4.2m 和下三分点构图保持。
+镜头和后坐必须关联当前动作，取消、死亡、F2 替换不能让冻结的旧后坐永远留在普通相机。
+目标死亡或取消时使用序列最后瞄准点恢复；相机不另建会推进技能的时钟。
+普通特效与专用冲击各自游标消费，SniperShot／SniperImpact 只追加表现，不重复伤害或播放第二声。
+
+HUD 显示玩家生命 1000、耐力、当前组、E／Q 独立冷却、右键阶段、Tab 条件与链斧离手。就绪快照必须跟随模拟本步最终状态。
+目标血条来自当前 Combatant.target，联动原目标不能强行覆盖用户当前锁定。
+Web 只更新安全文字、progress、SVG href、显隐、样式类和无障碍属性；无独立冷却时钟或演示点击控制。
+
+音频按真实 Shot 一次消费：鸟铳沿用已缓存程序枪声，弓发射临时复用随包共享 attack cue。
+Block／Deflect／Parry 沿用现有程序 hit／deflect 适配，没有新增原作武器音频。音效来源不能标成已恢复的鸟铳／弓原作媒体。
+source_owner 用于玩家归属，actor 决定真正演出者；妹妹开枪不在哥哥身上播放射击动作。
+失锁跳过新事件并前移游标，不恢复后补播；暂停／音乐／声部契约继续沿用客户端索引。
+
+## Validation & Error Matrix
+
+| 情况 | 行为 |
+|---|---|
+| performer 无 Body／Health | 正常读取 CompanionState，不尝试物理查询 |
+| 模式替换／逻辑妹妹失效 | 显示隐藏或回收，旧绳索／后坐不残留 |
+| 事件跨套装变化后才消费 | 仍使用事件原始 pair，不看最新 CompanionState |
+| 暂停／HitStop | 共同取 current；骨骼时间冻结，专用冲击可在 HitStop 继续 |
+| F3 在暂停／空中切身体 | 不重置物理、动作、武器组或妹妹 |
+| DOM 未就绪 | 缓存最新状态，挂载后重放 |
+| 重复消费／反馈历史跨多步 | 每序号一次，无重复声音／伤害／资产分配 |
+
+## Good / Base / Bad Cases
+
+Good：Q 由妹妹开枪，哥哥保持原武器与动作；随后切组，尚未消费的事件仍播放原武器声音。
+Base：一轮联动结束，妹妹退场、链斧回手、镜头回普通构图。
+Bad：F2 暂停换敌人后还保留上次后坐；同一个 PlayerView 同时承接哥哥和妹妹的射击。
+
+## Tests Required
+
+保留皮肤／源动画／IK／外观资源复用／真实相机投影与净空回归。
+新增实际 Q／三发事件的妹妹归属、独立模型／枪口、暂停／失效回收、绳索与离手、双冷却／耐力和 immutable pair 音频测试。
+Node 执行实际 HUD／appearance／audio 桥；make check、WASM Clippy 和临时 Trunk 构建后，单独记录浏览器画面与交互观察。
+
+## Wrong vs Correct
+
+错误：用 source_owner 匹配玩家后把妹妹事件播给哥哥，或依据最新武器组重放历史声音。
+正确：actor 路由动作、source_owner 归属玩家、事件 pair 决定武器，模拟快照唯一推进时序。

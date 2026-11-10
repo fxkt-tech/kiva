@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 use crate::{
     gameplay::Player,
-    simulation::{CombatEffect, CombatEvent, CombatFeedback, SimulationActive},
+    simulation::{CombatEffect, CombatEvent, CombatFeedback, SimulationActive, WeaponPair},
 };
 
 #[cfg(target_arch = "wasm32")]
@@ -23,6 +23,7 @@ enum Sound {
     Hit,
     Deflect,
     Shot,
+    Arrow,
 }
 
 pub(super) fn sync(
@@ -34,7 +35,12 @@ pub(super) fn sync(
     #[cfg(target_arch = "wasm32")]
     browser_active(active.0);
     for event in feedback.events() {
-        if let Some(sound) = consume(&mut cursor, event, active.0, players.contains(event.actor)) {
+        if let Some(sound) = consume(
+            &mut cursor,
+            event,
+            active.0,
+            players.contains(event.source_owner),
+        ) {
             play(sound);
         }
     }
@@ -50,13 +56,16 @@ fn consume(cursor: &mut u64, event: &CombatEvent, active: bool, is_player: bool)
         return None;
     }
     match event.kind {
-        CombatEffect::Melee | CombatEffect::Hammer | CombatEffect::Spin => Some(Sound::Attack),
+        CombatEffect::Melee | CombatEffect::Hammer | CombatEffect::ChainSweep => {
+            Some(Sound::Attack)
+        }
         CombatEffect::Hit => Some(Sound::Hit),
-        CombatEffect::Deflect => Some(Sound::Deflect),
-        CombatEffect::Shot if is_player => Some(Sound::Shot),
-        // A leap launch has distinct origin/end. Ordinary cannon impact emits
-        // Cannon at end/end after Shot; it must not create a second gunshot.
-        CombatEffect::Cannon if is_player && event.position != event.end => Some(Sound::Shot),
+        CombatEffect::Deflect | CombatEffect::Block | CombatEffect::Parry => Some(Sound::Deflect),
+        CombatEffect::Shot if is_player => Some(if event.pair == Some(WeaponPair::ChainAxeBow) {
+            Sound::Arrow
+        } else {
+            Sound::Shot
+        }),
         // SniperShot accompanies an ordinary Shot; do not play the same gun twice.
         _ => None,
     }
@@ -68,7 +77,7 @@ fn play(sound: Sound) {
         Sound::Shot => {
             let _ = browser_shot();
         }
-        Sound::Attack => {
+        Sound::Attack | Sound::Arrow => {
             let _ = browser_effect("attack");
         }
         Sound::Hit => {
@@ -90,6 +99,10 @@ mod tests {
         CombatEvent {
             sequence,
             actor: Entity::PLACEHOLDER,
+            source_owner: Entity::PLACEHOLDER,
+            pair: Some(WeaponPair::HammerMusket),
+            action_id: 1,
+            hit_index: 0,
             kind,
             position: Vec3::ZERO,
             end: Vec3::Z,
@@ -132,46 +145,74 @@ mod tests {
     }
 
     #[test]
-    fn one_actual_cannon_attack_plays_one_shot_despite_its_splash_feedback() {
-        use crate::simulation::{CombatIntent, Combatant, SimulationPlugin, WeaponSet};
+    fn sister_triple_shot_plays_each_actual_shot_once_despite_impact_feedback() {
+        use crate::simulation::{CombatIntent, Combatant, SimulationPlugin};
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin));
         app.finish();
         crate::gameplay::setup(app.world_mut());
-        for _ in 0..12 {
-            app.world_mut().run_schedule(FixedUpdate);
-        }
         let player = app
             .world_mut()
             .query_filtered::<Entity, With<Player>>()
             .single(app.world())
             .unwrap();
-        app.world_mut()
-            .entity_mut(player)
-            .insert(Combatant::new(WeaponSet::AxeCannon));
+        let tick = |app: &mut App, n| {
+            for _ in 0..n {
+                app.world_mut()
+                    .resource_mut::<Time<Fixed>>()
+                    .advance_by(std::time::Duration::from_secs_f64(1. / 60.));
+                app.world_mut().run_schedule(FixedUpdate);
+            }
+        };
+        tick(&mut app, 12);
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
-            .request_switch_weapon();
-        app.world_mut().run_schedule(FixedUpdate);
+            .request_toggle_target();
+        tick(&mut app, 1);
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
-            .request_attack();
-        app.world_mut().run_schedule(FixedUpdate);
+            .request_melee_skill();
+        tick(&mut app, 14);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_combo();
+        tick(&mut app, 45);
+        let sister = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .companion()
+            .unwrap();
+        let mut cursor = 0;
         let feedback = app.world().resource::<CombatFeedback>();
+        let mut shots = 0;
+        for event in feedback.events() {
+            if consume(&mut cursor, event, true, event.source_owner == player) == Some(Sound::Shot)
+            {
+                assert_eq!(event.actor, sister);
+                shots += 1;
+            }
+        }
+        assert_eq!(shots, 3);
         assert!(
             feedback
                 .events()
-                .any(|event| event.kind == CombatEffect::Cannon)
+                .any(|e| e.kind == CombatEffect::SniperShot)
         );
+    }
+    #[test]
+    fn shot_sound_uses_immutable_event_pair_even_when_consuming_history() {
         let mut cursor = 0;
-        let shots = feedback
-            .events()
-            .filter(|event| {
-                consume(&mut cursor, event, true, event.actor == player) == Some(Sound::Shot)
-            })
-            .count();
-        assert_eq!(shots, 1);
+        let mut arrow = event(1, CombatEffect::Shot);
+        arrow.pair = Some(WeaponPair::ChainAxeBow);
+        assert_eq!(consume(&mut cursor, &arrow, true, true), Some(Sound::Arrow));
+        assert_eq!(
+            consume(&mut cursor, &event(2, CombatEffect::Shot), true, true),
+            Some(Sound::Shot)
+        );
+        assert_eq!(consume(&mut cursor, &arrow, true, true), None);
     }
 }

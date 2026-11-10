@@ -4,7 +4,6 @@ use bevy::prelude::*;
 use super::{
     PlayerView,
     avatar::{self, Appearance, AvatarAppearance},
-    combat::WeaponVisual,
 };
 
 #[derive(Resource, Default)]
@@ -64,16 +63,6 @@ pub(super) fn reconcile(world: &mut World) {
         .collect();
     for player in players {
         avatar::replace(world, player, selected);
-        let weapons: Vec<_> = world
-            .query::<(Entity, &WeaponVisual, &ChildOf)>()
-            .iter(world)
-            .filter_map(|(entity, weapon, parent)| {
-                (parent.parent() == player && weapon.is_melee()).then_some(entity)
-            })
-            .collect();
-        for weapon in weapons {
-            avatar::replace_blade(world, weapon, selected);
-        }
     }
 }
 
@@ -90,7 +79,7 @@ mod tests {
             stickman,
         },
         gameplay::Player,
-        simulation::{Body, Combatant, Enemy, Health, MotionState, SimulationActive, WeaponSet},
+        simulation::{Body, Combatant, Enemy, Health, MotionState, SimulationActive, WeaponPair},
     };
 
     fn scene() -> (World, Entity, Entity) {
@@ -107,7 +96,7 @@ mod tests {
                 Player,
                 Body::at(Vec3::new(2.0, 1.4, -3.0), 6.0, 0.35),
                 motion,
-                Combatant::new(WeaponSet::AxeCannon),
+                Combatant::new(WeaponPair::ChainAxeBow),
                 Health::new(100.0),
             ))
             .id();
@@ -134,7 +123,7 @@ mod tests {
 
     fn weapon_meshes(world: &mut World, melee: bool) -> Vec<Handle<Mesh>> {
         let roots: Vec<_> = world
-            .query::<(Entity, &WeaponVisual)>()
+            .query::<(Entity, &super::super::combat::WeaponVisual)>()
             .iter(world)
             .filter_map(|(entity, weapon)| (weapon.is_melee() == melee).then_some(entity))
             .collect();
@@ -193,15 +182,15 @@ mod tests {
             4.0
         );
         assert_eq!(
-            world.get::<Combatant>(actor).unwrap().weapon_set(),
-            WeaponSet::AxeCannon
+            world.get::<Combatant>(actor).unwrap().weapon_pair(),
+            WeaponPair::ChainAxeBow
         );
         assert_eq!(world.get::<Health>(actor).unwrap().current(), 100.0);
         let rig = world.get::<RigPose>(view).unwrap();
         assert_eq!(rig.model, pose);
         assert_eq!(rig.source.as_ref().unwrap().model.as_ptr(), source_pointer);
         assert_eq!(rig.source.as_ref().unwrap().weight, 0.6);
-        assert_ne!(weapon_meshes(&mut world, true), old_melee);
+        assert_eq!(weapon_meshes(&mut world, true), old_melee);
         assert_eq!(weapon_meshes(&mut world, false), ranged);
         assert_eq!(
             world.get::<AvatarAppearance>(enemy).unwrap().0,

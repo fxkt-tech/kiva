@@ -51,7 +51,7 @@ test("early Rust selections replay when the DOM becomes ready", () => {
   f.parse();
   assert.equal(f.at("appearance-choulingke").attributes["aria-pressed"], "false");
   assert.equal(f.at("appearance-lihuowang").attributes["aria-pressed"], "true");
-  assert.match(f.at("appearance-hint").textContent, /横刀·烛泪/);
+  assert.match(f.at("appearance-hint").textContent, /身体与服饰/);
   assert.equal(f.at("hud-appearance").textContent, "外观 · 李火旺 · F3 切换");
   assert.equal(f.bridge.takeAppearance(), 0);
 });
@@ -72,7 +72,7 @@ test("loading and paused button selections survive old snapshots until one consu
   f.at("appearance-choulingke").click();
   assert.equal(f.bridge.takeAppearance(), 1);
   f.bridge.render(1);
-  assert.match(f.at("appearance-hint").textContent, /愁铃长刀/);
+  assert.match(f.at("appearance-hint").textContent, /身体与服饰/);
 });
 
 test("F3 requires active trusted non-repeat input and does not consume F2", () => {

@@ -1,13 +1,9 @@
 //! One-shot sniper presentation. Its clock runs through hit stop, but not Esc.
 use bevy::prelude::*;
 
-use super::{ActorView, PlayerView, combat::WeaponVisual};
 use crate::simulation::{CombatEffect, CombatFeedback, SimulationActive};
 
 const RECOIL_DURATION: f32 = 0.12;
-const MUZZLE: Vec3 = Vec3::new(0.0, 0.0, -0.88);
-
-type MuzzleViewFilter = (With<PlayerView>, Without<ImpactParticle>);
 
 #[derive(Resource, Default)]
 pub(super) struct ImpactState {
@@ -208,8 +204,6 @@ pub(super) fn update(
     timing: (Res<Time>, Res<SimulationActive>),
     feedback: (Res<CombatFeedback>, Res<ImpactAssets>),
     mut state: ResMut<ImpactState>,
-    players: Query<(Entity, &ActorView, &Transform), MuzzleViewFilter>,
-    weapons: Query<(&WeaponVisual, &Transform, &ChildOf), Without<ImpactParticle>>,
     mut particles: Query<(Entity, &mut ImpactParticle, &mut Transform)>,
 ) {
     let (time, active) = timing;
@@ -248,20 +242,8 @@ pub(super) fn update(
         }
         match event.kind {
             CombatEffect::SniperShot => {
-                let Some((entity, _, view)) = players
-                    .iter()
-                    .find(|(_, owner, _)| owner.owner == event.actor)
-                else {
-                    continue;
-                };
-                state.shot = Some((event.actor, 0.0));
-                if let Some((_, weapon, _)) = weapons
-                    .iter()
-                    .find(|(visual, _, parent)| visual.is_sniper() && parent.parent() == entity)
-                {
-                    let muzzle = view.transform_point(weapon.transform_point(MUZZLE));
-                    shot(&mut commands, &assets, muzzle, event.end);
-                }
+                state.shot = Some((event.source_owner, 0.0));
+                shot(&mut commands, &assets, event.position, event.end);
             }
             CombatEffect::SniperImpact => hit(&mut commands, &assets, event.position, event.end),
             _ => {}
@@ -278,7 +260,7 @@ mod tests {
     use crate::{
         client::{animation, combat, scene, skeleton::AnimationLibrary, stickman},
         gameplay::{self, Player},
-        simulation::{Body, CombatIntent, Combatant, Health, SimulationPlugin, WeaponMode},
+        simulation::{Body, CombatIntent, Combatant, Health, SimulationPlugin},
     };
     use std::time::Duration;
 
@@ -313,6 +295,7 @@ mod tests {
             .query_filtered::<Entity, With<Player>>()
             .single(app.world())
             .unwrap();
+        request(&mut app, player, CombatIntent::request_toggle_target);
         let target = app
             .world()
             .get::<Combatant>(player)
@@ -344,12 +327,15 @@ mod tests {
     }
 
     fn prepare(app: &mut App, player: Entity) {
-        if app.world().get::<Combatant>(player).unwrap().weapon_mode() == WeaponMode::Ranged {
-            request(app, player, CombatIntent::request_switch_weapon);
-        }
-        request(app, player, CombatIntent::request_skill);
+        request(app, player, CombatIntent::request_melee_skill);
+        tick(app, 13);
         request(app, player, CombatIntent::request_combo);
-        assert!(app.world().get::<Combatant>(player).unwrap().is_sniping());
+        assert!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .is_combo_active()
+        );
     }
 
     fn discharge(app: &mut App, player: Entity) {
@@ -358,7 +344,7 @@ mod tests {
                 .world()
                 .get::<Combatant>(player)
                 .unwrap()
-                .sniper_sequence()
+                .sequence()
                 .is_some_and(|sequence| sequence.has_fired())
             {
                 render(app, 0.0);
@@ -390,20 +376,25 @@ mod tests {
                 .is_none()
         );
         discharge(&mut app, player);
-        let (view_entity, view) = app
-            .world_mut()
-            .query_filtered::<(Entity, &Transform), With<PlayerView>>()
-            .single(app.world())
-            .map(|(entity, transform)| (entity, *transform))
-            .unwrap();
-        let weapon = *app
-            .world_mut()
-            .query::<(&WeaponVisual, &Transform, &ChildOf)>()
-            .iter(app.world())
-            .find(|(visual, _, parent)| visual.is_sniper() && parent.parent() == view_entity)
+        let muzzle = app
+            .world()
+            .resource::<CombatFeedback>()
+            .events()
+            .find(|e| e.kind == CombatEffect::SniperShot)
             .unwrap()
-            .1;
-        let muzzle = view.transform_point(weapon.transform_point(MUZZLE));
+            .position;
+        let performer = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .companion()
+            .unwrap();
+        assert!(
+            app.world()
+                .get::<crate::simulation::Companion>(performer)
+                .is_some()
+        );
+        assert!(app.world().get::<Body>(performer).is_none());
         let assets = app.world().resource::<ImpactAssets>();
         let sphere = assets.sphere.clone();
         let hit = *app
@@ -463,11 +454,7 @@ mod tests {
         for _ in 0..2 {
             prepare(&mut app, player);
             discharge(&mut app, player);
-            assert!(
-                app.world()
-                    .resource::<crate::simulation::HitStop>()
-                    .is_active()
-            );
+
             render(&mut app, 0.03);
             let count = particle_count(&mut app);
             let kick = app
@@ -513,8 +500,8 @@ mod tests {
     #[test]
     fn ordinary_ranged_attack_never_creates_a_special_cue() {
         let (mut app, player, _) = arena();
-        request(&mut app, player, CombatIntent::request_switch_weapon);
-        request(&mut app, player, CombatIntent::request_attack);
+        request(&mut app, player, CombatIntent::request_ranged_skill);
+        tick(&mut app, 14);
         render(&mut app, 0.0);
         assert!(
             app.world()

@@ -22,7 +22,7 @@ pub enum BossState {
     Telegraph,
     Attacking,
     Recovering,
-    Deflected,
+    Stunned,
     Transition,
     Defeated,
 }
@@ -34,7 +34,6 @@ impl KivaTuning {
     const TELEGRAPH: f32 = 0.72;
     const ACTIVE: f32 = 0.22;
     const RECOVERY: f32 = 0.65;
-    const DEFLECT_RECOVERY: f32 = 1.1;
     const TRANSITION: f32 = 2.2;
     const RESPAWN: f32 = 3.0;
     const HIT_RANGE: f32 = 3.2;
@@ -83,6 +82,7 @@ pub struct Boss {
     attacks_since_reposition: u8,
     strike_resolved: bool,
     engaged: bool,
+    stun_source: Option<u64>,
 }
 
 impl Default for Boss {
@@ -100,6 +100,7 @@ impl Default for Boss {
             attacks_since_reposition: 0,
             strike_resolved: false,
             engaged: false,
+            stun_source: None,
         }
     }
 }
@@ -143,8 +144,30 @@ impl Boss {
         !self.is_invulnerable()
     }
 
+    pub fn stun_source(&self) -> Option<u64> {
+        if self.state == BossState::Stunned {
+            self.stun_source
+        } else {
+            None
+        }
+    }
+    pub fn stun_remaining(&self) -> f32 {
+        if self.state == BossState::Stunned {
+            (self.duration - self.elapsed).max(0.0)
+        } else {
+            0.0
+        }
+    }
+    pub(super) fn stun(&mut self, source: u64, duration: f32) {
+        if !self.is_invulnerable() {
+            self.enter(BossState::Stunned, duration);
+            self.stun_source = Some(source);
+            self.strike_resolved = true;
+        }
+    }
     fn enter(&mut self, state: BossState, duration: f32) {
         self.state = state;
+        self.stun_source = None;
         self.elapsed = 0.0;
         self.duration = duration;
     }
@@ -215,6 +238,7 @@ type BossActors = (
     &'static mut ActionIntent,
     &'static mut Health,
     &'static SpawnPoint,
+    &'static mut super::SlowEffect,
 );
 type Opponents = (
     Entity,
@@ -223,6 +247,10 @@ type Opponents = (
     &'static mut Health,
     &'static mut MotionState,
     &'static mut ActionIntent,
+    &'static mut super::DefenseState,
+    &'static mut super::Stamina,
+    &'static mut Combatant,
+    &'static mut super::CombatIntent,
 );
 
 /// Runs after current physical snapshots and player combat, with the same pause gate.
@@ -244,6 +272,7 @@ pub(super) fn advance(
         mut actions,
         mut health,
         spawn,
+        mut slow,
     ) in &mut bosses
     {
         if body.world_position().y < -12.0 && health.is_alive() {
@@ -272,6 +301,7 @@ pub(super) fn advance(
                 boss.sequence += 1;
                 boss.enter(BossState::Transition, KivaTuning::TRANSITION);
                 health.refill();
+                *slow = super::SlowEffect::default();
                 body.teleport_to(Vec3::new(spawn.0.x, 0.0, spawn.0.y));
                 motion.reset();
             } else if boss.state != BossState::Defeated {
@@ -281,6 +311,7 @@ pub(super) fn advance(
                 if boss.elapsed >= boss.duration {
                     boss.reset_fight();
                     health.refill();
+                    *slow = super::SlowEffect::default();
                     body.teleport_to(Vec3::new(spawn.0.x, 0.0, spawn.0.y));
                     motion.reset();
                     feedback.push(
@@ -312,18 +343,19 @@ pub(super) fn advance(
         }
         let target = players
             .iter()
-            .filter(|(_, _, _, health, _, _)| health.is_alive())
+            .filter(|(_, _, _, health, _, _, _, _, _, _)| health.is_alive())
             .min_by(|a, b| {
                 a.1.world_position()
                     .distance_squared(body.world_position())
                     .total_cmp(&b.1.world_position().distance_squared(body.world_position()))
             })
-            .map(|(entity, _, _, _, _, _)| entity);
+            .map(|(entity, _, _, _, _, _, _, _, _, _)| entity);
         let Some(target) = target else {
             movement.stop();
             if boss.engaged {
                 boss.reset_fight();
                 health.refill();
+                *slow = super::SlowEffect::default();
                 body.teleport_to(Vec3::new(spawn.0.x, 0.0, spawn.0.y));
                 motion.reset();
                 actions.clear();
@@ -335,8 +367,12 @@ pub(super) fn advance(
             target_body,
             target_facing,
             mut target_health,
-            mut target_motion,
+            target_motion,
             mut target_actions,
+            mut target_defense,
+            mut target_stamina,
+            mut target_combat,
+            mut target_intent,
         ) = players.get_mut(target).unwrap();
         let offset = target_body.world_position() - body.world_position();
         let distance = offset.length();
@@ -347,7 +383,9 @@ pub(super) fn advance(
         }
         if !motion.is_grounded() {
             movement.stop();
-            boss.enter(BossState::Recovering, KivaTuning::RECOVERY);
+            if boss.state != BossState::Stunned {
+                boss.enter(BossState::Recovering, KivaTuning::RECOVERY);
+            }
             continue;
         }
         match boss.state {
@@ -446,35 +484,41 @@ pub(super) fn advance(
                     && visible
                 {
                     boss.strike_resolved = true;
-                    let position = target_body.aim_position();
-                    if target_motion.is_invulnerable() {
-                        feedback.push(target, CombatEffect::Dodge, position, position, 0.65);
-                    } else if target_motion.is_parrying()
-                        && target_facing.direction().dot(-direction) > 0.25
-                    {
-                        boss.enter(BossState::Deflected, KivaTuning::DEFLECT_RECOVERY);
-                        movement.stop();
-                        feedback.push(
-                            target,
-                            CombatEffect::Deflect,
-                            position,
-                            body.aim_position(),
-                            0.65,
-                        );
+                    let damage = if boss.phase == BossPhase::One {
+                        KivaTuning::DAMAGE_P1
                     } else {
-                        let damage = if boss.phase == BossPhase::One {
-                            KivaTuning::DAMAGE_P1
-                        } else {
-                            KivaTuning::DAMAGE_P2
-                        };
-                        target_health.damage(damage);
-                        feedback.push(target, CombatEffect::Hit, position, position, 0.65);
-                        if !target_health.is_alive() {
-                            movement.stop();
-                            target_actions.clear();
-                            target_motion.cancel_parry();
-                            feedback.push(target, CombatEffect::Defeat, position, position, 0.9);
-                        }
+                        KivaTuning::DAMAGE_P2
+                    };
+                    let outcome = super::combat::apply_hit(
+                        super::HitContext {
+                            source: entity,
+                            source_owner: entity,
+                            pair: None,
+                            target,
+                            action_id: boss.sequence,
+                            hit_index: 0,
+                            damage,
+                            origin: body.aim_position(),
+                        },
+                        target_body,
+                        target_facing,
+                        &target_motion,
+                        &mut target_health,
+                        Some(&mut target_defense),
+                        Some(&mut target_stamina),
+                        false,
+                        &mut feedback,
+                    );
+                    if outcome == super::HitOutcome::Parried {
+                        let source = boss.sequence;
+                        boss.stun(source, 0.80);
+                        movement.stop();
+                    }
+                    if !target_health.is_alive() {
+                        movement.stop();
+                        target_actions.clear();
+                        target_combat.clear_targets();
+                        target_intent.clear();
                     }
                 }
                 if boss.state == BossState::Attacking && boss.elapsed >= boss.duration {
@@ -482,7 +526,7 @@ pub(super) fn advance(
                     movement.stop();
                 }
             }
-            BossState::Recovering | BossState::Deflected => {
+            BossState::Recovering | BossState::Stunned => {
                 movement.stop();
                 if boss.elapsed >= boss.duration {
                     boss.enter(BossState::Idle, 0.0);
@@ -498,7 +542,7 @@ mod tests {
     use super::*;
     use crate::simulation::{
         CollisionWorld, CombatIntent, Enemy, HitStop, SimulationActive, SimulationPlugin,
-        WeaponSet, spawn_box,
+        WeaponPair, spawn_box,
     };
     use std::time::Duration;
 
@@ -525,7 +569,7 @@ mod tests {
                 MotionState::default(),
                 Facing::default(),
                 Health::new(10_000.0),
-                Combatant::new(WeaponSet::HammerSniper),
+                Combatant::new(WeaponPair::HammerMusket),
                 CombatIntent::default(),
                 SpawnPoint(Vec2::ZERO),
             ))
@@ -628,7 +672,7 @@ mod tests {
     }
 
     #[test]
-    fn a_real_front_parry_interrupts_the_boss_but_a_back_parry_takes_full_damage() {
+    fn tap_deflect_is_immune_without_stunning_boss_and_back_takes_full_damage() {
         for front in [true, false] {
             let (mut app, player, boss) = arena();
             wait_for(&mut app, boss, BossState::Attacking);
@@ -639,9 +683,9 @@ mod tests {
                 .unwrap()
                 .set(direction.xz() * if front { 1.0 } else { -1.0 });
             app.world_mut()
-                .get_mut::<ActionIntent>(player)
+                .get_mut::<super::super::DefenseState>(player)
                 .unwrap()
-                .request_parry();
+                .push_edge(super::super::DefenseEdge::Pressed);
             tick(&mut app, 10);
             assert_eq!(
                 health(&app, player),
@@ -651,13 +695,10 @@ mod tests {
                     10_000.0 - KivaTuning::DAMAGE_P1
                 }
             );
-            assert_eq!(
-                app.world().get::<Boss>(boss).unwrap().state() == BossState::Deflected,
-                front
+            assert_ne!(
+                app.world().get::<Boss>(boss).unwrap().state(),
+                BossState::Stunned
             );
-            if front {
-                assert_eq!(app.world().get::<MoveIntent>(boss).unwrap().0, Vec2::ZERO);
-            }
             assert_eq!(
                 app.world()
                     .resource::<CombatFeedback>()
@@ -670,7 +711,7 @@ mod tests {
     }
 
     #[test]
-    fn recovery_and_deflection_clear_the_lunge_before_the_next_motor_step() {
+    fn recovery_and_release_parry_clear_the_lunge_before_the_next_motor_step() {
         for interrupted in [false, true] {
             let (mut app, player, boss) = arena();
             wait_for(&mut app, boss, BossState::Telegraph);
@@ -688,15 +729,29 @@ mod tests {
                 .get_mut::<Facing>(player)
                 .unwrap()
                 .set(-forward);
+            if interrupted {
+                tick(&mut app, 2); // Teleport clears support; establish it before the physical press.
+                app.world_mut()
+                    .get_mut::<super::super::DefenseState>(player)
+                    .unwrap()
+                    .push_edge(super::super::DefenseEdge::Pressed);
+                tick(&mut app, 13);
+                assert!(
+                    app.world()
+                        .get::<super::super::DefenseState>(player)
+                        .unwrap()
+                        .is_guarding()
+                );
+            }
             wait_for(&mut app, boss, BossState::Attacking);
             if interrupted {
                 app.world_mut()
-                    .get_mut::<ActionIntent>(player)
+                    .get_mut::<super::super::DefenseState>(player)
                     .unwrap()
-                    .request_parry();
+                    .push_edge(super::super::DefenseEdge::Released);
             }
             let boundary = if interrupted {
-                BossState::Deflected
+                BossState::Stunned
             } else {
                 BossState::Recovering
             };
@@ -766,32 +821,33 @@ mod tests {
     }
 
     #[test]
-    fn the_existing_player_launch_and_sniper_link_still_damage_the_active_boss() {
+    fn hammer_launch_and_three_companion_shots_damage_the_active_boss() {
         let (mut app, player, boss) = arena();
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
-            .request_skill();
-        tick(&mut app, 4);
+            .request_toggle_target();
+        tick(&mut app, 1);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_melee_skill();
+        tick(&mut app, 13);
         assert_eq!(health(&app, boss), Boss::PHASE_HEALTH - 20.0);
         assert!(!app.world().get::<MotionState>(boss).unwrap().is_grounded());
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
             .request_combo();
-        tick(&mut app, 25);
-        assert_eq!(health(&app, boss), Boss::PHASE_HEALTH - 105.0);
-        assert_eq!(
-            app.world().get::<Boss>(boss).unwrap().phase(),
-            BossPhase::One
-        );
+        tick(&mut app, 34);
+        assert_eq!(health(&app, boss), Boss::PHASE_HEALTH - 104.0);
         assert_eq!(
             app.world()
                 .resource::<CombatFeedback>()
                 .events()
-                .filter(|event| event.actor == player && event.kind == CombatEffect::SniperShot)
+                .filter(|e| e.source_owner == player && e.kind == CombatEffect::SniperShot)
                 .count(),
-            1
+            3
         );
     }
 
@@ -844,7 +900,7 @@ mod tests {
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()
-            .request_skill();
+            .request_melee_skill();
         tick(&mut app, 4);
         assert_eq!(health(&app, boss), Boss::PHASE_HEALTH);
         assert!(app.world().get::<MotionState>(boss).unwrap().is_grounded());
@@ -920,6 +976,147 @@ mod tests {
         assert_eq!(
             app.world().get::<Body>(boss).unwrap().world_position().xz(),
             Vec2::new(0.0, -4.0)
+        );
+    }
+    #[test]
+    fn chain_q_stun_belongs_only_to_boss_and_phase_change_cancels_remaining_arrows() {
+        let (mut app, player, boss) = arena();
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_pair(super::super::WeaponPair::ChainAxeBow);
+        tick(&mut app, 1);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_toggle_target();
+        tick(&mut app, 1);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_ranged_skill();
+        tick(&mut app, 19);
+        let window = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .combo_window()
+            .unwrap();
+        assert_eq!(
+            app.world().get::<Boss>(boss).unwrap().state(),
+            BossState::Stunned
+        );
+        assert_eq!(
+            app.world().get::<Boss>(boss).unwrap().stun_source(),
+            Some(window.source_action_id)
+        );
+        assert_eq!(app.world().get::<Enemy>(boss).unwrap().stun_source(), None);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_combo();
+        tick(&mut app, 9);
+        let count = app
+            .world()
+            .resource::<CombatFeedback>()
+            .events()
+            .filter(|e| e.source_owner == player && e.kind == CombatEffect::Shot)
+            .count();
+        assert_eq!(count, 2); // Q departure plus first arrow.
+        app.world_mut()
+            .get_mut::<Health>(boss)
+            .unwrap()
+            .damage(Boss::PHASE_HEALTH);
+        tick(&mut app, 1);
+        assert_eq!(
+            app.world().get::<Boss>(boss).unwrap().state(),
+            BossState::Transition
+        );
+        assert_eq!(app.world().get::<Boss>(boss).unwrap().stun_source(), None);
+        let actor = app.world().get::<Combatant>(player).unwrap();
+        assert_eq!(actor.target(), None);
+        assert!(!actor.axe_away());
+        assert!(actor.sequence().unwrap().cancelled);
+        tick(&mut app, 60);
+        assert_eq!(
+            app.world()
+                .resource::<CombatFeedback>()
+                .events()
+                .filter(|e| e.source_owner == player && e.kind == CombatEffect::Shot)
+                .count(),
+            count
+        );
+    }
+    #[test]
+    fn boss_slow_changes_real_motor_and_is_cleared_on_phase_reset() {
+        let (mut app, player, boss) = arena();
+        super::super::teleport_actor(app.world_mut(), player, Vec3::new(0.0, 0.0, 7.0));
+        tick(&mut app, 2);
+        {
+            let mut b = app.world_mut().get_mut::<Boss>(boss).unwrap();
+            b.enter(BossState::Pursuing, 5.0);
+        }
+        app.world_mut()
+            .get_mut::<super::super::SlowEffect>(boss)
+            .unwrap()
+            .apply(0.65, 1.5);
+        tick(&mut app, 8);
+        let speed = app
+            .world()
+            .get::<Body>(boss)
+            .unwrap()
+            .velocity()
+            .xz()
+            .length();
+        assert!(
+            (speed - 5.2 * 0.65).abs() < 0.06,
+            "actual slowed motor speed {speed}"
+        );
+        app.world_mut()
+            .get_mut::<Health>(boss)
+            .unwrap()
+            .damage(Boss::PHASE_HEALTH);
+        tick(&mut app, 1);
+        assert_eq!(
+            app.world()
+                .get::<super::super::SlowEffect>(boss)
+                .unwrap()
+                .factor(),
+            1.0
+        );
+    }
+    #[test]
+    fn sustained_boss_guard_uses_the_same_cost_and_half_damage_as_normal_enemies() {
+        let (mut app, player, boss) = arena();
+        wait_for(&mut app, boss, BossState::Telegraph);
+        app.world_mut()
+            .get_mut::<super::super::DefenseState>(player)
+            .unwrap()
+            .push_edge(super::super::DefenseEdge::Pressed);
+        tick(&mut app, 13);
+        assert!(
+            app.world()
+                .get::<super::super::DefenseState>(player)
+                .unwrap()
+                .is_guarding()
+        );
+        wait_for(&mut app, boss, BossState::Attacking);
+        wait_for(&mut app, boss, BossState::Recovering);
+        assert_eq!(health(&app, player), 10_000.0 - KivaTuning::DAMAGE_P1 * 0.5);
+        assert_eq!(
+            app.world()
+                .get::<super::super::Stamina>(player)
+                .unwrap()
+                .current(),
+            80.0
+        );
+        assert_eq!(
+            app.world()
+                .resource::<CombatFeedback>()
+                .events()
+                .filter(|e| e.actor == player && e.kind == CombatEffect::Block)
+                .count(),
+            1
         );
     }
 }

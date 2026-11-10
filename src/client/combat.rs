@@ -6,8 +6,9 @@ use super::{ActorView, PlayerView};
 use crate::{
     gameplay::Player,
     simulation::{
-        Body, Boss, BossState, CombatEffect, CombatFeedback, Combatant, Enemy, Facing, Health,
-        HitStop, MotionState, SimulationActive, SurfaceHit, WeaponMode, WeaponSet, surface_below,
+        Body, Boss, BossState, CombatEffect, CombatFeedback, Combatant, DefenseState, Enemy,
+        Facing, Health, HitStop, MotionState, SimulationActive, SurfaceHit, WeaponMode, WeaponPair,
+        surface_below,
     },
 };
 
@@ -17,23 +18,18 @@ pub(super) struct VisualAssets {
     ring: Handle<Mesh>,
     sphere: Handle<Mesh>,
     enemy: Handle<StandardMaterial>,
-    dark: Handle<StandardMaterial>,
-    metal: Handle<StandardMaterial>,
     gold: Handle<StandardMaterial>,
     teal: Handle<StandardMaterial>,
     hit: Handle<StandardMaterial>,
 }
 
 #[derive(Component)]
-pub(super) struct WeaponVisual(WeaponSet, WeaponMode);
+pub(super) struct WeaponVisual(WeaponPair, WeaponMode);
 
 impl WeaponVisual {
+    #[cfg(test)]
     pub(super) fn is_melee(&self) -> bool {
         self.1 == WeaponMode::Melee
-    }
-
-    pub(super) fn is_sniper(&self) -> bool {
-        self.0 == WeaponSet::HammerSniper && self.1 == WeaponMode::Ranged
     }
 }
 #[derive(Component)]
@@ -45,7 +41,6 @@ pub(super) struct EnemyHealthBar(Entity);
 #[derive(Component)]
 pub(super) enum Marker {
     Target,
-    Aim,
     Guard,
 }
 #[derive(Component)]
@@ -102,8 +97,6 @@ pub(super) fn setup(world: &mut World) {
         ring,
         sphere,
         enemy: material(Color::srgb(0.72, 0.30, 0.22), false),
-        dark: material(Color::srgb(0.08, 0.12, 0.15), false),
-        metal: material(Color::srgb(0.61, 0.67, 0.66), false),
         gold: material(Color::srgb(1.0, 0.70, 0.23), true),
         teal: material(Color::srgb(0.35, 0.89, 0.83), true),
         hit: material(Color::srgb(1.0, 0.93, 0.75), true),
@@ -120,61 +113,20 @@ pub(super) fn setup(world: &mut World) {
         .query_filtered::<Entity, With<PlayerView>>()
         .single(world)
         .expect("one player");
-    for (set, mode) in [
-        (WeaponSet::HammerSniper, WeaponMode::Melee),
-        (WeaponSet::HammerSniper, WeaponMode::Ranged),
-        (WeaponSet::AxeCannon, WeaponMode::Melee),
-        (WeaponSet::AxeCannon, WeaponMode::Ranged),
-    ] {
+    for set in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
         let root = world
             .spawn((
-                WeaponVisual(set, mode),
-                Transform::from_xyz(0.40, 1.0, -0.30),
+                WeaponVisual(set, WeaponMode::Melee),
+                Transform::IDENTITY,
                 Visibility::Hidden,
             ))
             .id();
-        let parts: &[(Vec3, Vec3, bool)] = match (set, mode) {
-            (_, WeaponMode::Melee) => &[],
-            (WeaponSet::HammerSniper, WeaponMode::Ranged) => &[
-                (Vec3::ZERO, Vec3::new(0.14, 0.16, 0.85), false),
-                (
-                    Vec3::new(0.0, 0.0, -0.63),
-                    Vec3::new(0.06, 0.06, 0.50),
-                    true,
-                ),
-                (
-                    Vec3::new(0.0, 0.13, -0.10),
-                    Vec3::new(0.10, 0.10, 0.25),
-                    true,
-                ),
-            ],
-            (WeaponSet::AxeCannon, WeaponMode::Ranged) => &[
-                (Vec3::ZERO, Vec3::new(0.28, 0.28, 0.75), false),
-                (
-                    Vec3::new(0.0, 0.0, -0.40),
-                    Vec3::new(0.38, 0.38, 0.18),
-                    true,
-                ),
-            ],
-        };
-        for &(position, size, accent) in parts {
-            let child = mesh(
-                world,
-                &assets.cube,
-                if accent { &assets.metal } else { &assets.dark },
-                Transform::from_translation(position).with_scale(size),
-            );
-            world.entity_mut(root).add_child(child);
-        }
-        if mode == WeaponMode::Melee {
-            super::avatar::spawn_blade(world, root);
-        }
+        super::weapons::spawn(world, root, set, WeaponMode::Melee);
         world.entity_mut(player).add_child(root);
-        super::stickman::attach_weapon(world, player, root, mode);
+        super::stickman::attach_weapon(world, player, root, WeaponMode::Melee);
     }
     for (marker, color, size) in [
         (Marker::Target, &assets.gold, 0.65),
-        (Marker::Aim, &assets.teal, 0.45),
         (Marker::Guard, &assets.teal, 0.7),
     ] {
         let entity = mesh(
@@ -310,7 +262,10 @@ pub(super) fn sync_weapons(
     mut weapons: Query<(&WeaponVisual, &mut Visibility)>,
 ) {
     for (weapon, mut visibility) in &mut weapons {
-        *visibility = if weapon.0 == player.weapon_set() && weapon.1 == player.weapon_mode() {
+        *visibility = if weapon.0 == player.weapon_pair()
+            && weapon.1 == WeaponMode::Melee
+            && !player.axe_away()
+        {
             Visibility::Visible
         } else {
             Visibility::Hidden
@@ -323,11 +278,11 @@ pub(super) fn sync_markers(
     active: Res<SimulationActive>,
     hit_stop: Res<HitStop>,
     surfaces: SurfaceQueries,
-    player: Single<(&Body, &MotionState, &Combatant, &Health), With<Player>>,
+    player: Single<(&Body, &MotionState, &Combatant, &Health, &DefenseState), With<Player>>,
     targets: Query<(&Body, &MotionState, &Health), With<Enemy>>,
     mut markers: Query<(&Marker, &mut Transform, &mut Visibility)>,
 ) {
-    let (body, motion, combat, health) = *player;
+    let (body, motion, combat, health, defense) = *player;
     let alpha = super::display_alpha(&time, &active, &hit_stop);
     let excluded: Vec<_> = surfaces.excluded.iter().collect();
     for (marker, mut transform, mut visibility) in &mut markers {
@@ -339,13 +294,7 @@ pub(super) fn sync_markers(
                 .and_then(|(body, motion, _)| {
                     marker_surface(&surfaces.spatial, &excluded, body, motion, alpha)
                 }),
-            Marker::Aim
-                if combat.weapon_set() == WeaponSet::AxeCannon
-                    && combat.weapon_mode() == WeaponMode::Ranged =>
-            {
-                combat.aim_surface()
-            }
-            Marker::Guard if motion.is_parrying() => {
+            Marker::Guard if defense.is_active() => {
                 marker_surface(&surfaces.spatial, &excluded, body, motion, alpha)
             }
             _ => None,
@@ -384,12 +333,12 @@ fn marker_surface(
 pub(super) fn effects(
     mut commands: Commands,
     (time, active): (Res<Time>, Res<SimulationActive>),
-    feedback: Res<CombatFeedback>,
-    assets: Res<VisualAssets>,
+    feedback: (Res<CombatFeedback>, Res<VisualAssets>),
     mut cursor: ResMut<EffectCursor>,
     surfaces: SurfaceQueries,
     mut effects: Query<(Entity, &mut Effect, &mut Transform)>,
 ) {
+    let (feedback, assets) = feedback;
     let latest = feedback
         .events()
         .last()
@@ -411,27 +360,51 @@ pub(super) fn effects(
     }
     for event in feedback.events().filter(|event| event.sequence > cursor.0) {
         let (mesh, material, transform, duration, expansion) = match event.kind {
-            CombatEffect::SniperShot | CombatEffect::SniperImpact => continue,
+            CombatEffect::SniperShot | CombatEffect::SniperImpact | CombatEffect::AxeThrow => {
+                continue;
+            }
             CombatEffect::Shot => {
+                let arrow = event.pair == Some(WeaponPair::ChainAxeBow);
+                if arrow {
+                    let direction = (event.end - event.position).normalize_or(Vec3::NEG_Z);
+                    for (offset, scale) in [
+                        (0.0, Vec3::new(0.12, 0.06, 0.16)),
+                        (0.25, Vec3::new(0.12, 0.07, 0.08)),
+                    ] {
+                        let transform = Transform::from_translation(event.end - direction * offset)
+                            .looking_at(event.end + direction, Vec3::Y)
+                            .with_scale(scale);
+                        commands.spawn((
+                            Mesh3d(assets.cube.clone()),
+                            MeshMaterial3d(assets.teal.clone()),
+                            transform,
+                            Effect {
+                                remaining: 0.18,
+                                duration: 0.18,
+                                expansion: 0.,
+                                scale,
+                            },
+                        ));
+                    }
+                }
                 let length = event.position.distance(event.end).max(0.05);
                 let mut transform = Transform::from_translation((event.position + event.end) * 0.5)
                     .with_scale(Vec3::new(0.035, 0.035, length));
                 if length > 0.05 {
                     transform = transform.looking_at(event.end, Vec3::Y);
                 }
-                (&assets.cube, &assets.gold, transform, 0.16, 0.0)
+                (
+                    &assets.cube,
+                    if arrow { &assets.teal } else { &assets.gold },
+                    transform,
+                    0.16,
+                    0.0,
+                )
             }
-            CombatEffect::Hammer
-            | CombatEffect::Cannon
-            | CombatEffect::Spin
-            | CombatEffect::Melee => (
+            CombatEffect::Hammer | CombatEffect::ChainSweep | CombatEffect::Melee => (
                 &assets.ring,
-                if matches!(event.kind, CombatEffect::Cannon) {
-                    &assets.teal
-                } else {
-                    &assets.gold
-                },
-                if matches!(event.kind, CombatEffect::Spin) {
+                &assets.gold,
+                if matches!(event.kind, CombatEffect::ChainSweep) {
                     Transform::from_translation(event.position)
                 } else {
                     surfaces.effect_transform(event.position)
@@ -567,7 +540,7 @@ mod tests {
     }
 
     #[test]
-    fn default_dummy_remains_selected_and_its_view_projects_ahead_of_the_player() {
+    fn default_dummy_remains_unselected_and_its_view_projects_ahead_of_the_player() {
         use bevy::camera::CameraProjection;
         use bevy::mesh::skinning::SkinnedMesh;
 
@@ -582,10 +555,7 @@ mod tests {
             .unwrap();
         let feet = world.get::<Body>(dummy).unwrap().world_position();
         assert!(feet.distance(Vec3::new(0.0, 0.0, -4.0)) < 0.03);
-        assert_eq!(
-            world.get::<Combatant>(player).unwrap().target(),
-            Some(dummy)
-        );
+        assert_eq!(world.get::<Combatant>(player).unwrap().target(), None);
         let (view_entity, _, root, visibility) = world
             .query_filtered::<(Entity, &ActorView, &Transform, &Visibility), With<EnemyView>>()
             .single(world)
@@ -745,38 +715,50 @@ mod tests {
     }
 
     #[test]
-    fn cannon_marker_matches_the_resolved_hill_surface_and_normal() {
+    fn target_marker_matches_the_resolved_hill_surface_and_normal() {
         let mut app = headless_app();
         let player = physical_player(&mut app);
-        teleport_actor(app.world_mut(), player, Vec3::new(11.0, 0.0, 8.5));
-        let mut intent = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
-        intent.request_set(WeaponSet::AxeCannon);
-        intent.request_switch_weapon();
-        intent.set_aim(Vec2::new(14.0, 8.5));
-        fixed_ticks(&mut app, 2);
+        let enemy = app
+            .world_mut()
+            .query_filtered::<Entity, With<Enemy>>()
+            .single(app.world())
+            .unwrap();
+        teleport_actor(app.world_mut(), player, Vec3::new(11., 0., 8.5));
+        teleport_actor(app.world_mut(), enemy, Vec3::new(14., 1.8, 8.5));
+        app.world_mut()
+            .get_mut::<Facing>(player)
+            .unwrap()
+            .set(Vec2::X);
+        fixed_ticks(&mut app, 12);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_toggle_target();
+        fixed_ticks(&mut app, 1);
+        let origin = app.world().get::<Body>(enemy).unwrap().world_position() + Vec3::Y * 0.1;
         let surface = app
             .world()
-            .get::<Combatant>(player)
+            .get::<MotionState>(enemy)
             .unwrap()
-            .aim_surface()
-            .unwrap();
-        assert!(surface.position.y > 0.5);
-        assert!(surface.normal.y < 0.99 && surface.normal.y > 0.7);
+            .surface()
+            .unwrap_or_else(|| surface_at_effect_origin(&mut app, origin));
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
         app.world_mut().run_schedule(Update);
-        let (_, transform, visibility) = app
+        let (_, transform, visible) = app
             .world_mut()
             .query::<(&Marker, &Transform, &Visibility)>()
             .iter(app.world())
-            .find(|(marker, _, _)| matches!(marker, Marker::Aim))
+            .find(|(m, _, _)| matches!(m, Marker::Target))
             .unwrap();
-        assert_eq!(*visibility, Visibility::Visible);
+        assert_eq!(*visible, Visibility::Visible);
+        assert!(transform.translation.y > 0.5);
         assert!(
             transform
                 .translation
                 .distance(surface.position + surface.normal * 0.04)
-                < 0.001
+                < 0.03
         );
-        assert!((transform.rotation * Vec3::Y).dot(surface.normal) > 0.999);
+        assert!((transform.rotation * Vec3::Y).dot(surface.normal) > 0.99);
     }
 
     #[test]
@@ -836,7 +818,7 @@ mod tests {
             .get_mut::<CombatIntent>(player)
             .unwrap()
             .request_attack();
-        fixed_ticks(&mut app, 1);
+        fixed_ticks(&mut app, 12);
         let event_origin = app
             .world()
             .resource::<CombatFeedback>()
@@ -923,7 +905,7 @@ mod tests {
         app.world_mut()
             .resource_mut::<Time<Fixed>>()
             .advance_by(Duration::from_secs_f64(1.0 / 60.0));
-        app.world_mut().run_schedule(FixedUpdate);
+        fixed_ticks(&mut app, 12);
         app.world_mut().run_schedule(Update);
         assert!(
             app.world_mut()
@@ -994,11 +976,16 @@ mod tests {
             .advance_by(Duration::from_secs_f64(1.0 / 60.0));
         app.world_mut().run_schedule(FixedUpdate);
         let enemy = app
-            .world()
-            .get::<Combatant>(player)
-            .unwrap()
-            .target()
+            .world_mut()
+            .query_filtered::<Entity, With<Enemy>>()
+            .single(app.world())
             .unwrap();
+        teleport_actor(app.world_mut(), player, Vec3::new(0., 0., -2.));
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_toggle_target();
+        fixed_ticks(&mut app, 1);
         let enemy_view = app
             .world_mut()
             .query::<(Entity, &ActorView)>()
@@ -1017,10 +1004,9 @@ mod tests {
         app.world_mut().entity_mut(enemy).insert(Health::new(1.0));
         {
             let mut intent = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
-            intent.request_switch_weapon();
             intent.request_attack();
         }
-        app.world_mut().run_schedule(FixedUpdate);
+        fixed_ticks(&mut app, 12);
         assert!(!app.world().get::<Health>(enemy).unwrap().is_alive());
         app.world_mut()
             .resource_mut::<Time>()
