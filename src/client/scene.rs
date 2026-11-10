@@ -67,12 +67,10 @@ fn spawn_player(world: &mut World) {
             Visibility::default(),
         ))
         .id();
-    let (body_material, eyes_material) = {
-        let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
-        (
-            materials.add(Color::srgb(0.10, 0.56, 0.56)),
-            materials.add(Color::srgb(1.0, 0.64, 0.23)),
-        )
-    };
-    super::stickman::spawn(world, view, &body_material, &eyes_material);
+    let appearance = world
+        .get_resource::<super::appearance::AppearanceSelection>()
+        .map_or(super::avatar::Appearance::Lihuowang, |selection| {
+            selection.current()
+        });
+    super::avatar::spawn_with_appearance(world, view, appearance);
 }

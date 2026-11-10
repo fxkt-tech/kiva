@@ -1,17 +1,13 @@
-//! Identifiable temporary weapons. All geometry and materials are reused.
+//! Shared melee geometry, source ranged meshes and read-only chain-axe presentation.
 use crate::simulation::{WeaponMode, WeaponPair};
 use bevy::prelude::*;
 
 #[derive(Resource, Clone)]
 pub(super) struct WeaponAssets {
     pub cube: Handle<Mesh>,
-    pub sphere: Handle<Mesh>,
     pub steel: Handle<StandardMaterial>,
     pub wood: Handle<StandardMaterial>,
     pub gold: Handle<StandardMaterial>,
-    pub cloth: Handle<StandardMaterial>,
-    pub skin: Handle<StandardMaterial>,
-    pub hair: Handle<StandardMaterial>,
 }
 impl WeaponAssets {
     pub fn shared(world: &mut World) -> Self {
@@ -19,9 +15,6 @@ impl WeaponAssets {
             return assets.clone();
         }
         let cube = world.resource_mut::<Assets<Mesh>>().add(Cuboid::default());
-        let sphere = world
-            .resource_mut::<Assets<Mesh>>()
-            .add(Sphere::new(0.5).mesh().uv(12, 8));
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
         let mut mat = |color| {
             materials.add(StandardMaterial {
@@ -32,13 +25,9 @@ impl WeaponAssets {
         };
         let assets = Self {
             cube,
-            sphere,
             steel: mat(Color::srgb(0.55, 0.65, 0.70)),
             wood: mat(Color::srgb(0.23, 0.085, 0.035)),
             gold: mat(Color::srgb(0.95, 0.66, 0.18)),
-            cloth: mat(Color::srgb(0.19, 0.43, 0.81)),
-            skin: mat(Color::srgb(0.92, 0.73, 0.59)),
-            hair: mat(Color::srgb(0.04, 0.025, 0.065)),
         };
         world.insert_resource(assets.clone());
         assets
@@ -153,69 +142,8 @@ pub(super) fn spawn(world: &mut World, root: Entity, pair: WeaponPair, mode: Wea
                 );
             }
         }
-        (WeaponPair::HammerMusket, WeaponMode::Ranged) => {
-            // Long wooden stock, slender barrel and brass flintlock, unlike the old cannon.
-            part(
-                world,
-                root,
-                &a.cube,
-                &a.wood,
-                Transform::from_xyz(0., -0.06, 0.61).with_scale(Vec3::new(0.12, 0.15, 0.92)),
-            );
-            part(
-                world,
-                root,
-                &a.cube,
-                &a.steel,
-                Transform::from_xyz(0., 0., 0.48).with_scale(Vec3::new(0.055, 0.055, 0.96)),
-            );
-            part(
-                world,
-                root,
-                &a.cube,
-                &a.gold,
-                Transform::from_xyz(0.07, 0.025, 0.72).with_scale(Vec3::new(0.05, 0.10, 0.10)),
-            );
-            part(
-                world,
-                root,
-                &a.cube,
-                &a.wood,
-                Transform::from_xyz(0., -0.12, 1.02)
-                    .with_rotation(Quat::from_rotation_x(-0.2))
-                    .with_scale(Vec3::new(0.14, 0.24, 0.20)),
-            );
-        }
-        (WeaponPair::ChainAxeBow, WeaponMode::Ranged) => {
-            for side in [-1., 1.] {
-                let points = [
-                    Vec3::ZERO,
-                    Vec3::new(0., side * 0.25, 0.10),
-                    Vec3::new(0., side * 0.51, 0.24),
-                    Vec3::new(0., side * 0.67, 0.16),
-                ];
-                for points in points.windows(2) {
-                    bar(world, root, &a, &a.wood, points[0], points[1], 0.055);
-                }
-                bar(
-                    world,
-                    root,
-                    &a,
-                    &a.gold,
-                    Vec3::new(0., side * 0.67, 0.16),
-                    Vec3::new(0., 0., 0.45),
-                    0.012,
-                );
-            }
-            bar(
-                world,
-                root,
-                &a,
-                &a.steel,
-                Vec3::new(0., 0., -0.25),
-                Vec3::new(0., 0., 0.65),
-                0.018,
-            );
+        (_, WeaponMode::Ranged) => {
+            super::ranged_models::spawn(world, root, pair, super::ranged_models::Mount::Muzzle);
         }
     }
 }

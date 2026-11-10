@@ -1,0 +1,340 @@
+{
+  "package": "assets/prepared/naraka/yizhiying",
+  "portable_manifest_sha256": "fbe98256865375192c3f97d4b2b7a0452e6352bf22dfa59ac3db25e493ed7136",
+  "identity": {
+    "item_id": 2310557,
+    "name": "羿之影",
+    "weapon_type": "bow",
+    "weapon_temp_ids": [
+      3112195,
+      3112196,
+      3112197
+    ]
+  },
+  "verified_files": 33,
+  "verified_pngs": 9,
+  "files": [
+    {
+      "file": "models/yizhiying_main.glb",
+      "sha256": "5662d347923ff5fc8bf584a4290af47c88f37d1f5052b4b8a2acb05cfd0d06ee",
+      "bytes": 1843316,
+      "role": "original-weapon-glb:main"
+    },
+    {
+      "file": "source-evidence/model-checks/yizhiying_main.cpu-verification.json",
+      "sha256": "531c798c1eb8968dc43e1e9dcdea9bf97a5e23a1e680872d568909e9179798a9",
+      "bytes": 4673,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/yizhiying_main.khronos.json",
+      "sha256": "8953fec42126df320d26db476180973161cc4b40d0240f7ae5001f86cc560132",
+      "bytes": 2192,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "models/yizhiying_quiver.glb",
+      "sha256": "75d13676df9283c4a1aea4347a857585aa3a7a92a03d8178895d3d00d9e04ff1",
+      "bytes": 1421948,
+      "role": "original-weapon-glb:quiver"
+    },
+    {
+      "file": "source-evidence/model-checks/yizhiying_quiver.cpu-verification.json",
+      "sha256": "982e2b13e426706003e478a5eda24bd34f0554004fbf8ff1bebd070b6e4774bf",
+      "bytes": 388,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/yizhiying_quiver.khronos.json",
+      "sha256": "73f154fba62cae79cac133eeb85e8cf0ebc97aab75c2e17a8a4e6dfdc07e0410",
+      "bytes": 1772,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "models/yizhiying_arrowbag.glb",
+      "sha256": "42171ac417e29058217f017a4d59725099fe00a7e829cca252facfcd66737f54",
+      "bytes": 436892,
+      "role": "original-weapon-glb:arrowbag"
+    },
+    {
+      "file": "source-evidence/model-checks/yizhiying_arrowbag.cpu-verification.json",
+      "sha256": "1f2a1f70be045391f841ed4ee8b35445fe2d83a3a03d22e0696641b8890c830e",
+      "bytes": 392,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/yizhiying_arrowbag.khronos.json",
+      "sha256": "fe5b8aedd904a966c0a6c196ea579c391119f2b5ffeb189354c0a1bb4b0d54e2",
+      "bytes": 1592,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_mask.png",
+      "sha256": "6680c8aec97e78dc8dde2c82c50b721a492756fadbb809ae3c74d89cac6f211d",
+      "bytes": 362557,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_n.png",
+      "sha256": "ad453a419a8ddd5197cde836ab5a1497c24d961c36500bb8dd8f9162824584e3",
+      "bytes": 903857,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_em.png",
+      "sha256": "95d274a0b5873233fcfc3c86975916d5f96da9ce8bc7df393550a1811744256d",
+      "bytes": 495286,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_d.png",
+      "sha256": "ea186bf86f71f9f7e7c0bb41ee9d6adcde63a36f89308d6d91ad0ac0d5914f6e",
+      "bytes": 1298424,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_mrav.png",
+      "sha256": "be8275ae4aae0092617e3f5f9f665865912d4b3947ad6bc66586664ae992d6bb",
+      "bytes": 1192160,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_arrow_mask.png",
+      "sha256": "41768d2022a525c69d5466bd782e1ded8287f30eb10feade7c516ef24b2b2962",
+      "bytes": 45271,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_arrow_n.png",
+      "sha256": "d09fe478019276a6ac9eb98310e86910a8734eca104918428aa61062a8470143",
+      "bytes": 172387,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_arrow_d.png",
+      "sha256": "466cba5871bcfcb617423f5739fa4ea76a8209e996411c3024d67f01e7bd90a7",
+      "bytes": 298913,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_bow_wuzhengong_arrow_mrav.png",
+      "sha256": "e83921aaa1baeb47ff18193001f3b183fd99d891982fcef624f14c69e5e7003d",
+      "bytes": 229998,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "source-evidence/weapon-export.original.json",
+      "sha256": "c377ec7bbb52ac3764f46d0b80d1a941b7df695a83472493b9687ed964707bcb",
+      "bytes": 2491237,
+      "role": "historical-original-export-manifest"
+    },
+    {
+      "file": "source-evidence/identity_manifest.json",
+      "sha256": "d5b7b3571358288d9cb8e3d6fd9112817f679b3fb971c82ba766ffd5636ebc4f",
+      "bytes": 48312,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/target_parts.json",
+      "sha256": "dbcaecb503a0c91f6c38cf07dd18e4e49ba6161d1edbd45eaecdd136181e9813",
+      "bytes": 20676,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/records/WeaponConfig_WeaponTemp_3112195.bin",
+      "sha256": "920d760e21bf523424c2b97b5cca7715000ad80e63e8ed9e9bcb3a5068b9bff8",
+      "bytes": 158,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponConfig_WeaponTemp_3112196.bin",
+      "sha256": "6cb62a2deacd7a0f0a3924eb3d0d93456815040ef992de23e8d0ab015f20827e",
+      "bytes": 146,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponConfig_WeaponTemp_3112197.bin",
+      "sha256": "5123e7c2e72832eea3f16d5c431af98f885c509db5259d14b765829f2c9448b0",
+      "bytes": 154,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponBattleSkin_2310557.bin",
+      "sha256": "47b6c2dd9abc6ce81c8dbd89564a59af9a8740ec5a2fb79d529ef467650ed6b2",
+      "bytes": 204,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponSkin_2310557.bin",
+      "sha256": "54abeb643cc730513c70b4b2f69948948421dd90bcb9f914e629976f5eefa703",
+      "bytes": 1044,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "related/models/wp_bow_wuzhengong_arrow_asset_space.glb",
+      "sha256": "f5fef713678c76c596dba583d85fdbbcd5f44ab5599c4929d4ab9e9118ae102f",
+      "bytes": 41020,
+      "role": "related-original-geometry-not-equipped"
+    },
+    {
+      "file": "related/source-evidence/wp_bow_wuzhengong_arrow_asset_space.cpu-verification.json",
+      "sha256": "71740de6253721519da7bc87a84a0e56372656b099db2145193b1188f8984470",
+      "bytes": 413,
+      "role": "related-source-geometry-verification"
+    },
+    {
+      "file": "related/source-evidence/wp_bow_wuzhengong_arrow_asset_space.khronos.json",
+      "sha256": "c63fe3c2069bdd1b388f4e8f968d4f0d1529bc4e686c2fa867cb9f44ca6d7bf6",
+      "bytes": 1492,
+      "role": "related-source-geometry-verification"
+    },
+    {
+      "file": "related/source-evidence/source_evidence.json",
+      "sha256": "b88c2fa1a5543564d867bb8a22c8004f9537f52d2bdd262b443e72f87b2a439c",
+      "bytes": 767248,
+      "role": "related-original-source-evidence"
+    },
+    {
+      "file": "related/source-evidence/manifest.original.json",
+      "sha256": "b4f236b0422ad25fbde6b64c398a1f48d03a29ca38bb001cb4508c66e6fa7815",
+      "bytes": 2731,
+      "role": "related-historical-original-manifest"
+    },
+    {
+      "file": "verification-report.json",
+      "sha256": "ea82b669a996a36111fa41bd15cd00eb233cadb04310d5e3e0a939326fa56842",
+      "bytes": 4108,
+      "role": "offline-verification-report"
+    },
+    {
+      "file": "README.md",
+      "sha256": "d132d87e41c9e814c53ec2a7aad679f45478cb3210bd6796bc60aaeccd6048a0",
+      "bytes": 1733,
+      "role": "readme"
+    }
+  ],
+  "generator": "scripts/import-prepared-models.py",
+  "generator_sha256": "c74db0c4fea9fa0fdd90c13eaef2ba91dcb6ef9fdb1f4a598164dcc51d65c007",
+  "runtime": "weapon.bin",
+  "runtime_sha256": "124e496ff8ce56a88ff122c60cad94d063584958efc33b8d8b82c6944641ea9a",
+  "adaptation": {
+    "format": "KIVAWP01",
+    "identity": "羿之影2310557",
+    "max_texture_size": 1024,
+    "forward": "-Z",
+    "muzzle_or_arrow_source": [
+      0,
+      0,
+      0
+    ],
+    "right_hand_grip": [
+      0.0,
+      0.0,
+      0.35
+    ],
+    "left_hand_grip": [
+      0.0,
+      0.0,
+      0.08
+    ],
+    "adaptations": [
+      {
+        "part": "yizhiying_main",
+        "mount": "muzzle/arrow source",
+        "conversion": [
+          [
+            -0.66,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.66,
+            0.0
+          ],
+          [
+            0.0,
+            0.66,
+            0.0,
+            0.08
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "authored": "Kiva axis/grip/muzzle or body mount adaptation; not a recovered original Actor attachment."
+      },
+      {
+        "part": "yizhiying_quiver",
+        "mount": "spine_03 in Kiva body axes",
+        "conversion": [
+          [
+            -0.55,
+            0.0,
+            0.0,
+            0.22211051517561428
+          ],
+          [
+            0.0,
+            0.0,
+            0.55,
+            -0.10277606502338796
+          ],
+          [
+            0.0,
+            0.55,
+            0.0,
+            0.13538540681889852
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "authored": "Kiva axis/grip/muzzle or body mount adaptation; not a recovered original Actor attachment."
+      },
+      {
+        "part": "yizhiying_arrowbag",
+        "mount": "spine_03 in Kiva body axes",
+        "conversion": [
+          [
+            -0.55,
+            0.0,
+            0.0,
+            -0.11247179095633326
+          ],
+          [
+            0.0,
+            0.0,
+            0.55,
+            -0.06862759098410606
+          ],
+          [
+            0.0,
+            0.55,
+            0.0,
+            0.13324065648019306
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "authored": "Kiva axis/grip/muzzle or body mount adaptation; not a recovered original Actor attachment."
+      }
+    ],
+    "limits": "Original current source pose LBS baked rigid; no source fire/draw clips, special shader, emission or packed mapping.",
+    "related_arrow": "Independent related neutral geometry remains prepared only; no recovered Actor/material binding, not fourth configured part."
+  },
+  "runtime_external_paths_or_downloads": false,
+  "game_reads": false
+}

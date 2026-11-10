@@ -12,6 +12,8 @@ mod environment;
 mod forest_material;
 mod hud;
 mod impact;
+mod model_asset;
+mod ranged_models;
 mod rendering;
 mod scene;
 mod skeleton;

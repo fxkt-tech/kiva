@@ -1,0 +1,323 @@
+{
+  "primitives": [
+    {
+      "role": "yinbingluo_main",
+      "mesh": "m_978860580@wp_flintlock_bingxueniaochong",
+      "vertices": 4159,
+      "triangles": 5464,
+      "native_source_skin": true,
+      "weighted_source_slots": [
+        0
+      ],
+      "joint1_vertices": 0,
+      "nonidentity_sourceRest_IBM_matrices": 1,
+      "maximum_independent_LBS_and_f32_bake_error_m": 5.956050165440203e-08,
+      "source_pose_bounds": [
+        [
+          -0.06271055866704235,
+          -0.07907351040704357,
+          -0.3352044496826369
+        ],
+        [
+          0.04822891579507686,
+          0.13764690076682962,
+          1.0131230446811663
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.04822891579507686,
+          -0.13727351040704355,
+          -4.681166343445398e-09
+        ],
+        [
+          0.06271055866704235,
+          0.07944690076682961,
+          1.348327489682637
+        ]
+      ],
+      "nondegenerate_UV_triangles": 5464
+    },
+    {
+      "role": "yinbingluo_main",
+      "mesh": "m_978860580@wp_flintlock_bingxueniaochong_01",
+      "vertices": 1236,
+      "triangles": 1642,
+      "native_source_skin": true,
+      "weighted_source_slots": [
+        0,
+        1
+      ],
+      "joint1_vertices": 135,
+      "nonidentity_sourceRest_IBM_matrices": 2,
+      "maximum_independent_LBS_and_f32_bake_error_m": 5.966978126479763e-08,
+      "source_pose_bounds": [
+        [
+          -0.05082891616567407,
+          -0.06268995941231256,
+          -0.3110816790194696
+        ],
+        [
+          0.046995157695553416,
+          0.11285131769819562,
+          1.004949574657817
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.046995157695553416,
+          -0.12088995941231256,
+          0.008173465342182995
+        ],
+        [
+          0.05082891616567407,
+          0.05465131769819562,
+          1.3242047190194697
+        ]
+      ],
+      "nondegenerate_UV_triangles": 1642
+    }
+  ],
+  "materials_and_textures": [
+    {
+      "name": "naraka::yinbingluo_main::wp_flintlock_bingxueniaochong",
+      "source_png_sha256": "5f5e2a8659891831632ce6f752964a7ffe5bba396e9204a2d3d14f5c590b9f54",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "96d74b7090def2e631803255132369380b5c2c971b3f6735eb14b6e42f59e017",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::yinbingluo_main::wp_flintlock_bingxueniaochong",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "name": "naraka::yinbingluo_main::wp_flintlock_bingxueniaochong_01",
+      "source_png_sha256": "2d73103505abc16db7cb26b682c4e99d3fcb344173620f581c0a7dcf2bc424d8",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "c05d5e92bfed893866d78450b717931145c1bad0a950ec857cc2c4979bfeceeb",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::yinbingluo_main::wp_flintlock_bingxueniaochong_01",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    }
+  ],
+  "adaptations": [
+    {
+      "part": "yinbingluo_main",
+      "mount": "muzzle/arrow source",
+      "conversion": [
+        [
+          -1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.0582
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          1.01312304
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "authored": "Kiva axis/grip/muzzle or body mount adaptation; not a recovered original Actor attachment."
+    }
+  ],
+  "binary": {
+    "format": "KIVAWP01",
+    "sha256": "27ce590db7dfd294656f6a1052410b24e07c75b52580ae8a3cda939f7307172b",
+    "bytes": 1577483,
+    "textures": 2,
+    "materials": 2,
+    "parts": 2,
+    "vertices": 5395,
+    "triangles": 7106,
+    "part_statistics": [
+      {
+        "name": "naraka::yinbingluo_main::m_978860580@wp_flintlock_bingxueniaochong",
+        "mount": 0,
+        "vertices": 4159,
+        "triangles": 5464
+      },
+      {
+        "name": "naraka::yinbingluo_main::m_978860580@wp_flintlock_bingxueniaochong_01",
+        "mount": 0,
+        "vertices": 1236,
+        "triangles": 1642
+      }
+    ],
+    "actual_runtime_mount0_bounds": [
+      [
+        -0.0482289157807827,
+        -0.13727350533008575,
+        -4.6811665654900025e-09
+      ],
+      [
+        0.06271056085824966,
+        0.07944690436124802,
+        1.3483275175094604
+      ]
+    ],
+    "source_pose_nonbind_bones": 0,
+    "PNG_checks": [
+      {
+        "name": "naraka::yinbingluo_main::wp_flintlock_bingxueniaochong",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "96d74b7090def2e631803255132369380b5c2c971b3f6735eb14b6e42f59e017"
+      },
+      {
+        "name": "naraka::yinbingluo_main::wp_flintlock_bingxueniaochong_01",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "c05d5e92bfed893866d78450b717931145c1bad0a950ec857cc2c4979bfeceeb"
+      }
+    ],
+    "right_left_grips": [
+      0.0,
+      -0.05820000171661377,
+      0.7631230354309082,
+      0.0,
+      -0.028200000524520874,
+      0.4131230413913727
+    ],
+    "exact_EOF": true
+  },
+  "source_verification": {
+    "passed": true,
+    "files": 20,
+    "glbs": [
+      {
+        "file": "yinbingluo_main.glb",
+        "sha256": "b2d29661f95e4783921ad0d0ff7bcd25788c7964f93110ff31abf2e5a38003c5",
+        "vertices": 5395,
+        "triangles": 7106,
+        "meshes": 2,
+        "native_skinned_meshes": 2,
+        "primitive_checks": [
+          {
+            "mesh": "m_978860580@wp_flintlock_bingxueniaochong",
+            "vertices": 4159,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.06271055866704235,
+                -0.07907351040704357,
+                -0.3352044496826369
+              ],
+              [
+                0.04822891579507686,
+                0.13764690076682962,
+                1.0131230446811663
+              ]
+            ],
+            "palette_slots": 1,
+            "perturbed_source_joint": "bingxueniaochong_01",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.22211606428444486
+          },
+          {
+            "mesh": "m_978860580@wp_flintlock_bingxueniaochong_01",
+            "vertices": 1236,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.05082891616567407,
+                -0.06268995941231256,
+                -0.3110816790194696
+              ],
+              [
+                0.046995157695553416,
+                0.11285131769819562,
+                1.004949574657817
+              ]
+            ],
+            "palette_slots": 2,
+            "perturbed_source_joint": "bingxueniaochong_01",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.2199583086596518
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      }
+    ],
+    "png_files": 9,
+    "portable_paths_only": true,
+    "game_or_research_directory_required_for_verify": false,
+    "browser_or_screenshot_test": false
+  },
+  "checks": [
+    "pinned_portable_manifest_and_every_file_SHA",
+    "actual_source_accessor_weights_indices",
+    "original_source_hierarchy_and_current_LBS",
+    "source_f32_or_weights255_deviation",
+    "UV_and_unit_normals",
+    "bounded_PNG_sRGB_base_only",
+    "finite_matrices_and_bounds",
+    "exact_binary_EOF"
+  ],
+  "browser_or_screenshot_test": false
+}

@@ -6,8 +6,20 @@ use super::{
     avatar::{self, Appearance, AvatarAppearance},
 };
 
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub(super) struct AppearanceSelection(Appearance);
+
+impl Default for AppearanceSelection {
+    fn default() -> Self {
+        Self(Appearance::Lihuowang)
+    }
+}
+
+impl AppearanceSelection {
+    pub(super) fn current(&self) -> Appearance {
+        self.0
+    }
+}
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen::prelude::wasm_bindgen]
@@ -34,6 +46,7 @@ pub(super) fn sample(
         render(match selection.0 {
             Appearance::Choulingke => 1,
             Appearance::Lihuowang => 2,
+            Appearance::Bailingmiao => unreachable!("player appearance excludes companion"),
         });
     }
     #[cfg(not(target_arch = "wasm32"))]
@@ -41,6 +54,7 @@ pub(super) fn sample(
         selection.0 = match selection.0 {
             Appearance::Choulingke => Appearance::Lihuowang,
             Appearance::Lihuowang => Appearance::Choulingke,
+            Appearance::Bailingmiao => unreachable!("player appearance excludes companion"),
         };
     }
 }
@@ -118,6 +132,11 @@ mod tests {
             Health::new(1_000_000.0),
         ));
         combat::setup(&mut world);
+        world.spawn((
+            crate::simulation::Companion { owner: actor },
+            crate::simulation::CompanionState::default(),
+        ));
+        super::super::companion::setup(&mut world);
         (world, actor, view)
     }
 
@@ -166,6 +185,11 @@ mod tests {
             .single(&world)
             .unwrap();
         let enemy_children: Vec<_> = world.get::<Children>(enemy).unwrap().iter().collect();
+        let sister = world
+            .query_filtered::<Entity, With<super::super::companion::CompanionView>>()
+            .single(&world)
+            .unwrap();
+        let sister_children: Vec<_> = world.get::<Children>(sister).unwrap().iter().collect();
         world.resource_mut::<AppearanceSelection>().0 = Appearance::Lihuowang;
         reconcile(&mut world);
         assert_eq!(
@@ -193,6 +217,19 @@ mod tests {
         assert_eq!(weapon_meshes(&mut world, true), old_melee);
         assert_eq!(weapon_meshes(&mut world, false), ranged);
         assert_eq!(
+            world.get::<AvatarAppearance>(sister).unwrap().0,
+            Appearance::Bailingmiao
+        );
+        assert!(world.get::<PlayerView>(sister).is_none());
+        assert_eq!(
+            world
+                .get::<Children>(sister)
+                .unwrap()
+                .iter()
+                .collect::<Vec<_>>(),
+            sister_children
+        );
+        assert_eq!(
             world.get::<AvatarAppearance>(enemy).unwrap().0,
             Appearance::Choulingke
         );
@@ -208,11 +245,23 @@ mod tests {
             world.resource::<Assets<Mesh>>().len(),
             world.resource::<Assets<StandardMaterial>>().len(),
             world.resource::<Assets<Image>>().len(),
-            world.entities().len(),
+            world.entities().count_spawned(),
         );
         for _ in 0..4 {
             world.resource_mut::<AppearanceSelection>().0 = Appearance::Choulingke;
             reconcile(&mut world);
+            assert_eq!(
+                world.get::<AvatarAppearance>(sister).unwrap().0,
+                Appearance::Bailingmiao
+            );
+            assert_eq!(
+                world
+                    .get::<Children>(sister)
+                    .unwrap()
+                    .iter()
+                    .collect::<Vec<_>>(),
+                sister_children
+            );
             assert_eq!(weapon_meshes(&mut world, true), old_melee);
             world.resource_mut::<AppearanceSelection>().0 = Appearance::Lihuowang;
             reconcile(&mut world);
@@ -221,7 +270,7 @@ mod tests {
                     world.resource::<Assets<Mesh>>().len(),
                     world.resource::<Assets<StandardMaterial>>().len(),
                     world.resource::<Assets<Image>>().len(),
-                    world.entities().len(),
+                    world.entities().count_spawned(),
                 ),
                 counts
             );
@@ -249,5 +298,14 @@ mod tests {
             world.get::<AvatarAppearance>(player).unwrap().0,
             Appearance::Lihuowang
         );
+    }
+
+    #[test]
+    fn player_selection_defaults_to_lihuowang_while_enemy_avatar_default_stays_choulingke() {
+        assert_eq!(
+            AppearanceSelection::default().current(),
+            Appearance::Lihuowang
+        );
+        assert_eq!(Appearance::default(), Appearance::Choulingke);
     }
 }

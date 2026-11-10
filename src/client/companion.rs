@@ -1,8 +1,10 @@
-//! A separate, render-only temporary sister rig. Source and clocks come from simulation.
+//! Bai Lingmiao's independent render rig. Source and clocks come from simulation.
 use super::{
     animation::RigPose,
+    avatar::{self, Appearance, AvatarAssetCache, AvatarAssets},
+    ranged_models::{self, Mount, RangedModel},
     skeleton::AnimationLibrary,
-    weapons::{self, WeaponAssets},
+    weapons,
 };
 use crate::simulation::{
     Companion, CompanionState, HitStop, SimulationActive, WeaponMode, WeaponPair,
@@ -15,17 +17,14 @@ pub(super) struct CompanionView {
     pub performer: Entity,
 }
 #[derive(Component)]
-struct SisterPart {
-    root: Entity,
-    from: usize,
-    to: usize,
-    width: f32,
-    head: bool,
-}
-#[derive(Component)]
-struct SisterWeapon {
+struct SisterBodyMount {
     root: Entity,
     pair: WeaponPair,
+}
+#[derive(Component)]
+pub(super) struct SisterWeapon {
+    pub root: Entity,
+    pub pair: WeaponPair,
 }
 
 pub(super) fn setup(world: &mut World) {
@@ -34,8 +33,14 @@ pub(super) fn setup(world: &mut World) {
         .iter(world)
         .map(|(performer, c)| (performer, c.owner))
         .collect();
-    let assets = WeaponAssets::shared(world);
     for (performer, owner) in actors {
+        if world
+            .query::<&CompanionView>()
+            .iter(world)
+            .any(|view| view.performer == performer)
+        {
+            continue;
+        }
         let rig = RigPose::new(world.resource::<AnimationLibrary>());
         let root = world
             .spawn((
@@ -45,57 +50,19 @@ pub(super) fn setup(world: &mut World) {
                 Visibility::Hidden,
             ))
             .id();
-        for (from, to, width, head) in [
-            ("pelvis", "spine_03", 0.28, false),
-            ("neck_01", "Head", 0.23, true),
-            ("upperarm_l", "lowerarm_l", 0.10, false),
-            ("lowerarm_l", "hand_l", 0.08, false),
-            ("upperarm_r", "lowerarm_r", 0.10, false),
-            ("lowerarm_r", "hand_r", 0.08, false),
-            ("thigh_l", "calf_l", 0.13, false),
-            ("calf_l", "foot_l", 0.10, false),
-            ("thigh_r", "calf_r", 0.13, false),
-            ("calf_r", "foot_r", 0.10, false),
-        ] {
-            let library = world.resource::<AnimationLibrary>();
-            let from = library.bone(from);
-            let to = library.bone(to);
-            let part = weapons::part(
-                world,
-                root,
-                if head { &assets.sphere } else { &assets.cube },
-                if head { &assets.skin } else { &assets.cloth },
+        avatar::spawn_with_appearance(world, root, Appearance::Bailingmiao);
+        let body_mount = world
+            .spawn((
+                SisterBodyMount {
+                    root,
+                    pair: WeaponPair::ChainAxeBow,
+                },
                 Transform::IDENTITY,
-            );
-            world.entity_mut(part).insert(SisterPart {
-                root,
-                from,
-                to,
-                width,
-                head,
-            });
-        }
-        // Dark hair cap and twin tails give her a distinct silhouette from either brother appearance.
-        for (position, size) in [
-            (Vec3::new(0., 1.64, 0.045), Vec3::new(0.29, 0.20, 0.24)),
-            (Vec3::new(-0.17, 1.48, 0.08), Vec3::new(0.09, 0.36, 0.10)),
-            (Vec3::new(0.17, 1.48, 0.08), Vec3::new(0.09, 0.36, 0.10)),
-        ] {
-            weapons::part(
-                world,
-                root,
-                &assets.sphere,
-                &assets.hair,
-                Transform::from_translation(position).with_scale(size),
-            );
-        }
-        weapons::part(
-            world,
-            root,
-            &assets.cube,
-            &assets.gold,
-            Transform::from_xyz(0., 0.94, 0.).with_scale(Vec3::new(0.31, 0.07, 0.19)),
-        );
+                Visibility::Hidden,
+            ))
+            .id();
+        ranged_models::spawn(world, body_mount, WeaponPair::ChainAxeBow, Mount::Spine);
+        world.entity_mut(root).add_child(body_mount);
         for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
             let weapon = world
                 .spawn((
@@ -146,54 +113,48 @@ pub(super) fn sync(world: &mut World) {
         let root_transform =
             Transform::from_translation(position).with_rotation(Quat::from_rotation_y(yaw));
         *world.get_mut::<Transform>(root).unwrap() = root_transform;
-        let offset = state.aim_position - state.source_position;
-        let pitch = offset.y.atan2(offset.xz().length().max(0.001));
-        world.resource_scope(|world, library: Mut<AnimationLibrary>| {
-            world.get_mut::<RigPose>(root).unwrap().sample_companion(
-                &library,
-                &state,
-                pitch,
-                root_transform
-                    .compute_affine()
-                    .inverse()
-                    .transform_point3(state.source_position + (position - state.position)),
-            );
-        });
-        let model = world.get::<RigPose>(root).unwrap().model.clone();
-        let parts: Vec<_> = world
-            .query::<(Entity, &SisterPart)>()
-            .iter(world)
-            .filter(|(_, p)| p.root == root)
-            .map(|(e, p)| (e, p.from, p.to, p.width, p.head))
-            .collect();
-        for (entity, from, to, width, head) in parts {
-            let a = model[from].translation;
-            let b = model[to].translation;
-            let transform = if head {
-                Transform::from_translation(b + Vec3::Y * 0.055).with_scale(Vec3::new(
-                    width,
-                    width * 1.15,
-                    width,
-                ))
-            } else {
-                Transform::from_translation((a + b) * 0.5)
-                    .with_rotation(Quat::from_rotation_arc(
-                        Vec3::Y,
-                        (b - a).normalize_or(Vec3::Y),
-                    ))
-                    .with_scale(Vec3::new(width, a.distance(b).max(0.08), width * 0.8))
-            };
-            *world.get_mut::<Transform>(entity).unwrap() = transform;
-        }
         let source = state.source_position + (position - state.position);
         let direction =
             (state.aim_position - source).normalize_or(root_transform.rotation * Vec3::NEG_Z);
+        // Aim in the actor's frame so turning through PI cannot roll a bow
+        // upside down while its forward axis still appears to match the target.
         let local_rotation =
-            root_transform.rotation.inverse() * Quat::from_rotation_arc(Vec3::NEG_Z, direction);
+            Quat::from_rotation_arc(Vec3::NEG_Z, root_transform.rotation.inverse() * direction);
         let local_source = root_transform
             .compute_affine()
             .inverse()
             .transform_point3(source);
+        let pitch = direction.y.atan2(direction.xz().length().max(0.001));
+        let grips = RangedModel::shared(world, state.pair)
+            .grips
+            .map(|grip| local_source + local_rotation * grip);
+        world.resource_scope(|world, library: Mut<AnimationLibrary>| {
+            world
+                .get_mut::<RigPose>(root)
+                .unwrap()
+                .sample_companion(&library, &state, pitch, grips);
+        });
+        let assets = AvatarAssets::cached(
+            world.get_resource::<AvatarAssets>(),
+            world.get_resource::<AvatarAssetCache>(),
+            Appearance::Bailingmiao,
+        )
+        .expect("companion skin is cached");
+        let body_pose = assets.body_mount(world.get::<RigPose>(root).unwrap());
+        let mounts: Vec<_> = world
+            .query::<(Entity, &SisterBodyMount)>()
+            .iter(world)
+            .filter(|(_, mount)| mount.root == root)
+            .map(|(entity, mount)| (entity, mount.pair))
+            .collect();
+        for (entity, pair) in mounts {
+            *world.get_mut::<Transform>(entity).unwrap() = body_pose;
+            *world.get_mut::<Visibility>(entity).unwrap() = if pair == state.pair {
+                Visibility::Visible
+            } else {
+                Visibility::Hidden
+            };
+        }
         let weapons: Vec<_> = world
             .query::<(Entity, &SisterWeapon)>()
             .iter(world)
@@ -240,10 +201,10 @@ mod tests {
         assert!(
             world
                 .get::<super::super::avatar::AvatarAppearance>(root)
-                .is_none()
+                .is_some_and(|appearance| appearance.0 == Appearance::Bailingmiao)
         );
         let counts = (
-            world.entities().len(),
+            world.entities().count_spawned(),
             world.resource::<Assets<Mesh>>().len(),
             world.resource::<Assets<StandardMaterial>>().len(),
         );
@@ -260,14 +221,111 @@ mod tests {
             sync(&mut world);
             assert_eq!(
                 (
-                    world.entities().len(),
+                    world.entities().count_spawned(),
                     world.resource::<Assets<Mesh>>().len(),
                     world.resource::<Assets<StandardMaterial>>().len()
                 ),
                 counts
             );
         }
+        // Reconciliation can revisit startup data without adding a second skin
+        // or weapon tree. Removing the logical performer removes its whole view.
+        setup(&mut world);
+        assert_eq!(world.entities().count_spawned(), counts.0);
+        let mut hierarchy = vec![root];
+        let mut cursor = 0;
+        while cursor < hierarchy.len() {
+            if let Some(children) = world.get::<Children>(hierarchy[cursor]) {
+                hierarchy.extend(children.iter());
+            }
+            cursor += 1;
+        }
+        world.despawn(performer);
+        sync(&mut world);
+        assert!(world.get_entity(root).is_err());
+        assert!(
+            hierarchy
+                .iter()
+                .all(|&entity| world.get_entity(entity).is_err())
+        );
+        assert_eq!(
+            world.entities().count_spawned(),
+            counts.0 - hierarchy.len() as u32 - 1
+        );
+        assert_eq!(world.resource::<Assets<Mesh>>().len(), counts.1);
+        assert_eq!(world.resource::<Assets<StandardMaterial>>().len(), counts.2);
     }
+    #[test]
+    fn both_source_weapons_keep_their_up_axis_at_every_heading_and_pitch() {
+        let mut world = World::new();
+        world.init_resource::<Assets<Mesh>>();
+        world.init_resource::<Assets<StandardMaterial>>();
+        world.init_resource::<AnimationLibrary>();
+        world.init_resource::<Time<Fixed>>();
+        world.insert_resource(SimulationActive(false));
+        world.init_resource::<HitStop>();
+        let owner = world.spawn_empty().id();
+        let performer = world
+            .spawn((Companion { owner }, CompanionState::default()))
+            .id();
+        setup(&mut world);
+        let root = world
+            .query_filtered::<Entity, With<CompanionView>>()
+            .single(&world)
+            .unwrap();
+        for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+            for yaw in [
+                0.,
+                std::f32::consts::FRAC_PI_2,
+                -std::f32::consts::FRAC_PI_2,
+                std::f32::consts::PI,
+            ] {
+                for pitch in [-0.65, 0.0, 0.65, 1.0] {
+                    let yaw_rotation = Quat::from_rotation_y(yaw);
+                    let expected_rotation = yaw_rotation * Quat::from_rotation_x(pitch);
+                    let position = Vec3::new(2., 0.7, -3.);
+                    let source = position + yaw_rotation * Vec3::new(0., 1.2, -0.55);
+                    *world.get_mut::<CompanionState>(performer).unwrap() = CompanionState {
+                        visible: true,
+                        pair,
+                        position,
+                        previous_position: position,
+                        source_position: source,
+                        aim_position: source + expected_rotation * Vec3::NEG_Z * 5.,
+                        facing: (yaw_rotation * Vec3::NEG_Z).xz(),
+                        ..default()
+                    };
+                    sync(&mut world);
+                    let root_pose = *world.get::<Transform>(root).unwrap();
+                    let weapon = *world
+                        .query::<(&SisterWeapon, &Transform)>()
+                        .iter(&world)
+                        .find(|(weapon, _)| weapon.root == root && weapon.pair == pair)
+                        .unwrap()
+                        .1;
+                    let actual_rotation = root_pose.rotation * weapon.rotation;
+                    assert!(
+                        root_pose
+                            .transform_point(weapon.translation)
+                            .distance(source)
+                            < 0.0001
+                    );
+                    assert!(
+                        (actual_rotation * Vec3::NEG_Z).distance(expected_rotation * Vec3::NEG_Z)
+                            < 0.0001
+                    );
+                    assert!(
+                        (actual_rotation * Vec3::Y).distance(expected_rotation * Vec3::Y) < 0.0001,
+                        "{pair:?} yaw={yaw} pitch={pitch} must stay upright"
+                    );
+                    assert!(
+                        (actual_rotation * Vec3::X).distance(expected_rotation * Vec3::X) < 0.0001
+                    );
+                }
+            }
+        }
+    }
+
     #[test]
     fn real_q_has_one_sister_exact_muzzle_pause_and_roster_cleanup_without_asset_growth() {
         use crate::{
@@ -312,7 +370,7 @@ mod tests {
             .request_toggle_target();
         tick(&mut app, 1);
         let counts = (
-            app.world().entities().len(),
+            app.world().entities().count_spawned(),
             app.world().resource::<Assets<Mesh>>().len(),
             app.world().resource::<Assets<StandardMaterial>>().len(),
         );
@@ -363,7 +421,7 @@ mod tests {
             );
             assert_eq!(
                 (
-                    app.world().entities().len(),
+                    app.world().entities().count_spawned(),
                     app.world().resource::<Assets<Mesh>>().len(),
                     app.world().resource::<Assets<StandardMaterial>>().len()
                 ),

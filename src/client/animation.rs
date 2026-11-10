@@ -44,6 +44,8 @@ pub(super) struct SourcePose {
 #[derive(Component)]
 pub(super) struct RigPose {
     pub(super) source: Option<SourcePose>,
+    /// Render-only grip targets, retargeted with each companion body's own lengths.
+    pub(super) companion_hands: Option<[Vec3; 2]>,
     source_local: Option<Vec<Transform>>,
     source_from: Option<Vec<Transform>>,
     source_clip: Option<usize>,
@@ -70,6 +72,7 @@ impl RigPose {
         let local = poses::idle(library, 0.0, WeaponMode::Melee);
         Self {
             source: None,
+            companion_hands: None,
             source_local: None,
             source_from: None,
             source_clip: None,
@@ -97,10 +100,9 @@ impl RigPose {
         library: &AnimationLibrary,
         state: &crate::simulation::CompanionState,
         pitch: f32,
-        muzzle: Vec3,
+        grips: [Vec3; 2],
     ) {
         let elapsed = state.elapsed;
-        let pair = state.pair;
         let shots = state.shot_count;
         let kind = state.kind;
         let mut local = poses::idle(library, elapsed, WeaponMode::Ranged);
@@ -119,26 +121,11 @@ impl RigPose {
         });
         poses::aim_ranged(library, &mut local, pitch, recoil);
         self.model = library.model_pose(&local);
-        // Hands grip the authoritative muzzle's stock or bowstring. Arm endpoints
-        // are an independent temporary rig, never the brother's palette.
-        let rotation = Quat::from_rotation_x(pitch);
-        let right = if pair == WeaponPair::HammerMusket {
-            muzzle + rotation * Vec3::new(0.03, -0.05, 0.70 + recoil)
-        } else {
-            muzzle + rotation * Vec3::new(0.05, 0., 0.40 + recoil)
-        };
-        let left = if pair == WeaponPair::HammerMusket {
-            muzzle + rotation * Vec3::new(-0.04, -0.04, 0.35)
-        } else {
-            muzzle + rotation * Vec3::new(0., 0., 0.03)
-        };
-        for (side, hand) in [("r", right), ("l", left)] {
-            let shoulder = library.bone(&format!("upperarm_{side}"));
-            let elbow = library.bone(&format!("lowerarm_{side}"));
+        // Palette retargeting solves the female arms against these weapon-local
+        // grips while retaining the authored lower-body and recoil choreography.
+        self.companion_hands = Some(grips);
+        for (side, hand) in [("r", grips[0]), ("l", grips[1])] {
             let wrist = library.bone(&format!("hand_{side}"));
-            let origin = self.model[shoulder].translation;
-            self.model[elbow].translation = origin.lerp(hand, 0.5)
-                + Vec3::new(if side == "r" { 0.10 } else { -0.10 }, -0.10, 0.10);
             self.model[wrist].translation = hand;
         }
     }
@@ -1328,18 +1315,33 @@ mod tests {
             ..default()
         };
         let muzzle = Vec3::new(0., 1.2, -0.55);
-        rig.sample_companion(&library, &state, 0.4, muzzle);
+        rig.sample_companion(
+            &library,
+            &state,
+            0.4,
+            [muzzle + Vec3::Z * 0.76, muzzle + Vec3::Z * 0.41],
+        );
         let gun = rig.model.clone();
         let foot = library.bone("foot_l");
         let hand = library.bone("hand_r");
         state.pair = WeaponPair::ChainAxeBow;
         state.kind = ActionKind::ChainCombo;
-        rig.sample_companion(&library, &state, 0.4, muzzle);
+        rig.sample_companion(
+            &library,
+            &state,
+            0.4,
+            [muzzle + Vec3::Z * 0.35, muzzle + Vec3::Z * 0.08],
+        );
         assert!(rig.model[hand].translation.distance(gun[hand].translation) > 0.15);
         assert_eq!(rig.model[foot], gun[foot]);
         finite(&rig.model);
         let paused = rig.model.clone();
-        rig.sample_companion(&library, &state, 0.4, muzzle);
+        rig.sample_companion(
+            &library,
+            &state,
+            0.4,
+            [muzzle + Vec3::Z * 0.35, muzzle + Vec3::Z * 0.08],
+        );
         assert_eq!(rig.model, paused);
     }
 

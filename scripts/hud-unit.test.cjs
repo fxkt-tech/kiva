@@ -70,7 +70,7 @@ test("early player, resources, pair and target snapshots replay safely together"
 
 test("pair identity uses explicit enums, with E and Q always separate", () => {
   const f = fixture(true); player(f, { weapon: "可更名的武器" });
-  for (const [pair, melee, ranged, icon] of [[1,"锤子","鸟铳","hammer"],[2,"链斧","弓箭","axe"]]) {
+  for (const [pair, melee, ranged, icon] of [[1,"锤子","引冰落","hammer"],[2,"链斧","羿之影","axe"]]) {
     f.hud.renderLoadout(pair, 1000, true, true, true, true, false);
     f.hud.renderResources(100,100,0,0,false,0);
     assert.equal(f.at("hud-melee-name").textContent,melee);

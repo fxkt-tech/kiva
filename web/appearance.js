@@ -1,7 +1,7 @@
 /* Appearance requests affect player visuals; Rust owns the applied selection. */
 (() => {
   "use strict";
-  let current = 1;
+  let current = 2;
   let pending = 0;
 
   function paint() {
