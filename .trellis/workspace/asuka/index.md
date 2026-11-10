@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 35
+- **Total Sessions**: 37
 - **Last Active**: 2026-11-10
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1201 | Active |
+| `journal-1.md` | ~1269 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 37 | 2026-11-10 | 提交并推送两件近战模型 | `791c66d` | `main` |
+| 36 | 2026-11-10 | 近战模型接入：伏浪锚与谪星摧山 | - | `main` |
 | 35 | 2026-11-10 | 提交并合并指定模型接入 | `9073157`, `8ee266e` | `main` |
 | 34 | 2026-11-10 | 指定兄妹及远程武器模型接入 | - | `feat/action-v1-models` |
 | 33 | 2026-11-10 | 提交并合并动作系统第一版到main | `79b3538`, `33f3a67` | `main` |

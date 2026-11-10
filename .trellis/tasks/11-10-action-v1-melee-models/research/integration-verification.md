@@ -30,7 +30,7 @@
 - 任务 JSON／JSONL／引用、文档链接和 `git diff --check`。
 
 旧三组导出器 `--verify` 也全部通过，12文件逐字节一致；旧五组运行资源、prepared、旧转换器、simulation／gameplay、相机和 Cargo／lock 均未改动。
-基线 branch／HEAD 仍为 main／f1da207，本轮无提交／推送。
+实施验收基线 branch／HEAD 为 main／f1da207，当时尚未提交／推送。
 
 ## 最终打包产物浏览器流程
 
@@ -44,4 +44,9 @@ Chromium／SwiftShader fixture 运行 exit0，page／console errors为空，fail
 
 前轮 Chromium／SwiftShader 在重构前基线和当前代码均只有背景与 HUD。本轮查看07链斧联动截图仍相同，皮肤HUD正常，但3D可见性未通过验收。
 真实代码／数值／流程检查已完成，CPU投影也检查了几何完整性；真实 GPU 下的外观／握持构图／穿插仍待复核，任务保留跟踪，不提前归档。
-当前改动直接保留在 main 工作区，未执行新的提交／推送操作。
+实现交付时改动直接保留在 main 工作区；后续用户明确要求“提交&推送”。
+
+## Git 交付
+
+按用户授权，代码直接在 main 提交为 `791c66d`（feat: integrate Fulangmao and Zhexing Cuishan models），并推送 origin/main。
+提交前 fetch 确认 main 与远端一致，没有额外合并或临时分支。已通过的运行代码／资产未再修改，真实 GPU 画面验收继续跟踪，任务不提前归档。

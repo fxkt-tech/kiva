@@ -1199,3 +1199,71 @@ Packaged exact official Choulingke soundtrack and fully traced original shared p
 ### Next Steps
 
 - 真实GPU画面验收待复核，保留任务记录，不提前归档。
+
+
+## Session 36: 近战模型接入：伏浪锚与谪星摧山
+<!-- trellis-session: v=2 fp=f44a86b269ecc16f -->
+
+**Date**: 2026-11-10
+**Task**: 近战模型接入：伏浪锚与谪星摧山
+**Branch**: `main`
+
+### Summary
+
+直接main接入两件源近战模型，手持/飞行共享缓存；谪星明确固定静态装配，全部自动检查和浏览器流程通过。
+
+### Main Changes
+
+- 新近战离线转换器与两组WP01资产；源LBS、448隐式权重、谪星互补部件/Float边界和静态装配完整记录。
+- 统一四槽武器模型缓存，绳索连接本帧实际手腕，HUD身份紧凑显示；保留战斗规则与旧五组资源。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 220 Rust、65 Node、原生和WASM Clippy、WASM检查与离线Trunk打包通过；新8文件重建一致、旧12文件重建不漂移。
+- [OK] 最终WASM浏览器单枪/双三发联动/暂停换装/模式切换通过，page和console错误为空；CPU轮廓检查通过，真实GPU画面仍待复核。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- main工作区尚未提交；真实GPU下检查模型外观、握持构图与穿插，任务保留验收跟踪。
+
+
+## Session 37: 提交并推送两件近战模型
+<!-- trellis-session: v=2 fp=1a3d5bfc3aba609e -->
+
+**Date**: 2026-11-10
+**Task**: 提交并推送两件近战模型
+**Branch**: `main`
+
+### Summary
+
+按用户明确授权，直接main提交伏浪锚和谪星摧山接入并推送origin/main。
+
+### Main Changes
+
+- 代码提交791c66d；实现及资源来源、静态装配边界、客户端共享缓存和真实手腕绳索均已记录。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `791c66d` | feat: integrate Fulangmao and Zhexing Cuishan models |
+
+### Testing
+
+- [OK] 沿用最终220 Rust、65 Node、双平台Clippy、WASM/Trunk、离线重建和浏览器流程通过结果；提交期间未再改运行代码或资产。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 真实GPU模型画面复核继续跟踪，任务保留不提前归档。

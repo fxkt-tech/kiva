@@ -15,7 +15,7 @@
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "791c66d",
   "pr_url": null,
   "subtasks": [],
   "children": [],
@@ -32,6 +32,6 @@
     "index.html",
     ".trellis/spec/client/model-assets.md"
   ],
-  "notes": "按用户要求直接main接入伏浪锚/谪星摧山，未创建分支、未提交或推送。谪星为来源明确的Kiva互补部件静态组装，不宣称恢复随机星格/Floatshader/FX。220Rust+65Node、双平台Clippy、WASM/Trunk、源校验与新8文件重建一致通过；旧五组资产和规则/相机/Cargo未变。浏览器双联动、暂停换装与模式切换通过，无运行错误。真实GPU画面待复核，任务暂不归档。",
+  "notes": "按用户要求直接main接入伏浪锚/谪星摧山，代码提交791c66d；用户随后明确授权提交和推送，直接交付origin/main，无临时分支。谪星为来源明确的Kiva互补部件静态组装，不宣称恢复随机星格/Floatshader/FX。220Rust+65Node、双平台Clippy、WASM/Trunk、源校验与新8文件重建一致通过；旧五组资产和规则/相机/Cargo未变。浏览器双联动、暂停换装与模式切换通过，无运行错误。真实GPU画面待复核，任务暂不归档。",
   "meta": {}
 }
