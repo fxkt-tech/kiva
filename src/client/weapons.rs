@@ -1,151 +1,41 @@
-//! Shared melee geometry, source ranged meshes and read-only chain-axe presentation.
+//! Source weapon instances and read-only chain-axe presentation.
 use crate::simulation::{WeaponMode, WeaponPair};
 use bevy::prelude::*;
 
 #[derive(Resource, Clone)]
-pub(super) struct WeaponAssets {
-    pub cube: Handle<Mesh>,
-    pub steel: Handle<StandardMaterial>,
-    pub wood: Handle<StandardMaterial>,
-    pub gold: Handle<StandardMaterial>,
+struct TetherAssets {
+    cube: Handle<Mesh>,
+    gold: Handle<StandardMaterial>,
 }
-impl WeaponAssets {
-    pub fn shared(world: &mut World) -> Self {
+impl TetherAssets {
+    fn shared(world: &mut World) -> Self {
         if let Some(assets) = world.get_resource::<Self>() {
             return assets.clone();
         }
         let cube = world.resource_mut::<Assets<Mesh>>().add(Cuboid::default());
-        let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
-        let mut mat = |color| {
-            materials.add(StandardMaterial {
-                base_color: color,
+        let gold = world
+            .resource_mut::<Assets<StandardMaterial>>()
+            .add(StandardMaterial {
+                base_color: Color::srgb(0.95, 0.66, 0.18),
                 perceptual_roughness: 0.65,
                 ..default()
-            })
-        };
-        let assets = Self {
-            cube,
-            steel: mat(Color::srgb(0.55, 0.65, 0.70)),
-            wood: mat(Color::srgb(0.23, 0.085, 0.035)),
-            gold: mat(Color::srgb(0.95, 0.66, 0.18)),
-        };
+            });
+        let assets = Self { cube, gold };
         world.insert_resource(assets.clone());
         assets
     }
 }
-pub(super) fn part(
-    world: &mut World,
-    parent: Entity,
-    mesh: &Handle<Mesh>,
-    material: &Handle<StandardMaterial>,
-    transform: Transform,
-) -> Entity {
-    let entity = world
-        .spawn((
-            Mesh3d(mesh.clone()),
-            MeshMaterial3d(material.clone()),
-            transform,
-        ))
-        .id();
-    world.entity_mut(parent).add_child(entity);
-    entity
-}
-fn bar(
-    world: &mut World,
-    parent: Entity,
-    assets: &WeaponAssets,
-    material: &Handle<StandardMaterial>,
-    a: Vec3,
-    b: Vec3,
-    width: f32,
-) {
-    let delta = b - a;
-    part(
-        world,
-        parent,
-        &assets.cube,
-        material,
-        Transform::from_translation((a + b) * 0.5)
-            .with_rotation(Quat::from_rotation_arc(Vec3::Y, delta.normalize()))
-            .with_scale(Vec3::new(width, delta.length(), width)),
-    );
-}
-/// Melee grip extends +Y; ranged barrel/arrow points -Z, muzzle at local origin.
-pub(super) fn spawn(world: &mut World, root: Entity, pair: WeaponPair, mode: WeaponMode) {
-    let a = WeaponAssets::shared(world);
-    match (pair, mode) {
-        (WeaponPair::HammerMusket, WeaponMode::Melee) => {
-            bar(
-                world,
-                root,
-                &a,
-                &a.wood,
-                Vec3::new(0., -0.25, 0.),
-                Vec3::new(0., 0.85, 0.),
-                0.07,
-            );
-            part(
-                world,
-                root,
-                &a.cube,
-                &a.steel,
-                Transform::from_xyz(0., 0.85, 0.).with_scale(Vec3::new(0.70, 0.33, 0.32)),
-            );
-            for x in [-0.32, 0.32] {
-                part(
-                    world,
-                    root,
-                    &a.cube,
-                    &a.gold,
-                    Transform::from_xyz(x, 0.85, 0.).with_scale(Vec3::new(0.09, 0.37, 0.36)),
-                );
-            }
-        }
-        (WeaponPair::ChainAxeBow, WeaponMode::Melee) => {
-            bar(
-                world,
-                root,
-                &a,
-                &a.wood,
-                Vec3::new(0., -0.2, 0.),
-                Vec3::new(0., 0.85, 0.),
-                0.065,
-            );
-            for side in [-1., 1.] {
-                part(
-                    world,
-                    root,
-                    &a.cube,
-                    &a.steel,
-                    Transform::from_xyz(side * 0.22, 0.73, 0.)
-                        .with_rotation(Quat::from_rotation_z(side * 0.32))
-                        .with_scale(Vec3::new(0.35, 0.42, 0.075)),
-                );
-                part(
-                    world,
-                    root,
-                    &a.cube,
-                    &a.gold,
-                    Transform::from_xyz(side * 0.36, 0.73, 0.)
-                        .with_scale(Vec3::new(0.055, 0.47, 0.09)),
-                );
-            }
-            for i in 0..6 {
-                let y = -0.23 - i as f32 * 0.07;
-                part(
-                    world,
-                    root,
-                    &a.cube,
-                    &a.steel,
-                    Transform::from_xyz((i % 2) as f32 * 0.03, y, 0.)
-                        .with_scale(Vec3::new(0.07, 0.045, 0.035)),
-                );
-            }
-        }
-        (_, WeaponMode::Ranged) => {
-            super::ranged_models::spawn(world, root, pair, super::ranged_models::Mount::Muzzle);
-        }
+
+pub(super) fn melee_name(pair: WeaponPair) -> &'static str {
+    match pair {
+        WeaponPair::HammerMusket => "伏浪锚 · 锤子",
+        WeaponPair::ChainAxeBow => "谪星·摧山 · 链斧",
     }
+}
+
+/// Source melee extends +Y from the grip; ranged points -Z from the firing source.
+pub(super) fn spawn(world: &mut World, root: Entity, pair: WeaponPair, mode: WeaponMode) {
+    super::weapon_models::spawn(world, root, pair, mode, super::weapon_models::Mount::Weapon);
 }
 
 #[derive(Component)]
@@ -154,7 +44,7 @@ pub(super) struct FlyingAxe;
 pub(super) struct Tether;
 /// Persistent views; fixed-step snapshots alone determine throw and return progress.
 pub(super) fn setup_tether(world: &mut World) {
-    let assets = WeaponAssets::shared(world);
+    let assets = TetherAssets::shared(world);
     let axe = world
         .spawn((FlyingAxe, Transform::IDENTITY, Visibility::Hidden))
         .id();
@@ -173,29 +63,58 @@ type TetherData = (
     Has<FlyingAxe>,
 );
 type TetherViews = Or<(With<FlyingAxe>, With<Tether>)>;
-pub(super) fn sync_tether(
-    time: Res<Time<Fixed>>,
-    active: Res<crate::simulation::SimulationActive>,
-    hit_stop: Res<crate::simulation::HitStop>,
-    player: Single<
-        (&crate::simulation::Combatant, &crate::simulation::Body),
-        With<crate::gameplay::Player>,
-    >,
-    mut views: Query<TetherData, TetherViews>,
-) {
-    use crate::simulation::ActionKind;
-    let (combat, body) = *player;
-    let alpha = super::display_alpha(&time, &active, &hit_stop);
-    let hand = body.interpolated_world(alpha) + Vec3::Y * 1.0;
+pub(super) fn sync_tether(world: &mut World) {
+    use crate::{
+        client::{
+            PlayerView,
+            stickman::{Attachment, BoneVisual},
+        },
+        gameplay::Player,
+        simulation::{ActionKind, Combatant, HitStop, SimulationActive},
+    };
+    let time = world.resource::<Time<Fixed>>();
+    let dt = time.delta_secs();
+    let alpha = super::display_alpha(
+        time,
+        world.resource::<SimulationActive>(),
+        world.resource::<HitStop>(),
+    );
+    let combat = world
+        .query_filtered::<&Combatant, With<Player>>()
+        .single(world)
+        .expect("one player");
     let action = combat
         .active_action()
         .filter(|a| a.pair == WeaponPair::ChainAxeBow && combat.axe_away());
-    for (mut transform, mut visibility, is_axe) in &mut views {
+    let (view, root) = world
+        .query_filtered::<(Entity, &Transform), With<PlayerView>>()
+        .single(world)
+        .map(|(view, transform)| (view, *transform))
+        .expect("one player view");
+    // Attachment transforms have just been updated from this frame's retargeted wrist.
+    // Compose the local grip directly: GlobalTransform propagation runs after Update.
+    let hand = world
+        .query::<(&BoneVisual, &Transform)>()
+        .iter(world)
+        .find(|(visual, _)| {
+            visual.owner == view
+                && matches!(
+                    visual.attachment,
+                    Attachment::Weapon {
+                        mode: WeaponMode::Melee,
+                        ..
+                    }
+                )
+        })
+        .map(|(_, transform)| root.transform_point(transform.translation))
+        .expect("player has a melee wrist attachment");
+    let mut views = world.query_filtered::<TetherData, TetherViews>();
+    for (mut transform, mut visibility, is_axe) in views.iter_mut(world) {
         let Some(a) = action else {
             *visibility = Visibility::Hidden;
             continue;
         };
-        let elapsed = (a.elapsed - time.delta_secs() * (1. - alpha)).max(0.);
+        let elapsed = (a.elapsed - dt * (1. - alpha)).max(0.);
         let point = if a.kind == ActionKind::AxeShot {
             if elapsed < 0.30 {
                 a.source_position
@@ -224,92 +143,463 @@ pub(super) fn sync_tether(
 mod tests {
     use super::*;
     use crate::{
-        gameplay::Player,
-        simulation::{Body, CombatIntent, Combatant, SimulationPlugin},
+        client::{
+            ActorView, PlayerView, animation,
+            avatar::{self, Appearance, AvatarAssetCache, AvatarAssets},
+            combat::{self, WeaponVisual},
+            controls::ViewYaw,
+            scene,
+            skeleton::AnimationLibrary,
+            stickman::{self, Attachment, BoneVisual},
+        },
+        gameplay::{EnemyMode, Player, set_enemy_mode},
+        simulation::{
+            ActionKind, Body, CombatIntent, Combatant, Health, HitStop, MoveIntent,
+            SimulationActive, SimulationPlugin, teleport_actor,
+        },
     };
     use std::time::Duration;
-    #[test]
-    fn real_chain_throw_returns_its_persistent_axe_and_tether_without_growing_assets() {
+
+    fn scene() -> (App, Entity, Entity) {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin))
             .init_resource::<Assets<Mesh>>()
             .init_resource::<Assets<StandardMaterial>>()
-            .add_systems(Startup, (crate::gameplay::setup, setup_tether).chain())
-            .add_systems(Update, sync_tether);
+            .init_resource::<AnimationLibrary>()
+            .init_resource::<ViewYaw>()
+            .add_systems(
+                Startup,
+                (
+                    crate::gameplay::setup,
+                    scene::setup,
+                    combat::setup,
+                    setup_tether,
+                )
+                    .chain(),
+            )
+            .add_systems(
+                Update,
+                (
+                    scene::sync_player,
+                    combat::sync_weapons,
+                    animation::animate,
+                    avatar::sync,
+                    stickman::sync_attachments,
+                    sync_tether,
+                )
+                    .chain(),
+            );
         app.finish();
         app.update();
-        let tick = |app: &mut App, n| {
-            for _ in 0..n {
-                app.world_mut()
-                    .resource_mut::<Time<Fixed>>()
-                    .advance_by(Duration::from_secs_f64(1. / 60.));
-                app.world_mut().run_schedule(FixedUpdate);
-            }
-        };
         tick(&mut app, 12);
-        let player = app
-            .world_mut()
+        let world = app.world_mut();
+        let player = world
             .query_filtered::<Entity, With<Player>>()
-            .single(app.world())
+            .single(world)
             .unwrap();
-        {
-            let mut i = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
-            i.request_toggle_target();
-            i.request_pair(WeaponPair::ChainAxeBow);
-        }
-        tick(&mut app, 1);
-        let counts = (
-            app.world().entities().len(),
-            app.world().resource::<Assets<Mesh>>().len(),
-            app.world().resource::<Assets<StandardMaterial>>().len(),
-        );
-        for _ in 0..2 {
+        let view = world
+            .query_filtered::<Entity, With<PlayerView>>()
+            .single(world)
+            .unwrap();
+        (app, player, view)
+    }
+    fn tick(app: &mut App, n: usize) {
+        for _ in 0..n {
             app.world_mut()
-                .get_mut::<CombatIntent>(player)
-                .unwrap()
-                .request_ranged_skill();
-            tick(&mut app, 13);
-            assert!(app.world().get::<Combatant>(player).unwrap().axe_away());
-            let position = app.world().get::<Body>(player).unwrap().world_position();
-            app.world_mut().run_schedule(Update);
+                .resource_mut::<Time<Fixed>>()
+                .advance_by(Duration::from_secs_f64(1. / 60.));
+            app.world_mut().run_schedule(FixedUpdate);
+        }
+    }
+    fn render(world: &mut World) {
+        world
+            .resource_mut::<Time>()
+            .advance_by(Duration::from_secs_f64(1. / 60.));
+        world.run_schedule(Update);
+    }
+    fn held(world: &mut World, pair: WeaponPair) -> Entity {
+        world
+            .query::<(Entity, &WeaponVisual)>()
+            .iter(world)
+            .find(|(_, w)| w.pair() == pair)
+            .unwrap()
+            .0
+    }
+    fn handles(world: &World, root: Entity) -> Vec<(Handle<Mesh>, Handle<StandardMaterial>)> {
+        world
+            .get::<Children>(root)
+            .unwrap()
+            .iter()
+            .map(|child| {
+                (
+                    world.get::<Mesh3d>(child).unwrap().0.clone(),
+                    world
+                        .get::<MeshMaterial3d<StandardMaterial>>(child)
+                        .unwrap()
+                        .0
+                        .clone(),
+                )
+            })
+            .collect()
+    }
+    fn asset_counts(world: &World) -> (usize, usize, usize) {
+        (
+            world.resource::<Assets<Mesh>>().len(),
+            world.resource::<Assets<StandardMaterial>>().len(),
+            world.resource::<Assets<Image>>().len(),
+        )
+    }
+    fn throw(app: &mut App, player: Entity) {
+        let needs_target = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .target()
+            .is_none();
+        {
+            let mut intent = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
+            if needs_target {
+                // The only target is the real roster actor, selected by the normal intent.
+                intent.request_toggle_target();
+            }
+            intent.request_pair(WeaponPair::ChainAxeBow);
+        }
+        tick(app, 1);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_ranged_skill();
+        tick(app, 13);
+        assert!(app.world().get::<Combatant>(player).unwrap().axe_away());
+        render(app.world_mut());
+    }
+    fn assert_tether_at_grip(world: &mut World, view: Entity) {
+        let root = *world.get::<Transform>(view).unwrap();
+        let weapon = held(world, WeaponPair::ChainAxeBow);
+        let grip = root.transform_point(world.get::<Transform>(weapon).unwrap().translation);
+        let line = *world
+            .query_filtered::<&Transform, With<Tether>>()
+            .single(world)
+            .unwrap();
+        let start = line.transform_point(Vec3::Z * 0.5);
+        let end = line.transform_point(Vec3::NEG_Z * 0.5);
+        let axe = *world
+            .query_filtered::<&Transform, With<FlyingAxe>>()
+            .single(world)
+            .unwrap();
+        assert!(
+            start.distance(grip) < 0.0001,
+            "rope starts on the rendered wrist grip"
+        );
+        assert!(
+            end.distance(axe.translation) < 0.0001,
+            "rope ends at the same flying grip origin"
+        );
+    }
+    fn assert_returned(world: &mut World, player: Entity) {
+        assert!(!world.get::<Combatant>(player).unwrap().axe_away());
+        for visibility in world
+            .query_filtered::<&Visibility, TetherViews>()
+            .iter(world)
+        {
+            assert_eq!(*visibility, Visibility::Hidden);
+        }
+        let weapon = held(world, WeaponPair::ChainAxeBow);
+        assert_eq!(
+            *world.get::<Visibility>(weapon).unwrap(),
+            Visibility::Visible
+        );
+    }
+
+    #[test]
+    fn source_melee_uses_the_retargeted_wrist_for_both_bodies_and_shared_flying_meshes() {
+        let (mut app, player, view) = scene();
+        let world = app.world_mut();
+        let axe = world
+            .query_filtered::<Entity, With<FlyingAxe>>()
+            .single(world)
+            .unwrap();
+        let chain = held(world, WeaponPair::ChainAxeBow);
+        let hammer = held(world, WeaponPair::HammerMusket);
+        let chain_handles = handles(world, chain);
+        let hammer_handles = handles(world, hammer);
+        assert_eq!(chain_handles, handles(world, axe));
+        assert_ne!(chain_handles, hammer_handles);
+        let counts = asset_counts(world);
+        for appearance in [Appearance::Choulingke, Appearance::Lihuowang] {
+            let world = app.world_mut();
+            let position = world.get::<Body>(player).unwrap().world_position();
+            avatar::replace(world, view, appearance);
+            render(world);
+            assert_eq!(handles(world, chain), chain_handles);
+            assert_eq!(handles(world, hammer), hammer_handles);
+            let rig = world.get::<animation::RigPose>(view).unwrap();
+            let assets = AvatarAssets::cached(
+                world.get_resource::<AvatarAssets>(),
+                world.get_resource::<AvatarAssetCache>(),
+                appearance,
+            )
+            .unwrap();
+            let expected = stickman::attachment_transform(
+                &world.get::<BoneVisual>(chain).unwrap().attachment,
+                &assets.attachment_pose(rig),
+            );
+            assert_eq!(*world.get::<Transform>(chain).unwrap(), expected);
+            let bone = world.resource::<AnimationLibrary>().bone("hand_r");
+            let pose = assets.attachment_pose(rig);
+            let wrist_forward = pose[bone].rotation * Vec3::Z;
+            assert!((expected.rotation * Vec3::Y).distance(wrist_forward) < 0.0001);
             assert_eq!(
-                app.world().get::<Body>(player).unwrap().world_position(),
+                world.get::<Body>(player).unwrap().world_position(),
                 position
             );
-            let axe = app
-                .world_mut()
-                .query_filtered::<(&Transform, &Visibility), With<FlyingAxe>>()
-                .single(app.world())
-                .unwrap();
-            assert_eq!(*axe.1, Visibility::Visible);
-            assert!(axe.0.translation.is_finite());
-            assert!(axe.0.translation.y > 0.5);
-            let line = app
-                .world_mut()
-                .query_filtered::<(&Transform, &Visibility), With<Tether>>()
-                .single(app.world())
-                .unwrap();
-            assert_eq!(*line.1, Visibility::Visible);
-            assert!(line.0.scale.z > 0.2);
-            tick(&mut app, 50);
-            app.world_mut().run_schedule(Update);
-            assert!(!app.world().get::<Combatant>(player).unwrap().axe_away());
-            for visibility in app
-                .world_mut()
-                .query_filtered::<&Visibility, TetherViews>()
-                .iter(app.world())
-            {
-                assert_eq!(*visibility, Visibility::Hidden);
-            }
+            assert_eq!(world.get::<ActorView>(view).unwrap().owner, player);
+            let Attachment::Weapon { mode, .. } =
+                world.get::<BoneVisual>(chain).unwrap().attachment;
+            assert_eq!(mode, WeaponMode::Melee);
+        }
+        assert_eq!(asset_counts(app.world()), counts);
+    }
+
+    #[test]
+    fn real_throw_pause_resume_and_return_keep_one_axe_and_reuse_assets() {
+        let (mut app, player, view) = scene();
+        let counts = asset_counts(app.world());
+        for appearance in [Appearance::Choulingke, Appearance::Lihuowang] {
+            avatar::replace(app.world_mut(), view, appearance);
+            throw(&mut app, player);
+            let world = app.world_mut();
+            let weapon = held(world, WeaponPair::ChainAxeBow);
             assert_eq!(
-                (
-                    app.world().entities().len(),
-                    app.world().resource::<Assets<Mesh>>().len(),
-                    app.world().resource::<Assets<StandardMaterial>>().len()
-                ),
-                counts
+                *world.get::<Visibility>(weapon).unwrap(),
+                Visibility::Hidden
             );
+            assert_tether_at_grip(world, view);
+            // Entering pause chooses current snapshots; repeated zero/multiple-step frames stay still.
+            world.resource_mut::<SimulationActive>().0 = false;
+            render(world);
+            let position = world.get::<Body>(player).unwrap().world_position();
+            let previous_rig = world.get::<animation::RigPose>(view).unwrap().model.clone();
+            let previous_handles = handles(world, weapon);
+            let replacement = if appearance == Appearance::Choulingke {
+                Appearance::Lihuowang
+            } else {
+                Appearance::Choulingke
+            };
+            avatar::replace(world, view, replacement);
+            render(world);
+            assert_eq!(
+                world.get::<Body>(player).unwrap().world_position(),
+                position
+            );
+            assert_eq!(
+                world.get::<animation::RigPose>(view).unwrap().model,
+                previous_rig
+            );
+            assert_eq!(handles(world, weapon), previous_handles);
+            assert_eq!(
+                *world.get::<Visibility>(weapon).unwrap(),
+                Visibility::Hidden
+            );
+            assert_tether_at_grip(world, view);
+            let entities = world.entities().count_spawned();
+            let pose = world.get::<animation::RigPose>(view).unwrap().model.clone();
+            let axe = *world
+                .query_filtered::<&Transform, With<FlyingAxe>>()
+                .single(world)
+                .unwrap();
+            let action_time = world
+                .get::<Combatant>(player)
+                .unwrap()
+                .active_action()
+                .unwrap()
+                .elapsed;
+            tick(&mut app, 60);
+            for _ in 0..3 {
+                render(app.world_mut());
+            }
+            let world = app.world_mut();
+            assert_eq!(
+                *world
+                    .query_filtered::<&Transform, With<FlyingAxe>>()
+                    .single(world)
+                    .unwrap(),
+                axe
+            );
+            assert_eq!(world.get::<animation::RigPose>(view).unwrap().model, pose);
+            assert_eq!(
+                world
+                    .get::<Combatant>(player)
+                    .unwrap()
+                    .active_action()
+                    .unwrap()
+                    .elapsed,
+                action_time
+            );
+            assert_tether_at_grip(world, view);
+            world.resource_mut::<SimulationActive>().0 = true;
+            tick(&mut app, 50);
+            render(app.world_mut());
+            assert_returned(app.world_mut(), player);
+            assert_eq!(asset_counts(app.world()), counts);
+            assert_eq!(app.world().entities().count_spawned(), entities);
             tick(&mut app, 260);
         }
+    }
+
+    #[test]
+    fn chain_pull_roster_cancellation_and_death_clear_source_axe_views() {
+        let (mut app, player, view) = scene();
+        throw(&mut app, player);
+        tick(&mut app, 7);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_combo();
+        tick(&mut app, 12);
+        assert_eq!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .active_action()
+                .unwrap()
+                .kind,
+            ActionKind::ChainCombo
+        );
+        render(app.world_mut());
+        assert_tether_at_grip(app.world_mut(), view);
+        tick(&mut app, 33);
+        render(app.world_mut());
+        assert_tether_at_grip(app.world_mut(), view);
+        tick(&mut app, 20);
+        render(app.world_mut());
+        assert_returned(app.world_mut(), player);
+        tick(&mut app, 260);
+        throw(&mut app, player);
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        set_enemy_mode(app.world_mut(), EnemyMode::Combat);
+        render(app.world_mut());
+        assert_returned(app.world_mut(), player);
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        set_enemy_mode(app.world_mut(), EnemyMode::Target);
+        tick(&mut app, 280);
+        throw(&mut app, player);
+        teleport_actor(app.world_mut(), player, Vec3::new(0., -20., 0.));
+        tick(&mut app, 1);
+        render(app.world_mut());
+        assert!(!app.world().get::<Health>(player).unwrap().is_alive());
+        assert_returned(app.world_mut(), player);
+    }
+
+    #[test]
+    fn moving_player_tether_reads_this_frame_grip_after_zero_and_multiple_fixed_steps() {
+        let (mut app, player, view) = scene();
+        app.world_mut()
+            .get_mut::<MoveIntent>(player)
+            .unwrap()
+            .set(Vec2::X);
+        throw(&mut app, player);
+        let root_before = *app.world().get::<Transform>(view).unwrap();
+        let position = app.world().get::<Body>(player).unwrap().world_position();
+        let action_time = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .active_action()
+            .unwrap()
+            .elapsed;
+        render(app.world_mut());
+        assert_eq!(
+            app.world().get::<Transform>(view).unwrap().translation,
+            root_before.translation
+        );
+        assert_eq!(
+            app.world().get::<Body>(player).unwrap().world_position(),
+            position
+        );
+        assert_eq!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .active_action()
+                .unwrap()
+                .elapsed,
+            action_time
+        );
+        assert_tether_at_grip(app.world_mut(), view);
+        tick(&mut app, 3);
+        render(app.world_mut());
+        assert!(
+            app.world()
+                .get::<Transform>(view)
+                .unwrap()
+                .translation
+                .distance(root_before.translation)
+                > 0.05
+        );
+        assert_tether_at_grip(app.world_mut(), view);
+    }
+
+    #[test]
+    fn actual_sniper_hit_stop_freezes_the_held_source_hammer_grip_and_resumes() {
+        let (mut app, player, view) = scene();
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_toggle_target();
+        tick(&mut app, 1);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_melee_skill();
+        tick(&mut app, 13);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_combo();
+        for _ in 0..40 {
+            tick(&mut app, 1);
+            render(app.world_mut());
+            if app.world().resource::<HitStop>().is_active() {
+                break;
+            }
+        }
+        assert!(app.world().resource::<HitStop>().is_active());
+        let world = app.world_mut();
+        let hammer = held(world, WeaponPair::HammerMusket);
+        let grip = *world.get::<Transform>(hammer).unwrap();
+        let mesh_handles = handles(world, hammer);
+        let pose = world.get::<animation::RigPose>(view).unwrap().model.clone();
+        let position = world.get::<Body>(player).unwrap().world_position();
+        let elapsed = world
+            .get::<Combatant>(player)
+            .unwrap()
+            .active_action()
+            .unwrap()
+            .elapsed;
+        for _ in 0..3 {
+            tick(&mut app, 1);
+            render(app.world_mut());
+            let world = app.world_mut();
+            assert!(world.resource::<HitStop>().is_active());
+            assert_eq!(*world.get::<Transform>(hammer).unwrap(), grip);
+            assert_eq!(world.get::<animation::RigPose>(view).unwrap().model, pose);
+            assert_eq!(
+                world.get::<Body>(player).unwrap().world_position(),
+                position
+            );
+            assert_eq!(handles(world, hammer), mesh_handles);
+        }
+        tick(&mut app, 1);
+        render(app.world_mut());
+        assert!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .active_action()
+                .unwrap()
+                .elapsed
+                > elapsed
+        );
     }
 }

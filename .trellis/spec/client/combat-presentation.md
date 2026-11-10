@@ -9,7 +9,7 @@
 
 - CompanionView { owner, performer }：owner 为哥哥，performer 为逻辑 Companion；不要求 performer 有 Body。
 - companion::setup／sync 读取 CompanionState，维护独立白灵淼蒙皮／RigPose 显示根。
-- weapons::spawn／setup_tether／sync_tether 建立共享武器、链斧离手实体和绳索；远程源模型由 ranged_models 缓存，格式与挂点见 [model-assets.md](model-assets.md)。
+- weapons::spawn／setup_tether／sync_tether 建立共享武器、链斧离手实体和绳索；四件源模型由 weapon_models 按 pair＋mode 缓存，格式与挂点见 [model-assets.md](model-assets.md)。
 - Combatant::sequence() 返回 SequenceSnapshot；kind 区分 HammerCombo 与 ChainCombo，cancelled 及 action_id 用于恢复和冲击归属。
 - kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)，pair=1 锤鸟／2 链斧弓。
 - kivaHud.renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)，defense=0 Idle／1 Deflect／2 Waiting／3 Guard／4 Parry。
@@ -21,8 +21,9 @@
 哥哥默认李火旺，沿用近战动作；妹妹使用白灵淼衣装／莲母发型／女性基脸和自己的结构参考与 RigPose，不贴 PlayerView／ActorView 来重放哥哥所有动作。
 妹妹出场位置、射击源、瞄准点和 elapsed 都来自模拟；显示使用相同 fixed overstep，暂停和 HitStop 取当前快照。
 引冰落以局部原点为枪口，羿之影以局部原点为箭源，均朝 -Z；武器、枪口火花、弹道与模拟 source_position 对齐。弓箭类型按事件 pair 判断，不能因玩家随后切组而改变历史表现。
-锤、链斧保持共享临时几何；鸟铳／弓使用源模型当前姿态 LBS 烘焙和原基础色纹理。握点／尺寸／附件挂接为明确的 Kiva 适配，不冒称恢复原作开火／拉弓动画；重复技能不增长网格／材质。
+锤使用伏浪锚，链斧使用谪星摧山，鸟铳／弓使用引冰落／羿之影；均使用源几何和基础色纹理，源蒙皮先求真实当前 LBS。谪星互补部件采用有记录的固定静态装配，未恢复随机星格／完整形变／FX。握点／尺寸／附件挂接为明确的 Kiva 适配，不冒称恢复原作开火／拉弓动画；重复技能不增长网格／材质。
 链斧离手时哥哥手中武器隐藏，绳索／飞斧读取实际动作时间线与物理位置；收招／取消归还，不能同时出现两把同一链斧。
+飞斧和手持使用同一份谪星网格／材质，绳索起点在本帧骨骼附件同步后读取实际握柄世界坐标，不用固定身体高度或滞后的 GlobalTransform；终点与飞斧根原点一致。
 F3 只替换哥哥身体和服饰，保留 RigPose／显示根／物理状态；不替换新武器、不影响妹妹与敌人。敌人原刀外观保留。
 
 锤鸟镜头从正常跟随进入低位仰视：约 0.20s 入场，三发为 0.30／0.42／0.54s，0.68–0.96s 回切。

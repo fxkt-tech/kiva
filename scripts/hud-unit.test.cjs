@@ -10,7 +10,7 @@ const ids = [
   "hud-persona", "hud-weapon", "hud-health", "hud-health-max", "hud-health-bar", "hud-status", "hud-cooldown",
   "hud-combo", "hud-combo-name", "hud-combo-time", "hud-target", "hud-target-name", "hud-target-status", "hud-target-health", "hud-target-max", "hud-target-bar",
   "hud-skill-start", "hud-skill-attack", "hud-skill-guard", "hud-skill-combo", "hud-skill-caption", "hud-start-icon", "hud-combo-icon",
-  "hud-melee", "hud-ranged", "hud-melee-name", "hud-ranged-name", "hud-melee-icon", "hud-ranged-icon", "hud-pair1", "hud-pair2",
+  "hud-melee", "hud-ranged", "hud-melee-name", "hud-melee-caption", "hud-ranged-name", "hud-melee-icon", "hud-ranged-icon", "hud-pair1", "hud-pair2",
 ];
 
 function fixture(ready = false) {
@@ -61,7 +61,9 @@ test("early player, resources, pair and target snapshots replay safely together"
   assert.equal(f.at("hud-stamina-bar").value, 0.6);
   assert.equal(f.at("hud-cooldown").textContent, "3.2");
   assert.equal(f.at("hud-ranged-cooldown").textContent, "1.3");
-  assert.equal(f.at("hud-melee-name").textContent, "链斧 · 回收中");
+  assert.equal(f.at("hud-melee-name").textContent, "谪星·摧山");
+  assert.equal(f.at("hud-melee-caption").textContent, "链斧 · 回收中");
+  assert.match(f.at("hud-melee").attributes["aria-label"], /谪星·摧山 · 链斧 · 回收中/);
   assert.equal(f.at("hud-target-health").textContent, "999,980");
   assert.equal(f.at("hud-combo-name").textContent, "拉近 · 妹妹三箭");
   assert.equal(f.at("hud-skill-attack").attributes["aria-disabled"], "true");
@@ -70,10 +72,12 @@ test("early player, resources, pair and target snapshots replay safely together"
 
 test("pair identity uses explicit enums, with E and Q always separate", () => {
   const f = fixture(true); player(f, { weapon: "可更名的武器" });
-  for (const [pair, melee, ranged, icon] of [[1,"锤子","引冰落","hammer"],[2,"链斧","羿之影","axe"]]) {
+  for (const [pair, melee, ranged, icon] of [[1,"伏浪锚","引冰落","hammer"],[2,"谪星·摧山","羿之影","axe"]]) {
     f.hud.renderLoadout(pair, 1000, true, true, true, true, false);
     f.hud.renderResources(100,100,0,0,false,0);
     assert.equal(f.at("hud-melee-name").textContent,melee);
+    assert.equal(f.at("hud-melee-caption").textContent,"哥哥 · 左键 / E");
+    assert.equal(f.at("hud-melee").attributes.title,`${melee} · ${pair === 1 ? "锤子" : "链斧"}`);
     assert.equal(f.at("hud-ranged-name").textContent,ranged);
     assert.equal(f.at("hud-start-icon").attributes.href,`#hud-icon-${icon}`);
     assert.equal(f.at("hud-skill-start").classList.contains("ready"),true);

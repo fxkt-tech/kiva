@@ -22,7 +22,8 @@
     "11-10-action-v1-simulation",
     "11-10-action-v1-input",
     "11-10-action-v1-presentation",
-    "11-10-action-v1-models"
+    "11-10-action-v1-models",
+    "11-10-action-v1-melee-models"
   ],
   "parent": null,
   "relatedFiles": [],

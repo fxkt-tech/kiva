@@ -1,0 +1,16 @@
+{
+  "base_commit": "f1da207ef081f4d736a2af4330d2c646d8f62fd8",
+  "branch": "main",
+  "old_runtime_tree_oids": {
+    "assets/choulingke": "eb428c940e94b9785626b83b585c6c30f073c724",
+    "assets/lihuowang": "388b33ed4151e2d02139f42299a9f268841414de",
+    "assets/bailingmiao": "c30cc5a7e3577393cf25231e5399e7d9abcced5c",
+    "assets/yinbingluo": "42b0c7f4c7f5a31d2343f3fe25abbee1d139404a",
+    "assets/yizhiying": "c313c144e60f43871eb5b8b80648bbc4a3863b0e"
+  },
+  "Cargo.lock_sha256": "f582ba6e933a38619a2f5d29eb5410492b24e4ce7d674d753026b1acdc0d5955",
+  "prepared_manifest_sha256": {
+    "fulangmao": "71bf61d35756e4b655e156d952756640c8e8476bc42315c1fdb4c128d1a57b80",
+    "zhexingcuishan": "81891e9d41c1fb9333c510c398c022e0389fae1c73c7c480385c9447545fdd7e"
+  }
+}

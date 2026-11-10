@@ -13,13 +13,13 @@ mod forest_material;
 mod hud;
 mod impact;
 mod model_asset;
-mod ranged_models;
 mod rendering;
 mod scene;
 mod skeleton;
 mod source_animation;
 mod stickman;
 mod texture_mips;
+mod weapon_models;
 mod weapons;
 mod web;
 
@@ -110,9 +110,9 @@ pub(super) fn run() {
             combat::sync_weapons,
             animation::animate,
             companion::sync,
-            weapons::sync_tether,
             avatar::sync,
             stickman::sync_attachments,
+            weapons::sync_tether,
             combat::sync_markers,
             combat::effects,
             impact::update,

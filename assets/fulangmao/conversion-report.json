@@ -1,0 +1,793 @@
+{
+  "primitives": [
+    {
+      "role": "main",
+      "mesh": "m_1518293717@wp_blade_chuanmaolv1",
+      "vertices": 4989,
+      "triangles": 7252,
+      "native_source_skin": true,
+      "weighted_source_slots": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "original_bones": [
+        {
+          "slot": 0,
+          "name": "chuanmao_01",
+          "weighted_vertices": 2667,
+          "source_current_model": [
+            [
+              5.120203470099039e-07,
+              -3.1786535783122187e-08,
+              0.9999999999998683,
+              2.954689826140156e-10
+            ],
+            [
+              -1.6292068527744474e-07,
+              -0.999999999999986,
+              -3.1786452364420165e-08,
+              -3.03167499245651e-32
+            ],
+            [
+              0.9999999999998556,
+              -1.6292066900211295e-07,
+              -5.120203519665366e-07,
+              -1.5860897645183965e-24
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "original_inverse_bind": [
+            [
+              5.078825324744685e-07,
+              -1.0,
+              1.1102230246251565e-14,
+              -1.5006352007423425e-16
+            ],
+            [
+              -3.1786502319164356e-08,
+              -1.1102230246251565e-14,
+              -1.0,
+              9.391926134574059e-18
+            ],
+            [
+              1.0,
+              5.078825324744685e-07,
+              -3.1786502319164356e-08,
+              -2.954689826140111e-10
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "current_model_times_IBM_identity_residual": 1.0000000000001157
+        },
+        {
+          "slot": 1,
+          "name": "chuanmao_04",
+          "weighted_vertices": 1847,
+          "source_current_model": [
+            [
+              3.3717481185826463e-07,
+              1.4305874879033732e-07,
+              0.9999999999999327,
+              6.509072727227911e-07
+            ],
+            [
+              -6.874573981531923e-07,
+              -0.9999999999997532,
+              1.4305898058363044e-07,
+              -4.593759188631149e-07
+            ],
+            [
+              0.9999999999997067,
+              -6.874574463890311e-07,
+              -3.371747132893419e-07,
+              1.4056170284745642
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "original_inverse_bind": [
+            [
+              1.0013739029091084e-06,
+              -1.0,
+              4.440892098500626e-14,
+              -1.4056169986724854
+            ],
+            [
+              1.4305886963938974e-07,
+              1.3322676295501878e-13,
+              -1.0,
+              -9.006222398966202e-07
+            ],
+            [
+              1.0,
+              1.0013739029091084e-06,
+              1.4305886963938974e-07,
+              1.230579755429062e-06
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "current_model_times_IBM_identity_residual": 1.0000000000000444
+        },
+        {
+          "slot": 2,
+          "name": "chuanmao_03",
+          "weighted_vertices": 192,
+          "source_current_model": [
+            [
+              5.120203826245644e-07,
+              1.4305883831484165e-07,
+              0.9999999999998586,
+              5.176681088336034e-07
+            ],
+            [
+              -5.126117915713219e-07,
+              -0.9999999999998581,
+              1.4305910078252718e-07,
+              -2.3399688590453027e-07
+            ],
+            [
+              0.9999999999997373,
+              -5.12611864820425e-07,
+              -5.120203090688e-07,
+              1.0104533731935774
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "original_inverse_bind": [
+            [
+              8.448195103483158e-07,
+              -1.0,
+              -4.440892098500626e-14,
+              -1.010453462600708
+            ],
+            [
+              1.4305906859135575e-07,
+              1.3322676295501878e-13,
+              -1.0,
+              -5.511947733793932e-07
+            ],
+            [
+              1.0,
+              8.448195103483158e-07,
+              1.4305905438050104e-07,
+              6.766821343262563e-07
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "current_model_times_IBM_identity_residual": 1.0000000000001699
+        },
+        {
+          "slot": 3,
+          "name": "chuanmao_02",
+          "weighted_vertices": 318,
+          "source_current_model": [
+            [
+              5.120203479560236e-07,
+              1.4305892783931024e-07,
+              0.9999999999998586,
+              3.145147110049517e-07
+            ],
+            [
+              -3.377662668460993e-07,
+              -0.9999999999999325,
+              1.4305910078252223e-07,
+              -9.998199239755368e-08
+            ],
+            [
+              0.9999999999998117,
+              -3.377663400952221e-07,
+              -5.120202994134647e-07,
+              0.6136850714682647
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "original_inverse_bind": [
+            [
+              6.747305860699271e-07,
+              -1.0,
+              4.440892098500626e-14,
+              -0.6136850714683533
+            ],
+            [
+              1.4305905438050104e-07,
+              1.1102230246251565e-13,
+              -1.0,
+              -2.9262784551065124e-07
+            ],
+            [
+              1.0,
+              6.747305860699271e-07,
+              1.4305906859135575e-07,
+              3.064766076477099e-07
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "current_model_times_IBM_identity_residual": 1.0000000000001572
+        },
+        {
+          "slot": 4,
+          "name": "chuanmao_06",
+          "weighted_vertices": 1103,
+          "source_current_model": [
+            [
+              5.120203479560363e-07,
+              1.4305901736380567e-07,
+              0.9999999999998586,
+              -4.967127782433531e-07
+            ],
+            [
+              -1.6292068527744477e-07,
+              -0.9999999999999762,
+              1.430591007825284e-07,
+              3.6232231076611987e-08
+            ],
+            [
+              0.9999999999998556,
+              -1.6292075852659229e-07,
+              -5.120203244267067e-07,
+              -0.6906806826589884
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "original_inverse_bind": [
+            [
+              5.078824756310496e-07,
+              -1.0,
+              0.0,
+              0.6906806826591492
+            ],
+            [
+              1.4305904016964632e-07,
+              6.661338147750939e-14,
+              -1.0,
+              2.5304825612693094e-07
+            ],
+            [
+              1.0,
+              5.078825324744685e-07,
+              1.4305905438050104e-07,
+              -8.695202780018008e-08
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "current_model_times_IBM_identity_residual": 1.0000000000001157
+        }
+      ],
+      "source_four_influence_weights_preserved_before_bake": true,
+      "maximum_independent_current_LBS_error_m": 4.440892098500626e-16,
+      "maximum_independent_LBS_and_f32_bake_error_m": 3.023464041823407e-08,
+      "source_pose_bounds": [
+        [
+          -0.09498253753500857,
+          -0.3462557459015919,
+          -0.6877422928810455
+        ],
+        [
+          0.09498333642172699,
+          0.34625584243328855,
+          1.9313645660879444
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.039891763457730114,
+          -0.28884522965472,
+          -0.14542416449039092
+        ],
+        [
+          0.03989209898256265,
+          0.8111547703452802,
+          0.14542412394799537
+        ]
+      ],
+      "nondegenerate_UV_triangles": 7252,
+      "original_indices_sha256": "eea7eb8c2b4c57c1461a5bdcfe4bde388f5b1bdd18228bb449d13cf28a35dac5",
+      "original_UV_f32_sha256": "2eabe4ca418e00709207f07c32d5fb4c38df8461a7b6d614ed82939f070938d7"
+    },
+    {
+      "role": "main",
+      "mesh": "m_1518293717@wp_blade_chuanmaolv1_01",
+      "vertices": 448,
+      "triangles": 586,
+      "native_source_skin": true,
+      "weighted_source_slots": [
+        0
+      ],
+      "original_bones": [
+        {
+          "slot": 0,
+          "name": "chuanmao_01",
+          "weighted_vertices": 448,
+          "source_current_model": [
+            [
+              5.120203470099039e-07,
+              -3.1786535783122187e-08,
+              0.9999999999998683,
+              2.954689826140156e-10
+            ],
+            [
+              -1.6292068527744474e-07,
+              -0.999999999999986,
+              -3.1786452364420165e-08,
+              -3.03167499245651e-32
+            ],
+            [
+              0.9999999999998556,
+              -1.6292066900211295e-07,
+              -5.120203519665366e-07,
+              -1.5860897645183965e-24
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "original_inverse_bind": [
+            [
+              5.078825324744685e-07,
+              -1.0,
+              1.1102230246251565e-14,
+              -1.5006352007423425e-16
+            ],
+            [
+              -3.1786502319164356e-08,
+              -1.1102230246251565e-14,
+              -1.0,
+              9.391926134574059e-18
+            ],
+            [
+              1.0,
+              5.078825324744685e-07,
+              -3.1786502319164356e-08,
+              -2.954689826140111e-10
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "current_model_times_IBM_identity_residual": 1.0000000000001157
+        }
+      ],
+      "source_four_influence_weights_preserved_before_bake": false,
+      "maximum_independent_current_LBS_error_m": 5.551115123125783e-17,
+      "maximum_independent_LBS_and_f32_bake_error_m": 7.424820519280937e-09,
+      "source_pose_bounds": [
+        [
+          -0.06608589589504515,
+          -0.24226333662565025,
+          0.18224996724078144
+        ],
+        [
+          0.06608599573466784,
+          0.24226337209644447,
+          0.37779733546280136
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.027755448478786325,
+          0.07654325491850168,
+          -0.1017483148476777
+        ],
+        [
+          0.027755490410479405,
+          0.15867129192761278,
+          0.10174829995028109
+        ]
+      ],
+      "nondegenerate_UV_triangles": 586,
+      "original_indices_sha256": "084a39c04712b890254441c09c06a8c6318c7263b9b48c0048b81bf4a83eb317",
+      "original_UV_f32_sha256": "a84a504aa45470c5c84221695001d62f4e7e05903326d7f2a52ea46c6815ad6e",
+      "original_single_index_implicit_weight_vertices_verified": 448
+    }
+  ],
+  "materials_and_textures": [
+    {
+      "name": "naraka::fulangmao::main::wp_blade_chuanmaolv1",
+      "source_png_sha256": "1caee8ebec51d061f19fefe1eba45a366fc55b1169d24e4e74472a733e560f63",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "a32f96a6d3bccda7fbdac696b49f57c6292d6b71ab0adcbb52fd7cbb5526ea77",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::fulangmao::main::wp_blade_chuanmaolv1",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "name": "naraka::fulangmao::main::wp_blade_chuanmaolv1_01",
+      "source_png_sha256": "911d70de0f0f9cfec9646b70df2c85e6d0c10f61286f5259b208f312c9853c77",
+      "source_size": [
+        512,
+        512
+      ],
+      "runtime_size": [
+        512,
+        512
+      ],
+      "runtime_png_sha256": "9c39190debd03db04baf3ca0b9dcf710bb31b5cabd2f56705aadba6ae1af7c82",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::fulangmao::main::wp_blade_chuanmaolv1_01",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    }
+  ],
+  "source_base_texture_pixel_checks": [
+    {
+      "name": "naraka::fulangmao::main::wp_blade_chuanmaolv1",
+      "source_RGBA_pixels_sha256": "9c2d2bf2229fe6384c46e6c5fcd910c40b0f2bf95294a8ca10f5856795ef9fb2",
+      "runtime_RGBA_pixels_sha256": "9c2d2bf2229fe6384c46e6c5fcd910c40b0f2bf95294a8ca10f5856795ef9fb2",
+      "all_RGB_and_alpha_pixels_identical": true,
+      "resized": false,
+      "size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "naraka::fulangmao::main::wp_blade_chuanmaolv1_01",
+      "source_RGBA_pixels_sha256": "4c0a311f05a67597039406226d6e5dcceca5f886dc42193f22d0093cdf4e577f",
+      "runtime_RGBA_pixels_sha256": "4c0a311f05a67597039406226d6e5dcceca5f886dc42193f22d0093cdf4e577f",
+      "all_RGB_and_alpha_pixels_identical": true,
+      "resized": false,
+      "size": [
+        512,
+        512
+      ]
+    }
+  ],
+  "assembly_contact_checks": {
+    "actual_binary_f32_positions": true,
+    "contact_tolerance_m": 0.002,
+    "all_parts_connected_within_tolerance": true,
+    "pair_checks": [
+      {
+        "parts": [
+          "naraka::fulangmao::main::m_1518293717@wp_blade_chuanmaolv1",
+          "naraka::fulangmao::main::m_1518293717@wp_blade_chuanmaolv1_01"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            3.9368551085772197e-08,
+            0.1431640237569809,
+            0.017872264608740807
+          ],
+          [
+            1.3200442516847488e-08,
+            0.14316195249557495,
+            0.01786733977496624
+          ]
+        ],
+        "surface_gap_upper_bound_m": 5.342733035514221e-06,
+        "within_contact_tolerance": true
+      }
+    ],
+    "interpretation": "Minimum original triangle-vertex distance is an upper bound on inter-surface gap. Contact graph is connected at 2mm tolerance; this does not claim welded topology or exact triangle intersections."
+  },
+  "adaptations": [
+    {
+      "role": "main",
+      "piece_to_source_space": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "source_to_runtime": [
+        [
+          0.41999050028566404,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.41999050028566404,
+          0.0
+        ],
+        [
+          0.0,
+          -0.41999050028566404,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "combined": [
+        [
+          0.41999050028566404,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.41999050028566404,
+          0.0
+        ],
+        [
+          0.0,
+          -0.41999050028566404,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "mount": "Grip0",
+      "authored": "Kiva size/grip/axis adaptation and explicitly documented static composition."
+    }
+  ],
+  "selection": {
+    "selection": "Both original configured LOD0 skinned instances, with their actual current source pose.",
+    "authored_piece_assembly": false
+  },
+  "binary": {
+    "format": "KIVAWP01",
+    "sha256": "104f01a3ced11c443ba2ea8f650d38fb9a92729bcea11c5e08ad7987f2f722c0",
+    "bytes": 2360330,
+    "textures": 2,
+    "materials": 2,
+    "parts": 2,
+    "vertices": 5437,
+    "triangles": 7838,
+    "part_statistics": [
+      {
+        "name": "naraka::fulangmao::main::m_1518293717@wp_blade_chuanmaolv1",
+        "mount": 0,
+        "vertices": 4989,
+        "triangles": 7252
+      },
+      {
+        "name": "naraka::fulangmao::main::m_1518293717@wp_blade_chuanmaolv1_01",
+        "mount": 0,
+        "vertices": 448,
+        "triangles": 586
+      }
+    ],
+    "actual_runtime_mount0_bounds": [
+      [
+        -0.039891764521598816,
+        -0.2888452410697937,
+        -0.14542415738105774
+      ],
+      [
+        0.03989209979772568,
+        0.8111547827720642,
+        0.14542412757873535
+      ]
+    ],
+    "PNG_checks": [
+      {
+        "name": "naraka::fulangmao::main::wp_blade_chuanmaolv1",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "a32f96a6d3bccda7fbdac696b49f57c6292d6b71ab0adcbb52fd7cbb5526ea77"
+      },
+      {
+        "name": "naraka::fulangmao::main::wp_blade_chuanmaolv1_01",
+        "size": [
+          512,
+          512
+        ],
+        "sRGB": true,
+        "sha256": "9c39190debd03db04baf3ca0b9dcf710bb31b5cabd2f56705aadba6ae1af7c82"
+      }
+    ],
+    "right_left_grips": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exact_EOF": true
+  },
+  "source_verification": {
+    "passed": true,
+    "files": 24,
+    "glbs": [
+      {
+        "file": "fulangmao_main.glb",
+        "sha256": "cf70d33ee341db0063f30dbda955b264f1320298a2267233b5bfa744244c77a9",
+        "vertices": 5437,
+        "triangles": 7838,
+        "meshes": 2,
+        "native_skinned_meshes": 2,
+        "primitive_checks": [
+          {
+            "mesh": "m_1518293717@wp_blade_chuanmaolv1",
+            "vertices": 4989,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.09498253753500857,
+                -0.3462557459015919,
+                -0.6877422928810455
+              ],
+              [
+                0.09498333642172699,
+                0.34625584243328855,
+                1.9313645660879444
+              ]
+            ],
+            "palette_slots": 5,
+            "perturbed_source_joint": "chuanmao_01",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.3856294468463465
+          },
+          {
+            "mesh": "m_1518293717@wp_blade_chuanmaolv1_01",
+            "vertices": 448,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.06608589589504515,
+                -0.24226333662565025,
+                0.18224996724078144
+              ],
+              [
+                0.06608599573466784,
+                0.24226337209644447,
+                0.37779733546280136
+              ]
+            ],
+            "palette_slots": 1,
+            "perturbed_source_joint": "chuanmao_01",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.07892900007949949
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      }
+    ],
+    "png_files": 9,
+    "portable_paths_only": true,
+    "game_or_research_directory_required_for_verify": false,
+    "browser_or_screenshot_test": false
+  },
+  "checks": [
+    "pinned_portable_manifest_and_all_file_SHA_before_and_after",
+    "native_source_current_LBS_all_weighted_slots",
+    "static_source_hierarchy_before_authored_assembly",
+    "original_indices_UV_and_material_reference",
+    "f32_bake_tolerance_and_unit_normals",
+    "bounded_sRGB_source_base_RGB_alpha",
+    "source_base_RGBA_every_pixel_identical",
+    "actual_f32_assembly_contact_graph_connected_2mm",
+    "Grip0_Y_axis_1.10m",
+    "bounded_binary_exact_EOF",
+    "original_448_single_index_implicit_weight1"
+  ],
+  "browser_or_screenshot_test": false
+}

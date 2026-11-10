@@ -3,7 +3,7 @@ use crate::{
     gameplay::Player,
     simulation::{
         Boss, BossPhase, BossState, Combatant, DefenseKind, DefenseState, Enemy, Health,
-        MotionState, Stamina, WeaponMode,
+        MotionState, Stamina,
     },
 };
 use bevy::prelude::*;
@@ -123,7 +123,7 @@ pub(super) fn sync(
 ) {
     let (combat, health, motion, defense, stamina) = *player;
     let target = target_snapshot(combat, health, |entity| enemies.get(entity).ok());
-    let weapon = combat.weapon_pair().weapon_name(WeaponMode::Melee);
+    let weapon = super::weapons::melee_name(combat.weapon_pair());
     let context = if !health.is_alive() {
         "倒地 · 即将回到出生点"
     } else if combat.is_combo_active() {

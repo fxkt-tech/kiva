@@ -1,0 +1,1402 @@
+{
+  "primitives": [
+    {
+      "role": "main",
+      "mesh": "m_321289189@wp_saber_xingtian",
+      "vertices": 1606,
+      "triangles": 2008,
+      "native_source_skin": true,
+      "weighted_source_slots": [
+        0,
+        1
+      ],
+      "original_bones": [
+        {
+          "slot": 0,
+          "name": "wp_saber_bone_02",
+          "weighted_vertices": 920,
+          "source_current_model": [
+            [
+              0.9999999998661183,
+              -2.3563615487388023e-08,
+              -1.6363459275595273e-05,
+              2.1958698481283422e-07
+            ],
+            [
+              1.63634588658329e-05,
+              -1.7285872922625657e-05,
+              0.9999999997167176,
+              -1.9772799268118544e-05
+            ],
+            [
+              -2.384647215832745e-08,
+              -0.999999999850599,
+              -1.7285872534702457e-05,
+              0.5695689916578283
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "original_inverse_bind": [
+            [
+              1.0,
+              2.3847077201821776e-08,
+              1.6363459508283995e-05,
+              -2.056808909856045e-07
+            ],
+            [
+              -2.356370920608697e-08,
+              1.0,
+              -1.7317130186711438e-05,
+              0.5695689916610718
+            ],
+            [
+              -1.6363459508283995e-05,
+              1.7317130186711438e-05,
+              1.0,
+              2.963610131700989e-05
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "current_model_times_IBM_identity_residual": 1.000000000283822
+        },
+        {
+          "slot": 1,
+          "name": "wp_saber_bone_01",
+          "weighted_vertices": 686,
+          "source_current_model": [
+            [
+              0.9999999995886696,
+              2.2864633756712125e-05,
+              -1.7316733615279773e-05,
+              -4.0058194831987454e-08
+            ],
+            [
+              1.731712884783987e-05,
+              -1.72856746716977e-05,
+              0.9999999997006611,
+              6.113920033870409e-06
+            ],
+            [
+              2.2864334418444207e-05,
+              -0.9999999995892069,
+              -1.7286070614337552e-05,
+              -0.5150730013837468
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "original_inverse_bind": [
+            [
+              1.0,
+              -2.2864336642669514e-05,
+              1.7317128367722034e-05,
+              1.1816754522442352e-05
+            ],
+            [
+              2.2864634956931695e-05,
+              1.0,
+              -1.7316733647021465e-05,
+              -0.5150730013847351
+            ],
+            [
+              -1.7316733647021465e-05,
+              1.7317130186711438e-05,
+              1.0,
+              -1.5033507224870846e-05
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "current_model_times_IBM_identity_residual": 1.00000000041133
+        }
+      ],
+      "source_four_influence_weights_preserved_before_bake": true,
+      "maximum_independent_current_LBS_error_m": 2.220446049250313e-16,
+      "maximum_independent_LBS_and_f32_bake_error_m": 1.4747723091656094e-08,
+      "source_pose_bounds": [
+        [
+          -0.05028308183627111,
+          -0.08495385187062102,
+          -0.8559232354490269
+        ],
+        [
+          0.05028308183628861,
+          0.0849538521760348,
+          1.0055100915019533
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.019728437620803646,
+          -0.33581927642653003,
+          -0.03333142504588708
+        ],
+        [
+          0.019728437620810512,
+          0.3945092940380508,
+          0.03333142492605877
+        ]
+      ],
+      "nondegenerate_UV_triangles": 2008,
+      "original_indices_sha256": "2b6ccdaa563d75d6f5a33e6f17d762d447fc99654ab92947641b933076ddeca4",
+      "original_UV_f32_sha256": "718325b79e019b86a34f76edefcb6804514601f204602ddc79552f4b50f6abcf"
+    },
+    {
+      "role": "source_variant_input_01",
+      "mesh": "m_-505735536@wp_saber_xingtian_01",
+      "vertices": 3776,
+      "triangles": 5054,
+      "native_source_skin": false,
+      "weighted_source_slots": [],
+      "original_bones": [],
+      "source_four_influence_weights_preserved_before_bake": false,
+      "maximum_independent_current_LBS_error_m": 0.0,
+      "maximum_independent_LBS_and_f32_bake_error_m": 2.980749012935379e-08,
+      "source_pose_bounds": [
+        [
+          -0.03262622281908989,
+          -0.15361811220645905,
+          -0.12530018389225006
+        ],
+        [
+          0.03262622281908989,
+          0.15361811220645905,
+          0.12530018389225006
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.0192012217086669,
+          0.28733038124328414,
+          -0.16506858131383606
+        ],
+        [
+          0.0192012217086669,
+          0.7092320752904527,
+          0.07090519959411291
+        ]
+      ],
+      "nondegenerate_UV_triangles": 5054,
+      "original_indices_sha256": "e5897b64af4803381be6aa01a11e1eb7a63183ddbf9c7e14ffd37cca9e90d703",
+      "original_UV_f32_sha256": "3ddf36ad1ae3f4e7c82cf34b1d8fcf1ec9f3bd862957b6e09562984db0f275e0"
+    },
+    {
+      "role": "source_variant_input_02",
+      "mesh": "m_-505735536@wp_saber_xingtian_02",
+      "vertices": 3300,
+      "triangles": 4544,
+      "native_source_skin": false,
+      "weighted_source_slots": [],
+      "original_bones": [],
+      "source_four_influence_weights_preserved_before_bake": false,
+      "maximum_independent_current_LBS_error_m": 0.0,
+      "maximum_independent_LBS_and_f32_bake_error_m": 2.978023354444544e-08,
+      "source_pose_bounds": [
+        [
+          -0.022104714065790176,
+          -0.28136971592903137,
+          -0.09732815623283386
+        ],
+        [
+          0.022104714065790176,
+          0.2721978425979614,
+          0.09732817113399506
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.01300909142738959,
+          0.19948462926011895,
+          -0.06460248001361117
+        ],
+        [
+          0.01300909142738959,
+          0.7641807235734701,
+          0.08814333713640637
+        ]
+      ],
+      "nondegenerate_UV_triangles": 4544,
+      "original_indices_sha256": "5f3a5c0518287bae05c696d45794c7b737bf2f13009570a047161ad283424bb5",
+      "original_UV_f32_sha256": "4f84d8600fd5515eeeccb56ac23ddc81671c2c8470027136420cb4ea9f374231"
+    },
+    {
+      "role": "source_variant_input_03",
+      "mesh": "m_-505735536@wp_saber_xingtian_03",
+      "vertices": 2950,
+      "triangles": 3630,
+      "native_source_skin": false,
+      "weighted_source_slots": [],
+      "original_bones": [],
+      "source_four_influence_weights_preserved_before_bake": false,
+      "maximum_independent_current_LBS_error_m": 0.0,
+      "maximum_independent_LBS_and_f32_bake_error_m": 2.9789094791994444e-08,
+      "source_pose_bounds": [
+        [
+          -0.1200568675994873,
+          -0.14721347391605377,
+          -0.12136046588420868
+        ],
+        [
+          0.1200568750500679,
+          0.14721359312534332,
+          0.12136046588420868
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.05007342901943732,
+          0.5919708055324268,
+          -0.05718827392531579
+        ],
+        [
+          0.04413457933581867,
+          0.7074885067925835,
+          0.03804265836416907
+        ]
+      ],
+      "nondegenerate_UV_triangles": 3630,
+      "original_indices_sha256": "f9c69f706e1d6dd5242a8824e49fbc5755eea6c3b2373f2cd82ca77cc9562b2f",
+      "original_UV_f32_sha256": "4b2dab4fa3545640b09080b409d0cfa91525ac82ade6784079041994c456034c"
+    },
+    {
+      "role": "source_variant_input_04",
+      "mesh": "m_-505735536@wp_saber_xingtian_04",
+      "vertices": 5872,
+      "triangles": 7384,
+      "native_source_skin": false,
+      "weighted_source_slots": [],
+      "original_bones": [],
+      "source_four_influence_weights_preserved_before_bake": false,
+      "maximum_independent_current_LBS_error_m": 0.0,
+      "maximum_independent_LBS_and_f32_bake_error_m": 7.406978469114981e-09,
+      "source_pose_bounds": [
+        [
+          -0.08992298692464828,
+          -0.09666779637336731,
+          -0.08992299437522888
+        ],
+        [
+          0.08992298692464828,
+          0.09666778147220612,
+          0.08992298692464828
+        ]
+      ],
+      "runtime_bounds": [
+        [
+          -0.02822484181054444,
+          0.09520928692659802,
+          -0.02822484414911732
+        ],
+        [
+          0.02822484181054444,
+          0.1558930596488513,
+          0.02822484181054444
+        ]
+      ],
+      "nondegenerate_UV_triangles": 7384,
+      "original_indices_sha256": "84e2c396e3216ce04788b0a83bc9133af59b66035378b49e19c4a0152757263f",
+      "original_UV_f32_sha256": "2ef671d3205b6bd38944b17ec03bde5197e45135b22be380d7f2db18dacbceeb"
+    }
+  ],
+  "materials_and_textures": [
+    {
+      "name": "naraka::zhexingcuishan::main::wp_saber_xingtian",
+      "source_png_sha256": "bcf29e7a1b2957e7bb77e1643f57cbb4b9bd6cf3e3d46f00fa254050ac3ba88a",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "5140ae218e0c80f6697d305266774b211b8876600a84bee12d294e25f2cfcc42",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::zhexingcuishan::main::wp_saber_xingtian",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::zhexingcuishan::source_variant_input_01::wp_saber_xingtian_01",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::zhexingcuishan::source_variant_input_02::wp_saber_xingtian_02",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::zhexingcuishan::source_variant_input_03::wp_saber_xingtian_03",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::zhexingcuishan::source_variant_input_04::wp_saber_xingtian_04",
+      "prepared_factor_linear": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "runtime_factor_linear": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    }
+  ],
+  "source_base_texture_pixel_checks": [
+    {
+      "name": "naraka::zhexingcuishan::main::wp_saber_xingtian",
+      "source_RGBA_pixels_sha256": "56da9b91091d159251f18eadaf0ebdf1cf93aa0f0c85c8d05fcb2968bb4ccc52",
+      "runtime_RGBA_pixels_sha256": "56da9b91091d159251f18eadaf0ebdf1cf93aa0f0c85c8d05fcb2968bb4ccc52",
+      "all_RGB_and_alpha_pixels_identical": true,
+      "resized": false,
+      "size": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "assembly_contact_checks": {
+    "actual_binary_f32_positions": true,
+    "contact_tolerance_m": 0.002,
+    "all_parts_connected_within_tolerance": true,
+    "pair_checks": [
+      {
+        "parts": [
+          "naraka::zhexingcuishan::main::m_321289189@wp_saber_xingtian",
+          "naraka::zhexingcuishan::source_variant_input_01::m_-505735536@wp_saber_xingtian_01"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            -1.710002311191422e-14,
+            0.3919087052345276,
+            -0.0060604107566177845
+          ],
+          [
+            2.6135589105104806e-15,
+            0.39123430848121643,
+            -0.005986841861158609
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.0006783976439048951,
+        "within_contact_tolerance": true
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::main::m_321289189@wp_saber_xingtian",
+          "naraka::zhexingcuishan::source_variant_input_02::m_-505735536@wp_saber_xingtian_02"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            -2.6442555962772132e-14,
+            0.33908846974372864,
+            0.016309287399053574
+          ],
+          [
+            1.0454235218525449e-15,
+            0.3387894332408905,
+            0.01741151697933674
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.0011420739370464872,
+        "within_contact_tolerance": true
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::main::m_321289189@wp_saber_xingtian",
+          "naraka::zhexingcuishan::source_variant_input_03::m_-505735536@wp_saber_xingtian_03"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            -0.012070324271917343,
+            0.3945019841194153,
+            5.346843856557371e-09
+          ],
+          [
+            -0.018504375591874123,
+            0.5919708013534546,
+            -0.00957280769944191
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.19780538300515835,
+        "within_contact_tolerance": false
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::main::m_321289189@wp_saber_xingtian",
+          "naraka::zhexingcuishan::source_variant_input_04::m_-505735536@wp_saber_xingtian_04"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            0.015820052474737167,
+            0.11202263087034225,
+            -3.482790722486584e-09
+          ],
+          [
+            0.01602243073284626,
+            0.11158069223165512,
+            -3.507859336338015e-09
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.0004860727514682428,
+        "within_contact_tolerance": true
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::source_variant_input_01::m_-505735536@wp_saber_xingtian_01",
+          "naraka::zhexingcuishan::source_variant_input_02::m_-505735536@wp_saber_xingtian_02"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            4.965761993497384e-15,
+            0.43093809485435486,
+            -0.040762051939964294
+          ],
+          [
+            -7.840676413894087e-16,
+            0.43144112825393677,
+            -0.040594443678855896
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.0005302217746252164,
+        "within_contact_tolerance": true
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::source_variant_input_01::m_-505735536@wp_saber_xingtian_01",
+          "naraka::zhexingcuishan::source_variant_input_03::m_-505735536@wp_saber_xingtian_03"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            0.011817635037004948,
+            0.647390604019165,
+            0.020985204726457596
+          ],
+          [
+            0.012538105249404907,
+            0.6475094556808472,
+            0.02085231989622116
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.0007422003924461454,
+        "within_contact_tolerance": true
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::source_variant_input_01::m_-505735536@wp_saber_xingtian_01",
+          "naraka::zhexingcuishan::source_variant_input_04::m_-505735536@wp_saber_xingtian_04"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            0.0,
+            0.28733038902282715,
+            -0.02836517058312893
+          ],
+          [
+            -1.3638945972616057e-08,
+            0.15589305758476257,
+            -0.005566851235926151
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.1333999080232699,
+        "within_contact_tolerance": false
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::source_variant_input_02::m_-505735536@wp_saber_xingtian_02",
+          "naraka::zhexingcuishan::source_variant_input_03::m_-505735536@wp_saber_xingtian_03"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            0.008358001708984375,
+            0.6482523679733276,
+            -0.02301284298300743
+          ],
+          [
+            0.00850575789809227,
+            0.6480068564414978,
+            -0.022539282217621803
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.0005535048348422453,
+        "within_contact_tolerance": true
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::source_variant_input_02::m_-505735536@wp_saber_xingtian_02",
+          "naraka::zhexingcuishan::source_variant_input_04::m_-505735536@wp_saber_xingtian_04"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            2.0908470437050897e-15,
+            0.19948463141918182,
+            -0.009166656993329525
+          ],
+          [
+            -1.3638945972616057e-08,
+            0.15589305758476257,
+            -0.005566851235926151
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.04373995782865875,
+        "within_contact_tolerance": false
+      },
+      {
+        "parts": [
+          "naraka::zhexingcuishan::source_variant_input_03::m_-505735536@wp_saber_xingtian_03",
+          "naraka::zhexingcuishan::source_variant_input_04::m_-505735536@wp_saber_xingtian_04"
+        ],
+        "nearest_actual_f32_vertices": [
+          [
+            -0.018504375591874123,
+            0.5919708013534546,
+            -0.00957280769944191
+          ],
+          [
+            -0.005566861014813185,
+            0.15589305758476257,
+            -2.33857289089201e-09
+          ]
+        ],
+        "surface_gap_upper_bound_m": 0.4363746286120468,
+        "within_contact_tolerance": false
+      }
+    ],
+    "interpretation": "Minimum original triangle-vertex distance is an upper bound on inter-surface gap. Contact graph is connected at 2mm tolerance; this does not claim welded topology or exact triangle intersections."
+  },
+  "adaptations": [
+    {
+      "role": "main",
+      "piece_to_source_space": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "source_to_runtime": [
+        [
+          0.39234742383217985,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.39234742383217985,
+          0.0
+        ],
+        [
+          0.0,
+          -0.39234742383217985,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "combined": [
+        [
+          0.39234742383217985,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.39234742383217985,
+          0.0
+        ],
+        [
+          0.0,
+          -0.39234742383217985,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "mount": "Grip0",
+      "authored": "Kiva size/grip/axis adaptation and explicitly documented static composition."
+    },
+    {
+      "role": "source_variant_input_01",
+      "piece_to_source_space": [
+        [
+          1.5,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -2.4,
+          0.12
+        ],
+        [
+          0.0,
+          3.5,
+          0.0,
+          1.27
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "source_to_runtime": [
+        [
+          0.39234742383217985,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.39234742383217985,
+          0.0
+        ],
+        [
+          0.0,
+          -0.39234742383217985,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "combined": [
+        [
+          0.5885211357482698,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.3732159834126294,
+          0.0,
+          0.49828122826686844
+        ],
+        [
+          0.0,
+          0.0,
+          0.9416338171972316,
+          -0.04708169085986158
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "mount": "Grip0",
+      "authored": "Kiva size/grip/axis adaptation and explicitly documented static composition."
+    },
+    {
+      "role": "source_variant_input_02",
+      "piece_to_source_space": [
+        [
+          1.5,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -2.0,
+          -0.03
+        ],
+        [
+          0.0,
+          2.6,
+          0.0,
+          1.24
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "source_to_runtime": [
+        [
+          0.39234742383217985,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.39234742383217985,
+          0.0
+        ],
+        [
+          0.0,
+          -0.39234742383217985,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "combined": [
+        [
+          0.5885211357482698,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0201033019636676,
+          0.0,
+          0.486510805551903
+        ],
+        [
+          0.0,
+          0.0,
+          0.7846948476643597,
+          0.011770422714965395
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "mount": "Grip0",
+      "authored": "Kiva size/grip/axis adaptation and explicitly documented static composition."
+    },
+    {
+      "role": "source_variant_input_03",
+      "piece_to_source_space": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.007568359375
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          0.0243988037109375
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          1.656005859375
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "source_to_runtime": [
+        [
+          0.39234742383217985,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.39234742383217985,
+          0.0
+        ],
+        [
+          0.0,
+          -0.39234742383217985,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "combined": [
+        [
+          0.39234742383217985,
+          0.0,
+          0.0,
+          -0.002969426303417377
+        ],
+        [
+          0.0,
+          0.39234742383217985,
+          0.0,
+          0.6497296327767763
+        ],
+        [
+          0.0,
+          0.0,
+          0.39234742383217985,
+          -0.009572807780573359
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "mount": "Grip0",
+      "authored": "Kiva size/grip/axis adaptation and explicitly documented static composition."
+    },
+    {
+      "role": "source_variant_input_04",
+      "piece_to_source_space": [
+        [
+          0.8,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -0.8,
+          0.0
+        ],
+        [
+          0.0,
+          0.8,
+          0.0,
+          0.32
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "source_to_runtime": [
+        [
+          0.39234742383217985,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.39234742383217985,
+          0.0
+        ],
+        [
+          0.0,
+          -0.39234742383217985,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "combined": [
+        [
+          0.3138779390657439,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.3138779390657439,
+          0.0,
+          0.12555117562629756
+        ],
+        [
+          0.0,
+          0.0,
+          0.3138779390657439,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "mount": "Grip0",
+      "authored": "Kiva size/grip/axis adaptation and explicitly documented static composition."
+    }
+  ],
+  "selection": {
+    "selection": "Kiva static assembly of source-proven complementary blade/back/head/handle groups plus original main shaft; both FX inputs excluded.",
+    "authored_piece_assembly": true,
+    "source_group_roles": {
+      "source_variant_input_01": "blade back / 刀背",
+      "source_variant_input_02": "blade / 刀刃",
+      "source_variant_input_03": "head / 人头",
+      "source_variant_input_04": "handle / 刀柄",
+      "main": "handle shaft / 刀柄"
+    },
+    "source_head_anchor": {
+      "file": "source-evidence/additional/rule_source.json",
+      "path": "ruleGroups[6].ruleDatas[1].subRules[0].vectorStartValue",
+      "interval": [
+        0,
+        99
+      ],
+      "xyz": [
+        -0.007568359375,
+        0.0243988037109375,
+        1.656005859375
+      ],
+      "usage": "Position reference only; choosing this anchor is authored, not an executed original star result."
+    },
+    "source_shape_index_reference": 8,
+    "source_shape_index_executed": false,
+    "Float_or_packed_shape_textures_sampled": false,
+    "original_default_or_randomized_star_appearance_claimed": false,
+    "piece_transform_note": "Translations/rotations/scales are explicitly authored Kiva assembly; original source shader lookup and morph behavior are not reconstructed.",
+    "excluded_roles": [
+      "source_fx_input_01",
+      "source_fx_input_02"
+    ]
+  },
+  "binary": {
+    "format": "KIVAWP01",
+    "sha256": "8828682dd2a818c37043d51b3ba166974acb7fd2e502f27e0e55e2b4d40c7dc1",
+    "bytes": 1321418,
+    "textures": 1,
+    "materials": 5,
+    "parts": 5,
+    "vertices": 17504,
+    "triangles": 22620,
+    "part_statistics": [
+      {
+        "name": "naraka::zhexingcuishan::main::m_321289189@wp_saber_xingtian",
+        "mount": 0,
+        "vertices": 1606,
+        "triangles": 2008
+      },
+      {
+        "name": "naraka::zhexingcuishan::source_variant_input_01::m_-505735536@wp_saber_xingtian_01",
+        "mount": 0,
+        "vertices": 3776,
+        "triangles": 5054
+      },
+      {
+        "name": "naraka::zhexingcuishan::source_variant_input_02::m_-505735536@wp_saber_xingtian_02",
+        "mount": 0,
+        "vertices": 3300,
+        "triangles": 4544
+      },
+      {
+        "name": "naraka::zhexingcuishan::source_variant_input_03::m_-505735536@wp_saber_xingtian_03",
+        "mount": 0,
+        "vertices": 2950,
+        "triangles": 3630
+      },
+      {
+        "name": "naraka::zhexingcuishan::source_variant_input_04::m_-505735536@wp_saber_xingtian_04",
+        "mount": 0,
+        "vertices": 5872,
+        "triangles": 7384
+      }
+    ],
+    "actual_runtime_mount0_bounds": [
+      [
+        -0.05007342994213104,
+        -0.335819274187088,
+        -0.165068581700325
+      ],
+      [
+        0.044134579598903656,
+        0.7641807198524475,
+        0.08814333379268646
+      ]
+    ],
+    "PNG_checks": [
+      {
+        "name": "naraka::zhexingcuishan::main::wp_saber_xingtian",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "5140ae218e0c80f6697d305266774b211b8876600a84bee12d294e25f2cfcc42"
+      }
+    ],
+    "right_left_grips": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "exact_EOF": true
+  },
+  "source_verification": {
+    "passed": true,
+    "files": 122,
+    "glbs": [
+      {
+        "file": "zhexingcuishan_main.glb",
+        "sha256": "687b9274509d2a62319b88bc9bfa5ffdb1d63da974d0b0bc43ded5c8195d74f3",
+        "vertices": 1606,
+        "triangles": 2008,
+        "meshes": 1,
+        "native_skinned_meshes": 1,
+        "primitive_checks": [
+          {
+            "mesh": "m_321289189@wp_saber_xingtian",
+            "vertices": 1606,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.05028308183627111,
+                -0.08495385187062102,
+                -0.8559232354490269
+              ],
+              [
+                0.05028308183628861,
+                0.0849538521760348,
+                1.0055100915019533
+              ]
+            ],
+            "palette_slots": 2,
+            "perturbed_source_joint": "wp_saber_bone_02",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.08725575161070233
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      },
+      {
+        "file": "zhexingcuishan_source_variant_input_01.glb",
+        "sha256": "2e202e39dd06fa8a6c1f83ddbcb46bafbab85725c4a19fa52b4aa9d479e1a36e",
+        "vertices": 3776,
+        "triangles": 5054,
+        "meshes": 1,
+        "native_skinned_meshes": 0,
+        "primitive_checks": [
+          {
+            "mesh": "m_-505735536@wp_saber_xingtian_01",
+            "vertices": 3776,
+            "native_skin": false,
+            "source_pose_bounds": [
+              [
+                -0.03262622281908989,
+                -0.15361811220645905,
+                -0.12530018389225006
+              ],
+              [
+                0.03262622281908989,
+                0.15361811220645905,
+                0.12530018389225006
+              ]
+            ]
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      },
+      {
+        "file": "zhexingcuishan_source_variant_input_02.glb",
+        "sha256": "3636f29110f5bc062f3a2bd0fc0f8dd23283ae2416a1d5d4cbe443c0a25218d3",
+        "vertices": 3300,
+        "triangles": 4544,
+        "meshes": 1,
+        "native_skinned_meshes": 0,
+        "primitive_checks": [
+          {
+            "mesh": "m_-505735536@wp_saber_xingtian_02",
+            "vertices": 3300,
+            "native_skin": false,
+            "source_pose_bounds": [
+              [
+                -0.022104714065790176,
+                -0.28136971592903137,
+                -0.09732815623283386
+              ],
+              [
+                0.022104714065790176,
+                0.2721978425979614,
+                0.09732817113399506
+              ]
+            ]
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      },
+      {
+        "file": "zhexingcuishan_source_variant_input_03.glb",
+        "sha256": "a1b363e1dce2380c6e8b130799228b3fcc1de4758773145be359a617fc15aa01",
+        "vertices": 2950,
+        "triangles": 3630,
+        "meshes": 1,
+        "native_skinned_meshes": 0,
+        "primitive_checks": [
+          {
+            "mesh": "m_-505735536@wp_saber_xingtian_03",
+            "vertices": 2950,
+            "native_skin": false,
+            "source_pose_bounds": [
+              [
+                -0.1200568675994873,
+                -0.14721347391605377,
+                -0.12136046588420868
+              ],
+              [
+                0.1200568750500679,
+                0.14721359312534332,
+                0.12136046588420868
+              ]
+            ]
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      },
+      {
+        "file": "zhexingcuishan_source_variant_input_04.glb",
+        "sha256": "ecbc04f4db44e1a4264d825aba4f25debd7f908fce4a38e079a2abd9b69c9bc3",
+        "vertices": 5872,
+        "triangles": 7384,
+        "meshes": 1,
+        "native_skinned_meshes": 0,
+        "primitive_checks": [
+          {
+            "mesh": "m_-505735536@wp_saber_xingtian_04",
+            "vertices": 5872,
+            "native_skin": false,
+            "source_pose_bounds": [
+              [
+                -0.08992298692464828,
+                -0.09666779637336731,
+                -0.08992299437522888
+              ],
+              [
+                0.08992298692464828,
+                0.09666778147220612,
+                0.08992298692464828
+              ]
+            ]
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      },
+      {
+        "file": "zhexingcuishan_source_fx_input_01.glb",
+        "sha256": "27f686b54caa9c6dba447e005edd26618e7de4d725b04cbec2362b1c67616c5e",
+        "vertices": 1488,
+        "triangles": 2072,
+        "meshes": 1,
+        "native_skinned_meshes": 0,
+        "primitive_checks": [
+          {
+            "mesh": "m_-505735536@wp_saber_xingtian_fx_01",
+            "vertices": 1488,
+            "native_skin": false,
+            "source_pose_bounds": [
+              [
+                -0.018796401098370552,
+                -0.13322454690933228,
+                -0.10971879959106445
+              ],
+              [
+                0.017993971705436707,
+                0.13322454690933228,
+                0.37110233306884766
+              ]
+            ]
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      },
+      {
+        "file": "zhexingcuishan_source_fx_input_02.glb",
+        "sha256": "99f540b2e70c32dcdf8fd9a5b5ef9ba268c01d03812fb8557c453a0a61da24d0",
+        "vertices": 1264,
+        "triangles": 1800,
+        "meshes": 1,
+        "native_skinned_meshes": 0,
+        "primitive_checks": [
+          {
+            "mesh": "m_-505735536@wp_saber_xingtian_fx_02",
+            "vertices": 1264,
+            "native_skin": false,
+            "source_pose_bounds": [
+              [
+                -0.13421501219272614,
+                -0.15015244483947754,
+                -0.3092406392097473
+              ],
+              [
+                0.13065995275974274,
+                0.13417649269104004,
+                0.3291946053504944
+              ]
+            ]
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      }
+    ],
+    "png_files": 20,
+    "portable_paths_only": true,
+    "game_or_research_directory_required_for_verify": false,
+    "browser_or_screenshot_test": false
+  },
+  "checks": [
+    "pinned_portable_manifest_and_all_file_SHA_before_and_after",
+    "native_source_current_LBS_all_weighted_slots",
+    "static_source_hierarchy_before_authored_assembly",
+    "original_indices_UV_and_material_reference",
+    "f32_bake_tolerance_and_unit_normals",
+    "bounded_sRGB_source_base_RGB_alpha",
+    "source_base_RGBA_every_pixel_identical",
+    "actual_f32_assembly_contact_graph_connected_2mm",
+    "Grip0_Y_axis_1.10m",
+    "bounded_binary_exact_EOF"
+  ],
+  "browser_or_screenshot_test": false
+}

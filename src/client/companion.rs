@@ -2,8 +2,8 @@
 use super::{
     animation::RigPose,
     avatar::{self, Appearance, AvatarAssetCache, AvatarAssets},
-    ranged_models::{self, Mount, RangedModel},
     skeleton::AnimationLibrary,
+    weapon_models::{self, Mount, WeaponModel},
     weapons,
 };
 use crate::simulation::{
@@ -61,7 +61,13 @@ pub(super) fn setup(world: &mut World) {
                 Visibility::Hidden,
             ))
             .id();
-        ranged_models::spawn(world, body_mount, WeaponPair::ChainAxeBow, Mount::Spine);
+        weapon_models::spawn(
+            world,
+            body_mount,
+            WeaponPair::ChainAxeBow,
+            WeaponMode::Ranged,
+            Mount::Spine,
+        );
         world.entity_mut(root).add_child(body_mount);
         for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
             let weapon = world
@@ -125,7 +131,7 @@ pub(super) fn sync(world: &mut World) {
             .inverse()
             .transform_point3(source);
         let pitch = direction.y.atan2(direction.xz().length().max(0.001));
-        let grips = RangedModel::shared(world, state.pair)
+        let grips = WeaponModel::shared(world, state.pair, WeaponMode::Ranged)
             .grips
             .map(|grip| local_source + local_rotation * grip);
         world.resource_scope(|world, library: Mut<AnimationLibrary>| {

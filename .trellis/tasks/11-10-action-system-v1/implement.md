@@ -22,6 +22,7 @@
 | action-v1-input | 原生与 Web 事件、意图、捕获、一次消费及真实桥测试 | Rust 接入依赖 runtime-contract；只写 controls.rs、web.rs、input.js 及输入测试 |
 | action-v1-presentation | 角色／武器／动画／镜头／HUD／音频及对应回归 | 依赖 runtime-contract；写其余客户端和 UI，含 web/appearance.js 的 F3 文字；不写模拟或输入 |
 | action-v1-models | 合并后的指定模型接入：李火旺／白灵淼／引冰落／羿之影 | 复用已准备资源及第一版独立妹妹与射击源，不改模拟规则；见该子任务的模型运行合同 |
+| action-v1-melee-models | 直接 main 接入伏浪锚与谪星摧山，替换锤／链斧临时显示 | 复用冻结源资源，核对谪星静态选型；手持与离手共享资产，不改规则 |
 
 每个子任务各有 PRD、涉及的设计说明、执行清单、真实 spec／research manifests；引用父任务共享设计，不复制一份会漂移的规则。
 集成检查点仍按 A → B → C 推进。实际子任务按文件所有权划分为权威模拟、输入适配、客户端表现；先固化共享接口，再并行处理互不重叠的文件，不并行改写 combat／physics／animation／input。依赖写在各子任务文档中，父任务负责共同契约与最终验收。

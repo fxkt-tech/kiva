@@ -1,6 +1,6 @@
-//! Current-pose source weapon meshes. Firing axes and body mounts are Kiva adaptations.
+//! Cached current-pose source weapons. Grip/firing axes and body mounts are Kiva adaptations.
 use super::model_asset::{self, Reader};
-use crate::simulation::WeaponPair;
+use crate::simulation::{WeaponMode, WeaponPair};
 use bevy::{
     asset::RenderAssetUsages,
     mesh::{Indices, PrimitiveTopology},
@@ -9,7 +9,7 @@ use bevy::{
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Mount {
-    Muzzle,
+    Weapon,
     Spine,
 }
 
@@ -22,33 +22,44 @@ struct ModelPart {
 }
 
 #[derive(Clone)]
-pub(super) struct RangedModel {
-    /// Right hand, then left hand, in the authoritative firing-source frame.
+pub(super) struct WeaponModel {
+    /// Right then left hand, relative to the weapon origin (grip or firing source).
     pub grips: [Vec3; 2],
     parts: Vec<ModelPart>,
 }
 
 #[derive(Resource, Default)]
-struct RangedModels {
-    musket: Option<RangedModel>,
-    bow: Option<RangedModel>,
+struct WeaponModels {
+    models: [Option<WeaponModel>; 4],
 }
 
-impl RangedModel {
-    pub(super) fn shared(world: &mut World, pair: WeaponPair) -> Self {
-        world.init_resource::<RangedModels>();
-        let cache = world.resource::<RangedModels>();
-        let cached = match pair {
-            WeaponPair::HammerMusket => &cache.musket,
-            WeaponPair::ChainAxeBow => &cache.bow,
+impl WeaponModel {
+    pub(super) fn shared(world: &mut World, pair: WeaponPair, mode: WeaponMode) -> Self {
+        world.init_resource::<WeaponModels>();
+        let index = match (pair, mode) {
+            (WeaponPair::HammerMusket, WeaponMode::Melee) => 0,
+            (WeaponPair::ChainAxeBow, WeaponMode::Melee) => 1,
+            (WeaponPair::HammerMusket, WeaponMode::Ranged) => 2,
+            (WeaponPair::ChainAxeBow, WeaponMode::Ranged) => 3,
         };
+        let cached = &world.resource::<WeaponModels>().models[index];
         if let Some(model) = cached {
             return model.clone();
         }
         world.init_resource::<Assets<Image>>();
-        let data: &[u8] = match pair {
-            WeaponPair::HammerMusket => include_bytes!("../../assets/yinbingluo/weapon.bin"),
-            WeaponPair::ChainAxeBow => include_bytes!("../../assets/yizhiying/weapon.bin"),
+        let data: &[u8] = match (pair, mode) {
+            (WeaponPair::HammerMusket, WeaponMode::Melee) => {
+                include_bytes!("../../assets/fulangmao/weapon.bin")
+            }
+            (WeaponPair::ChainAxeBow, WeaponMode::Melee) => {
+                include_bytes!("../../assets/zhexingcuishan/weapon.bin")
+            }
+            (WeaponPair::HammerMusket, WeaponMode::Ranged) => {
+                include_bytes!("../../assets/yinbingluo/weapon.bin")
+            }
+            (WeaponPair::ChainAxeBow, WeaponMode::Ranged) => {
+                include_bytes!("../../assets/yizhiying/weapon.bin")
+            }
         };
         let mut reader = Reader(data);
         assert_eq!(&reader.take::<8>(), b"KIVAWP01");
@@ -68,7 +79,7 @@ impl RangedModel {
         for _ in 0..count {
             let name = reader.string();
             let mount = match reader.u8() {
-                0 => Mount::Muzzle,
+                0 => Mount::Weapon,
                 1 => Mount::Spine,
                 _ => panic!("verified weapon attachment"),
             };
@@ -113,17 +124,19 @@ impl RangedModel {
         }
         assert!(reader.0.is_empty());
         let model = Self { grips, parts };
-        let mut cache = world.resource_mut::<RangedModels>();
-        match pair {
-            WeaponPair::HammerMusket => cache.musket = Some(model.clone()),
-            WeaponPair::ChainAxeBow => cache.bow = Some(model.clone()),
-        }
+        world.resource_mut::<WeaponModels>().models[index] = Some(model.clone());
         model
     }
 }
 
-pub(super) fn spawn(world: &mut World, parent: Entity, pair: WeaponPair, mount: Mount) {
-    let model = RangedModel::shared(world, pair);
+pub(super) fn spawn(
+    world: &mut World,
+    parent: Entity,
+    pair: WeaponPair,
+    mode: WeaponMode,
+    mount: Mount,
+) {
+    let model = WeaponModel::shared(world, pair, mode);
     for part in model.parts.iter().filter(|part| part.mount == mount) {
         let entity = world
             .spawn((
@@ -148,11 +161,11 @@ mod tests {
         world.init_resource::<Assets<Mesh>>();
         world.init_resource::<Assets<StandardMaterial>>();
         for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
-            let model = RangedModel::shared(&mut world, pair);
+            let model = WeaponModel::shared(&mut world, pair, WeaponMode::Ranged);
             let parts = model
                 .parts
                 .iter()
-                .filter(|part| part.mount == Mount::Muzzle)
+                .filter(|part| part.mount == Mount::Weapon)
                 .collect::<Vec<_>>();
             assert!(
                 parts.len()
@@ -201,7 +214,7 @@ mod tests {
                     min.z.abs() < 0.03 && max.z > 1.2,
                     "barrel exit sits at the source and stock is behind it"
                 );
-                assert!(model.parts.iter().all(|part| part.mount == Mount::Muzzle));
+                assert!(model.parts.iter().all(|part| part.mount == Mount::Weapon));
             } else {
                 assert!(
                     model
@@ -230,7 +243,7 @@ mod tests {
                 world.resource::<Assets<StandardMaterial>>().len(),
                 world.resource::<Assets<Image>>().len(),
             );
-            let reused = RangedModel::shared(&mut world, pair);
+            let reused = WeaponModel::shared(&mut world, pair, WeaponMode::Ranged);
             assert_eq!(model.parts[0].mesh, reused.parts[0].mesh);
             assert_eq!(model.parts[0].material, reused.parts[0].material);
             assert_eq!(
@@ -242,6 +255,111 @@ mod tests {
                 counts
             );
         }
+        assert!(
+            world
+                .resource::<Assets<Image>>()
+                .iter()
+                .all(|(_, image)| image.texture_descriptor.format == TextureFormat::Rgba8UnormSrgb)
+        );
+    }
+
+    #[test]
+    fn melee_models_keep_source_geometry_grip_frame_base_color_and_four_model_cache() {
+        let mut world = World::new();
+        world.init_resource::<Assets<Mesh>>();
+        world.init_resource::<Assets<StandardMaterial>>();
+        for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+            let model = WeaponModel::shared(&mut world, pair, WeaponMode::Melee);
+            assert_eq!(model.grips[0], Vec3::ZERO);
+            assert!(model.parts.iter().all(|part| part.mount == Mount::Weapon));
+            let mut minimum = Vec3::splat(f32::INFINITY);
+            let mut maximum = Vec3::splat(f32::NEG_INFINITY);
+            let mut vertices = 0;
+            for part in &model.parts {
+                let mesh = world.resource::<Assets<Mesh>>().get(&part.mesh).unwrap();
+                assert!(mesh.attribute(Mesh::ATTRIBUTE_JOINT_INDEX).is_none());
+                let positions = mesh
+                    .attribute(Mesh::ATTRIBUTE_POSITION)
+                    .unwrap()
+                    .as_float3()
+                    .unwrap();
+                vertices += positions.len();
+                for position in positions {
+                    minimum = minimum.min(Vec3::from(*position));
+                    maximum = maximum.max(Vec3::from(*position));
+                }
+                let material = world
+                    .resource::<Assets<StandardMaterial>>()
+                    .get(&part.material)
+                    .unwrap();
+                assert!(material.base_color_texture.is_some());
+                assert!(material.normal_map_texture.is_none());
+                assert!(material.metallic_roughness_texture.is_none());
+            }
+            assert!(vertices > 1000, "original meshes replace temporary cubes");
+            assert!(
+                minimum.y < 0. && maximum.y > 0.5,
+                "grip lies in the handle, head extends +Y"
+            );
+            let size = maximum - minimum;
+            assert!(size.y > size.x && size.y > size.z);
+            assert!(
+                (size.y - 1.10).abs() < 0.0001,
+                "contract: 1.10m melee display length"
+            );
+            if pair == WeaponPair::HammerMusket {
+                assert_eq!(
+                    vertices, 5437,
+                    "main and implicit-weight attachment both remain"
+                );
+                assert_eq!(model.parts.len(), 2);
+            } else {
+                assert_eq!(
+                    vertices, 17504,
+                    "main plus complementary blade/back/head/handle regions"
+                );
+                assert_eq!(model.parts.len(), 5, "independent FX draws stay excluded");
+            }
+            let parent = world.spawn(Transform::IDENTITY).id();
+            spawn(&mut world, parent, pair, WeaponMode::Melee, Mount::Weapon);
+            for (child, part) in world
+                .get::<Children>(parent)
+                .unwrap()
+                .iter()
+                .zip(&model.parts)
+            {
+                assert_eq!(world.get::<Mesh3d>(child).unwrap().0, part.mesh);
+                assert_eq!(
+                    world
+                        .get::<MeshMaterial3d<StandardMaterial>>(child)
+                        .unwrap()
+                        .0,
+                    part.material
+                );
+                assert_eq!(*world.get::<Transform>(child).unwrap(), Transform::IDENTITY);
+            }
+            WeaponModel::shared(&mut world, pair, WeaponMode::Ranged);
+        }
+        let counts = (
+            world.resource::<Assets<Mesh>>().len(),
+            world.resource::<Assets<StandardMaterial>>().len(),
+            world.resource::<Assets<Image>>().len(),
+        );
+        for _ in 0..3 {
+            for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+                for mode in [WeaponMode::Melee, WeaponMode::Ranged] {
+                    WeaponModel::shared(&mut world, pair, mode);
+                }
+            }
+        }
+        assert_eq!(
+            (
+                world.resource::<Assets<Mesh>>().len(),
+                world.resource::<Assets<StandardMaterial>>().len(),
+                world.resource::<Assets<Image>>().len()
+            ),
+            counts
+        );
         assert!(
             world
                 .resource::<Assets<Image>>()

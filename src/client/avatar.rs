@@ -1447,7 +1447,7 @@ mod tests {
 
     #[test]
     fn bailingmiao_uses_female_palettes_and_real_weapon_grips_without_stretching_arms() {
-        use crate::client::ranged_models::RangedModel;
+        use crate::client::weapon_models::WeaponModel;
         use crate::simulation::CompanionState;
         let mut app = test_app(false);
         let world = app.world_mut();
@@ -1479,7 +1479,7 @@ mod tests {
         let resting = sample_surface(world, owner);
         let mut poses = Vec::new();
         for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
-            let model = RangedModel::shared(world, pair);
+            let model = WeaponModel::shared(world, pair, crate::simulation::WeaponMode::Ranged);
             for pitch in [0_f32, 0.35, -0.25, 0.8, 1.0, -0.8] {
                 let source = Vec3::new(0., 1.2, -0.55);
                 let grips = model
@@ -1577,7 +1577,7 @@ mod tests {
         // Sweep across reach thresholds. A barely unreachable grip must not
         // snap the clavicle by its full length between adjacent aim samples.
         for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
-            let model = RangedModel::shared(world, pair);
+            let model = WeaponModel::shared(world, pair, crate::simulation::WeaponMode::Ranged);
             let mut previous: Option<Vec<Transform>> = None;
             for step in -200..=200 {
                 let pitch = step as f32 * 0.005;
@@ -1644,8 +1644,8 @@ mod tests {
                 animation, combat,
                 companion::{self, CompanionView, SisterWeapon},
                 controls::ViewYaw,
-                ranged_models::RangedModel,
                 scene,
+                weapon_models::WeaponModel,
             },
             gameplay::Player,
             simulation::{CombatEffect, CombatFeedback, CompanionState},
@@ -1731,7 +1731,8 @@ mod tests {
                     .unwrap();
                 let state = *world.get::<CompanionState>(performer).unwrap();
                 if state.visible && state.action_id == sequence.action_id {
-                    let model = RangedModel::shared(world, pair);
+                    let model =
+                        WeaponModel::shared(world, pair, crate::simulation::WeaponMode::Ranged);
                     let root_transform = *world.get::<Transform>(root).unwrap();
                     let weapon = *world
                         .query::<(&SisterWeapon, &Transform)>()

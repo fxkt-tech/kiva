@@ -32,7 +32,7 @@
 | `client/animation.rs`、`animation/poses.rs` | 根据只读模拟快照与明确 actor 的事件选择 / 混合身体姿态 |
 | `client/camera.rs` | 从相同显示位置与朝向派生跟随镜头 |
 | `client/combat.rs` | 只读敌人 / 武器 / 标记 / 特效，按反馈序号消费并回收临时实体 |
-| `client/companion.rs`、`weapons.rs`、`ranged_models.rs` | 独立白灵淼、程序锤／链斧与源模型引冰落／羿之影、链斧离手／回收及绳索表现 |
+| `client/companion.rs`、`weapons.rs`、`weapon_models.rs` | 独立白灵淼、伏浪锚／谪星摧山／引冰落／羿之影共享源模型、链斧离手／回收及绳索表现 |
 | `client/impact.rs` | 狙击枪口、弹道、空中命中火花和镜头后坐的共享资产及显示时钟 |
 | `client/audio.rs`、`web/audio.js` | 实际战斗反馈的一次消费、短音效与暂停同步的音乐循环 |
 | `client/hud.rs`、`web/hud.js` | 把玩家与当前选中敌人的真实快照显示为血条、人格 / 武器、技能可用性、冷却和联动提示 |
@@ -106,7 +106,9 @@ C 点按切换蹲伏 / 站立，松开保持，蹲行固定 1.6m/s；疾跑按 C
 哥哥默认李火旺，可在进入／暂停卡片或 F3 选择愁铃客／李火旺身体和服饰，敌人仍为愁铃客。选择属于 AppearanceSelection，reconcile 在动画前只替换玩家身体／调色板，保留物理 actor、显示根、RigPose、动作和当前武器。
 妹妹使用独立 CompanionView／RigPose 和固定 Bailingmiao 外观，不含 PlayerView／ActorView，不能被 F3 换成哥哥。身体资产分别缓存，重复技能／换装不增长资产。
 
-`scripts/import-prepared-models.py` 从冻结的 `assets/prepared/naraka` 离线生成白灵淼 KIVAAV03 与引冰落／羿之影 KIVAWP01，无新增运行时 GLTF／JSON 依赖。白灵淼衣装、莲母和女性基脸保留女性自身骨序／逆绑定／当前 rest，以自身 23 结构参考接收既有动作；双手握持使用女性臂长 IK。远程武器保留真实当前 LBS 后烘焙为刚性几何，局部发射源0／朝向 -Z 对齐模拟；弓附件按明确的 Kiva 适配挂在 spine_03。锤子与链斧仍用临时几何。专属捏脸、原发丝／布料 shader 和原作开火／拉弓动画未恢复，来源与适配见 [白灵淼](../assets/bailingmiao/README.md)、[引冰落](../assets/yinbingluo/README.md)、[羿之影](../assets/yizhiying/README.md) 与 [模型规范](../.trellis/spec/client/model-assets.md)。
+`scripts/import-prepared-models.py` 从冻结的 `assets/prepared/naraka` 离线生成白灵淼 KIVAAV03 与引冰落／羿之影 KIVAWP01，无新增运行时 GLTF／JSON 依赖。白灵淼衣装、莲母和女性基脸保留女性自身骨序／逆绑定／当前 rest，以自身 23 结构参考接收既有动作；双手握持使用女性臂长 IK。远程武器保留真实当前 LBS 后烘焙为刚性几何，局部发射源0／朝向 -Z 对齐模拟；弓附件按明确的 Kiva 适配挂在 spine_03。专属捏脸、原发丝／布料 shader 和原作开火／拉弓动画未恢复，来源与适配见 [白灵淼](../assets/bailingmiao/README.md)、[引冰落](../assets/yinbingluo/README.md)、[羿之影](../assets/yizhiying/README.md) 与 [模型规范](../.trellis/spec/client/model-assets.md)。
+
+`scripts/import-melee-models.py` 单独生成 [伏浪锚](../assets/fulangmao/README.md) 和 [谪星摧山](../assets/zhexingcuishan/README.md)，复用同一 KIVAWP01 材质／几何格式，旧五组资产与转换器保持稳定。四件武器由 `WeaponModel` 以 pair＋mode 缓存；近战握柄0／主轴 +Y，手持和 FlyingAxe 共享同一网格／材质。谪星的主体与四个非 FX 输入根据原控制器证据作固定 Kiva 静态装配，不声称恢复原随机星格、Float 形变、溶解／灵光／cubemap。绳索在本帧手腕附件同步后连接真实握柄和飞斧根，物理轨迹与动作标记仍由模拟决定。
 
 李火旺资源由 `scripts/import-naraka.py` 生成 `assets/lihuowang/character.bin`，包括衣装、心素发型、惘心笠、通用基础脸和原刀鞘，烛泪以刚性当前姿态适配既有握柄轴。惘心笠为单独原头饰3411276，跟随原头骨绑定，不改变已归一化角色比例或碰撞高度；原帽下限发协议未完整恢复，不凭隐藏mask删掉整套发型。KIVAAV03 在现 KIVAAV02 上增加材质双面标记及每骨的源模型空间姿态，保留原逆绑定矩阵；源导入姿态不等于绑定姿态时不强行抵消为单位矩阵。该外观用自身 23 个结构锚点接收既有动作增量，附件与身体读取同一适配手腕，不直接索引燕云 986 节点或使用另一角色的绝对手位置。具体来源、重建挂接、通用脸与材质适配限制见[资源说明](../assets/lihuowang/README.md)及[接入说明](plans/naraka-appearances.md)。
 `avatar::sync` 位于动画与挂点同步之间，用源绑定矩阵和既有动作增量更新独立显示骨骼；武器位置使用适配后的手腕，不能反写 Body。角色标准高度 1.73m，靶子由 `Body::scaled(1.45)` 同时放大显示和胶囊；胶囊半径、站立/蹲伏高、瞬移和复活使用实际尺寸。

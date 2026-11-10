@@ -1,0 +1,299 @@
+{
+  "package": "assets/prepared/naraka/fulangmao",
+  "portable_manifest_sha256": "71bf61d35756e4b655e156d952756640c8e8476bc42315c1fdb4c128d1a57b80",
+  "files": [
+    {
+      "file": "models/fulangmao_main.glb",
+      "sha256": "cf70d33ee341db0063f30dbda955b264f1320298a2267233b5bfa744244c77a9",
+      "bytes": 2615764,
+      "role": "original-weapon-glb:main"
+    },
+    {
+      "file": "source-evidence/model-checks/fulangmao_main.cpu-verification.json",
+      "sha256": "56cdd284a7c863ee7f57b5895e5974d1a859fb67b4d80d24da2e3733f079ba51",
+      "bytes": 4203,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/fulangmao_main.khronos.json",
+      "sha256": "bfe95c39efe98952da4081dea014b49bbc68d82078dc1ea5ade65dcf90f77807",
+      "bytes": 3146,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_n.png",
+      "sha256": "afc6e782c12cd61761d7cfe81042491b2ea023c424ab5d8a32459e6084ec5fa9",
+      "bytes": 1459292,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_d.png",
+      "sha256": "1caee8ebec51d061f19fefe1eba45a366fc55b1169d24e4e74472a733e560f63",
+      "bytes": 1717817,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_mrav.png",
+      "sha256": "d57d7bbb6952a8996ba7bcd7a09d1c295290cbec2b2c4b9d86951ae8070667ba",
+      "bytes": 1475213,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_01_e.png",
+      "sha256": "671f56d9aa4709ad53b0242a0f99536272fe04cef8eed823f60e1ecb704c89ef",
+      "bytes": 294353,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_01_d.png",
+      "sha256": "911d70de0f0f9cfec9646b70df2c85e6d0c10f61286f5259b208f312c9853c77",
+      "bytes": 394517,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_01_nx.png",
+      "sha256": "c5a1d148d475c895e0e8949cc289e2f95407aaf00fe692789af7a6ce0c5d614f",
+      "bytes": 266318,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_01_mrav.png",
+      "sha256": "67743939261f01e81344e57a518d1f90d596dc348146ff6b09fdbb70fd21cc5b",
+      "bytes": 258827,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_01_tx.png",
+      "sha256": "96a854c0c68bafe5b7ec3e2ef96b676a7cc7bf2989942ed8e8ca85016ad25a11",
+      "bytes": 346965,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_blade_chuanmaolv1_01_tr.png",
+      "sha256": "1de1fd335efbd7b6083449a9cd663d2ac104c02f950aa131e0143bdf44e494d5",
+      "bytes": 220110,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "source-evidence/weapon-export.original.json",
+      "sha256": "57a05fbe51d5886ec6ec548135dd481ae6b33f72ac7bef5194b18aacbc7419c0",
+      "bytes": 3062593,
+      "role": "historical-original-export-manifest"
+    },
+    {
+      "file": "source-evidence/identity_manifest.json",
+      "sha256": "497fdcc2c979a1cc97382bcbc6334abe62391893bb1598682bfa7cd237e99705",
+      "bytes": 42473,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/target_parts.json",
+      "sha256": "ca043907cd2b7d97f29946565c6501535651bd3c01e732bebba6ea372da33068",
+      "bytes": 13756,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/records/WeaponConfig_WeaponTemp_3112349.bin",
+      "sha256": "03f37ff7b915f30fc7ade8519259d3085adfa06e189c2546a8916838f0c2e9e5",
+      "bytes": 180,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponBattleSkin_2310478.bin",
+      "sha256": "122100f329f6f4cef4611e821f7ebad00723c6d342b6eee21cfc0fb22f29ac63",
+      "bytes": 206,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponSkin_2310478.bin",
+      "sha256": "4563180508a8d61246ca4035aa5e6fffe2e03d7ba63e85228ed8b0bf4bc11e81",
+      "bytes": 1388,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/additional/initial_probe.json",
+      "sha256": "7a88c410f41e2de1ba2239ea45f39905843f8779c8658011aa49e459a86ad754",
+      "bytes": 66043,
+      "role": "original-source-palette-layout-and-lod-evidence"
+    },
+    {
+      "file": "source-evidence/additional/metadata_validation.json",
+      "sha256": "6f042696f0a1910b4446ed47937d13cc9a34827ac2fb8e615b12ac0b302079d9",
+      "bytes": 1943,
+      "role": "original-source-palette-layout-and-lod-evidence"
+    },
+    {
+      "file": "source-evidence/additional/fulangmao_main.source.json",
+      "sha256": "d0e0e5b732d7e37c5b897065719770786ad53c9abd38830de7155dbc6d29949b",
+      "bytes": 41345,
+      "role": "original-source-palette-layout-and-lod-evidence"
+    },
+    {
+      "file": "source-evidence/additional/main_3583192603019751291.single-indices.u32.bin",
+      "sha256": "7b4fc1a8dbe6b6121f16ada516e2ac27e02964716bacea5fb7d07cf30595948e",
+      "bytes": 1792,
+      "role": "original-source-palette-layout-and-lod-evidence"
+    },
+    {
+      "file": "verification-report.json",
+      "sha256": "29a064ed5970066473f2bf5e9ea184269936c2c09e6321c05a138c944e37acac",
+      "bytes": 2231,
+      "role": "offline-verification-report"
+    },
+    {
+      "file": "README.md",
+      "sha256": "33ea47ceb86a00b1ae66ad2ed04b79365b3c37bc58a61696d7fa1bbbb0d5c6d2",
+      "bytes": 1835,
+      "role": "readme"
+    }
+  ],
+  "identity": {
+    "item_id": 2310478,
+    "name": "伏浪锚",
+    "weapon_type": "blade",
+    "weapon_temp_ids": [
+      3112349
+    ],
+    "source_identity_file": "/home/asuka/kiva-asset-research/naraka/identity/fulangmao/identity_manifest.json",
+    "source_identity_sha256": "497fdcc2c979a1cc97382bcbc6334abe62391893bb1598682bfa7cd237e99705"
+  },
+  "generator": "scripts/import-melee-models.py",
+  "generator_sha256": "77661a28a3d74be0d38cebb63208e3eb23239cfe4f786be02cbede066c210147",
+  "imported_helpers_sha256": {
+    "import-prepared-models.py": "c74db0c4fea9fa0fdd90c13eaef2ba91dcb6ef9fdb1f4a598164dcc51d65c007",
+    "import-naraka.py": "6466eb88a4f577686d412c7f8b56f96f4d56e85250865b810a5b49de091757d9",
+    "import-bailingmiao.py": "4eb46962ca602db4125aec5f3986e0abd6bfbf712ec2f7c18a9f213c66630dea"
+  },
+  "runtime": "weapon.bin",
+  "runtime_sha256": "104f01a3ced11c443ba2ea8f650d38fb9a92729bcea11c5e08ad7987f2f722c0",
+  "adaptation": {
+    "format": "KIVAWP01",
+    "identity": "伏浪锚2310478",
+    "mount0": "Grip",
+    "main_axis": "+Y",
+    "right_hand_grip": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "left_hand_grip": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "unused_second_grip": true,
+    "source_grip": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source_grip_note": "Authored Kiva shaft-centre grip, not a recovered original Actor attachment.",
+    "runtime_length_m": 1.1,
+    "uniform_source_to_runtime_scale": 0.41999050028566404,
+    "assembly_source_bounds": [
+      [
+        -0.09498253753500857,
+        -0.3462557459015919,
+        -0.6877422928810455
+      ],
+      [
+        0.09498333642172699,
+        0.34625584243328855,
+        1.9313645660879444
+      ]
+    ],
+    "max_texture_size": 1024,
+    "selection": {
+      "selection": "Both original configured LOD0 skinned instances, with their actual current source pose.",
+      "authored_piece_assembly": false
+    },
+    "adaptations": [
+      {
+        "role": "main",
+        "piece_to_source_space": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "source_to_runtime": [
+          [
+            0.41999050028566404,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.41999050028566404,
+            0.0
+          ],
+          [
+            0.0,
+            -0.41999050028566404,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "combined": [
+          [
+            0.41999050028566404,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.41999050028566404,
+            0.0
+          ],
+          [
+            0.0,
+            -0.41999050028566404,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "mount": "Grip0",
+        "authored": "Kiva size/grip/axis adaptation and explicitly documented static composition."
+      }
+    ],
+    "limits": "Original current-LBS/static geometry with source base RGB/alpha; neutral prepared PBR. No source attack clips, packed/normal/Float shader, randomized stars, dissolve, spirit-light or reflection FX reconstruction."
+  },
+  "game_reads": false,
+  "runtime_external_paths_or_downloads": false
+}

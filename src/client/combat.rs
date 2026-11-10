@@ -28,6 +28,10 @@ pub(super) struct WeaponVisual(WeaponPair, WeaponMode);
 
 impl WeaponVisual {
     #[cfg(test)]
+    pub(super) fn pair(&self) -> WeaponPair {
+        self.0
+    }
+    #[cfg(test)]
     pub(super) fn is_melee(&self) -> bool {
         self.1 == WeaponMode::Melee
     }

@@ -10,7 +10,7 @@
 - `stickman::spawn(world, owner, body_material, eyes_material)` 为玩家 / 敌人共用的纯显示构造器，创建 RigPose、愁铃客蒙皮和骨骼附件，返回可关联受击变色的身体部件。
 - `AnimationLibrary::{bone,duration,sample,model_pose}` / `blend` 采样随包骨骼资产；`RigPose::new(&AnimationLibrary)` 保存局部混合及模型空间姿态。
 - `stickman::{attach_weapon,sync_attachments}` 绑定右手腕，并在姿态采样后同步几何；WeaponMode 分别校正近战柄轴和远程枪轴。
-- `scene::sync_player` → 敌人显示根 / 武器显隐 → `animation::animate` → `companion::sync` / `weapons::sync_tether` → `avatar::sync` → `stickman::sync_attachments` → HUD → `camera::follow` 在 Update 链式执行。
+- `scene::sync_player` → 敌人显示根 / 武器显隐 → `animation::animate` → `companion::sync` → `avatar::sync` → `stickman::sync_attachments` → `weapons::sync_tether` → HUD → `camera::follow` 在 Update 链式执行。
 - `ActorView { owner }` / `PlayerView` / `PropView { owner }` 标记纯显示根；输入、战斗身份留在物理实体。
 - Web 桥 `window.kivaInput.isActive(): boolean` / `takeLook(): number` / `keys(): number` / `takeActions(): number` / `takeDefenseEdges(): number[]` / `ready(): void`。
 - wasm-bindgen 绑定在 `client/web.rs`，原生不需要 JS；加载观察器为 `window.kivaStartup.subscribe(callback)`。
