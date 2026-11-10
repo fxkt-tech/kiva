@@ -1,0 +1,21 @@
+{
+  "trunk_version": "0.22.1",
+  "cargo_lock_sha256": "f582ba6e933a38619a2f5d29eb5410492b24e4ce7d674d753026b1acdc0d5955",
+  "files": 19,
+  "wasm": [
+    {
+      "file": "kiva-6b40cb1ccdf8c05c_bg.wasm",
+      "bytes": 202157834,
+      "sha256": "600e941c9760d177ad304ebcb896b7368120ba62e4426ad3d1d0c5f4d3bc35ce"
+    }
+  ],
+  "bridges": {
+    "input.js": true,
+    "hud.js": true,
+    "appearance.js": true,
+    "enemies.js": true,
+    "audio.js": true,
+    "startup.js": true,
+    "style.css": true
+  }
+}

@@ -1,0 +1,13 @@
+{"file":".trellis/spec/index.md","reason":"项目分层、质量门槛与服务约束"}
+{"file":".trellis/spec/simulation/index.md","reason":"固定步动作、战斗、反馈、Boss 与暂停契约"}
+{"file":".trellis/spec/simulation/physics.md","reason":"Avian 唯一运动权威、支撑、拉近与快照"}
+{"file":".trellis/spec/gameplay/index.md","reason":"玩家与敌人装配、模式替换及生命周期"}
+{"file":".trellis/spec/client/index.md","reason":"输入捕获、动画归属、HUD、相机及资产复用"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"输入到模拟再到人物／妹妹／相机的跨层验证"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复用已有状态和几何，避免新增权威副本"}
+{"file":".trellis/tasks/11-10-action-system-v1/research/current-system.md","reason":"当前接口、源码锚点、资源缺口与迁移风险"}
+{"file": ".trellis/tasks/11-10-action-system-v1/research/current-mechanics-map.md", "reason": "现有操作与真实数值、两条旧联动、状态归属和当前代码图谱证据"}
+{"file": ".trellis/tasks/11-10-action-system-v1/research/runtime-contract.md", "reason": "第一版跨层输入、状态、动作时间线与事件归属的已固化接口"}
+{"file": ".trellis/spec/client/input.md", "reason": "第一版设备边沿、捕获取消、位掩码与原生/Web一次消费"}
+{"file": ".trellis/spec/client/combat-presentation.md", "reason": "独立妹妹、临时武器、只读镜头/HUD与历史事件归属"}
+{"file": ".trellis/spec/simulation/combat-v1.md", "reason": "第一版技能时间线、防御耐力、目标来源与共同命中契约"}

@@ -1,0 +1,30 @@
+# Action V1 runtime contract
+
+Stable implementation API for input/presentation (2026-11-10). Simulation owns all time and outcomes.
+
+- `WeaponPair::{HammerMusket,ChainAxeBow}`; `name()`, `weapon_name(WeaponMode)`; `WeaponMode::{Melee,Ranged}` describes attachment grip only. No WeaponSet or player remote-mode switching.
+- `CombatIntent::{request_attack,request_melee_skill,request_ranged_skill,request_combo,request_toggle_target,request_pair(WeaponPair),clear}`. No aim-point intent or wheel switch.
+- `DefenseEdge::{Pressed,Released,Cancelled}`; `DefenseState::push_edge(edge)` preserves order, bound 64; `clear()` latches cancellation, does not fabricate Released. Input clear must call this in addition to ActionIntent/CombatIntent clear.
+- `DefenseKind::{Idle,Deflect,Waiting,Guard,Parry}`; `DefenseState::{kind,is_active,is_deflecting,is_guarding,is_parrying,remaining,deflect_cooldown,parry_cooldown}` read-only except edge/clear submission.
+- `Stamina::{current,maximum,quiet_elapsed}`; max100, block20, quiet1s, regen15/s. No client mutation.
+- `Combatant::{weapon_pair,target,melee_cooldown,ranged_cooldown,attack_cooldown,combo_remaining,combo_window,active_action,sequence,companion,axe_away,status,availability,clear_targets}`. `clear_targets()` cancels committed action immediately for roster replacement, preserves cooldowns/resources.
+- `ActionAvailability` public bool fields `attack,melee_skill,ranged_skill,combo,defense,equip,movement_actions` are the current admission snapshot, still revalidated on use.
+- `ActionKind::{Melee,HammerSlam,MusketShot,ChainSweep,AxeShot,HammerCombo,ChainCombo}`. `ActionSnapshot` public fields `action_id,kind,pair,target,elapsed,duration,shot_count,aim_position,source_position,companion_position`. `Combatant::active_action()->Option<ActionSnapshot>`.
+- `SequenceSnapshot` public fields `action_id,kind,pair,target,elapsed,duration,shot_count,aim_position,source_position,companion_position,cancelled`; methods `target(),elapsed(),aim_position(),has_fired()`; constants `AIM_DURATION=.30,HOLD_DURATION=.38,RETURN_DURATION=.28,TOTAL_DURATION=.96` for hammer compatibility in camera math. Both combo kinds use `Combatant::sequence()->Option<SequenceSnapshot>`; `is_combo_active()` includes bounded camera recovery. Chain total .93, recovery starts .65. Cancellation preserves snapshot through .28 recovery except roster replace/death immediate clear.
+- `ComboWindow` public fields `source_action_id,pair,original_target,remaining`.
+- `Companion { pub owner: Entity }` logical entity has no Body/Health; player `Combatant::companion()->Option<Entity>`. `CompanionState` public snapshot fields `visible,position,previous_position,facing,pair,action_id,kind,elapsed,shot_count,source_position,aim_position`; query logical performer with `(&Companion,&CompanionState)`. At most one per player. Presentation must NOT assume every performer has Body.
+- `CombatEvent` retains `sequence,actor,kind,position,end,radius`, adds `source_owner:Entity,pair:Option<WeaponPair>,action_id:u64,hit_index:u8`. Shot actor is companion, source_owner is player; Hit/Defeat actor is recipient. `CombatEffect::{Melee,Shot,SniperShot,SniperImpact,Hammer,ChainSweep,AxeThrow,Hit,Deflect,Block,Parry,Dodge,Defeat,Respawn,EnemyWindup,Rejected}`. Only `Shot` produces a gun/arrow sound; sniper events are extra visual cues.
+- `SlowEffect::{factor,remaining}` read-only methods. `Enemy::stun_source()->Option<u64>`, `stun_remaining()->f32`; Boss owns `BossState::Stunned`, `stun_source()/stun_remaining()` independently; no Boss recovery timer mirrored into Enemy.
+- MotionState loses old parry authority. Animations/HUD must read DefenseState. `ActionIntent` retains jump/dodge/crouch/held/clear. During attack, movement actions are consumed/rejected; defense can be exited by jump/dodge; ordinary airborne melee accepted; combo movement is locked or physical pull. New attack/skill/equip requests during action are discarded.
+
+Scheduling: HitStop gate → install/prepare (consume inputs, defense/action clocks, restrictions) → motor → physics → publish → player hit markers → ordinary AI → Boss → stamina recovery/companion cleanup → teleports. Same gate freezes all.
+
+## Final concrete snapshot types
+
+All snapshots are `Clone + Copy + Debug`. `ActionSnapshot.target` is `Option<Entity>`; sequence targets are `Entity`. `kind` is always `ActionKind`, `pair` is `WeaponPair`, all position fields are `Vec3`, `facing` is `Vec2`, elapsed/duration/remaining are `f32`, `action_id`/`source_action_id` are `u64`, `shot_count`/`hit_index` are `u8`. `CompanionState.visible` and `SequenceSnapshot.cancelled` are bools.
+
+`CombatEvent.pair: Option<WeaponPair>` is immutable historical weapon identity: `Some(pair)` for player/companion weapon effects and their hits; `None` for generic enemy/lifecycle feedback. This avoids classifying old shots using the current equipment. `source_position` is the exact shared world muzzle, normally companion feet + Y1.2 + forward0.55; appearance solves its weapon/arms to this point. Its segment and appearance side offset are checked against actual collision geometry; the owner chest is a bounded fallback in constrained spaces. `aim_position` is the original committed target's current chest, never the replacement lock.
+
+AxeShot emits one Shot and one AxeThrow at .15s; only damage/stun occurs at .30s. There is no second firing sound at impact. The runtime survives crossing its duration until the post-physics marker pass; all crossed markers execute in order before it retires. Active cancellation preserves a bounded .28s camera return; direct roster replacement hides CompanionState synchronously, including while paused.
+
+The old WeaponSet, player remote mode, cannon aim/leap/spin, MotionState parry timers, and all Leap APIs were deleted. MotionState publishes only real motor/contact/jump/dodge/crouch/slide state. New DefenseState, action clocks, slow effects and resource recovery share the same SimulationActive/HitStop gate. After the Boss pass, a final availability publish reflects actual damage/phase/landing prerequisites without advancing a second clock.

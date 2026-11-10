@@ -1,0 +1,30 @@
+{
+  "id": "action-system-v1",
+  "name": "action-system-v1",
+  "title": "动作系统重构第一版",
+  "description": "规划哥哥常驻操控、妹妹技能出场、两套武器普通技能与联动、防御和耐力的第一版战斗重构",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "action",
+  "package": null,
+  "priority": "P2",
+  "creator": "asuka",
+  "assignee": "asuka",
+  "createdAt": "2026-11-10",
+  "completedAt": null,
+  "branch": "feat/action-system-v1",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": "79b3538",
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "11-10-action-v1-simulation",
+    "11-10-action-v1-input",
+    "11-10-action-v1-presentation"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "代码与自动检查已通过；用户已授权提交、合并main、删除本次临时分支并推送。真实GPU画面复核仍作为遗留验收跟踪，不声明已通过。",
+  "meta": {}
+}

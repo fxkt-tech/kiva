@@ -1061,3 +1061,71 @@ Packaged exact official Choulingke soundtrack and fully traced original shared p
 ### Next Steps
 
 - Continue bounded official Android artifact investigation as a possible HD codec6 implementation clue; do not claim original success-deflect or all audio recovered.
+
+
+## Session 32: 动作系统第一版实现与集成验证
+<!-- trellis-session: v=2 fp=91c5faaf63d3f4bd -->
+
+**Date**: 2026-11-10
+**Task**: 动作系统第一版实现与集成验证
+**Branch**: `feat/action-system-v1`
+
+### Summary
+
+实现哥哥常驻近战、独立临时妹妹、两套普通技能与三发联动、防御耐力、新输入与HUD；自动质量门槛与真实WASM功能验证通过。软件GPU全场景不可见在独立旧版基线同样复现，画面手感待实际GPU复核。未提交或推送。
+
+### Main Changes
+
+- 按已批准方案完成模拟、输入、双角色表现及跨层事件归属，保留重构前HTML图谱，更新现行架构与规范。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] make check通过：201单元+9地形集成Rust测试、64 Node测试、原生全目标Clippy、WASM check；显式WASM Clippy通过。
+- [OK] 最终源码临时Trunk构建通过且Cargo.lock未变；真实WASM两套联动、伤害、声音、F2/F3遥测通过；旧版与最终版中心像素一致。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 实际GPU复核模型、镜头与操作手感；审阅当前未提交变更，提交与推送等待用户授权。
+
+
+## Session 33: 提交并合并动作系统第一版到main
+<!-- trellis-session: v=2 fp=676c11038ac08f52 -->
+
+**Date**: 2026-11-10
+**Task**: 提交并合并动作系统第一版到main
+**Branch**: `main`
+
+### Summary
+
+按用户明确授权提交动作系统第一版并合入main，保留远端已有资源准备提交；临时分支清理与main推送纳入本轮Git交付。真实GPU画面复核仍单独跟踪。
+
+### Main Changes
+
+- 工作提交79b3538，合并时保留origin/main的c6a17b0资源提交；任务与日志关闭自动提交，由主会话显式提交。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `79b3538` | feat: implement action system v1 |
+| `33f3a67` | merge: integrate action system v1 |
+
+### Testing
+
+- [OK] 沿用已通过的210项Rust、64项Node、原生/WASM Clippy和Trunk构建；合并后的运行文件与已验证工作提交一致。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 在实际GPU复核模型、镜头和手感；任务继续保留未完成的视觉验收，不误标为通过。
