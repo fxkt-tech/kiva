@@ -631,6 +631,10 @@ impl AvatarAssets {
         source_deltas: Option<&[Mat4]>,
         bone: &SourceBone,
     ) -> Transform {
+        if rig.reference_pose {
+            // AV03 preserves the imported source rest separately from IBM.
+            return Transform::from_matrix(bone.bind);
+        }
         let fallback = Transform::from_matrix(deltas[bone.driver] * bone.bind);
         rig.source.as_ref().map_or(fallback, |source| {
             let matrix = if self.appearance != Appearance::Choulingke {
@@ -652,22 +656,84 @@ impl AvatarAssets {
     /// Converted accessory vertices use body axes, so apply the spine's motion
     /// delta rather than the CC0 skeleton's authored bone-axis rotation.
     pub(super) fn body_mount(&self, rig: &RigPose) -> Transform {
-        self.posed_drivers(rig)[self.spine]
+        self.evaluated_drivers(rig)[self.spine]
+    }
+
+    /// Semantic body axes evaluated from the very same rest and motion deltas
+    /// as the skin. Source and structural previews therefore expose the actual
+    /// left hand and spine instead of unrelated CC0 reference positions.
+    pub(super) fn evaluated_drivers(&self, rig: &RigPose) -> Vec<Transform> {
+        let fallback = if rig.reference_pose {
+            self.drivers
+                .iter()
+                .map(|driver| Transform::from_translation(driver.anchor))
+                .collect()
+        } else {
+            self.posed_drivers(rig)
+        };
+        let Some(source) = rig.source.as_ref().filter(|_| !rig.reference_pose) else {
+            return fallback;
+        };
+        let source_pose = self.source_driver_pose(&source.model);
+        fallback
+            .iter()
+            .zip(source_pose)
+            .enumerate()
+            .map(|(index, (fallback, mut posed))| {
+                if self.appearance == Appearance::Choulingke
+                    && let Some(source_index) = self.drivers[index].source
+                {
+                    let matrix = source.model[source_index];
+                    posed.translation = matrix.w_axis.xyz();
+                    posed.rotation =
+                        Transform::from_matrix(matrix * self.drivers[index].source_inverse_rest)
+                            .rotation;
+                }
+                blend(*fallback, posed, source.weight)
+            })
+            .collect()
+    }
+
+    pub(super) fn structural_bones(&self, rig: &RigPose) -> Vec<(Option<usize>, Transform)> {
+        self.drivers
+            .iter()
+            .zip(self.evaluated_drivers(rig))
+            .map(|(driver, pose)| (driver.parent, pose))
+            .collect()
     }
 
     pub(super) fn attachment_pose(&self, rig: &RigPose) -> Vec<Transform> {
-        let drivers = self.posed_drivers(rig);
+        let drivers = self.evaluated_drivers(rig);
         let mut result = rig.model.clone();
-        if self.appearance == Appearance::Bailingmiao {
+        if rig.reference_pose {
             for (driver, posed) in self.drivers.iter().zip(&drivers) {
                 result[driver.bone] = Transform::from_translation(posed.translation)
+                    .with_rotation(driver.reference.rotation);
+            }
+            return result;
+        }
+        let fallback_drivers = self.posed_drivers(rig);
+        if self.appearance == Appearance::Bailingmiao {
+            for (driver, posed) in self.drivers.iter().zip(&fallback_drivers) {
+                result[driver.bone] = Transform::from_translation(posed.translation)
                     .with_rotation(posed.rotation * driver.reference.rotation);
+            }
+        }
+        // Keep the established right-hand path below byte-for-byte equivalent;
+        // expose the other semantic joints without introducing viewer offsets.
+        for (index, driver) in self.drivers.iter().enumerate() {
+            if index == self.right_hand {
+                continue;
+            }
+            result[driver.bone].translation = drivers[index].translation;
+            if rig.source.is_some() {
+                result[driver.bone].rotation = drivers[index].rotation * driver.reference.rotation;
             }
         }
         let hand = &self.drivers[self.right_hand];
         // Preserve the authored hand orientation used by weapon corrections and
         // ranged aiming; only align its attachment position to the retargeted hand.
-        result[hand.bone].translation = drivers[self.right_hand].translation;
+        result[hand.bone].translation = fallback_drivers[self.right_hand].translation;
         if let Some(source) = &rig.source {
             let source_hand = if self.appearance != Appearance::Choulingke {
                 let posed = self.source_driver_pose(&source.model)[self.right_hand];
@@ -1157,6 +1223,105 @@ mod tests {
             }
         }
         assert!(changed(&sampled, &original) < 0.00001);
+    }
+
+    #[test]
+    fn source_semantic_hands_and_spine_match_actual_skin_at_each_blend_weight() {
+        let mut app = test_app(false);
+        let world = app.world_mut();
+        for appearance in [
+            Appearance::Choulingke,
+            Appearance::Lihuowang,
+            Appearance::Bailingmiao,
+        ] {
+            let owner = world.spawn(Transform::IDENTITY).id();
+            spawn_with_appearance(world, owner, appearance);
+            let assets = AvatarAssets::cached(
+                world.get_resource::<AvatarAssets>(),
+                world.get_resource::<AvatarAssetCache>(),
+                appearance,
+            )
+            .unwrap()
+            .clone();
+            let library = world.resource::<SourceAnimationLibrary>();
+            let clip = library.clip("skill_ylk_1").unwrap();
+            let source_model = library.model_pose(&library.sample(clip, 1.35, false, false));
+            for weight in [0.0, 0.5, 1.0] {
+                let mut rig = RigPose::new(world.resource::<AnimationLibrary>());
+                rig.source = Some(super::super::animation::SourcePose {
+                    model: source_model.clone(),
+                    weight,
+                });
+                let semantic = assets.attachment_pose(&rig);
+                let deltas = assets.pose_deltas(&rig);
+                let source_deltas = assets.source_deltas(&rig);
+                for index in [assets.right_hand, assets.left_hand, assets.spine] {
+                    let driver = &assets.drivers[index];
+                    let bone = assets
+                        .parts
+                        .iter()
+                        .filter(|part| !part.blade)
+                        .flat_map(|part| &part.bones)
+                        .filter(|bone| bone.driver == index)
+                        .min_by(|a, b| {
+                            a.bind
+                                .w_axis
+                                .xyz()
+                                .distance_squared(driver.anchor)
+                                .total_cmp(&b.bind.w_axis.xyz().distance_squared(driver.anchor))
+                        })
+                        .unwrap();
+                    let local_anchor = bone.bind.inverse().transform_point3(driver.anchor);
+                    let palette = assets.joint_pose(&rig, &deltas, source_deltas.as_deref(), bone);
+                    let actual = palette.transform_point(local_anchor);
+                    assert!(
+                        semantic[driver.bone].translation.distance(actual) < 0.0003,
+                        "{appearance:?} driver {index} weight {weight}: semantic {:?}, skin {:?}",
+                        semantic[driver.bone].translation,
+                        actual
+                    );
+                }
+                // Existing weapon orientation/offset must remain identical to
+                // the previously established right-wrist path.
+                let fallback = assets.posed_drivers(&rig);
+                let hand = &assets.drivers[assets.right_hand];
+                let mut previous = rig.model[hand.bone];
+                if appearance == Appearance::Bailingmiao {
+                    previous.rotation =
+                        fallback[assets.right_hand].rotation * hand.reference.rotation;
+                    previous.scale = Vec3::ONE;
+                }
+                previous.translation = fallback[assets.right_hand].translation;
+                let source_hand = if appearance == Appearance::Choulingke {
+                    let posed = Transform::from_matrix(source_model[assets.source_hand]);
+                    Transform::from_translation(posed.translation).with_rotation(
+                        posed.rotation
+                            * assets.source_hand_rest.inverse()
+                            * hand.reference.rotation,
+                    )
+                } else {
+                    let posed = assets.source_driver_pose(&source_model)[assets.right_hand];
+                    Transform::from_translation(posed.translation)
+                        .with_rotation(posed.rotation * hand.reference.rotation)
+                };
+                assert_eq!(semantic[hand.bone], blend(previous, source_hand, weight));
+            }
+            let mut rig = RigPose::new(world.resource::<AnimationLibrary>());
+            rig.reference_pose = true;
+            let deltas = assets.pose_deltas(&rig);
+            for bone in assets
+                .parts
+                .iter()
+                .filter(|part| !part.blade)
+                .flat_map(|part| &part.bones)
+            {
+                assert_eq!(
+                    assets.joint_pose(&rig, &deltas, None, bone),
+                    Transform::from_matrix(bone.bind)
+                );
+            }
+            world.despawn(owner);
+        }
     }
 
     #[test]

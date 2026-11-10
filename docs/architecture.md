@@ -58,7 +58,7 @@ Avian 的 Position / Rotation / 速度是唯一运动权威；`Body` 和 `Physic
    暂停或命中停顿时统一取当前状态，避免 fixed overstep 持续循环导致模型 / 镜头往复抖动；命中停顿冻结骨骼时钟。
    专用冲击表现及音效消费在骨骼附件后、HUD / 相机前执行；冲击粒子和后坐可在命中停顿中继续，失锁时冻结。
    相机读取同一个显示根位置，朝向使用当前 `ViewYaw`，不追加平滑延迟。
-5. Bevy 完成全局变换传播和渲染。首次进入由渲染子应用在真实提交／present后检查GameCamera输出、非空可见网格／材质准备与管线就绪，再通过跨世界信号由主线程放行Web入口；空队列／实体装配完成不能替代。
+5. Bevy 完成全局变换传播和渲染。首次进入由渲染子应用在真实提交／present后检查MainView输出、非空可见网格／材质准备与管线就绪，再通过跨世界信号由主线程放行Web入口；验收页另校验当前选择版本和实际可见主体，空队列／实体装配完成不能替代。
 
 ## 控制与构图
 
@@ -139,7 +139,9 @@ RigPose.local 保存蹲伏 IK 前姿态，IK 只作用于生成 model 的副本�
 
 ## 浏览器边界
 
-`startup.js`、`loader.js`、`input.js`、`hud.js`、`enemies.js`、`appearance.js`、`audio.js` 必须同步安装在 Trunk 生成的模块之前，脚本不依赖 DOM 已创建。
+`?view=model` 在Bevy App创建前选择独立验收组合，不安装SimulationPlugin、地图、AI、战斗HUD、音频和游戏鼠标捕获。查看页与游戏共用资产、`RigPose`单帧驱动、蒙皮和武器挂接，Rust持有唯一播放状态；固定60Hz单体场景重放用于暂停／seek，不能冒称任意真实游玩的帧录制。源片段另作对照，具体操作见[验收页说明](model-viewer.md)，执行契约见[客户端规范](../.trellis/spec/client/model-viewer.md)。
+
+`mode.js`首先固定页面模式，`startup.js`、`loader.js`、`input.js`、`hud.js`、`enemies.js`、`appearance.js`、`audio.js`、`viewer.js`必须同步安装在Trunk生成的模块之前，脚本不依赖DOM已创建；游戏专属脚本在查看模式下退出。
 Trunk入口通过专用loader包装自身WASM Response，保留流式编译并报告真实下载字节；可用分母才显示百分比，初始化／画面准备显示明确阶段。按钮加载时可见但disabled，最终ready后用户点击申请鼠标捕获，请求期间显示进入中；错误可重载或重试，Esc恢复沿用ready。具体接口与失败边界见[启动规范](../.trellis/spec/client/startup.md)。
 `window.kivaAudio.playEffect(name)` 消费已结算的挥击、命中和防御，`playSniperShot()` 消费妹妹真实鸟铳射击；弓发射临时复用共享 attack cue；伴随的狙击特效事件不重复发声。`setActive(bool)` 同步模拟暂停，可信进入点击 / 画布按下解锁 Web Audio 并缓存随包音频。随包BGM使用官方愁铃客发行录音《惊惧一夜》，原文件/转码来源记录在assets/audio/music-manifest.json，运行时不连接音乐站点；该循环不是已恢复的原bank分轨/阶段切换。音乐至多一条循环，暂停保留播放位置并释放节点；短音效至多 4 声部，未解锁/暂停/失败的声音丢弃，不延迟重放。原生播放为空操作，无新增平台音频依赖。
 `window.kivaEnemies.takeMode()` 返回并清空待处理模式（0=无、1=靶子、2=实战），`render(mode)` 显示 Rust 当前模式；模式请求在固定循环前处理，不受暂停门控。

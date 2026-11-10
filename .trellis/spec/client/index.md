@@ -4,6 +4,8 @@
 
 `src/client/`、`web/`、`index.html` 拥有输入、蒙皮角色/环境表现和镜头，修改控制 / 构图 / Web 启动时阅读。首次加载与进入详见 [startup.md](startup.md)，输入详见 [input.md](input.md)，双角色战斗表现详见 [combat-presentation.md](combat-presentation.md)，指定模型转换／女性驱动／武器格式见 [model-assets.md](model-assets.md)。
 
+`?view=model` 为独立的模型／武器／动作验收App，共用真实游戏姿态和挂点，不装配模拟或游戏输入；入口、时间轴、部件显隐与共享计算契约见 [model-viewer.md](model-viewer.md)。
+
 ## Signatures
 
 - `controls::ViewYaw::yaw()` 供 scene 和 camera 读取；鼠标样本只能由 controls 消费一次。
@@ -38,7 +40,7 @@ scene 根据 Body 的三维脚底前后快照和 fixed overstep 插值，camera 
 `impact::update` 在骨骼附件之后、相机之前消费专用事件；粒子和镜头后坐在 HitStop 期间继续表现，失锁暂停时冻结，临时实体到期回收并复用共享资产。普通特效系统忽略这两种专用事件。
 网格 / 材质 / 纹理复用；使用随包角色二进制和 CC0 动画资源，音频仅加载同源随包文件，移动权威在模拟。
 
-Web startup／loader／input／hud／enemies／appearance／audio 脚本先于 Trunk 模块同步安装，DOM 就绪后才绑定元素。专用WASM流报告真实下载进度；按钮加载时可见但disabled，Rust观察首轮必要渲染准备与提交后才最终ready。捕获进行中有反馈，确认／失败与恢复保持原输入契约；完整门槛见 [startup.md](startup.md)。
+Web mode脚本最先固定页面模式，startup／loader／input／hud／enemies／appearance／audio／viewer先于Trunk模块同步安装，DOM就绪后才绑定元素；游戏专属脚本在查看模式先退出。专用WASM流报告真实下载进度；游戏按钮加载时可见但disabled，Rust观察首轮必要渲染准备与提交后才最终ready。捕获进行中有反馈，确认／失败与恢复保持原输入契约；完整门槛见[startup.md](startup.md)。
 音效仅在可信进入点击或画布按下时创建 / 恢复 Web Audio；随包音频异步解码一次，原有枪声保留合成缓存。至多 4 个短音效声部及 1 个 BGM 循环，gain 各 0.18，暂停立即停止/回收短音效并保存 BGM 播放位置；恢复只创建一条循环。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
 进入卡片可选择靶子 / 实战，捕获期间 F2 切换；按钮请求在暂停或引擎加载时保留至一次消费，模式权威在玩法层。
 外观卡片可选择愁铃客 / 李火旺，捕获期间 F3 切换；外观只决定哥哥身体／服饰，不改变 WeaponPair 或武器。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。哥哥默认李火旺；`Appearance::default()` 仍为愁铃客，供敌人使用。白灵淼仅用于妹妹，不进入 F3 或 Web 选择枚举；换装不影响敌人、妹妹或当前武器。
@@ -111,7 +113,7 @@ C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失
 
 `environment` 只消费Level同源地形/竹干/岩石，20个聚合网格、7个ForestMaterial；14张原竹叶/竹皮/落叶/土壤/草苔/草丛base与normal随包复用，sRGB/linear显式区分，alpha卡片有UV/tangent。ForestMaterial=ExtendedMaterial<StandardMaterial,ForestSurface>，保留标准PBR/雾、蒙皮/阴影路径；地表只通过分层纹理和有界mask区分干土/湿土/非金属积水，不用clearcoat或金属度伪造湿地。12组装饰风动不改变碰撞竹干，暂停冻结时钟。重复不透明纹理由texture_mips生成完整mip，颜色在线性空间平均、法线重归一；不直接给裁切atlas平均alpha以免远草消失。半球环境光/冷色填光/指数雾为Kiva美术适配；原编译shader用于验证mix通道，不冒称原HLSL/完整BRDF已移植。场景是主题重建，来源与局限见assets/choulingke/README.md。
 
-rendering仅给GameCamera安装HDR、Msaa::Off、FXAA、DepthPrepass、DeferredPrepass和SSR，默认不透明材质deferred；透光裁切植被显式Forward。不能改变相机姿态/FOV或模拟。SSR只对屏幕内深度/已完成deferred光照有效，前向透光物体和屏幕外物体不保证倒影；验收需要真实GPU pass记录与GBuffer读回，只有shader组合测试不够。湿土粗糙度不进入SSR，仅平滑积水进入，避免高频normal造成随机闪点。
+rendering共用MainView标记和HDR、Msaa::Off、FXAA、DepthPrepass、DeferredPrepass，默认不透明材质deferred；游戏GameCamera另装SSR，验收页不装SSR。透光裁切植被显式Forward。不能改变相机姿态/FOV或模拟。SSR只对屏幕内深度/已完成deferred光照有效，前向透光物体和屏幕外物体不保证倒影；验收需要真实GPU pass记录与GBuffer读回，只有shader组合测试不够。湿土粗糙度不进入SSR，仅平滑积水进入，避免高频normal造成随机闪点。
 
 当前BGM为官方艺人发行的愁铃客《惊惧一夜》，audio/music.json.file=choulingke-bgm.ogg，原MP3及随包Ogg哈希/来源见music-manifest；加载仅同源、可信点击后解码。不能称其为已恢复的本地WEM映射、原循环点或原阶段切换。attack为已核Cue/事件/媒体的原长兵器共享适配，hit/deflect仍为自制程序声，来源逐项见effects-manifest；原长刀/成功卸势完整映射仍缺。离线导入器只写其拥有的attack，程序生成器只重建hit/deflect并核对保留原attack，不能互相覆写；不得用自制或共用武器声冒称愁铃客专属。新增声音必须逐项注明实际来源，再配置本目录简单文件名并随包复制。
 

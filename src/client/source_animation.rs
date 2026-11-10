@@ -251,6 +251,22 @@ impl SourceAnimationLibrary {
         self.clip_names.get(name).copied()
     }
 
+    pub(super) fn clips(&self) -> Vec<(&str, f32)> {
+        let mut clips: Vec<_> = self
+            .clip_names
+            .iter()
+            .map(|(name, &index)| (name.as_str(), self.clips[index].duration))
+            .collect();
+        clips.sort_by(|a, b| a.0.cmp(b.0));
+        clips
+    }
+
+    pub(super) fn clip_name(&self, index: usize) -> Option<&str> {
+        self.clip_names
+            .iter()
+            .find_map(|(name, &value)| (value == index).then_some(name.as_str()))
+    }
+
     /// Sparse missing channels use actual local rest TRS, never a flat identity.
     /// Strip only planar root travel. Source vertical bends remain visible;
     /// airborne simulation supplies the world lift exactly once.
@@ -261,14 +277,8 @@ impl SourceAnimationLibrary {
         looping: bool,
         airborne: bool,
     ) -> Vec<Transform> {
+        let time = self.sample_time(clip, seconds, looping) * 1000.0;
         let clip = &self.clips[clip];
-        let time = if !seconds.is_finite() {
-            0.0
-        } else if looping {
-            seconds.rem_euclid(clip.duration)
-        } else {
-            seconds.clamp(0.0, clip.duration)
-        } * 1000.0;
         let mut local: Vec<_> = self.joints.iter().map(|joint| joint.rest).collect();
         for track in &clip.tracks {
             let transform = &mut local[track.joint];
@@ -291,6 +301,17 @@ impl SourceAnimationLibrary {
         }
         root.rotation = clip.root_heading * root.rotation;
         local
+    }
+
+    pub(super) fn sample_time(&self, clip: usize, seconds: f32, looping: bool) -> f32 {
+        let clip = &self.clips[clip];
+        if !seconds.is_finite() {
+            0.0
+        } else if looping {
+            seconds.rem_euclid(clip.duration)
+        } else {
+            seconds.clamp(0.0, clip.duration)
+        }
     }
 
     pub(super) fn model_pose(&self, local: &[Transform]) -> Vec<Mat4> {

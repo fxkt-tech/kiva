@@ -1,6 +1,7 @@
 /* Read-only snapshots: simulation owns targets, health, action availability and all timers. */
 (() => {
   "use strict";
+  if (window.kivaPage?.isViewer()) return;
   let latest = null;
   let target = null;
   let loadout = { set: 1, maximum: 1000, attack: false, melee: false, ranged: false, guard: false, combo: false };

@@ -1,5 +1,6 @@
 (() => {
   "use strict";
+  if (window.kivaPage?.isViewer()) return;
 
   const MAX_VOICES = 4;
   const voices = new Set();

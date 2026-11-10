@@ -92,6 +92,17 @@ pub(super) fn blend(a: Transform, b: Transform, weight: f32) -> Transform {
     }
 }
 impl AnimationLibrary {
+    /// Stable catalog from the loaded assets, rather than a second name list.
+    pub(super) fn clips(&self) -> Vec<(&str, f32)> {
+        let mut clips: Vec<_> = self
+            .clips
+            .iter()
+            .map(|(name, clip)| (name.as_str(), clip.duration))
+            .collect();
+        clips.sort_by(|a, b| a.0.cmp(b.0));
+        clips
+    }
+
     pub fn bone(&self, name: &str) -> usize {
         self.bones
             .iter()
@@ -103,11 +114,7 @@ impl AnimationLibrary {
     }
     pub fn sample(&self, name: &str, seconds: f32, looping: bool) -> Vec<Transform> {
         let clip = &self.clips[name];
-        let seconds = if looping {
-            seconds.rem_euclid(clip.duration)
-        } else {
-            seconds.clamp(0.0, clip.duration)
-        };
+        let seconds = self.sample_time(name, seconds, looping);
         let frame = seconds / clip.duration * (clip.frames.len() - 1) as f32;
         let lo = frame.floor() as usize;
         let hi = (lo + 1).min(clip.frames.len() - 1);
@@ -116,6 +123,14 @@ impl AnimationLibrary {
             .zip(&clip.frames[hi])
             .map(|(&a, &b)| blend(a, b, frame.fract()))
             .collect()
+    }
+    pub(super) fn sample_time(&self, name: &str, seconds: f32, looping: bool) -> f32 {
+        let duration = self.clips[name].duration;
+        if looping {
+            seconds.rem_euclid(duration)
+        } else {
+            seconds.clamp(0.0, duration)
+        }
     }
     pub fn model_pose(&self, local: &[Transform]) -> Vec<Transform> {
         assert_eq!(local.len(), self.bones.len());

@@ -1,5 +1,8 @@
 //! Authored skeletal animation driven by read-only simulation snapshots and actor-tagged events.
 mod poses;
+mod preview;
+
+pub(super) use preview::{PreviewClip, PreviewRig, preview_catalog};
 
 use bevy::prelude::*;
 
@@ -31,18 +34,37 @@ enum PoseState {
     Deflected,
 }
 
+#[derive(Clone)]
 struct Playback {
     kind: Gesture,
     elapsed: f32,
 }
 
+#[derive(Clone)]
 pub(super) struct SourcePose {
     pub(super) model: Vec<Mat4>,
     pub(super) weight: f32,
 }
 
-#[derive(Component)]
+/// Read alongside the actual sampling branches; the web UI never derives crops.
+#[derive(Clone, Default)]
+pub(super) struct PoseTrace {
+    pub(super) state: &'static str,
+    pub(super) cc0_clip: Option<String>,
+    pub(super) cc0_seconds: f32,
+    pub(super) source_clip: Option<String>,
+    pub(super) source_seconds: f32,
+    pub(super) source_weight: f32,
+    pub(super) transition: f32,
+    pub(super) crouch_weight: f32,
+    pub(super) companion_ik: bool,
+}
+
+#[derive(Component, Clone)]
 pub(super) struct RigPose {
+    /// View the asset's imported current reference, which need not equal bind.
+    pub(super) reference_pose: bool,
+    trace: PoseTrace,
     pub(super) source: Option<SourcePose>,
     /// Render-only grip targets, retargeted with each companion body's own lengths.
     pub(super) companion_hands: Option<[Vec3; 2]>,
@@ -71,6 +93,13 @@ impl RigPose {
     pub fn new(library: &AnimationLibrary) -> Self {
         let local = poses::idle(library, 0.0, WeaponMode::Melee);
         Self {
+            reference_pose: false,
+            trace: PoseTrace {
+                state: "idle",
+                cc0_clip: Some("Sword_Idle".into()),
+                transition: 1.0,
+                ..default()
+            },
             source: None,
             companion_hands: None,
             source_local: None,
@@ -95,6 +124,49 @@ impl RigPose {
         }
     }
 
+    pub(super) fn trace(&self) -> &PoseTrace {
+        &self.trace
+    }
+
+    /// One display frame. Both adapters supply snapshots/cues; state priority,
+    /// cue deduplication, crops, transitions and IK stay here.
+    fn frame(
+        &mut self,
+        library: &AnimationLibrary,
+        source: Option<&SourceAnimationLibrary>,
+        frame: DisplayFrame,
+        events: impl IntoIterator<Item = (u64, u64, CombatEffect)>,
+        dt: f32,
+    ) {
+        self.reference_pose = false;
+        self.companion_hands = None;
+        if let Some((action_id, effect)) = frame.action
+            && action_id != self.action_id
+        {
+            if let Some(effect) = effect {
+                self.observe(library, effect, frame.pair, false);
+            }
+            self.action_id = action_id;
+        }
+        let previous = self.event_sequence;
+        for (sequence, action_id, effect) in events {
+            if sequence > previous
+                && !(action_id == self.action_id
+                    && matches!(
+                        effect,
+                        CombatEffect::Melee | CombatEffect::Hammer | CombatEffect::ChainSweep
+                    ))
+            {
+                self.observe(library, effect, frame.pair, frame.blade);
+            }
+        }
+        self.event_sequence = frame.latest_sequence;
+        self.advance(library, frame.input, dt);
+        if let Some(source) = source {
+            self.advance_source(source, frame.input, dt);
+        }
+    }
+
     pub(super) fn sample_companion(
         &mut self,
         library: &AnimationLibrary,
@@ -105,7 +177,6 @@ impl RigPose {
         let elapsed = state.elapsed;
         let shots = state.shot_count;
         let kind = state.kind;
-        let mut local = poses::idle(library, elapsed, WeaponMode::Ranged);
         let markers: &[f32] = match kind {
             ActionKind::HammerCombo => &[0.30, 0.42, 0.54],
             ActionKind::ChainCombo => &[0.12, 0.28, 0.44],
@@ -119,6 +190,34 @@ impl RigPose {
         let recoil = last.map_or(0.0, |time| {
             (1.0 - (elapsed - time) / 0.10).clamp(0.0, 1.0) * 0.06
         });
+        self.companion_pose(library, elapsed, pitch, grips, recoil);
+    }
+
+    /// Inspect only the companion hold/aim calculation, with no shot sequence.
+    pub(super) fn sample_companion_hold(
+        &mut self,
+        library: &AnimationLibrary,
+        elapsed: f32,
+        pitch: f32,
+        grips: [Vec3; 2],
+    ) {
+        self.source = None;
+        self.source_local = None;
+        self.source_from = None;
+        self.source_clip = None;
+        self.companion_pose(library, elapsed, pitch, grips, 0.0);
+    }
+
+    fn companion_pose(
+        &mut self,
+        library: &AnimationLibrary,
+        elapsed: f32,
+        pitch: f32,
+        grips: [Vec3; 2],
+        recoil: f32,
+    ) {
+        self.reference_pose = false;
+        let mut local = poses::idle(library, elapsed, WeaponMode::Ranged);
         poses::aim_ranged(library, &mut local, pitch, recoil);
         self.model = library.model_pose(&local);
         // Palette retargeting solves the female arms against these weapon-local
@@ -128,6 +227,14 @@ impl RigPose {
             let wrist = library.bone(&format!("hand_{side}"));
             self.model[wrist].translation = hand;
         }
+        self.trace = PoseTrace {
+            state: "companion hold/aim",
+            cc0_clip: Some("Sword_Idle".into()),
+            cc0_seconds: library.sample_time("Sword_Idle", elapsed, true),
+            companion_ik: true,
+            transition: 1.0,
+            ..default()
+        };
     }
 
     /// Uses the already selected display state and clock. These are explicit
@@ -201,6 +308,8 @@ impl RigPose {
         let selected = selection
             .and_then(|(name, time, looping)| library.clip(name).map(|clip| (clip, time, looping)));
         if let Some((clip, seconds, looping)) = selected {
+            self.trace.source_clip = library.clip_name(clip).map(str::to_owned);
+            self.trace.source_seconds = library.sample_time(clip, seconds, looping);
             let mut target = library.sample(clip, seconds, looping, input.airborne);
             // A dodge uses one forward source clip; the simulation's accepted
             // direction supplies only this display-space facing adjustment.
@@ -234,8 +343,11 @@ impl RigPose {
                 self.source_local = None;
                 self.source_from = None;
                 self.source_clip = None;
+                self.trace.source_clip = None;
+                self.trace.source_seconds = 0.0;
             }
         }
+        self.trace.source_weight = self.source.as_ref().map_or(0.0, |source| source.weight);
     }
 
     fn observe(
@@ -353,9 +465,10 @@ impl RigPose {
                 PoseState::Parry => 0.85 * input.speed / 3.8,
                 _ => 0.0,
             };
-        let mut target = match state {
-            PoseState::Idle => poses::idle(library, self.clock, input.mode),
-            PoseState::Walk | PoseState::Run => library.sample(
+        let (mut target, sampled) = match state {
+            PoseState::Idle => trace_pose(poses::idle_with_trace(library, self.clock, input.mode)),
+            PoseState::Walk | PoseState::Run => sample_traced(
+                library,
                 if state == PoseState::Run {
                     "Jog_Fwd_Loop"
                 } else {
@@ -364,49 +477,80 @@ impl RigPose {
                 self.gait_time,
                 true,
             ),
-            PoseState::Air(jumps) => airborne_pose(library, self.air_time, jumps),
-            PoseState::Land => library.sample("Jump_Land", 0.15 + self.clock * 4.0, false),
+            // A two-clip airborne blend has no single CC0 source sample.
+            PoseState::Air(jumps) => (airborne_pose(library, self.air_time, jumps), None),
+            PoseState::Land => sample_traced(library, "Jump_Land", 0.15 + self.clock * 4.0, false),
             PoseState::Dodge => {
-                let mut pose = library.sample(
+                let (mut pose, sample) = sample_traced(
+                    library,
                     "Roll",
                     input.dodge_elapsed / 0.42 * library.duration("Roll"),
                     false,
                 );
                 pose[0].rotation = Quat::from_rotation_y(input.dodge_yaw) * pose[0].rotation;
-                pose
+                (pose, sample)
             }
             PoseState::Crouch => {
                 if input.speed > 0.01 {
-                    let mut pose = library.sample("Walk_Loop", self.gait_time, true);
+                    let (mut pose, sample) =
+                        sample_traced(library, "Walk_Loop", self.gait_time, true);
                     poses::hold_guard(library, &mut pose, input.mode);
-                    pose
+                    (pose, sample)
                 } else {
-                    poses::idle(library, self.clock, input.mode)
+                    trace_pose(poses::idle_with_trace(library, self.clock, input.mode))
                 }
             }
             PoseState::Slide => {
-                let mut pose = library.sample("Sword_Idle", 0.0, false);
+                let (mut pose, sample) = sample_traced(library, "Sword_Idle", 0.0, false);
                 poses::hold_guard(library, &mut pose, input.mode);
                 pose[0].rotation = Quat::from_rotation_y(input.slide_yaw) * pose[0].rotation;
-                pose
+                (pose, sample)
             }
-            PoseState::Parry => library.sample("Sword_Block", 0.2 + self.clock.min(0.2), false),
-            PoseState::Aim => poses::idle(library, self.clock, WeaponMode::Ranged),
-            PoseState::Attack(kind) => poses::gesture(
+            PoseState::Parry => {
+                sample_traced(library, "Sword_Block", 0.2 + self.clock.min(0.2), false)
+            }
+            PoseState::Aim => trace_pose(poses::idle_with_trace(
+                library,
+                self.clock,
+                WeaponMode::Ranged,
+            )),
+            PoseState::Attack(kind) => trace_pose(poses::gesture_with_trace(
                 library,
                 kind,
-                self.playback
-                    .as_ref()
-                    .map_or(0.0, |playback| playback.elapsed),
+                self.playback.as_ref().map_or(0.0, |p| p.elapsed),
                 input.mode,
-            ),
-            PoseState::Deflected => poses::gesture(library, Gesture::HeavyHit, 0.18, input.mode),
-            PoseState::Down => library.sample(
+            )),
+            PoseState::Deflected => trace_pose(poses::gesture_with_trace(
+                library,
+                Gesture::HeavyHit,
+                0.18,
+                input.mode,
+            )),
+            PoseState::Down => sample_traced(
+                library,
                 "Death01",
                 self.clock / 0.8 * library.duration("Death01"),
                 false,
             ),
         };
+        self.trace.state = match state {
+            PoseState::Idle => "idle",
+            PoseState::Walk => "walk",
+            PoseState::Run => "run",
+            PoseState::Air(_) => "airborne blend",
+            PoseState::Land => "land",
+            PoseState::Dodge => "dodge",
+            PoseState::Crouch => "crouch",
+            PoseState::Slide => "slide",
+            PoseState::Parry => "defense",
+            PoseState::Aim => "aim",
+            PoseState::Attack(_) => "gesture",
+            PoseState::Down => "death",
+            PoseState::Deflected => "deflected",
+        };
+        self.trace.cc0_clip = sampled.as_ref().map(|sample| sample.name.into());
+        self.trace.cc0_seconds = sampled.map_or(0.0, |sample| sample.seconds);
+        self.trace.companion_ik = false;
         if matches!(state, PoseState::Air(_)) {
             poses::hold_guard(library, &mut target, input.mode);
         }
@@ -444,6 +588,7 @@ impl RigPose {
             _ => 0.12,
         };
         let weight = poses::smooth(self.transition / seconds);
+        self.trace.transition = weight;
         let mut posed: Vec<_> = self
             .from
             .iter()
@@ -470,6 +615,7 @@ impl RigPose {
             poses::crouch_pose(library, &mut posed, poses::smooth(self.crouch_weight));
         }
         self.model = library.model_pose(&posed);
+        self.trace.crouch_weight = self.crouch_weight;
     }
 }
 
@@ -497,6 +643,35 @@ struct Inputs {
     sniper: Option<SniperPose>,
     mode: WeaponMode,
     boss_deflected: Option<(f32, f32)>,
+}
+
+struct DisplayFrame {
+    input: Inputs,
+    pair: WeaponPair,
+    blade: bool,
+    action: Option<(u64, Option<CombatEffect>)>,
+    latest_sequence: u64,
+}
+
+fn trace_pose(
+    (pose, trace): (Vec<Transform>, poses::ClipSample),
+) -> (Vec<Transform>, Option<poses::ClipSample>) {
+    (pose, Some(trace))
+}
+
+fn sample_traced(
+    library: &AnimationLibrary,
+    name: &'static str,
+    seconds: f32,
+    looping: bool,
+) -> (Vec<Transform>, Option<poses::ClipSample>) {
+    (
+        library.sample(name, seconds, looping),
+        Some(poses::ClipSample {
+            name,
+            seconds: library.sample_time(name, seconds, looping),
+        }),
+    )
 }
 
 fn airborne_pose(library: &AnimationLibrary, clock: f32, jumps: u8) -> Vec<Transform> {
@@ -568,35 +743,15 @@ pub(super) fn animate(
         };
         let set = combat.map_or(WeaponPair::HammerMusket, Combatant::weapon_pair);
         let mode = WeaponMode::Melee;
-        if let Some(action) = combat.and_then(Combatant::active_action)
-            && action.action_id != rig.action_id
-        {
+        let action = combat.and_then(Combatant::active_action).map(|action| {
             let effect = match action.kind {
                 ActionKind::Melee => Some(CombatEffect::Melee),
                 ActionKind::HammerSlam => Some(CombatEffect::Hammer),
                 ActionKind::ChainSweep => Some(CombatEffect::ChainSweep),
                 _ => None,
             };
-            if let Some(effect) = effect {
-                rig.observe(&library, effect, set, false);
-            }
-            rig.action_id = action.action_id;
-        }
-        let previous_sequence = rig.event_sequence;
-        for event in feedback
-            .events()
-            .filter(|event| event.sequence > previous_sequence && event.actor == view.owner)
-        {
-            if !(event.action_id == rig.action_id
-                && matches!(
-                    event.kind,
-                    CombatEffect::Melee | CombatEffect::Hammer | CombatEffect::ChainSweep
-                ))
-            {
-                rig.observe(&library, event.kind, set, combat.is_none());
-            }
-        }
-        rig.event_sequence = latest_sequence;
+            (action.action_id, effect)
+        });
         let direction = motion.dodge_direction();
         let dodge_yaw = (-direction.x).atan2(-direction.y)
             - (-facing.direction().x).atan2(-facing.direction().y);
@@ -628,10 +783,22 @@ pub(super) fn animate(
         } else {
             time.delta_secs()
         };
-        rig.advance(&library, input, dt);
-        if let Some(source) = &source_library {
-            rig.advance_source(source, input, dt);
-        }
+        rig.frame(
+            &library,
+            source_library.as_deref(),
+            DisplayFrame {
+                input,
+                pair: set,
+                blade: combat.is_none(),
+                action,
+                latest_sequence,
+            },
+            feedback
+                .events()
+                .filter(|event| event.actor == view.owner)
+                .map(|event| (event.sequence, event.action_id, event.kind)),
+            dt,
+        );
     }
 }
 
@@ -728,6 +895,87 @@ mod tests {
             parrying: false,
             sniper: None,
             mode: WeaponMode::Melee,
+        }
+    }
+
+    #[test]
+    fn inspection_replay_matches_actual_game_adapter_through_attack_recovery_and_crouch() {
+        for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+            for id in ["game:idle", "game:attack", "game:crouch", "game:guard"] {
+                let mut app = app();
+                app.init_resource::<SourceAnimationLibrary>();
+                let actor = actor(&mut app);
+                app.world_mut()
+                    .entity_mut(actor)
+                    .insert(Combatant::new(pair));
+                // Resolve the actual floor/support and install simulation-owned
+                // companions/defense before starting the controlled input trace.
+                frame(&mut app, true);
+                let view = app.world().get::<TestView>(actor).unwrap().0;
+                let initial = RigPose::new(app.world().resource::<AnimationLibrary>());
+                *app.world_mut().get_mut::<RigPose>(view).unwrap() = initial;
+                match id {
+                    "game:attack" => app
+                        .world_mut()
+                        .get_mut::<CombatIntent>(actor)
+                        .unwrap()
+                        .request_attack(),
+                    "game:crouch" => app
+                        .world_mut()
+                        .get_mut::<ActionIntent>(actor)
+                        .unwrap()
+                        .request_crouch_toggle(),
+                    "game:guard" => {
+                        app.world_mut()
+                            .entity_mut(actor)
+                            .insert(DefenseState::default());
+                        app.world_mut()
+                            .get_mut::<DefenseState>(actor)
+                            .unwrap()
+                            .push_edge(crate::simulation::DefenseEdge::Pressed);
+                    }
+                    _ => {}
+                }
+                let mut preview = PreviewRig::new(app.world().resource::<AnimationLibrary>());
+                for index in 1..=90 {
+                    // Accept the real action once, then hold its read-only input
+                    // snapshot while rendering. This tests the real ECS adapter,
+                    // including active action notification and feedback filtering.
+                    frame(&mut app, index == 1);
+                    assert!(preview.seek(
+                        app.world().resource::<AnimationLibrary>(),
+                        app.world().resource::<SourceAnimationLibrary>(),
+                        id,
+                        pair,
+                        false,
+                        index as f32 / 60.0,
+                        false,
+                    ));
+                    let live = actor_rig(&app, actor);
+                    let inspected = preview.pose();
+                    assert_eq!(live.state, inspected.state, "{id} frame {index}");
+                    for (a, b) in live.model.iter().zip(&inspected.model) {
+                        assert!(
+                            a.translation.distance(b.translation) < 0.00001,
+                            "{id} frame {index}"
+                        );
+                        assert!(
+                            a.rotation.dot(b.rotation).abs() > 0.99999,
+                            "{id} frame {index}"
+                        );
+                    }
+                    match (&live.source, &inspected.source) {
+                        (Some(a), Some(b)) => {
+                            assert_eq!(a.weight, b.weight);
+                            assert_eq!(a.model, b.model);
+                        }
+                        (None, None) => {}
+                        _ => panic!("{id} frame {index}: mismatched source"),
+                    }
+                    assert_eq!(live.trace.source_clip, inspected.trace.source_clip);
+                    assert_eq!(live.trace.source_seconds, inspected.trace.source_seconds);
+                }
+            }
         }
     }
 

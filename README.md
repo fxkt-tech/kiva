@@ -18,6 +18,9 @@ make run
 本地使用 localhost，发布使用 HTTPS。游戏运行不需要 Node.js。
 自定义端口：`make run ARGS='--port 8080'`。开发服务由开发者自行启动与关闭。
 
+模型、武器与动作验收页：<http://localhost:3221/?view=model>。可切换角色与武器，暂停、逐帧和自由转动镜头，
+检查实际游戏的模型、蒙皮与挂接；使用方法和检查范围见[验收页说明](docs/model-viewer.md)。
+
 原生桌面使用 `cargo run --locked`，需要可用的图形环境。Linux 构建依赖包括
 `build-essential`、`pkg-config`、`libx11-dev` 和 `libxkbcommon-dev`。
 

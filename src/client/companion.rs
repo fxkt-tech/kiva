@@ -27,6 +27,30 @@ pub(super) struct SisterWeapon {
     pub pair: WeaponPair,
 }
 
+/// The actual muzzle/arrow-source frame used by both the live companion and
+/// pose inspection. A ranged model's origin is not its right-hand grip.
+pub(super) struct CompanionFrame {
+    pub(super) weapon: Transform,
+    pub(super) pitch: f32,
+    pub(super) grips: [Vec3; 2],
+}
+
+pub(super) fn local_frame(
+    root: Transform,
+    source: Vec3,
+    aim: Vec3,
+    model_grips: [Vec3; 2],
+) -> CompanionFrame {
+    let direction = (aim - source).normalize_or(root.rotation * Vec3::NEG_Z);
+    let rotation = Quat::from_rotation_arc(Vec3::NEG_Z, root.rotation.inverse() * direction);
+    let position = root.compute_affine().inverse().transform_point3(source);
+    CompanionFrame {
+        weapon: Transform::from_translation(position).with_rotation(rotation),
+        pitch: direction.y.atan2(direction.xz().length().max(0.001)),
+        grips: model_grips.map(|grip| position + rotation * grip),
+    }
+}
+
 pub(super) fn setup(world: &mut World) {
     let actors: Vec<_> = world
         .query::<(Entity, &Companion)>()
@@ -120,25 +144,19 @@ pub(super) fn sync(world: &mut World) {
             Transform::from_translation(position).with_rotation(Quat::from_rotation_y(yaw));
         *world.get_mut::<Transform>(root).unwrap() = root_transform;
         let source = state.source_position + (position - state.position);
-        let direction =
-            (state.aim_position - source).normalize_or(root_transform.rotation * Vec3::NEG_Z);
-        // Aim in the actor's frame so turning through PI cannot roll a bow
-        // upside down while its forward axis still appears to match the target.
-        let local_rotation =
-            Quat::from_rotation_arc(Vec3::NEG_Z, root_transform.rotation.inverse() * direction);
-        let local_source = root_transform
-            .compute_affine()
-            .inverse()
-            .transform_point3(source);
-        let pitch = direction.y.atan2(direction.xz().length().max(0.001));
-        let grips = WeaponModel::shared(world, state.pair, WeaponMode::Ranged)
-            .grips
-            .map(|grip| local_source + local_rotation * grip);
+        let frame = local_frame(
+            root_transform,
+            source,
+            state.aim_position,
+            WeaponModel::shared(world, state.pair, WeaponMode::Ranged).grips,
+        );
         world.resource_scope(|world, library: Mut<AnimationLibrary>| {
-            world
-                .get_mut::<RigPose>(root)
-                .unwrap()
-                .sample_companion(&library, &state, pitch, grips);
+            world.get_mut::<RigPose>(root).unwrap().sample_companion(
+                &library,
+                &state,
+                frame.pitch,
+                frame.grips,
+            );
         });
         let assets = AvatarAssets::cached(
             world.get_resource::<AvatarAssets>(),
@@ -173,8 +191,7 @@ pub(super) fn sync(world: &mut World) {
             } else {
                 Visibility::Hidden
             };
-            *world.get_mut::<Transform>(entity).unwrap() =
-                Transform::from_translation(local_source).with_rotation(local_rotation);
+            *world.get_mut::<Transform>(entity).unwrap() = frame.weapon;
         }
     }
 }
@@ -327,6 +344,23 @@ mod tests {
                     assert!(
                         (actual_rotation * Vec3::X).distance(expected_rotation * Vec3::X) < 0.0001
                     );
+                    let frame = local_frame(
+                        root_pose,
+                        source,
+                        source + expected_rotation * Vec3::NEG_Z * 5.0,
+                        WeaponModel::shared(&mut world, pair, WeaponMode::Ranged).grips,
+                    );
+                    assert_eq!(frame.weapon, weapon);
+                    let mut inspected = RigPose::new(world.resource::<AnimationLibrary>());
+                    inspected.sample_companion_hold(
+                        world.resource::<AnimationLibrary>(),
+                        0.0,
+                        frame.pitch,
+                        frame.grips,
+                    );
+                    let actual = world.get::<RigPose>(root).unwrap();
+                    assert_eq!(inspected.model, actual.model);
+                    assert_eq!(inspected.companion_hands, actual.companion_hands);
                 }
             }
         }

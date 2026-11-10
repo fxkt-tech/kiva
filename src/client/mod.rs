@@ -20,6 +20,7 @@ mod skeleton;
 mod source_animation;
 mod stickman;
 mod texture_mips;
+mod viewer;
 mod weapon_models;
 mod weapons;
 mod web;
@@ -68,62 +69,67 @@ pub(super) fn run() {
         }),
         ..default()
     }))
-    .add_plugins(forest_material::ForestMaterialPlugin)
-    .add_plugins(loading::StartupPlugin)
-    .add_plugins(crate::simulation::SimulationPlugin)
-    .insert_resource(ClearColor(Color::srgb_u8(15, 22, 29)))
-    .init_resource::<controls::ViewYaw>()
-    .init_resource::<controls::CaptureState>()
-    .init_resource::<skeleton::AnimationLibrary>()
-    .init_resource::<source_animation::SourceAnimationLibrary>()
-    .init_resource::<appearance::AppearanceSelection>()
-    .add_systems(
-        Startup,
-        (
-            loading::begin,
-            crate::gameplay::setup,
-            scene::setup,
-            combat::setup,
-            companion::setup,
-            weapons::setup_tether,
-            impact::setup,
-            camera::setup,
-            rendering::setup,
-            environment::setup_camera_fog,
-            loading::scene_ready,
+    .add_plugins(loading::StartupPlugin);
+    if web::viewer_mode() {
+        viewer::configure(&mut app);
+        app.run();
+        return;
+    }
+    app.add_plugins(forest_material::ForestMaterialPlugin)
+        .add_plugins(crate::simulation::SimulationPlugin)
+        .insert_resource(ClearColor(Color::srgb_u8(15, 22, 29)))
+        .init_resource::<controls::ViewYaw>()
+        .init_resource::<controls::CaptureState>()
+        .init_resource::<skeleton::AnimationLibrary>()
+        .init_resource::<source_animation::SourceAnimationLibrary>()
+        .init_resource::<appearance::AppearanceSelection>()
+        .add_systems(
+            Startup,
+            (
+                loading::begin,
+                crate::gameplay::setup,
+                scene::setup,
+                combat::setup,
+                companion::setup,
+                weapons::setup_tether,
+                impact::setup,
+                camera::setup,
+                rendering::setup,
+                environment::setup_camera_fog,
+                loading::scene_ready,
+            )
+                .chain(),
         )
-            .chain(),
-    )
-    .add_systems(
-        RunFixedMainLoop,
-        (enemies::sample, controls::sample, appearance::sample)
-            .chain()
-            .in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
-    )
-    .add_systems(
-        Update,
-        (
-            appearance::reconcile,
-            scene::sync_player,
-            scene::sync_props,
-            environment::animate_foliage,
-            combat::reconcile_enemies,
-            combat::sync_enemies,
-            combat::sync_health_bars,
-            combat::sync_weapons,
-            animation::animate,
-            companion::sync,
-            avatar::sync,
-            stickman::sync_attachments,
-            weapons::sync_tether,
-            combat::sync_markers,
-            combat::effects,
-            impact::update,
-            audio::sync,
-            hud::sync,
-            camera::follow,
+        .add_systems(
+            RunFixedMainLoop,
+            (enemies::sample, controls::sample, appearance::sample)
+                .chain()
+                .in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
         )
-            .chain(),
-    );
+        .add_systems(
+            Update,
+            (
+                appearance::reconcile,
+                scene::sync_player,
+                scene::sync_props,
+                environment::animate_foliage,
+                combat::reconcile_enemies,
+                combat::sync_enemies,
+                combat::sync_health_bars,
+                combat::sync_weapons,
+                animation::animate,
+                companion::sync,
+                avatar::sync,
+                stickman::sync_attachments,
+                weapons::sync_tether,
+                combat::sync_markers,
+                combat::effects,
+                impact::update,
+                audio::sync,
+                hud::sync,
+                camera::follow,
+            )
+                .chain(),
+        );
     app.run();
 }

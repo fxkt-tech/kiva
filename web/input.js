@@ -1,6 +1,7 @@
 /* Browser input owns capture and pixel units; Bevy owns direction and movement. */
 (() => {
   "use strict";
+  if (window.kivaPage?.isViewer()) return;
   let ready = false;
   let confirmed = false;
   let request = null;

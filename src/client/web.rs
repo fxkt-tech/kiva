@@ -1,6 +1,16 @@
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen::prelude::wasm_bindgen]
 extern "C" {
+    #[wasm_bindgen(js_namespace = ["window", "kivaPage"], js_name = isViewer)]
+    fn browser_viewer_mode() -> bool;
+    #[wasm_bindgen(js_namespace = ["window", "kivaViewer"], js_name = takeCommands)]
+    fn browser_viewer_commands() -> String;
+    #[wasm_bindgen(js_namespace = ["window", "kivaViewer"], js_name = render)]
+    fn browser_viewer_render(snapshot: &str);
+    #[wasm_bindgen(js_namespace = ["window", "kivaViewer"], js_name = ready)]
+    fn browser_viewer_ready();
+    #[wasm_bindgen(js_namespace = ["window", "kivaViewer"], js_name = fail)]
+    fn browser_viewer_fail(reason: &str);
     #[wasm_bindgen(js_namespace = ["window", "kivaInput"], js_name = isActive)]
     fn browser_active() -> bool;
     #[wasm_bindgen(js_namespace = ["window", "kivaInput"], js_name = takeLook)]
@@ -45,7 +55,11 @@ pub(super) fn ready() {
     #[cfg(test)]
     STARTUP_NOTIFICATIONS.with(|counts| counts.set((counts.get().0 + 1, counts.get().1)));
     #[cfg(target_arch = "wasm32")]
-    browser_ready();
+    if viewer_mode() {
+        browser_viewer_ready();
+    } else {
+        browser_ready();
+    }
 }
 
 pub(super) fn progress(_phase: &str, _loaded: u32, _total: u32) {
@@ -68,4 +82,29 @@ thread_local! {
 #[cfg(test)]
 pub(super) fn take_startup_notifications() -> (u32, u32) {
     STARTUP_NOTIFICATIONS.with(|counts| counts.replace((0, 0)))
+}
+
+/// Page mode is fixed before the App and any game browser listeners exist.
+pub(super) fn viewer_mode() -> bool {
+    #[cfg(target_arch = "wasm32")]
+    return browser_viewer_mode();
+    #[cfg(not(target_arch = "wasm32"))]
+    false
+}
+
+pub(super) fn viewer_take_commands() -> String {
+    #[cfg(target_arch = "wasm32")]
+    return browser_viewer_commands();
+    #[cfg(not(target_arch = "wasm32"))]
+    String::new()
+}
+
+pub(super) fn viewer_render(_snapshot: &str) {
+    #[cfg(target_arch = "wasm32")]
+    browser_viewer_render(_snapshot);
+}
+
+pub(super) fn viewer_fail(_reason: &str) {
+    #[cfg(target_arch = "wasm32")]
+    browser_viewer_fail(_reason);
 }

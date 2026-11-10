@@ -1,6 +1,7 @@
 /* Mode controls submit a selection; Rust owns the roster and enemy behavior. */
 (() => {
   "use strict";
+  if (window.kivaPage?.isViewer()) return;
   let current = 1;
   let pending = 0;
 

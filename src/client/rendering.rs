@@ -8,6 +8,32 @@ use bevy::{
     prelude::*,
 };
 
+/// Actual rendered view, shared by normal gameplay and the inspection App.
+#[derive(Component)]
+pub(super) struct MainView;
+
+fn setup_base(world: &mut World, camera: Entity) {
+    world.entity_mut(camera).insert((
+        MainView,
+        Hdr,
+        Msaa::Off,
+        Fxaa::default(),
+        DepthPrepass,
+        DeferredPrepass,
+    ));
+}
+
+pub(super) fn setup_viewer(world: &mut World) {
+    world.insert_resource(DefaultOpaqueRendererMethod::deferred());
+    let cameras: Vec<_> = world
+        .query_filtered::<Entity, With<MainView>>()
+        .iter(world)
+        .collect();
+    for camera in cameras {
+        setup_base(world, camera);
+    }
+}
+
 pub(super) fn setup(world: &mut World) {
     // SSR consumes the deferred gbuffer. Standard/extended materials remain
     // responsible for their GPU skinning, alpha masks and normal maps.
@@ -17,22 +43,16 @@ pub(super) fn setup(world: &mut World) {
         .iter(world)
         .collect();
     for camera in cameras {
-        world.entity_mut(camera).insert((
-            Hdr,
-            Msaa::Off,
-            Fxaa::default(),
-            DepthPrepass,
-            DeferredPrepass,
-            ScreenSpaceReflections {
-                min_perceptual_roughness: 0.08..0.12,
-                max_perceptual_roughness: 0.18..0.24,
-                linear_steps: 24,
-                bisection_steps: 4,
-                thickness: 0.18,
-                edge_fadeout: 0.02..0.10,
-                ..default()
-            },
-        ));
+        setup_base(world, camera);
+        world.entity_mut(camera).insert(ScreenSpaceReflections {
+            min_perceptual_roughness: 0.08..0.12,
+            max_perceptual_roughness: 0.18..0.24,
+            linear_steps: 24,
+            bisection_steps: 4,
+            thickness: 0.18,
+            edge_fadeout: 0.02..0.10,
+            ..default()
+        });
     }
 }
 
@@ -70,5 +90,19 @@ mod tests {
         let ssr = world.get::<ScreenSpaceReflections>(camera).unwrap();
         // Rough damp soil stays outside the stochastic reflection pass.
         assert!(ssr.linear_steps > 0 && ssr.max_perceptual_roughness.end <= 0.25);
+    }
+
+    #[test]
+    fn inspection_view_shares_pbr_setup_without_wetland_ssr_or_pose_changes() {
+        let mut world = World::new();
+        let transform = Transform::from_xyz(0.0, 1.5, 3.0).looking_at(Vec3::Y, Vec3::Y);
+        let camera = world.spawn((MainView, Camera3d::default(), transform)).id();
+        setup_viewer(&mut world);
+        assert_eq!(*world.get::<Transform>(camera).unwrap(), transform);
+        assert!(world.get::<Hdr>(camera).is_some());
+        assert!(world.get::<Fxaa>(camera).is_some());
+        assert!(world.get::<DepthPrepass>(camera).is_some());
+        assert!(world.get::<DeferredPrepass>(camera).is_some());
+        assert!(world.get::<ScreenSpaceReflections>(camera).is_none());
     }
 }

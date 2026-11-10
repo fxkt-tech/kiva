@@ -3,6 +3,11 @@ use super::super::skeleton::{AnimationLibrary, blend};
 use crate::simulation::WeaponMode;
 use bevy::prelude::*;
 
+pub(super) struct ClipSample {
+    pub(super) name: &'static str,
+    pub(super) seconds: f32,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Gesture {
     Slash,
@@ -81,9 +86,23 @@ fn guard(mode: WeaponMode) -> Key {
 }
 
 pub(super) fn idle(library: &AnimationLibrary, seconds: f32, mode: WeaponMode) -> Vec<Transform> {
+    idle_with_trace(library, seconds, mode).0
+}
+
+pub(super) fn idle_with_trace(
+    library: &AnimationLibrary,
+    seconds: f32,
+    mode: WeaponMode,
+) -> (Vec<Transform>, ClipSample) {
     let mut pose = library.sample("Sword_Idle", seconds, true);
     hold_guard(library, &mut pose, mode);
-    pose
+    (
+        pose,
+        ClipSample {
+            name: "Sword_Idle",
+            seconds: library.sample_time("Sword_Idle", seconds, true),
+        },
+    )
 }
 
 pub(super) fn hold_guard(library: &AnimationLibrary, pose: &mut [Transform], mode: WeaponMode) {
@@ -153,18 +172,25 @@ pub(super) fn crouch_pose(library: &AnimationLibrary, local: &mut [Transform], w
     }
 }
 
+#[cfg(test)]
 pub(super) fn gesture(
     library: &AnimationLibrary,
     kind: Gesture,
     elapsed: f32,
     mode: WeaponMode,
 ) -> Vec<Transform> {
+    gesture_with_trace(library, kind, elapsed, mode).0
+}
+
+pub(super) fn gesture_with_trace(
+    library: &AnimationLibrary,
+    kind: Gesture,
+    elapsed: f32,
+    mode: WeaponMode,
+) -> (Vec<Transform>, ClipSample) {
     if matches!(kind, Gesture::Hit | Gesture::HeavyHit) {
-        let mut pose = library.sample(
-            "Hit_Chest",
-            elapsed / kind.duration() * library.duration("Hit_Chest"),
-            false,
-        );
+        let seconds = elapsed / kind.duration() * library.duration("Hit_Chest");
+        let mut pose = library.sample("Hit_Chest", seconds, false);
         if kind == Gesture::HeavyHit {
             let standing = idle(library, 0.0, mode);
             super::replace_lower_body(library, &mut pose, &standing);
@@ -177,10 +203,23 @@ pub(super) fn gesture(
                 * model[spine].rotation)
                 .normalize();
         }
-        return pose;
+        return (
+            pose,
+            ClipSample {
+                name: "Hit_Chest",
+                seconds,
+            },
+        );
     }
     if kind == Gesture::Guard {
-        return library.sample("Sword_Block", 0.2 + elapsed.min(0.2), false);
+        let seconds = 0.2 + elapsed.min(0.2);
+        return (
+            library.sample("Sword_Block", seconds, false),
+            ClipSample {
+                name: "Sword_Block",
+                seconds,
+            },
+        );
     }
     let k = |x, y, z, yaw, pitch, twist| Key::new(Vec3::new(x, y, z), yaw, pitch, twist);
     let (clip, times, loaded, contact, follow) = match kind {
@@ -251,7 +290,13 @@ pub(super) fn gesture(
     for (pose, idle) in pose.iter_mut().zip(idle) {
         *pose = blend(*pose, idle, recovery);
     }
-    pose
+    (
+        pose,
+        ClipSample {
+            name: clip,
+            seconds: source_time,
+        },
+    )
 }
 
 /// The imported axes vary by bone; corrections therefore operate in model space.

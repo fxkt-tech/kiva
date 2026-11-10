@@ -1,6 +1,7 @@
 /* Appearance requests affect player visuals; Rust owns the applied selection. */
 (() => {
   "use strict";
+  if (window.kivaPage?.isViewer()) return;
   let current = 2;
   let pending = 0;
 

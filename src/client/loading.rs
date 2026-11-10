@@ -43,6 +43,51 @@ impl StartupSignal {
     }
 }
 
+/// A selection has its own render acknowledgement; global startup stays sticky.
+#[derive(Resource, Clone, Default)]
+struct ModelSignal(Arc<Mutex<(u64, bool, bool)>>);
+
+impl ModelSignal {
+    fn report(&self, revision: u64, next: Readiness) -> bool {
+        let mut state = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        if state.0 == revision && next != Readiness::Preparing {
+            state.1 = next == Readiness::Ready;
+            state.2 = next == Readiness::Failed;
+            true
+        } else {
+            false
+        }
+    }
+}
+
+#[derive(Resource, Clone, Default)]
+struct ModelRequirement {
+    revision: u64,
+    meshes: Vec<MainEntity>,
+}
+
+pub(super) fn require_model(world: &mut World, revision: u64, meshes: Vec<Entity>) {
+    let signal = world.resource::<ModelSignal>();
+    *signal.0.lock().unwrap_or_else(PoisonError::into_inner) = (revision, false, false);
+    world.insert_resource(ModelRequirement {
+        revision,
+        meshes: meshes.into_iter().map(MainEntity::from).collect(),
+    });
+}
+
+pub(super) fn model_ready(world: &World, revision: u64) -> bool {
+    world.get_resource::<ModelSignal>().is_some_and(|signal| {
+        *signal.0.lock().unwrap_or_else(PoisonError::into_inner) == (revision, true, false)
+    })
+}
+
+pub(super) fn model_failed(world: &World, revision: u64) -> bool {
+    world.get_resource::<ModelSignal>().is_some_and(|signal| {
+        let state = signal.0.lock().unwrap_or_else(PoisonError::into_inner);
+        state.0 == revision && state.2
+    })
+}
+
 #[derive(Resource, Default)]
 struct Notifications {
     failed: bool,
@@ -63,15 +108,23 @@ pub(super) struct StartupPlugin;
 impl Plugin for StartupPlugin {
     fn build(&self, app: &mut App) {
         let signal = StartupSignal::default();
+        let model_signal = ModelSignal::default();
         app.insert_resource(signal.clone())
+            .insert_resource(model_signal.clone())
+            .init_resource::<ModelRequirement>()
             .init_resource::<Notifications>()
             .add_systems(First, notify_browser);
 
         let has_renderer = if let Some(render_app) = app.get_sub_app_mut(RenderApp) {
             render_app
                 .insert_resource(signal)
+                .insert_resource(model_signal)
+                .init_resource::<ModelRequirement>()
                 .init_resource::<StartupCamera>()
-                .add_systems(ExtractSchedule, extract_startup_camera)
+                .add_systems(
+                    ExtractSchedule,
+                    (extract_startup_camera, extract_model_requirement),
+                )
                 .add_systems(
                     Render,
                     observe_rendered_scene
@@ -130,6 +183,15 @@ fn render_error(
     main_world
         .resource::<StartupSignal>()
         .report(Readiness::Failed);
+    {
+        let signal = main_world.resource::<ModelSignal>();
+        let mut model = signal.0.lock().unwrap_or_else(PoisonError::into_inner);
+        model.1 = false;
+        model.2 = true;
+    }
+    if super::web::viewer_mode() {
+        super::web::viewer_fail(RENDER_FAILURE);
+    }
     // The default handler exits; deliver the failure before delegating to it.
     let mut notifications = main_world.resource_mut::<Notifications>();
     if !notifications.ready && !notifications.failed {
@@ -141,10 +203,28 @@ fn render_error(
 }
 
 fn extract_startup_camera(
-    cameras: Extract<Query<Entity, With<super::camera::GameCamera>>>,
+    cameras: Extract<Query<Entity, With<super::rendering::MainView>>>,
     mut startup_camera: ResMut<StartupCamera>,
 ) {
     startup_camera.0 = cameras.iter().next().map(MainEntity::from);
+}
+
+fn extract_model_requirement(
+    requirement: Extract<Res<ModelRequirement>>,
+    mut target: ResMut<ModelRequirement>,
+) {
+    *target = requirement.clone();
+}
+
+fn required_model_visible(visible: &RenderVisibleEntities, required: &ModelRequirement) -> bool {
+    if required.revision == 0 {
+        return true;
+    }
+    visible.get::<Mesh3d>().is_some_and(|visible| {
+        visible
+            .iter_visible()
+            .any(|(_, entity)| required.meshes.contains(entity))
+    })
 }
 
 // PipelineCache is empty before scene specialization. An empty iterator is
@@ -192,11 +272,20 @@ fn visible_meshes_prepared(
 fn observe_rendered_scene(
     signal: Res<StartupSignal>,
     startup_camera: Res<StartupCamera>,
+    model_signal: Res<ModelSignal>,
+    model_requirement: Res<ModelRequirement>,
     cache: Option<Res<PipelineCache>>,
     specialized: Option<Res<SpecializedMaterialPipelineCache>>,
     views: Query<(&ExtractedView, &ViewTarget, &RenderVisibleEntities), With<ExtractedCamera>>,
 ) {
-    if signal.get() == Readiness::Ready {
+    if signal.get() == Readiness::Ready
+        && (model_requirement.revision == 0
+            || *model_signal
+                .0
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                == (model_requirement.revision, true, false))
+    {
         return;
     }
     let (Some(cache), Some(specialized)) = (cache, specialized) else {
@@ -205,7 +294,9 @@ fn observe_rendered_scene(
     };
     match pipelines_ready(cache.pipelines().map(|pipeline| &pipeline.state)) {
         Readiness::Failed => {
-            signal.report(Readiness::Failed);
+            if model_signal.report(model_requirement.revision, Readiness::Failed) {
+                signal.report(Readiness::Failed);
+            }
             return;
         }
         Readiness::Preparing => return,
@@ -216,6 +307,7 @@ fn observe_rendered_scene(
             // The output attachment marks this only when a render pass uses
             // it; an allocated target or an empty GPU submission isn't enough.
             || !target.needs_present()
+            || !required_model_visible(visible, &model_requirement)
         {
             continue;
         }
@@ -226,7 +318,9 @@ fn observe_rendered_scene(
                 "Initial scene rendered: {meshes} visible meshes, {} prepared pipelines",
                 cache.pipelines().count()
             );
-            signal.report(Readiness::Ready);
+            if model_signal.report(model_requirement.revision, Readiness::Ready) {
+                signal.report(Readiness::Ready);
+            }
             return;
         }
     }
@@ -420,5 +514,110 @@ mod tests {
         assert_eq!(super::super::web::take_startup_notifications(), (0, 1));
         app.update();
         assert_eq!(super::super::web::take_startup_notifications(), (0, 0));
+    }
+
+    #[test]
+    fn floor_or_previous_body_cannot_acknowledge_selected_model() {
+        let mut world = World::new();
+        let floor = MainEntity::from(world.spawn_empty().id());
+        let old_body = MainEntity::from(world.spawn_empty().id());
+        let selected_body = MainEntity::from(world.spawn_empty().id());
+        let mut visible = RenderVisibleEntities::default();
+        visible.classes.insert(
+            TypeId::of::<Mesh3d>(),
+            RenderVisibleEntitiesClass {
+                entities_cpu_culling: vec![
+                    (Entity::PLACEHOLDER, floor),
+                    (Entity::PLACEHOLDER, old_body),
+                ],
+                ..default()
+            },
+        );
+        let required = ModelRequirement {
+            revision: 2,
+            meshes: vec![selected_body],
+        };
+        assert!(!required_model_visible(&visible, &required));
+        visible
+            .classes
+            .get_mut(&TypeId::of::<Mesh3d>())
+            .unwrap()
+            .entities_cpu_culling
+            .push((Entity::PLACEHOLDER, selected_body));
+        assert!(required_model_visible(&visible, &required));
+        assert!(required_model_visible(
+            &visible,
+            &ModelRequirement::default()
+        ));
+        assert!(!required_model_visible(
+            &visible,
+            &ModelRequirement {
+                revision: 3,
+                meshes: vec![]
+            }
+        ));
+    }
+
+    #[test]
+    fn selection_ready_and_failure_are_versioned_without_resetting_global_ready() {
+        let mut app = app();
+        let first = app.world_mut().spawn_empty().id();
+        require_model(app.world_mut(), 1, vec![first]);
+        let signal = app.world().resource::<ModelSignal>().clone();
+        signal.report(1, Readiness::Ready);
+        assert!(model_ready(app.world(), 1));
+        app.world()
+            .resource::<StartupSignal>()
+            .report(Readiness::Ready);
+        let second = app.world_mut().spawn_empty().id();
+        require_model(app.world_mut(), 2, vec![second]);
+        assert!(!signal.report(1, Readiness::Ready));
+        assert!(!signal.report(1, Readiness::Failed));
+        assert!(!model_ready(app.world(), 2));
+        assert!(!model_failed(app.world(), 2));
+        assert_eq!(
+            app.world().resource::<StartupSignal>().get(),
+            Readiness::Ready
+        );
+        signal.report(2, Readiness::Failed);
+        assert!(model_failed(app.world(), 2));
+        signal.report(2, Readiness::Ready);
+        assert!(model_ready(app.world(), 2));
+        assert!(!model_failed(app.world(), 2));
+    }
+
+    #[test]
+    fn device_error_after_startup_stays_visible_for_current_selection_and_preserves_policy() {
+        let mut app = App::new();
+        app.insert_resource(RenderErrorHandler(|_, _, _| {
+            RenderErrorPolicy::StopRendering
+        }))
+        .add_plugins(StartupPlugin);
+        let body = app.world_mut().spawn_empty().id();
+        require_model(app.world_mut(), 5, vec![body]);
+        app.world()
+            .resource::<StartupSignal>()
+            .report(Readiness::Ready);
+        app.world()
+            .resource::<ModelSignal>()
+            .report(5, Readiness::Ready);
+        let mut render_world = World::new();
+        let handler = app.world().resource::<RenderErrorHandler>().0;
+        let policy = handler(
+            &RenderError {
+                ty: ErrorType::Validation,
+                description: "device lost after first ready".into(),
+                source: None,
+            },
+            app.world_mut(),
+            &mut render_world,
+        );
+        assert!(matches!(policy, RenderErrorPolicy::StopRendering));
+        assert_eq!(
+            app.world().resource::<StartupSignal>().get(),
+            Readiness::Ready
+        );
+        assert!(model_failed(app.world(), 5));
+        assert!(!model_ready(app.world(), 5));
     }
 }

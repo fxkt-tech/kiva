@@ -11,8 +11,9 @@
 - `kivaStartup.progress(phase,loaded,total)`：phase=`download|initialize|render`；真实字节／计数，0/0 表示不可计量。Rust 桥为 `(&str,u32,u32)`。
 - `kivaStartup.fail(reason)`：失败原因限制长度并以纯文字呈现。
 - `kivaStartup.subscribe(callback)`：立即重放 `(state,detail)`，state=`loading|failed|ready`，detail 含 phase／loaded／total／可选reason；`__kivaStartup` 保留原字符串兼容。
-- `kivaInput.ready()` 仍为最终放行入口并触发 kiva-ready，只有 Rust 首次必要渲染就绪后调用；下载或 TrunkApplicationStarted 不能代替。
+- Rust `web::ready()` 按不可变页面模式调用 `kivaInput.ready()` 或 `kivaViewer.ready()` 并触发kiva-ready，只有首次必要渲染就绪后调用；下载或TrunkApplicationStarted不能代替。
 - `loading::StartupPlugin` 共享 StartupSignal，Startup 使用 begin／scene_ready；主世界 First 的独占系统通知 JS，渲染世界在 RenderSystems::Render 后、Cleanup 前观察。
+- 渲染目标共用 `rendering::MainView`，查看页另通过require_model/model_ready/model_failed确认当前选择版本及实际可见主体，详见[验收页契约](model-viewer.md)。
 
 ## Contracts
 
@@ -25,7 +26,7 @@ Trunk 0.22.1 通过字面量 pattern_script 的 `{base}{js}`／`{base}{wasm}` �
 按钮加载时可见、原生 disabled，测量下载时显示百分比及 progress，未知阶段显示忙碌状态；下载100%仍不可点击。敌人／外观选择继续可用。
 捕获请求开始立即显示正在进入并禁重入；仅 pointerlockchange＋焦点确认成功，Promise完成不代替确认。拒绝／blur／Escape清理后可重试；恢复保留已完成ready，不重走下载或自动申请捕获。
 
-Rust门槛同时要求目标GameCamera已提取、有真实输出附件写入、非空可见Mesh3d均具有材质／网格准备后的specialization、PipelineCache存在且已就绪，并位于真实渲染提交／present之后。
+Rust门槛同时要求目标MainView已提取、有真实输出附件写入、非空可见Mesh3d均具有材质／网格准备后的specialization、PipelineCache存在且已就绪，并位于真实渲染提交／present之后。查看页还要求当前revision所选身体的可见Mesh，地板或旧选择不能代替。
 SpecializedMaterialPipelineCache为本机Bevy共享缓存，覆盖Standard与Forest；初始空队列／设备空提交／只装配实体均不是ready，隐藏妹妹／后续技能材质不成为首次可见场景门槛。
 ShaderNotLoaded／ShaderImportNotYetAvailable按Bevy机制等待；处理shader／创建module错误报告失败。渲染错误包装器先通知Web，再委托原RenderErrorHandler保持AppExit／恢复策略。跨世界信号有界且最终通知一次，DOM桥仅主线程调用。
 原生不依赖JS，不改变原生激活；无渲染测试上下文不能凭空放行，WASM缺渲染器可报告失败。

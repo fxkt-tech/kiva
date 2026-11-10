@@ -7,6 +7,8 @@
     <meta name="theme-color" content="#262727" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="data:," />
     <title>Kiva · 幽篁竹林</title>
+    <link data-trunk rel="copy-file" href="web/mode.js" />
+    <script src="mode.js"></script>
     <link data-trunk rel="copy-file" href="web/startup.js" />
     <script src="startup.js"></script>
     <link data-trunk rel="copy-file" href="web/loader.js" />
@@ -24,6 +26,10 @@
     <script src="audio.js"></script>
     <link data-trunk rel="copy-file" href="web/style.css" />
     <link rel="stylesheet" href="style.css" />
+    <link data-trunk rel="copy-file" href="web/viewer.css" />
+    <link rel="stylesheet" href="viewer.css" />
+    <link data-trunk rel="copy-file" href="web/viewer.js" />
+    <script src="viewer.js"></script>
     <link data-trunk rel="rust" data-bin="kiva" />
   </head>
   <body>
@@ -84,6 +90,7 @@
               <span class="eyebrow">KIVA / BAMBOO FOREST</span>
               <h1 id="entry-title">幽篁竹林</h1>
               <p id="entry-message" role="status" aria-live="polite">正在下载游戏…</p>
+              <a class="viewer-game-link" href="?view=model">模型、武器与动作验收 →</a>
               <fieldset class="enemy-mode-select">
                 <legend>敌人模式</legend>
                 <div class="enemy-mode-options">
@@ -143,6 +150,55 @@
         </div>
         <noscript>请启用 JavaScript 后运行游戏。</noscript>
       </div>
+    </main>
+
+    <main id="viewer" class="viewer-shell" aria-label="模型、武器与动作验收台" hidden>
+      <header class="viewer-header">
+        <div class="viewer-brand"><small>KIVA / MODEL INSPECTION</small><h1>模型 · 武器 · 动作验收</h1></div>
+        <span id="viewer-status" class="viewer-state" role="status" aria-live="polite">正在加载验收场景…</span>
+        <a href="?" aria-label="返回游戏">返回游戏 ↗</a>
+      </header>
+      <aside class="viewer-sidebar viewer-left" aria-label="检查对象">
+        <section class="viewer-section">
+          <h2>检查对象</h2>
+          <label class="viewer-field">实际游戏配置<select id="viewer-preset" aria-label="实际游戏配置"><option value="">正在读取配置…</option></select></label>
+          <label class="viewer-field">角色<select id="viewer-appearance" aria-label="角色"><option value="">正在读取角色…</option></select></label>
+          <label class="viewer-field">武器<select id="viewer-weapon" aria-label="武器"><option value="">正在读取武器…</option></select></label>
+          <p id="viewer-warning" class="viewer-warning">默认使用游戏实际配置与共享显示计算。</p>
+        </section>
+        <section class="viewer-section">
+          <h2>动作检查</h2>
+          <div class="viewer-tabs" role="group" aria-label="动作模式"><button id="viewer-game-mode" type="button" aria-pressed="true">游戏表现</button><button id="viewer-source-mode" type="button" aria-pressed="false">片段对照</button></div>
+          <p id="viewer-mode-help">检查游戏采用的裁剪、混合和持握结果。</p>
+          <label class="viewer-field">搜索动作<input id="viewer-search" type="search" placeholder="名称 / 来源" autocomplete="off" /></label>
+          <label class="viewer-field">动作<select id="viewer-action" aria-label="动作"><option value="">正在读取动作…</option></select></label>
+          <button id="viewer-reference" type="button" class="viewer-reference" aria-pressed="false">查看角色参考姿态</button>
+        </section>
+        <section class="viewer-section"><h2>观察方式</h2><p>左键拖动环绕 · 右键拖动平移<br />滚轮缩放 · 暂停后仍可转动镜头</p><p>骨骼和握点辅助可定位穿插及挂接问题。此页不修改模型或游戏规则。</p></section>
+      </aside>
+      <section id="viewer-viewport" class="viewer-viewport" aria-label="三维检查视口">
+        <div class="viewer-view-label"><strong id="viewer-current">李火旺 · 伏浪锚</strong><small id="viewer-context">游戏表现检查 / 暂停</small></div>
+        <div class="viewer-view-controls" role="group" aria-label="观察视角"><button type="button" data-view="front">正</button><button type="button" data-view="back">背</button><button type="button" data-view="left">左</button><button type="button" data-view="right">右</button><button type="button" data-view="top">顶</button><button type="button" data-view="three-quarter">¾</button><button id="viewer-fit" type="button">全身</button><button id="viewer-reset" type="button">重置</button></div>
+        <div class="viewer-view-help">左拖环绕 / 右拖平移 / 滚轮缩放</div>
+        <div id="viewer-loading" class="viewer-loading" role="status" aria-live="polite"><strong id="viewer-loading-label">正在下载检查程序…</strong><progress id="viewer-progress" aria-label="加载进度"></progress><p id="viewer-loading-detail">模型和动作准备后即可检查，无需捕获鼠标。</p><button id="viewer-retry" type="button" hidden>重新加载</button></div>
+      </section>
+      <aside class="viewer-sidebar viewer-right" aria-label="检查辅助与来源">
+        <section class="viewer-section"><h2>检查辅助</h2><label class="viewer-check"><input type="checkbox" data-debug="grid" checked />地面网格</label><label class="viewer-check"><input type="checkbox" data-debug="axes" checked />模型根轴</label><label class="viewer-check"><input type="checkbox" data-debug="bones" />骨骼</label><label class="viewer-check"><input type="checkbox" data-debug="grips" />手腕 / 握点 / 枪口 / 附件</label><label class="viewer-check"><input type="checkbox" data-debug="bounds" />当前姿态包围盒</label>
+          <div class="viewer-legend" aria-label="辅助标记图例">
+            <p><span class="viewer-legend-wrist">紫色十字</span>：实际手腕关节<br /><span class="viewer-legend-mount">青色标记</span>：武器挂点 / 发射源<br /><span class="viewer-legend-grip">黄色十字</span>：武器实际握点</p>
+            <p>近战青点包含游戏现有的 +0.055m 挂接偏移；远程青点为枪口 / 箭源。</p>
+            <p>坐标轴：<span class="viewer-legend-x">X 红</span> / <span class="viewer-legend-y">Y 绿</span> / <span class="viewer-legend-z">Z 蓝</span></p>
+          </div>
+        </section>
+        <section class="viewer-section"><h2>部件显示</h2><div id="viewer-parts" class="viewer-parts"><p>正在读取部件…</p></div></section>
+        <section class="viewer-section"><h2>动作与适配来源</h2><pre id="viewer-trace" class="viewer-trace">等待共享姿态计算…</pre><button id="viewer-copy" type="button">复制当前检查信息</button><span id="viewer-copy-status" class="viewer-copy-status" role="status" aria-live="polite"></span></section>
+      </aside>
+      <footer class="viewer-transport" aria-label="播放控制">
+        <div class="viewer-playback"><button id="viewer-restart" type="button" aria-label="从头重播">↺</button><button id="viewer-step-back" type="button" aria-label="向前一帧">−1帧</button><button id="viewer-play" type="button" class="primary" aria-pressed="false">播放</button><button id="viewer-step-next" type="button" aria-label="向后一帧">+1帧</button></div>
+        <span id="viewer-time" class="viewer-time">0.000 / 0.000 s · 第 0 帧</span>
+        <div class="viewer-timing"><label class="viewer-check"><input id="viewer-loop" type="checkbox" checked />循环</label><label class="viewer-check">速度<select id="viewer-speed" aria-label="播放速度"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label></div>
+        <input id="viewer-timeline" class="viewer-timeline" type="range" min="0" max="0" step="0.016666667" value="0" aria-label="动作时间轴" />
+      </footer>
     </main>
   </body>
 </html>
