@@ -59,7 +59,7 @@ test("early Rust selections replay when the DOM becomes ready", () => {
 test("loading and paused button selections survive old snapshots until one consumption", () => {
   const f = fixture();
   f.parse();
-  assert.equal(f.at("appearance-choulingke").attributes["aria-pressed"], "true");
+  assert.equal(f.at("appearance-lihuowang").attributes["aria-pressed"], "true");
   f.at("appearance-lihuowang").click();
   f.bridge.render(1);
   assert.equal(f.at("appearance-lihuowang").attributes["aria-pressed"], "true");
@@ -85,8 +85,8 @@ test("F3 requires active trusted non-repeat input and does not consume F2", () =
   }
   assert.equal(f.bridge.takeAppearance(), 0);
   assert.equal(f.key().prevented, true);
-  assert.equal(f.bridge.takeAppearance(), 2);
-  f.bridge.render(2);
+  assert.equal(f.bridge.takeAppearance(), 1);
+  f.bridge.render(1);
   f.pause();
   assert.equal(f.key().prevented, undefined);
   assert.equal(f.bridge.takeAppearance(), 0);
@@ -101,7 +101,7 @@ test("successive presses toggle from the pending choice before Rust samples", ()
   f.activate();
   f.key();
   f.key();
-  assert.equal(f.bridge.takeAppearance(), 1);
+  assert.equal(f.bridge.takeAppearance(), 2);
   f.bridge.render(1);
   f.at("appearance-lihuowang").click();
   f.key();
@@ -123,4 +123,12 @@ test("invalid snapshots cannot change or inject the displayed appearance", () =>
   f.nodes.clear();
   assert.doesNotThrow(() => f.bridge.render(1));
   assert.equal(Object.isFrozen(f.bridge), true);
+});
+
+test("brother defaults to Li Huowang before any Rust snapshot or request", () => {
+  const f = fixture(true);
+  assert.equal(f.at("appearance-lihuowang").attributes["aria-pressed"], "true");
+  assert.equal(f.at("appearance-choulingke").attributes["aria-pressed"], "false");
+  assert.equal(f.at("hud-appearance").textContent, "外观 · 李火旺 · F3 切换");
+  assert.equal(f.bridge.takeAppearance(), 0);
 });

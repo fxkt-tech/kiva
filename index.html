@@ -38,7 +38,7 @@
             <symbol id="hud-icon-guard" viewBox="0 0 40 40"><path d="m7 33 24-26-7 18-13 10zM6 9l28 21M4 17l10-1M26 5l1 9M27 29l8 5"/></symbol>
             <symbol id="hud-icon-target" viewBox="0 0 40 40"><circle cx="20" cy="20" r="10"/><path d="M20 4v10m0 12v10M4 20h10m12 0h10"/></symbol>
           </defs></svg>
-          <header class="hud-corner hud-place"><small>KIVA / BAMBOO FOREST</small><strong>幽篁竹林</strong><span id="hud-enemy-mode" class="hud-mode">靶子模式 · F2 切换</span><span id="hud-appearance" class="hud-mode">外观 · 愁铃客 · F3 切换</span></header>
+          <header class="hud-corner hud-place"><small>KIVA / BAMBOO FOREST</small><strong>幽篁竹林</strong><span id="hud-enemy-mode" class="hud-mode">靶子模式 · F2 切换</span><span id="hud-appearance" class="hud-mode">外观 · 李火旺 · F3 切换</span></header>
           <aside class="hud-corner hud-utility"><span><kbd>中键</kbd>锁定 / 解锁</span><span><kbd>Esc</kbd>暂停</span></aside>
           <section id="hud-target" class="hud-target" aria-label="锁定目标生命" hidden>
             <svg class="hud-target-ornament" viewBox="0 0 720 58" preserveAspectRatio="none" aria-hidden="true">
@@ -67,11 +67,11 @@
               <div id="hud-skill-guard" class="hud-slot hud-guard" role="group" aria-label="右键 拆招 / 防御 / 弹反" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use href="#hud-icon-guard"/></svg><kbd class="hud-key">右键</kbd></div>
               <div id="hud-skill-combo" class="hud-slot hud-combo-slot" role="group" aria-label="Tab 妹妹三枪" aria-disabled="true"><span class="hud-diamond"></span><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-combo-icon" href="#hud-icon-musket"/></svg><kbd class="hud-key">Tab</kbd></div>
             </div>
-            <div id="hud-skill-ranged" class="hud-ranged-slot" role="group" aria-label="Q 妹妹鸟铳" aria-disabled="true"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-ranged-skill-icon" href="#hud-icon-musket"/></svg><span id="hud-ranged-caption">妹妹 · 单发鸟铳</span><span id="hud-ranged-cooldown" hidden></span><kbd>Q</kbd></div>
+            <div id="hud-skill-ranged" class="hud-ranged-slot" role="group" aria-label="Q 白灵淼引冰落" aria-disabled="true"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-ranged-skill-icon" href="#hud-icon-musket"/></svg><span id="hud-ranged-caption">白灵淼 · 单发引冰落</span><span id="hud-ranged-cooldown" hidden></span><kbd>Q</kbd></div>
             <div class="hud-weapons">
               <div id="hud-melee" class="hud-weapon-choice active" role="group" aria-label="近战武器" aria-current="true"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-melee-icon" href="#hud-icon-hammer"/></svg><span class="hud-weapon-name"><small>哥哥 · 左键 / E</small><span id="hud-melee-name">锤子</span></span></div>
               <div class="hud-switch" aria-label="哥哥近战与妹妹远程协同"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg><small>协同</small></div>
-              <div id="hud-ranged" class="hud-weapon-choice" role="group" aria-label="远程武器" aria-current="false"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-ranged-icon" href="#hud-icon-musket"/></svg><span class="hud-weapon-name"><small>妹妹 · Q</small><span id="hud-ranged-name">鸟铳</span></span></div>
+              <div id="hud-ranged" class="hud-weapon-choice" role="group" aria-label="远程武器" aria-current="false"><svg class="hud-glyph" viewBox="0 0 40 40" aria-hidden="true"><use id="hud-ranged-icon" href="#hud-icon-musket"/></svg><span class="hud-weapon-name"><small>妹妹 · Q</small><span id="hud-ranged-name">引冰落</span></span></div>
             </div>
           </section>
           <div class="hud-sets" aria-label="武器套装"><span id="hud-pair1" class="hud-set active" aria-current="true"><kbd>1</kbd>锤鸟</span><span>·</span><span id="hud-pair2" class="hud-set" aria-current="false"><kbd>2</kbd>链斧弓</span></div>
@@ -93,10 +93,10 @@
               <fieldset class="appearance-select">
                 <legend>哥哥身体与服饰</legend>
                 <div class="appearance-options">
-                  <button id="appearance-choulingke" type="button" aria-pressed="true"><span>愁铃客</span><small>身体与服饰</small></button>
-                  <button id="appearance-lihuowang" type="button" aria-pressed="false"><span>李火旺</span><small>身体与服饰</small></button>
+                  <button id="appearance-choulingke" type="button" aria-pressed="false"><span>愁铃客</span><small>身体与服饰</small></button>
+                  <button id="appearance-lihuowang" type="button" aria-pressed="true"><span>李火旺</span><small>身体与服饰</small></button>
                 </div>
-                <span id="appearance-hint">愁铃客 · 身体与服饰 · F3 切换</span>
+                <span id="appearance-hint">李火旺 · 身体与服饰 · F3 切换</span>
               </fieldset>
               <div class="entry-actions">
                 <button id="enter" hidden>点击进入 <span aria-hidden="true">→</span></button>
@@ -127,9 +127,9 @@
                     <div class="control-row"><dt>近战普攻</dt><dd><kbd>左键</kbd></dd></div>
                     <div class="control-row"><dt>拆招 / 防御 / 弹反<span>按下拆招，长按防御，有效防御松开弹反</span></dt><dd><kbd>右键</kbd></dd></div>
                     <div class="control-row"><dt>近战技能<span>锤击飞 / 链斧减速 · 独立冷却</span></dt><dd><kbd>E</kbd></dd></div>
-                    <div class="control-row"><dt>妹妹远程技能<span>鸟铳单发 / 弓射链斧 · 需要锁定</span></dt><dd><kbd>Q</kbd></dd></div>
+                    <div class="control-row"><dt>妹妹远程技能<span>引冰落单发 / 羿之影射链斧 · 需要锁定</span></dt><dd><kbd>Q</kbd></dd></div>
                     <div class="control-row"><dt>释放联动<span>锤 E 浮空后三枪 / 弓 Q 僵直后拉近三箭</span></dt><dd><kbd>Tab</kbd></dd></div>
-                    <div class="control-row"><dt>选择武器组<span>锤子＋鸟铳 / 链斧＋弓箭</span></dt><dd><kbd>1</kbd><span>/</span><kbd>2</kbd></dd></div>
+                    <div class="control-row"><dt>选择武器组<span>锤子＋引冰落 / 链斧＋羿之影</span></dt><dd><kbd>1</kbd><span>/</span><kbd>2</kbd></dd></div>
                     <div class="control-row"><dt>锁定 / 解锁目标</dt><dd><kbd>中键</kbd></dd></div>
                     <div class="control-row"><dt>靶子 / 实战</dt><dd><kbd>F2</kbd></dd></div>
                     <div class="control-row"><dt>哥哥身体与服饰<span>愁铃客 / 李火旺 · 保留当前武器</span></dt><dd><kbd>F3</kbd></dd></div>

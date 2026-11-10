@@ -1,0 +1,198 @@
+{
+  "package": "assets/prepared/naraka/yinbingluo",
+  "portable_manifest_sha256": "3ab476488aef89294c1f95a88e42afbc1e7ea6c03ce14d843a7a54f30582d3fc",
+  "identity": {
+    "item_id": 2311228,
+    "name": "引冰落",
+    "weapon_type": "flintlock",
+    "weapon_temp_ids": [
+      3110620
+    ]
+  },
+  "verified_files": 20,
+  "verified_pngs": 9,
+  "files": [
+    {
+      "file": "models/yinbingluo_main.glb",
+      "sha256": "b2d29661f95e4783921ad0d0ff7bcd25788c7964f93110ff31abf2e5a38003c5",
+      "bytes": 1838712,
+      "role": "original-weapon-glb:main"
+    },
+    {
+      "file": "source-evidence/model-checks/yinbingluo_main.cpu-verification.json",
+      "sha256": "b247e67ae85b61952eb44b6d173c52c5e0c355baccc53e51182073abb9697737",
+      "bytes": 3082,
+      "role": "original-source-geometry-verification"
+    },
+    {
+      "file": "source-evidence/model-checks/yinbingluo_main.khronos.json",
+      "sha256": "bf462e02534e543f8238d792dc43167bfbd5df204f2dbf42e102443b613bad69",
+      "bytes": 3147,
+      "role": "original-source-khronos-verification"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_n.png",
+      "sha256": "29649cac29ca6bee71060c651e698ac867cb52759650c4bf7205de61046206d0",
+      "bytes": 984035,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_d.png",
+      "sha256": "5f5e2a8659891831632ce6f752964a7ffe5bba396e9204a2d3d14f5c590b9f54",
+      "bytes": 697686,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_mrav.png",
+      "sha256": "309a6d106c51afd6a478c0910a3e7124f748747d7e2bd14ca4cc1f23360f9c3a",
+      "bytes": 1234971,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_em.png",
+      "sha256": "802bd047153644d3cfe1c42ed513c8dcce2d9c73abfaf7023fce2900e03125c7",
+      "bytes": 209061,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_d.png",
+      "sha256": "2d73103505abc16db7cb26b682c4e99d3fcb344173620f581c0a7dcf2bc424d8",
+      "bytes": 651446,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_nx.png",
+      "sha256": "20447e22438870fabce84c93680e1f708a4932e58a84ef5f737ad5a9d6f4aa63",
+      "bytes": 1164340,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_mrav.png",
+      "sha256": "d0258bbd78ff4e402b97c213730079ceaa448108ca900b0fb303e54f19a8ae7a",
+      "bytes": 915620,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_tx.png",
+      "sha256": "c534187edfca6a745241f2326197b082d33663821cff77e7700c6dcc2031a3f3",
+      "bytes": 391172,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/wp_flintlock_bingxueniaochong_01_tr.png",
+      "sha256": "994c362d07ab6a863c39ca074c6988c1dabf706ee010d562a462250ee6f6ec2d",
+      "bytes": 442845,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "source-evidence/weapon-export.original.json",
+      "sha256": "9faf6f54dee1892a8abbdd6cb8e1729a0a8f05a9c2b0bebde6b7c76efa0bc327",
+      "bytes": 2470160,
+      "role": "historical-original-export-manifest"
+    },
+    {
+      "file": "source-evidence/identity_manifest.json",
+      "sha256": "bdc2323532c003f1c9f54d3ed5567ce40285bb861b57836d321c44f7a0f4bf6c",
+      "bytes": 41031,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/target_parts.json",
+      "sha256": "02f2dc9ef61d9bb3dcc338ab8a011fd96f3914835da983e42ca5a3bce3f06945",
+      "bytes": 13657,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/records/WeaponConfig_WeaponTemp_3110620.bin",
+      "sha256": "d952a87377a358ba4fb225c4f3be69ea8466ebb70b13e6d8733a954a9cfbd3b5",
+      "bytes": 242,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponBattleSkin_2311228.bin",
+      "sha256": "b1fb1942748302f75e544be54377b546d600e480784d8035097264b6cf98f154",
+      "bytes": 214,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/WeaponSkin_WeaponSkin_2311228.bin",
+      "sha256": "5d4ad486fc921bc1e2785268b12d8d9cbedfbcf7295bc8c228dd52e8cee6be5c",
+      "bytes": 954,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "verification-report.json",
+      "sha256": "be3ecb15f763a96e89d1c748959584af6c011fa6edec9afac9dccbbfe4515d24",
+      "bytes": 2270,
+      "role": "offline-verification-report"
+    },
+    {
+      "file": "README.md",
+      "sha256": "21903230baea1d4613a42f7df7dfcce9a46494dde1343c5e8737cc95fffaea4d",
+      "bytes": 1851,
+      "role": "readme"
+    }
+  ],
+  "generator": "scripts/import-prepared-models.py",
+  "generator_sha256": "c74db0c4fea9fa0fdd90c13eaef2ba91dcb6ef9fdb1f4a598164dcc51d65c007",
+  "runtime": "weapon.bin",
+  "runtime_sha256": "27ce590db7dfd294656f6a1052410b24e07c75b52580ae8a3cda939f7307172b",
+  "adaptation": {
+    "format": "KIVAWP01",
+    "identity": "引冰落2311228",
+    "max_texture_size": 1024,
+    "forward": "-Z",
+    "muzzle_or_arrow_source": [
+      0,
+      0,
+      0
+    ],
+    "right_hand_grip": [
+      0.0,
+      -0.0582,
+      0.76312304
+    ],
+    "left_hand_grip": [
+      0.0,
+      -0.0282,
+      0.41312304
+    ],
+    "adaptations": [
+      {
+        "part": "yinbingluo_main",
+        "mount": "muzzle/arrow source",
+        "conversion": [
+          [
+            -1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.0582
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0,
+            1.01312304
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "authored": "Kiva axis/grip/muzzle or body mount adaptation; not a recovered original Actor attachment."
+      }
+    ],
+    "limits": "Original current source pose LBS baked rigid; no source fire/draw clips, special shader, emission or packed mapping.",
+    "related_arrow": null
+  },
+  "runtime_external_paths_or_downloads": false,
+  "game_reads": false
+}

@@ -1,0 +1,12 @@
+{"file":".trellis/spec/index.md","reason":"项目边界与质量门槛"}
+{"file":".trellis/spec/client/index.md","reason":"现有蒙皮、缓存、外观与源动作约定"}
+{"file":".trellis/spec/client/combat-presentation.md","reason":"独立妹妹、武器射击源和只读动作时钟"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"显示不得反写规则和物理"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复用已有AV03和RigPose缓存"}
+{"file":"docs/plans/naraka-appearances.md","reason":"现有李火旺转换与源姿态适配证据"}
+{"file":"assets/prepared/naraka/README.md","reason":"准备包身份、来源和范围"}
+{"file":"assets/prepared/naraka/bailingmiao/README.md","reason":"真实女性骨架与基脸/发材质限制"}
+{"file":"assets/prepared/naraka/yinbingluo/README.md","reason":"引冰落的真实单索引蒙皮"}
+{"file":"assets/prepared/naraka/yizhiying/README.md","reason":"羿之影九骨和独立附件"}
+{"file": ".trellis/tasks/11-10-action-v1-models/research/model-runtime-contract.md", "reason": "核对实际资产格式、坐标、蒙皮与挂点"}
+{"file": ".trellis/tasks/11-10-action-v1-models/research/prepared-model-evidence.md", "reason": "独立来源事实及坐标/材料限制核对"}

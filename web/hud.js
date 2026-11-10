@@ -11,8 +11,8 @@
   const number = value => Math.ceil(nonnegative(value)).toLocaleString("en-US");
   const node = id => document.getElementById(id);
   const sets = Object.freeze({
-    1: { melee: "锤子", ranged: "鸟铳", meleeIcon: "hammer", rangedIcon: "musket", starter: "锤击 · 范围击飞", remote: "妹妹 · 单发鸟铳", finisher: "妹妹三枪", condition: "锤 E 原目标浮空时按 Tab" },
-    2: { melee: "链斧", ranged: "弓箭", meleeIcon: "axe", rangedIcon: "bow", starter: "链斧横扫 · 减速", remote: "妹妹 · 射出链斧", finisher: "拉近 · 妹妹三箭", condition: "弓 Q 成功僵直原目标后按 Tab" },
+    1: { melee: "锤子", ranged: "引冰落", meleeIcon: "hammer", rangedIcon: "musket", starter: "锤击 · 范围击飞", remote: "白灵淼 · 单发引冰落", finisher: "妹妹三枪", condition: "锤 E 原目标浮空时按 Tab" },
+    2: { melee: "链斧", ranged: "羿之影", meleeIcon: "axe", rangedIcon: "bow", starter: "链斧横扫 · 减速", remote: "白灵淼 · 射出链斧", finisher: "拉近 · 妹妹三箭", condition: "弓 Q 成功僵直原目标后按 Tab" },
   });
 
   function text(id, value) {

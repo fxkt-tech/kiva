@@ -1,0 +1,1710 @@
+{
+  "normalization": {
+    "source_bounds": [
+      [
+        -0.5867263408326595,
+        0.0031900560617017623,
+        -0.6871679841212877
+      ],
+      [
+        0.5867270434109311,
+        1.8901675600341004,
+        0.18110406578066174
+      ]
+    ],
+    "scale": 0.91681008192099,
+    "C": [
+      [
+        -0.91681008192099,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.91681008192099,
+        0.0,
+        -0.0029246755592613437
+      ],
+      [
+        0.0,
+        0.0,
+        -0.91681008192099,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "female_anchors": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        4.664391768029888e-15,
+        0.8934075307202305,
+        2.604102475607577e-08
+      ],
+      [
+        3.736854142109333e-09,
+        0.9690724213463493,
+        -0.015481241626951766
+      ],
+      [
+        -4.651666875680866e-10,
+        1.0735653724719292,
+        -0.01838412194662327
+      ],
+      [
+        7.930920692734285e-09,
+        1.21013520497763,
+        -0.012546833732324373
+      ],
+      [
+        8.416599414303232e-08,
+        1.4175065654751728,
+        0.019865745371855578
+      ],
+      [
+        6.058671385866336e-08,
+        1.498428375536399,
+        0.0011986571705580257
+      ],
+      [
+        -0.03433483665879127,
+        1.3816280248294863,
+        0.014202547780913058
+      ],
+      [
+        -0.14224377872064442,
+        1.3663862409694367,
+        0.022407536452112454
+      ],
+      [
+        -0.32094826807900534,
+        1.1623575231463021,
+        0.036780857708697524
+      ],
+      [
+        -0.4495628408090699,
+        0.9891638899526469,
+        -0.0646650791129915
+      ],
+      [
+        0.034334929565139505,
+        1.3816280259941427,
+        0.014202455872586445
+      ],
+      [
+        0.1422438806080149,
+        1.3663861371737152,
+        0.022407110355886068
+      ],
+      [
+        0.3209485293617299,
+        1.162357546873486,
+        0.03678012008381171
+      ],
+      [
+        0.44956281765283695,
+        0.9891638712825851,
+        -0.06466595653337692
+      ],
+      [
+        -0.08136671471168175,
+        0.8934074910163166,
+        1.0189697285194837e-07
+      ],
+      [
+        -0.13411035052691492,
+        0.48925602400489937,
+        0.025475860659987828
+      ],
+      [
+        -0.186700893356879,
+        0.08656496525727635,
+        0.050443274603255074
+      ],
+      [
+        -0.19988862635181534,
+        0.011117007989750243,
+        -0.07007283773305728
+      ],
+      [
+        0.0813667147114445,
+        0.8934075628037873,
+        -1.3691600813516357e-07
+      ],
+      [
+        0.13411051078191757,
+        0.48925609904397754,
+        0.025475437251596064
+      ],
+      [
+        0.1867012277204856,
+        0.08656512287080984,
+        0.05044268067698438
+      ],
+      [
+        0.19988862479794428,
+        0.01111717763780105,
+        -0.07007345760659964
+      ]
+    ],
+    "female_source_reference": "models/lianmu.glb; no male indices/proportions"
+  },
+  "skin_tint": {
+    "method": "Median original female_Body embedded base PNG at actual female hand/finger/forearm-weighted UV0, decoded sRGB to linear.",
+    "texture_sha256": "9704637d0254ef9f18fb4aed36e46a73c6b7427e32412e4e6c6806dbf370a398",
+    "samples": 1778,
+    "median_srgb": [
+      0.8,
+      0.5803921568627451,
+      0.5215686274509804
+    ],
+    "linear_tint": [
+      0.6038273388553378,
+      0.2961382707983211,
+      0.23455058216100522
+    ]
+  },
+  "primitives": [
+    {
+      "role": "outfit",
+      "mesh": "body",
+      "vertices": 3970,
+      "triangles": 6726,
+      "palette_slots": 78,
+      "maximum_C_LBS_error_m": 6.661338147750939e-16,
+      "maximum_f32_weights255_error_m": 7.35197204477507e-05,
+      "perturbed_female_driver": "Head",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.025655653074897918,
+      "maximum_driven_serialization_error_m": 7.351972044773256e-05,
+      "nondegenerate_UV_triangles": 6726
+    },
+    {
+      "role": "outfit",
+      "mesh": "body02",
+      "vertices": 14221,
+      "triangles": 18732,
+      "palette_slots": 77,
+      "maximum_C_LBS_error_m": 6.661338147750939e-16,
+      "maximum_f32_weights255_error_m": 0.0011176212581883477,
+      "perturbed_female_driver": "spine_01",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.1321867716313483,
+      "maximum_driven_serialization_error_m": 0.0011176212581883499,
+      "nondegenerate_UV_triangles": 18729
+    },
+    {
+      "role": "outfit",
+      "mesh": "body03",
+      "vertices": 466,
+      "triangles": 782,
+      "palette_slots": 18,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 1.0480507457272233e-07,
+      "perturbed_female_driver": "upperarm_l",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.0531982813467018,
+      "maximum_driven_serialization_error_m": 0.00012548091037601437,
+      "nondegenerate_UV_triangles": 781
+    },
+    {
+      "role": "outfit",
+      "mesh": "body04_cb",
+      "vertices": 466,
+      "triangles": 762,
+      "palette_slots": 20,
+      "maximum_C_LBS_error_m": 6.661338147750939e-16,
+      "maximum_f32_weights255_error_m": 9.761093349720977e-05,
+      "perturbed_female_driver": "upperarm_l",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.05388826369086592,
+      "maximum_driven_serialization_error_m": 0.000143870350733998,
+      "nondegenerate_UV_triangles": 762
+    },
+    {
+      "role": "outfit",
+      "mesh": "body05",
+      "vertices": 414,
+      "triangles": 680,
+      "palette_slots": 10,
+      "maximum_C_LBS_error_m": 4.440892098500626e-16,
+      "maximum_f32_weights255_error_m": 7.188009015842625e-05,
+      "perturbed_female_driver": "pelvis",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.04204012948579382,
+      "maximum_driven_serialization_error_m": 0.00011882734649183791,
+      "nondegenerate_UV_triangles": 680
+    },
+    {
+      "role": "outfit",
+      "mesh": "body06_cb",
+      "vertices": 2102,
+      "triangles": 3095,
+      "palette_slots": 28,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 0.00010054744874105148,
+      "perturbed_female_driver": "clavicle_r",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.03454810248923796,
+      "maximum_driven_serialization_error_m": 0.00015991692108208231,
+      "nondegenerate_UV_triangles": 3095
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth01",
+      "vertices": 246,
+      "triangles": 313,
+      "palette_slots": 7,
+      "maximum_C_LBS_error_m": 4.440892098500626e-16,
+      "maximum_f32_weights255_error_m": 8.544813762891655e-05,
+      "perturbed_female_driver": "thigh_r",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.034069340627124176,
+      "maximum_driven_serialization_error_m": 0.00016305774715085224,
+      "nondegenerate_UV_triangles": 313
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth02",
+      "vertices": 708,
+      "triangles": 986,
+      "palette_slots": 18,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 1.6454327791762453e-07,
+      "perturbed_female_driver": "lowerarm_l",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.04839760764184658,
+      "maximum_driven_serialization_error_m": 9.197560417202938e-05,
+      "nondegenerate_UV_triangles": 986
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth03_cb",
+      "vertices": 766,
+      "triangles": 1176,
+      "palette_slots": 30,
+      "maximum_C_LBS_error_m": 4.440892098500626e-16,
+      "maximum_f32_weights255_error_m": 3.473400816962887e-05,
+      "perturbed_female_driver": "pelvis",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.16207161567117012,
+      "maximum_driven_serialization_error_m": 0.00016455545515793162,
+      "nondegenerate_UV_triangles": 1176
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth04_cb",
+      "vertices": 678,
+      "triangles": 1106,
+      "palette_slots": 23,
+      "maximum_C_LBS_error_m": 6.661338147750939e-16,
+      "maximum_f32_weights255_error_m": 4.9659385803975715e-05,
+      "perturbed_female_driver": "lowerarm_l",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.06045088955095975,
+      "maximum_driven_serialization_error_m": 0.00012593779027893586,
+      "nondegenerate_UV_triangles": 1106
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth05_cb",
+      "vertices": 322,
+      "triangles": 494,
+      "palette_slots": 16,
+      "maximum_C_LBS_error_m": 4.440892098500626e-16,
+      "maximum_f32_weights255_error_m": 7.711594178206695e-05,
+      "perturbed_female_driver": "pelvis",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.17730076338567885,
+      "maximum_driven_serialization_error_m": 0.0001815666971060417,
+      "nondegenerate_UV_triangles": 494
+    },
+    {
+      "role": "outfit",
+      "mesh": "body04_cb",
+      "vertices": 466,
+      "triangles": 762,
+      "palette_slots": 20,
+      "maximum_C_LBS_error_m": 6.661338147750939e-16,
+      "maximum_f32_weights255_error_m": 9.761093349720977e-05,
+      "perturbed_female_driver": "upperarm_l",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.05388826369086592,
+      "maximum_driven_serialization_error_m": 0.000143870350733998,
+      "nondegenerate_UV_triangles": 762
+    },
+    {
+      "role": "outfit",
+      "mesh": "body06_cb",
+      "vertices": 2102,
+      "triangles": 3095,
+      "palette_slots": 28,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 0.00010054744874105148,
+      "perturbed_female_driver": "clavicle_r",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.03454810248923796,
+      "maximum_driven_serialization_error_m": 0.00015991692108208231,
+      "nondegenerate_UV_triangles": 3095
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth03_cb",
+      "vertices": 766,
+      "triangles": 1176,
+      "palette_slots": 30,
+      "maximum_C_LBS_error_m": 4.440892098500626e-16,
+      "maximum_f32_weights255_error_m": 3.473400816962887e-05,
+      "perturbed_female_driver": "pelvis",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.16207161567117012,
+      "maximum_driven_serialization_error_m": 0.00016455545515793162,
+      "nondegenerate_UV_triangles": 1176
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth04_cb",
+      "vertices": 678,
+      "triangles": 1106,
+      "palette_slots": 23,
+      "maximum_C_LBS_error_m": 6.661338147750939e-16,
+      "maximum_f32_weights255_error_m": 4.9659385803975715e-05,
+      "perturbed_female_driver": "lowerarm_l",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.06045088955095975,
+      "maximum_driven_serialization_error_m": 0.00012593779027893586,
+      "nondegenerate_UV_triangles": 1106
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth05_cb",
+      "vertices": 322,
+      "triangles": 494,
+      "palette_slots": 16,
+      "maximum_C_LBS_error_m": 4.440892098500626e-16,
+      "maximum_f32_weights255_error_m": 7.711594178206695e-05,
+      "perturbed_female_driver": "pelvis",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.17730076338567885,
+      "maximum_driven_serialization_error_m": 0.0001815666971060417,
+      "nondegenerate_UV_triangles": 494
+    },
+    {
+      "role": "lianmu",
+      "mesh": "hair_runtime_mesh",
+      "vertices": 9126,
+      "triangles": 8129,
+      "palette_slots": 12,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 1.6533189646857085e-07,
+      "perturbed_female_driver": "Head",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.04004497084357711,
+      "maximum_driven_serialization_error_m": 0.00012794970492384754,
+      "nondegenerate_UV_triangles": 8129
+    },
+    {
+      "role": "lianmu",
+      "mesh": "hair02_runtime_mesh",
+      "vertices": 2351,
+      "triangles": 2424,
+      "palette_slots": 14,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 1.6472661105601782e-07,
+      "perturbed_female_driver": "Head",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.07267169913324271,
+      "maximum_driven_serialization_error_m": 0.00013612069122130404,
+      "nondegenerate_UV_triangles": 2424
+    },
+    {
+      "role": "lianmu",
+      "mesh": "scalp_runtime_mesh",
+      "vertices": 371,
+      "triangles": 668,
+      "palette_slots": 2,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 1.3227592930100842e-07,
+      "perturbed_female_driver": "Head",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.033588753195397225,
+      "maximum_driven_serialization_error_m": 4.169762889416173e-05,
+      "nondegenerate_UV_triangles": 668
+    },
+    {
+      "role": "generic_female_face",
+      "mesh": "eyelash_runtime_mesh",
+      "vertices": 582,
+      "triangles": 914,
+      "palette_slots": 5,
+      "maximum_C_LBS_error_m": 6.661338147750939e-16,
+      "maximum_f32_weights255_error_m": 1.7705621137129204e-07,
+      "perturbed_female_driver": "Head",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.03938353690683075,
+      "maximum_driven_serialization_error_m": 1.7670371391933492e-07,
+      "nondegenerate_UV_triangles": 914
+    },
+    {
+      "role": "generic_female_face",
+      "mesh": "eyes_runtime_mesh",
+      "vertices": 402,
+      "triangles": 760,
+      "palette_slots": 2,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 1.1929513405432355e-07,
+      "perturbed_female_driver": "Head",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.03140107066440958,
+      "maximum_driven_serialization_error_m": 1.1928541413565092e-07,
+      "nondegenerate_UV_triangles": 760
+    },
+    {
+      "role": "generic_female_face",
+      "mesh": "face_runtime_mesh",
+      "vertices": 2276,
+      "triangles": 4144,
+      "palette_slots": 6,
+      "maximum_C_LBS_error_m": 8.881784197001252e-16,
+      "maximum_f32_weights255_error_m": 1.9766486034985482e-07,
+      "perturbed_female_driver": "Head",
+      "perturbation_radians": 0.35,
+      "maximum_driven_deformation_m": 0.03843030370103232,
+      "maximum_driven_serialization_error_m": 3.3111073457561955e-05,
+      "nondegenerate_UV_triangles": 4144
+    }
+  ],
+  "materials_and_textures": [
+    {
+      "name": "naraka::outfit::female_Body",
+      "source_png_sha256": "9704637d0254ef9f18fb4aed36e46a73c6b7427e32412e4e6c6806dbf370a398",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "fa705ce678b7f103151148afb2f4ed1c97f4a7b7b87ce541b6565fe90634ccb3",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::outfit::female_Body",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "name": "naraka::outfit::ch_f_ming_yulinglong_body02_lv_s16",
+      "source_png_sha256": "692611d7df072bcb8ab01003079a3ee5584af15cc6820512f8c565a078ac84dd",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "37ab693470a857f416ab022f558a77cee0d64b98fb5755a5c8b0e0a3507ae72f",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_body02_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_cloth01_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": true,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "name": "naraka::outfit::ch_f_ming_yulinglong_body04_cb_lv_s16",
+      "source_png_sha256": "d4435325e248375038721cecfa567c8f77a0c28589cd0bab6e90c812cb8bd560",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "4672728da1b540b6d0cea9a976287e433b51e3d86a8b25aa526d9bb1937139fe",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_body04_cb_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_body05_cb_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_body04_cb_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_cloth01_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": true,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_cloth01_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": true,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_cloth03_cb_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_body04_cb_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_cloth05_cb_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_body04_cf_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_body04_cf_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_cloth03_cf_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_body04_cf_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::outfit::ch_f_ming_yulinglong_cloth05_cf_lv_s16",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "name": "naraka::lianmu::ch_f_ming_yulinglong_hair_lv_s19",
+      "source_png_sha256": "22430c90d9e4f8dacabfc432d32179a53931d3436ed4cd7240739e6badf27ddd",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "4ad9ac00542f74d27dd2b07cdd05fda0cf82775b1b7e32007b89d2532ad6d8af",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::lianmu::ch_f_ming_yulinglong_hair_lv_s19",
+      "prepared_factor_linear": [
+        0.45,
+        0.45,
+        0.45,
+        1
+      ],
+      "runtime_factor_linear": [
+        0.45,
+        0.45,
+        0.45
+      ],
+      "alpha_mask": true,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "name": "naraka::lianmu::ch_f_ming_yulinglong_hair02_lv_s19",
+      "source_png_sha256": "22d36266c2d664eaf54b3de88a4f2c6b87b59a1f94479a7c03d5232bc5ffe4c0",
+      "source_size": [
+        512,
+        512
+      ],
+      "runtime_size": [
+        512,
+        512
+      ],
+      "runtime_png_sha256": "a676a7fe7ffa07d7a091cad19c486642e896ba88bbab186a8e98384705f791b0",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::lianmu::ch_f_ming_yulinglong_hair02_lv_s19",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        1,
+        1,
+        1
+      ],
+      "alpha_mask": true,
+      "cutoff": 0.8999999761581421,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "name": "naraka::lianmu::scalp_f_default",
+      "source_png_sha256": "8cb68739bed7818bfe15ff8cebbb4824858d0cafa909ab16c3dda1cc49d3b537",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        1024,
+        1024
+      ],
+      "runtime_png_sha256": "380ddeaa03b340602985ee537de0a23fc94dace6cc0aa6601fe0168116dae6a0",
+      "color_space": "sRGB",
+      "adaptation": "Source RGB/alpha preserved; resized only."
+    },
+    {
+      "material": "naraka::lianmu::scalp_f_default",
+      "prepared_factor_linear": [
+        0.45,
+        0.45,
+        0.45,
+        1
+      ],
+      "runtime_factor_linear": [
+        0.45,
+        0.45,
+        0.45
+      ],
+      "alpha_mask": true,
+      "cutoff": 0.699999988079071,
+      "double_sided": false,
+      "adaptation": "Source baseColorFactor/base PNG, cutoff and cull retained; neutral PBR scalars from prepared GLB."
+    },
+    {
+      "material": "naraka::generic_female_face::neutral original female eyelash",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        0.012,
+        0.012,
+        0.012
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Neutral charcoal tint on original female eyelash geometry; source cosmetic shader is not reconstructed."
+    },
+    {
+      "material": "naraka::generic_female_face::neutral original female eyes",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        0.28,
+        0.3,
+        0.32
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Neutral gray PBR tint on original female eye geometry; no authored atlas or claimed source cosmetics."
+    },
+    {
+      "material": "naraka::generic_female_face::neutral original female face",
+      "prepared_factor_linear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "runtime_factor_linear": [
+        0.6038273388553378,
+        0.2961382707983211,
+        0.23455058216100522
+      ],
+      "alpha_mask": false,
+      "cutoff": 0.5,
+      "double_sided": false,
+      "adaptation": "Generic female source face; neutral tint sampled from actual female outfit hand UV0, not Li male skin."
+    }
+  ],
+  "maximum_quantized_LBS_error_m": 0.0011176212581883477,
+  "maximum_driven_LBS_error_m": 0.0011176212581883499,
+  "binary": {
+    "format": "KIVAAV03",
+    "sha256": "adaeb80895ade1234677fd3b024dba459621b395e8d478ff222b74f28402408b",
+    "bytes": 7207149,
+    "textures": 6,
+    "materials": 22,
+    "parts": 22,
+    "vertices": 43801,
+    "triangles": 58524,
+    "part_statistics": [
+      {
+        "name": "naraka::female::outfit::1::body",
+        "mount": 0,
+        "vertices": 3970,
+        "triangles": 6726
+      },
+      {
+        "name": "naraka::female::outfit::2::body02",
+        "mount": 0,
+        "vertices": 14221,
+        "triangles": 18732
+      },
+      {
+        "name": "naraka::female::outfit::6::body03",
+        "mount": 0,
+        "vertices": 466,
+        "triangles": 782
+      },
+      {
+        "name": "naraka::female::outfit::10::body04_cb",
+        "mount": 0,
+        "vertices": 466,
+        "triangles": 762
+      },
+      {
+        "name": "naraka::female::outfit::14::body05",
+        "mount": 0,
+        "vertices": 414,
+        "triangles": 680
+      },
+      {
+        "name": "naraka::female::outfit::18::body06_cb",
+        "mount": 0,
+        "vertices": 2102,
+        "triangles": 3095
+      },
+      {
+        "name": "naraka::female::outfit::25::cloth01",
+        "mount": 0,
+        "vertices": 246,
+        "triangles": 313
+      },
+      {
+        "name": "naraka::female::outfit::31::cloth02",
+        "mount": 0,
+        "vertices": 708,
+        "triangles": 986
+      },
+      {
+        "name": "naraka::female::outfit::36::cloth03_cb",
+        "mount": 0,
+        "vertices": 766,
+        "triangles": 1176
+      },
+      {
+        "name": "naraka::female::outfit::42::cloth04_cb",
+        "mount": 0,
+        "vertices": 678,
+        "triangles": 1106
+      },
+      {
+        "name": "naraka::female::outfit::46::cloth05_cb",
+        "mount": 0,
+        "vertices": 322,
+        "triangles": 494
+      },
+      {
+        "name": "naraka::female::outfit::50::body04_cb",
+        "mount": 0,
+        "vertices": 466,
+        "triangles": 762
+      },
+      {
+        "name": "naraka::female::outfit::52::body06_cb",
+        "mount": 0,
+        "vertices": 2102,
+        "triangles": 3095
+      },
+      {
+        "name": "naraka::female::outfit::54::cloth03_cb",
+        "mount": 0,
+        "vertices": 766,
+        "triangles": 1176
+      },
+      {
+        "name": "naraka::female::outfit::56::cloth04_cb",
+        "mount": 0,
+        "vertices": 678,
+        "triangles": 1106
+      },
+      {
+        "name": "naraka::female::outfit::58::cloth05_cb",
+        "mount": 0,
+        "vertices": 322,
+        "triangles": 494
+      },
+      {
+        "name": "naraka::female::lianmu::64::hair_runtime_mesh",
+        "mount": 0,
+        "vertices": 9126,
+        "triangles": 8129
+      },
+      {
+        "name": "naraka::female::lianmu::65::hair02_runtime_mesh",
+        "mount": 0,
+        "vertices": 2351,
+        "triangles": 2424
+      },
+      {
+        "name": "naraka::female::lianmu::72::scalp_runtime_mesh",
+        "mount": 0,
+        "vertices": 371,
+        "triangles": 668
+      },
+      {
+        "name": "naraka::female::generic_female_face::2::eyelash_runtime_mesh",
+        "mount": 0,
+        "vertices": 582,
+        "triangles": 914
+      },
+      {
+        "name": "naraka::female::generic_female_face::4::eyes_runtime_mesh",
+        "mount": 0,
+        "vertices": 402,
+        "triangles": 760
+      },
+      {
+        "name": "naraka::female::generic_female_face::8::face_runtime_mesh",
+        "mount": 0,
+        "vertices": 2276,
+        "triangles": 4144
+      }
+    ],
+    "actual_runtime_mount0_bounds": [
+      [
+        -0.5379172402305552,
+        -2.358539822279915e-09,
+        -0.1660380225603024
+      ],
+      [
+        0.5379166397430256,
+        1.730000099332768,
+        0.6300025490550416
+      ]
+    ],
+    "source_pose_nonbind_bones": 483,
+    "PNG_checks": [
+      {
+        "name": "naraka::outfit::female_Body",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "fa705ce678b7f103151148afb2f4ed1c97f4a7b7b87ce541b6565fe90634ccb3"
+      },
+      {
+        "name": "naraka::outfit::ch_f_ming_yulinglong_body02_lv_s16",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "37ab693470a857f416ab022f558a77cee0d64b98fb5755a5c8b0e0a3507ae72f"
+      },
+      {
+        "name": "naraka::outfit::ch_f_ming_yulinglong_body04_cb_lv_s16",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "4672728da1b540b6d0cea9a976287e433b51e3d86a8b25aa526d9bb1937139fe"
+      },
+      {
+        "name": "naraka::lianmu::ch_f_ming_yulinglong_hair_lv_s19",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "4ad9ac00542f74d27dd2b07cdd05fda0cf82775b1b7e32007b89d2532ad6d8af"
+      },
+      {
+        "name": "naraka::lianmu::ch_f_ming_yulinglong_hair02_lv_s19",
+        "size": [
+          512,
+          512
+        ],
+        "sRGB": true,
+        "sha256": "a676a7fe7ffa07d7a091cad19c486642e896ba88bbab186a8e98384705f791b0"
+      },
+      {
+        "name": "naraka::lianmu::scalp_f_default",
+        "size": [
+          1024,
+          1024
+        ],
+        "sRGB": true,
+        "sha256": "380ddeaa03b340602985ee537de0a23fc94dace6cc0aa6601fe0168116dae6a0"
+      }
+    ],
+    "right_left_grips": null,
+    "exact_EOF": true
+  },
+  "source_verification": {
+    "passed": true,
+    "files": 76,
+    "glbs": [
+      {
+        "file": "outfit.glb",
+        "sha256": "3606106f8f8f55e76eab8063f733725f221363c50faa4945469d98feaf3bd8f2",
+        "vertices": 28693,
+        "triangles": 41485,
+        "meshes": 16,
+        "native_skinned_meshes": 16,
+        "primitive_checks": [
+          {
+            "mesh": "body",
+            "vertices": 3970,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.5517490448897908,
+                0.04250925960092256,
+                -0.12415504451835885
+              ],
+              [
+                0.5517491726872658,
+                1.8077446773135606,
+                0.1699868814817196
+              ]
+            ],
+            "palette_slots": 78,
+            "perturbed_source_joint": "gMan Head",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.03413198500433145
+          },
+          {
+            "mesh": "body02",
+            "vertices": 14221,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.5234759428580579,
+                0.0031900560617017623,
+                -0.3602516579284826
+              ],
+              [
+                0.5234934490451066,
+                1.5821113672211944,
+                0.1661152476966828
+              ]
+            ],
+            "palette_slots": 77,
+            "perturbed_source_joint": "gMan Spine",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.10582242537094547
+          },
+          {
+            "mesh": "body03",
+            "vertices": 466,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.32166246837920387,
+                1.2439295996855628,
+                -0.08584860779487738
+              ],
+              [
+                0.32166270219667126,
+                1.5272129577105813,
+                0.012830320417286479
+              ]
+            ],
+            "palette_slots": 18,
+            "perturbed_source_joint": "gMan L UpperArm Twist1",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.012748742648863986
+          },
+          {
+            "mesh": "body04_cb",
+            "vertices": 466,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.3239229097704925,
+                1.2420447679443243,
+                -0.08699781349915375
+              ],
+              [
+                0.323923410513688,
+                1.5272128382426255,
+                0.012830568215362829
+              ]
+            ],
+            "palette_slots": 20,
+            "perturbed_source_joint": "gMan L UpperArm Twist1",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.013000976089417115
+          },
+          {
+            "mesh": "body05",
+            "vertices": 414,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.18509272795307333,
+                0.8843583754984308,
+                -0.13489106334482903
+              ],
+              [
+                0.184273945849716,
+                1.2009080633968985,
+                0.1150501899762022
+              ]
+            ],
+            "palette_slots": 10,
+            "perturbed_source_joint": "gMan Pelvis",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.04912275908509708
+          },
+          {
+            "mesh": "body06_cb",
+            "vertices": 2102,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.36504901009459134,
+                0.5977914401563017,
+                -0.14352485038159343
+              ],
+              [
+                0.36504909617773906,
+                1.5525871124662805,
+                0.1369573871518584
+              ]
+            ],
+            "palette_slots": 28,
+            "perturbed_source_joint": "gMan R Clavicle",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.07022205652529967
+          },
+          {
+            "mesh": "cloth01",
+            "vertices": 246,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.13868208578669317,
+                0.3189270832964307,
+                0.04978381005355804
+              ],
+              [
+                0.1222256664745157,
+                1.1703559384828708,
+                0.1512014999516052
+              ]
+            ],
+            "palette_slots": 7,
+            "perturbed_source_joint": "gMan R Thigh Twist1",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.048689481956195886
+          },
+          {
+            "mesh": "cloth02",
+            "vertices": 708,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.4951502646150571,
+                0.9396252684502385,
+                -0.22442680512064564
+              ],
+              [
+                0.49516841056643573,
+                1.3464643093130741,
+                0.08728299184127193
+              ]
+            ],
+            "palette_slots": 18,
+            "perturbed_source_joint": "gMan L Forearm",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.03704703574198379
+          },
+          {
+            "mesh": "cloth03_cb",
+            "vertices": 766,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.42858703275580073,
+                0.15621486205869317,
+                -0.5076601142540166
+              ],
+              [
+                0.4285869258459206,
+                1.1760127805577472,
+                0.18110406578066174
+              ]
+            ],
+            "palette_slots": 30,
+            "perturbed_source_joint": "gMan Pelvis",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.16733919165466563
+          },
+          {
+            "mesh": "cloth04_cb",
+            "vertices": 678,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.5867263408326595,
+                0.6286246987727134,
+                -0.4624319526915739
+              ],
+              [
+                0.5867270434109311,
+                1.350998679065915,
+                0.1114494595308957
+              ]
+            ],
+            "palette_slots": 23,
+            "perturbed_source_joint": "gMan L Forearm",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.044215048701656594
+          },
+          {
+            "mesh": "cloth05_cb",
+            "vertices": 322,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.40044198775533746,
+                0.15907934762643025,
+                -0.522577139184964
+              ],
+              [
+                0.40044199051788687,
+                1.1738705893478296,
+                -0.011059554250448774
+              ]
+            ],
+            "palette_slots": 16,
+            "perturbed_source_joint": "BR_skirt_A_4",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.04295104243660629
+          },
+          {
+            "mesh": "body04_cb",
+            "vertices": 466,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.3239229097704925,
+                1.2420447679443243,
+                -0.08699781349915375
+              ],
+              [
+                0.323923410513688,
+                1.5272128382426255,
+                0.012830568215362829
+              ]
+            ],
+            "palette_slots": 20,
+            "perturbed_source_joint": "gMan L UpperArm Twist1",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.013000976089417115
+          },
+          {
+            "mesh": "body06_cb",
+            "vertices": 2102,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.36504901009459134,
+                0.5977914401563017,
+                -0.14352485038159343
+              ],
+              [
+                0.36504909617773906,
+                1.5525871124662805,
+                0.1369573871518584
+              ]
+            ],
+            "palette_slots": 28,
+            "perturbed_source_joint": "gMan R Clavicle",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.07022205652529967
+          },
+          {
+            "mesh": "cloth03_cb",
+            "vertices": 766,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.42858703275580073,
+                0.15621486205869317,
+                -0.5076601142540166
+              ],
+              [
+                0.4285869258459206,
+                1.1760127805577472,
+                0.18110406578066174
+              ]
+            ],
+            "palette_slots": 30,
+            "perturbed_source_joint": "gMan Pelvis",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.16733919165466563
+          },
+          {
+            "mesh": "cloth04_cb",
+            "vertices": 678,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.5867263408326595,
+                0.6286246987727134,
+                -0.4624319526915739
+              ],
+              [
+                0.5867270434109311,
+                1.350998679065915,
+                0.1114494595308957
+              ]
+            ],
+            "palette_slots": 23,
+            "perturbed_source_joint": "gMan L Forearm",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.044215048701656594
+          },
+          {
+            "mesh": "cloth05_cb",
+            "vertices": 322,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.40044198775533746,
+                0.15907934762643025,
+                -0.522577139184964
+              ],
+              [
+                0.40044199051788687,
+                1.1738705893478296,
+                -0.011059554250448774
+              ]
+            ],
+            "palette_slots": 16,
+            "perturbed_source_joint": "BR_skirt_A_4",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.04295104243660629
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      },
+      {
+        "file": "lianmu.glb",
+        "sha256": "fddd7ce6283909ff017fc6c0c27d37eb57db8c2f8147529b84b95559971b8d05",
+        "vertices": 11848,
+        "triangles": 11221,
+        "meshes": 3,
+        "native_skinned_meshes": 3,
+        "primitive_checks": [
+          {
+            "mesh": "hair_runtime_mesh",
+            "vertices": 9126,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.22414366464168559,
+                0.8153546923366448,
+                -0.6871679841212877
+              ],
+              [
+                0.21745212098764066,
+                1.8901210114165699,
+                0.12404906020437947
+              ]
+            ],
+            "palette_slots": 12,
+            "perturbed_source_joint": "gMan Head",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.051992384286249076
+          },
+          {
+            "mesh": "hair02_runtime_mesh",
+            "vertices": 2351,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.15293937481394337,
+                1.2271177710292611,
+                -0.3428466972336461
+              ],
+              [
+                0.1536904957398252,
+                1.8901675600341004,
+                0.13030905892892944
+              ]
+            ],
+            "palette_slots": 14,
+            "perturbed_source_joint": "gMan Head",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.05043419375575472
+          },
+          {
+            "mesh": "scalp_runtime_mesh",
+            "vertices": 371,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.07403601420040816,
+                1.628732119654121,
+                -0.07539824794709378
+              ],
+              [
+                0.07414785505480449,
+                1.8085165678247008,
+                0.10390461751732409
+              ]
+            ],
+            "palette_slots": 2,
+            "perturbed_source_joint": "gMan Head",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.03428562762596157
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      },
+      {
+        "file": "generic_female_face.glb",
+        "sha256": "5053332a25a1291465077e389b6f15844c48ad13c1310e03490f63fe466c02a8",
+        "vertices": 3260,
+        "triangles": 5818,
+        "meshes": 3,
+        "native_skinned_meshes": 3,
+        "primitive_checks": [
+          {
+            "mesh": "eyelash_runtime_mesh",
+            "vertices": 582,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.06879995629778175,
+                1.67189676111927,
+                0.0687053725847659
+              ],
+              [
+                0.06880002386633353,
+                1.7039953043070029,
+                0.11529050137826498
+              ]
+            ],
+            "palette_slots": 5,
+            "perturbed_source_joint": "gMan Head",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.02622543772504587
+          },
+          {
+            "mesh": "eyes_runtime_mesh",
+            "vertices": 402,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.043949648377722556,
+                1.6725426130527372,
+                0.07565909582982341
+              ],
+              [
+                0.043949693212448994,
+                1.7017943245581182,
+                0.09173977618781701
+              ]
+            ],
+            "palette_slots": 2,
+            "perturbed_source_joint": "Face_L_Yanqiu",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.0029203871246777494
+          },
+          {
+            "mesh": "face_runtime_mesh",
+            "vertices": 2276,
+            "native_skin": true,
+            "source_pose_bounds": [
+              [
+                -0.08435537703162516,
+                1.5824104164110644,
+                -0.02104755889184569
+              ],
+              [
+                0.08435531929098757,
+                1.7867850799670282,
+                0.1190700926255514
+              ]
+            ],
+            "palette_slots": 6,
+            "perturbed_source_joint": "gMan Head",
+            "radians": 0.2,
+            "maximum_deformation_source_units": 0.033675192255278465
+          }
+        ],
+        "original_units_and_poses_preserved": true,
+        "browser_or_screenshot_test": false
+      }
+    ],
+    "png_files": 35,
+    "portable_paths_only": true,
+    "game_or_research_directory_required_for_verify": false,
+    "browser_or_screenshot_test": false
+  },
+  "checks": [
+    "pinned_portable_manifest_and_every_file_SHA",
+    "actual_source_accessor_weights_indices",
+    "original_source_hierarchy_and_current_LBS",
+    "source_f32_or_weights255_deviation",
+    "UV_and_unit_normals",
+    "bounded_PNG_sRGB_base_only",
+    "finite_matrices_and_bounds",
+    "exact_binary_EOF"
+  ],
+  "browser_or_screenshot_test": false
+}

@@ -1,0 +1,518 @@
+{
+  "package": "assets/prepared/naraka/bailingmiao",
+  "portable_manifest_sha256": "bdf24f30a81916a3864e2c62f6a29fbeb2975e4fb20c26e4426b46ca1319a7a6",
+  "identity": {
+    "body": 3402139,
+    "hair": 100408,
+    "actor_temp": 1210776,
+    "body_size": 90005,
+    "female_avatar": "l22_female_skeletonAvatar",
+    "excluded_alternate_body": 3402140
+  },
+  "verified_files": 76,
+  "verified_pngs": 35,
+  "files": [
+    {
+      "file": "models/outfit.glb",
+      "sha256": "3606106f8f8f55e76eab8063f733725f221363c50faa4945469d98feaf3bd8f2",
+      "bytes": 11289736,
+      "role": "original-source-skin-glb:outfit"
+    },
+    {
+      "file": "source-evidence/components/outfit.source.json",
+      "sha256": "ca44378adcd50e10d1f0be8988a66a1678efc3462261ea043e17896b0d7c12a5",
+      "bytes": 584905,
+      "role": "historical-source-model-evidence"
+    },
+    {
+      "file": "source-evidence/components/outfit.cpu-verification.json",
+      "sha256": "6193376c2eb3877c35dc1bcb000c9bcaeaff8f00de22f78d73ae710a7d3a3184",
+      "bytes": 10565,
+      "role": "historical-source-model-evidence"
+    },
+    {
+      "file": "models/lianmu.glb",
+      "sha256": "fddd7ce6283909ff017fc6c0c27d37eb57db8c2f8147529b84b95559971b8d05",
+      "bytes": 1804332,
+      "role": "original-source-skin-glb:lianmu"
+    },
+    {
+      "file": "source-evidence/components/lianmu.source.json",
+      "sha256": "51ca70af05f9f303f9b8e1b7bcdda6cd2e983ab5c737364d87d5c0c62bbb481e",
+      "bytes": 334303,
+      "role": "historical-source-model-evidence"
+    },
+    {
+      "file": "source-evidence/components/lianmu.cpu-verification.json",
+      "sha256": "7112357ae0b55ddf443f3c8e8d5a92d38a68cf5be392e759d37c7298d5cc3f4e",
+      "bytes": 2424,
+      "role": "historical-source-model-evidence"
+    },
+    {
+      "file": "models/generic_female_face.glb",
+      "sha256": "5053332a25a1291465077e389b6f15844c48ad13c1310e03490f63fe466c02a8",
+      "bytes": 329480,
+      "role": "original-source-skin-glb:generic_female_face"
+    },
+    {
+      "file": "source-evidence/components/generic_female_face.source.json",
+      "sha256": "497a0e5eabfc7dca7cbc82ab5f1a7161b7d9415397723c01db75482ab7f0f844",
+      "bytes": 44200,
+      "role": "historical-source-model-evidence"
+    },
+    {
+      "file": "source-evidence/components/generic_female_face.cpu-verification.json",
+      "sha256": "78240eb2dbfe02e0cc2037cd2c86268ba474495ce35f62608f0bcf6abd2a2676",
+      "bytes": 2403,
+      "role": "historical-source-model-evidence"
+    },
+    {
+      "file": "textures/female_body01_d.png",
+      "sha256": "9704637d0254ef9f18fb4aed36e46a73c6b7427e32412e4e6c6806dbf370a398",
+      "bytes": 1131125,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/female_body01_nx.png",
+      "sha256": "4d2364446d3c8b6ec6d915422678938175ae64f2260be2d5dd2c33b29e6ba6b9",
+      "bytes": 5823269,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/female_body01_skin.png",
+      "sha256": "d62f1765724541e0b6c3b0d48c158e8c08b9105fc266fe9d0205bd53c4716699",
+      "bytes": 6492166,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body02_lv_s16_n.png",
+      "sha256": "e7ecf23daf741f8a2f3b330f6759d41cce09e3561e72e632670adc8077b5f98a",
+      "bytes": 7600086,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body02_lv_s16_mask.png",
+      "sha256": "88107f6f958191bfc84b023a1dcc7ce6f86193eadf874658dccf8a644086dc1f",
+      "bytes": 726170,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body02_lv_s16_em.png",
+      "sha256": "87c52cafd99f088c2ec6ffe9518a85003b1544d67f1506d154ffdcf05029eb69",
+      "bytes": 1023029,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body02_lv_s16_d.png",
+      "sha256": "692611d7df072bcb8ab01003079a3ee5584af15cc6820512f8c565a078ac84dd",
+      "bytes": 6099771,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body02_lv_s16_mrav.png",
+      "sha256": "947e20bdd617308675d7eb560b9128b656cf8975a28bb0d382dbfb834dc86a60",
+      "bytes": 7526866,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body03_lv_s16_n.png",
+      "sha256": "a8c2784b403ec88ce127e46c1d27cdd929ed70726376889099472c5a230c685c",
+      "bytes": 1736070,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body03_lv_s16_mask.png",
+      "sha256": "045a8a8aaadd606559063124553af351d62dfc7fa335c243292cf77af8247a63",
+      "bytes": 605185,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body03_lv_s16_em.png",
+      "sha256": "4ce6e47fd309ea0dead24dc4b32cf5a886ccef475d11d26d6b26526c87562ca2",
+      "bytes": 1318219,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body03_lv_s16_d.png",
+      "sha256": "d4435325e248375038721cecfa567c8f77a0c28589cd0bab6e90c812cb8bd560",
+      "bytes": 1188182,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_body03_lv_s16_mrav.png",
+      "sha256": "f2b369bd7605704249a2c65bfef4098d3855c464179a108b1536d4c9243d12a3",
+      "bytes": 1464368,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/hair_common_01_n.png",
+      "sha256": "3887fad206d4b3ef28ef2182a34ad3309aa6ff5bbe184621f0d7cee41e208226",
+      "bytes": 444207,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/hair_common_01_detail_sh_other.png",
+      "sha256": "9edf9a9274331243b3938c5fb0b19bed6485970818ed9babb55bfb1503b6fc70",
+      "bytes": 981477,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/hair_common_01_dir_other.png",
+      "sha256": "906a66dc1b22b00715d1212c2bba376d66812626bf6bb2268451e7e478d4e0ed",
+      "bytes": 746966,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/hair_iridescence_lut_other.png",
+      "sha256": "b966d59bf8f80b10fdc7bebf37694fdcba6cebee6a3492ff8c3bf1e55ddb056f",
+      "bytes": 20429,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_yulinglong_hair_lv_s19_main_sh_other.png",
+      "sha256": "7babca64497325dae2297b21eedf0fdc7f14e8c9fa72b50f1ec41b3d810b6c8e",
+      "bytes": 380179,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/hair_common_01_id_other.png",
+      "sha256": "4abede49dbc2c051ac89a5c9d6c450a2a22016df95f23d9d36e2b7ae975d4fb3",
+      "bytes": 762811,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_hair02_lv_s19_mask.png",
+      "sha256": "5f386c8401e522b6797c495eae758c41dff1b98b0809364302be6be209ed0852",
+      "bytes": 37294,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_hair02_lv_s19_n.png",
+      "sha256": "a36a2c81d8db217ef2c1facf45d6819d4bea6c44a0f751417acf3c961d88f40c",
+      "bytes": 334116,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_hair02_lv_s19_d.png",
+      "sha256": "22d36266c2d664eaf54b3de88a4f2c6b87b59a1f94479a7c03d5232bc5ffe4c0",
+      "bytes": 289429,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/ch_f_ming_yulinglong_hair02_lv_s19_mrav.png",
+      "sha256": "f05ef66e329b90a928a55446ca97ceb22d2cbe18456c6fde3bd1dded4e0b2e8a",
+      "bytes": 337619,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/scalp_f_default_n.png",
+      "sha256": "537af56fe212aed8ba0b86a33fd51478e57f47cdd306ce38a781bc7b5a1446b7",
+      "bytes": 403273,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/hair_m_default_01_sh_other.png",
+      "sha256": "405f863f6022b1b1fa25abb09ecda4bfe6c0eacba4b8c5368728803497ed281f",
+      "bytes": 85,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/hair_m_default_01_dir_other.png",
+      "sha256": "fe852361489427bd8ebf9503cbd255e605771485ff9052b33c8afcc920dd36d5",
+      "bytes": 86,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "textures/scalp_f_default_d.png",
+      "sha256": "21a31c0fdc1432a68b03097afe829aa838c15466f8eecdd2de1a4555eb20192f",
+      "bytes": 294616,
+      "role": "original-material-texture"
+    },
+    {
+      "file": "cosmetics/female_eyelash_yulinglong_bailingmiao_d.png",
+      "sha256": "5bfe47c4726f5106ee654bd792312b3879e0f7e5c61995c26ad7f4869b8bc574",
+      "bytes": 111274,
+      "role": "original-cosmetic-texture"
+    },
+    {
+      "file": "cosmetics/female_eyeshadow_yulinglong_bailingmiao_d.png",
+      "sha256": "a1192831b3da01eb8fa0883d22e62271293df33f249bc04ad9ae537607ef8e16",
+      "bytes": 174897,
+      "role": "original-cosmetic-texture"
+    },
+    {
+      "file": "cosmetics/female_iris_yulinglong_bailingmiao_d.png",
+      "sha256": "c7b3c6dfe83196c561dbb1131232724b96e0f76064f737e17d577b491e40a5d7",
+      "bytes": 89507,
+      "role": "original-cosmetic-texture"
+    },
+    {
+      "file": "derived-preview/hair_common_01_id_other_alpha_only.png",
+      "sha256": "22430c90d9e4f8dacabfc432d32179a53931d3436ed4cd7240739e6badf27ddd",
+      "bytes": 290584,
+      "role": "derived-neutral-alpha-preview-mask"
+    },
+    {
+      "file": "derived-preview/scalp_f_default_d_alpha_only.png",
+      "sha256": "8cb68739bed7818bfe15ff8cebbb4824858d0cafa909ab16c3dda1cc49d3b537",
+      "bytes": 153630,
+      "role": "derived-neutral-alpha-preview-mask"
+    },
+    {
+      "file": "source-evidence/identity_manifest.json",
+      "sha256": "def7fb11539953c303449b3dd1d8bd3c1fa9959f82aee4640c944066372b972c",
+      "bytes": 92096,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/target_parts.json",
+      "sha256": "4119e4b4d646cdb6f0ea6c6b897d180d41dd5a0f851f0efcc0c108221a437060",
+      "bytes": 32607,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/face_identity_records.json",
+      "sha256": "413bea5cc8d6ac027ce1b5c78dc45a8088a668409374645a3e87e86802537de7",
+      "bytes": 7841,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/colour_identity_limits.json",
+      "sha256": "41d6565b6c94aef3a55cc66756d02eda4bed6eb812ae1511939f1c2dfe66d5ae",
+      "bytes": 1613,
+      "role": "historical-original-identity-json"
+    },
+    {
+      "file": "source-evidence/records/AvatarFace_Cosmetic_1400584.bin",
+      "sha256": "da8c86cae66b65c83f3f7c94b45ce4539c80f90f7fa1217c4f128a2625c74b98",
+      "bytes": 280,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/AvatarFace_Cosmetic_1400585.bin",
+      "sha256": "cd6ed8d6ec5c4b67c6aad7b9c26ad092cc9048cfb635f2d9a2bdef819b3a01fc",
+      "bytes": 292,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/AvatarFace_Cosmetic_1400586.bin",
+      "sha256": "db24f76143d435d33068c48a982f56e3a869ceb20cb1cefaab77cdd6735b9bb6",
+      "bytes": 250,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/AvatarFace_FacePreset_1416403.bin",
+      "sha256": "ac4dc807f639d7bff370b7018d5071adfbca518a9789fcbe011a68aa079cd297",
+      "bytes": 147,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/CharacterConfig_ActorBodySize_90005.bin",
+      "sha256": "fbb914f43f74faeb89dddea721829f7cef323888df8441774e1cd0ce9b7012f9",
+      "bytes": 312,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/CharacterConfig_ActorTemp_1210776.bin",
+      "sha256": "d02e7bca894d430098125852cfd80d3c347e8921732478a9e54f8e4f87484ea7",
+      "bytes": 64,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/CharacterConfig_ActorVisualPart_11003.bin",
+      "sha256": "de29d98164ead65d621228a7dfabe62105c5b8102a9d9b52a9bb379d04292cef",
+      "bytes": 106,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/CharacterConfig_ActorVisualPart_11004.bin",
+      "sha256": "c38add25e3964139f3192f0a4cb52f3238dce432b7b0ee3fc503f9aab4ee6d18",
+      "bytes": 150,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/CharacterConfig_ActorVisualPart_11111.bin",
+      "sha256": "18137817f73dac91a49965e214cc9ae3d6b51d056cfebda4ec2c148144dc7d7f",
+      "bytes": 78,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/CharacterConfig_ActorVisualPart_11602.bin",
+      "sha256": "0ecac8d91572a152745cbcfe71af24cff6273021f2a0637666ee7069c8832ea6",
+      "bytes": 228,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/CharacterConfig_ActorVisualPart_17352.bin",
+      "sha256": "097888c8a2c813cae1a118370dedc74f847dda4da79c5ec59d929999f4f9c51d",
+      "bytes": 248,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/CharacterConfig_ActorVisualPart_18048.bin",
+      "sha256": "fb4f59a122ecf7d74c0e69091c7bdb8c4a8e1cccac921571b657bed38562ae52",
+      "bytes": 220,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/FashionConfig_FashionBody_3402139.bin",
+      "sha256": "1c6b543acd1e0353a2124dae143819c3eb28a6de2be1ff92ecfe24aea085c5b8",
+      "bytes": 1044,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/FashionConfig_FashionBody_3402140.bin",
+      "sha256": "e130fbb1ce35b76829c6521a8aa9c3a1855ce0f7bdfbfee2aad33c972aa76e37",
+      "bytes": 1042,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/HairConfig_HairVisual_100471.bin",
+      "sha256": "efa4d597e4f5a3844ae49dfa0cb516d320b3626024460bbb5507521826fba25f",
+      "bytes": 118,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/HairItem_Hair_100408.bin",
+      "sha256": "045b5ae568cdd3399858a153f254930ef6916cb1a4b8d42cd6fc5dec485a8048",
+      "bytes": 311,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/HeroFace_FacePreset_1000022.bin",
+      "sha256": "b4c95da5c2a3c57746440194475c9ec3269e553c5ff2afdd462ee91f1e8b60f5",
+      "bytes": 37,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/records/HeroFashion_HeroFashion_1000022.bin",
+      "sha256": "d503bc42e4768be5bf44f1e32dfe1d0079bc2b5d2246fff80522677d1b14a50e",
+      "bytes": 1239,
+      "role": "original-identity-record"
+    },
+    {
+      "file": "source-evidence/origin-manifest.json",
+      "sha256": "e592e04b09bc63a4d33b26c0c983d5d8b56da0768481e7b0e8c684b0018e57b3",
+      "bytes": 6280983,
+      "role": "historical-origin-metadata"
+    },
+    {
+      "file": "source-evidence/origin-female_rig.json",
+      "sha256": "ff17dd6932edf9bb829be3dc9b0f8304c18c0c3e629a6c39eab587766cb50cd5",
+      "bytes": 361069,
+      "role": "historical-origin-metadata"
+    },
+    {
+      "file": "source-evidence/origin-female_face_source.json",
+      "sha256": "3ee35f1c49e1aa87865f73bedc95d436b612087968fd0946cdb576360d3920d3",
+      "bytes": 9915014,
+      "role": "historical-origin-metadata"
+    },
+    {
+      "file": "source-evidence/cosmetic-textures.json",
+      "sha256": "66e514fa7bea9742cbe92361779647aaab32b54d1bff95691e0bb110212a3e09",
+      "bytes": 717496,
+      "role": "historical-origin-metadata"
+    },
+    {
+      "file": "reference-icons/ch_f_yulinglong_hair_lv_s19.png",
+      "sha256": "28a637485fbcec6de7e9a53c17b9bed131a7bed3f5650247f85e5a791476689f",
+      "bytes": 62557,
+      "role": "original-reference-icon"
+    },
+    {
+      "file": "reference-icons/ch_f_yulinglong_hair_lv_s19.source.json",
+      "sha256": "ade9954a9507ec171ada2f50a552869b0398100785dc7e5af88a62ebddef5c71",
+      "bytes": 13797,
+      "role": "original-reference-icon"
+    },
+    {
+      "file": "reference-icons/icon_face_balingmiao.png",
+      "sha256": "a0f84367c30a31de670de4e38882d75d9a78d996a2c36f54e7a8c80b3eae9a68",
+      "bytes": 71819,
+      "role": "original-reference-icon"
+    },
+    {
+      "file": "reference-icons/icon_face_balingmiao.source.json",
+      "sha256": "e7487c49aad6431df159c2509bedc60d87759d926aba08cd6d85d047f07541f1",
+      "bytes": 19604,
+      "role": "original-reference-icon"
+    },
+    {
+      "file": "reference-icons/icon_fashion_body_f_yulinglong_40.png",
+      "sha256": "998668b6270886bfd5e51c5850c4ac3da49c6e08020e5053ab8efd121a73de41",
+      "bytes": 129731,
+      "role": "original-reference-icon"
+    },
+    {
+      "file": "reference-icons/icon_fashion_body_f_yulinglong_40.source.json",
+      "sha256": "81ce2edee503481cbc5d7c6e936efa0d45b9bf741a9e4363803aa95c51ce7200",
+      "bytes": 18241,
+      "role": "original-reference-icon"
+    },
+    {
+      "file": "reference-icons/manifest.json",
+      "sha256": "200961da1170cf8b6e268f2c8cb03864f8a5d9970b916b8145a62130742fca2f",
+      "bytes": 2183,
+      "role": "original-reference-icon"
+    },
+    {
+      "file": "verification-report.json",
+      "sha256": "6c023899a411efc2be1e2d0e953f03e107eb0bb4432453853c155b27adbc4e33",
+      "bytes": 14867,
+      "role": "offline-verification-report"
+    },
+    {
+      "file": "README.md",
+      "sha256": "fbee629780f4a7effd09b3450778fe3189973dd9b5c88dde2e82ecdf9a62bd13",
+      "bytes": 2395,
+      "role": "readme"
+    }
+  ],
+  "generator": "scripts/import-prepared-models.py",
+  "generator_sha256": "c74db0c4fea9fa0fdd90c13eaef2ba91dcb6ef9fdb1f4a598164dcc51d65c007",
+  "runtime": "character.bin",
+  "runtime_sha256": "adaeb80895ade1234677fd3b024dba459621b395e8d478ff222b74f28402408b",
+  "adaptation": {
+    "format": "KIVAAV03",
+    "identity": "白灵淼衣装3402139 + 莲母100408 + 通用女性基脸",
+    "height_m": 1.73,
+    "max_texture_size": 1024,
+    "conversion": [
+      [
+        -0.91681008192099,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.91681008192099,
+        0.0,
+        -0.0029246755592613437
+      ],
+      [
+        0.0,
+        0.0,
+        -0.91681008192099,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "source_scale": 0.91681008192099,
+    "source_floor": 0.0031900560617017623,
+    "source_top": 1.8901675600341004,
+    "matrix_contract": "P=C*P; IBM=originalIBM*C^-1; sourceRest=C*originalBoneWorld; source current pose differs from bind.",
+    "female_driver_reference": "Actual Lianmu l22_female_skeletonAvatar current source structural anchors; palette current rests remain independent.",
+    "face": "Generic FEMALE source face. Female-body-derived skin; neutral gray eye tint. No Bai preset/cosmetic shader recovered.",
+    "hair": "Neutral light-grey alpha preview from frozen GLB, actual accessory base PNG; no ID RGB as albedo, no reconstructed dye/SH.",
+    "limits": "Neutral prepared PBR, no original cloth/hair physics, shader, specific facial preset or source fire/draw animation."
+  },
+  "runtime_external_paths_or_downloads": false,
+  "game_reads": false
+}

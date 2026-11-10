@@ -6,9 +6,6 @@ use std::collections::HashMap;
 use bevy::{
     asset::RenderAssetUsages,
     camera::visibility::DynamicSkinnedMeshBounds,
-    image::{
-        CompressedImageFormats, ImageAddressMode, ImageSampler, ImageSamplerDescriptor, ImageType,
-    },
     mesh::{
         Indices, PrimitiveTopology, VertexAttributeValues,
         skinning::{SkinnedMesh, SkinnedMeshInverseBindposes},
@@ -19,6 +16,7 @@ use bevy::{
 use super::{
     ActorView,
     animation::RigPose,
+    model_asset::Reader,
     skeleton::{AnimationLibrary, blend},
     source_animation::SourceAnimationLibrary,
 };
@@ -30,6 +28,7 @@ pub(super) enum Appearance {
     #[default]
     Choulingke,
     Lihuowang,
+    Bailingmiao,
 }
 
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
@@ -92,14 +91,19 @@ pub(super) struct AvatarAssets {
     drivers: Vec<Driver>,
     parts: Vec<Part>,
     right_hand: usize,
+    left_hand: usize,
+    spine: usize,
+    feet: [usize; 2],
+    toes: [usize; 2],
     source_hand: usize,
     source_hand_rest: Quat,
 }
 
-/// The original set retains its existing resource; the second set loads once on demand.
+/// Body sets load once and share meshes, palettes, textures and material variants.
 #[derive(Resource, Default)]
 pub(super) struct AvatarAssetCache {
     lihuowang: Option<AvatarAssets>,
+    bailingmiao: Option<AvatarAssets>,
 }
 
 #[derive(Component)]
@@ -127,41 +131,6 @@ impl AvatarSurface {
     }
 }
 
-// Explicit LE decoding of a trusted build artifact, matching import-choulingke.py.
-struct Reader<'a>(&'a [u8]);
-impl Reader<'_> {
-    fn take<const N: usize>(&mut self) -> [u8; N] {
-        self.bytes(N).try_into().unwrap()
-    }
-    fn bytes(&mut self, length: usize) -> &[u8] {
-        let (head, tail) = self.0.split_at(length);
-        self.0 = tail;
-        head
-    }
-    fn u8(&mut self) -> u8 {
-        self.take::<1>()[0]
-    }
-    fn u16(&mut self) -> usize {
-        u16::from_le_bytes(self.take()) as usize
-    }
-    fn u32(&mut self) -> usize {
-        u32::from_le_bytes(self.take()) as usize
-    }
-    fn f32(&mut self) -> f32 {
-        f32::from_le_bytes(self.take())
-    }
-    fn string(&mut self) -> String {
-        let length = self.u16();
-        String::from_utf8(self.bytes(length).to_vec()).unwrap()
-    }
-    fn vec3(&mut self) -> Vec3 {
-        Vec3::new(self.f32(), self.f32(), self.f32())
-    }
-    fn matrix(&mut self) -> Mat4 {
-        Mat4::from_cols_array(&std::array::from_fn(|_| self.f32()))
-    }
-}
-
 impl AvatarAssets {
     fn shared(world: &mut World, appearance: Appearance) -> Self {
         world.init_resource::<AvatarAssetCache>();
@@ -179,6 +148,7 @@ impl AvatarAssets {
             let data: &[u8] = match appearance {
                 Appearance::Choulingke => include_bytes!("../../assets/choulingke/character.bin"),
                 Appearance::Lihuowang => include_bytes!("../../assets/lihuowang/character.bin"),
+                Appearance::Bailingmiao => include_bytes!("../../assets/bailingmiao/character.bin"),
             };
             let mut reader = Reader(data);
             let format = reader.take::<8>();
@@ -187,7 +157,7 @@ impl AvatarAssets {
             let header_length = reader.u32();
             reader.bytes(header_length); // Offline provenance; no runtime paths or JSON dependency.
             let driver_count = reader.u16();
-            let (drivers, right_hand) = {
+            let (drivers, right_hand, left_hand, spine, feet, toes) = {
                 let library = world.resource::<AnimationLibrary>();
                 let reference = library.model_pose(
                     &library
@@ -251,90 +221,38 @@ impl AvatarAssets {
                         reference: reference[bone],
                     })
                     .collect();
-                let hand = records
-                    .iter()
-                    .position(|(bone, _)| *bone == library.bone("hand_r"))
-                    .unwrap();
-                (drivers, hand)
-            };
-            let texture_count = reader.u16();
-            let mut textures = Vec::new();
-            for _ in 0..texture_count {
-                reader.string(); // Exact texture GUID is also retained in the provenance header.
-                let srgb = reader.u8() != 0;
-                let length = reader.u32();
-                // Authored UVs include negative tiles and U > 1 (tops, pants,
-                // sheath/blade). Clamp collapses these regions to edge colours.
-                let mut sampler = ImageSamplerDescriptor::linear();
-                sampler.address_mode_u = ImageAddressMode::Repeat;
-                sampler.address_mode_v = ImageAddressMode::Repeat;
-                let image = Image::from_buffer(
-                    reader.bytes(length),
-                    ImageType::Extension("png"),
-                    CompressedImageFormats::NONE,
-                    srgb,
-                    ImageSampler::Descriptor(sampler),
-                    RenderAssetUsages::default(),
+                let index_for = |name| {
+                    records
+                        .iter()
+                        .position(|(bone, _)| *bone == library.bone(name))
+                        .unwrap()
+                };
+                (
+                    drivers,
+                    index_for("hand_r"),
+                    index_for("hand_l"),
+                    index_for("spine_03"),
+                    [index_for("foot_r"), index_for("foot_l")],
+                    [index_for("ball_r"), index_for("ball_l")],
                 )
-                .expect("verified bundled avatar PNG");
-                textures.push(world.resource_mut::<Assets<Image>>().add(image));
-            }
-            let mut materials = Vec::new();
-            let material_count = reader.u16();
-            for _ in 0..material_count {
-                reader.string();
-                let base = i16::from_le_bytes(reader.take());
-                let normal = i16::from_le_bytes(reader.take());
-                let surface = i16::from_le_bytes(reader.take());
-                let alpha = reader.u8() != 0;
-                let roughness = reader.f32();
-                let metallic = reader.f32();
-                let reflectance = reader.f32();
-                let anisotropy_strength = reader.f32();
-                let clearcoat = reader.f32();
-                let clearcoat_perceptual_roughness = reader.f32();
-                let diffuse_transmission = reader.f32();
-                let tint = reader.vec3();
-                let alpha_cutoff = reader.f32();
-                let double_sided = !source_pose || reader.u8() != 0;
-                let material = StandardMaterial {
-                    base_color: Color::linear_rgb(tint.x, tint.y, tint.z),
-                    base_color_texture: (base >= 0).then(|| textures[base as usize].clone()),
-                    normal_map_texture: (normal >= 0).then(|| textures[normal as usize].clone()),
-                    metallic_roughness_texture: (surface >= 0)
-                        .then(|| textures[surface as usize].clone()),
-                    occlusion_texture: (surface >= 0).then(|| textures[surface as usize].clone()),
-                    perceptual_roughness: roughness,
-                    metallic,
-                    reflectance,
-                    anisotropy_strength,
-                    anisotropy_rotation: std::f32::consts::FRAC_PI_2,
-                    clearcoat,
-                    clearcoat_perceptual_roughness,
-                    diffuse_transmission,
-                    alpha_mode: if alpha {
-                        AlphaMode::Mask(alpha_cutoff)
-                    } else {
-                        AlphaMode::Opaque
-                    },
-                    double_sided,
-                    cull_mode: (!double_sided).then_some(bevy::render::render_resource::Face::Back),
-                    ..default()
-                };
-                let mut assets = world.resource_mut::<Assets<StandardMaterial>>();
-                let variants = MaterialVariants {
-                    normal: assets.add(material.clone()),
-                    hit: assets.add(StandardMaterial {
-                        emissive: LinearRgba::rgb(0.9, 0.5, 0.2),
-                        ..material.clone()
-                    }),
-                    telegraph: assets.add(StandardMaterial {
-                        emissive: LinearRgba::rgb(0.45, 0.24, 0.025),
-                        ..material
-                    }),
-                };
-                materials.push(variants);
-            }
+            };
+            let materials = super::model_asset::materials(world, &mut reader, source_pose)
+                .into_iter()
+                .map(|material| {
+                    let mut assets = world.resource_mut::<Assets<StandardMaterial>>();
+                    MaterialVariants {
+                        normal: assets.add(material.clone()),
+                        hit: assets.add(StandardMaterial {
+                            emissive: LinearRgba::rgb(0.9, 0.5, 0.2),
+                            ..material.clone()
+                        }),
+                        telegraph: assets.add(StandardMaterial {
+                            emissive: LinearRgba::rgb(0.45, 0.24, 0.025),
+                            ..material
+                        }),
+                    }
+                })
+                .collect::<Vec<_>>();
             let part_count = reader.u16();
             let mut parts = Vec::new();
             for _ in 0..part_count {
@@ -435,11 +353,18 @@ impl AvatarAssets {
                 drivers,
                 parts,
                 right_hand,
+                left_hand,
+                spine,
+                feet,
+                toes,
             };
             match appearance {
                 Appearance::Choulingke => world.insert_resource(assets),
                 Appearance::Lihuowang => {
                     world.resource_mut::<AvatarAssetCache>().lihuowang = Some(assets);
+                }
+                Appearance::Bailingmiao => {
+                    world.resource_mut::<AvatarAssetCache>().bailingmiao = Some(assets);
                 }
             }
         }
@@ -460,6 +385,7 @@ impl AvatarAssets {
         match appearance {
             Appearance::Choulingke => original,
             Appearance::Lihuowang => cache?.lihuowang.as_ref(),
+            Appearance::Bailingmiao => cache?.bailingmiao.as_ref(),
         }
     }
 
@@ -483,6 +409,168 @@ impl AvatarAssets {
         result
     }
 
+    /// Solve a two-segment chain in the target body's model space. Rotation
+    /// deltas retain the palette's actual source axes and inverse bind matrices.
+    fn solve_limb(&self, posed: &mut [Transform], end: usize, target: Vec3, pole: Vec3) {
+        let middle = self.drivers[end].parent.expect("limb has a middle driver");
+        let start = self.drivers[middle].parent.expect("limb has a root driver");
+        let origin = posed[start].translation;
+        let upper_offset = self.drivers[middle].anchor - self.drivers[start].anchor;
+        let lower_offset = self.drivers[end].anchor - self.drivers[middle].anchor;
+        let upper_length = upper_offset.length();
+        let lower_length = lower_offset.length();
+        let direction = (target - origin).normalize_or(Vec3::NEG_Z);
+        let distance = target.distance(origin).clamp(
+            (upper_length - lower_length).abs() + 0.00001,
+            upper_length + lower_length - 0.00001,
+        );
+        let along = (upper_length * upper_length - lower_length * lower_length
+            + distance * distance)
+            / (2. * distance);
+        let bend = (pole - direction * pole.dot(direction)).normalize_or(Vec3::Y);
+        let middle_position = origin
+            + direction * along
+            + bend * (upper_length * upper_length - along * along).max(0.).sqrt();
+        let end_position = origin + direction * distance;
+        posed[start].rotation = Quat::from_rotation_arc(
+            (posed[start].rotation * upper_offset).normalize(),
+            (middle_position - origin).normalize(),
+        ) * posed[start].rotation;
+        posed[middle].translation = middle_position;
+        posed[middle].rotation = Quat::from_rotation_arc(
+            (posed[middle].rotation * lower_offset).normalize(),
+            (end_position - middle_position).normalize(),
+        ) * posed[middle].rotation;
+        posed[end].translation = end_position;
+    }
+
+    /// Companion grips use this body's female structural reference. At steep
+    /// elevation, adjust the relaxed stance to reach the fixed stock while both
+    /// feet stay planted; leg and arm solves preserve the target segment lengths.
+    fn posed_drivers(&self, rig: &RigPose) -> Vec<Transform> {
+        let mut posed = self.driver_pose(&rig.model);
+        if let Some(targets) = rig.companion_hands {
+            let hands = [self.right_hand, self.left_hand];
+            // The short clavicle segment can shrug toward a high stock before
+            // asking the legs to lower the torso. Its length stays unchanged.
+            for (wrist, target) in hands.into_iter().zip(targets) {
+                let elbow = self.drivers[wrist].parent.unwrap();
+                let upper = self.drivers[elbow].parent.unwrap();
+                let clavicle = self.drivers[upper].parent.unwrap();
+                let reach = self.drivers[wrist]
+                    .anchor
+                    .distance(self.drivers[elbow].anchor)
+                    + self.drivers[elbow]
+                        .anchor
+                        .distance(self.drivers[upper].anchor)
+                    - 0.0001;
+                if posed[upper].translation.distance(target) > reach {
+                    let offset = self.drivers[upper].anchor - self.drivers[clavicle].anchor;
+                    let toward_target = target - posed[clavicle].translation;
+                    let distance = toward_target.length().max(0.0001);
+                    let direction = toward_target / distance;
+                    let current = (posed[clavicle].rotation * offset).normalize();
+                    let angle = current.angle_between(direction);
+                    // The least law-of-cosines rotation starts at zero when the
+                    // grip crosses reach, keeping shoulder/sleeve motion continuous.
+                    let allowed = ((distance * distance + offset.length_squared() - reach * reach)
+                        / (2. * distance * offset.length()))
+                    .clamp(-1., 1.)
+                    .acos();
+                    let weight = ((angle - allowed) / angle.max(0.0001)).clamp(0., 1.);
+                    let correction =
+                        Quat::IDENTITY.slerp(Quat::from_rotation_arc(current, direction), weight);
+                    posed[clavicle].rotation = correction * posed[clavicle].rotation;
+                    posed[upper].translation =
+                        posed[clavicle].translation + posed[clavicle].rotation * offset;
+                }
+            }
+            let (mut minimum, mut maximum) = (f32::NEG_INFINITY, f32::INFINITY);
+            for (wrist, target) in hands.into_iter().zip(targets) {
+                let elbow = self.drivers[wrist].parent.unwrap();
+                let upper = self.drivers[elbow].parent.unwrap();
+                let reach = self.drivers[wrist]
+                    .anchor
+                    .distance(self.drivers[elbow].anchor)
+                    + self.drivers[elbow]
+                        .anchor
+                        .distance(self.drivers[upper].anchor)
+                    - 0.0001;
+                let delta = posed[upper].translation - target;
+                let available_y = (reach * reach - delta.xz().length_squared()).max(0.).sqrt();
+                minimum = minimum.max(-delta.y - available_y);
+                maximum = maximum.min(-delta.y + available_y);
+            }
+            // A downward shot may stand up from the relaxed CC0 pose. Bound
+            // that rise by both real leg lengths so feet never lift or stretch.
+            let maximum_rise = self
+                .feet
+                .into_iter()
+                .map(|foot| {
+                    let knee = self.drivers[foot].parent.unwrap();
+                    let hip = self.drivers[knee].parent.unwrap();
+                    let reach = self.drivers[foot]
+                        .anchor
+                        .distance(self.drivers[knee].anchor)
+                        + self.drivers[knee].anchor.distance(self.drivers[hip].anchor)
+                        - 0.0001;
+                    let delta = posed[hip].translation - posed[foot].translation;
+                    (reach * reach - delta.xz().length_squared()).max(0.).sqrt() - delta.y
+                })
+                .fold(f32::INFINITY, f32::min)
+                .max(0.);
+            let vertical = if minimum > 0. {
+                minimum
+            } else {
+                maximum.min(0.)
+            }
+            .clamp(-0.50, maximum_rise);
+            if vertical.abs() > 0.000001 {
+                // Root->pelvis translation is a pose control, never actor motion.
+                let feet = self
+                    .toes
+                    .into_iter()
+                    .zip(self.feet)
+                    .map(|(toe, foot)| {
+                        let knee = self.drivers[foot].parent.unwrap();
+                        let hip = self.drivers[knee].parent.unwrap();
+                        (
+                            toe,
+                            foot,
+                            posed[toe],
+                            posed[foot],
+                            posed[knee].translation - posed[hip].translation,
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                for driver in posed.iter_mut().skip(1) {
+                    driver.translation.y += vertical;
+                }
+                for (toe, foot, toe_pose, foot_pose, pole) in feet {
+                    self.solve_limb(&mut posed, foot, foot_pose.translation, pole);
+                    posed[foot].rotation = foot_pose.rotation;
+                    posed[toe] = toe_pose;
+                }
+            }
+            for (wrist, target, side) in [
+                (self.right_hand, targets[0], 1.),
+                (self.left_hand, targets[1], -1.),
+            ] {
+                self.solve_limb(&mut posed, wrist, target, Vec3::new(side, -1., 0.3));
+            }
+        }
+        posed
+    }
+
+    fn pose_deltas(&self, rig: &RigPose) -> Vec<Mat4> {
+        self.posed_drivers(rig)
+            .iter()
+            .zip(&self.drivers)
+            .map(|(posed, driver)| posed.to_matrix() * Mat4::from_translation(-driver.anchor))
+            .collect()
+    }
+
+    #[cfg(test)]
     fn deltas(&self, model: &[Transform]) -> Vec<Mat4> {
         self.driver_pose(model)
             .iter()
@@ -523,7 +611,7 @@ impl AvatarAssets {
     }
 
     fn source_deltas(&self, rig: &RigPose) -> Option<Vec<Mat4>> {
-        if self.appearance != Appearance::Lihuowang {
+        if self.appearance == Appearance::Choulingke {
             return None;
         }
         let source = rig.source.as_ref()?;
@@ -545,7 +633,7 @@ impl AvatarAssets {
     ) -> Transform {
         let fallback = Transform::from_matrix(deltas[bone.driver] * bone.bind);
         rig.source.as_ref().map_or(fallback, |source| {
-            let matrix = if self.appearance == Appearance::Lihuowang {
+            let matrix = if self.appearance != Appearance::Choulingke {
                 source_deltas.map(|deltas| deltas[bone.driver] * bone.bind)
             } else {
                 let driver = &self.drivers[bone.driver];
@@ -561,15 +649,27 @@ impl AvatarAssets {
         })
     }
 
+    /// Converted accessory vertices use body axes, so apply the spine's motion
+    /// delta rather than the CC0 skeleton's authored bone-axis rotation.
+    pub(super) fn body_mount(&self, rig: &RigPose) -> Transform {
+        self.posed_drivers(rig)[self.spine]
+    }
+
     pub(super) fn attachment_pose(&self, rig: &RigPose) -> Vec<Transform> {
-        let drivers = self.driver_pose(&rig.model);
+        let drivers = self.posed_drivers(rig);
         let mut result = rig.model.clone();
+        if self.appearance == Appearance::Bailingmiao {
+            for (driver, posed) in self.drivers.iter().zip(&drivers) {
+                result[driver.bone] = Transform::from_translation(posed.translation)
+                    .with_rotation(posed.rotation * driver.reference.rotation);
+            }
+        }
         let hand = &self.drivers[self.right_hand];
         // Preserve the authored hand orientation used by weapon corrections and
         // ranged aiming; only align its attachment position to the retargeted hand.
         result[hand.bone].translation = drivers[self.right_hand].translation;
         if let Some(source) = &rig.source {
-            let source_hand = if self.appearance == Appearance::Lihuowang {
+            let source_hand = if self.appearance != Appearance::Choulingke {
                 let posed = self.source_driver_pose(&source.model)[self.right_hand];
                 Transform::from_translation(posed.translation)
                     .with_rotation(posed.rotation * hand.reference.rotation)
@@ -600,7 +700,7 @@ pub(super) fn spawn_with_appearance(
         world.entity_mut(owner).insert(rig);
     }
     let rig = world.get::<RigPose>(owner).unwrap();
-    let deltas = assets.deltas(&rig.model);
+    let deltas = assets.pose_deltas(rig);
     let source_deltas = assets.source_deltas(rig);
     let poses: Vec<Vec<_>> = assets
         .parts
@@ -757,7 +857,7 @@ pub(super) fn sync(
             entity,
             (
                 selected,
-                selected.deltas(&pose.model),
+                selected.pose_deltas(pose),
                 selected.source_deltas(pose),
             ),
         );
@@ -796,6 +896,7 @@ mod tests {
         ActionIntent, Body, CollisionWorld, CombatIntent, Combatant, Facing, MotionState,
         MoveIntent, SimulationActive, SimulationPlugin, SpawnPoint, WeaponPair,
     };
+    use bevy::image::{ImageAddressMode, ImageSampler};
     use std::time::Duration;
 
     fn test_app(animated: bool) -> App {
@@ -1342,6 +1443,381 @@ mod tests {
         );
         assert!((blade.rotation * Vec3::Y).distance(attachment[hand].rotation * Vec3::Z) < 0.00001);
         assert_eq!(*world.get::<Transform>(owner).unwrap(), Transform::IDENTITY);
+    }
+
+    #[test]
+    fn bailingmiao_uses_female_palettes_and_real_weapon_grips_without_stretching_arms() {
+        use crate::client::ranged_models::RangedModel;
+        use crate::simulation::CompanionState;
+        let mut app = test_app(false);
+        let world = app.world_mut();
+        let owner = world.spawn(Transform::IDENTITY).id();
+        let surfaces = spawn_with_appearance(world, owner, Appearance::Bailingmiao);
+        assert!(
+            surfaces.len() >= 18,
+            "outfit, Lianmu and female face surfaces"
+        );
+        let female = AvatarAssets::shared(world, Appearance::Bailingmiao);
+        let male = AvatarAssets::shared(world, Appearance::Lihuowang);
+        assert_eq!(female.drivers.len(), 23);
+        assert!(female.parts.iter().all(|part| !part.blade));
+        assert!(
+            female
+                .parts
+                .iter()
+                .flat_map(|part| &part.bones)
+                .all(|bone| bone.source.is_none())
+        );
+        assert!(
+            female
+                .drivers
+                .iter()
+                .zip(&male.drivers)
+                .any(|(female, male)| (female.anchor - male.anchor).length() > 0.001),
+            "own female structural reference"
+        );
+        let resting = sample_surface(world, owner);
+        let mut poses = Vec::new();
+        for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+            let model = RangedModel::shared(world, pair);
+            for pitch in [0_f32, 0.35, -0.25, 0.8, 1.0, -0.8] {
+                let source = Vec3::new(0., 1.2, -0.55);
+                let grips = model
+                    .grips
+                    .map(|grip| source + Quat::from_rotation_x(pitch) * grip);
+                let state = CompanionState {
+                    pair,
+                    elapsed: 0.31,
+                    shot_count: 1,
+                    ..default()
+                };
+                world.resource_scope(|world, library: Mut<AnimationLibrary>| {
+                    world
+                        .get_mut::<RigPose>(owner)
+                        .unwrap()
+                        .sample_companion(&library, &state, pitch, grips);
+                });
+                world.run_schedule(Update);
+                let rig = world.get::<RigPose>(owner).unwrap();
+                let drivers = female.posed_drivers(rig);
+                let ground_pose = female.driver_pose(&rig.model);
+                for foot in female.feet {
+                    assert!(
+                        drivers[foot]
+                            .translation
+                            .distance(ground_pose[foot].translation)
+                            < 0.0001
+                    );
+                    assert!(
+                        drivers[foot]
+                            .rotation
+                            .angle_between(ground_pose[foot].rotation)
+                            < 0.0001
+                    );
+                }
+                for (index, driver) in female.drivers.iter().enumerate().skip(2) {
+                    let parent = driver.parent.unwrap();
+                    assert!(
+                        (drivers[index]
+                            .translation
+                            .distance(drivers[parent].translation)
+                            - driver.anchor.distance(female.drivers[parent].anchor))
+                        .abs()
+                            < 0.0001,
+                        "{pair:?} pitch={pitch} structural segment={index}"
+                    );
+                }
+                for (upper, elbow, wrist, target) in [(12, 13, 14, grips[0]), (8, 9, 10, grips[1])]
+                {
+                    assert!(
+                        drivers[wrist].translation.distance(target) < 0.0001,
+                        "{pair:?} pitch={pitch} wrist={wrist}: {:?} target={target:?}",
+                        drivers[wrist].translation
+                    );
+                    for (a, b) in [(upper, elbow), (elbow, wrist)] {
+                        assert!(
+                            (drivers[a].translation.distance(drivers[b].translation)
+                                - female.drivers[a].anchor.distance(female.drivers[b].anchor))
+                            .abs()
+                                < 0.0001
+                        );
+                    }
+                    // Check the actual palette entity used by SkinnedMesh, not
+                    // just the unrendered RigPose's intended hand coordinate.
+                    let (joint, palette) = world
+                        .query::<(Entity, &PaletteJoint)>()
+                        .iter(world)
+                        .find(|(_, joint)| joint.owner == owner && joint.bone.driver == wrist)
+                        .unwrap();
+                    let reference = palette
+                        .bone
+                        .bind
+                        .inverse()
+                        .transform_point3(female.drivers[wrist].anchor);
+                    assert!(
+                        world
+                            .get::<Transform>(joint)
+                            .unwrap()
+                            .transform_point(reference)
+                            .distance(target)
+                            < 0.0001
+                    );
+                }
+                let moved = sample_surface(world, owner);
+                assert!(changed(&resting, &moved) > 0.02);
+                assert!(
+                    moved
+                        .iter()
+                        .all(|point| point.is_finite() && point.abs().max_element() < 4.)
+                );
+                poses.push(moved);
+            }
+        }
+        assert!(changed(&poses[0], &poses[6]) > 0.02);
+        // Sweep across reach thresholds. A barely unreachable grip must not
+        // snap the clavicle by its full length between adjacent aim samples.
+        for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+            let model = RangedModel::shared(world, pair);
+            let mut previous: Option<Vec<Transform>> = None;
+            for step in -200..=200 {
+                let pitch = step as f32 * 0.005;
+                let grips = model
+                    .grips
+                    .map(|grip| Vec3::new(0., 1.2, -0.55) + Quat::from_rotation_x(pitch) * grip);
+                let state = CompanionState {
+                    pair,
+                    elapsed: 0.31,
+                    ..default()
+                };
+                world.resource_scope(|world, library: Mut<AnimationLibrary>| {
+                    world
+                        .get_mut::<RigPose>(owner)
+                        .unwrap()
+                        .sample_companion(&library, &state, pitch, grips);
+                });
+                let posed = female.posed_drivers(world.get::<RigPose>(owner).unwrap());
+                for (hand, target) in [female.right_hand, female.left_hand].into_iter().zip(grips) {
+                    assert!(
+                        posed[hand].translation.distance(target) < 0.0001,
+                        "swept {pair:?} pitch={pitch} hand={hand}"
+                    );
+                }
+                if let Some(previous) = previous {
+                    for index in [1, 7, 8, 11, 12] {
+                        assert!(
+                            posed[index]
+                                .translation
+                                .distance(previous[index].translation)
+                                < 0.025,
+                            "continuous {pair:?} pitch={pitch} driver={index}"
+                        );
+                    }
+                }
+                previous = Some(posed);
+            }
+        }
+        world.run_schedule(Update);
+        let paused = sample_surface(world, owner);
+        world.run_schedule(Update);
+        assert_eq!(sample_surface(world, owner), paused);
+        let counts = (
+            world.resource::<Assets<Mesh>>().len(),
+            world.resource::<Assets<Image>>().len(),
+            world.resource::<Assets<StandardMaterial>>().len(),
+        );
+        let other = world.spawn(Transform::IDENTITY).id();
+        spawn_with_appearance(world, other, Appearance::Bailingmiao);
+        assert_eq!(
+            (
+                world.resource::<Assets<Mesh>>().len(),
+                world.resource::<Assets<Image>>().len(),
+                world.resource::<Assets<StandardMaterial>>().len()
+            ),
+            counts
+        );
+    }
+
+    #[test]
+    fn actual_hammer_and_chain_combos_keep_female_skin_grips_sources_and_feet_aligned() {
+        use crate::{
+            client::{
+                animation, combat,
+                companion::{self, CompanionView, SisterWeapon},
+                controls::ViewYaw,
+                ranged_models::RangedModel,
+                scene,
+            },
+            gameplay::Player,
+            simulation::{CombatEffect, CombatFeedback, CompanionState},
+        };
+        fn tick(app: &mut App, count: usize) {
+            for _ in 0..count {
+                app.world_mut()
+                    .resource_mut::<Time<Fixed>>()
+                    .advance_by(Duration::from_secs_f64(1. / 60.));
+                app.world_mut().run_schedule(FixedUpdate);
+            }
+        }
+        fn request(app: &mut App, player: Entity, command: impl FnOnce(&mut CombatIntent)) {
+            command(&mut app.world_mut().get_mut::<CombatIntent>(player).unwrap());
+            tick(app, 1);
+        }
+        for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+            let mut app = App::new();
+            app.add_plugins((MinimalPlugins, SimulationPlugin))
+                .init_resource::<Assets<Mesh>>()
+                .init_resource::<Assets<StandardMaterial>>()
+                .init_resource::<AnimationLibrary>()
+                .init_resource::<ViewYaw>()
+                .add_systems(
+                    Startup,
+                    (
+                        crate::gameplay::setup,
+                        scene::setup,
+                        combat::setup,
+                        companion::setup,
+                    )
+                        .chain(),
+                )
+                .add_systems(
+                    Update,
+                    (
+                        scene::sync_player,
+                        animation::animate,
+                        companion::sync,
+                        sync,
+                    )
+                        .chain(),
+                );
+            app.finish();
+            app.update();
+            tick(&mut app, 12);
+            let player = app
+                .world_mut()
+                .query_filtered::<Entity, With<Player>>()
+                .single(app.world())
+                .unwrap();
+            request(&mut app, player, CombatIntent::request_toggle_target);
+            if pair == WeaponPair::HammerMusket {
+                request(&mut app, player, CombatIntent::request_melee_skill);
+                tick(&mut app, 13);
+            } else {
+                request(&mut app, player, |intent| intent.request_pair(pair));
+                request(&mut app, player, CombatIntent::request_ranged_skill);
+                tick(&mut app, 19);
+            }
+            request(&mut app, player, CombatIntent::request_combo);
+            let sequence = app
+                .world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .sequence()
+                .expect("real committed combo");
+            assert_eq!(sequence.pair, pair);
+            let mut highest_pitch = 0_f32;
+            for _ in 0..65 {
+                let before = app.world().get::<Body>(player).unwrap().world_position();
+                app.world_mut().run_schedule(Update);
+                assert_eq!(
+                    app.world().get::<Body>(player).unwrap().world_position(),
+                    before
+                );
+                let world = app.world_mut();
+                let (root, performer) = world
+                    .query::<(Entity, &CompanionView)>()
+                    .iter(world)
+                    .find(|(_, view)| view.owner == player)
+                    .map(|(entity, view)| (entity, view.performer))
+                    .unwrap();
+                let state = *world.get::<CompanionState>(performer).unwrap();
+                if state.visible && state.action_id == sequence.action_id {
+                    let model = RangedModel::shared(world, pair);
+                    let root_transform = *world.get::<Transform>(root).unwrap();
+                    let weapon = *world
+                        .query::<(&SisterWeapon, &Transform)>()
+                        .iter(world)
+                        .find(|(weapon, _)| weapon.root == root && weapon.pair == pair)
+                        .unwrap()
+                        .1;
+                    let source = root_transform.transform_point(weapon.translation);
+                    let expected =
+                        state.source_position + (root_transform.translation - state.position);
+                    assert!(source.distance(expected) < 0.0001);
+                    let forward = root_transform.rotation * weapon.rotation * Vec3::NEG_Z;
+                    let aim = (state.aim_position - expected).normalize();
+                    assert!(forward.distance(aim) < 0.0001);
+                    highest_pitch = highest_pitch.max(aim.y.atan2(aim.xz().length()));
+                    let female = AvatarAssets::cached(
+                        world.get_resource::<AvatarAssets>(),
+                        world.get_resource::<AvatarAssetCache>(),
+                        Appearance::Bailingmiao,
+                    )
+                    .unwrap()
+                    .clone();
+                    let rig = world.get::<RigPose>(root).unwrap();
+                    let posed = female.posed_drivers(rig);
+                    let ground = female.driver_pose(&rig.model);
+                    for foot in female.feet {
+                        assert!(
+                            posed[foot].translation.distance(ground[foot].translation) < 0.0001
+                        );
+                    }
+                    for (wrist, grip) in [female.right_hand, female.left_hand]
+                        .into_iter()
+                        .zip(model.grips)
+                    {
+                        let target = weapon.transform_point(grip);
+                        assert!(
+                            posed[wrist].translation.distance(target) < 0.0001,
+                            "{pair:?} elapsed={} wrist={wrist} gap={}",
+                            state.elapsed,
+                            posed[wrist].translation.distance(target)
+                        );
+                        let (joint, palette) = world
+                            .query::<(Entity, &PaletteJoint)>()
+                            .iter(world)
+                            .find(|(_, joint)| joint.owner == root && joint.bone.driver == wrist)
+                            .unwrap();
+                        let point = palette
+                            .bone
+                            .bind
+                            .inverse()
+                            .transform_point3(female.drivers[wrist].anchor);
+                        assert!(
+                            world
+                                .get::<Transform>(joint)
+                                .unwrap()
+                                .transform_point(point)
+                                .distance(target)
+                                < 0.0001
+                        );
+                    }
+                }
+                tick(&mut app, 1);
+            }
+            let events = app
+                .world()
+                .resource::<CombatFeedback>()
+                .events()
+                .filter(|event| {
+                    event.kind == CombatEffect::Shot && event.action_id == sequence.action_id
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(events.len(), 3, "each real three-shot sequence completed");
+            if pair == WeaponPair::HammerMusket {
+                assert!(
+                    highest_pitch > 0.3,
+                    "actual Hammer E airborne aim was exercised"
+                );
+            }
+            app.world_mut().run_schedule(Update);
+            let visibility = app
+                .world_mut()
+                .query_filtered::<&Visibility, With<CompanionView>>()
+                .single(app.world())
+                .unwrap();
+            assert_eq!(*visibility, Visibility::Hidden);
+        }
     }
 
     #[test]
