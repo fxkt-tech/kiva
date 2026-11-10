@@ -1,0 +1,1569 @@
+{
+  "provenance": {
+    "format": "KIVAAV03",
+    "height_m": 1.73,
+    "source_yaw_degrees": 180,
+    "max_texture_size": 1024,
+    "source_floor": 0.0004951779963536563,
+    "source_top_complete_body_head_hair": 1.8956517983010812,
+    "source_scale": 0.9128533132643297,
+    "conversion": [
+      [
+        -0.9128533132643297,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.9128533132643297,
+        0.0,
+        -0.00045202487462702736
+      ],
+      [
+        0.0,
+        0.0,
+        -0.9128533132643297,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "bone_names_prefix": "naraka::",
+    "source_animation_name_matching": false,
+    "matrix_contract": "POSITION'=C*POSITION; IBM'=IBM*C^-1; sourceRestModel'=C*originalBoneWorld. Original imported pose may differ from bind pose; do not replace rest with inverse(IBM).",
+    "sources": [
+      {
+        "role": "outfit",
+        "file": "character/lihuowang_s20_outfit.glb",
+        "sha256": "931bd444e2d8e64f704d5ef67715d60317c6fc88f00ce23d5647fa89cad5e0dc",
+        "packed": true
+      },
+      {
+        "role": "hair",
+        "file": "character/xinsu_reconstructed_binding.glb",
+        "sha256": "74fea423645617a4cdf498948118a18c747f3cb3c0f870158291d5e51021e98f",
+        "packed": true
+      },
+      {
+        "role": "face",
+        "file": "character/generic_base_face_neutral.glb",
+        "sha256": "82b5677e844a551c3219e307b86fd6701a8e69a72ae9f6c384f4d45b25dccbee",
+        "packed": true
+      },
+      {
+        "role": "blade",
+        "file": "weapon/zhulei_basecolor.glb",
+        "sha256": "8638c119db28f47f434c3b1924972fe61b542b9977f8926bc5b4ec37e3ea5d40",
+        "packed": true
+      },
+      {
+        "role": "sheath",
+        "file": "weapon/zhulei_sheath.glb",
+        "sha256": "192ea395e59b44dab38ad59cb590fb202887a4dc2797fc363f166035dca144c1",
+        "packed": true
+      },
+      {
+        "role": "ornament",
+        "file": "character/guidao_source_basecolor.glb",
+        "sha256": "9e50c35b8e9da98576948fea87dd7cab3634efe107675ae3879080af59883e4f",
+        "packed": false
+      }
+    ],
+    "face": "Generic source base face with sampled source hand skin tone and authored neutral brown eyes/charcoal lashes. LiHuowang1415608 facial parameters/1400595 makeup are NOT applied.",
+    "hair": "Original geometry/UV/weights/IBMs; six uniquely evidenced reconstructed external parent links, not serialized original SMR palettes. RGB data maps suppressed, only source alpha used with neutral black material.",
+    "shader": "Source BaseColor/alpha only; no guessed source normal/packed channels, no source anisotropic/SH/FX/cloth/morph shader. Neutral Kiva PBR adaptations.",
+    "weapon": "Original four-bone current-pose LBS baked into rigid blade with tassels. Authored hilt center and+Y axis; original skin/IBMs retained in source manifest.",
+    "blade_grip_source": [
+      0.0,
+      0.0,
+      -0.395
+    ],
+    "blade_conversion": [
+      [
+        0.9128533132643297,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.9128533132643297,
+        0.36057705873941026
+      ],
+      [
+        0.0,
+        -0.9128533132643297,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "sheath": "Original static source geometry with authored Kiva left-hip placement, following pelvis structural delta.",
+    "ornament": "Original Guidao source retained as evidence but not packed: dynamic FX shader is not reconstructed.",
+    "structural_driver_adaptation": "Original l22/current imported source anchor proportions; not the YYSLS rest pose. Source ancestor maps to23 existing structural deltas, preserving each palette original source rest model."
+  },
+  "source_export_manifest_sha256": "ed4463db38604546a3410435d97781e0c79ca610258920cc34769f5ec9a88d0b",
+  "identity": {
+    "status": "Name to exact wearable prefab confirmed through original table references",
+    "outfit_item_id": 3401149,
+    "outfit_name": "道诡异仙·李火旺",
+    "hero_id": 1000013,
+    "hero_name": "无尘",
+    "source_characterconfig": {
+      "table": "CharacterConfig",
+      "source": {
+        "path_id": -5656608313918041295,
+        "name": "CharacterConfig",
+        "file": "/home/asuka/kiva-asset-research/naraka/identity/xls/CharacterConfig.bytes",
+        "bytes": 623079,
+        "sha256": "2a62b7e22fe5f9f007593f5b66cf1f89d9424f9d82fffbf9a7217f1a1dfd3bdf",
+        "keyword_hits": []
+      },
+      "decoded_sha256": "995823239ceabd45eecd87b355850cd6f4bb7ea15bec8243dfcf578e18089e16",
+      "subtables": 5,
+      "records": 4111,
+      "complete_framing": true,
+      "association_copy_byte_exact": true
+    },
+    "body_item_reference": {
+      "table": "FashionConfig_FashionBody",
+      "record_offset": 418174,
+      "relative_u32_offset": 40,
+      "actor_temp_id": 1210779
+    },
+    "actor_temp_record": {
+      "table": "CharacterConfig_ActorTemp",
+      "id": 1210779,
+      "offset": 170459,
+      "end": 170523,
+      "bytes": 64,
+      "index_offset": 123098,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/CharacterConfig_ActorTemp_1210779.bin",
+      "record_sha256": "91c32f3dc33efe1e69c1e426ec81f37d32420469687b269fb8e64e9c0ae8f977"
+    },
+    "actor_temp_body_size_field": {
+      "relative_u32_offset": 16,
+      "value": 90001
+    },
+    "actor_temp_visual_part_vector": {
+      "present_flag_offset": 20,
+      "count_offset": 21,
+      "data_offset": 25,
+      "ids": [
+        10003,
+        10004,
+        10447,
+        11111
+      ]
+    },
+    "parts": [
+      {
+        "actor_visual_part_id": 10003,
+        "role": "base face",
+        "original_record": {
+          "table": "CharacterConfig_ActorVisualPart",
+          "id": 10003,
+          "offset": 209501,
+          "end": 209607,
+          "bytes": 106,
+          "index_offset": 193415,
+          "record_file": "/home/asuka/kiva-asset-research/naraka/identity/CharacterConfig_ActorVisualPart_10003.bin",
+          "record_sha256": "ac2a5f1ae16d9206b8cf37c14a5b857609efd79a982efa527bb772c9d8bc1414"
+        },
+        "battle_prefab_field": {
+          "relative_length_offset": 20,
+          "value": "face/ch_m_face_battle"
+        },
+        "ui_prefab_field": {
+          "relative_length_offset": 66,
+          "value": "face/ch_m_face_ui"
+        },
+        "prefabs": [
+          {
+            "path": "assets/res/prefab/actor_visual_part/face/ch_m_face_battle.prefab",
+            "string_offset": 28258460,
+            "bundle_index": 10620,
+            "key": "a/2/a2ddc57ac521814d",
+            "declared_size": 2043904,
+            "hash1": "0a343645e81ec9eb9edb4dc1708a7a23",
+            "hash2": "19ea792ac8f3b7ba5564048de6e34514",
+            "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/a/2/a2ddc57ac521814d"
+          },
+          {
+            "path": "assets/res/prefab/actor_visual_part/face/ch_m_face_ui.prefab",
+            "string_offset": 28258525,
+            "bundle_index": 10620,
+            "key": "a/2/a2ddc57ac521814d",
+            "declared_size": 2043904,
+            "hash1": "0a343645e81ec9eb9edb4dc1708a7a23",
+            "hash2": "19ea792ac8f3b7ba5564048de6e34514",
+            "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/a/2/a2ddc57ac521814d"
+          }
+        ]
+      },
+      {
+        "actor_visual_part_id": 10004,
+        "role": "default left cuff",
+        "original_record": {
+          "table": "CharacterConfig_ActorVisualPart",
+          "id": 10004,
+          "offset": 209607,
+          "end": 209757,
+          "bytes": 150,
+          "index_offset": 193423,
+          "record_file": "/home/asuka/kiva-asset-research/naraka/identity/CharacterConfig_ActorVisualPart_10004.bin",
+          "record_sha256": "b8739d3f5a20927e89283b6e35134705fd479025a83b1fd713c8438f0bc4b782"
+        },
+        "battle_prefab_field": {
+          "relative_length_offset": 20,
+          "value": "leftcuff/ch_m_leftcuff_default"
+        },
+        "ui_prefab_field": {
+          "relative_length_offset": 84,
+          "value": "leftcuff/ch_m_leftcuff_default"
+        },
+        "prefabs": [
+          {
+            "path": "assets/res/prefab/actor_visual_part/leftcuff/ch_m_leftcuff_default.prefab",
+            "string_offset": 18921563,
+            "bundle_index": 7358,
+            "key": "7/2/723ba007f7bdd61f",
+            "declared_size": 4526080,
+            "hash1": "10941efb136a8a9584eb0bc47cfeb1d0",
+            "hash2": "8cbcb7078af99af8644381f1449e5592",
+            "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/7/2/723ba007f7bdd61f"
+          }
+        ]
+      },
+      {
+        "actor_visual_part_id": 10447,
+        "role": "confirmed Li Huowang s20 outfit",
+        "original_record": {
+          "table": "CharacterConfig_ActorVisualPart",
+          "id": 10447,
+          "offset": 274781,
+          "end": 274971,
+          "bytes": 190,
+          "index_offset": 195967,
+          "record_file": "/home/asuka/kiva-asset-research/naraka/identity/CharacterConfig_ActorVisualPart_10447.bin",
+          "record_sha256": "996ef060ce348b99486ce9373e4eb029d5fdc963740bdd27782cac9a49b5250f"
+        },
+        "battle_prefab_field": {
+          "relative_length_offset": 20,
+          "value": "ch_m_ming_wuchen/ch_m_ming_wuchen_lv_s20"
+        },
+        "ui_prefab_field": {
+          "relative_length_offset": 104,
+          "value": "ch_m_ming_wuchen/ch_m_ming_wuchen_lv_s20"
+        },
+        "prefabs": [
+          {
+            "path": "assets/res/prefab/actor_visual_part/ch_m_ming_wuchen/ch_m_ming_wuchen_lv_s20.prefab",
+            "string_offset": 6205446,
+            "bundle_index": 2327,
+            "key": "2/4/2441ea454a301acb",
+            "declared_size": 664932352,
+            "hash1": "1301e9a119136dd17f4ca32f795f7519",
+            "hash2": "d61aa47aecdfde4d4fe78f01b1aa939d",
+            "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/2/4/2441ea454a301acb"
+          }
+        ]
+      },
+      {
+        "actor_visual_part_id": 11111,
+        "role": "base mask slot",
+        "original_record": {
+          "table": "CharacterConfig_ActorVisualPart",
+          "id": 11111,
+          "offset": 309003,
+          "end": 309081,
+          "bytes": 78,
+          "index_offset": 197335,
+          "record_file": "/home/asuka/kiva-asset-research/naraka/identity/CharacterConfig_ActorVisualPart_11111.bin",
+          "record_sha256": "18137817f73dac91a49965e214cc9ae3d6b51d056cfebda4ec2c148144dc7d7f"
+        },
+        "battle_prefab_field": {
+          "relative_length_offset": 20,
+          "value": "ch_m_mask_00"
+        },
+        "ui_prefab_field": {
+          "relative_length_offset": 48,
+          "value": "ch_m_mask_00"
+        },
+        "prefabs": [
+          {
+            "path": "assets/res/prefab/actor_visual_part/ch_m_mask_00.prefab",
+            "string_offset": 37659225,
+            "bundle_index": 13256,
+            "key": "c/c/cc90d3942158a59a",
+            "declared_size": 143360,
+            "hash1": "461b5ae28ca207451ce7d045c3cdf88f",
+            "hash2": "f562d4e402e90f9d9e4b4dd22664b9c2",
+            "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/c/c/cc90d3942158a59a"
+          }
+        ]
+      }
+    ],
+    "body_size_record": {
+      "table": "CharacterConfig_ActorBodySize",
+      "id": 90001,
+      "offset": 9110,
+      "end": 9418,
+      "bytes": 308,
+      "index_offset": 8126,
+      "record_file": "/home/asuka/kiva-asset-research/naraka/identity/CharacterConfig_ActorBodySize_90001.bin",
+      "record_sha256": "fc839f43c777e756153810385c886b81535473678b83cab3b50909e67131f5e5"
+    },
+    "skeleton_reference": {
+      "relative_length_offset": 233,
+      "value": "l22_male_skeletonAvatar",
+      "source_bundle_key": "5/8/589302f25ec7b3dd",
+      "original_fbx": "assets/art/characters/_common/avatar/l22_male_skeleton.fbx",
+      "verification": "Exporter must match original Avatar/Transform/bone hashes, not fabricate hierarchy"
+    },
+    "pack_appearance_overrides": [
+      {
+        "item_id": 100407,
+        "name": "道诡异仙·心素",
+        "original_icon_field": "ch_m_wuchen_hair_lv_s13",
+        "matching_prefab": {
+          "path": "assets/res/prefab/actor_visual_part/ch_m_ming_wuchen/ch_m_ming_wuchen_hair_lv_s13.prefab",
+          "string_offset": 6200670,
+          "bundle_index": 2327,
+          "key": "2/4/2441ea454a301acb",
+          "declared_size": 664932352,
+          "hash1": "1301e9a119136dd17f4ca32f795f7519",
+          "hash2": "d61aa47aecdfde4d4fe78f01b1aa939d",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/2/4/2441ea454a301acb"
+        },
+        "binding_limit": "Original icon/ref stem; exporter verifies hair and rig binding"
+      },
+      {
+        "item_id": 3411279,
+        "name": "道诡异仙·诡道",
+        "original_icon_field": "icon_ornament_wuchen_s_guangxiang",
+        "matching_prefab": {
+          "path": "assets/res/prefab/actor_extra_part/ch_ornament_wuchen_s_guangxiang.prefab",
+          "string_offset": 16057679,
+          "bundle_index": 6180,
+          "key": "5/f/5f3ddb92614a906c",
+          "declared_size": 1150976,
+          "hash1": "ab661ceaa1f1c41eed839b474902be5f",
+          "hash2": "e8245fa4427c5aa8505d77ab94eefef3",
+          "physical_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/5/f/5f3ddb92614a906c"
+        },
+        "binding_limit": "Original icon/ref stem; retain source attachment/effect limits"
+      }
+    ],
+    "limits": [
+      "Base face/cuff/mask are original actor-template parts; a robe alone is not a complete character.",
+      "ActorTemp separately contains default part10099; Xinsu100407 is an explicit pack hairstyle override.",
+      "Identity confirmation does not itself prove a finished skinned export."
+    ]
+  },
+  "source_textures": [
+    {
+      "name": "outfit::male_body_02",
+      "source_png_sha256": "1c21c945a33a3dfe6258d8ed6c39c2e0c5bfe989f87bd0f7d8bb4b3e360a1aee",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "embedded_png_sha256": "0e80d8a68536efcf1f8131b8af090c07b8cfc0b663e8f832c25d8f798015b783",
+      "adaptation": "Resize only, source RGB/alpha retained; normal/packed maps not connected."
+    },
+    {
+      "name": "outfit::ch_m_ming_wuchen_body02_lv_s20",
+      "source_png_sha256": "1fe09699d9c5f4146267be0656f084b3c7f64d382252144bab39cb7e01137602",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "embedded_png_sha256": "3b909623308de6748b81464bf9b5acbd96309ca9be184b528c606ed82bed5986",
+      "adaptation": "Resize only, source RGB/alpha retained; normal/packed maps not connected."
+    },
+    {
+      "name": "outfit::ch_m_ming_wuchen_cloth01_lv_s20",
+      "source_png_sha256": "d6fe5f9dbc503de82e3dfa16cec229a4085c4c2f63e574b9cc7d37af9c9f6cf3",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "embedded_png_sha256": "93279e98d310a2b30bfab94c88ca04a6f15a719e19f596028eea06a628df84dc",
+      "adaptation": "Resize only, source RGB/alpha retained; normal/packed maps not connected."
+    },
+    {
+      "name": "hair::ch_m_ming_wuchen_hair_lv_s13 - source texture preview",
+      "source_png_sha256": "4abede49dbc2c051ac89a5c9d6c450a2a22016df95f23d9d36e2b7ae975d4fb3",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "embedded_png_sha256": "40247ad57272268d7123d3530f44b394439f63e88eb23e55b676f02b55525298",
+      "adaptation": "Resize only, source RGB/alpha retained; normal/packed maps not connected."
+    },
+    {
+      "name": "hair::ch_m_wuchen_hair02_lv_s13 - source texture preview",
+      "source_png_sha256": "86a4c2dbac26da692104eb81fcddaab6684a5699d07b4fe0d64899c842bbb469",
+      "source_size": [
+        512,
+        512
+      ],
+      "embedded_size": [
+        512,
+        512
+      ],
+      "embedded_png_sha256": "8e33845be03480dce9fe7cb6f2d7a53cb807f51077465df75f069e8b9793d6d6",
+      "adaptation": "Resize only, source RGB/alpha retained; normal/packed maps not connected."
+    },
+    {
+      "name": "hair::scalp_m_default - source texture preview",
+      "source_png_sha256": "b24a340d33ba1d02944c40aaa222ef5a1a264468b45c638b848a1814c400dbf4",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "embedded_png_sha256": "4a873fb358f52772765e10492e6f2de2a71f52ed95a17153346fa0d8a9109587",
+      "adaptation": "Resize only, source RGB/alpha retained; normal/packed maps not connected."
+    },
+    {
+      "name": "authored_neutral_brown_eyes",
+      "source_png_sha256": "0d381ff025a49cb135c27f80a1ccb7e145cdcf4bf3956dc0fc435ca4e884d6ec",
+      "source_size": [
+        512,
+        512
+      ],
+      "embedded_size": [
+        512,
+        512
+      ],
+      "embedded_png_sha256": "0d381ff025a49cb135c27f80a1ccb7e145cdcf4bf3956dc0fc435ca4e884d6ec",
+      "adaptation": "Authored Kiva neutral eye atlas"
+    },
+    {
+      "name": "blade::wp_hengdao_manjianghong_d",
+      "source_png_sha256": "d32f4f4736b50c3af6b3115cbfc9e49990c773230337d22db84803da31c3b7fc",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "embedded_size": [
+        1024,
+        1024
+      ],
+      "embedded_png_sha256": "7fe41e54f2d7547840e1331a85c66c2a59af1fe3e7d23c685bfaeb0ecdc7a58c",
+      "adaptation": "Resize only, source RGB/alpha retained; normal/packed maps not connected."
+    }
+  ],
+  "original_weapon_four_bone_rest_and_IBMs": [
+    {
+      "name": "manjianghong_02",
+      "source_rest_model": [
+        [
+          -0.03595704785395673,
+          -1.2964867449411946e-07,
+          -0.9993533362678153,
+          -0.019973417263571613
+        ],
+        [
+          0.718816137681729,
+          0.6947189711133012,
+          -0.025863321202027015,
+          0.02597860010232313
+        ],
+        [
+          0.6942697249037657,
+          -0.7192812740335043,
+          -0.02497995009581286,
+          -0.46902700751413673
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "inverse_bind": [
+        [
+          -0.03595703840255737,
+          -0.6942696571350098,
+          0.7188161611557007,
+          0.30623918771743774
+        ],
+        [
+          -1.524840484989909e-07,
+          0.7192813158035278,
+          0.6947188973426819,
+          -0.3554101884365082
+        ],
+        [
+          -0.9993531703948975,
+          0.024979934096336365,
+          -0.025863325223326683,
+          -0.031004881486296654
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "manjianghong_03",
+      "source_rest_model": [
+        [
+          -0.035956962227633955,
+          1.138953217638532e-06,
+          -0.999353339348033,
+          -0.023830072678956524
+        ],
+        [
+          0.7188158707425827,
+          0.6947192827956902,
+          -0.025862368035927674,
+          0.10307705993463853
+        ],
+        [
+          0.6942700057153152,
+          -0.7192809729935488,
+          -0.024980813707942216,
+          -0.3945613358461132
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "inverse_bind": [
+        [
+          -0.03595695644617081,
+          -0.6942698955535889,
+          0.7188157439231873,
+          0.19898176193237305
+        ],
+        [
+          1.1181308536833967e-06,
+          0.7192808985710144,
+          0.6947191953659058,
+          -0.35540997982025146
+        ],
+        [
+          -0.9993533492088318,
+          0.02498079463839531,
+          -0.025862382724881172,
+          -0.031005309894680977
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "manjianghong_04",
+      "source_rest_model": [
+        [
+          -0.03595687846321138,
+          4.551145281387217e-06,
+          -0.9993533423521785,
+          -0.02777581945437252
+        ],
+        [
+          0.7188156244593153,
+          0.6947196284972026,
+          -0.02585992679561615,
+          0.18195603300113733
+        ],
+        [
+          0.6942702650440583,
+          -0.7192806390832424,
+          -0.02498322068221848,
+          -0.31837589349479845
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "inverse_bind": [
+        [
+          -0.03595687448978424,
+          -0.6942703127861023,
+          0.7188154458999634,
+          0.08924728631973267
+        ],
+        [
+          4.522850304056192e-06,
+          0.7192806601524353,
+          0.694719672203064,
+          -0.3554098606109619
+        ],
+        [
+          -0.9993533492088318,
+          0.024983199313282967,
+          -0.025859937071800232,
+          -0.031006542965769768
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "manjianghong_01",
+      "source_rest_model": [
+        [
+          1.4504322698449913e-07,
+          -8.940695071845172e-08,
+          0.9999999999999857,
+          5.351401759805307e-16
+        ],
+        [
+          -8.374025251001142e-08,
+          -0.9999999999999927,
+          -8.94069387945406e-08,
+          9.071839190553192e-10
+        ],
+        [
+          0.9999999999999862,
+          -8.374023932009477e-08,
+          -1.450432346935035e-07,
+          0.1600899994373346
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "inverse_bind": [
+        [
+          1.8489426167889178e-07,
+          -1.0,
+          -1.1102230246251565e-14,
+          -0.16008999943733215
+        ],
+        [
+          -7.549786573690653e-08,
+          0.0,
+          -1.0,
+          -1.7763568394002505e-15
+        ],
+        [
+          1.0,
+          1.8489426167889178e-07,
+          -7.549786573690653e-08,
+          2.9599718232020678e-08
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "hair_reconstruction": {
+    "source_manifest_sha256": "38d8187e9b24752881e2b0b68d2b1476f14b25bc7baf630276e9845e6402f6a6",
+    "threshold": 1e-05,
+    "external_parent_links": [
+      {
+        "hair_branch_node": 85,
+        "hair_branch_name": "M_hair_01",
+        "original_parent_node": 63,
+        "reconstructed_parent_node": 16,
+        "reconstructed_parent_name": "gMan Spine2"
+      },
+      {
+        "hair_branch_node": 82,
+        "hair_branch_name": "L_hairB_01",
+        "original_parent_node": 63,
+        "reconstructed_parent_node": 16,
+        "reconstructed_parent_name": "gMan Spine2"
+      },
+      {
+        "hair_branch_node": 81,
+        "hair_branch_name": "M_hairA",
+        "original_parent_node": 63,
+        "reconstructed_parent_node": 38,
+        "reconstructed_parent_name": "gMan Head"
+      },
+      {
+        "hair_branch_node": 78,
+        "hair_branch_name": "L_hairA_01",
+        "original_parent_node": 63,
+        "reconstructed_parent_node": 38,
+        "reconstructed_parent_name": "gMan Head"
+      },
+      {
+        "hair_branch_node": 90,
+        "hair_branch_name": "R_hairB_01",
+        "original_parent_node": 63,
+        "reconstructed_parent_node": 16,
+        "reconstructed_parent_name": "gMan Spine2"
+      },
+      {
+        "hair_branch_node": 76,
+        "hair_branch_name": "L_butterfly_01",
+        "original_parent_node": 63,
+        "reconstructed_parent_node": 38,
+        "reconstructed_parent_name": "gMan Head"
+      }
+    ],
+    "slots": [
+      [
+        {
+          "slot": 0,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.9806025941537797e-06,
+          "next_candidate_residual": 0.08826480097841527,
+          "method": "direct original configured common bone",
+          "source_joint_node": 38,
+          "source_joint_name": "gMan Head",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -3913719559857735752,
+            "class": "Transform",
+            "raw_bytes": 68,
+            "raw_sha256": "c843ca9ba02e2d4f0a474b4b4c52d7d4696f7ff0428c17432f7966ea5a171fb9",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 1,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.3444358247793886e-06,
+          "next_candidate_residual": 0.1099389107819608,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 86,
+          "source_joint_name": "M_hair_02",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 8313856943989511881,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "3a8c81726ebea6009dd70b2e8ad9da10e2d440f9b66156f9f35a2bb6367baf20",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 2,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.3846811047213414e-06,
+          "next_candidate_residual": 0.13146014885764545,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 87,
+          "source_joint_name": "M_hair_03",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 2728412376503488045,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "d4cb1bdc63872300a0aec65726bc4d6430e2d4c4252dfd4a7b958763b82ad77c",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 3,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.4713871778204712e-06,
+          "next_candidate_residual": 0.12675150314352535,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 88,
+          "source_joint_name": "M_hair_04",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 1992336383192785708,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "8873acabda77eb59fb8ad008628d91d89067918b3f46160eae00a7a97c8b8dd6",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 4,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.1655817389599754e-06,
+          "next_candidate_residual": 0.14297723753203795,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 85,
+          "source_joint_name": "M_hair_01",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -6982024713621888794,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "dbe545e903733ef84d1e7c8052af292aed9e928d96102eea03eedc185b8e3f7f",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 5,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.2002221755347264e-06,
+          "next_candidate_residual": 0.32979131563416525,
+          "method": "direct original configured common bone",
+          "source_joint_node": 39,
+          "source_joint_name": "gMan R Clavicle",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -5309380834784397440,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "c7f0e762212d0e1a7aad208907d9e383d4bd42f55d93a92fd253e2d1c0641c1e",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 6,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 2.3207104655753596e-06,
+          "next_candidate_residual": 0.12881165276071171,
+          "method": "direct original configured common bone",
+          "source_joint_node": 17,
+          "source_joint_name": "gMan L Clavicle",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": 8441813638795930619,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "2a2597a6bf4e96219fed071b5267012d9b27eaa885adca20c34d2067b6c0d115",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 7,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.4589081014371175e-06,
+          "next_candidate_residual": 0.12326883138981914,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 89,
+          "source_joint_name": "M_hair_05",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -4137001600917478786,
+            "class": "Transform",
+            "raw_bytes": 68,
+            "raw_sha256": "6ad3f1646ca1e104b4772dbca93c643b3fd0e571581769ca3ba92fe643fdd8b9",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 8,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.0806265841045715e-06,
+          "next_candidate_residual": 0.14896184085058395,
+          "method": "direct original configured common bone",
+          "source_joint_node": 16,
+          "source_joint_name": "gMan Spine2",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -3600527315183450350,
+            "class": "Transform",
+            "raw_bytes": 128,
+            "raw_sha256": "136da43943fc89dc8b4eca32d6a3bd3bfb0796756ad65bfca2496ccfd379df6a",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 9,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.2361668785265678e-06,
+          "next_candidate_residual": 0.08826472542426123,
+          "method": "direct original configured common bone",
+          "source_joint_node": 37,
+          "source_joint_name": "gMan Neck",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -338735943244950308,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "f62e8fdaf89913f23f91c34e70d41ba8767b0844d1590f9beccb61ac98b6639f",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 10,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 9.318620707299274e-07,
+          "next_candidate_residual": 0.15075657921110608,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 82,
+          "source_joint_name": "L_hairB_01",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 9209989150450753818,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "01720f77337b9d59b63adc5eb6b546d235197f93a3eca093833cc4eb2244f81e",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 11,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.130719128827895e-06,
+          "next_candidate_residual": 0.1007869781936277,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 83,
+          "source_joint_name": "L_hairB_02",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 7622393316396250497,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "e613bce972f48a2b470bf1431fa12615e7aec195277ae831ccadf6d2575b2c90",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 12,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.6632508254010858e-06,
+          "next_candidate_residual": 0.08547645890221078,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 81,
+          "source_joint_name": "M_hairA",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -2744159525161829742,
+            "class": "Transform",
+            "raw_bytes": 68,
+            "raw_sha256": "653631d66675772f51374d68bc96e57a1577f0511ed2004194ee0ff40b763ea5",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 38,
+          "inferred_external_parent_name": "gMan Head"
+        },
+        {
+          "slot": 13,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.6800243379244684e-06,
+          "next_candidate_residual": 0.09267415379132071,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 78,
+          "source_joint_name": "L_hairA_01",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 9059139342409872265,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "7b0ee5ead4599ebfc4d398249224ecd0d015229e4486c5be1bee50c0fbdac546",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 38,
+          "inferred_external_parent_name": "gMan Head"
+        },
+        {
+          "slot": 14,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.2782108647080292e-06,
+          "next_candidate_residual": 0.15114609791951517,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 90,
+          "source_joint_name": "R_hairB_01",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -8923147067252155126,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "463be7e1473e3f37f46d9d5bd145bf7e8fd2bdfb69542ded19f53b807924669e",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 15,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.0122684878655086e-06,
+          "next_candidate_residual": 0.08774693871394112,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 91,
+          "source_joint_name": "R_hairB_02",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -8537461105975515238,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "4e757788419afecb75f1066721d2b7228fffeb1a74b0961f293bbd36bcbf8b2d",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 16,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.6881201321261585e-06,
+          "next_candidate_residual": 0.08450284946979814,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 79,
+          "source_joint_name": "L_hairA_02",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 3684083433461797987,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "3adb4d490297f59e84a5b21a33b0b1f23f9f3327453a9eeba4f8b5b324a5e9ec",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 38,
+          "inferred_external_parent_name": "gMan Head"
+        }
+      ],
+      [
+        {
+          "slot": 0,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.9806025941537797e-06,
+          "next_candidate_residual": 0.08826480097841527,
+          "method": "direct original configured common bone",
+          "source_joint_node": 38,
+          "source_joint_name": "gMan Head",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -3913719559857735752,
+            "class": "Transform",
+            "raw_bytes": 68,
+            "raw_sha256": "c843ca9ba02e2d4f0a474b4b4c52d7d4696f7ff0428c17432f7966ea5a171fb9",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 1,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.1655817389599754e-06,
+          "next_candidate_residual": 0.14297723753203795,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 85,
+          "source_joint_name": "M_hair_01",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -6982024713621888794,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "dbe545e903733ef84d1e7c8052af292aed9e928d96102eea03eedc185b8e3f7f",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 2,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.3444358247793886e-06,
+          "next_candidate_residual": 0.1099389107819608,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 86,
+          "source_joint_name": "M_hair_02",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 8313856943989511881,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "3a8c81726ebea6009dd70b2e8ad9da10e2d440f9b66156f9f35a2bb6367baf20",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 3,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.2002221755347264e-06,
+          "next_candidate_residual": 0.32979131563416525,
+          "method": "direct original configured common bone",
+          "source_joint_node": 39,
+          "source_joint_name": "gMan R Clavicle",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -5309380834784397440,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "c7f0e762212d0e1a7aad208907d9e383d4bd42f55d93a92fd253e2d1c0641c1e",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 4,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 2.3207104655753596e-06,
+          "next_candidate_residual": 0.12881165276071171,
+          "method": "direct original configured common bone",
+          "source_joint_node": 17,
+          "source_joint_name": "gMan L Clavicle",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": 8441813638795930619,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "2a2597a6bf4e96219fed071b5267012d9b27eaa885adca20c34d2067b6c0d115",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 5,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.3846811047213414e-06,
+          "next_candidate_residual": 0.13146014885764545,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 87,
+          "source_joint_name": "M_hair_03",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 2728412376503488045,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "d4cb1bdc63872300a0aec65726bc4d6430e2d4c4252dfd4a7b958763b82ad77c",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 6,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.4589081014371175e-06,
+          "next_candidate_residual": 0.12326883138981914,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 89,
+          "source_joint_name": "M_hair_05",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -4137001600917478786,
+            "class": "Transform",
+            "raw_bytes": 68,
+            "raw_sha256": "6ad3f1646ca1e104b4772dbca93c643b3fd0e571581769ca3ba92fe643fdd8b9",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 7,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.4713871778204712e-06,
+          "next_candidate_residual": 0.12675150314352535,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 88,
+          "source_joint_name": "M_hair_04",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": 1992336383192785708,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "8873acabda77eb59fb8ad008628d91d89067918b3f46160eae00a7a97c8b8dd6",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 16,
+          "inferred_external_parent_name": "gMan Spine2"
+        },
+        {
+          "slot": 8,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.798989179457866e-06,
+          "next_candidate_residual": 0.059255131946282846,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 76,
+          "source_joint_name": "L_butterfly_01",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -2135788321595016448,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "cd75934729493fdd167edd5611ed97a811b9a403c932d170db5dcc4ca288af5f",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 38,
+          "inferred_external_parent_name": "gMan Head"
+        },
+        {
+          "slot": 9,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.6632508254010858e-06,
+          "next_candidate_residual": 0.08547645890221078,
+          "method": "original common bone world * original hair-prefab-relative node matrix",
+          "source_joint_node": 81,
+          "source_joint_name": "M_hairA",
+          "source_joint": {
+            "cab": "CAB-628d9fef5bede684d5b2a3ab632650cd",
+            "path_id": -2744159525161829742,
+            "class": "Transform",
+            "raw_bytes": 68,
+            "raw_sha256": "653631d66675772f51374d68bc96e57a1577f0511ed2004194ee0ff40b763ea5",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": 38,
+          "inferred_external_parent_name": "gMan Head"
+        }
+      ],
+      [
+        {
+          "slot": 0,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.980602741480375e-06,
+          "next_candidate_residual": 0.08826480097841083,
+          "method": "direct original configured common bone",
+          "source_joint_node": 38,
+          "source_joint_name": "gMan Head",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -3913719559857735752,
+            "class": "Transform",
+            "raw_bytes": 68,
+            "raw_sha256": "c843ca9ba02e2d4f0a474b4b4c52d7d4696f7ff0428c17432f7966ea5a171fb9",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 1,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.0953304468569458e-06,
+          "next_candidate_residual": 0.14896196153676455,
+          "method": "direct original configured common bone",
+          "source_joint_node": 16,
+          "source_joint_name": "gMan Spine2",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -3600527315183450350,
+            "class": "Transform",
+            "raw_bytes": 128,
+            "raw_sha256": "136da43943fc89dc8b4eca32d6a3bd3bfb0796756ad65bfca2496ccfd379df6a",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        },
+        {
+          "slot": 2,
+          "candidate_count_below_threshold": 1,
+          "threshold": 1e-05,
+          "residual_max": 1.2624218954093713e-06,
+          "next_candidate_residual": 0.08826473096488141,
+          "method": "direct original configured common bone",
+          "source_joint_node": 37,
+          "source_joint_name": "gMan Neck",
+          "source_joint": {
+            "cab": "CAB-735972d8c50e4d130075dba921e34762",
+            "path_id": -338735943244950308,
+            "class": "Transform",
+            "raw_bytes": 80,
+            "raw_sha256": "f62e8fdaf89913f23f91c34e70d41ba8767b0844d1590f9beccb61ac98b6639f",
+            "old_type_hash": "761ca81f78491542badc37f810ab3455",
+            "original_type_tree": true,
+            "unity_version": "2019.4.41f2"
+          },
+          "inferred_external_parent_node": null,
+          "inferred_external_parent_name": null
+        }
+      ]
+    ]
+  },
+  "source_face_records_sha256": "7d6edb55cd86c270496ccfb3b555a174f2f1557581711cc8c21176d2413bc688",
+  "output": {
+    "file": "/home/asuka/go/src/github.com/fxkt-tech/kiva/assets/lihuowang/character.bin",
+    "bytes": 8931762,
+    "sha256": "52ac24f9e5ccce28eb132b529d7fad7c3b39c23ef850c4448869275caad83fd9",
+    "drivers": 23,
+    "textures": 8,
+    "materials": 18,
+    "double_sided_materials": 5,
+    "parts": 18,
+    "vertices": 42625,
+    "triangles": 57257,
+    "actual_binary_lbs_character_bounds": [
+      [
+        -0.7197659719314854,
+        -8.386717801239133e-10,
+        -0.16009086148916032
+      ],
+      [
+        0.7769398381208555,
+        1.7299999676024438,
+        0.4597118823248947
+      ]
+    ],
+    "actual_binary_character_height": 1.7299999684411156,
+    "part_statistics": [
+      {
+        "name": "naraka::outfit::body",
+        "blade": false,
+        "bones": 58,
+        "vertices": 2671
+      },
+      {
+        "name": "naraka::outfit::body02",
+        "blade": false,
+        "bones": 88,
+        "vertices": 18490
+      },
+      {
+        "name": "naraka::outfit::body03",
+        "blade": false,
+        "bones": 30,
+        "vertices": 647
+      },
+      {
+        "name": "naraka::outfit::body04_cb",
+        "blade": false,
+        "bones": 25,
+        "vertices": 1406
+      },
+      {
+        "name": "naraka::outfit::cloth01",
+        "blade": false,
+        "bones": 5,
+        "vertices": 152
+      },
+      {
+        "name": "naraka::outfit::cloth02",
+        "blade": false,
+        "bones": 29,
+        "vertices": 569
+      },
+      {
+        "name": "naraka::outfit::cloth03",
+        "blade": false,
+        "bones": 13,
+        "vertices": 148
+      },
+      {
+        "name": "naraka::outfit::cloth04_cb",
+        "blade": false,
+        "bones": 18,
+        "vertices": 454
+      },
+      {
+        "name": "naraka::outfit::body04_cf",
+        "blade": false,
+        "bones": 25,
+        "vertices": 1406
+      },
+      {
+        "name": "naraka::outfit::cloth04_cf",
+        "blade": false,
+        "bones": 18,
+        "vertices": 454
+      },
+      {
+        "name": "naraka::hair::hair",
+        "blade": false,
+        "bones": 17,
+        "vertices": 7654
+      },
+      {
+        "name": "naraka::hair::hair02",
+        "blade": false,
+        "bones": 10,
+        "vertices": 811
+      },
+      {
+        "name": "naraka::hair::scalp",
+        "blade": false,
+        "bones": 3,
+        "vertices": 418
+      },
+      {
+        "name": "naraka::face::eyelash",
+        "blade": false,
+        "bones": 5,
+        "vertices": 628
+      },
+      {
+        "name": "naraka::face::eyes",
+        "blade": false,
+        "bones": 2,
+        "vertices": 402
+      },
+      {
+        "name": "naraka::face::face",
+        "blade": false,
+        "bones": 6,
+        "vertices": 2247
+      },
+      {
+        "name": "naraka::zhulei::rigid_blade",
+        "blade": true,
+        "bones": 1,
+        "vertices": 1730
+      },
+      {
+        "name": "naraka::sheath::authored_hip",
+        "blade": false,
+        "bones": 1,
+        "vertices": 2338
+      }
+    ],
+    "exact_EOF": true,
+    "source_pose_nonbind_bones_preserved": 352,
+    "browser_or_screenshot_test": false
+  },
+  "limits": "Generic source base face with sampled source hand skin tone and authored neutral brown eyes/charcoal lashes. LiHuowang1415608 facial parameters/1400595 makeup are NOT applied. Original geometry/UV/weights/IBMs; six uniquely evidenced reconstructed external parent links, not serialized original SMR palettes. RGB data maps suppressed, only source alpha used with neutral black material. Source BaseColor/alpha only; no guessed source normal/packed channels, no source anisotropic/SH/FX/cloth/morph shader. Neutral Kiva PBR adaptations.",
+  "game_reads": false,
+  "runtime_external_paths_or_downloads": false
+}

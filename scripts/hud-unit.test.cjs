@@ -47,6 +47,26 @@ function player(f, overrides = {}) {
   f.hud.render(data.persona, data.weapon, data.fraction, data.health, data.combo, data.cooldown, data.context);
 }
 
+test("melee appearance label survives early replay and gameplay loadout switches", () => {
+  const f = fixture();
+  f.hud.renderMelee("烛泪");
+  player(f, { weapon: "烛泪" });
+  f.parse();
+  assert.equal(f.at("hud-melee-name").textContent, "烛泪");
+  assert.equal(f.at("hud-weapon").textContent, "烛泪");
+  for (const set of [1, 2]) {
+    f.hud.renderLoadout(set, 1, 100, true, false, true, false);
+    player(f, { weapon: set === 1 ? "狙击枪" : "火炮" });
+    assert.equal(f.at("hud-melee-name").textContent, "烛泪");
+    assert.equal(f.at("hud-ranged-name").textContent, set === 1 ? "狙击枪" : "火炮");
+    assert.equal(f.at("hud-weapon").textContent, set === 1 ? "狙击枪" : "火炮");
+  }
+  for (const invalid of [undefined, null, NaN, 2, ""]) f.hud.renderMelee(invalid);
+  assert.equal(f.at("hud-melee-name").textContent, "烛泪");
+  f.hud.renderMelee("愁铃长刀");
+  assert.equal(f.at("hud-melee-name").textContent, "愁铃长刀");
+});
+
 test("player, loadout and selected target snapshots before DOM readiness replay together", () => {
   const f = fixture();
   player(f);

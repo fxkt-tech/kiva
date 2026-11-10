@@ -3,6 +3,7 @@
   "use strict";
   let latest = null;
   let target = null;
+  let melee = "愁铃长刀";
   let loadout = { set: 1, mode: 0, maximum: 100, attack: false, skill: false, guard: false, combo: false };
   let mounted = document.readyState !== "loading";
   const nonnegative = value => Number.isFinite(value) ? Math.max(0, value) : 0;
@@ -10,8 +11,8 @@
   const number = value => Math.ceil(nonnegative(value)).toLocaleString("en-US");
   const node = id => document.getElementById(id);
   const sets = Object.freeze({
-    1: { melee: "愁铃长刀", ranged: "狙击枪", meleeIcon: "blade", rangedIcon: "sniper", starter: "重刀震击", finisher: "狙击追击", starterMode: 0 },
-    2: { melee: "愁铃长刀", ranged: "火炮", meleeIcon: "blade", rangedIcon: "cannon", starter: "火炮跃进", finisher: "空中旋刀", starterMode: 1 },
+    1: { ranged: "狙击枪", meleeIcon: "blade", rangedIcon: "sniper", starter: "重刀震击", finisher: "狙击追击", starterMode: 0 },
+    2: { ranged: "火炮", meleeIcon: "blade", rangedIcon: "cannon", starter: "火炮跃进", finisher: "空中旋刀", starterMode: 1 },
   });
 
   function text(id, value) {
@@ -63,7 +64,7 @@
     progress("hud-target-bar", selected ? selected.health / selected.maximum : 0, selected?.health, selected?.maximum);
 
     text("hud-skill-caption", set.starter);
-    text("hud-melee-name", set.melee);
+    text("hud-melee-name", melee);
     text("hud-ranged-name", set.ranged);
     icon("hud-melee-icon", set.meleeIcon);
     icon("hud-ranged-icon", set.rangedIcon);
@@ -98,6 +99,10 @@
   }
 
   window.kivaHud = Object.freeze({
+    renderMelee(name) {
+      if (label(name)) melee = name;
+      paint();
+    },
     render(persona, weapon, healthFraction, health, combo, cooldown, context) {
       latest = {
         persona: label(persona), weapon: label(weapon),

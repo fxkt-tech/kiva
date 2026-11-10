@@ -24,6 +24,26 @@ use super::{
 };
 use crate::simulation::{Enemy, Health};
 
+/// A display asset selection; combat weapon sets and actors remain simulation-owned.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) enum Appearance {
+    #[default]
+    Choulingke,
+    Lihuowang,
+}
+
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct AvatarAppearance(pub Appearance);
+
+#[derive(Component)]
+struct AvatarPart;
+
+#[derive(Component)]
+struct BladeSurface;
+
+#[derive(Component)]
+struct BladeAppearance(Appearance);
+
 #[derive(Clone)]
 struct MaterialVariants {
     normal: Handle<StandardMaterial>,
@@ -42,6 +62,7 @@ struct SourceBone {
     source: Option<usize>,
     name: String,
     driver: usize,
+    // Display rest model. AV03 retains imported poses that differ from bind pose.
     bind: Mat4,
 }
 
@@ -66,6 +87,7 @@ struct Driver {
 
 #[derive(Resource, Clone)]
 pub(super) struct AvatarAssets {
+    appearance: Appearance,
     drivers: Vec<Driver>,
     parts: Vec<Part>,
     right_hand: usize,
@@ -73,12 +95,16 @@ pub(super) struct AvatarAssets {
     source_hand_rest: Quat,
 }
 
+/// The original set retains its existing resource; the second set loads once on demand.
+#[derive(Resource, Default)]
+pub(super) struct AvatarAssetCache {
+    lihuowang: Option<AvatarAssets>,
+}
+
 #[derive(Component)]
 pub(super) struct PaletteJoint {
-    source: Option<usize>,
     owner: Entity,
-    driver: usize,
-    bind: Mat4,
+    bone: SourceBone,
 }
 
 #[derive(Component)]
@@ -136,13 +162,27 @@ impl Reader<'_> {
 }
 
 impl AvatarAssets {
-    fn shared(world: &mut World) -> Self {
-        if !world.contains_resource::<Self>() {
+    fn shared(world: &mut World, appearance: Appearance) -> Self {
+        world.init_resource::<AvatarAssetCache>();
+        if let Some(assets) = Self::cached(
+            world.get_resource::<Self>(),
+            world.get_resource::<AvatarAssetCache>(),
+            appearance,
+        ) {
+            return assets.clone();
+        }
+        {
             world.init_resource::<SourceAnimationLibrary>();
             world.init_resource::<Assets<Image>>();
             world.init_resource::<Assets<SkinnedMeshInverseBindposes>>();
-            let mut reader = Reader(include_bytes!("../../assets/choulingke/character.bin"));
-            assert_eq!(&reader.take::<8>(), b"KIVAAV02");
+            let data: &[u8] = match appearance {
+                Appearance::Choulingke => include_bytes!("../../assets/choulingke/character.bin"),
+                Appearance::Lihuowang => include_bytes!("../../assets/lihuowang/character.bin"),
+            };
+            let mut reader = Reader(data);
+            let format = reader.take::<8>();
+            assert!(matches!(&format, b"KIVAAV02" | b"KIVAAV03"));
+            let source_pose = &format == b"KIVAAV03";
             let header_length = reader.u32();
             reader.bytes(header_length); // Offline provenance; no runtime paths or JSON dependency.
             let driver_count = reader.u16();
@@ -255,6 +295,7 @@ impl AvatarAssets {
                 let diffuse_transmission = reader.f32();
                 let tint = reader.vec3();
                 let alpha_cutoff = reader.f32();
+                let double_sided = !source_pose || reader.u8() != 0;
                 let material = StandardMaterial {
                     base_color: Color::linear_rgb(tint.x, tint.y, tint.z),
                     base_color_texture: (base >= 0).then(|| textures[base as usize].clone()),
@@ -275,8 +316,8 @@ impl AvatarAssets {
                     } else {
                         AlphaMode::Opaque
                     },
-                    double_sided: true,
-                    cull_mode: None,
+                    double_sided,
+                    cull_mode: (!double_sided).then_some(bevy::render::render_resource::Face::Back),
                     ..default()
                 };
                 let mut assets = world.resource_mut::<Assets<StandardMaterial>>();
@@ -307,11 +348,21 @@ impl AvatarAssets {
                     assert!(driver < driver_count);
                     let inverse = reader.matrix();
                     assert!(inverse.is_finite() && inverse.determinant().abs() > 0.0001);
+                    let rest = if source_pose {
+                        reader.matrix()
+                    } else {
+                        inverse.inverse()
+                    };
+                    assert!(rest.is_finite() && rest.determinant().abs() > 0.0001);
                     bones.push(SourceBone {
-                        source: world.resource::<SourceAnimationLibrary>().bone(&name),
+                        source: if appearance == Appearance::Choulingke {
+                            world.resource::<SourceAnimationLibrary>().bone(&name)
+                        } else {
+                            None
+                        },
                         name,
                         driver,
-                        bind: inverse.inverse(),
+                        bind: rest,
                     });
                     inverse_binds.push(inverse);
                 }
@@ -376,15 +427,39 @@ impl AvatarAssets {
             let source_hand = source_library.bone("Bip001 R Hand").unwrap();
             let source_hand_rest =
                 Transform::from_matrix(source_library.rest_model[source_hand]).rotation;
-            world.insert_resource(Self {
+            let assets = Self {
+                appearance,
                 source_hand,
                 source_hand_rest,
                 drivers,
                 parts,
                 right_hand,
-            });
+            };
+            match appearance {
+                Appearance::Choulingke => world.insert_resource(assets),
+                Appearance::Lihuowang => {
+                    world.resource_mut::<AvatarAssetCache>().lihuowang = Some(assets);
+                }
+            }
         }
-        world.resource::<Self>().clone()
+        Self::cached(
+            world.get_resource::<Self>(),
+            world.get_resource::<AvatarAssetCache>(),
+            appearance,
+        )
+        .expect("requested bundled appearance is cached")
+        .clone()
+    }
+
+    pub(super) fn cached<'a>(
+        original: Option<&'a Self>,
+        cache: Option<&'a AvatarAssetCache>,
+        appearance: Appearance,
+    ) -> Option<&'a Self> {
+        match appearance {
+            Appearance::Choulingke => original,
+            Appearance::Lihuowang => cache?.lihuowang.as_ref(),
+        }
     }
 
     /// Existing model-space rotations provide animation deltas; the extracted
@@ -415,6 +490,76 @@ impl AvatarAssets {
             .collect()
     }
 
+    /// Reuse motion deltas, rather than another character's absolute bone
+    /// positions. The target's own anchor segments retain its proportions.
+    fn source_driver_pose(&self, model: &[Mat4]) -> Vec<Transform> {
+        let pelvis = &self.drivers[1];
+        let pelvis_motion = pelvis.source.map_or(Vec3::ZERO, |index| {
+            let rest = pelvis.source_inverse_rest.inverse().w_axis.xyz();
+            let ratio = if rest.y.abs() > 0.0001 {
+                pelvis.anchor.y / rest.y
+            } else {
+                1.0
+            };
+            (model[index].w_axis.xyz() - rest) * ratio
+        });
+        let mut result: Vec<Transform> = Vec::with_capacity(self.drivers.len());
+        for (index, driver) in self.drivers.iter().enumerate() {
+            let rotation = driver.source.map_or(Quat::IDENTITY, |source| {
+                Transform::from_matrix(model[source] * driver.source_inverse_rest).rotation
+            });
+            let translation = driver.parent.map_or(Vec3::ZERO, |parent| {
+                result[parent].translation
+                    + result[parent].rotation * (driver.anchor - self.drivers[parent].anchor)
+            }) + if index == 1 {
+                pelvis_motion
+            } else {
+                Vec3::ZERO
+            };
+            result.push(Transform::from_translation(translation).with_rotation(rotation));
+        }
+        result
+    }
+
+    fn source_deltas(&self, rig: &RigPose) -> Option<Vec<Mat4>> {
+        if self.appearance != Appearance::Lihuowang {
+            return None;
+        }
+        let source = rig.source.as_ref()?;
+        Some(
+            self.source_driver_pose(&source.model)
+                .iter()
+                .zip(&self.drivers)
+                .map(|(posed, driver)| posed.to_matrix() * Mat4::from_translation(-driver.anchor))
+                .collect(),
+        )
+    }
+
+    fn joint_pose(
+        &self,
+        rig: &RigPose,
+        deltas: &[Mat4],
+        source_deltas: Option<&[Mat4]>,
+        bone: &SourceBone,
+    ) -> Transform {
+        let fallback = Transform::from_matrix(deltas[bone.driver] * bone.bind);
+        rig.source.as_ref().map_or(fallback, |source| {
+            let matrix = if self.appearance == Appearance::Lihuowang {
+                source_deltas.map(|deltas| deltas[bone.driver] * bone.bind)
+            } else {
+                let driver = &self.drivers[bone.driver];
+                bone.source.map(|index| source.model[index]).or_else(|| {
+                    driver
+                        .source
+                        .map(|index| source.model[index] * driver.source_inverse_rest * bone.bind)
+                })
+            };
+            matrix.map_or(fallback, |matrix| {
+                blend(fallback, Transform::from_matrix(matrix), source.weight)
+            })
+        })
+    }
+
     pub(super) fn attachment_pose(&self, rig: &RigPose) -> Vec<Transform> {
         let drivers = self.driver_pose(&rig.model);
         let mut result = rig.model.clone();
@@ -423,10 +568,16 @@ impl AvatarAssets {
         // ranged aiming; only align its attachment position to the retargeted hand.
         result[hand.bone].translation = drivers[self.right_hand].translation;
         if let Some(source) = &rig.source {
-            let posed = Transform::from_matrix(source.model[self.source_hand]);
-            let source_hand = Transform::from_translation(posed.translation).with_rotation(
-                posed.rotation * self.source_hand_rest.inverse() * hand.reference.rotation,
-            );
+            let source_hand = if self.appearance == Appearance::Lihuowang {
+                let posed = self.source_driver_pose(&source.model)[self.right_hand];
+                Transform::from_translation(posed.translation)
+                    .with_rotation(posed.rotation * hand.reference.rotation)
+            } else {
+                let posed = Transform::from_matrix(source.model[self.source_hand]);
+                Transform::from_translation(posed.translation).with_rotation(
+                    posed.rotation * self.source_hand_rest.inverse() * hand.reference.rotation,
+                )
+            };
             result[hand.bone] = blend(result[hand.bone], source_hand, source.weight);
         }
         result
@@ -434,22 +585,45 @@ impl AvatarAssets {
 }
 
 pub(super) fn spawn(world: &mut World, owner: Entity) -> Vec<Entity> {
-    let assets = AvatarAssets::shared(world);
-    let rig = RigPose::new(world.resource::<AnimationLibrary>());
+    spawn_with_appearance(world, owner, Appearance::Choulingke)
+}
+
+pub(super) fn spawn_with_appearance(
+    world: &mut World,
+    owner: Entity,
+    appearance: Appearance,
+) -> Vec<Entity> {
+    let assets = AvatarAssets::shared(world, appearance);
+    if world.get::<RigPose>(owner).is_none() {
+        let rig = RigPose::new(world.resource::<AnimationLibrary>());
+        world.entity_mut(owner).insert(rig);
+    }
+    let rig = world.get::<RigPose>(owner).unwrap();
     let deltas = assets.deltas(&rig.model);
+    let source_deltas = assets.source_deltas(rig);
+    let poses: Vec<Vec<_>> = assets
+        .parts
+        .iter()
+        .filter(|part| !part.blade)
+        .map(|part| {
+            part.bones
+                .iter()
+                .map(|bone| assets.joint_pose(rig, &deltas, source_deltas.as_deref(), bone))
+                .collect()
+        })
+        .collect();
     let mut surfaces = Vec::new();
-    for part in assets.parts.iter().filter(|part| !part.blade) {
+    for (part, poses) in assets.parts.iter().filter(|part| !part.blade).zip(poses) {
         let mut joints = Vec::new();
-        for bone in &part.bones {
+        for (bone, pose) in part.bones.iter().zip(poses) {
             let joint = world
                 .spawn((
+                    AvatarPart,
                     Name::new(bone.name.clone()),
-                    Transform::from_matrix(deltas[bone.driver] * bone.bind),
+                    pose,
                     PaletteJoint {
-                        source: bone.source,
                         owner,
-                        driver: bone.driver,
-                        bind: bone.bind,
+                        bone: bone.clone(),
                     },
                 ))
                 .id();
@@ -459,6 +633,7 @@ pub(super) fn spawn(world: &mut World, owner: Entity) -> Vec<Entity> {
         for primitive in &part.primitives {
             let entity = world
                 .spawn((
+                    AvatarPart,
                     Name::new(part.name.clone()),
                     Mesh3d(primitive.mesh.clone()),
                     MeshMaterial3d(primitive.material.normal.clone()),
@@ -478,13 +653,40 @@ pub(super) fn spawn(world: &mut World, owner: Entity) -> Vec<Entity> {
             surfaces.push(entity);
         }
     }
-    world.entity_mut(owner).insert(rig);
+    world.entity_mut(owner).insert(AvatarAppearance(appearance));
     surfaces
+}
+
+/// Only the avatar's own display nodes are replaced. Rig state and other
+/// children (weapon roots, markers) keep their identity and current playback.
+pub(super) fn replace(world: &mut World, owner: Entity, appearance: Appearance) {
+    if world.get::<AvatarAppearance>(owner) == Some(&AvatarAppearance(appearance)) {
+        return;
+    }
+    let parts: Vec<_> = world
+        .get::<Children>(owner)
+        .into_iter()
+        .flatten()
+        .copied()
+        .filter(|&child| world.get::<AvatarPart>(child).is_some())
+        .collect();
+    for part in parts {
+        world.despawn(part);
+    }
+    spawn_with_appearance(world, owner, appearance);
 }
 
 /// Confirmed weapon1 long blade, shared by both simulation melee sets.
 pub(super) fn spawn_blade(world: &mut World, parent: Entity) {
-    let assets = AvatarAssets::shared(world);
+    spawn_blade_with_appearance(world, parent, Appearance::Choulingke);
+}
+
+pub(super) fn spawn_blade_with_appearance(
+    world: &mut World,
+    parent: Entity,
+    appearance: Appearance,
+) {
+    let assets = AvatarAssets::shared(world, appearance);
     let blade = assets
         .parts
         .iter()
@@ -493,6 +695,7 @@ pub(super) fn spawn_blade(world: &mut World, parent: Entity) {
     for primitive in &blade.primitives {
         let entity = world
             .spawn((
+                BladeSurface,
                 Mesh3d(primitive.mesh.clone()),
                 MeshMaterial3d(primitive.material.normal.clone()),
                 Transform::IDENTITY,
@@ -500,11 +703,38 @@ pub(super) fn spawn_blade(world: &mut World, parent: Entity) {
             .id();
         world.entity_mut(parent).add_child(entity);
     }
+    world.entity_mut(parent).insert(BladeAppearance(appearance));
+}
+
+pub(super) fn replace_blade(world: &mut World, parent: Entity, appearance: Appearance) {
+    if world
+        .get::<BladeAppearance>(parent)
+        .is_some_and(|current| current.0 == appearance)
+    {
+        return;
+    }
+    let parts: Vec<_> = world
+        .get::<Children>(parent)
+        .into_iter()
+        .flatten()
+        .copied()
+        .filter(|&child| world.get::<BladeSurface>(child).is_some())
+        .collect();
+    for part in parts {
+        world.despawn(part);
+    }
+    spawn_blade_with_appearance(world, parent, appearance);
 }
 
 pub(super) fn sync(
     assets: Option<Res<AvatarAssets>>,
-    actors: Query<(Entity, &RigPose, Option<&ActorView>)>,
+    cache: Option<Res<AvatarAssetCache>>,
+    actors: Query<(
+        Entity,
+        &RigPose,
+        Option<&ActorView>,
+        Option<&AvatarAppearance>,
+    )>,
     health: Query<(&Health, Option<&Enemy>)>,
     mut joints: Query<(&PaletteJoint, &mut Transform)>,
     mut surfaces: Query<
@@ -512,11 +742,22 @@ pub(super) fn sync(
         Without<super::combat::EnemyBody>,
     >,
 ) {
-    let Some(assets) = assets else { return };
     let mut poses = HashMap::new();
     let mut tints = HashMap::new();
-    for (entity, pose, view) in &actors {
-        poses.insert(entity, assets.deltas(&pose.model));
+    for (entity, pose, view, appearance) in &actors {
+        let appearance = appearance.map_or(Appearance::default(), |current| current.0);
+        let Some(selected) = AvatarAssets::cached(assets.as_deref(), cache.as_deref(), appearance)
+        else {
+            continue;
+        };
+        poses.insert(
+            entity,
+            (
+                selected,
+                selected.deltas(&pose.model),
+                selected.source_deltas(pose),
+            ),
+        );
         let tint =
             view.and_then(|view| health.get(view.owner).ok())
                 .map_or(0, |(health, enemy)| {
@@ -531,23 +772,10 @@ pub(super) fn sync(
         tints.insert(entity, tint);
     }
     for (joint, mut transform) in &mut joints {
-        if let Some(deltas) = poses.get(&joint.owner) {
-            let fallback = Transform::from_matrix(deltas[joint.driver] * joint.bind);
-            *transform = actors
-                .get(joint.owner)
-                .ok()
-                .and_then(|(_, rig, _)| rig.source.as_ref())
-                .map_or(fallback, |source| {
-                    let driver = &assets.drivers[joint.driver];
-                    let matrix = joint.source.map(|index| source.model[index]).or_else(|| {
-                        driver.source.map(|index| {
-                            source.model[index] * driver.source_inverse_rest * joint.bind
-                        })
-                    });
-                    matrix.map_or(fallback, |matrix| {
-                        blend(fallback, Transform::from_matrix(matrix), source.weight)
-                    })
-                });
+        if let Some((selected, deltas, source_deltas)) = poses.get(&joint.owner)
+            && let Ok((_, rig, _, _)) = actors.get(joint.owner)
+        {
+            *transform = selected.joint_pose(rig, deltas, source_deltas.as_deref(), &joint.bone);
         }
     }
     for (surface, mut material) in &mut surfaces {
@@ -810,7 +1038,227 @@ mod tests {
     }
 
     #[test]
+    fn replacing_appearance_preserves_playback_and_other_children_and_reuses_both_sets() {
+        let mut app = test_app(false);
+        let world = app.world_mut();
+        let owner = world
+            .spawn((
+                Body::new(Vec2::new(3.0, -2.0), 6.0, 0.35),
+                Transform::from_xyz(3.0, 0.7, -2.0),
+            ))
+            .id();
+        spawn(world, owner);
+        let first_mesh = world
+            .query::<(&AvatarSurface, &Mesh3d)>()
+            .iter(world)
+            .find(|(surface, _)| surface.owner == owner)
+            .unwrap()
+            .1
+            .0
+            .clone();
+        let blade = world.spawn(Transform::IDENTITY).id();
+        let unrelated = world.spawn(Transform::from_xyz(0.0, 1.0, 0.0)).id();
+        world.entity_mut(owner).add_children(&[blade, unrelated]);
+        spawn_blade(world, blade);
+        super::super::stickman::attach_weapon(
+            world,
+            owner,
+            blade,
+            crate::simulation::WeaponMode::Melee,
+        );
+        let (model, source_pose) = {
+            let cc0 = world.resource::<AnimationLibrary>();
+            let source = world.resource::<SourceAnimationLibrary>();
+            let clip = source.clip("skill_ylk_1").unwrap();
+            (
+                cc0.model_pose(&cc0.sample("Walk_Loop", 0.4, true)),
+                source.model_pose(&source.sample(clip, 1.3, false, false)),
+            )
+        };
+        {
+            let mut rig = world.get_mut::<RigPose>(owner).unwrap();
+            rig.model = model.clone();
+            rig.source = Some(super::super::animation::SourcePose {
+                model: source_pose,
+                weight: 0.7,
+            });
+        }
+        let source_pointer = world
+            .get::<RigPose>(owner)
+            .unwrap()
+            .source
+            .as_ref()
+            .unwrap()
+            .model
+            .as_ptr();
+        let root_transform = *world.get::<Transform>(owner).unwrap();
+        let actor_position = world.get::<Body>(owner).unwrap().world_position();
+        replace(world, owner, Appearance::Lihuowang);
+        replace_blade(world, blade, Appearance::Lihuowang);
+        let assets = world
+            .resource::<AvatarAssetCache>()
+            .lihuowang
+            .as_ref()
+            .unwrap();
+        assert!(assets.parts.iter().filter(|part| !part.blade).count() >= 16);
+        assert!(assets.parts.iter().any(|part| part.name.contains("face")));
+        assert!(assets.parts.iter().any(|part| part.name.contains("hair")));
+        assert!(
+            assets
+                .parts
+                .iter()
+                .flat_map(|part| &part.bones)
+                .all(|bone| bone.source.is_none())
+        );
+        assert!(
+            world
+                .query::<(&AvatarSurface, &Mesh3d)>()
+                .iter(world)
+                .filter(|(surface, _)| surface.owner == owner)
+                .all(|(_, mesh)| mesh.0 != first_mesh)
+        );
+        let counts = (
+            world.resource::<Assets<Mesh>>().len(),
+            world.resource::<Assets<Image>>().len(),
+            world.resource::<Assets<StandardMaterial>>().len(),
+            world
+                .resource::<Assets<SkinnedMeshInverseBindposes>>()
+                .len(),
+            world.entities().len(),
+        );
+        for _ in 0..3 {
+            replace(world, owner, Appearance::Choulingke);
+            replace_blade(world, blade, Appearance::Choulingke);
+            replace(world, owner, Appearance::Lihuowang);
+            replace_blade(world, blade, Appearance::Lihuowang);
+        }
+        assert_eq!(
+            counts,
+            (
+                world.resource::<Assets<Mesh>>().len(),
+                world.resource::<Assets<Image>>().len(),
+                world.resource::<Assets<StandardMaterial>>().len(),
+                world
+                    .resource::<Assets<SkinnedMeshInverseBindposes>>()
+                    .len(),
+                world.entities().len(),
+            )
+        );
+        let rig = world.get::<RigPose>(owner).unwrap();
+        assert_eq!(rig.model, model);
+        assert_eq!(rig.source.as_ref().unwrap().model.as_ptr(), source_pointer);
+        assert_eq!(rig.source.as_ref().unwrap().weight, 0.7);
+        assert_eq!(*world.get::<Transform>(owner).unwrap(), root_transform);
+        assert_eq!(
+            world.get::<Body>(owner).unwrap().world_position(),
+            actor_position
+        );
+        assert_eq!(world.get::<ChildOf>(blade).unwrap().parent(), owner);
+        assert_eq!(world.get::<ChildOf>(unrelated).unwrap().parent(), owner);
+        assert_eq!(
+            world
+                .get::<super::super::stickman::BoneVisual>(blade)
+                .unwrap()
+                .owner,
+            owner
+        );
+        world.run_schedule(Update);
+        assert!(
+            sample_surface(world, owner)
+                .iter()
+                .all(|point| point.is_finite())
+        );
+    }
+
+    #[test]
+    fn naraka_source_motion_keeps_its_own_segments_and_wrist_and_changes_real_vertices() {
+        let mut app = test_app(false);
+        let world = app.world_mut();
+        let owner = world.spawn(Transform::IDENTITY).id();
+        spawn_with_appearance(world, owner, Appearance::Lihuowang);
+        let rest_source = world
+            .resource::<SourceAnimationLibrary>()
+            .rest_model
+            .clone();
+        world.get_mut::<RigPose>(owner).unwrap().source =
+            Some(super::super::animation::SourcePose {
+                model: rest_source,
+                weight: 1.0,
+            });
+        world.run_schedule(Update);
+        let rest_points = sample_surface(world, owner);
+        let model = {
+            let source = world.resource::<SourceAnimationLibrary>();
+            source.model_pose(&source.sample(
+                source.clip("skill_ylk_1").unwrap(),
+                1.5,
+                false,
+                false,
+            ))
+        };
+        world
+            .get_mut::<RigPose>(owner)
+            .unwrap()
+            .source
+            .as_mut()
+            .unwrap()
+            .model = model;
+        world.run_schedule(Update);
+        let moved_points = sample_surface(world, owner);
+        assert!(changed(&rest_points, &moved_points) > 0.05);
+        assert!(
+            moved_points
+                .iter()
+                .all(|point| point.abs().max_element() < 5.0)
+        );
+        let assets = world
+            .resource::<AvatarAssetCache>()
+            .lihuowang
+            .as_ref()
+            .unwrap();
+        let rig = world.get::<RigPose>(owner).unwrap();
+        let source_drivers = assets.source_driver_pose(&rig.source.as_ref().unwrap().model);
+        for (index, driver) in assets.drivers.iter().enumerate().skip(2) {
+            let parent = driver.parent.unwrap();
+            assert!(
+                (source_drivers[index]
+                    .translation
+                    .distance(source_drivers[parent].translation)
+                    - driver.anchor.distance(assets.drivers[parent].anchor))
+                .abs()
+                    < 0.00001
+            );
+        }
+        let hand = assets.drivers[assets.right_hand].bone;
+        let attachment = assets.attachment_pose(rig);
+        assert!(
+            attachment[hand]
+                .translation
+                .distance(source_drivers[assets.right_hand].translation)
+                < 0.00001
+        );
+        let blade = super::super::stickman::attachment_transform(
+            &super::super::stickman::Attachment::Weapon {
+                bone: hand,
+                mode: crate::simulation::WeaponMode::Melee,
+            },
+            &attachment,
+        );
+        assert!((blade.rotation * Vec3::Y).distance(attachment[hand].rotation * Vec3::Z) < 0.00001);
+        assert_eq!(*world.get::<Transform>(owner).unwrap(), Transform::IDENTITY);
+    }
+
+    #[test]
     fn real_simulation_and_animation_drive_the_skin_through_walk_crouch_jump_attack_and_pause() {
+        check_simulation_animation(Appearance::Choulingke);
+    }
+
+    #[test]
+    fn naraka_skin_follows_actual_walk_crouch_jump_attack_and_pause() {
+        check_simulation_animation(Appearance::Lihuowang);
+    }
+
+    fn check_simulation_animation(appearance: Appearance) {
         let mut app = test_app(true);
         let actor = app
             .world_mut()
@@ -830,7 +1278,7 @@ mod tests {
             .world_mut()
             .spawn((ActorView { owner: actor }, Transform::IDENTITY))
             .id();
-        spawn(app.world_mut(), view);
+        spawn_with_appearance(app.world_mut(), view, appearance);
         let frame = |app: &mut App, count: usize| {
             for _ in 0..count {
                 let step = Duration::from_secs_f64(1.0 / 60.0);

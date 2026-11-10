@@ -28,6 +28,10 @@ pub(super) struct VisualAssets {
 pub(super) struct WeaponVisual(WeaponSet, WeaponMode);
 
 impl WeaponVisual {
+    pub(super) fn is_melee(&self) -> bool {
+        self.1 == WeaponMode::Melee
+    }
+
     pub(super) fn is_sniper(&self) -> bool {
         self.0 == WeaponSet::HammerSniper && self.1 == WeaponMode::Ranged
     }

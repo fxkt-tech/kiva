@@ -1,0 +1,581 @@
+{
+  "binary": {
+    "file": "/home/asuka/go/src/github.com/fxkt-tech/kiva/assets/lihuowang/character.bin",
+    "bytes": 8931762,
+    "sha256": "52ac24f9e5ccce28eb132b529d7fad7c3b39c23ef850c4448869275caad83fd9",
+    "drivers": 23,
+    "textures": 8,
+    "materials": 18,
+    "double_sided_materials": 5,
+    "parts": 18,
+    "vertices": 42625,
+    "triangles": 57257,
+    "actual_binary_lbs_character_bounds": [
+      [
+        -0.7197659719314854,
+        -8.386717801239133e-10,
+        -0.16009086148916032
+      ],
+      [
+        0.7769398381208555,
+        1.7299999676024438,
+        0.4597118823248947
+      ]
+    ],
+    "actual_binary_character_height": 1.7299999684411156,
+    "part_statistics": [
+      {
+        "name": "naraka::outfit::body",
+        "blade": false,
+        "bones": 58,
+        "vertices": 2671
+      },
+      {
+        "name": "naraka::outfit::body02",
+        "blade": false,
+        "bones": 88,
+        "vertices": 18490
+      },
+      {
+        "name": "naraka::outfit::body03",
+        "blade": false,
+        "bones": 30,
+        "vertices": 647
+      },
+      {
+        "name": "naraka::outfit::body04_cb",
+        "blade": false,
+        "bones": 25,
+        "vertices": 1406
+      },
+      {
+        "name": "naraka::outfit::cloth01",
+        "blade": false,
+        "bones": 5,
+        "vertices": 152
+      },
+      {
+        "name": "naraka::outfit::cloth02",
+        "blade": false,
+        "bones": 29,
+        "vertices": 569
+      },
+      {
+        "name": "naraka::outfit::cloth03",
+        "blade": false,
+        "bones": 13,
+        "vertices": 148
+      },
+      {
+        "name": "naraka::outfit::cloth04_cb",
+        "blade": false,
+        "bones": 18,
+        "vertices": 454
+      },
+      {
+        "name": "naraka::outfit::body04_cf",
+        "blade": false,
+        "bones": 25,
+        "vertices": 1406
+      },
+      {
+        "name": "naraka::outfit::cloth04_cf",
+        "blade": false,
+        "bones": 18,
+        "vertices": 454
+      },
+      {
+        "name": "naraka::hair::hair",
+        "blade": false,
+        "bones": 17,
+        "vertices": 7654
+      },
+      {
+        "name": "naraka::hair::hair02",
+        "blade": false,
+        "bones": 10,
+        "vertices": 811
+      },
+      {
+        "name": "naraka::hair::scalp",
+        "blade": false,
+        "bones": 3,
+        "vertices": 418
+      },
+      {
+        "name": "naraka::face::eyelash",
+        "blade": false,
+        "bones": 5,
+        "vertices": 628
+      },
+      {
+        "name": "naraka::face::eyes",
+        "blade": false,
+        "bones": 2,
+        "vertices": 402
+      },
+      {
+        "name": "naraka::face::face",
+        "blade": false,
+        "bones": 6,
+        "vertices": 2247
+      },
+      {
+        "name": "naraka::zhulei::rigid_blade",
+        "blade": true,
+        "bones": 1,
+        "vertices": 1730
+      },
+      {
+        "name": "naraka::sheath::authored_hip",
+        "blade": false,
+        "bones": 1,
+        "vertices": 2338
+      }
+    ],
+    "exact_EOF": true,
+    "source_pose_nonbind_bones_preserved": 352,
+    "browser_or_screenshot_test": false
+  },
+  "source_pose_checks": [
+    {
+      "role": "outfit",
+      "mesh": "body",
+      "vertices": 2671,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 4.850712667639152e-05,
+      "nondegenerate_UV_triangles": 4317,
+      "triangles": 4317
+    },
+    {
+      "role": "outfit",
+      "mesh": "body02",
+      "vertices": 18490,
+      "float_C_source_LBS_error_max": 8.881784197001252e-16,
+      "serialized_f32_weights255_error_max_m": 4.3156861519343235e-05,
+      "nondegenerate_UV_triangles": 24031,
+      "triangles": 24031
+    },
+    {
+      "role": "outfit",
+      "mesh": "body03",
+      "vertices": 647,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 1.4587421724478635e-07,
+      "nondegenerate_UV_triangles": 865,
+      "triangles": 870
+    },
+    {
+      "role": "outfit",
+      "mesh": "body04_cb",
+      "vertices": 1406,
+      "float_C_source_LBS_error_max": 8.881784197001252e-16,
+      "serialized_f32_weights255_error_max_m": 1.3862706205321305e-07,
+      "nondegenerate_UV_triangles": 2367,
+      "triangles": 2367
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth01",
+      "vertices": 152,
+      "float_C_source_LBS_error_max": 3.3306690738754696e-16,
+      "serialized_f32_weights255_error_max_m": 2.2854136804381847e-05,
+      "nondegenerate_UV_triangles": 246,
+      "triangles": 246
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth02",
+      "vertices": 569,
+      "float_C_source_LBS_error_max": 5.551115123125783e-16,
+      "serialized_f32_weights255_error_max_m": 7.482805860400764e-05,
+      "nondegenerate_UV_triangles": 943,
+      "triangles": 943
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth03",
+      "vertices": 148,
+      "float_C_source_LBS_error_max": 3.3306690738754696e-16,
+      "serialized_f32_weights255_error_max_m": 6.211825393625893e-08,
+      "nondegenerate_UV_triangles": 240,
+      "triangles": 240
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth04_cb",
+      "vertices": 454,
+      "float_C_source_LBS_error_max": 5.551115123125783e-16,
+      "serialized_f32_weights255_error_max_m": 1.1654046254957156e-07,
+      "nondegenerate_UV_triangles": 763,
+      "triangles": 763
+    },
+    {
+      "role": "outfit",
+      "mesh": "body04_cb",
+      "vertices": 1406,
+      "float_C_source_LBS_error_max": 8.881784197001252e-16,
+      "serialized_f32_weights255_error_max_m": 1.3862706205321305e-07,
+      "nondegenerate_UV_triangles": 2367,
+      "triangles": 2367
+    },
+    {
+      "role": "outfit",
+      "mesh": "cloth04_cb",
+      "vertices": 454,
+      "float_C_source_LBS_error_max": 5.551115123125783e-16,
+      "serialized_f32_weights255_error_max_m": 1.1654046254957156e-07,
+      "nondegenerate_UV_triangles": 763,
+      "triangles": 763
+    },
+    {
+      "role": "hair",
+      "mesh": "hair_runtime_mesh",
+      "vertices": 7654,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 1.6019744270630451e-07,
+      "nondegenerate_UV_triangles": 6982,
+      "triangles": 6982
+    },
+    {
+      "role": "hair",
+      "mesh": "hair02_runtime_mesh",
+      "vertices": 811,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 1.146112314158228e-07,
+      "nondegenerate_UV_triangles": 1062,
+      "triangles": 1062
+    },
+    {
+      "role": "hair",
+      "mesh": "scalp_runtime_mesh",
+      "vertices": 418,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 6.128225292591625e-08,
+      "nondegenerate_UV_triangles": 760,
+      "triangles": 760
+    },
+    {
+      "role": "face",
+      "mesh": "eyelash_runtime_mesh",
+      "vertices": 628,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 1.5935706897080606e-07,
+      "nondegenerate_UV_triangles": 990,
+      "triangles": 990
+    },
+    {
+      "role": "face",
+      "mesh": "eyes_runtime_mesh",
+      "vertices": 402,
+      "float_C_source_LBS_error_max": 4.440892098500626e-16,
+      "serialized_f32_weights255_error_max_m": 1.9322410617979563e-07,
+      "nondegenerate_UV_triangles": 760,
+      "triangles": 760
+    },
+    {
+      "role": "face",
+      "mesh": "face_runtime_mesh",
+      "vertices": 2247,
+      "float_C_source_LBS_error_max": 6.661338147750939e-16,
+      "serialized_f32_weights255_error_max_m": 1.7401153338552446e-07,
+      "nondegenerate_UV_triangles": 4090,
+      "triangles": 4090
+    }
+  ],
+  "maximum_float_C_LBS_error": 8.881784197001252e-16,
+  "maximum_serialized_weights255_error_m": 7.482805860400764e-05,
+  "normalization": {
+    "complete_source_bounds": [
+      [
+        -0.851111373043603,
+        0.0004951779963536563,
+        -0.5035988494960139
+      ],
+      [
+        0.7884793611614014,
+        1.8956517983010812,
+        0.17537413526704676
+      ]
+    ],
+    "complete_parts": [
+      "outfit",
+      "hair",
+      "generic_source_face"
+    ],
+    "scale": 0.9128533132643297,
+    "C": [
+      [
+        -0.9128533132643297,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.9128533132643297,
+        0.0,
+        -0.00045202487462702736
+      ],
+      [
+        0.0,
+        0.0,
+        -0.9128533132643297,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "driver_anchors": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        4.644261187537738e-15,
+        0.8920117911573113,
+        2.592863690980966e-08
+      ],
+      [
+        3.7207266282047855e-09,
+        0.9673501272728038,
+        -0.01541442768931775
+      ],
+      [
+        -4.6315912132750235e-10,
+        1.0713921077535264,
+        -0.01830477975903933
+      ],
+      [
+        7.896692427759585e-09,
+        1.2073725322200273,
+        -0.01249268411133813
+      ],
+      [
+        8.380275057258204e-08,
+        1.4138489194666362,
+        0.019780008794369593
+      ],
+      [
+        6.032523373848001e-08,
+        1.4944214872060289,
+        0.0011934840063268825
+      ],
+      [
+        -0.034186654381783144,
+        1.3781252234151278,
+        0.01414125242976848
+      ],
+      [
+        -0.14162988306619495,
+        1.362949220040959,
+        0.022310830013499868
+      ],
+      [
+        -0.3195631196468638,
+        1.159801049292579,
+        0.036622118894828984
+      ],
+      [
+        -0.44762261764530914,
+        0.9873548851253527,
+        -0.06438599758535535
+      ],
+      [
+        0.03418674688716619,
+        1.378125224574758,
+        0.014141160918099794
+      ],
+      [
+        0.14162998451383993,
+        1.3629491166931988,
+        0.02231040575621944
+      ],
+      [
+        0.31956337980194444,
+        1.1598010729173611,
+        0.03662138445338441
+      ],
+      [
+        0.4476225945890139,
+        0.9873548665358671,
+        -0.06438687121897015
+      ],
+      [
+        -0.08101555227050089,
+        0.8920117516247515,
+        1.0145720592928934e-07
+      ],
+      [
+        -0.13353155711924777,
+        0.48960452138466587,
+        0.02536591194874583
+      ],
+      [
+        -0.1858951297013822,
+        0.08865139657885922,
+        0.050225571534947555
+      ],
+      [
+        -0.19902594708250085,
+        0.01352905758104028,
+        -0.06977041740250807
+      ],
+      [
+        0.08101555227026466,
+        0.892011823102402,
+        -1.3632510607129321e-07
+      ],
+      [
+        0.13353171668262195,
+        0.4896045960998904,
+        0.025365490367699865
+      ],
+      [
+        0.18589546262194248,
+        0.08865155351216428,
+        0.05022498017194367
+      ],
+      [
+        0.199025945535336,
+        0.013529226496924084,
+        -0.06977103460080039
+      ]
+    ],
+    "left_hand_negative_X": true,
+    "right_hand_positive_X": true,
+    "toe_forward_negative_Z": true
+  },
+  "grip": {
+    "authored_source_hilt_center": [
+      0.0,
+      0.0,
+      -0.395
+    ],
+    "source_axis": "+Z",
+    "converted_axis": "+Y",
+    "grip_origin_error": 0.0,
+    "C_blade_rigid": [
+      [
+        0.9128533132643297,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.9128533132643297,
+        0.36057705873941026
+      ],
+      [
+        0.0,
+        -0.9128533132643297,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "baked_source_bone_count": 4,
+    "bounds": [
+      [
+        -0.06061931876790795,
+        -0.16410655459583945,
+        -0.24419028473487292
+      ],
+      [
+        0.03261372881496348,
+        1.1215699242392625,
+        0.05563789913461149
+      ]
+    ]
+  },
+  "sheath": {
+    "authored": true,
+    "conversion": [
+      [
+        0.902602954553859,
+        0.0,
+        -0.13641509435655888,
+        -0.22
+      ],
+      [
+        -0.13641509435655888,
+        0.0,
+        -0.902602954553859,
+        0.9
+      ],
+      [
+        0.0,
+        0.9128533132643297,
+        0.0,
+        0.1
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "bounds": [
+      [
+        -0.3527181468162519,
+        0.1235981106295716,
+        0.06857496542717928
+      ],
+      [
+        -0.18359341214758026,
+        1.0423976760588352,
+        0.1443649935362436
+      ]
+    ]
+  },
+  "skin_tone": {
+    "method": "Median original male_body_02 _MainTex pixels at actual hand/finger/forearm-weighted body UV0; sRGB decoded to linear material tint.",
+    "texture_sha256": "1c21c945a33a3dfe6258d8ed6c39c2e0c5bfe989f87bd0f7d8bb4b3e360a1aee",
+    "samples": 1526,
+    "median_srgb": [
+      0.7450980392156863,
+      0.5607843137254902,
+      0.4666666666666667
+    ],
+    "linear_tint": [
+      0.5149176653765214,
+      0.27467731206038465,
+      0.184474994500441
+    ]
+  },
+  "neutral_eyes": {
+    "adaptation": "Kiva neutral brown iris/pupil and warm sclera baked to original source UV0; no source eye/makeup/face-preset texture recovered.",
+    "dark_pixels": 16478
+  },
+  "checks": [
+    "pinned_source_hashes",
+    "source_four_weights_and_indices",
+    "all_vertex_float_C_source_LBS_equivalence",
+    "actual_serialized_f32_weights255_source_LBS_error",
+    "source_rest_and_IBM_finite_nonsingular",
+    "weights_exact_sum255",
+    "driver_order23",
+    "left_right_and_toe_facing",
+    "full_body_head_hair_height1.73_floor0",
+    "source_UV_and_finite_unit_normals",
+    "material_texture_and_doubleSided_flags",
+    "PNG_size_and_decode",
+    "rigid_blade_pose_bake_and_grip_axis",
+    "authored_sheath_rest_above_ground",
+    "exact_binary_EOF"
+  ],
+  "browser_or_screenshot_test": false
+}

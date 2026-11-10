@@ -15,6 +15,8 @@
     <script src="hud.js"></script>
     <link data-trunk rel="copy-file" href="web/enemies.js" />
     <script src="enemies.js"></script>
+    <link data-trunk rel="copy-file" href="web/appearance.js" />
+    <script src="appearance.js"></script>
     <link data-trunk rel="copy-file" href="web/audio.js" />
     <link data-trunk rel="copy-dir" href="assets/audio" />
     <script src="audio.js"></script>
@@ -36,7 +38,7 @@
             <symbol id="hud-icon-guard" viewBox="0 0 40 40"><path d="m7 33 24-26-7 18-13 10zM6 9l28 21M4 17l10-1M26 5l1 9M27 29l8 5"/></symbol>
             <symbol id="hud-icon-target" viewBox="0 0 40 40"><circle cx="20" cy="20" r="10"/><path d="M20 4v10m0 12v10M4 20h10m12 0h10"/></symbol>
           </defs></svg>
-          <header class="hud-corner hud-place"><small>KIVA / BAMBOO FOREST</small><strong>幽篁竹林</strong><span id="hud-enemy-mode" class="hud-mode">靶子模式 · F2 切换</span></header>
+          <header class="hud-corner hud-place"><small>KIVA / BAMBOO FOREST</small><strong>幽篁竹林</strong><span id="hud-enemy-mode" class="hud-mode">靶子模式 · F2 切换</span><span id="hud-appearance" class="hud-mode">外观 · 愁铃客 · F3 切换</span></header>
           <aside class="hud-corner hud-utility"><span><kbd>Q</kbd>切换目标</span><span><kbd>Esc</kbd>暂停</span></aside>
           <section id="hud-target" class="hud-target" aria-label="锁定目标生命" hidden>
             <svg class="hud-target-ornament" viewBox="0 0 720 58" preserveAspectRatio="none" aria-hidden="true">
@@ -86,6 +88,14 @@
                 </div>
                 <span id="enemy-mode-hint">1 个静止靶子 · 100 万生命 · 不会攻击</span>
               </fieldset>
+              <fieldset class="appearance-select">
+                <legend>角色与近战外观</legend>
+                <div class="appearance-options">
+                  <button id="appearance-choulingke" type="button" aria-pressed="true"><span>愁铃客</span><small>愁铃长刀</small></button>
+                  <button id="appearance-lihuowang" type="button" aria-pressed="false"><span>李火旺</span><small>横刀 · 烛泪</small></button>
+                </div>
+                <span id="appearance-hint">愁铃客 · 愁铃长刀 · F3 切换外观</span>
+              </fieldset>
               <div class="entry-actions">
                 <button id="enter" hidden>点击进入 <span aria-hidden="true">→</span></button>
                 <button id="retry" hidden>重新加载</button>
@@ -119,6 +129,7 @@
                     <div class="control-row"><dt>切换武器套装<span>长刀震击 / 狙击枪 · 长刀旋斩 / 火炮</span></dt><dd><kbd>1</kbd><span>/</span><kbd>2</kbd></dd></div>
                     <div class="control-row"><dt>切换锁定目标</dt><dd><kbd>Q</kbd></dd></div>
                     <div class="control-row"><dt>靶子 / 实战<span>切换时重新生成敌人</span></dt><dd><kbd>F2</kbd></dd></div>
+                    <div class="control-row"><dt>切换角色与近战外观<span>愁铃客 / 李火旺 · 不改变武器玩法</span></dt><dd><kbd>F3</kbd></dd></div>
                     <div class="control-row"><dt>调整落点距离<span>火炮模式下使用</span></dt><dd><kbd>鼠标上下</kbd></dd></div>
                   </dl>
                 </section>

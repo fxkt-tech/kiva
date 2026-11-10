@@ -52,13 +52,15 @@ kbd { padding: 3px 6px; margin-right: 5px; border: 1px solid #aac5c54d; border-r
 h1 { font-size: 32px; font-weight: 500; margin: 18px 0 12px; letter-spacing: 0.07em; }
 p { color: #a9bcbe; font-size: 14px; line-height: 1.8; min-height: 50px; margin: 0 0 24px; }
 .entry-actions { display: grid; gap: 16px; width: 100%; margin-top: auto; }
-.enemy-mode-select { width: 100%; min-width: 0; margin: 0 0 24px; padding: 0; border: 0; }
-.enemy-mode-select legend { margin-bottom: 10px; padding: 0; color: #9bbab9; font-size: 11px; }
-.enemy-mode-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.enemy-mode-options button { justify-content: center; padding: 10px 8px; border: 1px solid #718b8e60; background: #24343d; color: #a9bcbe; box-shadow: inset 0 1px 0 #ffffff0a, 0 2px 3px #0003; }
-.enemy-mode-options button:hover { background: #30454c; }
-.enemy-mode-options button[aria-pressed="true"] { border-color: #74c4bb; background: #74c4bb20; color: #a4e1d9; box-shadow: inset 0 0 0 1px #74c4bb20; }
-#enemy-mode-hint { display: block; margin-top: 10px; color: #839b9e; font-size: 10px; line-height: 1.7; }
+.enemy-mode-select, .appearance-select { width: 100%; min-width: 0; margin: 0 0 24px; padding: 0; border: 0; }
+.enemy-mode-select legend, .appearance-select legend { margin-bottom: 10px; padding: 0; color: #9bbab9; font-size: 11px; }
+.enemy-mode-options, .appearance-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.enemy-mode-options button, .appearance-options button { justify-content: center; padding: 10px 8px; border: 1px solid #718b8e60; background: #24343d; color: #a9bcbe; box-shadow: inset 0 1px 0 #ffffff0a, 0 2px 3px #0003; }
+.enemy-mode-options button:hover, .appearance-options button:hover { background: #30454c; }
+.enemy-mode-options button[aria-pressed="true"], .appearance-options button[aria-pressed="true"] { border-color: #74c4bb; background: #74c4bb20; color: #a4e1d9; box-shadow: inset 0 0 0 1px #74c4bb20; }
+#enemy-mode-hint, #appearance-hint { display: block; margin-top: 10px; color: #839b9e; font-size: 10px; line-height: 1.7; }
+.appearance-options button { flex-direction: column; gap: 4px; }
+.appearance-options small { color: inherit; opacity: 0.8; font-size: 10px; }
 .entry-hint { color: #839b9e; font-size: 11px; line-height: 1.8; }
 button { width: 100%; display: flex; justify-content: space-between; align-items: center; border: 0; border-radius: 6px; padding: 14px 18px; font: inherit; font-size: 14px; color: #082928; background: #74c4bb; cursor: pointer; }
 button:hover { background: #91dbd1; }

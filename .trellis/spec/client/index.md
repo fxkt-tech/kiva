@@ -16,8 +16,10 @@
 - Web 桥 `window.kivaInput.isActive(): boolean` / `takeLook(): number` / `takeAim(): number` / `keys(): number` / `takeActions(): number` / `ready(): void`。
 - wasm-bindgen 绑定在 `client/web.rs`，原生不需要 JS；加载观察器为 `window.kivaStartup.subscribe(callback)`。
 - `window.kivaHud.render(persona, weapon, healthFraction, health, combo, cooldown, context)`；绑定在 `client/hud.rs`，只有显示方向。
+- `window.kivaHud.renderMelee(name)` 接收已应用玩家外观的近战显示名；右下近战槽不从模拟 WeaponSet 推断皮肤，远程名称继续由套装快照决定。
 - `window.kivaHud.renderLoadout(set, mode, maximum, attackReady, skillReady, guardReady, comboReady)`；set 为 1 锤狙 / 2 斧炮，mode 为 0 近战 / 1 远程。`renderTarget(name, current, maximum, status)` 接收当前锁定敌人，空名称清理目标条。Rust 每帧先发送套装和目标，再发送玩家快照。
 - `window.kivaEnemies.takeMode(): number`（0=无请求、1=靶子、2=实战）/ `render(mode)`；绑定在 `client/enemies.rs`，固定循环前把选择交给 `gameplay::set_enemy_mode`。
+- `window.kivaAppearance.takeAppearance(): number`（0=无请求、1=愁铃客、2=李火旺）/ `render(value)`；绑定在 `client/appearance.rs`，选择仅属于客户端，`appearance::reconcile` 在动画前成对替换玩家角色和近战显示。
 - `window.kivaAudio.{playSniperShot(): boolean, playEffect(name): boolean, setActive(bool)}`；绑定在 `client/audio.rs`，消费已结算攻击/命中/卸势和玩家射击；Shot 及伴随 SniperShot 不重复发声。
 
 ## Contracts
@@ -44,6 +46,9 @@ scene 根据 Body 的三维脚底前后快照和 fixed overstep 插值，camera 
 Web startup / input / hud / enemies / audio 五个 head 脚本先于 Trunk 模块同步安装，DOM 就绪后才绑定元素。
 音效仅在可信进入点击或画布按下时创建 / 恢复 Web Audio；随包音频异步解码一次，原有枪声保留合成缓存。至多 4 个短音效声部及 1 个 BGM 循环，gain 各 0.18，暂停立即停止/回收短音效并保存 BGM 播放位置；恢复只创建一条循环。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
 进入卡片可选择靶子 / 实战，捕获期间 F2 切换；按钮请求在暂停或引擎加载时保留至一次消费，模式权威在玩法层。
+外观卡片可选择愁铃客 / 李火旺，捕获期间 F3 切换；同一外观同时决定角色与近战刀，不复用模拟 WeaponSet。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。默认玩家与所有敌人为愁铃客，换装不影响敌人或远程枪械。
+`AvatarAssets` 保留默认资源，`AvatarAssetCache` 按第二套外观懒加载；多次换装复用原句柄。角色自身的 AvatarPart 与 BladeSurface 标记限定回收范围，不能清空玩家所有 Children 或重建 RigPose。显示根、物理 actor、动作状态、武器根的 BoneVisual 所属保持不变。
+KIVAAV03 增加每材质 doubleSided 和每骨 sourceRestModel，KIVAAV02 仍按原格式读取。源导入姿态可能不同于 bind pose，蒙皮正确性使用原 LBS 数值对照，不强改逆绑定为当前姿态抵消。李火旺骨名与燕云索引独立，23结构驱动只传递动作增量并保留各自骨长，源动作与附件均使用同一路 retarget 手腕。原 packed/ID 图未经通道证明不能接为颜色或 ORM；面容、发材质和刚性刀穗的美术适配必须在 assets/lihuowang 来源清单中明确。
 原生 F2 在有焦点时切换，窗口标题显示当前模式。模式改变后先回收失效敌人的显示树与血条，再用共享网格 / 材质创建新表现。
 捕获必须收到 pointerlockchange 且文档有焦点，requestPointerLock Promise 完成不算确认。
 失锁清水平 / 垂直累计；失焦失效整个请求，重新点击才能恢复。takeLook / takeAim 各返回并清空，合并事件和父事件不能重复计数。
@@ -110,6 +115,7 @@ Rust 无窗口回归通过真实固定步验证选中目标的当前血量、目
 冲击回归通过真实锤狙事件验证预瞄不触发、单次 / 重复 / 普通射击隔离、本帧枪口、空中命中方向、HitStop 中粒子继续而骨骼冻结、失锁全部显示暂停、后坐结束恢复和最终净空；重复射击后临时实体清空且网格 / 材质数量不增长。音效 Node 测试覆盖可信解锁、拒绝恢复、不支持、缓存、不削波、并发上限和节点释放；浏览器验证实际 AudioContext 播放。
 客户端无窗口场景测试验证装配、武器切换显示、反馈消费及特效回收和资产复用；真实画面 / 手感不由这些测试代替。
 模式切换回归检查多次切换的敌人显示根 / 血条数量、无孤立骨骼、资产数量不增长；Node 检查早期选择、一次消费和 F2 捕获 / 重复过滤。
+外观换装回归通过真实World检查角色 / 两近战模型改变、远程和敌人不变、暂停 / 空中物理快照与 RigPose 源姿态不重置、重复切换资产和实体数量稳定；Naraka额外验证当前姿态 / 源动作的真实骨骼变形、结构骨长与手挂点一致。Node 直接执行外观桥验证加载早期 / 暂停选择、单次消费、F3可信与捕获 / 重复过滤、Rust快照和非法值隔离。
 Shift 输入回归覆盖完整点按先于采样结束、左右键重叠 / 换手、帧间松开再按下，以及捕获 / 重复事件隔离。
 蒙皮无窗口测试覆盖绑定姿态抵消、实际走跑/蹲伏/跳跃/攻击/暂停、跨角色网格/纹理/材质复用、挂点、父子关系及不改变物理姿态。
 骨骼测试覆盖全部动画有限性 / 无根位移、走跑跳跃等实际姿态变化、事件归属、武器跟手、死亡 / 复活 / 暂停及不改模拟高度。

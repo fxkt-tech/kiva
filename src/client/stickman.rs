@@ -1,7 +1,11 @@
 //! Compatibility entry points for the shared skinned avatar and wrist attachments.
 use bevy::prelude::*;
 
-use super::{animation::RigPose, avatar::AvatarAssets, skeleton::AnimationLibrary};
+use super::{
+    animation::RigPose,
+    avatar::{Appearance, AvatarAppearance, AvatarAssetCache, AvatarAssets},
+    skeleton::AnimationLibrary,
+};
 use crate::simulation::WeaponMode;
 
 #[derive(Clone, Copy)]
@@ -43,7 +47,16 @@ pub(super) fn attach_weapon(world: &mut World, owner: Entity, weapon: Entity, mo
     let rig = world
         .get::<RigPose>(owner)
         .expect("weapon owner has an avatar rig");
-    let pose = world.resource::<AvatarAssets>().attachment_pose(rig);
+    let appearance = world
+        .get::<AvatarAppearance>(owner)
+        .map_or(Appearance::default(), |current| current.0);
+    let assets = AvatarAssets::cached(
+        world.get_resource::<AvatarAssets>(),
+        world.get_resource::<AvatarAssetCache>(),
+        appearance,
+    )
+    .expect("weapon owner's appearance has been loaded");
+    let pose = assets.attachment_pose(rig);
     let transform = attachment_transform(&attachment, &pose);
     world
         .entity_mut(weapon)
@@ -52,13 +65,14 @@ pub(super) fn attach_weapon(world: &mut World, owner: Entity, weapon: Entity, mo
 
 pub(super) fn sync_attachments(
     assets: Option<Res<AvatarAssets>>,
-    rigs: Query<&RigPose>,
+    cache: Option<Res<AvatarAssetCache>>,
+    rigs: Query<(&RigPose, Option<&AvatarAppearance>)>,
     mut parts: Query<(&BoneVisual, &mut Transform)>,
 ) {
     for (visual, mut transform) in &mut parts {
-        if let Ok(rig) = rigs.get(visual.owner) {
-            let pose = assets
-                .as_ref()
+        if let Ok((rig, appearance)) = rigs.get(visual.owner) {
+            let appearance = appearance.map_or(Appearance::default(), |current| current.0);
+            let pose = AvatarAssets::cached(assets.as_deref(), cache.as_deref(), appearance)
                 .map_or_else(|| rig.model.clone(), |assets| assets.attachment_pose(rig));
             *transform = attachment_transform(&visual.attachment, &pose);
         }

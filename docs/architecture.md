@@ -18,9 +18,10 @@
 | `gameplay/mod.rs`、`gameplay/terrain.rs` | `Level`、`Prop`、`Boundary`、`Player`、`EnemyMode`、共享地形几何及实体装配 |
 | `client/controls.rs` | `ViewYaw`，设备输入转世界方向；捕获失效时停止意图 |
 | `client/enemies.rs`、`web/enemies.js` | 进入卡片 / F2 的敌人模式请求及模式显示，调用玩法装配接口 |
+| `client/appearance.rs`、`web/appearance.js` | 进入 / 暂停卡片和 F3 的玩家外观选择，只替换显示资产，不改变玩法武器套装 |
 | `client/scene.rs` | 玩家显示根和插值后的显示 `Transform` |
 | `client/stickman.rs` | 角色构造兼容入口及动态右手挂点 |
-| `client/avatar.rs` | 随包愁铃客蒙皮、纹理、共享材质和绑定姿态适配；只写显示骨骼 |
+| `client/avatar.rs` | 两套随包角色 / 近战外观、各自蒙皮与材质缓存、结构动作适配；只写显示骨骼 |
 | `client/environment.rs`、`environment/ground_cover.rs` | 玩法同源竹干/地形、共享草叶装饰、雾和灯光 |
 | `client/rendering.rs`、`client/texture_mips.rs` | 相机 deferred/SSR/FXAA pass；重复纹理的线性颜色与单位法线 mip |
 | `client/source_animation.rs` | 986节点原主骨架与35个具名原作片段的有界解码、稀疏采样和层级求值 |
@@ -96,6 +97,8 @@ C 点按切换蹲伏 / 站立，松开保持，蹲行固定 1.6m/s；疾跑按 C
 蹲伏胶囊总高为 1.40m，改变姿态时保住脚底；起身前检查净空。重力统一为沿 -Y 的 18m/s²，
 跳跃与跃进提供速度，落地依赖实际支撑，不强制回到世界 y=0。箱子为可转动动态刚体，石块 / 石柱 / 地形为固定刚体。
 玩家和敌人使用随包愁铃客蒙皮模型、原始 UV/四权重、主色与法线贴图。`assets/choulingke/character.bin` 由离线工具生成，记录原始 GUID、材质槽和来源哈希；不在运行时读取游戏目录。13 个穿戴部件与配件共用网格、纹理和不可变受击/蓄力材质变体。专属长刀替换两套近战外观，刀鞘和腰刀为配件；远程保留原有狙击枪和火炮。原主骨架986节点已恢复，原mix图经DXIL家族证据转换成线性ORM；布料/发丝物理及完整原BRDF尚未移植，使用Standard PBR近似。
+玩家可在进入 / 暂停卡片或游戏中按 F3 选择“愁铃客 + 长刀”和“无尘·李火旺 + 横刀·烛泪”。默认愁铃客，敌人保持自己的愁铃客身份，远程枪械与 1/2 玩法套装不随外观改变。选择是客户端 `AppearanceSelection`，显示根以 `AvatarAppearance` 记录已应用值。`appearance::reconcile` 在动画前只回收该玩家的模型 / 调色板与两套近战显示子节点，保留物理 actor、显示根、RigPose、武器根和动作时钟；暂停时也可应用按钮请求。资产按外观首次加载后复用，反复换装不重新添加网格、贴图或材质。
+李火旺资源由 `scripts/import-naraka.py` 生成 `assets/lihuowang/character.bin`，包括衣装、心素发型、通用基础脸和原刀鞘，烛泪以刚性当前姿态适配既有握柄轴。KIVAAV03 在现 KIVAAV02 上增加材质双面标记及每骨的源模型空间姿态，保留原逆绑定矩阵；源导入姿态不等于绑定姿态时不强行抵消为单位矩阵。该外观用自身 23 个结构锚点接收既有动作增量，附件与身体读取同一适配手腕，不直接索引燕云 986 节点或使用另一角色的绝对手位置。具体来源、重建挂接、通用脸与材质适配限制见[资源说明](../assets/lihuowang/README.md)及[接入说明](plans/naraka-appearances.md)。
 `avatar::sync` 位于动画与挂点同步之间，用源绑定矩阵和既有动作增量更新独立显示骨骼；武器位置使用适配后的手腕，不能反写 Body。角色标准高度 1.73m，靶子由 `Body::scaled(1.45)` 同时放大显示和胶囊；胶囊半径、站立/蹲伏高、瞬移和复活使用实际尺寸。
 RigPose沿现有状态优先级与只读反馈选择原作长刀/卸势/跳跃/闪避/受击片段；source_animation解码35个具名clip，完整原层级求值并按骨名驱动调色板。共享动作保留愁铃客rest骨长，未恢复原技能槽和命中帧，裁剪/时长属于Kiva适配。移动、蹲滑、枪姿、旋转与倒地等继续用CC0的23骨骼/19片段和现有IK；两路平滑混合，独立附件缺失部分保留结构映射。
 资源嵌入WASM/原生二进制，运行时不读取游戏目录或联网加载。原动作平面根位移剔除，地面保留腰身竖直起伏，空中根高归模拟；原手腕相对rest的旋转增量用于握柄校正，避免将源轴约定直接套到旧枪轴。

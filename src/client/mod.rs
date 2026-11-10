@@ -1,5 +1,6 @@
 //! Device input and presentation compose the headless demo.
 mod animation;
+mod appearance;
 mod audio;
 mod avatar;
 mod camera;
@@ -70,6 +71,7 @@ pub(super) fn run() {
     .init_resource::<controls::AimDistance>()
     .init_resource::<skeleton::AnimationLibrary>()
     .init_resource::<source_animation::SourceAnimationLibrary>()
+    .init_resource::<appearance::AppearanceSelection>()
     .add_systems(
         Startup,
         (
@@ -86,13 +88,14 @@ pub(super) fn run() {
     )
     .add_systems(
         RunFixedMainLoop,
-        (enemies::sample, controls::sample)
+        (enemies::sample, controls::sample, appearance::sample)
             .chain()
             .in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
     )
     .add_systems(
         Update,
         (
+            appearance::reconcile,
             scene::sync_player,
             scene::sync_props,
             environment::animate_foliage,

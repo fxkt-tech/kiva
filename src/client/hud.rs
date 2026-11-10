@@ -1,6 +1,11 @@
 //! Converts simulation state into a display-only HUD; no DOM value enters the simulation.
 use bevy::prelude::*;
 
+use super::{
+    PlayerView,
+    avatar::{Appearance, AvatarAppearance},
+};
+
 use crate::{
     gameplay::Player,
     simulation::{
@@ -31,6 +36,8 @@ extern "C" {
         guard_ready: bool,
         combo_ready: bool,
     );
+    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderMelee)]
+    fn render_melee(name: &str);
     #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderTarget)]
     fn render_target(name: &str, current: f32, maximum: f32, status: &str);
 }
@@ -128,6 +135,7 @@ fn target_snapshot<'a>(
 
 pub(super) fn sync(
     player: Single<(&Combatant, &Health, &MotionState), With<Player>>,
+    views: Query<&AvatarAppearance, With<PlayerView>>,
     enemies: Query<(&Enemy, &Health, Option<&Boss>)>,
     mut window: Single<&mut Window>,
     #[cfg(not(target_arch = "wasm32"))] mode: Res<crate::gameplay::EnemyMode>,
@@ -135,7 +143,13 @@ pub(super) fn sync(
     let (combat, health, motion) = *player;
     let target = target_snapshot(combat, health, |entity| enemies.get(entity).ok());
     let persona = combat.persona();
-    let weapon = combat.weapon_name();
+    let appearance = views.single().map_or(Appearance::default(), |view| view.0);
+    let melee = melee_name(appearance);
+    let weapon = if combat.weapon_mode() == WeaponMode::Melee {
+        melee
+    } else {
+        combat.weapon_name()
+    };
     let context = if !health.is_alive() {
         "倒地 · 即将回到出生点"
     } else if motion.is_dodging() {
@@ -170,6 +184,7 @@ pub(super) fn sync(
     {
         let _ = &mut window;
         let loadout = loadout_snapshot(combat, health, motion);
+        render_melee(melee);
         render_loadout(
             loadout.set,
             loadout.mode,
@@ -213,6 +228,13 @@ pub(super) fn sync(
             health.current(),
             combat.cooldown(),
         );
+    }
+}
+
+fn melee_name(appearance: Appearance) -> &'static str {
+    match appearance {
+        Appearance::Choulingke => "愁铃长刀",
+        Appearance::Lihuowang => "烛泪",
     }
 }
 
