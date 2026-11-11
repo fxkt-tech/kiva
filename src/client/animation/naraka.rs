@@ -26,6 +26,14 @@ impl Selection {
     }
 }
 
+pub(super) fn melee_clip(stage: MeleeStage) -> &'static str {
+    match stage {
+        MeleeStage::One => "male_hengdao_attack_light_01",
+        MeleeStage::Two => "male_hengdao_attack_light_02",
+        MeleeStage::Three => "male_hengdao_attack_light_03",
+    }
+}
+
 impl RigPose {
     /// Simulation keeps the short effective window. Presentation separately
     /// remembers a preempted gesture so its tail cannot revive when a brief
@@ -100,11 +108,7 @@ impl RigPose {
         }
         if let Some(action) = action {
             if action.kind == ActionKind::Melee {
-                let name = match action.melee_stage.unwrap_or(MeleeStage::One) {
-                    MeleeStage::One => "male_hengdao_attack_light_01",
-                    MeleeStage::Two => "male_hengdao_attack_light_02",
-                    MeleeStage::Three => "male_hengdao_attack_light_03",
-                };
+                let name = melee_clip(action.melee_stage.unwrap_or(MeleeStage::One));
                 return clip(
                     name,
                     (action.elapsed / action.duration.max(0.001)).clamp(0.0, 1.0),
@@ -211,6 +215,7 @@ mod tests {
     use super::*;
     fn input() -> Inputs {
         Inputs {
+            boss_attack: None,
             alive: true,
             airborne: false,
             jumps_used: 0,

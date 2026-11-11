@@ -276,6 +276,7 @@ fn clip_time(seconds: f32, duration: f32, looping: bool) -> f32 {
 
 fn scenario_input(id: &str) -> (Inputs, Option<CombatEffect>) {
     let mut input = Inputs {
+        boss_attack: None,
         alive: true,
         airborne: false,
         jumps_used: 0,

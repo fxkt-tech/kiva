@@ -34,6 +34,8 @@ impl KivaTuning {
     const TELEGRAPH: f32 = 0.72;
     const ACTIVE: f32 = 0.22;
     const RECOVERY: f32 = 0.65;
+    const ATTACKS_PER_BURST: u8 = 3;
+    const BURST_REST: f32 = 3.0;
     const TRANSITION: f32 = 2.2;
     const RESPAWN: f32 = 3.0;
     const HIT_RANGE: f32 = 3.2;
@@ -79,7 +81,7 @@ pub struct Boss {
     cooldowns: [f32; 61],
     random: u32,
     opening: bool,
-    attacks_since_reposition: u8,
+    attacks_in_burst: u8,
     strike_resolved: bool,
     engaged: bool,
     stun_source: Option<u64>,
@@ -97,7 +99,7 @@ impl Default for Boss {
             cooldowns: [0.0; 61],
             random: 0xc10c_51a1,
             opening: true,
-            attacks_since_reposition: 0,
+            attacks_in_burst: 0,
             strike_resolved: false,
             engaged: false,
             stun_source: None,
@@ -123,6 +125,9 @@ impl Boss {
                 .contains(&action)
                 .then(|| SOURCE_SLOTS[(action - 4) as usize])
         })
+    }
+    pub fn attacks_in_burst(&self) -> u8 {
+        self.attacks_in_burst
     }
     pub fn elapsed(&self) -> f32 {
         self.elapsed
@@ -197,15 +202,16 @@ impl Boss {
         };
         let total: u32 = choices
             .iter()
-            .filter(|(action, _)| self.cooldowns[*action as usize] == 0.0)
+            .filter(|(action, _)| *action >= 4 && self.cooldowns[*action as usize] == 0.0)
             .map(|(_, weight)| weight)
             .sum();
         if total == 0 {
-            return 1; // Reposition while every source weight is suppressed.
+            // Keep the three-strike cadence when source cooldowns exhaust a pool.
+            return if self.phase == BossPhase::One { 45 } else { 21 };
         }
         let mut roll = self.roll(total);
         for &(action, weight) in choices {
-            if self.cooldowns[action as usize] != 0.0 {
+            if action < 4 || self.cooldowns[action as usize] != 0.0 {
                 continue;
             }
             if roll < weight {
@@ -296,7 +302,7 @@ pub(super) fn advance(
                 boss.phase = BossPhase::Two;
                 boss.cooldowns.fill(0.0);
                 boss.opening = true;
-                boss.attacks_since_reposition = 0;
+                boss.attacks_in_burst = 0;
                 boss.action = None;
                 boss.sequence += 1;
                 boss.enter(BossState::Transition, KivaTuning::TRANSITION);
@@ -377,10 +383,7 @@ pub(super) fn advance(
         let offset = target_body.world_position() - body.world_position();
         let distance = offset.length();
         let direction = offset.xz().normalize_or(Vec2::Y);
-        if !boss.engaged {
-            boss.engaged = true;
-            boss.begin_action(1); // Source P1's once-only two-second lateral opening.
-        }
+        boss.engaged = true;
         if !motion.is_grounded() {
             movement.stop();
             if boss.state != BossState::Stunned {
@@ -390,13 +393,15 @@ pub(super) fn advance(
         }
         match boss.state {
             BossState::Idle => {
-                let limit = if boss.phase == BossPhase::One { 3 } else { 5 };
+                if boss.attacks_in_burst >= KivaTuning::ATTACKS_PER_BURST {
+                    // A parry or knock-up may have interrupted the third strike.
+                    boss.enter(BossState::Recovering, KivaTuning::BURST_REST);
+                    movement.stop();
+                    continue;
+                }
                 let action = if boss.opening {
                     boss.opening = false;
                     if boss.phase == BossPhase::One { 45 } else { 21 }
-                } else if boss.attacks_since_reposition >= limit {
-                    boss.attacks_since_reposition = 0;
-                    1
                 } else {
                     boss.choose(distance)
                 };
@@ -443,7 +448,7 @@ pub(super) fn advance(
                 if boss.elapsed >= boss.duration {
                     let action = boss.action.unwrap();
                     boss.cooldowns[action as usize] = SOURCE_COOLDOWNS[(action - 4) as usize];
-                    boss.attacks_since_reposition += 1;
+                    boss.attacks_in_burst += 1;
                     boss.enter(BossState::Attacking, KivaTuning::ACTIVE);
                     feedback.push(
                         entity,
@@ -526,13 +531,23 @@ pub(super) fn advance(
                     }
                 }
                 if boss.state == BossState::Attacking && boss.elapsed >= boss.duration {
-                    boss.enter(BossState::Recovering, KivaTuning::RECOVERY);
+                    let recovery = if boss.attacks_in_burst >= KivaTuning::ATTACKS_PER_BURST {
+                        KivaTuning::BURST_REST
+                    } else {
+                        KivaTuning::RECOVERY
+                    };
+                    boss.enter(BossState::Recovering, recovery);
                     movement.stop();
                 }
             }
             BossState::Recovering | BossState::Stunned => {
                 movement.stop();
                 if boss.elapsed >= boss.duration {
+                    if boss.state == BossState::Recovering
+                        && boss.duration >= KivaTuning::BURST_REST
+                    {
+                        boss.attacks_in_burst = 0;
+                    }
                     boss.enter(BossState::Idle, 0.0);
                 }
             }
@@ -583,7 +598,11 @@ mod tests {
             .world_mut()
             .spawn((
                 Body::new(position, 5.2, 0.3),
-                Boss::default(),
+                Boss {
+                    state: BossState::Recovering,
+                    duration: 1.0,
+                    ..default()
+                },
                 Enemy::default(),
                 ActionIntent::default(),
                 MoveIntent::default(),
@@ -594,6 +613,8 @@ mod tests {
             ))
             .id();
         tick(&mut app, 12);
+        // Establish support before starting the AI, so attack timing begins here.
+        *app.world_mut().get_mut::<Boss>(boss).unwrap() = Boss::default();
         (app, player, boss)
     }
 
@@ -612,7 +633,7 @@ mod tests {
     }
 
     #[test]
-    fn source_choices_keep_distance_boundaries_weights_and_zero_weight_cooldowns() {
+    fn attack_choices_keep_distance_pools_and_fall_back_when_cooldowns_exhaust_them() {
         let mut boss = Boss::default();
         assert_eq!(boss.choose(12.001), 3);
         for _ in 0..1000 {
@@ -624,18 +645,99 @@ mod tests {
         for action in [10, 11, 12, 19] {
             boss.cooldowns[action] = 10.0;
         }
-        assert_eq!(boss.choose(3.0), 1);
+        assert_eq!(boss.choose(3.0), 45);
         for action in [14, 16, 45] {
             boss.cooldowns[action] = 10.0;
         }
-        assert_eq!(boss.choose(12.0), 3);
+        assert_eq!(boss.choose(12.0), 45);
         boss.phase = BossPhase::Two;
         for action in [50, 25, 53] {
             boss.cooldowns[action] = 10.0;
         }
-        assert_eq!(boss.choose(3.0), 1);
+        assert_eq!(boss.choose(3.0), 21);
         assert_eq!(SOURCE_SLOTS[45 - 4], 90021641);
         assert_eq!(SOURCE_COOLDOWNS[45 - 4], 45.0);
+    }
+
+    fn strike_count(app: &App, boss: Entity) -> usize {
+        app.world()
+            .resource::<CombatFeedback>()
+            .events()
+            .filter(|event| event.actor == boss && event.kind == CombatEffect::Melee)
+            .count()
+    }
+
+    #[test]
+    fn both_phases_repeat_three_strikes_then_three_seconds_of_stationary_rest() {
+        for phase in [BossPhase::One, BossPhase::Two] {
+            let (mut app, player, boss) = arena();
+            if phase == BossPhase::Two {
+                app.world_mut()
+                    .get_mut::<Health>(boss)
+                    .unwrap()
+                    .damage(Boss::PHASE_HEALTH);
+                tick(&mut app, 1);
+            }
+            for burst in 0..2 {
+                for strike in 1..=3 {
+                    wait_for(&mut app, boss, BossState::Attacking);
+                    assert_eq!(strike_count(&app, boss), burst * 3 + strike);
+                    wait_for(&mut app, boss, BossState::Recovering);
+                    let snapshot = app.world().get::<Boss>(boss).unwrap();
+                    assert_eq!(snapshot.attacks_in_burst, strike as u8);
+                    assert_eq!(
+                        snapshot.duration(),
+                        if strike == 3 {
+                            3.0
+                        } else {
+                            KivaTuning::RECOVERY
+                        }
+                    );
+                }
+                let count = strike_count(&app, boss);
+                let before = health(&app, player);
+                tick(&mut app, 178);
+                assert_eq!(
+                    app.world().get::<Boss>(boss).unwrap().state(),
+                    BossState::Recovering
+                );
+                assert_eq!(strike_count(&app, boss), count);
+                assert_eq!(health(&app, player), before);
+                assert_eq!(app.world().get::<MoveIntent>(boss).unwrap().0, Vec2::ZERO);
+                tick(&mut app, 4); // Allow one fixed step of float accumulation at the boundary.
+                assert_eq!(app.world().get::<Boss>(boss).unwrap().attacks_in_burst, 0);
+            }
+            wait_for(&mut app, boss, BossState::Attacking);
+            assert_eq!(strike_count(&app, boss), 7);
+        }
+    }
+
+    #[test]
+    fn burst_rest_freezes_when_paused_and_stun_cannot_skip_it() {
+        let (mut app, _, boss) = arena();
+        for _ in 0..3 {
+            wait_for(&mut app, boss, BossState::Attacking);
+            wait_for(&mut app, boss, BossState::Recovering);
+        }
+        tick(&mut app, 60);
+        let elapsed = app.world().get::<Boss>(boss).unwrap().elapsed();
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        tick(&mut app, 240);
+        assert_eq!(app.world().get::<Boss>(boss).unwrap().elapsed(), elapsed);
+        assert_eq!(strike_count(&app, boss), 3);
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        // A control interruption must not turn the three-strike limit into a fourth strike.
+        app.world_mut()
+            .get_mut::<Boss>(boss)
+            .unwrap()
+            .stun(123, 0.2);
+        tick(&mut app, 20);
+        let snapshot = app.world().get::<Boss>(boss).unwrap();
+        assert_eq!(snapshot.state(), BossState::Recovering);
+        assert_eq!(snapshot.duration(), 3.0);
+        assert_eq!(strike_count(&app, boss), 3);
+        wait_for(&mut app, boss, BossState::Attacking);
+        assert_eq!(strike_count(&app, boss), 4);
     }
 
     #[test]

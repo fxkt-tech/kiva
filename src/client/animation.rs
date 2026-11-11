@@ -434,26 +434,50 @@ impl RigPose {
                 _ => None,
             }
         };
-        let selection = if native_player {
-            self.naraka_selection(input, action, defense).or_else(|| {
+        let boss_selection = input
+            .boss_attack
+            .filter(|_| {
+                input.alive
+                    && libraries.for_rig(SourceRig::Naraka).is_some()
+                    && !input.airborne
+                    && input.boss_deflected.is_none()
+                    && !matches!(
+                        self.state,
+                        PoseState::Attack(Gesture::Hit | Gesture::HeavyHit)
+                    )
+            })
+            .map(|attack| naraka::Selection {
+                rig: SourceRig::Naraka,
+                name: naraka::melee_clip(attack.stage),
+                seconds: attack.fraction,
+                looping: false,
+                adaptation: "Kiva Boss windup/strike/recovery clock; shared Li Huowang melee clips",
+            });
+        let selection = boss_selection.or_else(|| {
+            if native_player {
+                self.naraka_selection(input, action, defense).or_else(|| {
+                    legacy_selection.map(|(name, seconds, looping)| naraka::Selection {
+                        rig: SourceRig::Yanyun,
+                        name,
+                        seconds,
+                        looping,
+                        adaptation: "explicit Yanyun fallback for Kiva skill / CC0 slide",
+                    })
+                })
+            } else {
                 legacy_selection.map(|(name, seconds, looping)| naraka::Selection {
                     rig: SourceRig::Yanyun,
                     name,
                     seconds,
                     looping,
-                    adaptation: "explicit Yanyun fallback for Kiva skill / CC0 slide",
+                    adaptation: "Yanyun original hierarchy",
                 })
-            })
-        } else {
-            legacy_selection.map(|(name, seconds, looping)| naraka::Selection {
-                rig: SourceRig::Yanyun,
-                name,
-                seconds,
-                looping,
-                adaptation: "Yanyun original hierarchy",
-            })
-        };
-        self.trace.melee_stage = action.and_then(|action| action.melee_stage);
+            }
+        });
+        self.trace.melee_stage = input
+            .boss_attack
+            .map(|attack| attack.stage)
+            .or_else(|| action.and_then(|action| action.melee_stage));
         self.trace.defense = defense.map(|defense| defense.kind);
         self.trace.defense_interrupted =
             defense.is_some_and(|defense| self.interrupted_defense == Some(defense.gesture_id));
@@ -859,8 +883,46 @@ struct SniperPose {
     recoil: f32,
 }
 
+/// Display-only mapping: source clips never decide attacks or damage.
+#[derive(Clone, Copy)]
+struct BossAttackPose {
+    stage: MeleeStage,
+    fraction: f32,
+}
+
+impl BossAttackPose {
+    fn from_boss(boss: &Boss) -> Option<Self> {
+        // Reserve the source's windup, strike and follow-through for the matching
+        // simulation phases. The long third-strike rest does not stretch the clip.
+        let (index, fraction) = match boss.state() {
+            BossState::Telegraph => (
+                boss.attacks_in_burst(),
+                0.45 * (boss.elapsed() / boss.duration().max(0.001)).clamp(0.0, 1.0),
+            ),
+            BossState::Attacking => (
+                boss.attacks_in_burst().checked_sub(1)?,
+                0.45 + 0.20 * (boss.elapsed() / boss.duration().max(0.001)).clamp(0.0, 1.0),
+            ),
+            BossState::Recovering if boss.elapsed() < 0.65 => (
+                boss.attacks_in_burst().checked_sub(1)?,
+                0.65 + 0.35 * boss.elapsed() / 0.65,
+            ),
+            _ => return None,
+        };
+        Some(Self {
+            stage: match index {
+                0 => MeleeStage::One,
+                1 => MeleeStage::Two,
+                _ => MeleeStage::Three,
+            },
+            fraction,
+        })
+    }
+}
+
 #[derive(Clone, Copy)]
 struct Inputs {
+    boss_attack: Option<BossAttackPose>,
     alive: bool,
     airborne: bool,
     jumps_used: u8,
@@ -996,6 +1058,7 @@ pub(super) fn animate(
             - (-facing.direction().x).atan2(-facing.direction().y);
         let speed = body.step_displacement().length() / fixed.delta_secs().max(0.0001);
         let input = Inputs {
+            boss_attack: boss.and_then(BossAttackPose::from_boss),
             boss_deflected: boss
                 .filter(|boss| boss.state() == BossState::Stunned)
                 .map(|boss| (boss.elapsed(), boss.duration())),
@@ -1119,6 +1182,7 @@ mod tests {
 
     fn idle_input() -> Inputs {
         Inputs {
+            boss_attack: None,
             boss_deflected: None,
             alive: true,
             airborne: false,
@@ -1348,6 +1412,88 @@ mod tests {
     }
 
     #[test]
+    fn boss_reuses_all_three_player_clips_on_fixed_attack_time_and_stops_during_rest() {
+        let mut app = app();
+        app.init_resource::<SourceAnimationLibrary>();
+        let player = actor(&mut app);
+        app.world_mut()
+            .entity_mut(player)
+            .insert(Health::new(10_000.0));
+        let boss = actor(&mut app);
+        app.world_mut()
+            .entity_mut(boss)
+            .remove::<(Combatant, CombatIntent)>()
+            .insert((
+                Body::new(Vec2::new(0.0, -4.0), 5.2, 0.3),
+                Boss::default(),
+                Enemy::default(),
+                Health::new(Boss::PHASE_HEALTH),
+            ));
+        let mut seen = std::collections::HashSet::new();
+        let mut rested = false;
+        let mut frozen_checked = false;
+        for _ in 0..1100 {
+            frame(&mut app, true);
+            let snapshot = app.world().get::<Boss>(boss).unwrap();
+            if snapshot.state() == BossState::Recovering
+                && snapshot.duration() == 3.0
+                && snapshot.elapsed() > 1.0
+            {
+                assert!(
+                    actor_rig(&app, boss).source.is_none(),
+                    "third strike stretched into the rest"
+                );
+                rested = true;
+            }
+            if snapshot.state() != BossState::Attacking || snapshot.elapsed() < 0.10 {
+                continue;
+            }
+            let attack = BossAttackPose::from_boss(snapshot).unwrap();
+            let name = naraka::melee_clip(attack.stage);
+            let source = app
+                .world()
+                .resource::<SourceAnimationLibrary>()
+                .for_rig(SourceRig::Naraka)
+                .unwrap();
+            let expected = attack.fraction * source.duration(source.clip(name).unwrap());
+            let trace = actor_rig(&app, boss).trace();
+            assert_eq!(trace.source_rig, Some(SourceRig::Naraka.id()));
+            assert_eq!(trace.source_clip.as_deref(), Some(name));
+            assert!((trace.source_seconds - expected).abs() < 0.00001);
+            assert!(
+                actor_rig(&app, boss)
+                    .source
+                    .as_ref()
+                    .unwrap()
+                    .model
+                    .iter()
+                    .all(|matrix| matrix.is_finite())
+            );
+            seen.insert(name);
+            if !frozen_checked {
+                let time = trace.source_seconds;
+                for _ in 0..5 {
+                    frame(&mut app, false);
+                    assert_eq!(actor_rig(&app, boss).trace().source_seconds, time);
+                }
+                app.world_mut().resource_mut::<SimulationActive>().0 = false;
+                let pose = actor_rig(&app, boss).source.as_ref().unwrap().model.clone();
+                for _ in 0..5 {
+                    frame(&mut app, true);
+                }
+                assert_eq!(actor_rig(&app, boss).source.as_ref().unwrap().model, pose);
+                app.world_mut().resource_mut::<SimulationActive>().0 = true;
+                frozen_checked = true;
+            }
+            if seen.len() == 3 && rested {
+                break;
+            }
+        }
+        assert_eq!(seen.len(), 3);
+        assert!(rested && frozen_checked);
+    }
+
+    #[test]
     fn actual_boss_q_stun_ends_the_old_source_attack() {
         let mut app = app();
         app.init_resource::<SourceAnimationLibrary>();
@@ -1397,6 +1543,15 @@ mod tests {
             app.world().get::<Boss>(boss).unwrap().state(),
             BossState::Stunned
         );
+        // The attack donor is Naraka; stun keeps the existing Yanyun donor.
+        // Check preemption before letting the render-only cross-rig blend settle.
+        assert_eq!(
+            actor_rig(&app, boss).trace().source_clip.as_deref(),
+            Some("weakhit_b")
+        );
+        for _ in 0..8 {
+            frame(&mut app, false);
+        }
         let rig = actor_rig(&app, boss);
         assert_eq!(rig.state, PoseState::Deflected);
         assert!(rig.playback.is_none());
