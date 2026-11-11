@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kiva · UI 原型台（可交互，不启动游戏）</title>
+    <style>
+      /* =====================================================================
+         UI 原型台 —— 纯前端实现，不加载 WASM / 不启动游戏。
+         · 场景区      = 深色占位背景（将来替换为真实 canvas #game）
+         · HUD 区      = 与游戏同构的 DOM，靠下方模拟状态驱动
+         · 底部工具条  = 快捷场景 + 状态面板（改完 UI 后可整体隐藏）
+         迁移回游戏时：把 .hud-root 及其 CSS 搬进 index.html / style.css，
+         再让 web/hud.js 的 render* 接口驱动同样的 id 即可。
+         ===================================================================== */
+      :root {
+        color-scheme: dark;
+        font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        --ink: #e4e9e9;
+        --muted: #8fa7a7;
+        --panel: #16232cf5;
+        --line: #ffffff1c;
+        --accent: #74c4bb;
+        --warn: #e0b46a;
+        --danger: #c96a5a;
+      }
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #0c1116; }
+      body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: minmax(0, 1fr); color: var(--ink); }
+      @media (max-width: 1080px) { body { grid-template-columns: minmax(0, 1fr) 250px; } }
+
+      /* ---------- 右侧栏（预览尺寸 + 场景 + 参数） ---------- */
+      .sidebar { display: flex; flex-direction: column; gap: 12px; padding: 14px 12px; overflow-y: auto; background: #0f171e; border-left: 1px solid var(--line); font-size: 12px; scrollbar-width: thin; }
+      .sidebar .brand { display: flex; flex-direction: column; gap: 2px; }
+      .sidebar .brand strong { font-weight: 500; letter-spacing: .08em; }
+      .sidebar .brand small { color: var(--muted); font-size: 10px; letter-spacing: .14em; }
+      .sidebar section { display: grid; gap: 8px; }
+      .sidebar h2 { margin: 0; color: var(--accent); font-size: 10px; font-weight: 500; letter-spacing: .14em; }
+      .sidebar .size { color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+      .sidebar .size b { color: var(--ink); font-weight: 500; }
+      .viewport-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+      .viewport-switch button { padding: 6px 4px; border: 1px solid var(--line); border-radius: 6px; background: #0b1218; color: var(--muted); font: inherit; font-size: 11px; cursor: pointer; }
+      .viewport-switch button:hover { border-color: #74c4bb66; color: #cfdcdc; }
+      .viewport-switch button[aria-pressed="true"] { border-color: #74c4bb88; background: #21323c; color: #d8efec; }
+
+      /* ---------- 场景舞台（中间：只放 16:9 画面） ---------- */      /* ---------- 场景舞台 ---------- */
+      .stage-area { display: grid; place-items: center; padding: 12px; min-width: 0; min-height: 0; overflow: hidden; }
+      .game-frame {
+        position: relative; overflow: hidden; container-type: inline-size; isolation: isolate;
+        /* 在可用区域里取能完整容纳的最大 16:9，宽高同时受限，永不裁切 */
+        width: min(100%, calc((100vh - 24px) * 16 / 9));
+        aspect-ratio: 16 / 9;
+        border: 1px solid #ffffff22; border-radius: 8px; background: #111a21;
+        box-shadow: 0 18px 60px #0009;
+      }
+      .scene-placeholder { position: absolute; inset: 0; z-index: 0; overflow: hidden; background:
+        radial-gradient(120% 90% at 50% 0%, #2c4b3d 0%, #1c332c 38%, #101d1a 72%, #0a1211 100%); }
+      .scene-placeholder::before { /* 竹林剪影 */
+        content: ""; position: absolute; inset: -4% 0 0; opacity: .5;
+        background:
+          repeating-linear-gradient(96deg, #0d1f17 0 6px, transparent 6px 44px, #123024 44px 50px, transparent 50px 118px),
+          repeating-linear-gradient(84deg, #08150f 0 4px, transparent 4px 70px, #0e241b 70px 76px, transparent 76px 160px);
+        mask-image: linear-gradient(#000 0%, #000 46%, transparent 88%);
+      }
+      .scene-placeholder::after { /* 地面光斑与人物位置提示 */
+        content: ""; position: absolute; left: 50%; top: 62%; width: 34%; aspect-ratio: 3 / 1;
+        transform: translate(-50%, -50%); border-radius: 50%;
+        background: radial-gradient(closest-side, #a9c08a26, transparent 70%);
+        box-shadow: 0 0 0 1px #ffffff0d inset;
+      }
+      .scene-note { position: absolute; left: 50%; bottom: 36%; transform: translateX(-50%); color: #d7e4d333; font-size: 11px; letter-spacing: .28em; white-space: nowrap; }
+
+      /* ---------- HUD（迁移目标） ---------- */
+      .hud-root { position: absolute; inset: 0; z-index: 1; pointer-events: none; color: #eeeee2; font-size: 13px; }
+      .hud-root kbd { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; font: inherit; }
+      .hud-root progress { display: block; appearance: none; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; }
+      .hud-root progress::-webkit-progress-bar { background: transparent; }
+      .hud-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+      svg.hud-glyph { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+      .hud-shade { position: absolute; inset: 0; background: linear-gradient(#08151173, transparent 22%, transparent 66%, #08130fc4); }
+
+      .hud-corner { position: absolute; top: 16px; display: grid; gap: 6px; text-shadow: 0 1px 4px #07100c; }
+      .hud-place { left: 16px; }
+      .hud-place small { color: #dedfc3a6; font-size: 9px; letter-spacing: .18em; }
+      .hud-place strong { font-family: "Songti SC", "SimSun", "Noto Serif CJK SC", serif; font-weight: 400; font-size: 17px; letter-spacing: .12em; }
+      .hud-mode { font-size: 10px; letter-spacing: .12em; color: #cacfbfc2; }
+      .hud-utility { right: 16px; text-align: right; color: #e3e6d4b3; font-size: 10px; line-height: 1.8; }
+      .hud-utility kbd { margin-right: 6px; color: #e3e6d4; }
+
+      /* Boss：居中名号，暗金色平直边框，血红色血槽。 */
+      .hud-target { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); width: calc(100% / 3); text-shadow: 0 2px 5px #030b08; }
+      .hud-target-name { display: block; color: #e8dfc9; text-align: center; padding-left: .1em; font-family: "Songti SC", "SimSun", "Noto Serif CJK SC", serif; font-size: 16px; font-weight: 400; letter-spacing: .1em; line-height: 24px; }
+      .hud-target-hp { position: relative; height: 12px; margin-top: 10px; background: #8e7545;  }
+      .hud-target-track { position: absolute; inset: 1px; overflow: hidden; background: #11120feb;  }
+      .hud-target-trail { position: absolute; inset: 0 auto 0 0; width: 0; background: #c3ac79; }
+      .hud-root #hud-target-bar { position: relative; color: #a31621; }
+      #hud-target-bar::-webkit-progress-value { background: linear-gradient(#b51e2a, #8b111d); box-shadow: inset 0 1px #e55c6333; }
+      #hud-target-bar::-moz-progress-bar { background: linear-gradient(#b51e2a, #8b111d); box-shadow: inset 0 1px #e55c6333; }
+
+      /* 生命与耐力共用一个底部容器，边距包含最下方的耐力条。 */
+      .hud-vitals { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); width: min(24%, 280px); text-shadow: 0 1px 4px #050d09; }
+      .hud-vitals-header { margin-bottom: 6px; text-align: center; font-size: 11px; line-height: 16px; color: #d9d1bc; }
+      .hud-player-hp, .hud-stamina { position: relative; height: 8px; padding: 1px; border: 1px solid #cecfb380; background: #121e18d9; overflow: hidden; }
+      #hud-health-bar { color: #c6d0bb; }
+      #hud-health-bar::-webkit-progress-value { background: linear-gradient(#e4e8d5, #b9c5b0); box-shadow: 0 0 5px #d6e8c426; }
+      #hud-health-bar::-moz-progress-bar { background: linear-gradient(#e4e8d5, #b9c5b0); box-shadow: 0 0 5px #d6e8c426; }
+      .hud-state { position: absolute; bottom: calc(100% + 13px); width: 100%; text-align: center; color: #dce2cca6; font-size: 11px; letter-spacing: .06em; }
+      .hud-state.linked { color: #f3dfaa; }
+      .hud-state .hud-key { margin-right: 6px; color: #fbebbc; }
+      .hud-state .hud-time { margin-left: 8px; color: #c7b88d; font-size: 10px; font-variant-numeric: tabular-nums; }
+      .hud-stamina { height: 5px; margin-top: 5px; border-color: #acb4a55e; background: #182520; }
+      #hud-stamina-bar { width: 100%; height: 100%; color: #bfb989; }
+      #hud-stamina-bar::-webkit-progress-value { background: #bfb989; }
+      #hud-stamina-bar::-moz-progress-bar { background: #bfb989; }
+
+      /* 右下：上三、中二、下一的交错菱形阵列。
+         横向每半格一个定位点，下排同时向右、向下错开半格，嵌入上排缺口。
+         最后一列和最后一行保留完整外接框，确保右侧、底部边界包含全部图形。 */
+      .hud-combat {
+        --d: 46px;                 /* 正方形边长 */
+        --gap: 8px;                /* 同排相邻菱形尖角的间距 */
+        --dia: calc(var(--d) * 1.4142);            /* 旋转后的外接框尺寸 */
+        --step: calc(var(--d) * 1.4142 + var(--gap)); /* 格距 */
+        --half: calc(var(--step) / 2); /* 两排在横、纵方向上的错位量 */
+        position: absolute; right: 16px; bottom: 16px;
+        display: grid;
+        grid-template-columns: repeat(4, var(--half)) var(--dia);
+        grid-template-rows: var(--half) var(--half) var(--dia);
+        text-shadow: 0 1px 3px #08100b;
+      }
+      .hud-slot, .hud-weapon-choice { position: relative; display: grid; place-items: center; width: var(--dia); height: var(--dia); padding: 0; border: 0; background: transparent; }
+      .hud-slot { grid-row: 1; }
+      .hud-slot.hud-start { grid-column: 5; }
+      .hud-slot.hud-combo-slot { grid-column: 3; }
+      .hud-slot.hud-ranged { grid-column: 1; }
+      .hud-square { position: absolute; width: var(--d); height: var(--d); transform: rotate(45deg); border: 1px solid #ddd6b48c; border-radius: 2px; background: linear-gradient(140deg, #17231f99, #223029cc); box-shadow: 0 1px 4px #0005; transition: background .15s, border-color .15s, box-shadow .15s; }
+      .hud-square::before { position: absolute; inset: 3px; content: ""; border: 1px solid #d7d2ae26; }
+      .hud-label { position: relative; z-index: 1; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 16px; font-weight: 500; line-height: 1; white-space: nowrap; text-align: center; }
+      .hud-label-combo { font-size: 13px; }
+      .hud-slot > .hud-label { color: #e2e3ca; }
+      .hud-slot[aria-disabled="true"] { opacity: .45; }
+      .hud-slot.ready .hud-square { border-color: #f2edcf; background: linear-gradient(145deg, #e9e5ca, #b5af8e); }
+      .hud-slot.ready > .hud-label { color: #262b22; text-shadow: none; }
+      .hud-slot.cooling { opacity: 1; }
+      .hud-slot.cooling .hud-square { background: #253129d9; }
+      /* 水位层不旋转，裁成菱形后保持水面水平。 */
+      .hud-cooldown { display: none; position: absolute; inset: 1px; overflow: hidden; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+      .hud-cooldown::before { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: var(--cooldown-fill, 0%); background: linear-gradient(to top, #afa986, #e9e5ca); border-top: 1px solid #fff6d9; }
+      .hud-cooldown-time { display: none; position: absolute; z-index: 2; top: calc(50% + 5px); color: #fff4d6; font-size: 10px; line-height: 12px; font-variant-numeric: tabular-nums; text-shadow: 0 1px 3px #07100c, 0 0 3px #07100c; }
+      .hud-slot.cooling .hud-cooldown, .hud-slot.cooling .hud-cooldown-time { display: block; }
+      .hud-slot.cooling .hud-label { transform: translateY(-7px); color: #fff4d6; text-shadow: 0 1px 3px #07100c, 0 0 3px #07100c; }
+      .hud-slot.hud-combo-slot.ready .hud-square { box-shadow: 0 0 14px #f0cf7859; animation: hud-link-breathe 1.8s ease-in-out infinite alternate; }
+
+      .hud-slot.hud-combo-slot.executing { opacity: 1; }
+      .hud-slot.hud-combo-slot.executing .hud-square { border-color: #d9b876; background: #413b28; }
+      .hud-slot.hud-combo-slot.executing .hud-label { color: #f0dbab; }
+
+      /* 第二行：按稳定 id 定位，分别嵌入 Q / Tab 和 Tab / E 之间。 */
+      .hud-weapon-choice { grid-row: 2; color: #c2cbbfd9; }
+      #hud-pair1 { grid-column: 2; }
+      #hud-pair2 { grid-column: 4; }
+      .hud-weapon-choice.active .hud-square { border-color: #f2edcf; background: linear-gradient(145deg, #e9e5ca, #b5af8e); box-shadow: 0 0 12px #eadcaf4d, 0 1px 4px #0005; }
+      .hud-weapon-choice .hud-label { font-size: 14px; }
+      .hud-weapon-choice.active { color: #e9e5ca; }
+      .hud-weapon-choice.active .hud-label { color: #2a3027; text-shadow: none; }
+      /* 第三行：暴怒技居中，朱红色搭配暗金边框。 */
+      .hud-slot.hud-rage { grid-row: 3; grid-column: 3; pointer-events: auto; cursor: pointer; font: inherit; }
+      .hud-rage .hud-square { border-color: #8e7545; background: linear-gradient(145deg, #903c2e, #682b24); box-shadow: inset 0 0 10px #3d171c66, 0 1px 4px #0005; }
+      .hud-rage .hud-square::before { border-color: #b395562e; }
+      .hud-rage > .hud-label { color: #f08869; font-size: 14px; }
+      .hud-rage.ready .hud-square { border-color: #8e7545; background: linear-gradient(145deg, #a34633, #7c3027); box-shadow: 0 0 10px #a83c2926, 0 1px 4px #0005; }
+      .hud-rage.ready > .hud-label { color: #f08869; }
+      .hud-rage:disabled { cursor: default; }
+      .hud-rage:not(:disabled):hover .hud-square { border-color: #b39556; background: linear-gradient(145deg, #a34633, #7c3027); }
+      .hud-rage:focus-visible { outline: none; }
+      .hud-rage:focus-visible .hud-square { outline: 2px solid #d0b777; outline-offset: 3px; }
+      @keyframes hud-link-breathe { from { box-shadow: 0 0 7px #f0cf7833; } to { box-shadow: 0 0 19px #f0cf7873; } }
+      @media (prefers-reduced-motion: reduce) { .hud-root *, .hud-root *::before, .hud-root *::after { animation: none !important; transition: none !important; } }
+      @container (max-width: 1000px) {
+        .hud-corner { top: 12px; } .hud-place { left: 12px; } .hud-utility { right: 12px; }
+        .hud-target { top: 12px; } .hud-target-name { font-size: 14px; line-height: 22px; }
+        .hud-target-hp { height: 10px; margin-top: 8px; }
+        .hud-vitals { bottom: 12px; }
+        .hud-combat { right: 12px; bottom: 12px; transform: scale(.9); transform-origin: right bottom; }
+      }
+      @container (max-width: 720px) {
+        .hud-corner { top: 8px; } .hud-place { left: 8px; } .hud-utility { right: 8px; }
+        .hud-utility .hud-mode { display: none; } .hud-place strong { font-size: 14px; }
+        .hud-target { top: 8px; } .hud-target-name { font-size: 13px; line-height: 20px; letter-spacing: .1em; }
+        .hud-target-hp { margin-top: 6px; height: 8px; }
+        .hud-vitals { bottom: 8px; }
+        .hud-vitals-header { font-size: 10px; }
+        .hud-combat { right: 8px; bottom: 10px; transform: scale(.76); transform-origin: right bottom; }
+      }
+
+      /* ---------- 参数与场景（侧栏内） ---------- */
+      .quick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+      .quick button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 8px; border: 1px solid #ffffff1c; border-radius: 6px; background: #16222b; color: #cfdcdc; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }
+      .quick button:hover { background: #1e2f39; border-color: #74c4bb66; }
+      .quick button[aria-pressed="true"] { border-color: #74c4bb99; background: #1d333b; color: #e2f4f1; }
+      .quick button small { color: var(--muted); font-size: 9px; }
+      .quick .reset { border-color: #e0b46a55; color: #ecd6a8; }
+      .inspector label { display: grid; grid-template-columns: 64px minmax(0, 1fr) 62px; align-items: center; gap: 6px; color: #b9c9c9; font-size: 11px; }
+      .inspector input[type="range"] { width: 100%; accent-color: var(--accent); }
+      .inspector label output { color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; font-size: 10px; }
+      .inspector label.check { grid-template-columns: 16px minmax(0, 1fr); }
+      .inspector label.check input { accent-color: var(--accent); }
+      .hint { margin: 0; color: #6f8686; font-size: 10px; line-height: 1.8; }
+      .hint b { color: #9fb8b6; font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <main class="stage-area" id="stage-area">
+      <div class="game-frame" id="preview-frame">
+        <div class="scene-placeholder" aria-hidden="true"></div>
+        <div class="scene-note" aria-hidden="true">SCENE PLACEHOLDER</div>
+
+        <!-- ===================== HUD 开始（迁移目标） ===================== -->
+        <div class="hud-root" id="game-hud" aria-label="战斗状态">
+          <div class="hud-shade" aria-hidden="true"></div>
+          <svg class="hud-defs" aria-hidden="true"><defs>
+            <symbol id="hud-icon-musket" viewBox="0 0 40 40"><path d="M5 23h30M9 23v7l7-7M13 19h15v8H13M21 19v-5h7v5M31 21v4M5 21v4"/></symbol>
+            <symbol id="hud-icon-bow" viewBox="0 0 40 40"><path d="M10 4q30 16 0 32l13-16zM5 20h29m-6-5 6 5-6 5"/></symbol>
+            <symbol id="hud-icon-hammer" viewBox="0 0 40 40"><path d="M18 15v22h5V15M6 5h29v12H6zM10 5v12m21-12v12"/></symbol>
+            <symbol id="hud-icon-axe" viewBox="0 0 40 40"><path d="M19 6v30m3-25 12-5v17l-12-5m-4-7L6 6v17l12-5M19 36l-4 3"/></symbol>
+            <symbol id="hud-icon-attack" viewBox="0 0 40 40"><path d="m9 31 20-24M14 33 34 9M5 23 20 10M8 31l3 3M26 8l4 3"/></symbol>
+            <symbol id="hud-icon-guard" viewBox="0 0 40 40"><path d="m7 33 24-26-7 18-13 10zM6 9l28 21M4 17l10-1M26 5l1 9M27 29l8 5"/></symbol>
+            <symbol id="hud-icon-target" viewBox="0 0 40 40"><circle cx="20" cy="20" r="10"/><path d="M20 4v10m0 12v10M4 20h10m12 0h10"/></symbol>
+          </defs></svg>
+
+          <header class="hud-corner hud-place">
+            <small>KIVA / BAMBOO FOREST</small>
+            <strong>幽篁竹林</strong>
+          </header>
+          <aside class="hud-corner hud-utility"><span><kbd>Esc</kbd>暂停</span></aside>
+
+          <section id="hud-target" class="hud-target" aria-label="锁定目标生命" hidden>
+            <span id="hud-target-name" class="hud-target-name"></span>
+            <div class="hud-target-hp"><div class="hud-target-track"><span id="hud-target-trail" class="hud-target-trail" aria-hidden="true"></span><progress id="hud-target-bar" max="1" value="0" aria-label="敌人生命"></progress></div></div>
+          </section>
+
+          <section class="hud-vitals" aria-label="玩家生命与耐力">
+            <div id="hud-status" class="hud-state">准备就绪</div>
+            <div id="hud-combo" class="hud-state linked" hidden><kbd class="hud-key">Tab</kbd><span id="hud-combo-name">妹妹三枪</span><span id="hud-combo-time" class="hud-time"></span></div>
+            <div class="hud-vitals-header"><span><span id="hud-persona">哥哥</span> · <span id="hud-weapon">伏浪锚 · 锤子</span></span></div>
+            <div class="hud-player-hp"><progress id="hud-health-bar" max="1" value="1" aria-label="玩家生命"></progress></div>
+            <div class="hud-stamina" aria-label="耐力"><progress id="hud-stamina-bar" max="1" value="1" aria-label="耐力"></progress></div>
+          </section>
+
+          <section class="hud-combat" aria-label="技能与武器">
+            <!-- 第一行视觉顺序：Q 远程技 / Tab 联动 / E 近战技 -->
+            <div id="hud-skill-start" class="hud-slot hud-start" role="group" aria-label="E 锤击 · 击飞" aria-disabled="true"><span class="hud-square"></span><span class="hud-cooldown" aria-hidden="true"></span><span id="hud-start-label" class="hud-label" aria-hidden="true">锤</span><span id="hud-skill-start-time" class="hud-cooldown-time" aria-hidden="true"></span></div>
+            <div id="hud-skill-combo" class="hud-slot hud-combo-slot" role="group" aria-label="Tab 妹妹三枪" aria-disabled="true"><span class="hud-square"></span><span id="hud-combo-label" class="hud-label hud-label-combo" aria-hidden="true">锤接铳</span></div>
+            <div id="hud-skill-ranged" class="hud-slot hud-ranged" role="group" aria-label="Q 白灵淼引冰落" aria-disabled="true"><span class="hud-square"></span><span class="hud-cooldown" aria-hidden="true"></span><span id="hud-ranged-skill-label" class="hud-label" aria-hidden="true">铳</span><span id="hud-skill-ranged-time" class="hud-cooldown-time" aria-hidden="true"></span></div>
+            <!-- 第二行：锤铳 / 斧弓，当前选中的武器组高亮 -->
+            <div id="hud-pair1" class="hud-weapon-choice active" role="group" aria-label="套装 1 · 锤铳 · 伏浪锚" aria-current="true"><span class="hud-square"></span><span id="hud-pair1-label" class="hud-label" aria-hidden="true">锤铳</span></div>
+            <div id="hud-pair2" class="hud-weapon-choice" role="group" aria-label="套装 2 · 斧弓 · 谪星·摧山" aria-current="false"><span class="hud-square"></span><span id="hud-pair2-label" class="hud-label" aria-hidden="true">斧弓</span></div>
+            <!-- 第三行：暴怒技 -->
+            <button id="hud-skill-rage" class="hud-slot hud-rage" type="button" aria-label="暴怒技"><span class="hud-square" aria-hidden="true"></span><span class="hud-label">暴怒</span></button>
+          </section>
+        </div>
+        <!-- ===================== HUD 结束 ===================== -->
+      </div>
+    </main>
+
+    <aside class="sidebar" aria-label="原型设置">
+      <div class="brand"><strong>Kiva · UI 原型台</strong><small>KIVA / UI PREVIEW</small></div>
+
+      <section aria-label="预览尺寸">
+        <h2>预览尺寸 / VIEWPORT</h2>
+        <div class="viewport-switch" role="group" aria-label="预览尺寸">
+          <button type="button" data-viewport="0" aria-pressed="true">自适应 16:9</button>
+          <button type="button" data-viewport="1920" aria-pressed="false">1920×1080</button>
+          <button type="button" data-viewport="2560" aria-pressed="false">2560×1440</button>
+          <button type="button" data-viewport="1280" aria-pressed="false">1280×720</button>
+        </div>
+        <span class="size">实际画面 <b id="size-readout">–</b></span>
+      </section>
+
+      <section aria-label="快捷场景">
+        <h2>快捷场景 / SCENE</h2>
+        <div class="quick" id="quick">
+          <button type="button" data-scene="ready">待机 <small>全部就绪</small></button>
+          <button type="button" data-scene="combat">实战 <small>锁定敌人 · 联动可用</small></button>
+          <button type="button" data-scene="lowhp">濒死 <small>生命 + 耐力</small></button>
+          <button type="button" data-scene="defend">防御中 <small>右键状态</small></button>
+          <button type="button" data-scene="axeaway">链斧离手 <small>回收中</small></button>
+          <button type="button" data-scene="down">倒地 <small>复活前</small></button>
+          <button type="button" data-scene="idle" class="reset">恢复默认</button>
+        </div>
+      </section>
+
+      <section class="inspector" aria-label="状态注入">
+        <h2>状态注入 / STATE</h2>
+        <label>生命<input type="range" id="in-health" min="0" max="1000" step="10" value="1000" /><output id="out-health">1000</output></label>
+        <label>耐力<input type="range" id="in-stamina" min="0" max="100" step="1" value="100" /><output id="out-stamina">100</output></label>
+        <label>目标生命<input type="range" id="in-target" min="0" max="1000000" step="1000" value="820000" /><output id="out-target">820,000</output></label>
+        <label>E 冷却<input type="range" id="in-melee-cd" min="0" max="12" step="0.1" value="0" /><output id="out-melee-cd">0.0s</output></label>
+        <label>Q 冷却<input type="range" id="in-ranged-cd" min="0" max="12" step="0.1" value="0" /><output id="out-ranged-cd">0.0s</output></label>
+        <label>联动窗口<input type="range" id="in-combo" min="0" max="5" step="0.1" value="0" /><output id="out-combo">0.0s</output></label>
+        <label class="check"><input type="checkbox" id="in-pair2" /><span>使用斧弓（2 号套装）</span></label>
+        <label class="check"><input type="checkbox" id="in-target-on" checked /><span>锁定敌人</span></label>
+        <label class="check"><input type="checkbox" id="in-rage-ready" checked /><span>暴怒可用</span></label>
+      </section>
+
+      <p class="hint">快捷键：<b>Z</b> 切换武器组 · <b>E</b> 近战技 · <b>Q</b> 远程技 · <b>左键</b> 普攻 · <b>右键</b> 拆招/防御/弹反 · <b>中键</b> 锁定 · <b>T</b> 扣血 · <b>H</b> 目标 · <b>Tab</b> 释放联动</p>
+    </aside>
+
+    <script>
+      /* ---------------------------------------------------------------------
+         模拟状态驱动：接口形态对齐 web/hud.js 的 kivaHud.render*。
+         --------------------------------------------------------------------- */
+      (() => {
+        "use strict";
+        const $ = id => document.getElementById(id);
+        const SETS = {
+          1: { melee: "伏浪锚", kind: "锤子", ranged: "引冰落", skillLabels: ["锤", "锤接铳", "铳"], starter: "锤击 · 击飞", remote: "白灵淼 · 单发引冰落", finisher: "妹妹三枪", condition: "锤 E 原目标浮空时按 Tab" },
+          2: { melee: "谪星·摧山", kind: "链斧", ranged: "羿之影", skillLabels: ["斧", "弓接斧", "弓"], starter: "链斧横扫 · 减速", remote: "白灵淼 · 射出链斧", finisher: "拉近 · 妹妹三箭", condition: "弓 Q 成功僵直原目标后按 Tab" },
+        };
+
+        const state = {
+          persona: "哥哥", set: 1, maximum: 1000,
+          health: 1000,
+          stamina: 100, staminaMax: 100,
+          meleeCd: 0, rangedCd: 0, meleeCdTotal: 4.5, rangedCdTotal: 9, combo: 0, comboActive: 0,
+          axeAway: false, defense: 0,
+          attack: true, melee: true, ranged: true, guard: true, comboReady: true, rageReady: true,
+          context: "准备就绪",
+          target: null,
+        };
+        const targetDefaults = { name: "愁铃客 · 一阶段", maximum: 1000000, status: "逼近中" };
+
+        const fmt = v => Math.ceil(Math.max(0, v)).toLocaleString("en-US");
+        const clamp01 = v => Math.min(1, Math.max(0, v));
+
+        function setText(id, value) { const el = $(id); if (el) el.textContent = value; }
+        function setHidden(id, value) { const el = $(id); if (el) el.hidden = value; }
+        function setAttr(id, name, value) { $(id)?.setAttribute(name, String(value)); }
+        function toggle(id, name, on) { $(id)?.classList.toggle(name, on); }
+        function ready(id, on) { toggle(id, "ready", on); setAttr(id, "aria-disabled", !on); }
+        function progress(id, fraction, current, maximum) {
+          const bar = $(id);
+          if (!bar) return;
+          bar.max = 1;
+          bar.value = clamp01(fraction);
+          bar.setAttribute("aria-valuetext", `${fmt(current)} / ${fmt(maximum)}`);
+        }
+
+        function setCooldown(field, seconds) {
+          state[field] = seconds;
+          state[`${field}Total`] = seconds;
+        }
+
+        const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+        const targetTrail = { target: null, current: 0, value: 0, holdUntil: 0 };
+        function syncTargetTrail(target, fraction) {
+          if (target !== targetTrail.target || fraction >= targetTrail.current || reducedMotion.matches) {
+            // 换目标、回血和无动画模式直接对齐，避免把初始化当成受伤。
+            if (target !== targetTrail.target || fraction > targetTrail.current || reducedMotion.matches) {
+              targetTrail.value = fraction;
+              targetTrail.holdUntil = 0;
+            }
+          } else {
+            targetTrail.holdUntil = performance.now() + 180;
+          }
+          targetTrail.target = target;
+          targetTrail.current = fraction;
+          $("hud-target-trail").style.width = `${targetTrail.value * 100}%`;
+        }
+        function animateTargetTrail(now, elapsed) {
+          if (reducedMotion.matches) targetTrail.value = targetTrail.current;
+          else if (now > targetTrail.holdUntil) {
+            const activeElapsed = Math.min(elapsed, (now - targetTrail.holdUntil) / 1000);
+            targetTrail.value = Math.max(targetTrail.current, targetTrail.value - activeElapsed * .65);
+          }
+          $("hud-target-trail").style.width = `${targetTrail.value * 100}%`;
+        }
+
+        function hasValidTarget() {
+          return !!state.target && state.target.health > 0 && state.target.maximum > 0;
+        }
+        function canReleaseCombo() {
+          return state.health > 0 && hasValidTarget() && state.comboReady && state.combo > 0 && state.comboActive <= 0;
+        }
+
+        function paint() {
+          const set = SETS[state.set];
+          const alive = state.health > 0;
+          const target = alive && hasValidTarget() ? state.target : null;
+
+          /* 玩家生命 */
+          setText("hud-persona", state.persona);
+          setText("hud-weapon", `${set.melee} · ${set.kind}`);
+          progress("hud-health-bar", state.health / state.maximum, state.health, state.maximum);
+          if (!alive || !hasValidTarget()) { state.combo = 0; state.comboActive = 0; }
+          setText("hud-status", state.comboActive > 0 ? `联动中 · ${set.finisher}` : state.context);
+
+          /* 锁定目标 */
+          setHidden("hud-target", !target);
+          setText("hud-target-name", target?.name || "");
+          const targetFraction = target && target.maximum > 0 ? clamp01(target.health / target.maximum) : 0;
+          progress("hud-target-bar", targetFraction, target?.health ?? 0, target?.maximum ?? 0);
+          syncTargetTrail(target, targetFraction);
+
+          /* 第一行文字随当前武器组变化 */
+          setText("hud-start-label", set.skillLabels[0]);
+          setText("hud-combo-label", set.skillLabels[1]);
+          setText("hud-ranged-skill-label", set.skillLabels[2]);
+
+          /* 第二行：始终仅高亮当前武器组，回收状态保留在无障碍描述中 */
+          for (const [id, on, label] of [
+            ["hud-pair1", state.set === 1, `套装 1 · 锤铳 · ${SETS[1].melee}`],
+            ["hud-pair2", state.set === 2, `套装 2 · 斧弓 · ${SETS[2].melee}`],
+          ]) {
+            toggle(id, "active", on);
+            setAttr(id, "aria-current", on);
+            setAttr(id, "aria-label", `${label}${on && state.axeAway ? " · 回收中" : ""}`);
+          }
+
+          /* 耐力 */
+          progress("hud-stamina-bar", state.staminaMax > 0 ? state.stamina / state.staminaMax : 0, state.stamina, state.staminaMax);
+
+          /* 冷却槽位：水位从底部填满，归零后恢复整格高亮。 */
+          for (const [id, cd, total, available, key, caption] of [
+            ["hud-skill-start", state.meleeCd, state.meleeCdTotal, state.melee, "E", set.starter],
+            ["hud-skill-ranged", state.rangedCd, state.rangedCdTotal, state.ranged, "Q", set.remote],
+          ]) {
+            toggle(id, "cooling", alive && cd > 0);
+            $(id).style.setProperty("--cooldown-fill", `${clamp01(total > 0 ? 1 - cd / total : 1) * 100}%`);
+            setText(`${id}-time`, cd > 0 ? `${(Math.ceil(cd * 10) / 10).toFixed(1)}s` : "");
+            ready(id, alive && available && cd <= 0);
+            const restriction = !alive ? "倒地中不可用" : cd > 0 ? `冷却 ${cd.toFixed(1)}s` : !available ? "当前条件不可用" : "就绪";
+            setAttr(id, "title", `${key} · ${caption} · ${restriction}`);
+            setAttr(id, "aria-label", `${key} · ${caption} · ${restriction}`);
+          }
+
+          /* 联动窗口是释放机会；释放动作有独立状态，不能反过来点亮可用提示。 */
+          const comboAvailable = canReleaseCombo();
+          const comboStatus = !alive ? "倒地中不可用" : !target ? "未锁定有效目标" : state.comboActive > 0 ? "释放中" : comboAvailable ? `可释放 · 剩余 ${state.combo.toFixed(1)}s` : "条件未满足";
+          ready("hud-skill-combo", comboAvailable);
+          setAttr("hud-skill-combo", "title", `Tab · ${set.skillLabels[1]} · ${comboStatus} · ${set.condition}`);
+          setAttr("hud-skill-combo", "aria-label", `Tab · ${set.skillLabels[1]} · ${comboStatus}`);
+          toggle("hud-skill-combo", "executing", alive && state.comboActive > 0);
+
+          setHidden("hud-combo", !comboAvailable);
+          setHidden("hud-status", comboAvailable);
+          setText("hud-combo-name", `${set.skillLabels[1]} · 可释放`);
+          setText("hud-combo-time", `${(Math.ceil(state.combo * 10) / 10).toFixed(1)}s`);
+
+          const rageAvailable = alive && state.rageReady;
+          ready("hud-skill-rage", rageAvailable);
+          $("hud-skill-rage").disabled = !rageAvailable;
+          setAttr("hud-skill-rage", "aria-label", `暴怒技 · ${rageAvailable ? "可用" : "不可用"}`);
+
+          syncInspector();
+        }
+
+        /* ---------- 面板回写 ---------- */
+        function syncInspector() {
+          $("in-health").value = state.health;
+          $("out-health").textContent = fmt(state.health);
+          $("in-stamina").value = state.stamina;
+          $("out-stamina").textContent = fmt(state.stamina);
+          $("in-target").value = state.target?.health ?? 0;
+          $("out-target").textContent = state.target ? fmt(state.target.health) : "—";
+          $("in-melee-cd").value = state.meleeCd;
+          $("out-melee-cd").textContent = `${state.meleeCd.toFixed(1)}s`;
+          $("in-ranged-cd").value = state.rangedCd;
+          $("out-ranged-cd").textContent = `${state.rangedCd.toFixed(1)}s`;
+          $("in-combo").value = state.combo;
+          $("out-combo").textContent = `${state.combo.toFixed(1)}s`;
+          $("in-pair2").checked = state.set === 2;
+          $("in-target-on").checked = !!state.target;
+          $("in-rage-ready").checked = state.rageReady;
+        }
+
+        /* ---------- 场景预设 ---------- */
+        function ensureTarget() {
+          if (!state.target) state.target = { ...targetDefaults, health: 820000 };
+        }
+        function setTargetHealth(v) { if (state.target) state.target.health = Math.min(state.target.maximum, v); }
+        function reset() {
+          Object.assign(state, {
+            persona: "哥哥", set: 1, maximum: 1000, health: 1000, stamina: 100, staminaMax: 100,
+            meleeCd: 0, rangedCd: 0, meleeCdTotal: 4.5, rangedCdTotal: 9, combo: 0, comboActive: 0, axeAway: false, defense: 0,
+            attack: true, melee: true, ranged: true, guard: true, comboReady: true, rageReady: true,
+            context: "准备就绪", target: null,
+          });
+        }
+        const scenes = {
+          idle: reset,
+          ready() {
+            reset();
+            ensureTarget();
+          },
+          combat() {
+            scenes.ready();
+            Object.assign(state, { health: 640, stamina: 42, meleeCd: 0, rangedCd: 0, combo: 2.5, context: "普攻 · 第 2 段" });
+            state.target.status = "浮空中";
+          },
+          lowhp() {
+            scenes.ready();
+            Object.assign(state, { health: 120, stamina: 8, rangedCd: 2.4, context: "等待防御 · 耐力不足时正常受伤" });
+          },
+          defend() {
+            scenes.ready();
+            Object.assign(state, { defense: 3, stamina: 55, context: "防御中 · 松开右键弹反" });
+          },
+          axeaway() {
+            scenes.ready();
+            Object.assign(state, { set: 2, axeAway: true, melee: false, ranged: false, rangedCd: 5.5, stamina: 73, context: "链斧离手 · 回收中" });
+            state.target.status = "僵直中";
+          },
+          down() {
+            reset();
+            Object.assign(state, { health: 0, context: "倒地 · 即将回到出生点" });
+          },
+        };
+
+        /* ---------- 绑定控件 ---------- */
+        function bindScene(name) {
+          for (const button of document.querySelectorAll("#quick [data-scene]")) {
+            button.setAttribute("aria-pressed", String(button.dataset.scene === name));
+          }
+          (scenes[name] || scenes.idle)();
+          paint();
+        }
+        for (const button of document.querySelectorAll("#quick [data-scene]")) {
+          button.addEventListener("click", () => bindScene(button.dataset.scene));
+        }
+
+        $("in-health").addEventListener("input", e => { state.health = Number(e.target.value); paint(); });
+        $("in-stamina").addEventListener("input", e => { state.stamina = Number(e.target.value); paint(); });
+        $("in-target").addEventListener("input", e => { ensureTarget(); state.target.health = Number(e.target.value); paint(); });
+        $("in-melee-cd").addEventListener("input", e => { setCooldown("meleeCd", Number(e.target.value)); state.melee = true; paint(); });
+        $("in-ranged-cd").addEventListener("input", e => { setCooldown("rangedCd", Number(e.target.value)); state.ranged = true; paint(); });
+        $("in-combo").addEventListener("input", e => { state.combo = Number(e.target.value); state.comboActive = 0; paint(); });
+        $("in-pair2").addEventListener("change", e => { state.set = e.target.checked ? 2 : 1; state.axeAway = false; state.combo = 0; state.comboActive = 0; paint(); });
+        $("in-target-on").addEventListener("change", e => { if (e.target.checked) ensureTarget(); else state.target = null; paint(); });
+        $("in-rage-ready").addEventListener("change", e => { state.rageReady = e.target.checked; paint(); });
+
+        /* ---------- 快捷键 ---------- */
+        function toggleTarget() {
+          state.target = state.target ? null : { ...targetDefaults, health: 820000 };
+        }
+        // HTML 不计算距离和碰撞：锁定的有效敌人视为在技能命中范围内。
+        function useSkill(kind) {
+          const cooldown = kind === "melee" ? "meleeCd" : "rangedCd";
+          if (state.health <= 0 || !state[kind] || state[cooldown] > 0 || state.comboActive > 0) return;
+          setCooldown(cooldown, kind === "melee" ? 4.5 : 9);
+          if (!hasValidTarget()) return;
+          const opensCombo = (state.set === 1 && kind === "melee") || (state.set === 2 && kind === "ranged");
+          setTargetHealth(state.target.health - (kind === "melee" ? 45000 : 88000));
+          if (opensCombo && hasValidTarget()) {
+            state.target.status = state.set === 1 ? "浮空中" : "僵直中";
+            state.combo = 2.5;
+          }
+        }
+        const GUARD_TEXT = ["按下拆招 · 长按防御 · 松开弹反", "拆招窗口 · 迎向来袭", "等待防御 · 耐力不足时正常受伤", "防御中 · 松开右键弹反", "弹反窗口"];
+        addEventListener("keydown", event => {
+          if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
+          const k = event.key.toLowerCase();
+          if (k === " " && event.target?.closest(".hud-rage")) return;
+          if (k === "z") { state.set = state.set === 1 ? 2 : 1; state.axeAway = false; state.combo = 0; state.comboActive = 0; }
+          else if (k === "e") { useSkill("melee"); }
+          else if (k === "q") { useSkill("ranged"); }
+          else if (k === "t") { state.health = Math.max(0, state.health - 120); state.stamina = Math.max(0, state.stamina - 18); }
+          else if (k === "h") { toggleTarget(); }
+          else if (k === " ") { if (!state.target) state.target = { ...targetDefaults, health: 820000 }; setTargetHealth(state.target.health - 2500); }
+          else if (k === "tab") {
+            event.preventDefault();
+            if (canReleaseCombo()) {
+              state.combo = 0;
+              state.comboActive = 1.6; // 预览释放动画时段，与可释放窗口分开。
+            }
+          }
+          else return;
+          paint();
+        });
+        addEventListener("contextmenu", e => e.preventDefault());
+        addEventListener("mousedown", event => {
+          if (event.target.closest(".sidebar, .hud-rage")) return;
+          if (!state.target) state.target = { ...targetDefaults, health: 820000 };
+          if (event.button === 0) {
+            setTargetHealth(state.target.health - 1800);
+            state.context = `普攻 · 第 ${1 + Math.floor(Math.random() * 3)} 段`;
+          } else if (event.button === 1) {
+            event.preventDefault();
+            toggleTarget();
+          } else if (event.button === 2) {
+            state.defense = (state.defense + 1) % 5;
+            state.context = GUARD_TEXT[state.defense];
+          } else return;
+          paint();
+        });
+        function defeatCheck() { if (state.target && state.target.health <= 0) state.target.status = "已击败"; }
+
+        /* ---------- 预览尺寸：中间画面始终为完整 16:9，只按可用区域取最大 ---------- */
+        const frame = $("preview-frame");
+        const stage = $("stage-area");
+        function applyViewport(width) {
+          for (const b of document.querySelectorAll("[data-viewport]")) {
+            b.setAttribute("aria-pressed", String(Number(b.dataset.viewport) === width));
+          }
+          // 中间画面永远完整显示：自适应即取可用区域内的最大 16:9；
+          // 指定尺寸仅作为“上限参考”，超出可用区域时自动缩小而不裁切。
+          frame.style.maxWidth = width ? `${width}px` : "";
+          requestAnimationFrame(readSize);
+        }
+        function readSize() {
+          const r = frame.getBoundingClientRect();
+          const scale = r.height / 1440; // 以 1440 高为 100% 参考
+          $("size-readout").textContent = `${Math.round(r.width)}×${Math.round(r.height)} · 完整 16:9 · ${(scale * 100).toFixed(0)}%`;
+        }
+        for (const b of document.querySelectorAll("[data-viewport]")) {
+          b.addEventListener("click", () => applyViewport(Number(b.dataset.viewport)));
+        }
+        new ResizeObserver(readSize).observe(frame);
+        addEventListener("resize", readSize);
+
+        /* ---------- 启动 ---------- */
+        bindScene("ready");
+        let previousTime = performance.now();
+        function tick(now) {
+          const elapsed = Math.max(0, (now - previousTime) / 1000);
+          previousTime = now;
+          if (state.meleeCd > 0 || state.rangedCd > 0 || state.combo > 0 || state.comboActive > 0) {
+            state.meleeCd = Math.max(0, state.meleeCd - elapsed);
+            state.rangedCd = Math.max(0, state.rangedCd - elapsed);
+            state.combo = Math.max(0, state.combo - elapsed);
+            state.comboActive = Math.max(0, state.comboActive - elapsed);
+            paint();
+          }
+          animateTargetTrail(now, elapsed);
+          requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      })();
+    </script>
+  </body>
+</html>
