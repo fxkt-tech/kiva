@@ -24,6 +24,7 @@ from naraka_audio import (
 ROOT = Path(__file__).resolve().parents[1]
 PREPARED = ROOT / "assets/prepared/naraka/audio"
 OUTPUT = ROOT / "assets/audio"
+EFFECT_GAIN = 0.45
 AUDIO_RELATIVE = Path("NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows")
 EVIDENCE = [
     "audio_sample_trace.json", "audio-tracks-selected.json",
@@ -44,6 +45,8 @@ CUES = [
     ("naraka_jump", "move_jump_takeoff_cloth_fast", 1, "Actual jump track's takeoff cloth event"),
     ("naraka_land", "move_jump_land", 1, "Both original PlayActions; first delayed 100ms"),
     ("naraka_dodge", "gman_dodge_01", 1, "Original four-direction dodge track event"),
+    ("naraka_dodge_success", "move_soul_dodge_1p", 3,
+     "User-selected soul dodge event adapted to settled successful dodge; not proof of original PVP usage"),
     ("naraka_step", "move_run", 0, "Original default material branch; Kiva actual-distance cadence"),
     ("naraka_death", "gman_all_die_drop", 2, "Original shared body/drop event; Kiva death assignment"),
     ("naraka_death_voice", "gman_dying_voice_male", 2,
@@ -81,6 +84,7 @@ sources是未改写的完整Wwise Vorbis WEM；pcm是完整PCM16LE的gzip无损�
 远程新增原FK射击与弓射击事件。FK标准分支与Barrett条件分支区分，
 不将未知条件数字称皮肤ID，不把无Sound轨的sniper片段说成已恢复声音连接。
 枪/弓cue均为武器家族适配，不是引冰落/羿之影或角色专属音效。
+成功闪避使用用户选定的move_soul_dodge_1p，保留三个原变体；这是Kiva用途适配，非原作PVP触发语义的确证。
 
 普通import/--verify从本包无损PCM重建Ogg并验证完整媒体链、哈希与格式，
 不需要客户端、Unity或vgmstream。需要Python3.11+和ffmpeg/ffprobe。
@@ -277,9 +281,9 @@ def build_runtime(source, output, verify, decoder=None):
                           ffmpeg_version=subprocess.run(["ffmpeg", "-version"], check=True,
                                                         capture_output=True, text=True).stdout.splitlines()[0],
                           decoder=manifest["decoder"]),
-            playback=dict(global_effect_gain=0.18, max_sources=4, priority="larger number is more important",
+            playback=dict(global_effect_gain=EFFECT_GAIN, max_sources=4, priority="larger number is more important",
                           peak_limit_per_source_after_variant_gain=PEAK_LIMIT,
-                          max_four_effects_peak_bound=4 * 0.18 * PEAK_LIMIT,
+                          max_four_effects_peak_bound=4 * EFFECT_GAIN * PEAK_LIMIT,
                           variant_gain="min(1,0.85/measured complete Vorbis float peak); source PCM/Ogg unchanged",
                           proto_track_time="unknown units/group semantics; offset0 is explicit Kiva adaptation",
                           layer_delay="seconds converted from actual original PlayAction DelayTime milliseconds"),
@@ -316,7 +320,7 @@ def build_runtime(source, output, verify, decoder=None):
                 prepared_bytes=sum(f.stat().st_size for f in source.rglob("*") if f.is_file()),
                 max_layer_sources=max(len(v["layers"]) for v in cues.values()),
                 maximum_ogg_duration=max(v["duration"] for v in measurements.values()),
-                max_effect_mix_peak=4 * 0.18 * PEAK_LIMIT, redecode=decoder is not None)
+                max_effect_mix_peak=4 * EFFECT_GAIN * PEAK_LIMIT, redecode=decoder is not None)
 
 
 def main():

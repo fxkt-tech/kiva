@@ -13,6 +13,7 @@ sources是未改写的完整Wwise Vorbis WEM；pcm是完整PCM16LE的gzip无损�
 远程新增原FK射击与弓射击事件。FK标准分支与Barrett条件分支区分，
 不将未知条件数字称皮肤ID，不把无Sound轨的sniper片段说成已恢复声音连接。
 枪/弓cue均为武器家族适配，不是引冰落/羿之影或角色专属音效。
+成功闪避使用用户选定的move_soul_dodge_1p，保留三个原变体；这是Kiva用途适配，非原作PVP触发语义的确证。
 
 普通import/--verify从本包无损PCM重建Ogg并验证完整媒体链、哈希与格式，
 不需要客户端、Unity或vgmstream。需要Python3.11+和ffmpeg/ffprobe。

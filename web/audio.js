@@ -3,6 +3,8 @@
   if (window.kivaPage?.isViewer()) return;
 
   const MAX_VOICES = 4;
+  const EFFECT_VOLUME = 0.45;
+  const MUSIC_VOLUME = 0.18;
   const voices = new Set();
   let context = null;
   let shot = null;
@@ -15,7 +17,7 @@
   const cueNames = new Set([
     "naraka_attack_1", "naraka_attack_2", "naraka_attack_3", "naraka_riposte",
     "naraka_hit", "naraka_deflect", "naraka_block", "naraka_parry",
-    "naraka_jump", "naraka_land", "naraka_dodge", "naraka_step",
+    "naraka_jump", "naraka_land", "naraka_dodge", "naraka_dodge_success", "naraka_step",
     "naraka_death", "naraka_death_voice",
     "naraka_gun", "naraka_bow",
   ]);
@@ -36,7 +38,7 @@
     const buffer = samples.get("bgm");
     if (music || !active || document.hidden || !buffer || context?.state !== "running") return;
     musicStart = context.currentTime;
-    music = playBuffer(buffer, { volume: 0.18, loop: true, offset: musicOffset });
+    music = playBuffer(buffer, { volume: MUSIC_VOLUME, loop: true, offset: musicOffset });
   }
 
   function record(value) {
@@ -131,7 +133,7 @@
     return true;
   }
 
-  function playBuffer(buffer, { volume = 0.18, loop = false, offset = 0, priority = 2, delay = 0, reserved = false } = {}) {
+  function playBuffer(buffer, { volume = EFFECT_VOLUME, loop = false, offset = 0, priority = 2, delay = 0, reserved = false } = {}) {
     if (!active || !context || context.state !== "running" || !buffer) return null;
     let source;
     let gain;
@@ -186,7 +188,7 @@
     if (!reserveVoices(cue.priority, layers.length)) return false;
     const started = [];
     for (const layer of layers) {
-      const voice = playBuffer(layer.buffer, { volume: 0.18 * layer.gain, priority: cue.priority, delay: layer.delay, reserved: true });
+      const voice = playBuffer(layer.buffer, { volume: EFFECT_VOLUME * layer.gain, priority: cue.priority, delay: layer.delay, reserved: true });
       if (!voice) {
         for (const previous of started) stop(previous);
         return false;

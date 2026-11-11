@@ -270,6 +270,7 @@ fn consume(
             Some(Sound::Naraka("naraka_hit"))
         }
         CombatEffect::Hit => Some(Sound::Hit),
+        CombatEffect::Dodge if defender => Some(Sound::Naraka("naraka_dodge_success")),
         CombatEffect::Deflect if defender => Some(Sound::Naraka("naraka_deflect")),
         CombatEffect::Block if defender => Some(Sound::Naraka("naraka_block")),
         CombatEffect::Parry if defender => Some(Sound::Naraka("naraka_parry")),
@@ -282,7 +283,7 @@ fn consume(
             Some(WeaponPair::ChainAxeBow) => Some(Sound::Naraka("naraka_bow")),
             None => None,
         },
-        // SniperShot accompanies Shot; invulnerability Dodge is not dodge start.
+        // SniperShot accompanies Shot; successful dodge is handled separately from motion start.
         _ => None,
     }
 }
@@ -1160,7 +1161,7 @@ mod tests {
                 )
                 .is_empty()
         );
-        // Immunity feedback is not an accepted physical dodge cue.
+        // A non-player immunity event must not trigger either player dodge cue.
         let dodge = event(999, CombatEffect::Dodge);
         assert!(
             state
@@ -1186,6 +1187,36 @@ mod tests {
             ),
             [Sound::Naraka("naraka_dodge")]
         );
+    }
+
+    #[test]
+    fn successful_dodge_plays_only_for_the_player_once_and_never_replays_after_pause() {
+        let actor = make_actor(MeleeStage::One, 0.0);
+        let mut state = AudioState::default();
+        let mut success = event(1, CombatEffect::Dodge);
+        success.actor = actor.entity;
+        success.source_owner = Entity::from_raw_u32(456).unwrap();
+        let play = |state: &mut AudioState, active, event: &CombatEvent| {
+            state.frame(
+                active,
+                0,
+                &[actor],
+                [event].into_iter(),
+                [].into_iter(),
+                |_| 0.0,
+            )
+        };
+        assert_eq!(
+            play(&mut state, true, &success),
+            [Sound::Naraka("naraka_dodge_success")]
+        );
+        assert!(play(&mut state, true, &success).is_empty());
+        success.sequence = 2;
+        assert!(play(&mut state, false, &success).is_empty());
+        assert!(play(&mut state, true, &success).is_empty());
+        success.sequence = 3;
+        success.actor = success.source_owner;
+        assert!(play(&mut state, true, &success).is_empty());
     }
 
     #[test]

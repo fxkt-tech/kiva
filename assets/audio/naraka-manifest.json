@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "scripts/import-naraka-audio.py",
-  "prepared_manifest_sha256": "3a4e996cbf5c0d37c7206ccc657e16baa1fa4751d0ae6f303b3e5a2a8e4f273f",
+  "prepared_manifest_sha256": "398c9f3762328c26dcb1f4aa505d9ee73a2eb119628d940228c61e6c58e18fe8",
   "source_origin": "User-specified local NARAKA BLADEPOINT; selected original audio, not full Wwise runtime",
   "encoding": {
     "format": "Vorbis/Ogg",
@@ -46,11 +46,11 @@
     }
   },
   "playback": {
-    "global_effect_gain": 0.18,
+    "global_effect_gain": 0.45,
     "max_sources": 4,
     "priority": "larger number is more important",
     "peak_limit_per_source_after_variant_gain": 0.85,
-    "max_four_effects_peak_bound": 0.612,
+    "max_four_effects_peak_bound": 1.53,
     "variant_gain": "min(1,0.85/measured complete Vorbis float peak); source PCM/Ogg unchanged",
     "proto_track_time": "unknown units/group semantics; offset0 is explicit Kiva adaptation",
     "layer_delay": "seconds converted from actual original PlayAction DelayTime milliseconds"
@@ -99,6 +99,10 @@
     "naraka_dodge": {
       "original_event": "gman_dodge_01",
       "note": "Original four-direction dodge track event"
+    },
+    "naraka_dodge_success": {
+      "original_event": "move_soul_dodge_1p",
+      "note": "User-selected soul dodge event adapted to settled successful dodge; not proof of original PVP usage"
     },
     "naraka_step": {
       "original_event": "move_run",
@@ -156,6 +160,30 @@
       "rate": 44100,
       "decoded_frames": 68212,
       "decoded_peak": 0.5086824893951416,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 56972138,
+      "file": "naraka-56972138.ogg",
+      "bytes": 21867,
+      "sha256": "c50733b44fc88c417967d4601f518e2bc0c0cef3efbf1366050e60e261e75530",
+      "duration": 1.2424943310657597,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 54794,
+      "decoded_peak": 0.8232616782188416,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 71696684,
+      "file": "naraka-71696684.ogg",
+      "bytes": 21438,
+      "sha256": "8ae27ce3ae84b46712a7663daa09a97401f68a763a7d8672b54e4d61c42d91f0",
+      "duration": 1.2004761904761905,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 52941,
+      "decoded_peak": 0.6974188089370728,
       "playback_gain": 1
     },
     {
@@ -312,6 +340,18 @@
       "rate": 44100,
       "decoded_frames": 40205,
       "decoded_peak": 0.2497481405735016,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 374972779,
+      "file": "naraka-374972779.ogg",
+      "bytes": 26458,
+      "sha256": "bee6637b87cdca36e2776edc7e9504dd62d03a81e1da24168fe85a7c18b221c2",
+      "duration": 1.5805895691609977,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 69704,
+      "decoded_peak": 0.6809906959533691,
       "playback_gain": 1
     },
     {
@@ -702,7 +742,7 @@
   "evidence": [
     {
       "path": "assets/prepared/naraka/audio/source-evidence/audio_sample_trace.json",
-      "sha256": "a93e73ee64550a8aba851eef33e0e2d568b52ccd0f40211fce978e9145efa2b2"
+      "sha256": "86f7f608a1e5647365f43e382859ee0d2ce30b0c7e7e8e3df7f40db1fa00a030"
     },
     {
       "path": "assets/prepared/naraka/audio/source-evidence/audio-tracks-selected.json",

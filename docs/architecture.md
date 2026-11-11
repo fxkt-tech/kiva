@@ -144,7 +144,7 @@ RigPose.local 保存蹲伏 IK 前姿态，IK 只作用于生成 model 的副本�
 
 `mode.js`首先固定页面模式，`startup.js`、`loader.js`、`input.js`、`hud.js`、`enemies.js`、`appearance.js`、`audio.js`、`viewer.js`必须同步安装在Trunk生成的模块之前，脚本不依赖DOM已创建；游戏专属脚本在查看模式下退出。
 Trunk入口通过专用loader包装自身WASM Response，保留流式编译并报告真实下载字节；可用分母才显示百分比，初始化／画面准备显示明确阶段。按钮加载时可见但disabled，最终ready后用户点击申请鼠标捕获，请求期间显示进入中；错误可重载或重试，Esc恢复沿用ready。具体接口与失败边界见[启动规范](../.trellis/spec/client/startup.md)。
-`window.kivaAudio.playEffect(name)`消费真实起手、命中、防御与运动事实。永劫音效包含16个cue／48个Ogg，Wwise变体与落地双层延迟保留；妹妹实际Shot（actor=Companion）按事件pair播放原鸟铳／弓媒体，伴随狙击特效不重复发声。MeleeStart起手声使用同一ActionSnapshot时钟，声音预定点超过0.12s或身份无效即丢弃；空挥无命中声，空弹反无成功声。`cueOffset`只读偏移，旧`playSniperShot`仅兼容保留。
+`window.kivaAudio.playEffect(name)`消费真实起手、命中、防御与运动事实。实际成功闪避结算播放用户选定的`move_soul_dodge_1p`三个等权变体（`naraka_dodge_success`），普通闪避起手声独立保留；音效基础增益0.45，BGM为0.18。永劫音效包含16个cue／48个Ogg，Wwise变体与落地双层延迟保留；妹妹实际Shot（actor=Companion）按事件pair播放原鸟铳／弓媒体，伴随狙击特效不重复发声。MeleeStart起手声使用同一ActionSnapshot时钟，声音预定点超过0.12s或身份无效即丢弃；空挥无命中声，空弹反无成功声。`cueOffset`只读偏移，旧`playSniperShot`仅兼容保留。
 可信进入点击／画布按下解锁Web Audio并缓存同源媒体；短音效最多4声部，整组层预留和优先级保护成功反馈。未解锁／未就绪／暂停／失败即丢弃，无恢复补声；同帧失焦重捕获也清待播。BGM仍为官方愁铃客发行录音《惊惧一夜》，单循环另计，暂停保存位置；不是已恢复的原bank分轨／阶段切换。原生播放为空操作，无新增平台音频依赖。完整来源和混音边界见[动作与音效契约](../.trellis/spec/client/naraka-motion.md)。
 `window.kivaEnemies.takeMode()` 返回并清空待处理模式（0=无、1=靶子、2=实战），`render(mode)` 显示 Rust 当前模式；模式请求在固定循环前处理，不受暂停门控。
 输入桥提供 isActive／takeLook／keys／takeActions／takeDefenseEdges／ready；精确位掩码和有序 Pressed／Released／Cancelled 见 [.trellis/spec/client/input.md](../.trellis/spec/client/input.md)。垂直输入不再调整落点；滚轮不切换人格。

@@ -40,6 +40,15 @@ class OriginalAudioContract(unittest.TestCase):
             identities.append({s["source_id"] for s in sounds})
         self.assertFalse(identities[0] & identities[1] | identities[1] & identities[2])
 
+    def test_selected_successful_dodge_retains_original_soul_dodge_variants(self):
+        event = self.manifest["events"]["move_soul_dodge_1p"]
+        self.assertEqual(event["bank"], "move_soul")
+        self.assertEqual(len(event["layers"]), 1)
+        layer = event["layers"][0]
+        self.assertEqual(layer["delay"], 0)
+        self.assertEqual([s["source_id"] for s in layer["sounds"]], [56972138, 71696684, 374972779])
+        self.assertTrue(all(abs(s["weight"] - 1 / 3) < 1e-8 for s in layer["sounds"]))
+
     def test_original_landing_keeps_both_actions_and_actual_delay(self):
         layers = self.manifest["events"]["move_jump_land"]["layers"]
         self.assertEqual([l["original_delay_ms"] for l in layers], [100, 0])

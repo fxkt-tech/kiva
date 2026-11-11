@@ -342,6 +342,32 @@
         }
       ]
     },
+    "naraka_dodge_success": {
+      "priority": 3,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-56972138.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            },
+            {
+              "file": "naraka-71696684.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            },
+            {
+              "file": "naraka-374972779.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
     "naraka_step": {
       "priority": 0,
       "offset": 0,

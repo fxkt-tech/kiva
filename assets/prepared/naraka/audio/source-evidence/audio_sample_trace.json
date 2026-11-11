@@ -4336,6 +4336,105 @@
         "ogg_bytes": 19386,
         "ogg_sha256": "a94dd05dc88fa360c2b888ea2d56c21efd23d220f0b0f591d87ada62527e7133"
       }
+    },
+    {
+      "event": "move_soul_dodge_1p",
+      "event_id": 1121656456,
+      "bank": "move_soul",
+      "bank_id": 1372756092,
+      "bank_sha256": "9eaa12a2a6fa2bc3a755199d5e9df8fc53bffb69bb47736920841d40b514c900",
+      "bank_entry": {
+        "section": "banks",
+        "id": 1372756092,
+        "alignment": 4096,
+        "bytes": 316505,
+        "offset": 129290240,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor1.pck",
+        "file_bytes": 434934120,
+        "header_bytes": 5000,
+        "header_sha256": "a426fa8a87758df6c11a2f8305ceb9992be256bdaa34442d6bb8b3239fe6ec11"
+      },
+      "event_record_offset": 11105018,
+      "event_record_bytes": 100,
+      "event_record_sha256": "953e3241c3701b589edea2a5786c7c0201e6d1c7d7543517745153f916af54a3",
+      "paths": [
+        {
+          "action_id": 70147766,
+          "play_action_type": 1027,
+          "target_id": 609382922,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 609382922,
+              "type": 5,
+              "tail": {
+                "offset": 59,
+                "children": [
+                  71331033,
+                  321089418,
+                  952484990
+                ],
+                "playlist": [
+                  {
+                    "id": 952484990,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 71331033,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 321089418,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            71331033,
+            321089418,
+            952484990
+          ],
+          "action_body_hex": "03040a725224000000047c98d251"
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 71331033,
+          "source_id": 56972138,
+          "source_sha256": "86208634e662f8aeebc8494f802a02a2955cc0028248f794f974aafdb6c32789",
+          "source_bytes": 19726,
+          "physical_offset": 129290464,
+          "bank_data_offset": 224,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 321089418,
+          "source_id": 71696684,
+          "source_sha256": "f4de978bbdc12bd12c92a7a107c796d63f9755aed7998f5f3ff2d8d9d4df4488",
+          "source_bytes": 19559,
+          "physical_offset": 129310192,
+          "bank_data_offset": 19952,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 952484990,
+          "source_id": 374972779,
+          "source_sha256": "81735bc633894b1f2f8f47e00df05bceeb7b63eb6ef6eb533da20171f856c72c",
+          "source_bytes": 24601,
+          "physical_offset": 129472432,
+          "bank_data_offset": 182192,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "note": "User-selected event for Kiva successful dodge; original PVP mapping unproven."
     }
   ]
 }
