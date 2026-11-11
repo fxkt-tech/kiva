@@ -1510,3 +1510,69 @@ Packaged exact official Choulingke soundtrack and fully traced original shared p
 ### Next Steps
 
 - 随后推送origin/main并核对远端与干净工作区；硬件GPU及已有适配限制继续跟踪。
+
+
+## Session 45: 交付永劫三段动作、音效与模型检查接入
+<!-- trellis-session: v=2 fp=af5b25865c38367c -->
+
+**Date**: 2026-11-11
+**Task**: 交付永劫三段动作、音效与模型检查接入
+**Branch**: `main`
+
+### Summary
+
+main工作区实现44段原生Humanoid转换、三段普通连击、分阶段防御/通用动作、16cue/48原音效与共享模型检查。独立修复闪避竞争、取消epoch、部分层下陷和旧弹反尾势恢复。代码与硬件验收通过，未提交或推送。
+
+### Main Changes
+
+- 保留真实原对象/原生capture/独立参考与portable verify，源f2/求值器f1及Kiva补指层边界明确；canonical规范与架构/README已同步。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] make check:297 Rust单测+9地形+105 Node；WASM Clippy；动画20/音频10测试及完整verify/repackage；Trunk与Windows Edge/NVIDIA 45场景、48音频解码通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 等待用户提交/推送指令；当前5个任务implementation_complete，未归档；完整交付见 .trellis/tasks/11-11-naraka-presentation/integration-report.md。
+
+
+## Session 46: 提交永劫动作音效交付并归档任务
+<!-- trellis-session: v=2 fp=7c3aaa62ee3d747c -->
+
+**Date**: 2026-11-11
+**Task**: 提交永劫动作音效交付并归档任务
+**Branch**: `main`
+
+### Summary
+
+用户明确授权提交&推送。已将已验收的永劫动作、三段连击、音效和共享查看页提交main，归档本次五个任务并修正归档context路径；日志纳入同批推送。
+
+### Main Changes
+
+- 功能提交 a38ef03；全部五项task记录工作提交身份并标completed，未清理此前无关任务或其它工作树。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a38ef03aab6bb68caba25a74bcc194f9c8414986` | feat: add Naraka combat animations and audio |
+
+### Testing
+
+- [OK] 复用同一冻结代码已通过的make check/WASM Clippy、离线动画和音效验证、Trunk与NVIDIA浏览器验收；当前运行时代码未变，暂存diff检查及全部归档context验证通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 查看交付记录 .trellis/tasks/archive/2026-11/11-11-naraka-presentation/integration-report.md。
