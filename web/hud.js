@@ -12,8 +12,8 @@
   const number = value => Math.ceil(nonnegative(value)).toLocaleString("en-US");
   const node = id => document.getElementById(id);
   const sets = Object.freeze({
-    1: { melee: "伏浪锚", kind: "锤子", ranged: "引冰落", meleeIcon: "hammer", rangedIcon: "musket", starter: "锤击 · 范围击飞", remote: "白灵淼 · 单发引冰落", finisher: "妹妹三枪", condition: "锤 E 原目标浮空时按 Tab" },
-    2: { melee: "谪星·摧山", kind: "链斧", ranged: "羿之影", meleeIcon: "axe", rangedIcon: "bow", starter: "链斧横扫 · 减速", remote: "白灵淼 · 射出链斧", finisher: "拉近 · 妹妹三箭", condition: "弓 Q 成功僵直原目标后按 Tab" },
+    1: { melee: "伏浪锚", kind: "锤子", ranged: "引冰落", skillLabels: ["锤", "铳"], starter: "锤击 · 范围击飞", remote: "白灵淼 · 单发引冰落", finisher: "妹妹三枪", condition: "锤 E 原目标浮空时按 Tab" },
+    2: { melee: "谪星·摧山", kind: "链斧", ranged: "羿之影", skillLabels: ["斧", "弓"], starter: "链斧横扫 · 减速", remote: "白灵淼 · 射出链斧", finisher: "拉近 · 妹妹三箭", condition: "弓 Q 成功僵直原目标后按 Tab" },
   });
 
   function text(id, value) {
@@ -41,8 +41,8 @@
     bar.value = Math.min(1, nonnegative(fraction));
     bar.setAttribute("aria-valuetext", `${number(current)} / ${number(maximum)}`);
   }
-  function icon(id, name) {
-    attribute(id, "href", `#hud-icon-${name}`);
+  function style(id, name, value) {
+    node(id)?.style.setProperty(name, value);
   }
 
   function paint() {
@@ -51,59 +51,47 @@
     const alive = latest.health > 0;
     text("hud-persona", latest.persona);
     text("hud-weapon", latest.weapon);
-    text("hud-health", number(latest.health));
-    text("hud-health-max", number(loadout.maximum));
     progress("hud-health-bar", latest.fraction, latest.health, loadout.maximum);
     text("hud-status", latest.context);
 
     const selected = alive ? target : null;
     hidden("hud-target", !selected);
     text("hud-target-name", selected?.name || "");
-    text("hud-target-status", selected?.status || "");
-    text("hud-target-health", number(selected?.health));
-    text("hud-target-max", number(selected?.maximum));
     progress("hud-target-bar", selected ? selected.health / selected.maximum : 0, selected?.health, selected?.maximum);
 
-    text("hud-skill-caption", set.starter);
-    text("hud-melee-name", set.melee);
-    text("hud-melee-caption", resources.axeAway ? "链斧 · 回收中" : "哥哥 · 左键 / E");
-    attribute("hud-melee", "aria-label", `近战武器 · ${set.melee} · ${set.kind}${resources.axeAway ? " · 回收中" : ""}`);
-    attribute("hud-melee", "title", `${set.melee} · ${set.kind}`);
-    text("hud-ranged-name", set.ranged);
-    icon("hud-melee-icon", set.meleeIcon);
-    icon("hud-ranged-icon", set.rangedIcon);
-    icon("hud-start-icon", set.meleeIcon);
-    icon("hud-combo-icon", set.rangedIcon);
-    for (const [id, active] of [["hud-melee", !resources.axeAway], ["hud-ranged", true], ["hud-pair1", loadout.set === 1], ["hud-pair2", loadout.set === 2]]) {
+    text("hud-start-label", set.skillLabels[0]);
+    text("hud-ranged-skill-label", set.skillLabels[1]);
+    text("hud-combo-label", "联动");
+    for (const [id, pair] of [["hud-pair1", 1], ["hud-pair2", 2]]) {
+      const active = loadout.set === pair;
       toggle(id, "active", active);
       attribute(id, "aria-current", active);
+      attribute(id, "aria-label", `套装 ${pair} · ${sets[pair].melee} / ${sets[pair].ranged}${active && resources.axeAway ? " · 回收中" : ""}`);
     }
 
     progress("hud-stamina-bar", resources.maximum > 0 ? resources.stamina / resources.maximum : 0, resources.stamina, resources.maximum);
-    text("hud-stamina", number(resources.stamina));
-    text("hud-stamina-max", number(resources.maximum));
-    text("hud-ranged-caption", set.remote);
-    icon("hud-ranged-skill-icon", set.rangedIcon);
-    for (const [id, cooldownId, cooldown, available, key, caption] of [
-      ["hud-skill-start", "hud-cooldown", resources.melee, loadout.melee, "E", set.starter],
-      ["hud-skill-ranged", "hud-ranged-cooldown", resources.ranged, loadout.ranged, "Q", set.remote],
+    // These are the current simulation cooldown durations (combat.rs); no Web clock.
+    for (const [id, cooldown, total, available, key, caption] of [
+      ["hud-skill-start", resources.melee, 3, loadout.melee, "E", set.starter],
+      ["hud-skill-ranged", resources.ranged, 4, loadout.ranged, "Q", set.remote],
     ]) {
-      text(cooldownId, cooldown.toFixed(1));
-      hidden(cooldownId, cooldown <= 0);
-      toggle(id, "cooling", cooldown > 0);
+      text(`${id}-time`, cooldown > 0 ? `${cooldown.toFixed(1)}s` : "");
+      toggle(id, "cooling", alive && cooldown > 0);
+      style(id, "--cooldown-fill", `${Math.max(0, 1 - cooldown / total) * 100}%`);
       ready(id, alive && available && cooldown <= 0);
       const restriction = !alive ? "倒地中不可用" : cooldown > 0 ? `冷却 ${cooldown.toFixed(1)}s` : !available ? "当前条件不可用" : "就绪";
       attribute(id, "title", `${key} · ${caption} · ${restriction}`);
       attribute(id, "aria-label", `${key} · ${caption} · ${restriction}`);
     }
-    ready("hud-skill-attack", alive && loadout.attack && !resources.axeAway);
-    ready("hud-skill-guard", alive && loadout.guard);
     ready("hud-skill-combo", alive && loadout.combo && latest.combo > 0);
-    const defenseLabels = ["按下拆招 · 长按防御 · 松开弹反", "拆招窗口", "等待防御", "防御中", "弹反窗口"];
-    attribute("hud-skill-guard", "aria-label", `右键 · ${defenseLabels[resources.defense]}`);
-    toggle("hud-skill-guard", "active", resources.defense > 0);
-    attribute("hud-skill-combo", "title", `Tab · ${set.finisher} · ${set.condition}`);
-    attribute("hud-skill-combo", "aria-label", `Tab · ${set.finisher} · ${set.condition}`);
+    attribute("hud-skill-combo", "title", `Tab · 联动 · ${set.finisher} · ${set.condition}`);
+    attribute("hud-skill-combo", "aria-label", `Tab · 联动 · ${set.finisher} · ${set.condition}`);
+    // Reserved UI: simulation does not yet own energy, durability or rage values.
+    for (const id of ["hud-ranged-energy-bar", "hud-melee-energy-bar", "hud-rage-value-bar"]) {
+      progress(id, 0, 0, 100);
+    }
+    style("hud-rage-value", "--rage-fraction", "0");
+    ready("hud-skill-rage", false);
 
     const hasCombo = alive && latest.combo > 0;
     hidden("hud-combo", !hasCombo);
