@@ -1,6 +1,6 @@
 //! Named, anatomical finger transfer. Palette data and inverse binds stay intact.
 use super::super::animation::SourcePose;
-use super::{Part, SourceAnimationLibrary, SourceBone};
+use super::{Part, SourceAnimationLibrary, SourceBone, SourceRig};
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -50,7 +50,7 @@ fn bone_index(bones: &[SourceBone], name: &str) -> Option<usize> {
 
 /// Merge only matching native-rest metadata, not palette indices. Some skins
 /// omit an unweighted parent although another surface retains the same joint.
-pub(super) fn bind_parts(parts: &mut [Part], library: &SourceAnimationLibrary) {
+pub(super) fn bind_parts(parts: &mut [Part], library: &SourceAnimationLibrary, original: bool) {
     let mut rest: HashMap<String, Option<Mat4>> = HashMap::new();
     for part in parts.iter().filter(|part| !part.blade) {
         for bone in &part.bones {
@@ -62,8 +62,29 @@ pub(super) fn bind_parts(parts: &mut [Part], library: &SourceAnimationLibrary) {
             }
         }
     }
-    for part in parts.iter_mut().filter(|part| !part.blade) {
-        bind(&mut part.bones, &rest, library);
+    if original {
+        // The native Chou hierarchy supplies true unweighted reference joints
+        // omitted from individual rendered palettes; no target joint is added.
+        for side in ["L", "R"] {
+            for digit in 0..5 {
+                let name = format!("Bip001 {side} Finger{digit}Nub");
+                if let Some(index) = library.bone(&name) {
+                    rest.entry(name).or_insert(Some(library.rest_model[index]));
+                }
+            }
+        }
+    }
+    for rig in [SourceRig::Yanyun, SourceRig::Naraka] {
+        let Some(source) = library.for_rig(rig) else {
+            continue;
+        };
+        // The matching original rig retains its full native palette channels.
+        if original && rig == SourceRig::Yanyun {
+            continue;
+        }
+        for part in parts.iter_mut().filter(|part| !part.blade) {
+            bind(&mut part.bones, &rest, source, original);
+        }
     }
 }
 
@@ -73,7 +94,10 @@ fn bind(
     bones: &mut [SourceBone],
     rest: &HashMap<String, Option<Mat4>>,
     library: &SourceAnimationLibrary,
+    original: bool,
 ) {
+    let target_prefix = if original { "Bip001" } else { "gMan" };
+    let source_prefix = library.rig().prefix();
     let target_rest = |name: &str| {
         bone_index(bones, name)
             .map(|index| bones[index].bind)
@@ -82,16 +106,16 @@ fn bind(
     let mut bindings = Vec::new();
     for side in ["L", "R"] {
         let target_names = [
-            format!("gMan {side} Hand"),
-            format!("gMan {side} Finger1"),
-            format!("gMan {side} Finger2"),
-            format!("gMan {side} Finger4"),
+            format!("{target_prefix} {side} Hand"),
+            format!("{target_prefix} {side} Finger1"),
+            format!("{target_prefix} {side} Finger2"),
+            format!("{target_prefix} {side} Finger4"),
         ];
         let source_names = [
-            format!("Bip001 {side} Hand"),
-            format!("Bip001 {side} Finger1"),
-            format!("Bip001 {side} Finger2"),
-            format!("Bip001 {side} Finger4"),
+            format!("{source_prefix} {side} Hand"),
+            format!("{source_prefix} {side} Finger1"),
+            format!("{source_prefix} {side} Finger2"),
+            format!("{source_prefix} {side} Finger4"),
         ];
         let Some(target_matrices) = target_names
             .iter()
@@ -121,9 +145,9 @@ fn bind(
         let own_palm_in_hand = Transform::from_matrix(target_hand).rotation.inverse() * own_frame;
         for digit in 0..5 {
             let names = [
-                format!("gMan {side} Finger{digit}"),
-                format!("gMan {side} Finger{digit}1"),
-                format!("gMan {side} Finger{digit}2"),
+                format!("{target_prefix} {side} Finger{digit}"),
+                format!("{target_prefix} {side} Finger{digit}1"),
+                format!("{target_prefix} {side} Finger{digit}2"),
             ];
             let Some(targets) = names
                 .iter()
@@ -133,10 +157,9 @@ fn bind(
                 continue;
             };
             let source_names = [
-                format!("Bip001 {side} Finger{digit}"),
-                format!("Bip001 {side} Finger{digit}1"),
-                format!("Bip001 {side} Finger{digit}2"),
-                format!("Bip001 {side} Finger{digit}Nub"),
+                format!("{source_prefix} {side} Finger{digit}"),
+                format!("{source_prefix} {side} Finger{digit}1"),
+                format!("{source_prefix} {side} Finger{digit}2"),
             ];
             let Some(sources) = source_names
                 .iter()
@@ -179,9 +202,27 @@ fn bind(
                     targets[link - 1]
                 };
                 let source_bind = library.rest_model[sources[link]];
-                let source_forward = source_points[link + 1] - source_points[link];
+                let source_forward = if link < 2 {
+                    source_points[link + 1] - source_points[link]
+                } else if let Some(nub) =
+                    library.bone(&format!("{source_prefix} {side} Finger{digit}Nub"))
+                {
+                    library.rest_model[nub].w_axis.xyz() - source_points[link]
+                } else {
+                    // Native Naraka donor links and distal-weighted mesh vertices
+                    // point -X; glTF target links point +X. Derive the terminal
+                    // native direction from the actual preceding child offset.
+                    let previous = Transform::from_matrix(library.rest_model[sources[link - 1]]);
+                    let native_axis = previous.rotation.inverse()
+                        * (source_points[link] - source_points[link - 1]);
+                    Transform::from_matrix(source_bind).rotation * native_axis
+                };
                 let own_forward = if link < 2 {
                     own_points[link + 1] - own_points[link]
+                } else if let Some(nub) =
+                    target_rest(&format!("{target_prefix} {side} Finger{digit}Nub"))
+                {
+                    nub.w_axis.xyz() - own_points[link]
                 } else {
                     // Both actual gMan palettes put the preceding child links
                     // on native +X; distal-weighted vertices extend +X too.
@@ -223,7 +264,10 @@ fn bind(
         }
     }
     for (index, binding) in bindings {
-        bones[index].finger = Some(binding);
+        match library.rig() {
+            SourceRig::Yanyun => bones[index].finger = Some(binding),
+            SourceRig::Naraka => bones[index].naraka_finger = Some(binding),
+        }
     }
 }
 
@@ -284,6 +328,7 @@ pub(super) fn references(
     original: bool,
     library: &SourceAnimationLibrary,
 ) -> [Option<GripReference>; 2] {
+    let source_prefix = library.rig().prefix();
     ["R", "L"].map(|side| {
         let prefix = if original { "Bip001" } else { "gMan" };
         let names = [
@@ -309,10 +354,10 @@ pub(super) fn references(
             bones[3].bind.w_axis.xyz(),
         ])?;
         let source_names = [
-            format!("Bip001 {side} Hand"),
-            format!("Bip001 {side} Finger1"),
-            format!("Bip001 {side} Finger2"),
-            format!("Bip001 {side} Finger4"),
+            format!("{source_prefix} {side} Hand"),
+            format!("{source_prefix} {side} Finger1"),
+            format!("{source_prefix} {side} Finger2"),
+            format!("{source_prefix} {side} Finger4"),
         ];
         let source_palm: Vec<_> = source_names
             .iter()

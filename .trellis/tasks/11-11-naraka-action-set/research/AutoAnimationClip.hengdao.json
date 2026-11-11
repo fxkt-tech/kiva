@@ -1,0 +1,631 @@
+{
+  "name": "AutoAnimationClip",
+  "source_path_id": -4321020800252306852,
+  "source_file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AutoAnimationClip.bytes",
+  "source_sha256": "c3ee419723bfde5d2fb3ca642de005c032f35bbc9d52685548a2ecd02265f07b",
+  "decoded_sha256": "368ae20157edf00f265919d95c6df6ab2c6013d3c9f3ec3014ed556b9f6ef6bb",
+  "decoded_bytes": 5843579,
+  "framing_verified": true,
+  "hits": [],
+  "tables": [
+    {
+      "name": "AutoAnimationClip_AnimClipInfo",
+      "offset": 118,
+      "end": 5843579,
+      "count": 75889,
+      "index_size": 910668
+    }
+  ],
+  "records": [
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -9066741994619227971,
+      "offset": 955384,
+      "end": 955449,
+      "bytes": 65,
+      "sha256": "87382872a40b5abe167089fbf069b4e885df9b510596b3facd30c24d3c5ae315",
+      "strings": [],
+      "raw_hex": "bdb09a8c31762c829a99993f00007040f9a05e4153859441e78c1a410000904000009040000000000000904001030000000000000000000000000090c000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -8768834964589686742,
+      "offset": 1038974,
+      "end": 1039039,
+      "bytes": 65,
+      "sha256": "659ecaf4cc718bbdf10a1acac674d4c03aa1eadea6435dca760cecef13ee75c0",
+      "strings": [],
+      "raw_hex": "2a509b190fd74e86eeee6e3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -8768716197763876240,
+      "offset": 1039039,
+      "end": 1039104,
+      "bytes": 65,
+      "sha256": "36c2871f59828da707578107d5a03d63e72427b4351e4af578cde11033b2fddb",
+      "strings": [],
+      "raw_hex": "70fa11a813434f86666606400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -7733817426291870983,
+      "offset": 1318929,
+      "end": 1318994,
+      "bytes": 65,
+      "sha256": "b283499fd1b7f0cef207e1ff4d0e2e741de58f2caa55e4669b544cab67db5e10",
+      "strings": [],
+      "raw_hex": "f9b225bc06f6ab94cecc4c3f000040400000404000000000000000009a9919409a991940000000009a991940010300000000000000000000009a99194001000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -7009609846461310697,
+      "offset": 1512304,
+      "end": 1512369,
+      "bytes": 65,
+      "sha256": "aed9a754011015b1c2611675b9833b940e7dd4dc454eeb42ef822d70a4f329bb",
+      "strings": [],
+      "raw_hex": "17d997affbdcb89eabaaaa3f1b9ede3dfe65bf3fda1bfc3dfe65bf3fe17a143ee17a143e00000000e17a143e0103000000e17a14be000000000000000000010000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -6982366598074764730,
+      "offset": 1520299,
+      "end": 1520364,
+      "bytes": 65,
+      "sha256": "3f2ffd1de8a3afdf2238da2b68dc87b7f7cfcc6a4b13b218bf92ae342a2e5b3e",
+      "strings": [],
+      "raw_hex": "467233be92a6199fcecc4c3f00008040000080400000000000000000cdcc4c40cdcc4c4000000000cdcc4c4001030000000000000000000000cdcc4c4000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -6853998457495239288,
+      "offset": 1553514,
+      "end": 1553579,
+      "bytes": 65,
+      "sha256": "4d5155c16d10b5266f904b67c0b2734dd4ced0eda681930ea3e435787740a677",
+      "strings": [],
+      "raw_hex": "88c5eb89b7b4e1a08988883f6666de3f74461b41211fe8400c931741c520e83fdcd7e93f00000000dcd7e93f010300000052499d3a00000000c520e83f00010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -6699309168958352370,
+      "offset": 1596999,
+      "end": 1597064,
+      "bytes": 65,
+      "sha256": "da63a4491679c608654d9aa99a208234ae0450a9e88ac0a44795cdb526eae508",
+      "strings": [],
+      "raw_hex": "0e54b827ce4507a3eeee6e3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -5973178706366328825,
+      "offset": 1788164,
+      "end": 1788229,
+      "bytes": 65,
+      "sha256": "02e617ae31a9398b6155f731936f242335684eb74c392b13f40641b0303452ee",
+      "strings": [],
+      "raw_hex": "07901b239d011bad000000400b24144062a16041560e4941e17ae24039458d4039458d400000000039458d400103000000cdcc8cc000000000ec51b8be00010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -5936985632209908248,
+      "offset": 1796549,
+      "end": 1796614,
+      "bytes": 65,
+      "sha256": "7481726604baaa014c98e2fafa41e433faad1ad324881275547c2c4756cdd880",
+      "strings": [],
+      "raw_hex": "e8cd87e305979bad000000400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -5850732316772566031,
+      "offset": 1819234,
+      "end": 1819299,
+      "bytes": 65,
+      "sha256": "d96701bb91fffe974e9e772df3e6c9c4600e405cfc9ee1bde1151dfa415f54b5",
+      "strings": [],
+      "raw_hex": "f17bdfd6f405ceae000000400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -5675420150642158945,
+      "offset": 1864994,
+      "end": 1865059,
+      "bytes": 65,
+      "sha256": "7d50a9bd281f48190847e26fabcb7f5e8fb85ff95ed1eda91f8d721436bc08e7",
+      "strings": [],
+      "raw_hex": "9f52e15171db3cb1cecc4c3f0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -5325423064563748598,
+      "offset": 1956969,
+      "end": 1957034,
+      "bytes": 65,
+      "sha256": "7fd9bb64692f384b49cf4fea1336f97858eaa646133dba54721d65768c63c2b6",
+      "strings": [],
+      "raw_hex": "0a710126f04b18b60200003f0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -3014384967960387943,
+      "offset": 2578239,
+      "end": 2578304,
+      "bytes": 65,
+      "sha256": "515e502f86c33493a72bb0767aaa58cb7cf5b196883cf2a5e5c96d006ed2f023",
+      "strings": [],
+      "raw_hex": "999e71b0d7c02ad6bcbb3b3f0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -2456353536337165099,
+      "offset": 2723449,
+      "end": 2723514,
+      "bytes": 65,
+      "sha256": "65ab25a8d88d0d1c74c0aea9fdd9a71e288f5f1771e5ebb4aa5ca73a17d2c2f3",
+      "strings": [],
+      "raw_hex": "d544d9177947e9dd9a99193f849ec9405316fb418e4631428716cf4113f2714013f271400000000013f271400103000000000000000000000013f2714000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -2156848892371406053,
+      "offset": 2806649,
+      "end": 2806714,
+      "bytes": 65,
+      "sha256": "c4273a4798e82754e851d562799f113db08335ddefc5f7fe1a3b7a2ed448f103",
+      "strings": [],
+      "raw_hex": "1bf301205c5511e24544843fc6dc3940a2b4bc410a68f441a2b4bc41bf0e4040bf0e404000000000bf0e404001030000000000000000000000bf0e404000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -1773184484833189704,
+      "offset": 2909349,
+      "end": 2909414,
+      "bytes": 65,
+      "sha256": "b870c61c2091b89a946f327207c4e6c77405da35c8126c360fd447d0fb12dde4",
+      "strings": [],
+      "raw_hex": "b8a048141b6264e778771740f931ee3fbbb8a741de718f414c377241cdcc8c402fdd8c40000000002fdd8c4001030000000000000000000000cdcc8c4000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -1714773002789871746,
+      "offset": 2926249,
+      "end": 2926314,
+      "bytes": 65,
+      "sha256": "9c4973cc219a14c5a0a50cbe12ba6a8b87f0636689cd0ffaecc3247ee5153beb",
+      "strings": [],
+      "raw_hex": "7e9f470a0ae733e8cecc4c3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -1496447932798548009,
+      "offset": 2984229,
+      "end": 2984294,
+      "bytes": 65,
+      "sha256": "cbcd8f64e853928731b6efe2bf3945932055479bed1b9aec7357c6e19ad399b9",
+      "strings": [],
+      "raw_hex": "d7c7ac9c888c3bebabaaaa3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001010000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -1344016499691025894,
+      "offset": 3027194,
+      "end": 3027259,
+      "bytes": 65,
+      "sha256": "325119c867add609a5d4c9c26018cca106782cf27f4a28ca9db081792c892319",
+      "strings": [],
+      "raw_hex": "1a0aa74b1d1859edcecc4c3f00008040000080400000000000000000cdcc4c40cdcc4c4000000000cdcc4c4001030000000000000000000000cdcc4c4001010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -1157658163030989343,
+      "offset": 3075099,
+      "end": 3075164,
+      "bytes": 65,
+      "sha256": "b7d575de6665533459a9648e8981dda56a06e14c1462edf12adb1c333fb61f80",
+      "strings": [],
+      "raw_hex": "e1e534c5082cefefa099993e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -1149137821482438992,
+      "offset": 3078154,
+      "end": 3078219,
+      "bytes": 65,
+      "sha256": "48b6117ed03cf618a1ff1ee8b8c3a3cc541ca0eacfc0abf6fff6589be1ec640f",
+      "strings": [],
+      "raw_hex": "b0ae92603d710df000000040e5d0023f61c399401d5a8c3fe4142d409fab1d3ffca9513f00000000fca9513f010300000000000000000000009fab1d3f00010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -972823533534658443,
+      "offset": 3124499,
+      "end": 3124564,
+      "bytes": 65,
+      "sha256": "ade67d2ec828e8424c6ad160afbf775ddd050f3ac92e16a5897112e2d08006dc",
+      "strings": [],
+      "raw_hex": "75c0868626d67ff2676606400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000000100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -941099826892008395,
+      "offset": 3133144,
+      "end": 3133209,
+      "bytes": 65,
+      "sha256": "44eb175749eaa8c33d23cf26bfd0bbaa3b2e6eb9925a94663b8771357eadeb6a",
+      "strings": [],
+      "raw_hex": "3594eb8fb18af0f28b88883e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -676223839680780578,
+      "offset": 3202109,
+      "end": 3202174,
+      "bytes": 65,
+      "sha256": "a678d2dc2d25cd3db893b5580cf53bbff911805fef32e445f412baafb04b31f3",
+      "strings": [],
+      "raw_hex": "de262d2700929df61111913f0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000000100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -357808134810743248,
+      "offset": 3287389,
+      "end": 3287454,
+      "bytes": 65,
+      "sha256": "98053ba5ead87427b0aeb293390342377ce65d7540b5f15ece2b2a48a8b792ed",
+      "strings": [],
+      "raw_hex": "304edcaa65cf08fbabaaaa3f0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -302033010424122116,
+      "offset": 3302599,
+      "end": 3302664,
+      "bytes": 65,
+      "sha256": "8bf3e395d7858fa6f621a7c72efbcce4805c7673e0aff48cd3f8120b707d0214",
+      "strings": [],
+      "raw_hex": "fc743ac793f6cefb00000040e5d0023f61c399401d5a8c3fe4142d409fab1d3ffca9513f00000000fca9513f010300000000000000000000009fab1d3f00010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -73306622312694773,
+      "offset": 3361944,
+      "end": 3362009,
+      "bytes": 65,
+      "sha256": "078e43e5878d2f76a60047be8b803d69d8e50eccfebdea825005acefe538d312",
+      "strings": [],
+      "raw_hex": "0b3c5ef10390fbfe8988883f0000c03f0000c03f0000000000000000cdcccc3fcdcccc3f00000000cdcccc3f01030000000000000000000000cdcccc3f01000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": -2926344184486999,
+      "offset": 3382224,
+      "end": 3382289,
+      "bytes": 65,
+      "sha256": "9136ebb613ef1e181e9454ebe6e5d4d2f88d6da0ce0a8eb828a7f086b5906b5a",
+      "strings": [],
+      "raw_hex": "a9a36466819af5ff000000400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 277447385844874082,
+      "offset": 3458989,
+      "end": 3459054,
+      "bytes": 65,
+      "sha256": "131db08aa26e688ec2592b4a8ae417a42a8f7de7590b58f866b500fc7c4e679f",
+      "strings": [],
+      "raw_hex": "62fb246dedb0d903abaaaa3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 725140508479842980,
+      "offset": 3578199,
+      "end": 3578264,
+      "bytes": 65,
+      "sha256": "6d5ace05f97922d3e934c72289a2bab63437b3d0ba8826b2d9d39bb381c36d0b",
+      "strings": [],
+      "raw_hex": "a4ea2f547337100a000000400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 832848741492067877,
+      "offset": 3606474,
+      "end": 3606539,
+      "bytes": 65,
+      "sha256": "7b887d427885750f4efabf57ec453ed70376ee092227ab798e949e03a50dd0dd",
+      "strings": [],
+      "raw_hex": "250e448c84df8e0b9a99993f000000400000004000000000000000009a9919409a991940000000009a991940010300000000000000000000009a99194001010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 833837363152521925,
+      "offset": 3606669,
+      "end": 3606734,
+      "bytes": 65,
+      "sha256": "2dab9abcf3d888bce163b97f322b8ae6cd52757d657456d810131a84b389e589",
+      "strings": [],
+      "raw_hex": "c58a27f7a962920bdeddad4017d94e3eaa60b43f5f070e3ef706af3ffb3a503ffb3a503f00000000fb3a503f010300000048502cbf0000000095d4e93e00000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 1241835622462637356,
+      "offset": 3718469,
+      "end": 3718534,
+      "bytes": 65,
+      "sha256": "d1cbe2f00c7a76baf86a2879070283775a5c7281dfecc9dc1d7441a1fdac0348",
+      "strings": [],
+      "raw_hex": "2cc54f4aebe23b11cecccc3f0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 1613314202885964955,
+      "offset": 3818959,
+      "end": 3819024,
+      "bytes": 65,
+      "sha256": "36e85fb9ab41f65d8bbab1240079543467c2fa3499d63b7e53bc02aea9e7bbe1",
+      "strings": [],
+      "raw_hex": "9b441c46b8a46316abaaaa3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 1859218536553332314,
+      "offset": 3885909,
+      "end": 3885974,
+      "bytes": 65,
+      "sha256": "3f79048851bf54e953b77e321dc39f3d1d0415576756dbb72dccee06b332d5aa",
+      "strings": [],
+      "raw_hex": "5a3e158f6845cd196766a640d6566c3d228e653f2cd41a3d5839243f9a99993e9a99993e000000009a99993e01030000009a9999be000000000000000000000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 1937920540847482965,
+      "offset": 3905929,
+      "end": 3905994,
+      "bytes": 65,
+      "sha256": "16692beb9e0e82aec429272f77cf76d91e94626713975212a30283973a723440",
+      "strings": [],
+      "raw_hex": "55a825e076e0e41a454404400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 2243894325608747572,
+      "offset": 3986139,
+      "end": 3986204,
+      "bytes": 65,
+      "sha256": "1e4232a063d9364c2e8da6ecdc2aa62495d2f3ba14e6d82af0eb0891da3ba415",
+      "strings": [],
+      "raw_hex": "34926c1f00ea231fabaaaa3f0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3021827027505079612,
+      "offset": 4192579,
+      "end": 4192644,
+      "bytes": 65,
+      "sha256": "9f2edcfedca3a227d16c3b7a99b1fb97bd6e96f011fab116a0cd0928e7ba3cfa",
+      "strings": [],
+      "raw_hex": "3c651dd3abafef29abaaaa3f3ee8d93e0de03540158c1a3f524925402041113f2041113f000000002041113f010300000000000000000000002041113f00010000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3053751619997389204,
+      "offset": 4200639,
+      "end": 4200704,
+      "bytes": 65,
+      "sha256": "6645af9e6f68e1036d220a3ebdb051a57290098b1c403673a6143f86acf53ca2",
+      "strings": [],
+      "raw_hex": "94d1373eeb1a612aabaaaa3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001010000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3206623848394971940,
+      "offset": 4241589,
+      "end": 4241654,
+      "bytes": 65,
+      "sha256": "54d4fbc129903310da760e496ee61c00f743fdf3551e5b0ffc5e4f143946133c",
+      "strings": [],
+      "raw_hex": "24dbe0936637802c00000040cdcc0c408a1f22418bfd3441b3ea9540cdcc8c40cdcc8c4000000000cdcc8c4001030000000000000000000000cdcc8cc000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3280243551440692467,
+      "offset": 4260569,
+      "end": 4260634,
+      "bytes": 65,
+      "sha256": "e020707fd60a02d56449204f33a0e778dff62d32935f3a8622a04d42d3a64cf3",
+      "strings": [],
+      "raw_hex": "f364636c21c4852d000080400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3369801715864269538,
+      "offset": 4286309,
+      "end": 4286374,
+      "bytes": 65,
+      "sha256": "5693be9c88a8a87566b2563567949086f3203f934cc0a03525248a8c369cdc21",
+      "strings": [],
+      "raw_hex": "e272977dcef0c32e0100803fdfe0e340ba49944171bd1342ce882f41d881e340d881e34000000000d881e34001030000005af5393e00000000006fe34000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3497094335640433969,
+      "offset": 4323684,
+      "end": 4323749,
+      "bytes": 65,
+      "sha256": "0355d3d42c42b486334aec46f721aa2f9df1241adf98605fb8d52ed4f047e266",
+      "strings": [],
+      "raw_hex": "31f5e015c52c8830abaaea3f5b428a404861d741818434424f1e7441a69bfa40ef38fb4000000000ef38fb40010300000033c4b1bc00000000a69bfa4000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3509953257450743559,
+      "offset": 4327324,
+      "end": 4327389,
+      "bytes": 65,
+      "sha256": "6ba81a797d89add221ba099a489e768263dce3fbdcfea3511aec9b2de7de2b97",
+      "strings": [],
+      "raw_hex": "07a79320e4dbb5309e99193f0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000000100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3855928821648296884,
+      "offset": 4420469,
+      "end": 4420534,
+      "bytes": 65,
+      "sha256": "6768aa9b3dfa4e628fbf3c5fd232981ce3edae4f5932152fef6137df53404adc",
+      "strings": [],
+      "raw_hex": "b48b896dd50283350000004005c51340d65657413b7039412fddc44091ed8c4091ed8c400000000091ed8c400103000000eeeb8c40000000000d712cbd00010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3882569679290879872,
+      "offset": 4427359,
+      "end": 4427424,
+      "bytes": 65,
+      "sha256": "486685836106150be2589ed25455b5edc3d4d7b66255b3799b23ee447c20cbd5",
+      "strings": [],
+      "raw_hex": "80cfd5758da8e135acaaaa3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 3981416755267820307,
+      "offset": 4452449,
+      "end": 4452514,
+      "bytes": 65,
+      "sha256": "d4831c45c9f36f5561e6bed596ad8c705ef256b1505a2e2982aae909eb8daf54",
+      "strings": [],
+      "raw_hex": "13db86c871d54037abaaaa3e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 4424985400778611470,
+      "offset": 4569449,
+      "end": 4569514,
+      "bytes": 65,
+      "sha256": "40f761b155c037e0a73c1f776def8772dd6901b4cc0689f743460b4ebd7c900f",
+      "strings": [],
+      "raw_hex": "0edbb205c7b4683d9a99993f0000704046b66341b82f9641849e0a4100009040000090400000000000009040010300000000009040000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 4710753338464209823,
+      "offset": 4645889,
+      "end": 4645954,
+      "bytes": 65,
+      "sha256": "66763639fbd79c0125c20cd2b6834d11961091a32aba2fd651f642a3a5c3c782",
+      "strings": [],
+      "raw_hex": "9f0ba5e333f55f418a88883e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 5557727888580827533,
+      "offset": 4873909,
+      "end": 4873974,
+      "bytes": 65,
+      "sha256": "7f8f0a1e6c74cfbab093e51e614477afd56840488e2f7c289ad767af9cdba6df",
+      "strings": [],
+      "raw_hex": "8d59248d1104214d9a99993f3d2c704000006441ed9ebb416c782541000090401b0d9040000000001b0d9040010300000000000000000000000000904000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 5912011914820832311,
+      "offset": 4969199,
+      "end": 4969264,
+      "bytes": 65,
+      "sha256": "d852f79a50d3dc0d0a310c4cdf783734a08e11a903c423ce92a0c8655e095ee0",
+      "strings": [],
+      "raw_hex": "37ccc56a83af0b52343333400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 6037923027774469055,
+      "offset": 5003649,
+      "end": 5003714,
+      "bytes": 65,
+      "sha256": "5bb331ed2e26df4dca4e8b04c9f0b089777b923802f2848c48826d32a3ceb5f5",
+      "strings": [],
+      "raw_hex": "bff3a5e30003cb53cecc4c3f00008040000080400000000000000000cdcc4c40cdcc4c4000000000cdcc4c4001030000000000000000000000cdcc4c4000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 6343465959152232947,
+      "offset": 5083079,
+      "end": 5083144,
+      "bytes": 65,
+      "sha256": "efbd3231542cbecaab4a27aa06faed63c0799ba1754db024c477fe8c0399ccdc",
+      "strings": [],
+      "raw_hex": "f3290d44ae840858abaaaa3e6ea3694073d782409f3cac3ec807ed3f61c39b3f61c39b3f0000000061c39b3f0103000000000000000000000061c39b3f00010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 6912654595292732628,
+      "offset": 5230369,
+      "end": 5230434,
+      "bytes": 65,
+      "sha256": "0cbd285edf3d13f18e0da95549596c334094d641f28704cd27382edd6b9606f1",
+      "strings": [],
+      "raw_hex": "d41c65c7baaeee5f9a99993f0000704046b66341b82f9641849e0a41000090400000904000000000000090400103000000000090c0000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 7212066146076725179,
+      "offset": 5312984,
+      "end": 5313049,
+      "bytes": 65,
+      "sha256": "6fda064e71661b1617c32e0b720796eca224d3ca023a75293eff4face0846388",
+      "strings": [],
+      "raw_hex": "bb0f86ddf26716648a88883e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 7489651706005134909,
+      "offset": 5384874,
+      "end": 5384939,
+      "bytes": 65,
+      "sha256": "eec08ed51aaf7f292f81d452b28776392a51e17783411a49a8f022eedcd1e4ea",
+      "strings": [],
+      "raw_hex": "3d9ed5738b96f0674544443fb4c83e40567dde41d7125042bec1da41fe431240fe43124000000000fe43124001030000000000000000000000fe43124000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 7796594234084902001,
+      "offset": 5463459,
+      "end": 5463524,
+      "bytes": 65,
+      "sha256": "7c9133834fbf5ee6e032cdad64c00e47ba28b82a68d5e56deea0b6c570195929",
+      "strings": [],
+      "raw_hex": "71447dd42511336cf1ee6e3fe4146d3f52493041cff7a540ee7c1441a3015c3fa3015c3f00000000a3015c3f0103000000ed0d3ebb00000000a3015c3f00010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 8145157729665624767,
+      "offset": 5560309,
+      "end": 5560374,
+      "bytes": 65,
+      "sha256": "968fbb8b9ff6abf55eeb2c33fcf40918fe046b19869d54d4437bddd9400dccf4",
+      "strings": [],
+      "raw_hex": "bf2a3fdccc6909718b88883e0000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000000010100"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 8879375199977919466,
+      "offset": 5755244,
+      "end": 5755309,
+      "bytes": 65,
+      "sha256": "c6e6ccdbbcde41e34fb3d2bcd56eeb480ae2594de40985078fad240bfac13fee",
+      "strings": [],
+      "raw_hex": "ead3180eb3e0397b000000400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000000"
+    },
+    {
+      "table": "AutoAnimationClip_AnimClipInfo",
+      "key": 9205209900076681152,
+      "offset": 5838574,
+      "end": 5838639,
+      "bytes": 65,
+      "sha256": "9d3179c1353bce31e8d3d4770e32b206ee8ccf7a704cde1b693e1d767bab4487",
+      "strings": [],
+      "raw_hex": "c0c7fa00a279bf7f000000400000000000000000000000000000000000000000000000000000000000000000010300000000000000000000000000000001000100"
+    }
+  ]
+}

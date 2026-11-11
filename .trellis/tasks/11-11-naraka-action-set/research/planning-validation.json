@@ -1,0 +1,57 @@
+{
+  "status": "planning-only",
+  "task_artifacts_and_manifests": {
+    "11-11-naraka-action-set": {
+      "implement": 14,
+      "check": 16
+    },
+    "11-11-naraka-animation-assets": {
+      "implement": 5,
+      "check": 7
+    },
+    "11-11-naraka-audio-assets": {
+      "implement": 3,
+      "check": 5
+    },
+    "11-11-melee-three-stage": {
+      "implement": 6,
+      "check": 8
+    },
+    "11-11-naraka-presentation": {
+      "implement": 12,
+      "check": 14
+    }
+  },
+  "research_json_parsed": 52,
+  "research_python_syntax_parsed": 12,
+  "original_clip_objects_and_probe_hashes": 29,
+  "original_state_bridges": 85,
+  "different_gender_candidate_selection_unproven": 12,
+  "audio_events_with_first_variant_decoded": 17,
+  "first_variant_ogg_total_bytes": 378594,
+  "external_cache_files_verified": 28,
+  "external_cache_bytes": 82052824,
+  "product_code_or_runtime_assets_changed": false,
+  "product_tests_run": false,
+  "h0_native_humanoid_oracle_passed": false,
+  "default_finger_layer_blending_restored": false,
+  "browser_acceptance_performed": false,
+  "compact_evidence_replay": {
+    "animation-state-mapping.json": {
+      "sha256": "17f06bfe9e163b81db89f292de1887c6b4578bb60b04e47d34e80286cab7a44d",
+      "stable_after_script_regeneration": true
+    },
+    "combo-graph-hd-compact.json": {
+      "sha256": "94bb4c107c9acab27e441372c8ba846b3bbaeb30cd37b48cb4b79840d0cffc67",
+      "stable_after_script_regeneration": true
+    },
+    "animation-info-selected.json": {
+      "sha256": "bacd0729806f1d59d882a8438b7542fbd17c61cd8845b426370b414c400048e2",
+      "stable_after_script_regeneration": true
+    },
+    "audio-tracks-selected.json": {
+      "sha256": "5f3c26ec1f6370c5ccbfbb6a0ec7369cccdb8d337fd7b441f763bec52ed1930f",
+      "stable_after_script_regeneration": true
+    }
+  }
+}

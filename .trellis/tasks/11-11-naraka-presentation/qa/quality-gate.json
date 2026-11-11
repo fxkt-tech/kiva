@@ -1,0 +1,32 @@
+{
+  "utc": "2026-11-11T01:24:51.189321+00:00",
+  "reviewer": "naraka_stable_check",
+  "scope": "Final runtime tree after motion owner froze bow scope and permanent defense interruption fixes",
+  "checks": {
+    "make_check": {
+      "status": "passed",
+      "command": "make check",
+      "rust_unit_tests": 297,
+      "physics_terrain_tests": 9,
+      "node_tests": 105,
+      "includes": [
+        "cargo fmt --all -- --check",
+        "cargo clippy --locked --all-targets -- -D warnings",
+        "cargo test --locked",
+        "node --test scripts/*-unit.test.cjs",
+        "cargo check --locked --target wasm32-unknown-unknown"
+      ]
+    },
+    "wasm_clippy": {
+      "status": "passed",
+      "command": "cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings"
+    },
+    "diff_check": {
+      "status": "passed",
+      "command": "git diff --check"
+    }
+  },
+  "offline_animation": "Reused source worker final 20 tests and full 44-clip portable verify/repackage; independently reviewed implementation and original native evidence",
+  "offline_audio": "Reviewer executed 10 Python tests plus 48-media portable verify; passed",
+  "browser": "Owned by root; not implied by CPU/Node checks"
+}

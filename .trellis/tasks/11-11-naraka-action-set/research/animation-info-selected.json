@@ -1,0 +1,3174 @@
+[
+  {
+    "offset": 58440,
+    "end": 58499,
+    "name": "male_hengdao_dodge_back_double_01",
+    "hash_u64": 9380002079090323645,
+    "sha256": "cd752d1de60874c76eedc4acbf1349489557a0291c2a8e370240426824a99643",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 9380002079090323645
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 46,
+        "text": "male_hengdao_dodge_back_double_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "9a99993f",
+        "float": 1.2000000476837158
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 167292,
+    "end": 167349,
+    "name": "male_hengdao_jump_inplace_up_02",
+    "hash_u64": 9677909109119864874,
+    "sha256": "0c3299c4fe7b861dfd6407e80a371323dcb4c26c46aeb17c85d414204bcff5b1",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 9677909109119864874
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 44,
+        "text": "male_hengdao_jump_inplace_up_02"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 44,
+        "end": 49,
+        "hex": "efee6e3e",
+        "float": 0.23333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 167349,
+    "end": 167400,
+    "name": "male_sniper_ads_attack_01",
+    "hash_u64": 9678027875945675376,
+    "sha256": "f3a11a27bda648f41afe4f69ab2a725cc659950232dcf6d5e005f7c70a9608fd",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 9678027875945675376
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 38,
+        "text": "male_sniper_ads_attack_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 38,
+        "end": 43,
+        "hex": "66660640",
+        "float": 2.0999999046325684
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 43,
+        "end": 45,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 536503,
+    "end": 536555,
+    "name": "male_hengdao_crouch_run_01",
+    "hash_u64": 10712926647417680633,
+    "sha256": "c7ca3f92e635be947e65bbcc6028f4765e7d8d83c712435408da6435f2bffe83",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 10712926647417680633
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 39,
+        "text": "male_hengdao_crouch_run_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 39,
+        "end": 44,
+        "hex": "cdcc4c3f",
+        "float": 0.800000011920929
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 44,
+        "end": 46,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 792415,
+    "end": 792470,
+    "name": "male_hurt_stand_light_left_01",
+    "hash_u64": 11437134227248240919,
+    "sha256": "f2f2649a1228e65b6a57dca7565f712e4ed986aedffa626b909c4aa24f8aff1f",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 11437134227248240919
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 42,
+        "text": "male_hurt_stand_light_left_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 42,
+        "end": 47,
+        "hex": "abaaaa3f",
+        "float": 1.3333333730697632
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 802889,
+    "end": 802948,
+    "name": "male_hengdao_jump_down_to_land_05",
+    "hash_u64": 11464377475634786886,
+    "sha256": "f6996cd203e95c43dd8b1539aa5ed181c6f1a69c1ac58c9ae45fc8d61d243254",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 11464377475634786886
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 46,
+        "text": "male_hengdao_jump_down_to_land_05"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "cdcc4c3f",
+        "float": 0.800000011920929
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 845989,
+    "end": 846043,
+    "name": "male_hengdao_attack_light_02",
+    "hash_u64": 11592745616214312328,
+    "sha256": "c0c6e766de8a98c70dd72418aed7702f7be86e86dbe8a8634e4e3a045d77dcb1",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 11592745616214312328
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 41,
+        "text": "male_hengdao_attack_light_02"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 41,
+        "end": 46,
+        "hex": "8988883f",
+        "float": 1.0666667222976685
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 903322,
+    "end": 903379,
+    "name": "male_hengdao_jump_forward_up_02",
+    "hash_u64": 11747434904751199246,
+    "sha256": "33c0fa250109957c4b3a92050732549cceccc888de693986373f045fa090136f",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 11747434904751199246
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 44,
+        "text": "male_hengdao_jump_forward_up_02"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 44,
+        "end": 49,
+        "hex": "efee6e3e",
+        "float": 0.23333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 1155071,
+    "end": 1155123,
+    "name": "male_hengdao_dodge_left_01",
+    "hash_u64": 12473565367343222791,
+    "sha256": "4da5f0434b5d295a354b231e062431ba9b81b988a9fcd93cac92567a715b901a",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 12473565367343222791
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 39,
+        "text": "male_hengdao_dodge_left_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 39,
+        "end": 44,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 44,
+        "end": 46,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 1167074,
+    "end": 1167133,
+    "name": "male_bow_attack_01_charge_hold_01",
+    "hash_u64": 12509758441499643368,
+    "sha256": "36fba34a164e5c37beababb5b38ae0606d824bb22b54ed4c79e4f771a7b3f4cb",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 12509758441499643368
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 46,
+        "text": "male_bow_attack_01_charge_hold_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 1197216,
+    "end": 1197265,
+    "name": "male_sniper_ads_idle_01",
+    "hash_u64": 12596011756936985585,
+    "sha256": "331a820c213db685679e17ebe702e0de8a139cca35a7f8756581e311b49c6dd8",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 12596011756936985585
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 36,
+        "text": "male_sniper_ads_idle_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 36,
+        "end": 41,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 41,
+        "end": 43,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 43,
+        "end": 45,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 1258528,
+    "end": 1258584,
+    "name": "male_hengdao_jump_down_loop_01",
+    "hash_u64": 12771323923067392671,
+    "sha256": "7ef335d2a5e30ded6a9c1d1af06849e876e7dc98e72fd7a7456daed832868914",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 12771323923067392671
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 43,
+        "text": "male_hengdao_jump_down_loop_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 43,
+        "end": 48,
+        "hex": "cdcc4c3f",
+        "float": 0.800000011920929
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 1378277,
+    "end": 1378336,
+    "name": "male_hengdao_jump_forward_down_02",
+    "hash_u64": 13121321009145803018,
+    "sha256": "0789d1c320ceac8a1c164ad3b61150b02d01393ec6a3f9f0c12be4d21d8ad54b",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 13121321009145803018
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 46,
+        "text": "male_hengdao_jump_forward_down_02"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "0000003f",
+        "float": 0.5
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2197975,
+    "end": 2198034,
+    "name": "male_hengdao_jump_down_to_land_01",
+    "hash_u64": 15432359105749163673,
+    "sha256": "1b73fc6aae8e14a0fa834b7c0d8c43bcfc852345af1bedcfc0d6ab1897321f73",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 15432359105749163673
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 46,
+        "text": "male_hengdao_jump_down_to_land_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "bcbb3b3f",
+        "float": 0.7333333492279053
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2389147,
+    "end": 2389206,
+    "name": "male_hengdao_jump_down_to_land_04",
+    "hash_u64": 15990390537372386517,
+    "sha256": "e66d25a5c0fec67f60b06a955b874da3f66d852da565346df8dccbefc6e1dafb",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 15990390537372386517
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 46,
+        "text": "male_hengdao_jump_down_to_land_04"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "9a99193f",
+        "float": 0.6000000238418579
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2498512,
+    "end": 2498566,
+    "name": "male_hengdao_attack_light_03",
+    "hash_u64": 16289895181338145563,
+    "sha256": "6a021522b0ea0ee160178ff51a211c6791898b3e68bf0564e41e33fcced70663",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 16289895181338145563
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 41,
+        "text": "male_hengdao_attack_light_03"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 41,
+        "end": 46,
+        "hex": "4444843f",
+        "float": 1.0333333015441895
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2632878,
+    "end": 2632931,
+    "name": "male_hengdao_dodge_front_01",
+    "hash_u64": 16673559588876361912,
+    "sha256": "278705a1c136ffe9f8f8880d475daeaeb45ee0c72dc53ffef93d1310bd24b0f2",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 16673559588876361912
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 40,
+        "text": "male_hengdao_dodge_front_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 40,
+        "end": 45,
+        "hex": "77771740",
+        "float": 2.366666555404663
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2654562,
+    "end": 2654614,
+    "name": "male_bow_attack_aim_01_pre",
+    "hash_u64": 16731971070919679870,
+    "sha256": "6cbe75aae105b2d2f6728d791d09bd9d34c986284870d4046ba9c11f888eed04",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 16731971070919679870
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 39,
+        "text": "male_bow_attack_aim_01_pre"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 39,
+        "end": 44,
+        "hex": "cdcc4c3e",
+        "float": 0.20000000298023224
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 44,
+        "end": 46,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2730928,
+    "end": 2730985,
+    "name": "male_bow_finger_default_left_01",
+    "hash_u64": 16950296140911003607,
+    "sha256": "3359ba2788594e0cd67dbe49a8a4e7e3e0344b801b014642f38956e87771450c",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 16950296140911003607
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 44,
+        "text": "male_bow_finger_default_left_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 44,
+        "end": 49,
+        "hex": "abaaaa3e",
+        "float": 0.3333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2786677,
+    "end": 2786722,
+    "name": "male_hengdao_run_01",
+    "hash_u64": 17102727574018525722,
+    "sha256": "7bab124bc60effbb8aa4aba69d53ec6bb4a2c4be3a772c2b1ce9183c3a7d152e",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 17102727574018525722
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 32,
+        "text": "male_hengdao_run_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 32,
+        "end": 37,
+        "hex": "cdcc4c3f",
+        "float": 0.800000011920929
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 37,
+        "end": 39,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 39,
+        "end": 41,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 41,
+        "end": 43,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2851127,
+    "end": 2851182,
+    "name": "male_sniper_attack_01_recover",
+    "hash_u64": 17289085910678562273,
+    "sha256": "a580b710d3f93c6fa455e23c38e4702d1710a7eec9a2fb87cdd6dad46c7e82c7",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 17289085910678562273
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 42,
+        "text": "male_sniper_attack_01_recover"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 42,
+        "end": 47,
+        "hex": "9a99993e",
+        "float": 0.30000001192092896
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2854988,
+    "end": 2855035,
+    "name": "male_hengdao_shock_04",
+    "hash_u64": 17297606252227112624,
+    "sha256": "4326c78b81d20cc9f4df67bde02cdf37614a67a47f2f8c11dcf1667db7701498",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 17297606252227112624
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 34,
+        "text": "male_hengdao_shock_04"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 34,
+        "end": 39,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 39,
+        "end": 41,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 41,
+        "end": 43,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 43,
+        "end": 45,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2915658,
+    "end": 2915705,
+    "name": "male_sniper_attack_01",
+    "hash_u64": 17473920540174893173,
+    "sha256": "332cabe20c9f7d479bdac0637475fe014f2f0cfc544e5e53a1a8b29f2ebaca9b",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 17473920540174893173
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 34,
+        "text": "male_sniper_attack_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 34,
+        "end": 39,
+        "hex": "66660640",
+        "float": 2.0999999046325684
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 39,
+        "end": 41,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 41,
+        "end": 43,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 43,
+        "end": 45,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 2927087,
+    "end": 2927146,
+    "name": "male_hengdao_jump_inplace_down_01",
+    "hash_u64": 17505644246817543221,
+    "sha256": "8e6f6473d3b9e2ff62345f7dabd144d9d291a9c807e379b70ce304218db21f35",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 17505644246817543221
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 46,
+        "text": "male_hengdao_jump_inplace_down_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "8988883e",
+        "float": 0.2666666805744171
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3018843,
+    "end": 3018887,
+    "name": "male_bow_attack_01",
+    "hash_u64": 17770520234028771038,
+    "sha256": "f04595892712023a458307078b3f2f7974c2cf8b28c4a4dfeb4f658ee98bd113",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 17770520234028771038
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 31,
+        "text": "male_bow_attack_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 31,
+        "end": 36,
+        "hex": "1111913f",
+        "float": 1.1333333253860474
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 36,
+        "end": 38,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 38,
+        "end": 40,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 40,
+        "end": 42,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3130737,
+    "end": 3130793,
+    "name": "male_hurt_stand_light_right_01",
+    "hash_u64": 18088935938898808368,
+    "sha256": "3ff6642c18e11b62963f623f45ea5e226d49a5e9155bc94b031bea83c2422a43",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 18088935938898808368
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 43,
+        "text": "male_hurt_stand_light_right_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 43,
+        "end": 48,
+        "hex": "abaaaa3f",
+        "float": 1.3333333730697632
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3150650,
+    "end": 3150697,
+    "name": "male_hengdao_shock_01",
+    "hash_u64": 18144711063285429500,
+    "sha256": "fc769d8198133833b8828a468c023d52ccdaaa432eb6e4e02e796711fd5eb062",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 18144711063285429500
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 34,
+        "text": "male_hengdao_shock_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 34,
+        "end": 39,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 39,
+        "end": 41,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 41,
+        "end": 43,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 43,
+        "end": 45,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3228358,
+    "end": 3228416,
+    "name": "male_hengdao_crouch_promenade_01",
+    "hash_u64": 18373437451396856843,
+    "sha256": "be2ab1c3a6e2ddfd1e9916afbca0a67b59084f2b32d4e510bf6eff3ced8de8be",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 18373437451396856843
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 45,
+        "text": "male_hengdao_crouch_promenade_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 45,
+        "end": 50,
+        "hex": "8988883f",
+        "float": 1.0666667222976685
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 54,
+        "end": 56,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3254722,
+    "end": 3254764,
+    "name": "male_bow_idle_01",
+    "hash_u64": 18443817729525064617,
+    "sha256": "c49d4f1f2793099a0047619c5ea407302a82184cd2efc2399ae2c865fe992c60",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 11,
+        "value": 18443817729525064617
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 11,
+        "end": 29,
+        "text": "male_bow_idle_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 29,
+        "end": 34,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 34,
+        "end": 36,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 36,
+        "end": 38,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 38,
+        "end": 40,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3353706,
+    "end": 3353763,
+    "name": "male_bow_finger_default_right_01",
+    "hash_u64": 277447385844874082,
+    "sha256": "ab0acd4b02f34c87359176d097d1cf49ea1765f2368a177d59be528481547ea1",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 277447385844874082
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 44,
+        "text": "male_bow_finger_default_right_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 44,
+        "end": 49,
+        "hex": "abaaaa3e",
+        "float": 0.3333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3507750,
+    "end": 3507796,
+    "name": "male_bow_hold_idle_01",
+    "hash_u64": 725140508479842980,
+    "sha256": "884d89c3cd4fda99bd1553ea6110f8b39f6f7c8cb2213c350f622acb9d6ac6e5",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 725140508479842980
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 33,
+        "text": "male_bow_hold_idle_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 33,
+        "end": 38,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 38,
+        "end": 40,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 40,
+        "end": 42,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 42,
+        "end": 44,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3545031,
+    "end": 3545081,
+    "name": "male_hengdao_promenade_01",
+    "hash_u64": 832848741492067877,
+    "sha256": "0499c96fed79fbff73aed29705860deac21c62ad79dbb0f0e4d301745d23c2df",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 832848741492067877
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 37,
+        "text": "male_hengdao_promenade_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 37,
+        "end": 42,
+        "hex": "9a99993f",
+        "float": 1.2000000476837158
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 42,
+        "end": 44,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 44,
+        "end": 46,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3545279,
+    "end": 3545338,
+    "name": "male_die_hurt_stand_light_front_01",
+    "hash_u64": 833837363152521925,
+    "sha256": "5a04fb2163e338616044a0867b2ded80af708460bcaeb980b45537df6efeef51",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 833837363152521925
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 46,
+        "text": "male_die_hurt_stand_light_front_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "deddad40",
+        "float": 5.433333396911621
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3687202,
+    "end": 3687260,
+    "name": "male_hengdao_jump_down_to_land_02",
+    "hash_u64": 1241835622462637356,
+    "sha256": "4ad17ec6017cd388a752fbe5be00e87a15493c01fee0c2a91ad4761779082d3c",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 1241835622462637356
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 45,
+        "text": "male_hengdao_jump_down_to_land_02"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 45,
+        "end": 50,
+        "hex": "cdcccc3f",
+        "float": 1.600000023841858
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 54,
+        "end": 56,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3815379,
+    "end": 3815426,
+    "name": "male_bow_attack_aim_01",
+    "hash_u64": 1613314202885964955,
+    "sha256": "1aa2b0ed8554430aaabdaaa627bc78ff524cbe3489cbfb952234eb0301f7100f",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 1613314202885964955
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 34,
+        "text": "male_bow_attack_aim_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 34,
+        "end": 39,
+        "hex": "abaaaa3e",
+        "float": 0.3333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 39,
+        "end": 41,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 41,
+        "end": 43,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 43,
+        "end": 45,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3901360,
+    "end": 3901418,
+    "name": "male_die_hurt_stand_light_back_01",
+    "hash_u64": 1859218536553332314,
+    "sha256": "68b810b5bd61fd4fcd5a885069964c9287670201b853a3f72f2999a59ea53293",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 1859218536553332314
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 45,
+        "text": "male_die_hurt_stand_light_back_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 45,
+        "end": 50,
+        "hex": "6666a640",
+        "float": 5.199999809265137
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 54,
+        "end": 56,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 3928202,
+    "end": 3928252,
+    "name": "male_bow_attack_01_charge",
+    "hash_u64": 1937920540847482965,
+    "sha256": "1ceccb13619a32a56f49d6e3af41383b50e474171accc11dd03a92dc7b670b34",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 1937920540847482965
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 37,
+        "text": "male_bow_attack_01_charge"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 37,
+        "end": 42,
+        "hex": "44440440",
+        "float": 2.066666603088379
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 42,
+        "end": 44,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 44,
+        "end": 46,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4031997,
+    "end": 4032051,
+    "name": "male_hurt_stand_light_back_01",
+    "hash_u64": 2243894325608747572,
+    "sha256": "0e4435baa2314752e7178a3a498012591b57f19858a416ae2fd3b5a7acbdbf36",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 2243894325608747572
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 41,
+        "text": "male_hurt_stand_light_back_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 41,
+        "end": 46,
+        "hex": "abaaaa3f",
+        "float": 1.3333333730697632
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4300818,
+    "end": 4300873,
+    "name": "male_hurt_stand_light_front_01",
+    "hash_u64": 3021827027505079612,
+    "sha256": "29e35bbe680b0c2267316cb8095c131d95541b64884fde0c9cbce0db561bccfa",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3021827027505079612
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 42,
+        "text": "male_hurt_stand_light_front_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 42,
+        "end": 47,
+        "hex": "abaaaa3f",
+        "float": 1.3333333730697632
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4311223,
+    "end": 4311275,
+    "name": "male_hengdao_finger_left_01",
+    "hash_u64": 3053751619997389204,
+    "sha256": "fcb0cb20222e61de9ff46b748a6b5af66a3f62e921c9c693bde784efc8ac55e0",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3053751619997389204
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 39,
+        "text": "male_hengdao_finger_left_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 39,
+        "end": 44,
+        "hex": "abaaaa3e",
+        "float": 0.3333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 44,
+        "end": 46,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4364508,
+    "end": 4364559,
+    "name": "male_hengdao_dodge_back_01",
+    "hash_u64": 3206623848394971940,
+    "sha256": "c242145b096158c605b3a5256cabf60cb7c6705e6aa83fc6224c7045125cf4b5",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3206623848394971940
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 38,
+        "text": "male_hengdao_dodge_back_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 38,
+        "end": 43,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 43,
+        "end": 45,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4389232,
+    "end": 4389277,
+    "name": "male_hengdao_idle_01",
+    "hash_u64": 3280243551440692467,
+    "sha256": "20acfe5d3c6e3cd59be489d145e77e63462969566df2a09c644068d88ec29b3f",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3280243551440692467
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 32,
+        "text": "male_hengdao_idle_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 32,
+        "end": 37,
+        "hex": "00008040",
+        "float": 4.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 37,
+        "end": 39,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 39,
+        "end": 41,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 41,
+        "end": 43,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4422565,
+    "end": 4422618,
+    "name": "male_hengdao_attack_light_05",
+    "hash_u64": 3369801715864269538,
+    "sha256": "fb242cc5aacbc92fe5bf5b8ad1a4e66d103cef5a867825b2c722ff402a8d40bf",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3369801715864269538
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 40,
+        "text": "male_hengdao_attack_light_05"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 40,
+        "end": 45,
+        "hex": "0000803f",
+        "float": 1.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4469951,
+    "end": 4470010,
+    "name": "male_hengdao_attack_shock_light_01",
+    "hash_u64": 3497094335640433969,
+    "sha256": "471797f621dac71a490015da1a3c3f102f58c67d4adc5a8455b61efaf83a2c59",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3497094335640433969
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 46,
+        "text": "male_hengdao_attack_shock_light_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "abaaea3f",
+        "float": 1.8333333730697632
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4474451,
+    "end": 4474502,
+    "name": "male_bow_attack_01_recover",
+    "hash_u64": 3509953257450743559,
+    "sha256": "acaf5826aea4abb921b69597daa271cff9f5271549a8b900b1922eeea6d8f966",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3509953257450743559
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 38,
+        "text": "male_bow_attack_01_recover"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 38,
+        "end": 43,
+        "hex": "9a99193f",
+        "float": 0.6000000238418579
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 43,
+        "end": 45,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4595905,
+    "end": 4595957,
+    "name": "male_hengdao_dodge_right_01",
+    "hash_u64": 3855928821648296884,
+    "sha256": "75f7e3dc7b6f4646c175092757aaee7539df1f0d7acc7d89b2524a1959b68d4d",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3855928821648296884
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 39,
+        "text": "male_hengdao_dodge_right_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 39,
+        "end": 44,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 44,
+        "end": 46,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4604481,
+    "end": 4604539,
+    "name": "male_hengdao_jump_inplace_down_02",
+    "hash_u64": 3882569679290879872,
+    "sha256": "92d065987105a05ba67645799653921279da128e7dc924c25af2fb096316ccc3",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3882569679290879872
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 45,
+        "text": "male_hengdao_jump_inplace_down_02"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 45,
+        "end": 50,
+        "hex": "abaaaa3e",
+        "float": 0.3333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 54,
+        "end": 56,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4637802,
+    "end": 4637855,
+    "name": "male_hengdao_finger_right_01",
+    "hash_u64": 3981416755267820307,
+    "sha256": "8cfff4943f566f6443489b49471f19137e99b3980bbc78b4c6c85b368cbe0f35",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 3981416755267820307
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 40,
+        "text": "male_hengdao_finger_right_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 40,
+        "end": 45,
+        "hex": "abaaaa3e",
+        "float": 0.3333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4788718,
+    "end": 4788777,
+    "name": "male_hengdao_dodge_right_double_01",
+    "hash_u64": 4424985400778611470,
+    "sha256": "5d832458e160bc9ce2261e41375ea5163daae7a8d1af23811ba0d8a04d7043b6",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 4424985400778611470
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 46,
+        "text": "male_hengdao_dodge_right_double_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "9a99993f",
+        "float": 1.2000000476837158
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 4888400,
+    "end": 4888456,
+    "name": "male_hengdao_jump_inplace_up_01",
+    "hash_u64": 4710753338464209823,
+    "sha256": "fe193314a96e457314687d5eebaeddd72c2915ab7629ff7fffbde835d7a5ccbb",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 4710753338464209823
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 43,
+        "text": "male_hengdao_jump_inplace_up_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 43,
+        "end": 48,
+        "hex": "8988883e",
+        "float": 0.2666666805744171
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 5185105,
+    "end": 5185164,
+    "name": "male_hengdao_dodge_front_double_01",
+    "hash_u64": 5557727888580827533,
+    "sha256": "139588b378f6883bf81b8e1892e522a5c1d9c068a0864e55ab9dc02d1d671e34",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 5557727888580827533
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 46,
+        "text": "male_hengdao_dodge_front_double_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 46,
+        "end": 51,
+        "hex": "9a99993f",
+        "float": 1.2000000476837158
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 51,
+        "end": 53,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 53,
+        "end": 55,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 55,
+        "end": 57,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 5306735,
+    "end": 5306781,
+    "name": "male_sniper_reload_01",
+    "hash_u64": 5912011914820832311,
+    "sha256": "99fdbd3f896206c182eb96cae34c51d5206e058f5d20265e3ec9ad177f60b8ca",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 5912011914820832311
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 33,
+        "text": "male_sniper_reload_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 33,
+        "end": 38,
+        "hex": "33333340",
+        "float": 2.799999952316284
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 38,
+        "end": 40,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 40,
+        "end": 42,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 42,
+        "end": 44,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 5350022,
+    "end": 5350080,
+    "name": "male_hengdao_jump_down_to_land_03",
+    "hash_u64": 6037923027774469055,
+    "sha256": "12444f73a57010bd619e96a414413dc1037b438b59c4baf64092456ea939e8c0",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 6037923027774469055
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 45,
+        "text": "male_hengdao_jump_down_to_land_03"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 45,
+        "end": 50,
+        "hex": "cdcc4c3f",
+        "float": 0.800000011920929
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 54,
+        "end": 56,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 5453238,
+    "end": 5453296,
+    "name": "male_hengdao_jump_down_to_land_06",
+    "hash_u64": 6343465959152232947,
+    "sha256": "e776d3274be00d10fb3a256e02e85bfd857f59b85de68076f11c27631b45668f",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 6343465959152232947
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 45,
+        "text": "male_hengdao_jump_down_to_land_06"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 45,
+        "end": 50,
+        "hex": "abaaaa3e",
+        "float": 0.3333333432674408
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 54,
+        "end": 56,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 5647369,
+    "end": 5647427,
+    "name": "male_hengdao_dodge_left_double_01",
+    "hash_u64": 6912654595292732628,
+    "sha256": "786f117722e4ecce80797cf0ef7ae85e624f8eea9893dfff2ef10037277b14ed",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 6912654595292732628
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 45,
+        "text": "male_hengdao_dodge_left_double_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 45,
+        "end": 50,
+        "hex": "9a99993f",
+        "float": 1.2000000476837158
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 54,
+        "end": 56,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 5753294,
+    "end": 5753350,
+    "name": "male_hengdao_jump_forward_up_01",
+    "hash_u64": 7212066146076725179,
+    "sha256": "6da2bdc4c9cb7f3c571e4b4ab62106a81658519689b67637a4310b6c02801908",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 7212066146076725179
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 43,
+        "text": "male_hengdao_jump_forward_up_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 43,
+        "end": 48,
+        "hex": "8988883e",
+        "float": 0.2666666805744171
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 5848654,
+    "end": 5848707,
+    "name": "male_hengdao_attack_light_01",
+    "hash_u64": 7489651706005134909,
+    "sha256": "1f8fd8220d3dff51b13ecbd7ad23d3a415238b52cfa844d68f1873b71b72f7d6",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 7489651706005134909
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 40,
+        "text": "male_hengdao_attack_light_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 40,
+        "end": 45,
+        "hex": "4444443f",
+        "float": 0.7666666507720947
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 5950028,
+    "end": 5950081,
+    "name": "male_hengdao_attack_light_04",
+    "hash_u64": 7796594234084902001,
+    "sha256": "b3203f472e87aef9ec867d362179b5a304065f3d47a6d72d4895feededc8d9fb",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 7796594234084902001
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 40,
+        "text": "male_hengdao_attack_light_04"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 40,
+        "end": 45,
+        "hex": "efee6e3f",
+        "float": 0.9333333373069763
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 45,
+        "end": 47,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 47,
+        "end": 49,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 49,
+        "end": 51,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 6074244,
+    "end": 6074302,
+    "name": "male_hengdao_jump_forward_down_01",
+    "hash_u64": 8145157729665624767,
+    "sha256": "56bfb5656644346b3e70cf348abcc6b02f3df4f57da344bbd3b3b15e686087cf",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 8145157729665624767
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 45,
+        "text": "male_hengdao_jump_forward_down_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 45,
+        "end": 50,
+        "hex": "8988883e",
+        "float": 0.2666666805744171
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 50,
+        "end": 52,
+        "value": 1
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 52,
+        "end": 54,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 54,
+        "end": 56,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 6327412,
+    "end": 6327456,
+    "name": "male_sniper_idle_01",
+    "hash_u64": 8879375199977919466,
+    "sha256": "4d435b961d8bd8f65e4ec94b6da93390f147310a4c0f47e90846600f3d9569d6",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 8879375199977919466
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 31,
+        "text": "male_sniper_idle_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 31,
+        "end": 36,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 36,
+        "end": 38,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 38,
+        "end": 40,
+        "value": 0
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 40,
+        "end": 42,
+        "value": 0
+      }
+    ]
+  },
+  {
+    "offset": 6436169,
+    "end": 6436221,
+    "name": "male_hengdao_crouch_idle_01",
+    "hash_u64": 9205209900076681152,
+    "sha256": "9492c773b5244a0b89ac0f342a11b8e170b5b64f66c5400218a75b8dc1251bee",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 0,
+        "offset": 0,
+        "end": 10,
+        "value": 9205209900076681152
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 10,
+        "end": 39,
+        "text": "male_hengdao_crouch_idle_01"
+      },
+      {
+        "field": 3,
+        "wire": 5,
+        "offset": 39,
+        "end": 44,
+        "hex": "00000040",
+        "float": 2.0
+      },
+      {
+        "field": 4,
+        "wire": 0,
+        "offset": 44,
+        "end": 46,
+        "value": 0
+      },
+      {
+        "field": 5,
+        "wire": 0,
+        "offset": 46,
+        "end": 48,
+        "value": 1
+      },
+      {
+        "field": 6,
+        "wire": 0,
+        "offset": 48,
+        "end": 50,
+        "value": 0
+      }
+    ]
+  }
+]

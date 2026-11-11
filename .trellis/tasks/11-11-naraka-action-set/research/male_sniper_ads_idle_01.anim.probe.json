@@ -1,0 +1,1519 @@
+{
+  "path": "assets/res/animclipadapter/76/male_sniper_ads_idle_01.anim",
+  "bundle_key": "8/3/8386dd0552ef55f1",
+  "cab": "CAB-4bd975c2835213fbee12e59bc1925a9f",
+  "declared_size": 16355328,
+  "path_id": 2454969433795455031,
+  "type": "AnimationClip",
+  "byte_start": 13159856,
+  "byte_size": 14972,
+  "raw_sha256": "cedc66eec0ad6a402bca950099e8313b54cc94b701020db5641a5c3b666a5826",
+  "old_type_hash": "1ece1117b1e6a8b84516b3eb77051cc3",
+  "type_counts": {
+    "AnimationClip": 640,
+    "MonoScript": 1,
+    "AssetBundle": 1
+  },
+  "externals": [],
+  "tree": {
+    "m_Name": "male_sniper_ads_idle_01",
+    "m_SampleRate": 30.0,
+    "m_Events": [],
+    "duration": 2.0,
+    "m_LoopTime": true,
+    "scalar_curves": {
+      "streamed": 43,
+      "dense": 9,
+      "constant": 77
+    },
+    "dense_frames": 62,
+    "binding_types": {
+      "(95, 8)": 69,
+      "(4, 0)": 18
+    },
+    "humanoid_muscles": 55
+  },
+  "proof": {
+    "source_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/8/3/8386dd0552ef55f1",
+    "source_size": 16355328,
+    "source_sha256": null,
+    "hash_scope": "only compressed metadata and inspected payload blocks; full source/node not read",
+    "header": {
+      "version": 7,
+      "unity_version": "5.x.x",
+      "unity_revision": "2019.4.14f1",
+      "variant": "new2",
+      "declared_size": 16355358,
+      "actual_size": 16355328,
+      "compressed_info_field": 1375,
+      "uncompressed_info_field": 4226,
+      "original_flags": 582,
+      "metadata_source_offset": 4096,
+      "metadata_compressed_bytes_consumed": 1209,
+      "metadata_raw_bytes": 2101,
+      "body_raw_bytes": 21172692
+    },
+    "metadata_compressed_sha256": "c43cedb9cc5fd3233b86db8b92c2022b29d4e01bcff2b92f4d8f90111010ded7",
+    "metadata_raw_sha256": "2f2fb2a34c55d4d48866b02a722fee2c6a3429ad31da9d39b503a8c3dd97cedb",
+    "nodes": [
+      {
+        "name": "CAB-4bd975c2835213fbee12e59bc1925a9f",
+        "offset": 0,
+        "size": 21172692,
+        "flags": 4
+      }
+    ],
+    "blocks": [
+      {
+        "uncompressed": 131072,
+        "compressed": 41009,
+        "flags": 6,
+        "source_offset": 8192,
+        "raw_offset": 0
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 77141,
+        "flags": 6,
+        "source_offset": 53248,
+        "raw_offset": 131072
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 122122,
+        "flags": 6,
+        "source_offset": 131072,
+        "raw_offset": 262144
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 101327,
+        "flags": 6,
+        "source_offset": 253952,
+        "raw_offset": 393216
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 123881,
+        "flags": 6,
+        "source_offset": 356352,
+        "raw_offset": 524288
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 85801,
+        "flags": 6,
+        "source_offset": 483328,
+        "raw_offset": 655360
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 110225,
+        "flags": 6,
+        "source_offset": 569344,
+        "raw_offset": 786432
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 108981,
+        "flags": 6,
+        "source_offset": 679936,
+        "raw_offset": 917504
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 129585,
+        "flags": 6,
+        "source_offset": 790528,
+        "raw_offset": 1048576
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 128401,
+        "flags": 6,
+        "source_offset": 921600,
+        "raw_offset": 1179648
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 123524,
+        "flags": 6,
+        "source_offset": 1052672,
+        "raw_offset": 1310720
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 131072,
+        "flags": 0,
+        "source_offset": 1179648,
+        "raw_offset": 1441792
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 100640,
+        "flags": 6,
+        "source_offset": 1310720,
+        "raw_offset": 1572864
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 128373,
+        "flags": 6,
+        "source_offset": 1413120,
+        "raw_offset": 1703936
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 123313,
+        "flags": 6,
+        "source_offset": 1544192,
+        "raw_offset": 1835008
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 105113,
+        "flags": 6,
+        "source_offset": 1671168,
+        "raw_offset": 1966080
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 103708,
+        "flags": 6,
+        "source_offset": 1777664,
+        "raw_offset": 2097152
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 99602,
+        "flags": 6,
+        "source_offset": 1884160,
+        "raw_offset": 2228224
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 127212,
+        "flags": 6,
+        "source_offset": 1986560,
+        "raw_offset": 2359296
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 107450,
+        "flags": 6,
+        "source_offset": 2117632,
+        "raw_offset": 2490368
+      },
+      {
+        "uncompressed": 35560,
+        "compressed": 26198,
+        "flags": 6,
+        "source_offset": 2228224,
+        "raw_offset": 2621440
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 75315,
+        "flags": 6,
+        "source_offset": 2256896,
+        "raw_offset": 2657000
+      },
+      {
+        "uncompressed": 129408,
+        "compressed": 90774,
+        "flags": 6,
+        "source_offset": 2334720,
+        "raw_offset": 2788072
+      },
+      {
+        "uncompressed": 2512,
+        "compressed": 2512,
+        "flags": 0,
+        "source_offset": 2428928,
+        "raw_offset": 2917480
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 70641,
+        "flags": 6,
+        "source_offset": 2433024,
+        "raw_offset": 2919992
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 88168,
+        "flags": 6,
+        "source_offset": 2506752,
+        "raw_offset": 3051064
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 100507,
+        "flags": 6,
+        "source_offset": 2596864,
+        "raw_offset": 3182136
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 124978,
+        "flags": 6,
+        "source_offset": 2699264,
+        "raw_offset": 3313208
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 110806,
+        "flags": 6,
+        "source_offset": 2826240,
+        "raw_offset": 3444280
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 117436,
+        "flags": 6,
+        "source_offset": 2940928,
+        "raw_offset": 3575352
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 69014,
+        "flags": 6,
+        "source_offset": 3059712,
+        "raw_offset": 3706424
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 87873,
+        "flags": 6,
+        "source_offset": 3129344,
+        "raw_offset": 3837496
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 86681,
+        "flags": 6,
+        "source_offset": 3219456,
+        "raw_offset": 3968568
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 82480,
+        "flags": 6,
+        "source_offset": 3309568,
+        "raw_offset": 4099640
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 78708,
+        "flags": 6,
+        "source_offset": 3395584,
+        "raw_offset": 4230712
+      },
+      {
+        "uncompressed": 86232,
+        "compressed": 66707,
+        "flags": 6,
+        "source_offset": 3477504,
+        "raw_offset": 4361784
+      },
+      {
+        "uncompressed": 65328,
+        "compressed": 47344,
+        "flags": 6,
+        "source_offset": 3547136,
+        "raw_offset": 4448016
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 88218,
+        "flags": 6,
+        "source_offset": 3596288,
+        "raw_offset": 4513344
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 97132,
+        "flags": 6,
+        "source_offset": 3686400,
+        "raw_offset": 4644416
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 99156,
+        "flags": 6,
+        "source_offset": 3784704,
+        "raw_offset": 4775488
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 125178,
+        "flags": 6,
+        "source_offset": 3887104,
+        "raw_offset": 4906560
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 119583,
+        "flags": 6,
+        "source_offset": 4014080,
+        "raw_offset": 5037632
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 98381,
+        "flags": 6,
+        "source_offset": 4136960,
+        "raw_offset": 5168704
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 83205,
+        "flags": 6,
+        "source_offset": 4239360,
+        "raw_offset": 5299776
+      },
+      {
+        "uncompressed": 37528,
+        "compressed": 15301,
+        "flags": 6,
+        "source_offset": 4325376,
+        "raw_offset": 5430848
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 95050,
+        "flags": 6,
+        "source_offset": 4341760,
+        "raw_offset": 5468376
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 104676,
+        "flags": 6,
+        "source_offset": 4440064,
+        "raw_offset": 5599448
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 99218,
+        "flags": 6,
+        "source_offset": 4546560,
+        "raw_offset": 5730520
+      },
+      {
+        "uncompressed": 84784,
+        "compressed": 39052,
+        "flags": 6,
+        "source_offset": 4648960,
+        "raw_offset": 5861592
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 102685,
+        "flags": 6,
+        "source_offset": 4689920,
+        "raw_offset": 5946376
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 109328,
+        "flags": 6,
+        "source_offset": 4796416,
+        "raw_offset": 6077448
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 75948,
+        "flags": 6,
+        "source_offset": 4907008,
+        "raw_offset": 6208520
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 63186,
+        "flags": 6,
+        "source_offset": 4984832,
+        "raw_offset": 6339592
+      },
+      {
+        "uncompressed": 10368,
+        "compressed": 9115,
+        "flags": 6,
+        "source_offset": 5050368,
+        "raw_offset": 6470664
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 56453,
+        "flags": 6,
+        "source_offset": 5062656,
+        "raw_offset": 6481032
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 78800,
+        "flags": 6,
+        "source_offset": 5120000,
+        "raw_offset": 6612104
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 92517,
+        "flags": 6,
+        "source_offset": 5201920,
+        "raw_offset": 6743176
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 125046,
+        "flags": 6,
+        "source_offset": 5296128,
+        "raw_offset": 6874248
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 108866,
+        "flags": 6,
+        "source_offset": 5423104,
+        "raw_offset": 7005320
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 90576,
+        "flags": 6,
+        "source_offset": 5533696,
+        "raw_offset": 7136392
+      },
+      {
+        "uncompressed": 35000,
+        "compressed": 29405,
+        "flags": 6,
+        "source_offset": 5627904,
+        "raw_offset": 7267464
+      },
+      {
+        "uncompressed": 136,
+        "compressed": 136,
+        "flags": 0,
+        "source_offset": 5660672,
+        "raw_offset": 7302464
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 106054,
+        "flags": 6,
+        "source_offset": 5664768,
+        "raw_offset": 7302600
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 80734,
+        "flags": 6,
+        "source_offset": 5771264,
+        "raw_offset": 7433672
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 114867,
+        "flags": 6,
+        "source_offset": 5853184,
+        "raw_offset": 7564744
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 107886,
+        "flags": 6,
+        "source_offset": 5971968,
+        "raw_offset": 7695816
+      },
+      {
+        "uncompressed": 90616,
+        "compressed": 79276,
+        "flags": 6,
+        "source_offset": 6082560,
+        "raw_offset": 7826888
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 94867,
+        "flags": 6,
+        "source_offset": 6164480,
+        "raw_offset": 7917504
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 63151,
+        "flags": 6,
+        "source_offset": 6262784,
+        "raw_offset": 8048576
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 105763,
+        "flags": 6,
+        "source_offset": 6328320,
+        "raw_offset": 8179648
+      },
+      {
+        "uncompressed": 8,
+        "compressed": 8,
+        "flags": 0,
+        "source_offset": 6434816,
+        "raw_offset": 8310720
+      },
+      {
+        "uncompressed": 7720,
+        "compressed": 4305,
+        "flags": 6,
+        "source_offset": 6438912,
+        "raw_offset": 8310728
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 71920,
+        "flags": 6,
+        "source_offset": 6447104,
+        "raw_offset": 8318448
+      },
+      {
+        "uncompressed": 10448,
+        "compressed": 10443,
+        "flags": 6,
+        "source_offset": 6520832,
+        "raw_offset": 8449520
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 110742,
+        "flags": 6,
+        "source_offset": 6533120,
+        "raw_offset": 8459968
+      },
+      {
+        "uncompressed": 83832,
+        "compressed": 70215,
+        "flags": 6,
+        "source_offset": 6647808,
+        "raw_offset": 8591040
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 91805,
+        "flags": 6,
+        "source_offset": 6721536,
+        "raw_offset": 8674872
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 90124,
+        "flags": 6,
+        "source_offset": 6815744,
+        "raw_offset": 8805944
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 131072,
+        "flags": 0,
+        "source_offset": 6909952,
+        "raw_offset": 8937016
+      },
+      {
+        "uncompressed": 53376,
+        "compressed": 42821,
+        "flags": 6,
+        "source_offset": 7041024,
+        "raw_offset": 9068088
+      },
+      {
+        "uncompressed": 5936,
+        "compressed": 3320,
+        "flags": 6,
+        "source_offset": 7086080,
+        "raw_offset": 9121464
+      },
+      {
+        "uncompressed": 13216,
+        "compressed": 10460,
+        "flags": 6,
+        "source_offset": 7090176,
+        "raw_offset": 9127400
+      },
+      {
+        "uncompressed": 127552,
+        "compressed": 88539,
+        "flags": 6,
+        "source_offset": 7102464,
+        "raw_offset": 9140616
+      },
+      {
+        "uncompressed": 3520,
+        "compressed": 3520,
+        "flags": 0,
+        "source_offset": 7192576,
+        "raw_offset": 9268168
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 102577,
+        "flags": 6,
+        "source_offset": 7196672,
+        "raw_offset": 9271688
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 103537,
+        "flags": 6,
+        "source_offset": 7303168,
+        "raw_offset": 9402760
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 66684,
+        "flags": 6,
+        "source_offset": 7409664,
+        "raw_offset": 9533832
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 58492,
+        "flags": 6,
+        "source_offset": 7479296,
+        "raw_offset": 9664904
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 100668,
+        "flags": 6,
+        "source_offset": 7540736,
+        "raw_offset": 9795976
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 102086,
+        "flags": 6,
+        "source_offset": 7643136,
+        "raw_offset": 9927048
+      },
+      {
+        "uncompressed": 59512,
+        "compressed": 44745,
+        "flags": 6,
+        "source_offset": 7745536,
+        "raw_offset": 10058120
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 98943,
+        "flags": 6,
+        "source_offset": 7790592,
+        "raw_offset": 10117632
+      },
+      {
+        "uncompressed": 121856,
+        "compressed": 83113,
+        "flags": 6,
+        "source_offset": 7892992,
+        "raw_offset": 10248704
+      },
+      {
+        "uncompressed": 58976,
+        "compressed": 52873,
+        "flags": 6,
+        "source_offset": 7979008,
+        "raw_offset": 10370560
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 84337,
+        "flags": 6,
+        "source_offset": 8032256,
+        "raw_offset": 10429536
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 103786,
+        "flags": 6,
+        "source_offset": 8118272,
+        "raw_offset": 10560608
+      },
+      {
+        "uncompressed": 127144,
+        "compressed": 70965,
+        "flags": 6,
+        "source_offset": 8224768,
+        "raw_offset": 10691680
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 68145,
+        "flags": 6,
+        "source_offset": 8298496,
+        "raw_offset": 10818824
+      },
+      {
+        "uncompressed": 6576,
+        "compressed": 6576,
+        "flags": 0,
+        "source_offset": 8368128,
+        "raw_offset": 10949896
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 80456,
+        "flags": 6,
+        "source_offset": 8376320,
+        "raw_offset": 10956472
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 80919,
+        "flags": 6,
+        "source_offset": 8458240,
+        "raw_offset": 11087544
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 118302,
+        "flags": 6,
+        "source_offset": 8540160,
+        "raw_offset": 11218616
+      },
+      {
+        "uncompressed": 127920,
+        "compressed": 63060,
+        "flags": 6,
+        "source_offset": 8658944,
+        "raw_offset": 11349688
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 111887,
+        "flags": 6,
+        "source_offset": 8724480,
+        "raw_offset": 11477608
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 88893,
+        "flags": 6,
+        "source_offset": 8839168,
+        "raw_offset": 11608680
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 54695,
+        "flags": 6,
+        "source_offset": 8929280,
+        "raw_offset": 11739752
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 92795,
+        "flags": 6,
+        "source_offset": 8986624,
+        "raw_offset": 11870824
+      },
+      {
+        "uncompressed": 21280,
+        "compressed": 21280,
+        "flags": 0,
+        "source_offset": 9080832,
+        "raw_offset": 12001896
+      },
+      {
+        "uncompressed": 200,
+        "compressed": 200,
+        "flags": 0,
+        "source_offset": 9105408,
+        "raw_offset": 12023176
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 93641,
+        "flags": 6,
+        "source_offset": 9109504,
+        "raw_offset": 12023376
+      },
+      {
+        "uncompressed": 58872,
+        "compressed": 26888,
+        "flags": 6,
+        "source_offset": 9203712,
+        "raw_offset": 12154448
+      },
+      {
+        "uncompressed": 8352,
+        "compressed": 3254,
+        "flags": 6,
+        "source_offset": 9232384,
+        "raw_offset": 12213320
+      },
+      {
+        "uncompressed": 18808,
+        "compressed": 3168,
+        "flags": 6,
+        "source_offset": 9236480,
+        "raw_offset": 12221672
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 51533,
+        "flags": 6,
+        "source_offset": 9240576,
+        "raw_offset": 12240480
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 63592,
+        "flags": 6,
+        "source_offset": 9293824,
+        "raw_offset": 12371552
+      },
+      {
+        "uncompressed": 14600,
+        "compressed": 10487,
+        "flags": 6,
+        "source_offset": 9359360,
+        "raw_offset": 12502624
+      },
+      {
+        "uncompressed": 856,
+        "compressed": 214,
+        "flags": 6,
+        "source_offset": 9371648,
+        "raw_offset": 12517224
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 105514,
+        "flags": 6,
+        "source_offset": 9375744,
+        "raw_offset": 12518080
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 88263,
+        "flags": 6,
+        "source_offset": 9482240,
+        "raw_offset": 12649152
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 73387,
+        "flags": 6,
+        "source_offset": 9572352,
+        "raw_offset": 12780224
+      },
+      {
+        "uncompressed": 32112,
+        "compressed": 22236,
+        "flags": 6,
+        "source_offset": 9646080,
+        "raw_offset": 12911296
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 73284,
+        "flags": 6,
+        "source_offset": 9670656,
+        "raw_offset": 12943408
+      },
+      {
+        "uncompressed": 127968,
+        "compressed": 80446,
+        "flags": 6,
+        "source_offset": 9744384,
+        "raw_offset": 13074480
+      },
+      {
+        "uncompressed": 6224,
+        "compressed": 5737,
+        "flags": 6,
+        "source_offset": 9826304,
+        "raw_offset": 13202448
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 65514,
+        "flags": 6,
+        "source_offset": 9834496,
+        "raw_offset": 13208672
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 102569,
+        "flags": 6,
+        "source_offset": 9900032,
+        "raw_offset": 13339744
+      },
+      {
+        "uncompressed": 130712,
+        "compressed": 85330,
+        "flags": 6,
+        "source_offset": 10006528,
+        "raw_offset": 13470816
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 88387,
+        "flags": 6,
+        "source_offset": 10092544,
+        "raw_offset": 13601528
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 89260,
+        "flags": 6,
+        "source_offset": 10182656,
+        "raw_offset": 13732600
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 66062,
+        "flags": 6,
+        "source_offset": 10272768,
+        "raw_offset": 13863672
+      },
+      {
+        "uncompressed": 168,
+        "compressed": 168,
+        "flags": 0,
+        "source_offset": 10342400,
+        "raw_offset": 13994744
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 107037,
+        "flags": 6,
+        "source_offset": 10346496,
+        "raw_offset": 13994912
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 118057,
+        "flags": 6,
+        "source_offset": 10457088,
+        "raw_offset": 14125984
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 131072,
+        "flags": 0,
+        "source_offset": 10575872,
+        "raw_offset": 14257056
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 124446,
+        "flags": 6,
+        "source_offset": 10706944,
+        "raw_offset": 14388128
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 116435,
+        "flags": 6,
+        "source_offset": 10833920,
+        "raw_offset": 14519200
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 131072,
+        "flags": 0,
+        "source_offset": 10952704,
+        "raw_offset": 14650272
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 131072,
+        "flags": 0,
+        "source_offset": 11083776,
+        "raw_offset": 14781344
+      },
+      {
+        "uncompressed": 76672,
+        "compressed": 61659,
+        "flags": 6,
+        "source_offset": 11214848,
+        "raw_offset": 14912416
+      },
+      {
+        "uncompressed": 56,
+        "compressed": 48,
+        "flags": 6,
+        "source_offset": 11280384,
+        "raw_offset": 14989088
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 98014,
+        "flags": 6,
+        "source_offset": 11284480,
+        "raw_offset": 14989144
+      },
+      {
+        "uncompressed": 8,
+        "compressed": 8,
+        "flags": 0,
+        "source_offset": 11382784,
+        "raw_offset": 15120216
+      },
+      {
+        "uncompressed": 114296,
+        "compressed": 71320,
+        "flags": 6,
+        "source_offset": 11386880,
+        "raw_offset": 15120224
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 116674,
+        "flags": 6,
+        "source_offset": 11460608,
+        "raw_offset": 15234520
+      },
+      {
+        "uncompressed": 53848,
+        "compressed": 43752,
+        "flags": 6,
+        "source_offset": 11579392,
+        "raw_offset": 15365592
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 124368,
+        "flags": 6,
+        "source_offset": 11624448,
+        "raw_offset": 15419440
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 97546,
+        "flags": 6,
+        "source_offset": 11751424,
+        "raw_offset": 15550512
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 102924,
+        "flags": 6,
+        "source_offset": 11849728,
+        "raw_offset": 15681584
+      },
+      {
+        "uncompressed": 520,
+        "compressed": 520,
+        "flags": 0,
+        "source_offset": 11956224,
+        "raw_offset": 15812656
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 103240,
+        "flags": 6,
+        "source_offset": 11960320,
+        "raw_offset": 15813176
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 88311,
+        "flags": 6,
+        "source_offset": 12066816,
+        "raw_offset": 15944248
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 107121,
+        "flags": 6,
+        "source_offset": 12156928,
+        "raw_offset": 16075320
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 72279,
+        "flags": 6,
+        "source_offset": 12267520,
+        "raw_offset": 16206392
+      },
+      {
+        "uncompressed": 1680,
+        "compressed": 1648,
+        "flags": 6,
+        "source_offset": 12341248,
+        "raw_offset": 16337464
+      },
+      {
+        "uncompressed": 120,
+        "compressed": 120,
+        "flags": 0,
+        "source_offset": 12345344,
+        "raw_offset": 16339144
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 80256,
+        "flags": 6,
+        "source_offset": 12349440,
+        "raw_offset": 16339264
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 85787,
+        "flags": 6,
+        "source_offset": 12431360,
+        "raw_offset": 16470336
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 95981,
+        "flags": 6,
+        "source_offset": 12517376,
+        "raw_offset": 16601408
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 93794,
+        "flags": 6,
+        "source_offset": 12615680,
+        "raw_offset": 16732480
+      },
+      {
+        "uncompressed": 216,
+        "compressed": 216,
+        "flags": 0,
+        "source_offset": 12709888,
+        "raw_offset": 16863552
+      },
+      {
+        "uncompressed": 4296,
+        "compressed": 3632,
+        "flags": 6,
+        "source_offset": 12713984,
+        "raw_offset": 16863768
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 92098,
+        "flags": 6,
+        "source_offset": 12718080,
+        "raw_offset": 16868064
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 108364,
+        "flags": 6,
+        "source_offset": 12812288,
+        "raw_offset": 16999136
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 99223,
+        "flags": 6,
+        "source_offset": 12922880,
+        "raw_offset": 17130208
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 115877,
+        "flags": 6,
+        "source_offset": 13025280,
+        "raw_offset": 17261280
+      },
+      {
+        "uncompressed": 192,
+        "compressed": 192,
+        "flags": 0,
+        "source_offset": 13144064,
+        "raw_offset": 17392352
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 108985,
+        "flags": 6,
+        "source_offset": 13148160,
+        "raw_offset": 17392544
+      },
+      {
+        "uncompressed": 85600,
+        "compressed": 56545,
+        "flags": 6,
+        "source_offset": 13258752,
+        "raw_offset": 17523616
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 122178,
+        "flags": 6,
+        "source_offset": 13316096,
+        "raw_offset": 17609216
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 130089,
+        "flags": 6,
+        "source_offset": 13438976,
+        "raw_offset": 17740288
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 129675,
+        "flags": 6,
+        "source_offset": 13570048,
+        "raw_offset": 17871360
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 130417,
+        "flags": 6,
+        "source_offset": 13701120,
+        "raw_offset": 18002432
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 112399,
+        "flags": 6,
+        "source_offset": 13832192,
+        "raw_offset": 18133504
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 68400,
+        "flags": 6,
+        "source_offset": 13946880,
+        "raw_offset": 18264576
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 100293,
+        "flags": 6,
+        "source_offset": 14016512,
+        "raw_offset": 18395648
+      },
+      {
+        "uncompressed": 248,
+        "compressed": 248,
+        "flags": 0,
+        "source_offset": 14118912,
+        "raw_offset": 18526720
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 98534,
+        "flags": 6,
+        "source_offset": 14123008,
+        "raw_offset": 18526968
+      },
+      {
+        "uncompressed": 744,
+        "compressed": 179,
+        "flags": 6,
+        "source_offset": 14225408,
+        "raw_offset": 18658040
+      },
+      {
+        "uncompressed": 131016,
+        "compressed": 121540,
+        "flags": 6,
+        "source_offset": 14229504,
+        "raw_offset": 18658784
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 131072,
+        "flags": 0,
+        "source_offset": 14352384,
+        "raw_offset": 18789800
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 84712,
+        "flags": 6,
+        "source_offset": 14483456,
+        "raw_offset": 18920872
+      },
+      {
+        "uncompressed": 15448,
+        "compressed": 12077,
+        "flags": 6,
+        "source_offset": 14569472,
+        "raw_offset": 19051944
+      },
+      {
+        "uncompressed": 41504,
+        "compressed": 26723,
+        "flags": 6,
+        "source_offset": 14581760,
+        "raw_offset": 19067392
+      },
+      {
+        "uncompressed": 13304,
+        "compressed": 13304,
+        "flags": 0,
+        "source_offset": 14610432,
+        "raw_offset": 19108896
+      },
+      {
+        "uncompressed": 23088,
+        "compressed": 23088,
+        "flags": 0,
+        "source_offset": 14626816,
+        "raw_offset": 19122200
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 131072,
+        "flags": 0,
+        "source_offset": 14651392,
+        "raw_offset": 19145288
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 95824,
+        "flags": 6,
+        "source_offset": 14782464,
+        "raw_offset": 19276360
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 108863,
+        "flags": 6,
+        "source_offset": 14880768,
+        "raw_offset": 19407432
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 113676,
+        "flags": 6,
+        "source_offset": 14991360,
+        "raw_offset": 19538504
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 97112,
+        "flags": 6,
+        "source_offset": 15106048,
+        "raw_offset": 19669576
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 103685,
+        "flags": 6,
+        "source_offset": 15204352,
+        "raw_offset": 19800648
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 109403,
+        "flags": 6,
+        "source_offset": 15310848,
+        "raw_offset": 19931720
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 110214,
+        "flags": 6,
+        "source_offset": 15421440,
+        "raw_offset": 20062792
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 122403,
+        "flags": 6,
+        "source_offset": 15532032,
+        "raw_offset": 20193864
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 122634,
+        "flags": 6,
+        "source_offset": 15654912,
+        "raw_offset": 20324936
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 107920,
+        "flags": 6,
+        "source_offset": 15777792,
+        "raw_offset": 20456008
+      },
+      {
+        "uncompressed": 25464,
+        "compressed": 24128,
+        "flags": 6,
+        "source_offset": 15888384,
+        "raw_offset": 20587080
+      },
+      {
+        "uncompressed": 89160,
+        "compressed": 65731,
+        "flags": 6,
+        "source_offset": 15912960,
+        "raw_offset": 20612544
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 68512,
+        "flags": 6,
+        "source_offset": 15982592,
+        "raw_offset": 20701704
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 125209,
+        "flags": 6,
+        "source_offset": 16052224,
+        "raw_offset": 20832776
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 107318,
+        "flags": 6,
+        "source_offset": 16179200,
+        "raw_offset": 20963848
+      },
+      {
+        "uncompressed": 77772,
+        "compressed": 63098,
+        "flags": 6,
+        "source_offset": 16289792,
+        "raw_offset": 21094920
+      }
+    ],
+    "limits": {
+      "max_source": 2147483648,
+      "max_logical": 4294967296,
+      "max_read": 8388608,
+      "read_budget": 134217728,
+      "compressed_budget": 67108864,
+      "cache_bytes": 16777216
+    },
+    "io": {
+      "directory_read_bytes": 66048,
+      "compressed_payload_bytes": 121455,
+      "returned_bytes": 138153,
+      "cached_bytes": 259040
+    },
+    "inspected_blocks": [
+      {
+        "index": 0,
+        "uncompressed": 131072,
+        "compressed": 41009,
+        "flags": 6,
+        "source_offset": 8192,
+        "raw_offset": 0,
+        "compressed_sha256": "19c088174c7c0ece47331b5daa9ef972c9dda712b0ef8d28d911f3299c9ba76e",
+        "raw_sha256": "a52381ad93babc15bc99fe4116e237566e0a1d0dbd6446fceae0a6129c4e60cd"
+      },
+      {
+        "index": 122,
+        "uncompressed": 127968,
+        "compressed": 80446,
+        "flags": 6,
+        "source_offset": 9744384,
+        "raw_offset": 13074480,
+        "compressed_sha256": "5b7393dd9feed3be7040d75d373caab9389308e29dd295c24fe3418915211c21",
+        "raw_sha256": "f69b79e2611db39211b991951e541ef95a855be8895b68684fc1c678f473d3a5"
+      }
+    ]
+  }
+}

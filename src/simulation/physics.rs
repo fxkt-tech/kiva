@@ -141,6 +141,9 @@ pub fn teleport_actor(world: &mut World, entity: Entity, feet: Vec3) {
         motion.reset_at(feet.y);
         motion.capsule_height = height;
     }
+    if let Some(mut history) = target.get_mut::<super::motion_feedback::MotionFeedbackState>() {
+        history.clear();
+    }
     target.insert((
         Position(feet + Vec3::Y * height * 0.5),
         Rotation::IDENTITY,
@@ -312,6 +315,7 @@ pub(super) fn fixed_clock(mut clock: ResMut<Time>, fixed: Res<Time<Fixed>>) {
 }
 
 type Motors = (
+    Entity,
     &'static mut Body,
     &'static mut LinearVelocity,
     &'static MoveIntent,
@@ -319,18 +323,32 @@ type Motors = (
     Option<&'static mut ActionIntent>,
     Option<&'static Facing>,
     Option<&'static Health>,
-    Option<&'static Combatant>,
+    Option<&'static mut Combatant>,
     Option<&'static super::DefenseState>,
     Option<&'static super::SlowEffect>,
 );
 
-pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
-    let dt = time.delta_secs();
+pub(super) fn motor(
+    mut feedback: super::motion_feedback::MotionRecorder,
+    mut actors: Query<Motors>,
+) {
+    let dt = feedback.delta_secs();
     if dt <= 0.0 {
         return;
     }
-    for (mut body, mut velocity, intent, motion, actions, facing, health, combat, defense, slow) in
-        &mut actors
+    for (
+        entity,
+        mut body,
+        mut velocity,
+        intent,
+        motion,
+        actions,
+        facing,
+        health,
+        mut combat,
+        defense,
+        slow,
+    ) in &mut actors
     {
         body.previous = body.position;
         if health.is_some_and(|health| !health.is_alive()) {
@@ -348,7 +366,7 @@ pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
             }
             continue;
         }
-        let direction = if combat.is_some_and(Combatant::movement_locked) {
+        let direction = if combat.as_deref().is_some_and(Combatant::movement_locked) {
             Vec2::ZERO
         } else {
             intent.0
@@ -361,6 +379,9 @@ pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
         };
         let mut idle = ActionIntent::default();
         let mut actions = actions;
+        let previous_jump = motion.jumps_used();
+        let was_dodging = motion.is_dodging();
+        let was_sliding = motion.is_sliding();
         let mut delta = motion.advance(
             actions.as_deref_mut().unwrap_or(&mut idle),
             direction,
@@ -369,7 +390,20 @@ pub(super) fn motor(time: Res<Time<Fixed>>, mut actors: Query<Motors>) {
             dt,
             defense.is_some_and(super::DefenseState::is_active),
         );
-        if let Some(combat) = combat
+        if let Some(combat) = combat.as_deref_mut() {
+            let jumped = motion.jumps_used() > previous_jump;
+            let dodged = !was_dodging && motion.is_dodging();
+            if jumped || dodged || (!was_sliding && motion.is_sliding()) {
+                combat.interrupt_melee_chain();
+            }
+            if jumped {
+                feedback.push(entity, super::MotionKind::Jump, &body, &motion);
+            }
+            if dodged {
+                feedback.push(entity, super::MotionKind::Dodge, &body, &motion);
+            }
+        }
+        if let Some(combat) = combat.as_deref()
             && let Some(pull) = combat.pull_velocity()
         {
             delta = pull * dt;
@@ -487,21 +521,27 @@ type SupportBodies = (
     Option<&'static ComputedCenterOfMass>,
 );
 
+type PublishedActors = (
+    Entity,
+    &'static Position,
+    &'static LinearVelocity,
+    &'static mut Body,
+    Option<&'static mut MotionState>,
+    Option<&'static MoveIntent>,
+    Option<&'static Health>,
+    Option<&'static mut super::motion_feedback::MotionFeedbackState>,
+);
+
 pub(super) fn publish(
+    mut feedback: super::motion_feedback::MotionRecorder,
     collisions: Collisions,
     spatial: SpatialQuery,
     bodies: Query<SupportBodies>,
     sensors: Query<(), With<Sensor>>,
-    mut actors: Query<(
-        Entity,
-        &Position,
-        &LinearVelocity,
-        &mut Body,
-        Option<&mut MotionState>,
-    )>,
+    mut actors: Query<PublishedActors>,
     mut poses: Query<(&Position, &Rotation, &mut PhysicsPose)>,
 ) {
-    for (entity, position, velocity, mut body, motion) in &mut actors {
+    for (entity, position, velocity, mut body, motion, movement, health, history) in &mut actors {
         let height = motion
             .as_ref()
             .map_or(body.standing_height(), |motion| motion.capsule_height);
@@ -590,6 +630,24 @@ pub(super) fn publish(
         }
         motion.steep_normal = steep;
         motion.publish(feet.y, velocity.y, support);
+        if let Some(mut history) = history {
+            if body.teleport_request.is_some() || health.is_some_and(|health| !health.is_alive()) {
+                history.clear();
+                continue;
+            }
+            let (landed, stepped) = history.publish(
+                feedback.delta_secs(),
+                &body,
+                &motion,
+                movement.is_some_and(|intent| intent.0 != Vec2::ZERO),
+            );
+            if landed {
+                feedback.push(entity, super::MotionKind::Land, &body, &motion);
+            }
+            if stepped {
+                feedback.push(entity, super::MotionKind::Footstep, &body, &motion);
+            }
+        }
     }
     for (position, rotation, mut pose) in &mut poses {
         pose.position = position.0;

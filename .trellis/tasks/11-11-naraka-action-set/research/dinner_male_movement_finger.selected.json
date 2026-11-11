@@ -1,0 +1,144 @@
+{
+  "name": "dinner_male_movement_finger",
+  "offset": 2101853,
+  "end": 2102134,
+  "fields": [
+    {
+      "field": 1,
+      "wire": 2,
+      "offset": 0,
+      "end": 29,
+      "text": "dinner_male_movement_finger"
+    },
+    {
+      "field": 2,
+      "wire": 0,
+      "offset": 29,
+      "end": 31,
+      "value": 12
+    },
+    {
+      "field": 3,
+      "wire": 0,
+      "offset": 31,
+      "end": 33,
+      "value": 13
+    },
+    {
+      "field": 4,
+      "wire": 2,
+      "offset": 33,
+      "end": 68,
+      "message": [
+        {
+          "field": 1,
+          "wire": 0,
+          "offset": 0,
+          "end": 11,
+          "value": 18446744072738254412
+        },
+        {
+          "field": 2,
+          "wire": 0,
+          "offset": 11,
+          "end": 22,
+          "value": 18092034193844067105
+        },
+        {
+          "field": 2,
+          "wire": 0,
+          "offset": 22,
+          "end": 33,
+          "value": 15522595473221558089
+        }
+      ]
+    },
+    {
+      "field": 4,
+      "wire": 2,
+      "offset": 68,
+      "end": 102,
+      "message": [
+        {
+          "field": 1,
+          "wire": 0,
+          "offset": 0,
+          "end": 11,
+          "value": 18446744073579425856
+        },
+        {
+          "field": 2,
+          "wire": 0,
+          "offset": 11,
+          "end": 22,
+          "value": 10872809569220358889
+        },
+        {
+          "field": 2,
+          "wire": 0,
+          "offset": 22,
+          "end": 32,
+          "value": 2454827432165367346
+        }
+      ]
+    },
+    {
+      "field": 5,
+      "wire": 2,
+      "offset": 102,
+      "end": 189,
+      "message": [
+        {
+          "field": 1,
+          "wire": 0,
+          "offset": 0,
+          "end": 11,
+          "value": 18446744072738254412
+        },
+        {
+          "field": 2,
+          "wire": 2,
+          "offset": 11,
+          "end": 48,
+          "text": "male_unarmed_finger_default_left_01"
+        },
+        {
+          "field": 3,
+          "wire": 2,
+          "offset": 48,
+          "end": 85,
+          "text": "male_unarmed_finger_default_left_01"
+        }
+      ]
+    },
+    {
+      "field": 5,
+      "wire": 2,
+      "offset": 189,
+      "end": 278,
+      "message": [
+        {
+          "field": 1,
+          "wire": 0,
+          "offset": 0,
+          "end": 11,
+          "value": 18446744073579425856
+        },
+        {
+          "field": 2,
+          "wire": 2,
+          "offset": 11,
+          "end": 49,
+          "text": "male_unarmed_finger_default_right_01"
+        },
+        {
+          "field": 3,
+          "wire": 2,
+          "offset": 49,
+          "end": 87,
+          "text": "male_unarmed_finger_default_right_01"
+        }
+      ]
+    }
+  ]
+}

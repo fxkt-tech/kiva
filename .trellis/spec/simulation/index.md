@@ -18,7 +18,7 @@
 - `MotionState::{is_crouched,is_sliding,slide_elapsed,slide_direction}` 只读蹲伏和滑铲状态。
 - `MotionState::jumps_used()` 只读当前腾空已用跳跃次数，供二段跳表现使用。
 - `Facing::set(Vec2)` / `direction()`；`MotionState` 只读接触和跳跃状态，`launch_up(velocity)` 由模拟击飞调用。旧火炮 Leap 接口已删除，拉近通过 motor 目标速度求解。
-- `CombatIntent::{request_attack,request_melee_skill,request_ranged_skill,request_combo,request_toggle_target,request_pair,clear}`；`Combatant::new(WeaponPair)`，哥哥始终为近战受控角色。
+- `CombatIntent::{request_attack,request_melee_skill,request_ranged_skill,request_combo,request_toggle_target,request_pair,cancel_melee_chain,clear}`；`Combatant::new(WeaponPair)`，哥哥始终为近战受控角色。
 - `Health::new(maximum)` / `current/maximum/is_alive()`；`Enemy::default()` 为普通主动敌人（兼容无窗口夹具），`Enemy::target_dummy()` / `is_passive()` 为被动靶子；`SpawnPoint(Vec2)`。
 - `Combatant::clear_targets()` 在敌人集合替换时清理目标和联动，不刷新技能 / 普攻冷却。
 - `Combatant::{active_action,sequence,companion,axe_away,availability}` 暴露只读动作和联动；`CompanionState` 独立描述妹妹，窗口／资源见战斗契约。

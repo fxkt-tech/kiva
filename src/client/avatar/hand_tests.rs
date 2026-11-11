@@ -45,6 +45,8 @@ fn source_rig(world: &World, seconds: f32, weight: f32) -> RigPose {
     let source = world.resource::<SourceAnimationLibrary>();
     let mut rig = RigPose::new(world.resource::<AnimationLibrary>());
     rig.source = Some(SourcePose {
+        scope: crate::client::source_animation::SourceScope::FullBody,
+        rig: crate::client::source_animation::SourceRig::Yanyun,
         model: source.model_pose(&source.sample(
             source.clip("skill_ylk_1").unwrap(),
             seconds,
@@ -469,6 +471,424 @@ fn declared_cc0_and_current_source_palms_drive_actual_skin_and_grips() {
                     let expected = rig.model[index].rotation.slerp(source_grip, weight);
                     assert!((expected * Vec3::Y).distance(long) < 0.0005);
                     assert!((expected * Vec3::Z).distance(across) < 0.0005);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn native_naraka_hands_use_their_own_negative_axes_and_keep_all_three_targets_lengths() {
+    for appearance in [
+        Appearance::Lihuowang,
+        Appearance::Bailingmiao,
+        Appearance::Choulingke,
+    ] {
+        let (world, assets) = bundle(appearance);
+        let source = world
+            .resource::<SourceAnimationLibrary>()
+            .for_rig(SourceRig::Naraka)
+            .expect("verified native Naraka library");
+        let prefix = if appearance == Appearance::Choulingke {
+            "Bip001"
+        } else {
+            "gMan"
+        };
+        for clip in [
+            "male_hengdao_idle_01",
+            "male_hengdao_attack_light_01",
+            "male_hengdao_shock_01",
+            "male_hengdao_attack_shock_light_01",
+        ] {
+            let clip = source.clip(clip).unwrap();
+            for seconds in [0.0, source.duration(clip) * 0.4, source.duration(clip)] {
+                let mut rig = RigPose::new(world.resource::<AnimationLibrary>());
+                rig.source = Some(SourcePose {
+                    scope: crate::client::source_animation::SourceScope::FullBody,
+                    rig: SourceRig::Naraka,
+                    model: source.model_pose(&source.sample(clip, seconds, false, false)),
+                    weight: 1.0,
+                });
+                let model = &rig.source.as_ref().unwrap().model;
+                for side in ["L", "R"] {
+                    let source_joint = |suffix: &str| {
+                        model[source.bone(&format!("gMan {side} {suffix}")).unwrap()]
+                    };
+                    let target_joint =
+                        |suffix: &str| matrix(&assets, &rig, &format!("{prefix} {side} {suffix}"));
+                    let source_palm = palm(
+                        source_joint("Hand").w_axis.xyz(),
+                        source_joint("Finger1").w_axis.xyz(),
+                        source_joint("Finger2").w_axis.xyz(),
+                        source_joint("Finger4").w_axis.xyz(),
+                    );
+                    let target_palm = palm(
+                        target_joint("Hand").w_axis.xyz(),
+                        target_joint("Finger1").w_axis.xyz(),
+                        target_joint("Finger2").w_axis.xyz(),
+                        target_joint("Finger4").w_axis.xyz(),
+                    );
+                    for digit in 0..5 {
+                        let suffixes = [
+                            "Hand".to_owned(),
+                            format!("Finger{digit}"),
+                            format!("Finger{digit}1"),
+                            format!("Finger{digit}2"),
+                        ];
+                        for link in 1..=3 {
+                            let name = format!("{prefix} {side} {}", suffixes[link]);
+                            assert!(
+                                bone(&assets, &name).naraka_finger.is_some(),
+                                "{appearance:?} {name}"
+                            );
+                            let child = target_joint(&suffixes[link]);
+                            let parent = target_joint(&suffixes[link - 1]);
+                            let rest_child = bone(&assets, &name).bind;
+                            let rest_parent =
+                                bone(&assets, &format!("{prefix} {side} {}", suffixes[link - 1]))
+                                    .bind;
+                            assert!(
+                                (child.w_axis.xyz().distance(parent.w_axis.xyz())
+                                    - rest_child.w_axis.xyz().distance(rest_parent.w_axis.xyz()))
+                                .abs()
+                                    < 0.00002,
+                                "{appearance:?} {name}: own segment changed"
+                            );
+                            let (actual, wanted) = if link < 3 {
+                                (
+                                    target_joint(&suffixes[link + 1]).w_axis.xyz()
+                                        - child.w_axis.xyz(),
+                                    source_joint(&suffixes[link + 1]).w_axis.xyz()
+                                        - source_joint(&suffixes[link]).w_axis.xyz(),
+                                )
+                            } else {
+                                let source_index = source
+                                    .bone(&format!("gMan {side} {}", suffixes[link]))
+                                    .unwrap();
+                                let previous_index = source
+                                    .bone(&format!("gMan {side} {}", suffixes[link - 1]))
+                                    .unwrap();
+                                let native_axis =
+                                    Transform::from_matrix(source.rest_model[previous_index])
+                                        .rotation
+                                        .inverse()
+                                        * (source.rest_model[source_index].w_axis.xyz()
+                                            - source.rest_model[previous_index].w_axis.xyz());
+                                assert!(
+                                    native_axis.x < 0.0,
+                                    "real donor distal direction must remain -X"
+                                );
+                                let own_axis = if let Some(nub) = assets
+                                    .parts
+                                    .iter()
+                                    .filter(|part| !part.blade)
+                                    .flat_map(|part| &part.bones)
+                                    .find(|bone| {
+                                        bone.name.rsplit("::").next().unwrap()
+                                            == format!("{prefix} {side} Finger{digit}Nub")
+                                    }) {
+                                    Transform::from_matrix(rest_child).rotation.inverse()
+                                        * (nub.bind.w_axis.xyz() - rest_child.w_axis.xyz())
+                                } else {
+                                    Transform::from_matrix(rest_parent).rotation.inverse()
+                                        * (rest_child.w_axis.xyz() - rest_parent.w_axis.xyz())
+                                };
+                                (
+                                    Transform::from_matrix(child).rotation * own_axis,
+                                    Transform::from_matrix(source_joint(&suffixes[link])).rotation
+                                        * native_axis,
+                                )
+                            };
+                            let actual = (target_palm.inverse() * actual).normalize();
+                            let wanted = (source_palm.inverse() * wanted).normalize();
+                            assert!(
+                                actual.distance(wanted) < 0.001,
+                                "{appearance:?} {side} finger{digit} link{link} t{seconds}: {actual:?} vs {wanted:?}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn lower_body_skin_vertices(world: &World, assets: &AvatarAssets, rig: &RigPose) -> Vec<Vec3> {
+    let meshes = world.resource::<Assets<Mesh>>();
+    let inverse = world.resource::<Assets<SkinnedMeshInverseBindposes>>();
+    let deltas = assets.pose_deltas(rig);
+    let source_deltas = assets.source_deltas(rig);
+    let mut result = Vec::new();
+    for part in assets.parts.iter().filter(|part| !part.blade) {
+        let palette: Vec<_> = part
+            .bones
+            .iter()
+            .zip(inverse.get(&part.inverse_bindposes).unwrap().iter())
+            .map(|(bone, bind)| {
+                assets
+                    .joint_pose(rig, &deltas, source_deltas.as_deref(), bone)
+                    .to_matrix()
+                    * *bind
+            })
+            .collect();
+        for primitive in &part.primitives {
+            let mesh = meshes.get(&primitive.mesh).unwrap();
+            let positions = mesh
+                .attribute(Mesh::ATTRIBUTE_POSITION)
+                .unwrap()
+                .as_float3()
+                .unwrap();
+            let VertexAttributeValues::Uint16x4(joints) =
+                mesh.attribute(Mesh::ATTRIBUTE_JOINT_INDEX).unwrap()
+            else {
+                panic!("indices")
+            };
+            let VertexAttributeValues::Float32x4(weights) =
+                mesh.attribute(Mesh::ATTRIBUTE_JOINT_WEIGHT).unwrap()
+            else {
+                panic!("weights")
+            };
+            for vertex in 0..positions.len() {
+                if (0..4).any(|slot| {
+                    weights[vertex][slot] > 0.0
+                        && (2..=14).contains(&part.bones[joints[vertex][slot] as usize].driver)
+                }) {
+                    continue;
+                }
+                let position = Vec3::from(positions[vertex]);
+                result.push(
+                    (0..4)
+                        .map(|slot| {
+                            palette[joints[vertex][slot] as usize].transform_point3(position)
+                                * weights[vertex][slot]
+                        })
+                        .sum(),
+                );
+            }
+        }
+    }
+    result
+}
+
+#[test]
+fn raw_native_upper_body_layers_keep_actual_pelvis_legs_and_skinned_feet_on_the_shared_baseline() {
+    for appearance in [
+        Appearance::Lihuowang,
+        Appearance::Bailingmiao,
+        Appearance::Choulingke,
+    ] {
+        let (world, assets) = bundle(appearance);
+        let cc0 = world.resource::<AnimationLibrary>();
+        let sources = world.resource::<SourceAnimationLibrary>();
+        let source = sources.for_rig(SourceRig::Naraka).unwrap();
+        let baseline = RigPose::new(cc0);
+        let baseline_drivers = assets.evaluated_drivers(&baseline);
+        let baseline_vertices = lower_body_skin_vertices(&world, &assets, &baseline);
+        assert!(baseline_vertices.len() > 100);
+        for (name, duration) in source.clips().into_iter().filter(|(name, _)| {
+            name.contains("_sniper_") || name.contains("_fk_") || *name == "male_bow_attack_01"
+        }) {
+            let mut preview = crate::client::animation::PreviewRig::new(cc0);
+            for (sample, seconds) in [0.0, duration * 0.5, duration].into_iter().enumerate() {
+                assert!(preview.seek(
+                    cc0,
+                    sources,
+                    &format!("naraka:{name}"),
+                    crate::simulation::WeaponPair::HammerMusket,
+                    false,
+                    seconds,
+                    false
+                ));
+                let rig = preview.pose();
+                assert_eq!(rig.source.as_ref().unwrap().scope, SourceScope::UpperBody);
+                assert!(
+                    rig.companion_hands.is_none(),
+                    "raw source must not apply weapon IK"
+                );
+                let drivers = assets.evaluated_drivers(rig);
+                for (index, (actual, baseline)) in drivers.iter().zip(&baseline_drivers).enumerate()
+                {
+                    if (2..=14).contains(&index) {
+                        continue;
+                    }
+                    assert!(
+                        actual.translation.distance(baseline.translation) < 0.000002,
+                        "{appearance:?} {name}: lower driver{index} sank"
+                    );
+                    assert!(actual.rotation.dot(baseline.rotation).abs() > 0.999999);
+                }
+                if sample == 1 {
+                    let actual_vertices = lower_body_skin_vertices(&world, &assets, rig);
+                    assert_eq!(actual_vertices.len(), baseline_vertices.len());
+                    for (actual, baseline) in actual_vertices.iter().zip(&baseline_vertices) {
+                        assert!(
+                            actual.distance(*baseline) < 0.00002,
+                            "{appearance:?} {name}: actual lower-body LBS changed by {:?}",
+                            actual - *baseline
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn native_finger_curls_reach_real_weighted_vertices_and_fades_keep_own_lengths() {
+    for appearance in [Appearance::Lihuowang, Appearance::Bailingmiao] {
+        let (world, assets) = bundle(appearance);
+        let source = world
+            .resource::<SourceAnimationLibrary>()
+            .for_rig(SourceRig::Naraka)
+            .unwrap();
+        let baseline = RigPose::new(world.resource::<AnimationLibrary>());
+        let rigid = finger_vertices_in_hand(&world, &assets, &baseline);
+        let clip = source.clip("male_hengdao_idle_01").unwrap();
+        let model = source.model_pose(&source.sample(clip, 0.4, false, false));
+        let mut rig = baseline.clone();
+        rig.source = Some(SourcePose {
+            scope: SourceScope::FullBody,
+            rig: SourceRig::Naraka,
+            model,
+            weight: 1.0,
+        });
+        let curled = finger_vertices_in_hand(&world, &assets, &rig);
+        assert_eq!(rigid.len(), curled.len());
+        assert!(rigid.len() > 100);
+        let displacement = rigid
+            .iter()
+            .zip(&curled)
+            .map(|(a, b)| a.distance(*b))
+            .fold(0.0_f32, f32::max);
+        assert!(
+            displacement > 0.005,
+            "{appearance:?}: native curls did not reach actual finger-weighted skin ({displacement}m)"
+        );
+        for weight in [0.0, 0.25, 0.5, 0.75, 1.0] {
+            rig.source.as_mut().unwrap().weight = weight;
+            for side in ["L", "R"] {
+                for digit in 0..5 {
+                    let names = [
+                        format!("gMan {side} Hand"),
+                        format!("gMan {side} Finger{digit}"),
+                        format!("gMan {side} Finger{digit}1"),
+                        format!("gMan {side} Finger{digit}2"),
+                    ];
+                    for link in 0..3 {
+                        let posed_length = matrix(&assets, &rig, &names[link])
+                            .w_axis
+                            .xyz()
+                            .distance(matrix(&assets, &rig, &names[link + 1]).w_axis.xyz());
+                        let own_length = bone(&assets, &names[link])
+                            .bind
+                            .w_axis
+                            .xyz()
+                            .distance(bone(&assets, &names[link + 1]).bind.w_axis.xyz());
+                        assert!(
+                            (posed_length - own_length).abs() < 0.00002,
+                            "{appearance:?} {side} finger{digit} segment{link} source weight{weight}: own length changed"
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn crouched_attacks_and_crouched_or_moving_defense_keep_real_lower_skin_and_weapon_grips() {
+    for appearance in [
+        Appearance::Lihuowang,
+        Appearance::Bailingmiao,
+        Appearance::Choulingke,
+    ] {
+        let (world, assets) = bundle(appearance);
+        let cc0 = world.resource::<AnimationLibrary>();
+        let sources = world.resource::<SourceAnimationLibrary>();
+        let prefix = if appearance == Appearance::Choulingke {
+            "Bip001"
+        } else {
+            "gMan"
+        };
+        for scenario in ["crouch_attack", "crouch_guard", "walk_guard"] {
+            let mut preview = crate::client::animation::PreviewRig::new(cc0);
+            for seconds in [1.0 / 60.0, 0.05, 0.10, 0.20, 0.40] {
+                assert!(preview.seek(
+                    cc0,
+                    sources,
+                    &format!("game:{scenario}"),
+                    crate::simulation::WeaponPair::HammerMusket,
+                    false,
+                    seconds,
+                    false
+                ));
+                let rig = preview.pose();
+                assert_eq!(rig.source.as_ref().unwrap().scope, SourceScope::UpperBody);
+                let expected = if scenario == "crouch_attack" {
+                    "male_hengdao_attack_light_01"
+                } else {
+                    "male_hengdao_shock_01"
+                };
+                assert_eq!(rig.trace().source_clip.as_deref(), Some(expected));
+                assert!(rig.trace().adaptation.unwrap().contains("crouch/gait"));
+                let mut baseline = rig.clone();
+                baseline.source = None;
+                let drivers = assets.evaluated_drivers(rig);
+                let lower = assets.evaluated_drivers(&baseline);
+                for (index, (actual, wanted)) in drivers.iter().zip(&lower).enumerate() {
+                    if (2..=14).contains(&index) {
+                        continue;
+                    }
+                    assert!(
+                        actual.translation.distance(wanted.translation) < 0.000002,
+                        "{appearance:?} {scenario} {seconds}: lower driver {index} displaced"
+                    );
+                    assert!(actual.rotation.dot(wanted.rotation).abs() > 0.999999);
+                }
+                let actual_skin = lower_body_skin_vertices(&world, &assets, rig);
+                let baseline_skin = lower_body_skin_vertices(&world, &assets, &baseline);
+                assert_eq!(actual_skin.len(), baseline_skin.len());
+                for (actual, wanted) in actual_skin.iter().zip(&baseline_skin) {
+                    assert!(
+                        actual.distance(*wanted) < 0.00002,
+                        "{appearance:?} {scenario}: actual pelvis/leg/foot skin displaced"
+                    );
+                }
+                if scenario.starts_with("crouch") {
+                    let weight = rig.trace().crouch_weight;
+                    if seconds < 0.12 {
+                        assert!(weight > 0.0 && weight < 1.0);
+                    } else {
+                        assert_eq!(weight, 1.0);
+                    }
+                }
+                let pose = assets.attachment_pose(rig);
+                for (side, semantic) in [("R", "hand_r"), ("L", "hand_l")] {
+                    let wrist = matrix(&assets, rig, &format!("{prefix} {side} Hand"))
+                        .w_axis
+                        .xyz();
+                    let middle = matrix(&assets, rig, &format!("{prefix} {side} Finger2"))
+                        .w_axis
+                        .xyz();
+                    let hand = cc0.bone(semantic);
+                    assert!(pose[hand].translation.distance(wrist) < 0.00002);
+                    assert!(
+                        (pose[hand].rotation * Vec3::Y).dot((middle - wrist).normalize()) > 0.9999
+                    );
+                    let mount = crate::client::stickman::attachment_transform(
+                        &crate::client::stickman::Attachment::Weapon {
+                            bone: hand,
+                            mode: crate::simulation::WeaponMode::Melee,
+                        },
+                        &pose,
+                    );
+                    assert!(
+                        mount
+                            .translation
+                            .distance(wrist + (middle - wrist).normalize() * 0.055)
+                            < 0.00002,
+                        "{appearance:?} {scenario} {side}: signed physical grip shifted"
+                    );
                 }
             }
         }

@@ -1,0 +1,83 @@
+{
+  "slice": "audio-input",
+  "checks": [
+    {
+      "command": "cargo test --locked client::audio::tests -- --quiet",
+      "result": "passed",
+      "tests": 10
+    },
+    {
+      "command": "cargo test --locked client::controls::tests -- --quiet",
+      "result": "passed",
+      "tests": 17
+    },
+    {
+      "command": "node --test scripts/audio-unit.test.cjs",
+      "result": "passed",
+      "tests": 23
+    },
+    {
+      "command": "node --test scripts/*-unit.test.cjs",
+      "result": "passed",
+      "tests": 103
+    },
+    {
+      "command": "cargo clippy --locked --all-targets -- -D warnings",
+      "result": "passed"
+    },
+    {
+      "command": "cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- src/client/audio.rs src/client/controls.rs scripts/audio-unit.test.cjs web/audio.js",
+      "result": "passed"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "result": "passed"
+    }
+  ],
+  "remaining": [
+    "Root final make check after peer edits",
+    "Root actual Chromium 42 Ogg decode and active AudioContext/input QA",
+    "Root canonical spec synchronization"
+  ],
+  "committed": false,
+  "ranged_follow_up": {
+    "directory": {
+      "cues": 16,
+      "unique_media": 48
+    },
+    "checks": [
+      {
+        "command": "cargo test --locked client::audio::tests::shot -- --quiet",
+        "result": "passed",
+        "tests": 3
+      },
+      {
+        "command": "cargo test --locked client::audio::tests::sounds_follow_actual_feedback_once_for_both_sides_of_combat -- --quiet",
+        "result": "passed",
+        "tests": 1
+      },
+      {
+        "command": "node --test --test-name-pattern='bundled effects load|unverified music|all sixteen|metadata arriving|original ranged' scripts/audio-unit.test.cjs",
+        "result": "passed",
+        "tests": 6
+      },
+      {
+        "command": "rustfmt --check --edition 2024 src/client/audio.rs",
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check -- src/client/audio.rs web/audio.js scripts/audio-unit.test.cjs",
+        "result": "passed"
+      }
+    ],
+    "provenance": "Native weapon-family shared flintlock/bow sounds; not character or displayed weapon-skin exclusive",
+    "remaining": [
+      "Root final full make check",
+      "Root additional six Ogg browser decode and actual gun/bow Shot QA"
+    ]
+  }
+}

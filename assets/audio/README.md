@@ -1,5 +1,16 @@
 # 战斗声音
 
+当前哥哥普通战斗、运动与妹妹枪弓使用永劫原音效：16个cue、48个Ogg，保留三段挥击变体、真实防御成功事件、落地双层与原100ms延迟。完整Event→Action→容器→媒体来源、SHA和增益见[naraka-manifest.json](naraka-manifest.json)，运行时配置见[naraka-cues.json](naraka-cues.json)，冻结输入与离线复核见[准备包](../prepared/naraka/audio/README.md)。声源自然音高，variant峰值增益再乘全局0.18；四短声部按优先级整组预留。空挥没有命中声，空右键没有成功声。查看页静音，游戏需可信点击解锁；未就绪／暂停的声音丢弃，恢复不补播。
+
+```sh
+python3 scripts/import-naraka-audio.py --verify assets/prepared/naraka/audio
+python3 scripts/test-naraka-audio.py
+```
+
+原鸟铳与弓媒体按实际Shot（actor=Companion）的不可变pair播放，伴随狙击特效事件不重复。原Wwise总线／完整switch混音和原动作音轨时间单位未完全恢复，未证明的起手时点采用明确Kiva偏移0；不能把这些适配称为完整原控制器。通用男性死亡语音只保留可选cue，不自动加到所有角色。
+
+以下记录燕云／旧兼容声音与BGM，相关文件仍保留。
+
 `attack.ogg` 已替换为燕云原作的真实长兵器挥声，作为Kiva当前长刀的共享适配。原common骨架的Cue → `char_skill_qiang_end_swing_fast_1p` → Event/Action/RandomContainer → Sound → `Sounds/Media/145056080.wem` 已逐段核对；来源偏移与SHA见 [effects-manifest.json](effects-manifest.json)。选择一条完整原变体，保留48kHz立体声/.71525秒源录音，仅施加恒定增益使源PCM峰值到.85，未人为截音或改变音高/速度。不称为愁铃客专属刀声，也没有恢复原随机变体、Cue时间或Wwise混音。
 
 ```sh
@@ -8,7 +19,7 @@ python3 scripts/import-choulingke-effects.py \
   --vgmstream /home/asuka/kiva-asset-research/vgmstream-r2168/vgmstream-cli
 ```
 
-`hit.ogg`、`deflect.ogg` 仍为 Kiva 自制程序音效；原版命中和成功卸势音的准确身份尚未恢复。原有枪声继续由 `web/audio.js` 合成。三类短音效只跟随实际战斗反馈，来源逐项记录，不把共用挥声或程序声混称为愁铃客原声全集。
+`hit.ogg`、`deflect.ogg` 仍为 Kiva 自制程序音效；原版命中和成功卸势音的准确身份尚未恢复。旧程序枪声在 `web/audio.js` 保留兼容入口，实际妹妹枪弓已使用上述永劫媒体。旧三类短音效仅用于未迁移的敌人／技能兼容反馈，来源逐项记录，不把共用挥声或程序声混称为愁铃客原声全集。
 
 ```sh
 python3 scripts/generate-combat-audio.py

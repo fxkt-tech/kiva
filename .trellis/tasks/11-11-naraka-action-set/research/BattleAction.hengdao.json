@@ -1,0 +1,30 @@
+{
+  "name": "BattleAction",
+  "source_path_id": -1398725021763068172,
+  "source_file": "/home/asuka/kiva-asset-research/naraka/identity/xls/BattleAction.bytes",
+  "source_sha256": "2c3f2e92eb7b328a6cdbcd3b761b60d0d3c32d62281026537d24546f550d4542",
+  "decoded_sha256": "3451e449c8db0f0da422456239bff33a282fbd5e7fef89d59aefff53b031ad7c",
+  "decoded_bytes": 1129695,
+  "framing_verified": true,
+  "tables": [
+    {
+      "name": "BattleAction_Action",
+      "offset": 198,
+      "end": 1121023,
+      "count": 13511
+    },
+    {
+      "name": "BattleAction_ActionGroup",
+      "offset": 1121023,
+      "end": 1121215,
+      "count": 6
+    },
+    {
+      "name": "BattleAction_ActionLogic",
+      "offset": 1121215,
+      "end": 1129695,
+      "count": 706
+    }
+  ],
+  "records": []
+}

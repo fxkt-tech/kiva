@@ -1,0 +1,4095 @@
+{
+  "source_dbbl_sha256": "0fbb905eb229ebe9e93a37cdfabd9d7e78755256fa0d2c5b5afec542d4b11f75",
+  "scope": "Selected event chains; source name is not alone semantic proof. Switch selections follow original default and remain explicitly marked. No original parameter/RTPC/timing reconstruction claimed.",
+  "decoder": "/home/asuka/kiva-asset-research/vgmstream-r2168/vgmstream-cli",
+  "decoder_sha256": "e736da315053bf91796d01eca18b54cbcc2d5b328eecdaf15786e7838251f581",
+  "conversion": "ffmpeg -v error -y -i full-source.wav -c:a libvorbis -q:a 4 output.ogg; no normalization, trimming or splicing",
+  "chains": [
+    {
+      "event": "gman_hengdao_attack_light_01",
+      "event_id": 3721273877,
+      "bank": "gman_hengdao",
+      "bank_id": 354526541,
+      "bank_sha256": "59f20fa5d321d3c7047334bcb8e49257ca38059fe15b35c0bab6dd68d81fb643",
+      "bank_entry": {
+        "section": "banks",
+        "id": 354526541,
+        "alignment": 4096,
+        "bytes": 3032099,
+        "offset": 23023616,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9940633,
+      "event_record_bytes": 126,
+      "event_record_sha256": "68515bf115b4a9830fd16e4bdd028a18fd21fe0553cd4cbfd2015c80e8c7d86c",
+      "paths": [
+        {
+          "action_id": 892735413,
+          "play_action_type": 1027,
+          "target_id": 715088316,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 715088316,
+              "type": 5,
+              "tail": {
+                "offset": 63,
+                "children": [
+                  402072877,
+                  984953422
+                ],
+                "playlist": [
+                  {
+                    "id": 984953422,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 402072877,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            402072877,
+            984953422
+          ],
+          "action_body_hex": "0304bc619f2a000000044da52115",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 402072877,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 909498841,
+          "source_bytes": 16692,
+          "source_sha256": "9084a55391acc96ca39f7c6f6745c2256dd144b67f7b455f535edbf9774cda81",
+          "bank_data_offset": 2528880,
+          "physical_offset": 25552496,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 984953422,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 183294347,
+          "source_bytes": 19702,
+          "source_sha256": "975900a7d33bf4f8f6ea45ee1919e30a5305570ed7268d32677f95c3460592ee",
+          "bank_data_offset": 475248,
+          "physical_offset": 23498864,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 909498841,
+        "duration": 1.1603628117913831,
+        "samples": 51172,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.738006591796875,
+        "rms_dbfs": -25.873513178074646,
+        "wav_sha256": "adb01304c4f7a7c401afdaab8c488ec3d2478c1854f4cebe4e3f8f1f92c73cab",
+        "ogg_bytes": 19871,
+        "ogg_sha256": "bbe317f9f98ed812a28a73baa60776334c37d5d8ec1c602848f82b3b3424a656",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "1.160363"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_hengdao_attack_light_01.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 51172 (0:01.160 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 114 kbps\nsample type: float\nplay duration: 51172 samples (0:01.160 seconds)\n"
+      },
+      "retained_sample": "audio-sample-gman_hengdao_attack_light_01.ogg"
+    },
+    {
+      "event": "gman_hengdao_attack_light_02",
+      "event_id": 3721273878,
+      "bank": "gman_hengdao",
+      "bank_id": 354526541,
+      "bank_sha256": "59f20fa5d321d3c7047334bcb8e49257ca38059fe15b35c0bab6dd68d81fb643",
+      "bank_entry": {
+        "section": "banks",
+        "id": 354526541,
+        "alignment": 4096,
+        "bytes": 3032099,
+        "offset": 23023616,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9941467,
+      "event_record_bytes": 126,
+      "event_record_sha256": "1d98a5abcc1c790ae83615931c2633e6e7d86efd792cc1a54758d7425a9ad2d3",
+      "paths": [
+        {
+          "action_id": 389517586,
+          "play_action_type": 1027,
+          "target_id": 221623978,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 221623978,
+              "type": 5,
+              "tail": {
+                "offset": 63,
+                "children": [
+                  551214520,
+                  795311813,
+                  938167163
+                ],
+                "playlist": [
+                  {
+                    "id": 551214520,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 938167163,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 795311813,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            551214520,
+            795311813,
+            938167163
+          ],
+          "action_body_hex": "0304aab6350d000000044da52115",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 551214520,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 869056893,
+          "source_bytes": 18701,
+          "source_sha256": "19b4d648a8b421008cfe59c136692fcf78c5eec9341fe50e71fe62a01c22433f",
+          "bank_data_offset": 2368992,
+          "physical_offset": 25392608,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 795311813,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 15507174,
+          "source_bytes": 15697,
+          "source_sha256": "50e0d32b06ad41f04185d0810ed076cd2f9ae56a1443bc7400bb46a9b7bab127",
+          "bank_data_offset": 57760,
+          "physical_offset": 23081376,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 938167163,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 278708188,
+          "source_bytes": 18874,
+          "source_sha256": "172d69fac6ad6c044d8cd25fa3fc252338ba1bf795b55606251694612570d957",
+          "bank_data_offset": 672592,
+          "physical_offset": 23696208,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 869056893,
+        "duration": 1.412607709750567,
+        "samples": 62296,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.748626708984375,
+        "rms_dbfs": -25.04607793665076,
+        "wav_sha256": "824feee86ab50e1b4747b552eaf147bca414aea4e3e574b48e8e4f31705998a1",
+        "ogg_bytes": 21577,
+        "ogg_sha256": "0d010cc8670f53bf5aeef38f8bcc53a18c9dac1db745a1346735dc2657c6e641",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "1.412608"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_hengdao_attack_light_02.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 62296 (0:01.413 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 105 kbps\nsample type: float\nplay duration: 62296 samples (0:01.413 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_hengdao_attack_light_03",
+      "event_id": 3721273879,
+      "bank": "gman_hengdao",
+      "bank_id": 354526541,
+      "bank_sha256": "59f20fa5d321d3c7047334bcb8e49257ca38059fe15b35c0bab6dd68d81fb643",
+      "bank_entry": {
+        "section": "banks",
+        "id": 354526541,
+        "alignment": 4096,
+        "bytes": 3032099,
+        "offset": 23023616,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9942301,
+      "event_record_bytes": 126,
+      "event_record_sha256": "78d06e5f3d7e770671e3e0356771f098c2b0a1ace0b42877236aaf0f7ea968be",
+      "paths": [
+        {
+          "action_id": 531355528,
+          "play_action_type": 1027,
+          "target_id": 602790012,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 602790012,
+              "type": 5,
+              "tail": {
+                "offset": 63,
+                "children": [
+                  110211255,
+                  525298400,
+                  687924463
+                ],
+                "playlist": [
+                  {
+                    "id": 110211255,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 525298400,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 687924463,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            110211255,
+            525298400,
+            687924463
+          ],
+          "action_body_hex": "03047cd8ed23000000044da52115",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 110211255,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 359912015,
+          "source_bytes": 22296,
+          "source_sha256": "d4829c9e23a956cb7eadc11761d04541c49276d837fccb6fc1451e3f22cacd7f",
+          "bank_data_offset": 902400,
+          "physical_offset": 23926016,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 525298400,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 318634220,
+          "source_bytes": 25677,
+          "source_sha256": "f3efac93946ee50c743d0ca0322d97e286eb03808282bd916589d90e3ff75ffa",
+          "bank_data_offset": 726256,
+          "physical_offset": 23749872,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 687924463,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 278221262,
+          "source_bytes": 21933,
+          "source_sha256": "cf0400f3245759e6cbec2b24904f00b682b55bdaf6cb7c2e1fb9bf88d29023d2",
+          "bank_data_offset": 650656,
+          "physical_offset": 23674272,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 359912015,
+        "duration": 1.740544217687075,
+        "samples": 76758,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.6722412109375,
+        "rms_dbfs": -26.341686977255595,
+        "wav_sha256": "5976029534700067f17a1ae70f5f7d34419ea4d174487a77e561aa7fdda886d8",
+        "ogg_bytes": 23700,
+        "ogg_sha256": "afa697b9bfd22928f2119287c42c8f995e5240deaf8c35b98847d743a738d883",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "1.740544"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_hengdao_attack_light_03.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 76758 (0:01.741 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 102 kbps\nsample type: float\nplay duration: 76758 samples (0:01.741 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_hengdao_attack_shock_light_01",
+      "event_id": 726559932,
+      "bank": "gman_hengdao",
+      "bank_id": 354526541,
+      "bank_sha256": "59f20fa5d321d3c7047334bcb8e49257ca38059fe15b35c0bab6dd68d81fb643",
+      "bank_entry": {
+        "section": "banks",
+        "id": 354526541,
+        "alignment": 4096,
+        "bytes": 3032099,
+        "offset": 23023616,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9945145,
+      "event_record_bytes": 138,
+      "event_record_sha256": "aa4c89fcd97b7850e868896529561dfcca2af06d2aa3b176ab0f81f7dc0b327e",
+      "paths": [
+        {
+          "action_id": 367206753,
+          "play_action_type": 1027,
+          "target_id": 336892938,
+          "target_type": 2,
+          "containers": [],
+          "sounds": [
+            336892938
+          ],
+          "action_body_hex": "03040a941414000000044da52115",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 336892938,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 925549399,
+          "source_bytes": 34153,
+          "source_sha256": "8ed02b385c121350e345f64db1d6809b055729735ad9a5d217f6f4978513a7ac",
+          "bank_data_offset": 2590384,
+          "physical_offset": 25614000,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 925549399,
+        "duration": 2.610816326530612,
+        "samples": 115137,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.842529296875,
+        "rms_dbfs": -21.801824962295086,
+        "wav_sha256": "01fe9e46a4bc11cf3fd6d06998ebca30c29766dc5242b22681ed54e17d09d564",
+        "ogg_bytes": 38628,
+        "ogg_sha256": "6fe3ef1f0b0e73b051daa7ff2e516e9b54d2939593efe8a9e917f55fba26fd89",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "2.610816"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_hengdao_attack_shock_light_01.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 115137 (0:02.611 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 104 kbps\nsample type: float\nplay duration: 115137 samples (0:02.611 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_all_weapon_touch_shock_katana",
+      "event_id": 1521460233,
+      "bank": "gman_all_weapon_touch",
+      "bank_id": 2404454999,
+      "bank_sha256": "5f9e980d16bf795279059435df5466587580c1da30c09d250a5cbd120a39df40",
+      "bank_entry": {
+        "section": "banks",
+        "id": 2404454999,
+        "alignment": 4096,
+        "bytes": 1638057,
+        "offset": 150679552,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9566627,
+      "event_record_bytes": 156,
+      "event_record_sha256": "423e6e1ef1b0ca9cef6d982848a483dfeee901f791f6a7ae8440fe0af8f92e3d",
+      "paths": [
+        {
+          "action_id": 667042414,
+          "play_action_type": 1027,
+          "target_id": 181787070,
+          "target_type": 2,
+          "containers": [],
+          "sounds": [
+            181787070
+          ],
+          "action_body_hex": "0304bed9d50a000000045712518f",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 181787070,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 888176521,
+          "source_bytes": 44490,
+          "source_sha256": "8efb7366b8d1a73dbcd96c3e61e11d4063c574d1e53ccf46b2e404c6e82ad993",
+          "bank_data_offset": 1267248,
+          "physical_offset": 151946800,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 888176521,
+        "duration": 3.119002267573696,
+        "samples": 137548,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 1.0,
+        "rms_dbfs": -19.50680028943389,
+        "wav_sha256": "a6b111bca8c3fbe559cef4472fc96995e614e7c89dc886a3f4865305dbcdcefa",
+        "ogg_bytes": 42655,
+        "ogg_sha256": "a2171f4f5e998f87bf224d0d80649c5cd9a04af7f7cd386c173173846601427c",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "3.119002"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_all_weapon_touch_shock_katana.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 137548 (0:03.119 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 113 kbps\nsample type: float\nplay duration: 137548 samples (0:03.119 seconds)\n"
+      },
+      "retained_sample": "audio-sample-gman_all_weapon_touch_shock_katana.ogg"
+    },
+    {
+      "event": "gman_all_weapon_touch_bounce_katana",
+      "event_id": 2530787967,
+      "bank": "gman_all_weapon_touch",
+      "bank_id": 2404454999,
+      "bank_sha256": "5f9e980d16bf795279059435df5466587580c1da30c09d250a5cbd120a39df40",
+      "bank_entry": {
+        "section": "banks",
+        "id": 2404454999,
+        "alignment": 4096,
+        "bytes": 1638057,
+        "offset": 150679552,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9562985,
+      "event_record_bytes": 158,
+      "event_record_sha256": "b9787147de6ac6040688faa01a42c4db1e220a89256c7bfdf5b539e46e1e131e",
+      "paths": [
+        {
+          "action_id": 851320366,
+          "play_action_type": 1027,
+          "target_id": 356988993,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 356988993,
+              "type": 5,
+              "tail": {
+                "offset": 68,
+                "children": [
+                  44835417,
+                  191383837,
+                  250754409,
+                  399130005,
+                  636151948
+                ],
+                "playlist": [
+                  {
+                    "id": 636151948,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 191383837,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 399130005,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 250754409,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 44835417,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            44835417,
+            191383837,
+            250754409,
+            399130005,
+            636151948
+          ],
+          "action_body_hex": "030441384715000000045712518f",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 44835417,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 890927339,
+          "source_bytes": 27339,
+          "source_sha256": "7649faf32aa5d6ce4fd7df21950abc1e7fba33b5e83dc028376870e37bb7a5e4",
+          "bank_data_offset": 1311744,
+          "physical_offset": 151991296,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 191383837,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 717311560,
+          "source_bytes": 26855,
+          "source_sha256": "26e0c4ef778a44ff603d281788ee207913f7635d4836ce94d9cdb2a9a52dd4cf",
+          "bank_data_offset": 1041136,
+          "physical_offset": 151720688,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 250754409,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 932857473,
+          "source_bytes": 31017,
+          "source_sha256": "5a27f6bcd65c118f22476860ef0c35f165701da18a128650b14225873c25f924",
+          "bank_data_offset": 1339088,
+          "physical_offset": 152018640,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 399130005,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 840260110,
+          "source_bytes": 31525,
+          "source_sha256": "ebf47d85a63a7a8809353e948f708ddd339242f38a6c487cb42f92b35a2befb3",
+          "bank_data_offset": 1157856,
+          "physical_offset": 151837408,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 636151948,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 810026058,
+          "source_bytes": 29931,
+          "source_sha256": "e7a4528e9aa7550e28f7c1bdecfcdb96a7f20e4f664c9acc212304accbcb2e55",
+          "bank_data_offset": 1120000,
+          "physical_offset": 151799552,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 890927339,
+        "duration": 1.8316326530612246,
+        "samples": 80775,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 1.0,
+        "rms_dbfs": -22.84013375456648,
+        "wav_sha256": "3b7a37b63fdb9a6a5bb4e0fed1383262fd9f85bc3601ab153c893e8377460e15",
+        "ogg_bytes": 30142,
+        "ogg_sha256": "784c2a09a68bbc004d3b2f76581faa968a8489c835633ce6b00ce783c69c3242",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "1.831633"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_all_weapon_touch_bounce_katana.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 80775 (0:01.832 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 118 kbps\nsample type: float\nplay duration: 80775 samples (0:01.832 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_all_jump_start_pre_01",
+      "event_id": 70533642,
+      "bank": "gman_all_jump",
+      "bank_id": 3392935703,
+      "bank_sha256": "eb8ea6a9f41cce35cdec36c8dd0431e0f265a18d4c2eb37f03548ff8c923f9e5",
+      "bank_entry": {
+        "section": "banks",
+        "id": 3392935703,
+        "alignment": 4096,
+        "bytes": 299770,
+        "offset": 192565248,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9549453,
+      "event_record_bytes": 124,
+      "event_record_sha256": "45891ab2c8f02d45ae0d97883737d6401621e733c5859610bb124e9de8fb4b5b",
+      "paths": [
+        {
+          "action_id": 1011652001,
+          "play_action_type": 1027,
+          "target_id": 563165196,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 563165196,
+              "type": 5,
+              "tail": {
+                "offset": 54,
+                "children": [
+                  183523935,
+                  622609083,
+                  623956231,
+                  942181691
+                ],
+                "playlist": [
+                  {
+                    "id": 623956231,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 942181691,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 622609083,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 183523935,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            183523935,
+            622609083,
+            623956231,
+            942181691
+          ],
+          "action_body_hex": "03040c3891210000000417173cca",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 183523935,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 960648416,
+          "source_bytes": 6567,
+          "source_sha256": "1d530b84eea605077fcdf03ef11004ea38c254a897a1e906806ee9ead1a1904e",
+          "bank_data_offset": 267536,
+          "physical_offset": 192832784,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 622609083,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 807356163,
+          "source_bytes": 7301,
+          "source_sha256": "4b9c7f932c76ebdc1cf83361db6bcef89ef43061a7b2dbe9d7fee4f5975e18ee",
+          "bank_data_offset": 148992,
+          "physical_offset": 192714240,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 623956231,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 333771416,
+          "source_bytes": 7201,
+          "source_sha256": "dafce45388bf1a8f659b9a5dccedf36475f6f80e4ae0947d1138d30b2dd2c46c",
+          "bank_data_offset": 15328,
+          "physical_offset": 192580576,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 942181691,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 192537954,
+          "source_bytes": 6230,
+          "source_sha256": "fc979bd24eadd3049be3575bab9951b1a9dc3eb18da57179c651e3b2c501bdd0",
+          "bank_data_offset": 9088,
+          "physical_offset": 192574336,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 960648416,
+        "duration": 0.755827664399093,
+        "samples": 33332,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.143463134765625,
+        "rms_dbfs": -38.20103309574755,
+        "wav_sha256": "db7085cdf3d604ced90593a1743fa6fe2b1824b9f3d50454aa7efcd0651b82d3",
+        "ogg_bytes": 9772,
+        "ogg_sha256": "184ea320da98ed378debe54c4f2a460d90c0172e533abd30ff8f5a4aed44ba23",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "0.755828"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_all_jump_start_pre_01.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 33332 (0:00.756 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 68 kbps\nsample type: float\nplay duration: 33332 samples (0:00.756 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_all_jump_down_recover_01",
+      "event_id": 3261097271,
+      "bank": "gman_all_jump",
+      "bank_id": 3392935703,
+      "bank_sha256": "eb8ea6a9f41cce35cdec36c8dd0431e0f265a18d4c2eb37f03548ff8c923f9e5",
+      "bank_entry": {
+        "section": "banks",
+        "id": 3392935703,
+        "alignment": 4096,
+        "bytes": 299770,
+        "offset": 192565248,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9549187,
+      "event_record_bytes": 130,
+      "event_record_sha256": "511cc0c1ec13d6419aeb3533f3b1bf967c80d359717d0fbfcc7cebdeff1250ec",
+      "paths": [
+        {
+          "action_id": 522721785,
+          "play_action_type": 1027,
+          "target_id": 717181373,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 717181373,
+              "type": 5,
+              "tail": {
+                "offset": 73,
+                "children": [
+                  376508741,
+                  388103621,
+                  713695671,
+                  714125518
+                ],
+                "playlist": [
+                  {
+                    "id": 713695671,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 714125518,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 376508741,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 388103621,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            376508741,
+            388103621,
+            713695671,
+            714125518
+          ],
+          "action_body_hex": "0304bd51bf2a0000000417173cca",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 376508741,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 860520235,
+          "source_bytes": 55131,
+          "source_sha256": "0765473b0e5e6d01cca97c973a047f04f74a2a9848dd6b126b6ddd045436863c",
+          "bank_data_offset": 212400,
+          "physical_offset": 192777648,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 388103621,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 449901098,
+          "source_bytes": 54359,
+          "source_sha256": "2465ac83c298fe0a1b74026fc41b229ee56a3f8fb2a5c1d3637a0cf75027335a",
+          "bank_data_offset": 22544,
+          "physical_offset": 192587792,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 713695671,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 585935093,
+          "source_bytes": 54301,
+          "source_sha256": "237e0f4277499ed6c0eddb7f2869161873b86a20ef965a25fd6c3f1338e84e3b",
+          "bank_data_offset": 85952,
+          "physical_offset": 192651200,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 714125518,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 844587257,
+          "source_bytes": 56091,
+          "source_sha256": "7b097d39a20d1a2ac3b6c010d33018af61e5921654edb9fdf41687b42b97c0be",
+          "bank_data_offset": 156304,
+          "physical_offset": 192721552,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 860520235,
+        "duration": 4.199727891156463,
+        "samples": 185208,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.775665283203125,
+        "rms_dbfs": -26.711012571277593,
+        "wav_sha256": "7441b098d24089d41e7edf9cefd1741b49154542d5a0987ed1a73cf76eaf5877",
+        "ogg_bytes": 50989,
+        "ogg_sha256": "0abe9d647139f88d760555c3d0a1a16afcdf48602fee771a3d4ade275648703e",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "4.199728"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_all_jump_down_recover_01.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 185208 (0:04.200 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 104 kbps\nsample type: float\nplay duration: 185208 samples (0:04.200 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_dodge_01",
+      "event_id": 1350675122,
+      "bank": "gman_dodge",
+      "bank_id": 859014412,
+      "bank_sha256": "f3d61553f7d7fcadf56a2af0dc8e9cb738ce907c5fdb8ca19d7e0d29efbfa4fd",
+      "bank_entry": {
+        "section": "banks",
+        "id": 859014412,
+        "alignment": 4096,
+        "bytes": 322153,
+        "offset": 71880704,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor1.pck",
+        "file_bytes": 434934120,
+        "header_bytes": 5000,
+        "header_sha256": "a426fa8a87758df6c11a2f8305ceb9992be256bdaa34442d6bb8b3239fe6ec11"
+      },
+      "event_record_offset": 9743607,
+      "event_record_bytes": 92,
+      "event_record_sha256": "069645e01600d4c8e8c54faa8d65fb0beb6695c0521d07f28253dda0bb51c269",
+      "paths": [
+        {
+          "action_id": 168301124,
+          "play_action_type": 1027,
+          "target_id": 496861425,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 496861425,
+              "type": 5,
+              "tail": {
+                "offset": 116,
+                "children": [
+                  146466590,
+                  232688953,
+                  290036446,
+                  496944873,
+                  522542959,
+                  723058154
+                ],
+                "playlist": [
+                  {
+                    "id": 232688953,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 146466590,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 290036446,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 522542959,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 723058154,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 496944873,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            146466590,
+            232688953,
+            290036446,
+            496944873,
+            522542959,
+            723058154
+          ],
+          "action_body_hex": "0304f1809d1d000000040c853333",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 146466590,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 384048418,
+          "source_bytes": 11374,
+          "source_sha256": "1b9ecbcfc52f7b901a3aa689148df08fefa073debf9c63305fc89b9ec0f435d7",
+          "bank_data_offset": 131184,
+          "physical_offset": 72011888,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 232688953,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 835672119,
+          "source_bytes": 11576,
+          "source_sha256": "a7898abe02a5654e71a24d42cd1bcc180a0af4bc6ad3ae047c97ff8d729fa281",
+          "bank_data_offset": 206576,
+          "physical_offset": 72087280,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 290036446,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 919868544,
+          "source_bytes": 12813,
+          "source_sha256": "571d84d35d88f766b12c8492998ffc6dd6dcd470026ed3551cf1c10f391fa4cc",
+          "bank_data_offset": 248624,
+          "physical_offset": 72129328,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 496944873,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1013417629,
+          "source_bytes": 13535,
+          "source_sha256": "6f46aa32cad9a1d098f6f2e9cefc68713c677140806cb1a09fe2f56022cf1e72",
+          "bank_data_offset": 280112,
+          "physical_offset": 72160816,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 522542959,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 828546990,
+          "source_bytes": 14220,
+          "source_sha256": "6d83bb3948b3bba8b411507ca2c1c91a4b284e8b93ea1069c2e6b330e4e8a6aa",
+          "bank_data_offset": 192352,
+          "physical_offset": 72073056,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 723058154,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 364824874,
+          "source_bytes": 11644,
+          "source_sha256": "70efd50d552ed63618f3d41500c052823eb477f6b5fe30fe93f767436dea55f1",
+          "bank_data_offset": 110048,
+          "physical_offset": 71990752,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 384048418,
+        "duration": 0.932358276643991,
+        "samples": 41117,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.2908935546875,
+        "rms_dbfs": -30.634159450571087,
+        "wav_sha256": "6938e989ab68c666da54394f2b7ace7da969cd5d8027710900dab32234dba4ff",
+        "ogg_bytes": 14079,
+        "ogg_sha256": "e027558665969852b294942b67908d8d6548bbfa0c363f776f9436fa579e7cd0",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "0.932358"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_dodge_01.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 41117 (0:00.932 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 96 kbps\nsample type: float\nplay duration: 41117 samples (0:00.932 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "impact_body",
+      "event_id": 2553674422,
+      "bank": "impact_body",
+      "bank_id": 2553674422,
+      "bank_sha256": "1747f09f029a02f0930ebe098b2e3cc8d7c77118a1e8073e3e344203ba8e2d7f",
+      "bank_entry": {
+        "section": "banks",
+        "id": 2553674422,
+        "alignment": 4096,
+        "bytes": 165891,
+        "offset": 155140096,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 11077107,
+      "event_record_bytes": 165,
+      "event_record_sha256": "5499d8408706fc767d6c7dd8094d51d3d52cdf571679f44cf5e5a01d00f80061",
+      "paths": [
+        {
+          "action_id": 925122482,
+          "play_action_type": 1027,
+          "target_id": 652182496,
+          "target_type": 6,
+          "containers": [
+            {
+              "id": 652182496,
+              "type": 6,
+              "tail": {
+                "offset": 49,
+                "group_type": 0,
+                "group_id": 2553674422,
+                "default_switch": 2454616260,
+                "continuous": 0,
+                "children": [
+                  81520592,
+                  443331604,
+                  878583613
+                ],
+                "groups": [
+                  {
+                    "switch": 3071189824,
+                    "children": [
+                      878583613
+                    ]
+                  },
+                  {
+                    "switch": 1719082493,
+                    "children": [
+                      81520592
+                    ]
+                  },
+                  {
+                    "switch": 2454616260,
+                    "children": [
+                      443331604
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 878583613,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 81520592,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 443331604,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 443331604,
+              "type": 5,
+              "tail": {
+                "offset": 59,
+                "children": [
+                  64680600,
+                  203675293,
+                  335750139,
+                  919461479,
+                  963015164
+                ],
+                "playlist": [
+                  {
+                    "id": 919461479,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 963015164,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 335750139,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 64680600,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 203675293,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            64680600,
+            203675293,
+            335750139,
+            919461479,
+            963015164
+          ],
+          "action_body_hex": "0304e083df2600000004b6fa3598",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 64680600,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 682948856,
+          "source_bytes": 15081,
+          "source_sha256": "21252751ac7b6b47468f29da2841d37ad92feb841912e3084f7ee397b5483452",
+          "bank_data_offset": 75776,
+          "physical_offset": 155215872,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 203675293,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 347384654,
+          "source_bytes": 11305,
+          "source_sha256": "be0203693e31746dd691a1f70e179be814f177b7df38c2043edc1eda3a9fc010",
+          "bank_data_offset": 41408,
+          "physical_offset": 155181504,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 335750139,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 474690479,
+          "source_bytes": 14700,
+          "source_sha256": "215a879d891bb93ad7f6a8922dc084f82bbe0d6821ed991c80df03a30242299a",
+          "bank_data_offset": 52720,
+          "physical_offset": 155192816,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 919461479,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 278492924,
+          "source_bytes": 15673,
+          "source_sha256": "bfb7c400e299097402f6b11fa72136e7bc2180a7bc9c5f2ec376bde89603fe33",
+          "bank_data_offset": 18544,
+          "physical_offset": 155158640,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 963015164,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 781923129,
+          "source_bytes": 13079,
+          "source_sha256": "4fc1a221e4495482257af2953d758fa3ee025d4373b7284ff8d2c0df472913a5",
+          "bank_data_offset": 130128,
+          "physical_offset": 155270224,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 682948856,
+        "duration": 1.1343310657596373,
+        "samples": 50024,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.936126708984375,
+        "rms_dbfs": -24.467735465512817,
+        "wav_sha256": "c12d17645bdc0295554bba7ce0f98bc2018db0b99bce717f31998cbf30675cfd",
+        "ogg_bytes": 18237,
+        "ogg_sha256": "d2718666df4c137c24b63a4196c648d1cba00fde39539e9d64f221843f3dd46d",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "1.134331"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-impact_body.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 50024 (0:01.134 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 105 kbps\nsample type: float\nplay duration: 50024 samples (0:01.134 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "move_run",
+      "event_id": 2393422116,
+      "bank": "move_run",
+      "bank_id": 2393422116,
+      "bank_sha256": "0d4443491c5663e46e040805e19b23279635b5d42f407fd6b7bbbf60f516a667",
+      "bank_entry": {
+        "section": "banks",
+        "id": 2393422116,
+        "alignment": 4096,
+        "bytes": 1089032,
+        "offset": 223612928,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor1.pck",
+        "file_bytes": 434934120,
+        "header_bytes": 5000,
+        "header_sha256": "a426fa8a87758df6c11a2f8305ceb9992be256bdaa34442d6bb8b3239fe6ec11"
+      },
+      "event_record_offset": 11095146,
+      "event_record_bytes": 427,
+      "event_record_sha256": "ef26be290b182a5f337e0d811be17542282a7e1602cb088433fcbee11200e9f0",
+      "paths": [
+        {
+          "action_id": 129835391,
+          "play_action_type": 1027,
+          "target_id": 870651836,
+          "target_type": 6,
+          "containers": [
+            {
+              "id": 870651836,
+              "type": 6,
+              "tail": {
+                "offset": 110,
+                "group_type": 0,
+                "group_id": 1936126619,
+                "default_switch": 2195636714,
+                "continuous": 0,
+                "children": [
+                  21804459,
+                  106003476,
+                  119759451,
+                  141515210,
+                  156674980,
+                  325163430,
+                  329747088,
+                  475639084,
+                  516672427,
+                  550585602,
+                  575296365,
+                  587168386,
+                  596845107,
+                  686257662,
+                  757564530,
+                  853517708,
+                  859371902,
+                  959719300,
+                  962168298,
+                  966251895,
+                  975223581
+                ],
+                "groups": [
+                  {
+                    "switch": 2195636714,
+                    "children": [
+                      156674980
+                    ]
+                  },
+                  {
+                    "switch": 2058049674,
+                    "children": [
+                      119759451
+                    ]
+                  },
+                  {
+                    "switch": 1216965916,
+                    "children": [
+                      962168298
+                    ]
+                  },
+                  {
+                    "switch": 2185786256,
+                    "children": [
+                      575296365
+                    ]
+                  },
+                  {
+                    "switch": 4248645337,
+                    "children": [
+                      853517708
+                    ]
+                  },
+                  {
+                    "switch": 1427625975,
+                    "children": [
+                      325163430
+                    ]
+                  },
+                  {
+                    "switch": 3273609536,
+                    "children": [
+                      966251895
+                    ]
+                  },
+                  {
+                    "switch": 2003927601,
+                    "children": [
+                      975223581
+                    ]
+                  },
+                  {
+                    "switch": 2654748154,
+                    "children": [
+                      959719300
+                    ]
+                  },
+                  {
+                    "switch": 2637588553,
+                    "children": [
+                      329747088
+                    ]
+                  },
+                  {
+                    "switch": 2473969246,
+                    "children": [
+                      859371902
+                    ]
+                  },
+                  {
+                    "switch": 48383132,
+                    "children": [
+                      686257662
+                    ]
+                  },
+                  {
+                    "switch": 2412606308,
+                    "children": [
+                      21804459
+                    ]
+                  },
+                  {
+                    "switch": 803837735,
+                    "children": [
+                      516672427
+                    ]
+                  },
+                  {
+                    "switch": 3111880208,
+                    "children": [
+                      550585602
+                    ]
+                  },
+                  {
+                    "switch": 1365536729,
+                    "children": [
+                      757564530
+                    ]
+                  },
+                  {
+                    "switch": 344481046,
+                    "children": [
+                      141515210
+                    ]
+                  },
+                  {
+                    "switch": 787898836,
+                    "children": [
+                      475639084
+                    ]
+                  },
+                  {
+                    "switch": 3787535528,
+                    "children": [
+                      587168386
+                    ]
+                  },
+                  {
+                    "switch": 1813329600,
+                    "children": [
+                      596845107
+                    ]
+                  },
+                  {
+                    "switch": 1639179434,
+                    "children": [
+                      106003476
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 156674980,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 119759451,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 962168298,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 575296365,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 853517708,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 325163430,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 966251895,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 975223581,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 959719300,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 329747088,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 859371902,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 686257662,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 21804459,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 516672427,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 550585602,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 757564530,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 141515210,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 475639084,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 587168386,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 106003476,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 596845107,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 156674980,
+              "type": 5,
+              "tail": {
+                "offset": 54,
+                "children": [
+                  48648339,
+                  387914970,
+                  458322402,
+                  519647363,
+                  534567783,
+                  607595689,
+                  723596167,
+                  884677866
+                ],
+                "playlist": [
+                  {
+                    "id": 723596167,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 48648339,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 884677866,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 534567783,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 519647363,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 607595689,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 387914970,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 458322402,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            48648339,
+            387914970,
+            458322402,
+            519647363,
+            534567783,
+            607595689,
+            723596167,
+            884677866
+          ],
+          "action_body_hex": "0304bc17e5330000000424b9a88e",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 48648339,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 655706814,
+          "source_bytes": 5259,
+          "source_sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e",
+          "bank_data_offset": 704912,
+          "physical_offset": 224317840,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 387914970,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 265957799,
+          "source_bytes": 5843,
+          "source_sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae",
+          "bank_data_offset": 256176,
+          "physical_offset": 223869104,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 458322402,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 361062933,
+          "source_bytes": 5565,
+          "source_sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e",
+          "bank_data_offset": 372208,
+          "physical_offset": 223985136,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 519647363,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1012800056,
+          "source_bytes": 5895,
+          "source_sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4",
+          "bank_data_offset": 1030992,
+          "physical_offset": 224643920,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 534567783,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1002355989,
+          "source_bytes": 5454,
+          "source_sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf",
+          "bank_data_offset": 1011632,
+          "physical_offset": 224624560,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 607595689,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 322497778,
+          "source_bytes": 5653,
+          "source_sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6",
+          "bank_data_offset": 307584,
+          "physical_offset": 223920512,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 723596167,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 450188065,
+          "source_bytes": 4436,
+          "source_sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290",
+          "bank_data_offset": 505344,
+          "physical_offset": 224118272,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 884677866,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 394273666,
+          "source_bytes": 5364,
+          "source_sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee",
+          "bank_data_offset": 405344,
+          "physical_offset": 224018272,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 655706814,
+        "duration": 0.4844671201814059,
+        "samples": 21365,
+        "channels": 1,
+        "rate": 44100,
+        "peak": 0.3828125,
+        "rms_dbfs": -32.75761882790541,
+        "wav_sha256": "46dd71ffc9632c7d50da765a63a8ebdd1d5640da10a8845368957cff8b93516c",
+        "ogg_bytes": 8390,
+        "ogg_sha256": "d56a2d9bb67ec48681170c35293ef8efcf8c997d91e1ae99b990dc80d78c2fad",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 1
+            }
+          ],
+          "format": {
+            "duration": "0.484467"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-move_run.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 21365 (0:00.484 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 85 kbps\nsample type: float\nplay duration: 21365 samples (0:00.484 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "move_sprint",
+      "event_id": 1466795493,
+      "bank": "move_sprint",
+      "bank_id": 1466795493,
+      "bank_sha256": "cf9a1982d7160bd5a0eb7ffe4ffc7f1bff65ce1b232659115847f14bcf163666",
+      "bank_entry": {
+        "section": "banks",
+        "id": 1466795493,
+        "alignment": 4096,
+        "bytes": 1088091,
+        "offset": 159145984,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor1.pck",
+        "file_bytes": 434934120,
+        "header_bytes": 5000,
+        "header_sha256": "a426fa8a87758df6c11a2f8305ceb9992be256bdaa34442d6bb8b3239fe6ec11"
+      },
+      "event_record_offset": 11112248,
+      "event_record_bytes": 439,
+      "event_record_sha256": "21edd7ff45f0da20943300d3f0ccc57fca4ab223e930073d9e3832c7bad5bd1a",
+      "paths": [
+        {
+          "action_id": 560082350,
+          "play_action_type": 1027,
+          "target_id": 356762757,
+          "target_type": 6,
+          "containers": [
+            {
+              "id": 356762757,
+              "type": 6,
+              "tail": {
+                "offset": 110,
+                "group_type": 0,
+                "group_id": 1936126619,
+                "default_switch": 2195636714,
+                "continuous": 0,
+                "children": [
+                  20928205,
+                  79353918,
+                  183386325,
+                  292828399,
+                  294745296,
+                  319833955,
+                  324591359,
+                  381497069,
+                  646147766,
+                  646884281,
+                  664428525,
+                  666401703,
+                  701007085,
+                  701816684,
+                  737696095,
+                  739021516,
+                  770944626,
+                  860033180,
+                  869710943,
+                  895299500,
+                  1035953255
+                ],
+                "groups": [
+                  {
+                    "switch": 2195636714,
+                    "children": [
+                      860033180
+                    ]
+                  },
+                  {
+                    "switch": 2058049674,
+                    "children": [
+                      664428525
+                    ]
+                  },
+                  {
+                    "switch": 1216965916,
+                    "children": [
+                      646147766
+                    ]
+                  },
+                  {
+                    "switch": 2185786256,
+                    "children": [
+                      739021516
+                    ]
+                  },
+                  {
+                    "switch": 4248645337,
+                    "children": [
+                      79353918
+                    ]
+                  },
+                  {
+                    "switch": 1427625975,
+                    "children": [
+                      324591359
+                    ]
+                  },
+                  {
+                    "switch": 3273609536,
+                    "children": [
+                      381497069
+                    ]
+                  },
+                  {
+                    "switch": 2003927601,
+                    "children": [
+                      183386325
+                    ]
+                  },
+                  {
+                    "switch": 2654748154,
+                    "children": [
+                      701007085
+                    ]
+                  },
+                  {
+                    "switch": 2637588553,
+                    "children": [
+                      646884281
+                    ]
+                  },
+                  {
+                    "switch": 2473969246,
+                    "children": [
+                      292828399
+                    ]
+                  },
+                  {
+                    "switch": 48383132,
+                    "children": [
+                      701816684
+                    ]
+                  },
+                  {
+                    "switch": 2412606308,
+                    "children": [
+                      869710943
+                    ]
+                  },
+                  {
+                    "switch": 803837735,
+                    "children": [
+                      770944626
+                    ]
+                  },
+                  {
+                    "switch": 3111880208,
+                    "children": [
+                      294745296
+                    ]
+                  },
+                  {
+                    "switch": 1365536729,
+                    "children": [
+                      666401703
+                    ]
+                  },
+                  {
+                    "switch": 344481046,
+                    "children": [
+                      319833955
+                    ]
+                  },
+                  {
+                    "switch": 787898836,
+                    "children": [
+                      895299500
+                    ]
+                  },
+                  {
+                    "switch": 3787535528,
+                    "children": [
+                      20928205
+                    ]
+                  },
+                  {
+                    "switch": 1813329600,
+                    "children": [
+                      737696095
+                    ]
+                  },
+                  {
+                    "switch": 1639179434,
+                    "children": [
+                      1035953255
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 860033180,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 664428525,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 646147766,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 739021516,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 79353918,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 324591359,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 381497069,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 183386325,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 701007085,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 646884281,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 292828399,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 701816684,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 869710943,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 770944626,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 294745296,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 666401703,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 319833955,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 895299500,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 20928205,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 737696095,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 1035953255,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 860033180,
+              "type": 5,
+              "tail": {
+                "offset": 54,
+                "children": [
+                  59814718,
+                  405497740,
+                  579310865,
+                  778890190,
+                  798332020,
+                  868099192,
+                  968910918,
+                  1006562681
+                ],
+                "playlist": [
+                  {
+                    "id": 868099192,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 59814718,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 968910918,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 579310865,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 405497740,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 778890190,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 1006562681,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 798332020,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            59814718,
+            405497740,
+            579310865,
+            778890190,
+            798332020,
+            868099192,
+            968910918,
+            1006562681
+          ],
+          "action_body_hex": "030485c4431500000004e5856d57",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 59814718,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 655706814,
+          "source_bytes": 5259,
+          "source_sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e",
+          "bank_data_offset": 697472,
+          "physical_offset": 159843456,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 405497740,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1012800056,
+          "source_bytes": 5895,
+          "source_sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4",
+          "bank_data_offset": 1017680,
+          "physical_offset": 160163664,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 579310865,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1002355989,
+          "source_bytes": 5454,
+          "source_sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf",
+          "bank_data_offset": 1000624,
+          "physical_offset": 160146608,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 778890190,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 322497778,
+          "source_bytes": 5653,
+          "source_sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6",
+          "bank_data_offset": 290848,
+          "physical_offset": 159436832,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 798332020,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 361062933,
+          "source_bytes": 5565,
+          "source_sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e",
+          "bank_data_offset": 350192,
+          "physical_offset": 159496176,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 868099192,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 450188065,
+          "source_bytes": 4436,
+          "source_sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290",
+          "bank_data_offset": 492400,
+          "physical_offset": 159638384,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 968910918,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 394273666,
+          "source_bytes": 5364,
+          "source_sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee",
+          "bank_data_offset": 390304,
+          "physical_offset": 159536288,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 1006562681,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 265957799,
+          "source_bytes": 5843,
+          "source_sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae",
+          "bank_data_offset": 239088,
+          "physical_offset": 159385072,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 655706814,
+        "duration": 0.4844671201814059,
+        "samples": 21365,
+        "channels": 1,
+        "rate": 44100,
+        "peak": 0.3828125,
+        "rms_dbfs": -32.75761882790541,
+        "wav_sha256": "46dd71ffc9632c7d50da765a63a8ebdd1d5640da10a8845368957cff8b93516c",
+        "ogg_bytes": 8390,
+        "ogg_sha256": "3f5373c94b19e029cc9e4e76e6cb49fd973ab16d1f234e3d2c7002bc8215d014",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 1
+            }
+          ],
+          "format": {
+            "duration": "0.484467"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-move_sprint.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 21365 (0:00.484 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 85 kbps\nsample type: float\nplay duration: 21365 samples (0:00.484 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "move_jump_takeoff_cloth_fast",
+      "event_id": 2940828046,
+      "bank": "move_jump",
+      "bank_id": 2747083069,
+      "bank_sha256": "afc7a0c5bf8e4c620fd07a717734cb2b11ab0f24c3662060b9ca5b771556ed43",
+      "bank_entry": {
+        "section": "banks",
+        "id": 2747083069,
+        "alignment": 4096,
+        "bytes": 3343635,
+        "offset": 268824576,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor1.pck",
+        "file_bytes": 434934120,
+        "header_bytes": 5000,
+        "header_sha256": "a426fa8a87758df6c11a2f8305ceb9992be256bdaa34442d6bb8b3239fe6ec11"
+      },
+      "event_record_offset": 11092452,
+      "event_record_bytes": 469,
+      "event_record_sha256": "5bc6355d2a1f2d4a40a88d3373d300b42851735eb90f6bba0023d7bfd3d93a2c",
+      "paths": [
+        {
+          "action_id": 146113053,
+          "play_action_type": 1027,
+          "target_id": 73453220,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 73453220,
+              "type": 5,
+              "tail": {
+                "offset": 116,
+                "children": [
+                  345561239,
+                  383914894,
+                  836564911,
+                  906166560
+                ],
+                "playlist": [
+                  {
+                    "id": 345561239,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 383914894,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 836564911,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 906166560,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            345561239,
+            383914894,
+            836564911,
+            906166560
+          ],
+          "action_body_hex": "0304a4ce6004000000043d29bda3",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 345561239,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 777150789,
+          "source_bytes": 9787,
+          "source_sha256": "06c0747fe0488d88e02166a682dc958032087d38d6cea12cadc522d0e43b52da",
+          "bank_data_offset": 2306352,
+          "physical_offset": 271130928,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 383914894,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 791851626,
+          "source_bytes": 7823,
+          "source_sha256": "cb79b8b8bab52735736f1cae329842c216c03031473907ff545051d653061b07",
+          "bank_data_offset": 2358496,
+          "physical_offset": 271183072,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 836564911,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 399916424,
+          "source_bytes": 8409,
+          "source_sha256": "d9a9c64e886c64bd0668a6a389ba92000ea40c479159af3c54676fcd247a36fb",
+          "bank_data_offset": 1308096,
+          "physical_offset": 270132672,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 906166560,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 878176367,
+          "source_bytes": 8709,
+          "source_sha256": "41467c8edf80fb37d6863d6a781204d5271e9079878dc06cb1d5dbe627fd4114",
+          "bank_data_offset": 2561904,
+          "physical_offset": 271386480,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 777150789,
+        "duration": 0.66,
+        "samples": 29106,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.235076904296875,
+        "rms_dbfs": -33.274203389534485,
+        "wav_sha256": "1ba2e3b8fd5bca582357035e96036b34b16954361009394ca20aaf039eef2ce1",
+        "ogg_bytes": 12579,
+        "ogg_sha256": "f4121a1e7e8810bb7f0063593e966fd159d658492705d39ea2271afaf3b1ae35",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "0.660000"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-move_jump_takeoff_cloth_fast.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 29106 (0:00.660 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 117 kbps\nsample type: float\nplay duration: 29106 samples (0:00.660 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "move_jump_land",
+      "event_id": 1145943743,
+      "bank": "move_jump",
+      "bank_id": 2747083069,
+      "bank_sha256": "afc7a0c5bf8e4c620fd07a717734cb2b11ab0f24c3662060b9ca5b771556ed43",
+      "bank_entry": {
+        "section": "banks",
+        "id": 2747083069,
+        "alignment": 4096,
+        "bytes": 3343635,
+        "offset": 268824576,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor1.pck",
+        "file_bytes": 434934120,
+        "header_bytes": 5000,
+        "header_sha256": "a426fa8a87758df6c11a2f8305ceb9992be256bdaa34442d6bb8b3239fe6ec11"
+      },
+      "event_record_offset": 11089256,
+      "event_record_bytes": 441,
+      "event_record_sha256": "b99e23a832f177c33d774ac320d890fc099992d582ee26fdff5581cff27bcd62",
+      "paths": [
+        {
+          "action_id": 221259392,
+          "play_action_type": 1027,
+          "target_id": 48398575,
+          "target_type": 6,
+          "containers": [
+            {
+              "id": 48398575,
+              "type": 6,
+              "tail": {
+                "offset": 110,
+                "group_type": 0,
+                "group_id": 1936126619,
+                "default_switch": 2195636714,
+                "continuous": 0,
+                "children": [
+                  33733124,
+                  146592735,
+                  170284552,
+                  325952535,
+                  370251827,
+                  498024571,
+                  582069048,
+                  622944717,
+                  625720546,
+                  653803790,
+                  671371493,
+                  685909840,
+                  687783958,
+                  726198320,
+                  823391852,
+                  850179360,
+                  863302343,
+                  927096275,
+                  937379617,
+                  956054232,
+                  1038231966
+                ],
+                "groups": [
+                  {
+                    "switch": 2195636714,
+                    "children": [
+                      622944717
+                    ]
+                  },
+                  {
+                    "switch": 2058049674,
+                    "children": [
+                      685909840
+                    ]
+                  },
+                  {
+                    "switch": 1216965916,
+                    "children": [
+                      498024571
+                    ]
+                  },
+                  {
+                    "switch": 2185786256,
+                    "children": [
+                      937379617
+                    ]
+                  },
+                  {
+                    "switch": 4248645337,
+                    "children": [
+                      582069048
+                    ]
+                  },
+                  {
+                    "switch": 1427625975,
+                    "children": [
+                      927096275
+                    ]
+                  },
+                  {
+                    "switch": 3273609536,
+                    "children": [
+                      1038231966
+                    ]
+                  },
+                  {
+                    "switch": 2003927601,
+                    "children": [
+                      146592735
+                    ]
+                  },
+                  {
+                    "switch": 2654748154,
+                    "children": [
+                      33733124
+                    ]
+                  },
+                  {
+                    "switch": 2637588553,
+                    "children": [
+                      850179360
+                    ]
+                  },
+                  {
+                    "switch": 2473969246,
+                    "children": [
+                      863302343
+                    ]
+                  },
+                  {
+                    "switch": 48383132,
+                    "children": [
+                      823391852
+                    ]
+                  },
+                  {
+                    "switch": 2412606308,
+                    "children": [
+                      726198320
+                    ]
+                  },
+                  {
+                    "switch": 803837735,
+                    "children": [
+                      625720546
+                    ]
+                  },
+                  {
+                    "switch": 3111880208,
+                    "children": [
+                      671371493
+                    ]
+                  },
+                  {
+                    "switch": 1365536729,
+                    "children": [
+                      956054232
+                    ]
+                  },
+                  {
+                    "switch": 344481046,
+                    "children": [
+                      370251827
+                    ]
+                  },
+                  {
+                    "switch": 787898836,
+                    "children": [
+                      653803790
+                    ]
+                  },
+                  {
+                    "switch": 3787535528,
+                    "children": [
+                      170284552
+                    ]
+                  },
+                  {
+                    "switch": 1813329600,
+                    "children": [
+                      687783958
+                    ]
+                  },
+                  {
+                    "switch": 1639179434,
+                    "children": [
+                      325952535
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 622944717,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 685909840,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 498024571,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 937379617,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 582069048,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 927096275,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 1038231966,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 146592735,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 33733124,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 850179360,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 863302343,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 823391852,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 726198320,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 625720546,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 671371493,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 956054232,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 370251827,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 653803790,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 687783958,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 325952535,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 170284552,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 622944717,
+              "type": 5,
+              "tail": {
+                "offset": 54,
+                "children": [
+                  121153801,
+                  170558996,
+                  317339609,
+                  618363731,
+                  837546345,
+                  844704651,
+                  859995397,
+                  986540961
+                ],
+                "playlist": [
+                  {
+                    "id": 844704651,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 170558996,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 859995397,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 986540961,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 121153801,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 317339609,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 837546345,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 618363731,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            121153801,
+            170558996,
+            317339609,
+            618363731,
+            837546345,
+            844704651,
+            859995397,
+            986540961
+          ],
+          "action_body_hex": "0304ef80e20200010f6400000000043d29bda3",
+          "action_properties_count": 1,
+          "action_ranged_properties_count": 15
+        },
+        {
+          "action_id": 944570778,
+          "play_action_type": 1027,
+          "target_id": 700913913,
+          "target_type": 6,
+          "containers": [
+            {
+              "id": 700913913,
+              "type": 6,
+              "tail": {
+                "offset": 110,
+                "group_type": 0,
+                "group_id": 1936126619,
+                "default_switch": 2195636714,
+                "continuous": 0,
+                "children": [
+                  119593616,
+                  221005464,
+                  360787563,
+                  393099585,
+                  419206954,
+                  440507687,
+                  461201303,
+                  518844855,
+                  534439238,
+                  550795843,
+                  603326380,
+                  667854497,
+                  687220962,
+                  749372566,
+                  760630904,
+                  777559498,
+                  852955243,
+                  894502166,
+                  937288787,
+                  967665546,
+                  1032259062
+                ],
+                "groups": [
+                  {
+                    "switch": 2195636714,
+                    "children": [
+                      667854497
+                    ]
+                  },
+                  {
+                    "switch": 2058049674,
+                    "children": [
+                      419206954
+                    ]
+                  },
+                  {
+                    "switch": 1216965916,
+                    "children": [
+                      894502166
+                    ]
+                  },
+                  {
+                    "switch": 2185786256,
+                    "children": [
+                      967665546
+                    ]
+                  },
+                  {
+                    "switch": 4248645337,
+                    "children": [
+                      461201303
+                    ]
+                  },
+                  {
+                    "switch": 1427625975,
+                    "children": [
+                      687220962
+                    ]
+                  },
+                  {
+                    "switch": 3273609536,
+                    "children": [
+                      221005464
+                    ]
+                  },
+                  {
+                    "switch": 2003927601,
+                    "children": [
+                      440507687
+                    ]
+                  },
+                  {
+                    "switch": 2654748154,
+                    "children": [
+                      749372566
+                    ]
+                  },
+                  {
+                    "switch": 2637588553,
+                    "children": [
+                      119593616
+                    ]
+                  },
+                  {
+                    "switch": 2473969246,
+                    "children": [
+                      393099585
+                    ]
+                  },
+                  {
+                    "switch": 48383132,
+                    "children": [
+                      1032259062
+                    ]
+                  },
+                  {
+                    "switch": 2412606308,
+                    "children": [
+                      534439238
+                    ]
+                  },
+                  {
+                    "switch": 803837735,
+                    "children": [
+                      852955243
+                    ]
+                  },
+                  {
+                    "switch": 3111880208,
+                    "children": [
+                      760630904
+                    ]
+                  },
+                  {
+                    "switch": 1365536729,
+                    "children": [
+                      550795843
+                    ]
+                  },
+                  {
+                    "switch": 344481046,
+                    "children": [
+                      360787563
+                    ]
+                  },
+                  {
+                    "switch": 787898836,
+                    "children": [
+                      603326380
+                    ]
+                  },
+                  {
+                    "switch": 3787535528,
+                    "children": [
+                      518844855
+                    ]
+                  },
+                  {
+                    "switch": 1813329600,
+                    "children": [
+                      937288787
+                    ]
+                  },
+                  {
+                    "switch": 1639179434,
+                    "children": [
+                      777559498
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 667854497,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 419206954,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 894502166,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 967665546,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 461201303,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 687220962,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 221005464,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 440507687,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 749372566,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 119593616,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 393099585,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 1032259062,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 534439238,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 852955243,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 760630904,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 550795843,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 360787563,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 603326380,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 937288787,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 777559498,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 518844855,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 667854497,
+              "type": 5,
+              "tail": {
+                "offset": 54,
+                "children": [
+                  68276897,
+                  84071579,
+                  155136766,
+                  207069115,
+                  280185431,
+                  290008449,
+                  828837974,
+                  832551732
+                ],
+                "playlist": [
+                  {
+                    "id": 207069115,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 84071579,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 68276897,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 828837974,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 832551732,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 280185431,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 155136766,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 290008449,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            68276897,
+            84071579,
+            155136766,
+            207069115,
+            280185431,
+            290008449,
+            828837974,
+            832551732
+          ],
+          "action_body_hex": "0304f918c729000000043d29bda3",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 121153801,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1012800056,
+          "source_bytes": 5895,
+          "source_sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4",
+          "bank_data_offset": 3025152,
+          "physical_offset": 271849728,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 170558996,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 655706814,
+          "source_bytes": 5259,
+          "source_sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e",
+          "bank_data_offset": 2079440,
+          "physical_offset": 270904016,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 317339609,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 322497778,
+          "source_bytes": 5653,
+          "source_sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6",
+          "bank_data_offset": 1056864,
+          "physical_offset": 269881440,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 618363731,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 361062933,
+          "source_bytes": 5565,
+          "source_sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e",
+          "bank_data_offset": 1187360,
+          "physical_offset": 270011936,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 837546345,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 265957799,
+          "source_bytes": 5843,
+          "source_sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae",
+          "bank_data_offset": 817152,
+          "physical_offset": 269641728,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 844704651,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 450188065,
+          "source_bytes": 4436,
+          "source_sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290",
+          "bank_data_offset": 1491248,
+          "physical_offset": 270315824,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 859995397,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 394273666,
+          "source_bytes": 5364,
+          "source_sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee",
+          "bank_data_offset": 1266896,
+          "physical_offset": 270091472,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 986540961,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1002355989,
+          "source_bytes": 5454,
+          "source_sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf",
+          "bank_data_offset": 2987168,
+          "physical_offset": 271811744,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 68276897,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 394273666,
+          "source_bytes": 5364,
+          "source_sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee",
+          "bank_data_offset": 1266896,
+          "physical_offset": 270091472,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 84071579,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 655706814,
+          "source_bytes": 5259,
+          "source_sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e",
+          "bank_data_offset": 2079440,
+          "physical_offset": 270904016,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 155136766,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 265957799,
+          "source_bytes": 5843,
+          "source_sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae",
+          "bank_data_offset": 817152,
+          "physical_offset": 269641728,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 207069115,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 450188065,
+          "source_bytes": 4436,
+          "source_sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290",
+          "bank_data_offset": 1491248,
+          "physical_offset": 270315824,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 280185431,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 322497778,
+          "source_bytes": 5653,
+          "source_sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6",
+          "bank_data_offset": 1056864,
+          "physical_offset": 269881440,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 290008449,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 361062933,
+          "source_bytes": 5565,
+          "source_sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e",
+          "bank_data_offset": 1187360,
+          "physical_offset": 270011936,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 828837974,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1002355989,
+          "source_bytes": 5454,
+          "source_sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf",
+          "bank_data_offset": 2987168,
+          "physical_offset": 271811744,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "sound_id": 832551732,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 1012800056,
+          "source_bytes": 5895,
+          "source_sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4",
+          "bank_data_offset": 3025152,
+          "physical_offset": 271849728,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 1012800056,
+        "duration": 0.5891609977324263,
+        "samples": 25982,
+        "channels": 1,
+        "rate": 44100,
+        "peak": 0.457763671875,
+        "rms_dbfs": -33.71155241250854,
+        "wav_sha256": "d15c6a987813a5b0d5666739b09b0d0bc0de977081df68c6a4b740c8c2e5c9d9",
+        "ogg_bytes": 9103,
+        "ogg_sha256": "a70a81a20eda2e2ce0f730bbcb96e6bdf1d5603cda4f5d51954687d473b0c83a",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 1
+            }
+          ],
+          "format": {
+            "duration": "0.589161"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-move_jump_land.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 25982 (0:00.589 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 78 kbps\nsample type: float\nplay duration: 25982 samples (0:00.589 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_all_break_hurt",
+      "event_id": 1501617680,
+      "bank": "gman_all_break_hurt",
+      "bank_id": 1501617680,
+      "bank_sha256": "879920c8f1bab152295216b2f8ff4dea750cabb273353075914a16236efc18de",
+      "bank_entry": {
+        "section": "banks",
+        "id": 1501617680,
+        "alignment": 4096,
+        "bytes": 39085,
+        "offset": 85311488,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9538373,
+      "event_record_bytes": 122,
+      "event_record_sha256": "d989c9b33f614a8294ba0e6c7b86b0ea2ade4fae0a2a4c6ebbac1dd12168adb4",
+      "paths": [
+        {
+          "action_id": 826264985,
+          "play_action_type": 1027,
+          "target_id": 899285817,
+          "target_type": 2,
+          "containers": [],
+          "sounds": [
+            899285817
+          ],
+          "action_body_hex": "030439039a350000000410de8059",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 899285817,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 536528925,
+          "source_bytes": 38602,
+          "source_sha256": "f5cf6255bef6268140b8e51094b5c2b6565caf86dab45c05b0509e12fcc89f73",
+          "bank_data_offset": 64,
+          "physical_offset": 85311552,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 536528925,
+        "duration": 2.842108843537415,
+        "samples": 125337,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.999969482421875,
+        "rms_dbfs": -20.945094625402895,
+        "wav_sha256": "ad6f634b4d6f999224e1619188c22fc8dfd4c68f856515df41d29c6b67e3cf78",
+        "ogg_bytes": 39843,
+        "ogg_sha256": "246c42cb8d27e2ed497ec056152be3248d93a20b0387e37490e425d160a2e4b1",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "2.842109"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_all_break_hurt.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 125337 (0:02.842 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 108 kbps\nsample type: float\nplay duration: 125337 samples (0:02.842 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_all_die_drop",
+      "event_id": 1040724093,
+      "bank": "gman_all_die_drop",
+      "bank_id": 1040724093,
+      "bank_sha256": "57bf2a002b3be6cccd87efd9cee1a8906779ade9e16372222c7cc9def13244c7",
+      "bank_entry": {
+        "section": "banks",
+        "id": 1040724093,
+        "alignment": 4096,
+        "bytes": 9205,
+        "offset": 100712448,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor1.pck",
+        "file_bytes": 434934120,
+        "header_bytes": 5000,
+        "header_sha256": "a426fa8a87758df6c11a2f8305ceb9992be256bdaa34442d6bb8b3239fe6ec11"
+      },
+      "event_record_offset": 9541517,
+      "event_record_bytes": 114,
+      "event_record_sha256": "d8551cc7d4f32f68c9a5ea681837e25ef7a77e7d80f4abe73bfe101e9bc55cef",
+      "paths": [
+        {
+          "action_id": 454309726,
+          "play_action_type": 1027,
+          "target_id": 226803575,
+          "target_type": 2,
+          "containers": [],
+          "sounds": [
+            226803575
+          ],
+          "action_body_hex": "030477bf840d000000047d30083e",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 226803575,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 682276155,
+          "source_bytes": 8675,
+          "source_sha256": "77cacdaca96e61e64d484dbe01a7a9cf10052084cd71505357706579f88bce7d",
+          "bank_data_offset": 64,
+          "physical_offset": 100712512,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 682276155,
+        "duration": 0.8560090702947846,
+        "samples": 37750,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.369293212890625,
+        "rms_dbfs": -27.456518404408136,
+        "wav_sha256": "1161b14e1a474295e9f4a5beb1b2b7eb79bdd06e281cabf61f67f62822f796c1",
+        "ogg_bytes": 12516,
+        "ogg_sha256": "acee97931572ce8904b35d02601689819db61dd1aba072be67ded5eaf2de9429",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "0.856009"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_all_die_drop.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 37750 (0:00.856 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 80 kbps\nsample type: float\nplay duration: 37750 samples (0:00.856 seconds)\n"
+      },
+      "retained_sample": null
+    },
+    {
+      "event": "gman_dying_voice_male",
+      "event_id": 229701695,
+      "bank": "gman_dying",
+      "bank_id": 2001539042,
+      "bank_sha256": "5097e6dabe735dcf9682f97245b443c9413996d6f6f412be8de9a74096a5ffbe",
+      "bank_entry": {
+        "section": "banks",
+        "id": 2001539042,
+        "alignment": 4096,
+        "bytes": 624621,
+        "offset": 188575744,
+        "language": 0
+      },
+      "package": {
+        "file": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/Audio/GeneratedSoundBanks/Windows/SoundActor1.pck",
+        "file_bytes": 434934120,
+        "header_bytes": 5000,
+        "header_sha256": "a426fa8a87758df6c11a2f8305ceb9992be256bdaa34442d6bb8b3239fe6ec11"
+      },
+      "event_record_offset": 9821033,
+      "event_record_bytes": 108,
+      "event_record_sha256": "036e8f912b74182ca8ed080dbf8f05f26c7bfed3b33d47b557c1ba0bdfde83de",
+      "paths": [
+        {
+          "action_id": 442220329,
+          "play_action_type": 1027,
+          "target_id": 619457840,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 619457840,
+              "type": 5,
+              "tail": {
+                "offset": 59,
+                "children": [
+                  366978209,
+                  484579355,
+                  596786149,
+                  838244829,
+                  870946017,
+                  940266524,
+                  1004595385
+                ],
+                "playlist": [
+                  {
+                    "id": 366978209,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 838244829,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 596786149,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 940266524,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 1004595385,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 870946017,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 484579355,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            366978209,
+            484579355,
+            596786149,
+            838244829,
+            870946017,
+            940266524,
+            1004595385
+          ],
+          "action_body_hex": "0304302dec2400000004e20f4d77",
+          "action_properties_count": 0,
+          "action_ranged_properties_count": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 366978209,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 487560667,
+          "source_bytes": 13883,
+          "source_sha256": "658a1c423dc2b5a24a7f8597a9aac1b3fc757d570a66db1c398c2557a0207b35",
+          "bank_data_offset": 227664,
+          "physical_offset": 188803408,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 484579355,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 289069424,
+          "source_bytes": 27805,
+          "source_sha256": "d2f4bb4931ad8d3e253eceff944703ca3fac33ae64403a4354269b954bbc83c4",
+          "bank_data_offset": 163888,
+          "physical_offset": 188739632,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 596786149,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 672810389,
+          "source_bytes": 14470,
+          "source_sha256": "db9c67acc56197840d9113175219cf660a8c51878f658b39e5526490017840c0",
+          "bank_data_offset": 308736,
+          "physical_offset": 188884480,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 838244829,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 27850851,
+          "source_bytes": 13860,
+          "source_sha256": "ff94ce7e7ee168f767c94475eb5928e7ae6125763e0f082cf3548f1acd3503ae",
+          "bank_data_offset": 320,
+          "physical_offset": 188576064,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 870946017,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 444149984,
+          "source_bytes": 20646,
+          "source_sha256": "4b1b91102c488082949b270f4e2a6d4477411711f870d5fffb8e6b8772f81a00",
+          "bank_data_offset": 207008,
+          "physical_offset": 188782752,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 940266524,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 51798462,
+          "source_bytes": 17856,
+          "source_sha256": "3fdc5ef9b5d1d3cdd792ab42665f1bd41e79eb1f3c438c759efbec7400e0894c",
+          "bank_data_offset": 21504,
+          "physical_offset": 188597248,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 1004595385,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 323878669,
+          "source_bytes": 15302,
+          "source_sha256": "980e5c048fae84b38679707917021400e6f974dfa62443f03261a1bfab16ff5b",
+          "bank_data_offset": 191696,
+          "physical_offset": 188767440,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 487560667,
+        "duration": 1.1700907029478458,
+        "samples": 51601,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.61932373046875,
+        "rms_dbfs": -17.856903593237856,
+        "wav_sha256": "f9b0a9cb27a20f9c0e4032e43e7d824b9e00b18780b22045be01516d393a6dd1",
+        "ogg_bytes": 18123,
+        "ogg_sha256": "4feb68f44d9b97e9d16f3e5f36e46f6731978187bc5cb3ca7fcb304bb2c8c9cb",
+        "ogg_probe": {
+          "programs": [],
+          "streams": [
+            {
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "1.170091"
+          }
+        },
+        "vgmstream_stdout": "decoding /home/asuka/go/src/github.com/fxkt-tech/kiva/.trellis/tasks/11-11-naraka-action-set/research/audio-sample-gman_dying_voice_male.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 51601 (0:01.170 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 94 kbps\nsample type: float\nplay duration: 51601 samples (0:01.170 seconds)\n"
+      },
+      "retained_sample": null
+    }
+  ]
+}

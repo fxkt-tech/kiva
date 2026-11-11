@@ -1,36 +1,77 @@
-//! Recovered Messiah hierarchy and explicitly named source channels.
-//! This module only decodes/samples immutable display data. Actor position,
-//! combat timing and motion authority remain in simulation.
+//! Immutable, independently indexed source rigs. Rules and actor roots remain in simulation.
+mod layers;
+
 use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
+
+/// Identifies an actual baked hierarchy, not merely the originating game.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) enum SourceRig {
+    #[default]
+    Yanyun,
+    Naraka,
+}
+impl SourceRig {
+    pub(super) fn id(self) -> &'static str {
+        match self {
+            Self::Yanyun => "yanyun/choulingke",
+            Self::Naraka => "naraka/l22_male_skeleton",
+        }
+    }
+    pub(super) fn prefix(self) -> &'static str {
+        match self {
+            Self::Yanyun => "Bip001",
+            Self::Naraka => "gMan",
+        }
+    }
+}
+
+/// Declared target composition. The immutable native matrices stay intact.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) enum SourceScope {
+    #[default]
+    FullBody,
+    UpperBody,
+    Fingers,
+}
+impl SourceScope {
+    pub(super) fn label(self) -> &'static str {
+        match self {
+            Self::FullBody => "source full body",
+            Self::UpperBody => "source upper body / fingers + CC0 lower body",
+            Self::Fingers => "source fingers + CC0 body",
+        }
+    }
+}
 
 #[derive(Clone)]
 struct Joint {
     parent: Option<usize>,
     rest: Transform,
 }
-
 struct Keys<T> {
-    times: Vec<u16>,
+    times: Vec<f32>,
     values: Vec<T>,
 }
-
 struct Track {
     joint: usize,
     translation: Keys<Vec3>,
     rotation: Keys<Quat>,
     scale: Keys<Vec3>,
 }
-
 struct Clip {
     duration: f32,
     tracks: Vec<Track>,
     root_heading: Quat,
 }
 
+/// Existing methods select Yanyun for compatibility. `for_rig` selects another
+/// independently decoded library; no pose arrays or bone indices are shared.
 #[derive(Resource)]
 pub(super) struct SourceAnimationLibrary {
+    rig: SourceRig,
+    secondary: Option<Box<Self>>,
     joints: Vec<Joint>,
     names: HashMap<String, usize>,
     clips: Vec<Clip>,
@@ -38,7 +79,6 @@ pub(super) struct SourceAnimationLibrary {
     root: usize,
     pub(super) rest_model: Vec<Mat4>,
 }
-
 struct Reader<'a>(&'a [u8]);
 type DecodeResult<T> = Result<T, &'static str>;
 impl Reader<'_> {
@@ -52,6 +92,9 @@ impl Reader<'_> {
     }
     fn u16(&mut self) -> DecodeResult<usize> {
         Ok(u16::from_le_bytes(self.bytes(2)?.try_into().unwrap()) as usize)
+    }
+    fn u32(&mut self) -> DecodeResult<usize> {
+        Ok(u32::from_le_bytes(self.bytes(4)?.try_into().unwrap()) as usize)
     }
     fn f32(&mut self) -> DecodeResult<f32> {
         let value = f32::from_le_bytes(self.bytes(4)?.try_into().unwrap());
@@ -83,33 +126,37 @@ impl Reader<'_> {
     }
     fn keys<T>(
         &mut self,
-        duration: usize,
+        duration: f32,
+        precise: bool,
+        width: usize,
         mut read: impl FnMut(&mut Self) -> DecodeResult<T>,
     ) -> DecodeResult<Keys<T>> {
-        let count = self.u16()?;
+        let count = if precise { self.u32()? } else { self.u16()? };
+        // Bound allocations before reading any attacker-controlled element count.
+        let stride = width * 4 + if precise { 4 } else { 2 };
+        if count > 1_000_000 || count > self.0.len() / stride {
+            return Err("invalid source key count");
+        }
         let mut times = Vec::with_capacity(count);
         let mut values = Vec::with_capacity(count);
         for _ in 0..count {
-            let time = self.u16()?;
-            if time > duration
-                || times
-                    .last()
-                    .is_some_and(|&previous| previous >= time as u16)
-            {
+            let time = if precise {
+                self.f32()?
+            } else {
+                self.u16()? as f32 / 1000.0
+            };
+            if time < 0.0 || time > duration || times.last().is_some_and(|&v| v >= time) {
                 return Err("invalid source key time");
             }
-            times.push(time as u16);
+            times.push(time);
             values.push(read(self)?);
         }
         Ok(Keys { times, values })
     }
 }
-
 impl<T: Copy> Keys<T> {
-    fn sample(&self, milliseconds: f32, rest: T, interpolate: impl Fn(T, T, f32) -> T) -> T {
-        let end = self
-            .times
-            .partition_point(|&time| (time as f32) <= milliseconds);
+    fn sample(&self, seconds: f32, rest: T, interpolate: impl Fn(T, T, f32) -> T) -> T {
+        let end = self.times.partition_point(|&time| time <= seconds);
         if end == 0 {
             return self.values.first().copied().unwrap_or(rest);
         }
@@ -117,33 +164,61 @@ impl<T: Copy> Keys<T> {
             return self.values[end - 1];
         }
         let start = end - 1;
-        let weight = (milliseconds - self.times[start] as f32)
-            / (self.times[end] - self.times[start]) as f32;
+        if seconds == self.times[start] {
+            return self.values[start];
+        }
+        // Adjacent f32 timestamps can deliberately bracket a native Humanoid
+        // branch cut. Their positive dt must not be widened to EPSILON.
+        let weight = (seconds - self.times[start]) / (self.times[end] - self.times[start]);
         interpolate(self.values[start], self.values[end], weight)
     }
 }
-
 impl Default for SourceAnimationLibrary {
     fn default() -> Self {
-        Self::decode(include_bytes!("../../assets/choulingke/animations.bin"))
-            .expect("verified bundled original animation asset")
+        Self {
+            secondary: Some(Box::new(
+                Self::decode(include_bytes!("../../assets/naraka/animations.bin"))
+                    .expect("verified native Humanoid animation asset"),
+            )),
+            ..Self::decode(include_bytes!("../../assets/choulingke/animations.bin"))
+                .expect("verified bundled original animation asset")
+        }
     }
 }
-
 impl SourceAnimationLibrary {
     fn decode(bytes: &[u8]) -> DecodeResult<Self> {
         if bytes.len() > 64 * 1024 * 1024 {
             return Err("oversized source animation asset");
         }
         let mut reader = Reader(bytes);
-        if reader.bytes(8)? != b"KIVASR01" {
-            return Err("unsupported source animation format");
-        }
+        let magic = reader.bytes(8)?;
+        let precise = match magic {
+            b"KIVASR01" => false,
+            b"KIVASR02" => true,
+            _ => return Err("unsupported source animation format"),
+        };
+        let rig = if precise {
+            if reader.string()? != SourceRig::Naraka.id() {
+                return Err("unsupported source rig identity");
+            }
+            SourceRig::Naraka
+        } else {
+            SourceRig::Yanyun
+        };
         let joint_count = reader.u16()?;
         let clip_count = reader.u16()?;
         if !(1..=4096).contains(&joint_count) || !(1..=4096).contains(&clip_count) {
             return Err("invalid source joint/clip count");
         }
+        let root_index = if precise {
+            let index = reader.u16()?;
+            if reader.u16()? != 0 {
+                return Err("unsupported source flags");
+            }
+            Some(index)
+        } else {
+            None
+        };
         let mut names = HashMap::new();
         let mut joints = Vec::with_capacity(joint_count);
         for index in 0..joint_count {
@@ -157,7 +232,7 @@ impl SourceAnimationLibrary {
             let translation = reader.vec3()?;
             let rotation = reader.quat()?;
             let scale = reader.vec3()?;
-            if scale.abs().min_element() < 0.00000001 {
+            if scale.abs().min_element() < 1e-8 {
                 return Err("singular source rest scale");
             }
             joints.push(Joint {
@@ -169,7 +244,11 @@ impl SourceAnimationLibrary {
                 },
             });
         }
-        let root = *names.get("Bip001").ok_or("missing source motion root")?;
+        let root = match root_index {
+            Some(index) if index < joint_count => index,
+            Some(_) => return Err("invalid source motion root"),
+            None => *names.get("Bip001").ok_or("missing source motion root")?,
+        };
         let rest_heading = heading(joints[root].rest.rotation);
         let mut clips = Vec::with_capacity(clip_count);
         let mut clip_names = HashMap::new();
@@ -177,9 +256,14 @@ impl SourceAnimationLibrary {
             if clip_names.insert(reader.string()?, index).is_some() {
                 return Err("duplicate source clip name");
             }
-            let duration = reader.u16()?;
+            let duration = if precise {
+                reader.f32()?
+            } else {
+                reader.u16()? as f32 / 1000.0
+            };
             let track_count = reader.u16()?;
-            if duration == 0 || track_count == 0 || track_count > joint_count {
+            if duration <= 0.0 || duration > 3600.0 || track_count == 0 || track_count > joint_count
+            {
                 return Err("invalid source clip duration/track count");
             }
             let mut tracks = Vec::with_capacity(track_count);
@@ -190,14 +274,20 @@ impl SourceAnimationLibrary {
                 if joint >= joint_count || !seen.insert(joint) {
                     return Err("invalid or duplicate source track joint");
                 }
-                let translation = reader.keys(duration, Reader::vec3)?;
-                let rotation = reader.keys(duration, Reader::quat)?;
-                let scale = reader.keys(duration, Reader::vec3)?;
-                if scale.values.iter().any(|value| value.min_element() <= 0.0) {
-                    return Err("non-positive source key scale");
+                let translation = reader.keys(duration, precise, 3, Reader::vec3)?;
+                let rotation = reader.keys(duration, precise, 4, Reader::quat)?;
+                let scale = reader.keys(duration, precise, 3, Reader::vec3)?;
+                if scale
+                    .values
+                    .iter()
+                    .any(|v| v.abs().min_element() < 1e-8 || !precise && v.min_element() <= 0.0)
+                {
+                    return Err("singular source key scale");
                 }
                 if joint == root {
-                    root_heading = Some(
+                    root_heading = Some(if precise {
+                        Quat::IDENTITY
+                    } else {
                         rest_heading
                             * heading(
                                 rotation
@@ -206,8 +296,8 @@ impl SourceAnimationLibrary {
                                     .copied()
                                     .unwrap_or(joints[root].rest.rotation),
                             )
-                            .inverse(),
-                    );
+                            .inverse()
+                    });
                 }
                 tracks.push(Track {
                     joint,
@@ -217,7 +307,7 @@ impl SourceAnimationLibrary {
                 });
             }
             clips.push(Clip {
-                duration: duration as f32 / 1000.0,
+                duration,
                 tracks,
                 root_heading: root_heading.ok_or("clip lacks original motion root")?,
             });
@@ -226,6 +316,8 @@ impl SourceAnimationLibrary {
             return Err("trailing source animation data");
         }
         let mut result = Self {
+            rig,
+            secondary: None,
             joints,
             names,
             clips,
@@ -233,43 +325,81 @@ impl SourceAnimationLibrary {
             root,
             rest_model: Vec::new(),
         };
-        result.rest_model = result.model_pose(
-            &result
-                .joints
-                .iter()
-                .map(|joint| joint.rest)
-                .collect::<Vec<_>>(),
-        );
+        result.rest_model =
+            result.model_pose(&result.joints.iter().map(|j| j.rest).collect::<Vec<_>>());
         Ok(result)
     }
-
+    pub(super) fn for_rig(&self, rig: SourceRig) -> Option<&Self> {
+        if self.rig == rig {
+            Some(self)
+        } else {
+            self.secondary
+                .as_deref()
+                .filter(|library| library.rig == rig)
+        }
+    }
+    pub(super) fn rig(&self) -> SourceRig {
+        self.rig
+    }
     pub(super) fn bone(&self, name: &str) -> Option<usize> {
         self.names.get(name).copied()
     }
-
     pub(super) fn clip(&self, name: &str) -> Option<usize> {
         self.clip_names.get(name).copied()
     }
-
     pub(super) fn clips(&self) -> Vec<(&str, f32)> {
         let mut clips: Vec<_> = self
             .clip_names
             .iter()
-            .map(|(name, &index)| (name.as_str(), self.clips[index].duration))
+            .map(|(name, &i)| (name.as_str(), self.clips[i].duration))
             .collect();
         clips.sort_by(|a, b| a.0.cmp(b.0));
         clips
     }
-
     pub(super) fn clip_name(&self, index: usize) -> Option<&str> {
         self.clip_names
             .iter()
-            .find_map(|(name, &value)| (value == index).then_some(name.as_str()))
+            .find_map(|(name, &i)| (i == index).then_some(name.as_str()))
+    }
+    pub(super) fn duration(&self, clip: usize) -> f32 {
+        self.clips[clip].duration
+    }
+    pub(super) fn scope(&self, clip: usize) -> SourceScope {
+        if self.rig == SourceRig::Naraka
+            && let Some(name) = self.clip_name(clip)
+        {
+            if name.contains("_finger_") {
+                return SourceScope::Fingers;
+            }
+            // Native root extraction leaves these weapon layers with Hips
+            // near/below zero. Declare the same target composition in game and
+            // inspection instead of silently presenting them as a full body.
+            if name.contains("_sniper_") || name.contains("_fk_") || name == "male_bow_attack_01" {
+                return SourceScope::UpperBody;
+            }
+        }
+        SourceScope::FullBody
     }
 
-    /// Sparse missing channels use actual local rest TRS, never a flat identity.
-    /// Strip only planar root travel. Source vertical bends remain visible;
-    /// airborne simulation supplies the world lift exactly once.
+    pub(super) fn layer_description(&self, clip: usize) -> String {
+        if self.rig == SourceRig::Yanyun {
+            return "original named source channels".into();
+        }
+        let Some((left, right)) = self.clip_name(clip).and_then(layers::finger_layers) else {
+            return "unregistered composition metadata".into();
+        };
+        if left.is_empty() && right.is_empty() {
+            return "native main; no supplemental finger layers".into();
+        }
+        format!(
+            "native main priority; Kiva missing-chain supplements: L={} / R={} (original controller weights unknown)",
+            if left.is_empty() { "none" } else { left },
+            if right.is_empty() { "none" } else { right }
+        )
+    }
+
+    /// Local source channels are already fully composed offline. A missing
+    /// baked track keeps its true rest; missing Humanoid fingers are not filled here.
     pub(super) fn sample(
         &self,
         clip: usize,
@@ -277,7 +407,7 @@ impl SourceAnimationLibrary {
         looping: bool,
         airborne: bool,
     ) -> Vec<Transform> {
-        let time = self.sample_time(clip, seconds, looping) * 1000.0;
+        let time = self.sample_time(clip, seconds, looping);
         let clip = &self.clips[clip];
         let mut local: Vec<_> = self.joints.iter().map(|joint| joint.rest).collect();
         for track in &clip.tracks {
@@ -286,11 +416,9 @@ impl SourceAnimationLibrary {
                 track
                     .translation
                     .sample(time, transform.translation, Vec3::lerp);
-            transform.rotation = track
-                .rotation
-                .sample(time, transform.rotation, |a, b, weight| {
-                    a.slerp(b, weight).normalize()
-                });
+            transform.rotation = track.rotation.sample(time, transform.rotation, |a, b, w| {
+                a.slerp(b, w).normalize()
+            });
             transform.scale = track.scale.sample(time, transform.scale, Vec3::lerp);
         }
         let root = &mut local[self.root];
@@ -300,35 +428,39 @@ impl SourceAnimationLibrary {
             root.translation.y = self.joints[self.root].rest.translation.y;
         }
         root.rotation = clip.root_heading * root.rotation;
+        if airborne && self.rig == SourceRig::Naraka {
+            // Native applyRootMotion=false leaves MotionRoot stationary but
+            // encodes jumping body elevation in Hips. Physics already supplies
+            // actor height; keep the actual leg rotations without a second lift.
+            if let Some(pelvis) = self.bone("gMan Pelvis") {
+                local[pelvis].translation.y = self.joints[pelvis].rest.translation.y;
+            }
+        }
         local
     }
-
     pub(super) fn sample_time(&self, clip: usize, seconds: f32, looping: bool) -> f32 {
-        let clip = &self.clips[clip];
+        let duration = self.clips[clip].duration;
         if !seconds.is_finite() {
             0.0
         } else if looping {
-            seconds.rem_euclid(clip.duration)
+            seconds.rem_euclid(duration)
         } else {
-            seconds.clamp(0.0, clip.duration)
+            seconds.clamp(0.0, duration)
         }
     }
-
     pub(super) fn model_pose(&self, local: &[Transform]) -> Vec<Mat4> {
         assert_eq!(local.len(), self.joints.len());
-        let mut model: Vec<Mat4> = Vec::with_capacity(local.len());
+        let mut model = Vec::with_capacity(local.len());
         for (joint, local) in self.joints.iter().zip(local) {
-            let matrix = local.to_matrix();
-            model.push(joint.parent.map_or(matrix, |parent| model[parent] * matrix));
+            let m = local.to_matrix();
+            model.push(joint.parent.map_or(m, |parent| model[parent] * m));
         }
         model
     }
 }
-
 fn heading(rotation: Quat) -> Quat {
     Quat::from_rotation_y(rotation.to_euler(EulerRot::YXZ).0)
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -411,7 +543,7 @@ mod tests {
     #[test]
     fn sparse_sampler_uses_slerp_and_clamps_key_boundaries() {
         let keys = Keys {
-            times: vec![10, 30],
+            times: vec![10.0, 30.0],
             values: vec![Quat::IDENTITY, Quat::from_rotation_y(1.0)],
         };
         let sample = |time| keys.sample(time, Quat::IDENTITY, Quat::slerp);
@@ -423,5 +555,170 @@ mod tests {
             values: vec![],
         };
         assert_eq!(absent.sample(10.0, Vec3::Y, Vec3::lerp), Vec3::Y);
+    }
+    fn precise_fixture(times: &[f32]) -> Vec<u8> {
+        fn u16_value(bytes: &mut Vec<u8>, value: u16) {
+            bytes.extend(value.to_le_bytes());
+        }
+        fn string(bytes: &mut Vec<u8>, value: &str) {
+            u16_value(bytes, value.len() as u16);
+            bytes.extend(value.as_bytes());
+        }
+        fn float(bytes: &mut Vec<u8>, value: f32) {
+            bytes.extend(value.to_le_bytes());
+        }
+        let mut bytes = b"KIVASR02".to_vec();
+        string(&mut bytes, SourceRig::Naraka.id());
+        for value in [2, 1, 0, 0] {
+            u16_value(&mut bytes, value);
+        }
+        for (name, parent) in [("MotionRoot", 65535), ("gMan Pelvis", 0)] {
+            string(&mut bytes, name);
+            u16_value(&mut bytes, parent);
+            for value in [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0] {
+                float(&mut bytes, value);
+            }
+        }
+        string(&mut bytes, "precision");
+        float(&mut bytes, 1.0);
+        u16_value(&mut bytes, 2);
+        for joint in 0..2 {
+            u16_value(&mut bytes, joint);
+            bytes.extend((times.len() as u32).to_le_bytes());
+            for &time in times {
+                for value in [time, 0.0, time, 0.0] {
+                    float(&mut bytes, value);
+                }
+            }
+            bytes.extend(0u32.to_le_bytes());
+            bytes.extend(0u32.to_le_bytes());
+        }
+        bytes
+    }
+
+    #[test]
+    fn precise_seconds_and_independent_rig_indices_are_preserved() {
+        let library =
+            SourceAnimationLibrary::decode(&precise_fixture(&[0.0, 1.0 / 30.0, 1.0])).unwrap();
+        assert_eq!(library.rig(), SourceRig::Naraka);
+        assert_eq!(library.joints.len(), 2);
+        assert!(library.for_rig(SourceRig::Yanyun).is_none());
+        let local = library.sample(0, 1.0 / 60.0, false, false);
+        assert!((local[1].translation.y - 1.0 / 60.0).abs() < 1e-8);
+        assert_eq!(library.clips[0].tracks[0].translation.times[1], 1.0 / 30.0);
+        let yanyun = SourceAnimationLibrary {
+            secondary: Some(Box::new(library)),
+            ..Default::default()
+        };
+        assert_eq!(yanyun.for_rig(SourceRig::Yanyun).unwrap().joints.len(), 986);
+        assert_eq!(yanyun.for_rig(SourceRig::Naraka).unwrap().joints.len(), 2);
+    }
+
+    #[test]
+    fn precise_decoder_bounds_counts_times_identity_and_trailing_data() {
+        for times in [
+            &[-0.01, 0.5][..],
+            &[0.1, 0.1],
+            &[0.2, 0.1],
+            &[0.0, 1.001],
+            &[f32::NAN],
+        ] {
+            assert!(SourceAnimationLibrary::decode(&precise_fixture(times)).is_err());
+        }
+        let bytes = precise_fixture(&[0.0, 1.0]);
+        for end in [0, 7, 9, bytes.len() - 1] {
+            assert!(SourceAnimationLibrary::decode(&bytes[..end]).is_err());
+        }
+        let mut bad = bytes.clone();
+        bad[10] = b'x';
+        assert!(SourceAnimationLibrary::decode(&bad).is_err());
+        let mut extra = bytes;
+        extra.push(0);
+        assert!(SourceAnimationLibrary::decode(&extra).is_err());
+        let count = u32::MAX.to_le_bytes();
+        let mut reader = Reader(&count);
+        assert!(reader.keys(1.0, true, 3, Reader::vec3).is_err());
+    }
+    #[test]
+    fn native_airborne_removes_only_the_extra_hips_height_and_preserves_leg_pose() {
+        let libraries = SourceAnimationLibrary::default();
+        let source = libraries
+            .for_rig(SourceRig::Naraka)
+            .expect("verified native Naraka library");
+        assert_eq!(source.joints.len(), 63);
+        assert_eq!(source.root, source.bone("MotionRoot").unwrap());
+        let pelvis = source.bone("gMan Pelvis").unwrap();
+        let foot = source.bone("gMan R Foot").unwrap();
+        for name in [
+            "male_hengdao_jump_inplace_up_01",
+            "male_hengdao_jump_inplace_up_02",
+            "male_hengdao_jump_down_loop_01",
+        ] {
+            let clip = source.clip(name).unwrap();
+            for time in [0.0, source.duration(clip) * 0.4, source.duration(clip)] {
+                let raw = source.model_pose(&source.sample(clip, time, false, false));
+                let display = source.model_pose(&source.sample(clip, time, false, true));
+                assert!(
+                    (display[pelvis].w_axis.y - source.rest_model[pelvis].w_axis.y).abs() < 0.00002,
+                    "{name} {time}: duplicate jumping height"
+                );
+                let relative = |model: &[Mat4]| model[pelvis].inverse() * model[foot];
+                assert!(
+                    relative(&raw).abs_diff_eq(relative(&display), 0.00002),
+                    "{name}: removing actor-height changed leg pose"
+                );
+            }
+        }
+        let clip = source.clip("male_hengdao_jump_inplace_up_01").unwrap();
+        let start = source.model_pose(&source.sample(clip, 0.0, false, false));
+        let end = source.model_pose(&source.sample(clip, source.duration(clip), false, false));
+        assert!(
+            (start[pelvis].w_axis.y - end[pelvis].w_axis.y).abs() > 0.5,
+            "raw source comparison lost its original body elevation"
+        );
+    }
+    #[test]
+    fn every_native_clip_has_explicit_verified_composition_metadata() {
+        let libraries = SourceAnimationLibrary::default();
+        let native = libraries.for_rig(SourceRig::Naraka).unwrap();
+        for (name, _) in native.clips() {
+            assert!(
+                layers::finger_layers(name).is_some(),
+                "{name}: update actual native composition metadata"
+            );
+        }
+    }
+    #[test]
+    fn adjacent_float_native_cuts_keep_exact_keys_and_true_positive_sub_epsilon_dt() {
+        let time = 0.25f32;
+        let adjacent = f32::from_bits(time.to_bits() + 1);
+        let keys = Keys {
+            times: vec![time, adjacent],
+            values: vec![Quat::from_rotation_x(0.7), Quat::from_rotation_y(2.8)],
+        };
+        for (index, seconds) in keys.times.iter().copied().enumerate() {
+            assert_eq!(
+                keys.sample(seconds, Quat::IDENTITY, |_, _, _| panic!(
+                    "exact native key must not interpolate"
+                )),
+                keys.values[index]
+            );
+        }
+        let end = f32::from_bits(time.to_bits() + 2);
+        let interpolate = Keys {
+            times: vec![time, end],
+            values: vec![Vec3::ZERO, Vec3::Y],
+        };
+        assert!((end - time).abs() < f32::EPSILON);
+        assert_eq!(
+            interpolate.sample(adjacent, Vec3::ZERO, Vec3::lerp),
+            Vec3::Y * 0.5
+        );
+        let decoded =
+            SourceAnimationLibrary::decode(&precise_fixture(&[time, adjacent, end])).unwrap();
+        assert_eq!(
+            decoded.clips[0].tracks[0].translation.times,
+            vec![time, adjacent, end]
+        );
     }
 }

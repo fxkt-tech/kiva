@@ -1,0 +1,2424 @@
+{
+  "override_payload_sha256": "6dab5ddd1893f4237836b7a3c3c17067d0eed22c3bc70e7afa5a50e5d6efa961",
+  "state_table": {
+    "source_file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AutoAnimatorStates.bytes",
+    "source_sha256": "4fad3cbab5cac043e039f71ec8edec4d38c2a3634514e4758e98e6fce9ff711c",
+    "source_path_id": -2135719427922892394,
+    "decoded_sha256": "6f8066d2783f69d84e7ac3339089b3122c3fc4ded014e1033f3fef91761999b3",
+    "records": 23132,
+    "index_size": 1362150,
+    "complete_framing": true
+  },
+  "groups": [
+    {
+      "group": "female_fk_pve_weapon_player_affix_1100353",
+      "archive_offset": 3284248,
+      "archive_end": 3285598,
+      "sha256": "040fcb7668e0a29f50b4360cfbdfaf923aa4a7c3c6c27aa22190b2f2f4a4cc28",
+      "selected": [
+        {
+          "state_crc32": 866340105,
+          "states": [
+            "attack_501_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover",
+            "3": "male_fk_attack_01_recover"
+          },
+          "override_entry_offset": 794,
+          "override_entry_end": 856,
+          "override_entry_sha256": "be677755a9007c90ef5dab8b771a3ec1d9425dcae6bb55cc67ee265463db70bb"
+        },
+        {
+          "state_crc32": 170815948,
+          "states": [
+            "attack_502_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover_copy",
+            "3": "male_fk_attack_01_recover_copy"
+          },
+          "override_entry_offset": 856,
+          "override_entry_end": 927,
+          "override_entry_sha256": "dcc361b9df0e3acf85d288ad4369efa8b7c5bd7c71455e7b61c01cf91fddb728"
+        }
+      ]
+    },
+    {
+      "group": "female_fk_weapon_player",
+      "archive_offset": 3285598,
+      "archive_end": 3311863,
+      "sha256": "7c9f1410a0b55ebc7b19cdf266ee05acd79179c964beec0c8cf8685ca4917b3d",
+      "selected": [
+        {
+          "state_crc32": 720336948,
+          "states": [
+            "attack_501"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01",
+            "3": "male_fk_attack_01"
+          },
+          "override_entry_offset": 8686,
+          "override_entry_end": 8732,
+          "override_entry_sha256": "87b39b5ef9993511d12549f4d3af5edfc37ee17f9646e7e817ccb0417bb496ca"
+        },
+        {
+          "state_crc32": 3018205582,
+          "states": [
+            "attack_502"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_copy",
+            "3": "male_fk_attack_01_copy"
+          },
+          "override_entry_offset": 8732,
+          "override_entry_end": 8793,
+          "override_entry_sha256": "10b3b508608c02ce8055abebb6f1610d13c14e4d9afaca7205ea78838f4657b1"
+        },
+        {
+          "state_crc32": 1515526067,
+          "states": [
+            "attack_510_prepare"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_pre_aim",
+            "3": "male_fk_attack_01_pre_aim"
+          },
+          "override_entry_offset": 8793,
+          "override_entry_end": 8855,
+          "override_entry_sha256": "df646d8a1b856ddd193b1b866eb1c2d9379c198afc1230f964073abd598dfcc4"
+        },
+        {
+          "state_crc32": 866340105,
+          "states": [
+            "attack_501_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover",
+            "3": "male_fk_attack_01_recover"
+          },
+          "override_entry_offset": 8855,
+          "override_entry_end": 8917,
+          "override_entry_sha256": "be677755a9007c90ef5dab8b771a3ec1d9425dcae6bb55cc67ee265463db70bb"
+        },
+        {
+          "state_crc32": 170815948,
+          "states": [
+            "attack_502_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover_copy",
+            "3": "male_fk_attack_01_recover_copy"
+          },
+          "override_entry_offset": 8917,
+          "override_entry_end": 8988,
+          "override_entry_sha256": "dcc361b9df0e3acf85d288ad4369efa8b7c5bd7c71455e7b61c01cf91fddb728"
+        },
+        {
+          "state_crc32": 1909744944,
+          "states": [
+            "dinner_beam_above_idle_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_01",
+            "3": "male_fk_beam_idle_01"
+          },
+          "override_entry_offset": 10407,
+          "override_entry_end": 10459,
+          "override_entry_sha256": "76e4dfcc987c1635c9379fb5d14e85d021f5b67548a1659766e906573e995a03"
+        },
+        {
+          "state_crc32": 4284179155,
+          "states": [
+            "dinner_beam_above_idle_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_02",
+            "3": "male_fk_beam_idle_02"
+          },
+          "override_entry_offset": 10459,
+          "override_entry_end": 10516,
+          "override_entry_sha256": "11593914c001cd8c69d1602cb13ba2e9e0674916c0423547809ea63811a7d4e5"
+        },
+        {
+          "state_crc32": 3052052427,
+          "states": [
+            "dinner_beam_above_idle_inertia_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_inertia_01",
+            "3": "male_fk_beam_idle_inertia_01"
+          },
+          "override_entry_offset": 10516,
+          "override_entry_end": 10589,
+          "override_entry_sha256": "3719d6e6d76deef0c9112dba22c4df37bcae15b35e7209b5c066ec642b7e5efd"
+        },
+        {
+          "state_crc32": 996513832,
+          "states": [
+            "dinner_beam_above_idle_inertia_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_inertia_02",
+            "3": "male_fk_beam_idle_inertia_02"
+          },
+          "override_entry_offset": 10589,
+          "override_entry_end": 10657,
+          "override_entry_sha256": "3739b88daa1152e45fe3386d555607b9eaeba600d39d663ce50fbba075918271"
+        },
+        {
+          "state_crc32": 1146698920,
+          "states": [
+            "dinner_beam_above_idle_switch12_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch12_left_01",
+            "3": "male_fk_beam_idle_switch12_left_01"
+          },
+          "override_entry_offset": 10657,
+          "override_entry_end": 10737,
+          "override_entry_sha256": "47268a9505359f3efa6790a7fd11b4aed8f442703a03ef7fc4aaf6ed0bfa7170"
+        },
+        {
+          "state_crc32": 326070712,
+          "states": [
+            "dinner_beam_above_idle_switch12_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch12_right_01",
+            "3": "male_fk_beam_idle_switch12_right_01"
+          },
+          "override_entry_offset": 10737,
+          "override_entry_end": 10819,
+          "override_entry_sha256": "5603cee63a8803d2b813a28d2f6225c845abb9f3dd0ea6a6298ea7ad46d9781f"
+        },
+        {
+          "state_crc32": 1040962526,
+          "states": [
+            "dinner_beam_above_idle_switch21_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch21_left_01",
+            "3": "male_fk_beam_idle_switch21_left_01"
+          },
+          "override_entry_offset": 10819,
+          "override_entry_end": 10899,
+          "override_entry_sha256": "ce7df415b9e82369c7b961c64dfc30634a25ba4d1c59dd8986f2423dfe83a76f"
+        },
+        {
+          "state_crc32": 2859726686,
+          "states": [
+            "dinner_beam_above_idle_switch21_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch21_right_01",
+            "3": "male_fk_beam_idle_switch21_right_01"
+          },
+          "override_entry_offset": 10899,
+          "override_entry_end": 10986,
+          "override_entry_sha256": "65e49dcd45fc2164aa69b415243fdecc9a4b8a050bc72c66d284630066b54dc2"
+        },
+        {
+          "state_crc32": 3042871213,
+          "states": [
+            "dinner_beam_above_idle_turn_back_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_turn_back_01",
+            "3": "male_fk_beam_idle_turn_back_01"
+          },
+          "override_entry_offset": 10986,
+          "override_entry_end": 11063,
+          "override_entry_sha256": "212d7890d9ce571378b0100c25164e2e8a3c5f37e2c40dbc7ca6ad349ef8a056"
+        },
+        {
+          "state_crc32": 1003585614,
+          "states": [
+            "dinner_beam_above_idle_turn_back_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_turn_back_02",
+            "3": "male_fk_beam_idle_turn_back_02"
+          },
+          "override_entry_offset": 11063,
+          "override_entry_end": 11135,
+          "override_entry_sha256": "c514643d0d2309eb9b0a90bf62a9bef3833c234091f7bc76260948a0a70f75bb"
+        },
+        {
+          "state_crc32": 1957100178,
+          "states": [
+            "dinner_crouch_idle_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_01",
+            "3": "male_fk_crouch_idle_01"
+          },
+          "override_entry_offset": 11855,
+          "override_entry_end": 11911,
+          "override_entry_sha256": "4deca2b6451102aa4ce907b30f75d77f85ee08328be6b035a810fa53cf2f389a"
+        },
+        {
+          "state_crc32": 4106851574,
+          "states": [
+            "dinner_crouch_idle_turn_half_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_half_left_01",
+            "3": "male_fk_crouch_idle_turn_half_left_01"
+          },
+          "override_entry_offset": 11911,
+          "override_entry_end": 12002,
+          "override_entry_sha256": "3117f9f22dbbf4dbd9b0901c4c3bd0c345252afb2853d864c5d8f0b48daaa84c"
+        },
+        {
+          "state_crc32": 2668404195,
+          "states": [
+            "dinner_crouch_idle_turn_half_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_half_right_01",
+            "3": "male_fk_crouch_idle_turn_half_right_01"
+          },
+          "override_entry_offset": 12002,
+          "override_entry_end": 12095,
+          "override_entry_sha256": "da840e9aa6d71a0875ad363efe5992cfa85f249728066ecae25116099d1b79b1"
+        },
+        {
+          "state_crc32": 1569867729,
+          "states": [
+            "dinner_crouch_idle_turn_square_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_square_left_01",
+            "3": "male_fk_crouch_idle_turn_square_left_01"
+          },
+          "override_entry_offset": 12095,
+          "override_entry_end": 12185,
+          "override_entry_sha256": "32ed4c9472675d0da194f05bb4e56f3e069c50376cd12c021a2478c35f7d1534"
+        },
+        {
+          "state_crc32": 984576859,
+          "states": [
+            "dinner_crouch_idle_turn_square_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_square_right_01",
+            "3": "male_fk_crouch_idle_turn_square_right_01"
+          },
+          "override_entry_offset": 12185,
+          "override_entry_end": 12277,
+          "override_entry_sha256": "301879f07289b085c178dc878f9e7ab970f402665f08fb844dcdec866eadb334"
+        },
+        {
+          "state_crc32": 3001845246,
+          "states": [
+            "dinner_bow_hold_beam_idle_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_01",
+            "3": "male_fk_hold_beam_idle_01"
+          },
+          "override_entry_offset": 14159,
+          "override_entry_end": 14226,
+          "override_entry_sha256": "376763b7ee9b2c90c3a83c8a7bdbf6832bef628a8fcb9f269622cb828f91fc81"
+        },
+        {
+          "state_crc32": 736482372,
+          "states": [
+            "dinner_bow_hold_beam_idle_02"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_02",
+            "3": "male_fk_hold_beam_idle_02"
+          },
+          "override_entry_offset": 14226,
+          "override_entry_end": 14288,
+          "override_entry_sha256": "afbc24e62d9eb546f8717da85efc7d29dc55df9590b4203af1efae2a4c3ae5fe"
+        },
+        {
+          "state_crc32": 2183372692,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch12_left_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch12_left_01",
+            "3": "male_fk_hold_beam_idle_switch12_left_01"
+          },
+          "override_entry_offset": 14288,
+          "override_entry_end": 14383,
+          "override_entry_sha256": "073d92885e93f8ba8c24671f987590ea1b9c573413be719e854ed03222b4ef45"
+        },
+        {
+          "state_crc32": 2571300445,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch12_right_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch12_right_01",
+            "3": "male_fk_hold_beam_idle_switch12_right_01"
+          },
+          "override_entry_offset": 14383,
+          "override_entry_end": 14480,
+          "override_entry_sha256": "ffbbd5cf3b83c6c37b9f349c9d7e9ff65958a9ef05fbe07926e723611459f68d"
+        },
+        {
+          "state_crc32": 1352210514,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch21_left_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch21_left_01",
+            "3": "male_fk_hold_beam_idle_switch21_left_01"
+          },
+          "override_entry_offset": 14480,
+          "override_entry_end": 14570,
+          "override_entry_sha256": "c70eaea951c7db8959d2e3766e301dbb24b5ef7ed07b0afa768401a837c8dd66"
+        },
+        {
+          "state_crc32": 3952554847,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch21_right_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch21_right_01",
+            "3": "male_fk_hold_beam_idle_switch21_right_01"
+          },
+          "override_entry_offset": 14570,
+          "override_entry_end": 14667,
+          "override_entry_sha256": "069a13bf129c9de081195301275670de96d87986209daa3b2dea414939bd121e"
+        },
+        {
+          "state_crc32": 435901448,
+          "states": [
+            "dinner_bow_hold_beam_idle_turn_back_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_turn_back_01",
+            "3": "male_fk_hold_beam_idle_turn_back_01"
+          },
+          "override_entry_offset": 14667,
+          "override_entry_end": 14749,
+          "override_entry_sha256": "bd946259a771ef0eaba8e0de9c86e7406c14c5b45adf410b9c93e1c45328156d"
+        },
+        {
+          "state_crc32": 2163344818,
+          "states": [
+            "dinner_bow_hold_beam_idle_turn_back_02"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_turn_back_02",
+            "3": "male_fk_hold_beam_idle_turn_back_02"
+          },
+          "override_entry_offset": 14749,
+          "override_entry_end": 14836,
+          "override_entry_sha256": "17db421fd45abd0ba8ec642a61ada81cef7250e8198b1dd7d4f7b800a2831bf6"
+        },
+        {
+          "state_crc32": 2526862761,
+          "states": [
+            "dinner_bow_hold_crouch_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_crouch_idle_01",
+            "3": "male_fk_hold_crouch_idle_01"
+          },
+          "override_entry_offset": 15958,
+          "override_entry_end": 16029,
+          "override_entry_sha256": "c4f591905457eeefa4bda671dd99bd8c7f05017d533c24102456bb50681b8610"
+        },
+        {
+          "state_crc32": 1788378619,
+          "states": [
+            "dinner_bow_hold_crouch_turn"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_crouch_idle_turn_01",
+            "3": "male_fk_hold_crouch_idle_turn_01"
+          },
+          "override_entry_offset": 16029,
+          "override_entry_end": 16105,
+          "override_entry_sha256": "5d9daa0642b92ffe8c28b4d2deb71d901316abb8277885b302ebe01a7cb92932"
+        },
+        {
+          "state_crc32": 1455847442,
+          "states": [
+            "dinner_bow_hold_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_idle_01",
+            "3": "male_fk_hold_idle_01"
+          },
+          "override_entry_offset": 17093,
+          "override_entry_end": 17145,
+          "override_entry_sha256": "5b8b5b91ed6f0c9b6cbd4d6813429b3cb74617f58225dadf1aaa2ddf224f86b2"
+        },
+        {
+          "state_crc32": 2864896064,
+          "states": [
+            "dinner_bow_hold_turn"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_idle_turn_01",
+            "3": "male_fk_hold_idle_turn_01"
+          },
+          "override_entry_offset": 17145,
+          "override_entry_end": 17212,
+          "override_entry_sha256": "888977b48d718c8f14bec7a10dfd66e79187a517e227ba71402f3df78ff5e0df"
+        },
+        {
+          "state_crc32": 361969557,
+          "states": [
+            "dinner_idle_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_01",
+            "3": "male_fk_idle_01"
+          },
+          "override_entry_offset": 19697,
+          "override_entry_end": 19739,
+          "override_entry_sha256": "0ce044dfc81a7c78e1ebe13f2f385a148c4309123516fa8752c151542a6a6b05"
+        },
+        {
+          "state_crc32": 1341054890,
+          "states": [
+            "common_idle_turn_half_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_half_left_01",
+            "3": "male_fk_idle_turn_half_left_01"
+          },
+          "override_entry_offset": 19739,
+          "override_entry_end": 19811,
+          "override_entry_sha256": "fba2ae42b6bfc87292c5d61eb28bf47d8048399c4b271377e2b9695ed4f24f78"
+        },
+        {
+          "state_crc32": 4251625335,
+          "states": [
+            "common_idle_turn_half_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_half_right_01",
+            "3": "male_fk_idle_turn_half_right_01"
+          },
+          "override_entry_offset": 19811,
+          "override_entry_end": 19890,
+          "override_entry_sha256": "43ecd9cea45b685d8dfe805facd5c3da20582847f27e49b7399cb7c831f16144"
+        },
+        {
+          "state_crc32": 2861725366,
+          "states": [
+            "common_idle_turn_square_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_square_left_01",
+            "3": "male_fk_idle_turn_square_left_01"
+          },
+          "override_entry_offset": 19890,
+          "override_entry_end": 19971,
+          "override_entry_sha256": "0037476f2e34b3d47a665c053c8322111fd9382c796ef619f2ed0d9a58713274"
+        },
+        {
+          "state_crc32": 3918432145,
+          "states": [
+            "common_idle_turn_square_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_square_right_01",
+            "3": "male_fk_idle_turn_square_right_01"
+          },
+          "override_entry_offset": 19971,
+          "override_entry_end": 20054,
+          "override_entry_sha256": "ea83024cac7b50fb69070e49673e8864849d97462c57fda679bfa056fb0cddc1"
+        },
+        {
+          "state_crc32": 8830729,
+          "states": [
+            "dinner_ukemi_attack_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_ka_ukemi_attack_01",
+            "3": "male_ka_ukemi_attack_01"
+          },
+          "override_entry_offset": 25980,
+          "override_entry_end": 26037,
+          "override_entry_sha256": "e656bbb97ea80120684d44a46921a1e38b8acb0eec28763cb20d58aa2e95122e"
+        }
+      ]
+    },
+    {
+      "group": "female_fk_weapon_player_affix_1100020",
+      "archive_offset": 3311863,
+      "archive_end": 3312203,
+      "sha256": "8bce5979bcd45d0bb82443c772c04576353037f0f50ee7ffc78a9da41bd5f4df",
+      "selected": []
+    },
+    {
+      "group": "female_fk_weapon_player_affix_1100100",
+      "archive_offset": 3312203,
+      "archive_end": 3312690,
+      "sha256": "d3c4c7ae036852c8b6527389e1bd9dcb793d3822a18ff394fd74ff2974272f01",
+      "selected": []
+    },
+    {
+      "group": "female_fk_weapon_player_affix_1100101",
+      "archive_offset": 3312690,
+      "archive_end": 3312950,
+      "sha256": "2d187b873df4c61224db3e7696c5c9e4ebf8d2df88f5a3fa5a714738f791995b",
+      "selected": []
+    },
+    {
+      "group": "female_fk_weapon_player_affix_1100351",
+      "archive_offset": 3312950,
+      "archive_end": 3313644,
+      "sha256": "0e2081bb1fa990b7872aa0cab9ed419321ab2698970b0773cfb884ae633e96cf",
+      "selected": []
+    },
+    {
+      "group": "female_fk_weapon_player_affix_1100351_shenshe",
+      "archive_offset": 3313644,
+      "archive_end": 3314381,
+      "sha256": "9ca39e37b4e1b287664c06b867750dda5335d765bf3f211c6310922d1faeb1af",
+      "selected": []
+    },
+    {
+      "group": "female_fk_weapon_player_affix_1100994",
+      "archive_offset": 3314381,
+      "archive_end": 3314748,
+      "sha256": "78c3d741a2572de2eaacb81d96a26bcac5428c1fdf43830ba4af371cf2b7e4e6",
+      "selected": []
+    },
+    {
+      "group": "female_fk_weapon_player_hospital",
+      "archive_offset": 3314748,
+      "archive_end": 3339362,
+      "sha256": "9a7f9bfef8d8d239aa4030c4c796c931452b62387c2dcd6e0d1f434fa0c371bb",
+      "selected": [
+        {
+          "state_crc32": 3018205582,
+          "states": [
+            "attack_502"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_copy_hospital",
+            "3": "male_fk_attack_01_copy_hospital"
+          },
+          "override_entry_offset": 7814,
+          "override_entry_end": 7893,
+          "override_entry_sha256": "ed128c2af8dc18110f1a28cdaed55f0c7b3722077f3596c2fb088839eeaea6b6"
+        },
+        {
+          "state_crc32": 720336948,
+          "states": [
+            "attack_501"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_hospital",
+            "3": "male_fk_attack_01_hospital"
+          },
+          "override_entry_offset": 7893,
+          "override_entry_end": 7957,
+          "override_entry_sha256": "2e2415afb93475e378f1f07df8cab9886295502157fe17e841d9cee68ce31990"
+        },
+        {
+          "state_crc32": 1515526067,
+          "states": [
+            "attack_510_prepare"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_pre_aim",
+            "3": "male_fk_attack_01_pre_aim"
+          },
+          "override_entry_offset": 7957,
+          "override_entry_end": 8019,
+          "override_entry_sha256": "df646d8a1b856ddd193b1b866eb1c2d9379c198afc1230f964073abd598dfcc4"
+        },
+        {
+          "state_crc32": 866340105,
+          "states": [
+            "attack_501_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover",
+            "3": "male_fk_attack_01_recover"
+          },
+          "override_entry_offset": 8019,
+          "override_entry_end": 8081,
+          "override_entry_sha256": "be677755a9007c90ef5dab8b771a3ec1d9425dcae6bb55cc67ee265463db70bb"
+        },
+        {
+          "state_crc32": 170815948,
+          "states": [
+            "attack_502_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover_copy",
+            "3": "male_fk_attack_01_recover_copy"
+          },
+          "override_entry_offset": 8081,
+          "override_entry_end": 8152,
+          "override_entry_sha256": "dcc361b9df0e3acf85d288ad4369efa8b7c5bd7c71455e7b61c01cf91fddb728"
+        },
+        {
+          "state_crc32": 1909744944,
+          "states": [
+            "dinner_beam_above_idle_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_01",
+            "3": "male_fk_beam_idle_01"
+          },
+          "override_entry_offset": 8974,
+          "override_entry_end": 9026,
+          "override_entry_sha256": "76e4dfcc987c1635c9379fb5d14e85d021f5b67548a1659766e906573e995a03"
+        },
+        {
+          "state_crc32": 4284179155,
+          "states": [
+            "dinner_beam_above_idle_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_02",
+            "3": "male_fk_beam_idle_02"
+          },
+          "override_entry_offset": 9026,
+          "override_entry_end": 9083,
+          "override_entry_sha256": "11593914c001cd8c69d1602cb13ba2e9e0674916c0423547809ea63811a7d4e5"
+        },
+        {
+          "state_crc32": 3052052427,
+          "states": [
+            "dinner_beam_above_idle_inertia_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_inertia_01",
+            "3": "male_fk_beam_idle_inertia_01"
+          },
+          "override_entry_offset": 9083,
+          "override_entry_end": 9156,
+          "override_entry_sha256": "3719d6e6d76deef0c9112dba22c4df37bcae15b35e7209b5c066ec642b7e5efd"
+        },
+        {
+          "state_crc32": 996513832,
+          "states": [
+            "dinner_beam_above_idle_inertia_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_inertia_02",
+            "3": "male_fk_beam_idle_inertia_02"
+          },
+          "override_entry_offset": 9156,
+          "override_entry_end": 9224,
+          "override_entry_sha256": "3739b88daa1152e45fe3386d555607b9eaeba600d39d663ce50fbba075918271"
+        },
+        {
+          "state_crc32": 1146698920,
+          "states": [
+            "dinner_beam_above_idle_switch12_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch12_left_01",
+            "3": "male_fk_beam_idle_switch12_left_01"
+          },
+          "override_entry_offset": 9224,
+          "override_entry_end": 9304,
+          "override_entry_sha256": "47268a9505359f3efa6790a7fd11b4aed8f442703a03ef7fc4aaf6ed0bfa7170"
+        },
+        {
+          "state_crc32": 326070712,
+          "states": [
+            "dinner_beam_above_idle_switch12_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch12_right_01",
+            "3": "male_fk_beam_idle_switch12_right_01"
+          },
+          "override_entry_offset": 9304,
+          "override_entry_end": 9386,
+          "override_entry_sha256": "5603cee63a8803d2b813a28d2f6225c845abb9f3dd0ea6a6298ea7ad46d9781f"
+        },
+        {
+          "state_crc32": 1040962526,
+          "states": [
+            "dinner_beam_above_idle_switch21_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch21_left_01",
+            "3": "male_fk_beam_idle_switch21_left_01"
+          },
+          "override_entry_offset": 9386,
+          "override_entry_end": 9466,
+          "override_entry_sha256": "ce7df415b9e82369c7b961c64dfc30634a25ba4d1c59dd8986f2423dfe83a76f"
+        },
+        {
+          "state_crc32": 2859726686,
+          "states": [
+            "dinner_beam_above_idle_switch21_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch21_right_01",
+            "3": "male_fk_beam_idle_switch21_right_01"
+          },
+          "override_entry_offset": 9466,
+          "override_entry_end": 9553,
+          "override_entry_sha256": "65e49dcd45fc2164aa69b415243fdecc9a4b8a050bc72c66d284630066b54dc2"
+        },
+        {
+          "state_crc32": 3042871213,
+          "states": [
+            "dinner_beam_above_idle_turn_back_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_turn_back_01",
+            "3": "male_fk_beam_idle_turn_back_01"
+          },
+          "override_entry_offset": 9553,
+          "override_entry_end": 9630,
+          "override_entry_sha256": "212d7890d9ce571378b0100c25164e2e8a3c5f37e2c40dbc7ca6ad349ef8a056"
+        },
+        {
+          "state_crc32": 1003585614,
+          "states": [
+            "dinner_beam_above_idle_turn_back_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_turn_back_02",
+            "3": "male_fk_beam_idle_turn_back_02"
+          },
+          "override_entry_offset": 9630,
+          "override_entry_end": 9702,
+          "override_entry_sha256": "c514643d0d2309eb9b0a90bf62a9bef3833c234091f7bc76260948a0a70f75bb"
+        },
+        {
+          "state_crc32": 2864896064,
+          "states": [
+            "dinner_bow_hold_turn"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_bingyuan_hold_idle_turn_01",
+            "3": "male_fk_bingyuan_hold_idle_turn_01"
+          },
+          "override_entry_offset": 10136,
+          "override_entry_end": 10221,
+          "override_entry_sha256": "bf426e8341bc4182e02ecd9f40f61314b16644abd28b0dae2364e9e7254edee7"
+        },
+        {
+          "state_crc32": 1455847442,
+          "states": [
+            "dinner_bow_hold_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_bingyuan_idle_01",
+            "3": "male_fk_bingyuan_idle_01"
+          },
+          "override_entry_offset": 10221,
+          "override_entry_end": 10281,
+          "override_entry_sha256": "42e7154a411acb6144fd18b2a0129e68e1fd1741ca51ed48518ea3d5ed692b1c"
+        },
+        {
+          "state_crc32": 361969557,
+          "states": [
+            "dinner_idle_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_bingyuan_idle_01",
+            "3": "male_fk_bingyuan_idle_01"
+          },
+          "override_entry_offset": 10281,
+          "override_entry_end": 10341,
+          "override_entry_sha256": "733497efaac37d40d7378636da30268e2cec8b9f051bb77e6ededed199a45827"
+        },
+        {
+          "state_crc32": 1957100178,
+          "states": [
+            "dinner_crouch_idle_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_01",
+            "3": "male_fk_crouch_idle_01"
+          },
+          "override_entry_offset": 12702,
+          "override_entry_end": 12758,
+          "override_entry_sha256": "4deca2b6451102aa4ce907b30f75d77f85ee08328be6b035a810fa53cf2f389a"
+        },
+        {
+          "state_crc32": 4106851574,
+          "states": [
+            "dinner_crouch_idle_turn_half_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_half_left_01",
+            "3": "male_fk_crouch_idle_turn_half_left_01"
+          },
+          "override_entry_offset": 12758,
+          "override_entry_end": 12849,
+          "override_entry_sha256": "3117f9f22dbbf4dbd9b0901c4c3bd0c345252afb2853d864c5d8f0b48daaa84c"
+        },
+        {
+          "state_crc32": 2668404195,
+          "states": [
+            "dinner_crouch_idle_turn_half_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_half_right_01",
+            "3": "male_fk_crouch_idle_turn_half_right_01"
+          },
+          "override_entry_offset": 12849,
+          "override_entry_end": 12942,
+          "override_entry_sha256": "da840e9aa6d71a0875ad363efe5992cfa85f249728066ecae25116099d1b79b1"
+        },
+        {
+          "state_crc32": 1569867729,
+          "states": [
+            "dinner_crouch_idle_turn_square_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_square_left_01",
+            "3": "male_fk_crouch_idle_turn_square_left_01"
+          },
+          "override_entry_offset": 12942,
+          "override_entry_end": 13032,
+          "override_entry_sha256": "32ed4c9472675d0da194f05bb4e56f3e069c50376cd12c021a2478c35f7d1534"
+        },
+        {
+          "state_crc32": 984576859,
+          "states": [
+            "dinner_crouch_idle_turn_square_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_square_right_01",
+            "3": "male_fk_crouch_idle_turn_square_right_01"
+          },
+          "override_entry_offset": 13032,
+          "override_entry_end": 13124,
+          "override_entry_sha256": "301879f07289b085c178dc878f9e7ab970f402665f08fb844dcdec866eadb334"
+        },
+        {
+          "state_crc32": 3001845246,
+          "states": [
+            "dinner_bow_hold_beam_idle_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_01",
+            "3": "male_fk_hold_beam_idle_01"
+          },
+          "override_entry_offset": 15206,
+          "override_entry_end": 15273,
+          "override_entry_sha256": "376763b7ee9b2c90c3a83c8a7bdbf6832bef628a8fcb9f269622cb828f91fc81"
+        },
+        {
+          "state_crc32": 736482372,
+          "states": [
+            "dinner_bow_hold_beam_idle_02"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_02",
+            "3": "male_fk_hold_beam_idle_02"
+          },
+          "override_entry_offset": 15273,
+          "override_entry_end": 15335,
+          "override_entry_sha256": "afbc24e62d9eb546f8717da85efc7d29dc55df9590b4203af1efae2a4c3ae5fe"
+        },
+        {
+          "state_crc32": 2183372692,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch12_left_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch12_left_01",
+            "3": "male_fk_hold_beam_idle_switch12_left_01"
+          },
+          "override_entry_offset": 15335,
+          "override_entry_end": 15430,
+          "override_entry_sha256": "073d92885e93f8ba8c24671f987590ea1b9c573413be719e854ed03222b4ef45"
+        },
+        {
+          "state_crc32": 2571300445,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch12_right_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch12_right_01",
+            "3": "male_fk_hold_beam_idle_switch12_right_01"
+          },
+          "override_entry_offset": 15430,
+          "override_entry_end": 15527,
+          "override_entry_sha256": "ffbbd5cf3b83c6c37b9f349c9d7e9ff65958a9ef05fbe07926e723611459f68d"
+        },
+        {
+          "state_crc32": 1352210514,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch21_left_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch21_left_01",
+            "3": "male_fk_hold_beam_idle_switch21_left_01"
+          },
+          "override_entry_offset": 15527,
+          "override_entry_end": 15617,
+          "override_entry_sha256": "c70eaea951c7db8959d2e3766e301dbb24b5ef7ed07b0afa768401a837c8dd66"
+        },
+        {
+          "state_crc32": 3952554847,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch21_right_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch21_right_01",
+            "3": "male_fk_hold_beam_idle_switch21_right_01"
+          },
+          "override_entry_offset": 15617,
+          "override_entry_end": 15714,
+          "override_entry_sha256": "069a13bf129c9de081195301275670de96d87986209daa3b2dea414939bd121e"
+        },
+        {
+          "state_crc32": 435901448,
+          "states": [
+            "dinner_bow_hold_beam_idle_turn_back_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_turn_back_01",
+            "3": "male_fk_hold_beam_idle_turn_back_01"
+          },
+          "override_entry_offset": 15714,
+          "override_entry_end": 15796,
+          "override_entry_sha256": "bd946259a771ef0eaba8e0de9c86e7406c14c5b45adf410b9c93e1c45328156d"
+        },
+        {
+          "state_crc32": 2163344818,
+          "states": [
+            "dinner_bow_hold_beam_idle_turn_back_02"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_turn_back_02",
+            "3": "male_fk_hold_beam_idle_turn_back_02"
+          },
+          "override_entry_offset": 15796,
+          "override_entry_end": 15883,
+          "override_entry_sha256": "17db421fd45abd0ba8ec642a61ada81cef7250e8198b1dd7d4f7b800a2831bf6"
+        },
+        {
+          "state_crc32": 2526862761,
+          "states": [
+            "dinner_bow_hold_crouch_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_crouch_idle_01",
+            "3": "male_fk_hold_crouch_idle_01"
+          },
+          "override_entry_offset": 17005,
+          "override_entry_end": 17076,
+          "override_entry_sha256": "c4f591905457eeefa4bda671dd99bd8c7f05017d533c24102456bb50681b8610"
+        },
+        {
+          "state_crc32": 1788378619,
+          "states": [
+            "dinner_bow_hold_crouch_turn"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_crouch_idle_turn_01",
+            "3": "male_fk_hold_crouch_idle_turn_01"
+          },
+          "override_entry_offset": 17076,
+          "override_entry_end": 17152,
+          "override_entry_sha256": "5d9daa0642b92ffe8c28b4d2deb71d901316abb8277885b302ebe01a7cb92932"
+        },
+        {
+          "state_crc32": 3788767113,
+          "states": [
+            "dinner_bow_recover_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_recover_idle",
+            "3": "male_fk_idle_recover_idle"
+          },
+          "override_entry_offset": 20625,
+          "override_entry_end": 20692,
+          "override_entry_sha256": "965900aaf684807da51c3c66877d4f0de3c92d784a0c7a9b409060c1ddfc0956"
+        },
+        {
+          "state_crc32": 1341054890,
+          "states": [
+            "common_idle_turn_half_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_half_left_01",
+            "3": "male_fk_idle_turn_half_left_01"
+          },
+          "override_entry_offset": 20692,
+          "override_entry_end": 20764,
+          "override_entry_sha256": "fba2ae42b6bfc87292c5d61eb28bf47d8048399c4b271377e2b9695ed4f24f78"
+        },
+        {
+          "state_crc32": 4251625335,
+          "states": [
+            "common_idle_turn_half_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_half_right_01",
+            "3": "male_fk_idle_turn_half_right_01"
+          },
+          "override_entry_offset": 20764,
+          "override_entry_end": 20843,
+          "override_entry_sha256": "43ecd9cea45b685d8dfe805facd5c3da20582847f27e49b7399cb7c831f16144"
+        },
+        {
+          "state_crc32": 2861725366,
+          "states": [
+            "common_idle_turn_square_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_square_left_01",
+            "3": "male_fk_idle_turn_square_left_01"
+          },
+          "override_entry_offset": 20843,
+          "override_entry_end": 20924,
+          "override_entry_sha256": "0037476f2e34b3d47a665c053c8322111fd9382c796ef619f2ed0d9a58713274"
+        },
+        {
+          "state_crc32": 3918432145,
+          "states": [
+            "common_idle_turn_square_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_square_right_01",
+            "3": "male_fk_idle_turn_square_right_01"
+          },
+          "override_entry_offset": 20924,
+          "override_entry_end": 21007,
+          "override_entry_sha256": "ea83024cac7b50fb69070e49673e8864849d97462c57fda679bfa056fb0cddc1"
+        },
+        {
+          "state_crc32": 8830729,
+          "states": [
+            "dinner_ukemi_attack_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_ka_ukemi_attack_01",
+            "3": "male_ka_ukemi_attack_01"
+          },
+          "override_entry_offset": 24553,
+          "override_entry_end": 24610,
+          "override_entry_sha256": "e656bbb97ea80120684d44a46921a1e38b8acb0eec28763cb20d58aa2e95122e"
+        }
+      ]
+    },
+    {
+      "group": "female_fk_weapon_player_pvpve_1000239",
+      "archive_offset": 3339362,
+      "archive_end": 3339728,
+      "sha256": "21245f42e8d7ec7547902aba2dfc40dc27d4678dc6cd8c61371e52d246fa684c",
+      "selected": [
+        {
+          "state_crc32": 720336948,
+          "states": [
+            "attack_501"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_pvpve",
+            "3": "male_fk_attack_01_pvpve"
+          },
+          "override_entry_offset": 232,
+          "override_entry_end": 290,
+          "override_entry_sha256": "b277e374886bf968c6df012d6006c556f4e51158a7fc94311c1012d9da6d0e70"
+        },
+        {
+          "state_crc32": 3018205582,
+          "states": [
+            "attack_502"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_pvpve_copy",
+            "3": "male_fk_attack_01_pvpve_copy"
+          },
+          "override_entry_offset": 290,
+          "override_entry_end": 363,
+          "override_entry_sha256": "4675b91eefb8811129095f1e67fcabb05e14e464537eb376042abb843443bdba"
+        }
+      ]
+    },
+    {
+      "group": "female_fk_weapon_player_shenshe",
+      "archive_offset": 3339728,
+      "archive_end": 3341070,
+      "sha256": "20bd77e54de65e181981acc5c8e82a373480749a4b20d00215cdb41e48a3a57b",
+      "selected": [
+        {
+          "state_crc32": 3029069207,
+          "states": [
+            "attack_506"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_copy_shenshe",
+            "3": "male_fk_attack_01_copy_shenshe"
+          },
+          "override_entry_offset": 788,
+          "override_entry_end": 865,
+          "override_entry_sha256": "6fc4eb7debfefc8bfdf199960a64f25949c4b21ee39e9eb57ccec4d601b2b0eb"
+        },
+        {
+          "state_crc32": 1850678277,
+          "states": [
+            "attack_505_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover",
+            "3": "male_fk_attack_01_recover"
+          },
+          "override_entry_offset": 865,
+          "override_entry_end": 927,
+          "override_entry_sha256": "d6bf5c1db1f810c7c38d1dfb21a19d377a19f8bd78f75bb3874128d2b89a0c5e"
+        },
+        {
+          "state_crc32": 1472340160,
+          "states": [
+            "attack_506_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover_copy",
+            "3": "male_fk_attack_01_recover_copy"
+          },
+          "override_entry_offset": 927,
+          "override_entry_end": 999,
+          "override_entry_sha256": "2483d7eace2a0c60e3abb881600a68132a09e729beb364a88ae552e78e202c5d"
+        },
+        {
+          "state_crc32": 763542573,
+          "states": [
+            "attack_505"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_shenshe",
+            "3": "male_fk_attack_01_shenshe"
+          },
+          "override_entry_offset": 999,
+          "override_entry_end": 1061,
+          "override_entry_sha256": "8d3c89d89b941a1dda8bdab4315f268cb6d95e30adddf4a0f3ae48a299c92ca2"
+        }
+      ]
+    },
+    {
+      "group": "female_fk_weapon_player_shenshe_02",
+      "archive_offset": 3341070,
+      "archive_end": 3341998,
+      "sha256": "6b05d39798bf2da88819bf3ee843db1dab81055892eb859a0aa2ef49abe6de94",
+      "selected": []
+    },
+    {
+      "group": "male_fk_pve_weapon_player_affix_1100353",
+      "archive_offset": 7735236,
+      "archive_end": 7736584,
+      "sha256": "3bcb16f8af517be473e061389ac0fb6d08a9128ef95d81280e06c0ce9e3b4d8c",
+      "selected": [
+        {
+          "state_crc32": 866340105,
+          "states": [
+            "attack_501_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover",
+            "3": "male_fk_attack_01_recover"
+          },
+          "override_entry_offset": 792,
+          "override_entry_end": 854,
+          "override_entry_sha256": "be677755a9007c90ef5dab8b771a3ec1d9425dcae6bb55cc67ee265463db70bb"
+        },
+        {
+          "state_crc32": 170815948,
+          "states": [
+            "attack_502_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover_copy",
+            "3": "male_fk_attack_01_recover_copy"
+          },
+          "override_entry_offset": 854,
+          "override_entry_end": 925,
+          "override_entry_sha256": "dcc361b9df0e3acf85d288ad4369efa8b7c5bd7c71455e7b61c01cf91fddb728"
+        }
+      ]
+    },
+    {
+      "group": "male_fk_weapon_player",
+      "archive_offset": 7736584,
+      "archive_end": 7762847,
+      "sha256": "b08c1792b346105e0ee1e95dd877bc6233dbcd8b4e2e99805f951dab201bf726",
+      "selected": [
+        {
+          "state_crc32": 720336948,
+          "states": [
+            "attack_501"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01",
+            "3": "male_fk_attack_01"
+          },
+          "override_entry_offset": 8684,
+          "override_entry_end": 8730,
+          "override_entry_sha256": "87b39b5ef9993511d12549f4d3af5edfc37ee17f9646e7e817ccb0417bb496ca"
+        },
+        {
+          "state_crc32": 3018205582,
+          "states": [
+            "attack_502"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_copy",
+            "3": "male_fk_attack_01_copy"
+          },
+          "override_entry_offset": 8730,
+          "override_entry_end": 8791,
+          "override_entry_sha256": "10b3b508608c02ce8055abebb6f1610d13c14e4d9afaca7205ea78838f4657b1"
+        },
+        {
+          "state_crc32": 1515526067,
+          "states": [
+            "attack_510_prepare"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_pre_aim",
+            "3": "male_fk_attack_01_pre_aim"
+          },
+          "override_entry_offset": 8791,
+          "override_entry_end": 8853,
+          "override_entry_sha256": "df646d8a1b856ddd193b1b866eb1c2d9379c198afc1230f964073abd598dfcc4"
+        },
+        {
+          "state_crc32": 866340105,
+          "states": [
+            "attack_501_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover",
+            "3": "male_fk_attack_01_recover"
+          },
+          "override_entry_offset": 8853,
+          "override_entry_end": 8915,
+          "override_entry_sha256": "be677755a9007c90ef5dab8b771a3ec1d9425dcae6bb55cc67ee265463db70bb"
+        },
+        {
+          "state_crc32": 170815948,
+          "states": [
+            "attack_502_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover_copy",
+            "3": "male_fk_attack_01_recover_copy"
+          },
+          "override_entry_offset": 8915,
+          "override_entry_end": 8986,
+          "override_entry_sha256": "dcc361b9df0e3acf85d288ad4369efa8b7c5bd7c71455e7b61c01cf91fddb728"
+        },
+        {
+          "state_crc32": 1909744944,
+          "states": [
+            "dinner_beam_above_idle_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_01",
+            "3": "male_fk_beam_idle_01"
+          },
+          "override_entry_offset": 10405,
+          "override_entry_end": 10457,
+          "override_entry_sha256": "76e4dfcc987c1635c9379fb5d14e85d021f5b67548a1659766e906573e995a03"
+        },
+        {
+          "state_crc32": 4284179155,
+          "states": [
+            "dinner_beam_above_idle_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_02",
+            "3": "male_fk_beam_idle_02"
+          },
+          "override_entry_offset": 10457,
+          "override_entry_end": 10514,
+          "override_entry_sha256": "11593914c001cd8c69d1602cb13ba2e9e0674916c0423547809ea63811a7d4e5"
+        },
+        {
+          "state_crc32": 3052052427,
+          "states": [
+            "dinner_beam_above_idle_inertia_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_inertia_01",
+            "3": "male_fk_beam_idle_inertia_01"
+          },
+          "override_entry_offset": 10514,
+          "override_entry_end": 10587,
+          "override_entry_sha256": "3719d6e6d76deef0c9112dba22c4df37bcae15b35e7209b5c066ec642b7e5efd"
+        },
+        {
+          "state_crc32": 996513832,
+          "states": [
+            "dinner_beam_above_idle_inertia_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_inertia_02",
+            "3": "male_fk_beam_idle_inertia_02"
+          },
+          "override_entry_offset": 10587,
+          "override_entry_end": 10655,
+          "override_entry_sha256": "3739b88daa1152e45fe3386d555607b9eaeba600d39d663ce50fbba075918271"
+        },
+        {
+          "state_crc32": 1146698920,
+          "states": [
+            "dinner_beam_above_idle_switch12_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch12_left_01",
+            "3": "male_fk_beam_idle_switch12_left_01"
+          },
+          "override_entry_offset": 10655,
+          "override_entry_end": 10735,
+          "override_entry_sha256": "47268a9505359f3efa6790a7fd11b4aed8f442703a03ef7fc4aaf6ed0bfa7170"
+        },
+        {
+          "state_crc32": 326070712,
+          "states": [
+            "dinner_beam_above_idle_switch12_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch12_right_01",
+            "3": "male_fk_beam_idle_switch12_right_01"
+          },
+          "override_entry_offset": 10735,
+          "override_entry_end": 10817,
+          "override_entry_sha256": "5603cee63a8803d2b813a28d2f6225c845abb9f3dd0ea6a6298ea7ad46d9781f"
+        },
+        {
+          "state_crc32": 1040962526,
+          "states": [
+            "dinner_beam_above_idle_switch21_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch21_left_01",
+            "3": "male_fk_beam_idle_switch21_left_01"
+          },
+          "override_entry_offset": 10817,
+          "override_entry_end": 10897,
+          "override_entry_sha256": "ce7df415b9e82369c7b961c64dfc30634a25ba4d1c59dd8986f2423dfe83a76f"
+        },
+        {
+          "state_crc32": 2859726686,
+          "states": [
+            "dinner_beam_above_idle_switch21_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch21_right_01",
+            "3": "male_fk_beam_idle_switch21_right_01"
+          },
+          "override_entry_offset": 10897,
+          "override_entry_end": 10984,
+          "override_entry_sha256": "65e49dcd45fc2164aa69b415243fdecc9a4b8a050bc72c66d284630066b54dc2"
+        },
+        {
+          "state_crc32": 3042871213,
+          "states": [
+            "dinner_beam_above_idle_turn_back_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_turn_back_01",
+            "3": "male_fk_beam_idle_turn_back_01"
+          },
+          "override_entry_offset": 10984,
+          "override_entry_end": 11061,
+          "override_entry_sha256": "212d7890d9ce571378b0100c25164e2e8a3c5f37e2c40dbc7ca6ad349ef8a056"
+        },
+        {
+          "state_crc32": 1003585614,
+          "states": [
+            "dinner_beam_above_idle_turn_back_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_turn_back_02",
+            "3": "male_fk_beam_idle_turn_back_02"
+          },
+          "override_entry_offset": 11061,
+          "override_entry_end": 11133,
+          "override_entry_sha256": "c514643d0d2309eb9b0a90bf62a9bef3833c234091f7bc76260948a0a70f75bb"
+        },
+        {
+          "state_crc32": 1957100178,
+          "states": [
+            "dinner_crouch_idle_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_01",
+            "3": "male_fk_crouch_idle_01"
+          },
+          "override_entry_offset": 11853,
+          "override_entry_end": 11909,
+          "override_entry_sha256": "4deca2b6451102aa4ce907b30f75d77f85ee08328be6b035a810fa53cf2f389a"
+        },
+        {
+          "state_crc32": 4106851574,
+          "states": [
+            "dinner_crouch_idle_turn_half_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_half_left_01",
+            "3": "male_fk_crouch_idle_turn_half_left_01"
+          },
+          "override_entry_offset": 11909,
+          "override_entry_end": 12000,
+          "override_entry_sha256": "3117f9f22dbbf4dbd9b0901c4c3bd0c345252afb2853d864c5d8f0b48daaa84c"
+        },
+        {
+          "state_crc32": 2668404195,
+          "states": [
+            "dinner_crouch_idle_turn_half_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_half_right_01",
+            "3": "male_fk_crouch_idle_turn_half_right_01"
+          },
+          "override_entry_offset": 12000,
+          "override_entry_end": 12093,
+          "override_entry_sha256": "da840e9aa6d71a0875ad363efe5992cfa85f249728066ecae25116099d1b79b1"
+        },
+        {
+          "state_crc32": 1569867729,
+          "states": [
+            "dinner_crouch_idle_turn_square_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_square_left_01",
+            "3": "male_fk_crouch_idle_turn_square_left_01"
+          },
+          "override_entry_offset": 12093,
+          "override_entry_end": 12183,
+          "override_entry_sha256": "32ed4c9472675d0da194f05bb4e56f3e069c50376cd12c021a2478c35f7d1534"
+        },
+        {
+          "state_crc32": 984576859,
+          "states": [
+            "dinner_crouch_idle_turn_square_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_square_right_01",
+            "3": "male_fk_crouch_idle_turn_square_right_01"
+          },
+          "override_entry_offset": 12183,
+          "override_entry_end": 12275,
+          "override_entry_sha256": "301879f07289b085c178dc878f9e7ab970f402665f08fb844dcdec866eadb334"
+        },
+        {
+          "state_crc32": 3001845246,
+          "states": [
+            "dinner_bow_hold_beam_idle_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_01",
+            "3": "male_fk_hold_beam_idle_01"
+          },
+          "override_entry_offset": 14157,
+          "override_entry_end": 14224,
+          "override_entry_sha256": "376763b7ee9b2c90c3a83c8a7bdbf6832bef628a8fcb9f269622cb828f91fc81"
+        },
+        {
+          "state_crc32": 736482372,
+          "states": [
+            "dinner_bow_hold_beam_idle_02"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_02",
+            "3": "male_fk_hold_beam_idle_02"
+          },
+          "override_entry_offset": 14224,
+          "override_entry_end": 14286,
+          "override_entry_sha256": "afbc24e62d9eb546f8717da85efc7d29dc55df9590b4203af1efae2a4c3ae5fe"
+        },
+        {
+          "state_crc32": 2183372692,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch12_left_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch12_left_01",
+            "3": "male_fk_hold_beam_idle_switch12_left_01"
+          },
+          "override_entry_offset": 14286,
+          "override_entry_end": 14381,
+          "override_entry_sha256": "073d92885e93f8ba8c24671f987590ea1b9c573413be719e854ed03222b4ef45"
+        },
+        {
+          "state_crc32": 2571300445,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch12_right_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch12_right_01",
+            "3": "male_fk_hold_beam_idle_switch12_right_01"
+          },
+          "override_entry_offset": 14381,
+          "override_entry_end": 14478,
+          "override_entry_sha256": "ffbbd5cf3b83c6c37b9f349c9d7e9ff65958a9ef05fbe07926e723611459f68d"
+        },
+        {
+          "state_crc32": 1352210514,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch21_left_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch21_left_01",
+            "3": "male_fk_hold_beam_idle_switch21_left_01"
+          },
+          "override_entry_offset": 14478,
+          "override_entry_end": 14568,
+          "override_entry_sha256": "c70eaea951c7db8959d2e3766e301dbb24b5ef7ed07b0afa768401a837c8dd66"
+        },
+        {
+          "state_crc32": 3952554847,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch21_right_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch21_right_01",
+            "3": "male_fk_hold_beam_idle_switch21_right_01"
+          },
+          "override_entry_offset": 14568,
+          "override_entry_end": 14665,
+          "override_entry_sha256": "069a13bf129c9de081195301275670de96d87986209daa3b2dea414939bd121e"
+        },
+        {
+          "state_crc32": 435901448,
+          "states": [
+            "dinner_bow_hold_beam_idle_turn_back_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_turn_back_01",
+            "3": "male_fk_hold_beam_idle_turn_back_01"
+          },
+          "override_entry_offset": 14665,
+          "override_entry_end": 14747,
+          "override_entry_sha256": "bd946259a771ef0eaba8e0de9c86e7406c14c5b45adf410b9c93e1c45328156d"
+        },
+        {
+          "state_crc32": 2163344818,
+          "states": [
+            "dinner_bow_hold_beam_idle_turn_back_02"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_turn_back_02",
+            "3": "male_fk_hold_beam_idle_turn_back_02"
+          },
+          "override_entry_offset": 14747,
+          "override_entry_end": 14834,
+          "override_entry_sha256": "17db421fd45abd0ba8ec642a61ada81cef7250e8198b1dd7d4f7b800a2831bf6"
+        },
+        {
+          "state_crc32": 2526862761,
+          "states": [
+            "dinner_bow_hold_crouch_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_crouch_idle_01",
+            "3": "male_fk_hold_crouch_idle_01"
+          },
+          "override_entry_offset": 15956,
+          "override_entry_end": 16027,
+          "override_entry_sha256": "c4f591905457eeefa4bda671dd99bd8c7f05017d533c24102456bb50681b8610"
+        },
+        {
+          "state_crc32": 1788378619,
+          "states": [
+            "dinner_bow_hold_crouch_turn"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_crouch_idle_turn_01",
+            "3": "male_fk_hold_crouch_idle_turn_01"
+          },
+          "override_entry_offset": 16027,
+          "override_entry_end": 16103,
+          "override_entry_sha256": "5d9daa0642b92ffe8c28b4d2deb71d901316abb8277885b302ebe01a7cb92932"
+        },
+        {
+          "state_crc32": 1455847442,
+          "states": [
+            "dinner_bow_hold_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_idle_01",
+            "3": "male_fk_hold_idle_01"
+          },
+          "override_entry_offset": 17091,
+          "override_entry_end": 17143,
+          "override_entry_sha256": "5b8b5b91ed6f0c9b6cbd4d6813429b3cb74617f58225dadf1aaa2ddf224f86b2"
+        },
+        {
+          "state_crc32": 2864896064,
+          "states": [
+            "dinner_bow_hold_turn"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_idle_turn_01",
+            "3": "male_fk_hold_idle_turn_01"
+          },
+          "override_entry_offset": 17143,
+          "override_entry_end": 17210,
+          "override_entry_sha256": "888977b48d718c8f14bec7a10dfd66e79187a517e227ba71402f3df78ff5e0df"
+        },
+        {
+          "state_crc32": 361969557,
+          "states": [
+            "dinner_idle_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_01",
+            "3": "male_fk_idle_01"
+          },
+          "override_entry_offset": 19695,
+          "override_entry_end": 19737,
+          "override_entry_sha256": "0ce044dfc81a7c78e1ebe13f2f385a148c4309123516fa8752c151542a6a6b05"
+        },
+        {
+          "state_crc32": 1341054890,
+          "states": [
+            "common_idle_turn_half_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_half_left_01",
+            "3": "male_fk_idle_turn_half_left_01"
+          },
+          "override_entry_offset": 19737,
+          "override_entry_end": 19809,
+          "override_entry_sha256": "fba2ae42b6bfc87292c5d61eb28bf47d8048399c4b271377e2b9695ed4f24f78"
+        },
+        {
+          "state_crc32": 4251625335,
+          "states": [
+            "common_idle_turn_half_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_half_right_01",
+            "3": "male_fk_idle_turn_half_right_01"
+          },
+          "override_entry_offset": 19809,
+          "override_entry_end": 19888,
+          "override_entry_sha256": "43ecd9cea45b685d8dfe805facd5c3da20582847f27e49b7399cb7c831f16144"
+        },
+        {
+          "state_crc32": 2861725366,
+          "states": [
+            "common_idle_turn_square_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_square_left_01",
+            "3": "male_fk_idle_turn_square_left_01"
+          },
+          "override_entry_offset": 19888,
+          "override_entry_end": 19969,
+          "override_entry_sha256": "0037476f2e34b3d47a665c053c8322111fd9382c796ef619f2ed0d9a58713274"
+        },
+        {
+          "state_crc32": 3918432145,
+          "states": [
+            "common_idle_turn_square_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_square_right_01",
+            "3": "male_fk_idle_turn_square_right_01"
+          },
+          "override_entry_offset": 19969,
+          "override_entry_end": 20052,
+          "override_entry_sha256": "ea83024cac7b50fb69070e49673e8864849d97462c57fda679bfa056fb0cddc1"
+        },
+        {
+          "state_crc32": 8830729,
+          "states": [
+            "dinner_ukemi_attack_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_ka_ukemi_attack_01",
+            "3": "male_ka_ukemi_attack_01"
+          },
+          "override_entry_offset": 25978,
+          "override_entry_end": 26035,
+          "override_entry_sha256": "e656bbb97ea80120684d44a46921a1e38b8acb0eec28763cb20d58aa2e95122e"
+        }
+      ]
+    },
+    {
+      "group": "male_fk_weapon_player_affix_1100020",
+      "archive_offset": 7762847,
+      "archive_end": 7763185,
+      "sha256": "e54ca8eadcabfe5aec0490d36eaf3d189009b8bb98c4fee7a70bd28f54714ebf",
+      "selected": []
+    },
+    {
+      "group": "male_fk_weapon_player_affix_1100100",
+      "archive_offset": 7763185,
+      "archive_end": 7763670,
+      "sha256": "4a99d5cff954a2337569455257fb7abcd47056a95ce1c72c6ea5b5fe19da62b8",
+      "selected": []
+    },
+    {
+      "group": "male_fk_weapon_player_affix_1100101",
+      "archive_offset": 7763670,
+      "archive_end": 7763928,
+      "sha256": "ed7d2b8931093c10c9658df92c663149de22815474db4890b42dfd4c876c48ba",
+      "selected": []
+    },
+    {
+      "group": "male_fk_weapon_player_affix_1100351",
+      "archive_offset": 7763928,
+      "archive_end": 7764620,
+      "sha256": "f7bc6c86c84f086fcb8ea1a6eb7696924392eef3fb5bafbd5f45943eb594ac97",
+      "selected": []
+    },
+    {
+      "group": "male_fk_weapon_player_affix_1100351_shenshe",
+      "archive_offset": 7764620,
+      "archive_end": 7765355,
+      "sha256": "efecf91641cecbe89f946f0802d2226149e85f46dfc15db723586d009fb4497f",
+      "selected": []
+    },
+    {
+      "group": "male_fk_weapon_player_affix_1100994",
+      "archive_offset": 7765355,
+      "archive_end": 7765720,
+      "sha256": "f094bad9b54e75eb2ed60f8264b700a0040a69e9aef9d5d2c914a2c9c449bec4",
+      "selected": []
+    },
+    {
+      "group": "male_fk_weapon_player_hospital",
+      "archive_offset": 7765720,
+      "archive_end": 7790332,
+      "sha256": "7fd0563a7add57590f41e6471ce65c3bec704d6a26ca827705d200f0b973462b",
+      "selected": [
+        {
+          "state_crc32": 3018205582,
+          "states": [
+            "attack_502"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_copy_hospital",
+            "3": "male_fk_attack_01_copy_hospital"
+          },
+          "override_entry_offset": 7812,
+          "override_entry_end": 7891,
+          "override_entry_sha256": "ed128c2af8dc18110f1a28cdaed55f0c7b3722077f3596c2fb088839eeaea6b6"
+        },
+        {
+          "state_crc32": 720336948,
+          "states": [
+            "attack_501"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_hospital",
+            "3": "male_fk_attack_01_hospital"
+          },
+          "override_entry_offset": 7891,
+          "override_entry_end": 7955,
+          "override_entry_sha256": "2e2415afb93475e378f1f07df8cab9886295502157fe17e841d9cee68ce31990"
+        },
+        {
+          "state_crc32": 1515526067,
+          "states": [
+            "attack_510_prepare"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_pre_aim",
+            "3": "male_fk_attack_01_pre_aim"
+          },
+          "override_entry_offset": 7955,
+          "override_entry_end": 8017,
+          "override_entry_sha256": "df646d8a1b856ddd193b1b866eb1c2d9379c198afc1230f964073abd598dfcc4"
+        },
+        {
+          "state_crc32": 866340105,
+          "states": [
+            "attack_501_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover",
+            "3": "male_fk_attack_01_recover"
+          },
+          "override_entry_offset": 8017,
+          "override_entry_end": 8079,
+          "override_entry_sha256": "be677755a9007c90ef5dab8b771a3ec1d9425dcae6bb55cc67ee265463db70bb"
+        },
+        {
+          "state_crc32": 170815948,
+          "states": [
+            "attack_502_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover_copy",
+            "3": "male_fk_attack_01_recover_copy"
+          },
+          "override_entry_offset": 8079,
+          "override_entry_end": 8150,
+          "override_entry_sha256": "dcc361b9df0e3acf85d288ad4369efa8b7c5bd7c71455e7b61c01cf91fddb728"
+        },
+        {
+          "state_crc32": 1909744944,
+          "states": [
+            "dinner_beam_above_idle_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_01",
+            "3": "male_fk_beam_idle_01"
+          },
+          "override_entry_offset": 8972,
+          "override_entry_end": 9024,
+          "override_entry_sha256": "76e4dfcc987c1635c9379fb5d14e85d021f5b67548a1659766e906573e995a03"
+        },
+        {
+          "state_crc32": 4284179155,
+          "states": [
+            "dinner_beam_above_idle_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_02",
+            "3": "male_fk_beam_idle_02"
+          },
+          "override_entry_offset": 9024,
+          "override_entry_end": 9081,
+          "override_entry_sha256": "11593914c001cd8c69d1602cb13ba2e9e0674916c0423547809ea63811a7d4e5"
+        },
+        {
+          "state_crc32": 3052052427,
+          "states": [
+            "dinner_beam_above_idle_inertia_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_inertia_01",
+            "3": "male_fk_beam_idle_inertia_01"
+          },
+          "override_entry_offset": 9081,
+          "override_entry_end": 9154,
+          "override_entry_sha256": "3719d6e6d76deef0c9112dba22c4df37bcae15b35e7209b5c066ec642b7e5efd"
+        },
+        {
+          "state_crc32": 996513832,
+          "states": [
+            "dinner_beam_above_idle_inertia_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_inertia_02",
+            "3": "male_fk_beam_idle_inertia_02"
+          },
+          "override_entry_offset": 9154,
+          "override_entry_end": 9222,
+          "override_entry_sha256": "3739b88daa1152e45fe3386d555607b9eaeba600d39d663ce50fbba075918271"
+        },
+        {
+          "state_crc32": 1146698920,
+          "states": [
+            "dinner_beam_above_idle_switch12_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch12_left_01",
+            "3": "male_fk_beam_idle_switch12_left_01"
+          },
+          "override_entry_offset": 9222,
+          "override_entry_end": 9302,
+          "override_entry_sha256": "47268a9505359f3efa6790a7fd11b4aed8f442703a03ef7fc4aaf6ed0bfa7170"
+        },
+        {
+          "state_crc32": 326070712,
+          "states": [
+            "dinner_beam_above_idle_switch12_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch12_right_01",
+            "3": "male_fk_beam_idle_switch12_right_01"
+          },
+          "override_entry_offset": 9302,
+          "override_entry_end": 9384,
+          "override_entry_sha256": "5603cee63a8803d2b813a28d2f6225c845abb9f3dd0ea6a6298ea7ad46d9781f"
+        },
+        {
+          "state_crc32": 1040962526,
+          "states": [
+            "dinner_beam_above_idle_switch21_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch21_left_01",
+            "3": "male_fk_beam_idle_switch21_left_01"
+          },
+          "override_entry_offset": 9384,
+          "override_entry_end": 9464,
+          "override_entry_sha256": "ce7df415b9e82369c7b961c64dfc30634a25ba4d1c59dd8986f2423dfe83a76f"
+        },
+        {
+          "state_crc32": 2859726686,
+          "states": [
+            "dinner_beam_above_idle_switch21_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_switch21_right_01",
+            "3": "male_fk_beam_idle_switch21_right_01"
+          },
+          "override_entry_offset": 9464,
+          "override_entry_end": 9551,
+          "override_entry_sha256": "65e49dcd45fc2164aa69b415243fdecc9a4b8a050bc72c66d284630066b54dc2"
+        },
+        {
+          "state_crc32": 3042871213,
+          "states": [
+            "dinner_beam_above_idle_turn_back_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_turn_back_01",
+            "3": "male_fk_beam_idle_turn_back_01"
+          },
+          "override_entry_offset": 9551,
+          "override_entry_end": 9628,
+          "override_entry_sha256": "212d7890d9ce571378b0100c25164e2e8a3c5f37e2c40dbc7ca6ad349ef8a056"
+        },
+        {
+          "state_crc32": 1003585614,
+          "states": [
+            "dinner_beam_above_idle_turn_back_02_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_beam_idle_turn_back_02",
+            "3": "male_fk_beam_idle_turn_back_02"
+          },
+          "override_entry_offset": 9628,
+          "override_entry_end": 9700,
+          "override_entry_sha256": "c514643d0d2309eb9b0a90bf62a9bef3833c234091f7bc76260948a0a70f75bb"
+        },
+        {
+          "state_crc32": 2864896064,
+          "states": [
+            "dinner_bow_hold_turn"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_bingyuan_hold_idle_turn_01",
+            "3": "male_fk_bingyuan_hold_idle_turn_01"
+          },
+          "override_entry_offset": 10134,
+          "override_entry_end": 10219,
+          "override_entry_sha256": "bf426e8341bc4182e02ecd9f40f61314b16644abd28b0dae2364e9e7254edee7"
+        },
+        {
+          "state_crc32": 1455847442,
+          "states": [
+            "dinner_bow_hold_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_bingyuan_idle_01",
+            "3": "male_fk_bingyuan_idle_01"
+          },
+          "override_entry_offset": 10219,
+          "override_entry_end": 10279,
+          "override_entry_sha256": "42e7154a411acb6144fd18b2a0129e68e1fd1741ca51ed48518ea3d5ed692b1c"
+        },
+        {
+          "state_crc32": 361969557,
+          "states": [
+            "dinner_idle_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_bingyuan_idle_01",
+            "3": "male_fk_bingyuan_idle_01"
+          },
+          "override_entry_offset": 10279,
+          "override_entry_end": 10339,
+          "override_entry_sha256": "733497efaac37d40d7378636da30268e2cec8b9f051bb77e6ededed199a45827"
+        },
+        {
+          "state_crc32": 1957100178,
+          "states": [
+            "dinner_crouch_idle_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_01",
+            "3": "male_fk_crouch_idle_01"
+          },
+          "override_entry_offset": 12700,
+          "override_entry_end": 12756,
+          "override_entry_sha256": "4deca2b6451102aa4ce907b30f75d77f85ee08328be6b035a810fa53cf2f389a"
+        },
+        {
+          "state_crc32": 4106851574,
+          "states": [
+            "dinner_crouch_idle_turn_half_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_half_left_01",
+            "3": "male_fk_crouch_idle_turn_half_left_01"
+          },
+          "override_entry_offset": 12756,
+          "override_entry_end": 12847,
+          "override_entry_sha256": "3117f9f22dbbf4dbd9b0901c4c3bd0c345252afb2853d864c5d8f0b48daaa84c"
+        },
+        {
+          "state_crc32": 2668404195,
+          "states": [
+            "dinner_crouch_idle_turn_half_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_half_right_01",
+            "3": "male_fk_crouch_idle_turn_half_right_01"
+          },
+          "override_entry_offset": 12847,
+          "override_entry_end": 12940,
+          "override_entry_sha256": "da840e9aa6d71a0875ad363efe5992cfa85f249728066ecae25116099d1b79b1"
+        },
+        {
+          "state_crc32": 1569867729,
+          "states": [
+            "dinner_crouch_idle_turn_square_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_square_left_01",
+            "3": "male_fk_crouch_idle_turn_square_left_01"
+          },
+          "override_entry_offset": 12940,
+          "override_entry_end": 13030,
+          "override_entry_sha256": "32ed4c9472675d0da194f05bb4e56f3e069c50376cd12c021a2478c35f7d1534"
+        },
+        {
+          "state_crc32": 984576859,
+          "states": [
+            "dinner_crouch_idle_turn_square_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_crouch_idle_turn_square_right_01",
+            "3": "male_fk_crouch_idle_turn_square_right_01"
+          },
+          "override_entry_offset": 13030,
+          "override_entry_end": 13122,
+          "override_entry_sha256": "301879f07289b085c178dc878f9e7ab970f402665f08fb844dcdec866eadb334"
+        },
+        {
+          "state_crc32": 3001845246,
+          "states": [
+            "dinner_bow_hold_beam_idle_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_01",
+            "3": "male_fk_hold_beam_idle_01"
+          },
+          "override_entry_offset": 15204,
+          "override_entry_end": 15271,
+          "override_entry_sha256": "376763b7ee9b2c90c3a83c8a7bdbf6832bef628a8fcb9f269622cb828f91fc81"
+        },
+        {
+          "state_crc32": 736482372,
+          "states": [
+            "dinner_bow_hold_beam_idle_02"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_02",
+            "3": "male_fk_hold_beam_idle_02"
+          },
+          "override_entry_offset": 15271,
+          "override_entry_end": 15333,
+          "override_entry_sha256": "afbc24e62d9eb546f8717da85efc7d29dc55df9590b4203af1efae2a4c3ae5fe"
+        },
+        {
+          "state_crc32": 2183372692,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch12_left_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch12_left_01",
+            "3": "male_fk_hold_beam_idle_switch12_left_01"
+          },
+          "override_entry_offset": 15333,
+          "override_entry_end": 15428,
+          "override_entry_sha256": "073d92885e93f8ba8c24671f987590ea1b9c573413be719e854ed03222b4ef45"
+        },
+        {
+          "state_crc32": 2571300445,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch12_right_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch12_right_01",
+            "3": "male_fk_hold_beam_idle_switch12_right_01"
+          },
+          "override_entry_offset": 15428,
+          "override_entry_end": 15525,
+          "override_entry_sha256": "ffbbd5cf3b83c6c37b9f349c9d7e9ff65958a9ef05fbe07926e723611459f68d"
+        },
+        {
+          "state_crc32": 1352210514,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch21_left_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch21_left_01",
+            "3": "male_fk_hold_beam_idle_switch21_left_01"
+          },
+          "override_entry_offset": 15525,
+          "override_entry_end": 15615,
+          "override_entry_sha256": "c70eaea951c7db8959d2e3766e301dbb24b5ef7ed07b0afa768401a837c8dd66"
+        },
+        {
+          "state_crc32": 3952554847,
+          "states": [
+            "dinner_bow_hold_beam_idle_switch21_right_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_switch21_right_01",
+            "3": "male_fk_hold_beam_idle_switch21_right_01"
+          },
+          "override_entry_offset": 15615,
+          "override_entry_end": 15712,
+          "override_entry_sha256": "069a13bf129c9de081195301275670de96d87986209daa3b2dea414939bd121e"
+        },
+        {
+          "state_crc32": 435901448,
+          "states": [
+            "dinner_bow_hold_beam_idle_turn_back_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_turn_back_01",
+            "3": "male_fk_hold_beam_idle_turn_back_01"
+          },
+          "override_entry_offset": 15712,
+          "override_entry_end": 15794,
+          "override_entry_sha256": "bd946259a771ef0eaba8e0de9c86e7406c14c5b45adf410b9c93e1c45328156d"
+        },
+        {
+          "state_crc32": 2163344818,
+          "states": [
+            "dinner_bow_hold_beam_idle_turn_back_02"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_beam_idle_turn_back_02",
+            "3": "male_fk_hold_beam_idle_turn_back_02"
+          },
+          "override_entry_offset": 15794,
+          "override_entry_end": 15881,
+          "override_entry_sha256": "17db421fd45abd0ba8ec642a61ada81cef7250e8198b1dd7d4f7b800a2831bf6"
+        },
+        {
+          "state_crc32": 2526862761,
+          "states": [
+            "dinner_bow_hold_crouch_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_crouch_idle_01",
+            "3": "male_fk_hold_crouch_idle_01"
+          },
+          "override_entry_offset": 17003,
+          "override_entry_end": 17074,
+          "override_entry_sha256": "c4f591905457eeefa4bda671dd99bd8c7f05017d533c24102456bb50681b8610"
+        },
+        {
+          "state_crc32": 1788378619,
+          "states": [
+            "dinner_bow_hold_crouch_turn"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_hold_crouch_idle_turn_01",
+            "3": "male_fk_hold_crouch_idle_turn_01"
+          },
+          "override_entry_offset": 17074,
+          "override_entry_end": 17150,
+          "override_entry_sha256": "5d9daa0642b92ffe8c28b4d2deb71d901316abb8277885b302ebe01a7cb92932"
+        },
+        {
+          "state_crc32": 3788767113,
+          "states": [
+            "dinner_bow_recover_idle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_recover_idle",
+            "3": "male_fk_idle_recover_idle"
+          },
+          "override_entry_offset": 20623,
+          "override_entry_end": 20690,
+          "override_entry_sha256": "965900aaf684807da51c3c66877d4f0de3c92d784a0c7a9b409060c1ddfc0956"
+        },
+        {
+          "state_crc32": 1341054890,
+          "states": [
+            "common_idle_turn_half_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_half_left_01",
+            "3": "male_fk_idle_turn_half_left_01"
+          },
+          "override_entry_offset": 20690,
+          "override_entry_end": 20762,
+          "override_entry_sha256": "fba2ae42b6bfc87292c5d61eb28bf47d8048399c4b271377e2b9695ed4f24f78"
+        },
+        {
+          "state_crc32": 4251625335,
+          "states": [
+            "common_idle_turn_half_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_half_right_01",
+            "3": "male_fk_idle_turn_half_right_01"
+          },
+          "override_entry_offset": 20762,
+          "override_entry_end": 20841,
+          "override_entry_sha256": "43ecd9cea45b685d8dfe805facd5c3da20582847f27e49b7399cb7c831f16144"
+        },
+        {
+          "state_crc32": 2861725366,
+          "states": [
+            "common_idle_turn_square_left_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_square_left_01",
+            "3": "male_fk_idle_turn_square_left_01"
+          },
+          "override_entry_offset": 20841,
+          "override_entry_end": 20922,
+          "override_entry_sha256": "0037476f2e34b3d47a665c053c8322111fd9382c796ef619f2ed0d9a58713274"
+        },
+        {
+          "state_crc32": 3918432145,
+          "states": [
+            "common_idle_turn_square_right_01_battle"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_idle_turn_square_right_01",
+            "3": "male_fk_idle_turn_square_right_01"
+          },
+          "override_entry_offset": 20922,
+          "override_entry_end": 21005,
+          "override_entry_sha256": "ea83024cac7b50fb69070e49673e8864849d97462c57fda679bfa056fb0cddc1"
+        },
+        {
+          "state_crc32": 8830729,
+          "states": [
+            "dinner_ukemi_attack_01"
+          ],
+          "clip_string_fields": {
+            "2": "male_ka_ukemi_attack_01",
+            "3": "male_ka_ukemi_attack_01"
+          },
+          "override_entry_offset": 24551,
+          "override_entry_end": 24608,
+          "override_entry_sha256": "e656bbb97ea80120684d44a46921a1e38b8acb0eec28763cb20d58aa2e95122e"
+        }
+      ]
+    },
+    {
+      "group": "male_fk_weapon_player_pvpve_1000239",
+      "archive_offset": 7790332,
+      "archive_end": 7790696,
+      "sha256": "9af74849294f45e2d93519df72ffebf8fdcd3254a3c39252a5838241f49b2975",
+      "selected": [
+        {
+          "state_crc32": 720336948,
+          "states": [
+            "attack_501"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_pvpve",
+            "3": "male_fk_attack_01_pvpve"
+          },
+          "override_entry_offset": 230,
+          "override_entry_end": 288,
+          "override_entry_sha256": "b277e374886bf968c6df012d6006c556f4e51158a7fc94311c1012d9da6d0e70"
+        },
+        {
+          "state_crc32": 3018205582,
+          "states": [
+            "attack_502"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_pvpve_copy",
+            "3": "male_fk_attack_01_pvpve_copy"
+          },
+          "override_entry_offset": 288,
+          "override_entry_end": 361,
+          "override_entry_sha256": "4675b91eefb8811129095f1e67fcabb05e14e464537eb376042abb843443bdba"
+        }
+      ]
+    },
+    {
+      "group": "male_fk_weapon_player_shenshe",
+      "archive_offset": 7790696,
+      "archive_end": 7792036,
+      "sha256": "ec1ce523c4d35aa3d3506b41a241e61b9caa1c30f866c5f7079e627f57e431bb",
+      "selected": [
+        {
+          "state_crc32": 3029069207,
+          "states": [
+            "attack_506"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_copy_shenshe",
+            "3": "male_fk_attack_01_copy_shenshe"
+          },
+          "override_entry_offset": 786,
+          "override_entry_end": 863,
+          "override_entry_sha256": "6fc4eb7debfefc8bfdf199960a64f25949c4b21ee39e9eb57ccec4d601b2b0eb"
+        },
+        {
+          "state_crc32": 1850678277,
+          "states": [
+            "attack_505_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover",
+            "3": "male_fk_attack_01_recover"
+          },
+          "override_entry_offset": 863,
+          "override_entry_end": 925,
+          "override_entry_sha256": "d6bf5c1db1f810c7c38d1dfb21a19d377a19f8bd78f75bb3874128d2b89a0c5e"
+        },
+        {
+          "state_crc32": 1472340160,
+          "states": [
+            "attack_506_recover"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_recover_copy",
+            "3": "male_fk_attack_01_recover_copy"
+          },
+          "override_entry_offset": 925,
+          "override_entry_end": 997,
+          "override_entry_sha256": "2483d7eace2a0c60e3abb881600a68132a09e729beb364a88ae552e78e202c5d"
+        },
+        {
+          "state_crc32": 763542573,
+          "states": [
+            "attack_505"
+          ],
+          "clip_string_fields": {
+            "2": "male_fk_attack_01_shenshe",
+            "3": "male_fk_attack_01_shenshe"
+          },
+          "override_entry_offset": 997,
+          "override_entry_end": 1059,
+          "override_entry_sha256": "8d3c89d89b941a1dda8bdab4315f268cb6d95e30adddf4a0f3ae48a299c92ca2"
+        }
+      ]
+    },
+    {
+      "group": "male_fk_weapon_player_shenshe_02",
+      "archive_offset": 7792036,
+      "archive_end": 7792962,
+      "sha256": "1e5511746e64326712b3c11e5d5c155e410469a51c7965d200c3103de1935026",
+      "selected": []
+    }
+  ],
+  "weapon_family_evidence": {
+    "item_id": 2311228,
+    "display_name": "引冰落",
+    "category": "鸟铳",
+    "source_record_sha256": "5d4ad486fc921bc1e2785268b12d8d9cbedfbcf7295bc8c228dd52e8cee6be5c",
+    "source_manifest": "assets/prepared/naraka/yinbingluo/source-evidence/identity_manifest.json",
+    "original_string_fields": [
+      {
+        "relative_length_offset": 446,
+        "value": "wp_presentation_flintlock_bingxueniaochong"
+      },
+      {
+        "relative_length_offset": 594,
+        "value": "ui_system_weapon_skin_show_fk_shizhonghuo"
+      },
+      {
+        "relative_length_offset": 680,
+        "value": "ui_system_weapon_skin_show_fk_shizhonghuo_reward"
+      }
+    ],
+    "inference": "Same original Yinbingluo WeaponSkin record combines flintlock asset name and fk UI family; both male/female FK original runtime overrides map the same exact attack/idle clip names. This establishes FK family identity and source clip selection; no original controller finger layer weights are claimed."
+  }
+}

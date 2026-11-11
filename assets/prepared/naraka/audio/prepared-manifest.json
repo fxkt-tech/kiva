@@ -1,0 +1,4496 @@
+{
+  "schema_version": 1,
+  "origin": "User-specified local NARAKA BLADEPOINT; selected original audio, not full Wwise runtime",
+  "source_install_historical": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT",
+  "source_wwise_banks_dbbl_sha256": "0fbb905eb229ebe9e93a37cdfabd9d7e78755256fa0d2c5b5afec542d4b11f75",
+  "banks": {
+    "gman_all_break_hurt": "banks/gman_all_break_hurt.json",
+    "gman_all_die_drop": "banks/gman_all_die_drop.json",
+    "gman_all_weapon_touch": "banks/gman_all_weapon_touch.json",
+    "gman_bow": "banks/gman_bow.json",
+    "gman_dodge": "banks/gman_dodge.json",
+    "gman_dying": "banks/gman_dying.json",
+    "gman_fk": "banks/gman_fk.json",
+    "gman_hengdao": "banks/gman_hengdao.json",
+    "impact_body": "banks/impact_body.json",
+    "move_jump": "banks/move_jump.json",
+    "move_run": "banks/move_run.json"
+  },
+  "events": {
+    "gman_all_break_hurt": {
+      "event_id": 1501617680,
+      "bank": "gman_all_break_hurt",
+      "original_event_record_sha256": "d989c9b33f614a8294ba0e6c7b86b0ea2ade4fae0a2a4c6ebbac1dd12168adb4",
+      "layers": [
+        {
+          "action_id": 826264985,
+          "target": 899285817,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [],
+          "sounds": [
+            {
+              "sound_id": 899285817,
+              "source_id": 536528925,
+              "weight": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    "gman_all_die_drop": {
+      "event_id": 1040724093,
+      "bank": "gman_all_die_drop",
+      "original_event_record_sha256": "d8551cc7d4f32f68c9a5ea681837e25ef7a77e7d80f4abe73bfe101e9bc55cef",
+      "layers": [
+        {
+          "action_id": 454309726,
+          "target": 226803575,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [],
+          "sounds": [
+            {
+              "sound_id": 226803575,
+              "source_id": 682276155,
+              "weight": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    "gman_all_weapon_touch_shock_katana": {
+      "event_id": 1521460233,
+      "bank": "gman_all_weapon_touch",
+      "original_event_record_sha256": "423e6e1ef1b0ca9cef6d982848a483dfeee901f791f6a7ae8440fe0af8f92e3d",
+      "layers": [
+        {
+          "action_id": 667042414,
+          "target": 181787070,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [],
+          "sounds": [
+            {
+              "sound_id": 181787070,
+              "source_id": 888176521,
+              "weight": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    "gman_bow_attack_01": {
+      "event_id": 1865825154,
+      "bank": "gman_bow",
+      "original_event_record_sha256": "3a0bc02a017c69ead34959206cb8395c889dd51e0013e2954391276f871b7a91",
+      "layers": [
+        {
+          "action_id": 157051335,
+          "target": 396574211,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 396574211,
+              "type": 5,
+              "tail": {
+                "offset": 87,
+                "children": [
+                  293408372,
+                  585189473,
+                  599978858
+                ],
+                "playlist": [
+                  {
+                    "id": 585189473,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 599978858,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 293408372,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 293408372,
+              "source_id": 771871815,
+              "weight": 0.3333333333333333
+            },
+            {
+              "sound_id": 585189473,
+              "source_id": 938553406,
+              "weight": 0.3333333333333333
+            },
+            {
+              "sound_id": 599978858,
+              "source_id": 471162968,
+              "weight": 0.3333333333333333
+            }
+          ]
+        }
+      ]
+    },
+    "gman_dodge_01": {
+      "event_id": 1350675122,
+      "bank": "gman_dodge",
+      "original_event_record_sha256": "069645e01600d4c8e8c54faa8d65fb0beb6695c0521d07f28253dda0bb51c269",
+      "layers": [
+        {
+          "action_id": 168301124,
+          "target": 496861425,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 496861425,
+              "type": 5,
+              "tail": {
+                "offset": 116,
+                "children": [
+                  146466590,
+                  232688953,
+                  290036446,
+                  496944873,
+                  522542959,
+                  723058154
+                ],
+                "playlist": [
+                  {
+                    "id": 232688953,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 146466590,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 290036446,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 522542959,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 723058154,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 496944873,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 146466590,
+              "source_id": 384048418,
+              "weight": 0.16666666666666666
+            },
+            {
+              "sound_id": 232688953,
+              "source_id": 835672119,
+              "weight": 0.16666666666666666
+            },
+            {
+              "sound_id": 290036446,
+              "source_id": 919868544,
+              "weight": 0.16666666666666666
+            },
+            {
+              "sound_id": 496944873,
+              "source_id": 1013417629,
+              "weight": 0.16666666666666666
+            },
+            {
+              "sound_id": 522542959,
+              "source_id": 828546990,
+              "weight": 0.16666666666666666
+            },
+            {
+              "sound_id": 723058154,
+              "source_id": 364824874,
+              "weight": 0.16666666666666666
+            }
+          ]
+        }
+      ]
+    },
+    "gman_dying_voice_male": {
+      "event_id": 229701695,
+      "bank": "gman_dying",
+      "original_event_record_sha256": "036e8f912b74182ca8ed080dbf8f05f26c7bfed3b33d47b557c1ba0bdfde83de",
+      "layers": [
+        {
+          "action_id": 442220329,
+          "target": 619457840,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 619457840,
+              "type": 5,
+              "tail": {
+                "offset": 59,
+                "children": [
+                  366978209,
+                  484579355,
+                  596786149,
+                  838244829,
+                  870946017,
+                  940266524,
+                  1004595385
+                ],
+                "playlist": [
+                  {
+                    "id": 366978209,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 838244829,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 596786149,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 940266524,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 1004595385,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 870946017,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 484579355,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 366978209,
+              "source_id": 487560667,
+              "weight": 0.14285714285714285
+            },
+            {
+              "sound_id": 484579355,
+              "source_id": 289069424,
+              "weight": 0.14285714285714285
+            },
+            {
+              "sound_id": 596786149,
+              "source_id": 672810389,
+              "weight": 0.14285714285714285
+            },
+            {
+              "sound_id": 838244829,
+              "source_id": 27850851,
+              "weight": 0.14285714285714285
+            },
+            {
+              "sound_id": 870946017,
+              "source_id": 444149984,
+              "weight": 0.14285714285714285
+            },
+            {
+              "sound_id": 940266524,
+              "source_id": 51798462,
+              "weight": 0.14285714285714285
+            },
+            {
+              "sound_id": 1004595385,
+              "source_id": 323878669,
+              "weight": 0.14285714285714285
+            }
+          ]
+        }
+      ]
+    },
+    "gman_fk_attack_01": {
+      "event_id": 1162568353,
+      "bank": "gman_fk",
+      "original_event_record_sha256": "8cd481231df64d38559a535bed177111523e1d368c79648a93fd3016606e5274",
+      "layers": [
+        {
+          "action_id": 699106619,
+          "target": 156854694,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 156854694,
+              "type": 5,
+              "tail": {
+                "offset": 87,
+                "children": [
+                  625712628,
+                  686228295,
+                  743114974
+                ],
+                "playlist": [
+                  {
+                    "id": 743114974,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 686228295,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 625712628,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 625712628,
+              "source_id": 477445358,
+              "weight": 0.3333333333333333
+            },
+            {
+              "sound_id": 686228295,
+              "source_id": 585387678,
+              "weight": 0.3333333333333333
+            },
+            {
+              "sound_id": 743114974,
+              "source_id": 384264562,
+              "weight": 0.3333333333333333
+            }
+          ]
+        }
+      ]
+    },
+    "gman_hengdao_attack_light_01": {
+      "event_id": 3721273877,
+      "bank": "gman_hengdao",
+      "original_event_record_sha256": "68515bf115b4a9830fd16e4bdd028a18fd21fe0553cd4cbfd2015c80e8c7d86c",
+      "layers": [
+        {
+          "action_id": 892735413,
+          "target": 715088316,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 715088316,
+              "type": 5,
+              "tail": {
+                "offset": 63,
+                "children": [
+                  402072877,
+                  984953422
+                ],
+                "playlist": [
+                  {
+                    "id": 984953422,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 402072877,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 402072877,
+              "source_id": 909498841,
+              "weight": 0.5
+            },
+            {
+              "sound_id": 984953422,
+              "source_id": 183294347,
+              "weight": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    "gman_hengdao_attack_light_02": {
+      "event_id": 3721273878,
+      "bank": "gman_hengdao",
+      "original_event_record_sha256": "1d98a5abcc1c790ae83615931c2633e6e7d86efd792cc1a54758d7425a9ad2d3",
+      "layers": [
+        {
+          "action_id": 389517586,
+          "target": 221623978,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 221623978,
+              "type": 5,
+              "tail": {
+                "offset": 63,
+                "children": [
+                  551214520,
+                  795311813,
+                  938167163
+                ],
+                "playlist": [
+                  {
+                    "id": 551214520,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 938167163,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 795311813,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 551214520,
+              "source_id": 869056893,
+              "weight": 0.3333333333333333
+            },
+            {
+              "sound_id": 795311813,
+              "source_id": 15507174,
+              "weight": 0.3333333333333333
+            },
+            {
+              "sound_id": 938167163,
+              "source_id": 278708188,
+              "weight": 0.3333333333333333
+            }
+          ]
+        }
+      ]
+    },
+    "gman_hengdao_attack_light_03": {
+      "event_id": 3721273879,
+      "bank": "gman_hengdao",
+      "original_event_record_sha256": "78d06e5f3d7e770671e3e0356771f098c2b0a1ace0b42877236aaf0f7ea968be",
+      "layers": [
+        {
+          "action_id": 531355528,
+          "target": 602790012,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 602790012,
+              "type": 5,
+              "tail": {
+                "offset": 63,
+                "children": [
+                  110211255,
+                  525298400,
+                  687924463
+                ],
+                "playlist": [
+                  {
+                    "id": 110211255,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 525298400,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 687924463,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 110211255,
+              "source_id": 359912015,
+              "weight": 0.3333333333333333
+            },
+            {
+              "sound_id": 525298400,
+              "source_id": 318634220,
+              "weight": 0.3333333333333333
+            },
+            {
+              "sound_id": 687924463,
+              "source_id": 278221262,
+              "weight": 0.3333333333333333
+            }
+          ]
+        }
+      ]
+    },
+    "gman_hengdao_attack_shock_light_01": {
+      "event_id": 726559932,
+      "bank": "gman_hengdao",
+      "original_event_record_sha256": "aa4c89fcd97b7850e868896529561dfcca2af06d2aa3b176ab0f81f7dc0b327e",
+      "layers": [
+        {
+          "action_id": 367206753,
+          "target": 336892938,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [],
+          "sounds": [
+            {
+              "sound_id": 336892938,
+              "source_id": 925549399,
+              "weight": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    "impact_body": {
+      "event_id": 2553674422,
+      "bank": "impact_body",
+      "original_event_record_sha256": "5499d8408706fc767d6c7dd8094d51d3d52cdf571679f44cf5e5a01d00f80061",
+      "layers": [
+        {
+          "action_id": 925122482,
+          "target": 652182496,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 652182496,
+              "type": 6,
+              "tail": {
+                "offset": 49,
+                "group_type": 0,
+                "group_id": 2553674422,
+                "default_switch": 2454616260,
+                "continuous": 0,
+                "children": [
+                  81520592,
+                  443331604,
+                  878583613
+                ],
+                "groups": [
+                  {
+                    "switch": 3071189824,
+                    "children": [
+                      878583613
+                    ]
+                  },
+                  {
+                    "switch": 1719082493,
+                    "children": [
+                      81520592
+                    ]
+                  },
+                  {
+                    "switch": 2454616260,
+                    "children": [
+                      443331604
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 878583613,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 81520592,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 443331604,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 443331604,
+              "type": 5,
+              "tail": {
+                "offset": 59,
+                "children": [
+                  64680600,
+                  203675293,
+                  335750139,
+                  919461479,
+                  963015164
+                ],
+                "playlist": [
+                  {
+                    "id": 919461479,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 963015164,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 335750139,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 64680600,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 203675293,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 64680600,
+              "source_id": 682948856,
+              "weight": 0.2
+            },
+            {
+              "sound_id": 203675293,
+              "source_id": 347384654,
+              "weight": 0.2
+            },
+            {
+              "sound_id": 335750139,
+              "source_id": 474690479,
+              "weight": 0.2
+            },
+            {
+              "sound_id": 919461479,
+              "source_id": 278492924,
+              "weight": 0.2
+            },
+            {
+              "sound_id": 963015164,
+              "source_id": 781923129,
+              "weight": 0.2
+            }
+          ]
+        }
+      ]
+    },
+    "move_jump_land": {
+      "event_id": 1145943743,
+      "bank": "move_jump",
+      "original_event_record_sha256": "b99e23a832f177c33d774ac320d890fc099992d582ee26fdff5581cff27bcd62",
+      "layers": [
+        {
+          "action_id": 221259392,
+          "target": 48398575,
+          "delay": 0.1,
+          "original_delay_ms": 100,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 48398575,
+              "type": 6,
+              "tail": {
+                "offset": 110,
+                "group_type": 0,
+                "group_id": 1936126619,
+                "default_switch": 2195636714,
+                "continuous": 0,
+                "children": [
+                  33733124,
+                  146592735,
+                  170284552,
+                  325952535,
+                  370251827,
+                  498024571,
+                  582069048,
+                  622944717,
+                  625720546,
+                  653803790,
+                  671371493,
+                  685909840,
+                  687783958,
+                  726198320,
+                  823391852,
+                  850179360,
+                  863302343,
+                  927096275,
+                  937379617,
+                  956054232,
+                  1038231966
+                ],
+                "groups": [
+                  {
+                    "switch": 2195636714,
+                    "children": [
+                      622944717
+                    ]
+                  },
+                  {
+                    "switch": 2058049674,
+                    "children": [
+                      685909840
+                    ]
+                  },
+                  {
+                    "switch": 1216965916,
+                    "children": [
+                      498024571
+                    ]
+                  },
+                  {
+                    "switch": 2185786256,
+                    "children": [
+                      937379617
+                    ]
+                  },
+                  {
+                    "switch": 4248645337,
+                    "children": [
+                      582069048
+                    ]
+                  },
+                  {
+                    "switch": 1427625975,
+                    "children": [
+                      927096275
+                    ]
+                  },
+                  {
+                    "switch": 3273609536,
+                    "children": [
+                      1038231966
+                    ]
+                  },
+                  {
+                    "switch": 2003927601,
+                    "children": [
+                      146592735
+                    ]
+                  },
+                  {
+                    "switch": 2654748154,
+                    "children": [
+                      33733124
+                    ]
+                  },
+                  {
+                    "switch": 2637588553,
+                    "children": [
+                      850179360
+                    ]
+                  },
+                  {
+                    "switch": 2473969246,
+                    "children": [
+                      863302343
+                    ]
+                  },
+                  {
+                    "switch": 48383132,
+                    "children": [
+                      823391852
+                    ]
+                  },
+                  {
+                    "switch": 2412606308,
+                    "children": [
+                      726198320
+                    ]
+                  },
+                  {
+                    "switch": 803837735,
+                    "children": [
+                      625720546
+                    ]
+                  },
+                  {
+                    "switch": 3111880208,
+                    "children": [
+                      671371493
+                    ]
+                  },
+                  {
+                    "switch": 1365536729,
+                    "children": [
+                      956054232
+                    ]
+                  },
+                  {
+                    "switch": 344481046,
+                    "children": [
+                      370251827
+                    ]
+                  },
+                  {
+                    "switch": 787898836,
+                    "children": [
+                      653803790
+                    ]
+                  },
+                  {
+                    "switch": 3787535528,
+                    "children": [
+                      170284552
+                    ]
+                  },
+                  {
+                    "switch": 1813329600,
+                    "children": [
+                      687783958
+                    ]
+                  },
+                  {
+                    "switch": 1639179434,
+                    "children": [
+                      325952535
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 622944717,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 685909840,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 498024571,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 937379617,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 582069048,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 927096275,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 1038231966,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 146592735,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 33733124,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 850179360,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 863302343,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 823391852,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 726198320,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 625720546,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 671371493,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 956054232,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 370251827,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 653803790,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 687783958,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 325952535,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 170284552,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 622944717,
+              "type": 5,
+              "tail": {
+                "offset": 54,
+                "children": [
+                  121153801,
+                  170558996,
+                  317339609,
+                  618363731,
+                  837546345,
+                  844704651,
+                  859995397,
+                  986540961
+                ],
+                "playlist": [
+                  {
+                    "id": 844704651,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 170558996,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 859995397,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 986540961,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 121153801,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 317339609,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 837546345,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 618363731,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 121153801,
+              "source_id": 1012800056,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 170558996,
+              "source_id": 655706814,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 317339609,
+              "source_id": 322497778,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 618363731,
+              "source_id": 361062933,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 837546345,
+              "source_id": 265957799,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 844704651,
+              "source_id": 450188065,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 859995397,
+              "source_id": 394273666,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 986540961,
+              "source_id": 1002355989,
+              "weight": 0.125
+            }
+          ]
+        },
+        {
+          "action_id": 944570778,
+          "target": 700913913,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 700913913,
+              "type": 6,
+              "tail": {
+                "offset": 110,
+                "group_type": 0,
+                "group_id": 1936126619,
+                "default_switch": 2195636714,
+                "continuous": 0,
+                "children": [
+                  119593616,
+                  221005464,
+                  360787563,
+                  393099585,
+                  419206954,
+                  440507687,
+                  461201303,
+                  518844855,
+                  534439238,
+                  550795843,
+                  603326380,
+                  667854497,
+                  687220962,
+                  749372566,
+                  760630904,
+                  777559498,
+                  852955243,
+                  894502166,
+                  937288787,
+                  967665546,
+                  1032259062
+                ],
+                "groups": [
+                  {
+                    "switch": 2195636714,
+                    "children": [
+                      667854497
+                    ]
+                  },
+                  {
+                    "switch": 2058049674,
+                    "children": [
+                      419206954
+                    ]
+                  },
+                  {
+                    "switch": 1216965916,
+                    "children": [
+                      894502166
+                    ]
+                  },
+                  {
+                    "switch": 2185786256,
+                    "children": [
+                      967665546
+                    ]
+                  },
+                  {
+                    "switch": 4248645337,
+                    "children": [
+                      461201303
+                    ]
+                  },
+                  {
+                    "switch": 1427625975,
+                    "children": [
+                      687220962
+                    ]
+                  },
+                  {
+                    "switch": 3273609536,
+                    "children": [
+                      221005464
+                    ]
+                  },
+                  {
+                    "switch": 2003927601,
+                    "children": [
+                      440507687
+                    ]
+                  },
+                  {
+                    "switch": 2654748154,
+                    "children": [
+                      749372566
+                    ]
+                  },
+                  {
+                    "switch": 2637588553,
+                    "children": [
+                      119593616
+                    ]
+                  },
+                  {
+                    "switch": 2473969246,
+                    "children": [
+                      393099585
+                    ]
+                  },
+                  {
+                    "switch": 48383132,
+                    "children": [
+                      1032259062
+                    ]
+                  },
+                  {
+                    "switch": 2412606308,
+                    "children": [
+                      534439238
+                    ]
+                  },
+                  {
+                    "switch": 803837735,
+                    "children": [
+                      852955243
+                    ]
+                  },
+                  {
+                    "switch": 3111880208,
+                    "children": [
+                      760630904
+                    ]
+                  },
+                  {
+                    "switch": 1365536729,
+                    "children": [
+                      550795843
+                    ]
+                  },
+                  {
+                    "switch": 344481046,
+                    "children": [
+                      360787563
+                    ]
+                  },
+                  {
+                    "switch": 787898836,
+                    "children": [
+                      603326380
+                    ]
+                  },
+                  {
+                    "switch": 3787535528,
+                    "children": [
+                      518844855
+                    ]
+                  },
+                  {
+                    "switch": 1813329600,
+                    "children": [
+                      937288787
+                    ]
+                  },
+                  {
+                    "switch": 1639179434,
+                    "children": [
+                      777559498
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 667854497,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 419206954,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 894502166,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 967665546,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 461201303,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 687220962,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 221005464,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 440507687,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 749372566,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 119593616,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 393099585,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 1032259062,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 534439238,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 852955243,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 760630904,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 550795843,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 360787563,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 603326380,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 937288787,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 777559498,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 518844855,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 667854497,
+              "type": 5,
+              "tail": {
+                "offset": 54,
+                "children": [
+                  68276897,
+                  84071579,
+                  155136766,
+                  207069115,
+                  280185431,
+                  290008449,
+                  828837974,
+                  832551732
+                ],
+                "playlist": [
+                  {
+                    "id": 207069115,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 84071579,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 68276897,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 828837974,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 832551732,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 280185431,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 155136766,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 290008449,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 68276897,
+              "source_id": 394273666,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 84071579,
+              "source_id": 655706814,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 155136766,
+              "source_id": 265957799,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 207069115,
+              "source_id": 450188065,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 280185431,
+              "source_id": 322497778,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 290008449,
+              "source_id": 361062933,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 828837974,
+              "source_id": 1002355989,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 832551732,
+              "source_id": 1012800056,
+              "weight": 0.125
+            }
+          ]
+        }
+      ]
+    },
+    "move_jump_takeoff_cloth_fast": {
+      "event_id": 2940828046,
+      "bank": "move_jump",
+      "original_event_record_sha256": "5bc6355d2a1f2d4a40a88d3373d300b42851735eb90f6bba0023d7bfd3d93a2c",
+      "layers": [
+        {
+          "action_id": 146113053,
+          "target": 73453220,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 73453220,
+              "type": 5,
+              "tail": {
+                "offset": 116,
+                "children": [
+                  345561239,
+                  383914894,
+                  836564911,
+                  906166560
+                ],
+                "playlist": [
+                  {
+                    "id": 345561239,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 383914894,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 836564911,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 906166560,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 345561239,
+              "source_id": 777150789,
+              "weight": 0.25
+            },
+            {
+              "sound_id": 383914894,
+              "source_id": 791851626,
+              "weight": 0.25
+            },
+            {
+              "sound_id": 836564911,
+              "source_id": 399916424,
+              "weight": 0.25
+            },
+            {
+              "sound_id": 906166560,
+              "source_id": 878176367,
+              "weight": 0.25
+            }
+          ]
+        }
+      ]
+    },
+    "move_run": {
+      "event_id": 2393422116,
+      "bank": "move_run",
+      "original_event_record_sha256": "ef26be290b182a5f337e0d811be17542282a7e1602cb088433fcbee11200e9f0",
+      "layers": [
+        {
+          "action_id": 129835391,
+          "target": 870651836,
+          "delay": 0.0,
+          "original_delay_ms": 0,
+          "fade_curve": 4,
+          "containers": [
+            {
+              "id": 870651836,
+              "type": 6,
+              "tail": {
+                "offset": 110,
+                "group_type": 0,
+                "group_id": 1936126619,
+                "default_switch": 2195636714,
+                "continuous": 0,
+                "children": [
+                  21804459,
+                  106003476,
+                  119759451,
+                  141515210,
+                  156674980,
+                  325163430,
+                  329747088,
+                  475639084,
+                  516672427,
+                  550585602,
+                  575296365,
+                  587168386,
+                  596845107,
+                  686257662,
+                  757564530,
+                  853517708,
+                  859371902,
+                  959719300,
+                  962168298,
+                  966251895,
+                  975223581
+                ],
+                "groups": [
+                  {
+                    "switch": 2195636714,
+                    "children": [
+                      156674980
+                    ]
+                  },
+                  {
+                    "switch": 2058049674,
+                    "children": [
+                      119759451
+                    ]
+                  },
+                  {
+                    "switch": 1216965916,
+                    "children": [
+                      962168298
+                    ]
+                  },
+                  {
+                    "switch": 2185786256,
+                    "children": [
+                      575296365
+                    ]
+                  },
+                  {
+                    "switch": 4248645337,
+                    "children": [
+                      853517708
+                    ]
+                  },
+                  {
+                    "switch": 1427625975,
+                    "children": [
+                      325163430
+                    ]
+                  },
+                  {
+                    "switch": 3273609536,
+                    "children": [
+                      966251895
+                    ]
+                  },
+                  {
+                    "switch": 2003927601,
+                    "children": [
+                      975223581
+                    ]
+                  },
+                  {
+                    "switch": 2654748154,
+                    "children": [
+                      959719300
+                    ]
+                  },
+                  {
+                    "switch": 2637588553,
+                    "children": [
+                      329747088
+                    ]
+                  },
+                  {
+                    "switch": 2473969246,
+                    "children": [
+                      859371902
+                    ]
+                  },
+                  {
+                    "switch": 48383132,
+                    "children": [
+                      686257662
+                    ]
+                  },
+                  {
+                    "switch": 2412606308,
+                    "children": [
+                      21804459
+                    ]
+                  },
+                  {
+                    "switch": 803837735,
+                    "children": [
+                      516672427
+                    ]
+                  },
+                  {
+                    "switch": 3111880208,
+                    "children": [
+                      550585602
+                    ]
+                  },
+                  {
+                    "switch": 1365536729,
+                    "children": [
+                      757564530
+                    ]
+                  },
+                  {
+                    "switch": 344481046,
+                    "children": [
+                      141515210
+                    ]
+                  },
+                  {
+                    "switch": 787898836,
+                    "children": [
+                      475639084
+                    ]
+                  },
+                  {
+                    "switch": 3787535528,
+                    "children": [
+                      587168386
+                    ]
+                  },
+                  {
+                    "switch": 1813329600,
+                    "children": [
+                      596845107
+                    ]
+                  },
+                  {
+                    "switch": 1639179434,
+                    "children": [
+                      106003476
+                    ]
+                  }
+                ],
+                "params": [
+                  {
+                    "node": 156674980,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 119759451,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 962168298,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 575296365,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 853517708,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 325163430,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 966251895,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 975223581,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 959719300,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 329747088,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 859371902,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 686257662,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 21804459,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 516672427,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 550585602,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 757564530,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 141515210,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 475639084,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 587168386,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 106003476,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  },
+                  {
+                    "node": 596845107,
+                    "flags": 0,
+                    "on_switch": 1,
+                    "fade_out": 0,
+                    "fade_in": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": 156674980,
+              "type": 5,
+              "tail": {
+                "offset": 54,
+                "children": [
+                  48648339,
+                  387914970,
+                  458322402,
+                  519647363,
+                  534567783,
+                  607595689,
+                  723596167,
+                  884677866
+                ],
+                "playlist": [
+                  {
+                    "id": 723596167,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 48648339,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 884677866,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 534567783,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 519647363,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 607595689,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 387914970,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 458322402,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            {
+              "sound_id": 48648339,
+              "source_id": 655706814,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 387914970,
+              "source_id": 265957799,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 458322402,
+              "source_id": 361062933,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 519647363,
+              "source_id": 1012800056,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 534567783,
+              "source_id": 1002355989,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 607595689,
+              "source_id": 322497778,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 723596167,
+              "source_id": 450188065,
+              "weight": 0.125
+            },
+            {
+              "sound_id": 884677866,
+              "source_id": 394273666,
+              "weight": 0.125
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "media": [
+    {
+      "source_id": 15507174,
+      "wem": "sources/15507174.wem",
+      "wem_bytes": 15697,
+      "wem_sha256": "50e0d32b06ad41f04185d0810ed076cd2f9ae56a1443bc7400bb46a9b7bab127",
+      "pcm": "pcm/15507174.s16le.gz",
+      "decoded": {
+        "frames": 45161,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "c8a8454f8db833a51ccc2271c647d2ccf51a3e7450ebf4f37d9f2dfe7a7ef35d",
+        "wav_sha256": "e96c838bd81c2a8520a5eee54a41c5066f9cd119df4e091a8d0fa91728eeef39",
+        "peak": 0.741363525390625,
+        "rms_dbfs": -23.507430235567732,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 45161 (0:01.024 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 121 kbps\nsample type: float\nplay duration: 45161 samples (0:01.024 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 15507174,
+          "sound_id": 795311813,
+          "bytes": 15697,
+          "sha256": "50e0d32b06ad41f04185d0810ed076cd2f9ae56a1443bc7400bb46a9b7bab127",
+          "bank_data_offset": 57760,
+          "physical_offset": 23081376,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 27850851,
+      "wem": "sources/27850851.wem",
+      "wem_bytes": 13860,
+      "wem_sha256": "ff94ce7e7ee168f767c94475eb5928e7ae6125763e0f082cf3548f1acd3503ae",
+      "pcm": "pcm/27850851.s16le.gz",
+      "decoded": {
+        "frames": 53601,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "c4887ceb00f0a817f35db413cbaa6c049b8625e0429fd42fd0c9bd2f3b0c3a10",
+        "wav_sha256": "4ed54fece2b8ee91b07049b11c647488429164489cdbf49838a0db1a4ec19c36",
+        "peak": 0.5921630859375,
+        "rms_dbfs": -21.45778662409522,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 53601 (0:01.215 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 90 kbps\nsample type: float\nplay duration: 53601 samples (0:01.215 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dying",
+          "source_id": 27850851,
+          "sound_id": 838244829,
+          "bytes": 13860,
+          "sha256": "ff94ce7e7ee168f767c94475eb5928e7ae6125763e0f082cf3548f1acd3503ae",
+          "bank_data_offset": 320,
+          "physical_offset": 188576064,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 51798462,
+      "wem": "sources/51798462.wem",
+      "wem_bytes": 17856,
+      "wem_sha256": "3fdc5ef9b5d1d3cdd792ab42665f1bd41e79eb1f3c438c759efbec7400e0894c",
+      "pcm": "pcm/51798462.s16le.gz",
+      "decoded": {
+        "frames": 68212,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "f84de2a5dec8731418c78dec17397e3daf27cd9a67ddeeaa427256604ad5f7c7",
+        "wav_sha256": "abda1a73da054c22b4998f7046f1bd2d78fc2d5714c7859e2e5dbb25578a37ac",
+        "peak": 0.517303466796875,
+        "rms_dbfs": -17.567369044084806,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 68212 (0:01.547 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 91 kbps\nsample type: float\nplay duration: 68212 samples (0:01.547 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dying",
+          "source_id": 51798462,
+          "sound_id": 940266524,
+          "bytes": 17856,
+          "sha256": "3fdc5ef9b5d1d3cdd792ab42665f1bd41e79eb1f3c438c759efbec7400e0894c",
+          "bank_data_offset": 21504,
+          "physical_offset": 188597248,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 183294347,
+      "wem": "sources/183294347.wem",
+      "wem_bytes": 19702,
+      "wem_sha256": "975900a7d33bf4f8f6ea45ee1919e30a5305570ed7268d32677f95c3460592ee",
+      "pcm": "pcm/183294347.s16le.gz",
+      "decoded": {
+        "frames": 72049,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "23abdc5195b11a33454e60f6df314ec3a863088934c639b51aea68b821d9f176",
+        "wav_sha256": "9358944787eaaa8dd60eec01eb9a077d7b9d6df6b9520e8ff3cd04e567a26849",
+        "peak": 0.834136962890625,
+        "rms_dbfs": -26.37590440120613,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 72049 (0:01.634 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 96 kbps\nsample type: float\nplay duration: 72049 samples (0:01.634 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 183294347,
+          "sound_id": 984953422,
+          "bytes": 19702,
+          "sha256": "975900a7d33bf4f8f6ea45ee1919e30a5305570ed7268d32677f95c3460592ee",
+          "bank_data_offset": 475248,
+          "physical_offset": 23498864,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 265957799,
+      "wem": "sources/265957799.wem",
+      "wem_bytes": 5843,
+      "wem_sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae",
+      "pcm": "pcm/265957799.s16le.gz",
+      "decoded": {
+        "frames": 25444,
+        "rate": 44100,
+        "channels": 1,
+        "sample_width": 2,
+        "sha256": "f304075c02774a37c9e80601ea2468ad217531d00af0ecce19dfc73b2b74c5f6",
+        "wav_sha256": "78aff81e16de279b39097510ebfe2f2ca11245a433c224c165654eeb4381edf4",
+        "peak": 0.354736328125,
+        "rms_dbfs": -33.40501508967829,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 25444 (0:00.577 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 79 kbps\nsample type: float\nplay duration: 25444 samples (0:00.577 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 265957799,
+          "sound_id": 837546345,
+          "bytes": 5843,
+          "sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae",
+          "bank_data_offset": 817152,
+          "physical_offset": 269641728,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_jump",
+          "source_id": 265957799,
+          "sound_id": 155136766,
+          "bytes": 5843,
+          "sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae",
+          "bank_data_offset": 817152,
+          "physical_offset": 269641728,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_run",
+          "source_id": 265957799,
+          "sound_id": 387914970,
+          "bytes": 5843,
+          "sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae",
+          "bank_data_offset": 256176,
+          "physical_offset": 223869104,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 278221262,
+      "wem": "sources/278221262.wem",
+      "wem_bytes": 21933,
+      "wem_sha256": "cf0400f3245759e6cbec2b24904f00b682b55bdaf6cb7c2e1fb9bf88d29023d2",
+      "pcm": "pcm/278221262.s16le.gz",
+      "decoded": {
+        "frames": 77239,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "2b06c6a29a33e3c50d44d5129f3154b07653b53e5a3c5240b6259dfa73dde99d",
+        "wav_sha256": "88f908929ac55b7dd9ff7f9eadf81156a48c0a22923f491d064d2482cfda7929",
+        "peak": 0.74493408203125,
+        "rms_dbfs": -26.827649387239425,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 77239 (0:01.751 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 99 kbps\nsample type: float\nplay duration: 77239 samples (0:01.751 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 278221262,
+          "sound_id": 687924463,
+          "bytes": 21933,
+          "sha256": "cf0400f3245759e6cbec2b24904f00b682b55bdaf6cb7c2e1fb9bf88d29023d2",
+          "bank_data_offset": 650656,
+          "physical_offset": 23674272,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 278492924,
+      "wem": "sources/278492924.wem",
+      "wem_bytes": 15673,
+      "wem_sha256": "bfb7c400e299097402f6b11fa72136e7bc2180a7bc9c5f2ec376bde89603fe33",
+      "pcm": "pcm/278492924.s16le.gz",
+      "decoded": {
+        "frames": 43128,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "76ee516c1b292611443b05d0cc45c994b04ee81786e3b3d21008c798e9fdd778",
+        "wav_sha256": "f4583f1510bb676ad2b6a3329a4b4ae1572296cef76a3f1b28309ad3896c32a4",
+        "peak": 1.0,
+        "rms_dbfs": -21.889562787666236,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 43128 (0:00.978 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 127 kbps\nsample type: float\nplay duration: 43128 samples (0:00.978 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "impact_body",
+          "source_id": 278492924,
+          "sound_id": 919461479,
+          "bytes": 15673,
+          "sha256": "bfb7c400e299097402f6b11fa72136e7bc2180a7bc9c5f2ec376bde89603fe33",
+          "bank_data_offset": 18544,
+          "physical_offset": 155158640,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 278708188,
+      "wem": "sources/278708188.wem",
+      "wem_bytes": 18874,
+      "wem_sha256": "172d69fac6ad6c044d8cd25fa3fc252338ba1bf795b55606251694612570d957",
+      "pcm": "pcm/278708188.s16le.gz",
+      "decoded": {
+        "frames": 59516,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "7ad31f59ff534eedb00d38bf6a23f44e4c8a53375401543603ad6e153558e791",
+        "wav_sha256": "0b149da55d6c9d471ba399bce4ed3e910856b733c8dc8ba3512edd85c6489029",
+        "peak": 0.674530029296875,
+        "rms_dbfs": -24.95523324321102,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 59516 (0:01.350 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 111 kbps\nsample type: float\nplay duration: 59516 samples (0:01.350 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 278708188,
+          "sound_id": 938167163,
+          "bytes": 18874,
+          "sha256": "172d69fac6ad6c044d8cd25fa3fc252338ba1bf795b55606251694612570d957",
+          "bank_data_offset": 672592,
+          "physical_offset": 23696208,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 289069424,
+      "wem": "sources/289069424.wem",
+      "wem_bytes": 27805,
+      "wem_sha256": "d2f4bb4931ad8d3e253eceff944703ca3fac33ae64403a4354269b954bbc83c4",
+      "pcm": "pcm/289069424.s16le.gz",
+      "decoded": {
+        "frames": 114168,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "cbd7e76bfdf81649dde576285bf4891d8310bdb22ff2b4dac035341943bba48d",
+        "wav_sha256": "b21d43ef1beda5143c0d2d42fbb4fc9419cbdc02583cb0eff423e762e9d2d55d",
+        "peak": 0.62652587890625,
+        "rms_dbfs": -19.23265331654596,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 114168 (0:02.589 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 85 kbps\nsample type: float\nplay duration: 114168 samples (0:02.589 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dying",
+          "source_id": 289069424,
+          "sound_id": 484579355,
+          "bytes": 27805,
+          "sha256": "d2f4bb4931ad8d3e253eceff944703ca3fac33ae64403a4354269b954bbc83c4",
+          "bank_data_offset": 163888,
+          "physical_offset": 188739632,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 318634220,
+      "wem": "sources/318634220.wem",
+      "wem_bytes": 25677,
+      "wem_sha256": "f3efac93946ee50c743d0ca0322d97e286eb03808282bd916589d90e3ff75ffa",
+      "pcm": "pcm/318634220.s16le.gz",
+      "decoded": {
+        "frames": 92889,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "84b779c806cea5aa90585337f431f00d52d7b68bbd7bdb2a88043185fcefb9dd",
+        "wav_sha256": "9500ab9bc89f017a3f4bb909abd6e3640cf177720aa4d53cb17ddec011fb5d8a",
+        "peak": 0.776763916015625,
+        "rms_dbfs": -27.185450096875094,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 92889 (0:02.106 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 97 kbps\nsample type: float\nplay duration: 92889 samples (0:02.106 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 318634220,
+          "sound_id": 525298400,
+          "bytes": 25677,
+          "sha256": "f3efac93946ee50c743d0ca0322d97e286eb03808282bd916589d90e3ff75ffa",
+          "bank_data_offset": 726256,
+          "physical_offset": 23749872,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 322497778,
+      "wem": "sources/322497778.wem",
+      "wem_bytes": 5653,
+      "wem_sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6",
+      "pcm": "pcm/322497778.s16le.gz",
+      "decoded": {
+        "frames": 26194,
+        "rate": 44100,
+        "channels": 1,
+        "sample_width": 2,
+        "sha256": "d1c14c8b6bd61f7d798427879d87b7d1916236b9722ba9694c1cde806967ed49",
+        "wav_sha256": "a50e9124922919d65b1cd563e4dc348b5284bd45b7557be05cbc3cd41988894b",
+        "peak": 0.357513427734375,
+        "rms_dbfs": -33.455840359139025,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 26194 (0:00.594 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 74 kbps\nsample type: float\nplay duration: 26194 samples (0:00.594 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 322497778,
+          "sound_id": 317339609,
+          "bytes": 5653,
+          "sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6",
+          "bank_data_offset": 1056864,
+          "physical_offset": 269881440,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_jump",
+          "source_id": 322497778,
+          "sound_id": 280185431,
+          "bytes": 5653,
+          "sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6",
+          "bank_data_offset": 1056864,
+          "physical_offset": 269881440,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_run",
+          "source_id": 322497778,
+          "sound_id": 607595689,
+          "bytes": 5653,
+          "sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6",
+          "bank_data_offset": 307584,
+          "physical_offset": 223920512,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 323878669,
+      "wem": "sources/323878669.wem",
+      "wem_bytes": 15302,
+      "wem_sha256": "980e5c048fae84b38679707917021400e6f974dfa62443f03261a1bfab16ff5b",
+      "pcm": "pcm/323878669.s16le.gz",
+      "decoded": {
+        "frames": 57049,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "14a9c80d127dbe7d035be04da443c0a2fe82203bd8d405315860ee67248f56d0",
+        "wav_sha256": "54bb54ac707da47a8b90b2599b6d6634440370bccd1257e8021b9fc1ef564928",
+        "peak": 0.5823974609375,
+        "rms_dbfs": -15.3850841908391,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 57049 (0:01.294 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 94 kbps\nsample type: float\nplay duration: 57049 samples (0:01.294 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dying",
+          "source_id": 323878669,
+          "sound_id": 1004595385,
+          "bytes": 15302,
+          "sha256": "980e5c048fae84b38679707917021400e6f974dfa62443f03261a1bfab16ff5b",
+          "bank_data_offset": 191696,
+          "physical_offset": 188767440,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 347384654,
+      "wem": "sources/347384654.wem",
+      "wem_bytes": 11305,
+      "wem_sha256": "be0203693e31746dd691a1f70e179be814f177b7df38c2043edc1eda3a9fc010",
+      "pcm": "pcm/347384654.s16le.gz",
+      "decoded": {
+        "frames": 34205,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "432447e247a4ccfe20a58c7c4b2bf1d4cc4d72c5adbe289679da496f1bd2edfe",
+        "wav_sha256": "e0dde3ff4b20d02ed3cd4c21745952a27190153def1bd11d8f00b24414c2208c",
+        "peak": 0.991119384765625,
+        "rms_dbfs": -20.50352207340886,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 34205 (0:00.776 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 115 kbps\nsample type: float\nplay duration: 34205 samples (0:00.776 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "impact_body",
+          "source_id": 347384654,
+          "sound_id": 203675293,
+          "bytes": 11305,
+          "sha256": "be0203693e31746dd691a1f70e179be814f177b7df38c2043edc1eda3a9fc010",
+          "bank_data_offset": 41408,
+          "physical_offset": 155181504,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 359912015,
+      "wem": "sources/359912015.wem",
+      "wem_bytes": 22296,
+      "wem_sha256": "d4829c9e23a956cb7eadc11761d04541c49276d837fccb6fc1451e3f22cacd7f",
+      "pcm": "pcm/359912015.s16le.gz",
+      "decoded": {
+        "frames": 76758,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "9e4fbf3d30b9d534b5345d317e9ad539c82ea3dfb95b773a5fcde03ced2078e5",
+        "wav_sha256": "5976029534700067f17a1ae70f5f7d34419ea4d174487a77e561aa7fdda886d8",
+        "peak": 0.6722412109375,
+        "rms_dbfs": -26.341686977255595,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 76758 (0:01.741 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 102 kbps\nsample type: float\nplay duration: 76758 samples (0:01.741 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 359912015,
+          "sound_id": 110211255,
+          "bytes": 22296,
+          "sha256": "d4829c9e23a956cb7eadc11761d04541c49276d837fccb6fc1451e3f22cacd7f",
+          "bank_data_offset": 902400,
+          "physical_offset": 23926016,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 361062933,
+      "wem": "sources/361062933.wem",
+      "wem_bytes": 5565,
+      "wem_sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e",
+      "pcm": "pcm/361062933.s16le.gz",
+      "decoded": {
+        "frames": 25433,
+        "rate": 44100,
+        "channels": 1,
+        "sample_width": 2,
+        "sha256": "76b306fe7d27e9db64b09513af8b690be5522fa1a9eefc3e74395de7dd21f840",
+        "wav_sha256": "aa01e0d42474df0c9896687a3c6e3d56dcc54244deb9b93347153c0ab721a0cd",
+        "peak": 0.27728271484375,
+        "rms_dbfs": -34.94146781333146,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 25433 (0:00.577 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 75 kbps\nsample type: float\nplay duration: 25433 samples (0:00.577 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 361062933,
+          "sound_id": 618363731,
+          "bytes": 5565,
+          "sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e",
+          "bank_data_offset": 1187360,
+          "physical_offset": 270011936,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_jump",
+          "source_id": 361062933,
+          "sound_id": 290008449,
+          "bytes": 5565,
+          "sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e",
+          "bank_data_offset": 1187360,
+          "physical_offset": 270011936,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_run",
+          "source_id": 361062933,
+          "sound_id": 458322402,
+          "bytes": 5565,
+          "sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e",
+          "bank_data_offset": 372208,
+          "physical_offset": 223985136,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 364824874,
+      "wem": "sources/364824874.wem",
+      "wem_bytes": 11644,
+      "wem_sha256": "70efd50d552ed63618f3d41500c052823eb477f6b5fe30fe93f767436dea55f1",
+      "pcm": "pcm/364824874.s16le.gz",
+      "decoded": {
+        "frames": 40333,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "2a022f1e03709b37dfde23ccd3e4dc88c5dca070df793f071b1ffab102dcc162",
+        "wav_sha256": "bb01e05cc5fc51ab7c6715b0fc32a48188642bd543790363010e95c8ad9a90de",
+        "peak": 0.244537353515625,
+        "rms_dbfs": -31.549679965703902,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 40333 (0:00.915 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 101 kbps\nsample type: float\nplay duration: 40333 samples (0:00.915 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dodge",
+          "source_id": 364824874,
+          "sound_id": 723058154,
+          "bytes": 11644,
+          "sha256": "70efd50d552ed63618f3d41500c052823eb477f6b5fe30fe93f767436dea55f1",
+          "bank_data_offset": 110048,
+          "physical_offset": 71990752,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 384048418,
+      "wem": "sources/384048418.wem",
+      "wem_bytes": 11374,
+      "wem_sha256": "1b9ecbcfc52f7b901a3aa689148df08fefa073debf9c63305fc89b9ec0f435d7",
+      "pcm": "pcm/384048418.s16le.gz",
+      "decoded": {
+        "frames": 41117,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "feee033adac15fc2e1a0e941fafce43b7584189ab23bc5d23319c3be6d4de6b8",
+        "wav_sha256": "6938e989ab68c666da54394f2b7ace7da969cd5d8027710900dab32234dba4ff",
+        "peak": 0.2908935546875,
+        "rms_dbfs": -30.634159450571087,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 41117 (0:00.932 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 96 kbps\nsample type: float\nplay duration: 41117 samples (0:00.932 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dodge",
+          "source_id": 384048418,
+          "sound_id": 146466590,
+          "bytes": 11374,
+          "sha256": "1b9ecbcfc52f7b901a3aa689148df08fefa073debf9c63305fc89b9ec0f435d7",
+          "bank_data_offset": 131184,
+          "physical_offset": 72011888,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 384264562,
+      "wem": "sources/384264562.wem",
+      "wem_bytes": 42692,
+      "wem_sha256": "9bc54fe3b6ece2511bd007b723b13b18e0d70ce0c20867738eaaea223e27600a",
+      "pcm": "pcm/384264562.s16le.gz",
+      "decoded": {
+        "frames": 133786,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "10f17c39c5238532d739098d653995194691728e82e46aa99fe6ce2a1c96f8c6",
+        "wav_sha256": "8e2d296277c9d6776779fb19c3410ecf01a0073c8896db75d2baaf0cea8514a3",
+        "peak": 1.0,
+        "rms_dbfs": -19.942227797318168,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 133786 (0:03.034 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 112 kbps\nsample type: float\nplay duration: 133786 samples (0:03.034 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_fk",
+          "source_id": 384264562,
+          "sound_id": 743114974,
+          "bytes": 42692,
+          "sha256": "9bc54fe3b6ece2511bd007b723b13b18e0d70ce0c20867738eaaea223e27600a",
+          "bank_data_offset": 226352,
+          "physical_offset": 217089072,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 394273666,
+      "wem": "sources/394273666.wem",
+      "wem_bytes": 5364,
+      "wem_sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee",
+      "pcm": "pcm/394273666.s16le.gz",
+      "decoded": {
+        "frames": 23170,
+        "rate": 44100,
+        "channels": 1,
+        "sample_width": 2,
+        "sha256": "139ff1858de4705bef8a18b12b1155d95c2d7e294feede8d5aab50ce45707b1d",
+        "wav_sha256": "1dad2401a2ff373a0f98537ccd43c1d26066d2ddfae427e1d5822069f980f40f",
+        "peak": 0.337677001953125,
+        "rms_dbfs": -34.96040872666071,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 23170 (0:00.525 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 80 kbps\nsample type: float\nplay duration: 23170 samples (0:00.525 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 394273666,
+          "sound_id": 859995397,
+          "bytes": 5364,
+          "sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee",
+          "bank_data_offset": 1266896,
+          "physical_offset": 270091472,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_jump",
+          "source_id": 394273666,
+          "sound_id": 68276897,
+          "bytes": 5364,
+          "sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee",
+          "bank_data_offset": 1266896,
+          "physical_offset": 270091472,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_run",
+          "source_id": 394273666,
+          "sound_id": 884677866,
+          "bytes": 5364,
+          "sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee",
+          "bank_data_offset": 405344,
+          "physical_offset": 224018272,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 399916424,
+      "wem": "sources/399916424.wem",
+      "wem_bytes": 8409,
+      "wem_sha256": "d9a9c64e886c64bd0668a6a389ba92000ea40c479159af3c54676fcd247a36fb",
+      "pcm": "pcm/399916424.s16le.gz",
+      "decoded": {
+        "frames": 25179,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "f0930751b18ae0aa301cb2b9ccffccf90bcf469638d2094a2a07c0529c267b44",
+        "wav_sha256": "f01e959a70726c1b85b4bc68dae550d23678c72dce818e33d2af769304019bc7",
+        "peak": 0.22808837890625,
+        "rms_dbfs": -32.10500345848621,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 25179 (0:00.571 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 116 kbps\nsample type: float\nplay duration: 25179 samples (0:00.571 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 399916424,
+          "sound_id": 836564911,
+          "bytes": 8409,
+          "sha256": "d9a9c64e886c64bd0668a6a389ba92000ea40c479159af3c54676fcd247a36fb",
+          "bank_data_offset": 1308096,
+          "physical_offset": 270132672,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 444149984,
+      "wem": "sources/444149984.wem",
+      "wem_bytes": 20646,
+      "wem_sha256": "4b1b91102c488082949b270f4e2a6d4477411711f870d5fffb8e6b8772f81a00",
+      "pcm": "pcm/444149984.s16le.gz",
+      "decoded": {
+        "frames": 80738,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "7cf60c13a4e8e37e46a0f3a26c88ddda3cb93a02ea6e5d18c9e977710d795822",
+        "wav_sha256": "0c452b88693a173f1dd134248ac67ce2f829f2b478a1c2a61e2f8cea9aee590d",
+        "peak": 0.5501708984375,
+        "rms_dbfs": -21.34826072892419,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 80738 (0:01.831 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 89 kbps\nsample type: float\nplay duration: 80738 samples (0:01.831 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dying",
+          "source_id": 444149984,
+          "sound_id": 870946017,
+          "bytes": 20646,
+          "sha256": "4b1b91102c488082949b270f4e2a6d4477411711f870d5fffb8e6b8772f81a00",
+          "bank_data_offset": 207008,
+          "physical_offset": 188782752,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 450188065,
+      "wem": "sources/450188065.wem",
+      "wem_bytes": 4436,
+      "wem_sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290",
+      "pcm": "pcm/450188065.s16le.gz",
+      "decoded": {
+        "frames": 19851,
+        "rate": 44100,
+        "channels": 1,
+        "sample_width": 2,
+        "sha256": "c263d89ec14ec6fd989f6a8ce8ac21808bc1e23847b21f88c88932aacf086529",
+        "wav_sha256": "6783f334df8c5a389d912028f2c4c1416a5d45a54adb7834c4eda67189b6d3b8",
+        "peak": 0.4981689453125,
+        "rms_dbfs": -30.322256150039042,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 19851 (0:00.450 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 77 kbps\nsample type: float\nplay duration: 19851 samples (0:00.450 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 450188065,
+          "sound_id": 844704651,
+          "bytes": 4436,
+          "sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290",
+          "bank_data_offset": 1491248,
+          "physical_offset": 270315824,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_jump",
+          "source_id": 450188065,
+          "sound_id": 207069115,
+          "bytes": 4436,
+          "sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290",
+          "bank_data_offset": 1491248,
+          "physical_offset": 270315824,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_run",
+          "source_id": 450188065,
+          "sound_id": 723596167,
+          "bytes": 4436,
+          "sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290",
+          "bank_data_offset": 505344,
+          "physical_offset": 224118272,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 471162968,
+      "wem": "sources/471162968.wem",
+      "wem_bytes": 18191,
+      "wem_sha256": "b85095875f2ef24071cfe862ab8522d17b7a6414cc77424f378d88c85ba90999",
+      "pcm": "pcm/471162968.s16le.gz",
+      "decoded": {
+        "frames": 48861,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "6ec2f4d1a856c84590ea9a5284a124a859d02c389c6d2d31642276f74fb9641b",
+        "wav_sha256": "c4958002d10cbbf6f0d9598e1fa3f3356ca9153e853651d64998daa2977f530f",
+        "peak": 0.766815185546875,
+        "rms_dbfs": -24.0912941208057,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 48861 (0:01.108 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 130 kbps\nsample type: float\nplay duration: 48861 samples (0:01.108 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_bow",
+          "source_id": 471162968,
+          "sound_id": 599978858,
+          "bytes": 18191,
+          "sha256": "b85095875f2ef24071cfe862ab8522d17b7a6414cc77424f378d88c85ba90999",
+          "bank_data_offset": 583088,
+          "physical_offset": 85935536,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 474690479,
+      "wem": "sources/474690479.wem",
+      "wem_bytes": 14700,
+      "wem_sha256": "215a879d891bb93ad7f6a8922dc084f82bbe0d6821ed991c80df03a30242299a",
+      "pcm": "pcm/474690479.s16le.gz",
+      "decoded": {
+        "frames": 42368,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "c72e05face404ae33afa13879200b05c39b345fdeee0d30d49eaad96f2756147",
+        "wav_sha256": "1140e3d433e95f70bf3cd91c5e38bf9a4b546a61b8b7d31e597b12c1f832b9b3",
+        "peak": 1.0,
+        "rms_dbfs": -22.390732829269826,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 42368 (0:00.961 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 121 kbps\nsample type: float\nplay duration: 42368 samples (0:00.961 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "impact_body",
+          "source_id": 474690479,
+          "sound_id": 335750139,
+          "bytes": 14700,
+          "sha256": "215a879d891bb93ad7f6a8922dc084f82bbe0d6821ed991c80df03a30242299a",
+          "bank_data_offset": 52720,
+          "physical_offset": 155192816,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 477445358,
+      "wem": "sources/477445358.wem",
+      "wem_bytes": 43148,
+      "wem_sha256": "6fe05b2022aa16b297d1e82e85c9bc01d1a7f79cef969c5ae4d867b37b5b0868",
+      "pcm": "pcm/477445358.s16le.gz",
+      "decoded": {
+        "frames": 134942,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "0dbf8cf1e511a67e27b838add7755cff217088a7f417e0a4ee8aad5cf7cc7819",
+        "wav_sha256": "6fe8869ed9375c2873daccaa3891b13c72060e4748b5e3c0a7c97be3d17e65aa",
+        "peak": 1.0,
+        "rms_dbfs": -20.391326032687644,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 134942 (0:03.060 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 112 kbps\nsample type: float\nplay duration: 134942 samples (0:03.060 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_fk",
+          "source_id": 477445358,
+          "sound_id": 625712628,
+          "bytes": 43148,
+          "sha256": "6fe05b2022aa16b297d1e82e85c9bc01d1a7f79cef969c5ae4d867b37b5b0868",
+          "bank_data_offset": 383488,
+          "physical_offset": 217246208,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 487560667,
+      "wem": "sources/487560667.wem",
+      "wem_bytes": 13883,
+      "wem_sha256": "658a1c423dc2b5a24a7f8597a9aac1b3fc757d570a66db1c398c2557a0207b35",
+      "pcm": "pcm/487560667.s16le.gz",
+      "decoded": {
+        "frames": 51601,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "ee10732b64e728c01a46f5b509717976ac7f4b157be3d02846a0f39b2b134d5e",
+        "wav_sha256": "f9b0a9cb27a20f9c0e4032e43e7d824b9e00b18780b22045be01516d393a6dd1",
+        "peak": 0.61932373046875,
+        "rms_dbfs": -17.856903593237856,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 51601 (0:01.170 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 94 kbps\nsample type: float\nplay duration: 51601 samples (0:01.170 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dying",
+          "source_id": 487560667,
+          "sound_id": 366978209,
+          "bytes": 13883,
+          "sha256": "658a1c423dc2b5a24a7f8597a9aac1b3fc757d570a66db1c398c2557a0207b35",
+          "bank_data_offset": 227664,
+          "physical_offset": 188803408,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 536528925,
+      "wem": "sources/536528925.wem",
+      "wem_bytes": 38602,
+      "wem_sha256": "f5cf6255bef6268140b8e51094b5c2b6565caf86dab45c05b0509e12fcc89f73",
+      "pcm": "pcm/536528925.s16le.gz",
+      "decoded": {
+        "frames": 125337,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "3343233782b80b8529737abd14571a0b3113dc0cbe997c95659f6a7b275c0e89",
+        "wav_sha256": "ad6f634b4d6f999224e1619188c22fc8dfd4c68f856515df41d29c6b67e3cf78",
+        "peak": 0.999969482421875,
+        "rms_dbfs": -20.945094625402895,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 125337 (0:02.842 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 108 kbps\nsample type: float\nplay duration: 125337 samples (0:02.842 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_all_break_hurt",
+          "source_id": 536528925,
+          "sound_id": 899285817,
+          "bytes": 38602,
+          "sha256": "f5cf6255bef6268140b8e51094b5c2b6565caf86dab45c05b0509e12fcc89f73",
+          "bank_data_offset": 64,
+          "physical_offset": 85311552,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 585387678,
+      "wem": "sources/585387678.wem",
+      "wem_bytes": 44223,
+      "wem_sha256": "6c8b06fa18ce64bea8771110e57ca155e6eba070d6583c508fdad7c05f4b499c",
+      "pcm": "pcm/585387678.s16le.gz",
+      "decoded": {
+        "frames": 146772,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "d6b96f612403e99ebd5a0df5ba820aee801f596048ea63b9deb991e4e2956e76",
+        "wav_sha256": "97c63d0ec2497e69c001d50fe2d81782c77f4386854ee0fab1df65287caa5a42",
+        "peak": 0.999969482421875,
+        "rms_dbfs": -21.105586648726558,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 146772 (0:03.328 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 106 kbps\nsample type: float\nplay duration: 146772 samples (0:03.328 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_fk",
+          "source_id": 585387678,
+          "sound_id": 686228295,
+          "bytes": 44223,
+          "sha256": "6c8b06fa18ce64bea8771110e57ca155e6eba070d6583c508fdad7c05f4b499c",
+          "bank_data_offset": 510272,
+          "physical_offset": 217372992,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 655706814,
+      "wem": "sources/655706814.wem",
+      "wem_bytes": 5259,
+      "wem_sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e",
+      "pcm": "pcm/655706814.s16le.gz",
+      "decoded": {
+        "frames": 21365,
+        "rate": 44100,
+        "channels": 1,
+        "sample_width": 2,
+        "sha256": "2b5e459c9d81eaa7644afef42ca4dd9679203166da63553e3ee665e38b59054d",
+        "wav_sha256": "46dd71ffc9632c7d50da765a63a8ebdd1d5640da10a8845368957cff8b93516c",
+        "peak": 0.3828125,
+        "rms_dbfs": -32.75761882790541,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 21365 (0:00.484 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 85 kbps\nsample type: float\nplay duration: 21365 samples (0:00.484 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 655706814,
+          "sound_id": 170558996,
+          "bytes": 5259,
+          "sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e",
+          "bank_data_offset": 2079440,
+          "physical_offset": 270904016,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_jump",
+          "source_id": 655706814,
+          "sound_id": 84071579,
+          "bytes": 5259,
+          "sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e",
+          "bank_data_offset": 2079440,
+          "physical_offset": 270904016,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_run",
+          "source_id": 655706814,
+          "sound_id": 48648339,
+          "bytes": 5259,
+          "sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e",
+          "bank_data_offset": 704912,
+          "physical_offset": 224317840,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 672810389,
+      "wem": "sources/672810389.wem",
+      "wem_bytes": 14470,
+      "wem_sha256": "db9c67acc56197840d9113175219cf660a8c51878f658b39e5526490017840c0",
+      "pcm": "pcm/672810389.s16le.gz",
+      "decoded": {
+        "frames": 53072,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "77bc8362dd08f71313282b7baa5234d5b54836646db140d9dc8ee4b4a55d16c8",
+        "wav_sha256": "641ac7d0b822fc8aa32b0f9a2ab70410e1892a6bdfcf180aa394939c9a04d146",
+        "peak": 0.648712158203125,
+        "rms_dbfs": -14.880753946662239,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 53072 (0:01.203 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 95 kbps\nsample type: float\nplay duration: 53072 samples (0:01.203 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dying",
+          "source_id": 672810389,
+          "sound_id": 596786149,
+          "bytes": 14470,
+          "sha256": "db9c67acc56197840d9113175219cf660a8c51878f658b39e5526490017840c0",
+          "bank_data_offset": 308736,
+          "physical_offset": 188884480,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 682276155,
+      "wem": "sources/682276155.wem",
+      "wem_bytes": 8675,
+      "wem_sha256": "77cacdaca96e61e64d484dbe01a7a9cf10052084cd71505357706579f88bce7d",
+      "pcm": "pcm/682276155.s16le.gz",
+      "decoded": {
+        "frames": 37750,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "143c9f41f4b478c1ccf4fcbe0205cd1226833324df2571df7190db8e12ac1f70",
+        "wav_sha256": "1161b14e1a474295e9f4a5beb1b2b7eb79bdd06e281cabf61f67f62822f796c1",
+        "peak": 0.369293212890625,
+        "rms_dbfs": -27.456518404408136,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 37750 (0:00.856 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 80 kbps\nsample type: float\nplay duration: 37750 samples (0:00.856 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_all_die_drop",
+          "source_id": 682276155,
+          "sound_id": 226803575,
+          "bytes": 8675,
+          "sha256": "77cacdaca96e61e64d484dbe01a7a9cf10052084cd71505357706579f88bce7d",
+          "bank_data_offset": 64,
+          "physical_offset": 100712512,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 682948856,
+      "wem": "sources/682948856.wem",
+      "wem_bytes": 15081,
+      "wem_sha256": "21252751ac7b6b47468f29da2841d37ad92feb841912e3084f7ee397b5483452",
+      "pcm": "pcm/682948856.s16le.gz",
+      "decoded": {
+        "frames": 50024,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "bd8dc0446cd5e6574136a2332a079b3891d56f781268715fcb074c29ceee9ba6",
+        "wav_sha256": "c12d17645bdc0295554bba7ce0f98bc2018db0b99bce717f31998cbf30675cfd",
+        "peak": 0.936126708984375,
+        "rms_dbfs": -24.467735465512817,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 50024 (0:01.134 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 105 kbps\nsample type: float\nplay duration: 50024 samples (0:01.134 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "impact_body",
+          "source_id": 682948856,
+          "sound_id": 64680600,
+          "bytes": 15081,
+          "sha256": "21252751ac7b6b47468f29da2841d37ad92feb841912e3084f7ee397b5483452",
+          "bank_data_offset": 75776,
+          "physical_offset": 155215872,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 771871815,
+      "wem": "sources/771871815.wem",
+      "wem_bytes": 16899,
+      "wem_sha256": "32223963a87efc7e1c140f0e1a7e910e0c24c51c215dfc97ba595c97bd275f66",
+      "pcm": "pcm/771871815.s16le.gz",
+      "decoded": {
+        "frames": 51097,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "4620cb9b80602e6082b43ffce128388c28e772aa013271e17bfeb65aab0f6573",
+        "wav_sha256": "d3ecfa93d508476fcd39f5acf6355aa37f293f883d9afd2c9f6feeef4376f22a",
+        "peak": 0.83001708984375,
+        "rms_dbfs": -24.701977166265785,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 51097 (0:01.159 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 116 kbps\nsample type: float\nplay duration: 51097 samples (0:01.159 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_bow",
+          "source_id": 771871815,
+          "sound_id": 293408372,
+          "bytes": 16899,
+          "sha256": "32223963a87efc7e1c140f0e1a7e910e0c24c51c215dfc97ba595c97bd275f66",
+          "bank_data_offset": 829040,
+          "physical_offset": 86181488,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 777150789,
+      "wem": "sources/777150789.wem",
+      "wem_bytes": 9787,
+      "wem_sha256": "06c0747fe0488d88e02166a682dc958032087d38d6cea12cadc522d0e43b52da",
+      "pcm": "pcm/777150789.s16le.gz",
+      "decoded": {
+        "frames": 29106,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "8e1d98487c393982cede889b81e77b9ef7b355b20fe0c5e4259ea0b66101d6bf",
+        "wav_sha256": "1ba2e3b8fd5bca582357035e96036b34b16954361009394ca20aaf039eef2ce1",
+        "peak": 0.235076904296875,
+        "rms_dbfs": -33.274203389534485,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 29106 (0:00.660 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 117 kbps\nsample type: float\nplay duration: 29106 samples (0:00.660 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 777150789,
+          "sound_id": 345561239,
+          "bytes": 9787,
+          "sha256": "06c0747fe0488d88e02166a682dc958032087d38d6cea12cadc522d0e43b52da",
+          "bank_data_offset": 2306352,
+          "physical_offset": 271130928,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 781923129,
+      "wem": "sources/781923129.wem",
+      "wem_bytes": 13079,
+      "wem_sha256": "4fc1a221e4495482257af2953d758fa3ee025d4373b7284ff8d2c0df472913a5",
+      "pcm": "pcm/781923129.s16le.gz",
+      "decoded": {
+        "frames": 39151,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "47ac4c22744ca13f25230aa64a8e2b85e686cde14f83f532dd1ec8e8bb0789e9",
+        "wav_sha256": "2cb4c03575741588062bf4991efeb963d3aad377a5c034638d5107c7299f8910",
+        "peak": 0.88348388671875,
+        "rms_dbfs": -23.22081134962398,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 39151 (0:00.888 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 117 kbps\nsample type: float\nplay duration: 39151 samples (0:00.888 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "impact_body",
+          "source_id": 781923129,
+          "sound_id": 963015164,
+          "bytes": 13079,
+          "sha256": "4fc1a221e4495482257af2953d758fa3ee025d4373b7284ff8d2c0df472913a5",
+          "bank_data_offset": 130128,
+          "physical_offset": 155270224,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 791851626,
+      "wem": "sources/791851626.wem",
+      "wem_bytes": 7823,
+      "wem_sha256": "cb79b8b8bab52735736f1cae329842c216c03031473907ff545051d653061b07",
+      "pcm": "pcm/791851626.s16le.gz",
+      "decoded": {
+        "frames": 21908,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "687b6dae87cc995db4d0a41079a1fccdab0b7ea34ee598939899b0ddfd0480e1",
+        "wav_sha256": "bb716da3520c8b67bdbaa52ecf0b47a4226f63873b929e6ce4130fa93aeff4f9",
+        "peak": 0.225799560546875,
+        "rms_dbfs": -30.592770159804935,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 21908 (0:00.497 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 124 kbps\nsample type: float\nplay duration: 21908 samples (0:00.497 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 791851626,
+          "sound_id": 383914894,
+          "bytes": 7823,
+          "sha256": "cb79b8b8bab52735736f1cae329842c216c03031473907ff545051d653061b07",
+          "bank_data_offset": 2358496,
+          "physical_offset": 271183072,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 828546990,
+      "wem": "sources/828546990.wem",
+      "wem_bytes": 14220,
+      "wem_sha256": "6d83bb3948b3bba8b411507ca2c1c91a4b284e8b93ea1069c2e6b330e4e8a6aa",
+      "pcm": "pcm/828546990.s16le.gz",
+      "decoded": {
+        "frames": 48261,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "3372814a8f924fedce44a80634c158fe2d76d9a87cfe41e5d39c4709a5785884",
+        "wav_sha256": "b4f0e1a88ea1a51000e1be6da1b88b8460ca403675bc89b2ddcf0b8417d0c0df",
+        "peak": 0.303009033203125,
+        "rms_dbfs": -33.88828374530884,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 48261 (0:01.094 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 103 kbps\nsample type: float\nplay duration: 48261 samples (0:01.094 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dodge",
+          "source_id": 828546990,
+          "sound_id": 522542959,
+          "bytes": 14220,
+          "sha256": "6d83bb3948b3bba8b411507ca2c1c91a4b284e8b93ea1069c2e6b330e4e8a6aa",
+          "bank_data_offset": 192352,
+          "physical_offset": 72073056,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 835672119,
+      "wem": "sources/835672119.wem",
+      "wem_bytes": 11576,
+      "wem_sha256": "a7898abe02a5654e71a24d42cd1bcc180a0af4bc6ad3ae047c97ff8d729fa281",
+      "pcm": "pcm/835672119.s16le.gz",
+      "decoded": {
+        "frames": 38948,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "d2741e6d5ca3b3692cee72bb5f8100dacd6e0886f434dbe56b74d12464d40d5d",
+        "wav_sha256": "e42e9b2a96884a46ea520e997d0a9a537281e4862b2adc15f72950bf2654c5eb",
+        "peak": 0.36602783203125,
+        "rms_dbfs": -30.281602799741563,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 38948 (0:00.883 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 104 kbps\nsample type: float\nplay duration: 38948 samples (0:00.883 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dodge",
+          "source_id": 835672119,
+          "sound_id": 232688953,
+          "bytes": 11576,
+          "sha256": "a7898abe02a5654e71a24d42cd1bcc180a0af4bc6ad3ae047c97ff8d729fa281",
+          "bank_data_offset": 206576,
+          "physical_offset": 72087280,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 869056893,
+      "wem": "sources/869056893.wem",
+      "wem_bytes": 18701,
+      "wem_sha256": "19b4d648a8b421008cfe59c136692fcf78c5eec9341fe50e71fe62a01c22433f",
+      "pcm": "pcm/869056893.s16le.gz",
+      "decoded": {
+        "frames": 62296,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "3b1f3e8a5fb23e39c97467cf8df15a4b6d8a23e88c3e8a14c9de02b99b9dd7aa",
+        "wav_sha256": "824feee86ab50e1b4747b552eaf147bca414aea4e3e574b48e8e4f31705998a1",
+        "peak": 0.748626708984375,
+        "rms_dbfs": -25.04607793665076,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 62296 (0:01.413 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 105 kbps\nsample type: float\nplay duration: 62296 samples (0:01.413 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 869056893,
+          "sound_id": 551214520,
+          "bytes": 18701,
+          "sha256": "19b4d648a8b421008cfe59c136692fcf78c5eec9341fe50e71fe62a01c22433f",
+          "bank_data_offset": 2368992,
+          "physical_offset": 25392608,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 878176367,
+      "wem": "sources/878176367.wem",
+      "wem_bytes": 8709,
+      "wem_sha256": "41467c8edf80fb37d6863d6a781204d5271e9079878dc06cb1d5dbe627fd4114",
+      "pcm": "pcm/878176367.s16le.gz",
+      "decoded": {
+        "frames": 26321,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "1954d5fa96fb644cb52e905e8b24f5d7980630d08df78fafecff242e152e7eb7",
+        "wav_sha256": "9f3d9a227b827e98c2ddb2a828e2625905f9fe3a812687ecfcadcde38ff4ad2f",
+        "peak": 0.27099609375,
+        "rms_dbfs": -32.54302277063842,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 26321 (0:00.597 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 115 kbps\nsample type: float\nplay duration: 26321 samples (0:00.597 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 878176367,
+          "sound_id": 906166560,
+          "bytes": 8709,
+          "sha256": "41467c8edf80fb37d6863d6a781204d5271e9079878dc06cb1d5dbe627fd4114",
+          "bank_data_offset": 2561904,
+          "physical_offset": 271386480,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 888176521,
+      "wem": "sources/888176521.wem",
+      "wem_bytes": 44490,
+      "wem_sha256": "8efb7366b8d1a73dbcd96c3e61e11d4063c574d1e53ccf46b2e404c6e82ad993",
+      "pcm": "pcm/888176521.s16le.gz",
+      "decoded": {
+        "frames": 137548,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "b108d9345b56c7d24258aaa74e4401d8f68b9ba9ca6607e862f5a505e39a03ee",
+        "wav_sha256": "a6b111bca8c3fbe559cef4472fc96995e614e7c89dc886a3f4865305dbcdcefa",
+        "peak": 1.0,
+        "rms_dbfs": -19.50680028943389,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 137548 (0:03.119 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 113 kbps\nsample type: float\nplay duration: 137548 samples (0:03.119 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_all_weapon_touch",
+          "source_id": 888176521,
+          "sound_id": 181787070,
+          "bytes": 44490,
+          "sha256": "8efb7366b8d1a73dbcd96c3e61e11d4063c574d1e53ccf46b2e404c6e82ad993",
+          "bank_data_offset": 1267248,
+          "physical_offset": 151946800,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 909498841,
+      "wem": "sources/909498841.wem",
+      "wem_bytes": 16692,
+      "wem_sha256": "9084a55391acc96ca39f7c6f6745c2256dd144b67f7b455f535edbf9774cda81",
+      "pcm": "pcm/909498841.s16le.gz",
+      "decoded": {
+        "frames": 51172,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "16cf6891d37e17bd2078e6123a9653df9ae3f22be99833c3fea46210a7837270",
+        "wav_sha256": "adb01304c4f7a7c401afdaab8c488ec3d2478c1854f4cebe4e3f8f1f92c73cab",
+        "peak": 0.738006591796875,
+        "rms_dbfs": -25.873513178074646,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 51172 (0:01.160 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 114 kbps\nsample type: float\nplay duration: 51172 samples (0:01.160 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 909498841,
+          "sound_id": 402072877,
+          "bytes": 16692,
+          "sha256": "9084a55391acc96ca39f7c6f6745c2256dd144b67f7b455f535edbf9774cda81",
+          "bank_data_offset": 2528880,
+          "physical_offset": 25552496,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 919868544,
+      "wem": "sources/919868544.wem",
+      "wem_bytes": 12813,
+      "wem_sha256": "571d84d35d88f766b12c8492998ffc6dd6dcd470026ed3551cf1c10f391fa4cc",
+      "pcm": "pcm/919868544.s16le.gz",
+      "decoded": {
+        "frames": 48028,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "949c944b6dec21c34b4d6f8aa1b0d7b67d73d3dab71e8c37e58ba2aa31c4b9c3",
+        "wav_sha256": "d2765284cc56139fa1b560bfb0ef5b46dfeb5858bda37c594156bbf4ee734f75",
+        "peak": 0.3035888671875,
+        "rms_dbfs": -32.24336309585812,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 48028 (0:01.089 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 93 kbps\nsample type: float\nplay duration: 48028 samples (0:01.089 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dodge",
+          "source_id": 919868544,
+          "sound_id": 290036446,
+          "bytes": 12813,
+          "sha256": "571d84d35d88f766b12c8492998ffc6dd6dcd470026ed3551cf1c10f391fa4cc",
+          "bank_data_offset": 248624,
+          "physical_offset": 72129328,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 925549399,
+      "wem": "sources/925549399.wem",
+      "wem_bytes": 34153,
+      "wem_sha256": "8ed02b385c121350e345f64db1d6809b055729735ad9a5d217f6f4978513a7ac",
+      "pcm": "pcm/925549399.s16le.gz",
+      "decoded": {
+        "frames": 115137,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "8453bf4fc4fc93ba2cedb9c11eacdd8c45e9c1d312156f57b86de05d44fb095e",
+        "wav_sha256": "01fe9e46a4bc11cf3fd6d06998ebca30c29766dc5242b22681ed54e17d09d564",
+        "peak": 0.842529296875,
+        "rms_dbfs": -21.801824962295086,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 115137 (0:02.611 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 104 kbps\nsample type: float\nplay duration: 115137 samples (0:02.611 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_hengdao",
+          "source_id": 925549399,
+          "sound_id": 336892938,
+          "bytes": 34153,
+          "sha256": "8ed02b385c121350e345f64db1d6809b055729735ad9a5d217f6f4978513a7ac",
+          "bank_data_offset": 2590384,
+          "physical_offset": 25614000,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 938553406,
+      "wem": "sources/938553406.wem",
+      "wem_bytes": 15078,
+      "wem_sha256": "591b17101bc887a4d6940d8fdc0066f23c86edd1317a22bc042699b64d4161ab",
+      "pcm": "pcm/938553406.s16le.gz",
+      "decoded": {
+        "frames": 46053,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "8b122b5b2321aa54423a62020d91dfc3981d83a2cd0ace76fa9c9d3532558d8c",
+        "wav_sha256": "7954d3ccc97a4a67e1ae86532f8703b800be1bee6c8635354cc3665c042d75f7",
+        "peak": 0.7841796875,
+        "rms_dbfs": -23.958376062446067,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 46053 (0:01.044 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 114 kbps\nsample type: float\nplay duration: 46053 samples (0:01.044 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_bow",
+          "source_id": 938553406,
+          "sound_id": 585189473,
+          "bytes": 15078,
+          "sha256": "591b17101bc887a4d6940d8fdc0066f23c86edd1317a22bc042699b64d4161ab",
+          "bank_data_offset": 1043088,
+          "physical_offset": 86395536,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 1002355989,
+      "wem": "sources/1002355989.wem",
+      "wem_bytes": 5454,
+      "wem_sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf",
+      "pcm": "pcm/1002355989.s16le.gz",
+      "decoded": {
+        "frames": 24265,
+        "rate": 44100,
+        "channels": 1,
+        "sample_width": 2,
+        "sha256": "15b5455439275c02b159a1660cb5b9232d7aaa811869f4686a5560806c0d2d1f",
+        "wav_sha256": "42a9574f604cf64e3963b9e1e0cd7fc7dcbc3ab97a1960f083f989159b2a56ca",
+        "peak": 0.2315673828125,
+        "rms_dbfs": -34.4989669650743,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 24265 (0:00.550 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 77 kbps\nsample type: float\nplay duration: 24265 samples (0:00.550 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 1002355989,
+          "sound_id": 986540961,
+          "bytes": 5454,
+          "sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf",
+          "bank_data_offset": 2987168,
+          "physical_offset": 271811744,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_jump",
+          "source_id": 1002355989,
+          "sound_id": 828837974,
+          "bytes": 5454,
+          "sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf",
+          "bank_data_offset": 2987168,
+          "physical_offset": 271811744,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_run",
+          "source_id": 1002355989,
+          "sound_id": 534567783,
+          "bytes": 5454,
+          "sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf",
+          "bank_data_offset": 1011632,
+          "physical_offset": 224624560,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 1012800056,
+      "wem": "sources/1012800056.wem",
+      "wem_bytes": 5895,
+      "wem_sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4",
+      "pcm": "pcm/1012800056.s16le.gz",
+      "decoded": {
+        "frames": 25982,
+        "rate": 44100,
+        "channels": 1,
+        "sample_width": 2,
+        "sha256": "d890435f9ad8624e61f135a60c838ed5aa791ea05ac9553b1fc4dad5a65c58cc",
+        "wav_sha256": "d15c6a987813a5b0d5666739b09b0d0bc0de977081df68c6a4b740c8c2e5c9d9",
+        "peak": 0.457763671875,
+        "rms_dbfs": -33.71155241250854,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 1\nchannel mask: 0x4 / FC\nstream total samples: 25982 (0:00.589 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 78 kbps\nsample type: float\nplay duration: 25982 samples (0:00.589 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "move_jump",
+          "source_id": 1012800056,
+          "sound_id": 121153801,
+          "bytes": 5895,
+          "sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4",
+          "bank_data_offset": 3025152,
+          "physical_offset": 271849728,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_jump",
+          "source_id": 1012800056,
+          "sound_id": 832551732,
+          "bytes": 5895,
+          "sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4",
+          "bank_data_offset": 3025152,
+          "physical_offset": 271849728,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        },
+        {
+          "bank": "move_run",
+          "source_id": 1012800056,
+          "sound_id": 519647363,
+          "bytes": 5895,
+          "sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4",
+          "bank_data_offset": 1030992,
+          "physical_offset": 224643920,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 1,
+          "rate": 44100
+        }
+      ]
+    },
+    {
+      "source_id": 1013417629,
+      "wem": "sources/1013417629.wem",
+      "wem_bytes": 13535,
+      "wem_sha256": "6f46aa32cad9a1d098f6f2e9cefc68713c677140806cb1a09fe2f56022cf1e72",
+      "pcm": "pcm/1013417629.s16le.gz",
+      "decoded": {
+        "frames": 51235,
+        "rate": 44100,
+        "channels": 2,
+        "sample_width": 2,
+        "sha256": "1b4e9c3114c330e47b76d0e41db88ad09438c9f99db7e50d8b98136c513b6800",
+        "wav_sha256": "aded9c3cf80ac45e18c2618666688ad648d5c5d77a08d948de0180309c5007d3",
+        "peak": 0.324554443359375,
+        "rms_dbfs": -32.418657737793254,
+        "decoder_output": "decoding source.wem\nsample rate: 44100 Hz\nchannels: 2\nchannel mask: 0x3 / FL FR\nstream total samples: 51235 (0:01.162 seconds)\nencoding: Custom Vorbis\nlayout: flat\nmetadata from: Audiokinetic Wwise RIFF header\nbitrate: 92 kbps\nsample type: float\nplay duration: 51235 samples (0:01.162 seconds)\n"
+      },
+      "origins": [
+        {
+          "bank": "gman_dodge",
+          "source_id": 1013417629,
+          "sound_id": 496944873,
+          "bytes": 13535,
+          "sha256": "6f46aa32cad9a1d098f6f2e9cefc68713c677140806cb1a09fe2f56022cf1e72",
+          "bank_data_offset": 280112,
+          "physical_offset": 72160816,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ]
+    }
+  ],
+  "decoder": {
+    "tool": "vgmstream-r2168/vgmstream-cli",
+    "sha256": "e736da315053bf91796d01eca18b54cbcc2d5b328eecdaf15786e7838251f581",
+    "arguments": [
+      "-i"
+    ]
+  },
+  "format_reference": {
+    "project": "https://github.com/bnnm/wwiser",
+    "commit": "6d4b5bfb45afc52cda9d68fbbe0cbd97de0e26a3",
+    "action_property": "v135 AkPropID_128: 0x0F DelayTime, signed milliseconds",
+    "references": [
+      {
+        "path": "wwiser/parser/wdefs.py",
+        "sha256": "8eb5e5450731d5e00f2e1cae9545c93381fc01a78c8aff27a2751841cd2d27d2"
+      },
+      {
+        "path": "wwiser/generator/render/bnode_props.py",
+        "sha256": "e9bfe9a8f3e2ea223ea8f7dba29c8921fbd7d220e62acaab61ba59bc5d751305"
+      }
+    ],
+    "note": "Format reference only; this importer does not execute or depend on wwiser."
+  },
+  "producer": {
+    "script": "scripts/import-naraka-audio.py",
+    "module": "scripts/naraka_audio.py",
+    "python": "3.11+ stdlib",
+    "decoder_required_only_for_prepare_or_redecode": true
+  },
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1636,
+      "sha256": "cc5c42e95183e05aab09a611caa7d70bda2c3775bfac52ed9cd565fbf11be9d2"
+    },
+    {
+      "path": "banks/gman_all_break_hurt.json",
+      "bytes": 1360,
+      "sha256": "4ec45c015f67bf857ca23abc0b60a64a73b99f93b2855bfd4f9b5247ed69d4fe"
+    },
+    {
+      "path": "banks/gman_all_die_drop.json",
+      "bytes": 1395,
+      "sha256": "e23917c6f439b7118452bff280acb5493c386297b5f171f96cef07e896b6b40d"
+    },
+    {
+      "path": "banks/gman_all_weapon_touch.json",
+      "bytes": 14282,
+      "sha256": "83c07eb6bc1c52216e5505c5cf6061d1b7c8f47d857295daa105c47d510b31c4"
+    },
+    {
+      "path": "banks/gman_bow.json",
+      "bytes": 11223,
+      "sha256": "2536069f1c6f3a77530c3a36e3eae76ba9b685473e076d998aa41c73e8925389"
+    },
+    {
+      "path": "banks/gman_dodge.json",
+      "bytes": 6407,
+      "sha256": "01f6ddb05671046e8eb81abe6a8782c6ade01bbbbd84f42b8292b5b88ee9b4bc"
+    },
+    {
+      "path": "banks/gman_dying.json",
+      "bytes": 7146,
+      "sha256": "e0308d636c3b835f3be6816ac4816fd4dae6f9f1a703fb6dfe325a91d5fa19f8"
+    },
+    {
+      "path": "banks/gman_fk.json",
+      "bytes": 8876,
+      "sha256": "34606f4c68c72d826d22844702bfa26c2fabed5dbd18bbd39ba71f2d64923490"
+    },
+    {
+      "path": "banks/gman_hengdao.json",
+      "bytes": 36580,
+      "sha256": "824cdaa1191241e7450c80240ab953d8f88c51f60193b181b5e8f4284ac610ed"
+    },
+    {
+      "path": "banks/impact_body.json",
+      "bytes": 4732,
+      "sha256": "b434431d08b032cff6db8bffb3da12835a702de16fe381310dc799ef8752116d"
+    },
+    {
+      "path": "banks/move_jump.json",
+      "bytes": 132967,
+      "sha256": "2d1e2a37cb69836135c3e171e4a154be9ef98c485db8fdb74df08b08c2a97d1e"
+    },
+    {
+      "path": "banks/move_run.json",
+      "bytes": 25120,
+      "sha256": "fdf360657f6520c21ccb0d9506c005e0b2c29e49be89b89dfde345c1cdb1cb58"
+    },
+    {
+      "path": "pcm/1002355989.s16le.gz",
+      "bytes": 34394,
+      "sha256": "b785bf0ddfd5844d6666de4ab82309acf18ddd3d297cd358322577db2fb8da1f"
+    },
+    {
+      "path": "pcm/1012800056.s16le.gz",
+      "bytes": 38055,
+      "sha256": "b0803232d7854e88b5499234289f9c944f2690376a518edc59f851c3c37a89ca"
+    },
+    {
+      "path": "pcm/1013417629.s16le.gz",
+      "bytes": 105401,
+      "sha256": "6a63bf0598f4dee2831244a596dbeb4210472e1a3d36844803e958218474254f"
+    },
+    {
+      "path": "pcm/15507174.s16le.gz",
+      "bytes": 137474,
+      "sha256": "d4eaf3ca671990f24cf6b745c2df40c40a8f0ef160de674438b2ab916141e22b"
+    },
+    {
+      "path": "pcm/183294347.s16le.gz",
+      "bytes": 136462,
+      "sha256": "e1f9b12fbbb55f22a861bd7df5368f6a8ef5764b655aad0d5450e9c4ddac40fc"
+    },
+    {
+      "path": "pcm/265957799.s16le.gz",
+      "bytes": 38269,
+      "sha256": "19c670f42fef839130074fbf03d0c83dd56a2e28e0840651e261c3e323609b6b"
+    },
+    {
+      "path": "pcm/278221262.s16le.gz",
+      "bytes": 144754,
+      "sha256": "ede9c90f47629c23d4ade16e9b1df1ad76279ac5e311726620eda4855bae95a4"
+    },
+    {
+      "path": "pcm/278492924.s16le.gz",
+      "bytes": 124780,
+      "sha256": "9e3b6ae1c72760f34596c5c3ea105ab975bde4d083eb232fa922baa2d000232b"
+    },
+    {
+      "path": "pcm/27850851.s16le.gz",
+      "bytes": 131080,
+      "sha256": "7a441cdbb1068e5543cb09cb68b685481ef0056e22bd63374ca7358385daf165"
+    },
+    {
+      "path": "pcm/278708188.s16le.gz",
+      "bytes": 155813,
+      "sha256": "9c4b637731167e9a2c76955f7faa2d386fa4553e1fb0673e103f4d464f2dc799"
+    },
+    {
+      "path": "pcm/289069424.s16le.gz",
+      "bytes": 254163,
+      "sha256": "2948c2cc422146dc88976509c4a4be9ac409f67cc6e825c1ca7098bfdb89668e"
+    },
+    {
+      "path": "pcm/318634220.s16le.gz",
+      "bytes": 168647,
+      "sha256": "4f9be133690326ffb1f32e9ad74d89ae2e9cb361e401b266540ac927c34d27d9"
+    },
+    {
+      "path": "pcm/322497778.s16le.gz",
+      "bytes": 38195,
+      "sha256": "9ded29c2f5e06997193444ec07f4766cd1eba1ea733fc2c503deadb81851a14d"
+    },
+    {
+      "path": "pcm/323878669.s16le.gz",
+      "bytes": 165506,
+      "sha256": "7c1679d648d3c85993309c42eb55ac6580c2ddf127685e69ce2c3a58ec9be6c1"
+    },
+    {
+      "path": "pcm/347384654.s16le.gz",
+      "bytes": 110729,
+      "sha256": "2913f2b74647f6c905baee52281c3b4ba90cde5a6e2fa689a26ae5915ca088c1"
+    },
+    {
+      "path": "pcm/359912015.s16le.gz",
+      "bytes": 158445,
+      "sha256": "40de8a1f0ad0e5f0fa96a9ae1b16ec4f13e734d9347991ddf2be17384c95923f"
+    },
+    {
+      "path": "pcm/361062933.s16le.gz",
+      "bytes": 37598,
+      "sha256": "310ee0cdc8a84a63c6687cf3bbffcacb951d2f557b91590c1c2a9bf6df66fbf0"
+    },
+    {
+      "path": "pcm/364824874.s16le.gz",
+      "bytes": 82040,
+      "sha256": "a10d7fe82e3b060ad354f811def05d1b4f533d7e215dfd2a46a5213810b9f4a1"
+    },
+    {
+      "path": "pcm/384048418.s16le.gz",
+      "bytes": 90439,
+      "sha256": "ed09dc49f27b39ebe6ea665b05acc96a8bca15f033928b1fd3d3f09d4f70d4eb"
+    },
+    {
+      "path": "pcm/384264562.s16le.gz",
+      "bytes": 356340,
+      "sha256": "3a4ee370339103b5fa6ce48dbd54433fff1c9937f0430fd655bd603aebadcc56"
+    },
+    {
+      "path": "pcm/394273666.s16le.gz",
+      "bytes": 33863,
+      "sha256": "a67d491a93e1829858ff3ab26b22084e5121028fbc34cfc6346e3ced099d2a03"
+    },
+    {
+      "path": "pcm/399916424.s16le.gz",
+      "bytes": 71348,
+      "sha256": "d2e279775a6fe804f65a3be83356830a4cfa3dc930a32983fdcb8b9d1455bdca"
+    },
+    {
+      "path": "pcm/444149984.s16le.gz",
+      "bytes": 184034,
+      "sha256": "da42a64c8226d0408eb12d6c75753e2a64eca87a57c683d7e70990110ccb6dd2"
+    },
+    {
+      "path": "pcm/450188065.s16le.gz",
+      "bytes": 30327,
+      "sha256": "3206002ef31bf654aa14997a48c9864860cf2d38356ab872e1c9f414d2f4d338"
+    },
+    {
+      "path": "pcm/471162968.s16le.gz",
+      "bytes": 115986,
+      "sha256": "931aeff7b3466114ac037c716adff50e6892b3bbac71969f71049c9c1b35ef5b"
+    },
+    {
+      "path": "pcm/474690479.s16le.gz",
+      "bytes": 111252,
+      "sha256": "8cd5a54a632073e2c89beb480fac56093153d60a6ed3273d090074580ea93142"
+    },
+    {
+      "path": "pcm/477445358.s16le.gz",
+      "bytes": 364007,
+      "sha256": "db502de1fc33e87bbe95fd2cca6550f4a33c93890ab0a17cfe5ce0c48b3ee8f9"
+    },
+    {
+      "path": "pcm/487560667.s16le.gz",
+      "bytes": 145862,
+      "sha256": "a992b985dcbc637c93723870699d7241181675bfa830bfdd50c49032b896ceeb"
+    },
+    {
+      "path": "pcm/51798462.s16le.gz",
+      "bytes": 200478,
+      "sha256": "63b2d2ae74d09beb48abb581bb85b8195723ab5d62464a07ac89e32e0f81c53e"
+    },
+    {
+      "path": "pcm/536528925.s16le.gz",
+      "bytes": 360421,
+      "sha256": "63ac288c666f10a2c623c0a704638d8ae0d522828685f86620ec0e16ef4804f2"
+    },
+    {
+      "path": "pcm/585387678.s16le.gz",
+      "bytes": 366590,
+      "sha256": "7402f6dc4d517ffef266a75f2f14b80d4ed0deb95382b18721b6f179c7f4f538"
+    },
+    {
+      "path": "pcm/655706814.s16le.gz",
+      "bytes": 32159,
+      "sha256": "d856fb32807a45ba31b7f40672c5222c63be83e9be126c76198d343e1bc62467"
+    },
+    {
+      "path": "pcm/672810389.s16le.gz",
+      "bytes": 157559,
+      "sha256": "2940d5eee3da09950de67edd4e2f9a9360817c516a6222ba744fa3b2b4cefbf9"
+    },
+    {
+      "path": "pcm/682276155.s16le.gz",
+      "bytes": 67118,
+      "sha256": "950e9c4fa24fd6a583ef5c3106d71cc3450796d0b834be143d4f015fb373cc1e"
+    },
+    {
+      "path": "pcm/682948856.s16le.gz",
+      "bytes": 116326,
+      "sha256": "509b52c8ac2ae23c65982340cc5b80f9cc6ac386ae4fb046ee91603bf3d7939e"
+    },
+    {
+      "path": "pcm/771871815.s16le.gz",
+      "bytes": 117244,
+      "sha256": "d45d5890c29eed2404007b30a1e05d4d08e6114c6d413761caee91b2a338a339"
+    },
+    {
+      "path": "pcm/777150789.s16le.gz",
+      "bytes": 72287,
+      "sha256": "05370d10dde05f60820edbad72ae577b2d705d545782be6305421a80838f208e"
+    },
+    {
+      "path": "pcm/781923129.s16le.gz",
+      "bytes": 106531,
+      "sha256": "56d21b24573364505c050795a0ffe0906803ab92af77169b25eb0631da61861f"
+    },
+    {
+      "path": "pcm/791851626.s16le.gz",
+      "bytes": 64643,
+      "sha256": "4d85ec2cdc29942824f60c9d24ed9946f5f8943c2dbe7b2b79c29cb6052b2e89"
+    },
+    {
+      "path": "pcm/828546990.s16le.gz",
+      "bytes": 101590,
+      "sha256": "13f766476ef3842d828e3542064450433edb67d3393b2fc375f20643c3ed10d1"
+    },
+    {
+      "path": "pcm/835672119.s16le.gz",
+      "bytes": 100467,
+      "sha256": "0658a3b64493d7fb9921bac6b3433a8da2570531809e6d6e660d97577a9fdd0e"
+    },
+    {
+      "path": "pcm/869056893.s16le.gz",
+      "bytes": 152061,
+      "sha256": "5cff68c37fd627cc649025c3f745ea11da723046a13e7778c4ab0b07f20f98a6"
+    },
+    {
+      "path": "pcm/878176367.s16le.gz",
+      "bytes": 72755,
+      "sha256": "d8cd0ff4db8f70390b06428cfed6772e2ea934bdf57e5ccfdda40e5c3cfbfac8"
+    },
+    {
+      "path": "pcm/888176521.s16le.gz",
+      "bytes": 380127,
+      "sha256": "9350986ecb952b2c5d7f7c7afe55ab197d7996068ab382315d6a6d43b6e6ee75"
+    },
+    {
+      "path": "pcm/909498841.s16le.gz",
+      "bytes": 129448,
+      "sha256": "01931ed500d13cab3f661b32d2196f6ad40376847d3bcdfb2a73824bfc56c415"
+    },
+    {
+      "path": "pcm/919868544.s16le.gz",
+      "bytes": 98036,
+      "sha256": "0d5faf496239829df55aa113bb4daf22695f0cd5d294082ba9d1dfb33343c919"
+    },
+    {
+      "path": "pcm/925549399.s16le.gz",
+      "bytes": 346186,
+      "sha256": "1df81a55bb9548dedeb105eb7c784ce4cb7ad3c64734577fd686dd35a12bd8a5"
+    },
+    {
+      "path": "pcm/938553406.s16le.gz",
+      "bytes": 112511,
+      "sha256": "83b30835e8107ab01b7999c8e1061c637e181b27db27e1cc3c2e6f3f37c7fff8"
+    },
+    {
+      "path": "source-evidence/audio-config-selected.json",
+      "bytes": 10398,
+      "sha256": "42a680ac29f2906f76f1d0200f21561ffa96f390ded4c1c9101abdd3f06ae249"
+    },
+    {
+      "path": "source-evidence/audio-dbbl-verification.json",
+      "bytes": 441,
+      "sha256": "fa3d237e85c9a0ab9681e6f6f8d43a7c6b577d7a1e516b7246cfc59068ee25ce"
+    },
+    {
+      "path": "source-evidence/audio-tracks-selected.json",
+      "bytes": 126122,
+      "sha256": "72439408c46af3ee782e1eac2080050e1f20e943be812bf94b50dfdbce76793c"
+    },
+    {
+      "path": "source-evidence/audio_sample_trace.json",
+      "bytes": 140519,
+      "sha256": "a93e73ee64550a8aba851eef33e0e2d568b52ccd0f40211fce978e9145efa2b2"
+    },
+    {
+      "path": "sources/1002355989.wem",
+      "bytes": 5454,
+      "sha256": "7483ef0f34c319ffc99380ce6ebb1c08096aa6fa2043b3acabaa58ff92e63ccf"
+    },
+    {
+      "path": "sources/1012800056.wem",
+      "bytes": 5895,
+      "sha256": "e653d5864c738d9107dbb54fafa9364198a8dd1607b16f74fb3a7d833a1005e4"
+    },
+    {
+      "path": "sources/1013417629.wem",
+      "bytes": 13535,
+      "sha256": "6f46aa32cad9a1d098f6f2e9cefc68713c677140806cb1a09fe2f56022cf1e72"
+    },
+    {
+      "path": "sources/15507174.wem",
+      "bytes": 15697,
+      "sha256": "50e0d32b06ad41f04185d0810ed076cd2f9ae56a1443bc7400bb46a9b7bab127"
+    },
+    {
+      "path": "sources/183294347.wem",
+      "bytes": 19702,
+      "sha256": "975900a7d33bf4f8f6ea45ee1919e30a5305570ed7268d32677f95c3460592ee"
+    },
+    {
+      "path": "sources/265957799.wem",
+      "bytes": 5843,
+      "sha256": "e656f27cfd7ef477d7c1bbe885904407ad5fbf65eaf9e0bc5f226ab82ba53bae"
+    },
+    {
+      "path": "sources/278221262.wem",
+      "bytes": 21933,
+      "sha256": "cf0400f3245759e6cbec2b24904f00b682b55bdaf6cb7c2e1fb9bf88d29023d2"
+    },
+    {
+      "path": "sources/278492924.wem",
+      "bytes": 15673,
+      "sha256": "bfb7c400e299097402f6b11fa72136e7bc2180a7bc9c5f2ec376bde89603fe33"
+    },
+    {
+      "path": "sources/27850851.wem",
+      "bytes": 13860,
+      "sha256": "ff94ce7e7ee168f767c94475eb5928e7ae6125763e0f082cf3548f1acd3503ae"
+    },
+    {
+      "path": "sources/278708188.wem",
+      "bytes": 18874,
+      "sha256": "172d69fac6ad6c044d8cd25fa3fc252338ba1bf795b55606251694612570d957"
+    },
+    {
+      "path": "sources/289069424.wem",
+      "bytes": 27805,
+      "sha256": "d2f4bb4931ad8d3e253eceff944703ca3fac33ae64403a4354269b954bbc83c4"
+    },
+    {
+      "path": "sources/318634220.wem",
+      "bytes": 25677,
+      "sha256": "f3efac93946ee50c743d0ca0322d97e286eb03808282bd916589d90e3ff75ffa"
+    },
+    {
+      "path": "sources/322497778.wem",
+      "bytes": 5653,
+      "sha256": "e33aea8048e4792b55f6c15affb275a0658729fca1a4c68033b1aa0b3eaf82c6"
+    },
+    {
+      "path": "sources/323878669.wem",
+      "bytes": 15302,
+      "sha256": "980e5c048fae84b38679707917021400e6f974dfa62443f03261a1bfab16ff5b"
+    },
+    {
+      "path": "sources/347384654.wem",
+      "bytes": 11305,
+      "sha256": "be0203693e31746dd691a1f70e179be814f177b7df38c2043edc1eda3a9fc010"
+    },
+    {
+      "path": "sources/359912015.wem",
+      "bytes": 22296,
+      "sha256": "d4829c9e23a956cb7eadc11761d04541c49276d837fccb6fc1451e3f22cacd7f"
+    },
+    {
+      "path": "sources/361062933.wem",
+      "bytes": 5565,
+      "sha256": "efc4909a557646ff322f4e15e84284995cc04976bac9b7fef6ce0d4ceec4af6e"
+    },
+    {
+      "path": "sources/364824874.wem",
+      "bytes": 11644,
+      "sha256": "70efd50d552ed63618f3d41500c052823eb477f6b5fe30fe93f767436dea55f1"
+    },
+    {
+      "path": "sources/384048418.wem",
+      "bytes": 11374,
+      "sha256": "1b9ecbcfc52f7b901a3aa689148df08fefa073debf9c63305fc89b9ec0f435d7"
+    },
+    {
+      "path": "sources/384264562.wem",
+      "bytes": 42692,
+      "sha256": "9bc54fe3b6ece2511bd007b723b13b18e0d70ce0c20867738eaaea223e27600a"
+    },
+    {
+      "path": "sources/394273666.wem",
+      "bytes": 5364,
+      "sha256": "1cd4ae40bee20be294357774d0ece5329fb1063689b55b5f521c5f4b508c09ee"
+    },
+    {
+      "path": "sources/399916424.wem",
+      "bytes": 8409,
+      "sha256": "d9a9c64e886c64bd0668a6a389ba92000ea40c479159af3c54676fcd247a36fb"
+    },
+    {
+      "path": "sources/444149984.wem",
+      "bytes": 20646,
+      "sha256": "4b1b91102c488082949b270f4e2a6d4477411711f870d5fffb8e6b8772f81a00"
+    },
+    {
+      "path": "sources/450188065.wem",
+      "bytes": 4436,
+      "sha256": "6b881eb5551314a880112116107f6ae319fcc80cd793205c61e069de1d997290"
+    },
+    {
+      "path": "sources/471162968.wem",
+      "bytes": 18191,
+      "sha256": "b85095875f2ef24071cfe862ab8522d17b7a6414cc77424f378d88c85ba90999"
+    },
+    {
+      "path": "sources/474690479.wem",
+      "bytes": 14700,
+      "sha256": "215a879d891bb93ad7f6a8922dc084f82bbe0d6821ed991c80df03a30242299a"
+    },
+    {
+      "path": "sources/477445358.wem",
+      "bytes": 43148,
+      "sha256": "6fe05b2022aa16b297d1e82e85c9bc01d1a7f79cef969c5ae4d867b37b5b0868"
+    },
+    {
+      "path": "sources/487560667.wem",
+      "bytes": 13883,
+      "sha256": "658a1c423dc2b5a24a7f8597a9aac1b3fc757d570a66db1c398c2557a0207b35"
+    },
+    {
+      "path": "sources/51798462.wem",
+      "bytes": 17856,
+      "sha256": "3fdc5ef9b5d1d3cdd792ab42665f1bd41e79eb1f3c438c759efbec7400e0894c"
+    },
+    {
+      "path": "sources/536528925.wem",
+      "bytes": 38602,
+      "sha256": "f5cf6255bef6268140b8e51094b5c2b6565caf86dab45c05b0509e12fcc89f73"
+    },
+    {
+      "path": "sources/585387678.wem",
+      "bytes": 44223,
+      "sha256": "6c8b06fa18ce64bea8771110e57ca155e6eba070d6583c508fdad7c05f4b499c"
+    },
+    {
+      "path": "sources/655706814.wem",
+      "bytes": 5259,
+      "sha256": "fcab8e59716b29f0b17f71e8a83b9ab192f53e3d88255a77e665126f211c879e"
+    },
+    {
+      "path": "sources/672810389.wem",
+      "bytes": 14470,
+      "sha256": "db9c67acc56197840d9113175219cf660a8c51878f658b39e5526490017840c0"
+    },
+    {
+      "path": "sources/682276155.wem",
+      "bytes": 8675,
+      "sha256": "77cacdaca96e61e64d484dbe01a7a9cf10052084cd71505357706579f88bce7d"
+    },
+    {
+      "path": "sources/682948856.wem",
+      "bytes": 15081,
+      "sha256": "21252751ac7b6b47468f29da2841d37ad92feb841912e3084f7ee397b5483452"
+    },
+    {
+      "path": "sources/771871815.wem",
+      "bytes": 16899,
+      "sha256": "32223963a87efc7e1c140f0e1a7e910e0c24c51c215dfc97ba595c97bd275f66"
+    },
+    {
+      "path": "sources/777150789.wem",
+      "bytes": 9787,
+      "sha256": "06c0747fe0488d88e02166a682dc958032087d38d6cea12cadc522d0e43b52da"
+    },
+    {
+      "path": "sources/781923129.wem",
+      "bytes": 13079,
+      "sha256": "4fc1a221e4495482257af2953d758fa3ee025d4373b7284ff8d2c0df472913a5"
+    },
+    {
+      "path": "sources/791851626.wem",
+      "bytes": 7823,
+      "sha256": "cb79b8b8bab52735736f1cae329842c216c03031473907ff545051d653061b07"
+    },
+    {
+      "path": "sources/828546990.wem",
+      "bytes": 14220,
+      "sha256": "6d83bb3948b3bba8b411507ca2c1c91a4b284e8b93ea1069c2e6b330e4e8a6aa"
+    },
+    {
+      "path": "sources/835672119.wem",
+      "bytes": 11576,
+      "sha256": "a7898abe02a5654e71a24d42cd1bcc180a0af4bc6ad3ae047c97ff8d729fa281"
+    },
+    {
+      "path": "sources/869056893.wem",
+      "bytes": 18701,
+      "sha256": "19b4d648a8b421008cfe59c136692fcf78c5eec9341fe50e71fe62a01c22433f"
+    },
+    {
+      "path": "sources/878176367.wem",
+      "bytes": 8709,
+      "sha256": "41467c8edf80fb37d6863d6a781204d5271e9079878dc06cb1d5dbe627fd4114"
+    },
+    {
+      "path": "sources/888176521.wem",
+      "bytes": 44490,
+      "sha256": "8efb7366b8d1a73dbcd96c3e61e11d4063c574d1e53ccf46b2e404c6e82ad993"
+    },
+    {
+      "path": "sources/909498841.wem",
+      "bytes": 16692,
+      "sha256": "9084a55391acc96ca39f7c6f6745c2256dd144b67f7b455f535edbf9774cda81"
+    },
+    {
+      "path": "sources/919868544.wem",
+      "bytes": 12813,
+      "sha256": "571d84d35d88f766b12c8492998ffc6dd6dcd470026ed3551cf1c10f391fa4cc"
+    },
+    {
+      "path": "sources/925549399.wem",
+      "bytes": 34153,
+      "sha256": "8ed02b385c121350e345f64db1d6809b055729735ad9a5d217f6f4978513a7ac"
+    },
+    {
+      "path": "sources/938553406.wem",
+      "bytes": 15078,
+      "sha256": "591b17101bc887a4d6940d8fdc0066f23c86edd1317a22bc042699b64d4161ab"
+    }
+  ]
+}

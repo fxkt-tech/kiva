@@ -3,6 +3,8 @@ use crate::simulation::{
     CollisionWorld, DefenseEdge, SimulationActive, SimulationPlugin, spawn_box, teleport_actor,
 };
 use std::time::Duration;
+#[path = "melee_chain_tests.rs"]
+mod melee_chain_tests;
 fn tick(app: &mut App, n: usize) {
     for _ in 0..n {
         app.world_mut().run_schedule(FixedUpdate);

@@ -1,0 +1,3882 @@
+{
+  "status": "passed",
+  "dist": "/tmp/kiva-naraka-final-review",
+  "hardware": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 4318,
+          "deviceId": 9989,
+          "subSysId": 2305495107,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA GeForce RTX 4070 Ti SUPER",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.16.1692"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9818"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "bgra8OverlaySupport": "SCALING",
+        "canSupportThreadedTextureMailbox": false,
+        "directComposition": true,
+        "directMLFeatureLevel": "Not supported",
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_D3D11",
+        "dx12FeatureLevel": "Not supported",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_copy_texture_3d GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_multiview_multisample GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_texture_usage GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_compressed_texture GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_EGL_image_external_wrap_modes GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_clip_cull_distance GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_border_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_storage GL_EXT_texture_type_2_10_10_10_REV GL_EXT_unpack_subimage GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_NV_EGL_stream_consumer_external GL_NV_fence GL_NV_framebuffer_blit GL_NV_pack_subimage GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_EGL_image_external_essl3 GL_OES_depth24 GL_OES_depth32 GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_border_clamp GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_texture_storage_multisample_2d_array GL_OES_vertex_array_object GL_OVR_multiview GL_OVR_multiview2 ",
+        "glImplementationParts": "(gl=egl-angle,angle=d3d11)",
+        "glRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Ti SUPER (0x00002705) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.16.1692)",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (NVIDIA)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.48743 git hash: 5e4f9b85d7f0)",
+        "glWsExtensions": "EGL_EXT_create_context_robustness EGL_ANGLE_d3d_share_handle_client_buffer EGL_ANGLE_d3d_texture_client_buffer EGL_ANGLE_surface_d3d_texture_2d_share_handle EGL_ANGLE_query_surface_pointer EGL_ANGLE_window_fixed_size EGL_ANGLE_keyed_mutex EGL_ANGLE_surface_orientation EGL_ANGLE_direct_composition EGL_NV_post_sub_buffer EGL_KHR_create_context EGL_KHR_image EGL_KHR_image_base EGL_KHR_gl_texture_2D_image EGL_KHR_gl_texture_cubemap_image EGL_KHR_gl_renderbuffer_image EGL_KHR_get_all_proc_addresses EGL_KHR_stream EGL_KHR_stream_consumer_gltexture EGL_NV_stream_consumer_gltexture_yuv EGL_ANGLE_stream_producer_d3d_texture EGL_ANGLE_create_context_webgl_compatibility EGL_CHROMIUM_create_context_bind_generates_resource EGL_CHROMIUM_sync_control EGL_EXT_pixel_format_float EGL_KHR_surfaceless_context EGL_ANGLE_display_texture_share_group EGL_ANGLE_display_semaphore_share_group EGL_ANGLE_create_context_client_arrays EGL_ANGLE_program_cache_control EGL_ANGLE_robust_resource_initialization EGL_ANGLE_create_context_extensions_enabled EGL_ANDROID_blob_cache EGL_ANDROID_recordable EGL_ANGLE_image_d3d11_texture EGL_ANGLE_create_context_backwards_compatible EGL_KHR_no_config_context EGL_KHR_create_context_no_error EGL_KHR_reusable_sync EGL_ANGLE_memory_usage_report ",
+        "glWsVendor": "Google Inc. (NVIDIA)",
+        "glWsVersion": "1.5 (ANGLE 2.1.48743 git hash: 5e4f9b85d7f0)",
+        "inProcessGpu": false,
+        "initializationTime": 0.232518,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "8",
+        "nv12OverlaySupport": "SCALING",
+        "optimus": false,
+        "p010OverlaySupport": "SCALING",
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "5.0",
+        "playreadyHardwareDrmSupport": false,
+        "processCrashCount": 0,
+        "rgb10a2OverlaySupport": "SCALING",
+        "sandboxed": true,
+        "skiaBackendType": "GaneshGL",
+        "subpixelFontRendering": true,
+        "supportsD3dSharedImages": false,
+        "supportsDirectML": false,
+        "supportsDx12": false,
+        "supportsOverlays": true,
+        "supportsVulkan": false,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "5.0",
+        "visibilityCallbackCallCount": 0,
+        "vulkanVersion": "Not supported",
+        "yuy2OverlaySupport": "SCALING"
+      },
+      "featureStatus": {
+        "2d_canvas": "enabled",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "skia_graphite": "disabled_off",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "webgl": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [
+        "disable_d3d11_vp9_ksvc_decoding",
+        "enable_webgl_timer_query_extensions",
+        "exit_on_context_lost",
+        "unpack_overlapping_rows_separately_unpack_buffer",
+        "use_g22_topleft_color_space_for_yuv_vp",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "modelName": "",
+    "modelVersion": "",
+    "commandLine": "\"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\" --headless=new --no-first-run --no-default-browser-check --disable-extensions --disable-sync --disable-background-networking --enable-unsafe-webgpu --ignore-gpu-blocklist --disable-gpu-watchdog --mute-audio --remote-debugging-port=62979 --user-data-dir=\"C:\\Users\\ASUS\\AppData\\Local\\Temp\\kiva-naraka-browser-9474f6973f3e484dab149809976c8c4f\" --noerrdialogs --flag-switches-begin --flag-switches-end about:blank"
+  },
+  "cases": [
+    {
+      "name": "root-entry-and-isolation",
+      "snapshot": {
+        "version": 1,
+        "revision": 1,
+        "ready": true,
+        "failed": false,
+        "appearance": "lihuowang",
+        "weapon": "fulangmao",
+        "preset": "brother_hammer",
+        "mode": "game",
+        "action": "game:idle",
+        "time": 0,
+        "duration": 3,
+        "frame": 0,
+        "playing": false,
+        "speed": 1,
+        "looping": true,
+        "trace": "状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：male_hengdao_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭",
+        "warning": "单角色60Hz显示检查；不验证伤害、位移或完整技能时序。",
+        "status": "",
+        "camera": {
+          "yaw": 2.7415926,
+          "pitch": 0.18,
+          "distance": 3.507131,
+          "target": [
+            -0.12375879,
+            0.8594952,
+            0.0815483
+          ]
+        },
+        "debug": {
+          "grid": true,
+          "axes": true,
+          "bones": false,
+          "grips": false,
+          "bounds": false
+        },
+        "parts": [
+          {
+            "id": "r1_part0",
+            "label": "手持 · naraka::fulangmao::main::m_1518293717@wp_blade_chuanmaolv1",
+            "visible": true
+          },
+          {
+            "id": "r1_part1",
+            "label": "手持 · naraka::fulangmao::main::m_1518293717@wp_blade_chuanmaolv1_01",
+            "visible": true
+          },
+          {
+            "id": "r1_part2",
+            "label": "身体 · naraka::face::eyelash",
+            "visible": true
+          },
+          {
+            "id": "r1_part3",
+            "label": "身体 · naraka::face::eyes",
+            "visible": true
+          },
+          {
+            "id": "r1_part4",
+            "label": "身体 · naraka::face::face",
+            "visible": true
+          },
+          {
+            "id": "r1_part5",
+            "label": "身体 · naraka::hair::hair",
+            "visible": true
+          },
+          {
+            "id": "r1_part6",
+            "label": "身体 · naraka::hair::hair02",
+            "visible": true
+          },
+          {
+            "id": "r1_part7",
+            "label": "身体 · naraka::hair::scalp",
+            "visible": true
+          },
+          {
+            "id": "r1_part8",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli",
+            "visible": true
+          },
+          {
+            "id": "r1_part9",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_01",
+            "visible": true
+          },
+          {
+            "id": "r1_part10",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cb",
+            "visible": true
+          },
+          {
+            "id": "r1_part11",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cf",
+            "visible": true
+          },
+          {
+            "id": "r1_part12",
+            "label": "身体 · naraka::outfit::body",
+            "visible": true
+          },
+          {
+            "id": "r1_part13",
+            "label": "身体 · naraka::outfit::body02",
+            "visible": true
+          },
+          {
+            "id": "r1_part14",
+            "label": "身体 · naraka::outfit::body03",
+            "visible": true
+          },
+          {
+            "id": "r1_part15",
+            "label": "身体 · naraka::outfit::body04_cb",
+            "visible": true
+          },
+          {
+            "id": "r1_part16",
+            "label": "身体 · naraka::outfit::body04_cf",
+            "visible": true
+          },
+          {
+            "id": "r1_part17",
+            "label": "身体 · naraka::outfit::cloth01",
+            "visible": true
+          },
+          {
+            "id": "r1_part18",
+            "label": "身体 · naraka::outfit::cloth02",
+            "visible": true
+          },
+          {
+            "id": "r1_part19",
+            "label": "身体 · naraka::outfit::cloth03",
+            "visible": true
+          },
+          {
+            "id": "r1_part20",
+            "label": "身体 · naraka::outfit::cloth04_cb",
+            "visible": true
+          },
+          {
+            "id": "r1_part21",
+            "label": "身体 · naraka::outfit::cloth04_cf",
+            "visible": true
+          },
+          {
+            "id": "r1_part22",
+            "label": "身体 · naraka::sheath::authored_hip",
+            "visible": true
+          }
+        ],
+        "inspection": "Kiva 模型／武器／动作检查 v1\n角色：lihuowang\n武器：fulangmao\n配置：brother_hammer\n模式：game\n动作：game:idle\n时间：0.000000s · 预览帧 0（60Hz）\n镜头 yaw=2.741593, pitch=0.180000, distance=3.507131, target=[-0.12375879, 0.8594952, 0.0815483]\n状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：male_hengdao_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭\n单角色60Hz显示检查；不验证伤害、位移或完整技能时序。"
+      },
+      "catalog": {
+        "appearances": [
+          {
+            "id": "lihuowang",
+            "label": "李火旺"
+          },
+          {
+            "id": "bailingmiao",
+            "label": "白灵淼"
+          },
+          {
+            "id": "choulingke",
+            "label": "愁铃客"
+          }
+        ],
+        "weapons": [
+          {
+            "id": "fulangmao",
+            "label": "伏浪锚 · 锤子"
+          },
+          {
+            "id": "zhexingcuishan",
+            "label": "谪星摧山 · 链斧"
+          },
+          {
+            "id": "yinbingluo",
+            "label": "引冰落 · 鸟铳"
+          },
+          {
+            "id": "yizhiying",
+            "label": "羿之影 · 弓箭"
+          },
+          {
+            "id": "choulingke_blade",
+            "label": "愁铃客原长刀"
+          },
+          {
+            "id": "none",
+            "label": "无手持"
+          }
+        ],
+        "presets": [
+          {
+            "id": "brother_hammer",
+            "label": "哥哥 · 伏浪锚"
+          },
+          {
+            "id": "brother_axe",
+            "label": "哥哥 · 谪星摧山"
+          },
+          {
+            "id": "sister_musket",
+            "label": "妹妹 · 引冰落"
+          },
+          {
+            "id": "sister_bow",
+            "label": "妹妹 · 羿之影"
+          },
+          {
+            "id": "enemy_blade",
+            "label": "敌人 · 愁铃客原长刀"
+          }
+        ],
+        "actions": [
+          {
+            "id": "game:idle",
+            "label": "待机",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:walk",
+            "label": "原地行走",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:run",
+            "label": "原地跑步",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:crouch",
+            "label": "蹲伏",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:crouch_attack",
+            "label": "蹲伏普攻 · 上身动作组合",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:crouch_guard",
+            "label": "蹲伏防御 · 上身动作组合",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:walk_guard",
+            "label": "行走防御 · 上身动作组合",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:attack",
+            "label": "近战普攻 · 第 1 段",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:attack2",
+            "label": "近战普攻 · 第 2 段",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:attack3",
+            "label": "近战普攻 · 第 3 段",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:attack_sequence",
+            "label": "近战普攻 · 三段连贯",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:jump",
+            "label": "一段跳 / 下落 / 落地",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:double_jump",
+            "label": "二段跳 / 下落 / 落地",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:dodge_front",
+            "label": "向前闪避",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:dodge_sprint",
+            "label": "疾跑闪避（实际 0.26 秒）",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:dodge_back",
+            "label": "向后闪避",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:dodge_left",
+            "label": "向左闪避",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:dodge_right",
+            "label": "向右闪避",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:crouch_walk",
+            "label": "蹲伏行走",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:slide",
+            "label": "滑铲（现有动作回退）",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:guard",
+            "label": "持续防御",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:deflect",
+            "label": "拆招反馈",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:parry",
+            "label": "弹反反馈",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:parry_interrupt_walk",
+            "label": "弹反尾势 · 短走打断检查",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:parry_interrupt_hit",
+            "label": "弹反尾势 · 受击打断检查",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:hit",
+            "label": "受击",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:death",
+            "label": "倒地",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:companion_hold",
+            "label": "妹妹持握姿态",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "game:companion_aim",
+            "label": "妹妹抬枪／拉弓瞄准姿态",
+            "mode": "game",
+            "group": "游戏单体检查",
+            "duration": 3
+          },
+          {
+            "id": "reference",
+            "label": "角色导入参考姿态",
+            "mode": "reference",
+            "group": "参考姿态",
+            "duration": 0
+          },
+          {
+            "id": "cc0:Death01",
+            "label": "Death01",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 2.4
+          },
+          {
+            "id": "cc0:Hit_Chest",
+            "label": "Hit_Chest",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 0.33333334
+          },
+          {
+            "id": "cc0:Jog_Fwd_Loop",
+            "label": "Jog_Fwd_Loop",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 0.93333334
+          },
+          {
+            "id": "cc0:Jump_Land",
+            "label": "Jump_Land",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.2666667
+          },
+          {
+            "id": "cc0:Jump_Loop",
+            "label": "Jump_Loop",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 2.5
+          },
+          {
+            "id": "cc0:Jump_Start",
+            "label": "Jump_Start",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.3333334
+          },
+          {
+            "id": "cc0:NinjaJump_Idle_Loop",
+            "label": "NinjaJump_Idle_Loop",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 2
+          },
+          {
+            "id": "cc0:Roll",
+            "label": "Roll",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.4666667
+          },
+          {
+            "id": "cc0:Sword_Attack",
+            "label": "Sword_Attack",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.5333333
+          },
+          {
+            "id": "cc0:Sword_Block",
+            "label": "Sword_Block",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.2333333
+          },
+          {
+            "id": "cc0:Sword_Dash",
+            "label": "Sword_Dash",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.5666667
+          },
+          {
+            "id": "cc0:Sword_Heavy_Combo",
+            "label": "Sword_Heavy_Combo",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 4.3333335
+          },
+          {
+            "id": "cc0:Sword_Idle",
+            "label": "Sword_Idle",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.6666666
+          },
+          {
+            "id": "cc0:Sword_Regular_A",
+            "label": "Sword_Regular_A",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 0.43333334
+          },
+          {
+            "id": "cc0:Sword_Regular_A_Rec",
+            "label": "Sword_Regular_A_Rec",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 0.96666664
+          },
+          {
+            "id": "cc0:Sword_Regular_B",
+            "label": "Sword_Regular_B",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 0.53333336
+          },
+          {
+            "id": "cc0:Sword_Regular_B_Rec",
+            "label": "Sword_Regular_B_Rec",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.0333333
+          },
+          {
+            "id": "cc0:Sword_Regular_C",
+            "label": "Sword_Regular_C",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 2
+          },
+          {
+            "id": "cc0:Walk_Loop",
+            "label": "Walk_Loop",
+            "mode": "source",
+            "group": "CC0片段对照",
+            "duration": 1.3333334
+          },
+          {
+            "id": "source:b_fight_env_jump_01_start_Lfoot__zuiquan",
+            "label": "b_fight_env_jump_01_start_Lfoot__zuiquan",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 0.734
+          },
+          {
+            "id": "source:b_fight_env_jump_02_loop__zuiquan",
+            "label": "b_fight_env_jump_02_loop__zuiquan",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 1.267
+          },
+          {
+            "id": "source:b_fight_env_jump_03_to_idle__zuiquan",
+            "label": "b_fight_env_jump_03_to_idle__zuiquan",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 1.301
+          },
+          {
+            "id": "source:dr_Skill_01_atk_loop",
+            "label": "dr_Skill_01_atk_loop",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 0.967
+          },
+          {
+            "id": "source:dr_Skill_01_atk_out",
+            "label": "dr_Skill_01_atk_out",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 2.634
+          },
+          {
+            "id": "source:dr_Skill_01_in",
+            "label": "dr_Skill_01_in",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 1.734
+          },
+          {
+            "id": "source:dr_Skill_01_loop",
+            "label": "dr_Skill_01_loop",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 2.001
+          },
+          {
+            "id": "source:dr_Skill_02",
+            "label": "dr_Skill_02",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.301
+          },
+          {
+            "id": "source:dr_Skill_03",
+            "label": "dr_Skill_03",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 2.467
+          },
+          {
+            "id": "source:dr_Skill_04",
+            "label": "dr_Skill_04",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 3.134
+          },
+          {
+            "id": "source:dr_Skill_05_in",
+            "label": "dr_Skill_05_in",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.834
+          },
+          {
+            "id": "source:dr_Skill_05_loop_out",
+            "label": "dr_Skill_05_loop_out",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.834
+          },
+          {
+            "id": "source:skill_huajie_01__shuangqiangt",
+            "label": "skill_huajie_01__shuangqiangt",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 4.001
+          },
+          {
+            "id": "source:skill_shoujia_dodge_f",
+            "label": "skill_shoujia_dodge_f",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 2.934
+          },
+          {
+            "id": "source:skill_ylk_1",
+            "label": "skill_ylk_1",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 6.267
+          },
+          {
+            "id": "source:skill_ylk_10",
+            "label": "skill_ylk_10",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 4.401
+          },
+          {
+            "id": "source:skill_ylk_12",
+            "label": "skill_ylk_12",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 3.967
+          },
+          {
+            "id": "source:skill_ylk_4",
+            "label": "skill_ylk_4",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 9.401
+          },
+          {
+            "id": "source:skill_ylk_5",
+            "label": "skill_ylk_5",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.234
+          },
+          {
+            "id": "source:skill_ylk_5_1",
+            "label": "skill_ylk_5_1",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 4.834
+          },
+          {
+            "id": "source:skill_ylk_6",
+            "label": "skill_ylk_6",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 9.734
+          },
+          {
+            "id": "source:skill_ylk_7",
+            "label": "skill_ylk_7",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 9.567
+          },
+          {
+            "id": "source:skill_ylk_P2_10",
+            "label": "skill_ylk_P2_10",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 9.501
+          },
+          {
+            "id": "source:skill_ylk_P2_11",
+            "label": "skill_ylk_P2_11",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.501
+          },
+          {
+            "id": "source:skill_ylk_P2_13",
+            "label": "skill_ylk_P2_13",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.934
+          },
+          {
+            "id": "source:skill_ylk_P2_14",
+            "label": "skill_ylk_P2_14",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.834
+          },
+          {
+            "id": "source:skill_ylk_P2_2",
+            "label": "skill_ylk_P2_2",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.667
+          },
+          {
+            "id": "source:skill_ylk_P2_4",
+            "label": "skill_ylk_P2_4",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 7.301
+          },
+          {
+            "id": "source:skill_ylk_P2_6",
+            "label": "skill_ylk_P2_6",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.501
+          },
+          {
+            "id": "source:skill_ylk_P2_7",
+            "label": "skill_ylk_P2_7",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.501
+          },
+          {
+            "id": "source:skill_ylk_P2_9",
+            "label": "skill_ylk_P2_9",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 6.134
+          },
+          {
+            "id": "source:skill_ylk_P2_9_hit",
+            "label": "skill_ylk_P2_9_hit",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 5.334
+          },
+          {
+            "id": "source:skill_ylk_P2_executebehit",
+            "label": "skill_ylk_P2_executebehit",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 17.467
+          },
+          {
+            "id": "source:weakhit_b",
+            "label": "weakhit_b",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 0.834
+          },
+          {
+            "id": "source:weakhit_far_b",
+            "label": "weakhit_far_b",
+            "mode": "source",
+            "group": "燕云源片段对照（已适配根运动）",
+            "duration": 0.834
+          },
+          {
+            "id": "naraka:female_sniper_ads_attack_01",
+            "label": "female_sniper_ads_attack_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2.1
+          },
+          {
+            "id": "naraka:female_sniper_ads_idle_01",
+            "label": "female_sniper_ads_idle_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:female_sniper_attack_01",
+            "label": "female_sniper_attack_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2.1000001
+          },
+          {
+            "id": "naraka:female_sniper_attack_01_recover",
+            "label": "female_sniper_attack_01_recover",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.3000002
+          },
+          {
+            "id": "naraka:female_sniper_idle_01",
+            "label": "female_sniper_idle_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:female_sniper_reload_01",
+            "label": "female_sniper_reload_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2.8000002
+          },
+          {
+            "id": "naraka:female_unarmed_finger_default_left_01",
+            "label": "female_unarmed_finger_default_left_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          },
+          {
+            "id": "naraka:female_unarmed_finger_default_right_01",
+            "label": "female_unarmed_finger_default_right_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          },
+          {
+            "id": "naraka:male_bow_attack_01",
+            "label": "male_bow_attack_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 1.1333333
+          },
+          {
+            "id": "naraka:male_bow_finger_default_left_01",
+            "label": "male_bow_finger_default_left_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          },
+          {
+            "id": "naraka:male_bow_finger_default_right_01",
+            "label": "male_bow_finger_default_right_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          },
+          {
+            "id": "naraka:male_bow_hold_idle_01",
+            "label": "male_bow_hold_idle_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_die_hurt_stand_light_front_01",
+            "label": "male_die_hurt_stand_light_front_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 5.4333334
+          },
+          {
+            "id": "naraka:male_fk_attack_01",
+            "label": "male_fk_attack_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 1.9
+          },
+          {
+            "id": "naraka:male_fk_attack_01_pre_aim",
+            "label": "male_fk_attack_01_pre_aim",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          },
+          {
+            "id": "naraka:male_fk_attack_01_recover",
+            "label": "male_fk_attack_01_recover",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.20000005
+          },
+          {
+            "id": "naraka:male_fk_hold_idle_01",
+            "label": "male_fk_hold_idle_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_fk_idle_01",
+            "label": "male_fk_idle_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_hengdao_attack_light_01",
+            "label": "male_hengdao_attack_light_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.7666667
+          },
+          {
+            "id": "naraka:male_hengdao_attack_light_02",
+            "label": "male_hengdao_attack_light_02",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 1.0666667
+          },
+          {
+            "id": "naraka:male_hengdao_attack_light_03",
+            "label": "male_hengdao_attack_light_03",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 1.0333334
+          },
+          {
+            "id": "naraka:male_hengdao_attack_shock_light_01",
+            "label": "male_hengdao_attack_shock_light_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 1.8333334
+          },
+          {
+            "id": "naraka:male_hengdao_crouch_idle_01",
+            "label": "male_hengdao_crouch_idle_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_hengdao_crouch_promenade_01",
+            "label": "male_hengdao_crouch_promenade_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 1.0666667
+          },
+          {
+            "id": "naraka:male_hengdao_dodge_back_01",
+            "label": "male_hengdao_dodge_back_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_hengdao_dodge_front_01",
+            "label": "male_hengdao_dodge_front_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2.3666668
+          },
+          {
+            "id": "naraka:male_hengdao_dodge_left_01",
+            "label": "male_hengdao_dodge_left_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_hengdao_dodge_right_01",
+            "label": "male_hengdao_dodge_right_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_hengdao_finger_left_01",
+            "label": "male_hengdao_finger_left_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          },
+          {
+            "id": "naraka:male_hengdao_finger_right_01",
+            "label": "male_hengdao_finger_right_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          },
+          {
+            "id": "naraka:male_hengdao_idle_01",
+            "label": "male_hengdao_idle_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 4
+          },
+          {
+            "id": "naraka:male_hengdao_jump_down_loop_01",
+            "label": "male_hengdao_jump_down_loop_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.8000001
+          },
+          {
+            "id": "naraka:male_hengdao_jump_down_to_land_01",
+            "label": "male_hengdao_jump_down_to_land_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.73333335
+          },
+          {
+            "id": "naraka:male_hengdao_jump_inplace_up_01",
+            "label": "male_hengdao_jump_inplace_up_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.2666667
+          },
+          {
+            "id": "naraka:male_hengdao_jump_inplace_up_02",
+            "label": "male_hengdao_jump_inplace_up_02",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.23333332
+          },
+          {
+            "id": "naraka:male_hengdao_promenade_01",
+            "label": "male_hengdao_promenade_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 1.2
+          },
+          {
+            "id": "naraka:male_hengdao_run_01",
+            "label": "male_hengdao_run_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.8000001
+          },
+          {
+            "id": "naraka:male_hengdao_shock_01",
+            "label": "male_hengdao_shock_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_hengdao_shock_04",
+            "label": "male_hengdao_shock_04",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_hurt_stand_light_front_01",
+            "label": "male_hurt_stand_light_front_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 1.3333334
+          },
+          {
+            "id": "naraka:male_sniper_ads_idle_01",
+            "label": "male_sniper_ads_idle_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2
+          },
+          {
+            "id": "naraka:male_sniper_attack_01",
+            "label": "male_sniper_attack_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 2.1000001
+          },
+          {
+            "id": "naraka:male_unarmed_finger_default_left_01",
+            "label": "male_unarmed_finger_default_left_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          },
+          {
+            "id": "naraka:male_unarmed_finger_default_right_01",
+            "label": "male_unarmed_finger_default_right_01",
+            "mode": "source",
+            "group": "永劫源片段对照（原生 Humanoid 烘焙）",
+            "duration": 0.33333334
+          }
+        ]
+      },
+      "ready": 1,
+      "locks": 0,
+      "gameBridges": [],
+      "canvasParent": "viewer-viewport"
+    },
+    {
+      "name": "deterministic-attack-seek",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.627s\n源层：male_hengdao_attack_light_01 · 0.426s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(One) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-model-switch-preserves-frame-camera"
+    },
+    {
+      "name": "actual-preset",
+      "preset": "brother_axe",
+      "snapshot": {
+        "version": 1,
+        "revision": 5,
+        "ready": true,
+        "failed": false,
+        "appearance": "lihuowang",
+        "weapon": "zhexingcuishan",
+        "preset": "brother_axe",
+        "mode": "game",
+        "action": "game:idle",
+        "time": 0.35,
+        "duration": 3,
+        "frame": 21,
+        "playing": false,
+        "speed": 1,
+        "looping": true,
+        "trace": "状态：idle\nCC0底层：Sword_Idle · 0.350s\n源层：male_hengdao_idle_01 · 0.350s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭",
+        "warning": "单角色60Hz显示检查；不验证伤害、位移或完整技能时序。",
+        "status": "",
+        "camera": {
+          "yaw": 2.7415926,
+          "pitch": 0.18,
+          "distance": 3.507131,
+          "target": [
+            -0.12375879,
+            0.8594952,
+            0.0815483
+          ]
+        },
+        "debug": {
+          "grid": true,
+          "axes": true,
+          "bones": false,
+          "grips": false,
+          "bounds": false
+        },
+        "parts": [
+          {
+            "id": "r5_part0",
+            "label": "手持 · naraka::zhexingcuishan::main::m_321289189@wp_saber_xingtian",
+            "visible": true
+          },
+          {
+            "id": "r5_part1",
+            "label": "手持 · naraka::zhexingcuishan::source_variant_input_01::m_-505735536@wp_saber_xingtian_01",
+            "visible": true
+          },
+          {
+            "id": "r5_part2",
+            "label": "手持 · naraka::zhexingcuishan::source_variant_input_02::m_-505735536@wp_saber_xingtian_02",
+            "visible": true
+          },
+          {
+            "id": "r5_part3",
+            "label": "手持 · naraka::zhexingcuishan::source_variant_input_03::m_-505735536@wp_saber_xingtian_03",
+            "visible": true
+          },
+          {
+            "id": "r5_part4",
+            "label": "手持 · naraka::zhexingcuishan::source_variant_input_04::m_-505735536@wp_saber_xingtian_04",
+            "visible": true
+          },
+          {
+            "id": "r5_part5",
+            "label": "身体 · naraka::face::eyelash",
+            "visible": true
+          },
+          {
+            "id": "r5_part6",
+            "label": "身体 · naraka::face::eyes",
+            "visible": true
+          },
+          {
+            "id": "r5_part7",
+            "label": "身体 · naraka::face::face",
+            "visible": true
+          },
+          {
+            "id": "r5_part8",
+            "label": "身体 · naraka::hair::hair",
+            "visible": true
+          },
+          {
+            "id": "r5_part9",
+            "label": "身体 · naraka::hair::hair02",
+            "visible": true
+          },
+          {
+            "id": "r5_part10",
+            "label": "身体 · naraka::hair::scalp",
+            "visible": true
+          },
+          {
+            "id": "r5_part11",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli",
+            "visible": true
+          },
+          {
+            "id": "r5_part12",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_01",
+            "visible": true
+          },
+          {
+            "id": "r5_part13",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cb",
+            "visible": true
+          },
+          {
+            "id": "r5_part14",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cf",
+            "visible": true
+          },
+          {
+            "id": "r5_part15",
+            "label": "身体 · naraka::outfit::body",
+            "visible": true
+          },
+          {
+            "id": "r5_part16",
+            "label": "身体 · naraka::outfit::body02",
+            "visible": true
+          },
+          {
+            "id": "r5_part17",
+            "label": "身体 · naraka::outfit::body03",
+            "visible": true
+          },
+          {
+            "id": "r5_part18",
+            "label": "身体 · naraka::outfit::body04_cb",
+            "visible": true
+          },
+          {
+            "id": "r5_part19",
+            "label": "身体 · naraka::outfit::body04_cf",
+            "visible": true
+          },
+          {
+            "id": "r5_part20",
+            "label": "身体 · naraka::outfit::cloth01",
+            "visible": true
+          },
+          {
+            "id": "r5_part21",
+            "label": "身体 · naraka::outfit::cloth02",
+            "visible": true
+          },
+          {
+            "id": "r5_part22",
+            "label": "身体 · naraka::outfit::cloth03",
+            "visible": true
+          },
+          {
+            "id": "r5_part23",
+            "label": "身体 · naraka::outfit::cloth04_cb",
+            "visible": true
+          },
+          {
+            "id": "r5_part24",
+            "label": "身体 · naraka::outfit::cloth04_cf",
+            "visible": true
+          },
+          {
+            "id": "r5_part25",
+            "label": "身体 · naraka::sheath::authored_hip",
+            "visible": true
+          }
+        ],
+        "inspection": "Kiva 模型／武器／动作检查 v1\n角色：lihuowang\n武器：zhexingcuishan\n配置：brother_axe\n模式：game\n动作：game:idle\n时间：0.350000s · 预览帧 21（60Hz）\n镜头 yaw=2.741593, pitch=0.180000, distance=3.507131, target=[-0.12375879, 0.8594952, 0.0815483]\n状态：idle\nCC0底层：Sword_Idle · 0.350s\n源层：male_hengdao_idle_01 · 0.350s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭\n单角色60Hz显示检查；不验证伤害、位移或完整技能时序。"
+      }
+    },
+    {
+      "name": "actual-preset",
+      "preset": "sister_musket",
+      "snapshot": {
+        "version": 1,
+        "revision": 6,
+        "ready": true,
+        "failed": false,
+        "appearance": "bailingmiao",
+        "weapon": "yinbingluo",
+        "preset": "sister_musket",
+        "mode": "game",
+        "action": "game:companion_aim",
+        "time": 0,
+        "duration": 3,
+        "frame": 0,
+        "playing": false,
+        "speed": 1,
+        "looping": true,
+        "trace": "状态：companion hold/aim\nCC0底层：Sword_Idle · 0.000s\n源层：male_fk_hold_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_unarmed_finger_default_left_01 / R=male_unarmed_finger_default_right_01 (original controller weights unknown)\n组合范围：source upper body / fingers + CC0 lower body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：verified shared female_fk source on canonical Avatar; upper body + CC0 lower body / target grip IK\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 开启",
+        "warning": "单角色60Hz显示检查；不验证伤害、位移或完整技能时序。",
+        "status": "",
+        "camera": {
+          "yaw": 2.7415926,
+          "pitch": 0.18,
+          "distance": 3.507131,
+          "target": [
+            -0.12375879,
+            0.8594952,
+            0.0815483
+          ]
+        },
+        "debug": {
+          "grid": true,
+          "axes": true,
+          "bones": false,
+          "grips": false,
+          "bounds": false
+        },
+        "parts": [
+          {
+            "id": "r6_part0",
+            "label": "手持 · naraka::yinbingluo_main::m_978860580@wp_flintlock_bingxueniaochong",
+            "visible": true
+          },
+          {
+            "id": "r6_part1",
+            "label": "手持 · naraka::yinbingluo_main::m_978860580@wp_flintlock_bingxueniaochong_01",
+            "visible": true
+          },
+          {
+            "id": "r6_part2",
+            "label": "身体 · naraka::female::generic_female_face::2::eyelash_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r6_part3",
+            "label": "身体 · naraka::female::generic_female_face::4::eyes_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r6_part4",
+            "label": "身体 · naraka::female::generic_female_face::8::face_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r6_part5",
+            "label": "身体 · naraka::female::lianmu::64::hair_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r6_part6",
+            "label": "身体 · naraka::female::lianmu::65::hair02_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r6_part7",
+            "label": "身体 · naraka::female::lianmu::72::scalp_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r6_part8",
+            "label": "身体 · naraka::female::outfit::10::body04_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part9",
+            "label": "身体 · naraka::female::outfit::14::body05",
+            "visible": true
+          },
+          {
+            "id": "r6_part10",
+            "label": "身体 · naraka::female::outfit::18::body06_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part11",
+            "label": "身体 · naraka::female::outfit::1::body",
+            "visible": true
+          },
+          {
+            "id": "r6_part12",
+            "label": "身体 · naraka::female::outfit::25::cloth01",
+            "visible": true
+          },
+          {
+            "id": "r6_part13",
+            "label": "身体 · naraka::female::outfit::2::body02",
+            "visible": true
+          },
+          {
+            "id": "r6_part14",
+            "label": "身体 · naraka::female::outfit::31::cloth02",
+            "visible": true
+          },
+          {
+            "id": "r6_part15",
+            "label": "身体 · naraka::female::outfit::36::cloth03_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part16",
+            "label": "身体 · naraka::female::outfit::42::cloth04_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part17",
+            "label": "身体 · naraka::female::outfit::46::cloth05_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part18",
+            "label": "身体 · naraka::female::outfit::50::body04_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part19",
+            "label": "身体 · naraka::female::outfit::52::body06_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part20",
+            "label": "身体 · naraka::female::outfit::54::cloth03_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part21",
+            "label": "身体 · naraka::female::outfit::56::cloth04_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part22",
+            "label": "身体 · naraka::female::outfit::58::cloth05_cb",
+            "visible": true
+          },
+          {
+            "id": "r6_part23",
+            "label": "身体 · naraka::female::outfit::6::body03",
+            "visible": true
+          }
+        ],
+        "inspection": "Kiva 模型／武器／动作检查 v1\n角色：bailingmiao\n武器：yinbingluo\n配置：sister_musket\n模式：game\n动作：game:companion_aim\n时间：0.000000s · 预览帧 0（60Hz）\n镜头 yaw=2.741593, pitch=0.180000, distance=3.507131, target=[-0.12375879, 0.8594952, 0.0815483]\n状态：companion hold/aim\nCC0底层：Sword_Idle · 0.000s\n源层：male_fk_hold_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_unarmed_finger_default_left_01 / R=male_unarmed_finger_default_right_01 (original controller weights unknown)\n组合范围：source upper body / fingers + CC0 lower body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：verified shared female_fk source on canonical Avatar; upper body + CC0 lower body / target grip IK\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 开启\n单角色60Hz显示检查；不验证伤害、位移或完整技能时序。"
+      }
+    },
+    {
+      "name": "actual-preset",
+      "preset": "sister_bow",
+      "snapshot": {
+        "version": 1,
+        "revision": 7,
+        "ready": true,
+        "failed": false,
+        "appearance": "bailingmiao",
+        "weapon": "yizhiying",
+        "preset": "sister_bow",
+        "mode": "game",
+        "action": "game:companion_aim",
+        "time": 0,
+        "duration": 3,
+        "frame": 0,
+        "playing": false,
+        "speed": 1,
+        "looping": true,
+        "trace": "状态：companion hold/aim\nCC0底层：Sword_Idle · 0.000s\n源层：male_bow_hold_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_bow_finger_default_left_01 / R=male_bow_finger_default_right_01 (original controller weights unknown)\n组合范围：source upper body / fingers + CC0 lower body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：verified shared female bow source; Kiva upper-body/fingers + CC0 lower body / grip IK\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 开启",
+        "warning": "单角色60Hz显示检查；不验证伤害、位移或完整技能时序。",
+        "status": "",
+        "camera": {
+          "yaw": 2.7415926,
+          "pitch": 0.18,
+          "distance": 3.507131,
+          "target": [
+            -0.12375879,
+            0.8594952,
+            0.0815483
+          ]
+        },
+        "debug": {
+          "grid": true,
+          "axes": true,
+          "bones": false,
+          "grips": false,
+          "bounds": false
+        },
+        "parts": [
+          {
+            "id": "r7_part0",
+            "label": "手持 · naraka::yizhiying_main::m_252424344@wp_bow_wuzhengong",
+            "visible": true
+          },
+          {
+            "id": "r7_part1",
+            "label": "背部 · naraka::yizhiying_arrowbag::m_2018696530@wp_bow_wuzhengong_arrowbag",
+            "visible": true
+          },
+          {
+            "id": "r7_part2",
+            "label": "背部 · naraka::yizhiying_quiver::m_1262666129@wp_bow_wuzhengong_quiver",
+            "visible": true
+          },
+          {
+            "id": "r7_part3",
+            "label": "身体 · naraka::female::generic_female_face::2::eyelash_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r7_part4",
+            "label": "身体 · naraka::female::generic_female_face::4::eyes_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r7_part5",
+            "label": "身体 · naraka::female::generic_female_face::8::face_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r7_part6",
+            "label": "身体 · naraka::female::lianmu::64::hair_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r7_part7",
+            "label": "身体 · naraka::female::lianmu::65::hair02_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r7_part8",
+            "label": "身体 · naraka::female::lianmu::72::scalp_runtime_mesh",
+            "visible": true
+          },
+          {
+            "id": "r7_part9",
+            "label": "身体 · naraka::female::outfit::10::body04_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part10",
+            "label": "身体 · naraka::female::outfit::14::body05",
+            "visible": true
+          },
+          {
+            "id": "r7_part11",
+            "label": "身体 · naraka::female::outfit::18::body06_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part12",
+            "label": "身体 · naraka::female::outfit::1::body",
+            "visible": true
+          },
+          {
+            "id": "r7_part13",
+            "label": "身体 · naraka::female::outfit::25::cloth01",
+            "visible": true
+          },
+          {
+            "id": "r7_part14",
+            "label": "身体 · naraka::female::outfit::2::body02",
+            "visible": true
+          },
+          {
+            "id": "r7_part15",
+            "label": "身体 · naraka::female::outfit::31::cloth02",
+            "visible": true
+          },
+          {
+            "id": "r7_part16",
+            "label": "身体 · naraka::female::outfit::36::cloth03_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part17",
+            "label": "身体 · naraka::female::outfit::42::cloth04_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part18",
+            "label": "身体 · naraka::female::outfit::46::cloth05_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part19",
+            "label": "身体 · naraka::female::outfit::50::body04_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part20",
+            "label": "身体 · naraka::female::outfit::52::body06_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part21",
+            "label": "身体 · naraka::female::outfit::54::cloth03_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part22",
+            "label": "身体 · naraka::female::outfit::56::cloth04_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part23",
+            "label": "身体 · naraka::female::outfit::58::cloth05_cb",
+            "visible": true
+          },
+          {
+            "id": "r7_part24",
+            "label": "身体 · naraka::female::outfit::6::body03",
+            "visible": true
+          }
+        ],
+        "inspection": "Kiva 模型／武器／动作检查 v1\n角色：bailingmiao\n武器：yizhiying\n配置：sister_bow\n模式：game\n动作：game:companion_aim\n时间：0.000000s · 预览帧 0（60Hz）\n镜头 yaw=2.741593, pitch=0.180000, distance=3.507131, target=[-0.12375879, 0.8594952, 0.0815483]\n状态：companion hold/aim\nCC0底层：Sword_Idle · 0.000s\n源层：male_bow_hold_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_bow_finger_default_left_01 / R=male_bow_finger_default_right_01 (original controller weights unknown)\n组合范围：source upper body / fingers + CC0 lower body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：verified shared female bow source; Kiva upper-body/fingers + CC0 lower body / grip IK\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 开启\n单角色60Hz显示检查；不验证伤害、位移或完整技能时序。"
+      }
+    },
+    {
+      "name": "actual-preset",
+      "preset": "enemy_blade",
+      "snapshot": {
+        "version": 1,
+        "revision": 8,
+        "ready": true,
+        "failed": false,
+        "appearance": "choulingke",
+        "weapon": "choulingke_blade",
+        "preset": "enemy_blade",
+        "mode": "game",
+        "action": "game:idle",
+        "time": 0,
+        "duration": 3,
+        "frame": 0,
+        "playing": false,
+        "speed": 1,
+        "looping": true,
+        "trace": "状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：无 · 0.000s · 权重 0.000\n骨架：无\n实际源层：无\n组合范围：CC0\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：CC0 fallback\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭",
+        "warning": "单角色60Hz显示检查；不验证伤害、位移或完整技能时序。",
+        "status": "",
+        "camera": {
+          "yaw": 2.7415926,
+          "pitch": 0.18,
+          "distance": 3.507131,
+          "target": [
+            -0.12375879,
+            0.8594952,
+            0.0815483
+          ]
+        },
+        "debug": {
+          "grid": true,
+          "axes": true,
+          "bones": false,
+          "grips": false,
+          "bounds": false
+        },
+        "parts": [
+          {
+            "id": "r8_part0",
+            "label": "手持 · 长刀",
+            "visible": true
+          },
+          {
+            "id": "r8_part1",
+            "label": "身体 · 3_weapon",
+            "visible": true
+          },
+          {
+            "id": "r8_part2",
+            "label": "身体 · body",
+            "visible": true
+          },
+          {
+            "id": "r8_part3",
+            "label": "身体 · clock",
+            "visible": true
+          },
+          {
+            "id": "r8_part4",
+            "label": "身体 · hair",
+            "visible": true
+          },
+          {
+            "id": "r8_part5",
+            "label": "身体 · hat",
+            "visible": true
+          },
+          {
+            "id": "r8_part6",
+            "label": "身体 · head",
+            "visible": true
+          },
+          {
+            "id": "r8_part7",
+            "label": "身体 · lingdang",
+            "visible": true
+          },
+          {
+            "id": "r8_part8",
+            "label": "身体 · mask",
+            "visible": true
+          },
+          {
+            "id": "r8_part9",
+            "label": "身体 · pants",
+            "visible": true
+          },
+          {
+            "id": "r8_part10",
+            "label": "身体 · tops",
+            "visible": true
+          },
+          {
+            "id": "r8_part11",
+            "label": "身体 · underwear1",
+            "visible": true
+          },
+          {
+            "id": "r8_part12",
+            "label": "身体 · underwear2",
+            "visible": true
+          },
+          {
+            "id": "r8_part13",
+            "label": "身体 · weapon2",
+            "visible": true
+          }
+        ],
+        "inspection": "Kiva 模型／武器／动作检查 v1\n角色：choulingke\n武器：choulingke_blade\n配置：enemy_blade\n模式：game\n动作：game:idle\n时间：0.000000s · 预览帧 0（60Hz）\n镜头 yaw=2.741593, pitch=0.180000, distance=3.507131, target=[-0.12375879, 0.8594952, 0.0815483]\n状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：无 · 0.000s · 权重 0.000\n骨架：无\n实际源层：无\n组合范围：CC0\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：CC0 fallback\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭\n单角色60Hz显示检查；不验证伤害、位移或完整技能时序。"
+      }
+    },
+    {
+      "name": "actual-preset",
+      "preset": "brother_hammer",
+      "snapshot": {
+        "version": 1,
+        "revision": 9,
+        "ready": true,
+        "failed": false,
+        "appearance": "lihuowang",
+        "weapon": "fulangmao",
+        "preset": "brother_hammer",
+        "mode": "game",
+        "action": "game:idle",
+        "time": 0,
+        "duration": 3,
+        "frame": 0,
+        "playing": false,
+        "speed": 1,
+        "looping": true,
+        "trace": "状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：male_hengdao_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭",
+        "warning": "单角色60Hz显示检查；不验证伤害、位移或完整技能时序。",
+        "status": "",
+        "camera": {
+          "yaw": 2.7415926,
+          "pitch": 0.18,
+          "distance": 3.507131,
+          "target": [
+            -0.12375879,
+            0.8594952,
+            0.0815483
+          ]
+        },
+        "debug": {
+          "grid": true,
+          "axes": true,
+          "bones": false,
+          "grips": false,
+          "bounds": false
+        },
+        "parts": [
+          {
+            "id": "r9_part0",
+            "label": "手持 · naraka::fulangmao::main::m_1518293717@wp_blade_chuanmaolv1",
+            "visible": true
+          },
+          {
+            "id": "r9_part1",
+            "label": "手持 · naraka::fulangmao::main::m_1518293717@wp_blade_chuanmaolv1_01",
+            "visible": true
+          },
+          {
+            "id": "r9_part2",
+            "label": "身体 · naraka::face::eyelash",
+            "visible": true
+          },
+          {
+            "id": "r9_part3",
+            "label": "身体 · naraka::face::eyes",
+            "visible": true
+          },
+          {
+            "id": "r9_part4",
+            "label": "身体 · naraka::face::face",
+            "visible": true
+          },
+          {
+            "id": "r9_part5",
+            "label": "身体 · naraka::hair::hair",
+            "visible": true
+          },
+          {
+            "id": "r9_part6",
+            "label": "身体 · naraka::hair::hair02",
+            "visible": true
+          },
+          {
+            "id": "r9_part7",
+            "label": "身体 · naraka::hair::scalp",
+            "visible": true
+          },
+          {
+            "id": "r9_part8",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli",
+            "visible": true
+          },
+          {
+            "id": "r9_part9",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_01",
+            "visible": true
+          },
+          {
+            "id": "r9_part10",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cb",
+            "visible": true
+          },
+          {
+            "id": "r9_part11",
+            "label": "身体 · naraka::hat::ch_ornament_hat_wuchen_s_lhwdouli_cf",
+            "visible": true
+          },
+          {
+            "id": "r9_part12",
+            "label": "身体 · naraka::outfit::body",
+            "visible": true
+          },
+          {
+            "id": "r9_part13",
+            "label": "身体 · naraka::outfit::body02",
+            "visible": true
+          },
+          {
+            "id": "r9_part14",
+            "label": "身体 · naraka::outfit::body03",
+            "visible": true
+          },
+          {
+            "id": "r9_part15",
+            "label": "身体 · naraka::outfit::body04_cb",
+            "visible": true
+          },
+          {
+            "id": "r9_part16",
+            "label": "身体 · naraka::outfit::body04_cf",
+            "visible": true
+          },
+          {
+            "id": "r9_part17",
+            "label": "身体 · naraka::outfit::cloth01",
+            "visible": true
+          },
+          {
+            "id": "r9_part18",
+            "label": "身体 · naraka::outfit::cloth02",
+            "visible": true
+          },
+          {
+            "id": "r9_part19",
+            "label": "身体 · naraka::outfit::cloth03",
+            "visible": true
+          },
+          {
+            "id": "r9_part20",
+            "label": "身体 · naraka::outfit::cloth04_cb",
+            "visible": true
+          },
+          {
+            "id": "r9_part21",
+            "label": "身体 · naraka::outfit::cloth04_cf",
+            "visible": true
+          },
+          {
+            "id": "r9_part22",
+            "label": "身体 · naraka::sheath::authored_hip",
+            "visible": true
+          }
+        ],
+        "inspection": "Kiva 模型／武器／动作检查 v1\n角色：lihuowang\n武器：fulangmao\n配置：brother_hammer\n模式：game\n动作：game:idle\n时间：0.000000s · 预览帧 0（60Hz）\n镜头 yaw=2.741593, pitch=0.180000, distance=3.507131, target=[-0.12375879, 0.8594952, 0.0815483]\n状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：male_hengdao_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭\n单角色60Hz显示检查；不验证伤害、位移或完整技能时序。"
+      }
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "lihuowang",
+      "id": "game:attack",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_01 · 0.234s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(One) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "lihuowang",
+      "id": "game:attack2",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_02 · 0.326s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Two) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "lihuowang",
+      "id": "game:attack3",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_03 · 0.316s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Three) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "choulingke",
+      "id": "game:attack",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_01 · 0.234s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(One) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "choulingke",
+      "id": "game:attack2",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_02 · 0.326s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Two) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "choulingke",
+      "id": "game:attack3",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_03 · 0.316s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Three) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "bailingmiao",
+      "id": "game:attack",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_01 · 0.234s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(One) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "bailingmiao",
+      "id": "game:attack2",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_02 · 0.326s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Two) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "three-stage-real-palette",
+      "appearance": "bailingmiao",
+      "id": "game:attack3",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_03 · 0.316s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Three) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "corresponding-motion",
+      "id": "game:parry",
+      "trace": "状态：defense\nCC0底层：Sword_Block · 0.317s\n源层：male_hengdao_attack_shock_light_01 · 0.306s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：Some(Parry) 0.100s · 手势：Some((Parry, 0.10000001)) · 已打断 false\n适配：Kiva 0.60s visual riposte; source success-only clip unproven\n回退：无\n过渡 0.998 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "corresponding-motion",
+      "id": "game:double_jump",
+      "trace": "状态：airborne blend\nCC0底层：混合／参考 · 0.000s\n源层：male_hengdao_jump_inplace_up_02 · 0.216s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "corresponding-motion",
+      "id": "game:dodge_left",
+      "trace": "状态：dodge\nCC0底层：Roll · 0.349s\n源层：male_hengdao_dodge_left_01 · 0.476s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 0.926 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "corresponding-motion",
+      "id": "game:crouch_walk",
+      "trace": "状态：crouch\nCC0底层：Walk_Loop · 0.316s\n源层：male_hengdao_crouch_promenade_01 · 0.263s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=male_hengdao_finger_right_01 (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 1.000 · 双手IK 关闭"
+    },
+    {
+      "name": "corresponding-motion",
+      "id": "game:crouch_attack",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.418s\n源层：male_hengdao_attack_light_01 · 0.234s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source upper body / fingers + CC0 lower body\n阶段：Some(One) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：Kiva native upper body / fingers + actual CC0 crouch/gait lower body (0.12s crouch blend)\n回退：无\n过渡 1.000 · 蹲姿IK 1.000 · 双手IK 关闭"
+    },
+    {
+      "name": "corresponding-motion",
+      "id": "game:crouch_guard",
+      "trace": "状态：defense\nCC0底层：Sword_Block · 0.400s\n源层：male_hengdao_shock_01 · 0.400s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source upper body / fingers + CC0 lower body\n阶段：None · 防御：Some(Guard) 0.183s · 手势：Some((Deflect, 0.38333336)) · 已打断 false\n适配：Kiva native upper body / fingers + actual CC0 crouch/gait lower body (0.12s crouch blend)\n回退：无\n过渡 1.000 · 蹲姿IK 1.000 · 双手IK 关闭"
+    },
+    {
+      "name": "corresponding-motion",
+      "id": "game:walk_guard",
+      "trace": "状态：defense\nCC0底层：Sword_Block · 0.400s\n源层：male_hengdao_shock_01 · 0.400s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source upper body / fingers + CC0 lower body\n阶段：None · 防御：Some(Guard) 0.183s · 手势：Some((Deflect, 0.38333336)) · 已打断 false\n适配：Kiva native upper body / fingers + actual CC0 crouch/gait lower body (0.12s crouch blend)\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "native-source-scope",
+      "id": "naraka:male_hengdao_attack_light_02",
+      "trace": "状态：source comparison (no hold override)\nCC0底层：混合／参考 · 0.000s\n源层：male_hengdao_attack_light_02 · 0.233s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native source matrices; declared target layer composition / root normalization; no weapon IK\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "native-source-scope",
+      "id": "naraka:male_fk_attack_01",
+      "trace": "状态：source comparison (no hold override)\nCC0底层：混合／参考 · 0.000s\n源层：male_fk_attack_01 · 0.233s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_unarmed_finger_default_left_01 / R=male_unarmed_finger_default_right_01 (original controller weights unknown)\n组合范围：source upper body / fingers + CC0 lower body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native source matrices; declared target layer composition / root normalization; no weapon IK\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "native-source-scope",
+      "id": "naraka:male_bow_attack_01",
+      "trace": "状态：source comparison (no hold override)\nCC0底层：混合／参考 · 0.000s\n源层：male_bow_attack_01 · 0.233s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_bow_finger_default_left_01 / R=none (original controller weights unknown)\n组合范围：source upper body / fingers + CC0 lower body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native source matrices; declared target layer composition / root normalization; no weapon IK\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "native-source-scope",
+      "id": "naraka:male_hengdao_finger_left_01",
+      "trace": "状态：source comparison (no hold override)\nCC0底层：混合／参考 · 0.000s\n源层：male_hengdao_finger_left_01 · 0.233s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source fingers + CC0 body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native source matrices; declared target layer composition / root normalization; no weapon IK\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "name": "hidden-part-selection-recovery"
+    },
+    {
+      "name": "transport-camera-debug-copy",
+      "state": "ready",
+      "ready": 1,
+      "locks": 0,
+      "timings": [
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.5
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "zoom\t-650",
+          "ms": 0.5
+        },
+        {
+          "commands": "fit",
+          "ms": 0.3999999761581421
+        },
+        {
+          "commands": "action\tgame:attack",
+          "ms": 0.9000000357627869
+        },
+        {
+          "commands": "seek\t0.350000007",
+          "ms": 1.5
+        },
+        {
+          "commands": "seek\t2.800000056",
+          "ms": 4.699999988079071
+        },
+        {
+          "commands": "seek\t0.350000007",
+          "ms": 1
+        },
+        {
+          "commands": "appearance\tbailingmiao",
+          "ms": 176.79999995231628
+        },
+        {
+          "commands": "appearance\tchoulingke",
+          "ms": 577.3000000119209
+        },
+        {
+          "commands": "appearance\tlihuowang",
+          "ms": 3
+        },
+        {
+          "commands": "preset\tbrother_axe",
+          "ms": 11.700000047683716
+        },
+        {
+          "commands": "preset\tsister_musket",
+          "ms": 34.80000001192093
+        },
+        {
+          "commands": "action\tgame:companion_aim",
+          "ms": 1.100000023841858
+        },
+        {
+          "commands": "preset\tsister_bow",
+          "ms": 27
+        },
+        {
+          "commands": "action\tgame:companion_aim",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "preset\tenemy_blade",
+          "ms": 5.5
+        },
+        {
+          "commands": "preset\tbrother_hammer",
+          "ms": 2.399999976158142
+        },
+        {
+          "commands": "preset\tbrother_hammer\nappearance\tlihuowang",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "action\tgame:attack",
+          "ms": 0.9000000357627869
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "action\tgame:attack2",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 1.0999999642372131
+        },
+        {
+          "commands": "action\tgame:attack3",
+          "ms": 0.5999999642372131
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "action\tgame:guard",
+          "ms": 0.7000000476837158
+        },
+        {
+          "commands": "seek\t0.400000008",
+          "ms": 1
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.40000003576278687
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.5
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.3999999761581421
+        },
+        {
+          "commands": "zoom\t-650",
+          "ms": 0.40000003576278687
+        },
+        {
+          "commands": "fit",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "appearance\tchoulingke",
+          "ms": 2.399999976158142
+        },
+        {
+          "commands": "action\tgame:attack",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 0.9000000357627869
+        },
+        {
+          "commands": "action\tgame:attack2",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "action\tgame:attack3",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 1
+        },
+        {
+          "commands": "action\tgame:guard",
+          "ms": 0.8999999761581421
+        },
+        {
+          "commands": "seek\t0.400000008",
+          "ms": 0.7999999523162842
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.5
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.3999999761581421
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.30000001192092896
+        },
+        {
+          "commands": "zoom\t-650",
+          "ms": 0.40000003576278687
+        },
+        {
+          "commands": "fit",
+          "ms": 0.5999999642372131
+        },
+        {
+          "commands": "appearance\tbailingmiao",
+          "ms": 1.800000011920929
+        },
+        {
+          "commands": "action\tgame:attack",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 0.9000000357627869
+        },
+        {
+          "commands": "action\tgame:attack2",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "action\tgame:attack3",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 1
+        },
+        {
+          "commands": "action\tgame:guard",
+          "ms": 0.5
+        },
+        {
+          "commands": "seek\t0.400000008",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.5
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.30000001192092896
+        },
+        {
+          "commands": "pan\t0\t30",
+          "ms": 0.3999999761581421
+        },
+        {
+          "commands": "zoom\t-650",
+          "ms": 0.40000003576278687
+        },
+        {
+          "commands": "fit",
+          "ms": 0.5
+        },
+        {
+          "commands": "preset\tbrother_hammer",
+          "ms": 1.699999988079071
+        },
+        {
+          "commands": "action\tgame:parry",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "seek\t0.116666669",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "action\tgame:double_jump",
+          "ms": 0.8999999761581421
+        },
+        {
+          "commands": "seek\t0.400000008",
+          "ms": 1.100000023841858
+        },
+        {
+          "commands": "action\tgame:dodge_left",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "seek\t0.100000002",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "action\tgame:crouch_walk",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "seek\t0.50000001",
+          "ms": 1.7000000476837158
+        },
+        {
+          "commands": "action\tgame:crouch_attack",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "action\tgame:crouch_guard",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "seek\t0.400000008",
+          "ms": 0.8999999761581421
+        },
+        {
+          "commands": "action\tgame:walk_guard",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "seek\t0.400000008",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "mode\tsource",
+          "ms": 0.5
+        },
+        {
+          "commands": "action\tnaraka:male_hengdao_attack_light_02",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "seek\t0.233333338",
+          "ms": 0.5
+        },
+        {
+          "commands": "action\tnaraka:male_fk_attack_01",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "seek\t0.233333338",
+          "ms": 0.7000000476837158
+        },
+        {
+          "commands": "action\tnaraka:male_bow_attack_01",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "seek\t0.233333338",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "action\tnaraka:male_hengdao_finger_left_01",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "seek\t0.233333338",
+          "ms": 0.5999999642372131
+        },
+        {
+          "commands": "preset\tbrother_hammer",
+          "ms": 0.8999999761581421
+        },
+        {
+          "commands": "mode\tgame",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "part\tr14_part2\t0",
+          "ms": 0.5
+        },
+        {
+          "commands": "weapon\tzhexingcuishan",
+          "ms": 0.9000000357627869
+        },
+        {
+          "commands": "mode\tsource",
+          "ms": 0.5
+        },
+        {
+          "commands": "action\tsource:b_fight_env_jump_01_start_Lfoot__zuiquan",
+          "ms": 1
+        },
+        {
+          "commands": "seek\t0.200000004",
+          "ms": 0.5
+        },
+        {
+          "commands": "mode\treference",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "mode\tgame",
+          "ms": 0.5999999642372131
+        },
+        {
+          "commands": "debug\tbones\t1",
+          "ms": 0.3999999761581421
+        },
+        {
+          "commands": "debug\tgrips\t1",
+          "ms": 0.5
+        },
+        {
+          "commands": "debug\tbounds\t1",
+          "ms": 0.699999988079071
+        },
+        {
+          "commands": "orbit\t25\t8.75",
+          "ms": 0.5
+        },
+        {
+          "commands": "orbit\t25\t8.75",
+          "ms": 0.800000011920929
+        },
+        {
+          "commands": "orbit\t25\t8.75",
+          "ms": 0.40000003576278687
+        },
+        {
+          "commands": "orbit\t25\t8.75",
+          "ms": 0.5
+        },
+        {
+          "commands": "fit",
+          "ms": 0.3999999761581421
+        },
+        {
+          "commands": "play\t1",
+          "ms": 0.6000000238418579
+        },
+        {
+          "commands": "play\t0",
+          "ms": 0.6000000238418579
+        }
+      ],
+      "samples": [
+        {
+          "t": 3414.400000035763,
+          "revision": 1,
+          "ready": false,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 3920.300000011921,
+          "revision": 1,
+          "ready": false,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 7141.900000035763,
+          "revision": 1,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 7991.300000011921,
+          "revision": 1,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8007,
+          "revision": 1,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8024.5,
+          "revision": 1,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8074,
+          "revision": 1,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8490.100000023842,
+          "revision": 1,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8507.700000047684,
+          "revision": 1,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8524.900000035763,
+          "revision": 1,
+          "ready": true,
+          "time": 0.35,
+          "action": "game:attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8561,
+          "revision": 1,
+          "ready": true,
+          "time": 2.8,
+          "action": "game:attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8590.800000011921,
+          "revision": 1,
+          "ready": true,
+          "time": 0.35,
+          "action": "game:attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8783.5,
+          "revision": 2,
+          "ready": false,
+          "time": 0.35,
+          "action": "game:attack",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 8840.300000011921,
+          "revision": 2,
+          "ready": true,
+          "time": 0.35,
+          "action": "game:attack",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 9433.800000011921,
+          "revision": 3,
+          "ready": false,
+          "time": 0.35,
+          "action": "game:attack",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 9741.900000035763,
+          "revision": 3,
+          "ready": true,
+          "time": 0.35,
+          "action": "game:attack",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 10659.700000047684,
+          "revision": 4,
+          "ready": false,
+          "time": 0.35,
+          "action": "game:attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 10673.900000035763,
+          "revision": 4,
+          "ready": true,
+          "time": 0.35,
+          "action": "game:attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 11068.200000047684,
+          "revision": 5,
+          "ready": false,
+          "time": 0.35,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 11085,
+          "revision": 5,
+          "ready": true,
+          "time": 0.35,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 11474.700000047684,
+          "revision": 6,
+          "ready": false,
+          "time": 0.35,
+          "action": "game:companion_hold",
+          "appearance": "bailingmiao",
+          "weapon": "yinbingluo"
+        },
+        {
+          "t": 11490.5,
+          "revision": 6,
+          "ready": true,
+          "time": 0.35,
+          "action": "game:companion_hold",
+          "appearance": "bailingmiao",
+          "weapon": "yinbingluo"
+        },
+        {
+          "t": 11541.200000047684,
+          "revision": 6,
+          "ready": true,
+          "time": 0,
+          "action": "game:companion_aim",
+          "appearance": "bailingmiao",
+          "weapon": "yinbingluo"
+        },
+        {
+          "t": 11950.200000047684,
+          "revision": 7,
+          "ready": false,
+          "time": 0,
+          "action": "game:companion_hold",
+          "appearance": "bailingmiao",
+          "weapon": "yizhiying"
+        },
+        {
+          "t": 11965.5,
+          "revision": 7,
+          "ready": true,
+          "time": 0,
+          "action": "game:companion_hold",
+          "appearance": "bailingmiao",
+          "weapon": "yizhiying"
+        },
+        {
+          "t": 11990.600000023842,
+          "revision": 7,
+          "ready": true,
+          "time": 0,
+          "action": "game:companion_aim",
+          "appearance": "bailingmiao",
+          "weapon": "yizhiying"
+        },
+        {
+          "t": 12312.400000035763,
+          "revision": 8,
+          "ready": false,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "choulingke",
+          "weapon": "choulingke_blade"
+        },
+        {
+          "t": 12432.200000047684,
+          "revision": 8,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "choulingke",
+          "weapon": "choulingke_blade"
+        },
+        {
+          "t": 13325.800000011921,
+          "revision": 9,
+          "ready": false,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 13340.400000035763,
+          "revision": 9,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 13723.900000035763,
+          "revision": 10,
+          "ready": false,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 13740.5,
+          "revision": 10,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 13758.900000035763,
+          "revision": 10,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 13790.600000023842,
+          "revision": 10,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 14173.900000035763,
+          "revision": 10,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack2",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 14191.300000011921,
+          "revision": 10,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack2",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 14507.300000011921,
+          "revision": 10,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack3",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 14524.400000035763,
+          "revision": 10,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack3",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 14874.200000047684,
+          "revision": 10,
+          "ready": true,
+          "time": 0,
+          "action": "game:guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 14891.200000047684,
+          "revision": 10,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15273.900000035763,
+          "revision": 10,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15290.600000023842,
+          "revision": 10,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15307.100000023842,
+          "revision": 10,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15357.200000047684,
+          "revision": 10,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15724.400000035763,
+          "revision": 10,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15742.5,
+          "revision": 11,
+          "ready": false,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15757.300000011921,
+          "revision": 11,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15774.200000047684,
+          "revision": 11,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 15824.200000047684,
+          "revision": 11,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 16224.100000023842,
+          "revision": 11,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack2",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 16257.400000035763,
+          "revision": 11,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack2",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 16590.900000035763,
+          "revision": 11,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack3",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 16607.900000035763,
+          "revision": 11,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack3",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 16958,
+          "revision": 11,
+          "ready": true,
+          "time": 0,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17007.5,
+          "revision": 11,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17390.900000035763,
+          "revision": 11,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17407.30000001192,
+          "revision": 11,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17423.900000035763,
+          "revision": 11,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17457.400000035763,
+          "revision": 11,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17857.30000001192,
+          "revision": 11,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "choulingke",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17908.600000023842,
+          "revision": 12,
+          "ready": false,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17924.200000047684,
+          "revision": 12,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17941,
+          "revision": 12,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 17991.200000047684,
+          "revision": 12,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 18374.100000023842,
+          "revision": 12,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack2",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 18407.600000023842,
+          "revision": 12,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack2",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 18757.600000023842,
+          "revision": 12,
+          "ready": true,
+          "time": 0,
+          "action": "game:attack3",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 18774.600000023842,
+          "revision": 12,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:attack3",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 19107.900000035763,
+          "revision": 12,
+          "ready": true,
+          "time": 0,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 19174.30000001192,
+          "revision": 12,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 19591.5,
+          "revision": 12,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 19607.400000035763,
+          "revision": 12,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 19624.30000001192,
+          "revision": 12,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 19657.400000035763,
+          "revision": 12,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 20057.200000047684,
+          "revision": 12,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:guard",
+          "appearance": "bailingmiao",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 20108.5,
+          "revision": 13,
+          "ready": false,
+          "time": 0.4,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 20140.900000035763,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "game:parry",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 20174.200000047684,
+          "revision": 13,
+          "ready": true,
+          "time": 0.11666667,
+          "action": "game:parry",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 20509.100000023842,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "game:double_jump",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 20558.200000047684,
+          "revision": 13,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:double_jump",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 20907.900000035763,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "game:dodge_left",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 20941,
+          "revision": 13,
+          "ready": true,
+          "time": 0.1,
+          "action": "game:dodge_left",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 21291.400000035763,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "game:crouch_walk",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 21325.700000047684,
+          "revision": 13,
+          "ready": true,
+          "time": 0.5,
+          "action": "game:crouch_walk",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 21690.900000035763,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "game:crouch_attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 21724.30000001192,
+          "revision": 13,
+          "ready": true,
+          "time": 0.2,
+          "action": "game:crouch_attack",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 22090.900000035763,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "game:crouch_guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 22124.600000023842,
+          "revision": 13,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:crouch_guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 22457.700000047684,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "game:walk_guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 22507.600000023842,
+          "revision": 13,
+          "ready": true,
+          "time": 0.4,
+          "action": "game:walk_guard",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 22890.80000001192,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "cc0:Death01",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 22933.600000023842,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "naraka:male_hengdao_attack_light_02",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 22974.200000047684,
+          "revision": 13,
+          "ready": true,
+          "time": 0.23333333,
+          "action": "naraka:male_hengdao_attack_light_02",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 23324.5,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "naraka:male_fk_attack_01",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 23357.700000047684,
+          "revision": 13,
+          "ready": true,
+          "time": 0.23333333,
+          "action": "naraka:male_fk_attack_01",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 23724.400000035763,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "naraka:male_bow_attack_01",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 23774.200000047684,
+          "revision": 13,
+          "ready": true,
+          "time": 0.23333333,
+          "action": "naraka:male_bow_attack_01",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 24094.200000047684,
+          "revision": 13,
+          "ready": true,
+          "time": 0,
+          "action": "naraka:male_hengdao_finger_left_01",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 24157.80000001192,
+          "revision": 13,
+          "ready": true,
+          "time": 0.23333333,
+          "action": "naraka:male_hengdao_finger_left_01",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 24524.80000001192,
+          "revision": 14,
+          "ready": false,
+          "time": 0.23333333,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 24557.900000035763,
+          "revision": 14,
+          "ready": true,
+          "time": 0.23333333,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 24574.400000035763,
+          "revision": 14,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 24591,
+          "revision": 14,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "fulangmao"
+        },
+        {
+          "t": 24624.700000047684,
+          "revision": 15,
+          "ready": false,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 24641.200000047684,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 24691,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "naraka:male_hengdao_finger_left_01",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 24708.600000023842,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "source:b_fight_env_jump_01_start_Lfoot__zuiquan",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 24757.700000047684,
+          "revision": 15,
+          "ready": true,
+          "time": 0.2,
+          "action": "source:b_fight_env_jump_01_start_Lfoot__zuiquan",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25141.600000023842,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "reference",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25507.700000047684,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25557.5,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25590.900000035763,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25624.5,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25657.80000001192,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25674.80000001192,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25690.900000035763,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25707.900000035763,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 25757.600000023842,
+          "revision": 15,
+          "ready": true,
+          "time": 0,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26107.700000047684,
+          "revision": 15,
+          "ready": true,
+          "time": 0.016666668,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26124.80000001192,
+          "revision": 15,
+          "ready": true,
+          "time": 0.033333335,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26141.30000001192,
+          "revision": 15,
+          "ready": true,
+          "time": 0.05,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26157.900000035763,
+          "revision": 15,
+          "ready": true,
+          "time": 0.06666667,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26174.700000047684,
+          "revision": 15,
+          "ready": true,
+          "time": 0.083333336,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26191.600000023842,
+          "revision": 15,
+          "ready": true,
+          "time": 0.1,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26208.100000023842,
+          "revision": 15,
+          "ready": true,
+          "time": 0.11666667,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26224.700000047684,
+          "revision": 15,
+          "ready": true,
+          "time": 0.13333334,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26241.200000047684,
+          "revision": 15,
+          "ready": true,
+          "time": 0.15,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        },
+        {
+          "t": 26274.400000035763,
+          "revision": 15,
+          "ready": true,
+          "time": 0.15,
+          "action": "game:idle",
+          "appearance": "lihuowang",
+          "weapon": "zhexingcuishan"
+        }
+      ],
+      "adapter": null
+    },
+    {
+      "name": "static-subpath-direct-entry",
+      "url": "http://127.0.0.1:42307/kiva/?view=model",
+      "returnLink": "?"
+    }
+  ],
+  "errors": [],
+  "logs": [
+    {
+      "type": "warning",
+      "text": "The `integrity` attribute is currently ignored for preload destinations that do not support subresource integrity. See https://crbug.com/981419 for more information"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.20.1/src/system.rs:67%c Creating new window Kiva · Top-down / WASD + Mouse (63v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "warning",
+      "text": "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.20.1/src/renderer/mod.rs:310%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: None, limit_bucket: None } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.20.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.20.1/src/batching/gpu_preprocessing.rs:1595%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:155%c Initial scene assembled; waiting for rendering color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 66 visible meshes, 49 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:167%c Client ready after initial scene render color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 67 visible meshes, 49 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 60 visible meshes, 58 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 66 visible meshes, 58 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 69 visible meshes, 58 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 67 visible meshes, 58 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 68 visible meshes, 61 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 60 visible meshes, 67 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 66 visible meshes, 67 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 66 visible meshes, 67 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 62 visible meshes, 67 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 69 visible meshes, 67 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 68 visible meshes, 67 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 68 visible meshes, 67 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 71 visible meshes, 67 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "warning",
+      "text": "The `integrity` attribute is currently ignored for preload destinations that do not support subresource integrity. See https://crbug.com/981419 for more information"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.20.1/src/system.rs:67%c Creating new window Kiva · Top-down / WASD + Mouse (63v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "warning",
+      "text": "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.20.1/src/renderer/mod.rs:310%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: None, limit_bucket: None } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.20.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.20.1/src/batching/gpu_preprocessing.rs:1595%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:155%c Initial scene assembled; waiting for rendering color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 66 visible meshes, 49 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:167%c Client ready after initial scene render color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "warning",
+      "text": "The `integrity` attribute is currently ignored for preload destinations that do not support subresource integrity. See https://crbug.com/981419 for more information"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.20.1/src/system.rs:67%c Creating new window Kiva · Top-down / WASD + Mouse (63v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "warning",
+      "text": "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.20.1/src/renderer/mod.rs:310%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: None, limit_bucket: None } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.20.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c /home/asuka/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.20.1/src/batching/gpu_preprocessing.rs:1595%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:155%c Initial scene assembled; waiting for rendering color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:317%c Initial scene rendered: 61 visible meshes, 91 prepared pipelines color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    },
+    {
+      "type": "log",
+      "text": "%cINFO%c src/client/loading.rs:167%c Client ready after initial scene render color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+    }
+  ],
+  "provenance": "Completed viewer cases on the same final WASM; later independent game fixture runs are recorded separately. No product changes between runs."
+}

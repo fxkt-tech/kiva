@@ -1,0 +1,981 @@
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets -- -D warnings
+    Checking kiva v0.1.0 (/home/asuka/go/src/github.com/fxkt-tech/kiva)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 3.82s
+cargo test --locked
+   Compiling kiva v0.1.0 (/home/asuka/go/src/github.com/fxkt-tech/kiva)
+    Finished `test` profile [optimized + debuginfo] target(s) in 17.40s
+     Running unittests src/lib.rs (target/debug/deps/kiva-632fb916b2684f51)
+
+running 297 tests
+test client::animation::naraka::tests::four_accepted_dodge_directions_select_four_native_clips_without_root_yaw_rotation ... ok
+test client::animation::poses::tests::crouch_moves_the_weapon_grip_with_the_pelvis_without_changing_two_handed_alignment ... ok
+test client::animation::poses::tests::crouch_ik_preserves_feet_rotation_and_leg_lengths_across_authored_ground_poses ... ok
+test client::animation::naraka::tests::missed_parry_window_keeps_only_the_bounded_visual_tail_and_new_inputs_preempt_it ... ok
+test client::animation::naraka::tests::each_committed_stage_uses_its_snapshot_clock_instead_of_a_damage_cue ... ok
+test client::animation::poses::tests::sniper_aim_raises_the_rifle_without_moving_planted_feet ... ok
+test client::animation::naraka::tests::actual_moving_deflect_and_guard_keep_shock_while_movement_preempts_only_the_riposte_tail ... ok
+test client::animation::poses::tests::heavy_hit_adds_a_torso_reaction_without_displacing_the_pelvis_or_feet ... ok
+test client::animation::tests::a_partial_movement_step_slows_gait_without_rewinding_an_existing_walk_cycle ... ok
+test client::animation::tests::death_lowers_the_authored_head_and_respawn_restores_the_rig ... ok
+test client::animation::tests::authored_weapon_gestures_change_bones_and_return_to_guard ... ok
+test client::animation::tests::companion_gun_and_bow_have_independent_hands_and_fixed_shot_clocks ... ok
+test client::animation::tests::sniper_aim_replaces_the_hammer_pose_and_waits_for_the_actual_shot_event ... ok
+test client::appearance::tests::player_selection_defaults_to_lihuowang_while_enemy_avatar_default_stays_choulingke ... ok
+test client::animation::tests::actor_tagged_feedback_animates_only_the_performer_even_at_the_same_position ... ok
+test client::animation::tests::pause_freezes_pose_clocks_and_feedback_cursor_then_resumes_without_physics_writes ... ok
+test client::audio::tests::cancellation_epoch_drops_future_cues_and_that_frames_facts_while_still_active ... ok
+test client::audio::tests::committed_stages_sound_once_from_start_and_never_again_at_the_damage_marker ... ok
+test client::audio::tests::future_cues_follow_only_the_matching_fixed_action_clock_and_drop_on_invalidation ... ok
+test client::audio::tests::late_ended_or_mismatched_starts_are_discarded_without_using_current_pair_or_stage ... ok
+test client::audio::tests::metal_feedback_uses_the_defending_actor_and_empty_attempts_remain_silent ... ok
+test client::audio::tests::motion_has_an_independent_cursor_and_drops_inactive_nonplayer_or_dead_facts ... ok
+test client::audio::tests::paused_feedback_and_older_history_cannot_replay_on_resume ... ok
+test client::animation::preview::tests::seeking_reconstructs_short_walk_and_hit_interruptions_without_reviving_the_same_riposte ... ok
+test client::animation::tests::blocked_actor_idles_and_zero_fixed_render_frames_keep_a_stable_walk_state ... ok
+test client::animation::preview::tests::invalid_input_does_not_mutate_the_last_pose_and_loop_seek_keeps_the_tail ... ok
+test client::animation::preview::tests::trace_keeps_fading_source_and_actual_normalized_sample_time ... ok
+test client::animation::tests::different_source_hierarchies_fade_without_reusing_local_pose_indices ... ok
+test client::audio::tests::shot_sound_uses_immutable_event_pair_even_when_consuming_history ... ok
+test client::animation::tests::late_old_melee_feedback_cannot_restart_a_new_committed_stage ... ok
+test client::audio::tests::sounds_follow_actual_feedback_once_for_both_sides_of_combat ... ok
+test client::animation::tests::new_light_or_heavy_hit_latches_even_when_its_playback_fits_inside_one_render_frame ... ok
+test client::animation::tests::display_frames_latch_a_preempted_riposte_and_only_a_new_gesture_can_restart_it ... ok
+test client::animation::tests::original_named_motion_uses_state_priority_and_keeps_shared_moves_distinct ... ok
+test client::animation::preview::tests::longest_game_seek_has_bounded_replay_work ... ok
+test client::audio::tests::actual_control_cancellation_with_no_fixed_step_clears_an_unplayed_offset_cue ... ok
+test client::animation::tests::fixed_crouch_keeps_its_foot_anchor_then_walks_and_smoothly_stands_without_foot_drift ... ok
+test client::animation::preview::tests::catalog_is_complete_and_all_raw_samples_are_finite_without_hold_overrides ... ok
+test client::animation::tests::real_sprint_to_slide_uses_a_crouched_pose_then_keeps_crouching_after_the_slide ... ok
+test client::animation::tests::second_jump_uses_act_pose_and_restarts_air_time_without_adding_root_height ... ok
+test client::animation::tests::real_fixed_motion_drives_walk_run_jump_land_parry_and_roll_poses ... ok
+test client::animation::tests::actual_sniper_hit_freezes_both_rigs_then_plays_the_recipients_heavy_flinch ... ok
+test client::animation::preview::tests::reset_seek_backward_incremental_and_configuration_changes_reconstruct_history ... ok
+test client::audio::tests::shot_sister_triple_plays_each_actual_shot_once_despite_impact_feedback ... ok
+test client::animation::tests::actual_committed_stages_follow_fixed_snapshot_time_through_zero_fixed_render_frames ... ok
+test client::avatar::hand_tests::all_fingers_follow_actual_source_anatomy_in_the_current_palm_frame ... ok
+test client::avatar::hand_tests::default_weapon_grip_offset_and_shaft_follow_the_actual_palm ... ok
+test client::avatar::hand_tests::every_real_naraka_finger_joint_is_bound_including_partial_thumb_palettes ... ok
+test client::animation::tests::actual_boss_q_stun_ends_the_old_source_attack ... ok
+test client::avatar::hand_tests::finger_motion_reaches_actual_lbs_vertices_and_reference_stays_original ... ok
+test client::avatar::hand_tests::finger_fades_keep_own_lengths_and_rest_local_rotation_at_zero_weight ... ok
+test client::avatar::hand_tests::native_finger_curls_reach_real_weighted_vertices_and_fades_keep_own_lengths ... ok
+test client::avatar::tests::naraka_source_finger_rotation_reaches_actual_finger_joint ... ok
+test client::camera::tests::actual_perspective_places_the_body_center_at_the_lower_third_at_every_heading ... ok
+test client::audio::tests::shot_actual_companion_uses_original_family_cue_after_a_later_weapon_switch ... ok
+test client::audio::tests::real_fixed_update_starts_and_accepted_motion_reach_audio_once ... ok
+test client::avatar::hand_tests::original_choulingke_named_source_palette_is_unchanged ... ok
+test client::avatar::tests::naraka_source_motion_keeps_its_own_segments_and_wrist_and_changes_real_vertices ... ok
+test client::appearance::tests::selection_before_views_exist_is_applied_when_player_is_spawned ... ok
+test client::avatar::tests::bundled_skin_cancels_at_rest_and_has_real_base_and_linear_normal_maps ... ok
+test client::camera::tests::cinematic_sphere_sweep_keeps_the_camera_in_front_of_a_wall_behind_the_player ... ok
+test client::camera::tests::chain_combo_uses_level_camera_and_roster_clear_restores_even_when_paused ... ok
+test client::avatar::tests::bailingmiao_uses_female_palettes_and_real_weapon_grips_without_stretching_arms ... ok
+test client::camera::tests::committed_sniper_camera_reaches_low_rear_aim_before_damage_and_restores_top_down ... ok
+test client::camera::tests::ordinary_sister_q_keeps_the_existing_top_down_camera ... ok
+test client::avatar::hand_tests::declared_cc0_and_current_source_palms_drive_actual_skin_and_grips ... ok
+test client::camera::tests::paused_roster_replacement_after_a_shot_discards_camera_recoil ... ok
+test client::camera::tests::lethal_sniper_shot_keeps_the_last_live_aim_during_recovery ... ok
+test client::avatar::hand_tests::asset_reference_grips_use_actual_rest_palms_after_source_sampling ... ok
+test client::avatar::tests::original_hierarchy_matches_body_binds_and_wrist_delta_drives_the_grip ... ok
+test client::appearance::tests::paired_appearance_switch_preserves_paused_airborne_actor_pose_and_enemy ... ok
+test client::avatar::tests::retargeted_arms_follow_donor_directions_with_own_lengths ... ok
+test client::camera::tests::actual_sniper_recoil_pauses_decays_exactly_and_keeps_final_wall_clearance ... ok
+test client::controls::tests::native_capture_frame_other_windows_and_refocus_repeats_cannot_create_inputs ... ok
+test client::controls::tests::native_crouch_taps_keep_parity_without_changing_other_queued_actions ... ok
+test client::controls::tests::native_defense_overflow_cancels_and_requires_release_before_another_press ... ok
+test client::controls::tests::native_direction_release_fact_requires_the_entire_physical_group_to_be_up ... ok
+test client::controls::tests::native_focus_loss_and_escape_cancel_instead_of_releasing_and_require_a_capture_click ... ok
+test client::controls::tests::native_keyboard_events_preserve_short_shift_taps_repress_and_handoff ... ok
+test client::controls::tests::native_mouse_taps_preserve_defense_order_and_deduplicate_left_and_middle ... ok
+test client::controls::tests::native_movement_uses_physical_held_keys_even_when_their_axes_cancel ... ok
+test client::avatar::tests::naraka_skin_follows_actual_walk_crouch_jump_attack_and_pause ... ok
+test client::avatar::hand_tests::crouched_attacks_and_crouched_or_moving_defense_keep_real_lower_skin_and_weapon_grips ... ok
+test client::avatar::hand_tests::raw_native_upper_body_layers_keep_actual_pelvis_legs_and_skinned_feet_on_the_shared_baseline ... ok
+test client::camera::tests::cinematic_uses_actual_elevation_and_pause_freezes_its_pose_without_physical_writes ... ok
+test client::controls::tests::native_skill_keydowns_are_distinct_and_hold_repeat_release_do_not_attack ... ok
+test client::controls::tests::rightward_mouse_turns_right_without_a_frame_time_multiplier ... ok
+test client::avatar::hand_tests::native_naraka_hands_use_their_own_negative_axes_and_keep_all_three_targets_lengths ... ok
+test client::controls::tests::wasd_strafes_relative_to_the_view_and_diagonals_do_not_accelerate ... ok
+test client::environment::ground_cover::tests::clusters_leave_clearings_paths_and_ledge_unobstructed ... ok
+test client::environment::ground_cover::tests::fine_grass_uses_separate_blade_regions_with_grounded_varied_heights ... ok
+test client::environment::ground_cover::tests::grass_card_roots_follow_the_ground_and_leave_spawn_and_routes_open ... ok
+test client::environment::ground_cover::tests::initial_camera_sees_grass_clumps_beside_the_open_fighting_lane ... ok
+test client::environment::tests::camera_fog_is_available_without_a_renderer_or_asset_server ... ok
+test client::companion::tests::both_source_weapons_keep_their_up_axis_at_every_heading_and_pitch ... ok
+test client::avatar::tests::replacing_appearance_preserves_playback_and_other_children_and_reuses_both_sets ... ok
+test client::controls::tests::native_sample_middle_toggles_lock_and_focus_clear_preserves_the_committed_q_action ... ok
+test client::forest_material::tests::camera_leaf_clipping_keeps_standard_vertices_and_shadow_support ... ok
+test client::forest_material::tests::woodland_shader_composes_forward_and_deferred_pbr_interfaces ... ok
+test client::companion::tests::sister_is_one_independent_rig_and_reuses_all_assets ... ok
+test client::controls::tests::native_sample_focus_loss_cancels_guard_without_a_release_parry_after_recapture ... ok
+test client::controls::tests::native_sample_direction_release_and_repress_end_sprint_even_with_zero_fixed_frames ... ok
+test client::controls::tests::native_sample_shift_release_and_repress_restart_hold_when_new_dodges_are_rejected ... ok
+test client::avatar::tests::wangxin_hat_follows_the_head_and_is_reclaimed_when_switching_appearance ... ok
+test client::controls::tests::native_sample_preserves_a_tap_through_zero_fixed_frames_and_consumes_it_once ... ok
+test client::loading::tests::actual_bevy_pipeline_states_keep_transient_errors_pending_and_report_terminal_errors ... ok
+test client::loading::tests::device_error_after_startup_stays_visible_for_current_selection_and_preserves_policy ... ok
+test client::loading::tests::device_error_notifies_before_preserving_the_existing_render_error_policy ... ok
+test client::loading::tests::every_visible_standard_and_forest_mesh_needs_its_real_specialization_entry ... ok
+test client::loading::tests::floor_or_previous_body_cannot_acknowledge_selected_model ... ok
+test client::loading::tests::render_schedule_without_a_device_remains_pending_without_panicking ... ok
+test client::loading::tests::render_thread_results_notify_main_once_and_true_ready_recovers_failure ... ok
+test client::loading::tests::selection_ready_and_failure_are_versioned_without_resetting_global_ready ... ok
+test client::loading::tests::startup_assembly_and_empty_render_state_cannot_unlock_entry ... ok
+test client::rendering::tests::inspection_view_shares_pbr_setup_without_wetland_ssr_or_pose_changes ... ok
+test client::rendering::tests::wet_ground_reflections_install_real_passes_without_moving_the_camera ... ok
+test client::skeleton::tests::all_looped_clips_wrap_and_one_shots_clamp_at_both_ends ... ok
+test client::skeleton::tests::authored_hand_motion_is_preserved ... ok
+test client::skeleton::tests::bundled_clips_keep_the_source_hierarchy_required_by_the_rigid_renderer ... ok
+test client::skeleton::tests::clips_are_finite_and_have_no_root_translation ... ok
+test client::skeleton::tests::pose_blend_has_exact_endpoints_and_keeps_unit_rotations ... ok
+test client::source_animation::tests::adjacent_float_native_cuts_keep_exact_keys_and_true_positive_sub_epsilon_dt ... ok
+test client::avatar::tests::source_semantic_hands_and_spine_match_actual_skin_at_each_blend_weight ... ok
+test client::source_animation::tests::bounds_bad_version_and_trailing_bytes_are_rejected ... ok
+test client::hud::tests::explicit_target_snapshots_follow_real_damage_and_hide_after_clear_or_death ... ok
+test client::source_animation::tests::precise_decoder_bounds_counts_times_identity_and_trailing_data ... ok
+test client::source_animation::tests::native_airborne_removes_only_the_extra_hips_height_and_preserves_leg_pose ... ok
+test client::source_animation::tests::precise_seconds_and_independent_rig_indices_are_preserved ... ok
+test client::source_animation::tests::every_native_clip_has_explicit_verified_composition_metadata ... ok
+test client::source_animation::tests::sparse_sampler_uses_slerp_and_clamps_key_boundaries ... ok
+test client::stickman::tests::both_weapon_axes_follow_the_authored_wrist_orientation ... ok
+test client::source_animation::tests::sparse_channels_rest_root_travel_removed_and_real_waist_motion_preserved ... ok
+test client::texture_mips::tests::color_mips_average_light_and_preserve_original_level ... ok
+test client::texture_mips::tests::normal_mips_average_directions_without_srgb_or_losing_unit_length ... ok
+test client::texture_mips::tests::rectangular_chain_reaches_one_texel_and_is_not_generated_twice ... ok
+test client::viewer::orbit::tests::camera_controls_remain_finite_and_clamped_at_extreme_inputs ... ok
+test client::viewer::orbit::tests::fit_contains_all_corners_at_portrait_and_wide_aspects_without_changing_direction ... ok
+test client::viewer::snapshot::tests::escapes_all_json_control_characters_and_source_labels ... ok
+test client::source_animation::tests::source_asset_validates_all_clips_and_exact_rest_hierarchy ... ok
+test client::hud::tests::admission_snapshot_has_1000_health_dual_slots_and_no_player_ranged_mode ... ok
+test client::viewer::tests::bounds_union_contains_current_rigid_attachment_and_excludes_stage_and_hidden_parts ... ok
+test client::viewer::tests::commands_validate_and_seek_pause_without_resetting_configuration_time ... ok
+test client::avatar::tests::real_simulation_and_animation_drive_the_skin_through_walk_crouch_jump_attack_and_pause ... ok
+test client::hud::tests::player_death_and_roster_replacement_clear_target_display ... ok
+test client::controls::tests::sampled_focus_cancellation_clears_buffered_melee_but_ordinary_active_frames_preserve_it ... ok
+test client::viewer::tests::configuration_switch_restores_hidden_body_and_rejects_stale_part_identity ... ok
+test client::viewer::tests::paused_camera_and_noop_frames_keep_pose_and_bounds_cache_stable ... ok
+test client::viewer::tests::wall_clock_partition_and_speed_do_not_change_canonical_frame ... ok
+test client::stickman::tests::characters_share_geometry_and_preserve_authoritative_position ... ok
+test client::weapon_models::tests::source_weapons_keep_textured_geometry_separate_body_mounts_and_cache_handles ... ok
+test client::weapon_models::tests::melee_models_keep_source_geometry_grip_frame_base_color_and_four_model_cache ... ok
+test client::environment::tests::only_decorative_foliage_sways_and_pause_preserves_pose_and_shared_assets ... ok
+test client::environment::tests::textured_soil_preserves_albedo_and_uses_metric_uvs_with_a_dry_material_baseline ... ok
+test client::viewer::tests::source_seek_to_loop_endpoint_retains_real_tail_sample ... ok
+test client::environment::tests::forest_presentation_reuses_exact_solid_geometry_and_a_small_material_set ... ok
+test gameplay::terrain::tests::ground_is_one_finite_upward_mesh_with_a_flat_outer_edge ... ok
+test gameplay::terrain::tests::ramp_and_platform_form_a_closed_solid_with_the_requested_top_slope ... ok
+test gameplay::terrain::tests::small_hill_has_a_walkable_approach_and_an_over_limit_flank ... ok
+test client::viewer::tests::source_comparison_hides_hand_and_restores_actual_attachment_without_rebuilding_assets ... ok
+test gameplay::tests::dense_forest_is_deterministic_and_keeps_clear_traversal_corridors ... ok
+test gameplay::tests::combat_actors_spawn_with_complete_state_and_settle_on_shared_ground ... ok
+test client::viewer::tests::actual_assets_and_entity_counts_stabilize_across_repeated_body_and_weapon_switches ... ok
+test client::combat::tests::attacks_and_enemy_windups_project_effects_onto_the_actual_hill_surface ... ok
+test gameplay::tests::woodland_terrain_preserves_open_spawns_and_controller_routes ... ok
+test client::viewer::tests::source_mode_hides_real_weapon_meshes_after_selection_and_part_reshow ... ok
+test client::combat::tests::defeated_enemy_keeps_its_body_for_the_death_clip_and_paused_rigs_stay_frozen ... ok
+test client::combat::tests::prop_snapshots_move_display_roots_without_changing_local_children ... ok
+test simulation::boss::tests::boss_slow_changes_real_motor_and_is_cleared_on_phase_reset ... ok
+test gameplay::tests::woodland_assembles_shared_trunk_and_rock_geometry_with_a_finite_rim ... ok
+test client::combat::tests::target_marker_matches_the_resolved_hill_surface_and_normal ... ok
+test simulation::boss::tests::hammer_launch_and_three_companion_shots_damage_the_active_boss ... ok
+test simulation::boss::tests::chain_q_stun_belongs_only_to_boss_and_phase_change_cancels_remaining_arrows ... ok
+test client::combat::tests::headless_scene_consumes_combat_feedback_and_reclaims_effects_without_new_assets ... ok
+test simulation::boss::tests::source_choices_keep_distance_boundaries_weights_and_zero_weight_cooldowns ... ok
+test gameplay::tests::platform_landing_refills_two_jumps_without_snapping_to_world_zero ... ok
+test client::combat::tests::switching_enemy_modes_recycles_views_skeletons_and_health_bars ... ok
+test simulation::boss::tests::a_real_boss_hit_clears_only_the_players_uncommitted_melee_successor ... ok
+test simulation::boss::tests::a_dodge_protected_by_the_existing_motor_rejects_the_boss_active_hit_once ... ok
+test simulation::combat::tests::action_markers_crossed_with_completion_are_not_dropped ... ok
+test client::combat::tests::view_and_camera_follow_actual_elevation_without_writing_the_physical_actor ... ok
+test simulation::boss::tests::pause_and_hit_stop_freeze_boss_timeline_cooldowns_and_real_physical_pose ... ok
+test client::impact::tests::ordinary_ranged_attack_never_creates_a_special_cue ... ok
+test client::animation::tests::inspection_replay_matches_actual_game_adapter_through_attack_recovery_and_crouch ... ok
+test simulation::boss::tests::real_encounter_telegraphs_source_opening_and_hits_only_once_per_active_window ... ok
+test simulation::combat::tests::attack_admission_discards_movement_new_attacks_and_equipment_during_commitment ... ok
+test simulation::combat::tests::chain_combo_requires_the_original_q_stun_source ... ok
+test simulation::combat::tests::axe_shot_has_separate_throw_hit_return_and_source_bound_stun ... ok
+test simulation::boss::tests::player_death_resets_one_encounter_and_discards_the_pending_boss_strike ... ok
+test simulation::boss::tests::sustained_boss_guard_uses_the_same_cost_and_half_damage_as_normal_enemies ... ok
+test simulation::combat::tests::back_hits_ignore_all_three_defense_states ... ok
+test simulation::combat::tests::air_and_action_right_presses_are_consumed_and_never_queued ... ok
+test simulation::combat::tests::defense_moves_slowly_crouches_without_slide_and_jump_exits ... ok
+test client::impact::tests::real_discharge_uses_the_live_muzzle_and_airborne_hit_once_without_physics_writes ... ok
+test simulation::combat::tests::chain_pull_uses_physics_and_three_separate_arrows_from_a_fixed_sister ... ok
+test simulation::combat::tests::clear_during_zero_tick_pause_cancels_without_ghost_release_or_timer_reset ... ok
+test simulation::combat::tests::chain_sweep_without_lock_damages_and_slow_reaches_the_actual_motor ... ok
+test simulation::combat::tests::held_guard_blocks_more_than_three_hits_and_exact_last_cost_but_never_partially_spends ... ok
+test gameplay::tests::modes_replace_the_roster_while_paused_and_the_dummy_never_attacks_or_chases ... ok
+test simulation::combat::tests::cooldown_press_and_insufficient_stamina_do_not_manufacture_extra_windows ... ok
+test simulation::combat::tests::independent_shared_slot_cooldowns_survive_switching_pairs ... ok
+test simulation::combat::tests::every_projectile_rechecks_visibility_and_does_not_replay_a_skipped_shot ... ok
+test simulation::combat::tests::many_crossed_combo_markers_execute_in_order_once_even_past_completion ... ok
+test simulation::boss::tests::two_health_bars_transition_with_damage_and_knockup_immunity_then_reset_after_defeat ... ok
+test simulation::boss::tests::recovery_and_release_parry_clear_the_lunge_before_the_next_motor_step ... ok
+test simulation::combat::tests::hammer_three_shots_each_have_their_own_fixed_marker_and_companion_identity ... ok
+test simulation::boss::tests::tap_deflect_is_immune_without_stunning_boss_and_back_takes_full_damage ... ok
+test simulation::combat::tests::feedback_history_remains_bounded_ordered_and_companion_does_not_duplicate ... ok
+test simulation::combat::tests::late_tab_keeps_three_shots_when_gravity_naturally_lands_the_original_target ... ok
+test simulation::combat::tests::lock_is_explicit_toggle_parity_and_rejected_skills_cost_no_cooldown ... ok
+test simulation::combat::tests::death_cancels_pending_shots_and_respawn_clears_every_gesture_and_refills ... ok
+test simulation::combat::tests::melee_chain_tests::a_dodge_becoming_ready_this_tick_preempts_the_buffered_successor ... ok
+test simulation::combat::tests::melee_chain_tests::a_valid_slide_cancels_the_pending_attack_and_does_not_lock_out_the_crouch_edge ... ok
+test client::weapons::tests::moving_player_tether_reads_this_frame_grip_after_zero_and_multiple_fixed_steps ... ok
+test client::weapons::tests::source_melee_uses_the_retargeted_wrist_for_both_bodies_and_shared_flying_meshes ... ok
+test simulation::combat::tests::melee_chain_tests::explicit_cancel_survives_other_requests_until_the_rule_tick ... ok
+test simulation::combat::tests::melee_chain_tests::ordinary_crouch_applies_before_a_buffered_attack_without_losing_its_stage ... ok
+test simulation::combat::tests::melee_chain_tests::defense_snapshot_survives_an_entire_missed_parry_window_and_cancel_invalidates_it ... ok
+test simulation::combat::tests::melee_chain_tests::hit_stop_freezes_the_uncommitted_grace_window ... ok
+test simulation::combat::tests::melee_chain_tests::ordinary_damage_clears_followups_but_cannot_revoke_the_current_marker ... ok
+test client::weapons::tests::actual_sniper_hit_stop_freezes_the_held_source_hammer_grip_and_resumes ... ok
+test simulation::combat::tests::melee_chain_tests::accepted_jump_or_dodge_gets_the_motor_before_an_automatic_successor ... ok
+test simulation::combat::tests::mode_switch_while_paused_clears_sister_synchronously_and_preserves_stamina ... ok
+test simulation::combat::tests::ordered_short_tap_preserves_deflect_but_never_creates_release_parry ... ok
+test simulation::combat::tests::ordinary_musket_q_stuns_once_and_keeps_e_cooldown_independent ... ok
+test simulation::combat::tests::melee_chain_tests::motion_feedback_uses_accepted_jumps_and_one_real_landing_not_requested_third_jump ... ok
+test simulation::combat::tests::melee_chain_tests::paused_clear_latches_cancellation_without_cancelling_the_committed_attack ... ok
+test simulation::combat::tests::melee_has_a_real_windup_and_uses_facing_without_a_lock ... ok
+test simulation::combat::tests::melee_chain_tests::a_whiff_keeps_stage_markers_without_synthesizing_impacts ... ok
+test simulation::combat::tests::original_target_survives_unlock_and_natural_landing_after_tab ... ok
+test simulation::combat::tests::launch_peak_is_relative_to_actual_surface_including_high_platforms ... ok
+test simulation::combat::tests::dying_dummy_revives_passive_and_scale_survives_teleport_and_landing ... ok
+test simulation::geometry::tests::a_long_step_cannot_tunnel_and_preserves_motion_along_the_wall ... ok
+test simulation::geometry::tests::corners_and_map_edges_keep_the_whole_footprint_outside_solids ... ok
+test simulation::geometry::tests::touching_a_face_allows_tangential_motion_and_moving_away ... ok
+test simulation::combat::tests::post_marker_availability_and_half_open_defense_boundaries_are_current ... ok
+test simulation::combat::tests::release_from_effective_guard_parries_and_stuns_but_cancel_does_not ... ok
+test simulation::combat::tests::melee_chain_tests::new_valid_skill_pair_and_defense_win_over_a_buffered_successor ... ok
+test client::combat::tests::default_dummy_remains_unselected_and_its_view_projects_ahead_of_the_player ... ok
+test simulation::combat::tests::melee_chain_tests::actual_stride_feedback_stops_at_idle_and_excludes_teleports_and_blocked_input ... ok
+test simulation::combat::tests::melee_chain_tests::mode_cleanup_and_death_cannot_revive_an_old_followup_after_respawn ... ok
+test simulation::combat::tests::missing_target_and_los_stop_old_hits_without_retargeting ... ok
+test simulation::movement::tests::clearing_input_cancels_pending_actions_and_teleport_resets_interpolation ... ok
+test simulation::movement::tests::accepted_jump_dodge_and_knockup_exit_crouch_but_rejected_actions_do_not ... ok
+test simulation::combat::tests::third_shot_is_cancelled_if_the_second_kills_and_selected_target_clears_immediately ... ok
+test simulation::combat::tests::pause_freezes_action_stamina_cooldowns_and_clear_keeps_committed_timeline ... ok
+test simulation::boss::tests::walls_block_the_boss_motor_and_strikes_instead_of_client_position_corrections ... ok
+test simulation::combat::tests::melee_chain_tests::single_click_does_not_auto_chain_and_grace_resets_after_expiry ... ok
+test simulation::combat::tests::unaccepted_hammer_window_expires_on_landing_and_never_replays_a_tab ... ok
+test simulation::movement::tests::invalid_facing_and_knockup_requests_do_not_poison_motion ... ok
+test simulation::impact::tests::sniper_hit_stop_holds_actors_boxes_velocities_and_combat_then_resumes ... ok
+test simulation::movement::tests::crouch_toggle_is_latched_once_and_two_presses_before_fixed_tick_cancel ... ok
+test simulation::movement::tests::all_directions_released_between_fixed_ticks_clears_latched_sprint ... ok
+test simulation::movement::tests::knockup_and_input_cleanup_preserve_spent_jumps_but_reset_refills_them ... ok
+test simulation::movement::tests::dodge_still_sweeps_against_walls ... ok
+test simulation::combat::tests::melee_chain_tests::three_stages_preserve_each_marker_damage_and_immutable_history_for_both_pairs ... ok
+test simulation::combat::tests::pull_blocked_by_wall_or_large_height_cancels_and_returns_axe_without_late_arrows ... ok
+test simulation::movement::tests::repressing_shift_late_in_dodge_never_rewinds_position_when_duration_shortens ... ok
+test simulation::combat::tests::stamina_recovers_only_after_quiet_and_attack_or_incoming_restarts_wait ... ok
+test simulation::movement::tests::shift_release_between_fixed_ticks_restarts_the_continuous_hold_timer ... ok
+test simulation::movement::tests::dodge_locks_direction_has_delayed_invulnerability_and_cannot_repeat_early ... ok
+test simulation::movement::tests::holding_shift_shortens_dodge_before_transitioning_into_sprint ... ok
+test simulation::movement::tests::pressing_c_again_stands_up_and_cancels_a_slide_early ... ok
+test simulation::movement::tests::crouched_walk_is_absolute_one_point_six_and_a_sprint_latch_does_not_speed_it_up ... ok
+test simulation::movement::tests::fresh_dodge_press_restarts_hold_timer_even_when_shift_release_was_not_sampled ... ok
+test simulation::movement::tests::airborne_and_dodge_crouch_requests_are_ignored_without_landing_replay ... ok
+test simulation::impact::tests::user_pause_preserves_the_hit_stop_budget_and_ordinary_shots_do_not_trigger_it ... ok
+test simulation::movement::tests::stationary_shift_tap_dodges_backwards_immediately_without_latching_sprint ... ok
+test simulation::movement::tests::sprint_crouch_slides_in_a_locked_direction_and_stays_crouched_after_ending ... ok
+test simulation::combat::tests::pull_arrives_with_braking_without_contact_or_pushing_the_target ... ok
+test simulation::movement::tests::knockup_preserves_physical_horizontal_momentum ... ok
+test simulation::physics::tests::fast_capsule_and_dynamic_boxes_do_not_cross_thin_obstacles_or_each_other ... ok
+test simulation::physics::tests::first_install_support_point_and_rotation_velocity_are_in_world_space ... ok
+test simulation::movement::tests::released_or_invalid_input_does_not_move ... ok
+test simulation::physics::tests::first_fixed_tick_accepts_ground_actions_from_actual_spawn_contact ... ok
+test simulation::movement::tests::short_shift_tap_completes_dodge_then_returns_to_walking ... ok
+test simulation::physics::tests::a_ceiling_stops_jump_height_and_side_contacts_do_not_refill_jumps ... ok
+test client::avatar::tests::actual_hammer_and_chain_combos_keep_female_skin_grips_sources_and_feet_aligned ... ok
+test simulation::movement::tests::sprint_survives_direction_changes_and_opposing_held_directions ... ok
+test simulation::movement::tests::death_and_respawn_clear_crouch_and_discard_c_pressed_while_down ... ok
+test simulation::movement::tests::sliding_respects_walls_and_the_full_body_map_boundary ... ok
+test client::viewer::tests::actual_game_adapter_and_preview_drive_identical_real_palettes_and_weapon_mounts ... ok
+test simulation::movement::tests::capture_loss_cancellation_survives_paused_ticks_and_preserves_airborne_motion ... ok
+test simulation::movement::tests::pause_cleanup_cancels_sticky_slide_and_crouch_without_canceling_a_jump ... ok
+test simulation::movement::tests::sprint_latch_survives_shift_release_until_all_direction_keys_are_released ... ok
+test simulation::physics::tests::pause_freezes_falling_actors_and_rotating_props_on_the_first_tick ... ok
+test simulation::physics::tests::moving_support_carries_an_idle_actor_and_loss_of_support_falls ... ok
+test simulation::movement::tests::straight_and_diagonal_input_cover_the_same_distance_in_one_second ... ok
+test simulation::physics::tests::a_dynamic_box_tips_from_off_center_impulse_and_two_boxes_settle ... ok
+test simulation::movement::tests::two_jumps_are_latched_third_is_rejected_and_landing_refills_them ... ok
+test simulation::physics::tests::elevated_support_refills_two_jumps_and_leaving_its_edge_falls ... ok
+test simulation::combat::tests::stationary_skill_range_matches_admission_for_scaled_targets_on_high_ground ... ok
+test client::companion::tests::real_q_has_one_sister_exact_muzzle_pause_and_roster_cleanup_without_asset_growth ... ok
+test simulation::movement::tests::paused_simulation_preserves_motion_and_cleared_requests_do_not_replay_on_resume ... ok
+test simulation::physics::tests::a_ceiling_prevents_standing_until_the_actor_moves_clear ... ok
+test client::weapons::tests::chain_pull_roster_cancellation_and_death_clear_source_axe_views ... ok
+test client::impact::tests::particles_and_recoil_pause_then_expire_with_shared_assets_across_shots ... ok
+test client::weapons::tests::real_throw_pause_resume_and_return_keep_one_axe_and_reuse_assets ... ok
+
+test result: ok. 297 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.73s
+
+     Running unittests src/main.rs (target/debug/deps/kiva-da35d90c244e48c4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/physics_terrain.rs (target/debug/deps/physics_terrain-0d768236c6903187)
+
+running 9 tests
+test the_shared_bamboo_mesh_really_blocks_the_motor_near_the_clearing ... ok
+test the_actual_ramp_supports_diagonal_descent_without_launching_the_actor ... ok
+test pausing_the_real_courtyard_freezes_falling_actor_and_all_dynamic_props ... ok
+test scaled_capsules_keep_feet_through_crouch_headroom_teleport_and_revival ... ok
+test walking_into_the_steep_flank_does_not_climb_to_the_hilltop ... ok
+test double_jumps_from_the_hill_and_ramp_refill_only_after_landing_back_on_the_slope ... ok
+test actual_courtyard_ramp_supports_ascent_stopping_and_platform_edge_fall ... ok
+test actual_hill_has_a_walkable_approach_a_supported_summit_and_a_descent ... ok
+test an_actual_jump_can_clear_the_low_rim_and_falling_out_respawns_the_actor ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+   Doc-tests kiva
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+node --test scripts/*-unit.test.cjs
+TAP version 13
+# Subtest: early Rust selections replay when the DOM becomes ready
+ok 1 - early Rust selections replay when the DOM becomes ready
+  ---
+  duration_ms: 1.41207
+  type: 'test'
+  ...
+# Subtest: loading and paused button selections survive old snapshots until one consumption
+ok 2 - loading and paused button selections survive old snapshots until one consumption
+  ---
+  duration_ms: 0.512997
+  type: 'test'
+  ...
+# Subtest: F3 requires active trusted non-repeat input and does not consume F2
+ok 3 - F3 requires active trusted non-repeat input and does not consume F2
+  ---
+  duration_ms: 0.721816
+  type: 'test'
+  ...
+# Subtest: successive presses toggle from the pending choice before Rust samples
+ok 4 - successive presses toggle from the pending choice before Rust samples
+  ---
+  duration_ms: 1.440313
+  type: 'test'
+  ...
+# Subtest: invalid snapshots cannot change or inject the displayed appearance
+ok 5 - invalid snapshots cannot change or inject the displayed appearance
+  ---
+  duration_ms: 0.762559
+  type: 'test'
+  ...
+# Subtest: brother defaults to Li Huowang before any Rust snapshot or request
+ok 6 - brother defaults to Li Huowang before any Rust snapshot or request
+  ---
+  duration_ms: 0.558986
+  type: 'test'
+  ...
+# Subtest: bridge is available before DOM and only trusted entry/canvas gestures unlock audio
+ok 7 - bridge is available before DOM and only trusted entry/canvas gestures unlock audio
+  ---
+  duration_ms: 71.560337
+  type: 'test'
+  ...
+# Subtest: shots while locked or resuming are discarded instead of replayed after unlock
+ok 8 - shots while locked or resuming are discarded instead of replayed after unlock
+  ---
+  duration_ms: 31.799087
+  type: 'test'
+  ...
+# Subtest: unsupported, denied, and rejected audio do not throw or leak rejected promises
+ok 9 - unsupported, denied, and rejected audio do not throw or leak rejected promises
+  ---
+  duration_ms: 32.214353
+  type: 'test'
+  ...
+# Subtest: cached original synthesis is finite, normalized, and includes a short decaying tail
+ok 10 - cached original synthesis is finite, normalized, and includes a short decaying tail
+  ---
+  duration_ms: 69.569072
+  type: 'test'
+  ...
+# Subtest: voices are bounded, connected correctly, and disconnected on completion
+ok 11 - voices are bounded, connected correctly, and disconnected on completion
+  ---
+  duration_ms: 31.631087
+  type: 'test'
+  ...
+# Subtest: suspension drops active tails and a closed context can be unlocked afresh
+ok 12 - suspension drops active tails and a closed context can be unlocked afresh
+  ---
+  duration_ms: 52.842566
+  type: 'test'
+  ...
+# Subtest: closed context replacement releases old voices before a delayed statechange
+ok 13 - closed context replacement releases old voices before a delayed statechange
+  ---
+  duration_ms: 53.992776
+  type: 'test'
+  ...
+# Subtest: a failing source start releases its graph and reports unavailable playback
+ok 14 - a failing source start releases its graph and reports unavailable playback
+  ---
+  duration_ms: 30.253802
+  type: 'test'
+  ...
+# Subtest: bundled effects load once after trusted activation and BGM has a single loop
+ok 15 - bundled effects load once after trusted activation and BGM has a single loop
+  ---
+  duration_ms: 36.787463
+  type: 'test'
+  ...
+# Subtest: pause stops voices and resumes music from its offset without overlapping loops
+ok 16 - pause stops voices and resumes music from its offset without overlapping loops
+  ---
+  duration_ms: 34.374433
+  type: 'test'
+  ...
+# Subtest: asset loading cannot start paused BGM or replay an effect requested before decode
+ok 17 - asset loading cannot start paused BGM or replay an effect requested before decode
+  ---
+  duration_ms: 32.341596
+  type: 'test'
+  ...
+# Subtest: failed asset loads and decoding leave gameplay and procedural gunshots available
+ok 18 - failed asset loads and decoding leave gameplay and procedural gunshots available
+  ---
+  duration_ms: 61.617855
+  type: 'test'
+  ...
+# Subtest: unverified music stays absent without requesting a missing or arbitrary track
+ok 19 - unverified music stays absent without requesting a missing or arbitrary track
+  ---
+  duration_ms: 31.306687
+  type: 'test'
+  ...
+# Subtest: all bundled effects are actual Ogg files and Trunk copies their directory
+ok 20 - all bundled effects are actual Ogg files and Trunk copies their directory
+  ---
+  duration_ms: 4.622453
+  type: 'test'
+  ...
+# Subtest: all sixteen original cues share one decode per media and keep natural pitch
+ok 21 - all sixteen original cues share one decode per media and keep natural pitch
+  ---
+  duration_ms: 31.963945
+  type: 'test'
+  ...
+# Subtest: weighted independent variants apply each imported gain exactly once
+ok 22 - weighted independent variants apply each imported gain exactly once
+  ---
+  duration_ms: 61.194661
+  type: 'test'
+  ...
+# Subtest: landing schedules two independent original layers, including future voices in pause cleanup
+ok 23 - landing schedules two independent original layers, including future voices in pause cleanup
+  ---
+  duration_ms: 31.977388
+  type: 'test'
+  ...
+# Subtest: four effect slots protect critical cues and reserve all layers before stealing
+ok 24 - four effect slots protect critical cues and reserve all layers before stealing
+  ---
+  duration_ms: 31.225105
+  type: 'test'
+  ...
+# Subtest: a second-layer start failure cleans the entire cue without stopping BGM
+ok 25 - a second-layer start failure cleans the entire cue without stopping BGM
+  ---
+  duration_ms: 31.098189
+  type: 'test'
+  ...
+# Subtest: invalid bounded metadata never requests arbitrary files or disables old audio
+ok 26 - invalid bounded metadata never requests arbitrary files or disables old audio
+  ---
+  duration_ms: 451.737922
+  type: 'test'
+  ...
+# Subtest: metadata arriving from a closed context cannot populate the replacement or replay requests
+ok 27 - metadata arriving from a closed context cannot populate the replacement or replay requests
+  ---
+  duration_ms: 53.517093
+  type: 'test'
+  ...
+# Subtest: missing selected media is discarded without reducing a layered cue or replaying on resume
+ok 28 - missing selected media is discarded without reducing a layered cue or replaying on resume
+  ---
+  duration_ms: 30.611033
+  type: 'test'
+  ...
+# Subtest: viewer never installs an audio bridge, gesture listeners, or fetches
+ok 29 - viewer never installs an audio bridge, gesture listeners, or fetches
+  ---
+  duration_ms: 0.482627
+  type: 'test'
+  ...
+# Subtest: original ranged family cues preserve all six variants, gain, zero delay, and legacy gun access
+ok 30 - original ranged family cues preserve all six variants, gain, zero delay, and legacy gun access
+  ---
+  duration_ms: 30.80211
+  type: 'test'
+  ...
+# Subtest: original ranged undecoded media never invokes procedural fallback or queues an old shot
+ok 31 - original ranged undecoded media never invokes procedural fallback or queues an old shot
+  ---
+  duration_ms: 30.548018
+  type: 'test'
+  ...
+# Subtest: mode requests survive loading and are consumed once even while paused
+ok 32 - mode requests survive loading and are consumed once even while paused
+  ---
+  duration_ms: 1.395326
+  type: 'test'
+  ...
+# Subtest: F2 switches only during active play and ignores repeat and untrusted input
+ok 33 - F2 switches only during active play and ignores repeat and untrusted input
+  ---
+  duration_ms: 0.545865
+  type: 'test'
+  ...
+# Subtest: mode snapshots ignore invalid values and tolerate absent DOM nodes
+ok 34 - mode snapshots ignore invalid values and tolerate absent DOM nodes
+  ---
+  duration_ms: 0.473132
+  type: 'test'
+  ...
+# Subtest: early player, resources, pair and target snapshots replay safely together
+ok 35 - early player, resources, pair and target snapshots replay safely together
+  ---
+  duration_ms: 19.624373
+  type: 'test'
+  ...
+# Subtest: pair identity uses explicit enums, with E and Q always separate
+ok 36 - pair identity uses explicit enums, with E and Q always separate
+  ---
+  duration_ms: 3.103267
+  type: 'test'
+  ...
+# Subtest: all numerical values are finite and bounded, with inert strings
+ok 37 - all numerical values are finite and bounded, with inert strings
+  ---
+  duration_ms: 1.218264
+  type: 'test'
+  ...
+# Subtest: target clearing, death and expired combo remove stale state without a clock
+ok 38 - target clearing, death and expired combo remove stale state without a clock
+  ---
+  duration_ms: 0.854872
+  type: 'test'
+  ...
+# Subtest: head scripts retain readiness and failures before DOM exists
+ok 39 - head scripts retain readiness and failures before DOM exists
+  ---
+  duration_ms: 8.51759
+  type: 'test'
+  ...
+# Subtest: first entry is visible and disabled until real engine readiness
+ok 40 - first entry is visible and disabled until real engine readiness
+  ---
+  duration_ms: 0.868403
+  type: 'test'
+  ...
+# Subtest: capture pending has immediate feedback and becomes retryable after failure or blur
+ok 41 - capture pending has immediate feedback and becomes retryable after failure or blur
+  ---
+  duration_ms: 0.794802
+  type: 'test'
+  ...
+# Subtest: real download progress replays before DOM and never enables entry at 100 percent
+ok 42 - real download progress replays before DOM and never enables entry at 100 percent
+  ---
+  duration_ms: 0.685367
+  type: 'test'
+  ...
+# Subtest: unknown and invalid totals show a stage without a fabricated percentage
+ok 43 - unknown and invalid totals show a stage without a fabricated percentage
+  ---
+  duration_ms: 0.713243
+  type: 'test'
+  ...
+# Subtest: startup phases never regress, failed progress cannot reset failure, and real ready wins
+ok 44 - startup phases never regress, failed progress cannot reset failure, and real ready wins
+  ---
+  duration_ms: 0.695215
+  type: 'test'
+  ...
+# Subtest: pointer-lock event errors and synchronous rejection restore the entry button
+ok 45 - pointer-lock event errors and synchronous rejection restore the entry button
+  ---
+  duration_ms: 0.623136
+  type: 'test'
+  ...
+# Subtest: resume after Escape keeps readiness and ignores delayed first-load notifications
+ok 46 - resume after Escape keeps readiness and ignores delayed first-load notifications
+  ---
+  duration_ms: 1.219234
+  type: 'test'
+  ...
+# Subtest: input waits for actual pointerlockchange, not just promise resolution
+ok 47 - input waits for actual pointerlockchange, not just promise resolution
+  ---
+  duration_ms: 1.397538
+  type: 'test'
+  ...
+# Subtest: lock loss and blur discard old motion and require a fresh click
+ok 48 - lock loss and blur discard old motion and require a fresh click
+  ---
+  duration_ms: 1.759119
+  type: 'test'
+  ...
+# Subtest: rapid blur and recapture clear held keys; repeated keydown cannot resurrect them
+ok 49 - rapid blur and recapture clear held keys; repeated keydown cannot resurrect them
+  ---
+  duration_ms: 0.782121
+  type: 'test'
+  ...
+# Subtest: capture failures allow retry; delayed rejection cannot cancel confirmed capture
+ok 50 - capture failures allow retry; delayed rejection cannot cancel confirmed capture
+  ---
+  duration_ms: 0.612203
+  type: 'test'
+  ...
+# Subtest: horizontal coalesced samples are consumed once and vertical motion is ignored
+ok 51 - horizontal coalesced samples are consumed once and vertical motion is ignored
+  ---
+  duration_ms: 0.600667
+  type: 'test'
+  ...
+# Subtest: 150% system pixel units calibrate independently of DPR and reject clipped edges
+ok 52 - 150% system pixel units calibrate independently of DPR and reject clipped edges
+  ---
+  duration_ms: 0.871669
+  type: 'test'
+  ...
+# Subtest: startup and input bridges load before the generated WASM module
+ok 53 - startup and input bridges load before the generated WASM module
+  ---
+  duration_ms: 0.341594
+  type: 'test'
+  ...
+# Subtest: action presses are consumed once and repeat cannot replay an action
+ok 54 - action presses are consumed once and repeat cannot replay an action
+  ---
+  duration_ms: 0.817388
+  type: 'test'
+  ...
+# Subtest: right edges preserve complete taps and repress ordering without action bits
+ok 55 - right edges preserve complete taps and repress ordering without action bits
+  ---
+  duration_ms: 1.026182
+  type: 'test'
+  ...
+# Subtest: right edges remain queued across unsampled frames and are consumed once
+ok 56 - right edges remain queued across unsampled frames and are consumed once
+  ---
+  duration_ms: 0.698349
+  type: 'test'
+  ...
+# Subtest: pointercancel cancels instead of releasing and needs a new physical press
+ok 57 - pointercancel cancels instead of releasing and needs a new physical press
+  ---
+  duration_ms: 0.788577
+  type: 'test'
+  ...
+# Subtest: blur, Escape and lock loss retain cancellation across immediate recapture
+ok 58 - blur, Escape and lock loss retain cancellation across immediate recapture
+  ---
+  duration_ms: 1.759587
+  type: 'test'
+  ...
+# Subtest: defense cancellation precedes a new gesture without losing it
+ok 59 - defense cancellation precedes a new gesture without losing it
+  ---
+  duration_ms: 0.590804
+  type: 'test'
+  ...
+# Subtest: right queue is bounded; overflow cancels the current gesture until a fresh press
+ok 60 - right queue is bounded; overflow cancels the current gesture until a fresh press
+  ---
+  duration_ms: 0.782337
+  type: 'test'
+  ...
+# Subtest: untrusted, touch and inactive right edges cannot alter an accepted mouse gesture
+ok 61 - untrusted, touch and inactive right edges cannot alter an accepted mouse gesture
+  ---
+  duration_ms: 1.479142
+  type: 'test'
+  ...
+# Subtest: loss of capture discards queued actions, parry and sprint without replay after recapture
+ok 62 - loss of capture discards queued actions, parry and sprint without replay after recapture
+  ---
+  duration_ms: 0.63627
+  type: 'test'
+  ...
+# Subtest: wheel has no weapon or attack mapping
+ok 63 - wheel has no weapon or attack mapping
+  ---
+  duration_ms: 0.614175
+  type: 'test'
+  ...
+# Subtest: game keys and browser gestures prevent defaults only during confirmed capture
+ok 64 - game keys and browser gestures prevent defaults only during confirmed capture
+  ---
+  duration_ms: 0.846288
+  type: 'test'
+  ...
+# Subtest: untrusted or nonmouse events cannot queue attacks or wheel switches
+ok 65 - untrusted or nonmouse events cannot queue attacks or wheel switches
+  ---
+  duration_ms: 0.82895
+  type: 'test'
+  ...
+# Subtest: vertical pointer samples have no aim interface and never alter horizontal look
+ok 66 - vertical pointer samples have no aim interface and never alter horizontal look
+  ---
+  duration_ms: 0.819408
+  type: 'test'
+  ...
+# Subtest: short Shift tap retains one queued dodge after release
+ok 67 - short Shift tap retains one queued dodge after release
+  ---
+  duration_ms: 0.785048
+  type: 'test'
+  ...
+# Subtest: left and right Shift form one physical hold without duplicate dodge
+ok 68 - left and right Shift form one physical hold without duplicate dodge
+  ---
+  duration_ms: 0.878989
+  type: 'test'
+  ...
+# Subtest: inactive, untrusted and repeated Shift cannot dodge; Ctrl is unbound
+ok 69 - inactive, untrusted and repeated Shift cannot dodge; Ctrl is unbound
+  ---
+  duration_ms: 0.669128
+  type: 'test'
+  ...
+# Subtest: C tap queues one crouch toggle and keyup does not clear it
+ok 70 - C tap queues one crouch toggle and keyup does not clear it
+  ---
+  duration_ms: 0.653558
+  type: 'test'
+  ...
+# Subtest: two C taps before sampling cancel toggle parity without losing other actions
+ok 71 - two C taps before sampling cancel toggle parity without losing other actions
+  ---
+  duration_ms: 1.329506
+  type: 'test'
+  ...
+# Subtest: holding C or keyboard repeat cannot keep toggling stance
+ok 72 - holding C or keyboard repeat cannot keep toggling stance
+  ---
+  duration_ms: 0.648654
+  type: 'test'
+  ...
+# Subtest: queued crouch toggles clear on blur, lock loss and capture confirmation
+ok 73 - queued crouch toggles clear on blur, lock loss and capture confirmation
+  ---
+  duration_ms: 0.717253
+  type: 'test'
+  ...
+# Subtest: inactive and untrusted C presses do not toggle or prevent browser input
+ok 74 - inactive and untrusted C presses do not toggle or prevent browser input
+  ---
+  duration_ms: 0.599511
+  type: 'test'
+  ...
+# Subtest: E and Q queue distinct ordinary skills on keydown, never on hold or release
+ok 75 - E and Q queue distinct ordinary skills on keydown, never on hold or release
+  ---
+  duration_ms: 0.832366
+  type: 'test'
+  ...
+# Subtest: left attacks and middle lock toggles require fresh button edges
+ok 76 - left attacks and middle lock toggles require fresh button edges
+  ---
+  duration_ms: 1.419973
+  type: 'test'
+  ...
+# Subtest: capture click never attacks; confirmation discards previous device actions
+ok 77 - capture click never attacks; confirmation discards previous device actions
+  ---
+  duration_ms: 0.663216
+  type: 'test'
+  ...
+# Subtest: the last requested pair wins within one browser batch
+ok 78 - the last requested pair wins within one browser batch
+  ---
+  duration_ms: 0.592811
+  type: 'test'
+  ...
+# Subtest: all-direction release and repress keeps the release fact with the final held snapshot
+ok 79 - all-direction release and repress keeps the release fact with the final held snapshot
+  ---
+  duration_ms: 0.58589
+  type: 'test'
+  ...
+# Subtest: opposing directions and overlapping Shift hands do not end a physical hold
+ok 80 - opposing directions and overlapping Shift hands do not end a physical hold
+  ---
+  duration_ms: 0.773447
+  type: 'test'
+  ...
+# Subtest: Shift release and repress delivers both the release fact and a fresh dodge
+ok 81 - Shift release and repress delivers both the release fact and a fresh dodge
+  ---
+  duration_ms: 0.806681
+  type: 'test'
+  ...
+# Subtest: physical release facts survive blur and recapture between samples
+ok 82 - physical release facts survive blur and recapture between samples
+  ---
+  duration_ms: 0.921071
+  type: 'test'
+  ...
+# Subtest: untrusted or inactive key releases cannot publish release facts
+ok 83 - untrusted or inactive key releases cannot publish release facts
+  ---
+  duration_ms: 0.826789
+  type: 'test'
+  ...
+# Subtest: WASM streaming uses actual response bytes and keeps download completion separate from ready
+ok 84 - WASM streaming uses actual response bytes and keeps download completion separate from ready
+  ---
+  duration_ms: 20.893509
+  type: 'test'
+  ...
+# Subtest: missing, invalid and compressed response lengths stay indeterminate while retaining actual bytes
+ok 85 - missing, invalid and compressed response lengths stay indeterminate while retaining actual bytes
+  ---
+  duration_ms: 5.407724
+  type: 'test'
+  ...
+# Subtest: CORS responses cannot treat a hidden encoding header as proof of an unencoded length
+ok 86 - CORS responses cannot treat a hidden encoding header as proof of an unencoded length
+  ---
+  duration_ms: 1.13118
+  type: 'test'
+  ...
+# Subtest: a cached immediate response still waits for engine and render readiness
+ok 87 - a cached immediate response still waits for engine and render readiness
+  ---
+  duration_ms: 0.972099
+  type: 'test'
+  ...
+# Subtest: HTTP, fetch, stream and initialization failures reject and replay a retryable failure
+ok 88 - HTTP, fetch, stream and initialization failures reject and replay a retryable failure
+  ---
+  duration_ms: 3.722146
+  type: 'test'
+  ...
+# Subtest: loader errors arriving after real ready cannot replace a working entry state
+ok 89 - loader errors arriving after real ready cannot replace a working entry state
+  ---
+  duration_ms: 0.966603
+  type: 'test'
+  ...
+# Subtest: initialization failure cancels an unfinished download and preserves its original error
+ok 90 - initialization failure cancels an unfinished download and preserves its original error
+  ---
+  duration_ms: 1.666933
+  type: 'test'
+  ...
+# Subtest: truncated known-size responses fail instead of announcing initialization
+ok 91 - truncated known-size responses fail instead of announcing initialization
+  ---
+  duration_ms: 1.240654
+  type: 'test'
+  ...
+# Subtest: canceling the tracked response cancels its original reader
+ok 92 - canceling the tracked response cancels its original reader
+  ---
+  duration_ms: 1.335713
+  type: 'test'
+  ...
+# Subtest: Trunk uses the dedicated loader while retaining its bindings and started event
+ok 93 - Trunk uses the dedicated loader while retaining its bindings and started event
+  ---
+  duration_ms: 2.244511
+  type: 'test'
+  ...
+# Subtest: immutable page mode only accepts exact model query and precedes game bridges
+ok 94 - immutable page mode only accepts exact model query and precedes game bridges
+  ---
+  duration_ms: 6.44895
+  type: 'test'
+  ...
+# Subtest: viewer mode installs no game capture, HUD, selection or audio bridges/listeners
+ok 95 - viewer mode installs no game capture, HUD, selection or audio bridges/listeners
+  ---
+  duration_ms: 3.593297
+  type: 'test'
+  ...
+# Subtest: early snapshot/catalog replay waits for true engine ready and current model ready
+ok 96 - early snapshot/catalog replay waits for true engine ready and current model ready
+  ---
+  duration_ms: 2.854081
+  type: 'test'
+  ...
+# Subtest: transport sends bounded commands once without optimistic playback or a JS clock
+ok 97 - transport sends bounded commands once without optimistic playback or a JS clock
+  ---
+  duration_ms: 1.234037
+  type: 'test'
+  ...
+# Subtest: latest selections coalesce, malformed IDs/nonfinite values never cross bridge
+ok 98 - latest selections coalesce, malformed IDs/nonfinite values never cross bridge
+  ---
+  duration_ms: 2.408023
+  type: 'test'
+  ...
+# Subtest: stale/invalid snapshots cannot replace confirmed state or erase retained catalog
+ok 99 - stale/invalid snapshots cannot replace confirmed state or erase retained catalog
+  ---
+  duration_ms: 1.478547
+  type: 'test'
+  ...
+# Subtest: source catalog, search and reference are explicit and driven by Rust snapshot
+ok 100 - source catalog, search and reference are explicit and driven by Rust snapshot
+  ---
+  duration_ms: 1.599314
+  type: 'test'
+  ...
+# Subtest: camera uses canvas-only pointer capture; form interaction, blur and cancellation do not leak deltas
+ok 101 - camera uses canvas-only pointer capture; form interaction, blur and cancellation do not leak deltas
+  ---
+  duration_ms: 1.296074
+  type: 'test'
+  ...
+# Subtest: part hiding is unavailable before selected render readiness and does not mutate source state
+ok 102 - part hiding is unavailable before selected render readiness and does not mutate source state
+  ---
+  duration_ms: 2.289172
+  type: 'test'
+  ...
+# Subtest: copy uses confirmed inspection text, clipboard rejection is visible and retry works
+ok 103 - copy uses confirmed inspection text, clipboard rejection is visible and retry works
+  ---
+  duration_ms: 5.285879
+  type: 'test'
+  ...
+# Subtest: download/failure replay never fakes readiness; only retry requests a reload
+ok 104 - download/failure replay never fakes readiness; only retry requests a reload
+  ---
+  duration_ms: 1.334402
+  type: 'test'
+  ...
+# Subtest: render failure after global ready remains recoverable without resetting startup
+ok 105 - render failure after global ready remains recoverable without resetting startup
+  ---
+  duration_ms: 2.109954
+  type: 'test'
+  ...
+1..105
+# tests 105
+# suites 0
+# pass 105
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1411.698189
+cargo check --locked --target wasm32-unknown-unknown
+    Checking kiva v0.1.0 (/home/asuka/go/src/github.com/fxkt-tech/kiva)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 2.20s

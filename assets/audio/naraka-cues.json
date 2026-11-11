@@ -1,0 +1,511 @@
+{
+  "version": 1,
+  "cues": {
+    "naraka_attack_1": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-909498841.ogg",
+              "weight": 0.5,
+              "gain": 1
+            },
+            {
+              "file": "naraka-183294347.ogg",
+              "weight": 0.5,
+              "gain": 0.9566714571907537
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_attack_2": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-869056893.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            },
+            {
+              "file": "naraka-15507174.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            },
+            {
+              "file": "naraka-278708188.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_attack_3": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-359912015.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            },
+            {
+              "file": "naraka-318634220.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            },
+            {
+              "file": "naraka-278221262.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_riposte": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-925549399.ogg",
+              "weight": 1.0,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_hit": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-682948856.ogg",
+              "weight": 0.2,
+              "gain": 0.7877015316081852
+            },
+            {
+              "file": "naraka-347384654.ogg",
+              "weight": 0.2,
+              "gain": 0.7529093744350791
+            },
+            {
+              "file": "naraka-474690479.ogg",
+              "weight": 0.2,
+              "gain": 0.8752010525512788
+            },
+            {
+              "file": "naraka-278492924.ogg",
+              "weight": 0.2,
+              "gain": 0.7801905615579658
+            },
+            {
+              "file": "naraka-781923129.ogg",
+              "weight": 0.2,
+              "gain": 0.8656965791813716
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_deflect": {
+      "priority": 3,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-536528925.ogg",
+              "weight": 1.0,
+              "gain": 0.7693786653114119
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_block": {
+      "priority": 3,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-536528925.ogg",
+              "weight": 1.0,
+              "gain": 0.7693786653114119
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_parry": {
+      "priority": 3,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-888176521.ogg",
+              "weight": 1.0,
+              "gain": 0.7765634206305763
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_jump": {
+      "priority": 1,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-777150789.ogg",
+              "weight": 0.25,
+              "gain": 1
+            },
+            {
+              "file": "naraka-791851626.ogg",
+              "weight": 0.25,
+              "gain": 1
+            },
+            {
+              "file": "naraka-399916424.ogg",
+              "weight": 0.25,
+              "gain": 1
+            },
+            {
+              "file": "naraka-878176367.ogg",
+              "weight": 0.25,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_land": {
+      "priority": 1,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.1,
+          "variants": [
+            {
+              "file": "naraka-1012800056.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-655706814.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-322497778.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-361062933.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-265957799.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-450188065.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-394273666.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-1002355989.ogg",
+              "weight": 0.125,
+              "gain": 1
+            }
+          ]
+        },
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-394273666.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-655706814.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-265957799.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-450188065.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-322497778.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-361062933.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-1002355989.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-1012800056.ogg",
+              "weight": 0.125,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_dodge": {
+      "priority": 1,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-384048418.ogg",
+              "weight": 0.16666666666666666,
+              "gain": 1
+            },
+            {
+              "file": "naraka-835672119.ogg",
+              "weight": 0.16666666666666666,
+              "gain": 1
+            },
+            {
+              "file": "naraka-919868544.ogg",
+              "weight": 0.16666666666666666,
+              "gain": 1
+            },
+            {
+              "file": "naraka-1013417629.ogg",
+              "weight": 0.16666666666666666,
+              "gain": 1
+            },
+            {
+              "file": "naraka-828546990.ogg",
+              "weight": 0.16666666666666666,
+              "gain": 1
+            },
+            {
+              "file": "naraka-364824874.ogg",
+              "weight": 0.16666666666666666,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_step": {
+      "priority": 0,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-655706814.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-265957799.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-361062933.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-1012800056.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-1002355989.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-322497778.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-450188065.ogg",
+              "weight": 0.125,
+              "gain": 1
+            },
+            {
+              "file": "naraka-394273666.ogg",
+              "weight": 0.125,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_death": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-682276155.ogg",
+              "weight": 1.0,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_death_voice": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-487560667.ogg",
+              "weight": 0.14285714285714285,
+              "gain": 1
+            },
+            {
+              "file": "naraka-289069424.ogg",
+              "weight": 0.14285714285714285,
+              "gain": 1
+            },
+            {
+              "file": "naraka-672810389.ogg",
+              "weight": 0.14285714285714285,
+              "gain": 1
+            },
+            {
+              "file": "naraka-27850851.ogg",
+              "weight": 0.14285714285714285,
+              "gain": 1
+            },
+            {
+              "file": "naraka-444149984.ogg",
+              "weight": 0.14285714285714285,
+              "gain": 1
+            },
+            {
+              "file": "naraka-51798462.ogg",
+              "weight": 0.14285714285714285,
+              "gain": 1
+            },
+            {
+              "file": "naraka-323878669.ogg",
+              "weight": 0.14285714285714285,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_gun": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-477445358.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 0.7529465830838055
+            },
+            {
+              "file": "naraka-585387678.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 0.795726080621661
+            },
+            {
+              "file": "naraka-384264562.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 0.7502045400193192
+            }
+          ]
+        }
+      ]
+    },
+    "naraka_bow": {
+      "priority": 2,
+      "offset": 0,
+      "layers": [
+        {
+          "delay": 0.0,
+          "variants": [
+            {
+              "file": "naraka-771871815.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            },
+            {
+              "file": "naraka-938553406.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            },
+            {
+              "file": "naraka-471162968.ogg",
+              "weight": 0.3333333333333333,
+              "gain": 1
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

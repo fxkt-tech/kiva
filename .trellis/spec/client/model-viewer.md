@@ -9,7 +9,7 @@
 
 - `web::viewer_mode() -> bool` 在App创建前读取 `window.kivaPage.isViewer()`；仅精确 `view=model` 启用，原生仍运行游戏。
 - `viewer::configure(&mut App)` 组合独立场景，前置为DefaultPlugins与StartupPlugin；不安装SimulationPlugin、地图、战斗、游戏输入、跟随镜头、HUD或音频。
-- `animation::preview_catalog(&AnimationLibrary, &SourceAnimationLibrary) -> Vec<PreviewClip>` 提供游戏单体场景、19 CC0、35源片段和资产参考姿态；片段时长读取实际库。
+- `animation::preview_catalog(&AnimationLibrary, &SourceAnimationLibrary) -> Vec<PreviewClip>` 提供游戏单体场景、19 CC0、35燕云／44永劫源片段和资产参考姿态；片段时长读取实际库。
 - `PreviewRig::seek(library, source, id, pair, blade, seconds, looping) -> bool` 重建游戏单体状态或按绝对时间采样片段；`pose()` 返回实际RigPose。
 - `RigPose::trace()` 返回实际采样分支记录的主要片段／时间、源权重、过渡与IK信息；不由JS推导裁剪公式。
 - `companion::local_frame(root, source, aim, grips) -> CompanionFrame`、`RigPose::sample_companion_hold(...)` 与真实妹妹显示共用局部武器frame和持握计算。
@@ -25,7 +25,7 @@
 
 游戏单体检查复用游戏 `RigPose::frame`，保留动作通知与事件去重→observe→advance→advance_source顺序。固定60Hz检查场景以完整RigPose历史重放，向前增量计算、倒拖／更换场景参数从头重建；这是受控单体输入，不是任意真实游戏帧录制。游戏自身显示dt不改成60Hz。妹妹仅检查持握／瞄准，不能复制射击标记或冒称完整技能。
 
-源／CC0对照使用实际绝对采样，不叠加游戏持握；源轨保留现有根运动／重定向规则，不是未加工原件。源模式隐藏手持，返回游戏模式保留已选装备。参考姿态读取角色自身导入rest，不能以inverse(IBM)替代AV03 sourceRestModel。
+源／CC0对照使用实际绝对采样，不叠加游戏持握；源轨保留现有根运动／重定向规则，不是未加工原件。永劫upper-body／fingers片段按声明scope组合参考下身／身体，不能让缺轨骨盆把模型压入地面，具体来源与插值契约见[naraka-motion.md](naraka-motion.md)。源模式隐藏手持，返回游戏模式保留已选装备。参考姿态读取角色自身导入rest，不能以inverse(IBM)替代AV03 sourceRestModel。
 
 源层和CC0层最终显示、左右手／脊柱标记与实际皮肤共用求值；握持坐标从实际腕／MCP重建，近战+0.055m语义偏移保留。参考臂向、掌轴与独立源指轨的校准详见[模型契约](model-assets.md)。远程使用实际枪口0/-Z及武器握点求双手，不把近战手腕根直接当枪口。禁止只在查看页增加纠偏、偏移或IK来掩盖游戏错误。
 
@@ -54,14 +54,14 @@ Rust独占播放时钟、配置、动作、相机和ready状态。换动作回�
 
 Good：暂停攻击中段，换三角色并观察同一帧，打开真实骨骼／握点对比，复制配置复现问题。
 Base：默认实际配置→选动作→播放／暂停→拖时间→自由镜头检查。
-Bad：用独立查看器修正错误偏移后宣称游戏正确；用54片段冒称54个完整技能；只看地板ready或CPU测试就宣称模型画面通过。
+Bad：用独立查看器修正错误偏移后宣称游戏正确；用片段数冒称完整技能数；只看地板ready或CPU测试就宣称模型画面通过。
 
 ## Tests Required
 
 - `make check`、WASM Clippy；入口变更再执行固定临时Trunk构建，检查根路径／静态子路径。
 - 真实game animate适配与PreviewRig比较动作、恢复、蹲伏、防御序列；三角色实际palette、源权重与近战武器变换一致，妹妹真实frame／双手握点回归。
 - source权重0/0.5/1的左右手／脊柱语义与实际皮肤一致，臂段方向、独立指链和正向握柄另有正确性断言；不能用原错误右手数学结果或游戏／查看一致替代解剖检查。参考姿态不假定IBM抵消。
-- 正放／seek／倒拖／切换／循环末帧结果一致，全部54片段有限；动态fit包含当前皮肤及附件，暂停相机帧复用计算，重复换装不增长实体／资产。
+- 正放／seek／倒拖／切换／循环末帧结果一致，全部98个对照片段有限；动态fit包含当前皮肤及附件，暂停相机帧复用计算，重复换装不增长实体／资产。
 - 实际传播的子Mesh显隐、隐藏身体后重选、旧部件ID拒绝；加载选中主体、旧revision、后续错误可恢复。
 - Node直接执行真实脚本，验证模式隔离、早期快照、队列边界、时间控件／画布／焦点／取消、复制失败和错误恢复；浏览器验证实际WASM操作及画面。软件GPU流程不替代真实GPU模型验收。
 

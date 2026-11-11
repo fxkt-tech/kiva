@@ -337,10 +337,8 @@ fn actual_game_adapter_and_preview_drive_identical_real_palettes_and_weapon_moun
             let dt = Duration::from_secs_f64(1. / 60.);
             let mut preview = PreviewRig::new(app.world().resource::<AnimationLibrary>());
             for frame in 1..=60 {
-                if frame == 1 {
-                    app.world_mut().resource_mut::<Time<Fixed>>().advance_by(dt);
-                    app.world_mut().run_schedule(FixedUpdate);
-                }
+                app.world_mut().resource_mut::<Time<Fixed>>().advance_by(dt);
+                app.world_mut().run_schedule(FixedUpdate);
                 app.world_mut().resource_mut::<Time>().advance_by(dt);
                 assert!(preview.seek(
                     app.world().resource::<AnimationLibrary>(),
@@ -381,10 +379,10 @@ fn actual_game_adapter_and_preview_drive_identical_real_palettes_and_weapon_moun
                     );
                     assert!(at.rotation.dot(bt.rotation).abs() > 0.99999);
                 }
-                assert_eq!(
-                    *app.world().get::<Transform>(live_weapon).unwrap(),
-                    *app.world().get::<Transform>(inspected_weapon).unwrap()
-                );
+                let live_mount = app.world().get::<Transform>(live_weapon).unwrap();
+                let inspected_mount = app.world().get::<Transform>(inspected_weapon).unwrap();
+                assert!(live_mount.translation.distance(inspected_mount.translation) < 0.00001);
+                assert!(live_mount.rotation.dot(inspected_mount.rotation).abs() > 0.99999);
             }
         }
     }

@@ -1,0 +1,99 @@
+{
+  "name": "AutoAnimatorStates",
+  "source_path_id": -2135719427922892394,
+  "source_file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AutoAnimatorStates.bytes",
+  "source_sha256": "4fad3cbab5cac043e039f71ec8edec4d38c2a3634514e4758e98e6fce9ff711c",
+  "decoded_sha256": "6f8066d2783f69d84e7ac3339089b3122c3fc4ded014e1033f3fef91761999b3",
+  "decoded_bytes": 5419630,
+  "framing_verified": true,
+  "hits": [],
+  "tables": [
+    {
+      "name": "AutoAnimatorStates_MaxStateMachineConf",
+      "offset": 136,
+      "end": 5419630,
+      "count": 23132,
+      "index_size": 1362150
+    }
+  ],
+  "records": [
+    {
+      "table": "AutoAnimatorStates_MaxStateMachineConf",
+      "key": "attack_1000",
+      "offset": 1362294,
+      "end": 1362383,
+      "bytes": 89,
+      "sha256": "b1151ecdf20f1004b7209ff880aaa4a82e323ebe37e00944fa9c92390b3210a4",
+      "strings": [
+        {
+          "offset": 0,
+          "characters": 11,
+          "value": "attack_1000"
+        },
+        {
+          "offset": 31,
+          "characters": 11,
+          "value": "attack_1000"
+        },
+        {
+          "offset": 57,
+          "characters": 13,
+          "value": "dinner_attack"
+        }
+      ],
+      "raw_hex": "0b000000610074007400610063006b005f00310030003000300001010000000b000000610074007400610063006b005f0031003000300030000d000000640069006e006e00650072005f00610074007400610063006b000000"
+    },
+    {
+      "table": "AutoAnimatorStates_MaxStateMachineConf",
+      "key": "attack_1000_charge",
+      "offset": 1362383,
+      "end": 1362514,
+      "bytes": 131,
+      "sha256": "7f4b1571b10e0f8020b7d48c2fe6b63ed5156bc4a14a8968aff61c3c5f8d01ac",
+      "strings": [
+        {
+          "offset": 0,
+          "characters": 18,
+          "value": "attack_1000_charge"
+        },
+        {
+          "offset": 45,
+          "characters": 18,
+          "value": "attack_1000_charge"
+        },
+        {
+          "offset": 85,
+          "characters": 20,
+          "value": "dinner_attack_charge"
+        }
+      ],
+      "raw_hex": "12000000610074007400610063006b005f0031003000300030005f00630068006100720067006500010100000012000000610074007400610063006b005f0031003000300030005f0063006800610072006700650014000000640069006e006e00650072005f00610074007400610063006b005f006300680061007200670065000000"
+    },
+    {
+      "table": "AutoAnimatorStates_MaxStateMachineConf",
+      "key": "attack_1000_prepare",
+      "offset": 1362514,
+      "end": 1362651,
+      "bytes": 137,
+      "sha256": "aa487162af93bc449f0e8073dfae5b5413510781fb019ab83689af87f0220f43",
+      "strings": [
+        {
+          "offset": 0,
+          "characters": 19,
+          "value": "attack_1000_prepare"
+        },
+        {
+          "offset": 47,
+          "characters": 19,
+          "value": "attack_1000_prepare"
+        },
+        {
+          "offset": 89,
+          "characters": 21,
+          "value": "dinner_attack_prepare"
+        }
+      ],
+      "raw_hex": "13000000610074007400610063006b005f0031003000300030005f007000720065007000610072006500010100000013000000610074007400610063006b005f0031003000300030005f00700072006500700061007200650015000000640069006e006e00650072005f00610074007400610063006b005f0070007200650070006100720065000000"
+    }
+  ]
+}

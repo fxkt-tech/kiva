@@ -1,0 +1,91 @@
+{
+  "scope": "Offline Naraka audio delivery only; no client/web/simulation edits",
+  "source_events": 15,
+  "runtime_cues": 16,
+  "unique_original_wem_and_complete_pcm": 48,
+  "ogg_bytes": 945182,
+  "prepared_bytes": 8213555,
+  "decoder": {
+    "tool": "vgmstream-r2168/vgmstream-cli",
+    "sha256": "e736da315053bf91796d01eca18b54cbcc2d5b328eecdaf15786e7838251f581",
+    "arguments": [
+      "-i"
+    ]
+  },
+  "ffmpeg_version": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+  "original_landing_actions": [
+    {
+      "action_id": 221259392,
+      "original_delay_ms": 100,
+      "variants": 8
+    },
+    {
+      "action_id": 944570778,
+      "original_delay_ms": 0,
+      "variants": 8
+    }
+  ],
+  "checks": {
+    "prepare_real_pck_and_hirc_then_decode_every_selected_media": true,
+    "full_portable_verify_rebuilt_all_ogg_config_and_manifest_byte_identical": true,
+    "portable_verify_audit_hook_disallowed_game_install_and_vgmstream_access": true,
+    "parser_real_identity_and_fault_tests": {
+      "command": "python3 scripts/test-naraka-audio.py",
+      "passed": 10
+    },
+    "independent_research_first_variant_wav_sha_matches": 15,
+    "python_entry_points_ast_parsed": 4,
+    "git_diff_check": true,
+    "browser_audio_context": "pending parent integration",
+    "subjective_listening": "not performed",
+    "full_project_quality_gate": "parent integration responsibility"
+  },
+  "maximum_vorbis_decoded_peak_before_playback_gain": 1.1330243349075317,
+  "minimum_fixed_variant_playback_gain": 0.7502045400193192,
+  "maximum_effect_only_mix_peak_at_4_sources_gain_0_18": 0.612,
+  "existing_audio_files_unchanged_from_HEAD": {
+    "attack.ogg": "d41041393612bbf20265bcf9469d9ea59c1944b9c8407584148fe1f958cc6551",
+    "hit.ogg": "ca4de524bc2e0e178498066d314a16514c28093de89420e315f2c19ab14c205d",
+    "deflect.ogg": "8dfe753dfa4aacda2a022ad69105b893194d84a43b1417f315f6f97e66941843",
+    "choulingke-bgm.ogg": "407246d2cf3e5ff3165f5a1bc7ef321e9e3f47dd77950ab409c5143e63ceb7f8",
+    "effects-manifest.json": "fc6b7505f24423b29fd534cecccd86e79f7b3e8acb23f413a0dd5bf3037e7ba2",
+    "music-manifest.json": "90c165d29d1867905e42fe6d4f93a27443e2f798de59704acd31e1c752400798",
+    "music.json": "eca4ad9eec36c9bb5475d1827c6b7b96c06f768bd123f2277d23b3a16d60b200",
+    "README.md": "d162cceb71483c7c29c8a751202895ed5a091d97895dfb52bba403004caf761b"
+  },
+  "runtime_cues_sha256": "d19e52e079f7745c6ef086fe451d5e30cae34895a77275cbd9c4fa42f83cc864",
+  "prepared_manifest_sha256": "3a4e996cbf5c0d37c7206ccc657e16baa1fa4751d0ae6f303b3e5a2a8e4f273f",
+  "unrestored_original_behavior": [
+    "proto track time units/group semantics",
+    "material and armor switch names",
+    "RTPC and buses/reverb",
+    "original random mode"
+  ],
+  "ranged_extension": {
+    "original42media_byte_identical": true,
+    "new_ogg_files": [
+      "naraka-384264562.ogg",
+      "naraka-471162968.ogg",
+      "naraka-477445358.ogg",
+      "naraka-585387678.ogg",
+      "naraka-771871815.ogg",
+      "naraka-938553406.ogg"
+    ],
+    "new_cues": [
+      "naraka_gun",
+      "naraka_bow"
+    ],
+    "source_events": [
+      "gman_fk_attack_01",
+      "gman_bow_attack_01"
+    ],
+    "each_original_variants": 3,
+    "each_original_actions": 1,
+    "each_bank_delay_seconds": 0,
+    "full_portable_verify_rebuilt_current48_ogg": true,
+    "no_game_install_or_vgmstream_access_during_verify": true,
+    "browser_decode": "parent should verify only new six; old42 browser decode was independently completed by parent",
+    "clip_link_evidence": "male_fk_attack_01/male_bow_attack_01 original proto tracks; female_fk override identity supplied by animation worker separately",
+    "not_claimed": "sniper clip Sound mapping, skin-exclusive sound, original proto time unit or original runtime condition numeric meaning"
+  }
+}

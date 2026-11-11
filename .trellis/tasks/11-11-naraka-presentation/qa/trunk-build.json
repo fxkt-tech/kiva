@@ -1,0 +1,14 @@
+{
+  "dist": "/tmp/kiva-naraka-final-review",
+  "wasm": {
+    "file": "kiva-42b1df5b03aabde3_bg.wasm",
+    "bytes": 223710944,
+    "sha256": "5fde231b1cd2ebc980a9427c31b72cafde9d3281a826d6e4d778474277b87ce3"
+  },
+  "trunk": "0.22.1",
+  "command": "PATH=/home/asuka/.cache/trunk/wasm-bindgen-0.2.130:$PATH CARGO_NET_OFFLINE=true trunk build --locked true --offline true --public-url ./ --dist /tmp/kiva-naraka-final-review",
+  "status": "passed",
+  "runtime_sources_modified_after_wasm": false,
+  "runtime_animation_bytes": 6281901,
+  "runtime_naraka_audio_bytes": 945182
+}

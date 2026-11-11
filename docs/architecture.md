@@ -27,7 +27,7 @@
 | `client/avatar.rs` | 两套随包角色 / 近战外观、各自蒙皮与材质缓存、结构动作适配；只写显示骨骼 |
 | `client/environment.rs`、`environment/ground_cover.rs` | 玩法同源竹干/地形、共享草叶装饰、雾和灯光 |
 | `client/rendering.rs`、`client/texture_mips.rs` | 相机 deferred/SSR/FXAA pass；重复纹理的线性颜色与单位法线 mip |
-| `client/source_animation.rs` | 986节点原主骨架与35个具名原作片段的有界解码、稀疏采样和层级求值 |
+| `client/source_animation.rs` | 燕云986骨／35片段与永劫63骨／44片段的独立来源、有界解码、稀疏采样和层级求值 |
 | `client/forest_material.rs`、`assets/shaders/forest.wesl` | 标准PBR地表分层与干湿响应、共享环境材质和近叶可见/深度裁切，不改变模拟碰撞 |
 | `client/skeleton.rs` | 随包 CC0 动画的解码、局部采样、父子骨骼求值 |
 | `client/animation.rs`、`animation/poses.rs` | 根据只读模拟快照与明确 actor 的事件选择 / 混合身体姿态 |
@@ -107,21 +107,22 @@ C 点按切换蹲伏 / 站立，松开保持，蹲行固定 1.6m/s；疾跑按 C
 哥哥默认李火旺，可在进入／暂停卡片或 F3 选择愁铃客／李火旺身体和服饰，敌人仍为愁铃客。选择属于 AppearanceSelection，reconcile 在动画前只替换玩家身体／调色板，保留物理 actor、显示根、RigPose、动作和当前武器。
 妹妹使用独立 CompanionView／RigPose 和固定 Bailingmiao 外观，不含 PlayerView／ActorView，不能被 F3 换成哥哥。身体资产分别缓存，重复技能／换装不增长资产。
 
-`scripts/import-prepared-models.py` 从冻结的 `assets/prepared/naraka` 离线生成白灵淼 KIVAAV03 与引冰落／羿之影 KIVAWP01，无新增运行时 GLTF／JSON 依赖。白灵淼衣装、莲母和女性基脸保留女性自身骨序／逆绑定／当前 rest，以自身 23 结构参考接收既有动作；双手握持使用女性臂长 IK。远程武器保留真实当前 LBS 后烘焙为刚性几何，局部发射源0／朝向 -Z 对齐模拟；弓附件按明确的 Kiva 适配挂在 spine_03。专属捏脸、原发丝／布料 shader 和原作开火／拉弓动画未恢复，来源与适配见 [白灵淼](../assets/bailingmiao/README.md)、[引冰落](../assets/yinbingluo/README.md)、[羿之影](../assets/yizhiying/README.md) 与 [模型规范](../.trellis/spec/client/model-assets.md)。
+`scripts/import-prepared-models.py` 从冻结的 `assets/prepared/naraka` 离线生成白灵淼 KIVAAV03 与引冰落／羿之影 KIVAWP01，无新增运行时 GLTF／JSON 依赖。白灵淼衣装、莲母和女性基脸保留女性自身骨序／逆绑定／当前 rest，以自身 23 结构参考接收既有动作；双手握持使用女性臂长 IK。远程武器保留真实当前 LBS 后烘焙为刚性几何，局部发射源0／朝向 -Z 对齐模拟；弓附件按明确的 Kiva 适配挂在 spine_03。专属捏脸、原发丝／布料 shader 和完整原武器控制器未恢复；现有开火／拉弓上身片段与目标下身／握点IK组合见[动作契约](../.trellis/spec/client/naraka-motion.md)，来源与适配见 [白灵淼](../assets/bailingmiao/README.md)、[引冰落](../assets/yinbingluo/README.md)、[羿之影](../assets/yizhiying/README.md) 与 [模型规范](../.trellis/spec/client/model-assets.md)。
 
 `scripts/import-melee-models.py` 单独生成 [伏浪锚](../assets/fulangmao/README.md) 和 [谪星摧山](../assets/zhexingcuishan/README.md)，复用同一 KIVAWP01 材质／几何格式，旧五组资产与转换器保持稳定。四件武器由 `WeaponModel` 以 pair＋mode 缓存；近战握柄0／主轴 +Y，手持和 FlyingAxe 共享同一网格／材质。谪星的主体与四个非 FX 输入根据原控制器证据作固定 Kiva 静态装配，不声称恢复原随机星格、Float 形变、溶解／灵光／cubemap。绳索在本帧手腕附件同步后连接真实握柄和飞斧根，物理轨迹与动作标记仍由模拟决定。
 
 李火旺资源由 `scripts/import-naraka.py` 生成 `assets/lihuowang/character.bin`，包括衣装、心素发型、惘心笠、通用基础脸和原刀鞘，烛泪以刚性当前姿态适配既有握柄轴。惘心笠为单独原头饰3411276，跟随原头骨绑定，不改变已归一化角色比例或碰撞高度；原帽下限发协议未完整恢复，不凭隐藏mask删掉整套发型。KIVAAV03 在现 KIVAAV02 上增加材质双面标记及每骨的源模型空间姿态，保留原逆绑定矩阵；源导入姿态不等于绑定姿态时不强行抵消为单位矩阵。身体用自身23结构锚点校准动作方向并保留自身骨长，Naraka手指另按真实三节语义链接收源运动；附件与身体读取当前实际腕/MCP掌框，不套用另一角色的绝对手位置或原始骨索引。具体来源、重建挂接、通用脸与材质适配限制见[资源说明](../assets/lihuowang/README.md)、[接入说明](plans/naraka-appearances.md)及[手部重定向契约](../.trellis/spec/client/model-assets.md)。
 `avatar::sync` 位于动画与挂点同步之间，用源绑定矩阵和既有动作增量更新独立显示骨骼；武器位置使用适配后的手腕，不能反写 Body。角色标准高度 1.73m，靶子由 `Body::scaled(1.45)` 同时放大显示和胶囊；胶囊半径、站立/蹲伏高、瞬移和复活使用实际尺寸。
-RigPose沿现有状态优先级与只读反馈选择原作长刀/卸势/跳跃/闪避/受击片段；source_animation解码35个具名clip，完整原层级求值并按骨名驱动调色板。共享动作保留愁铃客rest骨长，未恢复原技能槽和命中帧，裁剪/时长属于Kiva适配。移动、蹲滑、枪姿、旋转与倒地等继续用CC0的23骨骼/19片段和现有IK；两路平滑混合，独立附件缺失部分保留结构映射。
+哥哥由权威ActionSnapshot驱动永劫横刀三段，拆招／防御用振刀，弹反显示用已证反击片段作0.60s可打断适配；判定仍0.18s。待机、走跑、蹲伏、跳跃／二段跳、四向闪避、落地、受击和死亡也使用对应永劫片段；E／Tab／滑铲保留现有编排／回退，Boss仍使用燕云。妹妹枪弓只组合原上身／手指与目标下肢，再执行实际武器双手IK。
+`source_animation`独立读取燕云KIVASR01（986骨／35片段）与永劫KIVASR02（63骨／44片段），姿态携带rig与scope，不按索引混不同拓扑。真实Avatar原生求值后自适应烘焙，保留高速转腕的相邻f32切点；缺失整指链用原default finger局部姿态显式补层，不冒称恢复未知控制器权重。资产格式、可离线重建／验证入口和误差验证见[动作契约](../.trellis/spec/client/naraka-motion.md)。
 资源嵌入WASM/原生二进制，运行时不读取游戏目录或联网加载。原动作平面根位移剔除，地面保留腰身竖直起伏，空中根高归模拟；不同手臂参考方向先校准，源手指在局部旋转混合后FK，握柄从当前真实掌骨求值，避免把不同手腕原轴或参考握拳角度直接混用。
 动画只写 RigPose，附件同步只写肢体与武器 Transform，不写人物显示根、Body 或相机。
 蹲伏复用 act 的模型空间腿部 IK：骨盆平滑下移 0.33m，保持脚掌位置 / 朝向和腿长，0.12s 蹲下 / 起身。
 RigPose.local 保存蹲伏 IK 前姿态，IK 只作用于生成 model 的副本，避免状态过渡反复累加下移。
 暂停时冻结动画时钟；倒地敌人身体保留以播放死亡姿态，生命 / 选中 / 伤害规则仍按死亡状态处理。
 
-玩家生命 1000，始终操控哥哥；1／2 选择锤子＋鸟铳／链斧＋弓箭，中键显式锁定／解锁，默认不自动补选。左键固定近战，E 近战技、Q 妹妹远程技，Tab 消费本次技能和原目标的联动窗口。
-妹妹是无独立生命／碰撞／AI 的逻辑 Companion，技能演出使用独立白灵淼蒙皮；伤害归玩家、发射 actor 为妹妹。E／Q 冷却分开并跨组保留，动作中拒绝新进攻或换组，不排队。
+玩家生命 1000，始终操控哥哥；1／2 选择锤子＋鸟铳／链斧＋弓箭，中键显式锁定／解锁，默认不自动补选。左键三段普通近战，第1／2段至多缓冲一条后继、第三段封顶，结束后0.45s内可续段；各段保留原伤害／范围／marker／时长。E 近战技、Q 妹妹远程技，Tab 消费本次技能和原目标的联动窗口。
+妹妹是无独立生命／碰撞／AI 的逻辑 Companion，技能演出使用独立白灵淼蒙皮；伤害归玩家、发射 actor 为妹妹。E／Q 冷却分开并跨组保留，技能动作中拒绝新进攻或换组，普攻仅按上述有限缓冲续段。
 
 - 锤 E 在 4.5m 内选中目标周围 3m 结算 20 伤害与约 3m 真实击飞。0.85s 内原目标仍浮空可 Tab；接受后自然落地不取消承诺，三枪各自 28 伤害。鸟铳 Q 单枪 40 伤害和 0.45s 僵直。
 - 链斧 E 自身范围伤害与减速；弓 Q 射出链斧，35 伤害和 0.90s 来源僵直，未接联动则回收。Tab 只认本次 Q 对原目标的僵直，真实拉近期间三箭各 18 伤害。离手期间不能近战，完成／取消归还链斧。
@@ -134,7 +135,7 @@ RigPose.local 保存蹲伏 IK 前姿态，IK 只作用于生成 model 的副本�
 进入卡片或 F2 提交模式选择，由 `gameplay::set_enemy_mode` 替换敌人，清理玩家旧目标、联动、拉力和妹妹可见性，保留玩家物理状态、生命、耐力、武器与冷却；暂停时也同步清理。
 敌人和玩家倒地 3s 后回到出生点，靶子复活仍为被动，复活不重放死亡期间排队的指令。
 `CombatFeedback` 持有最多 128 条单调序号反馈，显示按游标消费，避免零个 / 多个固定步丢失命中特效。
-反馈 actor 明确演出者／受害者，source_owner 明确玩家归属，pair／action_id／hit_index 固定事件产生时的武器与动作身份；历史重放不能读取最新套装来猜。
+反馈 actor 明确演出者／受害者，source_owner 明确玩家归属，pair／action_id／hit_index／melee_stage 固定事件产生时的武器与动作身份；历史重放不能读取最新套装来猜。
 身体动画按 actor 和 sequence 消费，不通过距离或中文 HUD 状态推断是哪一角色发生动作。
 
 ## 浏览器边界
@@ -143,7 +144,8 @@ RigPose.local 保存蹲伏 IK 前姿态，IK 只作用于生成 model 的副本�
 
 `mode.js`首先固定页面模式，`startup.js`、`loader.js`、`input.js`、`hud.js`、`enemies.js`、`appearance.js`、`audio.js`、`viewer.js`必须同步安装在Trunk生成的模块之前，脚本不依赖DOM已创建；游戏专属脚本在查看模式下退出。
 Trunk入口通过专用loader包装自身WASM Response，保留流式编译并报告真实下载字节；可用分母才显示百分比，初始化／画面准备显示明确阶段。按钮加载时可见但disabled，最终ready后用户点击申请鼠标捕获，请求期间显示进入中；错误可重载或重试，Esc恢复沿用ready。具体接口与失败边界见[启动规范](../.trellis/spec/client/startup.md)。
-`window.kivaAudio.playEffect(name)` 消费已结算的挥击、命中和防御，`playSniperShot()` 消费妹妹真实鸟铳射击；弓发射临时复用共享 attack cue；伴随的狙击特效事件不重复发声。`setActive(bool)` 同步模拟暂停，可信进入点击 / 画布按下解锁 Web Audio 并缓存随包音频。随包BGM使用官方愁铃客发行录音《惊惧一夜》，原文件/转码来源记录在assets/audio/music-manifest.json，运行时不连接音乐站点；该循环不是已恢复的原bank分轨/阶段切换。音乐至多一条循环，暂停保留播放位置并释放节点；短音效至多 4 声部，未解锁/暂停/失败的声音丢弃，不延迟重放。原生播放为空操作，无新增平台音频依赖。
+`window.kivaAudio.playEffect(name)`消费真实起手、命中、防御与运动事实。永劫音效包含16个cue／48个Ogg，Wwise变体与落地双层延迟保留；妹妹实际Shot（actor=Companion）按事件pair播放原鸟铳／弓媒体，伴随狙击特效不重复发声。MeleeStart起手声使用同一ActionSnapshot时钟，声音预定点超过0.12s或身份无效即丢弃；空挥无命中声，空弹反无成功声。`cueOffset`只读偏移，旧`playSniperShot`仅兼容保留。
+可信进入点击／画布按下解锁Web Audio并缓存同源媒体；短音效最多4声部，整组层预留和优先级保护成功反馈。未解锁／未就绪／暂停／失败即丢弃，无恢复补声；同帧失焦重捕获也清待播。BGM仍为官方愁铃客发行录音《惊惧一夜》，单循环另计，暂停保存位置；不是已恢复的原bank分轨／阶段切换。原生播放为空操作，无新增平台音频依赖。完整来源和混音边界见[动作与音效契约](../.trellis/spec/client/naraka-motion.md)。
 `window.kivaEnemies.takeMode()` 返回并清空待处理模式（0=无、1=靶子、2=实战），`render(mode)` 显示 Rust 当前模式；模式请求在固定循环前处理，不受暂停门控。
 输入桥提供 isActive／takeLook／keys／takeActions／takeDefenseEdges／ready；精确位掩码和有序 Pressed／Released／Cancelled 见 [.trellis/spec/client/input.md](../.trellis/spec/client/input.md)。垂直输入不再调整落点；滚轮不切换人格。
 

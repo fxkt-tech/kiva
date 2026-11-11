@@ -364,7 +364,10 @@ pub(super) fn effects(
     }
     for event in feedback.events().filter(|event| event.sequence > cursor.0) {
         let (mesh, material, transform, duration, expansion) = match event.kind {
-            CombatEffect::SniperShot | CombatEffect::SniperImpact | CombatEffect::AxeThrow => {
+            CombatEffect::SniperShot
+            | CombatEffect::SniperImpact
+            | CombatEffect::AxeThrow
+            | CombatEffect::MeleeStart => {
                 continue;
             }
             CombatEffect::Shot => {

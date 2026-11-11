@@ -3,8 +3,8 @@ use super::abilities::ActionRuntime;
 use super::defense::decay;
 use super::{
     ActionAvailability, ActionIntent, ActionKind, ActionSnapshot, Body, Boss, ComboWindow,
-    Companion, CompanionState, DefenseKind, DefenseState, Facing, HitStop, MotionState, MoveIntent,
-    SequenceSnapshot, SlowEffect, Stamina, WeaponMode, WeaponPair,
+    Companion, CompanionState, DefenseKind, DefenseState, Facing, HitStop, MeleeStage, MotionState,
+    MoveIntent, SequenceSnapshot, SlowEffect, Stamina, WeaponMode, WeaponPair,
 };
 use avian3d::prelude::{Sensor, SpatialQuery, SpatialQueryFilter};
 use bevy::{ecs::system::SystemParam, prelude::*};
@@ -150,6 +150,7 @@ impl Enemy {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CombatEffect {
+    MeleeStart,
     Melee,
     Shot,
     SniperShot,
@@ -173,6 +174,7 @@ pub struct CombatEvent {
     pub actor: Entity,
     pub source_owner: Entity,
     pub pair: Option<WeaponPair>,
+    pub melee_stage: Option<MeleeStage>,
     pub action_id: u64,
     pub hit_index: u8,
     pub kind: CombatEffect,
@@ -202,6 +204,7 @@ impl CombatFeedback {
             actor,
             source_owner: actor,
             pair: None,
+            melee_stage: None,
             action_id: 0,
             hit_index: 0,
             kind,
@@ -235,6 +238,7 @@ impl CombatFeedback {
             actor,
             source_owner: owner,
             pair: Some(action.pair),
+            melee_stage: action.melee_stage,
             action_id: action.action_id,
             hit_index: index,
             kind,
@@ -256,6 +260,7 @@ impl ActionIds {
 pub struct CombatIntent {
     commands: u8,
     pair: Option<WeaponPair>,
+    cancel_melee_chain: bool,
 }
 impl CombatIntent {
     pub fn request_attack(&mut self) {
@@ -276,12 +281,64 @@ impl CombatIntent {
     pub fn request_pair(&mut self, pair: WeaponPair) {
         self.pair = Some(pair);
     }
+    /// Drop only uncommitted ordinary-attack follow-ups at the next rule tick.
+    /// This latch survives a paused frame with no FixedUpdate.
+    pub fn cancel_melee_chain(&mut self) {
+        self.cancel_melee_chain = true;
+    }
     pub fn clear(&mut self) {
+        *self = Self {
+            cancel_melee_chain: true,
+            ..Self::default()
+        };
+    }
+}
+
+#[derive(Default)]
+struct MeleeChain {
+    next_stage: MeleeStage,
+    remaining: f32,
+    buffered: bool,
+    /// Only this committed action may open/extend the current chain. Clearing
+    /// it on damage prevents its later retirement from reviving an old chain.
+    eligible_action: Option<u64>,
+}
+impl MeleeChain {
+    fn clear(&mut self) {
         *self = Self::default();
+    }
+    fn tick(&mut self, dt: f32) {
+        if self.remaining > 0.0 {
+            self.remaining = decay(self.remaining, dt);
+            if self.remaining == 0.0 {
+                self.clear();
+            }
+        }
+    }
+    fn begin(&mut self, action_id: u64, stage: MeleeStage) {
+        self.clear();
+        if let Some(next) = stage.next() {
+            self.next_stage = next;
+            self.eligible_action = Some(action_id);
+        }
+    }
+    fn buffer(&mut self, action_id: u64) -> bool {
+        if self.eligible_action == Some(action_id) {
+            self.buffered = true;
+            true
+        } else {
+            false
+        }
+    }
+    fn finish(&mut self, action_id: u64) {
+        if self.eligible_action == Some(action_id) {
+            self.eligible_action = None;
+            self.remaining = 0.45;
+        }
     }
 }
 #[derive(Component)]
-#[require(DefenseState, Stamina)]
+#[require(DefenseState, Stamina, super::motion_feedback::MotionFeedbackState)]
 pub struct Combatant {
     pair: WeaponPair,
     target: Option<Entity>,
@@ -290,6 +347,7 @@ pub struct Combatant {
     ranged_cooldown: f32,
     combo: Option<ComboWindow>,
     action: Option<ActionRuntime>,
+    melee_chain: MeleeChain,
     companion: Option<Entity>,
     axe_away: bool,
     status: &'static str,
@@ -306,6 +364,7 @@ impl Combatant {
             ranged_cooldown: 0.0,
             combo: None,
             action: None,
+            melee_chain: MeleeChain::default(),
             companion: None,
             axe_away: false,
             status: "准备就绪",
@@ -362,9 +421,14 @@ impl Combatant {
         self.target = None;
         self.combo = None;
         self.action = None;
+        self.melee_chain.clear();
         self.axe_away = false;
         self.pull_velocity = None;
         self.availability = ActionAvailability::default();
+    }
+    /// Gameplay interruption clears pending follow-ups, not the current hit.
+    pub(super) fn interrupt_melee_chain(&mut self) {
+        self.melee_chain.clear();
     }
     pub(super) fn movement_locked(&self) -> bool {
         self.is_combo_active()
@@ -401,6 +465,7 @@ pub struct HitContext {
     pub source: Entity,
     pub source_owner: Entity,
     pub pair: Option<WeaponPair>,
+    pub melee_stage: Option<MeleeStage>,
     pub target: Entity,
     pub action_id: u64,
     pub hit_index: u8,
@@ -474,6 +539,7 @@ pub(super) fn apply_hit(
         actor: ctx.target,
         source_owner: ctx.source_owner,
         pair: ctx.pair,
+        melee_stage: ctx.melee_stage,
         action_id: ctx.action_id,
         hit_index: ctx.hit_index,
         kind,
@@ -490,6 +556,7 @@ pub(super) fn apply_hit(
             actor: ctx.target,
             source_owner: ctx.source_owner,
             pair: ctx.pair,
+            melee_stage: ctx.melee_stage,
             action_id: ctx.action_id,
             hit_index: ctx.hit_index,
             kind: CombatEffect::Defeat,
@@ -693,6 +760,10 @@ pub(super) fn prepare(
     {
         let commands = std::mem::take(&mut intent.commands);
         let pair = intent.pair.take();
+        if std::mem::take(&mut intent.cancel_melee_chain) {
+            combat.melee_chain.clear();
+        }
+        combat.melee_chain.tick(dt);
         combat.attack_cooldown = decay(combat.attack_cooldown, dt);
         combat.melee_cooldown = decay(combat.melee_cooldown, dt);
         combat.ranged_cooldown = decay(combat.ranged_cooldown, dt);
@@ -794,15 +865,27 @@ pub(super) fn prepare(
             };
             if finished {
                 combat.axe_away = false;
+                combat.melee_chain.clear();
             } else {
                 combat.action = Some(action);
             }
         }
         let busy = combat.action.is_some();
+        let buffered_input = if commands & ATTACK != 0 {
+            let action_id = combat
+                .action
+                .as_ref()
+                .filter(|action| action.snapshot.kind == ActionKind::Melee && !action.cancelled)
+                .map(|action| action.snapshot.action_id);
+            action_id.is_some_and(|id| combat.melee_chain.buffer(id))
+        } else {
+            false
+        };
         if busy {
             actions.discard_movement_actions();
         }
         let grounded = motion.is_grounded() && !motion.is_dodging() && !motion.is_sliding();
+        let gesture_id = defense.snapshot().gesture_id;
         defense.advance(
             dt,
             grounded && !busy,
@@ -810,11 +893,18 @@ pub(super) fn prepare(
             motion,
             stamina,
         );
+        if defense.snapshot().gesture_id != gesture_id || motion.is_dodging() || motion.is_sliding()
+        {
+            combat.melee_chain.clear();
+        }
         let free = !busy && !defense.is_active() && !motion.is_dodging() && !motion.is_sliding();
         if let Some(pair) = pair
             && free
             && grounded
         {
+            if combat.pair != pair {
+                combat.melee_chain.clear();
+            }
             combat.pair = pair;
             combat.combo = None;
             combat.axe_away = false;
@@ -832,6 +922,16 @@ pub(super) fn prepare(
         let availability = availability_for(&combat, motion, &defense, target_distance);
         let combo_admit = availability.combo;
         combat.availability = availability;
+        // A pending input gets one admission attempt, after the previous
+        // action's final markers retired it in advance(). New legal actions
+        // retain priority; a pending movement edge is handled by the motor.
+        let queued_attack = !busy && std::mem::take(&mut combat.melee_chain.buffered);
+        let movement_has_priority = actions.postpones_buffered_attack(motion, dt);
+        if queued_attack && movement_has_priority && actions.crouch_toggle_requested() {
+            // Let C reach the motor. An accepted slide clears this chain;
+            // an ordinary crouch preserves it for the following rule tick.
+            combat.melee_chain.buffered = true;
+        }
         let kind = if commands & COMBO != 0 && combo_admit {
             Some(if current_pair == WeaponPair::HammerMusket {
                 ActionKind::HammerCombo
@@ -850,12 +950,15 @@ pub(super) fn prepare(
             } else {
                 ActionKind::AxeShot
             })
-        } else if commands & ATTACK != 0 && availability.attack {
+        } else if (commands & ATTACK != 0 || (queued_attack && !movement_has_priority))
+            && availability.attack
+        {
             Some(ActionKind::Melee)
         } else {
             None
         };
         if let Some(kind) = kind {
+            let melee_stage = (kind == ActionKind::Melee).then_some(combat.melee_chain.next_stage);
             let combo = if kind.is_combo() {
                 combat.combo.take()
             } else {
@@ -887,14 +990,19 @@ pub(super) fn prepare(
             let (companion_position, source_position) =
                 world.companion_pose(body, facing.direction(), entity);
             let action_id = ids.next();
+            let duration = melee_stage.map_or_else(
+                || kind.duration(current_pair),
+                |stage| current_pair.melee_profile(stage).duration,
+            );
             combat.action = Some(ActionRuntime {
                 snapshot: ActionSnapshot {
                     action_id,
                     kind,
                     pair: current_pair,
+                    melee_stage,
                     target,
                     elapsed: 0.0,
-                    duration: kind.duration(current_pair),
+                    duration,
                     shot_count: 0,
                     aim_position: aim,
                     source_position,
@@ -907,12 +1015,28 @@ pub(super) fn prepare(
                 pull_stalled: 0.0,
                 pull_stopped: false,
             });
+            if let Some(stage) = melee_stage {
+                combat.melee_chain.begin(action_id, stage);
+                let snapshot = combat.action.as_ref().unwrap().snapshot;
+                feedback.action(
+                    entity,
+                    entity,
+                    &snapshot,
+                    0,
+                    CombatEffect::MeleeStart,
+                    body.aim_position(),
+                    body.aim_position(),
+                    0.0,
+                );
+            } else {
+                combat.melee_chain.clear();
+            }
             if kind == ActionKind::ChainCombo {
                 combat.axe_away = true;
             }
             combat.availability = ActionAvailability::default();
             match kind {
-                ActionKind::Melee => combat.attack_cooldown = current_pair.melee().3,
+                ActionKind::Melee => combat.attack_cooldown = duration,
                 ActionKind::HammerSlam | ActionKind::ChainSweep => combat.melee_cooldown = 3.0,
                 ActionKind::MusketShot | ActionKind::AxeShot => combat.ranged_cooldown = 4.0,
                 _ => {}
@@ -927,7 +1051,9 @@ pub(super) fn prepare(
                 ActionKind::ChainCombo => "拉近三箭联动",
             };
             actions.discard_movement_actions();
-        } else if commands & (ATTACK | MELEE_SKILL | RANGED_SKILL | COMBO) != 0 {
+        } else if commands & (MELEE_SKILL | RANGED_SKILL | COMBO) != 0
+            || (commands & ATTACK != 0 && !buffered_input)
+        {
             combat.reject(
                 if busy {
                     "动作执行中"
@@ -1032,6 +1158,7 @@ fn hit_enemy(
             source,
             source_owner: owner,
             pair: Some(action.pair),
+            melee_stage: action.melee_stage,
             target,
             action_id: action.action_id,
             hit_index: index,
@@ -1132,7 +1259,7 @@ pub(super) fn advance(
             combat.attack_cooldown = 0.0;
             combat.melee_cooldown = 0.0;
             combat.ranged_cooldown = 0.0;
-            *defense = DefenseState::default();
+            defense.reset();
             stamina.refill();
             feedback.push(
                 entity,
@@ -1157,8 +1284,11 @@ pub(super) fn advance(
         let snapshot = runtime.snapshot;
         match snapshot.kind {
             ActionKind::Melee => {
-                let (damage, range, marker, _) = snapshot.pair.melee();
-                if runtime.marker(0, marker) {
+                let profile = snapshot
+                    .pair
+                    .melee_profile(snapshot.melee_stage.expect("melee has a committed stage"));
+                let range = profile.range;
+                if runtime.marker(0, profile.hit_time) {
                     let facing = facing.direction();
                     let forward = Vec3::new(facing.x, 0.0, facing.y);
                     feedback.action(
@@ -1194,7 +1324,7 @@ pub(super) fn advance(
                             entity,
                             &snapshot,
                             0,
-                            damage,
+                            profile.damage,
                             Control::None,
                             body.aim_position(),
                             &mut enemies,
@@ -1480,6 +1610,9 @@ pub(super) fn advance(
         }
         if !runtime.cancelled && runtime.snapshot.elapsed + 1e-6 >= runtime.snapshot.duration {
             combat.axe_away = false;
+            if runtime.snapshot.kind == ActionKind::Melee {
+                combat.melee_chain.finish(runtime.snapshot.action_id);
+            }
         } else {
             combat.action = Some(runtime);
         }
@@ -1628,6 +1761,7 @@ fn advance_enemies(
                             source: entity,
                             source_owner: entity,
                             pair: None,
+                            melee_stage: None,
                             target,
                             action_id: enemy.attack_id,
                             hit_index: 0,
@@ -1647,6 +1781,9 @@ fn advance_enemies(
                         let id = enemy.attack_id;
                         enemy.stun(id, 0.80);
                         movement.stop();
+                    }
+                    if result == HitOutcome::Damaged {
+                        target_combat.interrupt_melee_chain();
                     }
                     if !target_health.is_alive() {
                         target_combat.clear_targets();

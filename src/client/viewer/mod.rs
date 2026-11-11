@@ -397,6 +397,12 @@ fn update(world: &mut World) {
                     frame.pitch,
                     frame.grips,
                 );
+                pose.companion_source(
+                    world.resource::<SourceAnimationLibrary>(),
+                    session.weapon.pair(),
+                    seconds,
+                    None,
+                );
             }
             world.entity_mut(scene.root).insert(pose);
             scene.evaluated = Some(key);

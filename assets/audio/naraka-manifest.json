@@ -1,0 +1,730 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/import-naraka-audio.py",
+  "prepared_manifest_sha256": "3a4e996cbf5c0d37c7206ccc657e16baa1fa4751d0ae6f303b3e5a2a8e4f273f",
+  "source_origin": "User-specified local NARAKA BLADEPOINT; selected original audio, not full Wwise runtime",
+  "encoding": {
+    "format": "Vorbis/Ogg",
+    "quality": 4,
+    "natural_pitch": true,
+    "crop": false,
+    "normalize": false,
+    "splice": false,
+    "command": [
+      "ffmpeg",
+      "-nostdin",
+      "-v",
+      "error",
+      "-y",
+      "-f",
+      "s16le",
+      "-ar",
+      "<source rate>",
+      "-ac",
+      "<source channels>",
+      "-i",
+      "source.s16le",
+      "-map",
+      "0:a:0",
+      "-map_metadata",
+      "-1",
+      "-c:a",
+      "libvorbis",
+      "-q:a",
+      "4",
+      "-fflags",
+      "+bitexact",
+      "output.ogg"
+    ],
+    "ffmpeg_version": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "decoder": {
+      "tool": "vgmstream-r2168/vgmstream-cli",
+      "sha256": "e736da315053bf91796d01eca18b54cbcc2d5b328eecdaf15786e7838251f581",
+      "arguments": [
+        "-i"
+      ]
+    }
+  },
+  "playback": {
+    "global_effect_gain": 0.18,
+    "max_sources": 4,
+    "priority": "larger number is more important",
+    "peak_limit_per_source_after_variant_gain": 0.85,
+    "max_four_effects_peak_bound": 0.612,
+    "variant_gain": "min(1,0.85/measured complete Vorbis float peak); source PCM/Ogg unchanged",
+    "proto_track_time": "unknown units/group semantics; offset0 is explicit Kiva adaptation",
+    "layer_delay": "seconds converted from actual original PlayAction DelayTime milliseconds"
+  },
+  "cues": {
+    "naraka_attack_1": {
+      "original_event": "gman_hengdao_attack_light_01",
+      "note": "Original horizontal stage 1"
+    },
+    "naraka_attack_2": {
+      "original_event": "gman_hengdao_attack_light_02",
+      "note": "Original horizontal stage 2"
+    },
+    "naraka_attack_3": {
+      "original_event": "gman_hengdao_attack_light_03",
+      "note": "Original horizontal stage 3"
+    },
+    "naraka_riposte": {
+      "original_event": "gman_hengdao_attack_shock_light_01",
+      "note": "Original riposte whoosh; not success collision"
+    },
+    "naraka_hit": {
+      "original_event": "impact_body",
+      "note": "Original default impact switch; armor/strength names unknown"
+    },
+    "naraka_deflect": {
+      "original_event": "gman_all_break_hurt",
+      "note": "Original shared blade clash, adapted to settled deflect"
+    },
+    "naraka_block": {
+      "original_event": "gman_all_break_hurt",
+      "note": "Same shared clash, adapted to settled block"
+    },
+    "naraka_parry": {
+      "original_event": "gman_all_weapon_touch_shock_katana",
+      "note": "Shared original metal collision, adapted only to settled parry"
+    },
+    "naraka_jump": {
+      "original_event": "move_jump_takeoff_cloth_fast",
+      "note": "Actual jump track's takeoff cloth event"
+    },
+    "naraka_land": {
+      "original_event": "move_jump_land",
+      "note": "Both original PlayActions; first delayed 100ms"
+    },
+    "naraka_dodge": {
+      "original_event": "gman_dodge_01",
+      "note": "Original four-direction dodge track event"
+    },
+    "naraka_step": {
+      "original_event": "move_run",
+      "note": "Original default material branch; Kiva actual-distance cadence"
+    },
+    "naraka_death": {
+      "original_event": "gman_all_die_drop",
+      "note": "Original shared body/drop event; Kiva death assignment"
+    },
+    "naraka_death_voice": {
+      "original_event": "gman_dying_voice_male",
+      "note": "Optional shared male death voice; not Li Huowang-specific or a female voice"
+    },
+    "naraka_gun": {
+      "original_event": "gman_fk_attack_01",
+      "note": "Original FK-family firing event from male_fk_attack_01; Kiva musket adaptation, not skin-exclusive"
+    },
+    "naraka_bow": {
+      "original_event": "gman_bow_attack_01",
+      "note": "Original male_bow_attack_01 firing event; shared bow-family adaptation"
+    }
+  },
+  "media": [
+    {
+      "source_id": 15507174,
+      "file": "naraka-15507174.ogg",
+      "bytes": 17207,
+      "sha256": "a518bb808a2672e628cc45c85d10f2477d9f443629a312ef867d62e13ea20f70",
+      "duration": 1.0240589569160998,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 45161,
+      "decoded_peak": 0.7589972019195557,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 27850851,
+      "file": "naraka-27850851.ogg",
+      "bytes": 18159,
+      "sha256": "16062d699ff106541e9dc460899a6423759dfef568b2d43358dfe79c7d6289f7",
+      "duration": 1.2154421768707484,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 53601,
+      "decoded_peak": 0.591948926448822,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 51798462,
+      "file": "naraka-51798462.ogg",
+      "bytes": 19791,
+      "sha256": "a68191acda867eab5c38cb854f6d0f625966edb409f3900890ac59d4c8e62263",
+      "duration": 1.5467573696145125,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 68212,
+      "decoded_peak": 0.5086824893951416,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 183294347,
+      "file": "naraka-183294347.ogg",
+      "bytes": 23037,
+      "sha256": "a84c903c3e9d184be24d8f1d77e742c355ad93f8ec447203d3b7e6a61ced47ae",
+      "duration": 1.633764172335601,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 72049,
+      "decoded_peak": 0.8884972929954529,
+      "playback_gain": 0.9566714571907537
+    },
+    {
+      "source_id": 265957799,
+      "file": "naraka-265957799.ogg",
+      "bytes": 8986,
+      "sha256": "1f66fe8785616ec826bd226b258c5ba7adcdd5685cb0d225564145bb7be3d257",
+      "duration": 0.5769614512471656,
+      "channels": 1,
+      "rate": 44100,
+      "decoded_frames": 25316,
+      "decoded_peak": 0.3572128117084503,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 278221262,
+      "file": "naraka-278221262.ogg",
+      "bytes": 22916,
+      "sha256": "f0b11542dcb6f9b5099e5c618a3c42b6021685f55a9821504e3a5d749c028ab7",
+      "duration": 1.7514512471655328,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 77239,
+      "decoded_peak": 0.6860079169273376,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 278492924,
+      "file": "naraka-278492924.ogg",
+      "bytes": 18074,
+      "sha256": "2e9edb041560ae304ebe9e0f0b8de99de3f2e6b70145f375243842629498f34b",
+      "duration": 0.9779591836734693,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 43000,
+      "decoded_peak": 1.0894774198532104,
+      "playback_gain": 0.7801905615579658
+    },
+    {
+      "source_id": 278708188,
+      "file": "naraka-278708188.ogg",
+      "bytes": 21159,
+      "sha256": "95825a78577c70a7575971c3c6498e0a0479a9051d625318103a6205d9f58890",
+      "duration": 1.3495691609977325,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 59516,
+      "decoded_peak": 0.6819548010826111,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 289069424,
+      "file": "naraka-289069424.ogg",
+      "bytes": 31696,
+      "sha256": "f92a3605831e9c4ce8e79b598d03b82d881aacdc853bee944839343697d1cb87",
+      "duration": 2.588843537414966,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 114168,
+      "decoded_peak": 0.6374301910400391,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 318634220,
+      "file": "naraka-318634220.ogg",
+      "bytes": 27121,
+      "sha256": "9540be3772a4c788520d52319305da6b123c25ffd46b0d68d429537f73697b3e",
+      "duration": 2.106326530612245,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 92889,
+      "decoded_peak": 0.7769959568977356,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 322497778,
+      "file": "naraka-322497778.ogg",
+      "bytes": 8954,
+      "sha256": "cc50c03e2fecb772c48493afafbd769f5422157a23b9f91fc1c9c8e049fc7960",
+      "duration": 0.5939682539682539,
+      "channels": 1,
+      "rate": 44100,
+      "decoded_frames": 26066,
+      "decoded_peak": 0.36098337173461914,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 323878669,
+      "file": "naraka-323878669.ogg",
+      "bytes": 18902,
+      "sha256": "3b5b0ddab29b5b05c8c2ea79dd4ae6383327dca4799a7c1ed2af262378a3041f",
+      "duration": 1.2936281179138323,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 57049,
+      "decoded_peak": 0.6033972501754761,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 347384654,
+      "file": "naraka-347384654.ogg",
+      "bytes": 14485,
+      "sha256": "a69fa024cd886b4275b209772939561421555c099d7b1f59beffb764bad0c8c6",
+      "duration": 0.77562358276644,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 34077,
+      "decoded_peak": 1.1289539337158203,
+      "playback_gain": 0.7529093744350791
+    },
+    {
+      "source_id": 359912015,
+      "file": "naraka-359912015.ogg",
+      "bytes": 23684,
+      "sha256": "b4d83951ed2cc1c8b371773a77aaf6a3a94cbd73ee1006acd7d64f8e39e85aff",
+      "duration": 1.740544217687075,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 76758,
+      "decoded_peak": 0.6912333369255066,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 361062933,
+      "file": "naraka-361062933.ogg",
+      "bytes": 8892,
+      "sha256": "235a833e5c1e21aa7c66030c77c08addc1c18e45b817e4b1602c1a437e256c7e",
+      "duration": 0.5767120181405896,
+      "channels": 1,
+      "rate": 44100,
+      "decoded_frames": 25305,
+      "decoded_peak": 0.2574648857116699,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 364824874,
+      "file": "naraka-364824874.ogg",
+      "bytes": 13872,
+      "sha256": "3964b629d4b9c2f221075a5bbf630c20517f1ba7d5296555bebcfebee4e27b5e",
+      "duration": 0.9145804988662132,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 40205,
+      "decoded_peak": 0.2497481405735016,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 384048418,
+      "file": "naraka-384048418.ogg",
+      "bytes": 14063,
+      "sha256": "9447b93da51fe0bd326f03c0e001e559bd6049f47607fc6dc9860e483c3965ad",
+      "duration": 0.932358276643991,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 40989,
+      "decoded_peak": 0.2797337770462036,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 384264562,
+      "file": "naraka-384264562.ogg",
+      "bytes": 44154,
+      "sha256": "7e80229d56353397f0551b19f1c64e5c84e30a5eb52808b88fa4b76c2d6296ef",
+      "duration": 3.0336961451247166,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 133786,
+      "decoded_peak": 1.1330243349075317,
+      "playback_gain": 0.7502045400193192
+    },
+    {
+      "source_id": 394273666,
+      "file": "naraka-394273666.ogg",
+      "bytes": 8551,
+      "sha256": "041a8e1e3673f102f736eb3da1a2e7162b4f05aa0035e8f33c52b7e2f63dfd12",
+      "duration": 0.5253968253968254,
+      "channels": 1,
+      "rate": 44100,
+      "decoded_frames": 23042,
+      "decoded_peak": 0.3341965675354004,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 399916424,
+      "file": "naraka-399916424.ogg",
+      "bytes": 11669,
+      "sha256": "1458bad27de5f3a1b52d3eab9d3db51a3d22668f02fd5ece200bbb6379942a97",
+      "duration": 0.570952380952381,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 25051,
+      "decoded_peak": 0.200225830078125,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 444149984,
+      "file": "naraka-444149984.ogg",
+      "bytes": 24783,
+      "sha256": "a1327bb8605a9cc71474b16f76716cbff406b7356d83d8df29c8be919c1aac01",
+      "duration": 1.8307936507936509,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 80738,
+      "decoded_peak": 0.5374946594238281,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 450188065,
+      "file": "naraka-450188065.ogg",
+      "bytes": 7794,
+      "sha256": "87f51c52b5c73a10beb61f1ee860d31ac69727b2ab30cd1eb345bee0c76d68ef",
+      "duration": 0.4501360544217687,
+      "channels": 1,
+      "rate": 44100,
+      "decoded_frames": 19723,
+      "decoded_peak": 0.5198941230773926,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 471162968,
+      "file": "naraka-471162968.ogg",
+      "bytes": 20484,
+      "sha256": "c2380ef41d9e36f869ac39c28bc503509e4f9b305c8366de70a07f836e04acff",
+      "duration": 1.1079591836734695,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 48861,
+      "decoded_peak": 0.7496291995048523,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 474690479,
+      "file": "naraka-474690479.ogg",
+      "bytes": 16654,
+      "sha256": "11029bd1b7e52eeb4f3655b4744200891bcfc878c8baf68e4fcb8105ff336687",
+      "duration": 0.9607256235827665,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 42240,
+      "decoded_peak": 0.9712054133415222,
+      "playback_gain": 0.8752010525512788
+    },
+    {
+      "source_id": 477445358,
+      "file": "naraka-477445358.ogg",
+      "bytes": 44296,
+      "sha256": "ee65ea21e0fb76de42647567c047e8977983cabdcd98ed2b6c88188c58b996e1",
+      "duration": 3.059909297052154,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 134942,
+      "decoded_peak": 1.1288981437683105,
+      "playback_gain": 0.7529465830838055
+    },
+    {
+      "source_id": 487560667,
+      "file": "naraka-487560667.ogg",
+      "bytes": 18107,
+      "sha256": "dd88924ed6c4386a5f4fb909a2fbbe4abbb06b59a3812fdc4dc389f497aadddb",
+      "duration": 1.1700907029478458,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 51601,
+      "decoded_peak": 0.610440194606781,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 536528925,
+      "file": "naraka-536528925.ogg",
+      "bytes": 39827,
+      "sha256": "db0901d9fdea6446d5893f9d4c673f3fe912ec1980dce328952ca5b1a5f3b6b4",
+      "duration": 2.842108843537415,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 125337,
+      "decoded_peak": 1.1047875881195068,
+      "playback_gain": 0.7693786653114119
+    },
+    {
+      "source_id": 585387678,
+      "file": "naraka-585387678.ogg",
+      "bytes": 47252,
+      "sha256": "014c953644e5a5c714fb6ad2a7d900590ad9f5be74a967577eb432907d659db0",
+      "duration": 3.3281632653061224,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 146772,
+      "decoded_peak": 1.068206787109375,
+      "playback_gain": 0.795726080621661
+    },
+    {
+      "source_id": 655706814,
+      "file": "naraka-655706814.ogg",
+      "bytes": 8374,
+      "sha256": "7708c99761ddb209dab34e9c872db04e1419f90e437a2f607661ebe1327b0fe3",
+      "duration": 0.4844671201814059,
+      "channels": 1,
+      "rate": 44100,
+      "decoded_frames": 22336,
+      "decoded_peak": 0.34981489181518555,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 672810389,
+      "file": "naraka-672810389.ogg",
+      "bytes": 18839,
+      "sha256": "fd0bfc14b23b064830f6c6b7779b55c9125e8b022d33571cdb7acf5879bf6b9c",
+      "duration": 1.2034467120181407,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 53072,
+      "decoded_peak": 0.6432621479034424,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 682276155,
+      "file": "naraka-682276155.ogg",
+      "bytes": 12500,
+      "sha256": "2ca31c63b94ad063a6ff5033ebace4a6d508c691d3e4e49cb3a188f84c4bb623",
+      "duration": 0.8560090702947846,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 37622,
+      "decoded_peak": 0.40561607480049133,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 682948856,
+      "file": "naraka-682948856.ogg",
+      "bytes": 18221,
+      "sha256": "612a65ce005e7a27b613d1acd6fcdab477c7cc09177e161bd53e3c21f7c58291",
+      "duration": 1.1343310657596373,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 50024,
+      "decoded_peak": 1.0790889263153076,
+      "playback_gain": 0.7877015316081852
+    },
+    {
+      "source_id": 771871815,
+      "file": "naraka-771871815.ogg",
+      "bytes": 19386,
+      "sha256": "a94dd05dc88fa360c2b888ea2d56c21efd23d220f0b0f591d87ada62527e7133",
+      "duration": 1.1586621315192744,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 51097,
+      "decoded_peak": 0.8115280866622925,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 777150789,
+      "file": "naraka-777150789.ogg",
+      "bytes": 12563,
+      "sha256": "0f6691bf3ef768bf72d0e0ca98ab51c0e15fe5161896097f01a729729b0d8ee1",
+      "duration": 0.66,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 30016,
+      "decoded_peak": 0.22516626119613647,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 781923129,
+      "file": "naraka-781923129.ogg",
+      "bytes": 16013,
+      "sha256": "18174b671a46d18b939e999a2928c83800cf561b2082bded9b80aecaeeedc64f",
+      "duration": 0.8877777777777778,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 39023,
+      "decoded_peak": 0.9818682670593262,
+      "playback_gain": 0.8656965791813716
+    },
+    {
+      "source_id": 791851626,
+      "file": "naraka-791851626.ogg",
+      "bytes": 10856,
+      "sha256": "6527f28be556e44e036fb3209de0ef05f320bce1fe7634d026736159aee68c4f",
+      "duration": 0.4967800453514739,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 21780,
+      "decoded_peak": 0.22829559445381165,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 828546990,
+      "file": "naraka-828546990.ogg",
+      "bytes": 17047,
+      "sha256": "48c796a374af3323f3a30e46a84c9ed1106cae2d5579ee686392e30e838648bf",
+      "duration": 1.0943537414965987,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 48261,
+      "decoded_peak": 0.29815027117729187,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 835672119,
+      "file": "naraka-835672119.ogg",
+      "bytes": 14732,
+      "sha256": "9d6a3d5deebcd3ccd1760e01a6e954511d4798e3c6940cd3c2e0c8e6ea9c61dd",
+      "duration": 0.8831746031746032,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 38820,
+      "decoded_peak": 0.34151047468185425,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 869056893,
+      "file": "naraka-869056893.ogg",
+      "bytes": 21561,
+      "sha256": "1bb44b8c0b46ee756e760247ed14e9cd38e619a03ebb08049059e45f17bba7b8",
+      "duration": 1.412607709750567,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 62296,
+      "decoded_peak": 0.729518711566925,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 878176367,
+      "file": "naraka-878176367.ogg",
+      "bytes": 12122,
+      "sha256": "9fa5591249036933ccfa0da8fcc0e298a5914cf9212e3757bd5973d8d5031356",
+      "duration": 0.5968480725623583,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 26193,
+      "decoded_peak": 0.2667209208011627,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 888176521,
+      "file": "naraka-888176521.ogg",
+      "bytes": 42639,
+      "sha256": "94cc36328621cd75aba115f2a06ae827670a41bc3e346ce22c7d2fb2809a01ec",
+      "duration": 3.119002267573696,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 137548,
+      "decoded_peak": 1.0945661067962646,
+      "playback_gain": 0.7765634206305763
+    },
+    {
+      "source_id": 909498841,
+      "file": "naraka-909498841.ogg",
+      "bytes": 19855,
+      "sha256": "0767589e90563fd748a243139897e389ca521434301962d4493232297bd8d551",
+      "duration": 1.1603628117913831,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 51172,
+      "decoded_peak": 0.7376070618629456,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 919868544,
+      "file": "naraka-919868544.ogg",
+      "bytes": 15392,
+      "sha256": "d9f350105fa9271b4026f5d74bd1af8a8ed4dfe2a31470e8a1f2bd334c04d0f0",
+      "duration": 1.0890702947845805,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 48028,
+      "decoded_peak": 0.28287816047668457,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 925549399,
+      "file": "naraka-925549399.ogg",
+      "bytes": 38612,
+      "sha256": "30ffa904ec19df89df6dbc0d954c66f96f176864f57833db7a12aad47e9dbad9",
+      "duration": 2.610816326530612,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 115137,
+      "decoded_peak": 0.813605785369873,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 938553406,
+      "file": "naraka-938553406.ogg",
+      "bytes": 18344,
+      "sha256": "c49ed262d8f1fbd83cc9df301aed6f391d6e4c53db3537f74c312e1d6010c65e",
+      "duration": 1.0442857142857143,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 46053,
+      "decoded_peak": 0.782230794429779,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 1002355989,
+      "file": "naraka-1002355989.ogg",
+      "bytes": 8750,
+      "sha256": "ffd0647d7a3218fc3a427ee1afa61f3397b44d63fae131ac041a831d0430fd8e",
+      "duration": 0.5502267573696145,
+      "channels": 1,
+      "rate": 44100,
+      "decoded_frames": 24137,
+      "decoded_peak": 0.23053768277168274,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 1012800056,
+      "file": "naraka-1012800056.ogg",
+      "bytes": 9087,
+      "sha256": "e1e22fbd86554d17e05e1ef76648952ea267585be46591dcdf0782df08d671b4",
+      "duration": 0.5891609977324263,
+      "channels": 1,
+      "rate": 44100,
+      "decoded_frames": 25854,
+      "decoded_peak": 0.44555798172950745,
+      "playback_gain": 1
+    },
+    {
+      "source_id": 1013417629,
+      "file": "naraka-1013417629.ogg",
+      "bytes": 15720,
+      "sha256": "fdeca50acb010ae19f7259236d2c84eaf9f4741584808f2fabe2f7eafca97355",
+      "duration": 1.1617913832199547,
+      "channels": 2,
+      "rate": 44100,
+      "decoded_frames": 51235,
+      "decoded_peak": 0.3153729736804962,
+      "playback_gain": 1
+    }
+  ],
+  "evidence": [
+    {
+      "path": "assets/prepared/naraka/audio/source-evidence/audio_sample_trace.json",
+      "sha256": "a93e73ee64550a8aba851eef33e0e2d568b52ccd0f40211fce978e9145efa2b2"
+    },
+    {
+      "path": "assets/prepared/naraka/audio/source-evidence/audio-tracks-selected.json",
+      "sha256": "72439408c46af3ee782e1eac2080050e1f20e943be812bf94b50dfdbce76793c"
+    },
+    {
+      "path": "assets/prepared/naraka/audio/source-evidence/audio-dbbl-verification.json",
+      "sha256": "fa3d237e85c9a0ab9681e6f6f8d43a7c6b577d7a1e516b7246cfc59068ee25ce"
+    },
+    {
+      "path": "assets/prepared/naraka/audio/source-evidence/audio-config-selected.json",
+      "sha256": "42a680ac29f2906f76f1d0200f21561ffa96f390ded4c1c9101abdd3f06ae249"
+    }
+  ],
+  "limits": [
+    "Original default switches selected; material/armor/strength labels remain unknown.",
+    "Original random mode, RTPC, positioning, buses and reverb are not reconstructed.",
+    "Kiva picks one weighted original variant per layer; land keeps two separate PlayActions.",
+    "Shared clash/shock assigned to Kiva settled defense; not proof of original success rules.",
+    "Optional generic male death voice is not character-specific and must not be used as a female voice.",
+    "Gun/bow are original weapon-family firing events, not skin-exclusive; sniper clip audio mapping is unproven.",
+    "move_run and move_sprint original default variants are the same source IDs; no two-set claim.",
+    "Signal/decode checks do not replace actual browser AudioContext and listening acceptance."
+  ]
+}

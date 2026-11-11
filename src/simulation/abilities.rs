@@ -1,6 +1,24 @@
 //! Read-only action and companion snapshots; combat owns marker execution.
 use super::WeaponPair;
 use bevy::prelude::*;
+
+/// A committed ordinary attack's stage, independent of skill combo windows.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum MeleeStage {
+    #[default]
+    One,
+    Two,
+    Three,
+}
+impl MeleeStage {
+    pub fn next(self) -> Option<Self> {
+        match self {
+            Self::One => Some(Self::Two),
+            Self::Two => Some(Self::Three),
+            Self::Three => None,
+        }
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ActionKind {
     Melee,
@@ -17,7 +35,7 @@ impl ActionKind {
     }
     pub(super) fn duration(self, pair: WeaponPair) -> f32 {
         match self {
-            Self::Melee => pair.melee().3,
+            Self::Melee => pair.melee_profile(MeleeStage::One).duration,
             Self::HammerSlam | Self::ChainSweep => 0.50,
             Self::MusketShot => 0.40,
             Self::AxeShot => 0.75,
@@ -31,6 +49,7 @@ pub struct ActionSnapshot {
     pub action_id: u64,
     pub kind: ActionKind,
     pub pair: WeaponPair,
+    pub melee_stage: Option<MeleeStage>,
     pub target: Option<Entity>,
     pub elapsed: f32,
     pub duration: f32,

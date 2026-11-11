@@ -1,0 +1,47 @@
+{
+  "scope": "Official native evaluator established; original clip/Avatar H0 and final 44-clip adaptive bake completed",
+  "native_unity_version": "2019.4.41f1 (fb553f8fdd6c)",
+  "source_unity_serialized_version": "2019.4.41f2",
+  "bootstrap_result": "NATIVE_OK 2019.4.41f1 95",
+  "bootstrap_exit_code": 0,
+  "player_source": {
+    "url": "https://download.unity3d.com/download_unity/fb553f8fdd6c/MacEditorTargetInstaller/UnitySetup-Windows-Mono-Support-for-Editor-2019.4.41f1.pkg",
+    "sha256": "6f77c5483056d5a63f6e785d41eb1e31312e5b341a86d345c92f9bfdc94e0e39",
+    "size": 112268324,
+    "purpose": "Extract official standalone Windows Mono player runtime only for isolated native sampler; do not install editor or activate licenses."
+  },
+  "settings_template_source": {
+    "url": "https://storage.googleapis.com/mlagents-test-environments/1.0.0/windows/Startup.zip",
+    "sha256": "3d7ec598936c2306550920742ced9bdee13f729e94db807d14f289f7199f9c8d",
+    "size": 70271524,
+    "purpose": "Standalone Unity runtime template for own offline native sampler; original application scripts will be replaced before execution."
+  },
+  "fixture_behavior": "Self-authored standard 2019 settings and Assembly-CSharp static bootstrap, official standalone Mono runtime, headless null graphics, bounded own process. No original game executable or managed game scripts run.",
+  "scope_limits": [
+    "No Unity Editor installed or activated",
+    "Not a claim of original controller layer weights",
+    "Source f2 and evaluator f1 discrepancy retained",
+    "H0 completion is supported by actual source native captures and independent weighted-hand validation, not by the bootstrap alone"
+  ],
+  "external_tools": [
+    "/home/asuka/kiva-asset-research/naraka/native-oracle/build-fixture.py",
+    "/home/asuka/kiva-asset-research/naraka/native-oracle/compile-sampler.py",
+    "/home/asuka/kiva-asset-research/naraka/native-oracle/run-fixture.py"
+  ],
+  "note": "Production sampling scripts and verified poses owned by naraka-animation-assets child; root maintains environment and independent validation.",
+  "validation": {
+    "status": "passed",
+    "clips": 44,
+    "adaptive_keys": 6534,
+    "independent_reference_frames": 8670,
+    "reference_clock": "137Hz + 0.00123 seconds, not used for adaptive key selection",
+    "actual_weighted_hand_vertices_per_frame": 1116,
+    "f32_adjacent_cuts": 65,
+    "max_local_angle_degrees": 0.078316,
+    "max_world_joint_error_mm": 0.283705,
+    "max_weighted_hand_error_mm": 0.278271,
+    "source_and_authored_finger_graph_error": 0,
+    "evidence": "assets/prepared/naraka/animations/baked/h0-report.json",
+    "delivery": ".trellis/tasks/11-11-naraka-animation-assets/delivery.md"
+  }
+}

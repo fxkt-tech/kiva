@@ -165,6 +165,8 @@ mod tests {
             let mut rig = world.get_mut::<RigPose>(view).unwrap();
             rig.model[0].translation = Vec3::new(0.2, 0.1, 0.0);
             rig.source = Some(SourcePose {
+                scope: crate::client::source_animation::SourceScope::FullBody,
+                rig: crate::client::source_animation::SourceRig::Yanyun,
                 model: source_model,
                 weight: 0.6,
             });

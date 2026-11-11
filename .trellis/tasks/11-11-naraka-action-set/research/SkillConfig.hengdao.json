@@ -1,0 +1,24 @@
+{
+  "name": "SkillConfig",
+  "source_path_id": -6010322381410630861,
+  "source_file": "/home/asuka/kiva-asset-research/naraka/identity/xls/SkillConfig.bytes",
+  "source_sha256": "11b80e097087753e093476a9962112f1479d2feec7805489bb086ec074b50ec2",
+  "decoded_sha256": "cdd9795ca869322235ea620875574e32e358f306feab7010f9b491e25483f26b",
+  "decoded_bytes": 109747,
+  "framing_verified": true,
+  "tables": [
+    {
+      "name": "SkillConfig_Skill",
+      "offset": 136,
+      "end": 103618,
+      "count": 501
+    },
+    {
+      "name": "SkillConfig_SkillReplace",
+      "offset": 103618,
+      "end": 109747,
+      "count": 90
+    }
+  ],
+  "records": []
+}

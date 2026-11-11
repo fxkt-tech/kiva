@@ -62,6 +62,7 @@ impl ViewYaw {
 
 #[derive(Resource, Default)]
 pub(super) struct CaptureState {
+    cancellation_epoch: u64,
     #[cfg(not(target_arch = "wasm32"))]
     active: bool,
     #[cfg(not(target_arch = "wasm32"))]
@@ -72,6 +73,12 @@ pub(super) struct CaptureState {
     defense_edges: Vec<DefenseEdge>,
     #[cfg(not(target_arch = "wasm32"))]
     right_blocked: bool,
+}
+
+impl CaptureState {
+    pub(super) fn cancellation_epoch(&self) -> u64 {
+        self.cancellation_epoch
+    }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -220,7 +227,7 @@ pub(super) fn sample(
     let (mut capture, mut simulation_active) = capture;
     #[cfg(target_arch = "wasm32")]
     let (active, look, held, commands, defense_edges) = {
-        let _ = (&buttons, &motion, &mut window, &mut capture);
+        let _ = (&buttons, &motion, &mut window);
         (
             super::web::active(),
             super::web::take_look(),
@@ -305,6 +312,11 @@ pub(super) fn sample(
             std::mem::take(&mut capture.defense_edges),
         )
     };
+    // Keep cancellation observable even when blur and recapture coalesce into
+    // an active sample. Audio may still have a future authoritative cue.
+    if defense_edges.contains(&DefenseEdge::Cancelled) {
+        capture.cancellation_epoch += 1;
+    }
     simulation_active.0 = active;
     if !active {
         keys.reset_all();
@@ -344,6 +356,11 @@ pub(super) fn sample(
         actions.set_shift_held(held & SPRINT != 0);
         actions.set_movement_held(held & 15 != 0);
         for edge in &defense_edges {
+            // A blur/capture cancellation can arrive in a frame which has
+            // already regained focus. Latch it until the next fixed tick.
+            if *edge == DefenseEdge::Cancelled {
+                combat.cancel_melee_chain();
+            }
             defense.push_edge(*edge);
         }
         if commands & JUMP != 0 {
@@ -951,5 +968,86 @@ mod tests {
         let before = one.yaw();
         one.turn(f32::NAN);
         assert_eq!(one.yaw(), before);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn sampled_focus_cancellation_clears_buffered_melee_but_ordinary_active_frames_preserve_it() {
+        use crate::simulation::{CombatEffect, CombatFeedback, Combatant, MeleeStage};
+        // The third case represents a blur/capture cancellation coalesced with
+        // recapture in one browser sample: final active=true, Cancelled retained.
+        for mode in 0..3 {
+            let (mut app, actor, window) = input_app();
+            for _ in 0..2 {
+                send_mouse(&mut app, window, MouseButton::Left, ButtonState::Pressed);
+                send_mouse(&mut app, window, MouseButton::Left, ButtonState::Released);
+                app.world_mut().run_schedule(Update);
+                fixed(&mut app, 1);
+            }
+            assert_eq!(
+                app.world()
+                    .get::<Combatant>(actor)
+                    .unwrap()
+                    .active_action()
+                    .unwrap()
+                    .melee_stage,
+                Some(MeleeStage::One)
+            );
+            if mode == 1 {
+                app.world_mut().write_message(WindowFocused {
+                    window,
+                    focused: false,
+                });
+                app.world_mut().write_message(WindowFocused {
+                    window,
+                    focused: true,
+                });
+            } else if mode == 2 {
+                app.world_mut()
+                    .resource_mut::<CaptureState>()
+                    .queue_defense(DefenseEdge::Cancelled);
+            }
+            // Cancellation must survive any number of display frames with no
+            // FixedUpdate, just like a buffered click must survive normal frames.
+            for _ in 0..3 {
+                app.world_mut().run_schedule(Update);
+            }
+            if mode == 1 {
+                assert!(!app.world().resource::<SimulationActive>().0);
+                fixed(&mut app, 5);
+                send_mouse(&mut app, window, MouseButton::Left, ButtonState::Pressed);
+                app.world_mut().run_schedule(Update);
+                assert!(app.world().resource::<SimulationActive>().0);
+            }
+            fixed(&mut app, 40);
+            let stages: Vec<_> = app
+                .world()
+                .resource::<CombatFeedback>()
+                .events()
+                .filter(|event| event.actor == actor && event.kind == CombatEffect::MeleeStart)
+                .map(|event| event.melee_stage.unwrap())
+                .collect();
+            if mode == 0 {
+                assert_eq!(stages, [MeleeStage::One, MeleeStage::Two]);
+                assert_eq!(
+                    app.world()
+                        .get::<Combatant>(actor)
+                        .unwrap()
+                        .active_action()
+                        .unwrap()
+                        .melee_stage,
+                    Some(MeleeStage::Two)
+                );
+            } else {
+                assert_eq!(stages, [MeleeStage::One]);
+                assert!(
+                    app.world()
+                        .get::<Combatant>(actor)
+                        .unwrap()
+                        .active_action()
+                        .is_none()
+                );
+            }
+        }
     }
 }

@@ -494,6 +494,7 @@ pub(super) fn advance(
                             source: entity,
                             source_owner: entity,
                             pair: None,
+                            melee_stage: None,
                             target,
                             action_id: boss.sequence,
                             hit_index: 0,
@@ -513,6 +514,9 @@ pub(super) fn advance(
                         let source = boss.sequence;
                         boss.stun(source, 0.80);
                         movement.stop();
+                    }
+                    if outcome == super::HitOutcome::Damaged {
+                        target_combat.interrupt_melee_chain();
                     }
                     if !target_health.is_alive() {
                         movement.stop();
@@ -1117,6 +1121,77 @@ mod tests {
                 .filter(|e| e.actor == player && e.kind == CombatEffect::Block)
                 .count(),
             1
+        );
+    }
+    #[test]
+    fn a_real_boss_hit_clears_only_the_players_uncommitted_melee_successor() {
+        let (mut app, player, boss) = arena();
+        wait_for(&mut app, boss, BossState::Telegraph);
+        tick(&mut app, 18);
+        let before = health(&app, player);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_attack();
+        tick(&mut app, 1);
+        let action = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .active_action()
+            .unwrap();
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_attack();
+        tick(&mut app, 1);
+        assert_eq!(health(&app, player), before);
+        for _ in 0..30 {
+            tick(&mut app, 1);
+            if health(&app, player) < before {
+                break;
+            }
+        }
+        assert!(health(&app, player) < before);
+        assert_eq!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .active_action()
+                .unwrap()
+                .action_id,
+            action.action_id
+        );
+        while app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .active_action()
+            .is_some()
+        {
+            tick(&mut app, 1);
+        }
+        tick(&mut app, 1);
+        assert!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .active_action()
+                .is_none()
+        );
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_attack();
+        tick(&mut app, 1);
+        assert_eq!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .active_action()
+                .unwrap()
+                .melee_stage,
+            Some(super::super::MeleeStage::One)
         );
     }
 }

@@ -1,0 +1,3160 @@
+{
+  "method": "CRC32 of exact original AutoAnimatorStates string key equals low32 of original override field5 key; all table records consumed and key equality verified. Field5 child strings 2/3 retained without inventing their selection rule. When strings differ, original runtime selection is unproven; hash/duration/paths describe identity_details_apply_to (the first-listed candidate) only.",
+  "state_source": {
+    "source_file": "/home/asuka/kiva-asset-research/naraka/identity/xls/AutoAnimatorStates.bytes",
+    "source_sha256": "4fad3cbab5cac043e039f71ec8edec4d38c2a3634514e4758e98e6fce9ff711c",
+    "source_path_id": -2135719427922892394,
+    "decoded_sha256": "6f8066d2783f69d84e7ac3339089b3122c3fc4ded014e1033f3fef91761999b3",
+    "records": 23132,
+    "index_size": 1362150,
+    "complete_framing": true
+  },
+  "override_source_sha256": "6dab5ddd1893f4237836b7a3c3c17067d0eed22c3bc70e7afa5a50e5d6efa961",
+  "rows": [
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 98967,
+      "override_entry_end": 99030,
+      "override_entry_sha256": "67dfe0e7ece6ff410dbeeec1678a38d9294296aaab65a254fa54ac4a65d4a457",
+      "state_crc32": 214964647,
+      "state_records": [
+        {
+          "state": "dinner_sniper_ads_attack_01",
+          "offset": 3760187,
+          "end": 3760354,
+          "bytes": 167,
+          "sha256": "27a1f1017a383c6df1b916e2d682bb5eca6a0e01ce6a17a5052d1ea652c62421"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_ads_attack_01",
+        "female_sniper_ads_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_ads_attack_01",
+        "3": "female_sniper_ads_attack_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_ads_attack_01",
+      "clip_hash_u64": 9678027875945675376,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/59/male_sniper_ads_attack_01.anim",
+          "bundle_key": "5/1/51d1055bbc19167c",
+          "declared_bundle_size": 17670144
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 99030,
+      "override_entry_end": 99094,
+      "override_entry_sha256": "a961fd67e243329ad948302a2a238be1b8f19c64ef17d7721cbb804339487dae",
+      "state_crc32": 1983021148,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_12",
+          "offset": 3763123,
+          "end": 3763274,
+          "bytes": 151,
+          "sha256": "6b72aec1b65c5e0dd923168a35c77f731615f7a28a6c704248becc81cad35e79"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_ads_attack_01",
+        "female_sniper_ads_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_ads_attack_01",
+        "3": "female_sniper_ads_attack_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_ads_attack_01",
+      "clip_hash_u64": 9678027875945675376,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/59/male_sniper_ads_attack_01.anim",
+          "bundle_key": "5/1/51d1055bbc19167c",
+          "declared_bundle_size": 17670144
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 99094,
+      "override_entry_end": 99163,
+      "override_entry_sha256": "a06154d4a9f4ba3b801b9f398d384941b071ec9cb452f8a74678599de610f245",
+      "state_crc32": 2672895337,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_14",
+          "offset": 3764515,
+          "end": 3764666,
+          "bytes": 151,
+          "sha256": "ed269f8f477f21975a5c5bdd779354d176e691fede06524ddf5d442e9688be6b"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_ads_attack_01",
+        "female_sniper_ads_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_ads_attack_01",
+        "3": "female_sniper_ads_attack_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_ads_attack_01",
+      "clip_hash_u64": 9678027875945675376,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/59/male_sniper_ads_attack_01.anim",
+          "bundle_key": "5/1/51d1055bbc19167c",
+          "declared_bundle_size": 17670144
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 99408,
+      "override_entry_end": 99468,
+      "override_entry_sha256": "982ee1f90a5cef591d12128fe0e5d7041030b3d54577c6122c9b7689ee295b15",
+      "state_crc32": 1354269017,
+      "state_records": [
+        {
+          "state": "dinner_sniper_ads_idle_01",
+          "offset": 3760354,
+          "end": 3760507,
+          "bytes": 153,
+          "sha256": "64b4f0e8e9c9627635cd050a6a00f0313f8634daf30a69760e561c5d09b6e3a3"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_ads_idle_01",
+        "female_sniper_ads_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_ads_idle_01",
+        "3": "female_sniper_ads_idle_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_ads_idle_01",
+      "clip_hash_u64": 12596011756936985585,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/76/male_sniper_ads_idle_01.anim",
+          "bundle_key": "8/3/8386dd0552ef55f1",
+          "declared_bundle_size": 16355328
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 100036,
+      "override_entry_end": 100097,
+      "override_entry_sha256": "e8fa62e64686bf5ccaf42f77ef9c76ae1e27654e7b22e526985f838988e11e97",
+      "state_crc32": 4129349799,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_01",
+          "offset": 3762276,
+          "end": 3762427,
+          "bytes": 151,
+          "sha256": "67a2000a782dd372483d299256e12d7766338a986681ed457afeabce55cec18d"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01",
+        "female_sniper_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01",
+        "3": "female_sniper_attack_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_attack_01",
+      "clip_hash_u64": 17473920540174893173,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/41/male_sniper_attack_01.anim",
+          "bundle_key": "f/d/fd76e60e72f0e838",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 100097,
+      "override_entry_end": 100158,
+      "override_entry_sha256": "6606c1bcee946aba6f3915d87680c9ed0fdba82818a156401a57810b73d32ff6",
+      "state_crc32": 4013674982,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_11",
+          "offset": 3762427,
+          "end": 3762578,
+          "bytes": 151,
+          "sha256": "a01c23a628007362fac45bf39461a8af80a71fff993aff50589fd05484dc3ed6"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01",
+        "female_sniper_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01",
+        "3": "female_sniper_attack_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_attack_01",
+      "clip_hash_u64": 17473920540174893173,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/41/male_sniper_attack_01.anim",
+          "bundle_key": "f/d/fd76e60e72f0e838",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 100158,
+      "override_entry_end": 100213,
+      "override_entry_sha256": "8f78ba72ac8e1ff2477e4609117134c88a24996335bd296ebf70ce671c57c15e",
+      "state_crc32": 20295882,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_13",
+          "offset": 3763819,
+          "end": 3763970,
+          "bytes": 151,
+          "sha256": "24fac4b7353da7c9ad828ea1c1ca892500c3f6fa6d555e63a3ea9b25d754d40a"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01",
+        "female_sniper_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01",
+        "3": "female_sniper_attack_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_attack_01",
+      "clip_hash_u64": 17473920540174893173,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/41/male_sniper_attack_01.anim",
+          "bundle_key": "f/d/fd76e60e72f0e838",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 100213,
+      "override_entry_end": 100284,
+      "override_entry_sha256": "db7875ca759cf87f7fb4727cda407373ab07da85f21bf0b1bbddbb6405f92d59",
+      "state_crc32": 234001223,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_11_recover",
+          "offset": 3762940,
+          "end": 3763123,
+          "bytes": 183,
+          "sha256": "0f7e018fadac9c5019441826c90344b235b8776264b825bf1e2f20e9ec8bce9d"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01_recover",
+        "female_sniper_attack_01_recover"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01_recover",
+        "3": "female_sniper_attack_01_recover"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_attack_01_recover",
+      "clip_hash_u64": 17289085910678562273,
+      "duration": 0.30000001192092896,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/80/male_sniper_attack_01_recover.anim",
+          "bundle_key": "6/4/64a05eb21f5c2eee",
+          "declared_bundle_size": 15147008
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 100284,
+      "override_entry_end": 100356,
+      "override_entry_sha256": "ff01b98a0cb2c7fade17a42f6c16b118be8e8256e9291cb085a367572ab3303f",
+      "state_crc32": 587512769,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_13_recover",
+          "offset": 3764332,
+          "end": 3764515,
+          "bytes": 183,
+          "sha256": "35f088c4af1ff4830eca35d79ff65f105d0652968cfb88a767ffc00a918b34c1"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01_recover",
+        "female_sniper_attack_01_recover"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01_recover",
+        "3": "female_sniper_attack_01_recover"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_attack_01_recover",
+      "clip_hash_u64": 17289085910678562273,
+      "duration": 0.30000001192092896,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/80/male_sniper_attack_01_recover.anim",
+          "bundle_key": "6/4/64a05eb21f5c2eee",
+          "declared_bundle_size": 15147008
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 100907,
+      "override_entry_end": 100964,
+      "override_entry_sha256": "642a6ab115191276bcaf10690aad986b0d0f99ef64dd450bcc1e1677fc202e50",
+      "state_crc32": 3004281523,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_20",
+          "offset": 3765907,
+          "end": 3766058,
+          "bytes": 151,
+          "sha256": "36fdb2cf4b0f7792caee3cbf99f1af6ec9c31ae2a38f23471dd8d44392bc50c3"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_idle_01",
+        "female_sniper_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_idle_01",
+        "3": "female_sniper_idle_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_idle_01",
+      "clip_hash_u64": 8879375199977919466,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/74/male_sniper_idle_01.anim",
+          "bundle_key": "b/7/b7b7f29288092d99",
+          "declared_bundle_size": 16039936
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 100964,
+      "override_entry_end": 101021,
+      "override_entry_sha256": "ee7dffa6ac57de483e4656c671d7816f153c9113bbed3f38f0383f9365fbaa26",
+      "state_crc32": 2612129664,
+      "state_records": [
+        {
+          "state": "dinner_sniper_idle_01",
+          "offset": 3774731,
+          "end": 3775148,
+          "bytes": 417,
+          "sha256": "a09500fe02cb5e7ba256ac08c937207b6441cc03ff40ab7f4887f937f802ac3d"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_idle_01",
+        "female_sniper_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_idle_01",
+        "3": "female_sniper_idle_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_idle_01",
+      "clip_hash_u64": 8879375199977919466,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/74/male_sniper_idle_01.anim",
+          "bundle_key": "b/7/b7b7f29288092d99",
+          "declared_bundle_size": 16039936
+        }
+      ]
+    },
+    {
+      "group": "dinner_female_movement_player",
+      "group_archive_offset": 757931,
+      "group_archive_end": 962044,
+      "override_entry_offset": 101550,
+      "override_entry_end": 101611,
+      "override_entry_sha256": "6d39898bccbe2cb3293cfa7cdbbac66843c667d37e893b77b53bcd231b144082",
+      "state_crc32": 2682543945,
+      "state_records": [
+        {
+          "state": "dinner_sniper_reload_01",
+          "offset": 3776450,
+          "end": 3776601,
+          "bytes": 151,
+          "sha256": "1c342704a6c4f46283a0a4a0acdfc247192773ff8d404089a1faa24c8df263eb"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_reload_01",
+        "female_sniper_reload_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_reload_01",
+        "3": "female_sniper_reload_01"
+      },
+      "selection_evidence": "distinct-name-candidates-runtime-selection-unproven",
+      "identity_details_apply_to": "male_sniper_reload_01",
+      "clip_hash_u64": 5912011914820832311,
+      "duration": 2.799999952316284,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/05/male_sniper_reload_01.anim",
+          "bundle_key": "7/4/74d56cc475c1b7cb",
+          "declared_bundle_size": 13115392
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_hurt_act_player",
+      "group_archive_offset": 1927139,
+      "group_archive_end": 2013278,
+      "override_entry_offset": 44309,
+      "override_entry_end": 44392,
+      "override_entry_sha256": "686a2eded4e397a2fad9701068d05bb48fbcf24b67821a575cd84488a1dba68b",
+      "state_crc32": 3528802256,
+      "state_records": [
+        {
+          "state": "common_die_hurt_back_1",
+          "offset": 2347940,
+          "end": 2348067,
+          "bytes": 127,
+          "sha256": "ea4f458c70e82530e66becdcc1fbe82ab4d98cdfbaec0fcdd9e7f3ef7f090eae"
+        }
+      ],
+      "clip_names": [
+        "male_die_hurt_stand_light_back_01",
+        "male_die_hurt_stand_light_back_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_die_hurt_stand_light_back_01",
+        "3": "male_die_hurt_stand_light_back_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_die_hurt_stand_light_back_01",
+      "clip_hash_u64": 1859218536553332314,
+      "duration": 5.199999809265137,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/27/male_die_hurt_stand_light_back_01.anim",
+          "bundle_key": "e/3/e32f06ad32e8ed23",
+          "declared_bundle_size": 17711104
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_hurt_act_player",
+      "group_archive_offset": 1927139,
+      "group_archive_end": 2013278,
+      "override_entry_offset": 44791,
+      "override_entry_end": 44871,
+      "override_entry_sha256": "37bd0965bd6fbd9236df015b741c28b010388c2fb9f8aaf3334417f1d0770a8c",
+      "state_crc32": 1234751073,
+      "state_records": [
+        {
+          "state": "common_die_hurt_front_1",
+          "offset": 2355566,
+          "end": 2355697,
+          "bytes": 131,
+          "sha256": "bb8aa8ebd238f9a52e3b7976586ee8b65efe327b1610dea77a04b9656125c019"
+        }
+      ],
+      "clip_names": [
+        "male_die_hurt_stand_light_front_01",
+        "male_die_hurt_stand_light_front_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_die_hurt_stand_light_front_01",
+        "3": "male_die_hurt_stand_light_front_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_die_hurt_stand_light_front_01",
+      "clip_hash_u64": 833837363152521925,
+      "duration": 5.433333396911621,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/36/male_die_hurt_stand_light_front_01.anim",
+          "bundle_key": "c/9/c9e0b82fda2f8dee",
+          "declared_bundle_size": 17305600
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_hurt_act_player",
+      "group_archive_offset": 1927139,
+      "group_archive_end": 2013278,
+      "override_entry_offset": 63721,
+      "override_entry_end": 63790,
+      "override_entry_sha256": "51003735a8dbf706e16da54cf56cb365a17c5f5e1f7c81d2b7abae011e6e9d7b",
+      "state_crc32": 144602942,
+      "state_records": [
+        {
+          "state": "common_hurt_back_1",
+          "offset": 2420161,
+          "end": 2420274,
+          "bytes": 113,
+          "sha256": "321a0039859ae7c050b0efd657598a2712e6f21261a4da2850de34ec680ab740"
+        }
+      ],
+      "clip_names": [
+        "male_hurt_stand_light_back_01",
+        "male_hurt_stand_light_back_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hurt_stand_light_back_01",
+        "3": "male_hurt_stand_light_back_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hurt_stand_light_back_01",
+      "clip_hash_u64": 2243894325608747572,
+      "duration": 1.3333333730697632,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/04/male_hurt_stand_light_back_01.anim",
+          "bundle_key": "f/7/f70d447bcb3aa1a6",
+          "declared_bundle_size": 16158720
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_hurt_act_player",
+      "group_archive_offset": 1927139,
+      "group_archive_end": 2013278,
+      "override_entry_offset": 64879,
+      "override_entry_end": 64950,
+      "override_entry_sha256": "9ace2043a3804d2d49583a561796cff21edd2259794e8342bf3ae0f754c15640",
+      "state_crc32": 250661462,
+      "state_records": [
+        {
+          "state": "common_hurt_front_1",
+          "offset": 2460263,
+          "end": 2460380,
+          "bytes": 117,
+          "sha256": "8cd4c2b1a5ebf03cfc5b6ddf7c67366ce93469ee24d61a5d748e0adf60fd9ff6"
+        }
+      ],
+      "clip_names": [
+        "male_hurt_stand_light_front_01",
+        "male_hurt_stand_light_front_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hurt_stand_light_front_01",
+        "3": "male_hurt_stand_light_front_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hurt_stand_light_front_01",
+      "clip_hash_u64": 3021827027505079612,
+      "duration": 1.3333333730697632,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/69/male_hurt_stand_light_front_01.anim",
+          "bundle_key": "8/a/8abebd5a62086ca4",
+          "declared_bundle_size": 15884288
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_hurt_act_player",
+      "group_archive_offset": 1927139,
+      "group_archive_end": 2013278,
+      "override_entry_offset": 65472,
+      "override_entry_end": 65547,
+      "override_entry_sha256": "d32f8440c403674fd6bb59386cd24fc331e518cb579304477ffc5791816148b5",
+      "state_crc32": 3887113457,
+      "state_records": [
+        {
+          "state": "common_hurt_left_1",
+          "offset": 2462647,
+          "end": 2462760,
+          "bytes": 113,
+          "sha256": "9647d17d339b91fc567411b815e11db548beaa91f3119bb589ee174f4f6ca2b0"
+        }
+      ],
+      "clip_names": [
+        "male_hurt_stand_light_left_01",
+        "male_hurt_stand_light_left_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hurt_stand_light_left_01",
+        "3": "male_hurt_stand_light_left_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hurt_stand_light_left_01",
+      "clip_hash_u64": 11437134227248240919,
+      "duration": 1.3333333730697632,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/65/male_hurt_stand_light_left_01.anim",
+          "bundle_key": "4/8/485d627dbd030494",
+          "declared_bundle_size": 21553152
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_hurt_act_player",
+      "group_archive_offset": 1927139,
+      "group_archive_end": 2013278,
+      "override_entry_offset": 66056,
+      "override_entry_end": 66133,
+      "override_entry_sha256": "ed46144dbc65e9913de9cf41f8bc7f32f99749ad32e7c214e51215e6990cc697",
+      "state_crc32": 3781924046,
+      "state_records": [
+        {
+          "state": "common_hurt_right_1",
+          "offset": 2475947,
+          "end": 2476064,
+          "bytes": 117,
+          "sha256": "3c6180e2fa4df52a3d42b09946a99d0d886a2169b0eb50edcb890919167ef293"
+        }
+      ],
+      "clip_names": [
+        "male_hurt_stand_light_right_01",
+        "male_hurt_stand_light_right_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hurt_stand_light_right_01",
+        "3": "male_hurt_stand_light_right_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hurt_stand_light_right_01",
+      "clip_hash_u64": 18088935938898808368,
+      "duration": 1.3333333730697632,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/45/male_hurt_stand_light_right_01.anim",
+          "bundle_key": "e/1/e10169508c79f34d",
+          "declared_bundle_size": 16392192
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 125473,
+      "override_entry_end": 125534,
+      "override_entry_sha256": "6215f2271ec64f54c5a4092b5de60b4d3781b113fac7f24beced72280283d79d",
+      "state_crc32": 214964647,
+      "state_records": [
+        {
+          "state": "dinner_sniper_ads_attack_01",
+          "offset": 3760187,
+          "end": 3760354,
+          "bytes": 167,
+          "sha256": "27a1f1017a383c6df1b916e2d682bb5eca6a0e01ce6a17a5052d1ea652c62421"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_ads_attack_01",
+        "male_sniper_ads_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_ads_attack_01",
+        "3": "male_sniper_ads_attack_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_ads_attack_01",
+      "clip_hash_u64": 9678027875945675376,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/59/male_sniper_ads_attack_01.anim",
+          "bundle_key": "5/1/51d1055bbc19167c",
+          "declared_bundle_size": 17670144
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 125534,
+      "override_entry_end": 125596,
+      "override_entry_sha256": "8ce32fc76f4b160eea52d9878eecd7e2c630ac43fadb67e1139c1a3eca6c5bf5",
+      "state_crc32": 1983021148,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_12",
+          "offset": 3763123,
+          "end": 3763274,
+          "bytes": 151,
+          "sha256": "6b72aec1b65c5e0dd923168a35c77f731615f7a28a6c704248becc81cad35e79"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_ads_attack_01",
+        "male_sniper_ads_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_ads_attack_01",
+        "3": "male_sniper_ads_attack_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_ads_attack_01",
+      "clip_hash_u64": 9678027875945675376,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/59/male_sniper_ads_attack_01.anim",
+          "bundle_key": "5/1/51d1055bbc19167c",
+          "declared_bundle_size": 17670144
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 125596,
+      "override_entry_end": 125663,
+      "override_entry_sha256": "629d8d71b0852ddd012bd633a51db2c466ff66a2eba18317a0364191e151fb66",
+      "state_crc32": 2672895337,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_14",
+          "offset": 3764515,
+          "end": 3764666,
+          "bytes": 151,
+          "sha256": "ed269f8f477f21975a5c5bdd779354d176e691fede06524ddf5d442e9688be6b"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_ads_attack_01",
+        "male_sniper_ads_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_ads_attack_01",
+        "3": "male_sniper_ads_attack_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_ads_attack_01",
+      "clip_hash_u64": 9678027875945675376,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/59/male_sniper_ads_attack_01.anim",
+          "bundle_key": "5/1/51d1055bbc19167c",
+          "declared_bundle_size": 17670144
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 125902,
+      "override_entry_end": 125960,
+      "override_entry_sha256": "87c0b405c2be538cef4cb6c35e8167fa74f6c677574931748fd676c0d9006383",
+      "state_crc32": 1354269017,
+      "state_records": [
+        {
+          "state": "dinner_sniper_ads_idle_01",
+          "offset": 3760354,
+          "end": 3760507,
+          "bytes": 153,
+          "sha256": "64b4f0e8e9c9627635cd050a6a00f0313f8634daf30a69760e561c5d09b6e3a3"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_ads_idle_01",
+        "male_sniper_ads_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_ads_idle_01",
+        "3": "male_sniper_ads_idle_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_ads_idle_01",
+      "clip_hash_u64": 12596011756936985585,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/76/male_sniper_ads_idle_01.anim",
+          "bundle_key": "8/3/8386dd0552ef55f1",
+          "declared_bundle_size": 16355328
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 126514,
+      "override_entry_end": 126573,
+      "override_entry_sha256": "533a9f05aaf892e279768396e14db7c482c5786731fe1d2b12c3a7b7ea0a8806",
+      "state_crc32": 4129349799,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_01",
+          "offset": 3762276,
+          "end": 3762427,
+          "bytes": 151,
+          "sha256": "67a2000a782dd372483d299256e12d7766338a986681ed457afeabce55cec18d"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01",
+        "male_sniper_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01",
+        "3": "male_sniper_attack_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_attack_01",
+      "clip_hash_u64": 17473920540174893173,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/41/male_sniper_attack_01.anim",
+          "bundle_key": "f/d/fd76e60e72f0e838",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 126573,
+      "override_entry_end": 126632,
+      "override_entry_sha256": "238e354a351b7ddc5d9cbebb62fd1080013e547862783f601b1aac46b6dfa0e7",
+      "state_crc32": 4013674982,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_11",
+          "offset": 3762427,
+          "end": 3762578,
+          "bytes": 151,
+          "sha256": "a01c23a628007362fac45bf39461a8af80a71fff993aff50589fd05484dc3ed6"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01",
+        "male_sniper_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01",
+        "3": "male_sniper_attack_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_attack_01",
+      "clip_hash_u64": 17473920540174893173,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/41/male_sniper_attack_01.anim",
+          "bundle_key": "f/d/fd76e60e72f0e838",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 126632,
+      "override_entry_end": 126685,
+      "override_entry_sha256": "272701307c06fa5de5d8bf7dc8a5bc20639b140a6708c88c7188e5f0e64c811a",
+      "state_crc32": 20295882,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_13",
+          "offset": 3763819,
+          "end": 3763970,
+          "bytes": 151,
+          "sha256": "24fac4b7353da7c9ad828ea1c1ca892500c3f6fa6d555e63a3ea9b25d754d40a"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01",
+        "male_sniper_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01",
+        "3": "male_sniper_attack_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_attack_01",
+      "clip_hash_u64": 17473920540174893173,
+      "duration": 2.0999999046325684,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/41/male_sniper_attack_01.anim",
+          "bundle_key": "f/d/fd76e60e72f0e838",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 126685,
+      "override_entry_end": 126754,
+      "override_entry_sha256": "38be4c004fd3d2c55fc931701da26c5e8951bebe145fb654ef1c924883f1a92c",
+      "state_crc32": 234001223,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_11_recover",
+          "offset": 3762940,
+          "end": 3763123,
+          "bytes": 183,
+          "sha256": "0f7e018fadac9c5019441826c90344b235b8776264b825bf1e2f20e9ec8bce9d"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01_recover",
+        "male_sniper_attack_01_recover"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01_recover",
+        "3": "male_sniper_attack_01_recover"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_attack_01_recover",
+      "clip_hash_u64": 17289085910678562273,
+      "duration": 0.30000001192092896,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/80/male_sniper_attack_01_recover.anim",
+          "bundle_key": "6/4/64a05eb21f5c2eee",
+          "declared_bundle_size": 15147008
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 126754,
+      "override_entry_end": 126824,
+      "override_entry_sha256": "95cdbf376adb8850ea7886202f7b2607ccae2cc329e241268f87509514bc7644",
+      "state_crc32": 587512769,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_13_recover",
+          "offset": 3764332,
+          "end": 3764515,
+          "bytes": 183,
+          "sha256": "35f088c4af1ff4830eca35d79ff65f105d0652968cfb88a767ffc00a918b34c1"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_attack_01_recover",
+        "male_sniper_attack_01_recover"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_attack_01_recover",
+        "3": "male_sniper_attack_01_recover"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_attack_01_recover",
+      "clip_hash_u64": 17289085910678562273,
+      "duration": 0.30000001192092896,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/80/male_sniper_attack_01_recover.anim",
+          "bundle_key": "6/4/64a05eb21f5c2eee",
+          "declared_bundle_size": 15147008
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 127363,
+      "override_entry_end": 127418,
+      "override_entry_sha256": "199555c0114eb57a318f5336de41e33fd9dbe5ef4c4cc4fd2e5058ad6aeb52a3",
+      "state_crc32": 3004281523,
+      "state_records": [
+        {
+          "state": "dinner_sniper_attack_20",
+          "offset": 3765907,
+          "end": 3766058,
+          "bytes": 151,
+          "sha256": "36fdb2cf4b0f7792caee3cbf99f1af6ec9c31ae2a38f23471dd8d44392bc50c3"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_idle_01",
+        "male_sniper_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_idle_01",
+        "3": "male_sniper_idle_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_idle_01",
+      "clip_hash_u64": 8879375199977919466,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/74/male_sniper_idle_01.anim",
+          "bundle_key": "b/7/b7b7f29288092d99",
+          "declared_bundle_size": 16039936
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 127418,
+      "override_entry_end": 127473,
+      "override_entry_sha256": "173ebf22d3978d5c539831897cd7fc4aa5714f59cc2210d0c90c371fded1b04c",
+      "state_crc32": 2612129664,
+      "state_records": [
+        {
+          "state": "dinner_sniper_idle_01",
+          "offset": 3774731,
+          "end": 3775148,
+          "bytes": 417,
+          "sha256": "a09500fe02cb5e7ba256ac08c937207b6441cc03ff40ab7f4887f937f802ac3d"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_idle_01",
+        "male_sniper_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_idle_01",
+        "3": "male_sniper_idle_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_idle_01",
+      "clip_hash_u64": 8879375199977919466,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/74/male_sniper_idle_01.anim",
+          "bundle_key": "b/7/b7b7f29288092d99",
+          "declared_bundle_size": 16039936
+        }
+      ]
+    },
+    {
+      "group": "dinner_male_movement_player",
+      "group_archive_offset": 2102134,
+      "group_archive_end": 2304192,
+      "override_entry_offset": 127990,
+      "override_entry_end": 128049,
+      "override_entry_sha256": "f65695ec15a6eacff73ab4ab452c5e4725f4b06603d169691eef858030b4f99d",
+      "state_crc32": 2682543945,
+      "state_records": [
+        {
+          "state": "dinner_sniper_reload_01",
+          "offset": 3776450,
+          "end": 3776601,
+          "bytes": 151,
+          "sha256": "1c342704a6c4f46283a0a4a0acdfc247192773ff8d404089a1faa24c8df263eb"
+        }
+      ],
+      "clip_names": [
+        "male_sniper_reload_01",
+        "male_sniper_reload_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_sniper_reload_01",
+        "3": "male_sniper_reload_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_sniper_reload_01",
+      "clip_hash_u64": 5912011914820832311,
+      "duration": 2.799999952316284,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/05/male_sniper_reload_01.anim",
+          "bundle_key": "7/4/74d56cc475c1b7cb",
+          "declared_bundle_size": 13115392
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 10237,
+      "override_entry_end": 10285,
+      "override_entry_sha256": "55360333712db515d6a23c59e98505ab5828fa163223ea434b0132c0ce673bc5",
+      "state_crc32": 720336948,
+      "state_records": [
+        {
+          "state": "attack_501",
+          "offset": 2198598,
+          "end": 2198789,
+          "bytes": 191,
+          "sha256": "acdbe16c48d2ada93202ae9e25e2ef2013a11e7c898a078c266b95f80bb258f7"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_01",
+        "male_bow_attack_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_01",
+        "3": "male_bow_attack_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_01",
+      "clip_hash_u64": 17770520234028771038,
+      "duration": 1.1333333253860474,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/47/male_bow_attack_01.anim",
+          "bundle_key": "a/c/ac3440153825b756",
+          "declared_bundle_size": 15147008
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 10285,
+      "override_entry_end": 10347,
+      "override_entry_sha256": "7ee02a2b5264949848d290da1c8c466b79f9b3a6e36fa1b06bf4fcce612f60ef",
+      "state_crc32": 1913541134,
+      "state_records": [
+        {
+          "state": "attack_501_charge",
+          "offset": 2198789,
+          "end": 2199064,
+          "bytes": 275,
+          "sha256": "19c92f5be9a61e456cf0f5360a2bce0a778d722c1b9a85b7e47ac981effb2f3c"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_01_charge",
+        "male_bow_attack_01_charge"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_01_charge",
+        "3": "male_bow_attack_01_charge"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_01_charge",
+      "clip_hash_u64": 1937920540847482965,
+      "duration": 2.066666603088379,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/00/male_bow_attack_01_charge.anim",
+          "bundle_key": "c/6/c602c8d9e6467369",
+          "declared_bundle_size": 12996608
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 10347,
+      "override_entry_end": 10414,
+      "override_entry_sha256": "1193072edc31401f2ff824697bfa8ba2c3788b5a45c4814ea88d2affabecab3a",
+      "state_crc32": 4236334573,
+      "state_records": [
+        {
+          "state": "attack_502_charge",
+          "offset": 2200164,
+          "end": 2200439,
+          "bytes": 275,
+          "sha256": "a2b998734bd56582b894e793738d4d0422519b7df1069a2cdf3f4ca289e4e1a2"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_01_charge",
+        "male_bow_attack_01_charge"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_01_charge",
+        "3": "male_bow_attack_01_charge"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_01_charge",
+      "clip_hash_u64": 1937920540847482965,
+      "duration": 2.066666603088379,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/00/male_bow_attack_01_charge.anim",
+          "bundle_key": "c/6/c602c8d9e6467369",
+          "declared_bundle_size": 12996608
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 10414,
+      "override_entry_end": 10476,
+      "override_entry_sha256": "467507c70adfc8b93e2a3f0cc187ff4d8219ce5a4f8148d8c6a68612b853a713",
+      "state_crc32": 808146291,
+      "state_records": [
+        {
+          "state": "attack_503_charge",
+          "offset": 2201539,
+          "end": 2201814,
+          "bytes": 275,
+          "sha256": "7728ad3e9310d5ab2787a21f04c62521b11e30c6d12a423f5c8510b26b504165"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_01_charge",
+        "male_bow_attack_01_charge"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_01_charge",
+        "3": "male_bow_attack_01_charge"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_01_charge",
+      "clip_hash_u64": 1937920540847482965,
+      "duration": 2.066666603088379,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/00/male_bow_attack_01_charge.anim",
+          "bundle_key": "c/6/c602c8d9e6467369",
+          "declared_bundle_size": 12996608
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 10476,
+      "override_entry_end": 10538,
+      "override_entry_sha256": "f234b493f67a6333ef52d9f59562e99a2e8958c91260e325a888dd8de025c039",
+      "state_crc32": 988699754,
+      "state_records": [
+        {
+          "state": "attack_504_charge",
+          "offset": 2202914,
+          "end": 2203189,
+          "bytes": 275,
+          "sha256": "1040fb492c9bc793c54c20a558566f72682fc7675c6b45f01b00ceb8329c3981"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_01_charge",
+        "male_bow_attack_01_charge"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_01_charge",
+        "3": "male_bow_attack_01_charge"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_01_charge",
+      "clip_hash_u64": 1937920540847482965,
+      "duration": 2.066666603088379,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/00/male_bow_attack_01_charge.anim",
+          "bundle_key": "c/6/c602c8d9e6467369",
+          "declared_bundle_size": 12996608
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 10538,
+      "override_entry_end": 10621,
+      "override_entry_sha256": "47ea7e66a6a196b5ec8accab39d1817a29512a92fced3264aa5099be3b37f30a",
+      "state_crc32": 3943728993,
+      "state_records": [
+        {
+          "state": "attack_503_charge_hold",
+          "offset": 2201814,
+          "end": 2202149,
+          "bytes": 335,
+          "sha256": "2b1d8e1d3ad286f505142c3623c2ec305bae3665208203a7da858c2d439615d8"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_01_charge_hold_01",
+        "male_bow_attack_01_charge_hold_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_01_charge_hold_01",
+        "3": "male_bow_attack_01_charge_hold_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_01_charge_hold_01",
+      "clip_hash_u64": 12509758441499643368,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/15/male_bow_attack_01_charge_hold_01.anim",
+          "bundle_key": "0/2/024c31a42ea70a3f",
+          "declared_bundle_size": 17199104
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 10828,
+      "override_entry_end": 10892,
+      "override_entry_sha256": "1a7196b2fa386faa29e63ef6356367a63ad251c90ccc95b84886e4f577f82fa5",
+      "state_crc32": 866340105,
+      "state_records": [
+        {
+          "state": "attack_501_recover",
+          "offset": 2199686,
+          "end": 2199973,
+          "bytes": 287,
+          "sha256": "296ca0d5da4322268dae9b0957e94d0507085fb7f85a7b10684961a5f74ca4e4"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_01_recover",
+        "male_bow_attack_01_recover"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_01_recover",
+        "3": "male_bow_attack_01_recover"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_01_recover",
+      "clip_hash_u64": 3509953257450743559,
+      "duration": 0.6000000238418579,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/47/male_bow_attack_01_recover.anim",
+          "bundle_key": "a/c/ac3440153825b756",
+          "declared_bundle_size": 15147008
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 11194,
+      "override_entry_end": 11250,
+      "override_entry_sha256": "94674a8899e43d380f3106e8aad321c3aea0009a0725816ec49308ab0dc0f227",
+      "state_crc32": 1156807139,
+      "state_records": [
+        {
+          "state": "attack_510",
+          "offset": 2210973,
+          "end": 2211170,
+          "bytes": 197,
+          "sha256": "795042bb54d7158a71d9c31e7bdeb394dc5e61156269c6492fdca232c42784c8"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_aim_01",
+        "male_bow_attack_aim_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_aim_01",
+        "3": "male_bow_attack_aim_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_aim_01",
+      "clip_hash_u64": 1613314202885964955,
+      "duration": 0.3333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/46/male_bow_attack_aim_01.anim",
+          "bundle_key": "5/c/5c4baeb0cccf1d18",
+          "declared_bundle_size": 16650240
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 11250,
+      "override_entry_end": 11314,
+      "override_entry_sha256": "9ab4d77dca90ace6edc4b127d9b61ca467097223bbf2a19a775c0790ca139630",
+      "state_crc32": 1515526067,
+      "state_records": [
+        {
+          "state": "attack_510_prepare",
+          "offset": 2211170,
+          "end": 2211463,
+          "bytes": 293,
+          "sha256": "84ab4a2116530e4565e6a79c00a951da9c06b33cceba48a487d9b2caca9aceba"
+        }
+      ],
+      "clip_names": [
+        "male_bow_attack_aim_01_pre",
+        "male_bow_attack_aim_01_pre"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_attack_aim_01_pre",
+        "3": "male_bow_attack_aim_01_pre"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_attack_aim_01_pre",
+      "clip_hash_u64": 16731971070919679870,
+      "duration": 0.20000000298023224,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/36/male_bow_attack_aim_01_pre.anim",
+          "bundle_key": "c/9/c9e0b82fda2f8dee",
+          "declared_bundle_size": 17305600
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 15638,
+      "override_entry_end": 15712,
+      "override_entry_sha256": "ae6e2aae4c56f852a1dce9182be59bc9477ba9b76dcf51ae88753b7a3b1c0ad0",
+      "state_crc32": 1980618313,
+      "state_records": [
+        {
+          "state": "dinner_left_finger",
+          "offset": 3466801,
+          "end": 3466928,
+          "bytes": 127,
+          "sha256": "cfb679bb2f5f1ad8759114792072fd3d4ad7583415414cbcb3ff716ccb229c69"
+        }
+      ],
+      "clip_names": [
+        "male_bow_finger_default_left_01",
+        "male_bow_finger_default_left_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_finger_default_left_01",
+        "3": "male_bow_finger_default_left_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_finger_default_left_01",
+      "clip_hash_u64": 16950296140911003607,
+      "duration": 0.3333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/90/male_bow_finger_default_left_01.anim",
+          "bundle_key": "c/a/ca6e8954da82a0ae",
+          "declared_bundle_size": 15659008
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 15712,
+      "override_entry_end": 15793,
+      "override_entry_sha256": "2312e4625c0d53c7e2fa12590ac1cdcd1acc7f7949271c5084529df0a820edae",
+      "state_crc32": 2296681015,
+      "state_records": [
+        {
+          "state": "dinner_right_finger",
+          "offset": 3691068,
+          "end": 3691201,
+          "bytes": 133,
+          "sha256": "c0473347c0637f1fb5a8e13ce7ddf9e8b3381c7bd74279da18b716b9ef5131ab"
+        }
+      ],
+      "clip_names": [
+        "male_bow_finger_default_right_01",
+        "male_bow_finger_default_right_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_finger_default_right_01",
+        "3": "male_bow_finger_default_right_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_finger_default_right_01",
+      "clip_hash_u64": 277447385844874082,
+      "duration": 0.3333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/99/male_bow_finger_default_right_01.anim",
+          "bundle_key": "a/e/aed69cc4c21133d3",
+          "declared_bundle_size": 17362944
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 18896,
+      "override_entry_end": 18950,
+      "override_entry_sha256": "49f4a304f30974714b68ef2dbbc6817ac23bfa95d0478d1a45886095755314b7",
+      "state_crc32": 1455847442,
+      "state_records": [
+        {
+          "state": "dinner_bow_hold_idle",
+          "offset": 2756013,
+          "end": 2756158,
+          "bytes": 145,
+          "sha256": "0a8a292ac38c5ec71ae8e0a2ad06e7ffb4a7c004e1f5315332d2206507010666"
+        }
+      ],
+      "clip_names": [
+        "male_bow_hold_idle_01",
+        "male_bow_hold_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_hold_idle_01",
+        "3": "male_bow_hold_idle_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_hold_idle_01",
+      "clip_hash_u64": 725140508479842980,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/32/male_bow_hold_idle_01.anim",
+          "bundle_key": "6/f/6ffaace477a71fb5",
+          "declared_bundle_size": 21180416
+        }
+      ]
+    },
+    {
+      "group": "female_bow_weapon_player",
+      "group_archive_offset": 2855235,
+      "group_archive_end": 2882404,
+      "override_entry_offset": 21558,
+      "override_entry_end": 21602,
+      "override_entry_sha256": "edb0a62fbfa405ee1acf69e0a1fb47f3679128f16b7bb0411a40220cea25cf96",
+      "state_crc32": 361969557,
+      "state_records": [
+        {
+          "state": "dinner_idle_battle",
+          "offset": 3412106,
+          "end": 3412225,
+          "bytes": 119,
+          "sha256": "672b61b960d2516af3532b668f154b4979ecb19dbda674bdff783dcabedf3c0d"
+        }
+      ],
+      "clip_names": [
+        "male_bow_idle_01",
+        "male_bow_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_bow_idle_01",
+        "3": "male_bow_idle_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_bow_idle_01",
+      "clip_hash_u64": 18443817729525064617,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/79/male_bow_idle_01.anim",
+          "bundle_key": "6/2/629ebf91719a4306",
+          "declared_bundle_size": 14725120
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 18411,
+      "override_entry_end": 18479,
+      "override_entry_sha256": "30b6e95e254440c5cd5002f70f8c7ad08656aa7b9a4c65d993e92506101fd07c",
+      "state_crc32": 770101480,
+      "state_records": [
+        {
+          "state": "attack_101",
+          "offset": 1367234,
+          "end": 1367319,
+          "bytes": 85,
+          "sha256": "39af3d6b0c7b9d082d705590214bb3372bda835c79385cf0583fdc67f27d7a9f"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_light_01",
+        "male_hengdao_attack_light_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_light_01",
+        "3": "male_hengdao_attack_light_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_light_01",
+      "clip_hash_u64": 7489651706005134909,
+      "duration": 0.7666666507720947,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/01/male_hengdao_attack_light_01.anim",
+          "bundle_key": "d/6/d653f1688755a556",
+          "declared_bundle_size": 15167488
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 18726,
+      "override_entry_end": 18799,
+      "override_entry_sha256": "4772bb837a7139ddc806892cca092a815e0c7c78ba088520d7516645655fd26b",
+      "state_crc32": 3035595090,
+      "state_records": [
+        {
+          "state": "attack_102",
+          "offset": 1372652,
+          "end": 1372737,
+          "bytes": 85,
+          "sha256": "1b1c7b24b01a1e443278b4d92dc484355991fcfda9c083225990c92569ae3c8d"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_light_02",
+        "male_hengdao_attack_light_02"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_light_02",
+        "3": "male_hengdao_attack_light_02"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_light_02",
+      "clip_hash_u64": 11592745616214312328,
+      "duration": 1.0666667222976685,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/90/male_hengdao_attack_light_02.anim",
+          "bundle_key": "c/a/ca6e8954da82a0ae",
+          "declared_bundle_size": 15659008
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 19051,
+      "override_entry_end": 19124,
+      "override_entry_sha256": "c74790030cddbc8d4eee53012edcb4b4f7be78a609c0f02a428b19b2c1211603",
+      "state_crc32": 3286806980,
+      "state_records": [
+        {
+          "state": "attack_103",
+          "offset": 1378070,
+          "end": 1378155,
+          "bytes": 85,
+          "sha256": "e5fbd8f6c43cccdcb6aa3ebd21e3000c5a7d8390f9c3cf5da587dda77c03fd82"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_light_03",
+        "male_hengdao_attack_light_03"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_light_03",
+        "3": "male_hengdao_attack_light_03"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_light_03",
+      "clip_hash_u64": 16289895181338145563,
+      "duration": 1.0333333015441895,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/72/male_hengdao_attack_light_03.anim",
+          "bundle_key": "8/8/88fbfc0c60ed6cb1",
+          "declared_bundle_size": 17035264
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 19124,
+      "override_entry_end": 19197,
+      "override_entry_sha256": "691b118f02113c279d0574c45b720482939a3a44309380f6003fb6bc86465f7c",
+      "state_crc32": 3297080797,
+      "state_records": [
+        {
+          "state": "attack_107",
+          "offset": 1380476,
+          "end": 1380561,
+          "bytes": 85,
+          "sha256": "8006a0c6cf8f0667e58f356668470e3fc0a489e5a370aa2751682dc40ec531cf"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_light_03",
+        "male_hengdao_attack_light_03"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_light_03",
+        "3": "male_hengdao_attack_light_03"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_light_03",
+      "clip_hash_u64": 16289895181338145563,
+      "duration": 1.0333333015441895,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/72/male_hengdao_attack_light_03.anim",
+          "bundle_key": "8/8/88fbfc0c60ed6cb1",
+          "declared_bundle_size": 17035264
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 19197,
+      "override_entry_end": 19265,
+      "override_entry_sha256": "18af65e2869006770d2c74c9c234cf1240b433be10d4d3eb74a48f14d4f01315",
+      "state_crc32": 1413113932,
+      "state_records": [
+        {
+          "state": "attack_108",
+          "offset": 1394374,
+          "end": 1394459,
+          "bytes": 85,
+          "sha256": "ef9d944c7b9c9554e97aeba861dc7f0e0f040a052140590a5cc52ce5daf91b4b"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_light_03",
+        "male_hengdao_attack_light_03"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_light_03",
+        "3": "male_hengdao_attack_light_03"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_light_03",
+      "clip_hash_u64": 16289895181338145563,
+      "duration": 1.0333333015441895,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/72/male_hengdao_attack_light_03.anim",
+          "bundle_key": "8/8/88fbfc0c60ed6cb1",
+          "declared_bundle_size": 17035264
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 19778,
+      "override_entry_end": 19846,
+      "override_entry_sha256": "43c2df3c96b31d670ce3a3b8ac0a27016af987ed95fa007171f72a75b979f910",
+      "state_crc32": 1569465447,
+      "state_records": [
+        {
+          "state": "attack_104",
+          "offset": 1379042,
+          "end": 1379127,
+          "bytes": 85,
+          "sha256": "55890abc2322bae83faacc3ec5c044720ceb9d1d9f47b82e8a8a2491998c4e37"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_light_04",
+        "male_hengdao_attack_light_04"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_light_04",
+        "3": "male_hengdao_attack_light_04"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_light_04",
+      "clip_hash_u64": 7796594234084902001,
+      "duration": 0.9333333373069763,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/66/male_hengdao_attack_light_04.anim",
+          "bundle_key": "c/a/caacfb088ebc7cdc",
+          "declared_bundle_size": 16596992
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 19846,
+      "override_entry_end": 19919,
+      "override_entry_sha256": "c94dc36751c29d4f7c61562beebc1541b7cbf2020413b2bb35a577d260eb5935",
+      "state_crc32": 3011659083,
+      "state_records": [
+        {
+          "state": "attack_106",
+          "offset": 1379998,
+          "end": 1380083,
+          "bytes": 85,
+          "sha256": "3afb15178b2bdd3581a2d16e3a7b03de565d89d87a7ba772bfb38c4e24b89f73"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_light_04",
+        "male_hengdao_attack_light_04"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_light_04",
+        "3": "male_hengdao_attack_light_04"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_light_04",
+      "clip_hash_u64": 7796594234084902001,
+      "duration": 0.9333333373069763,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/66/male_hengdao_attack_light_04.anim",
+          "bundle_key": "c/a/caacfb088ebc7cdc",
+          "declared_bundle_size": 16596992
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 20331,
+      "override_entry_end": 20399,
+      "override_entry_sha256": "c9d6129c55a5055e161354afec5684a5b08fc6be52648754270792a549a6b9f9",
+      "state_crc32": 713757937,
+      "state_records": [
+        {
+          "state": "attack_105",
+          "offset": 1379520,
+          "end": 1379605,
+          "bytes": 85,
+          "sha256": "c0b241d9d6d3aede9a432f65b7a0696972aafb331f1faa653ab33b703d1f1ec7"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_light_05",
+        "male_hengdao_attack_light_05"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_light_05",
+        "3": "male_hengdao_attack_light_05"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_light_05",
+      "clip_hash_u64": 3369801715864269538,
+      "duration": 1.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/63/male_hengdao_attack_light_05.anim",
+          "bundle_key": "a/7/a74bc74fd74b83ba",
+          "declared_bundle_size": 17379328
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 20488,
+      "override_entry_end": 20568,
+      "override_entry_sha256": "8352791659d0565d77161ccdf04b6f48574ac2b036ca0545006de0c27a152880",
+      "state_crc32": 1233786348,
+      "state_records": [
+        {
+          "state": "attack_141",
+          "offset": 1569277,
+          "end": 1569362,
+          "bytes": 85,
+          "sha256": "258af1d3c6f21fa531872829e621bc0cf9e4574244e3ec2f7efa0ee9b30e8056"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_attack_shock_light_01",
+        "male_hengdao_attack_shock_light_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_attack_shock_light_01",
+        "3": "male_hengdao_attack_shock_light_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_attack_shock_light_01",
+      "clip_hash_u64": 3497094335640433969,
+      "duration": 1.8333333730697632,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/16/male_hengdao_attack_shock_light_01.anim",
+          "bundle_key": "8/4/84688571c359d0c1",
+          "declared_bundle_size": 16871424
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 25178,
+      "override_entry_end": 25244,
+      "override_entry_sha256": "29feb793df0c51f33d6e7bb3547e89c4b3dda9591d70b099c3cc5c50f96623e6",
+      "state_crc32": 1957100178,
+      "state_records": [
+        {
+          "state": "dinner_crouch_idle_battle",
+          "offset": 3017758,
+          "end": 3017919,
+          "bytes": 161,
+          "sha256": "a9707bedd2db5597078f912fc0636e4bc5171868118fef775024c9c361b9cd55"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_crouch_idle_01",
+        "male_hengdao_crouch_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_crouch_idle_01",
+        "3": "male_hengdao_crouch_idle_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_crouch_idle_01",
+      "clip_hash_u64": 9205209900076681152,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/94/male_hengdao_crouch_idle_01.anim",
+          "bundle_key": "e/8/e8cc96ce986481e6",
+          "declared_bundle_size": 18685952
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 25650,
+      "override_entry_end": 25731,
+      "override_entry_sha256": "b9d490260e3b98301e8ca4e5e2827d4dc57c6f5f4f2e68b89e15882408192dbb",
+      "state_crc32": 3791899922,
+      "state_records": [
+        {
+          "state": "dinner_crouch_promenade_battle",
+          "offset": 3019834,
+          "end": 3020025,
+          "bytes": 191,
+          "sha256": "004b08c0390d78bfbec0aefe2f212b1911d00e0ba9ce721e6152f328a428bc76"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_crouch_promenade_01",
+        "male_hengdao_crouch_promenade_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_crouch_promenade_01",
+        "3": "male_hengdao_crouch_promenade_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_crouch_promenade_01",
+      "clip_hash_u64": 18373437451396856843,
+      "duration": 1.0666667222976685,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/20/male_hengdao_crouch_promenade_01.anim",
+          "bundle_key": "2/3/23eee545c88e5f03",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 26150,
+      "override_entry_end": 26214,
+      "override_entry_sha256": "116cc883458a5ee65a6db54b1056c9ca4f338552528c69dfb459ec778ee4b026",
+      "state_crc32": 1371881599,
+      "state_records": [
+        {
+          "state": "dinner_crouch_run_battle",
+          "offset": 3025990,
+          "end": 3026145,
+          "bytes": 155,
+          "sha256": "e5ada57e85222ceaba2540477abb2a560abd824d61a42b173fef3ab903cd73d9"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_crouch_run_01",
+        "male_hengdao_crouch_run_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_crouch_run_01",
+        "3": "male_hengdao_crouch_run_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_crouch_run_01",
+      "clip_hash_u64": 10712926647417680633,
+      "duration": 0.800000011920929,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/41/male_hengdao_crouch_run_01.anim",
+          "bundle_key": "f/d/fd76e60e72f0e838",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 26690,
+      "override_entry_end": 26759,
+      "override_entry_sha256": "3200ffaaa21f7f98de63392b14c2e070019e7403ca266c05900a0085234f1885",
+      "state_crc32": 3206223861,
+      "state_records": [
+        {
+          "state": "dinner_dodge_back_battle",
+          "offset": 3082471,
+          "end": 3082616,
+          "bytes": 145,
+          "sha256": "32cb49825b4541e39bdd66788a64bdc0cf36fbe43ab7aa2f9071b7cf238332c5"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_dodge_back_01",
+        "male_hengdao_dodge_back_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_dodge_back_01",
+        "3": "male_hengdao_dodge_back_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_dodge_back_01",
+      "clip_hash_u64": 3206623848394971940,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/03/male_hengdao_dodge_back_01.anim",
+          "bundle_key": "3/f/3fcb04d2d54672d1",
+          "declared_bundle_size": 18747392
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 26759,
+      "override_entry_end": 26837,
+      "override_entry_sha256": "28f8b137968738ff01f44aae978342c16c90f738f3ff8d80d1f5398d7952b07c",
+      "state_crc32": 854854937,
+      "state_records": [
+        {
+          "state": "dinner_dodge_back_double_battle",
+          "offset": 3082761,
+          "end": 3082934,
+          "bytes": 173,
+          "sha256": "1de2d5d5c564d2550fba8b14c2bc2abff71c35351bafefcfdabb6627b608d3cb"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_dodge_back_double_01",
+        "male_hengdao_dodge_back_double_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_dodge_back_double_01",
+        "3": "male_hengdao_dodge_back_double_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_dodge_back_double_01",
+      "clip_hash_u64": 9380002079090323645,
+      "duration": 1.2000000476837158,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/09/male_hengdao_dodge_back_double_01.anim",
+          "bundle_key": "a/6/a6e406d29398358e",
+          "declared_bundle_size": 17731584
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 26837,
+      "override_entry_end": 26908,
+      "override_entry_sha256": "e6a710542c984d1d717b4070490b18083897f8c0912060747c162a2ff30db37b",
+      "state_crc32": 3334521573,
+      "state_records": [
+        {
+          "state": "dinner_dodge_front_battle",
+          "offset": 3083055,
+          "end": 3083204,
+          "bytes": 149,
+          "sha256": "3395be6a57cda86c2b5adc7a263a79193069cd296fc363b8a920df99a8315767"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_dodge_front_01",
+        "male_hengdao_dodge_front_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_dodge_front_01",
+        "3": "male_hengdao_dodge_front_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_dodge_front_01",
+      "clip_hash_u64": 16673559588876361912,
+      "duration": 2.366666555404663,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/73/male_hengdao_dodge_front_01.anim",
+          "bundle_key": "2/d/2db6ed848c9b0de9",
+          "declared_bundle_size": 15933440
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 26908,
+      "override_entry_end": 26993,
+      "override_entry_sha256": "9d310876adc5bf7d7aa3d03ec7711399f277936e1f6bc7dc17e23e6f2b42a103",
+      "state_crc32": 4291542293,
+      "state_records": [
+        {
+          "state": "dinner_dodge_front_double_battle",
+          "offset": 3083353,
+          "end": 3083530,
+          "bytes": 177,
+          "sha256": "c80bb9b1a8c102fa7a7e9ed1ca7358effbe8b8887797c6e2acb961f2de4c7f3f"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_dodge_front_double_01",
+        "male_hengdao_dodge_front_double_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_dodge_front_double_01",
+        "3": "male_hengdao_dodge_front_double_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_dodge_front_double_01",
+      "clip_hash_u64": 5557727888580827533,
+      "duration": 1.2000000476837158,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/66/male_hengdao_dodge_front_double_01.anim",
+          "bundle_key": "c/a/caacfb088ebc7cdc",
+          "declared_bundle_size": 16596992
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 26993,
+      "override_entry_end": 27056,
+      "override_entry_sha256": "a4418cae53a46068945915572aa1f50cbe97f8985772e1a13c5cfa8df496195f",
+      "state_crc32": 193657409,
+      "state_records": [
+        {
+          "state": "dinner_dodge_left_battle",
+          "offset": 3083647,
+          "end": 3083792,
+          "bytes": 145,
+          "sha256": "fc54123c0c9d353b106077a41cf60374d10a48e3eda927e5830b0762e100da3a"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_dodge_left_01",
+        "male_hengdao_dodge_left_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_dodge_left_01",
+        "3": "male_hengdao_dodge_left_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_dodge_left_01",
+      "clip_hash_u64": 12473565367343222791,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/98/male_hengdao_dodge_left_01.anim",
+          "bundle_key": "7/b/7b17626da5244da0",
+          "declared_bundle_size": 17506304
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 27056,
+      "override_entry_end": 27134,
+      "override_entry_sha256": "107311e57fefe332aacf871ccc105c4625e76929f3e1a982be4ece942f94fe23",
+      "state_crc32": 845330843,
+      "state_records": [
+        {
+          "state": "dinner_dodge_left_double_battle",
+          "offset": 3083937,
+          "end": 3084110,
+          "bytes": 173,
+          "sha256": "72bbbea9dd2b7bd87ae7472967129f3706c27d1a1cd11882631778eb85ea7be9"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_dodge_left_double_01",
+        "male_hengdao_dodge_left_double_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_dodge_left_double_01",
+        "3": "male_hengdao_dodge_left_double_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_dodge_left_double_01",
+      "clip_hash_u64": 6912654595292732628,
+      "duration": 1.2000000476837158,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/45/male_hengdao_dodge_left_double_01.anim",
+          "bundle_key": "e/1/e10169508c79f34d",
+          "declared_bundle_size": 16392192
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 27134,
+      "override_entry_end": 27200,
+      "override_entry_sha256": "b5d983691f43e402ef419ee6df4f558c932ae3803fdaff8c7a7ddc407d6422a9",
+      "state_crc32": 616853143,
+      "state_records": [
+        {
+          "state": "dinner_dodge_right_battle",
+          "offset": 3084231,
+          "end": 3084380,
+          "bytes": 149,
+          "sha256": "dce5c031c4796c37590e7d34acafc6c6f2df489adc63ee8cf244b8c381d49bd6"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_dodge_right_01",
+        "male_hengdao_dodge_right_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_dodge_right_01",
+        "3": "male_hengdao_dodge_right_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_dodge_right_01",
+      "clip_hash_u64": 3855928821648296884,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/72/male_hengdao_dodge_right_01.anim",
+          "bundle_key": "8/8/88fbfc0c60ed6cb1",
+          "declared_bundle_size": 17035264
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 27200,
+      "override_entry_end": 27280,
+      "override_entry_sha256": "1e19e048288a5527d9a3ae4b016e80cda2724c74d4d778b54d7b84b42e6ad934",
+      "state_crc32": 1662288625,
+      "state_records": [
+        {
+          "state": "dinner_dodge_right_double_battle",
+          "offset": 3084529,
+          "end": 3084706,
+          "bytes": 177,
+          "sha256": "b668b61e669b61f95e261662f17c0e513a26add8cbc52716368ed7da488a9f34"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_dodge_right_double_01",
+        "male_hengdao_dodge_right_double_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_dodge_right_double_01",
+        "3": "male_hengdao_dodge_right_double_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_dodge_right_double_01",
+      "clip_hash_u64": 4424985400778611470,
+      "duration": 1.2000000476837158,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/43/male_hengdao_dodge_right_double_01.anim",
+          "bundle_key": "7/e/7eacac8639ba34dd",
+          "declared_bundle_size": 17907712
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 28164,
+      "override_entry_end": 28230,
+      "override_entry_sha256": "3cfa6d93cebe34f0b7abc10de5952baa6e857952597b3f27ed6a93edb7f00fff",
+      "state_crc32": 1980618313,
+      "state_records": [
+        {
+          "state": "dinner_left_finger",
+          "offset": 3466801,
+          "end": 3466928,
+          "bytes": 127,
+          "sha256": "cfb679bb2f5f1ad8759114792072fd3d4ad7583415414cbcb3ff716ccb229c69"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_finger_left_01",
+        "male_hengdao_finger_left_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_finger_left_01",
+        "3": "male_hengdao_finger_left_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_finger_left_01",
+      "clip_hash_u64": 3053751619997389204,
+      "duration": 0.3333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/52/male_hengdao_finger_left_01.anim",
+          "bundle_key": "8/1/817372590e334589",
+          "declared_bundle_size": 15179776
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 28230,
+      "override_entry_end": 28303,
+      "override_entry_sha256": "0b58b0b3ace95de8311a76717d693e98b03b57b0049f27a40b5cc9b7c62290f3",
+      "state_crc32": 2296681015,
+      "state_records": [
+        {
+          "state": "dinner_right_finger",
+          "offset": 3691068,
+          "end": 3691201,
+          "bytes": 133,
+          "sha256": "c0473347c0637f1fb5a8e13ce7ddf9e8b3381c7bd74279da18b716b9ef5131ab"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_finger_right_01",
+        "male_hengdao_finger_right_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_finger_right_01",
+        "3": "male_hengdao_finger_right_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_finger_right_01",
+      "clip_hash_u64": 3981416755267820307,
+      "duration": 0.3333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/45/male_hengdao_finger_right_01.anim",
+          "bundle_key": "e/1/e10169508c79f34d",
+          "declared_bundle_size": 16392192
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 30351,
+      "override_entry_end": 30403,
+      "override_entry_sha256": "423120691af34b51c89b85a99e98fa055cac828dc645d9ba5949dcc1ed45e866",
+      "state_crc32": 361969557,
+      "state_records": [
+        {
+          "state": "dinner_idle_battle",
+          "offset": 3412106,
+          "end": 3412225,
+          "bytes": 119,
+          "sha256": "672b61b960d2516af3532b668f154b4979ecb19dbda674bdff783dcabedf3c0d"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_idle_01",
+        "male_hengdao_idle_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_idle_01",
+        "3": "male_hengdao_idle_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_idle_01",
+      "clip_hash_u64": 3280243551440692467,
+      "duration": 4.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/00/male_hengdao_idle_01.anim",
+          "bundle_key": "c/6/c602c8d9e6467369",
+          "declared_bundle_size": 12996608
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 32477,
+      "override_entry_end": 32554,
+      "override_entry_sha256": "7d9faa2bd018f689787df5b51054408ebf70db8ef5077c321c64af05818605d5",
+      "state_crc32": 2543746319,
+      "state_records": [
+        {
+          "state": "dinner_jump_down_loop_01_battle",
+          "offset": 3456066,
+          "end": 3456231,
+          "bytes": 165,
+          "sha256": "1cbeb3d77254b36a66cc87e4f2a62ab65c881dbe04bb44be7a6a27ebbf4e38e2"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_down_loop_01",
+        "male_hengdao_jump_down_loop_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_down_loop_01",
+        "3": "male_hengdao_jump_down_loop_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_down_loop_01",
+      "clip_hash_u64": 12771323923067392671,
+      "duration": 0.800000011920929,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/81/male_hengdao_jump_down_loop_01.anim",
+          "bundle_key": "a/6/a6732a482aeb4727",
+          "declared_bundle_size": 16859136
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 32554,
+      "override_entry_end": 32632,
+      "override_entry_sha256": "6100ae3f5e1ce062933e5f8013fed41d2b8febdc99db7405d1df8d4f8bc8f079",
+      "state_crc32": 1204807480,
+      "state_records": [
+        {
+          "state": "dinner_down_to_land_01_battle",
+          "offset": 3085388,
+          "end": 3085545,
+          "bytes": 157,
+          "sha256": "e3a152c848bfde997bfe37d3e0121b8b13daea2cdfca4273fceb7846749ca1de"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_down_to_land_01",
+        "male_hengdao_jump_down_to_land_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_down_to_land_01",
+        "3": "male_hengdao_jump_down_to_land_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_down_to_land_01",
+      "clip_hash_u64": 15432359105749163673,
+      "duration": 0.7333333492279053,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/96/male_hengdao_jump_down_to_land_01.anim",
+          "bundle_key": "c/8/c8a2922644726158",
+          "declared_bundle_size": 17367040
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 32632,
+      "override_entry_end": 32715,
+      "override_entry_sha256": "cae5852731cc0a41031cea997d08e36e843b2f2f0cd7bed4deb1f49708150125",
+      "state_crc32": 3376472283,
+      "state_records": [
+        {
+          "state": "dinner_down_to_land_02_battle",
+          "offset": 3085674,
+          "end": 3085831,
+          "bytes": 157,
+          "sha256": "78c00e7db20705c3485911afcca1ff5ad07e8d14fbfca4befb686a904bfc25cc"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_down_to_land_02",
+        "male_hengdao_jump_down_to_land_02"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_down_to_land_02",
+        "3": "male_hengdao_jump_down_to_land_02"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_down_to_land_02",
+      "clip_hash_u64": 1241835622462637356,
+      "duration": 1.600000023841858,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/11/male_hengdao_jump_down_to_land_02.anim",
+          "bundle_key": "9/a/9a9ac316f8a23604",
+          "declared_bundle_size": 19124224
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 32715,
+      "override_entry_end": 32792,
+      "override_entry_sha256": "bc153bfa423826c8d28d7e23813d4299ecb28678f45e6fbbe0eadd005a22e99b",
+      "state_crc32": 99278917,
+      "state_records": [
+        {
+          "state": "dinner_down_to_land_03_battle",
+          "offset": 3085960,
+          "end": 3086117,
+          "bytes": 157,
+          "sha256": "409844b1b8887663ece6a3ceba6d0d13889ac421cf1ba46f3e750f2bcaf50119"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_down_to_land_03",
+        "male_hengdao_jump_down_to_land_03"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_down_to_land_03",
+        "3": "male_hengdao_jump_down_to_land_03"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_down_to_land_03",
+      "clip_hash_u64": 6037923027774469055,
+      "duration": 0.800000011920929,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/70/male_hengdao_jump_down_to_land_03.anim",
+          "bundle_key": "7/f/7f6c9ae3d79d9544",
+          "declared_bundle_size": 16793600
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 32792,
+      "override_entry_end": 32869,
+      "override_entry_sha256": "d228b6e5f280681228a3b2aca20c0261704a1e9e83e31b50df98ebee63fc6f60",
+      "state_crc32": 254798172,
+      "state_records": [
+        {
+          "state": "dinner_down_to_land_04_battle",
+          "offset": 3086246,
+          "end": 3086403,
+          "bytes": 157,
+          "sha256": "0558342d6ca688c9ca129bc99661d199c92fa7ea1fd77c5e1a96be7c92ac5c05"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_down_to_land_04",
+        "male_hengdao_jump_down_to_land_04"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_down_to_land_04",
+        "3": "male_hengdao_jump_down_to_land_04"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_down_to_land_04",
+      "clip_hash_u64": 15990390537372386517,
+      "duration": 0.6000000238418579,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/18/male_hengdao_jump_down_to_land_04.anim",
+          "bundle_key": "7/4/74dff03e1b7ba4aa",
+          "declared_bundle_size": 18276352
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 32869,
+      "override_entry_end": 32952,
+      "override_entry_sha256": "150195dc839e1e424c2179028a1d8e1483f32bf8060f448cab24bb633d16f811",
+      "state_crc32": 3280333250,
+      "state_records": [
+        {
+          "state": "dinner_down_to_land_05_battle",
+          "offset": 3086532,
+          "end": 3086689,
+          "bytes": 157,
+          "sha256": "db1e799153ca8410b8494ede418f0626dae6b90eea4a155652a137916e05f8bc"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_down_to_land_05",
+        "male_hengdao_jump_down_to_land_05"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_down_to_land_05",
+        "3": "male_hengdao_jump_down_to_land_05"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_down_to_land_05",
+      "clip_hash_u64": 11464377475634786886,
+      "duration": 0.800000011920929,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/30/male_hengdao_jump_down_to_land_05.anim",
+          "bundle_key": "d/3/d3308e981ae8a433",
+          "declared_bundle_size": 15364096
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 32952,
+      "override_entry_end": 33030,
+      "override_entry_sha256": "0c60a5097ff4bff4a02a56a8d388d38ab6d6a640b12e702040724f1609178485",
+      "state_crc32": 1292561953,
+      "state_records": [
+        {
+          "state": "dinner_down_to_land_06_battle",
+          "offset": 3086818,
+          "end": 3086975,
+          "bytes": 157,
+          "sha256": "c27f9ad08cc24b57cb7c9628113b0c7cc555303e82f7297589018f11ad14020b"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_down_to_land_06",
+        "male_hengdao_jump_down_to_land_06"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_down_to_land_06",
+        "3": "male_hengdao_jump_down_to_land_06"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_down_to_land_06",
+      "clip_hash_u64": 6343465959152232947,
+      "duration": 0.3333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/39/male_hengdao_jump_down_to_land_06.anim",
+          "bundle_key": "c/d/cde197820f62ea32",
+          "declared_bundle_size": 20946944
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 33962,
+      "override_entry_end": 34040,
+      "override_entry_sha256": "efb27221ef8a4369e8319769e5840cc3d587935e882d4251f0b0f999e667dccc",
+      "state_crc32": 1779515270,
+      "state_records": [
+        {
+          "state": "dinner_jump_forward_down_01_battle",
+          "offset": 3459699,
+          "end": 3459886,
+          "bytes": 187,
+          "sha256": "9c4b2f0465fb27950c76344c2f726ca1c178a002c518473a7f7c11f902419837"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_forward_down_01",
+        "male_hengdao_jump_forward_down_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_forward_down_01",
+        "3": "male_hengdao_jump_forward_down_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_forward_down_01",
+      "clip_hash_u64": 8145157729665624767,
+      "duration": 0.2666666805744171,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/43/male_hengdao_jump_forward_down_01.anim",
+          "bundle_key": "7/e/7eacac8639ba34dd",
+          "declared_bundle_size": 17907712
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 34040,
+      "override_entry_end": 34123,
+      "override_entry_sha256": "f2a16d2fbb7d26171607dcc3e61fd20cece1bd4ce6c880567bd317ff220544e0",
+      "state_crc32": 3835574373,
+      "state_records": [
+        {
+          "state": "dinner_jump_forward_down_02_battle",
+          "offset": 3460045,
+          "end": 3460232,
+          "bytes": 187,
+          "sha256": "dcaea3fa20d2e009af4679017ce0d70d3b6067600bc3ac62976f31d68a01bf96"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_forward_down_02",
+        "male_hengdao_jump_forward_down_02"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_forward_down_02",
+        "3": "male_hengdao_jump_forward_down_02"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_forward_down_02",
+      "clip_hash_u64": 13121321009145803018,
+      "duration": 0.5,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/35/male_hengdao_jump_forward_down_02.anim",
+          "bundle_key": "2/b/2badfe7c5a766b7d",
+          "declared_bundle_size": 14950400
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 34123,
+      "override_entry_end": 34197,
+      "override_entry_sha256": "481323baa4b930f74ad6bd82805a17b789f4bda8e082ec3b6371f13f2d25876b",
+      "state_crc32": 1275921332,
+      "state_records": [
+        {
+          "state": "dinner_jump_forward_up_01_battle",
+          "offset": 3460373,
+          "end": 3460542,
+          "bytes": 169,
+          "sha256": "c9e70b307c04b8f71e8a5c15f812f123b221404356cbfda1afe6cbab8f52147d"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_forward_up_01",
+        "male_hengdao_jump_forward_up_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_forward_up_01",
+        "3": "male_hengdao_jump_forward_up_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_forward_up_01",
+      "clip_hash_u64": 7212066146076725179,
+      "duration": 0.2666666805744171,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/36/male_hengdao_jump_forward_up_01.anim",
+          "bundle_key": "c/9/c9e0b82fda2f8dee",
+          "declared_bundle_size": 17305600
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 34197,
+      "override_entry_end": 34276,
+      "override_entry_sha256": "79346cd03342bc3b340c138518cbbfc837ee6c34411add2640bb625c505fa8c7",
+      "state_crc32": 3263300695,
+      "state_records": [
+        {
+          "state": "dinner_jump_forward_up_02_battle",
+          "offset": 3460683,
+          "end": 3460852,
+          "bytes": 169,
+          "sha256": "4fea5f18ee2cb01535d1816e3e469004b64d1371dcdad814f94e3ecf2053fd28"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_forward_up_02",
+        "male_hengdao_jump_forward_up_02"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_forward_up_02",
+        "3": "male_hengdao_jump_forward_up_02"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_forward_up_02",
+      "clip_hash_u64": 11747434904751199246,
+      "duration": 0.23333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/60/male_hengdao_jump_forward_up_02.anim",
+          "bundle_key": "1/a/1aafd4cac8221fc0",
+          "declared_bundle_size": 16982016
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 34276,
+      "override_entry_end": 34354,
+      "override_entry_sha256": "dd0127c43ab8a3e54b2e9d1a8bd80d90f4bf33741c9a3545616c645509179f83",
+      "state_crc32": 1689629021,
+      "state_records": [
+        {
+          "state": "dinner_jump_inplace_down_01_battle",
+          "offset": 3461011,
+          "end": 3461198,
+          "bytes": 187,
+          "sha256": "f88ba9b14305fbbaec293a3c438800379b4d0d886dc80bcdfc46ff382ac1f05f"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_inplace_down_01",
+        "male_hengdao_jump_inplace_down_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_inplace_down_01",
+        "3": "male_hengdao_jump_inplace_down_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_inplace_down_01",
+      "clip_hash_u64": 17505644246817543221,
+      "duration": 0.2666666805744171,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/77/male_hengdao_jump_inplace_down_01.anim",
+          "bundle_key": "7/e/7ec2aa94536a97d3",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 34354,
+      "override_entry_end": 34437,
+      "override_entry_sha256": "8e2ebcb0dc60b3b9035b96cbf85afd1694c11921bf1cc065a998419f8b525a65",
+      "state_crc32": 3929716414,
+      "state_records": [
+        {
+          "state": "dinner_jump_inplace_down_02_battle",
+          "offset": 3461357,
+          "end": 3461544,
+          "bytes": 187,
+          "sha256": "3286e4d08f2011e5d8657274eb25dfd44ca19394de3be9a755c9a3c4c4b7c3c6"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_inplace_down_02",
+        "male_hengdao_jump_inplace_down_02"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_inplace_down_02",
+        "3": "male_hengdao_jump_inplace_down_02"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_inplace_down_02",
+      "clip_hash_u64": 3882569679290879872,
+      "duration": 0.3333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/17/male_hengdao_jump_inplace_down_02.anim",
+          "bundle_key": "8/9/897cb81760ad5e11",
+          "declared_bundle_size": 15142912
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 34437,
+      "override_entry_end": 34511,
+      "override_entry_sha256": "d15d2a587fe440f9c117e0e894ca07893f663b9c245cb9549bc52b2769f6167e",
+      "state_crc32": 552186104,
+      "state_records": [
+        {
+          "state": "dinner_jump_inplace_up_01_battle",
+          "offset": 3461685,
+          "end": 3461854,
+          "bytes": 169,
+          "sha256": "19aeffc860a7726fe475e870b1c32c2b70687ede79a1e4bb590969a074e36908"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_inplace_up_01",
+        "male_hengdao_jump_inplace_up_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_inplace_up_01",
+        "3": "male_hengdao_jump_inplace_up_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_inplace_up_01",
+      "clip_hash_u64": 4710753338464209823,
+      "duration": 0.2666666805744171,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/87/male_hengdao_jump_inplace_up_01.anim",
+          "bundle_key": "9/0/90c91919ef9874e2",
+          "declared_bundle_size": 20213760
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 34511,
+      "override_entry_end": 34590,
+      "override_entry_sha256": "53f38686230acf3d39a4c6a02a8f8b9a690acc148bb380177d09c9f4dff43d91",
+      "state_crc32": 2925967131,
+      "state_records": [
+        {
+          "state": "dinner_jump_inplace_up_02_battle",
+          "offset": 3461995,
+          "end": 3462164,
+          "bytes": 169,
+          "sha256": "075e10d447c1992178c76e57f6f6b850987d0838c410405b858588b901f679ea"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_jump_inplace_up_02",
+        "male_hengdao_jump_inplace_up_02"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_jump_inplace_up_02",
+        "3": "male_hengdao_jump_inplace_up_02"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_jump_inplace_up_02",
+      "clip_hash_u64": 9677909109119864874,
+      "duration": 0.23333333432674408,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/54/male_hengdao_jump_inplace_up_02.anim",
+          "bundle_key": "6/0/60a83a629acd2aec",
+          "declared_bundle_size": 15974400
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 36449,
+      "override_entry_end": 36516,
+      "override_entry_sha256": "351b1b42e8b7c03cb55d96ef99f286fd31559df381af1615944707ead6a761c3",
+      "state_crc32": 2319604292,
+      "state_records": [
+        {
+          "state": "dinner_promenade_battle",
+          "offset": 3650469,
+          "end": 3650618,
+          "bytes": 149,
+          "sha256": "6f548d8f01e7179085b26381f1cc270dcbfce810dcc1fe79073c85a8a1393073"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_promenade_01",
+        "male_hengdao_promenade_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_promenade_01",
+        "3": "male_hengdao_promenade_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_promenade_01",
+      "clip_hash_u64": 832848741492067877,
+      "duration": 1.2000000476837158,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/33/male_hengdao_promenade_01.anim",
+          "bundle_key": "7/f/7fed4a734ee24025",
+          "declared_bundle_size": 19365888
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 36771,
+      "override_entry_end": 36820,
+      "override_entry_sha256": "fb2213cc1fc266db69c3ff582b361150e311437a0d5eb0f6ccdb055010cc496d",
+      "state_crc32": 267883681,
+      "state_records": [
+        {
+          "state": "dinner_run_battle",
+          "offset": 3694147,
+          "end": 3694390,
+          "bytes": 243,
+          "sha256": "16adab84cb26cb404ab26339574a1bea2e75fa5aa05019d892324f7ee2d7fc9d"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_run_01",
+        "male_hengdao_run_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_run_01",
+        "3": "male_hengdao_run_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_run_01",
+      "clip_hash_u64": 17102727574018525722,
+      "duration": 0.800000011920929,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/39/male_hengdao_run_01.anim",
+          "bundle_key": "c/d/cde197820f62ea32",
+          "declared_bundle_size": 20946944
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 38805,
+      "override_entry_end": 38864,
+      "override_entry_sha256": "e083bc4872d0bcffdab120fdbf3cc288f17d41f23e788c59437d77d586533d43",
+      "state_crc32": 3461468203,
+      "state_records": [
+        {
+          "state": "dinner_shock_01",
+          "offset": 3726103,
+          "end": 3726206,
+          "bytes": 103,
+          "sha256": "11b017ccb50a40ef72ea7c5e98f113a4e8c6cc65921b690c35a395dccbeb0e80"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_shock_01",
+        "male_hengdao_shock_01"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_shock_01",
+        "3": "male_hengdao_shock_01"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_shock_01",
+      "clip_hash_u64": 18144711063285429500,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/10/male_hengdao_shock_01.anim",
+          "bundle_key": "4/7/479100628ecd9807",
+          "declared_bundle_size": 19894272
+        }
+      ]
+    },
+    {
+      "group": "male_hd_weapon_player",
+      "group_archive_offset": 7854318,
+      "group_archive_end": 7908321,
+      "override_entry_offset": 38972,
+      "override_entry_end": 39031,
+      "override_entry_sha256": "2361bf0f1691be3cd86827f1846233968233600db3e76ba0841f3d265fd1cddd",
+      "state_crc32": 3191547044,
+      "state_records": [
+        {
+          "state": "dinner_shock_04",
+          "offset": 3726412,
+          "end": 3726515,
+          "bytes": 103,
+          "sha256": "c4e7f47fd0e40a3776ed9c636cbd40794f3d90f0811cd0c98d1dd74b38a5e249"
+        }
+      ],
+      "clip_names": [
+        "male_hengdao_shock_04",
+        "male_hengdao_shock_04"
+      ],
+      "clip_string_fields": {
+        "2": "male_hengdao_shock_04",
+        "3": "male_hengdao_shock_04"
+      },
+      "selection_evidence": "same-name-both-fields",
+      "identity_details_apply_to": "male_hengdao_shock_04",
+      "clip_hash_u64": 17297606252227112624,
+      "duration": 2.0,
+      "source_paths": [
+        {
+          "path": "assets/res/animclipadapter/52/male_hengdao_shock_04.anim",
+          "bundle_key": "8/1/817372590e334589",
+          "declared_bundle_size": 15179776
+        }
+      ]
+    }
+  ]
+}

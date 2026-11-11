@@ -1,0 +1,252 @@
+{
+  "source_dbbl_sha256": "0fbb905eb229ebe9e93a37cdfabd9d7e78755256fa0d2c5b5afec542d4b11f75",
+  "decoder_sha256": "e736da315053bf91796d01eca18b54cbcc2d5b328eecdaf15786e7838251f581",
+  "chains": [
+    {
+      "event": "gman_fk_attack_01",
+      "event_id": 1162568353,
+      "bank": "gman_fk",
+      "bank_id": 3844337830,
+      "bank_sha256": "3e05de7531ec4667011c05acb99d44b06ef4af2d29bc59c078c9089a53d87a79",
+      "bank_entry": {
+        "section": "banks",
+        "id": 3844337830,
+        "alignment": 4096,
+        "bytes": 1018902,
+        "offset": 216862720,
+        "language": 0
+      },
+      "package": {
+        "file": "SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9889355,
+      "event_record_bytes": 94,
+      "event_record_sha256": "8cd481231df64d38559a535bed177111523e1d368c79648a93fd3016606e5274",
+      "bank_record_offset": 122365,
+      "bank_record_bytes": 65,
+      "bank_record_sha256": "e7546093dc5266a32897481d5dcfb7479876fb6f75715f2315ba60d32fb330f2",
+      "paths": [
+        {
+          "action_id": 699106619,
+          "play_action_type": 1027,
+          "target_id": 156854694,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 156854694,
+              "type": 5,
+              "tail": {
+                "offset": 87,
+                "children": [
+                  625712628,
+                  686228295,
+                  743114974
+                ],
+                "playlist": [
+                  {
+                    "id": 743114974,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 686228295,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 625712628,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            625712628,
+            686228295,
+            743114974
+          ],
+          "action_body_hex": "0304a669590900000004a6f023e5",
+          "original_delay_ms": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 625712628,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 477445358,
+          "source_bytes": 43148,
+          "source_sha256": "6fe05b2022aa16b297d1e82e85c9bc01d1a7f79cef969c5ae4d867b37b5b0868",
+          "bank_data_offset": 383488,
+          "physical_offset": 217246208,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 686228295,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 585387678,
+          "source_bytes": 44223,
+          "source_sha256": "6c8b06fa18ce64bea8771110e57ca155e6eba070d6583c508fdad7c05f4b499c",
+          "bank_data_offset": 510272,
+          "physical_offset": 217372992,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 743114974,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 384264562,
+          "source_bytes": 42692,
+          "source_sha256": "9bc54fe3b6ece2511bd007b723b13b18e0d70ce0c20867738eaaea223e27600a",
+          "bank_data_offset": 226352,
+          "physical_offset": 217089072,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 477445358,
+        "duration": 3.059909297052154,
+        "samples": 134942,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 1.0,
+        "rms_dbfs": -20.391326032687644,
+        "wav_sha256": "6fe8869ed9375c2873daccaa3891b13c72060e4748b5e3c0a7c97be3d17e65aa",
+        "ogg_bytes": 44296,
+        "ogg_sha256": "ee65ea21e0fb76de42647567c047e8977983cabdcd98ed2b6c88188c58b996e1"
+      }
+    },
+    {
+      "event": "gman_bow_attack_01",
+      "event_id": 1865825154,
+      "bank": "gman_bow",
+      "bank_id": 1502270685,
+      "bank_sha256": "4eb143b222e58a9b09cfc017f0008c58612fa06d6811797e30cd93c924ef6fdc",
+      "bank_entry": {
+        "section": "banks",
+        "id": 1502270685,
+        "alignment": 4096,
+        "bytes": 1167322,
+        "offset": 85352448,
+        "language": 0
+      },
+      "package": {
+        "file": "SoundActor2.pck",
+        "file_bytes": 237043210,
+        "header_bytes": 4900,
+        "header_sha256": "f0a2d0a70de85f62449c5a27306d1298b39338f755df1fa75e92e15ea4c4d575"
+      },
+      "event_record_offset": 9643185,
+      "event_record_bytes": 98,
+      "event_record_sha256": "3a0bc02a017c69ead34959206cb8395c889dd51e0013e2954391276f871b7a91",
+      "bank_record_offset": 118738,
+      "bank_record_bytes": 67,
+      "bank_record_sha256": "cf84b3e8bb8c3fd8077e966e61e989c09ef2774b57ad4ba431e786c9d527eeca",
+      "paths": [
+        {
+          "action_id": 157051335,
+          "play_action_type": 1027,
+          "target_id": 396574211,
+          "target_type": 5,
+          "containers": [
+            {
+              "id": 396574211,
+              "type": 5,
+              "tail": {
+                "offset": 87,
+                "children": [
+                  293408372,
+                  585189473,
+                  599978858
+                ],
+                "playlist": [
+                  {
+                    "id": 585189473,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 599978858,
+                    "weight": 50000
+                  },
+                  {
+                    "id": 293408372,
+                    "weight": 50000
+                  }
+                ]
+              }
+            }
+          ],
+          "sounds": [
+            293408372,
+            585189473,
+            599978858
+          ],
+          "action_body_hex": "0304033ea31700000004ddd48a59",
+          "original_delay_ms": 0
+        }
+      ],
+      "media": [
+        {
+          "sound_id": 293408372,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 771871815,
+          "source_bytes": 16899,
+          "source_sha256": "32223963a87efc7e1c140f0e1a7e910e0c24c51c215dfc97ba595c97bd275f66",
+          "bank_data_offset": 829040,
+          "physical_offset": 86181488,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 585189473,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 938553406,
+          "source_bytes": 15078,
+          "source_sha256": "591b17101bc887a4d6940d8fdc0066f23c86edd1317a22bc042699b64d4161ab",
+          "bank_data_offset": 1043088,
+          "physical_offset": 86395536,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        },
+        {
+          "sound_id": 599978858,
+          "plugin_id": 262145,
+          "stream_type": 0,
+          "source_id": 471162968,
+          "source_bytes": 18191,
+          "source_sha256": "b85095875f2ef24071cfe862ab8522d17b7a6414cc77424f378d88c85ba90999",
+          "bank_data_offset": 583088,
+          "physical_offset": 85935536,
+          "codec": 65535,
+          "channels": 2,
+          "rate": 44100
+        }
+      ],
+      "decoded": {
+        "source_id": 771871815,
+        "duration": 1.1586621315192744,
+        "samples": 51097,
+        "channels": 2,
+        "rate": 44100,
+        "peak": 0.83001708984375,
+        "rms_dbfs": -24.701977166265785,
+        "wav_sha256": "d3ecfa93d508476fcd39f5acf6355aa37f293f883d9afd2c9f6feeef4376f22a",
+        "ogg_bytes": 19386,
+        "ogg_sha256": "a94dd05dc88fa360c2b888ea2d56c21efd23d220f0b0f591d87ada62527e7133"
+      }
+    }
+  ]
+}

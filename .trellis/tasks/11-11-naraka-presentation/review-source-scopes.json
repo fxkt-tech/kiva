@@ -1,0 +1,1181 @@
+{
+  "method": "Original native capture matrices/local TRS and original scalar authored masks; no target assumption",
+  "clips": [
+    {
+      "clip": "male_hengdao_attack_light_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.592926561832428,
+        0.7449841499328613
+      ],
+      "native_foot_world_y": [
+        0.0830584242939949,
+        0.43268558382987976
+      ]
+    },
+    {
+      "clip": "female_sniper_ads_attack_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.029592163860797882,
+        -0.02300640009343624
+      ],
+      "native_foot_world_y": [
+        -0.6156010031700134,
+        -0.5986335873603821
+      ]
+    },
+    {
+      "clip": "female_sniper_ads_idle_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.027661940082907677,
+        -0.027229582890868187
+      ],
+      "native_foot_world_y": [
+        -0.6123069524765015,
+        -0.6089688539505005
+      ]
+    },
+    {
+      "clip": "female_sniper_attack_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        -0.029592163860797882,
+        -0.02300640009343624
+      ],
+      "native_foot_world_y": [
+        -0.6156010031700134,
+        -0.5986335873603821
+      ]
+    },
+    {
+      "clip": "female_sniper_attack_01_recover",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.027241772040724754,
+        -0.027241772040724754
+      ],
+      "native_foot_world_y": [
+        -0.6150798797607422,
+        -0.6122187376022339
+      ]
+    },
+    {
+      "clip": "female_sniper_idle_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.027661940082907677,
+        -0.027229582890868187
+      ],
+      "native_foot_world_y": [
+        -0.6123069524765015,
+        -0.6089688539505005
+      ]
+    },
+    {
+      "clip": "female_sniper_reload_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.02948027476668358,
+        -0.0003815922827925533
+      ],
+      "native_foot_world_y": [
+        -0.6701414585113525,
+        -0.48368558287620544
+      ]
+    },
+    {
+      "clip": "female_unarmed_finger_default_left_01",
+      "body_authored": 0,
+      "body_missing": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "left_authored": 20,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.09275829792022705,
+        -0.09275829792022705
+      ],
+      "native_foot_world_y": [
+        -0.76382976770401,
+        -0.7638294100761414
+      ]
+    },
+    {
+      "clip": "female_unarmed_finger_default_right_01",
+      "body_authored": 0,
+      "body_missing": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        -0.09275829792022705,
+        -0.09275829792022705
+      ],
+      "native_foot_world_y": [
+        -0.76382976770401,
+        -0.7638294100761414
+      ]
+    },
+    {
+      "clip": "male_bow_attack_01",
+      "body_authored": 39,
+      "body_missing": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        -0.12004146724939346,
+        -0.10562532395124435
+      ],
+      "native_foot_world_y": [
+        -0.8030999898910522,
+        -0.7735813856124878
+      ]
+    },
+    {
+      "clip": "male_bow_finger_default_left_01",
+      "body_authored": 0,
+      "body_missing": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "left_authored": 20,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.09275829792022705,
+        -0.09275829792022705
+      ],
+      "native_foot_world_y": [
+        -0.76382976770401,
+        -0.7638294100761414
+      ]
+    },
+    {
+      "clip": "male_bow_finger_default_right_01",
+      "body_authored": 0,
+      "body_missing": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        -0.09275829792022705,
+        -0.09275829792022705
+      ],
+      "native_foot_world_y": [
+        -0.76382976770401,
+        -0.7638294100761414
+      ]
+    },
+    {
+      "clip": "male_bow_hold_idle_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        0.9760565757751465,
+        0.9831979870796204
+      ],
+      "native_foot_world_y": [
+        0.10284408181905746,
+        0.12054552882909775
+      ]
+    },
+    {
+      "clip": "male_die_hurt_stand_light_front_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        0.17154346406459808,
+        0.9647706151008606
+      ],
+      "native_foot_world_y": [
+        0.046275511384010315,
+        0.27523550391197205
+      ]
+    },
+    {
+      "clip": "male_fk_attack_01",
+      "body_authored": 39,
+      "body_missing": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.09602449089288712,
+        -0.09088420122861862
+      ],
+      "native_foot_world_y": [
+        -0.7715184688568115,
+        -0.7466301321983337
+      ]
+    },
+    {
+      "clip": "male_fk_attack_01_pre_aim",
+      "body_authored": 39,
+      "body_missing": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.09350665658712387,
+        -0.09065844863653183
+      ],
+      "native_foot_world_y": [
+        -0.7626875042915344,
+        -0.7577661871910095
+      ]
+    },
+    {
+      "clip": "male_fk_attack_01_recover",
+      "body_authored": 39,
+      "body_missing": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.09350620955228806,
+        -0.09300873428583145
+      ],
+      "native_foot_world_y": [
+        -0.7626866102218628,
+        -0.7585664391517639
+      ]
+    },
+    {
+      "clip": "male_fk_hold_idle_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        0.9732468128204346,
+        0.9771326184272766
+      ],
+      "native_foot_world_y": [
+        0.09539332240819931,
+        0.1084781065583229
+      ]
+    },
+    {
+      "clip": "male_fk_idle_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        0.9732467532157898,
+        0.9771322011947632
+      ],
+      "native_foot_world_y": [
+        0.09539338201284409,
+        0.10847751051187515
+      ]
+    },
+    {
+      "clip": "male_hengdao_attack_light_02",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.5161468982696533,
+        0.8358317613601685
+      ],
+      "native_foot_world_y": [
+        0.07371746003627777,
+        0.22897903621196747
+      ]
+    },
+    {
+      "clip": "male_hengdao_attack_light_03",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.4774610996246338,
+        0.7014082670211792
+      ],
+      "native_foot_world_y": [
+        0.040034208446741104,
+        0.43689751625061035
+      ]
+    },
+    {
+      "clip": "male_hengdao_attack_shock_light_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.6205937266349792,
+        0.944860577583313
+      ],
+      "native_foot_world_y": [
+        0.08276441693305969,
+        0.4071389436721802
+      ]
+    },
+    {
+      "clip": "male_hengdao_crouch_idle_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.39913538098335266,
+        0.4191073179244995
+      ],
+      "native_foot_world_y": [
+        0.0909096747636795,
+        0.15439766645431519
+      ]
+    },
+    {
+      "clip": "male_hengdao_crouch_promenade_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        0.7005698084831238,
+        0.7465097308158875
+      ],
+      "native_foot_world_y": [
+        0.09065914154052734,
+        0.2579023540019989
+      ]
+    },
+    {
+      "clip": "male_hengdao_dodge_back_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.505652904510498,
+        1.0177134275436401
+      ],
+      "native_foot_world_y": [
+        0.08470235019922256,
+        0.26873812079429626
+      ]
+    },
+    {
+      "clip": "male_hengdao_dodge_front_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.46612921357154846,
+        0.9829033613204956
+      ],
+      "native_foot_world_y": [
+        0.07330024987459183,
+        0.2928052544593811
+      ]
+    },
+    {
+      "clip": "male_hengdao_dodge_left_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.5802253484725952,
+        1.0282464027404785
+      ],
+      "native_foot_world_y": [
+        0.06528560072183609,
+        0.30492404103279114
+      ]
+    },
+    {
+      "clip": "male_hengdao_dodge_right_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.4777847230434418,
+        0.983079195022583
+      ],
+      "native_foot_world_y": [
+        0.07893617451190948,
+        0.26419439911842346
+      ]
+    },
+    {
+      "clip": "male_hengdao_finger_left_01",
+      "body_authored": 0,
+      "body_missing": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "left_authored": 20,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.09275829792022705,
+        -0.09275829792022705
+      ],
+      "native_foot_world_y": [
+        -0.76382976770401,
+        -0.7638294100761414
+      ]
+    },
+    {
+      "clip": "male_hengdao_finger_right_01",
+      "body_authored": 0,
+      "body_missing": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        -0.09275829792022705,
+        -0.09275829792022705
+      ],
+      "native_foot_world_y": [
+        -0.76382976770401,
+        -0.7638294100761414
+      ]
+    },
+    {
+      "clip": "male_hengdao_idle_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.9532890915870667,
+        0.9543660879135132
+      ],
+      "native_foot_world_y": [
+        0.09090122580528259,
+        0.09769842773675919
+      ]
+    },
+    {
+      "clip": "male_hengdao_jump_down_loop_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        1.0254026651382446,
+        1.0263127088546753
+      ],
+      "native_foot_world_y": [
+        0.17827308177947998,
+        0.5280532836914062
+      ]
+    },
+    {
+      "clip": "male_hengdao_jump_down_to_land_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.4676499664783478,
+        1.0258663892745972
+      ],
+      "native_foot_world_y": [
+        0.09066268801689148,
+        0.5111106634140015
+      ]
+    },
+    {
+      "clip": "male_hengdao_jump_inplace_up_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.5176992416381836,
+        1.2645771503448486
+      ],
+      "native_foot_world_y": [
+        0.08099531382322311,
+        1.0711582899093628
+      ]
+    },
+    {
+      "clip": "male_hengdao_jump_inplace_up_02",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        1.2413136959075928,
+        1.265220046043396
+      ],
+      "native_foot_world_y": [
+        0.9221358299255371,
+        1.0919198989868164
+      ]
+    },
+    {
+      "clip": "male_hengdao_promenade_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.9083589911460876,
+        0.9628379940986633
+      ],
+      "native_foot_world_y": [
+        0.09220918267965317,
+        0.25330790877342224
+      ]
+    },
+    {
+      "clip": "male_hengdao_run_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.8839050531387329,
+        0.981141984462738
+      ],
+      "native_foot_world_y": [
+        0.09414173662662506,
+        0.6032363176345825
+      ]
+    },
+    {
+      "clip": "male_hengdao_shock_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.8572238087654114,
+        0.9747219085693359
+      ],
+      "native_foot_world_y": [
+        0.0838053822517395,
+        0.2718483805656433
+      ]
+    },
+    {
+      "clip": "male_hengdao_shock_04",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        0.8572238087654114,
+        0.9747219085693359
+      ],
+      "native_foot_world_y": [
+        0.0838053822517395,
+        0.2718483805656433
+      ]
+    },
+    {
+      "clip": "male_hurt_stand_light_front_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 20,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        0.631401538848877,
+        0.9628951549530029
+      ],
+      "native_foot_world_y": [
+        0.08080004155635834,
+        0.23511791229248047
+      ]
+    },
+    {
+      "clip": "male_sniper_ads_idle_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.018113432452082634,
+        -0.017501359805464745
+      ],
+      "native_foot_world_y": [
+        -0.590212881565094,
+        -0.5675683617591858
+      ]
+    },
+    {
+      "clip": "male_sniper_attack_01",
+      "body_authored": 55,
+      "body_missing": [],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        -0.020121529698371887,
+        -0.014188012108206749
+      ],
+      "native_foot_world_y": [
+        -0.6248233318328857,
+        -0.6148281693458557
+      ]
+    },
+    {
+      "clip": "male_unarmed_finger_default_left_01",
+      "body_authored": 0,
+      "body_missing": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "left_authored": 20,
+      "right_authored": 0,
+      "native_pelvis_local_y": [
+        -0.09275829792022705,
+        -0.09275829792022705
+      ],
+      "native_foot_world_y": [
+        -0.76382976770401,
+        -0.7638294100761414
+      ]
+    },
+    {
+      "clip": "male_unarmed_finger_default_right_01",
+      "body_authored": 0,
+      "body_missing": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "left_authored": 0,
+      "right_authored": 20,
+      "native_pelvis_local_y": [
+        -0.09275829792022705,
+        -0.09275829792022705
+      ],
+      "native_foot_world_y": [
+        -0.76382976770401,
+        -0.7638294100761414
+      ]
+    }
+  ]
+}

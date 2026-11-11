@@ -8,12 +8,15 @@ client 只提交意图和读取快照；不拥有动作计时、伤害、耐力�
 ## Signatures
 
 - WeaponPair::{HammerMusket,ChainAxeBow}；WeaponMode 仅描述挂点握柄，不代表可控制人格。
-- CombatIntent::{request_attack,request_melee_skill,request_ranged_skill,request_combo,request_toggle_target,request_pair,clear}。
+- CombatIntent::{request_attack,request_melee_skill,request_ranged_skill,request_combo,request_toggle_target,request_pair,cancel_melee_chain,clear}。
 - Combatant::{weapon_pair,target,attack_cooldown,melee_cooldown,ranged_cooldown,combo_window,combo_remaining,active_action,sequence,companion,axe_away,availability,clear_targets}。
 - ActionAvailability 包含 attack、melee_skill、ranged_skill、combo、defense、equip、movement_actions。
+- `MeleeStage::{One,Two,Three}`；ActionSnapshot、CombatEvent、HitContext 各保留 `melee_stage: Option<MeleeStage>`，非普攻为None。
 - ActionSnapshot／SequenceSnapshot 保留 action_id、kind、pair、原目标、elapsed、duration、shot_count、aim_position、source_position、companion_position；SequenceSnapshot 另标 cancelled。
 - Companion { owner } 是无 Body／Health 的逻辑施法实体；CompanionState 提供独立演出位置、朝向、射击源、目标点、动作时间与可见性。
 - DefenseEdge::{Pressed,Released,Cancelled}；DefenseState::push_edge／clear 提交输入，其余窗口、kind、冷却只读。
+- DefenseState::snapshot() 包含kind/elapsed/remaining和单调gesture_id、last_gesture_kind/gesture_elapsed；自然Idle保留最后手势供显示，取消作废，复活不倒退ID。
+- MotionFeedback::events() 为独立最多128条运动事实，MotionKind::{Jump,Dodge,Land,Footstep}；MotionEvent携带sequence/actor/position/jump_count/sprinting。
 - DefenseKind::{Idle,Deflect,Waiting,Guard,Parry}；Stamina::{current,maximum,quiet_elapsed}。
 - HitContext／HitOutcome 供普通敌人与 Boss 共用来袭结算。事件含 sequence、actor、source_owner、pair: Option<WeaponPair>、action_id、hit_index、kind 和真实起止位置。
 
@@ -25,8 +28,22 @@ client 只提交意图和读取快照；不拥有动作计时、伤害、耐力�
 动作 elapsed 和冷却每步只推进一次。标记越界时有序执行，各标记只结算一次；不用动画结束回调制造命中。
 动作准入在消费输入时验证；快照必须与本步完成后的动作／窗口／死亡状态一致。
 默认无目标，中键锁定／解锁不自动补选。需要目标的技能不隐式选择；链斧 E 与普攻可以无锁定执行。
-E／Q 冷却独立、跨武器组保留；动作中不接受新攻击、右键、切组或跳跃／闪避，不排队补放；当前技能匹配的 Tab 分支除外。
+E／Q 冷却独立、跨武器组保留；技能动作中不接受新攻击、右键、切组或跳跃／闪避，不排队补放；当前技能匹配的 Tab 分支及下述普通连击缓冲除外。
 普通方向移动可保留；联动主动移动被禁用或由拉近驱动。普通空中近战保留；地面技能与防御不在空中起手。
+
+### 三段普通连击
+
+每次有效左键只承诺当前一段。第1／2段最多缓存一条后继；整段duration结束并退休后，在下一次prepare准入后继，不能在本段marker时提前开下一段。第三段不缓存第四段；未缓冲时保留0.45s续段宽限，过期从第一段开始。
+`WeaponPair::melee_profile(stage)` 返回纯数值：三段均保持锤24伤害／2.8m／0.12s marker／0.60s duration，链斧18／2.6m／0.08s／0.40s；不因原动作第三段效果而加伤、霸体或破防。
+
+每段安装后发唯一MeleeStart，冻结actor/source_owner/pair/action_id/stage；旧Melee marker仍是唯一近战命中／挥击FX入口，MeleeStart不能重复伤害或粒子。后继只在真实准入后才发起手事件。
+有效技能／Tab／防御／闪避／跳跃／切组优先于自动后继；预测闪避准入必须与motor同一步先减dt的冷却顺序一致。无效请求不伪造动作取消。
+失锁、F2、死亡／复活、实际受伤清未承诺连段；已承诺动作不被暂停或清后继中断。`cancel_melee_chain`和`clear`的取消锁存能跨零固定步保留；普通移动、F3、非滑铲蹲伏不清链。
+
+### 运动事实
+
+Jump／Dodge只在motor真实接受后记录，拒绝的第三次跳跃不发声。Land由物理publish后的真实离地→接触产生，有0.05s离地去抖；初次接地、传送、复活先重建基线，不制造落地。
+Footstep累计碰撞后相对支撑面的真实位移，排除空气、堵墙、无输入、滑铲／闪避；步距2m、蹲伏0.8m再乘Body.scale是Kiva适配。各客户端独立消费游标，暂停／HitStop不推进运动事实，不用声音时钟驱动物理。
 
 ### 两套技能与联动
 
@@ -65,7 +82,8 @@ ComboWindow 保存 source_action_id、pair、original_target 和 remaining；僵
 |---|---|
 | 无锁定／超范围／隔墙／冷却中起手 | 拒绝并消费请求，不开启新冷却 |
 | 起手后目标走开或遮挡 | 该次命中跳过，保留已经开始的冷却 |
-| 重复 Tab／攻击／换组 | 活动动作不被替换，不排队，不重复伤害 |
+| 重复 Tab／换组／技能动作中的攻击 | 活动动作不被替换，不排队，不重复伤害 |
+| 普攻期间反复左键 | 第1／2段只缓存一条后继，第三段无第四段 |
 | 耐力不足／背面攻击 | 正常受伤，无破防惩罚 |
 | 右键队列取消／溢出 | 取消当前手势，重新按下才可重建 |
 | 目标落地或僵直到期 | 尚未接受的窗口失效，已接受的三发按原目标继续复验 |
@@ -80,6 +98,7 @@ Bad：只播放三次闪光却扣一笔伤害；链斧拉近穿墙；F2 后在�
 
 ## Tests Required
 
+使用真实 FixedUpdate 测试逐段唯一start／marker、单缓冲、0.45s续段／过期、第三段封顶、同帧优先级和零固定步取消；覆盖最后半步闪避冷却竞争、实际运动声事实与重置。
 使用真实 FixedUpdate 测试三发时间点前后、独立 hit_index、原目标／stun_source、视线、阶段免疫、死亡和取消，不只断言最终总血量。
 测量实际高台／平地击飞最高点、拉近碰撞／停距／高差及减速位移；保留原物理、二段跳、Shift／蹲伏、HitStop／暂停回归。
 防御覆盖短按／长按／释放／取消、独立冷却边界、正背面、第五次有效格挡、低耐力恢复和同一步快照一致性。

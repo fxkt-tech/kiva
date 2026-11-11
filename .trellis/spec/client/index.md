@@ -4,6 +4,8 @@
 
 `src/client/`、`web/`、`index.html` 拥有输入、蒙皮角色/环境表现和镜头，修改控制 / 构图 / Web 启动时阅读。首次加载与进入详见 [startup.md](startup.md)，输入详见 [input.md](input.md)，双角色战斗表现详见 [combat-presentation.md](combat-presentation.md)，指定模型转换／女性驱动／武器格式见 [model-assets.md](model-assets.md)。
 
+永劫／燕云双来源、原生 Humanoid 转换、scope 与音效 cue 见 [naraka-motion.md](naraka-motion.md)。
+
 `?view=model` 为独立的模型／武器／动作验收App，共用真实游戏姿态和挂点，不装配模拟或游戏输入；入口、时间轴、部件显隐与共享计算契约见 [model-viewer.md](model-viewer.md)。
 
 ## Signatures
@@ -20,7 +22,7 @@
 - `window.kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)` 与 `renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)`；具体快照契约见 combat-presentation.md。
 - `window.kivaEnemies.takeMode(): number`（0=无请求、1=靶子、2=实战）/ `render(mode)`；绑定在 `client/enemies.rs`，固定循环前把选择交给 `gameplay::set_enemy_mode`。
 - `window.kivaAppearance.takeAppearance(): number`（0=无请求、1=愁铃客、2=李火旺）/ `render(value)`；绑定在 `client/appearance.rs`，选择仅属于客户端，`appearance::reconcile` 在动画前只替换哥哥身体／服饰，保留当前武器。
-- `window.kivaAudio.{playSniperShot(): boolean, playEffect(name): boolean, setActive(bool)}`；绑定在 `client/audio.rs`，消费已结算攻击／命中／防御和妹妹射击；Shot 及伴随 SniperShot 不重复发声。
+- `window.kivaAudio.{playSniperShot(): boolean, playEffect(name): boolean, cueOffset(name): number, setActive(bool)}`；绑定在 `client/audio.rs`，消费已结算攻击／命中／防御和妹妹射击；Shot 及伴随 SniperShot 不重复发声。
 
 ## Contracts
 
@@ -41,7 +43,7 @@ scene 根据 Body 的三维脚底前后快照和 fixed overstep 插值，camera 
 网格 / 材质 / 纹理复用；使用随包角色二进制和 CC0 动画资源，音频仅加载同源随包文件，移动权威在模拟。
 
 Web mode脚本最先固定页面模式，startup／loader／input／hud／enemies／appearance／audio／viewer先于Trunk模块同步安装，DOM就绪后才绑定元素；游戏专属脚本在查看模式先退出。专用WASM流报告真实下载进度；游戏按钮加载时可见但disabled，Rust观察首轮必要渲染准备与提交后才最终ready。捕获进行中有反馈，确认／失败与恢复保持原输入契约；完整门槛见[startup.md](startup.md)。
-音效仅在可信进入点击或画布按下时创建 / 恢复 Web Audio；随包音频异步解码一次，原有枪声保留合成缓存。至多 4 个短音效声部及 1 个 BGM 循环，gain 各 0.18，暂停立即停止/回收短音效并保存 BGM 播放位置；恢复只创建一条循环。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
+音效仅在可信进入点击或画布按下时创建 / 恢复 Web Audio；随包音频异步解码一次，原有程序枪声仅保留兼容接口，实际妹妹枪弓使用已验证永劫 cue。至多 4 个短音效声部及 1 个 BGM 循环，gain 各 0.18，暂停立即停止/回收短音效并保存 BGM 播放位置；恢复只创建一条循环。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
 进入卡片可选择靶子 / 实战，捕获期间 F2 切换；按钮请求在暂停或引擎加载时保留至一次消费，模式权威在玩法层。
 外观卡片可选择愁铃客 / 李火旺，捕获期间 F3 切换；外观只决定哥哥身体／服饰，不改变 WeaponPair 或武器。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。哥哥默认李火旺；`Appearance::default()` 仍为愁铃客，供敌人使用。白灵淼仅用于妹妹，不进入 F3 或 Web 选择枚举；换装不影响敌人、妹妹或当前武器。
 `AvatarAssets` 保留愁铃客资源，`AvatarAssetCache` 分别缓存李火旺与白灵淼；多次换装／技能复用原句柄。角色自身的 AvatarPart 标记限定身体回收范围，不能清空玩家所有 Children 或重建 RigPose。显示根、物理 actor、动作状态、武器根的 BoneVisual 所属保持不变。
@@ -56,10 +58,10 @@ Web HUD 顶部居中为米金边框、暗红填充的锁定敌人长血条；底
 HUD 脚本只更新 textContent、progress.value、图标 href、可见性、样式类和无障碍属性，不使用 innerHTML 或独立计时器；暂停后冷却与联动显示随模拟快照冻结。
 HUD 为 pointer-events:none 的纯显示层，E／Q／Tab／中键／1／2 通过实际输入桥；不能带入预览 HTML 的点击演示和模拟计时。HUD CSS 使用 hud-* 名称和 .game-hud 作用域，不能污染入口的 button / kbd / progress / p 样式。
 愁铃客标准高度1.73m，原主骨架986节点已恢复；source_animation对35个具名原clip有界解码、稀疏T/R/S采样与层级求值，按原骨名驱动独立Skin调色板，CC0回退仍用23个明确结构锚点。`avatar::sync` 只更新显示骨骼；挂点位置用适配后的手腕，枪轴方向沿用原动作。13个穿戴部件、17个材质槽中的皮肤及长刀使用原主色/法线纹理，PNG显式sRGB/linear；未知原作材质参数不猜测为已恢复。靶子从 Body.scale() 读取1.45比例，模型替换不能反写 Body 或改变玩家相机锚点。
-资产为 `assets/animations/stickman.anim`（23 骨骼 / 19 动画），保留同目录 CC0 许可证；`include_bytes!` 嵌入，显式小端解码。
+底层资产为 `assets/animations/stickman.anim`（23 骨骼 / 19 动画），保留同目录 CC0 许可证；永劫 KIVASR02 为独立63骨／44片段，燕云 KIVASR01 仍986骨／35片段；`include_bytes!` 嵌入，显式小端解码。
 身体姿态通过 ActorView.owner 读取 Body 的实际固定步位移、MotionState、Health 和 Combatant，动画反馈按物理 CombatEvent.actor/sequence 归属与去重。
 禁止把动画根位移叠加到权威位置；空中不重复抬升骨盆。暂停冻结姿态、尸体保留可见播放 Death01，复活清理旧姿态。
-跳跃读取MotionState::jumps_used()，第二次起跳重启空中计时；近战优先原作共用跳起/循环/落地三段，枪姿等缺源状态回退到CC0 NinjaJump/Jump_Land。
+跳跃读取MotionState::jumps_used()，第二次起跳重启空中计时；哥哥使用永劫一／二次起跳、下落和落地，Boss保留燕云来源，明确缺源状态仍可回退CC0。
 妹妹使用独立 RigPose 与射击／拉弓姿态，哥哥不因 Q 或联动切成远程；实际事件到达后产生反馈，物理权威保持。
 `SniperImpact` 仅为受击 actor 选择 0.30s 重受击姿态，保留骨盆和下肢落点；HitStop 期间仍消费反馈但姿态时钟 dt=0，恢复后再播放反应，不修改身体物理高度。
 蹲姿和滑铲根据 MotionState 只读状态选择，0.12s 平滑权重调用 act 的 crouch_pose 腿部 IK，下移骨盆 0.33m 且保持脚掌和腿长。
@@ -119,7 +121,7 @@ rendering共用MainView标记和HDR、Msaa::Off、FXAA、DepthPrepass、Deferred
 
 实战预警颜色与HUD阶段/行动文字直接读Boss只读快照，不能依赖普通Enemy.is_winding_up镜像。HUD不显示内部行动槽ID；无Boss的被动演武靶继续使用原目标血条。
 
-SourceAnimationLibrary与RigPose源姿态仅在client，不能让simulation导入资产名或播放时钟。KIVASR01保留原毫秒键、祖先索引和带符号非零尺度；读入检查边界/有限/单位quat/时间单调，缺轨回原rest。原根XZ去掉、地面保留腰身Y，空中Y不与物理高度叠加。共用jump/huajie/dodge按骨名和明确父关系retarget，省略轨记录来源，不能说成愁铃客专属；具体裁剪和比例适配写animation_manifest。手臂参考方向、真实掌轴与独立指轨按[模型契约](model-assets.md)共用校准；握柄读取当前实际腕/MCP，源指节在局部旋转混合后FK，远程显式握点IK优先。源骨架缺失独立附件不猜绑定。原技能槽→clip仍未恢复，Boss.clip_name=None不凭名字补造精确映射。
+SourceAnimationLibrary与RigPose源姿态仅在client，不能让simulation导入资产名或播放时钟。两来源独立身份／绑定与KIVASR02浮点时间切点见[naraka-motion.md](naraka-motion.md)。KIVASR01保留原毫秒键、祖先索引和带符号非零尺度；读入检查边界/有限/单位quat/时间单调，缺轨回原rest。原根XZ去掉、地面保留腰身Y，空中Y不与物理高度叠加。共用jump/huajie/dodge按骨名和明确父关系retarget，省略轨记录来源，不能说成愁铃客专属；具体裁剪和比例适配写animation_manifest。手臂参考方向、真实掌轴与独立指轨按[模型契约](model-assets.md)共用校准；握柄读取当前实际腕/MCP，源指节在局部旋转混合后FK，远程显式握点IK优先。源骨架缺失独立附件不猜绑定。原技能槽→clip仍未恢复，Boss.clip_name=None不凭名字补造精确映射。
 普通Effect暂停冻结寿命/变换并前移游标，恢复不补播；HitStop不等于失锁，普通视觉效果可继续推进。
 
 竹枝叶kind=3在相机3m内裁除、3–5.5m固定像素dither渐入，使用真实view.world_position；规则共用forest_view.wesl，主片元和forest_prepass.wesl同步可见深度/法线裁切，防止隐藏近叶提前遮挡。阴影pass以LOD主相机位置与阴影view区分，保留原叶atlas阴影；远叶/地面落叶不受近叶退隐影响。不改变碰撞或源alpha。

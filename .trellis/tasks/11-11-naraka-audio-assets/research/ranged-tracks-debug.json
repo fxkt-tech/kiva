@@ -1,0 +1,1292 @@
+[
+  {
+    "key": "male_bow_attack_aim_01",
+    "archive_offset": 6414079,
+    "archive_end": 6414397,
+    "sha256": "9f1715409f50a8f19cf6fcd281caeaf1582dcc247cf073f131498bf6c0356f0c",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 2,
+        "offset": 0,
+        "end": 24,
+        "text": "male_bow_attack_aim_01"
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 24,
+        "end": 203,
+        "message": [
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 0,
+            "end": 32,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "6666463d",
+                "float": 0.04843749850988388
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 107
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 30,
+                "message": [
+                  {
+                    "field": 175,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 10,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 0
+                      },
+                      {
+                        "field": 2,
+                        "wire": 5,
+                        "offset": 2,
+                        "end": 7,
+                        "hex": "cdcccc3e",
+                        "float": 0.4000000059604645
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 10,
+                    "end": 21,
+                    "value": 18446744072090467165
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 32,
+            "end": 58,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "69669a3e",
+                "float": 0.3015625774860382
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 91
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 24,
+                "message": [
+                  {
+                    "field": 166,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 9,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 4,
+                        "value": 16642
+                      },
+                      {
+                        "field": 2,
+                        "wire": 0,
+                        "offset": 4,
+                        "end": 6,
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 9,
+                    "end": 15,
+                    "value": 1881089325
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 58,
+            "end": 93,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "3933e73e",
+                "float": 0.45156267285346985
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 101
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 33,
+                "message": [
+                  {
+                    "field": 172,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 13,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 1
+                      },
+                      {
+                        "field": 2,
+                        "wire": 0,
+                        "offset": 2,
+                        "end": 4,
+                        "value": 11
+                      },
+                      {
+                        "field": 3,
+                        "wire": 0,
+                        "offset": 4,
+                        "end": 6,
+                        "value": 0
+                      },
+                      {
+                        "field": 4,
+                        "wire": 0,
+                        "offset": 6,
+                        "end": 8,
+                        "value": 0
+                      },
+                      {
+                        "field": 5,
+                        "wire": 0,
+                        "offset": 8,
+                        "end": 10,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 13,
+                    "end": 24,
+                    "value": 18446744072171648831
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 93,
+            "end": 136,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "5355093f",
+                "float": 0.5364581942558289
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 116
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 41,
+                "message": [
+                  {
+                    "field": 187,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 26,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 1
+                      },
+                      {
+                        "field": 2,
+                        "wire": 2,
+                        "offset": 2,
+                        "end": 21,
+                        "text": "weapon_attack_105"
+                      },
+                      {
+                        "field": 3,
+                        "wire": 0,
+                        "offset": 21,
+                        "end": 23,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 26,
+                    "end": 32,
+                    "value": 551036625
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 136,
+            "end": 174,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "cecc1a3f",
+                "float": 0.6046875715255737
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 114
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 36,
+                "message": [
+                  {
+                    "field": 185,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 21,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 0
+                      },
+                      {
+                        "field": 2,
+                        "wire": 2,
+                        "offset": 2,
+                        "end": 18,
+                        "message": [
+                          {
+                            "field": 1,
+                            "wire": 0,
+                            "offset": 0,
+                            "end": 2,
+                            "value": 0
+                          },
+                          {
+                            "field": 2,
+                            "wire": 0,
+                            "offset": 2,
+                            "end": 5,
+                            "value": 1000
+                          },
+                          {
+                            "field": 3,
+                            "wire": 2,
+                            "offset": 5,
+                            "end": 7,
+                            "message": []
+                          },
+                          {
+                            "field": 4,
+                            "wire": 2,
+                            "offset": 7,
+                            "end": 9,
+                            "message": []
+                          },
+                          {
+                            "field": 5,
+                            "wire": 5,
+                            "offset": 9,
+                            "end": 14,
+                            "hex": "00000000",
+                            "float": 0.0
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 21,
+                    "end": 27,
+                    "value": 1759372887
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 174,
+            "end": 176,
+            "value": 1
+          }
+        ]
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 203,
+        "end": 311,
+        "message": [
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 0,
+            "end": 31,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "33339b3e",
+                "float": 0.3031249940395355
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 91
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 29,
+                "message": [
+                  {
+                    "field": 166,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 9,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 4,
+                        "value": 16642
+                      },
+                      {
+                        "field": 2,
+                        "wire": 0,
+                        "offset": 4,
+                        "end": 6,
+                        "value": 2
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 9,
+                    "end": 20,
+                    "value": 18446744073241612992
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 31,
+            "end": 61,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "3c33e73e",
+                "float": 0.451562762260437
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 101
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 28,
+                "message": [
+                  {
+                    "field": 172,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 13,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 0
+                      },
+                      {
+                        "field": 2,
+                        "wire": 0,
+                        "offset": 2,
+                        "end": 4,
+                        "value": 1
+                      },
+                      {
+                        "field": 3,
+                        "wire": 0,
+                        "offset": 4,
+                        "end": 6,
+                        "value": 0
+                      },
+                      {
+                        "field": 4,
+                        "wire": 0,
+                        "offset": 6,
+                        "end": 8,
+                        "value": 0
+                      },
+                      {
+                        "field": 5,
+                        "wire": 0,
+                        "offset": 8,
+                        "end": 10,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 13,
+                    "end": 19,
+                    "value": 1861993166
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 61,
+            "end": 104,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "5355093f",
+                "float": 0.5364581942558289
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 116
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 41,
+                "message": [
+                  {
+                    "field": 187,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 21,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 1
+                      },
+                      {
+                        "field": 2,
+                        "wire": 2,
+                        "offset": 2,
+                        "end": 16,
+                        "text": "logic_battle"
+                      },
+                      {
+                        "field": 3,
+                        "wire": 0,
+                        "offset": 16,
+                        "end": 18,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 21,
+                    "end": 32,
+                    "value": 18446744072321467010
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 104,
+            "end": 106,
+            "value": 2
+          }
+        ]
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 311,
+        "end": 315,
+        "message": [
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 0,
+            "end": 2,
+            "value": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "male_sniper_ads_attack_01",
+    "archive_offset": 20704623,
+    "archive_end": 20704784,
+    "sha256": "200a5aa3350711226083e25b2ec5a0b0fc0228fbc3a4dddc22a7647900bff1de",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 2,
+        "offset": 0,
+        "end": 27,
+        "text": "male_sniper_ads_attack_01"
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 27,
+        "end": 88,
+        "message": [
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 0,
+            "end": 27,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "10ebac3c",
+                "float": 0.021108180284500122
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 12
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 25,
+                "message": [
+                  {
+                    "field": 113,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 5,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 5,
+                    "end": 16,
+                    "value": 18446744072863418669
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 27,
+            "end": 57,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "68e5563d",
+                "float": 0.05246487259864807
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 101
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 28,
+                "message": [
+                  {
+                    "field": 172,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 13,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 1
+                      },
+                      {
+                        "field": 2,
+                        "wire": 0,
+                        "offset": 2,
+                        "end": 4,
+                        "value": 11
+                      },
+                      {
+                        "field": 3,
+                        "wire": 0,
+                        "offset": 4,
+                        "end": 6,
+                        "value": 0
+                      },
+                      {
+                        "field": 4,
+                        "wire": 0,
+                        "offset": 6,
+                        "end": 8,
+                        "value": 0
+                      },
+                      {
+                        "field": 5,
+                        "wire": 0,
+                        "offset": 8,
+                        "end": 10,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 13,
+                    "end": 19,
+                    "value": 1121355518
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 57,
+            "end": 59,
+            "value": 1
+          }
+        ]
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 88,
+        "end": 154,
+        "message": [
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 0,
+            "end": 27,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "10ebac3c",
+                "float": 0.021108180284500122
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 12
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 25,
+                "message": [
+                  {
+                    "field": 113,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 5,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 5,
+                    "end": 16,
+                    "value": 18446744072000757586
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 27,
+            "end": 62,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "68e5563d",
+                "float": 0.05246487259864807
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 101
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 33,
+                "message": [
+                  {
+                    "field": 172,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 13,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 0
+                      },
+                      {
+                        "field": 2,
+                        "wire": 0,
+                        "offset": 2,
+                        "end": 4,
+                        "value": 1
+                      },
+                      {
+                        "field": 3,
+                        "wire": 0,
+                        "offset": 4,
+                        "end": 6,
+                        "value": 0
+                      },
+                      {
+                        "field": 4,
+                        "wire": 0,
+                        "offset": 6,
+                        "end": 8,
+                        "value": 0
+                      },
+                      {
+                        "field": 5,
+                        "wire": 0,
+                        "offset": 8,
+                        "end": 10,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 13,
+                    "end": 24,
+                    "value": 18446744072564337028
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 62,
+            "end": 64,
+            "value": 2
+          }
+        ]
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 154,
+        "end": 158,
+        "message": [
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 0,
+            "end": 2,
+            "value": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "male_sniper_attack_01",
+    "archive_offset": 20706020,
+    "archive_end": 20706172,
+    "sha256": "927f9f211ac8491a317ec934ba41e49fc8a4f46ac9dacfc73655635c82edbc83",
+    "fields": [
+      {
+        "field": 1,
+        "wire": 2,
+        "offset": 0,
+        "end": 23,
+        "text": "male_sniper_attack_01"
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 23,
+        "end": 84,
+        "message": [
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 0,
+            "end": 22,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "10ebac3c",
+                "float": 0.021108180284500122
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 12
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 20,
+                "message": [
+                  {
+                    "field": 113,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 5,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 5,
+                    "end": 11,
+                    "value": 734198895
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 22,
+            "end": 57,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "68e5563d",
+                "float": 0.05246487259864807
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 101
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 33,
+                "message": [
+                  {
+                    "field": 172,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 13,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 1
+                      },
+                      {
+                        "field": 2,
+                        "wire": 0,
+                        "offset": 2,
+                        "end": 4,
+                        "value": 11
+                      },
+                      {
+                        "field": 3,
+                        "wire": 0,
+                        "offset": 4,
+                        "end": 6,
+                        "value": 0
+                      },
+                      {
+                        "field": 4,
+                        "wire": 0,
+                        "offset": 6,
+                        "end": 8,
+                        "value": 0
+                      },
+                      {
+                        "field": 5,
+                        "wire": 0,
+                        "offset": 8,
+                        "end": 10,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 13,
+                    "end": 24,
+                    "value": 18446744071649284361
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 57,
+            "end": 59,
+            "value": 1
+          }
+        ]
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 84,
+        "end": 145,
+        "message": [
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 0,
+            "end": 22,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "10ebac3c",
+                "float": 0.021108180284500122
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 12
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 20,
+                "message": [
+                  {
+                    "field": 113,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 5,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 5,
+                    "end": 11,
+                    "value": 819920314
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 1,
+            "wire": 2,
+            "offset": 22,
+            "end": 57,
+            "message": [
+              {
+                "field": 1,
+                "wire": 5,
+                "offset": 0,
+                "end": 5,
+                "hex": "68e5563d",
+                "float": 0.05246487259864807
+              },
+              {
+                "field": 2,
+                "wire": 0,
+                "offset": 5,
+                "end": 7,
+                "value": 101
+              },
+              {
+                "field": 3,
+                "wire": 2,
+                "offset": 7,
+                "end": 33,
+                "message": [
+                  {
+                    "field": 172,
+                    "wire": 2,
+                    "offset": 0,
+                    "end": 13,
+                    "message": [
+                      {
+                        "field": 1,
+                        "wire": 0,
+                        "offset": 0,
+                        "end": 2,
+                        "value": 0
+                      },
+                      {
+                        "field": 2,
+                        "wire": 0,
+                        "offset": 2,
+                        "end": 4,
+                        "value": 1
+                      },
+                      {
+                        "field": 3,
+                        "wire": 0,
+                        "offset": 4,
+                        "end": 6,
+                        "value": 0
+                      },
+                      {
+                        "field": 4,
+                        "wire": 0,
+                        "offset": 6,
+                        "end": 8,
+                        "value": 0
+                      },
+                      {
+                        "field": 5,
+                        "wire": 0,
+                        "offset": 8,
+                        "end": 10,
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "field": 1,
+                    "wire": 0,
+                    "offset": 13,
+                    "end": 24,
+                    "value": 18446744072781065113
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 57,
+            "end": 59,
+            "value": 2
+          }
+        ]
+      },
+      {
+        "field": 2,
+        "wire": 2,
+        "offset": 145,
+        "end": 149,
+        "message": [
+          {
+            "field": 2,
+            "wire": 0,
+            "offset": 0,
+            "end": 2,
+            "value": 0
+          }
+        ]
+      }
+    ]
+  }
+]

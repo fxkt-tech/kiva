@@ -12,6 +12,14 @@
   let music = null;
   let musicOffset = 0;
   let musicStart = 0;
+  const cueNames = new Set([
+    "naraka_attack_1", "naraka_attack_2", "naraka_attack_3", "naraka_riposte",
+    "naraka_hit", "naraka_deflect", "naraka_block", "naraka_parry",
+    "naraka_jump", "naraka_land", "naraka_dodge", "naraka_step",
+    "naraka_death", "naraka_death_voice",
+    "naraka_gun", "naraka_bow",
+  ]);
+  let cues = new Map();
   const files = Object.freeze({ attack: "attack.ogg", hit: "hit.ogg", deflect: "deflect.ogg" });
 
   function stopMusic(preserve = true) {
@@ -28,7 +36,47 @@
     const buffer = samples.get("bgm");
     if (music || !active || document.hidden || !buffer || context?.state !== "running") return;
     musicStart = context.currentTime;
-    music = playBuffer(buffer, 0.18, true, musicOffset);
+    music = playBuffer(buffer, { volume: 0.18, loop: true, offset: musicOffset });
+  }
+
+  function record(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function finite(value, minimum, maximum) {
+    return typeof value === "number" && Number.isFinite(value) && value >= minimum && value <= maximum;
+  }
+
+  function parseCues(data) {
+    if (!record(data) || data.version !== 1 || !record(data.cues)) return null;
+    const names = Object.keys(data.cues);
+    if (!names.length || names.length > cueNames.size) return null;
+    const result = new Map();
+    const media = new Set();
+    for (const name of names) {
+      if (!cueNames.has(name)) return null;
+      const cue = data.cues[name];
+      if (!record(cue) || !Number.isInteger(cue.priority) || !finite(cue.priority, 0, 3) ||
+          !finite(cue.offset, 0, 2) || !Array.isArray(cue.layers) || !cue.layers.length || cue.layers.length > 4) return null;
+      const layers = [];
+      for (const layer of cue.layers) {
+        if (!record(layer) || !finite(layer.delay, 0, 2) || !Array.isArray(layer.variants) ||
+            !layer.variants.length || layer.variants.length > 16) return null;
+        let weight = 0;
+        const variants = [];
+        for (const variant of layer.variants) {
+          if (!record(variant) || typeof variant.file !== "string" || !/^naraka-[0-9]{1,10}\.ogg$/.test(variant.file) ||
+              !finite(variant.weight, Number.MIN_VALUE, 1e6) || !finite(variant.gain, 0, 1)) return null;
+          weight += variant.weight;
+          media.add(variant.file);
+          if (media.size > 64 || !Number.isFinite(weight)) return null;
+          variants.push(Object.freeze({ file: variant.file, weight: variant.weight, gain: variant.gain }));
+        }
+        layers.push(Object.freeze({ delay: layer.delay, weight, variants: Object.freeze(variants) }));
+      }
+      result.set(name, Object.freeze({ priority: cue.priority, offset: cue.offset, layers: Object.freeze(layers) }));
+    }
+    return { cues: result, media };
   }
 
   function loadSamples(audio) {
@@ -56,26 +104,50 @@
           }
         } catch { /* Optional music does not gate startup. */ }
       })(),
+      (async () => {
+        try {
+          const response = await fetch("audio/naraka-cues.json");
+          if (!response.ok) return;
+          const encoded = await response.text();
+          if (encoded.length > 64 * 1024) return;
+          const parsed = parseCues(JSON.parse(encoded));
+          if (!parsed || context !== audio) return;
+          cues = parsed.cues;
+          // Several events/layers share one original media. Fetch/decode it once.
+          await Promise.all([...parsed.media].map((file) => decode(file, file)));
+        } catch { /* Bad optional metadata cannot disable the procedural gun or BGM. */ }
+      })(),
     ]);
   }
 
-  function playBuffer(buffer, volume, loop = false, offset = 0) {
+  function reserveVoices(priority, count) {
+    const needed = Math.max(0, voices.size + count - MAX_VOICES);
+    const candidates = [...voices].filter((voice) => voice.priority <= priority)
+      .sort((a, b) => a.priority - b.priority);
+    // Reserve a whole layered cue before stopping anything. A quiet footstep
+    // cannot steal a successful parry, and a landing is not reduced to one layer.
+    if (candidates.length < needed) return false;
+    for (const voice of candidates.slice(0, needed)) stop(voice);
+    return true;
+  }
+
+  function playBuffer(buffer, { volume = 0.18, loop = false, offset = 0, priority = 2, delay = 0, reserved = false } = {}) {
     if (!active || !context || context.state !== "running" || !buffer) return null;
     let source;
     let gain;
     let voice;
     try {
-      if (!loop) while (voices.size >= MAX_VOICES) stop(voices.values().next().value);
+      if (!loop && !reserved && !reserveVoices(priority, 1)) return null;
       source = context.createBufferSource();
       gain = context.createGain();
       source.buffer = buffer;
       source.loop = loop;
-      // Four effect voices plus music have a total peak budget below one.
+      // Apply the imported variant headroom once, then the shared effect gain.
       gain.gain.value = volume;
       source.connect(gain);
       gain.connect(context.destination);
       let released = false;
-      voice = { source, release() {
+      voice = { source, priority, release() {
         if (released) return;
         released = true;
         source.onended = null;
@@ -85,7 +157,7 @@
       } };
       source.onended = voice.release;
       if (!loop) voices.add(voice);
-      source.start(0, offset);
+      source.start(loop ? 0 : context.currentTime + delay, offset);
       return voice;
     } catch {
       if (voice) voice.release();
@@ -95,6 +167,33 @@
       }
       return null;
     }
+  }
+
+  function playCue(cue) {
+    if (!active || document.hidden || context?.state !== "running") return false;
+    const layers = [];
+    for (const layer of cue.layers) {
+      let choice = Math.random() * layer.weight;
+      let variant = layer.variants[layer.variants.length - 1];
+      for (const candidate of layer.variants) {
+        choice -= candidate.weight;
+        if (choice < 0) { variant = candidate; break; }
+      }
+      const buffer = samples.get(variant.file);
+      if (!buffer) return false;
+      layers.push({ buffer, gain: variant.gain, delay: layer.delay });
+    }
+    if (!reserveVoices(cue.priority, layers.length)) return false;
+    const started = [];
+    for (const layer of layers) {
+      const voice = playBuffer(layer.buffer, { volume: 0.18 * layer.gain, priority: cue.priority, delay: layer.delay, reserved: true });
+      if (!voice) {
+        for (const previous of started) stop(previous);
+        return false;
+      }
+      started.push(voice);
+    }
+    return true;
   }
 
   function synthesize(audio) {
@@ -154,6 +253,7 @@
         stopMusic(false);
         for (const voice of [...voices]) stop(voice);
         samples = new Map();
+        cues = new Map();
         loading = null;
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
@@ -180,11 +280,19 @@
 
   window.kivaAudio = Object.freeze({
     playSniperShot() {
-      return playBuffer(shot, 0.18) !== null;
+      return playBuffer(shot) !== null;
     },
     playEffect(name) {
+      if (typeof name !== "string") return false;
+      const cue = cues.get(name);
+      if (cue) return playCue(cue);
       if (!Object.hasOwn(files, name) || name === "bgm") return false;
-      return playBuffer(samples.get(name), 0.18) !== null;
+      return playBuffer(samples.get(name), { priority: name === "deflect" ? 3 : 2 }) !== null;
+    },
+    cueOffset(name) {
+      // Rust schedules only against its authoritative action clock. Metadata
+      // does not set a wall-clock timeout or queue an effect before readiness.
+      return typeof name === "string" ? (cues.get(name)?.offset ?? 0) : 0;
     },
     setActive(value) {
       active = value === true && !document.hidden;

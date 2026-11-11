@@ -1,4 +1,5 @@
 //! Authored skeletal animation driven by read-only simulation snapshots and actor-tagged events.
+mod naraka;
 mod poses;
 mod preview;
 
@@ -9,11 +10,12 @@ use bevy::prelude::*;
 use super::{
     ActorView,
     skeleton::{AnimationLibrary, blend},
-    source_animation::SourceAnimationLibrary,
+    source_animation::{SourceAnimationLibrary, SourceRig, SourceScope},
 };
 use crate::simulation::{
-    ActionKind, Body, Boss, BossState, CombatEffect, CombatFeedback, Combatant, DefenseState,
-    Enemy, Facing, Health, HitStop, MotionState, SimulationActive, WeaponMode, WeaponPair,
+    ActionKind, ActionSnapshot, Body, Boss, BossState, CombatEffect, CombatFeedback, Combatant,
+    DefenseKind, DefenseSnapshot, DefenseState, Enemy, Facing, Health, HitStop, MeleeStage,
+    MotionState, SimulationActive, WeaponMode, WeaponPair,
 };
 use poses::Gesture;
 
@@ -42,6 +44,8 @@ struct Playback {
 
 #[derive(Clone)]
 pub(super) struct SourcePose {
+    pub(super) scope: SourceScope,
+    pub(super) rig: super::source_animation::SourceRig,
     pub(super) model: Vec<Mat4>,
     pub(super) weight: f32,
 }
@@ -53,6 +57,16 @@ pub(super) struct PoseTrace {
     pub(super) cc0_clip: Option<String>,
     pub(super) cc0_seconds: f32,
     pub(super) source_clip: Option<String>,
+    pub(super) source_rig: Option<&'static str>,
+    pub(super) source_layers: Option<String>,
+    pub(super) source_scope: Option<&'static str>,
+    pub(super) adaptation: Option<&'static str>,
+    pub(super) fallback: Option<&'static str>,
+    pub(super) melee_stage: Option<MeleeStage>,
+    pub(super) defense: Option<DefenseKind>,
+    pub(super) defense_seconds: f32,
+    pub(super) defense_gesture: Option<(DefenseKind, f32)>,
+    pub(super) defense_interrupted: bool,
     pub(super) source_seconds: f32,
     pub(super) source_weight: f32,
     pub(super) transition: f32,
@@ -70,7 +84,7 @@ pub(super) struct RigPose {
     pub(super) companion_hands: Option<[Vec3; 2]>,
     source_local: Option<Vec<Transform>>,
     source_from: Option<Vec<Transform>>,
-    source_clip: Option<usize>,
+    source_clip: Option<(SourceRig, usize)>,
     source_blend: f32,
     local: Vec<Transform>,
     pub(super) model: Vec<Transform>,
@@ -87,6 +101,7 @@ pub(super) struct RigPose {
     action_id: u64,
     playback: Option<Playback>,
     restart: bool,
+    interrupted_defense: Option<u64>,
 }
 
 impl RigPose {
@@ -121,6 +136,7 @@ impl RigPose {
             action_id: 0,
             playback: None,
             restart: false,
+            interrupted_defense: None,
         }
     }
 
@@ -140,6 +156,8 @@ impl RigPose {
     ) {
         self.reference_pose = false;
         self.companion_hands = None;
+        let native_player = !frame.blade
+            && source.is_some_and(|library| library.for_rig(SourceRig::Naraka).is_some());
         if let Some((action_id, effect)) = frame.action
             && action_id != self.action_id
         {
@@ -149,21 +167,51 @@ impl RigPose {
             self.action_id = action_id;
         }
         let previous = self.event_sequence;
+        let mut observed_hit = false;
         for (sequence, action_id, effect) in events {
             if sequence > previous
+                && !(native_player
+                    && matches!(
+                        effect,
+                        CombatEffect::Melee
+                            | CombatEffect::MeleeStart
+                            | CombatEffect::Deflect
+                            | CombatEffect::Block
+                            | CombatEffect::Parry
+                    ))
                 && !(action_id == self.action_id
                     && matches!(
                         effect,
                         CombatEffect::Melee | CombatEffect::Hammer | CombatEffect::ChainSweep
                     ))
             {
+                observed_hit |= matches!(effect, CombatEffect::Hit | CombatEffect::SniperImpact);
                 self.observe(library, effect, frame.pair, frame.blade);
             }
+        }
+        // A long render frame may both observe and finish a hit playback.
+        // Preserve the causal interruption before advance() retires that pose.
+        if observed_hit
+            && native_player
+            && let Some(defense) = frame.defense
+            && matches!(
+                defense.last_gesture_kind,
+                DefenseKind::Parry | DefenseKind::Deflect
+            )
+        {
+            self.interrupted_defense = Some(defense.gesture_id);
         }
         self.event_sequence = frame.latest_sequence;
         self.advance(library, frame.input, dt);
         if let Some(source) = source {
-            self.advance_source(source, frame.input, dt);
+            self.advance_sources(
+                source,
+                frame.input,
+                frame.action_snapshot,
+                frame.defense,
+                native_player,
+                dt,
+            );
         }
     }
 
@@ -191,6 +239,63 @@ impl RigPose {
             (1.0 - (elapsed - time) / 0.10).clamp(0.0, 1.0) * 0.06
         });
         self.companion_pose(library, elapsed, pitch, grips, recoil);
+    }
+
+    /// The same native donor and explicit physical grip correction are used
+    /// by the live companion and its inspection scenario.
+    pub(super) fn companion_source(
+        &mut self,
+        sources: &SourceAnimationLibrary,
+        pair: WeaponPair,
+        elapsed: f32,
+        shot_age: Option<f32>,
+    ) {
+        let Some(source) = sources.for_rig(SourceRig::Naraka) else {
+            return;
+        };
+        let attack = shot_age.is_some_and(|age| (0.0..0.40).contains(&age));
+        let (name, adaptation) = match (pair, attack) {
+            (WeaponPair::ChainAxeBow, false) => (
+                "male_bow_hold_idle_01",
+                "verified shared female bow source; Kiva upper-body/fingers + CC0 lower body / grip IK",
+            ),
+            (WeaponPair::ChainAxeBow, true) => (
+                "male_bow_attack_01",
+                "verified shared female bow source; Kiva shot clock / upper body + CC0 lower body / grip IK",
+            ),
+            (WeaponPair::HammerMusket, false) => (
+                naraka::GUN_HOLD,
+                "verified shared female_fk source on canonical Avatar; upper body + CC0 lower body / target grip IK",
+            ),
+            (WeaponPair::HammerMusket, true) => (
+                naraka::GUN_ATTACK,
+                "verified shared female_fk source on canonical Avatar; upper body + CC0 lower body / Kiva shot clock / target grip IK",
+            ),
+        };
+        let Some(clip) = source.clip(name) else {
+            return;
+        };
+        let seconds = if attack {
+            shot_age.unwrap() / 0.40 * source.duration(clip)
+        } else {
+            elapsed
+        };
+        let target = source.sample(clip, seconds, !attack, false);
+        self.source = Some(SourcePose {
+            scope: SourceScope::UpperBody,
+            rig: SourceRig::Naraka,
+            model: source.model_pose(&target),
+            weight: 1.0,
+        });
+        self.source_local = Some(target);
+        self.source_clip = Some((SourceRig::Naraka, clip));
+        self.trace.source_clip = Some(name.into());
+        self.trace.source_rig = Some(SourceRig::Naraka.id());
+        self.trace.source_layers = Some(source.layer_description(clip));
+        self.trace.source_scope = Some(SourceScope::UpperBody.label());
+        self.trace.source_seconds = source.sample_time(clip, seconds, !attack);
+        self.trace.source_weight = 1.0;
+        self.trace.adaptation = Some(adaptation);
     }
 
     /// Inspect only the companion hold/aim calculation, with no shot sequence.
@@ -239,11 +344,35 @@ impl RigPose {
 
     /// Uses the already selected display state and clock. These are explicit
     /// Kiva crops/retargets of source motion, not recovered gameplay hit frames.
+    #[cfg(test)]
     fn advance_source(&mut self, library: &SourceAnimationLibrary, input: Inputs, dt: f32) {
-        if dt <= 0.0 {
+        self.advance_sources(library, input, None, None, false, dt);
+    }
+
+    fn advance_sources(
+        &mut self,
+        libraries: &SourceAnimationLibrary,
+        input: Inputs,
+        action: Option<ActionSnapshot>,
+        defense: Option<DefenseSnapshot>,
+        native_player: bool,
+        dt: f32,
+    ) {
+        if dt <= 0.0 && self.source.is_some() {
             return;
         }
-        let selection = if input.mode == WeaponMode::Ranged
+        if native_player {
+            self.latch_defense_interruption(input, action, defense);
+        }
+        let first = self.source_local.is_none() && self.source_clip.is_none();
+        self.trace.fallback = if native_player && input.sliding {
+            Some("CC0 slide; no verified Naraka replacement")
+        } else if native_player && action.is_some_and(|action| action.kind != ActionKind::Melee) {
+            Some("existing Kiva skill choreography (Yanyun / CC0)")
+        } else {
+            None
+        };
+        let legacy_selection = if input.mode == WeaponMode::Ranged
             || (input.crouched && !input.airborne)
             || input.sliding
         {
@@ -305,20 +434,113 @@ impl RigPose {
                 _ => None,
             }
         };
-        let selected = selection
-            .and_then(|(name, time, looping)| library.clip(name).map(|clip| (clip, time, looping)));
-        if let Some((clip, seconds, looping)) = selected {
+        let selection = if native_player {
+            self.naraka_selection(input, action, defense).or_else(|| {
+                legacy_selection.map(|(name, seconds, looping)| naraka::Selection {
+                    rig: SourceRig::Yanyun,
+                    name,
+                    seconds,
+                    looping,
+                    adaptation: "explicit Yanyun fallback for Kiva skill / CC0 slide",
+                })
+            })
+        } else {
+            legacy_selection.map(|(name, seconds, looping)| naraka::Selection {
+                rig: SourceRig::Yanyun,
+                name,
+                seconds,
+                looping,
+                adaptation: "Yanyun original hierarchy",
+            })
+        };
+        self.trace.melee_stage = action.and_then(|action| action.melee_stage);
+        self.trace.defense = defense.map(|defense| defense.kind);
+        self.trace.defense_interrupted =
+            defense.is_some_and(|defense| self.interrupted_defense == Some(defense.gesture_id));
+        self.trace.defense_seconds = defense.map_or(0.0, |defense| defense.elapsed);
+        self.trace.defense_gesture =
+            defense.map(|defense| (defense.last_gesture_kind, defense.gesture_elapsed));
+        let selected = selection.and_then(|selection| {
+            let library = libraries.for_rig(selection.rig)?;
+            let clip = library.clip(selection.name)?;
+            let normalized = selection.rig == SourceRig::Naraka
+                && (selection.name.starts_with("male_hengdao_attack_light_")
+                    || selection.name.contains("_dodge_")
+                    || selection.name == "male_hengdao_attack_shock_light_01"
+                    || selection.name.contains("jump_inplace_up")
+                    || selection.name == "male_hengdao_jump_down_to_land_01");
+            let seconds = selection.seconds
+                * if normalized {
+                    library.duration(clip)
+                } else {
+                    1.0
+                };
+            Some((
+                library,
+                clip,
+                seconds,
+                selection.looping,
+                selection.adaptation,
+            ))
+        });
+        // Cross-rig transitions go through the common target reference. Their
+        // independent node arrays must never be zipped or interpreted together.
+        if selected.as_ref().is_some_and(|(library, ..)| {
+            self.source
+                .as_ref()
+                .is_some_and(|source| source.rig != library.rig())
+        }) {
+            if let Some(source) = &mut self.source {
+                source.weight = (source.weight - dt / 0.08).max(0.0);
+            }
+            if self
+                .source
+                .as_ref()
+                .is_some_and(|source| source.weight > 0.0)
+            {
+                self.trace.source_weight = self.source.as_ref().unwrap().weight;
+                return;
+            }
+            self.source = None;
+            self.source_local = None;
+            self.source_from = None;
+            self.source_clip = None;
+        }
+        if let Some((library, clip, seconds, looping, adaptation)) = selected {
+            let name = library.clip_name(clip).expect("selected source clip");
+            let defense_clip = matches!(
+                name,
+                "male_hengdao_shock_01" | "male_hengdao_attack_shock_light_01"
+            );
+            let crouched_melee =
+                input.crouched && action.is_some_and(|action| action.kind == ActionKind::Melee);
+            let composed_lower = library.rig() == SourceRig::Naraka
+                && !input.airborne
+                && (crouched_melee || defense_clip && (input.crouched || input.speed > 0.01));
+            let scope = if composed_lower {
+                SourceScope::UpperBody
+            } else {
+                library.scope(clip)
+            };
+            self.trace.source_rig = Some(library.rig().id());
+            self.trace.source_layers = Some(library.layer_description(clip));
+            self.trace.source_scope = Some(scope.label());
+            self.trace.adaptation = Some(if composed_lower {
+                "Kiva native upper body / fingers + actual CC0 crouch/gait lower body (0.12s crouch blend)"
+            } else {
+                adaptation
+            });
             self.trace.source_clip = library.clip_name(clip).map(str::to_owned);
             self.trace.source_seconds = library.sample_time(clip, seconds, looping);
             let mut target = library.sample(clip, seconds, looping, input.airborne);
             // A dodge uses one forward source clip; the simulation's accepted
             // direction supplies only this display-space facing adjustment.
-            if self.state == PoseState::Dodge {
+            if self.state == PoseState::Dodge && library.rig() == SourceRig::Yanyun {
                 let root = library.bone("Bip001").unwrap();
                 target[root].rotation =
                     Quat::from_rotation_y(input.dodge_yaw) * target[root].rotation;
             }
-            if self.source_clip != Some(clip) || self.transition <= dt {
+            if self.source_clip != Some((library.rig(), clip)) || self.transition <= dt {
                 self.source_from = self.source_local.clone();
                 self.source_blend = 0.0;
             }
@@ -331,11 +553,17 @@ impl RigPose {
             }
             let weight = self.source.as_ref().map_or(0.0, |source| source.weight);
             self.source = Some(SourcePose {
+                scope,
+                rig: library.rig(),
                 model: library.model_pose(&target),
-                weight: (weight + dt / 0.055).min(1.0),
+                weight: if first && dt == 0.0 {
+                    1.0
+                } else {
+                    (weight + dt / 0.055).min(1.0)
+                },
             });
             self.source_local = Some(target);
-            self.source_clip = Some(clip);
+            self.source_clip = Some((library.rig(), clip));
         } else if let Some(source) = &mut self.source {
             source.weight = (source.weight - dt / 0.12).max(0.0);
             if source.weight == 0.0 {
@@ -344,6 +572,10 @@ impl RigPose {
                 self.source_from = None;
                 self.source_clip = None;
                 self.trace.source_clip = None;
+                self.trace.source_rig = None;
+                self.trace.source_layers = None;
+                self.trace.source_scope = None;
+                self.trace.adaptation = None;
                 self.trace.source_seconds = 0.0;
             }
         }
@@ -381,7 +613,8 @@ impl RigPose {
             CombatEffect::Defeat
             | CombatEffect::Dodge
             | CombatEffect::SniperShot
-            | CombatEffect::Rejected => return,
+            | CombatEffect::Rejected
+            | CombatEffect::MeleeStart => return,
         };
         self.playback = Some(Playback { kind, elapsed: 0.0 });
         self.restart = true;
@@ -635,6 +868,7 @@ struct Inputs {
     sprinting: bool,
     dodging: bool,
     dodge_elapsed: f32,
+    dodge_duration: f32,
     dodge_yaw: f32,
     crouched: bool,
     sliding: bool,
@@ -651,6 +885,8 @@ struct DisplayFrame {
     blade: bool,
     action: Option<(u64, Option<CombatEffect>)>,
     latest_sequence: u64,
+    action_snapshot: Option<ActionSnapshot>,
+    defense: Option<DefenseSnapshot>,
 }
 
 fn trace_pose(
@@ -770,6 +1006,7 @@ pub(super) fn animate(
             sprinting: motion.is_sprinting(),
             dodging: motion.is_dodging(),
             dodge_elapsed: motion.dodge_elapsed(),
+            dodge_duration: motion.dodge_elapsed() + motion.dodge_remaining(),
             dodge_yaw,
             crouched: motion.is_crouched(),
             sliding: motion.is_sliding(),
@@ -792,6 +1029,8 @@ pub(super) fn animate(
                 blade: combat.is_none(),
                 action,
                 latest_sequence,
+                action_snapshot: combat.and_then(Combatant::active_action),
+                defense: defense.map(DefenseState::snapshot),
             },
             feedback
                 .events()
@@ -888,6 +1127,7 @@ mod tests {
             sprinting: false,
             dodging: false,
             dodge_elapsed: 0.0,
+            dodge_duration: 0.42,
             dodge_yaw: 0.0,
             crouched: false,
             sliding: false,
@@ -901,47 +1141,71 @@ mod tests {
     #[test]
     fn inspection_replay_matches_actual_game_adapter_through_attack_recovery_and_crouch() {
         for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
-            for id in ["game:idle", "game:attack", "game:crouch", "game:guard"] {
+            for id in [
+                "game:idle",
+                "game:attack",
+                "game:crouch",
+                "game:guard",
+                "game:crouch_attack",
+                "game:crouch_guard",
+                "game:walk_guard",
+            ] {
                 let mut app = app();
                 app.init_resource::<SourceAnimationLibrary>();
                 let actor = actor(&mut app);
                 app.world_mut()
                     .entity_mut(actor)
                     .insert(Combatant::new(pair));
+                if id == "game:walk_guard" {
+                    app.world_mut()
+                        .entity_mut(actor)
+                        .insert(Body::new(Vec2::ZERO, 3.8, 0.35));
+                }
                 // Resolve the actual floor/support and install simulation-owned
                 // companions/defense before starting the controlled input trace.
                 frame(&mut app, true);
+                if matches!(id, "game:crouch_attack" | "game:crouch_guard") {
+                    app.world_mut()
+                        .get_mut::<ActionIntent>(actor)
+                        .unwrap()
+                        .request_crouch_toggle();
+                    frame(&mut app, true);
+                }
                 let view = app.world().get::<TestView>(actor).unwrap().0;
                 let initial = RigPose::new(app.world().resource::<AnimationLibrary>());
                 *app.world_mut().get_mut::<RigPose>(view).unwrap() = initial;
-                match id {
-                    "game:attack" => app
-                        .world_mut()
+                if id.ends_with("attack") {
+                    app.world_mut()
                         .get_mut::<CombatIntent>(actor)
                         .unwrap()
-                        .request_attack(),
-                    "game:crouch" => app
-                        .world_mut()
+                        .request_attack();
+                }
+                if id == "game:crouch" {
+                    app.world_mut()
                         .get_mut::<ActionIntent>(actor)
                         .unwrap()
-                        .request_crouch_toggle(),
-                    "game:guard" => {
-                        app.world_mut()
-                            .entity_mut(actor)
-                            .insert(DefenseState::default());
-                        app.world_mut()
-                            .get_mut::<DefenseState>(actor)
-                            .unwrap()
-                            .push_edge(crate::simulation::DefenseEdge::Pressed);
-                    }
-                    _ => {}
+                        .request_crouch_toggle();
+                }
+                if id.ends_with("guard") {
+                    app.world_mut()
+                        .entity_mut(actor)
+                        .insert(DefenseState::default());
+                    app.world_mut()
+                        .get_mut::<DefenseState>(actor)
+                        .unwrap()
+                        .push_edge(crate::simulation::DefenseEdge::Pressed);
+                }
+                if id == "game:walk_guard" {
+                    app.world_mut()
+                        .get_mut::<MoveIntent>(actor)
+                        .unwrap()
+                        .set(Vec2::NEG_Y);
                 }
                 let mut preview = PreviewRig::new(app.world().resource::<AnimationLibrary>());
                 for index in 1..=90 {
-                    // Accept the real action once, then hold its read-only input
-                    // snapshot while rendering. This tests the real ECS adapter,
-                    // including active action notification and feedback filtering.
-                    frame(&mut app, index == 1);
+                    // Advance authoritative action/defense snapshots together
+                    // with the same 60 Hz inspection input trace.
+                    frame(&mut app, true);
                     assert!(preview.seek(
                         app.world().resource::<AnimationLibrary>(),
                         app.world().resource::<SourceAnimationLibrary>(),
@@ -967,13 +1231,21 @@ mod tests {
                     match (&live.source, &inspected.source) {
                         (Some(a), Some(b)) => {
                             assert_eq!(a.weight, b.weight);
-                            assert_eq!(a.model, b.model);
+                            for (a, b) in a.model.iter().zip(&b.model) {
+                                assert!(
+                                    a.abs_diff_eq(*b, 0.00001),
+                                    "{id} frame {index}: mismatched source sample"
+                                );
+                            }
                         }
                         (None, None) => {}
                         _ => panic!("{id} frame {index}: mismatched source"),
                     }
                     assert_eq!(live.trace.source_clip, inspected.trace.source_clip);
-                    assert_eq!(live.trace.source_seconds, inspected.trace.source_seconds);
+                    assert!(
+                        (live.trace.source_seconds - inspected.trace.source_seconds).abs()
+                            < 0.00001
+                    );
                 }
             }
         }
@@ -998,7 +1270,12 @@ mod tests {
         for _ in 0..6 {
             step(&mut rig, input, 1.0 / 60.0);
         }
-        assert_eq!(rig.source_clip, source.clip("skill_ylk_1"));
+        assert_eq!(
+            rig.source_clip,
+            source
+                .clip("skill_ylk_1")
+                .map(|clip| (SourceRig::Yanyun, clip))
+        );
         assert_eq!(rig.source.as_ref().unwrap().weight, 1.0);
         let held = rig.source.as_ref().unwrap().model.clone();
         step(&mut rig, input, 0.0);
@@ -1007,11 +1284,18 @@ mod tests {
         step(&mut rig, input, 1.0 / 60.0);
         assert_eq!(
             rig.source_clip,
-            source.clip("skill_huajie_01__shuangqiangt")
+            source
+                .clip("skill_huajie_01__shuangqiangt")
+                .map(|clip| (SourceRig::Yanyun, clip))
         );
         input.dodging = true;
         step(&mut rig, input, 1.0 / 60.0);
-        assert_eq!(rig.source_clip, source.clip("skill_shoujia_dodge_f"));
+        assert_eq!(
+            rig.source_clip,
+            source
+                .clip("skill_shoujia_dodge_f")
+                .map(|clip| (SourceRig::Yanyun, clip))
+        );
         input.dodging = false;
         input.parrying = false;
         rig.playback = None;
@@ -1020,26 +1304,34 @@ mod tests {
         step(&mut rig, input, 1.0 / 60.0);
         assert_eq!(
             rig.source_clip,
-            source.clip("b_fight_env_jump_01_start_Lfoot__zuiquan")
+            source
+                .clip("b_fight_env_jump_01_start_Lfoot__zuiquan")
+                .map(|clip| (SourceRig::Yanyun, clip))
         );
         for _ in 0..20 {
             step(&mut rig, input, 1.0 / 60.0);
         }
         assert_eq!(
             rig.source_clip,
-            source.clip("b_fight_env_jump_02_loop__zuiquan")
+            source
+                .clip("b_fight_env_jump_02_loop__zuiquan")
+                .map(|clip| (SourceRig::Yanyun, clip))
         );
         input.jumps_used = 2;
         step(&mut rig, input, 1.0 / 60.0);
         assert_eq!(
             rig.source_clip,
-            source.clip("b_fight_env_jump_01_start_Lfoot__zuiquan")
+            source
+                .clip("b_fight_env_jump_01_start_Lfoot__zuiquan")
+                .map(|clip| (SourceRig::Yanyun, clip))
         );
         input.airborne = false;
         step(&mut rig, input, 1.0 / 60.0);
         assert_eq!(
             rig.source_clip,
-            source.clip("b_fight_env_jump_03_to_idle__zuiquan")
+            source
+                .clip("b_fight_env_jump_03_to_idle__zuiquan")
+                .map(|clip| (SourceRig::Yanyun, clip))
         );
         input.mode = WeaponMode::Ranged;
         for _ in 0..10 {
@@ -1113,6 +1405,7 @@ mod tests {
             app.world()
                 .resource::<SourceAnimationLibrary>()
                 .clip("weakhit_b")
+                .map(|clip| (SourceRig::Yanyun, clip))
         );
         assert_eq!(rig.source.as_ref().unwrap().weight, 1.0);
         assert!(
@@ -1748,5 +2041,284 @@ mod tests {
                 .abs()
                 < 0.002
         );
+    }
+    #[test]
+    fn actual_committed_stages_follow_fixed_snapshot_time_through_zero_fixed_render_frames() {
+        let mut app = app();
+        app.init_resource::<SourceAnimationLibrary>();
+        let actor = actor(&mut app);
+        frame(&mut app, true);
+        let view = app.world().get::<TestView>(actor).unwrap().0;
+        let initial = RigPose::new(app.world().resource::<AnimationLibrary>());
+        *app.world_mut().get_mut::<RigPose>(view).unwrap() = initial;
+        app.world_mut()
+            .get_mut::<CombatIntent>(actor)
+            .unwrap()
+            .request_attack();
+        frame(&mut app, true);
+        let first = actor_rig(&app, actor)
+            .source
+            .as_ref()
+            .unwrap()
+            .model
+            .clone();
+        let first_time = actor_rig(&app, actor).trace.source_seconds;
+        assert_eq!(
+            actor_rig(&app, actor).trace.source_rig,
+            Some(SourceRig::Naraka.id())
+        );
+        for _ in 0..8 {
+            frame(&mut app, false);
+            assert_eq!(actor_rig(&app, actor).trace.source_seconds, first_time);
+            assert_eq!(actor_rig(&app, actor).source.as_ref().unwrap().model, first);
+        }
+        let mut stages = std::collections::HashSet::new();
+        for _ in 0..120 {
+            if !stages.contains(&3) {
+                app.world_mut()
+                    .get_mut::<CombatIntent>(actor)
+                    .unwrap()
+                    .request_attack();
+            }
+            frame(&mut app, true);
+            if let Some(snapshot) = app.world().get::<Combatant>(actor).unwrap().active_action() {
+                let (number, name) = match snapshot.melee_stage.unwrap() {
+                    MeleeStage::One => (1, "male_hengdao_attack_light_01"),
+                    MeleeStage::Two => (2, "male_hengdao_attack_light_02"),
+                    MeleeStage::Three => (3, "male_hengdao_attack_light_03"),
+                };
+                stages.insert(number);
+                let library = app
+                    .world()
+                    .resource::<SourceAnimationLibrary>()
+                    .for_rig(SourceRig::Naraka)
+                    .unwrap();
+                let seconds = snapshot.elapsed / snapshot.duration
+                    * library.duration(library.clip(name).unwrap());
+                let trace = &actor_rig(&app, actor).trace;
+                assert_eq!(trace.source_clip.as_deref(), Some(name));
+                assert!(
+                    (trace.source_seconds - seconds).abs() < 0.00001,
+                    "stage{number}: display restarted on damage cue"
+                );
+            }
+        }
+        assert_eq!(stages.len(), 3);
+    }
+    #[test]
+    fn different_source_hierarchies_fade_without_reusing_local_pose_indices() {
+        let library = AnimationLibrary::default();
+        let sources = SourceAnimationLibrary::default();
+        let mut rig = RigPose::new(&library);
+        let input = idle_input();
+        rig.advance_sources(&sources, input, None, None, true, 0.2);
+        assert_eq!(rig.source.as_ref().unwrap().rig, SourceRig::Naraka);
+        rig.observe(
+            &library,
+            CombatEffect::Hammer,
+            WeaponPair::HammerMusket,
+            false,
+        );
+        rig.advance(&library, input, 0.02);
+        let skill = ActionSnapshot {
+            action_id: 7,
+            kind: ActionKind::HammerSlam,
+            pair: WeaponPair::HammerMusket,
+            melee_stage: None,
+            target: None,
+            elapsed: 0.1,
+            duration: 0.5,
+            shot_count: 0,
+            aim_position: Vec3::ZERO,
+            source_position: Vec3::ZERO,
+            companion_position: Vec3::ZERO,
+        };
+        for (action, expected) in [(Some(skill), SourceRig::Yanyun), (None, SourceRig::Naraka)] {
+            for _ in 0..16 {
+                rig.advance_sources(&sources, input, action, None, true, 0.02);
+                if let Some(source) = &rig.source {
+                    let count = sources.for_rig(source.rig).unwrap().rest_model.len();
+                    assert_eq!(source.model.len(), count);
+                    assert_eq!(rig.source_local.as_ref().unwrap().len(), count);
+                    if let Some(from) = &rig.source_from {
+                        assert_eq!(from.len(), count);
+                    }
+                    assert!(source.model.iter().all(|matrix| matrix.is_finite()));
+                }
+            }
+            assert_eq!(rig.source.as_ref().unwrap().rig, expected);
+            assert_eq!(rig.source.as_ref().unwrap().weight, 1.0);
+        }
+    }
+    #[test]
+    fn late_old_melee_feedback_cannot_restart_a_new_committed_stage() {
+        let library = AnimationLibrary::default();
+        let sources = SourceAnimationLibrary::default();
+        let mut rig = RigPose::new(&library);
+        let snapshot = ActionSnapshot {
+            action_id: 9,
+            kind: ActionKind::Melee,
+            pair: WeaponPair::HammerMusket,
+            melee_stage: Some(MeleeStage::Two),
+            target: None,
+            elapsed: 0.30,
+            duration: 0.60,
+            shot_count: 0,
+            aim_position: Vec3::ZERO,
+            source_position: Vec3::ZERO,
+            companion_position: Vec3::ZERO,
+        };
+        let frame = |sequence| DisplayFrame {
+            input: idle_input(),
+            pair: snapshot.pair,
+            blade: false,
+            action: Some((snapshot.action_id, Some(CombatEffect::Melee))),
+            latest_sequence: sequence,
+            action_snapshot: Some(snapshot),
+            defense: None,
+        };
+        rig.frame(
+            &library,
+            Some(&sources),
+            frame(1),
+            [(1, 8, CombatEffect::Melee)],
+            0.10,
+        );
+        let clock = rig.clock;
+        let model = rig.source.as_ref().unwrap().model.clone();
+        rig.frame(
+            &library,
+            Some(&sources),
+            frame(2),
+            [(2, 8, CombatEffect::Melee)],
+            0.10,
+        );
+        assert!(
+            rig.clock > clock,
+            "historical hit marker restarted current body gesture"
+        );
+        assert_eq!(rig.source.as_ref().unwrap().model, model);
+        assert_eq!(rig.trace.melee_stage, Some(MeleeStage::Two));
+    }
+    #[test]
+    fn display_frames_latch_a_preempted_riposte_and_only_a_new_gesture_can_restart_it() {
+        let library = AnimationLibrary::default();
+        let source = SourceAnimationLibrary::default();
+        for hit in [false, true] {
+            let mut rig = RigPose::new(&library);
+            let frame = |input, age, id, sequence| DisplayFrame {
+                input,
+                pair: WeaponPair::HammerMusket,
+                blade: false,
+                action: None,
+                latest_sequence: sequence,
+                action_snapshot: None,
+                defense: Some(DefenseSnapshot {
+                    kind: if age < 0.18 {
+                        DefenseKind::Parry
+                    } else {
+                        DefenseKind::Idle
+                    },
+                    gesture_id: id,
+                    last_gesture_kind: DefenseKind::Parry,
+                    gesture_elapsed: age,
+                    ..default()
+                }),
+            };
+            rig.frame(
+                &library,
+                Some(&source),
+                frame(idle_input(), 0.1, 7, 0),
+                [],
+                0.1,
+            );
+            assert_eq!(
+                rig.trace.source_clip.as_deref(),
+                Some("male_hengdao_attack_shock_light_01")
+            );
+            let mut interrupt = idle_input();
+            if !hit {
+                interrupt.speed = 2.0;
+            }
+            let events = hit.then_some((1, 0, CombatEffect::Hit));
+            rig.frame(
+                &library,
+                Some(&source),
+                frame(interrupt, 0.25, 7, u64::from(hit)),
+                events,
+                0.1,
+            );
+            assert_eq!(rig.interrupted_defense, Some(7));
+            rig.frame(
+                &library,
+                Some(&source),
+                frame(idle_input(), 0.57, 7, u64::from(hit)),
+                [],
+                0.32,
+            );
+            assert_eq!(
+                rig.trace.source_clip.as_deref(),
+                Some("male_hengdao_idle_01"),
+                "ended short walk/hit revived the old gesture"
+            );
+            assert!(rig.trace.defense_interrupted);
+            rig.frame(
+                &library,
+                Some(&source),
+                frame(idle_input(), 0.1, 8, u64::from(hit)),
+                [],
+                0.1,
+            );
+            assert_eq!(
+                rig.trace.source_clip.as_deref(),
+                Some("male_hengdao_attack_shock_light_01")
+            );
+            assert!(!rig.trace.defense_interrupted);
+        }
+    }
+    #[test]
+    fn new_light_or_heavy_hit_latches_even_when_its_playback_fits_inside_one_render_frame() {
+        let library = AnimationLibrary::default();
+        let source = SourceAnimationLibrary::default();
+        for effect in [CombatEffect::Hit, CombatEffect::SniperImpact] {
+            let mut rig = RigPose::new(&library);
+            let frame = |age, sequence| DisplayFrame {
+                input: idle_input(),
+                pair: WeaponPair::HammerMusket,
+                blade: false,
+                action: None,
+                latest_sequence: sequence,
+                action_snapshot: None,
+                defense: Some(DefenseSnapshot {
+                    kind: if age < 0.18 {
+                        DefenseKind::Parry
+                    } else {
+                        DefenseKind::Idle
+                    },
+                    gesture_id: 12,
+                    last_gesture_kind: DefenseKind::Parry,
+                    gesture_elapsed: age,
+                    ..default()
+                }),
+            };
+            rig.frame(&library, Some(&source), frame(0.1, 0), [], 0.1);
+            rig.frame(
+                &library,
+                Some(&source),
+                frame(0.4, 1),
+                [(1, 0, effect)],
+                0.32,
+            );
+            assert!(
+                rig.playback.is_none(),
+                "hit must really have expired inside this frame"
+            );
+            assert_eq!(rig.interrupted_defense, Some(12));
+            assert_eq!(
+                rig.trace.source_clip.as_deref(),
+                Some("male_hengdao_idle_01"),
+                "expired hit resurrected old riposte"
+            );
+        }
     }
 }

@@ -1,0 +1,109 @@
+{
+  "rig_id": "naraka/l22_male_skeleton",
+  "source_terminal_direction": "-X",
+  "runtime_reflection_Z_retains_X_sign": true,
+  "reference": "Actual source child local offsets for all20 child segments are-X; actualoriginalIBM-weighted distal skin vertices occupy-X. No Nub or terminal length invented.",
+  "real_mesh_source_sha256": "931bd444e2d8e64f704d5ef67715d60317c6fc88f00ce23d5647fa89cad5e0dc",
+  "distal_skin_evidence": [
+    {
+      "bone": "gMan L Finger02",
+      "weighted_vertex_count": 38,
+      "bind_local_mean_x": -0.020012737803685073,
+      "bind_local_x_range": [
+        -0.03272113299719637,
+        -0.002264119674116216
+      ],
+      "negative_x_fraction": 1.0
+    },
+    {
+      "bone": "gMan L Finger12",
+      "weighted_vertex_count": 39,
+      "bind_local_mean_x": -0.015037913385838608,
+      "bind_local_x_range": [
+        -0.024679899236128233,
+        -0.0007353044053504121
+      ],
+      "negative_x_fraction": 1.0
+    },
+    {
+      "bone": "gMan L Finger22",
+      "weighted_vertex_count": 43,
+      "bind_local_mean_x": -0.01678816437134863,
+      "bind_local_x_range": [
+        -0.02861363013735385,
+        -0.00010296127756470597
+      ],
+      "negative_x_fraction": 1.0
+    },
+    {
+      "bone": "gMan L Finger32",
+      "weighted_vertex_count": 39,
+      "bind_local_mean_x": -0.013527141154060705,
+      "bind_local_x_range": [
+        -0.024857742195037336,
+        0.0005810095531422199
+      ],
+      "negative_x_fraction": 0.9487179487179487
+    },
+    {
+      "bone": "gMan L Finger42",
+      "weighted_vertex_count": 47,
+      "bind_local_mean_x": -0.014654004989489142,
+      "bind_local_x_range": [
+        -0.02602111986367417,
+        0.000919752037691346
+      ],
+      "negative_x_fraction": 0.9574468085106383
+    },
+    {
+      "bone": "gMan R Finger02",
+      "weighted_vertex_count": 38,
+      "bind_local_mean_x": -0.01945145134615924,
+      "bind_local_x_range": [
+        -0.03272044883129799,
+        -0.002074570057307712
+      ],
+      "negative_x_fraction": 1.0
+    },
+    {
+      "bone": "gMan R Finger12",
+      "weighted_vertex_count": 39,
+      "bind_local_mean_x": -0.015094434691733822,
+      "bind_local_x_range": [
+        -0.024679266236456443,
+        -0.0007346976421271911
+      ],
+      "negative_x_fraction": 1.0
+    },
+    {
+      "bone": "gMan R Finger22",
+      "weighted_vertex_count": 40,
+      "bind_local_mean_x": -0.01765948106136816,
+      "bind_local_x_range": [
+        -0.028612916049092885,
+        -0.0010507426816759313
+      ],
+      "negative_x_fraction": 1.0
+    },
+    {
+      "bone": "gMan R Finger32",
+      "weighted_vertex_count": 39,
+      "bind_local_mean_x": -0.013825995925525938,
+      "bind_local_x_range": [
+        -0.02485715310177372,
+        0.0005815543338600904
+      ],
+      "negative_x_fraction": 0.9487179487179487
+    },
+    {
+      "bone": "gMan R Finger42",
+      "weighted_vertex_count": 47,
+      "bind_local_mean_x": -0.014673373252273351,
+      "bind_local_x_range": [
+        -0.026020583830697275,
+        0.0009202520495035227
+      ],
+      "negative_x_fraction": 0.9574468085106383
+    }
+  ]
+}

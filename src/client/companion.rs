@@ -157,6 +157,27 @@ pub(super) fn sync(world: &mut World) {
                 frame.pitch,
                 frame.grips,
             );
+            let markers: &[f32] = match state.kind {
+                crate::simulation::ActionKind::HammerCombo => &[0.30, 0.42, 0.54],
+                crate::simulation::ActionKind::ChainCombo => &[0.12, 0.28, 0.44],
+                crate::simulation::ActionKind::AxeShot => &[0.15],
+                _ => &[0.18],
+            };
+            let shot_age = state
+                .shot_count
+                .checked_sub(1)
+                .and_then(|index| markers.get(index as usize))
+                .map(|time| state.elapsed - time);
+            world.resource_scope(
+                |world, source: Mut<super::source_animation::SourceAnimationLibrary>| {
+                    world.get_mut::<RigPose>(root).unwrap().companion_source(
+                        &source,
+                        state.pair,
+                        state.elapsed,
+                        shot_age,
+                    );
+                },
+            );
         });
         let assets = AvatarAssets::cached(
             world.get_resource::<AvatarAssets>(),

@@ -58,6 +58,22 @@ impl ActionIntent {
     pub(super) fn movement_requested(&self) -> bool {
         self.jump || self.dodge
     }
+    pub(super) fn crouch_toggle_requested(&self) -> bool {
+        self.crouch_toggle
+    }
+    /// A queued melee continuation must not consume an accepted movement
+    /// edge before the motor gets to it. Explicit attacks keep their existing
+    /// admission priority; only an automatic follow-up uses this predicate.
+    pub(super) fn postpones_buffered_attack(&self, motion: &MotionState, dt: f32) -> bool {
+        (self.jump && !motion.is_dodging() && motion.jumps_used < 2)
+            || (self.dodge
+                && motion.is_grounded()
+                && !motion.is_dodging()
+                // The motor decays this cooldown before admitting the dodge
+                // in this same tick. Include that step in the priority check.
+                && motion.dodge_cooldown <= dt)
+            || (self.crouch_toggle && motion.is_grounded() && !motion.is_dodging())
+    }
     pub(super) fn discard_movement_actions(&mut self) {
         self.jump = false;
         self.dodge = false;

@@ -1,0 +1,39 @@
+{
+  "status": "implemented-awaiting-independent-root-check",
+  "simulation_tests": {
+    "command": "cargo test --locked simulation:: -- --quiet",
+    "passed": 109,
+    "failed": 0,
+    "ignored": 0,
+    "new_tests": 16
+  },
+  "strengthened_airborne_teleport_test": {
+    "command": "cargo test --locked actual_stride_feedback -- --quiet",
+    "passed": 1
+  },
+  "terrain_tests": {
+    "command": "cargo test --locked --test physics_terrain -- --quiet",
+    "passed": 9,
+    "failed": 0
+  },
+  "native_clippy": {
+    "command": "cargo clippy --locked --all-targets -- -D warnings",
+    "passed": true
+  },
+  "wasm_check": {
+    "command": "cargo check --locked --target wasm32-unknown-unknown",
+    "passed": true
+  },
+  "git_diff_check": true,
+  "browser_visual_acceptance": false,
+  "source_animation_h0_owned_by_other_task": true,
+  "committed_or_pushed": false,
+  "wasm_clippy": {
+    "command": "cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings",
+    "passed": true
+  },
+  "format_check": {
+    "command": "cargo fmt --all -- --check",
+    "passed": true
+  }
+}

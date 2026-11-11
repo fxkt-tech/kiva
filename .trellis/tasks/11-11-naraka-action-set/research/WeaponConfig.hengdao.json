@@ -1,0 +1,2479 @@
+{
+  "name": "WeaponConfig",
+  "source_path_id": 6981010548153732578,
+  "source_file": "/home/asuka/kiva-asset-research/naraka/identity/xls/WeaponConfig.bytes",
+  "source_sha256": "35b62eff8fa9275f0cc1166f38bbb4a7c57555069c86a65e892894e9c98aa46c",
+  "decoded_sha256": "e134650fc0e62422dd682855d62355247f1f04320a5f4ce3233f93f3cc98bc10",
+  "decoded_bytes": 512540,
+  "framing_verified": true,
+  "tables": [
+    {
+      "name": "WeaponConfig_JiGuanSanWeaponTemp",
+      "offset": 354,
+      "end": 614,
+      "count": 9
+    },
+    {
+      "name": "WeaponConfig_WeaponCustomData",
+      "offset": 614,
+      "end": 95198,
+      "count": 828
+    },
+    {
+      "name": "WeaponConfig_WeaponSuit",
+      "offset": 95198,
+      "end": 150044,
+      "count": 313
+    },
+    {
+      "name": "WeaponConfig_WeaponSuitSetting",
+      "offset": 150044,
+      "end": 174912,
+      "count": 82
+    },
+    {
+      "name": "WeaponConfig_WeaponTemp",
+      "offset": 174912,
+      "end": 512540,
+      "count": 1678
+    }
+  ],
+  "records": [
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10427,
+      "offset": 51092,
+      "end": 51194,
+      "bytes": 102,
+      "index_offset": 4022,
+      "sha256": "e04b9dbfeed054fac14a4f6b1b1abe1fd0dcd515158b5a34ed7845e20fcf2511",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀配色1"
+        },
+        {
+          "offset": 18,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_01"
+        }
+      ],
+      "raw_hex": "bb280000050000002a6a00524d917282310028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003100"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10428,
+      "offset": 51194,
+      "end": 51310,
+      "bytes": 116,
+      "index_offset": 4030,
+      "sha256": "0c04ece68f3cc24c8b288dab5663e6003d817c6338a4b86d60e43f6bbc8e53d2",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀刀鞘1"
+        },
+        {
+          "offset": 18,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_01"
+        }
+      ],
+      "raw_hex": "bc280000050000002a6a00520052989731002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003100"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10429,
+      "offset": 51310,
+      "end": 51412,
+      "bytes": 102,
+      "index_offset": 4038,
+      "sha256": "655aa25dee10cd1d69a7884e5814c150439047a820124af378fae006b272f897",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀配色2"
+        },
+        {
+          "offset": 18,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_02"
+        }
+      ],
+      "raw_hex": "bd280000050000002a6a00524d917282320028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003200"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10430,
+      "offset": 51412,
+      "end": 51528,
+      "bytes": 116,
+      "index_offset": 4046,
+      "sha256": "32b269888617b0bdd5109d8e5af283b1450dc93ccc11220d4b80616902182299",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀刀鞘2"
+        },
+        {
+          "offset": 18,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_02"
+        }
+      ],
+      "raw_hex": "be280000050000002a6a00520052989732002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003200"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10431,
+      "offset": 51528,
+      "end": 51630,
+      "bytes": 102,
+      "index_offset": 4054,
+      "sha256": "e9d91f3f2bc6cf9e30a8821dc46993e71f3634080b199b29a3cc219562da4042",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀配色3"
+        },
+        {
+          "offset": 18,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_03"
+        }
+      ],
+      "raw_hex": "bf280000050000002a6a00524d917282330028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003300"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10432,
+      "offset": 51630,
+      "end": 51746,
+      "bytes": 116,
+      "index_offset": 4062,
+      "sha256": "ef3be6e731715059cafbe7cc277ee27588ac41ef629593c0f817a67c8031a5db",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀刀鞘3"
+        },
+        {
+          "offset": 18,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_03"
+        }
+      ],
+      "raw_hex": "c0280000050000002a6a00520052989733002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003300"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10433,
+      "offset": 51746,
+      "end": 51848,
+      "bytes": 102,
+      "index_offset": 4070,
+      "sha256": "792509dcbdbad707b1db042b2877ae72297ef57b59ced41c7cf1b15a7d460a1e",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀配色4"
+        },
+        {
+          "offset": 18,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_04"
+        }
+      ],
+      "raw_hex": "c1280000050000002a6a00524d917282340028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003400"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10434,
+      "offset": 51848,
+      "end": 51964,
+      "bytes": 116,
+      "index_offset": 4078,
+      "sha256": "427ffcce35d81845c47f27211bbef37e54e3aed66598f243be888b498a9e006e",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀刀鞘4"
+        },
+        {
+          "offset": 18,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_04"
+        }
+      ],
+      "raw_hex": "c2280000050000002a6a00520052989734002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003400"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10435,
+      "offset": 51964,
+      "end": 52066,
+      "bytes": 102,
+      "index_offset": 4086,
+      "sha256": "bcb81c7c966f58e433299e9e7e82fee9eaaa0c47e4a6b81035bd38b931bcd06c",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀配色5"
+        },
+        {
+          "offset": 18,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_05"
+        }
+      ],
+      "raw_hex": "c3280000050000002a6a00524d917282350028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003500"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10436,
+      "offset": 52066,
+      "end": 52182,
+      "bytes": 116,
+      "index_offset": 4094,
+      "sha256": "847a6376626e765f376db14a9118e7674e223b0b6e3cc3a4c824e6b1b205a1dd",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀刀鞘5"
+        },
+        {
+          "offset": 18,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_05"
+        }
+      ],
+      "raw_hex": "c4280000050000002a6a00520052989735002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003500"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10437,
+      "offset": 52182,
+      "end": 52284,
+      "bytes": 102,
+      "index_offset": 4102,
+      "sha256": "7a780fb94e51c7d1f249072214582fc465bca3236662efc736f3e0f9ad3fd758",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀配色6"
+        },
+        {
+          "offset": 18,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_06"
+        }
+      ],
+      "raw_hex": "c5280000050000002a6a00524d917282360028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003600"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10438,
+      "offset": 52284,
+      "end": 52400,
+      "bytes": 116,
+      "index_offset": 4110,
+      "sha256": "96c39363c769e1d786641693a0d4e49b14b90556c120b0592dbe8a8674ae9851",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀刀鞘6"
+        },
+        {
+          "offset": 18,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_06"
+        }
+      ],
+      "raw_hex": "c6280000050000002a6a00520052989736002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003600"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10458,
+      "offset": 54444,
+      "end": 54556,
+      "bytes": 112,
+      "index_offset": 4270,
+      "sha256": "9e52dab780ce7dd067769d94d41f049bf97c57054d3caeea49e4b0240f7e08a8",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色1"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_01"
+        }
+      ],
+      "raw_hex": "da2800000600000041002a6a00526263728231002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003100"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10459,
+      "offset": 54556,
+      "end": 54682,
+      "bytes": 126,
+      "index_offset": 4278,
+      "sha256": "d46d7df34e08d307aa43a2319b298bd8f4f9945963543f5061a2d825a112b6a3",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色1"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_01"
+        }
+      ],
+      "raw_hex": "db2800000600000041002a6a005262637282310033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003100"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10460,
+      "offset": 54682,
+      "end": 54794,
+      "bytes": 112,
+      "index_offset": 4286,
+      "sha256": "e3290003f4a619080dc9ffcc8cf61343685eba173c08279af84507b829e6a85e",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色2"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_02"
+        }
+      ],
+      "raw_hex": "dc2800000600000041002a6a00526263728232002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003200"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10461,
+      "offset": 54794,
+      "end": 54920,
+      "bytes": 126,
+      "index_offset": 4294,
+      "sha256": "fba1b6ffa53203cc4241d3304465268f74afdd835bc5a6cb1d45862827e15d30",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色2"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_02"
+        }
+      ],
+      "raw_hex": "dd2800000600000041002a6a005262637282320033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003200"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10462,
+      "offset": 54920,
+      "end": 55032,
+      "bytes": 112,
+      "index_offset": 4302,
+      "sha256": "1673fa17822106980b155de17c7d1abca5195ec7e8d9ec018dfb551df4d3f031",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色3"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_03"
+        }
+      ],
+      "raw_hex": "de2800000600000041002a6a00526263728233002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003300"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10463,
+      "offset": 55032,
+      "end": 55158,
+      "bytes": 126,
+      "index_offset": 4310,
+      "sha256": "e7961f49ed4c93e1c9b6f8ddc6aff408f95ff32d8212a2a102ad076b09654cae",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色3"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_03"
+        }
+      ],
+      "raw_hex": "df2800000600000041002a6a005262637282330033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003300"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10464,
+      "offset": 55158,
+      "end": 55270,
+      "bytes": 112,
+      "index_offset": 4318,
+      "sha256": "166dce94c685690b595bf25ae15c51d8170c9d2aaddb44d130d13fc20bfa8921",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色4"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_04"
+        }
+      ],
+      "raw_hex": "e02800000600000041002a6a00526263728234002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003400"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10465,
+      "offset": 55270,
+      "end": 55396,
+      "bytes": 126,
+      "index_offset": 4326,
+      "sha256": "0d322a81b84068748a0299e40c308f6cc51c94aa8f93d7e096befe45f6d89d9a",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色4"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_04"
+        }
+      ],
+      "raw_hex": "e12800000600000041002a6a005262637282340033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003400"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10470,
+      "offset": 55792,
+      "end": 55894,
+      "bytes": 102,
+      "index_offset": 4366,
+      "sha256": "93597b72e6b3d99402be2019e2ad00897c0eebbb93b992c3610dd11d990ef6de",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀配色7"
+        },
+        {
+          "offset": 18,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_07"
+        }
+      ],
+      "raw_hex": "e6280000050000002a6a00524d917282370028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003700"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10471,
+      "offset": 55894,
+      "end": 56010,
+      "bytes": 116,
+      "index_offset": 4374,
+      "sha256": "b781120c31a45d2a33c1b6d5111b2a155e01a2cf6e07c12ea038658206e468d9",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀刀鞘7"
+        },
+        {
+          "offset": 18,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_07"
+        }
+      ],
+      "raw_hex": "e7280000050000002a6a00520052989737002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003700"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10503,
+      "offset": 59160,
+      "end": 59272,
+      "bytes": 112,
+      "index_offset": 4630,
+      "sha256": "8df4008afc4cf3bd29a3b7335f54b14735afaeaa040ae8c6b36f74e198d15f0b",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色5"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_05"
+        }
+      ],
+      "raw_hex": "072900000600000041002a6a00526263728235002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003500"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10504,
+      "offset": 59272,
+      "end": 59398,
+      "bytes": 126,
+      "index_offset": 4638,
+      "sha256": "9280ff7a9307b2955e3bd05fb7dd1cccd9d55d4cf4b89f5472aed8e1dd784f79",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色5"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_05"
+        }
+      ],
+      "raw_hex": "082900000600000041002a6a005262637282350033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003500"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10519,
+      "offset": 60804,
+      "end": 60906,
+      "bytes": 102,
+      "index_offset": 4758,
+      "sha256": "419d69b0cd2d9ef80d5e4fbd4454de3a2ec80af54ab837866e976e8e2e607c2a",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀配色8"
+        },
+        {
+          "offset": 18,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_08"
+        }
+      ],
+      "raw_hex": "17290000050000002a6a00524d917282380028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003800"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10520,
+      "offset": 60906,
+      "end": 61022,
+      "bytes": 116,
+      "index_offset": 4766,
+      "sha256": "cdc745c7a8a649c0d01a4777b6e0f55a209f1ff2322b873701b8745f5f7de70b",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 5,
+          "value": "横刀刀鞘8"
+        },
+        {
+          "offset": 18,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_08"
+        }
+      ],
+      "raw_hex": "18290000050000002a6a00520052989738002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003800"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10553,
+      "offset": 64408,
+      "end": 64520,
+      "bytes": 112,
+      "index_offset": 5030,
+      "sha256": "388e2d77aa5a36fc6bb6b79169bf16cfd28e749701657ec568d77e9efe876bec",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色6"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_06"
+        }
+      ],
+      "raw_hex": "392900000600000041002a6a00526263728236002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003600"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10554,
+      "offset": 64520,
+      "end": 64646,
+      "bytes": 126,
+      "index_offset": 5038,
+      "sha256": "30b0b16d35bc553bdf67333e020bf0d6553e019a7edbbb2d180031ded2372396",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色6"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_06"
+        }
+      ],
+      "raw_hex": "3a2900000600000041002a6a005262637282360033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003600"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10555,
+      "offset": 64646,
+      "end": 64758,
+      "bytes": 112,
+      "index_offset": 5046,
+      "sha256": "aa8dedb307769c3f311cccecdfe496fb2ea12228c2519c5afd8c328de57683bd",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色7"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_07"
+        }
+      ],
+      "raw_hex": "3b2900000600000041002a6a00526263728237002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003700"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10556,
+      "offset": 64758,
+      "end": 64884,
+      "bytes": 126,
+      "index_offset": 5054,
+      "sha256": "a9b7c75e702a64f87b505a5ae9447a0292ca0c18c6d6a1f312362fba4f9c9246",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色7"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_07"
+        }
+      ],
+      "raw_hex": "3c2900000600000041002a6a005262637282370033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003700"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10580,
+      "offset": 67398,
+      "end": 67510,
+      "bytes": 112,
+      "index_offset": 5246,
+      "sha256": "4a7edde16fa2742345dae8e8efff734ef0a7f85133e48ed2611eea3004c176b8",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色8"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_08"
+        }
+      ],
+      "raw_hex": "542900000600000041002a6a00526263728238002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003800"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10581,
+      "offset": 67510,
+      "end": 67636,
+      "bytes": 126,
+      "index_offset": 5254,
+      "sha256": "10c8fc935c5a3437a52660d6913ca7c64a1b4bc4a855d59b4cb43c6c7e0e1c1d",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色8"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_08"
+        }
+      ],
+      "raw_hex": "552900000600000041002a6a005262637282380033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003800"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10582,
+      "offset": 67636,
+      "end": 67748,
+      "bytes": 112,
+      "index_offset": 5262,
+      "sha256": "6d7f030d3dcc016ac01d352bc123bf4cb750fc9428e40ce3f2f382daabbff196",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色9"
+        },
+        {
+          "offset": 20,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_09"
+        }
+      ],
+      "raw_hex": "562900000600000041002a6a00526263728239002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003900"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10583,
+      "offset": 67748,
+      "end": 67874,
+      "bytes": 126,
+      "index_offset": 5270,
+      "sha256": "3c715770ae6dac7427a0d2ee4223a5c20e94c7bc47612a822626c3e33fd6bcf1",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "A横刀换色9"
+        },
+        {
+          "offset": 20,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_09"
+        }
+      ],
+      "raw_hex": "572900000600000041002a6a005262637282390033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003900"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10710,
+      "offset": 82206,
+      "end": 82320,
+      "bytes": 114,
+      "index_offset": 6286,
+      "sha256": "4bb63afe8e1911539dae1bef8e371095a01a78bab926fdc033ddfdf15a02a8aa",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 7,
+          "value": "A横刀换色10"
+        },
+        {
+          "offset": 22,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_10"
+        }
+      ],
+      "raw_hex": "d62900000700000041002a6a005262637282310030002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0031003000"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10711,
+      "offset": 82320,
+      "end": 82448,
+      "bytes": 128,
+      "index_offset": 6294,
+      "sha256": "4eb8468f0a2f94724fe4c4027926eaca80e9a95f6f2d37dcc80269191b1f2908",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 7,
+          "value": "A横刀换色10"
+        },
+        {
+          "offset": 22,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_10"
+        }
+      ],
+      "raw_hex": "d72900000700000041002a6a0052626372823100300033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0031003000"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10712,
+      "offset": 82448,
+      "end": 82562,
+      "bytes": 114,
+      "index_offset": 6302,
+      "sha256": "1be6f813af4d00189f3f7a5b8cb5a3992dd0bafd9456673f24f08ba25596a44f",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 7,
+          "value": "A横刀换色11"
+        },
+        {
+          "offset": 22,
+          "characters": 44,
+          "value": "wp_hengdao_tanghengdao/weapon_custom_data_11"
+        }
+      ],
+      "raw_hex": "d82900000700000041002a6a005262637282310031002c000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0031003100"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10713,
+      "offset": 82562,
+      "end": 82690,
+      "bytes": 128,
+      "index_offset": 6310,
+      "sha256": "2bc5905a7b3b4c94b37e32d3a2e946440a654ba0a72837249bed230bf084753c",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 7,
+          "value": "A横刀换色11"
+        },
+        {
+          "offset": 22,
+          "characters": 51,
+          "value": "st_hengdao_tanghengdao_sheath/weapon_custom_data_11"
+        }
+      ],
+      "raw_hex": "d92900000700000041002a6a0052626372823100310033000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0031003100"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10714,
+      "offset": 82690,
+      "end": 82794,
+      "bytes": 104,
+      "index_offset": 6318,
+      "sha256": "661887107c63991bca98f3fe612f37a13dd57bf6d9feec1aec8cdd1b52f40cf4",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "横刀配色09"
+        },
+        {
+          "offset": 20,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_09"
+        }
+      ],
+      "raw_hex": "da290000060000002a6a00524d9172823000390028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003900"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10715,
+      "offset": 82794,
+      "end": 82912,
+      "bytes": 118,
+      "index_offset": 6326,
+      "sha256": "c8280c46726d3fff7ea4024b617d0162f6c9e0414e5102fceb45e595afb1c2b6",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "横刀刀鞘09"
+        },
+        {
+          "offset": 20,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_09"
+        }
+      ],
+      "raw_hex": "db290000060000002a6a005200529897300039002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0030003900"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10716,
+      "offset": 82912,
+      "end": 83016,
+      "bytes": 104,
+      "index_offset": 6334,
+      "sha256": "b5a82b7584b241425cef248123109014283ba9e8cd06ccd2f421f13eaf1e4b78",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "横刀配色10"
+        },
+        {
+          "offset": 20,
+          "characters": 40,
+          "value": "wp_hengdao_tangdao/weapon_custom_data_10"
+        }
+      ],
+      "raw_hex": "dc290000060000002a6a00524d9172823100300028000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0031003000"
+    },
+    {
+      "table": "WeaponConfig_WeaponCustomData",
+      "id": 10717,
+      "offset": 83016,
+      "end": 83134,
+      "bytes": 118,
+      "index_offset": 6342,
+      "sha256": "90ae592a7e1876d4b98665926525d32a295f9fb66c5751b1c969822c9d16a925",
+      "strings": [
+        {
+          "offset": 4,
+          "characters": 6,
+          "value": "横刀刀鞘10"
+        },
+        {
+          "offset": 20,
+          "characters": 47,
+          "value": "st_hengdao_tangdao_sheath/weapon_custom_data_10"
+        }
+      ],
+      "raw_hex": "dd290000060000002a6a005200529897310030002f000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f007300680065006100740068002f0077006500610070006f006e005f0063007500730074006f006d005f0064006100740061005f0031003000"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110596,
+      "offset": 293270,
+      "end": 293486,
+      "bytes": 216,
+      "index_offset": 179504,
+      "sha256": "798d5df31be9f3abb8faa69759a500c1c62d6461566f3d97b68100784612919f",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 26,
+          "value": "hengdao/wp_hengdao_tangdao"
+        },
+        {
+          "offset": 76,
+          "characters": 18,
+          "value": "wp_hengdao_tangdao"
+        },
+        {
+          "offset": 120,
+          "characters": 21,
+          "value": "wp_ui_hengdao_tangdao"
+        }
+      ],
+      "raw_hex": "c4762f00884f1200df4f1200994f1200994f12001a000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00740061006e006700640061006f0012000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f000000000015000000770070005f00750069005f00680065006e006700640061006f005f00740061006e006700640061006f00010a000000bb280000bd280000bf280000c1280000c3280000c5280000e628000017290000da290000dc2900000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110603,
+      "offset": 294446,
+      "end": 294704,
+      "bytes": 258,
+      "index_offset": 179560,
+      "sha256": "62a99ec2f006e28c0373e299f4ab4ed10381896f2fc89393aae7efabd952ff56",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 33,
+          "value": "hengdao/st_hengdao_tangdao_sheath"
+        },
+        {
+          "offset": 90,
+          "characters": 25,
+          "value": "st_hengdao_tangdao_sheath"
+        },
+        {
+          "offset": 148,
+          "characters": 28,
+          "value": "st_ui_hengdao_tangdao_sheath"
+        }
+      ],
+      "raw_hex": "cb762f00974f1200e04f1200974f1200974f120021000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f0073006800650061007400680019000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f00730068006500610074006800000000001c000000730074005f00750069005f00680065006e006700640061006f005f00740061006e006700640061006f005f00730068006500610074006800010a000000bc280000be280000c0280000c2280000c4280000c6280000e728000018290000db290000dd2900000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110622,
+      "offset": 297926,
+      "end": 298110,
+      "bytes": 184,
+      "index_offset": 179712,
+      "sha256": "615d59ea53d8aa48f991e7d8fdefc88fd7e2db18c47b11692d7e051af32fe93f",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 28,
+          "value": "hengdao/wp_hengdao_wujidiguo"
+        },
+        {
+          "offset": 80,
+          "characters": 20,
+          "value": "wp_hengdao_wujidiguo"
+        },
+        {
+          "offset": 128,
+          "characters": 23,
+          "value": "wp_ui_hengdao_wujidiguo"
+        }
+      ],
+      "raw_hex": "de762f00884f1200df4f1200994f1200994f12001c000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00770075006a00690064006900670075006f0014000000770070005f00680065006e006700640061006f005f00770075006a00690064006900670075006f000000000017000000770070005f00750069005f00680065006e006700640061006f005f00770075006a00690064006900670075006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110623,
+      "offset": 298110,
+      "end": 298336,
+      "bytes": 226,
+      "index_offset": 179720,
+      "sha256": "cf245fedcba97ec70a902d1fbc6774089e29e0e26751aeb0ce7e274cfaa6b7ff",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 35,
+          "value": "hengdao/st_hengdao_wujidiguo_sheath"
+        },
+        {
+          "offset": 94,
+          "characters": 27,
+          "value": "st_hengdao_wujidiguo_sheath"
+        },
+        {
+          "offset": 156,
+          "characters": 30,
+          "value": "st_ui_hengdao_wujidiguo_sheath"
+        }
+      ],
+      "raw_hex": "df762f00974f1200e04f1200974f1200974f120023000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f00770075006a00690064006900670075006f005f007300680065006100740068001b000000730074005f00680065006e006700640061006f005f00770075006a00690064006900670075006f005f00730068006500610074006800000000001e000000730074005f00750069005f00680065006e006700640061006f005f00770075006a00690064006900670075006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110627,
+      "offset": 298844,
+      "end": 299046,
+      "bytes": 202,
+      "index_offset": 179752,
+      "sha256": "98b282ee72aa380602fe8eacf97bcb4a52dded34aa29668e5c62e600490f844d",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 31,
+          "value": "hengdao/wp_hengdao_manjianghong"
+        },
+        {
+          "offset": 86,
+          "characters": 23,
+          "value": "wp_hengdao_manjianghong"
+        },
+        {
+          "offset": 140,
+          "characters": 26,
+          "value": "wp_ui_hengdao_manjianghong"
+        }
+      ],
+      "raw_hex": "e3762f00884f1200df4f1200994f1200994f12001f000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006d0061006e006a00690061006e00670068006f006e00670017000000770070005f00680065006e006700640061006f005f006d0061006e006a00690061006e00670068006f006e006700000000001a000000770070005f00750069005f00680065006e006700640061006f005f006d0061006e006a00690061006e00670068006f006e006700000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110628,
+      "offset": 299046,
+      "end": 299290,
+      "bytes": 244,
+      "index_offset": 179760,
+      "sha256": "9cff02a46f01e6c9f5a443ddbd06d345147d879a555bead61b650541d4d93062",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 38,
+          "value": "hengdao/st_hengdao_manjianghong_sheath"
+        },
+        {
+          "offset": 100,
+          "characters": 30,
+          "value": "st_hengdao_manjianghong_sheath"
+        },
+        {
+          "offset": 168,
+          "characters": 33,
+          "value": "st_ui_hengdao_manjianghong_sheath"
+        }
+      ],
+      "raw_hex": "e4762f00974f1200e04f1200974f1200974f120026000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f006d0061006e006a00690061006e00670068006f006e0067005f007300680065006100740068001e000000730074005f00680065006e006700640061006f005f006d0061006e006a00690061006e00670068006f006e0067005f007300680065006100740068000000000021000000730074005f00750069005f00680065006e006700640061006f005f006d0061006e006a00690061006e00670068006f006e0067005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110629,
+      "offset": 299290,
+      "end": 299492,
+      "bytes": 202,
+      "index_offset": 179768,
+      "sha256": "29dc0eb42a7f79eddc63c06c76c70553d8a62a7c96b4c49dca1b6591a9103987",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 31,
+          "value": "hengdao/wp_hengdao_lvzhuhengdao"
+        },
+        {
+          "offset": 86,
+          "characters": 23,
+          "value": "wp_hengdao_lvzhuhengdao"
+        },
+        {
+          "offset": 140,
+          "characters": 26,
+          "value": "wp_ui_hengdao_lvzhuhengdao"
+        }
+      ],
+      "raw_hex": "e5762f00884f1200df4f1200994f1200994f12001f000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0076007a0068007500680065006e006700640061006f0017000000770070005f00680065006e006700640061006f005f006c0076007a0068007500680065006e006700640061006f00000000001a000000770070005f00750069005f00680065006e006700640061006f005f006c0076007a0068007500680065006e006700640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110630,
+      "offset": 299492,
+      "end": 299736,
+      "bytes": 244,
+      "index_offset": 179776,
+      "sha256": "7be3d6162498cc1f38e02a916af35c54ee7a5759a2bd1fd6ebcd41fade7369a5",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 38,
+          "value": "hengdao/st_hengdao_lvzhuhengdao_sheath"
+        },
+        {
+          "offset": 100,
+          "characters": 30,
+          "value": "st_hengdao_lvzhuhengdao_sheath"
+        },
+        {
+          "offset": 168,
+          "characters": 33,
+          "value": "st_ui_hengdao_lvzhuhengdao_sheath"
+        }
+      ],
+      "raw_hex": "e6762f00974f1200e04f1200974f1200974f120026000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f006c0076007a0068007500680065006e006700640061006f005f007300680065006100740068001e000000730074005f00680065006e006700640061006f005f006c0076007a0068007500680065006e006700640061006f005f007300680065006100740068000000000021000000730074005f00750069005f00680065006e006700640061006f005f006c0076007a0068007500680065006e006700640061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110636,
+      "offset": 300708,
+      "end": 300952,
+      "bytes": 244,
+      "index_offset": 179824,
+      "sha256": "7f74535dee33b8944f5b75d105180a502f5b3fc2a1ba844cbdc5537c438257a4",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 30,
+          "value": "hengdao/wp_hengdao_tanghengdao"
+        },
+        {
+          "offset": 84,
+          "characters": 22,
+          "value": "wp_hengdao_tanghengdao"
+        },
+        {
+          "offset": 136,
+          "characters": 25,
+          "value": "wp_ui_hengdao_tanghengdao"
+        }
+      ],
+      "raw_hex": "ec762f00884f1200df4f1200994f1200994f12001e000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f0016000000770070005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f000000000019000000770070005f00750069005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f00010b000000da280000dc280000de280000e028000007290000392900003b2900005429000056290000d6290000d82900000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110637,
+      "offset": 300952,
+      "end": 301238,
+      "bytes": 286,
+      "index_offset": 179832,
+      "sha256": "b2857b0223838d85c34ea635b9033995e3d2830daa059ef988128c33d2f2c6f7",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 37,
+          "value": "hengdao/st_hengdao_tanghengdao_sheath"
+        },
+        {
+          "offset": 98,
+          "characters": 29,
+          "value": "st_hengdao_tanghengdao_sheath"
+        },
+        {
+          "offset": 164,
+          "characters": 32,
+          "value": "st_ui_hengdao_tanghengdao_sheath"
+        }
+      ],
+      "raw_hex": "ed762f00974f1200e04f1200974f1200974f120025000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068001d000000730074005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f007300680065006100740068000000000020000000730074005f00750069005f00680065006e006700640061006f005f00740061006e006700680065006e006700640061006f005f00730068006500610074006800010b000000db280000dd280000df280000e1280000082900003a2900003c2900005529000057290000d7290000d92900000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110654,
+      "offset": 304108,
+      "end": 304274,
+      "bytes": 166,
+      "index_offset": 179968,
+      "sha256": "a785b6c2db6cffd2fcaa2fe841f6cb864d7de0168d614b8237713cf57158aa17",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 25,
+          "value": "hengdao/wp_hengdao_jinsun"
+        },
+        {
+          "offset": 74,
+          "characters": 17,
+          "value": "wp_hengdao_jinsun"
+        },
+        {
+          "offset": 116,
+          "characters": 20,
+          "value": "wp_ui_hengdao_jinsun"
+        }
+      ],
+      "raw_hex": "fe762f00884f1200df4f1200994f1200994f120019000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006a0069006e00730075006e0011000000770070005f00680065006e006700640061006f005f006a0069006e00730075006e000000000014000000770070005f00750069005f00680065006e006700640061006f005f006a0069006e00730075006e00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110655,
+      "offset": 304274,
+      "end": 304482,
+      "bytes": 208,
+      "index_offset": 179976,
+      "sha256": "63898d6f3452facdf653fa2f3b9c56757ba1b247f3dd176dc1397d0fdc716ef8",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 32,
+          "value": "hengdao/st_hengdao_jinsun_sheath"
+        },
+        {
+          "offset": 88,
+          "characters": 24,
+          "value": "st_hengdao_jinsun_sheath"
+        },
+        {
+          "offset": 144,
+          "characters": 27,
+          "value": "st_ui_hengdao_jinsun_sheath"
+        }
+      ],
+      "raw_hex": "ff762f00974f1200e04f1200974f1200974f120020000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f006a0069006e00730075006e005f0073006800650061007400680018000000730074005f00680065006e006700640061006f005f006a0069006e00730075006e005f00730068006500610074006800000000001b000000730074005f00750069005f00680065006e006700640061006f005f006a0069006e00730075006e005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110666,
+      "offset": 306140,
+      "end": 306300,
+      "bytes": 160,
+      "index_offset": 180056,
+      "sha256": "7468b7c3a4b920acea0584ce3bd11ed8d7f3daf9f82c0a2976240312f1c971b4",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 24,
+          "value": "hengdao/wp_hengdao_bailu"
+        },
+        {
+          "offset": 72,
+          "characters": 16,
+          "value": "wp_hengdao_bailu"
+        },
+        {
+          "offset": 112,
+          "characters": 19,
+          "value": "wp_ui_hengdao_bailu"
+        }
+      ],
+      "raw_hex": "0a772f00884f1200df4f1200994f1200994f120018000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006200610069006c00750010000000770070005f00680065006e006700640061006f005f006200610069006c0075000000000013000000770070005f00750069005f00680065006e006700640061006f005f006200610069006c007500000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110667,
+      "offset": 306300,
+      "end": 306502,
+      "bytes": 202,
+      "index_offset": 180064,
+      "sha256": "f8bbf04e2bfdfdc0016e9c64934e7f12487fe7336bb555e6720be1a37c2efa6d",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 31,
+          "value": "hengdao/st_hengdao_bailu_sheath"
+        },
+        {
+          "offset": 86,
+          "characters": 23,
+          "value": "st_hengdao_bailu_sheath"
+        },
+        {
+          "offset": 140,
+          "characters": 26,
+          "value": "st_ui_hengdao_bailu_sheath"
+        }
+      ],
+      "raw_hex": "0b772f00974f1200e04f1200974f1200974f12001f000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f006200610069006c0075005f0073006800650061007400680017000000730074005f00680065006e006700640061006f005f006200610069006c0075005f00730068006500610074006800000000001a000000730074005f00750069005f00680065006e006700640061006f005f006200610069006c0075005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110687,
+      "offset": 309734,
+      "end": 309942,
+      "bytes": 208,
+      "index_offset": 180208,
+      "sha256": "e54de2cfe86424095f2a44cbda00a598fbeac0a5043c3d6776217efe94f639c8",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 32,
+          "value": "hengdao/wp_hengdao_saishihengdao"
+        },
+        {
+          "offset": 88,
+          "characters": 24,
+          "value": "wp_hengdao_saishihengdao"
+        },
+        {
+          "offset": 144,
+          "characters": 27,
+          "value": "wp_ui_hengdao_saishihengdao"
+        }
+      ],
+      "raw_hex": "1f772f00884f1200df4f1200994f1200994f120020000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00730061006900730068006900680065006e006700640061006f0018000000770070005f00680065006e006700640061006f005f00730061006900730068006900680065006e006700640061006f00000000001b000000770070005f00750069005f00680065006e006700640061006f005f00730061006900730068006900680065006e006700640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110688,
+      "offset": 309942,
+      "end": 310192,
+      "bytes": 250,
+      "index_offset": 180216,
+      "sha256": "f56e2abde918ebe90304508b95dd837702cecddea24541ba523c5fdd40462b79",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 39,
+          "value": "hengdao/st_hengdao_saishihengdao_sheath"
+        },
+        {
+          "offset": 102,
+          "characters": 31,
+          "value": "st_hengdao_saishihengdao_sheath"
+        },
+        {
+          "offset": 172,
+          "characters": 34,
+          "value": "st_ui_hengdao_saishihengdao_sheath"
+        }
+      ],
+      "raw_hex": "20772f00974f1200e04f1200974f1200974f120027000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f00730061006900730068006900680065006e006700640061006f005f007300680065006100740068001f000000730074005f00680065006e006700640061006f005f00730061006900730068006900680065006e006700640061006f005f007300680065006100740068000000000022000000730074005f00750069005f00680065006e006700640061006f005f00730061006900730068006900680065006e006700640061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110692,
+      "offset": 310830,
+      "end": 311008,
+      "bytes": 178,
+      "index_offset": 180248,
+      "sha256": "33c3e26489735d8154a41171b121425968b638d53aab199baead60fd953cc27f",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 27,
+          "value": "hengdao/wp_hengdao_heiyadao"
+        },
+        {
+          "offset": 78,
+          "characters": 19,
+          "value": "wp_hengdao_heiyadao"
+        },
+        {
+          "offset": 124,
+          "characters": 22,
+          "value": "wp_ui_hengdao_heiyadao"
+        }
+      ],
+      "raw_hex": "24772f00884f1200df4f1200994f1200994f12001b000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f0068006500690079006100640061006f0013000000770070005f00680065006e006700640061006f005f0068006500690079006100640061006f000000000016000000770070005f00750069005f00680065006e006700640061006f005f0068006500690079006100640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110693,
+      "offset": 311008,
+      "end": 311228,
+      "bytes": 220,
+      "index_offset": 180256,
+      "sha256": "1c8de81451d143b1b6847dc7b79b981a9a8a1913aa0c2f84870a0e6602de5d55",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 34,
+          "value": "hengdao/st_hengdao_heiyadao_sheath"
+        },
+        {
+          "offset": 92,
+          "characters": 26,
+          "value": "st_hengdao_heiyadao_sheath"
+        },
+        {
+          "offset": 152,
+          "characters": 29,
+          "value": "st_ui_hengdao_heiyadao_sheath"
+        }
+      ],
+      "raw_hex": "25772f00974f1200e04f1200974f1200974f120022000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f0068006500690079006100640061006f005f007300680065006100740068001a000000730074005f00680065006e006700640061006f005f0068006500690079006100640061006f005f00730068006500610074006800000000001d000000730074005f00750069005f00680065006e006700640061006f005f0068006500690079006100640061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110754,
+      "offset": 322072,
+      "end": 322250,
+      "bytes": 178,
+      "index_offset": 180736,
+      "sha256": "d008d632fdc678d63a6cf14a1904e2131b9532bcc942e5c56ea13c583b114065",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 27,
+          "value": "hengdao/wp_hengdao_heijingu"
+        },
+        {
+          "offset": 78,
+          "characters": 19,
+          "value": "wp_hengdao_heijingu"
+        },
+        {
+          "offset": 124,
+          "characters": 22,
+          "value": "wp_ui_hengdao_heijingu"
+        }
+      ],
+      "raw_hex": "62772f00884f1200df4f1200994f1200994f12001b000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006800650069006a0069006e006700750013000000770070005f00680065006e006700640061006f005f006800650069006a0069006e00670075000000000016000000770070005f00750069005f00680065006e006700640061006f005f006800650069006a0069006e0067007500000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110755,
+      "offset": 322250,
+      "end": 322470,
+      "bytes": 220,
+      "index_offset": 180744,
+      "sha256": "b13fa2ee56d8ac022354f48f2e313d901581bff70e31734ccb53aee815d08b60",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 34,
+          "value": "hengdao/wp_hengdao_heijingu_sheath"
+        },
+        {
+          "offset": 92,
+          "characters": 26,
+          "value": "wp_hengdao_heijingu_sheath"
+        },
+        {
+          "offset": 152,
+          "characters": 29,
+          "value": "wp_ui_hengdao_heijingu_sheath"
+        }
+      ],
+      "raw_hex": "63772f00974f1200e04f1200974f1200974f120022000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006800650069006a0069006e00670075005f007300680065006100740068001a000000770070005f00680065006e006700640061006f005f006800650069006a0069006e00670075005f00730068006500610074006800000000001d000000770070005f00750069005f00680065006e006700640061006f005f006800650069006a0069006e00670075005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110847,
+      "offset": 339068,
+      "end": 339252,
+      "bytes": 184,
+      "index_offset": 181464,
+      "sha256": "7a91576a4e2713cbef7b47b87acc42300184c99343602c7c17a749381d1cc0ed",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 28,
+          "value": "hengdao/wp_hengdao_donghuang"
+        },
+        {
+          "offset": 80,
+          "characters": 20,
+          "value": "wp_hengdao_donghuang"
+        },
+        {
+          "offset": 128,
+          "characters": 23,
+          "value": "wp_ui_hengdao_donghuang"
+        }
+      ],
+      "raw_hex": "bf772f00884f1200df4f1200994f1200994f12001c000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f0064006f006e0067006800750061006e00670014000000770070005f00680065006e006700640061006f005f0064006f006e0067006800750061006e0067000000000017000000770070005f00750069005f00680065006e006700640061006f005f0064006f006e0067006800750061006e006700000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110848,
+      "offset": 339252,
+      "end": 339478,
+      "bytes": 226,
+      "index_offset": 181472,
+      "sha256": "6633628c3e9830a63f35a34c7d56b19338553840565de1bb6cf1e987610a5aa9",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 35,
+          "value": "hengdao/wp_hengdao_donghuang_sheath"
+        },
+        {
+          "offset": 94,
+          "characters": 27,
+          "value": "wp_hengdao_donghuang_sheath"
+        },
+        {
+          "offset": 156,
+          "characters": 30,
+          "value": "wp_ui_hengdao_donghuang_sheath"
+        }
+      ],
+      "raw_hex": "c0772f00974f1200e04f1200974f1200974f120023000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f0064006f006e0067006800750061006e0067005f007300680065006100740068001b000000770070005f00680065006e006700640061006f005f0064006f006e0067006800750061006e0067005f00730068006500610074006800000000001e000000770070005f00750069005f00680065006e006700640061006f005f0064006f006e0067006800750061006e0067005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110875,
+      "offset": 344006,
+      "end": 344172,
+      "bytes": 166,
+      "index_offset": 181688,
+      "sha256": "e05033654f511ad835971b7033d8eca6888526d52ccbcd06551b705b540a45bb",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 25,
+          "value": "hengdao/wp_hengdao_leidao"
+        },
+        {
+          "offset": 74,
+          "characters": 17,
+          "value": "wp_hengdao_leidao"
+        },
+        {
+          "offset": 116,
+          "characters": 20,
+          "value": "wp_ui_hengdao_leidao"
+        }
+      ],
+      "raw_hex": "db772f00884f1200df4f1200994f1200994f120019000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0065006900640061006f0011000000770070005f00680065006e006700640061006f005f006c0065006900640061006f000000000014000000770070005f00750069005f00680065006e006700640061006f005f006c0065006900640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110876,
+      "offset": 344172,
+      "end": 344380,
+      "bytes": 208,
+      "index_offset": 181696,
+      "sha256": "015b1d8d86c5f5a26a287f028b5170e2098a0509ed8ec593b34ea4e377a86b2e",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 32,
+          "value": "hengdao/wp_hengdao_leidao_sheath"
+        },
+        {
+          "offset": 88,
+          "characters": 24,
+          "value": "wp_hengdao_leidao_sheath"
+        },
+        {
+          "offset": 144,
+          "characters": 27,
+          "value": "wp_ui_hengdao_leidao_sheath"
+        }
+      ],
+      "raw_hex": "dc772f00974f1200e04f1200974f1200974f120020000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0065006900640061006f005f0073006800650061007400680018000000770070005f00680065006e006700640061006f005f006c0065006900640061006f005f00730068006500610074006800000000001b000000770070005f00750069005f00680065006e006700640061006f005f006c0065006900640061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110910,
+      "offset": 351838,
+      "end": 351992,
+      "bytes": 154,
+      "index_offset": 181968,
+      "sha256": "84b976785aeb85785f637b658e2e5d9f7e816e95c4a6094b94a050cdb0c7d2e2",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 23,
+          "value": "hengdao/wp_hengdao_tuzi"
+        },
+        {
+          "offset": 70,
+          "characters": 15,
+          "value": "wp_hengdao_tuzi"
+        },
+        {
+          "offset": 108,
+          "characters": 18,
+          "value": "wp_ui_hengdao_tuzi"
+        }
+      ],
+      "raw_hex": "fe772f00884f1200df4f1200994f1200994f120017000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00740075007a0069000f000000770070005f00680065006e006700640061006f005f00740075007a0069000000000012000000770070005f00750069005f00680065006e006700640061006f005f00740075007a006900000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110911,
+      "offset": 351992,
+      "end": 352188,
+      "bytes": 196,
+      "index_offset": 181976,
+      "sha256": "b0e021cdd41bf72d4fe1259ca6c4f04e7d37b688e95c03aa463e00b465f4ebc3",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 30,
+          "value": "hengdao/wp_hengdao_tuzi_sheath"
+        },
+        {
+          "offset": 84,
+          "characters": 22,
+          "value": "wp_hengdao_tuzi_sheath"
+        },
+        {
+          "offset": 136,
+          "characters": 25,
+          "value": "wp_ui_hengdao_tuzi_sheath"
+        }
+      ],
+      "raw_hex": "ff772f00974f1200e04f1200974f1200974f12001e000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00740075007a0069005f0073006800650061007400680016000000770070005f00680065006e006700640061006f005f00740075007a0069005f007300680065006100740068000000000019000000770070005f00750069005f00680065006e006700640061006f005f00740075007a0069005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110948,
+      "offset": 359232,
+      "end": 359404,
+      "bytes": 172,
+      "index_offset": 182272,
+      "sha256": "48b0288bb24a5c3e83c7d1769f8a78f0aaab80428de858d6334bf4db23388672",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 26,
+          "value": "hengdao/wp_hengdao_penglai"
+        },
+        {
+          "offset": 76,
+          "characters": 18,
+          "value": "wp_hengdao_penglai"
+        },
+        {
+          "offset": 120,
+          "characters": 21,
+          "value": "wp_ui_hengdao_penglai"
+        }
+      ],
+      "raw_hex": "24782f00884f1200df4f1200994f1200994f12001a000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00700065006e0067006c006100690012000000770070005f00680065006e006700640061006f005f00700065006e0067006c00610069000000000015000000770070005f00750069005f00680065006e006700640061006f005f00700065006e0067006c0061006900000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110949,
+      "offset": 359404,
+      "end": 359618,
+      "bytes": 214,
+      "index_offset": 182280,
+      "sha256": "e22d76753e18f1af4dd611a2bd8a1c8629f6a91f0e1a8ea2788dc6b1a9e09918",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 33,
+          "value": "hengdao/wp_hengdao_penglai_sheath"
+        },
+        {
+          "offset": 90,
+          "characters": 25,
+          "value": "wp_hengdao_penglai_sheath"
+        },
+        {
+          "offset": 148,
+          "characters": 28,
+          "value": "wp_ui_hengdao_penglai_sheath"
+        }
+      ],
+      "raw_hex": "25782f00974f1200e04f1200974f1200974f120021000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00700065006e0067006c00610069005f0073006800650061007400680019000000770070005f00680065006e006700640061006f005f00700065006e0067006c00610069005f00730068006500610074006800000000001c000000770070005f00750069005f00680065006e006700640061006f005f00700065006e0067006c00610069005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110952,
+      "offset": 359966,
+      "end": 360138,
+      "bytes": 172,
+      "index_offset": 182304,
+      "sha256": "4041fc1a505a43fafb7927f53c849bb999c6eefb81469fbda60b682e21292bc1",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 26,
+          "value": "hengdao/wp_hengdao_bailang"
+        },
+        {
+          "offset": 76,
+          "characters": 18,
+          "value": "wp_hengdao_bailang"
+        },
+        {
+          "offset": 120,
+          "characters": 21,
+          "value": "wp_ui_hengdao_bailang"
+        }
+      ],
+      "raw_hex": "28782f00884f1200df4f1200994f1200994f12001a000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006200610069006c0061006e00670012000000770070005f00680065006e006700640061006f005f006200610069006c0061006e0067000000000015000000770070005f00750069005f00680065006e006700640061006f005f006200610069006c0061006e006700000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110968,
+      "offset": 363056,
+      "end": 363246,
+      "bytes": 190,
+      "index_offset": 182432,
+      "sha256": "e4d045c940d2f822ecf619bce5b1116760d11ee97b1cf9e66c2b3bf2eca7bad4",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 29,
+          "value": "hengdao/wp_hengdao_buliangren"
+        },
+        {
+          "offset": 82,
+          "characters": 21,
+          "value": "wp_hengdao_buliangren"
+        },
+        {
+          "offset": 132,
+          "characters": 24,
+          "value": "wp_ui_hengdao_buliangren"
+        }
+      ],
+      "raw_hex": "38782f00884f1200df4f1200994f1200994f12001d000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00620075006c00690061006e006700720065006e0015000000770070005f00680065006e006700640061006f005f00620075006c00690061006e006700720065006e000000000018000000770070005f00750069005f00680065006e006700640061006f005f00620075006c00690061006e006700720065006e00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110969,
+      "offset": 363246,
+      "end": 363478,
+      "bytes": 232,
+      "index_offset": 182440,
+      "sha256": "52c09e044091a4adce54adda811a9bc99f96c2be1e692392447be593e3ca6795",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 36,
+          "value": "hengdao/wp_hengdao_buliangren_sheath"
+        },
+        {
+          "offset": 96,
+          "characters": 28,
+          "value": "wp_hengdao_buliangren_sheath"
+        },
+        {
+          "offset": 160,
+          "characters": 31,
+          "value": "wp_ui_hengdao_buliangren_sheath"
+        }
+      ],
+      "raw_hex": "39782f00974f1200e04f1200974f1200974f120024000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00620075006c00690061006e006700720065006e005f007300680065006100740068001c000000770070005f00680065006e006700640061006f005f00620075006c00690061006e006700720065006e005f00730068006500610074006800000000001f000000770070005f00750069005f00680065006e006700640061006f005f00620075006c00690061006e006700720065006e005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110979,
+      "offset": 365210,
+      "end": 365376,
+      "bytes": 166,
+      "index_offset": 182520,
+      "sha256": "38cd66e2d8a9354e11da3f6fdb23671346462202f234f54112df01d6010f5ca4",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 25,
+          "value": "hengdao/wp_hengdao_paopao"
+        },
+        {
+          "offset": 74,
+          "characters": 17,
+          "value": "wp_hengdao_paopao"
+        },
+        {
+          "offset": 116,
+          "characters": 20,
+          "value": "wp_ui_hengdao_paopao"
+        }
+      ],
+      "raw_hex": "43782f00884f1200df4f1200994f1200994f120019000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00700061006f00700061006f0011000000770070005f00680065006e006700640061006f005f00700061006f00700061006f000000000014000000770070005f00750069005f00680065006e006700640061006f005f00700061006f00700061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110980,
+      "offset": 365376,
+      "end": 365584,
+      "bytes": 208,
+      "index_offset": 182528,
+      "sha256": "f66ccc9ecc47601db57db272b2b33c76d4fddcc461be91033a4ef9d59bc79fe6",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 32,
+          "value": "hengdao/wp_hengdao_paopao_sheath"
+        },
+        {
+          "offset": 88,
+          "characters": 24,
+          "value": "wp_hengdao_paopao_sheath"
+        },
+        {
+          "offset": 144,
+          "characters": 27,
+          "value": "wp_ui_hengdao_paopao_sheath"
+        }
+      ],
+      "raw_hex": "44782f00974f1200e04f1200974f1200974f120020000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00700061006f00700061006f005f0073006800650061007400680018000000770070005f00680065006e006700640061006f005f00700061006f00700061006f005f00730068006500610074006800000000001b000000770070005f00750069005f00680065006e006700640061006f005f00700061006f00700061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110981,
+      "offset": 365584,
+      "end": 365768,
+      "bytes": 184,
+      "index_offset": 182536,
+      "sha256": "1dee090b2ac64b876389403ec951d63cecc54c3fd8d1ad47e196270bf796b20d",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 28,
+          "value": "hengdao/wp_hengdao_paopaolv2"
+        },
+        {
+          "offset": 80,
+          "characters": 20,
+          "value": "wp_hengdao_paopaolv2"
+        },
+        {
+          "offset": 128,
+          "characters": 23,
+          "value": "wp_ui_hengdao_paopaolv2"
+        }
+      ],
+      "raw_hex": "45782f00884f1200df4f1200994f1200994f12001c000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00700061006f00700061006f006c007600320014000000770070005f00680065006e006700640061006f005f00700061006f00700061006f006c00760032000000000017000000770070005f00750069005f00680065006e006700640061006f005f00700061006f00700061006f006c0076003200000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110982,
+      "offset": 365768,
+      "end": 365994,
+      "bytes": 226,
+      "index_offset": 182544,
+      "sha256": "7035387b9dc2d0b05773b489bd23ffe6a1f5cb2ad2068946da7a58c6b37947d4",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 35,
+          "value": "hengdao/wp_hengdao_paopaolv2_sheath"
+        },
+        {
+          "offset": 94,
+          "characters": 27,
+          "value": "wp_hengdao_paopaolv2_sheath"
+        },
+        {
+          "offset": 156,
+          "characters": 30,
+          "value": "wp_ui_hengdao_paopaolv2_sheath"
+        }
+      ],
+      "raw_hex": "46782f00974f1200e04f1200974f1200974f120023000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00700061006f00700061006f006c00760032005f007300680065006100740068001b000000770070005f00680065006e006700640061006f005f00700061006f00700061006f006c00760032005f00730068006500610074006800000000001e000000770070005f00750069005f00680065006e006700640061006f005f00700061006f00700061006f006c00760032005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110983,
+      "offset": 365994,
+      "end": 366184,
+      "bytes": 190,
+      "index_offset": 182552,
+      "sha256": "1f8c9f6a39df1082d049e71a25d155383d21132d8024ce38d308215a5b878459",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 29,
+          "value": "hengdao/wp_hengdao_xiuchundao"
+        },
+        {
+          "offset": 82,
+          "characters": 21,
+          "value": "wp_hengdao_xiuchundao"
+        },
+        {
+          "offset": 132,
+          "characters": 24,
+          "value": "wp_ui_hengdao_xiuchundao"
+        }
+      ],
+      "raw_hex": "47782f00884f1200df4f1200994f1200994f12001d000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f007800690075006300680075006e00640061006f0015000000770070005f00680065006e006700640061006f005f007800690075006300680075006e00640061006f000000000018000000770070005f00750069005f00680065006e006700640061006f005f007800690075006300680075006e00640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3110984,
+      "offset": 366184,
+      "end": 366416,
+      "bytes": 232,
+      "index_offset": 182560,
+      "sha256": "23a2e1b6e3c10ada483089ad922b5b614e37b6b15f25d9559bd50440e2ba8d1f",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 36,
+          "value": "hengdao/wp_hengdao_xiuchundao_sheath"
+        },
+        {
+          "offset": 96,
+          "characters": 28,
+          "value": "wp_hengdao_xiuchundao_sheath"
+        },
+        {
+          "offset": 160,
+          "characters": 31,
+          "value": "wp_ui_hengdao_xiuchundao_sheath"
+        }
+      ],
+      "raw_hex": "48782f00974f1200e04f1200974f1200974f120024000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f007800690075006300680075006e00640061006f005f007300680065006100740068001c000000770070005f00680065006e006700640061006f005f007800690075006300680075006e00640061006f005f00730068006500610074006800000000001f000000770070005f00750069005f00680065006e006700640061006f005f007800690075006300680075006e00640061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112111,
+      "offset": 436388,
+      "end": 436560,
+      "bytes": 172,
+      "index_offset": 185208,
+      "sha256": "80a2a67d4e638218d0b72e441ed26a60effa7056e3e675da1838fec0ca3b73e2",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 26,
+          "value": "hengdao/wp_hengdao_zhanbai"
+        },
+        {
+          "offset": 76,
+          "characters": 18,
+          "value": "wp_hengdao_zhanbai"
+        },
+        {
+          "offset": 120,
+          "characters": 21,
+          "value": "wp_ui_hengdao_zhanbai"
+        }
+      ],
+      "raw_hex": "af7c2f00884f1200df4f1200994f1200994f12001a000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f007a00680061006e0062006100690012000000770070005f00680065006e006700640061006f005f007a00680061006e006200610069000000000015000000770070005f00750069005f00680065006e006700640061006f005f007a00680061006e00620061006900000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112112,
+      "offset": 436560,
+      "end": 436774,
+      "bytes": 214,
+      "index_offset": 185216,
+      "sha256": "6e37b9bf988392923aeb09754bb1e7c0a7eed6c65cea90e92dc54802b303f304",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 33,
+          "value": "hengdao/wp_hengdao_zhanbai_sheath"
+        },
+        {
+          "offset": 90,
+          "characters": 25,
+          "value": "wp_hengdao_zhanbai_sheath"
+        },
+        {
+          "offset": 148,
+          "characters": 28,
+          "value": "wp_ui_hengdao_zhanbai_sheath"
+        }
+      ],
+      "raw_hex": "b07c2f00974f1200e04f1200974f1200974f120021000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f007a00680061006e006200610069005f0073006800650061007400680019000000770070005f00680065006e006700640061006f005f007a00680061006e006200610069005f00730068006500610074006800000000001c000000770070005f00750069005f00680065006e006700640061006f005f007a00680061006e006200610069005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112135,
+      "offset": 440944,
+      "end": 441116,
+      "bytes": 172,
+      "index_offset": 185400,
+      "sha256": "f4b07eae3cc8b1dd813bcc2f641ae943d87a0c1dc4428854cf8a56ef39617333",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 26,
+          "value": "hengdao/wp_hengdao_tangdao"
+        },
+        {
+          "offset": 76,
+          "characters": 18,
+          "value": "wp_hengdao_tangdao"
+        },
+        {
+          "offset": 120,
+          "characters": 21,
+          "value": "wp_ui_hengdao_tangdao"
+        }
+      ],
+      "raw_hex": "c77c2f00884f1200df4f1200994f1200994f12001a000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00740061006e006700640061006f0012000000770070005f00680065006e006700640061006f005f00740061006e006700640061006f000000000015000000770070005f00750069005f00680065006e006700640061006f005f00740061006e006700640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112136,
+      "offset": 441116,
+      "end": 441330,
+      "bytes": 214,
+      "index_offset": 185408,
+      "sha256": "d6bbfa49c9a71337c3532153ca427978f6020a54bd056a4b166808948a578c1e",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 33,
+          "value": "hengdao/st_hengdao_tangdao_sheath"
+        },
+        {
+          "offset": 90,
+          "characters": 25,
+          "value": "st_hengdao_tangdao_sheath"
+        },
+        {
+          "offset": 148,
+          "characters": 28,
+          "value": "st_ui_hengdao_tangdao_sheath"
+        }
+      ],
+      "raw_hex": "c87c2f00974f1200e04f1200974f1200974f120021000000680065006e006700640061006f002f00730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f0073006800650061007400680019000000730074005f00680065006e006700640061006f005f00740061006e006700640061006f005f00730068006500610074006800000000001c000000730074005f00750069005f00680065006e006700640061006f005f00740061006e006700640061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112144,
+      "offset": 442678,
+      "end": 442874,
+      "bytes": 196,
+      "index_offset": 185472,
+      "sha256": "fdf7703e033b937bbe083d988651c9ee1345fc1a935cc63b44bad1a6589c0227",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 30,
+          "value": "hengdao/wp_hengdao_qingtongwen"
+        },
+        {
+          "offset": 84,
+          "characters": 22,
+          "value": "wp_hengdao_qingtongwen"
+        },
+        {
+          "offset": 136,
+          "characters": 25,
+          "value": "wp_ui_hengdao_qingtongwen"
+        }
+      ],
+      "raw_hex": "d07c2f00884f1200df4f1200994f1200994f12001e000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00710069006e00670074006f006e006700770065006e0016000000770070005f00680065006e006700640061006f005f00710069006e00670074006f006e006700770065006e000000000019000000770070005f00750069005f00680065006e006700640061006f005f00710069006e00670074006f006e006700770065006e00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112145,
+      "offset": 442874,
+      "end": 443112,
+      "bytes": 238,
+      "index_offset": 185480,
+      "sha256": "c7903f6e1696ed3efd1ff044b4fdafa1adb827c6a9bce31423ba68333aa98132",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 37,
+          "value": "hengdao/wp_hengdao_qingtongwen_sheath"
+        },
+        {
+          "offset": 98,
+          "characters": 29,
+          "value": "wp_hengdao_qingtongwen_sheath"
+        },
+        {
+          "offset": 164,
+          "characters": 32,
+          "value": "wp_ui_hengdao_qingtongwen_sheath"
+        }
+      ],
+      "raw_hex": "d17c2f00974f1200e04f1200974f1200974f120025000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f00710069006e00670074006f006e006700770065006e005f007300680065006100740068001d000000770070005f00680065006e006700640061006f005f00710069006e00670074006f006e006700770065006e005f007300680065006100740068000000000020000000770070005f00750069005f00680065006e006700640061006f005f00710069006e00670074006f006e006700770065006e005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112146,
+      "offset": 443112,
+      "end": 443284,
+      "bytes": 172,
+      "index_offset": 185488,
+      "sha256": "4c47ae72eff7d065b3c4f627d0a11c790e257429765e651ca66762e7f28d9663",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 26,
+          "value": "hengdao/wp_hengdao_tongwen"
+        },
+        {
+          "offset": 76,
+          "characters": 18,
+          "value": "wp_hengdao_tongwen"
+        },
+        {
+          "offset": 120,
+          "characters": 21,
+          "value": "wp_ui_hengdao_tongwen"
+        }
+      ],
+      "raw_hex": "d27c2f00884f1200df4f1200994f1200994f12001a000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f0074006f006e006700770065006e0012000000770070005f00680065006e006700640061006f005f0074006f006e006700770065006e000000000015000000770070005f00750069005f00680065006e006700640061006f005f0074006f006e006700770065006e00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112147,
+      "offset": 443284,
+      "end": 443498,
+      "bytes": 214,
+      "index_offset": 185496,
+      "sha256": "49839a67fc1d21befbe8ce5f2bee1ab05719b65fc2287684e3985d908ea991d0",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 33,
+          "value": "hengdao/wp_hengdao_tongwen_sheath"
+        },
+        {
+          "offset": 90,
+          "characters": 25,
+          "value": "wp_hengdao_tongwen_sheath"
+        },
+        {
+          "offset": 148,
+          "characters": 28,
+          "value": "wp_ui_hengdao_tongwen_sheath"
+        }
+      ],
+      "raw_hex": "d37c2f00974f1200e04f1200974f1200974f120021000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f0074006f006e006700770065006e005f0073006800650061007400680019000000770070005f00680065006e006700640061006f005f0074006f006e006700770065006e005f00730068006500610074006800000000001c000000770070005f00750069005f00680065006e006700640061006f005f0074006f006e006700770065006e005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112222,
+      "offset": 457330,
+      "end": 457556,
+      "bytes": 226,
+      "index_offset": 186096,
+      "sha256": "905210e6003b8cb973a22b0bead63256419e04b9646ea4ba17704ce78228d678",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 35,
+          "value": "hengdao/wp_hengdao_huajia_billboard"
+        },
+        {
+          "offset": 94,
+          "characters": 27,
+          "value": "wp_hengdao_huajia_billboard"
+        },
+        {
+          "offset": 156,
+          "characters": 30,
+          "value": "wp_ui_hengdao_huajia_billboard"
+        }
+      ],
+      "raw_hex": "1e7d2f00884f1200df4f1200994f1200994f120023000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006800750061006a00690061005f00620069006c006c0062006f006100720064001b000000770070005f00680065006e006700640061006f005f006800750061006a00690061005f00620069006c006c0062006f00610072006400000000001e000000770070005f00750069005f00680065006e006700640061006f005f006800750061006a00690061005f00620069006c006c0062006f00610072006400000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112223,
+      "offset": 457556,
+      "end": 457764,
+      "bytes": 208,
+      "index_offset": 186104,
+      "sha256": "23503c726cfc9d089d310ec4b1b3bcfe8147de273009a18a3e187735f4ec0cdc",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 32,
+          "value": "hengdao/wp_hengdao_huajia_sheath"
+        },
+        {
+          "offset": 88,
+          "characters": 24,
+          "value": "wp_hengdao_huajia_sheath"
+        },
+        {
+          "offset": 144,
+          "characters": 27,
+          "value": "wp_ui_hengdao_huajia_sheath"
+        }
+      ],
+      "raw_hex": "1f7d2f00974f1200e04f1200974f1200974f120020000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006800750061006a00690061005f0073006800650061007400680018000000770070005f00680065006e006700640061006f005f006800750061006a00690061005f00730068006500610074006800000000001b000000770070005f00750069005f00680065006e006700640061006f005f006800750061006a00690061005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112233,
+      "offset": 459834,
+      "end": 460018,
+      "bytes": 184,
+      "index_offset": 186184,
+      "sha256": "5dce65e664ed81505300ec6fc704e1025ac918eecbe8ddfba93233f96637e344",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 28,
+          "value": "hengdao/wp_hengdao_dacongman"
+        },
+        {
+          "offset": 80,
+          "characters": 20,
+          "value": "wp_hengdao_dacongman"
+        },
+        {
+          "offset": 128,
+          "characters": 23,
+          "value": "wp_ui_hengdao_dacongman"
+        }
+      ],
+      "raw_hex": "297d2f00884f1200df4f1200994f1200994f12001c000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006400610063006f006e0067006d0061006e0014000000770070005f00680065006e006700640061006f005f006400610063006f006e0067006d0061006e000000000017000000770070005f00750069005f00680065006e006700640061006f005f006400610063006f006e0067006d0061006e00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112249,
+      "offset": 462848,
+      "end": 463014,
+      "bytes": 166,
+      "index_offset": 186312,
+      "sha256": "1a3b3d460958a1bab327c44e4a9bc1a8b0aeaede2124d56aba5d53844822a4aa",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 25,
+          "value": "hengdao/wp_hengdao_leidao"
+        },
+        {
+          "offset": 74,
+          "characters": 17,
+          "value": "wp_hengdao_leidao"
+        },
+        {
+          "offset": 116,
+          "characters": 20,
+          "value": "wp_ui_hengdao_leidao"
+        }
+      ],
+      "raw_hex": "397d2f00884f1200df4f1200994f1200994f120019000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0065006900640061006f0011000000770070005f00680065006e006700640061006f005f006c0065006900640061006f000000000014000000770070005f00750069005f00680065006e006700640061006f005f006c0065006900640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112250,
+      "offset": 463014,
+      "end": 463222,
+      "bytes": 208,
+      "index_offset": 186320,
+      "sha256": "62dfd302bc086610d882116608f637c9b4fbf41f74be3901930febaf50d74334",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 32,
+          "value": "hengdao/wp_hengdao_leidao_sheath"
+        },
+        {
+          "offset": 88,
+          "characters": 24,
+          "value": "wp_hengdao_leidao_sheath"
+        },
+        {
+          "offset": 144,
+          "characters": 27,
+          "value": "wp_ui_hengdao_leidao_sheath"
+        }
+      ],
+      "raw_hex": "3a7d2f00974f1200e04f1200974f1200974f120020000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0065006900640061006f005f0073006800650061007400680018000000770070005f00680065006e006700640061006f005f006c0065006900640061006f005f00730068006500610074006800000000001b000000770070005f00750069005f00680065006e006700640061006f005f006c0065006900640061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112269,
+      "offset": 466870,
+      "end": 467036,
+      "bytes": 166,
+      "index_offset": 186472,
+      "sha256": "dc79a5faaf2eeb3d78d084d921c851c6f849221307e8fc8fd7b2c7853c55b476",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 25,
+          "value": "hengdao/wp_hengdao_leidao"
+        },
+        {
+          "offset": 74,
+          "characters": 17,
+          "value": "wp_hengdao_leidao"
+        },
+        {
+          "offset": 116,
+          "characters": 20,
+          "value": "wp_ui_hengdao_leidao"
+        }
+      ],
+      "raw_hex": "4d7d2f00884f1200df4f1200994f1200994f120019000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0065006900640061006f0011000000770070005f00680065006e006700640061006f005f006c0065006900640061006f000000000014000000770070005f00750069005f00680065006e006700640061006f005f006c0065006900640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112270,
+      "offset": 467036,
+      "end": 467244,
+      "bytes": 208,
+      "index_offset": 186480,
+      "sha256": "cf60d7b429ee39531116f472427b9d8180f3666c9efda524ca8b1f85b7ea2efc",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 32,
+          "value": "hengdao/wp_hengdao_leidao_sheath"
+        },
+        {
+          "offset": 88,
+          "characters": 24,
+          "value": "wp_hengdao_leidao_sheath"
+        },
+        {
+          "offset": 144,
+          "characters": 27,
+          "value": "wp_ui_hengdao_leidao_sheath"
+        }
+      ],
+      "raw_hex": "4e7d2f00974f1200e04f1200974f1200974f120020000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0065006900640061006f005f0073006800650061007400680018000000770070005f00680065006e006700640061006f005f006c0065006900640061006f005f00730068006500610074006800000000001b000000770070005f00750069005f00680065006e006700640061006f005f006c0065006900640061006f005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112384,
+      "offset": 488972,
+      "end": 489144,
+      "bytes": 172,
+      "index_offset": 187392,
+      "sha256": "18855b3dd8bf745a551781daace7d85098c3ab73fff20e5768f701f758b7045b",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 26,
+          "value": "hengdao/wp_hengdao_shenhai"
+        },
+        {
+          "offset": 76,
+          "characters": 18,
+          "value": "wp_hengdao_shenhai"
+        },
+        {
+          "offset": 120,
+          "characters": 21,
+          "value": "wp_ui_hengdao_shenhai"
+        }
+      ],
+      "raw_hex": "c07d2f00884f1200df4f1200994f1200994f12001a000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f007300680065006e0068006100690012000000770070005f00680065006e006700640061006f005f007300680065006e006800610069000000000015000000770070005f00750069005f00680065006e006700640061006f005f007300680065006e00680061006900000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112385,
+      "offset": 489144,
+      "end": 489358,
+      "bytes": 214,
+      "index_offset": 187400,
+      "sha256": "727584da777abffaa62a6da48bc2da73d6988ad02941813fd5ed5831486158e3",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 33,
+          "value": "hengdao/wp_hengdao_shenhai_sheath"
+        },
+        {
+          "offset": 90,
+          "characters": 25,
+          "value": "wp_hengdao_shenhai_sheath"
+        },
+        {
+          "offset": 148,
+          "characters": 28,
+          "value": "wp_ui_hengdao_shenhai_sheath"
+        }
+      ],
+      "raw_hex": "c17d2f00974f1200e04f1200974f1200974f120021000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f007300680065006e006800610069005f0073006800650061007400680019000000770070005f00680065006e006700640061006f005f007300680065006e006800610069005f00730068006500610074006800f1e82f001c000000770070005f00750069005f00680065006e006700640061006f005f007300680065006e006800610069005f00730068006500610074006800000100020001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112450,
+      "offset": 502346,
+      "end": 502512,
+      "bytes": 166,
+      "index_offset": 187912,
+      "sha256": "dc200ade1aa188f8d6f5af4e07dc31cca0671222aa941ca06ad152038e4f505b",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 25,
+          "value": "hengdao/wp_hengdao_leidao"
+        },
+        {
+          "offset": 74,
+          "characters": 17,
+          "value": "wp_hengdao_leidao"
+        },
+        {
+          "offset": 116,
+          "characters": 20,
+          "value": "wp_ui_hengdao_leidao"
+        }
+      ],
+      "raw_hex": "027e2f00884f1200df4f1200994f1200994f120019000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0065006900640061006f0011000000770070005f00680065006e006700640061006f005f006c0065006900640061006f000000000014000000770070005f00750069005f00680065006e006700640061006f005f006c0065006900640061006f00000100010001"
+    },
+    {
+      "table": "WeaponConfig_WeaponTemp",
+      "id": 3112451,
+      "offset": 502512,
+      "end": 502720,
+      "bytes": 208,
+      "index_offset": 187920,
+      "sha256": "8721dea049ce0ffcd932a64e37c7eafecd385c37c25c2dea1e57acfd448e46b0",
+      "strings": [
+        {
+          "offset": 20,
+          "characters": 32,
+          "value": "hengdao/wp_hengdao_leidao_sheath"
+        },
+        {
+          "offset": 88,
+          "characters": 24,
+          "value": "wp_hengdao_leidao_sheath"
+        },
+        {
+          "offset": 144,
+          "characters": 27,
+          "value": "wp_ui_hengdao_leidao_sheath"
+        }
+      ],
+      "raw_hex": "037e2f00974f1200e04f1200974f1200974f120020000000680065006e006700640061006f002f00770070005f00680065006e006700640061006f005f006c0065006900640061006f005f0073006800650061007400680018000000770070005f00680065006e006700640061006f005f006c0065006900640061006f005f00730068006500610074006800000000001b000000770070005f00750069005f00680065006e006700640061006f005f006c0065006900640061006f005f00730068006500610074006800000100020001"
+    }
+  ]
+}

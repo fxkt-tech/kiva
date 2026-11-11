@@ -1,0 +1,173 @@
+{
+  "purpose": "Large immutable planning probes moved outside repository; no game-install or pre-existing research files were changed. Regenerate from original client, or replay with --source-root.",
+  "files": [
+    {
+      "original_task_relative": "BattleConfig.selected.json",
+      "bytes": 17007,
+      "sha256": "18f19a650af3b52ce58a3a5be258e0bf92cb52c2d6709b861fd66f4fd1b9d330",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/BattleConfig.selected.json"
+    },
+    {
+      "original_task_relative": "all_flat_playable_animators_archive.bytes.payload.bin",
+      "bytes": 3472423,
+      "sha256": "f1ef1b3b1f00f63cc3192e650cf19c3d24884623dd6e8a421a36378dc9b0bb77",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/all_flat_playable_animators_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "all_flat_playable_animators_archive.bytes.probe.json",
+      "bytes": 386534,
+      "sha256": "e9e5ac6e1680b20a7726f54d0f07bc782acdb109aa461834f2d1d4c76b5391d2",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/all_flat_playable_animators_archive.bytes.probe.json"
+    },
+    {
+      "original_task_relative": "all_flat_playable_animators_archive.selected.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/all_flat_playable_animators_archive.selected.json"
+    },
+    {
+      "original_task_relative": "anim_state_set_archive.bytes.payload.bin",
+      "bytes": 8272575,
+      "sha256": "00fbfb446e70980c054eca0d30d0fffb047036b849a3f3405dd04e085f595915",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/anim_state_set_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "anim_state_set_archive.bytes.probe.json",
+      "bytes": 399629,
+      "sha256": "b80988dabb93dfb7ac1223977073832f31821d6cdb24e619aef06294ed080e3e",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/anim_state_set_archive.bytes.probe.json"
+    },
+    {
+      "original_task_relative": "anim_state_set_archive.selected.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/anim_state_set_archive.selected.json"
+    },
+    {
+      "original_task_relative": "animation_info_archive.bytes.payload.bin",
+      "bytes": 10394278,
+      "sha256": "535db2de353dce7d3e3d1dc90b67bb240193f3d3ff479685f42821cd13bc5654",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/animation_info_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "animation_info_archive.bytes.probe.json",
+      "bytes": 405691,
+      "sha256": "5d7cd5824d3fd0ee253086bcb8405c8980f8929959c201d9b6bff938b5a58153",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/animation_info_archive.bytes.probe.json"
+    },
+    {
+      "original_task_relative": "audio-configs-source.json",
+      "bytes": 1165905,
+      "sha256": "2575a44d7f28481b2e90a8d3cecd00acdb37a54a7086726ea9bdb33aedbeb7b6",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/audio-configs-source.json"
+    },
+    {
+      "original_task_relative": "audio-proto-track-source.json",
+      "bytes": 462617,
+      "sha256": "3eefd373969ac36abfb1e8178cf761a2dbc5d2c59fc4ec05f027851589ad8196",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/audio-proto-track-source.json"
+    },
+    {
+      "original_task_relative": "audio-tracks-selected-debug.json",
+      "bytes": 781849,
+      "sha256": "1089bb0be326d9bd6d7d746d0d2363e614019f1f4434e963732a290b91d28789",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/audio-tracks-selected-debug.json"
+    },
+    {
+      "original_task_relative": "audio_probe.json",
+      "bytes": 1273454,
+      "sha256": "1abc051cc9f7e7152c5f08f154b196e9c784ff9b4f2ee68a7442ed5d1a567dc3",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/audio_probe.json"
+    },
+    {
+      "original_task_relative": "charge_action_trans_param_archive.bytes.payload.bin",
+      "bytes": 38586,
+      "sha256": "08a0ac692bb57abd8575ceaf29eeb96ba239f1aebf5491589cf9df59f444ff21",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/charge_action_trans_param_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "charge_action_trans_param_archive.bytes.probe.json",
+      "bytes": 375999,
+      "sha256": "a726eff017bce092e5b2f340abfa47a326da003ad11554d03b4ade3b99ce24a6",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/charge_action_trans_param_archive.bytes.probe.json"
+    },
+    {
+      "original_task_relative": "combo-graph-male-hd.json",
+      "bytes": 1492637,
+      "sha256": "2a5506e42b6ff1c7e93f547fda70f1e133fae70a50aea012fea95f175967b62c",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/combo-graph-male-hd.json"
+    },
+    {
+      "original_task_relative": "combo_graph_archive.bytes.payload.bin",
+      "bytes": 3670688,
+      "sha256": "f2fc06388c75b6791760b9b8525e4cf6685421e91123f2952aff0b9ff5358e9f",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/combo_graph_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "combo_graph_archive.bytes.probe.json",
+      "bytes": 386495,
+      "sha256": "564784e5b804776a4b04adacb3ecaa2f62908ee2a8aceb23bc6b0cc454f45db7",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/combo_graph_archive.bytes.probe.json"
+    },
+    {
+      "original_task_relative": "override-male-hd-selected.json",
+      "bytes": 77068,
+      "sha256": "6b24c7ff208da0ab8b741d14ee6e2c83ef239353014696fb4716ff0a6d203fee",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/override-male-hd-selected.json"
+    },
+    {
+      "original_task_relative": "playable_runtime_override_mapping_archive.bytes.payload.bin",
+      "bytes": 17542071,
+      "sha256": "6dab5ddd1893f4237836b7a3c3c17067d0eed22c3bc70e7afa5a50e5d6efa961",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/playable_runtime_override_mapping_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "playable_runtime_override_mapping_archive.bytes.probe.json",
+      "bytes": 427156,
+      "sha256": "cb95145b2fc8e2849910c3990975aa50995b053891ac7709bcf3b795ac76fee9",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/playable_runtime_override_mapping_archive.bytes.probe.json"
+    },
+    {
+      "original_task_relative": "proto_track_archive.bytes.payload.bin",
+      "bytes": 30107418,
+      "sha256": "93dcf8a2c161571fe190b2151e5247dc796235140087bdbf172d930abc1268f1",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/proto_track_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "robot_combo_custom_config_archive.bytes.payload.bin",
+      "bytes": 18896,
+      "sha256": "0b5361dcd6cc39951ed8d21f2da52d468d3767ab757586cfbe41b9aa1ff4643c",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/robot_combo_custom_config_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "robot_combo_custom_config_archive.bytes.probe.json",
+      "bytes": 375997,
+      "sha256": "c8875804c45a367cecb411724b78e187c0e75198501aaae6d159177af62ede72",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/robot_combo_custom_config_archive.bytes.probe.json"
+    },
+    {
+      "original_task_relative": "statesetsoundconfig.asset.probe.json",
+      "bytes": 18960,
+      "sha256": "82808c13c982cd6b902f88b5a1972ee73bacf2be5c199af1e70c64e0ad30442f",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/statesetsoundconfig.asset.probe.json"
+    },
+    {
+      "original_task_relative": "weapon_battle_config_archive.bytes.payload.bin",
+      "bytes": 112518,
+      "sha256": "2b03a82f4134703643c5cee7a6e4197aa83d53f57d1749fb735138ad994277a3",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/weapon_battle_config_archive.bytes.payload.bin"
+    },
+    {
+      "original_task_relative": "weapon_battle_config_archive.bytes.probe.json",
+      "bytes": 376364,
+      "sha256": "890e663823bb9e5b4cc5bb8c5e4df2529f3c225a63ae7ed70ff94fd1b78684cc",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/weapon_battle_config_archive.bytes.probe.json"
+    },
+    {
+      "original_task_relative": "weapon_battle_config_archive.selected.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "cache_path": "/home/asuka/kiva-asset-research/naraka/action-set-2026-11-11/weapon_battle_config_archive.selected.json"
+    }
+  ]
+}

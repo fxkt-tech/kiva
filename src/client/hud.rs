@@ -126,6 +126,16 @@ pub(super) fn sync(
     let weapon = super::weapons::melee_name(combat.weapon_pair());
     let context = if !health.is_alive() {
         "倒地 · 即将回到出生点"
+    } else if let Some(stage) = combat
+        .active_action()
+        .filter(|action| action.kind == crate::simulation::ActionKind::Melee)
+        .and_then(|action| action.melee_stage)
+    {
+        match stage {
+            crate::simulation::MeleeStage::One => "普攻 · 第 1 段",
+            crate::simulation::MeleeStage::Two => "普攻 · 第 2 段",
+            crate::simulation::MeleeStage::Three => "普攻 · 第 3 段",
+        }
     } else if combat.is_combo_active() {
         "联动中 · 妹妹协同攻击"
     } else if combat.axe_away() {

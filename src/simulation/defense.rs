@@ -17,9 +17,25 @@ pub enum DefenseKind {
     Guard,
     Parry,
 }
+
+/// A display can miss an entire short phase between frames. The last gesture
+/// and its age remain available after a natural return to Idle.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct DefenseSnapshot {
+    pub kind: DefenseKind,
+    pub elapsed: f32,
+    pub remaining: f32,
+    pub gesture_id: u64,
+    pub last_gesture_kind: DefenseKind,
+    pub gesture_elapsed: f32,
+}
 #[derive(Component, Default, Debug)]
 pub struct DefenseState {
     kind: DefenseKind,
+    elapsed: f32,
+    gesture_id: u64,
+    last_gesture_kind: DefenseKind,
+    gesture_elapsed: f32,
     held: bool,
     held_elapsed: f32,
     remaining: f32,
@@ -44,6 +60,16 @@ impl DefenseState {
     pub fn kind(&self) -> DefenseKind {
         self.kind
     }
+    pub fn snapshot(&self) -> DefenseSnapshot {
+        DefenseSnapshot {
+            kind: self.kind,
+            elapsed: self.elapsed,
+            remaining: self.remaining,
+            gesture_id: self.gesture_id,
+            last_gesture_kind: self.last_gesture_kind,
+            gesture_elapsed: self.gesture_elapsed,
+        }
+    }
     pub fn is_active(&self) -> bool {
         self.kind != DefenseKind::Idle
     }
@@ -66,10 +92,30 @@ impl DefenseState {
         self.parry_cooldown
     }
     pub(super) fn cancel(&mut self) {
-        self.kind = DefenseKind::Idle;
+        self.transition(DefenseKind::Idle);
         self.held = false;
         self.held_elapsed = 0.0;
         self.remaining = 0.0;
+        self.last_gesture_kind = DefenseKind::Idle;
+        self.gesture_elapsed = 0.0;
+    }
+    pub(super) fn reset(&mut self) {
+        let gesture_id = self.gesture_id;
+        *self = Self {
+            gesture_id,
+            ..Self::default()
+        };
+    }
+    fn transition(&mut self, kind: DefenseKind) {
+        if self.kind != kind {
+            self.kind = kind;
+            self.elapsed = 0.0;
+        }
+    }
+    fn begin_gesture(&mut self) {
+        self.gesture_id += 1;
+        self.last_gesture_kind = self.kind;
+        self.gesture_elapsed = 0.0;
     }
     pub(super) fn advance(
         &mut self,
@@ -79,6 +125,10 @@ impl DefenseState {
         motion: &MotionState,
         stamina: &Stamina,
     ) {
+        self.elapsed += dt;
+        if self.gesture_id != 0 {
+            self.gesture_elapsed += dt;
+        }
         self.deflect_cooldown = decay(self.deflect_cooldown, dt);
         self.parry_cooldown = decay(self.parry_cooldown, dt);
         if std::mem::take(&mut self.cancel)
@@ -94,18 +144,18 @@ impl DefenseState {
         }
         self.remaining = decay(self.remaining, dt);
         if matches!(self.kind, DefenseKind::Deflect | DefenseKind::Parry) && self.remaining == 0.0 {
-            self.kind = if self.held {
+            self.transition(if self.held {
                 DefenseKind::Waiting
             } else {
                 DefenseKind::Idle
-            };
+            });
         }
         if self.held && self.held_elapsed + 1e-6 >= 0.20 {
-            self.kind = if stamina.can_block() {
+            self.transition(if stamina.can_block() {
                 DefenseKind::Guard
             } else {
                 DefenseKind::Waiting
-            };
+            });
             self.remaining = 0.0;
         }
         while let Some(edge) = self.edges.pop_front() {
@@ -118,12 +168,13 @@ impl DefenseState {
                     self.held = true;
                     self.held_elapsed = 0.0;
                     if self.deflect_cooldown == 0.0 {
-                        self.kind = DefenseKind::Deflect;
+                        self.transition(DefenseKind::Deflect);
                         self.remaining = 0.20;
                         self.deflect_cooldown = 0.65;
                     } else {
-                        self.kind = DefenseKind::Waiting;
+                        self.transition(DefenseKind::Waiting);
                     }
+                    self.begin_gesture();
                 }
                 DefenseEdge::Released => {
                     if !self.held {
@@ -134,11 +185,12 @@ impl DefenseState {
                         && stamina.can_block()
                         && self.parry_cooldown == 0.0
                     {
-                        self.kind = DefenseKind::Parry;
+                        self.transition(DefenseKind::Parry);
                         self.remaining = 0.18;
                         self.parry_cooldown = 0.65;
+                        self.begin_gesture();
                     } else if self.kind != DefenseKind::Deflect {
-                        self.kind = DefenseKind::Idle;
+                        self.transition(DefenseKind::Idle);
                         self.remaining = 0.0;
                     }
                 }

@@ -1,0 +1,513 @@
+{
+  "source_key": "a/9/a9638811245cd210",
+  "cab": "CAB-d409c76b6eb5c2b6f94cfb0f07627614",
+  "prefabs": [
+    {
+      "path": "assets/res/effect/fxattack/fxattack_male_hengdao_attack_light_01.prefab",
+      "path_id": -8544558266350280728,
+      "nodes": [
+        {
+          "name": "fxattack_male_hengdao_attack_light_01",
+          "path_id": -8544558266350280728,
+          "components": [
+            {
+              "path_id": 8418515135842241384,
+              "raw_bytes": 200,
+              "raw_sha256": "f7742dddbc13bdbcf0a4873cae4b01e0169c1582272f0da6782893d519af4596",
+              "script": {
+                "m_Name": "PlayerColliderCell",
+                "m_ExecutionOrder": 0,
+                "m_PropertiesHash": {
+                  "bytes[0]": 60,
+                  "bytes[1]": 119,
+                  "bytes[2]": 22,
+                  "bytes[3]": 233,
+                  "bytes[4]": 145,
+                  "bytes[5]": 9,
+                  "bytes[6]": 220,
+                  "bytes[7]": 35,
+                  "bytes[8]": 173,
+                  "bytes[9]": 58,
+                  "bytes[10]": 127,
+                  "bytes[11]": 139,
+                  "bytes[12]": 129,
+                  "bytes[13]": 22,
+                  "bytes[14]": 183,
+                  "bytes[15]": 10
+                },
+                "m_ClassName": "PlayerColliderCell",
+                "m_Namespace": "",
+                "m_AssemblyName": "Assembly-CSharp.dll"
+              },
+              "tree": {
+                "m_GameObject": {
+                  "m_FileID": 0,
+                  "m_PathID": -8544558266350280728
+                },
+                "m_Enabled": 1,
+                "m_Script": {
+                  "m_FileID": 0,
+                  "m_PathID": 765362652180392478
+                },
+                "m_Name": "",
+                "refsAdditiveHurtConfig": 0,
+                "prefabName": "fxattack_male_hengdao_attack_light_01",
+                "bodyPartGroup": 4,
+                "bodyBeAttackType": 0,
+                "JustUseInActivity": 0,
+                "moveAnchorOffset": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "HitEventID": "",
+                "FriendHitEventID": "",
+                "hit_colliders": [
+                  {
+                    "m_FileID": 0,
+                    "m_PathID": -27048091875465272
+                  },
+                  {
+                    "m_FileID": 0,
+                    "m_PathID": 4719209963662166680
+                  },
+                  {
+                    "m_FileID": 0,
+                    "m_PathID": 9193401629841091569
+                  },
+                  {
+                    "m_FileID": 0,
+                    "m_PathID": 6612328831769093537
+                  }
+                ],
+                "sweepVolumeCollider": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "interactiveCollisionOverride": {
+                  "customInteractiveCollision": 0,
+                  "interactiveFlag": 0,
+                  "waterVelocityPower": 0.0,
+                  "waterRadialPower": 0.0,
+                  "windVelocityPower": 0.0,
+                  "windRadialPower": 0.0
+                }
+              }
+            },
+            {
+              "path_id": 6039034266594288838,
+              "raw_bytes": 68,
+              "raw_sha256": "00effec174f2a191ea692f58eb1869e6e969c1c5a0f7961b69ed7f75658dac51",
+              "script": {
+                "m_Name": "CollideCellAgent",
+                "m_ExecutionOrder": 0,
+                "m_PropertiesHash": {
+                  "bytes[0]": 13,
+                  "bytes[1]": 177,
+                  "bytes[2]": 153,
+                  "bytes[3]": 36,
+                  "bytes[4]": 67,
+                  "bytes[5]": 111,
+                  "bytes[6]": 107,
+                  "bytes[7]": 40,
+                  "bytes[8]": 201,
+                  "bytes[9]": 37,
+                  "bytes[10]": 35,
+                  "bytes[11]": 12,
+                  "bytes[12]": 49,
+                  "bytes[13]": 188,
+                  "bytes[14]": 168,
+                  "bytes[15]": 93
+                },
+                "m_ClassName": "CollideCellAgent",
+                "m_Namespace": "",
+                "m_AssemblyName": "Assembly-CSharp.dll"
+              },
+              "tree": {
+                "m_GameObject": {
+                  "m_FileID": 0,
+                  "m_PathID": -8544558266350280728
+                },
+                "m_Enabled": 1,
+                "m_Script": {
+                  "m_FileID": 0,
+                  "m_PathID": -4380438238227166578
+                },
+                "m_Name": "",
+                "anim": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "playerColliderCell": {
+                  "m_FileID": 0,
+                  "m_PathID": 8418515135842241384
+                },
+                "decals": [],
+                "EnableForceDumpColliderInfo": 0,
+                "GenProxyHurtID": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "assets/res/effect/fxattack/fxattack_male_hengdao_shock_04.prefab",
+      "path_id": 7206256170001284638,
+      "nodes": [
+        {
+          "name": "fxattack_male_hengdao_shock_04",
+          "path_id": 7206256170001284638,
+          "components": [
+            {
+              "path_id": -8439317285093007318,
+              "raw_bytes": 156,
+              "raw_sha256": "e3e75fa660b82dc5d849d9cae38386cfc9c36e8c23154ac296cabd37021d9831",
+              "script": {
+                "m_Name": "PlayerColliderCell",
+                "m_ExecutionOrder": 0,
+                "m_PropertiesHash": {
+                  "bytes[0]": 60,
+                  "bytes[1]": 119,
+                  "bytes[2]": 22,
+                  "bytes[3]": 233,
+                  "bytes[4]": 145,
+                  "bytes[5]": 9,
+                  "bytes[6]": 220,
+                  "bytes[7]": 35,
+                  "bytes[8]": 173,
+                  "bytes[9]": 58,
+                  "bytes[10]": 127,
+                  "bytes[11]": 139,
+                  "bytes[12]": 129,
+                  "bytes[13]": 22,
+                  "bytes[14]": 183,
+                  "bytes[15]": 10
+                },
+                "m_ClassName": "PlayerColliderCell",
+                "m_Namespace": "",
+                "m_AssemblyName": "Assembly-CSharp.dll"
+              },
+              "tree": {
+                "m_GameObject": {
+                  "m_FileID": 0,
+                  "m_PathID": 7206256170001284638
+                },
+                "m_Enabled": 1,
+                "m_Script": {
+                  "m_FileID": 0,
+                  "m_PathID": 765362652180392478
+                },
+                "m_Name": "",
+                "refsAdditiveHurtConfig": 0,
+                "prefabName": "fxattack_male_hengdao_shock_04",
+                "bodyPartGroup": 4,
+                "bodyBeAttackType": 0,
+                "JustUseInActivity": 0,
+                "moveAnchorOffset": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "HitEventID": "",
+                "FriendHitEventID": "",
+                "hit_colliders": [
+                  {
+                    "m_FileID": 0,
+                    "m_PathID": -6229125433868703950
+                  }
+                ],
+                "sweepVolumeCollider": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "interactiveCollisionOverride": {
+                  "customInteractiveCollision": 0,
+                  "interactiveFlag": 0,
+                  "waterVelocityPower": 0.0,
+                  "waterRadialPower": 0.0,
+                  "windVelocityPower": 0.0,
+                  "windRadialPower": 0.0
+                }
+              }
+            },
+            {
+              "path_id": -8767721423792386530,
+              "raw_bytes": 68,
+              "raw_sha256": "2698394fa0973aa105885f7b594df2e3960b534302d774ac394ae00d9c9425f3",
+              "script": {
+                "m_Name": "CollideCellAgent",
+                "m_ExecutionOrder": 0,
+                "m_PropertiesHash": {
+                  "bytes[0]": 13,
+                  "bytes[1]": 177,
+                  "bytes[2]": 153,
+                  "bytes[3]": 36,
+                  "bytes[4]": 67,
+                  "bytes[5]": 111,
+                  "bytes[6]": 107,
+                  "bytes[7]": 40,
+                  "bytes[8]": 201,
+                  "bytes[9]": 37,
+                  "bytes[10]": 35,
+                  "bytes[11]": 12,
+                  "bytes[12]": 49,
+                  "bytes[13]": 188,
+                  "bytes[14]": 168,
+                  "bytes[15]": 93
+                },
+                "m_ClassName": "CollideCellAgent",
+                "m_Namespace": "",
+                "m_AssemblyName": "Assembly-CSharp.dll"
+              },
+              "tree": {
+                "m_GameObject": {
+                  "m_FileID": 0,
+                  "m_PathID": 7206256170001284638
+                },
+                "m_Enabled": 1,
+                "m_Script": {
+                  "m_FileID": 0,
+                  "m_PathID": -4380438238227166578
+                },
+                "m_Name": "",
+                "anim": {
+                  "m_FileID": 0,
+                  "m_PathID": 0
+                },
+                "playerColliderCell": {
+                  "m_FileID": 0,
+                  "m_PathID": -8439317285093007318
+                },
+                "decals": [],
+                "EnableForceDumpColliderInfo": 0,
+                "GenProxyHurtID": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "proof": {
+    "source_path": "/mnt/c/Program Files (x86)/Steam/steamapps/common/NARAKA BLADEPOINT/NarakaBladepoint_Data/StreamingAssets/a/9/a9638811245cd210",
+    "source_size": 425984,
+    "source_sha256": null,
+    "hash_scope": "only compressed metadata and inspected payload blocks; full source/node not read",
+    "header": {
+      "version": 7,
+      "unity_version": "5.x.x",
+      "unity_revision": "2019.4.14f1",
+      "variant": "new2",
+      "declared_size": 426014,
+      "actual_size": 425984,
+      "compressed_info_field": 356,
+      "uncompressed_info_field": 4226,
+      "original_flags": 582,
+      "metadata_source_offset": 4096,
+      "metadata_compressed_bytes_consumed": 182,
+      "metadata_raw_bytes": 241,
+      "body_raw_bytes": 1198340
+    },
+    "metadata_compressed_sha256": "72e8bd4c93597af30a27cd52792a7226a940f85615890873a078c9b684bc5ed7",
+    "metadata_raw_sha256": "6f7c7cee53332b8472777fbad055c3701eb2c3e2269064c87ed784514089aad1",
+    "nodes": [
+      {
+        "name": "CAB-d409c76b6eb5c2b6f94cfb0f07627614",
+        "offset": 0,
+        "size": 1198340,
+        "flags": 4
+      }
+    ],
+    "blocks": [
+      {
+        "uncompressed": 131072,
+        "compressed": 80795,
+        "flags": 6,
+        "source_offset": 8192,
+        "raw_offset": 0
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 82163,
+        "flags": 6,
+        "source_offset": 90112,
+        "raw_offset": 131072
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 46063,
+        "flags": 6,
+        "source_offset": 176128,
+        "raw_offset": 262144
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 26944,
+        "flags": 6,
+        "source_offset": 225280,
+        "raw_offset": 393216
+      },
+      {
+        "uncompressed": 9648,
+        "compressed": 2521,
+        "flags": 6,
+        "source_offset": 253952,
+        "raw_offset": 524288
+      },
+      {
+        "uncompressed": 488,
+        "compressed": 246,
+        "flags": 6,
+        "source_offset": 258048,
+        "raw_offset": 533936
+      },
+      {
+        "uncompressed": 4352,
+        "compressed": 1117,
+        "flags": 6,
+        "source_offset": 262144,
+        "raw_offset": 534424
+      },
+      {
+        "uncompressed": 47992,
+        "compressed": 10830,
+        "flags": 6,
+        "source_offset": 266240,
+        "raw_offset": 538776
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 27691,
+        "flags": 6,
+        "source_offset": 278528,
+        "raw_offset": 586768
+      },
+      {
+        "uncompressed": 129344,
+        "compressed": 27108,
+        "flags": 6,
+        "source_offset": 307200,
+        "raw_offset": 717840
+      },
+      {
+        "uncompressed": 1728,
+        "compressed": 663,
+        "flags": 6,
+        "source_offset": 335872,
+        "raw_offset": 847184
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 27379,
+        "flags": 6,
+        "source_offset": 339968,
+        "raw_offset": 848912
+      },
+      {
+        "uncompressed": 608,
+        "compressed": 307,
+        "flags": 6,
+        "source_offset": 368640,
+        "raw_offset": 979984
+      },
+      {
+        "uncompressed": 2376,
+        "compressed": 602,
+        "flags": 6,
+        "source_offset": 372736,
+        "raw_offset": 980592
+      },
+      {
+        "uncompressed": 131072,
+        "compressed": 26769,
+        "flags": 6,
+        "source_offset": 376832,
+        "raw_offset": 982968
+      },
+      {
+        "uncompressed": 84300,
+        "compressed": 17353,
+        "flags": 6,
+        "source_offset": 405504,
+        "raw_offset": 1114040
+      }
+    ],
+    "limits": {
+      "max_source": 2147483648,
+      "max_logical": 4294967296,
+      "max_read": 8388608,
+      "read_budget": 134217728,
+      "compressed_budget": 67108864,
+      "cache_bytes": 16777216
+    },
+    "io": {
+      "directory_read_bytes": 66048,
+      "compressed_payload_bytes": 290764,
+      "returned_bytes": 419287,
+      "cached_bytes": 784704
+    },
+    "inspected_blocks": [
+      {
+        "index": 0,
+        "uncompressed": 131072,
+        "compressed": 80795,
+        "flags": 6,
+        "source_offset": 8192,
+        "raw_offset": 0,
+        "compressed_sha256": "1630a5a6ed5eb08f98bc88b795c6dfc3bd63ca1baaea1b197455b41d01216ef4",
+        "raw_sha256": "e54dee5e8ee44d8dd52f4c66cb492e6d62fd0d885ccd2c9a3425cf9240c2b554"
+      },
+      {
+        "index": 1,
+        "uncompressed": 131072,
+        "compressed": 82163,
+        "flags": 6,
+        "source_offset": 90112,
+        "raw_offset": 131072,
+        "compressed_sha256": "989e064ccf635ee4eb3de75dabe0f464932a66d987402d7366733066a36a1445",
+        "raw_sha256": "325a3f4e17d74f19c7d117b86f201eacfb86ec1e186ab99375422ecbc29114a7"
+      },
+      {
+        "index": 2,
+        "uncompressed": 131072,
+        "compressed": 46063,
+        "flags": 6,
+        "source_offset": 176128,
+        "raw_offset": 262144,
+        "compressed_sha256": "3e789d51e88605ec0f4129a7fd95864edbdc612590185d8de8b1ff49c01f7f64",
+        "raw_sha256": "482a3935d636ba4afa6bde8a3e0b4d7489bb8e68919c3c19a9456e4604c40bf8"
+      },
+      {
+        "index": 3,
+        "uncompressed": 131072,
+        "compressed": 26944,
+        "flags": 6,
+        "source_offset": 225280,
+        "raw_offset": 393216,
+        "compressed_sha256": "5c75f9bc172857d276d2c929037c427d65d7cfbe80d9bc84dee1a03761e65c1d",
+        "raw_sha256": "0ab3775f4f67d0ec2329d901ab2ca3376d20009c001c862d49f8b627406abc88"
+      },
+      {
+        "index": 8,
+        "uncompressed": 131072,
+        "compressed": 27691,
+        "flags": 6,
+        "source_offset": 278528,
+        "raw_offset": 586768,
+        "compressed_sha256": "9e9bbdfb6551c70337dd147641797c155a5dd4a87424759e2aab72d23616bd1b",
+        "raw_sha256": "16f6a91c9878f341db9e11610cfd764d707d7fe677b724386a68e0fa20e8efe6"
+      },
+      {
+        "index": 9,
+        "uncompressed": 129344,
+        "compressed": 27108,
+        "flags": 6,
+        "source_offset": 307200,
+        "raw_offset": 717840,
+        "compressed_sha256": "08e663bb63d37d297b2b6bb02deba983080ef54b465ba47ee7bed042f92dbeaa",
+        "raw_sha256": "5b2bf5988720c653f157a00fde417b1b19bc1171b57303683a8a90af7fbf9c5d"
+      }
+    ]
+  }
+}
