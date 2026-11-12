@@ -48,9 +48,15 @@ impl ActionKind {
 /// presentation clip table and the baked hit data; it carries no display facts.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TrackId {
-    PlayerMelee { pair: WeaponPair, stage: MeleeStage },
+    PlayerMelee {
+        pair: WeaponPair,
+        stage: MeleeStage,
+    },
     PlayerSkill(ActionKind),
-    Boss { stage: MeleeStage },
+    /// One of the Boss's strikes: a row of [`super::Boss::STRIKES`].
+    Boss {
+        strike: u8,
+    },
     Enemy,
 }
 

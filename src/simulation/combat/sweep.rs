@@ -60,6 +60,32 @@ impl HitTrack {
         Self::time(self.windows.first().map_or(0, |window| window.1))
     }
 
+    /// How far straight ahead of a still attacker of `scale` a target
+    /// shaped like `target` can stand, feet to feet, and still be swept by
+    /// some active tick; zero if no swing passes in front. A multi-swing
+    /// strike may touch its full [`Self::reach`] only off to one side.
+    pub(in crate::simulation) fn frontal_reach(&self, scale: f32, target: &Hurtbox) -> f32 {
+        const STEP: f32 = 0.05;
+        let stance = Stance {
+            feet: Vec3::ZERO,
+            previous_feet: Vec3::ZERO,
+            forward: Vec2::NEG_Y,
+            scale,
+        };
+        let farthest = self.reach * scale + target.radius;
+        (0..=(farthest / STEP) as u32)
+            .rev()
+            .map(|step| step as f32 * STEP)
+            .find(|&distance| {
+                let at = target.moved_to(Vec3::NEG_Z * distance);
+                self.windows
+                    .iter()
+                    .flat_map(|&(start, end)| start..=end)
+                    .any(|tick| sweep(self, tick, &stance, &at, |_| {}).is_some())
+            })
+            .unwrap_or(0.0)
+    }
+
     fn sample(&self, tick: u16) -> (Vec3, Vec3) {
         let sample = self.samples[usize::from(tick).min(self.samples.len() - 1)];
         (
@@ -83,7 +109,7 @@ impl TrackId {
                 .filter(|kind| kind.swings_blade() && *kind != ActionKind::Melee)
                 .map(Self::PlayerSkill),
         );
-        tracks.extend(stages.map(|stage| Self::Boss { stage }));
+        tracks.extend((0..Boss::STRIKES.len() as u8).map(|strike| Self::Boss { strike }));
         tracks.push(Self::Enemy);
         tracks
     }
@@ -93,7 +119,9 @@ impl TrackId {
         match self {
             Self::PlayerMelee { pair, stage } => pair.melee_profile(stage).duration,
             Self::PlayerSkill(kind) => kind.spec().duration,
-            Self::Boss { .. } => Boss::STRIKE_DURATION,
+            Self::Boss { strike } => {
+                Boss::strike_duration(strike).expect("a Boss track is one of its strikes")
+            }
             Self::Enemy => super::enemy::ATTACK_DURATION,
         }
     }
@@ -154,6 +182,16 @@ impl Hurtbox {
             bottom: feet + Vec3::Y * radius,
             top: feet + Vec3::Y * (height - radius),
             radius,
+        }
+    }
+
+    /// The same capsule standing at `feet`.
+    fn moved_to(&self, feet: Vec3) -> Self {
+        let base = self.bottom - Vec3::Y * self.radius;
+        Self {
+            bottom: self.bottom - base + feet,
+            top: self.top - base + feet,
+            radius: self.radius,
         }
     }
 }
@@ -455,9 +493,26 @@ mod tests {
     }
 
     #[test]
+    fn frontal_reach_is_where_a_target_straight_ahead_is_still_swept() {
+        let body = target(Vec3::ZERO, 1.73);
+        let reach = TRACK.frontal_reach(1.0, &body);
+        assert!(reach > 0.0);
+        let at = |distance: f32| body.moved_to(Vec3::NEG_Z * distance);
+        let swept = |target: &Hurtbox| {
+            (1..TRACK.samples.len() as u16)
+                .filter(|&tick| TRACK.is_active(tick))
+                .any(|tick| sweep(&TRACK, tick, &stance(Vec2::NEG_Y), target, |_| {}).is_some())
+        };
+        assert!(swept(&at(reach)));
+        assert!(!swept(&at(reach + 0.06)));
+        // A larger attacker reaches farther.
+        assert!(TRACK.frontal_reach(1.5, &body) > reach);
+    }
+
+    #[test]
     fn every_blade_track_is_baked_for_its_current_timeline() {
         let tracks = TrackId::all();
-        assert_eq!(tracks.len(), 12);
+        assert_eq!(tracks.len(), 9 + Boss::STRIKES.len());
         for track in tracks {
             let baked = track
                 .hit_track()

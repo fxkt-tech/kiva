@@ -20,7 +20,7 @@ client 只提交意图和读取快照；不拥有动作计时、伤害、耐力�
 - MotionFeedback::events() 为独立最多128条运动事实，MotionKind::{Jump,Dodge,Land,Footstep}；MotionEvent携带sequence/actor/position/jump_count/sprinting。
 - DefenseKind::{Idle,Deflect,Waiting,Guard,Parry}；Stamina::{current,maximum,quiet_elapsed}。
 - HitContext／HitOutcome 供普通敌人与 Boss 共用来袭结算。事件含 sequence、actor、source_owner、pair: Option<WeaponPair>、action_id、hit_index、kind 和真实起止位置。`HitContext.origin` 是攻击者位置（决定防御是否正面），`contact: Option<Vec3>` 是刀刃接触点；有接触点时受击事件的 `position` 取它。
-- `HitTrack { duration, samples, windows, blade_radius, reach }` 是一招的刀刃轨迹；`TrackId::{all,duration,hit_track}` 列出全部挥刀招式、给出权威时长与烘焙数据。`ActionKind::{ALL,swings_blade}`、`WeaponPair::melee_skill`、`Boss::STRIKE_DURATION` 供烘焙与表现读取。
+- `HitTrack { duration, samples, windows, blade_radius, reach }` 是一招的刀刃轨迹；`TrackId::{all,duration,hit_track}` 列出全部挥刀招式、给出权威时长与烘焙数据。`ActionKind::{ALL,swings_blade}`、`WeaponPair::melee_skill`、`Boss::{STRIKES,strike_of,strike_duration}` 供烘焙与表现读取；`HitTrack::frontal_reach(scale, hurtbox)` 只在模拟层内用于接敌距离。
 - `Projectile` 是飞行中的一发：`owner／pair／action_id／index／position／interpolated(alpha)／direction／age／radius／is_thrown／is_returning／is_locked` 只读；`clear_projectiles(world)` 在敌人集合替换时清掉全部飞行物。`CombatEffect::ShotImpact` 表示一发被敌人以外的东西挡下（位置为落点）。`Combatant::axe_away()` 在近战武器被扔出未回、或拉近的链子占用时为真。
 - `HitProbes { enabled }` 是只读的判定几何历史（刀刃切片、受击胶囊、接触点），仅供调试显示；规则不读取它。
 

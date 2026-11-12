@@ -9,7 +9,7 @@
 - `SourceAnimationLibrary::for_rig(SourceRig::{Yanyun,Naraka})` 选择独立骨架；`SourcePose` 显式携带 rig、scope、model、weight。旧库默认 API 保留燕云语义。
 - `SourceScope::{FullBody,UpperBody,Fingers}` 限定目标组合范围，游戏与源对照共用；不得用不同拓扑的局部数组直接混合。
 - `RigPose::frame` 读取 `ActionSnapshot.melee_stage/elapsed/duration`、`DefenseSnapshot` 和实际运动状态；伤害 marker 不重启动作。
-- `animation/attack_clips.rs` 是攻击片段表：每个 `TrackId` 一行 `AttackClip { rig, clip, keys }`，`keys` 把攻击时间轴的比例分段线性映射到片段位置（横刀攻击片段取片段比例，其余取秒）。玩家普攻、技能、普通敌人和 Boss 的攻击姿态都按 `AttackClock.elapsed` 查这张表；同一模拟时刻在任何渲染帧率下采样到相同的片段时间。技能行按 `strike_effect()` 选择，不点名技能。Boss 每招一行：预警（0.72s）放完片段的蓄力部分，随后按片段原速放完全部挥刀，再放收势；改这些行会改变烘焙出的出刀时刻，也就改变 Boss 的预警长度。`animation/attack_replay.rs` 与 `hit_bake_tests.rs` 只在测试构建里存在：前者不经模拟、以 60Hz 回放同一个显示驱动，后者据此烘焙 `simulation/combat/hit_tracks.rs` 并校验其未过期。
+- `animation/attack_clips.rs` 是攻击片段表：每个 `TrackId` 一行 `AttackClip { rig, clip, keys }`，`keys` 把攻击时间轴的比例分段线性映射到片段位置（横刀攻击片段取片段比例，其余取秒）。玩家普攻、技能、普通敌人和 Boss 的攻击姿态都按 `AttackClock.elapsed` 查这张表；同一模拟时刻在任何渲染帧率下采样到相同的片段时间。技能行按 `strike_effect()` 选择，不点名技能。Boss 每招一行（`BOSS_CLIPS` 按 `Boss::STRIKES` 的行号：燕云原作具名 `skill_ylk_*` 片段、起点、首帧停留；动作号到招式行的映射在模拟层 `STRIKE_OF`），以原速播放 `[起点, 起点＋时长−停留]`；停留只用于片段自身蓄力过短、需要可读预警的招式。招式→片段配对与区间是 Kiva 适配，不是已恢复的槽位映射。改这些行会改变烘焙出的出刀时刻，也就改变 Boss 的预警长度；每招都从待机单独烘焙。`animation/attack_replay.rs` 与 `hit_bake_tests.rs` 只在测试构建里存在：前者不经模拟、以 60Hz 回放同一个显示驱动，后者据此烘焙 `simulation/combat/hit_tracks.rs` 并校验其未过期。
 - Web 保留 `playEffect(name)`、`playSniperShot()`、`setActive(bool)`，新增只读 `cueOffset(name) -> number`。原生音频为空操作。
 - `python3 scripts/prepare-naraka-animations.py --verify` 校验冻结源件、原生证据并逐帧重算 runtime 插值／FK／真实手部 LBS；`--repackage` 验证后再生成运行时文件。普通 verify 不依赖游戏目录、Unity 或第三方 Python 包。
 - `python3 scripts/import-naraka-audio.py --verify assets/prepared/naraka/audio` 从冻结 WEM／无损 PCM 重建并核对 Ogg、cue、manifest；需要 ffmpeg/ffprobe，普通 verify 不读取游戏或调用 vgmstream。
@@ -23,6 +23,8 @@
 原生旋转存在近瞬时分支切换。自适应采样须覆盖四分点／中点／四分之三点，并用未参与选键的偏移时刻独立验证。切换两侧用相邻 f32 时间键保存；运行时按真实正 dt 插值，不能用 `max(EPSILON)` 改写微小间隔，精确命中键直接取该键。完整验证必须检查独立帧的全骨 FK 与真实权重手部点，不能只对导出键自证。
 
 哥哥横刀三段分别取 `male_hengdao_attack_light_01/02/03`，由权威段内比例映射到源时长。拆招／持续防御取 `male_hengdao_shock_01`，有效防御释放后的表现取 `male_hengdao_attack_shock_light_01`，0.60s 可打断表现不延长 0.18s 弹反判定；RigPose锁存已打断gesture_id，同ID短暂移动／受击后不恢复，连显示帧跨过整段受击时也按本帧真实Hit事实打断；该源片段已证反击用途，未证“成功专用”。成功声音只取真实结算事件。
+
+源姿态的 0.08s 交叉淡入只在换片段或同一片段倒回重播时开始；下层 CC0 状态切换（走→停、手势结束）不能重启它，否则正在挥刀的源片段会落后于自身时间轴一帧以上（Boss 收步瞬间刀尖偏差曾达 0.37m），显示与烘焙判定不一致。
 
 待机、走跑、蹲伏、二段跳、四方向闪避、落地、受击和倒地使用明确对应片段。蹲伏普攻／防御只组合来源上身，保留目标蹲伏过渡和下肢；移动中的实际防御同样采用振刀上身＋真实步行下身，移动只抢占已结束判定的弹反尾势。E／Tab／滑铲保留原编排／回退，trace 必须说明。玩家 F3 两外观都可用永劫来源，Boss 仍用燕云。空气中剔除永劫 Pelvis 额外 Y（MotionRoot 的 T 为零），避免重复物理跳高；源对照保留原骨盆曲线。
 

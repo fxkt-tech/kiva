@@ -92,8 +92,8 @@ fn chains() -> Vec<Chain> {
                 0,
                 false,
             ),
-            // The Boss returns to idle for two steps between its strikes.
-            TrackId::Boss { .. } => (WeaponPair::default(), true, 2, true),
+            // Any Boss strike can follow any other, so each is baked from idle.
+            TrackId::Boss { .. } => (WeaponPair::default(), true, 0, false),
             TrackId::Enemy => (WeaponPair::default(), true, 0, false),
         };
         let same = |a: &TrackId| std::mem::discriminant(a) == std::mem::discriminant(&track);
@@ -274,7 +274,7 @@ fn pattern(track: TrackId) -> String {
             "TrackId::PlayerMelee {{ pair: WeaponPair::{pair:?}, stage: MeleeStage::{stage:?} }}"
         ),
         TrackId::PlayerSkill(kind) => format!("TrackId::PlayerSkill(ActionKind::{kind:?})"),
-        TrackId::Boss { stage } => format!("TrackId::Boss {{ stage: MeleeStage::{stage:?} }}"),
+        TrackId::Boss { strike } => format!("TrackId::Boss {{ strike: {strike} }}"),
         TrackId::Enemy => "TrackId::Enemy".into(),
     }
 }
@@ -294,7 +294,9 @@ fn render(baked: &[Baked]) -> String {
     for (index, track) in baked.iter().enumerate() {
         writeln!(text, "        {} => &TRACK_{index},", pattern(track.track)).unwrap();
     }
-    text.push_str("        TrackId::PlayerSkill(_) => return None,\n    })\n}\n");
+    text.push_str(
+        "        TrackId::PlayerSkill(_) | TrackId::Boss { .. } => return None,\n    })\n}\n",
+    );
     for (index, track) in baked.iter().enumerate() {
         writeln!(text, "\n/// {:?}", track.track).unwrap();
         writeln!(text, "static TRACK_{index}: HitTrack = HitTrack {{").unwrap();
@@ -511,7 +513,8 @@ mod live {
         let weapon = blade(&assets.blade_vertices(app.world().resource::<Assets<Mesh>>()));
         let mut stages = Vec::new();
         let mut checked = 0;
-        for _ in 0..420 {
+        // Long enough for the opening strike and two more after it.
+        for _ in 0..1200 {
             frame(&mut app);
             let Some(clock) = app.world().get::<Boss>(boss).unwrap().attack_clock() else {
                 continue;
@@ -530,7 +533,7 @@ mod live {
                 );
             }
         }
-        assert_eq!(stages.len(), 3, "the Boss played {stages:?}");
+        assert!(stages.len() >= 3, "the Boss played only {stages:?}");
         assert!(checked > 20);
     }
 }

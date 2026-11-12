@@ -1,12 +1,18 @@
-//! Fixed-step Choulingke encounter. Recovered source decisions and Kiva tuning
-//! stay distinct: this is an adaptation, not an executable copy of the source AI.
+//! Fixed-step Choulingke encounter. Its decisions are the source behaviour
+//! trees, transcribed in [`source`]; this module carries them out on Kiva's
+//! bodies: strikes swing their baked blade paths, movement goes through the
+//! shared motor. What could not be recovered (the skill slot -> clip mapping,
+//! damage, the phase-change script) is Kiva adaptation and says so.
 use bevy::prelude::*;
 
-use super::combat::{CombatWorld, strike, ticks_between};
+mod source;
+
+use super::combat::{CombatWorld, Hurtbox, strike, ticks_between};
 use super::{
     ActionIntent, AttackClock, Body, CombatEffect, CombatFeedback, Combatant, Facing, Health,
-    HitProbes, HitTrack, MeleeStage, MotionState, MoveIntent, SpawnPoint, TrackId,
+    HitProbes, HitTrack, MotionState, MoveIntent, SpawnPoint, TrackId,
 };
+use source::{Mind, Plan, Sight};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BossPhase {
@@ -29,49 +35,40 @@ pub enum BossState {
 
 /// Unrecovered damage and pacing are explicit local balance values. Where and
 /// when a strike can hit is not tuned here: it is the strike's baked blade path.
-/// Source distance fields retain their numeric values; no hidden model-height scaling.
 struct KivaTuning;
 impl KivaTuning {
     /// The share of the telegraph during which the Boss still turns to its target.
     const TRACKING: f32 = 0.65;
-    /// The Boss closes in until the target is this deep inside the blade's
-    /// reach: while it telegraphs, then while it swings.
+    /// The Boss closes in until the target is this deep inside the distance
+    /// at which its strike's blade passes straight ahead of it: while it
+    /// telegraphs, then while it swings.
     const TELEGRAPH_STOP: f32 = 0.75;
     const SWING_STOP: f32 = 0.875;
     /// How long the Boss collects itself after being knocked off the ground.
     const AIRBORNE_RECOVERY: f32 = 0.65;
-    const ATTACKS_PER_BURST: u8 = 3;
-    const BURST_REST: f32 = 3.0;
+    /// The source's `LockAnimLRAction` circles at `move_speed_rate` 0.7.
+    const CIRCLE_SPEED: f32 = 0.7;
+    /// A `LockAnimDistanceAction` gives up after this long.
+    const APPROACH_TIMEOUT: f32 = 5.0;
     const TRANSITION: f32 = 2.2;
     const RESPAWN: f32 = 3.0;
     const DAMAGE_P1: f32 = 14.0;
     const DAMAGE_P2: f32 = 18.0;
 }
 
-// Source: 51000025_CLK_fight_Action, cases 4..60. Cooldowns only apply when
-// action_flow_modify=true; values are zero-weight expiry durations, not clip lengths.
-const SOURCE_SLOTS: [u32; 57] = [
-    90021629, 90021435, 90021632, 90021633, 90021626, 90021627, 90021593, 90021594, 90021595,
-    90021596, 90021597, 90021598, 90021599, 90021600, 90021601, 90021602, 90021603, 90021604,
-    90021605, 90021606, 90021607, 90021608, 90021609, 90021610, 90021611, 90021612, 90021613,
-    90021614, 90021615, 90021616, 90021625, 90021631, 90021634, 90021635, 90021636, 90021637,
-    90021628, 90021639, 90021640, 90021638, 90021622, 90021641, 90021623, 90021646, 90021647,
-    90021648, 90021649, 90021650, 90021651, 90021652, 90021653, 90021654, 90021655, 90021656,
-    90021657, 90021658, 90021645,
+/// Kiva adaptation: which strike (a row of [`Boss::STRIKES`]) each source
+/// action 4..=60 swings. The source slot -> clip mapping is unrecovered, so
+/// these are chosen: phase-one actions swing phase-one clips, phase-two
+/// actions phase-two clips, and the reactive counters (4, 6..9, 34, 47) the
+/// shortest ones.
+const STRIKE_OF: [u8; 57] = [
+    7, 5, 5, 7, 5, 7, // 4..=9
+    0, 1, 2, 3, 3, 4, 4, 6, 2, 5, 1, // 10..=20
+    8, 12, 14, 9, 10, 11, 15, 11, 15, 12, 13, 10, 14, // 21..=33
+    16, // 34
+    0, 1, 2, 0, 1, 4, 0, 3, 6, 2, 6, 1, // 35..=46
+    16, 11, 12, 13, 9, 14, 14, 10, 15, 13, 8, 10, 9, 12, // 47..=60
 ];
-const SOURCE_COOLDOWNS: [f32; 57] = [
-    0., 0., 0., 0., 0., 0., 40., 55., 50., 65., 60., 0., 50., 60., 60., 55., 70., 65., 0., 80.,
-    65., 55., 0., 75., 0., 75., 75., 55., 55., 0., 0., 35., 45., 60., 65., 60., 55., 60., 45., 55.,
-    85., 45., 85., 0., 65., 50., 65., 65., 50., 55., 55., 60., 45., 50., 40., 55., 0.,
-];
-
-// Exact normal-choice lists and weights from the P1/P2 main trees. Action1 is
-// lateral repositioning; Action3 closes to source distance 6. Complex buff,
-// grab and soul mechanics remain explicitly outside this adaptation.
-const P1_NEAR: &[(u16, u32)] = &[(1, 1), (10, 50), (12, 50), (11, 50), (19, 1)];
-const P1_MID: &[(u16, u32)] = &[(3, 10), (14, 50), (16, 50), (45, 50)];
-const P2_NEAR: &[(u16, u32)] = &[(50, 50), (25, 50), (53, 50)];
-const P2_MID: &[(u16, u32)] = &[(48, 50), (49, 50), (24, 50), (3, 10), (21, 50)];
 
 #[derive(Component)]
 pub struct Boss {
@@ -81,15 +78,28 @@ pub struct Boss {
     elapsed: f32,
     duration: f32,
     sequence: u64,
-    cooldowns: [f32; 61],
-    random: u32,
-    opening: bool,
-    attacks_in_burst: u8,
+    mind: Mind,
     strike_resolved: bool,
     engaged: bool,
     stun_source: Option<u64>,
-    /// The strike in progress: its stage and the time since its telegraph began.
-    strike: Option<(MeleeStage, f32)>,
+    /// The strike in progress: its row of [`Self::STRIKES`] and the time
+    /// since its telegraph began.
+    strike: Option<(u8, f32)>,
+    /// How near the strike in progress needs its target, feet to feet, for
+    /// its blade to pass through it.
+    engage: f32,
+    /// How near an approach (action 2 or 3) closes in.
+    approach: f32,
+    /// Strafe to the Boss's left while circling.
+    circle_left: bool,
+    /// What the Boss does once its circling ends.
+    after_circle: Option<u16>,
+    /// The circling which ends the phase tree's attack round resets the count.
+    resets_count: bool,
+    /// Phase one marks its target below 65% health (buff 450097).
+    marked: bool,
+    /// The target guarded the last strike (`GedangCondition`).
+    guarded: bool,
 }
 
 impl Default for Boss {
@@ -101,14 +111,18 @@ impl Default for Boss {
             elapsed: 0.0,
             duration: 0.0,
             sequence: 0,
-            cooldowns: [0.0; 61],
-            random: 0xc10c_51a1,
-            opening: true,
-            attacks_in_burst: 0,
+            mind: Mind::default(),
             strike_resolved: false,
             engaged: false,
             stun_source: None,
             strike: None,
+            engage: 0.0,
+            approach: 5.0,
+            circle_left: false,
+            after_circle: None,
+            resets_count: false,
+            marked: false,
+            guarded: false,
         }
     }
 }
@@ -116,8 +130,23 @@ impl Default for Boss {
 impl Boss {
     /// Two health bars are a Kiva adaptation, not the source 65/75/30% buff checks.
     pub const PHASE_HEALTH: f32 = 650.0;
-    /// One strike's whole timeline: telegraph, swings and recovery.
-    pub const STRIKE_DURATION: f32 = 1.59;
+    /// Every strike's whole timeline in seconds: telegraph, swings and
+    /// recovery. Each plays one named source clip at its own speed (client
+    /// attack clip table); these are the lengths of those spans.
+    pub const STRIKES: [f32; 17] = [
+        2.0, 3.0, 3.2, 2.9, 2.6, 1.7, 4.3, 1.6, // phase-one clips
+        3.6, 2.9, 2.8, 4.8, 3.2, 2.3, 3.3, 2.7, 1.6, // phase-two clips
+    ];
+    /// The strike a source action swings, if it is one which strikes.
+    pub fn strike_of(action: u16) -> Option<u8> {
+        (4..=60)
+            .contains(&action)
+            .then(|| STRIKE_OF[usize::from(action - 4)])
+    }
+    /// The timeline length of a strike.
+    pub fn strike_duration(strike: u8) -> Option<f32> {
+        Self::STRIKES.get(usize::from(strike)).copied()
+    }
     pub fn phase(&self) -> BossPhase {
         self.phase
     }
@@ -128,14 +157,11 @@ impl Boss {
         self.action
     }
     pub fn skill_slot(&self) -> Option<u32> {
-        self.action.and_then(|action| {
-            (4..=60)
-                .contains(&action)
-                .then(|| SOURCE_SLOTS[(action - 4) as usize])
-        })
+        self.action.and_then(source::slot)
     }
-    pub fn attacks_in_burst(&self) -> u8 {
-        self.attacks_in_burst
+    /// The source tree's `attack_count`: strikes counted since it last circled.
+    pub fn attack_count(&self) -> u8 {
+        self.mind.attack_count
     }
     pub fn elapsed(&self) -> f32 {
         self.elapsed
@@ -147,20 +173,17 @@ impl Boss {
         self.sequence
     }
     /// The current strike's single timeline, from its telegraph through its
-    /// recovery. Interruptions (stun, knock-up, phase change) end it; the rest
-    /// after a burst is not part of it.
+    /// recovery. Interruptions (stun, knock-up, phase change) end it; a
+    /// combo starts the next strike's timeline.
     pub fn attack_clock(&self) -> Option<AttackClock> {
-        let (stage, elapsed) = self.strike?;
-        (elapsed <= Self::STRIKE_DURATION).then_some(AttackClock {
+        let (strike, elapsed) = self.strike?;
+        let duration = Self::strike_duration(strike)?;
+        (elapsed <= duration).then_some(AttackClock {
             action_id: self.sequence,
-            track: TrackId::Boss { stage },
+            track: TrackId::Boss { strike },
             elapsed,
-            duration: Self::STRIKE_DURATION,
+            duration,
         })
-    }
-    /// The 9002xxxx slot -> source graph/clip mapping has not been recovered.
-    pub fn clip_name(&self) -> Option<&'static str> {
-        None
     }
     pub fn is_invulnerable(&self) -> bool {
         matches!(self.state, BossState::Transition | BossState::Defeated)
@@ -211,10 +234,17 @@ impl Boss {
 
     /// The baked blade path of the strike in progress.
     fn strike_track(&self) -> &'static HitTrack {
-        let stage = self.strike.map_or(MeleeStage::One, |(stage, _)| stage);
-        TrackId::Boss { stage }
+        let (strike, _) = self.strike.expect("a strike is in progress");
+        TrackId::Boss { strike }
             .hit_track()
             .expect("every Boss strike is baked")
+    }
+
+    /// The timeline length of the strike in progress.
+    fn strike_duration_now(&self) -> f32 {
+        self.strike
+            .and_then(|(strike, _)| Self::strike_duration(strike))
+            .unwrap_or(0.0)
     }
 
     fn reset_fight(&mut self) {
@@ -223,62 +253,71 @@ impl Boss {
         self.sequence = sequence;
     }
 
-    fn roll(&mut self, maximum: u32) -> u32 {
-        self.random ^= self.random << 13;
-        self.random ^= self.random >> 17;
-        self.random ^= self.random << 5;
-        self.random % maximum
+    fn sight(&self, distance: f32, health: &Health) -> Sight {
+        Sight {
+            phase: self.phase,
+            distance,
+            marked: self.marked,
+            health: health.current() / health.maximum().max(1.0),
+        }
     }
 
-    fn choose(&mut self, distance: f32) -> u16 {
-        if distance > 12.0 {
-            return 3;
+    /// The phase tree's `ConditionPriorityNode`, after the combo branch:
+    /// counter a guard, attack while the round lasts, else circle.
+    fn decide(&mut self, sight: Sight) -> Plan {
+        if std::mem::take(&mut self.guarded) {
+            return Plan::Act(self.mind.counter_guard());
         }
-        let choices = match (self.phase, distance <= 6.0) {
-            (BossPhase::One, true) => P1_NEAR,
-            (BossPhase::One, false) => P1_MID,
-            (BossPhase::Two, true) => P2_NEAR,
-            (BossPhase::Two, false) => P2_MID,
-        };
-        let total: u32 = choices
-            .iter()
-            .filter(|(action, _)| *action >= 4 && self.cooldowns[*action as usize] == 0.0)
-            .map(|(_, weight)| weight)
-            .sum();
-        if total == 0 {
-            // Keep the three-strike cadence when source cooldowns exhaust a pool.
-            return if self.phase == BossPhase::One { 45 } else { 21 };
+        if self.mind.attack_count < source::attack_limit(self.phase) {
+            return self.mind.choose(sight);
         }
-        let mut roll = self.roll(total);
-        for &(action, weight) in choices {
-            if action < 4 || self.cooldowns[action as usize] != 0.0 {
-                continue;
-            }
-            if roll < weight {
-                return action;
-            }
-            roll -= weight;
+        // `LockTimer2`: circle for 1-2 s, then count a fresh round.
+        let seconds = self.mind.between(1.0, 2.0);
+        self.resets_count = true;
+        Plan::Circle {
+            seconds,
+            then: None,
         }
-        unreachable!("weighted choice exhausted")
+    }
+
+    fn circle(&mut self, seconds: f32, then: Option<u16>) {
+        // `lastlockdirection` alternates the side.
+        self.mind.last_lock_left = !self.mind.last_lock_left;
+        self.circle_left = self.mind.last_lock_left;
+        self.after_circle = then;
+        self.enter(BossState::Strafing, seconds);
     }
 
     fn begin_action(&mut self, action: u16) {
         self.action = Some(action);
         self.sequence += 1;
         self.strike_resolved = false;
+        self.engage = 0.0;
+        self.mind.dispatch(action, self.marked);
         match action {
-            1 | 2 => self.enter(BossState::Strafing, 2.0),
-            3 => self.enter(BossState::Pursuing, 5.0),
+            // Action 1: `LockAnimLRAction` for 3 s.
+            1 => self.circle(3.0, None),
+            // Actions 2 / 3: `LockAnimDistanceAction` to 6 / 5 m.
+            2 | 3 => {
+                self.approach = if action == 2 { 6.0 } else { 5.0 };
+                self.enter(BossState::Pursuing, KivaTuning::APPROACH_TIMEOUT);
+            }
             _ => {
-                let stage = match self.attacks_in_burst {
-                    0 => MeleeStage::One,
-                    1 => MeleeStage::Two,
-                    _ => MeleeStage::Three,
-                };
-                self.strike = Some((stage, 0.0));
+                let strike = Self::strike_of(action).expect("every source action 4..=60 strikes");
+                self.strike = Some((strike, 0.0));
                 // The telegraph lasts until the blade becomes dangerous.
                 let telegraph = self.strike_track().strike_time();
                 self.continue_strike(BossState::Telegraph, telegraph);
+            }
+        }
+    }
+
+    fn carry_out(&mut self, plan: Plan) {
+        match plan {
+            Plan::Act(action) => self.begin_action(action),
+            Plan::Circle { seconds, then } => {
+                self.action = None;
+                self.circle(seconds, then);
             }
         }
     }
@@ -344,17 +383,15 @@ pub(super) fn advance(
                 0.9,
             );
         }
-        for cooldown in &mut boss.cooldowns {
-            *cooldown = (*cooldown - dt).max(0.0);
-        }
+        boss.mind.tick(dt);
         if !health.is_alive() {
             movement.stop();
             actions.clear();
             if boss.phase == BossPhase::One {
+                // A fresh phase tree: its own blackboard, timers and opening.
                 boss.phase = BossPhase::Two;
-                boss.cooldowns.fill(0.0);
-                boss.opening = true;
-                boss.attacks_in_burst = 0;
+                boss.mind = Mind::default();
+                boss.guarded = false;
                 boss.action = None;
                 boss.sequence += 1;
                 boss.enter(BossState::Transition, KivaTuning::TRANSITION);
@@ -447,52 +484,50 @@ pub(super) fn advance(
             }
             continue;
         }
+        if boss.phase == BossPhase::One && health.current() <= health.maximum() * 0.65 {
+            boss.marked = true;
+        }
+        let sight = boss.sight(distance, &health);
+        // A decision taken this step, announced once it has started.
+        let mut decided = None;
         match boss.state {
-            BossState::Idle => {
-                if boss.attacks_in_burst >= KivaTuning::ATTACKS_PER_BURST {
-                    // A parry or knock-up may have interrupted the third strike.
-                    boss.enter(BossState::Recovering, KivaTuning::BURST_REST);
-                    movement.stop();
-                    continue;
-                }
-                let action = if boss.opening {
-                    boss.opening = false;
-                    if boss.phase == BossPhase::One { 45 } else { 21 }
-                } else {
-                    boss.choose(distance)
-                };
-                facing.set(direction);
-                boss.begin_action(action);
-                if boss.state == BossState::Telegraph {
-                    feedback.push(
-                        entity,
-                        CombatEffect::EnemyWindup,
-                        body.aim_position(),
-                        target_body.aim_position(),
-                        boss.strike_track().reach,
-                    );
-                }
-            }
+            BossState::Idle => decided = Some(boss.decide(sight)),
             BossState::Pursuing => {
                 facing.set(direction);
                 movement.set(direction);
-                if distance <= 6.0 || boss.elapsed >= boss.duration {
+                if distance <= boss.approach || boss.elapsed >= boss.duration {
                     movement.stop();
                     boss.enter(BossState::Idle, 0.0);
                 }
             }
             BossState::Strafing => {
                 facing.set(direction);
-                let sign = if boss.random & 1 == 0 { 1.0 } else { -1.0 };
-                movement.set(Vec2::new(-direction.y, direction.x) * (0.7 * sign / body.speed));
+                let sign = if boss.circle_left { -1.0 } else { 1.0 };
+                movement.set(
+                    Vec2::new(-direction.y, direction.x)
+                        * (KivaTuning::CIRCLE_SPEED * sign / body.speed),
+                );
                 if boss.elapsed >= boss.duration {
                     movement.stop();
-                    boss.enter(BossState::Idle, 0.0);
+                    if std::mem::take(&mut boss.resets_count) {
+                        boss.mind.attack_count = 0;
+                    }
+                    match boss.after_circle.take() {
+                        Some(action) => decided = Some(Plan::Act(action)),
+                        None => boss.enter(BossState::Idle, 0.0),
+                    }
                 }
             }
             BossState::Telegraph => {
                 let track = boss.strike_track();
-                let reach = track.reach * body.scale() + target_body.radius();
+                if boss.engage == 0.0 {
+                    let target = Hurtbox::of(target_body, &target_motion);
+                    // A strike which never passes in front still closes in.
+                    boss.engage = track
+                        .frontal_reach(body.scale(), &target)
+                        .max(body.radius() + target.radius);
+                }
+                let reach = boss.engage;
                 if boss.elapsed < boss.duration * KivaTuning::TRACKING {
                     facing.set(direction);
                 }
@@ -505,9 +540,6 @@ pub(super) fn advance(
                     Vec2::ZERO
                 });
                 if boss.strike_elapsed() + 1e-4 >= track.strike_time() {
-                    let action = boss.action.unwrap();
-                    boss.cooldowns[action as usize] = SOURCE_COOLDOWNS[(action - 4) as usize];
-                    boss.attacks_in_burst += 1;
                     let swings = HitTrack::time(track.last_active()) - track.strike_time();
                     boss.continue_strike(BossState::Attacking, swings);
                     feedback.push(
@@ -521,7 +553,7 @@ pub(super) fn advance(
             }
             BossState::Attacking => {
                 let track = boss.strike_track();
-                let reach = track.reach * body.scale() + target_body.radius();
+                let reach = boss.engage;
                 let forward = facing.direction();
                 movement.set(if distance > reach * KivaTuning::SWING_STOP {
                     forward * 0.95
@@ -596,6 +628,9 @@ pub(super) fn advance(
                         boss.stun(source, 0.80);
                         movement.stop();
                     }
+                    if outcome == super::HitOutcome::Blocked {
+                        boss.guarded = true;
+                    }
                     if outcome == super::HitOutcome::Damaged {
                         target_combat.interrupt_melee_chain();
                     }
@@ -607,27 +642,39 @@ pub(super) fn advance(
                     }
                 }
                 if boss.state == BossState::Attacking && finished {
-                    let recovery = if boss.attacks_in_burst >= KivaTuning::ATTACKS_PER_BURST {
-                        KivaTuning::BURST_REST
-                    } else {
-                        (Boss::STRIKE_DURATION - elapsed).max(0.0)
-                    };
-                    boss.continue_strike(BossState::Recovering, recovery);
                     movement.stop();
+                    // The skill's combo check (`CanComboCancel`): the combo
+                    // tree may cancel the recovery into a follow-up.
+                    let action = boss.action.expect("a strike has its action");
+                    match boss.mind.combo(action, sight) {
+                        Some(next) => decided = Some(Plan::Act(next)),
+                        None => {
+                            let recovery = (boss.strike_duration_now() - elapsed).max(0.0);
+                            boss.continue_strike(BossState::Recovering, recovery);
+                        }
+                    }
                 }
             }
             BossState::Recovering | BossState::Stunned => {
                 movement.stop();
                 if boss.elapsed >= boss.duration {
-                    if boss.state == BossState::Recovering
-                        && boss.duration >= KivaTuning::BURST_REST
-                    {
-                        boss.attacks_in_burst = 0;
-                    }
                     boss.enter(BossState::Idle, 0.0);
                 }
             }
             BossState::Transition | BossState::Defeated => unreachable!(),
+        }
+        if let Some(plan) = decided {
+            facing.set(direction);
+            boss.carry_out(plan);
+            if boss.state == BossState::Telegraph {
+                feedback.push(
+                    entity,
+                    CombatEffect::EnemyWindup,
+                    body.aim_position(),
+                    target_body.aim_position(),
+                    boss.strike_track().reach,
+                );
+            }
         }
     }
 }
@@ -708,31 +755,20 @@ mod tests {
         app.world().get::<Health>(entity).unwrap().current()
     }
 
-    #[test]
-    fn attack_choices_keep_distance_pools_and_fall_back_when_cooldowns_exhaust_them() {
-        let mut boss = Boss::default();
-        assert_eq!(boss.choose(12.001), 3);
-        for _ in 0..1000 {
-            let near = boss.choose(6.0);
-            let mid = boss.choose(6.001);
-            assert!(P1_NEAR.iter().any(|&(id, _)| id == near));
-            assert!(P1_MID.iter().any(|&(id, _)| id == mid));
+    /// Ticks from the opening telegraph until the opening strike first
+    /// reaches an undefended player. The encounter is deterministic, so a
+    /// rehearsal on an identical fixture tells when the real one will land:
+    /// a source strike swings several times and its first swing may whiff.
+    fn ticks_to_contact() -> usize {
+        let (mut app, player, boss) = arena();
+        wait_for(&mut app, boss, BossState::Telegraph);
+        for ticks in 1..600 {
+            tick(&mut app, 1);
+            if health(&app, player) < 10_000.0 {
+                return ticks;
+            }
         }
-        for action in [10, 11, 12, 19] {
-            boss.cooldowns[action] = 10.0;
-        }
-        assert_eq!(boss.choose(3.0), 45);
-        for action in [14, 16, 45] {
-            boss.cooldowns[action] = 10.0;
-        }
-        assert_eq!(boss.choose(12.0), 45);
-        boss.phase = BossPhase::Two;
-        for action in [50, 25, 53] {
-            boss.cooldowns[action] = 10.0;
-        }
-        assert_eq!(boss.choose(3.0), 21);
-        assert_eq!(SOURCE_SLOTS[45 - 4], 90021641);
-        assert_eq!(SOURCE_COOLDOWNS[45 - 4], 45.0);
+        panic!("the opening strike never reached the player");
     }
 
     fn strike_count(app: &App, boss: Entity) -> usize {
@@ -743,108 +779,62 @@ mod tests {
             .count()
     }
 
-    #[test]
-    fn both_phases_repeat_three_strikes_then_three_seconds_of_stationary_rest() {
-        for phase in [BossPhase::One, BossPhase::Two] {
-            let (mut app, player, boss) = arena();
-            if phase == BossPhase::Two {
-                app.world_mut()
-                    .get_mut::<Health>(boss)
-                    .unwrap()
-                    .damage(Boss::PHASE_HEALTH);
-                tick(&mut app, 1);
-            }
-            for burst in 0..2 {
-                for strike in 1..=3 {
-                    wait_for(&mut app, boss, BossState::Attacking);
-                    assert_eq!(strike_count(&app, boss), burst * 3 + strike);
-                    wait_for(&mut app, boss, BossState::Recovering);
-                    let snapshot = app.world().get::<Boss>(boss).unwrap();
-                    assert_eq!(snapshot.attacks_in_burst, strike as u8);
-                    // An ordinary recovery plays out the strike's timeline;
-                    // the third is the burst's rest.
-                    let swung = HitTrack::time(snapshot.strike_track().last_active());
-                    let expected = if strike == 3 {
-                        3.0
-                    } else {
-                        Boss::STRIKE_DURATION - swung
-                    };
-                    assert!((snapshot.duration() - expected).abs() < 0.02);
-                }
-                let count = strike_count(&app, boss);
-                let before = health(&app, player);
-                tick(&mut app, 178);
-                assert_eq!(
-                    app.world().get::<Boss>(boss).unwrap().state(),
-                    BossState::Recovering
-                );
-                assert_eq!(strike_count(&app, boss), count);
-                assert_eq!(health(&app, player), before);
-                assert_eq!(app.world().get::<MoveIntent>(boss).unwrap().0, Vec2::ZERO);
-                tick(&mut app, 4); // Allow one fixed step of float accumulation at the boundary.
-                assert_eq!(app.world().get::<Boss>(boss).unwrap().attacks_in_burst, 0);
-            }
-            wait_for(&mut app, boss, BossState::Attacking);
-            assert_eq!(strike_count(&app, boss), 7);
-        }
-    }
-
-    #[test]
-    fn burst_rest_freezes_when_paused_and_stun_cannot_skip_it() {
-        let (mut app, _, boss) = arena();
-        for _ in 0..3 {
-            wait_for(&mut app, boss, BossState::Attacking);
-            wait_for(&mut app, boss, BossState::Recovering);
-        }
-        tick(&mut app, 60);
-        let elapsed = app.world().get::<Boss>(boss).unwrap().elapsed();
-        app.world_mut().resource_mut::<SimulationActive>().0 = false;
-        tick(&mut app, 240);
-        assert_eq!(app.world().get::<Boss>(boss).unwrap().elapsed(), elapsed);
-        assert_eq!(strike_count(&app, boss), 3);
-        app.world_mut().resource_mut::<SimulationActive>().0 = true;
-        // A control interruption must not turn the three-strike limit into a fourth strike.
+    /// Start `action` now, in place of whatever the trees would choose.
+    fn force(app: &mut App, boss: Entity, action: u16) {
         app.world_mut()
             .get_mut::<Boss>(boss)
             .unwrap()
-            .stun(123, 0.2);
-        tick(&mut app, 20);
-        let snapshot = app.world().get::<Boss>(boss).unwrap();
-        assert_eq!(snapshot.state(), BossState::Recovering);
-        assert_eq!(snapshot.duration(), 3.0);
-        assert_eq!(strike_count(&app, boss), 3);
-        wait_for(&mut app, boss, BossState::Attacking);
-        assert_eq!(strike_count(&app, boss), 4);
+            .begin_action(action);
+    }
+
+    fn state(app: &App, boss: Entity) -> BossState {
+        app.world().get::<Boss>(boss).unwrap().state()
+    }
+
+    /// Run until the strike in progress has finished swinging.
+    fn finish_swing(app: &mut App, boss: Entity) {
+        wait_for(app, boss, BossState::Attacking);
+        while state(app, boss) == BossState::Attacking {
+            tick(app, 1);
+        }
     }
 
     #[test]
-    fn real_encounter_telegraphs_source_opening_and_hits_only_once_per_active_window() {
+    fn every_source_action_moves_or_swings_a_baked_strike() {
+        for action in 1..=60 {
+            match Boss::strike_of(action) {
+                Some(strike) => assert!(
+                    TrackId::Boss { strike }.hit_track().is_some(),
+                    "action {action} swings unbaked strike {strike}"
+                ),
+                None => assert!(action <= 3, "action {action} does nothing"),
+            }
+        }
+        assert!(
+            (0..Boss::STRIKES.len() as u8).all(|strike| STRIKE_OF.contains(&strike)),
+            "a strike no action swings"
+        );
+    }
+
+    #[test]
+    fn phase_one_circles_first_then_opens_with_its_source_strike_and_hits_once() {
         let (mut app, player, boss) = arena();
+        tick(&mut app, 1);
+        let snapshot = app.world().get::<Boss>(boss).unwrap();
+        assert_eq!(snapshot.state(), BossState::Strafing);
+        assert_eq!(snapshot.action_id(), None);
+        assert!((snapshot.duration() - 2.0).abs() < 1e-5);
         wait_for(&mut app, boss, BossState::Telegraph);
         let snapshot = app.world().get::<Boss>(boss).unwrap();
         assert_eq!(snapshot.action_id(), Some(45));
         assert_eq!(snapshot.skill_slot(), Some(90021641));
-        assert_eq!(snapshot.clip_name(), None);
-        assert!(snapshot.duration() > 0.5);
+        assert_eq!(snapshot.attack_count(), 1);
         assert_eq!(health(&app, player), 10_000.0);
-        wait_for(&mut app, boss, BossState::Attacking);
-        wait_for(&mut app, boss, BossState::Recovering);
+        finish_swing(&mut app, boss);
+        // However many times its blade passes, one strike lands once.
         assert_eq!(health(&app, player), 10_000.0 - KivaTuning::DAMAGE_P1);
+        assert_eq!(strike_count(&app, boss), 1);
         let feedback = app.world().resource::<CombatFeedback>();
-        assert_eq!(
-            feedback
-                .events()
-                .filter(|event| event.actor == boss && event.kind == CombatEffect::EnemyWindup)
-                .count(),
-            1
-        );
-        assert_eq!(
-            feedback
-                .events()
-                .filter(|event| event.actor == boss && event.kind == CombatEffect::Melee)
-                .count(),
-            1
-        );
         assert_eq!(
             feedback
                 .events()
@@ -855,10 +845,84 @@ mod tests {
     }
 
     #[test]
+    fn a_skill_whose_combo_condition_holds_cancels_into_its_follow_up() {
+        let (mut app, _, boss) = arena();
+        // Opening strike 45 checks combo tag 641: within 8 m it chains into
+        // combo 14, which swings 43 within 6 m, else 16.
+        wait_for(&mut app, boss, BossState::Telegraph);
+        let first = app.world().get::<Boss>(boss).unwrap().sequence();
+        finish_swing(&mut app, boss);
+        let snapshot = app.world().get::<Boss>(boss).unwrap();
+        assert_eq!(
+            snapshot.state(),
+            BossState::Telegraph,
+            "no recovery between"
+        );
+        assert_eq!(snapshot.sequence(), first + 1);
+        assert!(matches!(snapshot.action_id(), Some(43 | 16)));
+    }
+
+    #[test]
+    fn a_strike_without_a_combo_recovers_for_the_rest_of_its_timeline() {
+        let (mut app, _, boss) = arena();
+        force(&mut app, boss, 18);
+        let duration = Boss::strike_duration(Boss::strike_of(18).unwrap()).unwrap();
+        finish_swing(&mut app, boss);
+        let snapshot = app.world().get::<Boss>(boss).unwrap();
+        assert_eq!(snapshot.state(), BossState::Recovering);
+        let left = duration - snapshot.strike_elapsed();
+        assert!((snapshot.duration() - left).abs() < 0.02);
+        // The clock keeps running through the recovery.
+        assert!(snapshot.attack_clock().is_some());
+    }
+
+    #[test]
+    fn a_full_attack_round_circles_for_one_to_two_seconds_then_counts_afresh() {
+        for phase in [BossPhase::One, BossPhase::Two] {
+            let (mut app, _, boss) = arena();
+            {
+                let mut boss = app.world_mut().get_mut::<Boss>(boss).unwrap();
+                boss.phase = phase;
+                let sight = boss.sight(3.0, &Health::new(Boss::PHASE_HEALTH));
+                boss.mind.choose(sight); // the phase's opening
+                boss.mind.attack_count = source::attack_limit(phase);
+            }
+            tick(&mut app, 1);
+            let snapshot = app.world().get::<Boss>(boss).unwrap();
+            assert_eq!(snapshot.state(), BossState::Strafing);
+            assert!((1.0..=2.0).contains(&snapshot.duration()));
+            let seconds = snapshot.duration();
+            tick(&mut app, (seconds * 60.0) as usize + 2);
+            // A fresh round: at most the strike just chosen is counted.
+            assert!(app.world().get::<Boss>(boss).unwrap().attack_count() <= 1);
+        }
+    }
+
+    #[test]
+    fn a_guarded_strike_is_answered_by_one_of_the_two_guard_counters() {
+        let (mut app, _, boss) = arena();
+        let mut counters = Vec::new();
+        for _ in 0..2 {
+            let mut boss = app.world_mut().get_mut::<Boss>(boss).unwrap();
+            boss.guarded = true;
+            let sight = boss.sight(3.0, &Health::new(Boss::PHASE_HEALTH));
+            match boss.decide(sight) {
+                Plan::Act(action) => counters.push(action),
+                plan => panic!("{plan:?}"),
+            }
+            assert!(!boss.guarded);
+        }
+        counters.sort();
+        assert_eq!(counters, vec![6, 7], "the counter alternates");
+    }
+
+    #[test]
     fn tap_deflect_is_immune_without_stunning_boss_and_back_takes_full_damage() {
+        let contact = ticks_to_contact();
         for front in [true, false] {
             let (mut app, player, boss) = arena();
-            wait_for(&mut app, boss, BossState::Attacking);
+            wait_for(&mut app, boss, BossState::Telegraph);
+            tick(&mut app, contact - 3);
             let direction = app.world().get::<Body>(boss).unwrap().world_position()
                 - app.world().get::<Body>(player).unwrap().world_position();
             app.world_mut()
@@ -895,9 +959,13 @@ mod tests {
 
     #[test]
     fn recovery_and_release_parry_clear_the_lunge_before_the_next_motor_step() {
-        for interrupted in [false, true] {
+        // The strike under way, with the player placed and, for the parry, guarding.
+        let fixture = |interrupted: bool| {
             let (mut app, player, boss) = arena();
-            wait_for(&mut app, boss, BossState::Telegraph);
+            // A short strike, which ends while the Boss still lunges, and
+            // whose skill (tag 435) has no combo, so it recovers in place.
+            force(&mut app, boss, 5);
+            assert_eq!(state(&app, boss), BossState::Telegraph);
             let forward = app.world().get::<Facing>(boss).unwrap().direction();
             let position = app.world().get::<Body>(boss).unwrap().world_position();
             // The ordinary miss stays beyond the blade through recovery.
@@ -927,7 +995,30 @@ mod tests {
                 );
             }
             wait_for(&mut app, boss, BossState::Attacking);
+            (app, player, boss)
+        };
+        // A rehearsal which keeps guarding tells when the blade arrives; the
+        // guard does not change how the Boss moves.
+        let arrival = {
+            let (mut app, player, _) = fixture(true);
+            let blocked = |app: &App| {
+                app.world()
+                    .resource::<CombatFeedback>()
+                    .events()
+                    .any(|e| e.actor == player && e.kind == CombatEffect::Block)
+            };
+            (1..120)
+                .find(|_| {
+                    tick(&mut app, 1);
+                    blocked(&app)
+                })
+                .expect("the guarded strike reaches the player")
+        };
+        for interrupted in [false, true] {
+            let (mut app, player, boss) = fixture(interrupted);
             if interrupted {
+                // Release just before the blade arrives.
+                tick(&mut app, arrival - 2);
                 app.world_mut()
                     .get_mut::<super::super::DefenseState>(player)
                     .unwrap()
@@ -975,58 +1066,34 @@ mod tests {
     }
 
     #[test]
-    fn strike_phases_follow_the_baked_blade_path_of_each_stage() {
-        let (mut app, _, boss) = arena();
-        let step = 1.0 / 60.0 + 1e-4;
-        for _ in 0..3 {
-            wait_for(&mut app, boss, BossState::Telegraph);
-            let track = app.world().get::<Boss>(boss).unwrap().strike_track();
-            // The telegraph ends as the blade becomes dangerous…
-            wait_for(&mut app, boss, BossState::Attacking);
-            let clock = app
-                .world()
-                .get::<Boss>(boss)
-                .unwrap()
-                .attack_clock()
-                .unwrap();
-            assert_eq!(clock.duration, Boss::STRIKE_DURATION);
-            assert!((clock.elapsed - track.strike_time()).abs() <= step);
-            // …and the Boss recovers once its last swing has passed.
-            wait_for(&mut app, boss, BossState::Recovering);
-            let elapsed = app.world().get::<Boss>(boss).unwrap().strike_elapsed();
-            assert!((elapsed - HitTrack::time(track.last_active())).abs() <= step);
-            wait_for(&mut app, boss, BossState::Idle);
-        }
-    }
-
-    #[test]
     fn a_dodge_protected_by_the_existing_motor_rejects_the_boss_active_hit_once() {
         let (mut app, player, boss) = arena();
+        let contact = ticks_to_contact();
         wait_for(&mut app, boss, BossState::Telegraph);
-        tick(&mut app, 33);
-        let side = app
-            .world()
-            .get::<Body>(boss)
-            .unwrap()
-            .world_position()
-            .x
-            .signum();
+        // Protection begins a few steps into the dodge.
+        tick(&mut app, contact - 8);
+        // Dodge into the swing, so the blade still passes through the player.
+        let toward = (app.world().get::<Body>(boss).unwrap().world_position()
+            - app.world().get::<Body>(player).unwrap().world_position())
+        .xz()
+        .normalize();
         app.world_mut()
             .get_mut::<MoveIntent>(player)
             .unwrap()
-            .set(Vec2::X * side);
+            .set(toward);
         app.world_mut()
             .get_mut::<ActionIntent>(player)
             .unwrap()
             .request_dodge();
-        wait_for(&mut app, boss, BossState::Attacking);
+        tick(&mut app, 8);
         assert!(
             app.world()
                 .get::<MotionState>(player)
                 .unwrap()
                 .is_invulnerable()
         );
-        wait_for(&mut app, boss, BossState::Recovering);
+        // Only the dodged strike: a combo may follow it.
+        finish_swing(&mut app, boss);
         assert_eq!(health(&app, player), 10_000.0);
         assert_eq!(
             app.world()
@@ -1081,12 +1148,17 @@ mod tests {
         let (mut app, _, boss) = arena();
         wait_for(&mut app, boss, BossState::Attacking);
         let snapshot = app.world().get::<Boss>(boss).unwrap();
-        let (elapsed, cooldowns) = (snapshot.elapsed(), snapshot.cooldowns);
+        let action = snapshot.action_id().unwrap();
+        let (elapsed, cooldown) = (snapshot.elapsed(), snapshot.mind.cooldown(action));
+        assert!(cooldown > 0.0);
         let position = app.world().get::<Body>(boss).unwrap().world_position();
         app.world_mut().resource_mut::<SimulationActive>().0 = false;
         tick(&mut app, 60);
         assert_eq!(app.world().get::<Boss>(boss).unwrap().elapsed(), elapsed);
-        assert_eq!(app.world().get::<Boss>(boss).unwrap().cooldowns, cooldowns);
+        assert_eq!(
+            app.world().get::<Boss>(boss).unwrap().mind.cooldown(action),
+            cooldown
+        );
         assert_eq!(
             app.world().get::<Body>(boss).unwrap().world_position(),
             position
@@ -1095,14 +1167,17 @@ mod tests {
         app.world_mut().resource_mut::<HitStop>().request_sniper();
         tick(&mut app, 3);
         assert_eq!(app.world().get::<Boss>(boss).unwrap().elapsed(), elapsed);
-        assert_eq!(app.world().get::<Boss>(boss).unwrap().cooldowns, cooldowns);
+        assert_eq!(
+            app.world().get::<Boss>(boss).unwrap().mind.cooldown(action),
+            cooldown
+        );
         assert_eq!(
             app.world().get::<Body>(boss).unwrap().world_position(),
             position
         );
         tick(&mut app, 1);
         assert!(app.world().get::<Boss>(boss).unwrap().elapsed() > elapsed);
-        assert!(app.world().get::<Boss>(boss).unwrap().cooldowns[45] < cooldowns[45]);
+        assert!(app.world().get::<Boss>(boss).unwrap().mind.cooldown(action) < cooldown);
     }
 
     #[test]
@@ -1165,7 +1240,8 @@ mod tests {
         spawn_box(
             app.world_mut(),
             Vec3::new(0.0, 1.5, -1.5),
-            Vec3::new(8.0, 3.0, 0.3),
+            // Wide enough that circling cannot take the Boss round it.
+            Vec3::new(60.0, 3.0, 0.3),
             false,
         );
         tick(&mut app, 600);
@@ -1312,8 +1388,10 @@ mod tests {
     }
     #[test]
     fn sustained_boss_guard_uses_the_same_cost_and_half_damage_as_normal_enemies() {
+        let contact = ticks_to_contact();
         let (mut app, player, boss) = arena();
         wait_for(&mut app, boss, BossState::Telegraph);
+        tick(&mut app, contact - 20);
         app.world_mut()
             .get_mut::<super::super::DefenseState>(player)
             .unwrap()
@@ -1325,9 +1403,11 @@ mod tests {
                 .unwrap()
                 .is_guarding()
         );
-        wait_for(&mut app, boss, BossState::Attacking);
-        wait_for(&mut app, boss, BossState::Recovering);
+        // Read the guard's cost as the blow lands, before stamina recovers.
+        tick(&mut app, 7);
         assert_eq!(health(&app, player), 10_000.0 - KivaTuning::DAMAGE_P1 * 0.5);
+        // The guard is what the phase tree's `GedangCondition` answers.
+        assert!(app.world().get::<Boss>(boss).unwrap().guarded);
         assert_eq!(
             app.world()
                 .get::<super::super::Stamina>(player)
@@ -1346,9 +1426,10 @@ mod tests {
     }
     #[test]
     fn a_real_boss_hit_clears_only_the_players_uncommitted_melee_successor() {
+        let contact = ticks_to_contact();
         let (mut app, player, boss) = arena();
         wait_for(&mut app, boss, BossState::Telegraph);
-        tick(&mut app, 18);
+        tick(&mut app, contact - 12);
         let before = health(&app, player);
         app.world_mut()
             .get_mut::<CombatIntent>(player)

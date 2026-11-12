@@ -90,6 +90,8 @@ pub(super) struct RigPose {
     source_local: Option<Vec<Transform>>,
     source_from: Option<Vec<Transform>>,
     source_clip: Option<(SourceRig, usize)>,
+    /// Where in `source_clip` the previous frame sampled.
+    source_time: f32,
     source_blend: f32,
     local: Vec<Transform>,
     pub(super) model: Vec<Transform>,
@@ -125,6 +127,7 @@ impl RigPose {
             source_local: None,
             source_from: None,
             source_clip: None,
+            source_time: 0.0,
             source_blend: 0.0,
             model: library.model_pose(&local),
             from: local.clone(),
@@ -474,13 +477,7 @@ impl RigPose {
                 })
             }
         });
-        self.trace.melee_stage = input
-            .attack
-            .and_then(|clock| match clock.track {
-                crate::simulation::TrackId::Boss { stage } => Some(stage),
-                _ => None,
-            })
-            .or_else(|| action.and_then(|action| action.melee_stage));
+        self.trace.melee_stage = action.and_then(|action| action.melee_stage);
         self.trace.defense = defense.map(|defense| defense.kind);
         self.trace.defense_interrupted =
             defense.is_some_and(|defense| self.interrupted_defense == Some(defense.gesture_id));
@@ -567,7 +564,14 @@ impl RigPose {
                 target[root].rotation =
                     Quat::from_rotation_y(input.dodge_yaw) * target[root].rotation;
             }
-            if self.source_clip != Some((library.rig(), clip)) || self.transition <= dt {
+            // Cross-fade into a new clip, or into the same clip started over.
+            // A change of the CC0 state underneath does neither: the source
+            // clip keeps playing, and re-blending from last frame's pose would
+            // make it lag behind its own timeline.
+            let time = library.sample_time(clip, seconds, looping);
+            let restarted = !looping && time + 1e-4 < self.source_time;
+            self.source_time = time;
+            if self.source_clip != Some((library.rig(), clip)) || restarted {
                 self.source_from = self.source_local.clone();
                 self.source_blend = 0.0;
             }
@@ -1376,7 +1380,7 @@ mod tests {
     }
 
     #[test]
-    fn boss_reuses_all_three_player_clips_on_fixed_attack_time_and_stops_during_rest() {
+    fn boss_plays_each_strikes_own_clip_on_its_attack_time_and_stops_while_circling() {
         let mut app = app();
         app.init_resource::<SourceAnimationLibrary>();
         let player = actor(&mut app);
@@ -1396,16 +1400,17 @@ mod tests {
         let mut seen = std::collections::HashSet::new();
         let mut rested = false;
         let mut frozen_checked = false;
-        for _ in 0..1100 {
+        for _ in 0..3600 {
             frame(&mut app, true);
             let snapshot = app.world().get::<Boss>(boss).unwrap();
-            if snapshot.state() == BossState::Recovering
-                && snapshot.duration() == 3.0
-                && snapshot.elapsed() > 1.0
+            // Circling after a strike plays no attack clip.
+            if snapshot.state() == BossState::Strafing
+                && !seen.is_empty()
+                && snapshot.elapsed() > 0.3
             {
                 assert!(
                     actor_rig(&app, boss).source.is_none(),
-                    "third strike stretched into the rest"
+                    "a strike stretched into the circling"
                 );
                 rested = true;
             }
@@ -1415,14 +1420,11 @@ mod tests {
             let clock = snapshot.attack_clock().unwrap();
             let row = attack_clips::of(clock.track).unwrap();
             let name = row.clip;
-            let source = app
-                .world()
-                .resource::<SourceAnimationLibrary>()
-                .for_rig(SourceRig::Naraka)
-                .unwrap();
-            let expected = row.position(&clock) * source.duration(source.clip(name).unwrap());
+            // The Boss's own named clips take seconds.
+            let expected = row.position(&clock);
             let trace = actor_rig(&app, boss).trace();
-            assert_eq!(trace.source_rig, Some(SourceRig::Naraka.id()));
+            assert!(name.starts_with("skill_ylk_"), "{name}");
+            assert_eq!(trace.source_rig, Some(SourceRig::Yanyun.id()));
             assert_eq!(trace.source_clip.as_deref(), Some(name));
             assert!((trace.source_seconds - expected).abs() < 0.00001);
             assert!(
@@ -1450,11 +1452,11 @@ mod tests {
                 app.world_mut().resource_mut::<SimulationActive>().0 = true;
                 frozen_checked = true;
             }
-            if seen.len() == 3 && rested {
+            if seen.len() >= 3 && rested {
                 break;
             }
         }
-        assert_eq!(seen.len(), 3);
+        assert!(seen.len() >= 3, "the Boss played only {seen:?}");
         assert!(rested && frozen_checked);
     }
 
