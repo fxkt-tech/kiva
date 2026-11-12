@@ -4,6 +4,7 @@ mod actions;
 mod boss;
 mod combat;
 mod defense;
+#[cfg(test)]
 mod geometry;
 mod impact;
 mod motion_feedback;
@@ -24,7 +25,8 @@ pub use combat::{
     HitOutcome, SpawnPoint,
 };
 pub use defense::{DefenseEdge, DefenseKind, DefenseSnapshot, DefenseState};
-pub use geometry::{CollisionWorld, SolidBox};
+#[cfg(test)]
+pub(crate) use geometry::{CollisionWorld, SolidBox};
 pub use impact::HitStop;
 pub use motion_feedback::{MotionEvent, MotionFeedback, MotionKind};
 pub use movement::{Body, MoveIntent};
@@ -66,7 +68,6 @@ impl Plugin for SimulationPlugin {
             .insert_resource(SubstepCount(6))
             .insert_resource(Time::<Fixed>::from_hz(TICK_RATE))
             .init_resource::<SimulationActive>()
-            .init_resource::<CollisionWorld>()
             .init_resource::<CombatFeedback>()
             .init_resource::<MotionFeedback>()
             .init_resource::<combat::ActionIds>()
@@ -88,7 +89,6 @@ impl Plugin for SimulationPlugin {
                     physics::install,
                     combat::ensure_companions,
                     combat::prepare,
-                    physics::remember_prop_poses,
                     physics::motor,
                     physics::resize_characters,
                 )

@@ -41,11 +41,6 @@ pub(super) struct ActorView {
 #[derive(Component)]
 pub(super) struct PlayerView;
 
-#[derive(Component)]
-pub(super) struct PropView {
-    pub owner: Entity,
-}
-
 fn init_resource<R: Resource + FromWorld>(world: &mut World) {
     world.init_resource::<R>();
 }
@@ -190,7 +185,6 @@ pub(super) fn run() {
             (
                 appearance::reconcile,
                 scene::sync_player,
-                scene::sync_props,
                 environment::animate_foliage,
                 combat::reconcile_enemies,
                 combat::sync_enemies,

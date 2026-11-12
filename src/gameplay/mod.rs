@@ -108,9 +108,7 @@ fn spawn_enemies(world: &mut World, mode: EnemyMode) {
 #[derive(Resource)]
 pub struct Level {
     pub half_size: f32,
-    pub props: Vec<Prop>,
     pub ground: TerrainGeometry,
-    pub ramp: TerrainGeometry,
     pub bamboo: Vec<Bamboo>,
     pub forest_trunks: TerrainGeometry,
     pub forest_rocks: TerrainGeometry,
@@ -133,20 +131,6 @@ impl Bamboo {
     pub fn radius_at(&self, fraction: f32) -> f32 {
         self.radius * (1.0 - 0.35 * fraction)
     }
-}
-
-#[derive(Component, Clone, Copy, Debug)]
-pub struct Prop {
-    pub center: Vec2,
-    pub size: Vec3,
-    pub kind: PropKind,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum PropKind {
-    Crate,
-    Pillar,
-    Stone,
 }
 
 #[derive(Component, Clone, Copy, Debug)]
@@ -178,8 +162,6 @@ impl Level {
         Self {
             half_size: 25.0,
             ground: TerrainGeometry::ground(25.0),
-            ramp: TerrainGeometry::ramp(),
-            props: Vec::new(),
             bamboo,
             forest_trunks,
             forest_rocks: TerrainGeometry::forest_rocks(),
@@ -227,10 +209,8 @@ pub fn path_distance(point: Vec2) -> f32 {
 
 fn forest_clearance(point: Vec2) -> bool {
     let clearing = (point.x / 8.5).powi(2) + ((point.y + 4.0) / 9.5).powi(2) < 1.0;
-    let ramp = (-7.3..=-1.7).contains(&point.x)
-        && (-0.8..=terrain::ramp_summit() + 4.0).contains(&point.y);
     let hill = (9.2..=21.5).contains(&point.x) && (2.0..=15.0).contains(&point.y);
-    clearing || ramp || hill || path_distance(point) < 1.9
+    clearing || hill || path_distance(point) < 1.9
 }
 
 pub fn setup(world: &mut World) {
@@ -242,11 +222,6 @@ pub fn setup(world: &mut World) {
     );
     spawn_terrain(
         world,
-        level.ramp.vertices.clone(),
-        level.ramp.triangles.clone(),
-    );
-    spawn_terrain(
-        world,
         level.forest_trunks.vertices.clone(),
         level.forest_trunks.triangles.clone(),
     );
@@ -255,11 +230,6 @@ pub fn setup(world: &mut World) {
         level.forest_rocks.vertices.clone(),
         level.forest_rocks.triangles.clone(),
     );
-    for prop in &level.props {
-        let center = Vec3::new(prop.center.x, prop.size.y * 0.5, prop.center.y);
-        let entity = spawn_box(world, center, prop.size, prop.kind == PropKind::Crate);
-        world.entity_mut(entity).insert(*prop);
-    }
     for boundary in level.boundaries() {
         let entity = spawn_box(world, boundary.center, boundary.size, false);
         world.entity_mut(entity).insert(boundary);
@@ -302,35 +272,6 @@ mod tests {
         }
     }
 
-    fn terrain_actor(position: Vec3) -> (App, Entity) {
-        let mut app = App::new();
-        app.add_plugins((MinimalPlugins, SimulationPlugin));
-        app.finish();
-        let level = Level::bamboo_forest();
-        spawn_terrain(
-            app.world_mut(),
-            level.ground.vertices,
-            level.ground.triangles,
-        );
-        spawn_terrain(app.world_mut(), level.ramp.vertices, level.ramp.triangles);
-        let actor = app
-            .world_mut()
-            .spawn((
-                Body::at(position, 6.0, 0.35),
-                MoveIntent::default(),
-                ActionIntent::default(),
-                MotionState::default(),
-                Facing::default(),
-            ))
-            .id();
-        tick(&mut app, 12);
-        (app, actor)
-    }
-
-    fn position(app: &App, actor: Entity) -> Vec3 {
-        app.world().get::<Body>(actor).unwrap().world_position()
-    }
-
     #[test]
     fn dense_forest_is_deterministic_and_keeps_clear_traversal_corridors() {
         let first = Level::bamboo_forest();
@@ -370,37 +311,34 @@ mod tests {
     }
 
     #[test]
-    fn woodland_terrain_preserves_open_spawns_and_controller_routes() {
+    fn woodland_terrain_keeps_spawns_and_the_hill_route_clear_of_bamboo() {
         let level = Level::bamboo_forest();
-        let zones = [
-            (
-                Vec2::new(-6.0, 1.0),
-                Vec2::new(-3.0, terrain::ramp_summit() + 3.0),
-            ),
-            (Vec2::new(11.0, 4.0), Vec2::new(19.5, 13.0)),
-        ];
-        assert!(level.props.is_empty());
+        // The walkable approach, summit and steep flank of the hill.
+        let (min, max) = (Vec2::new(11.0, 4.0), Vec2::new(19.5, 13.0));
         for stem in &level.bamboo {
             let center = stem.base.xz();
             let half_size = Vec2::splat(stem.radius + 0.35);
-            let extent = center.abs() + half_size;
-            assert!(extent.max_element() < level.half_size);
-            for (min, max) in zones {
-                assert!(
-                    (center + half_size).cmple(min).any() || (center - half_size).cmpge(max).any(),
-                    "bamboo {stem:?} obstructs a controller route"
-                );
-            }
+            assert!((center.abs() + half_size).max_element() < level.half_size);
+            assert_eq!(stem.base.y, terrain::hill_height(center));
+            assert!(
+                (center + half_size).cmple(min).any() || (center - half_size).cmpge(max).any(),
+                "bamboo {stem:?} obstructs the hill route"
+            );
         }
+        // The player spawn, both enemy spawns and the fighting lane between them.
         for point in [
             Vec2::ZERO,
             Vec2::new(-1.5, -4.0),
-            Vec2::new(0.0, -5.5),
+            Vec2::new(0.0, -4.0),
+            Vec2::new(0.0, -6.0),
             Vec2::new(1.5, -4.5),
             Vec2::new(1.0, -8.0),
         ] {
-            for (min, max) in zones {
-                assert!(point.cmplt(min - 0.35).any() || point.cmpgt(max + 0.35).any());
+            for stem in &level.bamboo {
+                assert!(
+                    stem.base.xz().distance(point) - stem.radius > 2.0,
+                    "bamboo {stem:?} crowds {point}"
+                );
             }
         }
         for vertex in &level.ground.vertices {
@@ -417,14 +355,9 @@ mod tests {
         app.finish();
         setup(app.world_mut());
         let world = app.world_mut();
-        assert_eq!(world.query::<&Prop>().iter(world).count(), 0);
         let mut terrain = world.query_filtered::<(&PhysicsPose, &RigidBody), Without<Boundary>>();
         let terrain: Vec<_> = terrain.iter(world).collect();
-        assert_eq!(
-            terrain.len(),
-            4,
-            "ground, ledge, bamboo and rocks are solid"
-        );
+        assert_eq!(terrain.len(), 3, "ground, bamboo and rocks are solid");
         for (pose, body) in terrain {
             assert_eq!(*body, RigidBody::Static);
             assert_eq!(pose.position(), Vec3::ZERO);
@@ -562,29 +495,5 @@ mod tests {
             assert_eq!(body.scale(), 1.0);
         }
         assert_eq!(world.query::<&Boss>().iter(world).count(), 1);
-    }
-
-    #[test]
-    fn platform_landing_refills_two_jumps_without_snapping_to_world_zero() {
-        let (mut app, actor) = terrain_actor(Vec3::new(-4.5, 1.5, 6.5));
-        for _ in 0..2 {
-            app.world_mut()
-                .get_mut::<ActionIntent>(actor)
-                .unwrap()
-                .request_jump();
-            tick(&mut app, 8);
-        }
-        let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert_eq!(motion.jumps_used(), 2);
-        assert!(position(&app, actor).y > 2.0);
-        app.world_mut()
-            .get_mut::<ActionIntent>(actor)
-            .unwrap()
-            .request_jump();
-        tick(&mut app, 120);
-        let motion = app.world().get::<MotionState>(actor).unwrap();
-        assert!(motion.is_grounded());
-        assert_eq!(motion.jumps_used(), 0);
-        assert!((position(&app, actor).y - 1.5).abs() < 0.06);
     }
 }

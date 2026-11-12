@@ -500,7 +500,6 @@ mod tests {
                 Update,
                 (
                     scene::sync_player,
-                    scene::sync_props,
                     reconcile_enemies,
                     sync_enemies,
                     sync_health_bars,
@@ -851,48 +850,6 @@ mod tests {
                 < 0.001
         );
         assert!((attack.rotation * Vec3::Y).dot(support.normal) > 0.999);
-    }
-
-    #[test]
-    fn prop_snapshots_move_display_roots_without_changing_local_children() {
-        use crate::{
-            client::PropView,
-            simulation::{PhysicsPose, spawn_box},
-        };
-        use avian3d::prelude::{Position, Rotation};
-        let mut app = headless_app();
-        // The bamboo arena has no decorative crates. Keep this snapshot/child
-        // regression independent of whichever props the current level includes.
-        let prop = spawn_box(app.world_mut(), Vec3::new(5.0, 0.5, 0.0), Vec3::ONE, true);
-        let view = app
-            .world_mut()
-            .spawn((PropView { owner: prop }, Transform::IDENTITY))
-            .id();
-        for position in [Vec3::new(0.1, 0.3, 0.0), Vec3::new(-0.4, 0.0, 0.2)] {
-            let child = app
-                .world_mut()
-                .spawn(Transform::from_translation(position))
-                .id();
-            app.world_mut().entity_mut(view).add_child(child);
-        }
-        let children: Vec<_> = app.world().get::<Children>(view).unwrap().iter().collect();
-        let local: Vec<_> = children
-            .iter()
-            .map(|&entity| *app.world().get::<Transform>(entity).unwrap())
-            .collect();
-        app.world_mut().get_mut::<Position>(prop).unwrap().0.y += 1.0;
-        app.world_mut().get_mut::<Rotation>(prop).unwrap().0 = Quat::from_rotation_z(0.4);
-        fixed_ticks(&mut app, 1);
-        app.world_mut().resource_mut::<SimulationActive>().0 = false;
-        app.world_mut().run_schedule(Update);
-        let pose = app.world().get::<PhysicsPose>(prop).unwrap();
-        let transform = app.world().get::<Transform>(view).unwrap();
-        assert!(transform.translation.distance(pose.position()) < 0.001);
-        assert!(transform.rotation.dot(pose.rotation()).abs() > 0.9999);
-        for (&child, before) in children.iter().zip(local) {
-            assert_eq!(app.world().get::<ChildOf>(child).unwrap().parent(), view);
-            assert_eq!(*app.world().get::<Transform>(child).unwrap(), before);
-        }
     }
 
     #[test]

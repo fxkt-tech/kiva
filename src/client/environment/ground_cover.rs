@@ -12,20 +12,17 @@ struct Patch {
     seed: u32,
 }
 
-/// Keep a two-metre spawn disk, the central fighting lane, winding routes and
-/// ledge clear. The former whole-clearing ellipse pushed all cover off camera.
+/// Keep a two-metre spawn disk, the central fighting lane and winding routes
+/// clear. The former whole-clearing ellipse pushed all cover off camera.
 /// Margins account for each grass card's half-width and its small wind sway.
 fn cover_allowed(point: Vec2) -> bool {
     let spawn = point.length() < 2.6;
     let target =
         point.distance(Vec2::new(0.0, -4.0)) < 2.5 || point.distance(Vec2::new(0.0, -6.0)) < 2.5;
     let fighting_lane = point.x.abs() < 2.45 && (-8.6..=1.5).contains(&point.y);
-    let ledge = (-7.1..=-1.9).contains(&point.x)
-        && (-0.5..=terrain::ramp_summit() + 3.8).contains(&point.y);
     !spawn
         && !target
         && !fighting_lane
-        && !ledge
         && path_distance(point) > 2.4
         && point.abs().max_element() < 24.0
 }
@@ -36,8 +33,6 @@ fn floor_detail_allowed(point: Vec2) -> bool {
     point.length() > 2.85
         && point.distance(Vec2::new(0.0, -4.0)) > 1.1
         && point.distance(Vec2::new(0.0, -6.0)) > 1.1
-        && !((-6.7..=-2.3).contains(&point.x)
-            && (0.0..=terrain::ramp_summit() + 3.5).contains(&point.y))
 }
 
 fn patches() -> Vec<Patch> {

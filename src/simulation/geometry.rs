@@ -1,4 +1,6 @@
-//! Legacy planar fixture descriptions. Product motion and queries use Avian's 3D world.
+//! Flat-arena descriptions for headless tests only; this module is not part of
+//! a product build. Product levels assemble their own Avian terrain and props.
+use super::spawn_box;
 use bevy::prelude::*;
 
 #[derive(Clone, Copy, Debug)]
@@ -14,39 +16,60 @@ impl SolidBox {
     }
 }
 
+/// Insert after `SimulationPlugin`: the next fixed tick builds a flat walled
+/// floor of this half size with these pillars, replacing any previous one.
 #[derive(Resource)]
 pub struct CollisionWorld {
     half_size: f32,
     solids: Vec<SolidBox>,
-    fixture: bool,
 }
 
-impl Default for CollisionWorld {
-    fn default() -> Self {
-        Self {
-            half_size: 25.0,
-            solids: Vec::new(),
-            fixture: false,
+#[derive(Component)]
+struct FixtureGeometry;
+
+/// Runs at the start of `physics::install`, before new actors query support.
+pub(super) fn install_fixture(world: &mut World) {
+    let Some(fixture) = world
+        .get_resource_ref::<CollisionWorld>()
+        .filter(|fixture| fixture.is_changed())
+    else {
+        return;
+    };
+    let (half_size, solids) = (fixture.half_size, fixture.solids.clone());
+    let old: Vec<_> = world
+        .query_filtered::<Entity, With<FixtureGeometry>>()
+        .iter(world)
+        .collect();
+    for entity in old {
+        world.despawn(entity);
+    }
+    let span = half_size * 2.0 + 1.0;
+    let mut boxes = vec![(Vec3::new(0.0, -0.25, 0.0), Vec3::new(span, 0.5, span))];
+    boxes.extend(solids.iter().map(|solid| {
+        (
+            Vec3::new(solid.center.x, 2.0, solid.center.y),
+            Vec3::new(solid.half_size.x * 2.0, 4.0, solid.half_size.y * 2.0),
+        )
+    }));
+    for sign in [-1.0, 1.0] {
+        for axis in [0, 2] {
+            let mut center = Vec3::new(0.0, 0.35, 0.0);
+            center[axis] = sign * (half_size + 0.25);
+            let mut size = Vec3::new(span, 0.7, span);
+            size[axis] = 0.5;
+            boxes.push((center, size));
         }
+    }
+    for (center, size) in boxes {
+        let entity = spawn_box(world, center, size, false);
+        world.entity_mut(entity).insert(FixtureGeometry);
     }
 }
 
 impl CollisionWorld {
     pub fn new(half_size: f32, solids: Vec<SolidBox>) -> Self {
         assert!(half_size.is_finite() && half_size > 0.0);
-        Self {
-            half_size,
-            solids,
-            fixture: true,
-        }
-    }
-
-    pub(super) fn fixture_geometry(&self) -> Option<(f32, Vec<SolidBox>)> {
-        self.fixture.then(|| (self.half_size, self.solids.clone()))
-    }
-
-    pub fn half_size(&self) -> f32 {
-        self.half_size
+        Self { half_size, solids }
     }
 
     pub fn is_clear(&self, point: Vec2, half_extent: f32) -> bool {
@@ -65,7 +88,6 @@ impl CollisionWorld {
             })
     }
 
-    #[cfg(test)]
     pub(super) fn slide(&self, start: Vec2, displacement: Vec2, half_extent: f32) -> Vec2 {
         if !displacement.is_finite() {
             return start;
@@ -97,13 +119,11 @@ impl CollisionWorld {
     }
 }
 
-#[cfg(test)]
 struct Hit {
     time: f32,
     normal: Vec2,
 }
 
-#[cfg(test)]
 fn cast(origin: Vec2, delta: Vec2, solid: SolidBox, extent: f32) -> Option<Hit> {
     let min = solid.center - solid.half_size - Vec2::splat(extent);
     let max = solid.center + solid.half_size + Vec2::splat(extent);

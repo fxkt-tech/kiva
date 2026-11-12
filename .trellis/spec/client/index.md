@@ -15,7 +15,7 @@
 - `AnimationLibrary::{bone,duration,sample,model_pose}` / `blend` 采样随包骨骼资产；`RigPose::new(&AnimationLibrary)` 保存局部混合及模型空间姿态。
 - `stickman::{attach_weapon,sync_attachments}` 绑定右手腕，并在姿态采样后同步几何；WeaponMode 分别校正近战柄轴和远程枪轴。
 - `scene::sync_player` → 敌人显示根 / 武器显隐 → `animation::animate` → `companion::sync` → `avatar::sync` → `stickman::sync_attachments` → `weapons::sync_tether` → HUD → `camera::follow` 在 Update 链式执行。
-- `ActorView { owner }` / `PlayerView` / `PropView { owner }` 标记纯显示根；输入、战斗身份留在物理实体。
+- `ActorView { owner }` / `PlayerView` 标记纯显示根；输入、战斗身份留在物理实体。
 - Web 桥 `window.kivaInput.isActive(): boolean` / `takeLook(): number` / `keys(): number` / `takeActions(): number` / `takeDefenseEdges(): number[]` / `ready(): void`。
 - wasm-bindgen 绑定在 `client/web.rs`，原生不需要 JS；加载观察器为 `window.kivaStartup.subscribe(callback)`。
 - `window.kivaHud.render(persona, weapon, healthFraction, health, combo, cooldown, context)`；绑定在 `client/hud.rs`，只有显示方向。
@@ -30,8 +30,8 @@
 鼠标右移令 yaw 减小；0.0025 rad/CSSpx，不乘 dt，不重复除 DPR。垂直移动不改变镜头俯角。
 具体桥签名、位掩码、有序右键及原生事件规则见 [输入契约](input.md)。
 scene 根据 Body 的三维脚底前后快照和 fixed overstep 插值，camera 读取同一 PlayerView 位置。
-物理根与显示根独立，客户端不写物理实体的 Transform / Position；箱子通过 PhysicsPose 插值中心位置和旋转，绑带挂在同一 PropView 下。
-`SimulationActive=false` 或 `HitStop::is_active()` 时所有角色、箱体、血条和标记统一取当前快照，避免暂停时插值循环抖动；朝向不延迟平滑。
+物理根与显示根独立，客户端不写物理实体的 Transform / Position。
+`SimulationActive=false` 或 `HitStop::is_active()` 时所有角色、血条和标记统一取当前快照，避免暂停时插值循环抖动；朝向不延迟平滑。
 普通相机：FOV 50°，身体中心为根位置 + Y*0.9，相机在后方 4.2 / 上方 6；后退距离固定为高度的 0.7 倍，
 调整高度时同比缩放以保持俯角。根据透视投影推导俯角，
 使身体中心投影在水平 50%、从顶部算垂直 2/3 的位置。
@@ -113,7 +113,7 @@ C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失
 错误：独立平滑相机、把显示 Transform 写回物理 Position，或将 view 实体 ID 当作战斗 actor。
 正确：JS 只管理输入边界，物理实体消费 Intent；owner 关联的显示根读取快照，模型和相机共用显示位置。
 
-`environment` 只消费Level同源地形/竹干/岩石，20个聚合网格、7个ForestMaterial；14张原竹叶/竹皮/落叶/土壤/草苔/草丛base与normal随包复用，sRGB/linear显式区分，alpha卡片有UV/tangent。ForestMaterial=ExtendedMaterial<StandardMaterial,ForestSurface>，保留标准PBR/雾、蒙皮/阴影路径；地表只通过分层纹理和有界mask区分干土/湿土/非金属积水，不用clearcoat或金属度伪造湿地。12组装饰风动不改变碰撞竹干，暂停冻结时钟。重复不透明纹理由texture_mips生成完整mip，颜色在线性空间平均、法线重归一；不直接给裁切atlas平均alpha以免远草消失。半球环境光/冷色填光/指数雾为Kiva美术适配；原编译shader用于验证mix通道，不冒称原HLSL/完整BRDF已移植。场景是主题重建，来源与局限见assets/choulingke/README.md。
+`environment` 只消费Level同源地形/竹干/岩石，19个聚合网格、7个ForestMaterial；14张原竹叶/竹皮/落叶/土壤/草苔/草丛base与normal随包复用，sRGB/linear显式区分，alpha卡片有UV/tangent。ForestMaterial=ExtendedMaterial<StandardMaterial,ForestSurface>，保留标准PBR/雾、蒙皮/阴影路径；地表只通过分层纹理和有界mask区分干土/湿土/非金属积水，不用clearcoat或金属度伪造湿地。12组装饰风动不改变碰撞竹干，暂停冻结时钟。重复不透明纹理由texture_mips生成完整mip，颜色在线性空间平均、法线重归一；不直接给裁切atlas平均alpha以免远草消失。半球环境光/冷色填光/指数雾为Kiva美术适配；原编译shader用于验证mix通道，不冒称原HLSL/完整BRDF已移植。场景是主题重建，来源与局限见assets/choulingke/README.md。
 
 rendering共用MainView标记和HDR、Msaa::Off、FXAA、DepthPrepass、DeferredPrepass，默认不透明材质deferred；游戏GameCamera另装SSR，验收页不装SSR。透光裁切植被显式Forward。不能改变相机姿态/FOV或模拟。SSR只对屏幕内深度/已完成deferred光照有效，前向透光物体和屏幕外物体不保证倒影；验收需要真实GPU pass记录与GBuffer读回，只有shader组合测试不够。湿土粗糙度不进入SSR，仅平滑积水进入，避免高频normal造成随机闪点。
 

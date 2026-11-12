@@ -12,8 +12,8 @@
 - `Body::new(Vec2, speed, radius)` / `Body::at(Vec3, speed, radius)`；`world_position()`、`interpolated_world(alpha)` 为三维脚底快照，`position()` 为 x/z 投影。
 - `Body::step_displacement()` 只读实际碰撞后最近固定步位移；MotionState 的 `dodge_elapsed/dodge_direction()` 只读闪避进度 / 方向，用于表现。
 - `MoveIntent::set(direction: Vec2)` / `stop()`。
-- `spawn_box` / `spawn_terrain` 创建真实三维碰撞实体；`PhysicsPose` 为道具中心姿态只读快照。
-- `CollisionWorld` / `SolidBox` 只作为旧无窗口夹具的装配适配，不用于产品关卡的运动或战斗查询。
+- `spawn_box` / `spawn_terrain` 创建真实三维碰撞实体；`PhysicsPose` 为箱体／地形中心姿态的只读快照，不再提供显示插值。
+- `CollisionWorld` / `SolidBox` 只在测试构建中作为无窗口夹具的装配描述，产品构建不包含，不用于产品关卡的运动或战斗查询。
 - `ActionIntent::set_shift_held(physical_shift)` / `set_movement_held(bool)` / `request_jump()` / `request_dodge()` / `request_crouch_toggle()` / `clear()`。
 - `MotionState::{is_crouched,is_sliding,slide_elapsed,slide_direction}` 只读蹲伏和滑铲状态。
 - `MotionState::jumps_used()` 只读当前腾空已用跳跃次数，供二段跳表现使用。

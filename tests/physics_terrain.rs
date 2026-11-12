@@ -141,7 +141,7 @@ fn courtyard_actor(feet: Vec3) -> (App, Entity) {
     app.add_plugins((MinimalPlugins, TransformPlugin, SimulationPlugin));
     app.finish();
     gameplay::setup(app.world_mut());
-    // Keep the actual terrain, boxes and boundaries; isolate locomotion from AI.
+    // Keep the actual terrain and boundaries; isolate locomotion from AI.
     let mut actors = app.world_mut().query_filtered::<Entity, With<Body>>();
     let actors: Vec<_> = actors.iter(app.world()).collect();
     for entity in actors {
@@ -174,38 +174,6 @@ fn move_actor(app: &mut App, actor: Entity, direction: Vec2) {
 
 fn feet(app: &App, actor: Entity) -> Vec3 {
     app.world().get::<Body>(actor).unwrap().world_position()
-}
-
-#[test]
-fn actual_courtyard_ramp_supports_ascent_stopping_and_platform_edge_fall() {
-    let (mut app, actor) = courtyard_actor(Vec3::new(-4.5, 0.05, 0.3));
-    move_actor(&mut app, actor, Vec2::Y);
-    tick(&mut app, 68);
-    move_actor(&mut app, actor, Vec2::ZERO);
-    tick(&mut app, 40);
-    let top = feet(&app, actor);
-    assert!(
-        (5.3..8.0).contains(&top.z),
-        "did not reach the platform: {top}"
-    );
-    assert!((top.y - 1.5).abs() < 0.12, "platform foot height: {top}");
-    assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
-    tick(&mut app, 90);
-    assert!(
-        feet(&app, actor).distance(top) < 0.15,
-        "standing on the platform drifted"
-    );
-    move_actor(&mut app, actor, Vec2::X);
-    tick(&mut app, 55);
-    move_actor(&mut app, actor, Vec2::ZERO);
-    tick(&mut app, 50);
-    let ground = feet(&app, actor);
-    assert!(ground.x > -2.5, "did not leave the platform: {ground}");
-    assert!(
-        ground.y.abs() < 0.12,
-        "did not fall back to the courtyard: {ground}"
-    );
-    assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
 }
 
 #[test]
@@ -245,10 +213,8 @@ fn actual_hill_has_a_walkable_approach_a_supported_summit_and_a_descent() {
 }
 
 #[test]
-fn double_jumps_from_the_hill_and_ramp_refill_only_after_landing_back_on_the_slope() {
-    for origin in [Vec3::new(14.0, 1.75, 8.5), Vec3::new(-4.5, 0.85, 3.0)] {
-        assert_double_jump_on_slope(origin);
-    }
+fn double_jumps_from_the_hill_refill_only_after_landing_back_on_the_slope() {
+    assert_double_jump_on_slope(Vec3::new(14.0, 1.75, 8.5));
 }
 
 fn assert_double_jump_on_slope(origin: Vec3) {
@@ -300,28 +266,6 @@ fn assert_double_jump_on_slope(origin: Vec3) {
         feet(&app, actor).y > 0.5,
         "landing was forced down to world zero"
     );
-}
-
-#[test]
-fn the_actual_ramp_supports_diagonal_descent_without_launching_the_actor() {
-    let (mut app, actor) = courtyard_actor(Vec3::new(-5.0, 1.25, 4.2));
-    let start = feet(&app, actor);
-    assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
-    move_actor(&mut app, actor, Vec2::new(0.2, -1.0));
-    for _ in 0..38 {
-        tick(&mut app, 1);
-        assert!(
-            feet(&app, actor).y <= start.y + 0.02,
-            "descending the ramp launched the actor upward"
-        );
-    }
-    move_actor(&mut app, actor, Vec2::ZERO);
-    tick(&mut app, 40);
-    let end = feet(&app, actor);
-    assert!(end.x > start.x + 0.5, "did not move diagonally: {end}");
-    assert!(end.z < 0.8, "did not descend onto the courtyard: {end}");
-    assert!(end.y.abs() < 0.02, "did not return to flat ground: {end}");
-    assert!(app.world().get::<MotionState>(actor).unwrap().is_grounded());
 }
 
 #[test]

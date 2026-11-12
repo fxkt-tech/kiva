@@ -74,7 +74,6 @@ fn texture(world: &mut World, path: &'static str, srgb: bool, repeat: bool) -> H
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum EnvironmentPart {
     Ground,
-    Ledge,
     Trunks,
     Rocks,
     Perimeter,
@@ -113,11 +112,10 @@ pub(super) fn setup_camera_fog(world: &mut World) {
 }
 
 pub(super) fn setup(world: &mut World) {
-    let (ground, ramp, trunks, rocks, bamboo, boundaries) = {
+    let (ground, trunks, rocks, bamboo, boundaries) = {
         let level = world.resource::<Level>();
         (
             level.ground.clone(),
-            level.ramp.clone(),
             level.forest_trunks.clone(),
             level.forest_rocks.clone(),
             level.bamboo.clone(),
@@ -279,15 +277,6 @@ pub(super) fn setup(world: &mut World) {
         ground_colors,
         &soil,
         EnvironmentPart::Ground,
-        None,
-    );
-    let ramp_colors = ramp.vertices.iter().map(|v| ground_color(*v)).collect();
-    spawn_mesh(
-        world,
-        &ramp,
-        ramp_colors,
-        &soil,
-        EnvironmentPart::Ledge,
         None,
     );
     let trunk_colors = trunks
@@ -580,7 +569,7 @@ fn spawn_mesh(
                 }
                 EnvironmentPart::Trunks => [((index % 42) % 8) as f32 / 8.0, -point.y / 3.6],
                 // 2.5m per original 1024px soil tile is a Kiva scale adaptation.
-                EnvironmentPart::Ground | EnvironmentPart::Ledge => [point.x / 2.5, point.z / 2.5],
+                EnvironmentPart::Ground => [point.x / 2.5, point.z / 2.5],
                 _ => [point.x * 0.25, point.z * 0.25],
             })
             .collect()
@@ -618,7 +607,6 @@ mod tests {
         let level = world.resource::<Level>();
         let expected = [
             (EnvironmentPart::Ground, level.ground.clone()),
-            (EnvironmentPart::Ledge, level.ramp.clone()),
             (EnvironmentPart::Trunks, level.forest_trunks.clone()),
             (EnvironmentPart::Rocks, level.forest_rocks.clone()),
             (
@@ -642,8 +630,8 @@ mod tests {
                 (*part, mesh.0.clone())
             })
             .collect();
-        assert_eq!(parts.len(), 20);
-        assert_eq!(world.resource::<Assets<Mesh>>().len(), 20);
+        assert_eq!(parts.len(), 19);
+        assert_eq!(world.resource::<Assets<Mesh>>().len(), 19);
         assert_eq!(world.resource::<Assets<ForestMaterial>>().len(), 7);
         let materials = world.resource::<Assets<ForestMaterial>>();
         let images = world.resource::<Assets<Image>>();

@@ -3,11 +3,6 @@
 use bevy::prelude::*;
 
 pub const HILL_PEAK: Vec3 = Vec3::new(16.5, 2.6, 8.5);
-pub const RAMP_HEIGHT: f32 = 1.5;
-pub const RAMP_ANGLE: f32 = 20.0_f32.to_radians();
-pub const RAMP_LEFT: f32 = -6.0;
-pub const RAMP_RIGHT: f32 = -3.0;
-pub const RAMP_START: f32 = 1.0;
 const GRID_SPACING: f32 = 0.5;
 
 #[derive(Clone, Debug, Default)]
@@ -146,43 +141,6 @@ impl TerrainGeometry {
             triangles,
         }
     }
-
-    /// A closed solid with one uninterrupted ramp-to-platform top surface.
-    pub fn ramp() -> Self {
-        let summit = ramp_summit();
-        let end = summit + 3.0;
-        let mut vertices = Vec::with_capacity(8);
-        for x in [RAMP_LEFT, RAMP_RIGHT] {
-            vertices.extend([
-                Vec3::new(x, 0.0, RAMP_START),
-                Vec3::new(x, RAMP_HEIGHT, summit),
-                Vec3::new(x, RAMP_HEIGHT, end),
-                Vec3::new(x, 0.0, end),
-            ]);
-        }
-        let triangles = vec![
-            [0, 2, 1],
-            [0, 3, 2],
-            [4, 5, 6],
-            [4, 6, 7],
-            [0, 1, 4],
-            [4, 1, 5],
-            [1, 2, 5],
-            [5, 2, 6],
-            [2, 3, 6],
-            [6, 3, 7],
-            [0, 4, 3],
-            [4, 7, 3],
-        ];
-        Self {
-            vertices,
-            triangles,
-        }
-    }
-}
-
-pub fn ramp_summit() -> f32 {
-    RAMP_START + RAMP_HEIGHT / RAMP_ANGLE.tan()
 }
 
 pub fn hill_height(point: Vec2) -> f32 {
@@ -200,7 +158,6 @@ pub fn hill_height(point: Vec2) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
 
     fn normal(geometry: &TerrainGeometry, triangle: &[u32; 3]) -> Vec3 {
         let [a, b, c] = triangle.map(|index| geometry.vertices[index as usize]);
@@ -259,48 +216,5 @@ mod tests {
         ] {
             assert_eq!(hill_height(point), 0.0);
         }
-    }
-
-    #[test]
-    fn ramp_and_platform_form_a_closed_solid_with_the_requested_top_slope() {
-        let geometry = TerrainGeometry::ramp();
-        let mut edges = HashMap::new();
-        let mut sloped_tops = 0;
-        let mut flat_tops = 0;
-        for triangle in &geometry.triangles {
-            let normal = normal(&geometry, triangle);
-            assert!(normal.length_squared() > 0.0001);
-            if normal.y > 0.0 {
-                let angle = normal.normalize().angle_between(Vec3::Y);
-                if angle > 0.01 {
-                    assert!((angle - RAMP_ANGLE).abs() < 0.0001);
-                    sloped_tops += 1;
-                } else {
-                    flat_tops += 1;
-                }
-            }
-            for (a, b) in [
-                (triangle[0], triangle[1]),
-                (triangle[1], triangle[2]),
-                (triangle[2], triangle[0]),
-            ] {
-                let key = (a.min(b), a.max(b));
-                let (count, orientation) = edges.entry(key).or_insert((0, 0));
-                *count += 1;
-                *orientation += if a < b { 1 } else { -1 };
-            }
-        }
-        assert_eq!(sloped_tops, 2);
-        assert_eq!(flat_tops, 2);
-        assert!(
-            edges
-                .values()
-                .all(|&(count, direction)| count == 2 && direction == 0)
-        );
-        assert_eq!(geometry.vertices[0].y, 0.0);
-        assert_eq!(geometry.vertices[4].y, 0.0);
-        assert_eq!(geometry.vertices[1].z, geometry.vertices[5].z);
-        assert_eq!(geometry.vertices[1].y, RAMP_HEIGHT);
-        assert!((ramp_summit() - 5.1212).abs() < 0.0001);
     }
 }

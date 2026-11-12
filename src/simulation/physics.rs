@@ -4,9 +4,7 @@ use avian3d::collision::collider::contact_query::contact_manifolds;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use super::{
-    ActionIntent, Body, CollisionWorld, Combatant, Facing, Health, MotionState, MoveIntent,
-};
+use super::{ActionIntent, Body, Combatant, Facing, Health, MotionState, MoveIntent};
 
 pub const STANDING_HEIGHT: f32 = 1.73;
 pub const CROUCHED_HEIGHT: f32 = 1.40;
@@ -42,37 +40,23 @@ pub(super) struct Support {
     pub velocity: Vec3,
 }
 
-/// Read-only center pose for scene props. Only the physics bridge publishes it.
+/// Read-only center pose of a box or terrain body. Only the physics bridge
+/// publishes it.
 #[derive(Component)]
 pub struct PhysicsPose {
-    previous_position: Vec3,
     position: Vec3,
-    previous_rotation: Quat,
     rotation: Quat,
 }
 
 impl PhysicsPose {
     fn new(position: Vec3, rotation: Quat) -> Self {
-        Self {
-            previous_position: position,
-            position,
-            previous_rotation: rotation,
-            rotation,
-        }
+        Self { position, rotation }
     }
     pub fn position(&self) -> Vec3 {
         self.position
     }
     pub fn rotation(&self) -> Quat {
         self.rotation
-    }
-    pub fn interpolated_position(&self, alpha: f32) -> Vec3 {
-        self.previous_position
-            .lerp(self.position, alpha.clamp(0.0, 1.0))
-    }
-    pub fn interpolated_rotation(&self, alpha: f32) -> Quat {
-        self.previous_rotation
-            .slerp(self.rotation, alpha.clamp(0.0, 1.0))
     }
 }
 
@@ -165,53 +149,10 @@ pub(super) fn flush_teleports(world: &mut World) {
     }
 }
 
-#[derive(Component)]
-struct LegacyFixtureGeometry;
-
-/// Legacy descriptors are only used by existing headless fixtures. Production
-/// gameplay installs its explicit terrain and props instead.
+/// Give new actors their rigid body, collider and first genuine support.
 pub(super) fn install(world: &mut World) {
-    let rebuild = world
-        .get_resource_ref::<CollisionWorld>()
-        .is_some_and(|resource| resource.is_changed());
-    if rebuild {
-        let fixture = world.resource::<CollisionWorld>().fixture_geometry();
-        let old: Vec<_> = world
-            .query_filtered::<Entity, With<LegacyFixtureGeometry>>()
-            .iter(world)
-            .collect();
-        for entity in old {
-            world.despawn(entity);
-        }
-        if let Some((half_size, solids)) = fixture {
-            let ground = spawn_box(
-                world,
-                Vec3::new(0.0, -0.25, 0.0),
-                Vec3::new(half_size * 2.0 + 1.0, 0.5, half_size * 2.0 + 1.0),
-                false,
-            );
-            world.entity_mut(ground).insert(LegacyFixtureGeometry);
-            for solid in solids {
-                let entity = spawn_box(
-                    world,
-                    Vec3::new(solid.center.x, 2.0, solid.center.y),
-                    Vec3::new(solid.half_size.x * 2.0, 4.0, solid.half_size.y * 2.0),
-                    false,
-                );
-                world.entity_mut(entity).insert(LegacyFixtureGeometry);
-            }
-            for sign in [-1.0, 1.0] {
-                for axis in [0, 2] {
-                    let mut center = Vec3::new(0.0, 0.35, 0.0);
-                    center[axis] = sign * (half_size + 0.25);
-                    let mut size = Vec3::new(half_size * 2.0 + 1.0, 0.7, half_size * 2.0 + 1.0);
-                    size[axis] = 0.5;
-                    let entity = spawn_box(world, center, size, false);
-                    world.entity_mut(entity).insert(LegacyFixtureGeometry);
-                }
-            }
-        }
-    }
+    #[cfg(test)]
+    super::geometry::install_fixture(world);
     let actors: Vec<_> = world
         .query_filtered::<(Entity, &Body), Without<RigidBody>>()
         .iter(world)
@@ -503,13 +444,6 @@ pub(super) fn resize_characters(world: &mut World) {
             actor.insert((Position(center), character_collider(radius, wanted)));
             actor.get_mut::<MotionState>().unwrap().capsule_height = wanted;
         }
-    }
-}
-
-pub(super) fn remember_prop_poses(mut poses: Query<&mut PhysicsPose>) {
-    for mut pose in &mut poses {
-        pose.previous_position = pose.position;
-        pose.previous_rotation = pose.rotation;
     }
 }
 

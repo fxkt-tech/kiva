@@ -4,10 +4,10 @@ use bevy::prelude::*;
 
 use crate::{
     gameplay::Player,
-    simulation::{Body, Combatant, HitStop, PhysicsPose, SimulationActive},
+    simulation::{Body, Combatant, HitStop, SimulationActive},
 };
 
-use super::{ActorView, PlayerView, PropView, controls::ViewYaw};
+use super::{ActorView, PlayerView, controls::ViewYaw};
 
 pub(super) fn setup(world: &mut World) {
     super::environment::setup(world);
@@ -36,22 +36,6 @@ pub(super) fn sync_player(
             })
             .unwrap_or(view.yaw());
         transform.rotation = Quat::from_rotation_y(yaw);
-    }
-}
-
-pub(super) fn sync_props(
-    time: Res<Time<Fixed>>,
-    active: Res<SimulationActive>,
-    hit_stop: Res<HitStop>,
-    props: Query<&PhysicsPose>,
-    mut views: Query<(&PropView, &mut Transform)>,
-) {
-    let alpha = super::display_alpha(&time, &active, &hit_stop);
-    for (view, mut transform) in &mut views {
-        if let Ok(pose) = props.get(view.owner) {
-            transform.translation = pose.interpolated_position(alpha);
-            transform.rotation = pose.interpolated_rotation(alpha);
-        }
     }
 }
 
