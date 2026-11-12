@@ -3,6 +3,7 @@ mod animation;
 mod appearance;
 mod audio;
 mod avatar;
+mod bundle;
 mod camera;
 mod combat;
 mod companion;
@@ -25,7 +26,11 @@ mod weapon_models;
 mod weapons;
 mod web;
 
-use bevy::prelude::*;
+use bevy::{
+    asset::{AssetMetaCheck, AssetPlugin},
+    ecs::schedule::ScheduleLabel,
+    prelude::*,
+};
 
 /// Rendering owns these roots; their owners are simulation entities.
 #[derive(Component, Clone, Copy)]
@@ -41,6 +46,10 @@ pub(super) struct PropView {
     pub owner: Entity,
 }
 
+fn init_resource<R: Resource + FromWorld>(world: &mut World) {
+    world.init_resource::<R>();
+}
+
 fn display_alpha(
     time: &Time<Fixed>,
     active: &crate::simulation::SimulationActive,
@@ -53,40 +62,109 @@ fn display_alpha(
     }
 }
 
+/// The scene is assembled once, in the frame its runtime files have arrived.
+#[derive(ScheduleLabel, Clone, Debug, PartialEq, Eq, Hash)]
+pub(super) struct Assemble;
+
+/// Present once [`Assemble`] ran; every system reading the scene waits for it.
+#[derive(Resource)]
+pub(super) struct Assembled;
+
+/// What [`Assemble`] decodes. Later selections request their own files.
+#[derive(Resource)]
+pub(super) struct Manifest(pub Vec<&'static str>);
+
+const ASSET_FAILURE: &str = "资源加载失败，请重新加载后重试";
+
+fn request_manifest(world: &mut World) {
+    let paths = world.resource::<Manifest>().0.clone();
+    bundle::request(world, &paths);
+}
+
+fn assemble(world: &mut World, mut failed: Local<bool>) {
+    if world.contains_resource::<Assembled>() {
+        return;
+    }
+    let status = bundle::status(world, &world.resource::<Manifest>().0);
+    match status {
+        // Repeated every frame: the page ignores an unchanged count, and the
+        // loader's own late "initialize" notification cannot hide this one.
+        bundle::Status::Pending { loaded, total } => web::progress("initialize", loaded, total),
+        bundle::Status::Failed(path) if !*failed => {
+            *failed = true;
+            error!("Runtime asset {path} could not be loaded");
+            web::fail(ASSET_FAILURE);
+        }
+        _ => {}
+    }
+    if status == bundle::Status::Ready {
+        world.run_schedule(Assemble);
+        world.insert_resource(Assembled);
+    }
+}
+
+/// Shared by the game and the inspection page: fetch `manifest`, then run
+/// [`Assemble`] exactly once.
+pub(super) fn assemble_after_loading(app: &mut App, manifest: Vec<&'static str>) {
+    app.add_plugins(bundle::BundlePlugin)
+        .insert_resource(Manifest(manifest))
+        .init_schedule(Assemble)
+        .add_systems(Startup, (loading::begin, request_manifest).chain())
+        .add_systems(First, assemble);
+}
+
 pub(super) fn run() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-            title: "Kiva · Top-down / WASD + Mouse".into(),
-            resolution: (1440, 900).into(),
-            #[cfg(target_arch = "wasm32")]
-            canvas: Some("#game".into()),
-            #[cfg(target_arch = "wasm32")]
-            fit_canvas_to_parent: true,
-            #[cfg(target_arch = "wasm32")]
-            prevent_default_event_handling: true,
-            ..default()
-        }),
-        ..default()
-    }))
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Kiva · Top-down / WASD + Mouse".into(),
+                    resolution: (1440, 900).into(),
+                    #[cfg(target_arch = "wasm32")]
+                    canvas: Some("#game".into()),
+                    #[cfg(target_arch = "wasm32")]
+                    fit_canvas_to_parent: true,
+                    #[cfg(target_arch = "wasm32")]
+                    prevent_default_event_handling: true,
+                    ..default()
+                }),
+                ..default()
+            })
+            .set(AssetPlugin {
+                // Trunk copies each asset directory next to the page; native
+                // builds read the repository's (or the executable's) assets/.
+                file_path: if cfg!(target_arch = "wasm32") {
+                    ".".into()
+                } else {
+                    "assets".into()
+                },
+                // No .meta files are shipped, so do not request them.
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            }),
+    )
     .add_plugins(loading::StartupPlugin);
     if web::viewer_mode() {
         viewer::configure(&mut app);
         app.run();
         return;
     }
+    assemble_after_loading(&mut app, bundle::game());
     app.add_plugins(forest_material::ForestMaterialPlugin)
         .add_plugins(crate::simulation::SimulationPlugin)
+        // Nothing is simulated before the scene exists; input sampling owns
+        // this flag from the first assembled frame.
+        .insert_resource(crate::simulation::SimulationActive(false))
         .insert_resource(ClearColor(Color::srgb_u8(15, 22, 29)))
         .init_resource::<controls::ViewYaw>()
         .init_resource::<controls::CaptureState>()
         .init_resource::<skeleton::AnimationLibrary>()
-        .init_resource::<source_animation::SourceAnimationLibrary>()
         .init_resource::<appearance::AppearanceSelection>()
         .add_systems(
-            Startup,
+            Assemble,
             (
-                loading::begin,
+                init_resource::<source_animation::SourceAnimationLibrary>,
                 crate::gameplay::setup,
                 scene::setup,
                 combat::setup,
@@ -104,6 +182,7 @@ pub(super) fn run() {
             RunFixedMainLoop,
             (enemies::sample, controls::sample, appearance::sample)
                 .chain()
+                .run_if(resource_exists::<Assembled>)
                 .in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
         )
         .add_systems(
@@ -129,7 +208,83 @@ pub(super) fn run() {
                 hud::sync,
                 camera::follow,
             )
-                .chain(),
+                .chain()
+                .run_if(resource_exists::<Assembled>),
         );
     app.run();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Resource, Default)]
+    struct Runs {
+        assembled: u32,
+        gated: u32,
+    }
+
+    fn app(manifest: Vec<&'static str>) -> App {
+        let mut app = App::new();
+        app.add_plugins((
+            MinimalPlugins,
+            AssetPlugin {
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            },
+        ));
+        assemble_after_loading(&mut app, manifest);
+        app.init_resource::<Runs>()
+            .add_systems(Assemble, |mut runs: ResMut<Runs>| runs.assembled += 1)
+            .add_systems(
+                Update,
+                (|mut runs: ResMut<Runs>| runs.gated += 1).run_if(resource_exists::<Assembled>),
+            );
+        app
+    }
+
+    fn settle(app: &mut App) {
+        for _ in 0..2_000 {
+            app.update();
+            let status = bundle::status(app.world(), &app.world().resource::<Manifest>().0);
+            if !matches!(status, bundle::Status::Pending { .. }) {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1));
+        }
+    }
+
+    #[test]
+    fn the_scene_is_assembled_once_and_only_after_its_files_arrived() {
+        let mut app = app(vec![
+            "yizhiying/weapon.bin",
+            "choulingke/environment/litter.png",
+        ]);
+        // Requested in Startup; the files cannot have been delivered yet.
+        app.update();
+        assert!(!app.world().contains_resource::<Assembled>());
+        assert_eq!(app.world().resource::<Runs>().assembled, 0);
+        assert_eq!(app.world().resource::<Runs>().gated, 0);
+        settle(&mut app);
+        for _ in 0..3 {
+            app.update();
+        }
+        assert!(app.world().contains_resource::<Assembled>());
+        let runs = app.world().resource::<Runs>();
+        assert_eq!(runs.assembled, 1);
+        assert!(runs.gated >= 3);
+    }
+
+    #[test]
+    fn a_missing_file_never_assembles_and_reports_one_failure() {
+        web::take_startup_notifications();
+        let mut app = app(vec!["yizhiying/weapon.bin", "missing/weapon.bin"]);
+        settle(&mut app);
+        for _ in 0..3 {
+            app.update();
+        }
+        assert!(!app.world().contains_resource::<Assembled>());
+        assert_eq!(app.world().resource::<Runs>().assembled, 0);
+        assert_eq!(web::take_startup_notifications(), (0, 1));
+    }
 }

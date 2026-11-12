@@ -7,21 +7,34 @@ use std::time::Duration;
 
 fn session() -> Session {
     let library = AnimationLibrary::default();
-    let source = SourceAnimationLibrary::default();
+    let source = SourceAnimationLibrary::bundled();
     Session::new(animation::preview_catalog(&library, &source))
 }
 fn app() -> App {
+    app_with(false)
+}
+/// `server` adds the real asset server, so later selections load asynchronously.
+fn app_with(server: bool) -> App {
     let mut app = App::new();
     app.add_plugins((
         MinimalPlugins,
         bevy::camera::visibility::VisibilityPlugin,
         loading::StartupPlugin,
-    ))
-    .init_resource::<Assets<Mesh>>()
-    .init_resource::<Assets<StandardMaterial>>()
-    .init_resource::<AnimationLibrary>()
-    .init_resource::<SourceAnimationLibrary>()
-    .init_resource::<Orbit>();
+    ));
+    if server {
+        app.add_plugins((
+            bevy::asset::AssetPlugin {
+                meta_check: bevy::asset::AssetMetaCheck::Never,
+                ..default()
+            },
+            bundle::BundlePlugin,
+        ));
+    }
+    app.init_resource::<Assets<Mesh>>()
+        .init_resource::<Assets<StandardMaterial>>()
+        .init_resource::<AnimationLibrary>()
+        .init_resource::<SourceAnimationLibrary>()
+        .init_resource::<Orbit>();
     setup(app.world_mut());
     app.add_systems(
         Update,
@@ -489,4 +502,46 @@ fn source_seek_to_loop_endpoint_retains_real_tail_sample() {
     assert!((trace.cc0_seconds - duration).abs() < 0.00001);
     assert!(app.world().resource::<Session>().looping);
     assert!(!app.world().resource::<Session>().playing);
+}
+
+#[test]
+fn an_unloaded_selection_keeps_the_previous_model_and_revision_until_its_files_arrive() {
+    let mut app = app_with(true);
+    let shown = asset_counts(app.world());
+    let registered = app.world().resource::<Scene>().registered_revision;
+    apply(&mut app, "appearance\tbailingmiao");
+    apply(&mut app, "weapon\tyizhiying");
+    {
+        let scene = app.world().resource::<Scene>();
+        let session = app.world().resource::<Session>();
+        assert_eq!(session.appearance, Appearance::Bailingmiao);
+        assert!(scene.loading && !scene.load_failed);
+        assert_eq!(scene.shown_appearance, Appearance::Lihuowang);
+        assert_eq!(scene.shown_weapon, Weapon::Hammer);
+        // The page keeps its "preparing" panel: this revision is unconfirmed.
+        assert_ne!(session.revision, registered);
+        assert_eq!(scene.registered_revision, registered);
+        assert_eq!(session.status, "正在加载所选模型…");
+    }
+    assert_eq!(asset_counts(app.world()), shown);
+    // The mounts and debug overlay keep using the model which is shown.
+    app.world_mut().resource_mut::<Scene>().skin_dirty = true;
+    app.world_mut().resource_mut::<Session>().debug.grips = true;
+    app.world_mut().run_schedule(Update);
+    finish_view(app.world_mut());
+
+    for _ in 0..5_000 {
+        app.update();
+        if !app.world().resource::<Scene>().loading {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(1));
+    }
+    let scene = app.world().resource::<Scene>();
+    let session = app.world().resource::<Session>();
+    assert!(!scene.loading && !scene.load_failed);
+    assert_eq!(scene.shown_appearance, Appearance::Bailingmiao);
+    assert_eq!(scene.shown_weapon, Weapon::Bow);
+    assert_eq!(scene.registered_revision, session.revision);
+    assert_eq!(session.status, "");
 }

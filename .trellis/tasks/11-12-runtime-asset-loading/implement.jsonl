@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/index.md", "reason": "工程边界与质量门槛"}
+{"file": ".trellis/spec/client/index.md", "reason": "客户端组合与状态所有权"}
+{"file": ".trellis/spec/client/startup.md", "reason": "加载阶段、就绪门槛与失败契约"}
+{"file": ".trellis/spec/client/model-assets.md", "reason": "角色／武器资产格式与缓存"}
+{"file": ".trellis/spec/client/model-viewer.md", "reason": "验收页 revision 与就绪确认"}

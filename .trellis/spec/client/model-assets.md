@@ -3,7 +3,7 @@
 ## Scope / Trigger
 
 修改 `avatar`、`model_asset`、`weapon_models`、`weapons`、`companion`、女性握持 IK 或两个模型转换脚本时阅读。
-运行时只依赖随包二进制，不引入 GLTF／JSON 解析器，也不读取游戏目录。规则与动作时间线仍由 simulation 决定。
+运行时只依赖随包二进制，不引入 GLTF／JSON 解析器，也不读取游戏目录。角色与武器文件不编入程序，由 `bundle` 加载后交给 `AvatarAssets::shared`／`WeaponModel::shared` 解码一次；路径来自 `Appearance::asset_path` 与 `weapon_models::asset_path`，加载契约见 [startup.md](startup.md)。规则与动作时间线仍由 simulation 决定。
 
 ## Signatures
 
@@ -70,7 +70,7 @@ Bad：仅移动抽象 RigPose 手坐标而 palette 仍垂手，或只读取武�
 真实 GLB→二进制验证包含原 LBS、量化误差、权重／索引／法线／UV、female own rest、PNG 和可复现字节；不只测构造的单位绑定。
 World 回归检查实际 female palette 握点／臂长／几何变形、陡角度时脚掌与腿长、枪口0和 -Z、不同 yaw／pitch 下的武器上轴、两条真实三发技能与暂停、F2／死亡／F3 隔离，以及反复施放的实体／网格／纹理／材质数量稳定。
 近战额外验证两套哥哥身体的实际手腕轴、握柄与 +Y、四槽缓存和 source mesh 数量、链斧手持／飞行句柄一致、绳索本帧端点，以及普通 Q／完整拉近联动／取消／死亡／暂停回收且资产数量稳定。
-运行 make check、WASM Clippy；入口或嵌入资源改变后运行临时目录 Trunk 构建。真实画面观察单独记录，数值检查不替代画面验收。
+运行 make check、WASM Clippy；入口或随包资源清单改变后运行临时目录 Trunk 构建，并核对产物中的资源文件。真实画面观察单独记录，数值检查不替代画面验收。
 
 ## Wrong vs Correct
 

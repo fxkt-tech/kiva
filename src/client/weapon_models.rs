@@ -33,6 +33,22 @@ struct WeaponModels {
     models: [Option<WeaponModel>; 4],
 }
 
+pub(super) const PATHS: [&str; 4] = [
+    "fulangmao/weapon.bin",
+    "zhexingcuishan/weapon.bin",
+    "yinbingluo/weapon.bin",
+    "yizhiying/weapon.bin",
+];
+
+pub(super) fn asset_path(pair: WeaponPair, mode: WeaponMode) -> &'static str {
+    PATHS[match (pair, mode) {
+        (WeaponPair::HammerMusket, WeaponMode::Melee) => 0,
+        (WeaponPair::ChainAxeBow, WeaponMode::Melee) => 1,
+        (WeaponPair::HammerMusket, WeaponMode::Ranged) => 2,
+        (WeaponPair::ChainAxeBow, WeaponMode::Ranged) => 3,
+    }]
+}
+
 impl WeaponModel {
     pub(super) fn shared(world: &mut World, pair: WeaponPair, mode: WeaponMode) -> Self {
         world.init_resource::<WeaponModels>();
@@ -47,21 +63,8 @@ impl WeaponModel {
             return model.clone();
         }
         world.init_resource::<Assets<Image>>();
-        let data: &[u8] = match (pair, mode) {
-            (WeaponPair::HammerMusket, WeaponMode::Melee) => {
-                include_bytes!("../../assets/fulangmao/weapon.bin")
-            }
-            (WeaponPair::ChainAxeBow, WeaponMode::Melee) => {
-                include_bytes!("../../assets/zhexingcuishan/weapon.bin")
-            }
-            (WeaponPair::HammerMusket, WeaponMode::Ranged) => {
-                include_bytes!("../../assets/yinbingluo/weapon.bin")
-            }
-            (WeaponPair::ChainAxeBow, WeaponMode::Ranged) => {
-                include_bytes!("../../assets/yizhiying/weapon.bin")
-            }
-        };
-        let mut reader = Reader(data);
+        let data = super::bundle::take(world, asset_path(pair, mode));
+        let mut reader = Reader(&data);
         assert_eq!(&reader.take::<8>(), b"KIVAWP01");
         let length = reader.u32();
         reader.bytes(length); // Offline provenance, without a runtime JSON dependency.

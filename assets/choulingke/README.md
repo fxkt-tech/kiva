@@ -21,7 +21,7 @@
   --source /home/asuka/kiva-asset-research/choulingke
 ```
 
-用 `--max-texture-size 1024` 可导入更高纹理分辨率；不改变研究目录原件。游戏运行时只读取嵌入数据，不读取 Windows 安装目录，也不联网下载角色资源。GPU蒙皮、材质缓存和动作适配由 `client/avatar.rs` 管理；物理位置、角色大小、攻击结算仍由模拟/玩法层拥有。
+用 `--max-texture-size 1024` 可导入更高纹理分辨率；不改变研究目录原件。游戏运行时只加载本目录的随包文件（Web 为页面同源路径，原生为 `assets/`），不读取 Windows 安装目录，也不从其他来源下载角色资源。GPU蒙皮、材质缓存和动作适配由 `client/avatar.rs` 管理；物理位置、角色大小、攻击结算仍由模拟/玩法层拥有。
 
 ## 原 shader 与角色材质
 

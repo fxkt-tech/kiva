@@ -30,7 +30,27 @@ pub(super) struct WindDecoration {
 #[derive(Resource)]
 struct ForestLighting(EnvironmentMapLight);
 
-fn texture(world: &mut World, bytes: &'static [u8], srgb: bool, repeat: bool) -> Handle<Image> {
+/// Every file read by [`texture`] here and in the ground cover.
+pub(super) const TEXTURES: [&str; 14] = [
+    "choulingke/environment/leaves.png",
+    "choulingke/environment/leaves_normal.png",
+    "choulingke/environment/bamboo.png",
+    "choulingke/environment/bamboo_normal.png",
+    "choulingke/environment/litter.png",
+    "choulingke/environment/litter_normal.png",
+    "choulingke/environment/ground_base.png",
+    "choulingke/environment/ground_normal.png",
+    "choulingke/environment/forest_floor_base.png",
+    "choulingke/environment/forest_floor_normal.png",
+    "choulingke/environment/grass_base.png",
+    "choulingke/environment/grass_normal.png",
+    "choulingke/environment/grass_blades_base.png",
+    "choulingke/environment/grass_blades_normal.png",
+];
+
+fn texture(world: &mut World, path: &'static str, srgb: bool, repeat: bool) -> Handle<Image> {
+    debug_assert!(TEXTURES.contains(&path), "{path} is not in the manifest");
+    let bytes = &super::bundle::take(world, path);
     let mut sampler = ImageSamplerDescriptor::linear();
     sampler.set_anisotropic_filter(4);
     if repeat {
@@ -44,7 +64,7 @@ fn texture(world: &mut World, bytes: &'static [u8], srgb: bool, repeat: bool) ->
         ImageSampler::Descriptor(sampler),
         RenderAssetUsages::default(),
     )
-    .expect("verified embedded forest texture");
+    .expect("verified forest texture");
     if repeat {
         super::texture_mips::generate(&mut image, !srgb);
     }
@@ -147,63 +167,43 @@ pub(super) fn setup(world: &mut World) {
     world.insert_resource(ForestLighting(lighting));
     // The adjacent manifest retains Model -> material -> named texture refs.
     // Source parameter blocks were unavailable; response scalars are authored.
-    let leaves_base = texture(
-        world,
-        include_bytes!("../../assets/choulingke/environment/leaves.png"),
-        true,
-        false,
-    );
+    let leaves_base = texture(world, "choulingke/environment/leaves.png", true, false);
     let leaves_normal = texture(
         world,
-        include_bytes!("../../assets/choulingke/environment/leaves_normal.png"),
+        "choulingke/environment/leaves_normal.png",
         false,
         false,
     );
-    let bamboo_base = texture(
-        world,
-        include_bytes!("../../assets/choulingke/environment/bamboo.png"),
-        true,
-        true,
-    );
+    let bamboo_base = texture(world, "choulingke/environment/bamboo.png", true, true);
     let bamboo_normal = texture(
         world,
-        include_bytes!("../../assets/choulingke/environment/bamboo_normal.png"),
+        "choulingke/environment/bamboo_normal.png",
         false,
         true,
     );
-    let litter_base = texture(
-        world,
-        include_bytes!("../../assets/choulingke/environment/litter.png"),
-        true,
-        false,
-    );
+    let litter_base = texture(world, "choulingke/environment/litter.png", true, false);
     let litter_normal = texture(
         world,
-        include_bytes!("../../assets/choulingke/environment/litter_normal.png"),
+        "choulingke/environment/litter_normal.png",
         false,
         false,
     );
-    let ground_base = texture(
-        world,
-        include_bytes!("../../assets/choulingke/environment/ground_base.png"),
-        true,
-        true,
-    );
+    let ground_base = texture(world, "choulingke/environment/ground_base.png", true, true);
     let ground_normal = texture(
         world,
-        include_bytes!("../../assets/choulingke/environment/ground_normal.png"),
+        "choulingke/environment/ground_normal.png",
         false,
         true,
     );
     let cover_base = texture(
         world,
-        include_bytes!("../../assets/choulingke/environment/forest_floor_base.png"),
+        "choulingke/environment/forest_floor_base.png",
         true,
         true,
     );
     let cover_normal = texture(
         world,
-        include_bytes!("../../assets/choulingke/environment/forest_floor_normal.png"),
+        "choulingke/environment/forest_floor_normal.png",
         false,
         true,
     );

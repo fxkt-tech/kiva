@@ -143,8 +143,13 @@
       const total = finite(startupDetail.total) && startupDetail.total > 0 ? startupDetail.total : 0;
       const loaded = finite(startupDetail.loaded) && startupDetail.loaded >= 0 ? startupDetail.loaded : 0;
       text("loading-label", total ? `正在下载 ${Math.floor(loaded / total * 100)}%` : "正在下载检查程序…");
-      text("loading-detail", loaded ? `已接收 ${(loaded / 1048576).toFixed(1)} MB · 模型和动作随程序加载` : "模型和动作准备后即可检查，无需捕获鼠标。");
+      text("loading-detail", loaded ? `已接收 ${(loaded / 1048576).toFixed(1)} MB · 模型和动作随后加载` : "模型和动作准备后即可检查，无需捕获鼠标。");
       if (total) { progress.max = total; progress.value = loaded; } else progress.removeAttribute("value");
+    } else if (startupDetail.phase === "initialize" && startupDetail.total > 0) {
+      // The engine reports completed / required files of the default model.
+      text("loading-label", `正在加载模型与动作 ${startupDetail.loaded} / ${startupDetail.total}`);
+      text("loading-detail", "其余角色和武器在选中时加载。");
+      progress.max = startupDetail.total; progress.value = startupDetail.loaded;
     } else {
       text("loading-label", startupDetail.phase === "render" ? "正在准备模型画面…" : "正在初始化检查场景…");
       text("loading-detail", "使用游戏相同的模型、蒙皮和武器挂接计算。");

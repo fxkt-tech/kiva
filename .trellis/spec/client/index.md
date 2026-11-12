@@ -58,7 +58,7 @@ Web HUD 顶部居中为米金边框、暗红填充的锁定敌人长血条；底
 HUD 脚本只更新 textContent、progress.value、图标 href、可见性、样式类和无障碍属性，不使用 innerHTML 或独立计时器；暂停后冷却与联动显示随模拟快照冻结。
 HUD 为 pointer-events:none 的纯显示层，E／Q／Tab／中键／1／2 通过实际输入桥；不能带入预览 HTML 的点击演示和模拟计时。HUD CSS 使用 hud-* 名称和 .game-hud 作用域，不能污染入口的 button / kbd / progress / p 样式。
 愁铃客标准高度1.73m，原主骨架986节点已恢复；source_animation对35个具名原clip有界解码、稀疏T/R/S采样与层级求值，按原骨名驱动独立Skin调色板，CC0回退仍用23个明确结构锚点。`avatar::sync` 只更新显示骨骼；挂点位置用适配后的手腕，枪轴方向沿用原动作。13个穿戴部件、17个材质槽中的皮肤及长刀使用原主色/法线纹理，PNG显式sRGB/linear；未知原作材质参数不猜测为已恢复。靶子从 Body.scale() 读取1.45比例，模型替换不能反写 Body 或改变玩家相机锚点。
-底层资产为 `assets/animations/stickman.anim`（23 骨骼 / 19 动画），保留同目录 CC0 许可证；永劫 KIVASR02 为独立63骨／44片段，燕云 KIVASR01 仍986骨／35片段；`include_bytes!` 嵌入，显式小端解码。
+底层资产为 `assets/animations/stickman.anim`（23 骨骼 / 19 动画），保留同目录 CC0 许可证；永劫 KIVASR02 为独立63骨／44片段，燕云 KIVASR01 仍986骨／35片段；CC0 骨架 `include_bytes!` 嵌入，两份源动画由 `bundle` 运行时加载（`SourceAnimationLibrary` 为 `FromWorld`，测试用 `bundled()`），均显式小端解码。
 身体姿态通过 ActorView.owner 读取 Body 的实际固定步位移、MotionState、Health 和 Combatant，动画反馈按物理 CombatEvent.actor/sequence 归属与去重。
 禁止把动画根位移叠加到权威位置；空中不重复抬升骨盆。暂停冻结姿态、尸体保留可见播放 Death01，复活清理旧姿态。
 跳跃读取MotionState::jumps_used()，第二次起跳重启空中计时；哥哥使用永劫一／二次起跳、下落和落地，Boss保留燕云来源，明确缺源状态仍可回退CC0。

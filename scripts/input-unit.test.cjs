@@ -142,6 +142,19 @@ test("real download progress replays before DOM and never enables entry at 100 p
   f.window.kivaStartup.progress("initialize", 0, 0);
   assert.match(f.nodes.get("enter-label").textContent, /正在准备游戏/);
   assert.equal(f.nodes.get("enter-progress").getAttribute("value"), null);
+  // Runtime files are counted by the engine; every file arriving is still not ready.
+  f.window.kivaStartup.progress("initialize", 7, 23);
+  assert.equal(f.nodes.get("enter-label").textContent, "正在加载资源 7 / 23");
+  assert.equal(f.nodes.get("enter-progress").value, 7);
+  assert.equal(f.nodes.get("enter-progress").max, 23);
+  assert.match(f.nodes.get("entry-message").textContent, /模型、动作与场景贴图/);
+  f.window.kivaStartup.progress("initialize", 23, 23);
+  assert.equal(f.nodes.get("enter-label").textContent, "正在加载资源 23 / 23");
+  assert.equal(f.nodes.get("enter").disabled, true);
+  // The loader's late uncounted notification must not be mistaken for a download.
+  f.window.kivaStartup.progress("initialize", 0, 0);
+  assert.match(f.nodes.get("enter-label").textContent, /正在准备游戏/);
+  assert.equal(f.nodes.get("enter-progress").getAttribute("value"), null);
   f.window.kivaStartup.progress("render", 0, 0);
   assert.match(f.nodes.get("enter-label").textContent, /正在准备画面/);
   assert.equal(f.nodes.get("enter").disabled, true);

@@ -80,9 +80,12 @@
     const busy = (!ready && !failed) || pending;
     const measured = !ready && !failed && startupDetail.phase === "download" && startupDetail.total > 0;
     const percent = measured ? Math.floor(100 * startupDetail.loaded / startupDetail.total) : null;
+    // After the program starts, the engine reports completed / required files.
+    const counted = !ready && !failed && startupDetail.phase === "initialize" && startupDetail.total > 0;
     const loadingLabel = startupDetail.phase === "render" ? "正在准备画面…"
-      : startupDetail.phase === "initialize" ? "正在准备游戏…"
-        : measured ? `正在下载 ${percent}%` : "正在下载…";
+      : counted ? `正在加载资源 ${startupDetail.loaded} / ${startupDetail.total}`
+        : startupDetail.phase === "initialize" ? "正在准备游戏…"
+          : measured ? `正在下载 ${percent}%` : "正在下载…";
     const enterButton = document.getElementById("enter");
     const progress = document.getElementById("enter-progress");
     entry.hidden = isActive();
@@ -92,7 +95,7 @@
     document.getElementById("enter-label").textContent = pending ? "正在进入…"
       : ready ? "点击进入" : failed ? "加载失败" : loadingLabel;
     progress.hidden = ready || failed;
-    if (measured) {
+    if (measured || counted) {
       progress.max = startupDetail.total;
       progress.value = startupDetail.loaded;
     } else progress.removeAttribute("value");
@@ -106,7 +109,8 @@
       ? "进入竹林，迎战愁铃客。" : failed
         ? startupDetail.reason
         : startupDetail.phase === "render" ? "正在准备首次画面，请稍候…"
-          : startupDetail.phase === "initialize" ? "正在准备场景与游戏引擎…" : downloading);
+          : counted ? "正在加载模型、动作与场景贴图…"
+            : startupDetail.phase === "initialize" ? "正在准备场景与游戏引擎…" : downloading);
   }
 
   function enter() {

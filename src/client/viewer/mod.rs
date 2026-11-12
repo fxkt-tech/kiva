@@ -7,7 +7,7 @@ mod snapshot;
 use super::{
     animation::{self, PreviewRig, RigPose},
     avatar::{self, Appearance, AvatarAssetCache, AvatarAssets},
-    companion, loading, rendering,
+    bundle, companion, loading, rendering,
     skeleton::AnimationLibrary,
     source_animation::SourceAnimationLibrary,
     stickman,
@@ -35,6 +35,10 @@ struct Scene {
     shown_appearance: Appearance,
     shown_weapon: Weapon,
     registered_revision: u64,
+    /// The selection's files are still arriving (or failed); the previous
+    /// configuration stays shown and the new revision unacknowledged.
+    loading: bool,
+    load_failed: bool,
     preview: PreviewRig,
     evaluated: Option<(String, f32, Weapon, u64)>,
     parts: Vec<Part>,
@@ -54,14 +58,21 @@ struct Part {
 
 /// `DefaultPlugins` and `StartupPlugin` are installed by the common entry.
 pub(super) fn configure(app: &mut App) {
+    // Only the default configuration gates the page; other bodies and weapons
+    // are fetched when they are selected.
+    let mut manifest = super::source_animation::PATHS.to_vec();
+    manifest.extend(selection_paths(
+        Session::DEFAULT_APPEARANCE,
+        Session::DEFAULT_WEAPON,
+    ));
+    super::assemble_after_loading(app, manifest);
     app.init_resource::<AnimationLibrary>()
-        .init_resource::<SourceAnimationLibrary>()
         .init_resource::<Orbit>()
         .insert_resource(ClearColor(Color::srgb(0.115, 0.135, 0.16)))
         .add_systems(
-            Startup,
+            super::Assemble,
             (
-                loading::begin,
+                super::init_resource::<SourceAnimationLibrary>,
                 setup,
                 rendering::setup_viewer,
                 loading::scene_ready,
@@ -86,6 +97,19 @@ pub(super) fn configure(app: &mut App) {
                 .after(VisibilitySystems::VisibilityPropagate)
                 .before(VisibilitySystems::UpdateFrusta),
         );
+}
+
+/// The files decoded when this body and hand item are built.
+fn selection_paths(appearance: Appearance, weapon: Weapon) -> Vec<&'static str> {
+    let mut paths = vec![appearance.asset_path()];
+    match weapon {
+        Weapon::None => {}
+        // The enemy's long blade is a part of the default body asset.
+        Weapon::Blade => paths.push(Appearance::default().asset_path()),
+        _ => paths.push(weapon_models::asset_path(weapon.pair(), weapon.mode())),
+    }
+    paths.dedup();
+    paths
 }
 
 fn setup(world: &mut World) {
@@ -192,6 +216,8 @@ fn setup(world: &mut World) {
         shown_appearance: session.appearance,
         shown_weapon: session.weapon,
         registered_revision: session.revision,
+        loading: false,
+        load_failed: false,
         preview,
         evaluated: None,
         parts,
@@ -333,6 +359,30 @@ fn update(world: &mut World) {
         session.status = "已忽略过大的检查命令批次".into();
     }
     session.advance(world.resource::<Time>().delta_secs());
+    let wanted = selection_paths(session.appearance, session.weapon);
+    bundle::request(world, &wanted);
+    let status = bundle::status(world, &wanted);
+    if status != bundle::Status::Ready {
+        // Decoding needs the whole file. Keep showing the previous
+        // configuration and leave this revision unacknowledged meanwhile.
+        scene.loading = true;
+        scene.load_failed = matches!(status, bundle::Status::Failed(_));
+        session.status = if scene.load_failed {
+            "所选模型加载失败，请重新加载后重试"
+        } else {
+            "正在加载所选模型…"
+        }
+        .into();
+        world.insert_resource(orbit);
+        world.insert_resource(session);
+        world.insert_resource(scene);
+        return;
+    }
+    if scene.loading {
+        scene.loading = false;
+        scene.load_failed = false;
+        session.status.clear();
+    }
     let mut rebuilt = false;
     if scene.shown_appearance != session.appearance {
         avatar::replace(world, scene.root, session.appearance);
@@ -476,8 +526,9 @@ fn attachments(world: &mut World) {
         return;
     };
     let session = world.resource::<Session>();
-    let appearance = session.appearance;
-    let weapon = session.weapon;
+    // The selection may still be loading; mount what is actually shown.
+    let appearance = scene.shown_appearance;
+    let weapon = scene.shown_weapon;
     let companion = session.mode == Mode::Game && session.action.contains("companion");
     let aim = session.action.ends_with("aim");
     let rig = world.get::<RigPose>(scene.root).unwrap();
@@ -572,7 +623,7 @@ fn finish_view(world: &mut World) {
     let session = world.resource::<Session>();
     let mut lines = debug::base(session.debug);
     let rig = world.get::<RigPose>(scene.root).unwrap();
-    let assets = cached_assets(world, session.appearance);
+    let assets = cached_assets(world, scene.shown_appearance);
     if session.debug.bones {
         let bones = assets.structural_bones(rig);
         for (parent, pose) in &bones {
@@ -598,8 +649,8 @@ fn finish_view(world: &mut World) {
         debug::cross(&mut lines, hand.translation, 6);
         let spine = world.get::<Transform>(scene.spine).copied().unwrap();
         debug::axes(&mut lines, spine, 0.12);
-        if !matches!(session.weapon, Weapon::None | Weapon::Blade) {
-            let weapon = session.weapon;
+        if !matches!(scene.shown_weapon, Weapon::None | Weapon::Blade) {
+            let weapon = scene.shown_weapon;
             let model = WeaponModel::shared(world, weapon.pair(), weapon.mode());
             for grip in model.grips {
                 debug::cross(&mut lines, hand.transform_point(grip), 4);
@@ -617,7 +668,7 @@ fn finish_view(world: &mut World) {
     world.insert_resource(draw);
     let session = world.resource::<Session>();
     let ready = loading::model_ready(world, session.revision);
-    let failed = loading::model_failed(world, session.revision);
+    let failed = scene.load_failed || loading::model_failed(world, session.revision);
     let rendered = snapshot::render(
         session,
         &scene,

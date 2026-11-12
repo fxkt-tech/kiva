@@ -475,7 +475,7 @@ mod tests {
     #[test]
     fn reset_seek_backward_incremental_and_configuration_changes_reconstruct_history() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
             for &(id, _) in SCENARIOS {
                 let id = format!("game:{id}");
@@ -521,7 +521,7 @@ mod tests {
     #[test]
     fn catalog_is_complete_and_all_raw_samples_are_finite_without_hold_overrides() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         let clips = preview_catalog(&library, &source);
         assert_eq!(
             clips
@@ -564,7 +564,7 @@ mod tests {
     #[test]
     fn invalid_input_does_not_mutate_the_last_pose_and_loop_seek_keeps_the_tail() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         let mut preview = PreviewRig::new(&library);
         assert!(preview.seek(
             &library,
@@ -611,7 +611,7 @@ mod tests {
     #[test]
     fn trace_keeps_fading_source_and_actual_normalized_sample_time() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         let mut preview = PreviewRig::new(&library);
         assert!(preview.seek(
             &library,
@@ -675,7 +675,7 @@ mod tests {
     #[test]
     fn longest_game_seek_has_bounded_replay_work() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         let mut preview = PreviewRig::new(&library);
         let mut timings = Vec::new();
         for _ in 0..10 {
@@ -711,7 +711,7 @@ mod tests {
     #[test]
     fn seeking_reconstructs_short_walk_and_hit_interruptions_without_reviving_the_same_riposte() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         for id in ["game:parry_interrupt_walk", "game:parry_interrupt_hit"] {
             let mut streamed = PreviewRig::new(&library);
             for step in 0..=33 {

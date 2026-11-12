@@ -1318,7 +1318,7 @@ mod tests {
     #[test]
     fn original_named_motion_uses_state_priority_and_keeps_shared_moves_distinct() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         let mut rig = RigPose::new(&library);
         let mut input = idle_input();
         let step = |rig: &mut RigPose, input, dt| {
@@ -2263,7 +2263,7 @@ mod tests {
     #[test]
     fn different_source_hierarchies_fade_without_reusing_local_pose_indices() {
         let library = AnimationLibrary::default();
-        let sources = SourceAnimationLibrary::default();
+        let sources = SourceAnimationLibrary::bundled();
         let mut rig = RigPose::new(&library);
         let input = idle_input();
         rig.advance_sources(&sources, input, None, None, true, 0.2);
@@ -2308,7 +2308,7 @@ mod tests {
     #[test]
     fn late_old_melee_feedback_cannot_restart_a_new_committed_stage() {
         let library = AnimationLibrary::default();
-        let sources = SourceAnimationLibrary::default();
+        let sources = SourceAnimationLibrary::bundled();
         let mut rig = RigPose::new(&library);
         let snapshot = ActionSnapshot {
             action_id: 9,
@@ -2358,7 +2358,7 @@ mod tests {
     #[test]
     fn display_frames_latch_a_preempted_riposte_and_only_a_new_gesture_can_restart_it() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         for hit in [false, true] {
             let mut rig = RigPose::new(&library);
             let frame = |input, age, id, sequence| DisplayFrame {
@@ -2434,7 +2434,7 @@ mod tests {
     #[test]
     fn new_light_or_heavy_hit_latches_even_when_its_playback_fits_inside_one_render_frame() {
         let library = AnimationLibrary::default();
-        let source = SourceAnimationLibrary::default();
+        let source = SourceAnimationLibrary::bundled();
         for effect in [CombatEffect::Hit, CombatEffect::SniperImpact] {
             let mut rig = RigPose::new(&library);
             let frame = |age, sequence| DisplayFrame {

@@ -35,6 +35,19 @@ pub(super) enum Appearance {
     Bailingmiao,
 }
 
+impl Appearance {
+    pub(super) const ALL: [Self; 3] = [Self::Choulingke, Self::Lihuowang, Self::Bailingmiao];
+
+    /// The body, outfit and bound accessories of this appearance.
+    pub(super) fn asset_path(self) -> &'static str {
+        match self {
+            Self::Choulingke => "choulingke/character.bin",
+            Self::Lihuowang => "lihuowang/character.bin",
+            Self::Bailingmiao => "bailingmiao/character.bin",
+        }
+    }
+}
+
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) struct AvatarAppearance(pub Appearance);
 
@@ -155,12 +168,8 @@ impl AvatarAssets {
             world.init_resource::<SourceAnimationLibrary>();
             world.init_resource::<Assets<Image>>();
             world.init_resource::<Assets<SkinnedMeshInverseBindposes>>();
-            let data: &[u8] = match appearance {
-                Appearance::Choulingke => include_bytes!("../../assets/choulingke/character.bin"),
-                Appearance::Lihuowang => include_bytes!("../../assets/lihuowang/character.bin"),
-                Appearance::Bailingmiao => include_bytes!("../../assets/bailingmiao/character.bin"),
-            };
-            let mut reader = Reader(data);
+            let data = super::bundle::take(world, appearance.asset_path());
+            let mut reader = Reader(&data);
             let format = reader.take::<8>();
             assert!(matches!(&format, b"KIVAAV02" | b"KIVAAV03"));
             let source_pose = &format == b"KIVAAV03";

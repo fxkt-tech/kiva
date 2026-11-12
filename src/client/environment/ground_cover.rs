@@ -124,27 +124,22 @@ pub(super) fn setup(
             pebble(&mut pebbles, chip_point, index, 4);
         }
     }
-    let grass_base = texture(
-        world,
-        include_bytes!("../../../assets/choulingke/environment/grass_base.png"),
-        true,
-        false,
-    );
+    let grass_base = texture(world, "choulingke/environment/grass_base.png", true, false);
     let grass_normal = texture(
         world,
-        include_bytes!("../../../assets/choulingke/environment/grass_normal.png"),
+        "choulingke/environment/grass_normal.png",
         false,
         false,
     );
     let blades_base = texture(
         world,
-        include_bytes!("../../../assets/choulingke/environment/grass_blades_base.png"),
+        "choulingke/environment/grass_blades_base.png",
         true,
         false,
     );
     let blades_normal = texture(
         world,
-        include_bytes!("../../../assets/choulingke/environment/grass_blades_normal.png"),
+        "choulingke/environment/grass_blades_normal.png",
         false,
         false,
     );

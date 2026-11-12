@@ -130,6 +130,10 @@ pub(super) struct Session {
     source_action: String,
 }
 impl Session {
+    /// The configuration the page opens with; its files gate the first frame.
+    pub const DEFAULT_APPEARANCE: Appearance = Appearance::Lihuowang;
+    pub const DEFAULT_WEAPON: Weapon = Weapon::Hammer;
+
     pub fn new(catalog: Vec<PreviewClip>) -> Self {
         let duration = catalog
             .iter()
@@ -140,8 +144,8 @@ impl Session {
             .find(|c| Mode::for_action(&c.id) == Mode::Source)
             .map_or_else(|| "reference".into(), |c| c.id.clone());
         Self {
-            appearance: Appearance::Lihuowang,
-            weapon: Weapon::Hammer,
+            appearance: Self::DEFAULT_APPEARANCE,
+            weapon: Self::DEFAULT_WEAPON,
             mode: Mode::Game,
             action: "game:idle".into(),
             time: 0.0,

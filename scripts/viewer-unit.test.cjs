@@ -231,6 +231,11 @@ test("download/failure replay never fakes readiness; only retry requests a reloa
   assert.equal(f.nodes.get("viewer-progress").value, 512);
   f.window.kivaStartup.progress("download", 1024, 1024);
   assert.equal(f.nodes.get("viewer-loading").hidden, false);
+  f.window.kivaStartup.progress("initialize", 2, 4);
+  assert.equal(f.nodes.get("viewer-loading-label").textContent, "正在加载模型与动作 2 / 4");
+  assert.equal(f.nodes.get("viewer-progress").value, 2);
+  assert.equal(f.nodes.get("viewer-progress").max, 4);
+  assert.equal(f.nodes.get("viewer-loading").hidden, false);
   f.window.kivaStartup.fail("test failure");
   assert.equal(f.nodes.get("viewer-retry").hidden, false);
   f.click("retry"); assert.equal(f.reloads(), 1);

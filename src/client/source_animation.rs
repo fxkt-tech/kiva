@@ -173,19 +173,27 @@ impl<T: Copy> Keys<T> {
         interpolate(self.values[start], self.values[end], weight)
     }
 }
-impl Default for SourceAnimationLibrary {
-    fn default() -> Self {
+/// The primary (Yanyun) and secondary (Naraka) source rigs.
+pub(super) const PATHS: [&str; 2] = ["choulingke/animations.bin", "naraka/animations.bin"];
+
+impl FromWorld for SourceAnimationLibrary {
+    fn from_world(world: &mut World) -> Self {
+        let [primary, secondary] = PATHS.map(|path| super::bundle::take(world, path));
         Self {
             secondary: Some(Box::new(
-                Self::decode(include_bytes!("../../assets/naraka/animations.bin"))
-                    .expect("verified native Humanoid animation asset"),
+                Self::decode(&secondary).expect("verified native Humanoid animation asset"),
             )),
-            ..Self::decode(include_bytes!("../../assets/choulingke/animations.bin"))
-                .expect("verified bundled original animation asset")
+            ..Self::decode(&primary).expect("verified bundled original animation asset")
         }
     }
 }
 impl SourceAnimationLibrary {
+    /// Headless fixtures decode the shipped files directly.
+    #[cfg(test)]
+    pub(super) fn bundled() -> Self {
+        Self::from_world(&mut World::new())
+    }
+
     fn decode(bytes: &[u8]) -> DecodeResult<Self> {
         if bytes.len() > 64 * 1024 * 1024 {
             return Err("oversized source animation asset");
@@ -467,7 +475,7 @@ mod tests {
 
     #[test]
     fn source_asset_validates_all_clips_and_exact_rest_hierarchy() {
-        let library = SourceAnimationLibrary::default();
+        let library = SourceAnimationLibrary::bundled();
         assert_eq!(library.joints.len(), 986);
         assert_eq!(library.clips.len(), 35);
         assert_eq!(
@@ -489,7 +497,7 @@ mod tests {
 
     #[test]
     fn sparse_channels_rest_root_travel_removed_and_real_waist_motion_preserved() {
-        let library = SourceAnimationLibrary::default();
+        let library = SourceAnimationLibrary::bundled();
         let clip = library.clip("skill_ylk_1").unwrap();
         let a = library.sample(clip, 0.0, false, false);
         let b = library.sample(clip, 2.7, false, false);
@@ -528,7 +536,7 @@ mod tests {
 
     #[test]
     fn bounds_bad_version_and_trailing_bytes_are_rejected() {
-        let bytes = include_bytes!("../../assets/choulingke/animations.bin");
+        let bytes = crate::client::bundle::take(&mut World::new(), PATHS[0]);
         for end in [0, 7, 11, 20, bytes.len() / 2, bytes.len() - 1] {
             assert!(SourceAnimationLibrary::decode(&bytes[..end]).is_err());
         }
@@ -608,7 +616,7 @@ mod tests {
         assert_eq!(library.clips[0].tracks[0].translation.times[1], 1.0 / 30.0);
         let yanyun = SourceAnimationLibrary {
             secondary: Some(Box::new(library)),
-            ..Default::default()
+            ..SourceAnimationLibrary::bundled()
         };
         assert_eq!(yanyun.for_rig(SourceRig::Yanyun).unwrap().joints.len(), 986);
         assert_eq!(yanyun.for_rig(SourceRig::Naraka).unwrap().joints.len(), 2);
@@ -641,7 +649,7 @@ mod tests {
     }
     #[test]
     fn native_airborne_removes_only_the_extra_hips_height_and_preserves_leg_pose() {
-        let libraries = SourceAnimationLibrary::default();
+        let libraries = SourceAnimationLibrary::bundled();
         let source = libraries
             .for_rig(SourceRig::Naraka)
             .expect("verified native Naraka library");
@@ -679,7 +687,7 @@ mod tests {
     }
     #[test]
     fn every_native_clip_has_explicit_verified_composition_metadata() {
-        let libraries = SourceAnimationLibrary::default();
+        let libraries = SourceAnimationLibrary::bundled();
         let native = libraries.for_rig(SourceRig::Naraka).unwrap();
         for (name, _) in native.clips() {
             assert!(
