@@ -11,11 +11,11 @@
 ## Signatures
 
 - `controls::ViewYaw::yaw()` 供 scene 和 camera 读取；鼠标样本只能由 controls 消费一次。
-- `stickman::spawn(world, owner, body_material, eyes_material)` 为玩家 / 敌人共用的纯显示构造器，创建 RigPose、愁铃客蒙皮和骨骼附件，返回可关联受击变色的身体部件。
+- `avatar::spawn(world, owner)` 为玩家 / 敌人共用的纯显示构造器，创建蒙皮和骨骼附件，返回可关联受击变色的身体部件；`EnemyBody(owner)` 标记敌人的身体表面，由战斗表现着色，其余表面由 `avatar::sync` 着色。
 - `AnimationLibrary::{bone,duration,sample,model_pose}` / `blend` 采样随包骨骼资产；`RigPose::new(&AnimationLibrary)` 保存局部混合及模型空间姿态。
 - `stickman::{attach_weapon,sync_attachments}` 绑定右手腕，并在姿态采样后同步几何；WeaponMode 分别校正近战柄轴和远程枪轴。
 - `scene::sync_player` → 敌人显示根 / 武器显隐 → `animation::animate` → `companion::sync` → `avatar::sync` → `stickman::sync_attachments` → `weapons::sync_tether` → HUD → `camera::follow` 在 Update 链式执行。
-- `ActorView { owner }` / `PlayerView` 标记纯显示根；输入、战斗身份留在物理实体。
+- `ActorView { owner }` / `PlayerView` 标记纯显示根，与 `EnemyBody` 一起定义在 `client/mod.rs`；客户端模块之间不得环形依赖（`tests/layering.rs`）；输入、战斗身份留在物理实体。
 - Web 桥 `window.kivaInput.isActive(): boolean` / `takeLook(): number` / `keys(): number` / `takeActions(): number` / `takeDefenseEdges(): number[]` / `ready(): void`。
 - wasm-bindgen 绑定在 `client/web.rs`，原生不需要 JS；加载观察器为 `window.kivaStartup.subscribe(callback)`。
 - `window.kivaHud.render(persona, weapon, healthFraction, health, combo, cooldown, context)`；绑定在 `client/hud.rs`，只有显示方向。

@@ -2,7 +2,7 @@
 use avian3d::prelude::{Sensor, SpatialQuery};
 use bevy::{ecs::system::SystemParam, prelude::*};
 
-use super::{ActorView, PlayerView};
+use super::{ActorView, EnemyBody, PlayerView};
 use crate::{
     gameplay::Player,
     simulation::{
@@ -17,7 +17,6 @@ pub(super) struct VisualAssets {
     cube: Handle<Mesh>,
     ring: Handle<Mesh>,
     sphere: Handle<Mesh>,
-    enemy: Handle<StandardMaterial>,
     gold: Handle<StandardMaterial>,
     teal: Handle<StandardMaterial>,
     hit: Handle<StandardMaterial>,
@@ -36,8 +35,6 @@ impl WeaponVisual {
         self.1 == WeaponMode::Melee
     }
 }
-#[derive(Component)]
-pub(super) struct EnemyBody(Entity);
 #[derive(Component)]
 pub(super) struct EnemyView;
 #[derive(Component)]
@@ -100,7 +97,6 @@ pub(super) fn setup(world: &mut World) {
         cube,
         ring,
         sphere,
-        enemy: material(Color::srgb(0.72, 0.30, 0.22), false),
         gold: material(Color::srgb(1.0, 0.70, 0.23), true),
         teal: material(Color::srgb(0.35, 0.89, 0.83), true),
         hit: material(Color::srgb(1.0, 0.93, 0.75), true),
@@ -159,7 +155,7 @@ fn spawn_enemy_view(world: &mut World, enemy: Entity, assets: &VisualAssets) {
             Visibility::default(),
         ))
         .id();
-    for part in super::stickman::spawn(world, view, &assets.enemy, &assets.gold) {
+    for part in super::avatar::spawn(world, view) {
         world.entity_mut(part).insert(EnemyBody(enemy));
     }
     let blade = world

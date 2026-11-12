@@ -41,6 +41,11 @@ pub(super) struct ActorView {
 #[derive(Component)]
 pub(super) struct PlayerView;
 
+/// A body surface of an enemy's avatar; its owner is the simulation enemy.
+/// Combat presentation tints these, the avatar tints every other surface.
+#[derive(Component)]
+pub(super) struct EnemyBody(pub Entity);
+
 /// How far one presentation has consumed the simulation's bounded feedback.
 ///
 /// Every consumer shares one rule: an event is presented at most once, and
@@ -142,6 +147,16 @@ pub(super) fn assemble_after_loading(app: &mut App, manifest: Vec<&'static str>)
         .add_systems(First, assemble);
 }
 
+/// Everything the game scene decodes while it is assembled. Each module owns
+/// its own paths; `bundle` itself knows nothing about its users.
+fn game_manifest() -> Vec<&'static str> {
+    let mut paths = source_animation::PATHS.to_vec();
+    paths.extend(avatar::Appearance::ALL.map(avatar::Appearance::asset_path));
+    paths.extend(weapon_models::PATHS);
+    paths.extend(environment::TEXTURES);
+    paths
+}
+
 pub(super) fn run() {
     let mut app = App::new();
     app.add_plugins(
@@ -179,7 +194,7 @@ pub(super) fn run() {
         app.run();
         return;
     }
-    assemble_after_loading(&mut app, bundle::game());
+    assemble_after_loading(&mut app, game_manifest());
     app.add_plugins(forest_material::ForestMaterialPlugin)
         .add_plugins(crate::simulation::SimulationPlugin)
         // Nothing is simulated before the scene exists; input sampling owns
@@ -279,6 +294,22 @@ mod tests {
                 break;
             }
             std::thread::sleep(std::time::Duration::from_millis(1));
+        }
+    }
+
+    #[test]
+    fn every_runtime_file_of_the_game_is_shipped_once() {
+        let paths = game_manifest();
+        assert_eq!(paths.len(), 23);
+        let mut unique = paths.clone();
+        unique.sort_unstable();
+        unique.dedup();
+        assert_eq!(unique.len(), paths.len());
+        for path in paths {
+            let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("assets")
+                .join(path);
+            assert!(file.is_file(), "{path} is missing from assets/");
         }
     }
 

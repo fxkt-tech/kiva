@@ -64,16 +64,6 @@ impl Plugin for BundlePlugin {
     }
 }
 
-/// Everything the game scene decodes while it is assembled.
-pub(super) fn game() -> Vec<&'static str> {
-    use super::{avatar::Appearance, environment, source_animation, weapon_models};
-    let mut paths = source_animation::PATHS.to_vec();
-    paths.extend(Appearance::ALL.map(Appearance::asset_path));
-    paths.extend(weapon_models::PATHS);
-    paths.extend(environment::TEXTURES);
-    paths
-}
-
 /// Start loading; repeating a request neither restarts nor duplicates it.
 pub(super) fn request(world: &mut World, paths: &[&'static str]) {
     let Some(server) = world.get_resource::<AssetServer>().cloned() else {
@@ -179,22 +169,6 @@ mod tests {
             std::thread::sleep(std::time::Duration::from_millis(1));
         }
         status(app.world(), paths)
-    }
-
-    #[test]
-    fn every_runtime_file_of_the_game_is_shipped_once() {
-        let paths = game();
-        assert_eq!(paths.len(), 23);
-        let mut unique = paths.clone();
-        unique.sort_unstable();
-        unique.dedup();
-        assert_eq!(unique.len(), paths.len());
-        for path in paths {
-            let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("assets")
-                .join(path);
-            assert!(file.is_file(), "{path} is missing from assets/");
-        }
     }
 
     #[test]

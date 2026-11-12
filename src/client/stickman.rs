@@ -1,4 +1,4 @@
-//! Compatibility entry points for the shared skinned avatar and wrist attachments.
+//! Wrist attachments which follow the shared skinned avatar.
 use bevy::prelude::*;
 
 use super::{
@@ -29,16 +29,6 @@ pub(super) fn attachment_transform(attachment: &Attachment, pose: &[Transform]) 
     };
     Transform::from_translation(pose[bone].transform_point(Vec3::Y * 0.055))
         .with_rotation(pose[bone].rotation * correction)
-}
-
-/// Existing callers keep the same construction contract and body-part return.
-pub(super) fn spawn(
-    world: &mut World,
-    owner: Entity,
-    _body_material: &Handle<StandardMaterial>,
-    _eyes_material: &Handle<StandardMaterial>,
-) -> Vec<Entity> {
-    super::avatar::spawn(world, owner)
 }
 
 pub(super) fn attach_weapon(world: &mut World, owner: Entity, weapon: Entity, mode: WeaponMode) {
@@ -90,19 +80,16 @@ mod tests {
         world.init_resource::<Assets<Mesh>>();
         world.init_resource::<Assets<StandardMaterial>>();
         world.init_resource::<AnimationLibrary>();
-        let material = world
-            .resource_mut::<Assets<StandardMaterial>>()
-            .add(StandardMaterial::default());
         let position = Vec2::new(2.0, -3.0);
         let first = world
             .spawn((Body::new(position, 6.0, 0.35), Transform::default()))
             .id();
-        let first_parts = spawn(&mut world, first, &material, &material);
+        let first_parts = crate::client::avatar::spawn(&mut world, first);
         let mesh_count = world.resource::<Assets<Mesh>>().len();
         let material_count = world.resource::<Assets<StandardMaterial>>().len();
         let image_count = world.resource::<Assets<Image>>().len();
         let second = world.spawn(Transform::default()).id();
-        let second_parts = spawn(&mut world, second, &material, &material);
+        let second_parts = crate::client::avatar::spawn(&mut world, second);
         assert_eq!(world.resource::<Assets<Mesh>>().len(), mesh_count);
         assert_eq!(
             world.resource::<Assets<StandardMaterial>>().len(),

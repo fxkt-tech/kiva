@@ -90,7 +90,6 @@ mod tests {
             combat::{self, EnemyView},
             skeleton::AnimationLibrary,
             source_animation::SourceAnimationLibrary,
-            stickman,
         },
         gameplay::Player,
         simulation::{Body, Combatant, Enemy, Health, MotionState, SimulationActive, WeaponPair},
@@ -122,10 +121,7 @@ mod tests {
                 Visibility::default(),
             ))
             .id();
-        let material = world
-            .resource_mut::<Assets<StandardMaterial>>()
-            .add(StandardMaterial::default());
-        stickman::spawn(&mut world, view, &material, &material);
+        avatar::spawn(&mut world, view);
         world.spawn((
             Enemy::target_dummy(),
             Body::new(Vec2::new(0.0, -4.0), 6.0, 0.35),

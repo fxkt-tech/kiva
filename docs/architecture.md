@@ -14,7 +14,7 @@
 | 玩法 | `src/gameplay/` | 关卡几何、实体装配、敌人模式 | 创建 Mesh 或决定表现 |
 | 客户端 | `src/client/`、`web/`、`index.html` | 设备输入转意图、显示根、骨骼与蒙皮、镜头、特效、音频、HUD、加载 | 写物理实体的位置或 `MotionState`；拥有伤害、冷却等规则时钟 |
 
-分层靠约定和测试维持（单 crate 没有编译期隔离）。写代码前用 `rg` 确认没有反向引用。
+单 crate 没有编译期隔离，分层由 `tests/layering.rs` 检查：下层的产品代码不得引用上层，客户端各模块之间不得形成环形依赖（单元测试可以跨层搭夹具）。多个模块共用的显示标记（`ActorView`、`PlayerView`、`EnemyBody`）和清单汇总放在 `client/mod.rs`，不要让底层模块反过来引用使用它的模块。
 
 ## 状态所有权
 
@@ -32,12 +32,12 @@
 | `simulation/geometry.rs` | 仅测试构建：无窗口夹具的平地／立柱描述及其装配，产品构建不包含 |
 | `gameplay/mod.rs`、`gameplay/terrain.rs` | `Level`、`Boundary`、`Player`、`EnemyMode`、共享地形几何及实体装配 |
 | `client/controls.rs` | `ViewYaw`，设备输入转世界方向；捕获失效时停止意图 |
-| `client/bundle.rs` | 运行时资源文件的请求、到齐状态与一次性交付；`Assemble` 调度与 `Assembled` 门槛在 `client/mod.rs` |
+| `client/bundle.rs` | 运行时资源文件的请求、到齐状态与一次性交付，不认识任何使用方；游戏清单、`Assemble` 调度与 `Assembled` 门槛在 `client/mod.rs` |
 | `client/loading.rs`、`web/loader.js` | WASM真实下载流进度、首次可见场景渲染准备／提交门槛，以及主线程最终就绪通知 |
 | `client/enemies.rs`、`web/enemies.js` | 进入卡片 / F2 的敌人模式请求及模式显示，调用玩法装配接口 |
 | `client/appearance.rs`、`web/appearance.js` | 进入 / 暂停卡片和 F3 的玩家外观选择，只替换显示资产，不改变玩法武器套装 |
 | `client/scene.rs` | 玩家显示根和插值后的显示 `Transform` |
-| `client/stickman.rs` | 角色构造兼容入口及动态右手挂点 |
+| `client/stickman.rs` | 跟随蒙皮角色手腕的武器挂点 |
 | `client/avatar.rs` | 两套随包角色 / 近战外观、各自蒙皮与材质缓存、结构动作适配；只写显示骨骼 |
 | `client/environment.rs`、`environment/ground_cover.rs` | 玩法同源竹干/地形、共享草叶装饰、雾和灯光 |
 | `client/rendering.rs`、`client/texture_mips.rs` | 相机 deferred/SSR/FXAA pass；重复纹理的线性颜色与单位法线 mip |

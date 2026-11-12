@@ -1140,7 +1140,7 @@ pub(super) fn sync(
     mut joints: Query<(&PaletteJoint, &mut Transform)>,
     mut surfaces: Query<
         (&AvatarSurface, &mut MeshMaterial3d<StandardMaterial>),
-        Without<super::combat::EnemyBody>,
+        Without<super::EnemyBody>,
     >,
 ) {
     let mut poses = HashMap::new();

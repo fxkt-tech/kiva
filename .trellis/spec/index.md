@@ -13,7 +13,7 @@ Rust / Bevy 单 crate，Trunk 构建 WebAssembly。这里只记录当前竹林�
 ## Pre-Development Checklist
 
 1. 阅读当前任务的 `prd.md`、`design.md`、`implement.md`，再读涉及层的规范。
-2. 用 `rg` 找接口和已有行为，保持 `client → gameplay → simulation` 依赖方向。
+2. 用 `rg` 找接口和已有行为，保持 `client → gameplay → simulation` 依赖方向；`tests/layering.rs` 会拒绝反向引用和客户端模块间的环。
 3. 以 [架构文档](../../docs/architecture.md) 为状态所有权依据；DOM、相机、模型和按键属于客户端。
 
 ## Quality Check

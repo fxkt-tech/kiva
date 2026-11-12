@@ -12,7 +12,7 @@
 - `kivaStartup.fail(reason)`：失败原因限制长度并以纯文字呈现。
 - `kivaStartup.subscribe(callback)`：立即重放 `(state,detail)`，state=`loading|failed|ready`，detail 含 phase／loaded／total／可选reason；`__kivaStartup` 保留原字符串兼容。
 - Rust `web::ready()` 按不可变页面模式调用 `kivaInput.ready()` 或 `kivaViewer.ready()` 并触发kiva-ready，只有首次必要渲染就绪后调用；下载或TrunkApplicationStarted不能代替。
-- `bundle::{request(world, paths), status(world, paths) -> Pending{loaded,total}|Ready|Failed(path), take(world, path) -> Vec<u8>}`：运行时文件的请求、到齐状态和一次性交付。`client::assemble_after_loading(app, manifest)` 安装清单、`Assemble` 调度和 `Assembled` 标记。
+- `bundle::{request(world, paths), status(world, paths) -> Pending{loaded,total}|Ready|Failed(path), take(world, path) -> Vec<u8>}`：运行时文件的请求、到齐状态和一次性交付。`client::assemble_after_loading(app, manifest)` 安装清单、`Assemble` 调度和 `Assembled` 标记；游戏清单由 `client::game_manifest()` 从各模块自己的路径常量汇总，`bundle` 不引用使用方。
 - `loading::StartupPlugin` 共享 StartupSignal，Startup 使用 begin，`Assemble` 末尾使用 scene_ready；主世界 First 的独占系统通知 JS，渲染世界在 RenderSystems::Render 后、Cleanup 前观察。
 - 渲染目标共用 `rendering::MainView`，查看页另通过require_model/model_ready/model_failed确认当前选择版本及实际可见主体，详见[验收页契约](model-viewer.md)。
 
