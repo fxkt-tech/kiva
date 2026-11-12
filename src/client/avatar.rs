@@ -41,9 +41,9 @@ impl Appearance {
     /// The body, outfit and bound accessories of this appearance.
     pub(super) fn asset_path(self) -> &'static str {
         match self {
-            Self::Choulingke => "choulingke/character.bin",
-            Self::Lihuowang => "lihuowang/character.bin",
-            Self::Bailingmiao => "bailingmiao/character.bin",
+            Self::Choulingke => "characters/choulingke.bin",
+            Self::Lihuowang => "characters/lihuowang.bin",
+            Self::Bailingmiao => "characters/bailingmiao.bin",
         }
     }
 }

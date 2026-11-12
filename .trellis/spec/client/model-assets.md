@@ -27,7 +27,7 @@
 
 无源CC0保留原目标参考指型，参考模式完全绕过动画校准；愁铃客＋燕云同原骨架时完整源palette仍直接保留原骨轨；永劫来源对愁铃客也按目标自身比例重定向。旧愁铃客全局混合的中间掌形可能不刚性，挂点读取当前实际MCP，不能以腕四元数冒充真实掌框。燕云35片段没有相应独立twist动画轨，已知twist骨仍随臂段驱动，不宣称恢复未知分摊；永劫Humanoid的局部骨姿态由原生Avatar求值，版本与求值边界见[naraka-motion.md](naraka-motion.md)，同样不冒称恢复原脚本控制器。
 
-白灵淼衣装、莲母、女性基脸来自 `assets/prepared/naraka/bailingmiao`，运行输出为 `assets/bailingmiao/character.bin`（KIVAAV03）。
+白灵淼衣装、莲母、女性基脸来自仓库外的 Naraka 准备包 `bailingmiao/`（原 `assets/prepared/naraka/`，现位于 `../kiva-asset-research/prepared/naraka/`），运行输出为 `assets/characters/bailingmiao.bin`（KIVAAV03）。
 23 个结构锚点取自身女性 Lianmu 骨架；各部件保留各自原骨序、逆绑定和 sourceRestModel，不能套用男性比例／索引／脸。女性自身的结构参考驱动原有动作增量，双手 IK 保留自身上臂／前臂长。
 陡角度枪姿可用自身锁骨最小转动与表现层骨盆高度调整适配握持，向上站立受双腿真实可达范围限制；双腿 IK 保持自身骨长和脚掌／脚趾落点、朝向，不移动显示根或权威射击源。跨越臂长极限时锁骨转动连续，不能用二值阈值直接跳到最大转角。武器瞄准在妹妹局部坐标中求旋转，避免世界空间最短弧在不同 yaw 下产生翻滚。
 实际导入姿态可不同于 bind pose，不能把 sourceRestModel 替换为 inverse(IBM)，或把蒙皮结果强制抵消为单位矩阵。

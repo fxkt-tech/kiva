@@ -18,7 +18,7 @@
 
 实现与实测截图见[愁铃客与竹林方案](plans/choulingke-bamboo-arena.md)。竹林是主题重建，尚未导出原关卡完整布局；角色保留原模型/纹理，现已接原骨架及35个原作动作，移动等缺源状态保留CC0回退。
 
-声音已接挥刀、命中、卸势及枪声，原始战斗音效仍在恢复。愁铃客官方BGM已接入，不冒称本地bank映射已解出；父项因原战斗声音缺口仍保留未完成，详见[音频状态](../assets/audio/README.md)及[音频恢复方案](plans/choulingke-audio-recovery.md)。
+声音已接挥刀、命中、卸势及枪声，原始战斗音效仍在恢复。愁铃客官方BGM已接入，不冒称本地bank映射已解出；父项因原战斗声音缺口仍保留未完成，详见[音频状态](../provenance/audio/README.md)及[音频恢复方案](plans/choulingke-audio-recovery.md)。
 
 ### 后续增加需求
 

@@ -45,7 +45,7 @@ impl Reader<'_> {
 }
 impl Default for AnimationLibrary {
     fn default() -> Self {
-        let mut reader = Reader(include_bytes!("../../assets/animations/stickman.anim"));
+        let mut reader = Reader(include_bytes!("embedded/stickman.anim"));
         assert_eq!(&reader.take::<8>(), b"KIVAAN01");
         let count = reader.u16();
         let clip_count = reader.u16();
@@ -155,10 +155,7 @@ mod tests {
     #[test]
     fn bundled_clips_keep_the_source_hierarchy_required_by_the_rigid_renderer() {
         let library = AnimationLibrary::default();
-        assert_eq!(
-            include_bytes!("../../assets/animations/stickman.anim").len(),
-            578_598
-        );
+        assert_eq!(include_bytes!("embedded/stickman.anim").len(), 578_598);
         assert_eq!(library.bones.len(), 23);
         assert_eq!(library.clips.len(), 19);
         assert_eq!(library.bones[library.bone("root")].parent, None);

@@ -22,7 +22,7 @@
     "naraka_gun", "naraka_bow",
   ]);
   let cues = new Map();
-  const files = Object.freeze({ attack: "attack.ogg", hit: "hit.ogg", deflect: "deflect.ogg" });
+  const files = Object.freeze({ attack: "effects/attack.ogg", hit: "effects/hit.ogg", deflect: "effects/deflect.ogg" });
 
   function stopMusic(preserve = true) {
     if (!music) return;
@@ -83,9 +83,10 @@
 
   function loadSamples(audio) {
     if (loading || typeof fetch !== "function" || typeof audio.decodeAudioData !== "function") return;
-    async function decode(name, file) {
+    // `path` is relative to the published assets/audio/.
+    async function decode(name, path) {
       try {
-        const response = await fetch(`audio/${file}`);
+        const response = await fetch(`assets/audio/${path}`);
         if (!response.ok) return;
         const buffer = await audio.decodeAudioData(await response.arrayBuffer());
         if (context !== audio) return;
@@ -97,18 +98,18 @@
       ...Object.entries(files).map(([name, file]) => decode(name, file)),
       (async () => {
         try {
-          const response = await fetch("audio/music.json");
+          const response = await fetch("assets/audio/music/music.json");
           if (!response.ok) return;
           const { file } = await response.json();
           // Optional, verified local music only. No guessed song or missing-file request.
           if (typeof file === "string" && /^[a-z0-9][a-z0-9_-]*\.ogg$/.test(file)) {
-            await decode("bgm", file);
+            await decode("bgm", `music/${file}`);
           }
         } catch { /* Optional music does not gate startup. */ }
       })(),
       (async () => {
         try {
-          const response = await fetch("audio/naraka-cues.json");
+          const response = await fetch("assets/audio/naraka/cues.json");
           if (!response.ok) return;
           const encoded = await response.text();
           if (encoded.length > 64 * 1024) return;
@@ -116,7 +117,7 @@
           if (!parsed || context !== audio) return;
           cues = parsed.cues;
           // Several events/layers share one original media. Fetch/decode it once.
-          await Promise.all([...parsed.media].map((file) => decode(file, file)));
+          await Promise.all([...parsed.media].map((file) => decode(file, `naraka/${file}`)));
         } catch { /* Bad optional metadata cannot disable the procedural gun or BGM. */ }
       })(),
     ]);

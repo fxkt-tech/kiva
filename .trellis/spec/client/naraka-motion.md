@@ -16,7 +16,7 @@
 
 ## Contracts
 
-`assets/naraka/animations.bin` 为 KIVASR02，包含独立 `naraka/l22_male_skeleton`、63 骨、44 原片段。显式小端：magic8；u16 长度 UTF8 rig ID；u16 joints/clips/motion-root/flags；每骨 name、i16 parent、rest T3/Q4/S3；每片段 name、f32 duration、u16 tracks；每轨 u16 joint，T/Q/S 各 u32 key count 与 f32 seconds＋分量。KIVASR01 原毫秒键兼容。源 rest、目标自身 rest／IBM 分开保存。
+`assets/animations/naraka.bin` 为 KIVASR02，包含独立 `naraka/l22_male_skeleton`、63 骨、44 原片段。显式小端：magic8；u16 长度 UTF8 rig ID；u16 joints/clips/motion-root/flags；每骨 name、i16 parent、rest T3/Q4/S3；每片段 name、f32 duration、u16 tracks；每轨 u16 joint，T/Q/S 各 u32 key count 与 f32 seconds＋分量。KIVASR01 原毫秒键兼容。源 rest、目标自身 rest／IBM 分开保存。
 
 原 Humanoid clip 必须通过真实 Avatar 的原生 PlayableGraph 求局部 TRS；不得把肌肉数组直接当局部角度，也不得经有损 GetHumanPose→SetHumanPose 回写作为烘焙路径。来源版本、求值器版本及差异写 manifest。缺失整条三节手指链时，才以原 default finger clip 的独立原生局部姿态补层；主片段已写出的指链优先。这是明确的 Kiva 组合，不能称恢复了未知原控制器权重。
 

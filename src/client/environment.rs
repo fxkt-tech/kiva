@@ -32,20 +32,20 @@ struct ForestLighting(EnvironmentMapLight);
 
 /// Every file read by [`texture`] here and in the ground cover.
 pub(super) const TEXTURES: [&str; 14] = [
-    "choulingke/environment/leaves.png",
-    "choulingke/environment/leaves_normal.png",
-    "choulingke/environment/bamboo.png",
-    "choulingke/environment/bamboo_normal.png",
-    "choulingke/environment/litter.png",
-    "choulingke/environment/litter_normal.png",
-    "choulingke/environment/ground_base.png",
-    "choulingke/environment/ground_normal.png",
-    "choulingke/environment/forest_floor_base.png",
-    "choulingke/environment/forest_floor_normal.png",
-    "choulingke/environment/grass_base.png",
-    "choulingke/environment/grass_normal.png",
-    "choulingke/environment/grass_blades_base.png",
-    "choulingke/environment/grass_blades_normal.png",
+    "environment/bamboo/leaves.png",
+    "environment/bamboo/leaves_normal.png",
+    "environment/bamboo/bamboo.png",
+    "environment/bamboo/bamboo_normal.png",
+    "environment/bamboo/litter.png",
+    "environment/bamboo/litter_normal.png",
+    "environment/bamboo/ground_base.png",
+    "environment/bamboo/ground_normal.png",
+    "environment/bamboo/forest_floor_base.png",
+    "environment/bamboo/forest_floor_normal.png",
+    "environment/bamboo/grass_base.png",
+    "environment/bamboo/grass_normal.png",
+    "environment/bamboo/grass_blades_base.png",
+    "environment/bamboo/grass_blades_normal.png",
 ];
 
 fn texture(world: &mut World, path: &'static str, srgb: bool, repeat: bool) -> Handle<Image> {
@@ -165,43 +165,23 @@ pub(super) fn setup(world: &mut World) {
     world.insert_resource(ForestLighting(lighting));
     // The adjacent manifest retains Model -> material -> named texture refs.
     // Source parameter blocks were unavailable; response scalars are authored.
-    let leaves_base = texture(world, "choulingke/environment/leaves.png", true, false);
-    let leaves_normal = texture(
-        world,
-        "choulingke/environment/leaves_normal.png",
-        false,
-        false,
-    );
-    let bamboo_base = texture(world, "choulingke/environment/bamboo.png", true, true);
-    let bamboo_normal = texture(
-        world,
-        "choulingke/environment/bamboo_normal.png",
-        false,
-        true,
-    );
-    let litter_base = texture(world, "choulingke/environment/litter.png", true, false);
-    let litter_normal = texture(
-        world,
-        "choulingke/environment/litter_normal.png",
-        false,
-        false,
-    );
-    let ground_base = texture(world, "choulingke/environment/ground_base.png", true, true);
-    let ground_normal = texture(
-        world,
-        "choulingke/environment/ground_normal.png",
-        false,
-        true,
-    );
+    let leaves_base = texture(world, "environment/bamboo/leaves.png", true, false);
+    let leaves_normal = texture(world, "environment/bamboo/leaves_normal.png", false, false);
+    let bamboo_base = texture(world, "environment/bamboo/bamboo.png", true, true);
+    let bamboo_normal = texture(world, "environment/bamboo/bamboo_normal.png", false, true);
+    let litter_base = texture(world, "environment/bamboo/litter.png", true, false);
+    let litter_normal = texture(world, "environment/bamboo/litter_normal.png", false, false);
+    let ground_base = texture(world, "environment/bamboo/ground_base.png", true, true);
+    let ground_normal = texture(world, "environment/bamboo/ground_normal.png", false, true);
     let cover_base = texture(
         world,
-        "choulingke/environment/forest_floor_base.png",
+        "environment/bamboo/forest_floor_base.png",
         true,
         true,
     );
     let cover_normal = texture(
         world,
-        "choulingke/environment/forest_floor_normal.png",
+        "environment/bamboo/forest_floor_normal.png",
         false,
         true,
     );

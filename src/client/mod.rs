@@ -180,13 +180,9 @@ pub(super) fn run() {
                 ..default()
             })
             .set(AssetPlugin {
-                // Trunk copies each asset directory next to the page; native
-                // builds read the repository's (or the executable's) assets/.
-                file_path: if cfg!(target_arch = "wasm32") {
-                    ".".into()
-                } else {
-                    "assets".into()
-                },
+                // Trunk publishes the repository's assets/ next to the page;
+                // native builds read it from the working directory.
+                file_path: "assets".into(),
                 // No .meta files are shipped, so do not request them.
                 meta_check: AssetMetaCheck::Never,
                 ..default()
@@ -321,8 +317,8 @@ mod tests {
     #[test]
     fn the_scene_is_assembled_once_and_only_after_its_files_arrived() {
         let mut app = app(vec![
-            "yizhiying/weapon.bin",
-            "choulingke/environment/litter.png",
+            "weapons/ranged/yizhiying.bin",
+            "environment/bamboo/litter.png",
         ]);
         // Requested in Startup; the files cannot have been delivered yet.
         app.update();
@@ -342,7 +338,7 @@ mod tests {
     #[test]
     fn a_missing_file_never_assembles_and_reports_one_failure() {
         web::take_startup_notifications();
-        let mut app = app(vec!["yizhiying/weapon.bin", "missing/weapon.bin"]);
+        let mut app = app(vec!["weapons/ranged/yizhiying.bin", "weapons/missing.bin"]);
         settle(&mut app);
         for _ in 0..3 {
             app.update();

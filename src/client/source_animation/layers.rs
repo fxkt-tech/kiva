@@ -1,5 +1,5 @@
 //! Verified composition metadata from the native bake report.
-//! Keep in sync with assets/naraka/animations-manifest.json when adding clips.
+//! Keep in sync with provenance/animations/naraka/animations-manifest.json when adding clips.
 //! These are Kiva missing-chain supplements, not original controller weights.
 pub(super) fn finger_layers(name: &str) -> Option<(&'static str, &'static str)> {
     Some(match name {

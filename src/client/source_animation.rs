@@ -174,7 +174,7 @@ impl<T: Copy> Keys<T> {
     }
 }
 /// The primary (Yanyun) and secondary (Naraka) source rigs.
-pub(super) const PATHS: [&str; 2] = ["choulingke/animations.bin", "naraka/animations.bin"];
+pub(super) const PATHS: [&str; 2] = ["animations/yanyun.bin", "animations/naraka.bin"];
 
 impl FromWorld for SourceAnimationLibrary {
     fn from_world(world: &mut World) -> Self {

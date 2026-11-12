@@ -4,7 +4,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 const { test } = require("node:test");
 
-const bundledCues = JSON.parse(fs.readFileSync(path.join(__dirname, "../assets/audio/naraka-cues.json"), "utf8"));
+const bundledCues = JSON.parse(fs.readFileSync(path.join(__dirname, "../assets/audio/naraka/cues.json"), "utf8"));
 const source = fs.readFileSync(path.join(__dirname, "../web/audio.js"), "utf8");
 
 class Target {
@@ -103,7 +103,7 @@ function fixture(options = {}) {
   const fetch = options.sampleFiles ? async (url) => {
     requests.push(url);
     if (options.networkFailure) throw new Error("offline");
-    if (url === "audio/naraka-cues.json" && options.deferredCues) {
+    if (url === "assets/audio/naraka/cues.json" && options.deferredCues) {
       await new Promise((resolve) => metadataResolvers.push(resolve));
     }
     return { ok: !options.failedFiles?.includes(url), arrayBuffer: async () => url,
@@ -284,13 +284,13 @@ test("bundled effects load once after trusted activation and BGM has a single lo
   const music = context.sources[0];
   assert.equal(music.loop, true);
   assert.equal(music.connections[0].gain.value, 0.18);
-  assert.equal(music.buffer.name, "audio/choulingke-bgm.ogg");
+  assert.equal(music.buffer.name, "assets/audio/music/choulingke-bgm.ogg");
   for (let i = 0; i < 6; i++) { f.audio.setActive(true); f.gesture("game"); }
   assert.equal(f.requests.length, 57);
   assert.equal(context.sources.length, 1);
   for (const name of ["attack", "hit", "deflect"]) {
     assert.equal(f.audio.playEffect(name), true);
-    assert.equal(context.sources.at(-1).buffer.name, `audio/${name}.ogg`);
+    assert.equal(context.sources.at(-1).buffer.name, `assets/audio/effects/${name}.ogg`);
     assert.equal(context.sources.at(-1).loop, false);
     assert.equal(context.sources.at(-1).connections[0].gain.value, 0.45);
   }
@@ -354,14 +354,14 @@ test("unverified music stays absent without requesting a missing or arbitrary tr
 test("all bundled effects are actual Ogg files and Trunk copies their directory", () => {
   const root = path.join(__dirname, "..");
   for (const name of ["attack", "hit", "deflect"]) {
-    const bytes = fs.readFileSync(path.join(root, "assets/audio", `${name}.ogg`));
+    const bytes = fs.readFileSync(path.join(root, "assets/audio/effects", `${name}.ogg`));
     assert.equal(bytes.subarray(0, 4).toString("ascii"), "OggS");
     assert.ok(bytes.length > 1000);
   }
-  const music = JSON.parse(fs.readFileSync(path.join(root, "assets/audio/music.json")));
-  if (music.file) assert.ok(fs.existsSync(path.join(root, "assets/audio", music.file)));
+  const music = JSON.parse(fs.readFileSync(path.join(root, "assets/audio/music/music.json")));
+  if (music.file) assert.ok(fs.existsSync(path.join(root, "assets/audio/music", music.file)));
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-  assert.match(html, /data-trunk rel="copy-dir" href="assets\/audio"/);
+  assert.match(html, /data-trunk rel="copy-dir" href="assets"/);
 });
 
 function smallCues(cues) {
@@ -378,7 +378,7 @@ test("all seventeen original cues share one decode per media and keep natural pi
   const f = fixture({ parsed: true, sampleFiles: true }); f.gesture();
   assert.equal(f.audio.playEffect("naraka_attack_1"), false);
   await loaded();
-  const media = f.requests.filter((url) => /^audio\/naraka-[0-9]+\.ogg$/.test(url));
+  const media = f.requests.filter((url) => /^assets\/audio\/naraka\/naraka-[0-9]+\.ogg$/.test(url));
   assert.equal(media.length, 51);
   assert.equal(new Set(media).size, 51);
   for (const name of Object.keys(bundledCues.cues)) {
@@ -404,7 +404,7 @@ test("weighted independent variants apply each imported gain exactly once", asyn
     assert.equal(f.audio.cueOffset("naraka_attack_1"), 0.25);
     assert.equal(f.audio.playEffect("naraka_attack_1"), true);
     const source = f.contexts[0].sources.at(-1);
-    assert.equal(source.buffer.name, `audio/${name}`);
+    assert.equal(source.buffer.name, `assets/audio/naraka/${name}`);
     assert.equal(source.connections[0].gain.value, 0.45 * gain);
   }
 });
@@ -481,7 +481,7 @@ test("invalid bounded metadata never requests arbitrary files or disables old au
     assert.equal(f.audio.playEffect("naraka_attack_1"), false);
     assert.equal(f.audio.playEffect("attack"), true);
     assert.equal(f.audio.playSniperShot(), true);
-    assert.equal(f.requests.some((url) => /^audio\/naraka-[0-9]/.test(url)), false);
+    assert.equal(f.requests.some((url) => /^assets\/audio\/naraka\/naraka-[0-9]/.test(url)), false);
   }
   for (const cuesText of ['{"version":1,"cues":{"naraka_attack_1":{"priority":2,"offset":1e999,"layers":[]}}}', " ".repeat(65537), "{"]) {
     const f = fixture({ parsed: true, sampleFiles: true, cuesText }); f.gesture(); await loaded();
@@ -497,9 +497,9 @@ test("metadata arriving from a closed context cannot populate the replacement or
   assert.equal(f.metadataResolvers.length, 2);
   assert.equal(f.audio.playEffect("naraka_attack_1"), false);
   f.metadataResolvers[0](); await loaded();
-  assert.equal(f.requests.filter((url) => /^audio\/naraka-[0-9]/.test(url)).length, 0);
+  assert.equal(f.requests.filter((url) => /^assets\/audio\/naraka\/naraka-[0-9]/.test(url)).length, 0);
   f.metadataResolvers[1](); await loaded();
-  assert.equal(f.requests.filter((url) => /^audio\/naraka-[0-9]/.test(url)).length, 51);
+  assert.equal(f.requests.filter((url) => /^assets\/audio\/naraka\/naraka-[0-9]/.test(url)).length, 51);
   const current = f.contexts[1];
   assert.equal(current.sources.filter((node) => !node.loop).length, 0);
   assert.equal(f.audio.playEffect("naraka_attack_1"), true);
@@ -511,7 +511,7 @@ test("metadata arriving from a closed context cannot populate the replacement or
 
 test("missing selected media is discarded without reducing a layered cue or replaying on resume", async () => {
   const data = smallCues({ naraka_land: cue(1, [layer("naraka-1.ogg"), layer("naraka-2.ogg", 1, 0.1)]) });
-  const f = fixture({ parsed: true, sampleFiles: true, cues: data, failedFiles: ["audio/naraka-2.ogg"] });
+  const f = fixture({ parsed: true, sampleFiles: true, cues: data, failedFiles: ["assets/audio/naraka/naraka-2.ogg"] });
   f.gesture(); await loaded();
   assert.equal(f.audio.playEffect("naraka_land"), false);
   assert.equal(f.contexts[0].sources.filter((node) => !node.loop).length, 0);
@@ -551,7 +551,7 @@ test("original ranged family cues preserve all six variants, gain, zero delay, a
       assert.equal(context.sources.length, count + 1);
       const source = context.sources.at(-1);
       const variant = configured.layers[0].variants[index];
-      assert.equal(source.buffer.name, `audio/${variant.file}`);
+      assert.equal(source.buffer.name, `assets/audio/naraka/${variant.file}`);
       assert.equal(source.connections[0].gain.value, 0.45 * variant.gain);
       assert.deepEqual(Array.from(source.startArgs), [3, 0]);
       assert.equal(source.playbackRate, undefined);
@@ -566,7 +566,7 @@ test("original ranged family cues preserve all six variants, gain, zero delay, a
 
 test("original ranged undecoded media never invokes procedural fallback or queues an old shot", async () => {
   const first = bundledCues.cues.naraka_gun.layers[0].variants[0].file;
-  const f = fixture({ parsed: true, sampleFiles: true, random: () => 0, failedFiles: [`audio/${first}`] });
+  const f = fixture({ parsed: true, sampleFiles: true, random: () => 0, failedFiles: [`assets/audio/naraka/${first}`] });
   f.gesture(); await loaded();
   assert.equal(f.audio.playEffect("naraka_gun"), false);
   assert.equal(f.contexts[0].sources.filter((source) => !source.loop).length, 0);
@@ -589,7 +589,7 @@ test("successful dodge uses the selected soul-dodge event with three original va
     f.gesture(); await loaded();
     assert.equal(f.audio.playEffect("naraka_dodge_success"), true);
     const voice = f.contexts[0].sources.at(-1);
-    assert.equal(voice.buffer.name, `audio/${variants[i].file}`);
+    assert.equal(voice.buffer.name, `assets/audio/naraka/${variants[i].file}`);
     assert.equal(voice.connections[0].gain.value, .45 * variants[i].gain);
     assert.equal(voice.playbackRate, undefined);
     f.audio.setActive(false);

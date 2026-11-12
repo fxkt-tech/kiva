@@ -22,17 +22,10 @@
     <link data-trunk rel="copy-file" href="web/appearance.js" />
     <script src="appearance.js"></script>
     <link data-trunk rel="copy-file" href="web/audio.js" />
-    <link data-trunk rel="copy-dir" href="assets/audio" />
-    <!-- Runtime model, animation and texture files; the engine fetches them
-         relative to this page (see client/bundle.rs). -->
-    <link data-trunk rel="copy-dir" href="assets/choulingke" />
-    <link data-trunk rel="copy-dir" href="assets/lihuowang" />
-    <link data-trunk rel="copy-dir" href="assets/bailingmiao" />
-    <link data-trunk rel="copy-dir" href="assets/naraka" />
-    <link data-trunk rel="copy-dir" href="assets/fulangmao" />
-    <link data-trunk rel="copy-dir" href="assets/zhexingcuishan" />
-    <link data-trunk rel="copy-dir" href="assets/yinbingluo" />
-    <link data-trunk rel="copy-dir" href="assets/yizhiying" />
+    <!-- Every runtime file: models, animations, textures and audio. It holds
+         nothing else, so the whole folder is published as assets/ next to
+         the page (see client/bundle.rs). Provenance lives in provenance/. -->
+    <link data-trunk rel="copy-dir" href="assets" />
     <script src="audio.js"></script>
     <link data-trunk rel="copy-file" href="web/style.css" />
     <link rel="stylesheet" href="style.css" />

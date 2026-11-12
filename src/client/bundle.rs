@@ -144,7 +144,7 @@ mod tests {
     use super::*;
     use bevy::asset::AssetPlugin;
 
-    const SMALL: &str = "choulingke/environment/litter.png";
+    const SMALL: &str = "environment/bamboo/litter.png";
 
     fn app() -> App {
         let mut app = App::new();
@@ -174,7 +174,7 @@ mod tests {
     #[test]
     fn a_request_is_pending_until_the_real_file_arrives_and_is_released_when_taken() {
         let mut app = app();
-        let paths = [SMALL, "yizhiying/weapon.bin"];
+        let paths = [SMALL, "weapons/ranged/yizhiying.bin"];
         assert_eq!(
             status(app.world(), &paths),
             Status::Pending {
@@ -211,11 +211,11 @@ mod tests {
     #[test]
     fn a_missing_file_fails_the_set_and_names_the_file() {
         let mut app = app();
-        let paths = [SMALL, "missing/character.bin"];
+        let paths = [SMALL, "characters/missing.bin"];
         request(app.world_mut(), &paths);
         assert_eq!(
             settle(&mut app, &paths),
-            Status::Failed("missing/character.bin")
+            Status::Failed("characters/missing.bin")
         );
     }
 

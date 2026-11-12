@@ -1,9 +1,0 @@
-{
-  "raw_bytes": 12731643,
-  "raw_sha256": "b453b211dee64ef887e43d6bddfb3845ca500a26641bc418a5180d077a762a4a",
-  "decoded_sha256": "0fbb905eb229ebe9e93a37cdfabd9d7e78755256fa0d2c5b5afec542d4b11f75",
-  "exact_cached_match": true,
-  "source_textasset_path_id": -8685861610438291164,
-  "raw_xls_source": "f/a/fab72152d7112058",
-  "key_rule": "Version-specific xor_decode from prior verified tooling; suffix bytes not duplicated in this task"
-}

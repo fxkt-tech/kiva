@@ -47,7 +47,7 @@ Web mode脚本最先固定页面模式，startup／loader／input／hud／enemie
 进入卡片可选择靶子 / 实战，捕获期间 F2 切换；按钮请求在暂停或引擎加载时保留至一次消费，模式权威在玩法层。
 外观卡片可选择愁铃客 / 李火旺，捕获期间 F3 切换，选择保存在 `AppearanceSelection`；外观只决定哥哥身体／服饰，不改变 WeaponPair 或武器。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。哥哥默认李火旺；`Appearance::default()` 仍为愁铃客，供敌人使用。白灵淼仅用于妹妹，不进入 F3 或 Web 选择枚举；换装不影响敌人、妹妹或当前武器。
 `AvatarAssets` 保留愁铃客资源，`AvatarAssetCache` 分别缓存李火旺与白灵淼；多次换装／技能复用原句柄。角色自身的 AvatarPart 标记限定身体回收范围，不能清空玩家所有 Children 或重建 RigPose。显示根、物理 actor、动作状态、武器根的 BoneVisual 所属保持不变。
-KIVAAV03 增加每材质 doubleSided 和每骨 sourceRestModel，KIVAAV02 仍按原格式读取。源导入姿态可能不同于 bind pose，蒙皮正确性使用原 LBS 数值对照，不强改逆绑定为当前姿态抵消。李火旺骨名与燕云索引独立，身体23结构驱动校准参考臂向并保留自身骨长，源指轨另按三节语义链传递；源动作与附件读取实际皮肤掌框。原 packed/ID 图未经通道证明不能接为颜色或 ORM；面容、发材质和刚性刀穗的美术适配必须在 assets/lihuowang 来源清单中明确。
+KIVAAV03 增加每材质 doubleSided 和每骨 sourceRestModel，KIVAAV02 仍按原格式读取。源导入姿态可能不同于 bind pose，蒙皮正确性使用原 LBS 数值对照，不强改逆绑定为当前姿态抵消。李火旺骨名与燕云索引独立，身体23结构驱动校准参考臂向并保留自身骨长，源指轨另按三节语义链传递；源动作与附件读取实际皮肤掌框。原 packed/ID 图未经通道证明不能接为颜色或 ORM；面容、发材质和刚性刀穗的美术适配必须在 provenance/characters/lihuowang 来源清单中明确。
 原生 F2 在有焦点时切换，窗口标题显示当前模式。武器组的名称、模型、音效、姿态等表现集中在 `loadout.rs` 的表里（见 [战斗表现契约](combat-presentation.md)）。模式改变后先回收失效敌人的显示树与血条，再用共享网格 / 材质创建新表现。
 可信捕获、原生事件、Shift／C、有序右键与取消的唯一输入契约见 [input.md](input.md)。
 零固定步保留意图、多固定步一次消费；输入只改变意图与 ViewYaw，不能修改 MotionState 或已承诺技能。
@@ -58,7 +58,7 @@ Web HUD 顶部居中为米金边框、暗红填充的锁定敌人长血条；底
 HUD 脚本只更新 textContent、progress.value、图标 href、可见性、样式类和无障碍属性，不使用 innerHTML 或独立计时器；暂停后冷却与联动显示随模拟快照冻结。
 HUD 为 pointer-events:none 的纯显示层，E／Q／Tab／中键／Z／X 通过实际输入桥；不能带入预览 HTML 的点击演示和模拟计时。HUD CSS 使用 hud-* 名称和 .game-hud 作用域，不能污染入口的 button / kbd / progress / p 样式。
 愁铃客标准高度1.73m，原主骨架986节点已恢复；source_animation对35个具名原clip有界解码、稀疏T/R/S采样与层级求值，按原骨名驱动独立Skin调色板，CC0回退仍用23个明确结构锚点。`avatar::sync` 只更新显示骨骼；挂点位置用适配后的手腕，枪轴方向沿用原动作。13个穿戴部件、17个材质槽中的皮肤及长刀使用原主色/法线纹理，PNG显式sRGB/linear；未知原作材质参数不猜测为已恢复。靶子从 Body.scale() 读取1.45比例，模型替换不能反写 Body 或改变玩家相机锚点。
-底层资产为 `assets/animations/stickman.anim`（23 骨骼 / 19 动画），保留同目录 CC0 许可证；永劫 KIVASR02 为独立63骨／44片段，燕云 KIVASR01 仍986骨／35片段；CC0 骨架 `include_bytes!` 嵌入，两份源动画由 `bundle` 运行时加载（`SourceAnimationLibrary` 为 `FromWorld`，测试用 `bundled()`），均显式小端解码。
+底层资产为 `src/client/embedded/stickman.anim`（23 骨骼 / 19 动画），CC0 许可证与说明在同目录 `stickman-LICENSE.txt`／`stickman-README.md`；永劫 KIVASR02 为独立63骨／44片段，燕云 KIVASR01 仍986骨／35片段；CC0 骨架 `include_bytes!` 嵌入，两份源动画由 `bundle` 运行时加载（`SourceAnimationLibrary` 为 `FromWorld`，测试用 `bundled()`），均显式小端解码。
 身体姿态通过 ActorView.owner 读取 Body 的实际固定步位移、MotionState、Health 和 Combatant，动画反馈按物理 CombatEvent.actor/sequence 归属与去重。
 禁止把动画根位移叠加到权威位置；空中不重复抬升骨盆。暂停冻结姿态、尸体保留可见播放 Death01，复活清理旧姿态。
 跳跃读取MotionState::jumps_used()，第二次起跳重启空中计时；哥哥使用永劫一／二次起跳、下落和落地，Boss保留燕云来源，远程／缺源动作回退到CC0的NinjaJump等姿态，不额外叠加模型高度。
@@ -113,7 +113,7 @@ C 回归覆盖短按 / 松键保持、完整双按奇偶性、重复过滤和失
 错误：独立平滑相机、把显示 Transform 写回物理 Position，或将 view 实体 ID 当作战斗 actor。
 正确：JS 只管理输入边界，物理实体消费 Intent；owner 关联的显示根读取快照，模型和相机共用显示位置。
 
-`environment` 只消费Level同源地形/竹干/岩石，19个聚合网格、7个ForestMaterial；14张原竹叶/竹皮/落叶/土壤/草苔/草丛base与normal随包复用，sRGB/linear显式区分，alpha卡片有UV/tangent。ForestMaterial=ExtendedMaterial<StandardMaterial,ForestSurface>，保留标准PBR/雾、蒙皮/阴影路径；地表只通过分层纹理和有界mask区分干土/湿土/非金属积水，不用clearcoat或金属度伪造湿地。12组装饰风动不改变碰撞竹干，暂停冻结时钟。重复不透明纹理由texture_mips生成完整mip，颜色在线性空间平均、法线重归一；不直接给裁切atlas平均alpha以免远草消失。半球环境光/冷色填光/指数雾为Kiva美术适配；原编译shader用于验证mix通道，不冒称原HLSL/完整BRDF已移植。场景是主题重建，来源与局限见assets/choulingke/README.md。
+`environment` 只消费Level同源地形/竹干/岩石，19个聚合网格、7个ForestMaterial；14张原竹叶/竹皮/落叶/土壤/草苔/草丛base与normal随包复用，sRGB/linear显式区分，alpha卡片有UV/tangent。ForestMaterial=ExtendedMaterial<StandardMaterial,ForestSurface>，保留标准PBR/雾、蒙皮/阴影路径；地表只通过分层纹理和有界mask区分干土/湿土/非金属积水，不用clearcoat或金属度伪造湿地。12组装饰风动不改变碰撞竹干，暂停冻结时钟。重复不透明纹理由texture_mips生成完整mip，颜色在线性空间平均、法线重归一；不直接给裁切atlas平均alpha以免远草消失。半球环境光/冷色填光/指数雾为Kiva美术适配；原编译shader用于验证mix通道，不冒称原HLSL/完整BRDF已移植。场景是主题重建，来源与局限见 provenance/characters/choulingke/README.md 与 provenance/environment/bamboo/manifest.json。
 
 rendering共用MainView标记和HDR、Msaa::Off、FXAA、DepthPrepass、DeferredPrepass，默认不透明材质deferred；游戏GameCamera另装SSR，验收页不装SSR。透光裁切植被显式Forward。不能改变相机姿态/FOV或模拟。SSR只对屏幕内深度/已完成deferred光照有效，前向透光物体和屏幕外物体不保证倒影；验收需要真实GPU pass记录与GBuffer读回，只有shader组合测试不够。湿土粗糙度不进入SSR，仅平滑积水进入，避免高频normal造成随机闪点。
 

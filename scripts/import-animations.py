@@ -13,7 +13,7 @@ import struct
 import sys
 import zipfile
 
-OUTPUT = Path(__file__).resolve().parents[1] / "assets/animations"
+OUTPUT = Path(__file__).resolve().parents[1] / "src/client/embedded"
 BONES = [
     "root", "pelvis", "spine_01", "spine_02", "spine_03", "neck_01", "Head",
     "clavicle_l", "upperarm_l", "lowerarm_l", "hand_l",
@@ -155,7 +155,7 @@ def main():
             print(f"{name}: {duration:.3f}s, {frames} frames")
     (OUTPUT / "stickman.anim").write_bytes(data)
     license_name = next(n for n in sources[1].zip.namelist() if n.lower().endswith("license.txt"))
-    (OUTPUT / "LICENSE.txt").write_bytes(sources[1].zip.read(license_name))
+    (OUTPUT / "stickman-LICENSE.txt").write_bytes(sources[1].zip.read(license_name))
     print(f"Wrote {len(data):,} bytes to {OUTPUT / 'stickman.anim'}")
 
 

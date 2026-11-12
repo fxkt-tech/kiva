@@ -70,8 +70,8 @@ impl Loadout {
 const HAMMER_MUSKET: Loadout = Loadout {
     hud_index: 1,
     melee_name: "伏浪锚 · 锤子",
-    melee_model: "fulangmao/weapon.bin",
-    ranged_model: "yinbingluo/weapon.bin",
+    melee_model: "weapons/melee/fulangmao.bin",
+    ranged_model: "weapons/ranged/yinbingluo.bin",
     spine_accessory: false,
     tethered: false,
     swing: Swing::Hammer,
@@ -91,8 +91,8 @@ const HAMMER_MUSKET: Loadout = Loadout {
 const CHAIN_AXE_BOW: Loadout = Loadout {
     hud_index: 2,
     melee_name: "谪星·摧山 · 链斧",
-    melee_model: "zhexingcuishan/weapon.bin",
-    ranged_model: "yizhiying/weapon.bin",
+    melee_model: "weapons/melee/zhexingcuishan.bin",
+    ranged_model: "weapons/ranged/yizhiying.bin",
     spine_accessory: true,
     tethered: true,
     swing: Swing::Axe,

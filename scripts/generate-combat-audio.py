@@ -47,9 +47,11 @@ def samples(kind, duration):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, default=ROOT / 'assets/audio')
-    output = parser.parse_args().output.resolve()
-    manifest = json.loads((output / 'effects-manifest.json').read_text())
+    parser.add_argument('--output', type=Path, default=ROOT / 'assets/audio/effects')
+    parser.add_argument('--provenance', type=Path, default=ROOT / 'provenance/audio')
+    args = parser.parse_args()
+    output, provenance = args.output.resolve(), args.provenance.resolve()
+    manifest = json.loads((provenance / 'effects-manifest.json').read_text())
     effects = {entry['name']: entry for entry in manifest['effects']}
     if len(effects) != len(manifest['effects']) or set(effects) != {'attack', 'hit', 'deflect'}:
         raise ValueError('expected exactly one attack/hit/deflect manifest entry')
@@ -97,7 +99,7 @@ def main():
         (output / f'{kind}.ogg').write_bytes(data)
         effects[kind] = entry
     manifest['effects'] = [effects[name] for name in ('attack', 'hit', 'deflect')]
-    (output / 'effects-manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+    (provenance / 'effects-manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
 
 
 if __name__ == '__main__':

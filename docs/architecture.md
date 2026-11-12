@@ -42,7 +42,7 @@
 | `client/environment.rs`、`environment/ground_cover.rs` | 玩法同源竹干/地形、共享草叶装饰、雾和灯光 |
 | `client/rendering.rs`、`client/texture_mips.rs` | 相机 deferred/SSR/FXAA pass；重复纹理的线性颜色与单位法线 mip |
 | `client/source_animation.rs` | 燕云与永劫两套源动画的独立来源、有界解码、稀疏采样和层级求值 |
-| `client/forest_material.rs`、`assets/shaders/forest.wesl` | 标准PBR地表分层与干湿响应、共享环境材质和近叶可见/深度裁切，不改变模拟碰撞 |
+| `client/forest_material.rs`、`client/embedded/shaders/forest.wesl` | 标准PBR地表分层与干湿响应、共享环境材质和近叶可见/深度裁切，不改变模拟碰撞 |
 | `client/skeleton.rs` | 随包 CC0 动画的解码、局部采样、父子骨骼求值 |
 | `client/animation.rs`、`animation/poses.rs` | 根据只读模拟快照与明确 actor 的事件选择 / 混合身体姿态 |
 | `client/animation/attack_clips.rs` | 每条攻击时间轴（`TrackId`）播放的源片段与时间映射，一招一行；攻击姿态只按模拟的 `AttackClock` 采样 |
@@ -78,7 +78,17 @@
 
 ## 运行时资源
 
-角色、源动画、武器和环境贴图是随包文件，不编入二进制。`client/bundle.rs` 经 Bevy AssetServer 加载：Web 从页面同源路径拉取，原生读取 `assets/`；不读取原游戏目录，也不访问其他来源。每个文件只有一个解码方，字节交付后即释放。游戏在清单全部到齐后装配；验收页（`?view=model`）只等动画库和默认配置，其余在选中时加载。CC0 结构骨架和 shader 仍嵌入。
+角色、源动画、武器、环境贴图和音频是随包文件，不编入二进制。`client/bundle.rs` 经 Bevy AssetServer 加载：Web 和原生都从 `assets/` 读取（Trunk 把整个目录原样发布到页面同源的 `assets/`）；不读取原游戏目录，也不访问其他来源。每个文件只有一个解码方，字节交付后即释放。游戏在清单全部到齐后装配；验收页（`?view=model`）只等动画库和默认配置，其余在选中时加载。
+
+三个目录各管一类文件：
+
+| 目录 | 放什么 | 是否发布 |
+|---|---|---|
+| `assets/` | 只有运行时会下载的文件，按用途分：`characters/`、`weapons/{melee,ranged}/`、`animations/`、`environment/bamboo/`、`audio/{effects,music,naraka}/` | 是，整目录原样发布 |
+| `provenance/` | 每个运行时文件的来源说明、转换报告和来源清单，路径与 `assets/` 一一对应 | 否 |
+| `src/client/embedded/` | 编进二进制的 CC0 结构骨架和 shader | 编译进 WASM |
+
+`assets/` 里不能放说明、报告或清单，否则会被发布出去。Naraka 的冻结准备包不在仓库里，位于 `../kiva-asset-research/prepared/naraka/`。
 
 ## 浏览器边界
 
@@ -114,5 +124,5 @@
 | 角色／武器二进制格式、挂点、手部重定向 | [模型规范](../.trellis/spec/client/model-assets.md) |
 | 永劫／燕云源动画、片段映射、音效 cue 与混音 | [动作与音效契约](../.trellis/spec/client/naraka-motion.md) |
 | 验收页的操作与契约 | [验收页说明](model-viewer.md)、[验收页契约](../.trellis/spec/client/model-viewer.md) |
-| 各资源的来源、转换命令和已知局限 | `assets/*/README.md`，例如 [愁铃客](../assets/choulingke/README.md)、[李火旺](../assets/lihuowang/README.md)、[白灵淼](../assets/bailingmiao/README.md)、[音频](../assets/audio/README.md) |
+| 各资源的来源、转换记录和已知局限 | `provenance/`（与 `assets/` 同构），例如 [愁铃客](../provenance/characters/choulingke/README.md)、[李火旺](../provenance/characters/lihuowang/README.md)、[白灵淼](../provenance/characters/bailingmiao/README.md)、[音频](../provenance/audio/README.md) |
 | 历史方案与调查记录 | [`docs/plans/`](plans/)，例如[愁铃客竹林方案](plans/choulingke-bamboo-arena.md) |

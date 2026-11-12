@@ -52,19 +52,19 @@ impl Plugin for ForestMaterialPlugin {
         load_internal_asset!(
             app,
             FOREST_VIEW_SHADER,
-            "../../assets/shaders/forest_view.wesl",
+            "embedded/shaders/forest_view.wesl",
             |source, _path| Shader::from_wesl(source, "embedded://kiva/forest_view.wesl")
         );
         load_internal_asset!(
             app,
             FOREST_PREPASS_SHADER,
-            "../../assets/shaders/forest_prepass.wesl",
+            "embedded/shaders/forest_prepass.wesl",
             Shader::from_wesl
         );
         load_internal_asset!(
             app,
             FOREST_SHADER,
-            "../../assets/shaders/forest.wesl",
+            "embedded/shaders/forest.wesl",
             Shader::from_wesl
         );
         app.add_plugins(MaterialPlugin::<ForestMaterial>::default());
@@ -125,16 +125,13 @@ mod tests {
         cache.set_shader(
             FOREST_VIEW_SHADER.id(),
             Shader::from_wesl(
-                include_str!("../../assets/shaders/forest_view.wesl"),
+                include_str!("embedded/shaders/forest_view.wesl"),
                 "embedded://kiva/forest_view.wesl",
             ),
         );
         cache.set_shader(
             FOREST_SHADER.id(),
-            Shader::from_wesl(
-                include_str!("../../assets/shaders/forest.wesl"),
-                "forest.wesl",
-            ),
+            Shader::from_wesl(include_str!("embedded/shaders/forest.wesl"), "forest.wesl"),
         );
         for deferred in [false, true] {
             let source = cache
@@ -156,7 +153,7 @@ mod tests {
         cache.set_shader(
             FOREST_PREPASS_SHADER.id(),
             Shader::from_wesl(
-                include_str!("../../assets/shaders/forest_prepass.wesl"),
+                include_str!("embedded/shaders/forest_prepass.wesl"),
                 "forest_prepass.wesl",
             ),
         );

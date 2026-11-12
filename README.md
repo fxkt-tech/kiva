@@ -58,7 +58,7 @@ HUD 顶部显示锁定敌人的真实血量，底部居中显示玩家生命，�
 竹林几何由程序生成，原竹叶／竹皮／落叶图与自写PBR细节shader组合；原发丝／布料专用BRDF和完整原AI仍有缺口。
 蹲行速度为 1.6m/s，蹲下 / 起身平滑过渡并通过腿部 IK 保持脚部落点；跳跃、闪避和暂停清理会退出蹲姿。
 模型与武器跟随骨骼，位移、跳跃高度和伤害仍由模拟决定。资源来源及许可证见
-[动画说明](assets/animations/README.md)和[角色资源说明](assets/choulingke/README.md)。
+[动画说明](src/client/embedded/stickman-README.md)和[角色资源说明](provenance/characters/choulingke/README.md)。
 
 ## 构建与检查
 
@@ -82,7 +82,7 @@ trunk build --release
 - `client/`：设备输入、视角、插值、骨骼姿态、蒙皮角色、竹林显示和相机。
 - `web/`：加载入口和浏览器鼠标捕获，游戏规则留在 Rust。
 
-当前模型与竹林效果见[首次实测](docs/plans/choulingke-bamboo-arena.md)和[原动作、材质与单 Boss 对战](docs/plans/choulingke-source-behavior-and-rendering.md)。竹林为主题重建；BGM使用已核对的官方发行录音，原bank分轨映射仍未恢复；当前原音效与旧兼容声音的来源见[声音状态](assets/audio/README.md)。
+当前模型与竹林效果见[首次实测](docs/plans/choulingke-bamboo-arena.md)和[原动作、材质与单 Boss 对战](docs/plans/choulingke-source-behavior-and-rendering.md)。竹林为主题重建；BGM使用已核对的官方发行录音，原bank分轨映射仍未恢复；当前原音效与旧兼容声音的来源见[声音状态](provenance/audio/README.md)。
 
 详细边界和执行顺序见 [架构文档](docs/architecture.md)，开发规范入口见
 [.trellis/spec/index.md](.trellis/spec/index.md)。
