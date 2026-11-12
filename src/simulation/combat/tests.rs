@@ -107,15 +107,77 @@ fn shots(app: &App, p: Entity) -> Vec<CombatEvent> {
         .copied()
         .collect()
 }
+/// One incoming hit: the enemy turns to the player and its blade passes
+/// through them in this very step. The swing is started at the tick whose
+/// sweep reaches the player, so defense timing stays exact to the step.
 fn strike(app: &mut App, p: Entity, e: Entity) {
+    use super::sweep::{HitTrack, Hurtbox, Stance, sweep};
+    let track = crate::simulation::TrackId::Enemy.hit_track().unwrap();
+    let world = app.world();
+    let (attacker, victim) = (world.get::<Body>(e).unwrap(), world.get::<Body>(p).unwrap());
+    let toward = (victim.world_position() - attacker.world_position()).xz();
+    let mut stance = Stance::of(attacker, toward);
+    stance.previous_feet = stance.feet;
+    let hurtbox = Hurtbox::of(victim, world.get::<MotionState>(p).unwrap());
+    let reaches = (track.first_active()..=track.last_active())
+        .find(|&tick| {
+            track.is_active(tick) && sweep(track, tick, &stance, &hurtbox, |_| {}).is_some()
+        })
+        .expect("the enemy's blade reaches the player");
+    app.world_mut().get_mut::<Facing>(e).unwrap().set(toward);
     let mut enemy = app.world_mut().get_mut::<Enemy>(e).unwrap();
     enemy.passive = false;
     enemy.recovery = 0.0;
-    enemy.windup = 1.0 / 60.0;
-    enemy.attack_target = Some(p);
+    enemy.attack_elapsed = Some(HitTrack::time(reaches - 1));
+    enemy.struck.clear();
     enemy.attack_id += 1;
+    let events = |app: &App| {
+        app.world()
+            .resource::<CombatFeedback>()
+            .events()
+            .last()
+            .map_or(0, |event| event.sequence)
+    };
+    let before = events(app);
     tick(app, 1);
-    app.world_mut().get_mut::<Enemy>(e).unwrap().passive = true;
+    // Whatever the defense made of it, the swing reached the player.
+    assert!(
+        app.world()
+            .resource::<CombatFeedback>()
+            .events()
+            .any(|event| event.sequence > before && event.actor == p),
+        "the swing touched the player"
+    );
+    let mut enemy = app.world_mut().get_mut::<Enemy>(e).unwrap();
+    if enemy.stun_source.is_none() {
+        enemy.attack_elapsed = None;
+    }
+    enemy.struck.clear();
+    enemy.passive = true;
+}
+/// How many steps after its press the player's ordinary attack `stage` first
+/// touches `target`, as both stand now: the press is admitted in the first
+/// step, and the blade's tick `n` is swept in step `n + 1`.
+fn contact_step(app: &App, attacker: Entity, target: Entity, stage: MeleeStage) -> usize {
+    use super::sweep::{Hurtbox, Stance, sweep};
+    let world = app.world();
+    let pair = world.get::<Combatant>(attacker).unwrap().weapon_pair();
+    let track = crate::simulation::TrackId::PlayerMelee { pair, stage }
+        .hit_track()
+        .unwrap();
+    let body = world.get::<Body>(attacker).unwrap();
+    let mut stance = Stance::of(body, world.get::<Facing>(attacker).unwrap().direction());
+    stance.previous_feet = stance.feet;
+    let hurtbox = Hurtbox::of(
+        world.get::<Body>(target).unwrap(),
+        world.get::<MotionState>(target).unwrap(),
+    );
+    let tick = (track.first_active()..=track.last_active())
+        .find(|&tick| {
+            track.is_active(tick) && sweep(track, tick, &stance, &hurtbox, |_| {}).is_some()
+        })
+        .expect("the player's blade reaches the target");
+    usize::from(tick) + 1
 }
 #[test]
 fn lock_is_explicit_toggle_parity_and_rejected_skills_cost_no_cooldown() {
@@ -141,17 +203,61 @@ fn lock_is_explicit_toggle_parity_and_rejected_skills_cost_no_cooldown() {
 }
 #[test]
 fn melee_has_a_real_windup_and_uses_facing_without_a_lock() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.0, 0.0);
-    let back = dummy(&mut app, Vec3::Z * 2.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.6, 0.0);
+    let back = dummy(&mut app, Vec3::Z * 1.6);
     tick(&mut app, 2);
+    // Nothing is hurt until the blade arrives; the enemy behind never is.
+    let contact = contact_step(&app, p, e, MeleeStage::One);
+    assert!(contact > 3, "the attack hit without a windup");
     request(&mut app, p, CombatIntent::request_attack);
-    tick(&mut app, 8);
+    tick(&mut app, contact - 1);
     assert_eq!(hp(&app, e), 1000.0);
     tick(&mut app, 1);
     assert_eq!(hp(&app, e), 976.0);
     assert_eq!(hp(&app, back), 1000.0);
     tick(&mut app, 40);
     assert_eq!(hp(&app, e), 976.0);
+}
+#[test]
+fn the_blade_hits_only_what_it_reaches_and_never_through_a_wall() {
+    // Straight ahead, but beyond the blade: the old 2.8 m cone reached this.
+    let (mut app, p, far) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.4, 0.0);
+    // Within the swing to the right front, well off the facing axis.
+    let side = dummy(&mut app, Vec3::new(1.0, 0.0, -0.9));
+    tick(&mut app, 2);
+    request(&mut app, p, CombatIntent::request_attack);
+    tick(&mut app, 45);
+    assert_eq!(hp(&app, far), 1000.0);
+    assert_eq!(hp(&app, side), 976.0);
+    let hit = app
+        .world()
+        .resource::<CombatFeedback>()
+        .events()
+        .find(|event| event.kind == CombatEffect::Hit && event.actor == side)
+        .copied()
+        .unwrap();
+    // The event marks where the blade met the body, on its surface.
+    let body = app.world().get::<Body>(side).unwrap();
+    let planar = hit.position.xz().distance(body.world_position().xz());
+    assert!(
+        (planar - body.radius()).abs() < 0.05,
+        "contact {planar} m from the axis"
+    );
+
+    // A thin wall between the player and an enemy in easy reach stops the blade.
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
+    spawn_box(
+        app.world_mut(),
+        Vec3::new(0.0, 1.0, -0.6),
+        Vec3::new(4.0, 2.0, 0.16),
+        false,
+    );
+    tick(&mut app, 4);
+    for _ in 0..3 {
+        request(&mut app, p, CombatIntent::request_attack);
+        tick(&mut app, 45);
+    }
+    assert_eq!(hp(&app, e), 1000.0);
 }
 #[test]
 fn hammer_three_shots_each_have_their_own_fixed_marker_and_companion_identity() {
@@ -300,7 +406,7 @@ fn unaccepted_hammer_window_expires_on_landing_and_never_replays_a_tab() {
 }
 #[test]
 fn attack_admission_discards_movement_new_attacks_and_equipment_during_commitment() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.0, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.6, 0.0);
     request(&mut app, p, CombatIntent::request_attack);
     tick(&mut app, 1);
     for _ in 0..12 {
@@ -340,8 +446,16 @@ fn independent_shared_slot_cooldowns_survive_switching_pairs() {
 #[test]
 fn chain_sweep_without_lock_damages_and_slow_reaches_the_actual_motor() {
     let (mut app, p, e) = arena(WeaponPair::ChainAxeBow, Vec3::NEG_Z * 2.5, 0.0);
+    // Out of the blade's reach, the enemy is hit by the shockwave in the
+    // step the baked swing lands (the press is admitted one step earlier).
+    let track = crate::simulation::TrackId::PlayerSkill(WeaponPair::ChainAxeBow.melee_skill())
+        .hit_track()
+        .unwrap();
+    let impact = usize::from(super::sweep::HitTrack::tick(track.impact_time())) + 1;
     request(&mut app, p, CombatIntent::request_melee_skill);
-    tick(&mut app, 10);
+    tick(&mut app, impact - 1);
+    assert_eq!(hp(&app, e), 1000.0);
+    tick(&mut app, 1);
     assert_eq!(hp(&app, e), 976.0);
     let slow = app.world().get::<SlowEffect>(e).unwrap();
     assert_eq!(slow.factor(), 0.65);
@@ -471,7 +585,7 @@ fn pull_blocked_by_wall_or_large_height_cancels_and_returns_axe_without_late_arr
 }
 #[test]
 fn ordered_short_tap_preserves_deflect_but_never_creates_release_parry() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     edge(&mut app, p, DefenseEdge::Pressed);
     edge(&mut app, p, DefenseEdge::Released);
     tick(&mut app, 1);
@@ -485,7 +599,7 @@ fn ordered_short_tap_preserves_deflect_but_never_creates_release_parry() {
 }
 #[test]
 fn held_guard_blocks_more_than_three_hits_and_exact_last_cost_but_never_partially_spends() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     edge(&mut app, p, DefenseEdge::Pressed);
     tick(&mut app, 13);
     assert!(app.world().get::<DefenseState>(p).unwrap().is_guarding());
@@ -505,7 +619,7 @@ fn held_guard_blocks_more_than_three_hits_and_exact_last_cost_but_never_partiall
 #[test]
 fn release_from_effective_guard_parries_and_stuns_but_cancel_does_not() {
     for cancel in [false, true] {
-        let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+        let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
         edge(&mut app, p, DefenseEdge::Pressed);
         tick(&mut app, 13);
         edge(
@@ -529,7 +643,7 @@ fn release_from_effective_guard_parries_and_stuns_but_cancel_does_not() {
 #[test]
 fn back_hits_ignore_all_three_defense_states() {
     for kind in 0..3 {
-        let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::Z * 1.5, 0.0);
+        let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::Z * 1.2, 0.0);
         edge(&mut app, p, DefenseEdge::Pressed);
         tick(&mut app, if kind == 0 { 1 } else { 13 });
         if kind == 2 {
@@ -543,7 +657,7 @@ fn back_hits_ignore_all_three_defense_states() {
 }
 #[test]
 fn clear_during_zero_tick_pause_cancels_without_ghost_release_or_timer_reset() {
-    let (mut app, p, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     edge(&mut app, p, DefenseEdge::Pressed);
     tick(&mut app, 13);
     let cd = app
@@ -622,7 +736,7 @@ fn defense_moves_slowly_crouches_without_slide_and_jump_exits() {
 }
 #[test]
 fn stamina_recovers_only_after_quiet_and_attack_or_incoming_restarts_wait() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     edge(&mut app, p, DefenseEdge::Pressed);
     tick(&mut app, 13);
     strike(&mut app, p, e);
@@ -757,7 +871,7 @@ fn post_marker_availability_and_half_open_defense_boundaries_are_current() {
 }
 #[test]
 fn cooldown_press_and_insufficient_stamina_do_not_manufacture_extra_windows() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     edge(&mut app, p, DefenseEdge::Pressed);
     edge(&mut app, p, DefenseEdge::Released);
     tick(&mut app, 13);
@@ -803,7 +917,7 @@ fn every_projectile_rechecks_visibility_and_does_not_replay_a_skipped_shot() {
 }
 #[test]
 fn dying_dummy_revives_passive_and_scale_survives_teleport_and_landing() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     app.world_mut().get_mut::<Health>(e).unwrap().damage(1000.0);
     tick(&mut app, 181);
     assert_eq!(hp(&app, e), 1000.0);
@@ -815,7 +929,7 @@ fn dying_dummy_revives_passive_and_scale_survives_teleport_and_landing() {
 #[test]
 fn mode_switch_while_paused_clears_sister_synchronously_and_preserves_stamina() {
     use crate::gameplay::{EnemyMode, set_enemy_mode};
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     edge(&mut app, p, DefenseEdge::Pressed);
     tick(&mut app, 13);
     strike(&mut app, p, e);
@@ -849,7 +963,7 @@ fn mode_switch_while_paused_clears_sister_synchronously_and_preserves_stamina() 
 }
 #[test]
 fn action_markers_crossed_with_completion_are_not_dropped() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.0, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.6, 0.0);
     request(&mut app, p, CombatIntent::request_attack);
     tick(&mut app, 1);
     app.world_mut()

@@ -11,10 +11,15 @@ mod energy;
 mod feedback;
 mod health;
 mod hit;
+// Generated data: its layout belongs to the baker, not to rustfmt.
+#[rustfmt::skip]
+#[allow(clippy::approx_constant, clippy::excessive_precision)]
+mod hit_tracks;
 mod prepare;
 mod resolve;
 mod runtime;
 mod skills;
+mod sweep;
 
 pub use arsenal::Arsenal;
 pub(super) use availability::publish_availability;
@@ -28,10 +33,12 @@ pub(super) use energy::{drain_rage, release_rage};
 pub(super) use feedback::ActionIds;
 pub use feedback::{CombatEffect, CombatEvent, CombatFeedback};
 pub use health::{Health, SpawnPoint};
+pub(super) use hit::{CombatWorld, apply_hit, settle_defense};
 pub use hit::{HitContext, HitOutcome};
-pub(super) use hit::{apply_hit, settle_defense};
 pub(super) use prepare::{prepare, tick_slows};
 pub(super) use resolve::{recover_stamina, resolve_actions};
+pub use sweep::{HitProbe, HitProbes, HitTrack, Hurtbox, ProbeShape};
+pub(super) use sweep::{strike, tick_probes, ticks_between};
 
 #[cfg(test)]
 mod tests;

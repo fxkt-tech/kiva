@@ -1,11 +1,11 @@
 //! Fixed-step Choulingke encounter. Recovered source decisions and Kiva tuning
 //! stay distinct: this is an adaptation, not an executable copy of the source AI.
-use avian3d::prelude::{SpatialQuery, SpatialQueryFilter};
 use bevy::prelude::*;
 
+use super::combat::{CombatWorld, strike, ticks_between};
 use super::{
     ActionIntent, AttackClock, Body, CombatEffect, CombatFeedback, Combatant, Facing, Health,
-    MeleeStage, MotionState, MoveIntent, SpawnPoint, TrackId,
+    HitProbes, HitTrack, MeleeStage, MotionState, MoveIntent, SpawnPoint, TrackId,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -27,22 +27,23 @@ pub enum BossState {
     Defeated,
 }
 
-/// Unrecovered hitboxes, damage and active frames are explicit local balance values.
+/// Unrecovered damage and pacing are explicit local balance values. Where and
+/// when a strike can hit is not tuned here: it is the strike's baked blade path.
 /// Source distance fields retain their numeric values; no hidden model-height scaling.
 struct KivaTuning;
 impl KivaTuning {
-    const TELEGRAPH: f32 = 0.72;
-    const ACTIVE: f32 = 0.22;
-    const RECOVERY: f32 = 0.65;
-    /// One strike's whole timeline: telegraph, active window and recovery.
-    const MOVE: f32 = Self::TELEGRAPH + Self::ACTIVE + Self::RECOVERY;
+    /// The share of the telegraph during which the Boss still turns to its target.
+    const TRACKING: f32 = 0.65;
+    /// The Boss closes in until the target is this deep inside the blade's
+    /// reach: while it telegraphs, then while it swings.
+    const TELEGRAPH_STOP: f32 = 0.75;
+    const SWING_STOP: f32 = 0.875;
+    /// How long the Boss collects itself after being knocked off the ground.
+    const AIRBORNE_RECOVERY: f32 = 0.65;
     const ATTACKS_PER_BURST: u8 = 3;
     const BURST_REST: f32 = 3.0;
     const TRANSITION: f32 = 2.2;
     const RESPAWN: f32 = 3.0;
-    const HIT_RANGE: f32 = 3.2;
-    const HIT_HALF_ANGLE: f32 = 70.0_f32.to_radians();
-    const HIT_HEIGHT: f32 = 0.9;
     const DAMAGE_P1: f32 = 14.0;
     const DAMAGE_P2: f32 = 18.0;
 }
@@ -115,6 +116,8 @@ impl Default for Boss {
 impl Boss {
     /// Two health bars are a Kiva adaptation, not the source 65/75/30% buff checks.
     pub const PHASE_HEALTH: f32 = 650.0;
+    /// One strike's whole timeline: telegraph, swings and recovery.
+    pub const STRIKE_DURATION: f32 = 1.59;
     pub fn phase(&self) -> BossPhase {
         self.phase
     }
@@ -148,11 +151,11 @@ impl Boss {
     /// after a burst is not part of it.
     pub fn attack_clock(&self) -> Option<AttackClock> {
         let (stage, elapsed) = self.strike?;
-        (elapsed <= KivaTuning::MOVE).then_some(AttackClock {
+        (elapsed <= Self::STRIKE_DURATION).then_some(AttackClock {
             action_id: self.sequence,
             track: TrackId::Boss { stage },
             elapsed,
-            duration: KivaTuning::MOVE,
+            duration: Self::STRIKE_DURATION,
         })
     }
     /// The 9002xxxx slot -> source graph/clip mapping has not been recovered.
@@ -204,6 +207,14 @@ impl Boss {
 
     fn strike_elapsed(&self) -> f32 {
         self.strike.map_or(0.0, |(_, elapsed)| elapsed)
+    }
+
+    /// The baked blade path of the strike in progress.
+    fn strike_track(&self) -> &'static HitTrack {
+        let stage = self.strike.map_or(MeleeStage::One, |(stage, _)| stage);
+        TrackId::Boss { stage }
+            .hit_track()
+            .expect("every Boss strike is baked")
     }
 
     fn reset_fight(&mut self) {
@@ -259,13 +270,15 @@ impl Boss {
             1 | 2 => self.enter(BossState::Strafing, 2.0),
             3 => self.enter(BossState::Pursuing, 5.0),
             _ => {
-                self.enter(BossState::Telegraph, KivaTuning::TELEGRAPH);
                 let stage = match self.attacks_in_burst {
                     0 => MeleeStage::One,
                     1 => MeleeStage::Two,
                     _ => MeleeStage::Three,
                 };
                 self.strike = Some((stage, 0.0));
+                // The telegraph lasts until the blade becomes dangerous.
+                let telegraph = self.strike_track().strike_time();
+                self.continue_strike(BossState::Telegraph, telegraph);
             }
         }
     }
@@ -300,8 +313,9 @@ type Opponents = (
 /// Runs after current physical snapshots and player combat, with the same pause gate.
 pub(super) fn advance(
     time: Res<Time<Fixed>>,
-    spatial: SpatialQuery,
+    world: CombatWorld,
     mut feedback: ResMut<CombatFeedback>,
+    mut probes: ResMut<HitProbes>,
     mut bosses: Query<BossActors, With<Boss>>,
     mut players: Query<Opponents, (With<Combatant>, Without<Boss>)>,
 ) {
@@ -429,7 +443,7 @@ pub(super) fn advance(
         if !motion.is_grounded() {
             movement.stop();
             if boss.state != BossState::Stunned {
-                boss.enter(BossState::Recovering, KivaTuning::RECOVERY);
+                boss.enter(BossState::Recovering, KivaTuning::AIRBORNE_RECOVERY);
             }
             continue;
         }
@@ -455,7 +469,7 @@ pub(super) fn advance(
                         CombatEffect::EnemyWindup,
                         body.aim_position(),
                         target_body.aim_position(),
-                        KivaTuning::HIT_RANGE,
+                        boss.strike_track().reach,
                     );
                 }
             }
@@ -477,59 +491,62 @@ pub(super) fn advance(
                 }
             }
             BossState::Telegraph => {
-                if boss.elapsed < boss.duration * 0.65 {
+                let track = boss.strike_track();
+                let reach = track.reach * body.scale() + target_body.radius();
+                if boss.elapsed < boss.duration * KivaTuning::TRACKING {
                     facing.set(direction);
-                    movement.set(if distance > 2.4 {
-                        direction * 0.75
-                    } else {
-                        Vec2::ZERO
-                    });
-                } else {
-                    movement.stop();
                 }
-                if boss.strike_elapsed() >= KivaTuning::TELEGRAPH {
+                // Past the tracking share the direction is committed, but
+                // the Boss keeps stepping in so the swing can connect.
+                let forward = facing.direction();
+                movement.set(if distance > reach * KivaTuning::TELEGRAPH_STOP {
+                    forward * 0.75
+                } else {
+                    Vec2::ZERO
+                });
+                if boss.strike_elapsed() + 1e-4 >= track.strike_time() {
                     let action = boss.action.unwrap();
                     boss.cooldowns[action as usize] = SOURCE_COOLDOWNS[(action - 4) as usize];
                     boss.attacks_in_burst += 1;
-                    boss.continue_strike(BossState::Attacking, KivaTuning::ACTIVE);
+                    let swings = HitTrack::time(track.last_active()) - track.strike_time();
+                    boss.continue_strike(BossState::Attacking, swings);
                     feedback.push(
                         entity,
                         CombatEffect::Melee,
                         body.aim_position(),
-                        body.aim_position()
-                            + Vec3::new(facing.direction().x, 0.0, facing.direction().y)
-                                * KivaTuning::HIT_RANGE,
-                        KivaTuning::HIT_RANGE,
+                        body.aim_position() + Vec3::new(forward.x, 0.0, forward.y) * track.reach,
+                        track.reach,
                     );
                 }
             }
             BossState::Attacking => {
+                let track = boss.strike_track();
+                let reach = track.reach * body.scale() + target_body.radius();
                 let forward = facing.direction();
-                movement.set(if distance > 2.8 {
+                movement.set(if distance > reach * KivaTuning::SWING_STOP {
                     forward * 0.95
                 } else {
                     Vec2::ZERO
                 });
-                let aim_offset = target_body.aim_position() - body.aim_position();
-                let in_arc = forward.dot(aim_offset.xz().normalize_or(forward))
-                    >= KivaTuning::HIT_HALF_ANGLE.cos();
-                let visible = Dir3::new(aim_offset).ok().is_none_or(|direction| {
-                    spatial
-                        .cast_ray(
-                            body.aim_position(),
-                            direction,
-                            aim_offset.length(),
-                            true,
-                            &SpatialQueryFilter::from_excluded_entities([entity, target]),
-                        )
-                        .is_none()
-                });
-                if !boss.strike_resolved
-                    && distance <= KivaTuning::HIT_RANGE
-                    && aim_offset.y.abs() <= KivaTuning::HIT_HEIGHT
-                    && in_arc
-                    && visible
-                {
+                let elapsed = boss.strike_elapsed();
+                let mut finished = false;
+                for tick in ticks_between(elapsed - dt, elapsed) {
+                    finished |= tick >= track.last_active();
+                    if boss.strike_resolved || !track.is_active(tick) {
+                        continue;
+                    }
+                    // The blade hits only where it actually passes.
+                    let Some(contact) = strike(
+                        track,
+                        tick,
+                        (entity, &body),
+                        forward,
+                        (target, target_body, &target_motion),
+                        &world,
+                        &mut probes,
+                    ) else {
+                        continue;
+                    };
                     boss.strike_resolved = true;
                     let damage = if boss.phase == BossPhase::One {
                         KivaTuning::DAMAGE_P1
@@ -547,6 +564,7 @@ pub(super) fn advance(
                             hit_index: 0,
                             damage,
                             origin: body.aim_position(),
+                            contact: Some(contact),
                         },
                         target_body,
                         target_facing,
@@ -588,13 +606,11 @@ pub(super) fn advance(
                         target_intent.clear();
                     }
                 }
-                if boss.state == BossState::Attacking
-                    && boss.strike_elapsed() >= KivaTuning::TELEGRAPH + KivaTuning::ACTIVE
-                {
+                if boss.state == BossState::Attacking && finished {
                     let recovery = if boss.attacks_in_burst >= KivaTuning::ATTACKS_PER_BURST {
                         KivaTuning::BURST_REST
                     } else {
-                        KivaTuning::RECOVERY
+                        (Boss::STRIKE_DURATION - elapsed).max(0.0)
                     };
                     boss.continue_strike(BossState::Recovering, recovery);
                     movement.stop();
@@ -745,14 +761,15 @@ mod tests {
                     wait_for(&mut app, boss, BossState::Recovering);
                     let snapshot = app.world().get::<Boss>(boss).unwrap();
                     assert_eq!(snapshot.attacks_in_burst, strike as u8);
-                    assert_eq!(
-                        snapshot.duration(),
-                        if strike == 3 {
-                            3.0
-                        } else {
-                            KivaTuning::RECOVERY
-                        }
-                    );
+                    // An ordinary recovery plays out the strike's timeline;
+                    // the third is the burst's rest.
+                    let swung = HitTrack::time(snapshot.strike_track().last_active());
+                    let expected = if strike == 3 {
+                        3.0
+                    } else {
+                        Boss::STRIKE_DURATION - swung
+                    };
+                    assert!((snapshot.duration() - expected).abs() < 0.02);
                 }
                 let count = strike_count(&app, boss);
                 let before = health(&app, player);
@@ -883,9 +900,9 @@ mod tests {
             wait_for(&mut app, boss, BossState::Telegraph);
             let forward = app.world().get::<Facing>(boss).unwrap().direction();
             let position = app.world().get::<Body>(boss).unwrap().world_position();
-            // The ordinary miss stays beyond the hit volume through recovery.
-            // A parry meets the lunge just inside its outer edge, while moving.
-            let distance = if interrupted { 5.3 } else { 8.0 };
+            // The ordinary miss stays beyond the blade through recovery.
+            // A parry meets the blade at the far end of the lunge, while moving.
+            let distance = if interrupted { 5.2 } else { 8.0 };
             super::super::teleport_actor(
                 app.world_mut(),
                 player,
@@ -954,6 +971,31 @@ mod tests {
                 body.world_position().xz().distance(position.xz()) < speed / 60.0 * 0.9,
                 "{boundary:?} completed another full-speed lunge step"
             );
+        }
+    }
+
+    #[test]
+    fn strike_phases_follow_the_baked_blade_path_of_each_stage() {
+        let (mut app, _, boss) = arena();
+        let step = 1.0 / 60.0 + 1e-4;
+        for _ in 0..3 {
+            wait_for(&mut app, boss, BossState::Telegraph);
+            let track = app.world().get::<Boss>(boss).unwrap().strike_track();
+            // The telegraph ends as the blade becomes dangerous…
+            wait_for(&mut app, boss, BossState::Attacking);
+            let clock = app
+                .world()
+                .get::<Boss>(boss)
+                .unwrap()
+                .attack_clock()
+                .unwrap();
+            assert_eq!(clock.duration, Boss::STRIKE_DURATION);
+            assert!((clock.elapsed - track.strike_time()).abs() <= step);
+            // …and the Boss recovers once its last swing has passed.
+            wait_for(&mut app, boss, BossState::Recovering);
+            let elapsed = app.world().get::<Boss>(boss).unwrap().strike_elapsed();
+            assert!((elapsed - HitTrack::time(track.last_active())).abs() <= step);
+            wait_for(&mut app, boss, BossState::Idle);
         }
     }
 

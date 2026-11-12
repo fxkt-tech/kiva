@@ -1,9 +1,13 @@
 //! Authored skeletal animation driven by read-only simulation snapshots and actor-tagged events.
 mod attack_clips;
+#[cfg(test)]
+mod attack_replay;
 mod naraka;
 mod poses;
 mod preview;
 
+#[cfg(test)]
+pub(super) use attack_replay::AttackReplay;
 pub(super) use preview::{PreviewClip, PreviewRig, preview_catalog};
 
 use bevy::prelude::*;
@@ -1404,7 +1408,7 @@ mod tests {
                 );
                 rested = true;
             }
-            if snapshot.state() != BossState::Attacking || snapshot.elapsed() < 0.10 {
+            if snapshot.state() != BossState::Attacking || snapshot.elapsed() < 0.04 {
                 continue;
             }
             let clock = snapshot.attack_clock().unwrap();
@@ -2241,7 +2245,7 @@ mod tests {
             action_id: 3,
             track: crate::simulation::TrackId::Enemy,
             elapsed: 0.3,
-            duration: attack_clips::ENEMY_ATTACK[1],
+            duration: crate::simulation::TrackId::Enemy.duration(),
         };
         for (effect, blade, clock, action) in [
             (CombatEffect::Hammer, false, skill.clock(), Some(skill)),
@@ -2273,81 +2277,6 @@ mod tests {
                 );
             }
         }
-    }
-
-    #[test]
-    fn attack_clip_phase_boundaries_match_the_simulation_timelines() {
-        let mut app = app();
-        let player = actor(&mut app);
-        app.world_mut()
-            .entity_mut(player)
-            .insert(Health::new(10_000.0));
-        let boss = actor(&mut app);
-        app.world_mut()
-            .entity_mut(boss)
-            .remove::<(Combatant, CombatIntent)>()
-            .insert((
-                Body::new(Vec2::new(0.0, -2.5), 5.2, 0.3),
-                Boss::default(),
-                Enemy::default(),
-                Health::new(Boss::PHASE_HEALTH),
-            ));
-        let tick = 1.0 / 60.0 + 1e-4;
-        let mut previous = BossState::Idle;
-        let mut checked = 0;
-        for _ in 0..600 {
-            frame(&mut app, true);
-            let snapshot = app.world().get::<Boss>(boss).unwrap();
-            let state = snapshot.state();
-            if state != previous
-                && let Some(clock) = snapshot.attack_clock()
-            {
-                assert_eq!(clock.duration, attack_clips::BOSS_STRIKE[2]);
-                let boundary = match state {
-                    BossState::Attacking => Some(attack_clips::BOSS_STRIKE[0]),
-                    BossState::Recovering => Some(attack_clips::BOSS_STRIKE[1]),
-                    _ => None,
-                };
-                if let Some(boundary) = boundary {
-                    assert!(
-                        (clock.elapsed - boundary).abs() <= tick,
-                        "{state:?} began at {} not {boundary}",
-                        clock.elapsed
-                    );
-                    checked += 1;
-                }
-            }
-            previous = state;
-        }
-        assert!(checked >= 4, "only {checked} boss boundaries observed");
-
-        let mut app = super::tests::app();
-        let player = actor(&mut app);
-        app.world_mut()
-            .entity_mut(player)
-            .insert(Health::new(10_000.0));
-        let enemy = actor(&mut app);
-        app.world_mut()
-            .entity_mut(enemy)
-            .remove::<(Combatant, CombatIntent)>()
-            .insert((Body::new(Vec2::new(0.0, -1.2), 4.0, 0.35), Enemy::default()));
-        let mut struck = false;
-        let mut winding = false;
-        for _ in 0..240 {
-            frame(&mut app, true);
-            let snapshot = app.world().get::<Enemy>(enemy).unwrap();
-            let Some(clock) = snapshot.attack_clock() else {
-                continue;
-            };
-            assert_eq!(clock.duration, attack_clips::ENEMY_ATTACK[1]);
-            if winding && !snapshot.is_winding_up() {
-                assert!((clock.elapsed - attack_clips::ENEMY_ATTACK[0]).abs() <= tick);
-                struck = true;
-                break;
-            }
-            winding = snapshot.is_winding_up();
-        }
-        assert!(struck, "the enemy never struck");
     }
 
     #[test]

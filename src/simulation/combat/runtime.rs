@@ -1,6 +1,7 @@
 //! The committed action's private timeline: marker de-duplication and cancellation.
 use super::skills::{RETURN_DURATION, Shape};
 use crate::simulation::{ActionSnapshot, SequenceSnapshot};
+use bevy::prelude::Entity;
 
 const CANCELLED_ELAPSED: f32 = 0.65;
 
@@ -14,6 +15,9 @@ pub(super) struct ActionRuntime {
     pub pull_stopped: bool,
     /// Fixed when the action starts: empowerment or the enraged attack bonus.
     pub damage_scale: f32,
+    /// Enemies this action's blade or shockwave has already hit; each is hit
+    /// at most once per action.
+    pub struck: Vec<Entity>,
 }
 impl ActionRuntime {
     pub fn new(snapshot: ActionSnapshot, damage_scale: f32) -> Self {
@@ -26,6 +30,7 @@ impl ActionRuntime {
             pull_stalled: 0.0,
             pull_stopped: false,
             damage_scale,
+            struck: Vec::new(),
         }
     }
     pub fn sequence(&self) -> Option<SequenceSnapshot> {

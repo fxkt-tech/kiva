@@ -120,6 +120,26 @@ impl WeaponModel {
     }
 }
 
+#[cfg(test)]
+impl WeaponModel {
+    /// Vertices of the hand-held parts in the grip frame (+Y from the grip).
+    pub(super) fn vertices(&self, meshes: &Assets<Mesh>) -> Vec<Vec3> {
+        self.parts
+            .iter()
+            .filter(|part| part.mount == Mount::Weapon)
+            .flat_map(|part| {
+                meshes
+                    .get(&part.mesh)
+                    .and_then(|mesh| mesh.attribute(Mesh::ATTRIBUTE_POSITION))
+                    .and_then(|positions| positions.as_float3())
+                    .expect("weapon mesh keeps CPU positions")
+                    .iter()
+                    .map(|position| Vec3::from(*position))
+            })
+            .collect()
+    }
+}
+
 pub(super) fn spawn(
     world: &mut World,
     parent: Entity,

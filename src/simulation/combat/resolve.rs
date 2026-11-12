@@ -1,13 +1,15 @@
 //! After physics: the player's defeat and respawn, then the committed action's
-//! markers. Each skill shape has one resolver which reads its numbers from the
-//! skill table; every marker settles exactly once.
+//! blade sweeps and markers. Each skill shape has one resolver which reads its
+//! numbers from the skill table and its blade path from the baked hit tracks;
+//! every marker settles exactly once and every enemy is struck once per action.
 use super::hit::{
     Blow, CombatWorld, Enemies, Landed, Players, defeat_if_fallen, hit_enemy, target_lost,
     target_valid, valid_shot,
 };
 use super::runtime::ActionRuntime;
-use super::skills::{Area, Centre, Control, MELEE_ARC, Shape, Shot, Volley};
-use super::{CombatEffect, CombatFeedback, Combatant, Health};
+use super::skills::{Area, Centre, Control, Shape, Shot, Volley};
+use super::sweep::{HitTrack, strike, ticks_between};
+use super::{CombatEffect, CombatFeedback, Combatant, Health, HitProbes};
 use crate::simulation::{ActionKind, ActionSnapshot, Body, ComboWindow, HitStop, Stamina};
 use bevy::prelude::*;
 
@@ -28,6 +30,7 @@ struct Stage<'a, 'w, 's, 'world_w, 'world_s> {
     world: &'a CombatWorld<'world_w, 'world_s>,
     enemies: &'a mut Enemies<'w, 's>,
     feedback: &'a mut CombatFeedback,
+    probes: &'a mut HitProbes,
     /// Blows which dealt damage in this tick; each one feeds the sun meter.
     damaging_hits: u8,
 }
@@ -37,6 +40,7 @@ pub(in crate::simulation) fn resolve_actions(
     world: CombatWorld,
     mut feedback: ResMut<CombatFeedback>,
     mut hit_stop: ResMut<HitStop>,
+    mut probes: ResMut<HitProbes>,
     mut players: Players,
     mut enemies: Enemies,
 ) {
@@ -104,11 +108,12 @@ pub(in crate::simulation) fn resolve_actions(
             world: &world,
             enemies: &mut enemies,
             feedback: &mut feedback,
+            probes: &mut probes,
             damaging_hits: 0,
         };
         let spec = runtime.snapshot.kind.spec();
         match spec.shape {
-            Shape::Arc => strike_arc(&striker, &mut runtime, &mut stage),
+            Shape::Blade => strike_blade(&striker, &mut runtime, &mut stage),
             Shape::Area(area) => {
                 let range = spec.cast_range.unwrap_or(f32::INFINITY);
                 strike_area(
@@ -150,47 +155,78 @@ pub(in crate::simulation) fn resolve_actions(
     forget_lost_targets(&mut players, &mut enemies);
 }
 
-/// The ordinary attack: one frontal arc with the weapon stage's own numbers.
-fn strike_arc(striker: &Striker, runtime: &mut ActionRuntime, stage: &mut Stage) {
+/// The action's baked blade path; every blade-swinging action has one.
+fn blade_track(snapshot: &ActionSnapshot) -> &'static HitTrack {
+    let track = snapshot.clock().track;
+    track
+        .hit_track()
+        .unwrap_or_else(|| panic!("{track:?} has no baked blade path"))
+}
+
+/// Every valid enemy the moving blade touches in this step which the action
+/// has not hit yet, with the point of contact. `started` tells whether the
+/// blade's first dangerous sweep is in this step.
+fn blade_contacts(
+    striker: &Striker,
+    runtime: &ActionRuntime,
+    stage: &mut Stage,
+) -> (bool, Vec<(Entity, Vec3)>) {
+    let track = blade_track(&runtime.snapshot);
+    let mut started = false;
+    let mut contacts: Vec<(Entity, Vec3)> = Vec::new();
+    for tick in ticks_between(runtime.previous, runtime.snapshot.elapsed) {
+        started |= tick == track.first_active();
+        if !track.is_active(tick) {
+            continue;
+        }
+        for (target, body, motion, _, _, _, health, _, _, boss, _) in stage.enemies.iter() {
+            if !target_valid(health, boss)
+                || runtime.struck.contains(&target)
+                || contacts.iter().any(|(hit, _)| *hit == target)
+            {
+                continue;
+            }
+            let contact = strike(
+                track,
+                tick,
+                (striker.owner, striker.body),
+                striker.forward.xz(),
+                (target, body, motion),
+                stage.world,
+                stage.probes,
+            );
+            if let Some(contact) = contact {
+                contacts.push((target, contact));
+            }
+        }
+    }
+    (started, contacts)
+}
+
+/// The ordinary attack: the blade hits each enemy it touches once, with the
+/// weapon stage's damage.
+fn strike_blade(striker: &Striker, runtime: &mut ActionRuntime, stage: &mut Stage) {
     let snapshot = runtime.snapshot;
     let profile = snapshot
         .pair
         .melee_profile(snapshot.melee_stage.expect("melee has a committed stage"));
-    if !runtime.marker(0, profile.hit_time) {
-        return;
+    let (owner, body) = (striker.owner, striker.body);
+    let (started, contacts) = blade_contacts(striker, runtime, stage);
+    if started {
+        let reach = blade_track(&snapshot).reach;
+        stage.feedback.action(
+            owner,
+            owner,
+            &snapshot,
+            0,
+            CombatEffect::Melee,
+            body.aim_position(),
+            body.aim_position() + striker.forward * reach,
+            reach,
+        );
     }
-    let (owner, body, forward) = (striker.owner, striker.body, striker.forward);
-    let range = profile.range;
-    stage.feedback.action(
-        owner,
-        owner,
-        &snapshot,
-        0,
-        CombatEffect::Melee,
-        body.aim_position(),
-        body.aim_position() + forward * range,
-        range,
-    );
-    let targets: Vec<_> = stage
-        .enemies
-        .iter()
-        .filter(|(_, b, _, _, _, _, h, _, _, boss, _)| {
-            target_valid(h, boss.as_deref())
-                && b.world_position().distance(body.world_position()) <= range
-                && (b.world_position() - body.world_position())
-                    .xz()
-                    .normalize_or_zero()
-                    .dot(forward.xz())
-                    > MELEE_ARC
-        })
-        .filter(|(t, b, _, _, _, _, _, _, _, _, _)| {
-            stage
-                .world
-                .visible(body.aim_position(), b.aim_position(), owner, *t)
-        })
-        .map(|(e, ..)| e)
-        .collect();
-    for target in targets {
+    for (target, contact) in contacts {
+        runtime.struck.push(target);
         land(
             Blow {
                 target,
@@ -199,6 +235,7 @@ fn strike_arc(striker: &Striker, runtime: &mut ActionRuntime, stage: &mut Stage)
                 damage: profile.damage * runtime.damage_scale,
                 control: Control::None,
                 origin: body.aim_position(),
+                contact: Some(contact),
             },
             owner,
             &snapshot,
@@ -207,8 +244,10 @@ fn strike_arc(striker: &Striker, runtime: &mut ActionRuntime, stage: &mut Stage)
     }
 }
 
-/// One marker hits every visible enemy around the actor or the locked target.
-/// Controlling the original target opens the skill's combo window.
+/// The blade hits the enemies it touches; once its first swing has landed,
+/// the shockwave hits every other visible enemy around the actor or the
+/// locked target. Each enemy is hit once. Controlling the original target
+/// opens the skill's combo window.
 fn strike_area(
     area: &Area,
     cast_range: f32,
@@ -218,58 +257,45 @@ fn strike_area(
     stage: &mut Stage,
 ) {
     let snapshot = runtime.snapshot;
-    if !runtime.marker(0, area.time) {
-        return;
-    }
     let (owner, body) = (striker.owner, striker.body);
-    // `centre` measures the radius from feet; `shown` is where the effect appears.
-    let (centre, shown) = match area.centre {
-        Centre::Actor => (body.world_position(), body.aim_position()),
-        Centre::Target => {
-            let Some(target) = snapshot.target else {
-                return;
-            };
-            let source = body.aim_position();
-            if valid_shot(
-                stage.world,
-                source,
-                (owner, body),
-                target,
-                cast_range,
-                stage.enemies,
-            )
-            .is_none()
-            {
-                return;
-            }
-            let centre = stage.enemies.get_mut(target).unwrap().1.world_position();
-            (centre, centre)
-        }
-    };
-    stage.feedback.action(
-        owner,
-        owner,
-        &snapshot,
-        0,
-        area.effect,
-        shown,
-        shown,
-        area.radius,
-    );
-    let targets: Vec<_> = stage
-        .enemies
-        .iter()
-        .filter(|(_, b, _, _, _, _, h, _, _, boss, _)| {
-            target_valid(h, boss.as_deref()) && b.world_position().distance(centre) <= area.radius
-        })
-        .filter(|(t, b, _, _, _, _, _, _, _, _, _)| {
-            stage
-                .world
-                .visible(body.aim_position(), b.aim_position(), owner, *t)
-        })
-        .map(|(e, ..)| e)
+    let (_, contacts) = blade_contacts(striker, runtime, stage);
+    let mut hits: Vec<_> = contacts
+        .into_iter()
+        .map(|(target, contact)| (target, Some(contact)))
         .collect();
-    for target in targets {
+    if runtime.marker(0, blade_track(&snapshot).impact_time())
+        && let Some((centre, shown)) = area_centre(area, cast_range, striker, &snapshot, stage)
+    {
+        stage.feedback.action(
+            owner,
+            owner,
+            &snapshot,
+            0,
+            area.effect,
+            shown,
+            shown,
+            area.radius,
+        );
+        let reached: Vec<_> = stage
+            .enemies
+            .iter()
+            .filter(|(target, b, _, _, _, _, h, _, _, boss, _)| {
+                target_valid(h, boss.as_deref())
+                    && b.world_position().distance(centre) <= area.radius
+                    && !runtime.struck.contains(target)
+                    && !hits.iter().any(|(hit, _)| hit == target)
+            })
+            .filter(|(t, b, _, _, _, _, _, _, _, _, _)| {
+                stage
+                    .world
+                    .visible(body.aim_position(), b.aim_position(), owner, *t)
+            })
+            .map(|(target, ..)| (target, None))
+            .collect();
+        hits.extend(reached);
+    }
+    for (target, contact) in hits {
+        runtime.struck.push(target);
         let controlled = land(
             Blow {
                 target,
@@ -278,6 +304,7 @@ fn strike_area(
                 damage: area.damage * runtime.damage_scale,
                 control: area.control,
                 origin: body.aim_position(),
+                contact,
             },
             owner,
             &snapshot,
@@ -288,6 +315,34 @@ fn strike_area(
             && let Some(remaining) = area.window
         {
             combat.combo = Some(window(&snapshot, target, remaining));
+        }
+    }
+}
+
+/// Where the shockwave is measured from (at the feet) and where it is shown.
+/// `None` when it is centred on a target which can no longer be reached.
+fn area_centre(
+    area: &Area,
+    cast_range: f32,
+    striker: &Striker,
+    snapshot: &ActionSnapshot,
+    stage: &mut Stage,
+) -> Option<(Vec3, Vec3)> {
+    let (owner, body) = (striker.owner, striker.body);
+    match area.centre {
+        Centre::Actor => Some((body.world_position(), body.aim_position())),
+        Centre::Target => {
+            let target = snapshot.target?;
+            valid_shot(
+                stage.world,
+                body.aim_position(),
+                (owner, body),
+                target,
+                cast_range,
+                stage.enemies,
+            )?;
+            let centre = stage.enemies.get_mut(target).ok()?.1.world_position();
+            Some((centre, centre))
         }
     }
 }
@@ -365,6 +420,7 @@ fn fire_shot(
             damage: shot.damage * runtime.damage_scale,
             control: Control::Stun(shot.stun),
             origin: source,
+            contact: None,
         },
         owner,
         &snapshot,
@@ -431,6 +487,7 @@ fn fire_volley(
                 damage: volley.damage * runtime.damage_scale,
                 control: Control::None,
                 origin: source,
+                contact: None,
             },
             owner,
             &snapshot,

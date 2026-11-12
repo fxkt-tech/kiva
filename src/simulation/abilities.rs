@@ -31,6 +31,15 @@ pub enum ActionKind {
     ChainCombo,
 }
 impl ActionKind {
+    pub const ALL: [Self; 7] = [
+        Self::Melee,
+        Self::HammerSlam,
+        Self::MusketShot,
+        Self::ChainSweep,
+        Self::AxeShot,
+        Self::HammerCombo,
+        Self::ChainCombo,
+    ];
     pub fn is_combo(self) -> bool {
         matches!(self, Self::HammerCombo | Self::ChainCombo)
     }

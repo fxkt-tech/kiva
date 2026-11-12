@@ -446,6 +446,31 @@ impl AvatarAssets {
         .clone()
     }
 
+    /// The decoded appearance, for headless measurement of its attachments.
+    #[cfg(test)]
+    pub(super) fn loaded(world: &mut World, appearance: Appearance) -> Self {
+        Self::shared(world, appearance)
+    }
+
+    /// Vertices of the bundled long blade in its grip frame (+Y from the grip).
+    #[cfg(test)]
+    pub(super) fn blade_vertices(&self, meshes: &Assets<Mesh>) -> Vec<Vec3> {
+        self.parts
+            .iter()
+            .filter(|part| part.blade)
+            .flat_map(|part| &part.primitives)
+            .flat_map(|primitive| {
+                meshes
+                    .get(&primitive.mesh)
+                    .and_then(|mesh| mesh.attribute(Mesh::ATTRIBUTE_POSITION))
+                    .and_then(|positions| positions.as_float3())
+                    .expect("blade mesh keeps CPU positions")
+                    .iter()
+                    .map(|position| Vec3::from(*position))
+            })
+            .collect()
+    }
+
     pub(super) fn cached<'a>(
         original: Option<&'a Self>,
         cache: Option<&'a AvatarAssetCache>,

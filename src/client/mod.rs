@@ -11,6 +11,9 @@ pub(super) mod controls;
 mod enemies;
 mod environment;
 mod forest_material;
+#[cfg(test)]
+mod hit_bake_tests;
+mod hit_debug;
 mod hud;
 mod impact;
 mod loading;
@@ -251,6 +254,8 @@ pub(super) fn run() {
                 audio::sync,
                 hud::sync,
                 camera::follow,
+                hit_debug::toggle,
+                hit_debug::draw,
             )
                 .chain()
                 .run_if(resource_exists::<Assembled>),

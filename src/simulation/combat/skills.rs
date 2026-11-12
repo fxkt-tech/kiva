@@ -6,8 +6,6 @@ use crate::simulation::{ActionKind, SequenceSnapshot, WeaponPair};
 /// Selecting a target considers enemies this close and roughly ahead.
 pub(super) const LOCK_RANGE: f32 = 22.0;
 pub(super) const LOCK_ALIGNMENT: f32 = 0.35;
-/// A frontal ordinary attack reaches targets inside this facing cone.
-pub(super) const MELEE_ARC: f32 = 0.25;
 /// A cancelled volley keeps its camera this long while it returns.
 pub(super) const RETURN_DURATION: f32 = SequenceSnapshot::RETURN_DURATION;
 /// A parry strikes back at the attacker for this much.
@@ -59,10 +57,11 @@ pub(super) struct Pull {
     pub stall_limit: f32,
 }
 
-/// One marker hits everything around the actor or the target.
+/// The blade hits what it touches; when its first swing has landed, the
+/// shockwave hits everything else around the actor or the target. Both
+/// moments come from the attack's baked blade path.
 #[derive(Clone, Copy)]
 pub(super) struct Area {
-    pub time: f32,
     pub centre: Centre,
     pub radius: f32,
     pub damage: f32,
@@ -103,8 +102,9 @@ pub(super) struct Volley {
 
 #[derive(Clone, Copy)]
 pub(super) enum Shape {
-    /// The ordinary attack; its numbers are the weapon's `MeleeProfile`.
-    Arc,
+    /// The ordinary attack: the swept blade alone, with the weapon's
+    /// `MeleeProfile` numbers.
+    Blade,
     Area(Area),
     Shot(Shot),
     Volley(Volley),
@@ -128,7 +128,7 @@ impl SkillSpec {
     /// Whether the action remembers a target when it starts.
     pub(super) fn targeted(&self) -> bool {
         match self.shape {
-            Shape::Arc => false,
+            Shape::Blade => false,
             Shape::Area(area) => area.centre == Centre::Target,
             Shape::Shot(_) | Shape::Volley(_) => true,
         }
@@ -144,7 +144,7 @@ impl SkillSpec {
         match self.shape {
             Shape::Area(area) => area.window.is_some(),
             Shape::Shot(shot) => shot.window.is_some(),
-            Shape::Arc | Shape::Volley(_) => false,
+            Shape::Blade | Shape::Volley(_) => false,
         }
     }
 
@@ -153,7 +153,7 @@ impl SkillSpec {
         match self.shape {
             Shape::Area(area) => area.empowered,
             Shape::Shot(shot) => shot.empowered,
-            Shape::Arc | Shape::Volley(_) => 1.0,
+            Shape::Blade | Shape::Volley(_) => 1.0,
         }
     }
 
@@ -171,7 +171,7 @@ const MELEE: SkillSpec = SkillSpec {
     cast_range: None,
     wear: 1,
     rage: 0,
-    shape: Shape::Arc,
+    shape: Shape::Blade,
 };
 const HAMMER_SLAM: SkillSpec = SkillSpec {
     duration: 0.50,
@@ -180,7 +180,6 @@ const HAMMER_SLAM: SkillSpec = SkillSpec {
     wear: 10,
     rage: 1,
     shape: Shape::Area(Area {
-        time: 0.20,
         centre: Centre::Target,
         radius: 3.0,
         damage: 20.0,
@@ -197,7 +196,6 @@ const CHAIN_SWEEP: SkillSpec = SkillSpec {
     wear: 10,
     rage: 1,
     shape: Shape::Area(Area {
-        time: 0.15,
         centre: Centre::Actor,
         radius: 3.0,
         damage: 24.0,
@@ -287,7 +285,7 @@ impl ActionKind {
         match &self.spec().shape {
             Shape::Volley(volley) => &volley.times,
             Shape::Shot(shot) => std::slice::from_ref(shot.depart.as_ref().unwrap_or(&shot.impact)),
-            Shape::Arc | Shape::Area(_) => &[],
+            Shape::Blade | Shape::Area(_) => &[],
         }
     }
 
@@ -307,10 +305,15 @@ impl ActionKind {
         }
     }
 
+    /// Whether the actor swings its melee weapon, and so has a baked blade path.
+    pub fn swings_blade(self) -> bool {
+        matches!(self.spec().shape, Shape::Blade | Shape::Area(_))
+    }
+
     /// The effect this action's own strike will announce at its marker.
     pub fn strike_effect(self) -> Option<CombatEffect> {
         match self.spec().shape {
-            Shape::Arc => Some(CombatEffect::Melee),
+            Shape::Blade => Some(CombatEffect::Melee),
             Shape::Area(area) => Some(area.effect),
             Shape::Shot(_) | Shape::Volley(_) => None,
         }
@@ -332,6 +335,11 @@ impl ActionKind {
 }
 
 impl WeaponPair {
+    /// The skill on this pair's melee-skill input.
+    pub fn melee_skill(self) -> ActionKind {
+        self.action(Slot::MeleeSkill)
+    }
+
     /// The action each input commits with this pair equipped.
     pub(super) fn action(self, slot: Slot) -> ActionKind {
         match (slot, self) {

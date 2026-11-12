@@ -1,9 +1,10 @@
-//! The ordinary enemy: chase, wind up, strike, recover. The Boss owns its own
+//! The ordinary enemy: chase, wind up, swing its blade, recover. The Boss owns its own
 //! component and is skipped here.
 use super::hit::{
     CombatWorld, Enemies, Players, Riposte, apply_hit, defeat_if_fallen, settle_defense,
 };
-use super::{ActionIds, CombatEffect, CombatFeedback, HitContext, HitOutcome};
+use super::sweep::{HitTrack, strike, ticks_between};
+use super::{ActionIds, CombatEffect, CombatFeedback, HitContext, HitOutcome, HitProbes};
 use crate::simulation::defense::decay;
 use crate::simulation::{AttackClock, Body, SlowEffect, TrackId};
 use bevy::prelude::*;
@@ -11,12 +12,12 @@ use bevy::prelude::*;
 /// Kiva's ordinary enemy tuning.
 const FIRST_ATTACK_DELAY: f32 = 0.8;
 const ATTACK_COOLDOWN: f32 = 1.25;
-const WINDUP: f32 = 0.42;
-/// The strike's follow-through after the windup; part of the attack timeline.
-const SWING: f32 = 0.42;
+/// The whole attack: windup, cuts and follow-through. When the blade is
+/// dangerous within it comes from the baked path.
+pub(super) const ATTACK_DURATION: f32 = 0.84;
 const DAMAGE: f32 = 12.0;
-const REACH: f32 = 2.0;
-const ENGAGE_DISTANCE: f32 = 1.7;
+/// The enemy closes in until the player is this deep inside its blade's reach.
+const ENGAGE_DEPTH: f32 = 0.75;
 const SIGHT: f32 = 12.0;
 const PARRIED_STUN: f32 = 0.80;
 
@@ -25,25 +26,24 @@ const PARRIED_STUN: f32 = 0.80;
 pub struct Enemy {
     pub(super) passive: bool,
     pub(super) cooldown: f32,
-    pub(super) windup: f32,
     pub(super) recovery: f32,
     pub(super) stun_source: Option<u64>,
-    pub(super) attack_target: Option<Entity>,
     pub(super) attack_id: u64,
     /// Time since the current attack's windup began, through its follow-through.
     pub(super) attack_elapsed: Option<f32>,
+    /// Players the current attack has already hit; each is hit once.
+    pub(super) struck: Vec<Entity>,
 }
 impl Default for Enemy {
     fn default() -> Self {
         Self {
             passive: false,
             cooldown: FIRST_ATTACK_DELAY,
-            windup: 0.0,
             recovery: 0.0,
             stun_source: None,
-            attack_target: None,
             attack_id: 0,
             attack_elapsed: None,
+            struck: Vec::new(),
         }
     }
 }
@@ -57,11 +57,13 @@ impl Enemy {
     pub fn is_passive(&self) -> bool {
         self.passive
     }
+    /// Attacking, before the blade becomes dangerous.
     pub fn is_winding_up(&self) -> bool {
-        self.windup > 0.0
+        self.windup_remaining() > 0.0
     }
     pub fn windup_remaining(&self) -> f32 {
-        self.windup
+        self.attack_elapsed
+            .map_or(0.0, |elapsed| (track().strike_time() - elapsed).max(0.0))
     }
     pub fn is_recovering(&self) -> bool {
         self.recovery > 0.0
@@ -75,7 +77,7 @@ impl Enemy {
             action_id: self.attack_id,
             track: TrackId::Enemy,
             elapsed,
-            duration: WINDUP + SWING,
+            duration: ATTACK_DURATION,
         })
     }
     pub fn stun_source(&self) -> Option<u64> {
@@ -88,10 +90,13 @@ impl Enemy {
             0.0
         }
     }
-    pub(super) fn stun(&mut self, source: u64, duration: f32) {
-        self.windup = 0.0;
-        self.attack_target = None;
+    /// Abandon the attack in progress, if any.
+    fn stop_attack(&mut self) {
         self.attack_elapsed = None;
+        self.struck.clear();
+    }
+    pub(super) fn stun(&mut self, source: u64, duration: f32) {
+        self.stop_attack();
         self.recovery = duration;
         self.stun_source = Some(source);
     }
@@ -103,10 +108,18 @@ impl Enemy {
         };
     }
 }
+/// The ordinary enemy's baked blade path.
+fn track() -> &'static HitTrack {
+    crate::simulation::TrackId::Enemy
+        .hit_track()
+        .expect("the ordinary enemy's attack is baked")
+}
+
 pub(in crate::simulation) fn advance_enemies(
     time: Res<Time<Fixed>>,
     world: CombatWorld,
     mut feedback: ResMut<CombatFeedback>,
+    mut probes: ResMut<HitProbes>,
     mut players: Players,
     mut enemies: Enemies,
     mut ids: ResMut<ActionIds>,
@@ -131,10 +144,6 @@ pub(in crate::simulation) fn advance_enemies(
         }
         actions.clear();
         enemy.cooldown = decay(enemy.cooldown, dt);
-        if let Some(elapsed) = enemy.attack_elapsed {
-            let elapsed = elapsed + dt;
-            enemy.attack_elapsed = (elapsed <= WINDUP + SWING + 1e-6).then_some(elapsed);
-        }
         defeat_if_fallen(entity, &body, &mut health, &mut feedback);
         let was_dead = !health.is_alive();
         if health.tick(dt) {
@@ -152,9 +161,7 @@ pub(in crate::simulation) fn advance_enemies(
         }
         if was_dead {
             movement.stop();
-            enemy.windup = 0.0;
-            enemy.attack_target = None;
-            enemy.attack_elapsed = None;
+            enemy.stop_attack();
             continue;
         }
         if enemy.recovery > 0.0 {
@@ -167,30 +174,54 @@ pub(in crate::simulation) fn advance_enemies(
         }
         if enemy.is_passive() || !motion.is_grounded() {
             movement.stop();
-            enemy.windup = 0.0;
-            enemy.attack_target = None;
-            enemy.attack_elapsed = None;
+            enemy.stop_attack();
             continue;
         }
-        if enemy.windup > 0.0 {
+        if let Some(previous) = enemy.attack_elapsed {
+            // The attack is committed: stand, swing, and hit whatever the
+            // blade touches.
             movement.stop();
-            enemy.windup = decay(enemy.windup, dt);
-            if enemy.windup == 0.0 {
-                enemy.cooldown = ATTACK_COOLDOWN;
-                feedback.push(
-                    entity,
-                    CombatEffect::Melee,
-                    body.aim_position(),
-                    body.aim_position()
-                        + Vec3::new(facing.direction().x, 0.0, facing.direction().y) * REACH,
-                    REACH,
-                );
-                if let Some(target) = enemy.attack_target.take() {
+            let elapsed = previous + dt;
+            let track = track();
+            let forward = facing.direction();
+            for tick in ticks_between(previous, elapsed) {
+                if tick == track.first_active() {
+                    enemy.cooldown = ATTACK_COOLDOWN;
+                    feedback.push(
+                        entity,
+                        CombatEffect::Melee,
+                        body.aim_position(),
+                        body.aim_position() + Vec3::new(forward.x, 0.0, forward.y) * track.reach,
+                        track.reach,
+                    );
+                }
+                if !track.is_active(tick) {
+                    continue;
+                }
+                let touched: Vec<_> = players
+                    .iter()
+                    .filter(|(player, _, _, _, _, _, health, ..)| {
+                        health.is_alive() && !enemy.struck.contains(player)
+                    })
+                    .filter_map(|(player, target_body, target_motion, ..)| {
+                        strike(
+                            track,
+                            tick,
+                            (entity, &body),
+                            forward,
+                            (player, target_body, target_motion),
+                            &world,
+                            &mut probes,
+                        )
+                        .map(|contact| (player, contact))
+                    })
+                    .collect();
+                for (player, contact) in touched {
+                    enemy.struck.push(player);
                     let id = enemy.attack_id;
                     let riposte = land_attack(
                         (entity, &body),
-                        (target, id),
-                        &world,
+                        (player, id, contact),
                         &mut players,
                         &mut feedback,
                     );
@@ -207,8 +238,17 @@ pub(in crate::simulation) fn advance_enemies(
                             &mut feedback,
                         );
                         enemy.stun(id, PARRIED_STUN);
-                        movement.stop();
                     }
+                }
+                if enemy.attack_elapsed.is_none() {
+                    break;
+                }
+            }
+            if enemy.attack_elapsed.is_some() {
+                if elapsed < ATTACK_DURATION {
+                    enemy.attack_elapsed = Some(elapsed);
+                } else {
+                    enemy.stop_attack();
                 }
             }
             continue;
@@ -216,34 +256,32 @@ pub(in crate::simulation) fn advance_enemies(
         let target = players
             .iter()
             .filter(|(_, _, _, _, _, _, h, _, _, _, _, _, _)| h.is_alive())
-            .map(|(e, b, ..)| (e, b.world_position(), b.aim_position()))
-            .filter(|(_, p, _)| p.distance(body.world_position()) < SIGHT)
+            .map(|(e, b, ..)| (e, b.world_position(), b.aim_position(), b.radius()))
+            .filter(|(_, p, ..)| p.distance(body.world_position()) < SIGHT)
             .min_by(|a, b| {
                 a.1.distance_squared(body.world_position())
                     .total_cmp(&b.1.distance_squared(body.world_position()))
             });
-        let Some((target, position, aim)) = target else {
+        let Some((target, position, aim, radius)) = target else {
             movement.stop();
             continue;
         };
         let delta = position - body.world_position();
         let dir = delta.xz().normalize_or_zero();
         facing.set(dir);
-        if delta.length() <= ENGAGE_DISTANCE
-            && world.visible(body.aim_position(), aim, entity, target)
-        {
+        let engage = (track().reach * body.scale() + radius) * ENGAGE_DEPTH;
+        if delta.length() <= engage && world.visible(body.aim_position(), aim, entity, target) {
             movement.stop();
             if enemy.cooldown == 0.0 {
-                enemy.windup = WINDUP;
                 enemy.attack_elapsed = Some(0.0);
-                enemy.attack_target = Some(target);
+                enemy.struck.clear();
                 enemy.attack_id = ids.next();
                 feedback.push(
                     entity,
                     CombatEffect::EnemyWindup,
                     body.aim_position(),
                     aim,
-                    REACH,
+                    track().reach,
                 );
             }
         } else {
@@ -252,17 +290,16 @@ pub(in crate::simulation) fn advance_enemies(
     }
 }
 
-/// A finished wind-up reaches its chosen player only if they are still alive,
-/// in reach and visible. Returns the riposte when the player parried it.
+/// The blade touched this player at `contact`: resolve their defense and the
+/// damage. Returns the riposte when the player parried it.
 fn land_attack(
     attacker: (Entity, &Body),
-    attack: (Entity, u64),
-    world: &CombatWorld,
+    attack: (Entity, u64, Vec3),
     players: &mut Players,
     feedback: &mut CombatFeedback,
 ) -> Option<Riposte> {
     let (entity, body) = attacker;
-    let (target, attack_id) = attack;
+    let (target, attack_id, contact) = attack;
     let Ok((
         _,
         target_body,
@@ -281,15 +318,7 @@ fn land_attack(
     else {
         return None;
     };
-    if !target_health.is_alive()
-        || body.world_position().distance(target_body.world_position()) > REACH
-        || !world.visible(
-            body.aim_position(),
-            target_body.aim_position(),
-            entity,
-            target,
-        )
-    {
+    if !target_health.is_alive() {
         return None;
     }
     let result = apply_hit(
@@ -303,6 +332,7 @@ fn land_attack(
             hit_index: 0,
             damage: DAMAGE,
             origin: body.aim_position(),
+            contact: Some(contact),
         },
         &target_body,
         target_facing,

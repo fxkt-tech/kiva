@@ -19,17 +19,32 @@ client 只提交意图和读取快照；不拥有动作计时、伤害、耐力�
 - DefenseState::snapshot() 包含kind/elapsed/remaining和单调gesture_id、last_gesture_kind/gesture_elapsed；自然Idle保留最后手势供显示，取消作废，复活不倒退ID。
 - MotionFeedback::events() 为独立最多128条运动事实，MotionKind::{Jump,Dodge,Land,Footstep}；MotionEvent携带sequence/actor/position/jump_count/sprinting。
 - DefenseKind::{Idle,Deflect,Waiting,Guard,Parry}；Stamina::{current,maximum,quiet_elapsed}。
-- HitContext／HitOutcome 供普通敌人与 Boss 共用来袭结算。事件含 sequence、actor、source_owner、pair: Option<WeaponPair>、action_id、hit_index、kind 和真实起止位置。
+- HitContext／HitOutcome 供普通敌人与 Boss 共用来袭结算。事件含 sequence、actor、source_owner、pair: Option<WeaponPair>、action_id、hit_index、kind 和真实起止位置。`HitContext.origin` 是攻击者位置（决定防御是否正面），`contact: Option<Vec3>` 是刀刃接触点；有接触点时受击事件的 `position` 取它。
+- `HitTrack { duration, samples, windows, blade_radius, reach }` 是一招的刀刃轨迹；`TrackId::{all,duration,hit_track}` 列出全部挥刀招式、给出权威时长与烘焙数据。`ActionKind::{ALL,swings_blade}`、`WeaponPair::melee_skill`、`Boss::STRIKE_DURATION` 供烘焙与表现读取。
+- `HitProbes { enabled }` 是只读的判定几何历史（刀刃切片、受击胶囊、接触点），仅供调试显示；规则不读取它。
 
 ## Contracts
 
 ### 数据与模块
 
-技能数值只有一份：`combat/skills.rs` 的 `SkillSpec { duration, cooldown, cast_range, shape }`。`shape` 为 `Arc`（普攻，数值取 `MeleeProfile`）、`Area`（一个标记的范围伤害，中心为自身或锁定目标）、`Shot`（妹妹单发，可带离手时刻）或 `Volley`（妹妹三连发，可带拉近）。准入用的施放距离与结算用的射程读同一个 `cast_range`；下文各节的数字是这张表的说明，以表为准。`WeaponPair::action(Slot)` 把输入槽位映射到动作。
+技能数值只有一份：`combat/skills.rs` 的 `SkillSpec { duration, cooldown, cast_range, shape }`。`shape` 为 `Blade`（普攻，只有刀刃扫掠，数值取 `MeleeProfile`）、`Area`（刀刃扫掠加一次范围伤害，中心为自身或锁定目标）、`Shot`（妹妹单发，可带离手时刻）或 `Volley`（妹妹三连发，可带拉近）。准入用的施放距离与结算用的射程读同一个 `cast_range`；下文各节的数字是这张表的说明，以表为准。`WeaponPair::action(Slot)` 把输入槽位映射到动作。
 加一个已有形态的技能：加 `ActionKind` 变体、一行 `spec` 和一处槽位映射，不写新的规则代码。联动窗口的保持条件（锤鸟要求原目标浮空、链斧弓要求被本次动作僵直）仍在 `availability::window_valid` 里按武器组判断。
 每行另有 `wear`（准入时扣的武器耐久）和 `rage`（强化释放积累的暴怒）；`Area`／`Shot` 带 `empowered`（强化倍率）。
 `ActionKind::{shot_times,throw_times,return_window,strike_effect}` 把表里的时间点和起手效果以只读方式提供给表现层；`WeaponPair::ALL` 是全部武器组的声明顺序。
-`prepare` 在物理前消费指令、推进已承诺动作并至多准入一个新动作，每一步是具名函数；`resolve_actions` 在物理后按形态结算标记；`advance_enemies` 独立处理普通敌人。`ActionRuntime` 归战斗模块私有。
+`prepare` 在物理前消费指令、推进已承诺动作并至多准入一个新动作，每一步是具名函数；`resolve_actions` 在物理后按形态结算刀刃扫掠与标记；`advance_enemies` 独立处理普通敌人。`ActionRuntime` 归战斗模块私有。
+
+### 近战判定
+
+所有近战命中（玩家普攻与范围技的刀刃、普通敌人、Boss）只有一种判定：`combat/sweep.rs` 把该招烘焙出的刀刃线段（握点→刀尖，攻击者局部坐标：脚底为原点、-Z 为前）按攻击者的脚底位置、`Facing` 和 `Body::scale` 放到世界里，在每个固定步内从上一 tick 的线段扫到本 tick 的线段，与目标的物理胶囊（脚底、`MotionState` 的实际胶囊高度、`Body::radius`）求相交。没有距离、角度或命中时刻常量。
+
+- 数据在 `combat/hit_tracks.rs`，由 `make bake-hits` 生成，不手改：每招一条 `HitTrack`，逐 tick 采样、有效窗口（闭区间 tick，第 k tick 的扫掠是采样 k-1 到 k）、刀刃半径、最远距离。改片段、片段映射行、近战武器模型或招式时长后必须重新烘焙；`hit_tracks_match_animation` 在数据与动画不一致时失败。
+- 一步内刀刃绕握点转过的弧按刀尖位移切成最多 12 片（握点线性、方向球面插值），高速挥击不会漏过目标。攻击者本步的位移计入扫掠起点。
+- 只有处于有效窗口的 tick 才扫掠。窗口是刀尖速度不低于 25 m/s 的连续 tick，并且只从“起手过渡结束”之后开始：过渡期间画面里的刀取决于上一个姿态，烘焙无法代表。没有达到阈值的招式取最快时刻前后各一 tick。
+- 接触后从攻击者 `aim_position` 向接触点做视线检查（排除双方与传感器），被场景或其他角色挡住不算命中。
+- 每个动作对每个目标最多命中一次（`ActionRuntime.struck`、`Enemy.struck`、Boss 的 `strike_resolved`），不论该招有几个窗口；伤害数值因此不随窗口数量变化。
+- 命中后仍走 `apply_hit`／`settle_defense`／`hit_enemy`：防御顺序、能量、耐久和事件归属不变。正面判定用攻击者位置，受击事件位置用接触点。
+- 玩家普攻在第一个有效 tick 发 `Melee` 事件（半径为 `reach`）。范围技：刀刃碰到的敌人立即结算该技能的伤害与控制；第一个窗口结束的那一 tick（`HitTrack::impact_time`）发范围事件并结算范围内其余敌人。
+- 已知局限：烘焙用站立姿态和每种角色的标准外观（玩家为默认外观，敌人与 Boss 为愁铃客）。蹲伏出刀时画面里的刀更低，其他外观的握点略有不同，差异由刀刃半径的 0.08m 余量吸收。
 
 ### 调度与权限
 
@@ -43,9 +58,9 @@ E／Q 冷却独立、跨武器组保留；技能动作中不接受新攻击、�
 ### 三段普通连击
 
 每次有效左键只承诺当前一段。第1／2段最多缓存一条后继；整段duration结束并退休后，在下一次prepare准入后继，不能在本段marker时提前开下一段。第三段不缓存第四段；未缓冲时保留0.45s续段宽限，过期从第一段开始。
-`WeaponPair::melee_profile(stage)` 返回纯数值：三段均保持锤24伤害／2.8m／0.12s marker／0.60s duration，链斧18／2.6m／0.08s／0.40s；不因原动作第三段效果而加伤、霸体或破防。
+`WeaponPair::melee_profile(stage)` 返回纯数值：三段均保持锤 24 伤害／0.60s duration，链斧 18／0.40s；命中的位置和时刻来自该段的烘焙轨迹（见“近战判定”），每段对每个敌人只结算一次，不因原动作第三段效果而加伤、霸体或破防。
 
-每段安装后发唯一MeleeStart，冻结actor/source_owner/pair/action_id/stage；旧Melee marker仍是唯一近战命中／挥击FX入口，MeleeStart不能重复伤害或粒子。后继只在真实准入后才发起手事件。
+每段安装后发唯一MeleeStart，冻结actor/source_owner/pair/action_id/stage；刀刃第一次进入有效窗口时发唯一的 Melee 事件，它仍是挥击 FX 的入口，MeleeStart不能重复伤害或粒子。后继只在真实准入后才发起手事件。
 有效技能／Tab／防御／闪避／跳跃／切组优先于自动后继；预测闪避准入必须与motor同一步先减dt的冷却顺序一致。无效请求不伪造动作取消。
 失锁、F2、死亡／复活、实际受伤清未承诺连段；已承诺动作不被暂停或清后继中断。`cancel_melee_chain`和`clear`的取消锁存能跨零固定步保留；普通移动、F3、非滑铲蹲伏不清链。
 
@@ -56,7 +71,7 @@ Footstep累计碰撞后相对支撑面的真实位移，排除空气、堵墙、
 
 ### 两套技能与联动
 
-锤 E 在原目标 4.5m 内、其周围 3m 内结算 20 伤害和约 3m 真实物理击飞；必须原目标实际被击飞才开放对应窗口。
+锤 E 在原目标 4.5m 内、其周围 3m 内结算 20 伤害和约 3m 真实物理击飞；必须原目标实际被击飞才开放对应窗口。范围在烘焙轨迹的落点时刻结算，刀刃先碰到的敌人先结算，每个敌人一次。
 鸟铳 Q 是妹妹单枪、40 伤害及 0.45s 僵直。锤鸟 Tab 消费本次 E 的原目标窗口，0.30／0.42／0.54s 三发分别结算 28 伤害，总序列 0.96s。
 链斧 E 围绕自身造成范围伤害并施加单一 SlowEffect，减速进入真实 motor；同类效果不叠乘。
 弓 Q 发射链斧、35 伤害和 0.90s 僵直，离手期间不能再次用该链斧近战；未接联动则按时间线归还。
@@ -105,6 +120,8 @@ ComboWindow 保存 source_action_id、pair、original_target 和 remaining；僵
 |---|---|
 | 无锁定／超范围／隔墙／冷却中起手 | 拒绝并消费请求，不开启新冷却 |
 | 起手后目标走开或遮挡 | 该次命中跳过，保留已经开始的冷却 |
+| 目标在正前方但刀刃够不着，或隔着墙 | 不命中；刀刃实际扫过的侧面目标命中 |
+| 烘焙数据与动画、武器或时长不一致 | `hit_tracks_match_animation` 失败，提示运行 `make bake-hits` |
 | 重复 Tab／换组／技能动作中的攻击 | 活动动作不被替换，不排队，不重复伤害 |
 | 普攻期间反复左键 | 第1／2段只缓存一条后继，第三段无第四段 |
 | 耐力不足／背面攻击 | 正常受伤，无破防惩罚 |
@@ -128,6 +145,7 @@ Bad：只播放三次闪光却扣一笔伤害；链斧拉近穿墙；F2 后在�
 测量实际高台／平地击飞最高点、拉近碰撞／停距／高差及减速位移；保留原物理、二段跳、Shift／蹲伏、HitStop／暂停回归。
 能量覆盖每次命中的烈阳、拆招的月光、强化 E／Q 的伤害与清零、暴怒积累／释放／普攻翻倍／自动联动／20s 耗尽、弹反反击与事件顺序、耐久消耗／耗尽换组／联动窗口保留／Z 循环、复活重置（`combat/energy_tests.rs`）。
 防御覆盖短按／长按／释放／取消、独立冷却边界、正背面、第五次有效格挡、低耐力恢复和同一步快照一致性。
+近战判定覆盖：几何单元测试（弧而非弦、够不着、身后、蹲伏、朝向／缩放）、真实固定步里的侧面命中／够不着／隔墙、Boss 阶段随烘焙窗口切换；依赖命中时刻的测试从 `HitTrack` 读取接触 tick，不写死。客户端 `hit_bake_tests::live` 在真实战斗里核对画面中的刀与烘焙数据在有效窗口内相差不超过 3cm。
 执行 make check；Web Rust 另跑 WASM Clippy，打包另用临时目录 Trunk 构建。
 
 ## Wrong vs Correct

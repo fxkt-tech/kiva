@@ -22,7 +22,7 @@ fn attack(app: &mut App, player: Entity) {
 
 #[test]
 fn every_damaging_hit_adds_one_sun_and_a_full_sun_empowers_one_melee_skill() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.0, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     for hits in 1..=3 {
         attack(&mut app, p);
         assert_eq!(energy(&app, p).sun(), hits);
@@ -33,7 +33,7 @@ fn every_damaging_hit_adds_one_sun_and_a_full_sun_empowers_one_melee_skill() {
     tick(&mut app, 2);
     attack(&mut app, p);
     assert_eq!(energy(&app, p).sun(), 3);
-    teleport_actor(app.world_mut(), e, Vec3::NEG_Z * 2.0);
+    teleport_actor(app.world_mut(), e, Vec3::NEG_Z * 1.2);
     tick(&mut app, 12);
 
     charge(&mut app, p, Energy::SUN_MAX, 0, 0.0);
@@ -58,7 +58,7 @@ fn every_damaging_hit_adds_one_sun_and_a_full_sun_empowers_one_melee_skill() {
 
 #[test]
 fn a_deflect_adds_one_moon_and_a_full_moon_empowers_one_ranged_skill() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     edge(&mut app, p, DefenseEdge::Pressed);
     edge(&mut app, p, DefenseEdge::Released);
     tick(&mut app, 1);
@@ -84,7 +84,7 @@ fn a_deflect_adds_one_moon_and_a_full_moon_empowers_one_ranged_skill() {
 
 #[test]
 fn a_parry_strikes_back_for_a_little_damage_stuns_and_adds_one_sun() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     edge(&mut app, p, DefenseEdge::Pressed);
     tick(&mut app, 13);
     edge(&mut app, p, DefenseEdge::Released);
@@ -110,7 +110,7 @@ fn a_parry_strikes_back_for_a_little_damage_stuns_and_adds_one_sun() {
 
 #[test]
 fn rage_needs_a_full_meter_then_doubles_attacks_empowers_skills_and_chains_combos() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.0, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     charge(&mut app, p, 0, 0, Energy::RAGE_MAX - 1.0);
     request(&mut app, p, CombatIntent::request_rage);
     tick(&mut app, 1);
@@ -162,7 +162,7 @@ fn rage_needs_a_full_meter_then_doubles_attacks_empowers_skills_and_chains_combo
 
 #[test]
 fn starting_actions_wears_the_pair_and_a_worn_out_pair_rotates_once_idle() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.0, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     let (hammer, chain) = (WeaponPair::HammerMusket, WeaponPair::ChainAxeBow);
     assert_eq!(durability(&app, p, hammer), Arsenal::DURABILITY);
     attack(&mut app, p);
@@ -196,7 +196,7 @@ fn starting_actions_wears_the_pair_and_a_worn_out_pair_rotates_once_idle() {
 
 #[test]
 fn a_worn_out_pair_waits_for_its_open_combo_window_and_z_cycles_without_repair() {
-    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.0, 0.0);
+    let (mut app, p, e) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     let (hammer, chain) = (WeaponPair::HammerMusket, WeaponPair::ChainAxeBow);
     app.world_mut()
         .get_mut::<Arsenal>(p)
@@ -232,7 +232,7 @@ fn a_worn_out_pair_waits_for_its_open_combo_window_and_z_cycles_without_repair()
 
 #[test]
 fn respawning_empties_the_meters_ends_rage_and_repairs_every_pair() {
-    let (mut app, p, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 2.0, 0.0);
+    let (mut app, p, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     charge(&mut app, p, 4, 7, Energy::RAGE_MAX);
     request(&mut app, p, CombatIntent::request_rage);
     tick(&mut app, 1);

@@ -476,7 +476,7 @@ fn plan(
         body.aim_position() + ahead * DEFAULT_AIM_DISTANCE,
         Body::aim_position,
     );
-    if !matches!(spec.shape, Shape::Arc) {
+    if !matches!(spec.shape, Shape::Blade) {
         facing.set((aim - body.aim_position()).xz());
     }
     let (companion_position, source_position) =

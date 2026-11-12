@@ -37,10 +37,10 @@ fn buffered_first(app: &mut App, player: Entity) -> u64 {
 #[test]
 fn three_stages_preserve_each_marker_damage_and_immutable_history_for_both_pairs() {
     for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
-        let (mut app, player, enemy) = arena(pair, Vec3::NEG_Z * 1.5, 0.0);
-        let (damage, marker_tick, duration_ticks) = match pair {
-            WeaponPair::HammerMusket => (24.0, 8, 36),
-            WeaponPair::ChainAxeBow => (18.0, 5, 24),
+        let (mut app, player, enemy) = arena(pair, Vec3::NEG_Z * 1.2, 0.0);
+        let (damage, duration_ticks) = match pair {
+            WeaponPair::HammerMusket => (24.0, 36),
+            WeaponPair::ChainAxeBow => (18.0, 24),
         };
         request(&mut app, player, CombatIntent::request_attack);
         tick(&mut app, 1);
@@ -57,13 +57,18 @@ fn three_stages_preserve_each_marker_damage_and_immutable_history_for_both_pairs
             for _ in 0..30 {
                 request(&mut app, player, CombatIntent::request_attack);
             }
+            // The stage hurts in the very step its blade reaches the enemy,
+            // once, however long the blade then stays in them. This step is
+            // the stage's first: the blade's tick n is swept n steps later.
+            let contact = contact_step(&app, player, enemy, stage) - 1;
             tick(&mut app, 1);
-            tick(&mut app, marker_tick - 2);
+            tick(&mut app, contact - 2);
             assert_eq!(hp(&app, enemy), 1000.0 - damage * index as f32);
             tick(&mut app, 1);
             assert_eq!(hp(&app, enemy), 1000.0 - damage * (index + 1) as f32);
             let remaining_ticks = finish_action(&mut app, player);
-            assert_eq!(marker_tick + remaining_ticks, duration_ticks);
+            assert_eq!(contact + remaining_ticks, duration_ticks);
+            assert_eq!(hp(&app, enemy), 1000.0 - damage * (index + 1) as f32);
             assert!(active(&app, player).is_none());
             assert_eq!(
                 ordinary_events(&app, player, CombatEffect::MeleeStart).len(),
@@ -107,7 +112,7 @@ fn three_stages_preserve_each_marker_damage_and_immutable_history_for_both_pairs
 
 #[test]
 fn single_click_does_not_auto_chain_and_grace_resets_after_expiry() {
-    let (mut app, player, enemy) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, player, enemy) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     request(&mut app, player, CombatIntent::request_attack);
     tick(&mut app, 1);
     finish_action(&mut app, player);
@@ -140,7 +145,7 @@ fn single_click_does_not_auto_chain_and_grace_resets_after_expiry() {
 
 #[test]
 fn hit_stop_freezes_the_uncommitted_grace_window() {
-    let (mut app, player, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, player, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     request(&mut app, player, CombatIntent::request_attack);
     tick(&mut app, 1);
     finish_action(&mut app, player);
@@ -157,7 +162,7 @@ fn hit_stop_freezes_the_uncommitted_grace_window() {
 
 #[test]
 fn paused_clear_latches_cancellation_without_cancelling_the_committed_attack() {
-    let (mut app, player, enemy) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, player, enemy) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     let id = buffered_first(&mut app, player);
     let elapsed = active(&app, player).unwrap().elapsed;
     app.world_mut().resource_mut::<SimulationActive>().0 = false;
@@ -181,7 +186,7 @@ fn paused_clear_latches_cancellation_without_cancelling_the_committed_attack() {
 
 #[test]
 fn explicit_cancel_survives_other_requests_until_the_rule_tick() {
-    let (mut app, player, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, player, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     buffered_first(&mut app, player);
     request(&mut app, player, CombatIntent::cancel_melee_chain);
     request(&mut app, player, CombatIntent::request_toggle_target);
@@ -194,7 +199,7 @@ fn explicit_cancel_survives_other_requests_until_the_rule_tick() {
 #[test]
 fn new_valid_skill_pair_and_defense_win_over_a_buffered_successor() {
     for choice in 0..3 {
-        let (mut app, player, enemy) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+        let (mut app, player, enemy) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
         lock(&mut app, player, enemy);
         buffered_first(&mut app, player);
         finish_action(&mut app, player);
@@ -243,7 +248,7 @@ fn new_valid_skill_pair_and_defense_win_over_a_buffered_successor() {
 #[test]
 fn accepted_jump_or_dodge_gets_the_motor_before_an_automatic_successor() {
     for dodge in [false, true] {
-        let (mut app, player, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+        let (mut app, player, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
         buffered_first(&mut app, player);
         finish_action(&mut app, player);
         {
@@ -323,7 +328,7 @@ fn a_dodge_becoming_ready_this_tick_preempts_the_buffered_successor() {
 
 #[test]
 fn ordinary_damage_clears_followups_but_cannot_revoke_the_current_marker() {
-    let (mut app, player, enemy) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+    let (mut app, player, enemy) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
     let id = buffered_first(&mut app, player);
     strike(&mut app, player, enemy);
     assert_eq!(hp(&app, player), 988.0);
@@ -343,7 +348,7 @@ fn ordinary_damage_clears_followups_but_cannot_revoke_the_current_marker() {
 #[test]
 fn mode_cleanup_and_death_cannot_revive_an_old_followup_after_respawn() {
     for died in [false, true] {
-        let (mut app, player, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.5, 0.0);
+        let (mut app, player, _) = arena(WeaponPair::HammerMusket, Vec3::NEG_Z * 1.2, 0.0);
         buffered_first(&mut app, player);
         if died {
             app.world_mut()

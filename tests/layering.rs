@@ -170,12 +170,14 @@ fn concrete_weapon_pairs_and_skills_are_named_only_in_their_tables() {
         "simulation/weapons.rs",             // the pairs and their melee profiles
         "simulation/combat/skills.rs",       // input slot → skill
         "simulation/combat/availability.rs", // what keeps each combo window open
+        "simulation/combat/hit_tracks.rs",   // generated: each attack's baked blade path
         "client/loadout.rs",                 // how each pair looks and sounds
         "client/viewer/session.rs",          // the inspection page's weapon list
     ];
     let skill_tables = [
         "simulation/abilities.rs", // the skills and the idle companion's default
         "simulation/combat/skills.rs", // every skill number
+        "simulation/combat/hit_tracks.rs", // generated: each blade skill's baked path
         "client/hud.rs",           // the wording of each started skill
     ];
     let mut scanned = 0;

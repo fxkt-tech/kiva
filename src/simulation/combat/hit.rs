@@ -33,7 +33,10 @@ pub struct HitContext {
     pub action_id: u64,
     pub hit_index: u8,
     pub damage: f32,
+    /// Where the attacker is; decides whether a defense faces the attack.
     pub origin: Vec3,
+    /// Where the blade or projectile touched the target, when known.
+    pub contact: Option<Vec3>,
 }
 /// All candidates have already passed their attack-specific range/LoS checks.
 /// Enemy and Boss use this same defense ordering and damage/event application.
@@ -106,7 +109,7 @@ pub(in crate::simulation) fn apply_hit(
         action_id: ctx.action_id,
         hit_index: ctx.hit_index,
         kind,
-        position: body.aim_position(),
+        position: ctx.contact.unwrap_or(body.aim_position()),
         end: ctx.origin,
         radius: 0.65,
     });
@@ -231,6 +234,8 @@ pub(super) struct Blow {
     pub damage: f32,
     pub control: Control,
     pub origin: Vec3,
+    /// Where the blade touched the target, for swept hits.
+    pub contact: Option<Vec3>,
 }
 
 /// How a player's blow ended.
@@ -277,6 +282,7 @@ pub(super) fn hit_enemy(
             hit_index: blow.index,
             damage: blow.damage,
             origin: blow.origin,
+            contact: blow.contact,
         },
         &body,
         &facing,
@@ -331,6 +337,7 @@ impl Riposte {
             hit_index: 0,
             damage: PARRY_DAMAGE,
             origin: self.origin,
+            contact: None,
         }
     }
 }

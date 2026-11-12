@@ -22,7 +22,8 @@ pub use boss::{Boss, BossPhase, BossState};
 pub(crate) use combat::ensure_companions as combat_setup_companions;
 pub use combat::{
     Arsenal, CombatEffect, CombatEvent, CombatFeedback, CombatIntent, CombatStatus, Combatant,
-    Enemy, Energy, Health, HitContext, HitOutcome, SpawnPoint,
+    Enemy, Energy, Health, HitContext, HitOutcome, HitProbe, HitProbes, HitTrack, Hurtbox,
+    ProbeShape, SpawnPoint,
 };
 pub use defense::{DefenseEdge, DefenseKind, DefenseSnapshot, DefenseState};
 #[cfg(test)]
@@ -72,6 +73,7 @@ impl Plugin for SimulationPlugin {
             .init_resource::<MotionFeedback>()
             .init_resource::<combat::ActionIds>()
             .init_resource::<HitStop>()
+            .init_resource::<HitProbes>()
             .configure_sets(
                 FixedUpdate,
                 PhysicsSystems::StepSimulation.run_if(impact::simulation_running),
@@ -103,6 +105,7 @@ impl Plugin for SimulationPlugin {
                 FixedUpdate,
                 (
                     physics::publish,
+                    combat::tick_probes,
                     combat::resolve_actions,
                     combat::advance_enemies,
                     boss::advance,
