@@ -1,0 +1,5403 @@
+[
+  {
+    "function": "_M.n0_CBTSwitchCaseNode",
+    "source_line": 7,
+    "source_end_line": 141,
+    "data": {
+      "node_name": "n0_CBTSwitchCaseNode",
+      "cls": {
+        "lua": "AINodes.CBTSwitchCaseNode"
+      },
+      "cls_name": "CBTSwitchCaseNode",
+      "child_num": 60,
+      "child_name_list": [
+        "n00_CBTSelectNode",
+        "n01_CBTSelectNode",
+        "n02_CBTSelectNode",
+        "n03_CBTAlwaysSequenceNode",
+        "n04_CBTAlwaysSequenceNode",
+        "n05_CBTSequenceNode",
+        "n06_CBTAlwaysSequenceNode",
+        "n07_CBTSequenceNode",
+        "n08_CBTAlwaysSequenceNode",
+        "n09_CBTAlwaysSequenceNode",
+        "n0A_CBTAlwaysSequenceNode",
+        "n0B_CBTAlwaysSequenceNode",
+        "n0C_CBTAlwaysSequenceNode",
+        "n0D_CBTAlwaysSequenceNode",
+        "n0E_CBTAlwaysSequenceNode",
+        "n0F_CBTAlwaysSequenceNode",
+        "n0G_CBTAlwaysSequenceNode",
+        "n0H_CBTAlwaysSequenceNode",
+        "n0I_CBTAlwaysSequenceNode",
+        "n0J_CBTAlwaysSequenceNode",
+        "n0K_CBTAlwaysSequenceNode",
+        "n0L_CBTAlwaysSequenceNode",
+        "n0M_CBTAlwaysSequenceNode",
+        "n0N_CBTAlwaysSequenceNode",
+        "n0O_CBTAlwaysSequenceNode",
+        "n0P_CBTAlwaysSequenceNode",
+        "n0Q_CBTAlwaysSequenceNode",
+        "n0R_CBTAlwaysSequenceNode",
+        "n0S_CBTAlwaysSequenceNode",
+        "n0T_CBTAlwaysSequenceNode",
+        "n0U_CBTAlwaysSequenceNode",
+        "n0V_CBTAlwaysSequenceNode",
+        "n0W_CBTAlwaysSequenceNode",
+        "n0X_CBTAlwaysSequenceNode",
+        "n0Y_CBTAlwaysSequenceNode",
+        "n0Z_CBTAlwaysSequenceNode",
+        "n0a_CBTAlwaysSequenceNode",
+        "n0b_CBTAlwaysSequenceNode",
+        "n0c_CBTAlwaysSequenceNode",
+        "n0d_CBTAlwaysSequenceNode",
+        "n0e_CBTAlwaysSequenceNode",
+        "n0f_CBTAlwaysSequenceNode",
+        "n0g_CBTAlwaysSequenceNode",
+        "n0h_CBTAlwaysSequenceNode",
+        "n0i_CBTAlwaysSequenceNode",
+        "n0j_CBTAlwaysSequenceNode",
+        "n0k_CBTAlwaysSequenceNode",
+        "n0l_CBTAlwaysSequenceNode",
+        "n0m_CBTAlwaysSequenceNode",
+        "n0n_CBTAlwaysSequenceNode",
+        "n0o_CBTAlwaysSequenceNode",
+        "n0p_CBTAlwaysSequenceNode",
+        "n0q_CBTAlwaysSequenceNode",
+        "n0r_CBTAlwaysSequenceNode",
+        "n0s_CBTAlwaysSequenceNode",
+        "n0t_CBTAlwaysSequenceNode",
+        "n0u_CBTAlwaysSequenceNode",
+        "n0v_CBTAlwaysSequenceNode",
+        "n0w_CBTAlwaysSequenceNode",
+        "n0x_CBTAlwaysSequenceNode"
+      ],
+      "key_type": 1,
+      "key": "_ACTION_FLOW_",
+      "case_type": 3,
+      "cases_dict": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5,
+        "7": 6,
+        "8": 7,
+        "9": 8,
+        "10": 9,
+        "11": 10,
+        "12": 11,
+        "13": 12,
+        "14": 13,
+        "15": 14,
+        "16": 15,
+        "17": 16,
+        "18": 17,
+        "19": 18,
+        "20": 19,
+        "21": 20,
+        "22": 21,
+        "23": 22,
+        "24": 23,
+        "25": 24,
+        "26": 25,
+        "27": 26,
+        "28": 27,
+        "29": 28,
+        "30": 29,
+        "31": 30,
+        "32": 31,
+        "33": 32,
+        "34": 33,
+        "35": 34,
+        "36": 35,
+        "37": 36,
+        "38": 37,
+        "39": 38,
+        "40": 39,
+        "41": 40,
+        "42": 41,
+        "43": 42,
+        "44": 43,
+        "45": 44,
+        "46": 45,
+        "47": 46,
+        "48": 47,
+        "49": 48,
+        "50": 49,
+        "51": 50,
+        "52": 51,
+        "53": 52,
+        "54": 53,
+        "55": 54,
+        "56": 55,
+        "57": 56,
+        "58": 57,
+        "59": 58,
+        "60": 59
+      }
+    }
+  },
+  {
+    "function": "_M.n00_CBTSelectNode",
+    "source_line": 143,
+    "source_end_line": 155,
+    "data": {
+      "node_name": "n00_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n000_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n000_CBTAlwaysSequenceNode",
+    "source_line": 157,
+    "source_end_line": 170,
+    "data": {
+      "node_name": "n000_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n00_CBTSelectNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0000_CBTSequenceNode",
+        "n0001_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0000_CBTSequenceNode",
+    "source_line": 172,
+    "source_end_line": 186,
+    "data": {
+      "node_name": "n0000_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n000_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSequenceNode",
+      "fast_node": "n0001_CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n00000_JudgeTargetInRangeAction",
+        "n00001_TurningAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00000_JudgeTargetInRangeAction",
+    "source_line": 188,
+    "source_end_line": 203,
+    "data": {
+      "node_name": "n00000_JudgeTargetInRangeAction",
+      "cls": {
+        "lua": "AINodes.JudgeTargetInRangeAction"
+      },
+      "parent_node_name": "n0000_CBTSequenceNode",
+      "cls_name": "JudgeTargetInRangeAction",
+      "succ_fast_node": "n00001_TurningAction",
+      "idx_in_parent": 0,
+      "from_type": 0,
+      "from_value": "",
+      "to_type": 1,
+      "to_value": "_T1",
+      "left_v": "135.0",
+      "right_v": 225.0
+    }
+  },
+  {
+    "function": "_M.n00001_TurningAction",
+    "source_line": 205,
+    "source_end_line": 228,
+    "data": {
+      "node_name": "n00001_TurningAction",
+      "cls": {
+        "lua": "AINodes.TurningAction"
+      },
+      "parent_node_name": "n0000_CBTSequenceNode",
+      "cls_name": "TurningAction",
+      "idx_in_parent": 1,
+      "target_type": 1,
+      "anim_trans_time": -1.0,
+      "entity_bb_key": "_T1",
+      "duration": 3.0,
+      "bias_yaw": 1.05,
+      "diff_yaw": 0.0,
+      "turn_speed": 1.0,
+      "yaw_speed": -1.0,
+      "end_diff": 0.0,
+      "enable_physics": true,
+      "once_turning": false,
+      "scale_yaw": false,
+      "interrupt_watch": true,
+      "turn_on_tach": false,
+      "disable_yaw_controller": false
+    }
+  },
+  {
+    "function": "_M.n0001_CBTSelectNode",
+    "source_line": 230,
+    "source_end_line": 243,
+    "data": {
+      "node_name": "n0001_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n000_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n00010_CBTSequenceNode",
+        "n00011_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00010_CBTSequenceNode",
+    "source_line": 245,
+    "source_end_line": 259,
+    "data": {
+      "node_name": "n00010_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0001_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n00011_CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n000100_CheckTimer",
+        "n000101_Probability"
+      ]
+    }
+  },
+  {
+    "function": "_M.n000100_CheckTimer",
+    "source_line": 261,
+    "source_end_line": 273,
+    "data": {
+      "node_name": "n000100_CheckTimer",
+      "cls": {
+        "lua": "AINodes.CheckTimer"
+      },
+      "parent_node_name": "n00010_CBTSequenceNode",
+      "cls_name": "CheckTimer",
+      "succ_fast_node": "n000101_Probability",
+      "idx_in_parent": 0,
+      "timer_key_type": 4,
+      "timer_key": "LockTimer",
+      "is_pass_none_timer": true
+    }
+  },
+  {
+    "function": "_M.n000101_Probability",
+    "source_line": 275,
+    "source_end_line": 292,
+    "data": {
+      "node_name": "n000101_Probability",
+      "cls": {
+        "lua": "AINodes.CBTProbabilityNode"
+      },
+      "parent_node_name": "n00010_CBTSequenceNode",
+      "cls_name": "CBTProbabilityNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n0001010_CBTSequenceNode",
+        "n0001011_CBTSequenceNode"
+      ],
+      "child_weights": [
+        1,
+        1
+      ],
+      "acc_child_weights": [
+        1,
+        2
+      ],
+      "total_weight": 2,
+      "different_with_last": false
+    }
+  },
+  {
+    "function": "_M.n0001010_CBTSequenceNode",
+    "source_line": 294,
+    "source_end_line": 307,
+    "data": {
+      "node_name": "n0001010_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n000101_Probability",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n00010100_CheckBlackboard",
+        "n00010101_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00010100_CheckBlackboard",
+    "source_line": 309,
+    "source_end_line": 323,
+    "data": {
+      "node_name": "n00010100_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n0001010_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n00010101_CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "lastlockdirection",
+      "operator": "==",
+      "value_type": 3,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n00010101_CBTAlwaysSequenceNode",
+    "source_line": 325,
+    "source_end_line": 339,
+    "data": {
+      "node_name": "n00010101_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0001010_CBTSequenceNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 3,
+      "child_name_list": [
+        "n000101010_SetBlackboard",
+        "n000101011_SetTimer",
+        "n000101012_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n000101010_SetBlackboard",
+    "source_line": 341,
+    "source_end_line": 355,
+    "data": {
+      "node_name": "n000101010_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n00010101_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "fast_node": "n000101011_SetTimer",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "lastlockdirection",
+      "value_type": 3,
+      "value": "0",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n000101011_SetTimer",
+    "source_line": 357,
+    "source_end_line": 371,
+    "data": {
+      "node_name": "n000101011_SetTimer",
+      "cls": {
+        "lua": "AINodes.SetTimer"
+      },
+      "parent_node_name": "n00010101_CBTAlwaysSequenceNode",
+      "cls_name": "SetTimer",
+      "fast_node": "n000101012_LockAnimLRAction",
+      "idx_in_parent": 1,
+      "timer_key": "LockTimer",
+      "duration_type": "random",
+      "duration": 4.0,
+      "duration_max": 5.0,
+      "duration_bb": ""
+    }
+  },
+  {
+    "function": "_M.n000101012_LockAnimLRAction",
+    "source_line": 373,
+    "source_end_line": 397,
+    "data": {
+      "node_name": "n000101012_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n00010101_CBTAlwaysSequenceNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 2,
+      "entity_bb_key": "_T1",
+      "move_type": 1,
+      "min_duration": "3",
+      "max_duration": "3",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "3",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n0001011_CBTSequenceNode",
+    "source_line": 399,
+    "source_end_line": 412,
+    "data": {
+      "node_name": "n0001011_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n000101_Probability",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n00010110_CheckBlackboard",
+        "n00010111_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00010110_CheckBlackboard",
+    "source_line": 414,
+    "source_end_line": 428,
+    "data": {
+      "node_name": "n00010110_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n0001011_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n00010111_CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "lastlockdirection",
+      "operator": "==",
+      "value_type": 3,
+      "value": "0"
+    }
+  },
+  {
+    "function": "_M.n00010111_CBTAlwaysSequenceNode",
+    "source_line": 430,
+    "source_end_line": 444,
+    "data": {
+      "node_name": "n00010111_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0001011_CBTSequenceNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 3,
+      "child_name_list": [
+        "n000101110_SetBlackboard",
+        "n000101111_SetTimer",
+        "n000101112_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n000101110_SetBlackboard",
+    "source_line": 446,
+    "source_end_line": 460,
+    "data": {
+      "node_name": "n000101110_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n00010111_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "fast_node": "n000101111_SetTimer",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "lastlockdirection",
+      "value_type": 3,
+      "value": "1",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n000101111_SetTimer",
+    "source_line": 462,
+    "source_end_line": 476,
+    "data": {
+      "node_name": "n000101111_SetTimer",
+      "cls": {
+        "lua": "AINodes.SetTimer"
+      },
+      "parent_node_name": "n00010111_CBTAlwaysSequenceNode",
+      "cls_name": "SetTimer",
+      "fast_node": "n000101112_LockAnimLRAction",
+      "idx_in_parent": 1,
+      "timer_key": "LockTimer",
+      "duration_type": "random",
+      "duration": 4.0,
+      "duration_max": 5.0,
+      "duration_bb": ""
+    }
+  },
+  {
+    "function": "_M.n000101112_LockAnimLRAction",
+    "source_line": 478,
+    "source_end_line": 502,
+    "data": {
+      "node_name": "n000101112_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n00010111_CBTAlwaysSequenceNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 2,
+      "entity_bb_key": "_T1",
+      "move_type": 0,
+      "min_duration": "3",
+      "max_duration": "3",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "3",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n00011_CBTSelectNode",
+    "source_line": 504,
+    "source_end_line": 517,
+    "data": {
+      "node_name": "n00011_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n0001_CBTSelectNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n000110_CBTSequenceNode",
+        "n000111_CBTSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n000110_CBTSequenceNode",
+    "source_line": 519,
+    "source_end_line": 533,
+    "data": {
+      "node_name": "n000110_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n00011_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n000111_CBTSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0001100_CheckBlackboard",
+        "n0001101_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0001100_CheckBlackboard",
+    "source_line": 535,
+    "source_end_line": 549,
+    "data": {
+      "node_name": "n0001100_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n000110_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n0001101_CBTSelectNode",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "lastlockdirection",
+      "operator": "==",
+      "value_type": 3,
+      "value": "0"
+    }
+  },
+  {
+    "function": "_M.n0001101_CBTSelectNode",
+    "source_line": 551,
+    "source_end_line": 564,
+    "data": {
+      "node_name": "n0001101_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n000110_CBTSequenceNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n00011010_CBTSequenceNode",
+        "n00011011_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00011010_CBTSequenceNode",
+    "source_line": 566,
+    "source_end_line": 580,
+    "data": {
+      "node_name": "n00011010_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0001101_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n00011011_LockAnimLRAction",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n000110100_CheckObstacle",
+        "n000110101_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n000110100_CheckObstacle",
+    "source_line": 582,
+    "source_end_line": 601,
+    "data": {
+      "node_name": "n000110100_CheckObstacle",
+      "cls": {
+        "lua": "AINodes.CheckObstacle"
+      },
+      "parent_node_name": "n00011010_CBTSequenceNode",
+      "cls_name": "CheckObstacle",
+      "succ_fast_node": "n000110101_LockAnimLRAction",
+      "idx_in_parent": 0,
+      "bb_target": "_T1",
+      "direction": 4,
+      "target_bone_name": "Bip001 Spine1",
+      "target_ent_bone_name": "Scene Root",
+      "distance": 3.0,
+      "collision_type": 39,
+      "ignore_self": false,
+      "draw_line_flag": false,
+      "use_sweep": false,
+      "use_target_ent": false
+    }
+  },
+  {
+    "function": "_M.n000110101_LockAnimLRAction",
+    "source_line": 603,
+    "source_end_line": 627,
+    "data": {
+      "node_name": "n000110101_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n00011010_CBTSequenceNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "_T1",
+      "move_type": 0,
+      "min_duration": "3",
+      "max_duration": "3",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "3",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n00011011_LockAnimLRAction",
+    "source_line": 629,
+    "source_end_line": 653,
+    "data": {
+      "node_name": "n00011011_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n0001101_CBTSelectNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "_T1",
+      "move_type": 1,
+      "min_duration": "3",
+      "max_duration": "3",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "3",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n000111_CBTSequenceNode",
+    "source_line": 655,
+    "source_end_line": 668,
+    "data": {
+      "node_name": "n000111_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n00011_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n0001110_CheckBlackboard",
+        "n0001111_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0001110_CheckBlackboard",
+    "source_line": 670,
+    "source_end_line": 684,
+    "data": {
+      "node_name": "n0001110_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n000111_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n0001111_CBTSelectNode",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "lastlockdirection",
+      "operator": "==",
+      "value_type": 3,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0001111_CBTSelectNode",
+    "source_line": 686,
+    "source_end_line": 699,
+    "data": {
+      "node_name": "n0001111_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n000111_CBTSequenceNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n00011110_CBTSequenceNode",
+        "n00011111_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00011110_CBTSequenceNode",
+    "source_line": 701,
+    "source_end_line": 715,
+    "data": {
+      "node_name": "n00011110_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0001111_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n00011111_LockAnimLRAction",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n000111100_CheckObstacle",
+        "n000111101_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n000111100_CheckObstacle",
+    "source_line": 717,
+    "source_end_line": 736,
+    "data": {
+      "node_name": "n000111100_CheckObstacle",
+      "cls": {
+        "lua": "AINodes.CheckObstacle"
+      },
+      "parent_node_name": "n00011110_CBTSequenceNode",
+      "cls_name": "CheckObstacle",
+      "succ_fast_node": "n000111101_LockAnimLRAction",
+      "idx_in_parent": 0,
+      "bb_target": "_T1",
+      "direction": 2,
+      "target_bone_name": "Bip001 Spine1",
+      "target_ent_bone_name": "Scene Root",
+      "distance": 3.0,
+      "collision_type": 39,
+      "ignore_self": false,
+      "draw_line_flag": false,
+      "use_sweep": false,
+      "use_target_ent": false
+    }
+  },
+  {
+    "function": "_M.n000111101_LockAnimLRAction",
+    "source_line": 738,
+    "source_end_line": 762,
+    "data": {
+      "node_name": "n000111101_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n00011110_CBTSequenceNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "_T1",
+      "move_type": 1,
+      "min_duration": "3",
+      "max_duration": "3",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "3",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n00011111_LockAnimLRAction",
+    "source_line": 764,
+    "source_end_line": 788,
+    "data": {
+      "node_name": "n00011111_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n0001111_CBTSelectNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "_T1",
+      "move_type": 0,
+      "min_duration": "3",
+      "max_duration": "3",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "3",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n01_CBTSelectNode",
+    "source_line": 790,
+    "source_end_line": 802,
+    "data": {
+      "node_name": "n01_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n010_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n010_CBTAlwaysSequenceNode",
+    "source_line": 804,
+    "source_end_line": 817,
+    "data": {
+      "node_name": "n010_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n01_CBTSelectNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0100_CBTSequenceNode",
+        "n0101_LockAnimDistanceAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0100_CBTSequenceNode",
+    "source_line": 819,
+    "source_end_line": 833,
+    "data": {
+      "node_name": "n0100_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n010_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSequenceNode",
+      "fast_node": "n0101_LockAnimDistanceAction",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n01000_JudgeTargetInRangeAction",
+        "n01001_TurningAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n01000_JudgeTargetInRangeAction",
+    "source_line": 835,
+    "source_end_line": 850,
+    "data": {
+      "node_name": "n01000_JudgeTargetInRangeAction",
+      "cls": {
+        "lua": "AINodes.JudgeTargetInRangeAction"
+      },
+      "parent_node_name": "n0100_CBTSequenceNode",
+      "cls_name": "JudgeTargetInRangeAction",
+      "succ_fast_node": "n01001_TurningAction",
+      "idx_in_parent": 0,
+      "from_type": 0,
+      "from_value": "",
+      "to_type": 1,
+      "to_value": "_T1",
+      "left_v": "135.0",
+      "right_v": 225.0
+    }
+  },
+  {
+    "function": "_M.n01001_TurningAction",
+    "source_line": 852,
+    "source_end_line": 875,
+    "data": {
+      "node_name": "n01001_TurningAction",
+      "cls": {
+        "lua": "AINodes.TurningAction"
+      },
+      "parent_node_name": "n0100_CBTSequenceNode",
+      "cls_name": "TurningAction",
+      "idx_in_parent": 1,
+      "target_type": 1,
+      "anim_trans_time": -1.0,
+      "entity_bb_key": "_T1",
+      "duration": 3.0,
+      "bias_yaw": 1.05,
+      "diff_yaw": 0.0,
+      "turn_speed": 1.0,
+      "yaw_speed": -1.0,
+      "end_diff": 0.0,
+      "enable_physics": true,
+      "once_turning": false,
+      "scale_yaw": false,
+      "interrupt_watch": true,
+      "turn_on_tach": false,
+      "disable_yaw_controller": false
+    }
+  },
+  {
+    "function": "_M.n0101_LockAnimDistanceAction",
+    "source_line": 877,
+    "source_end_line": 918,
+    "data": {
+      "node_name": "n0101_LockAnimDistanceAction",
+      "cls": {
+        "lua": "AINodes.LockAnimDistanceAction"
+      },
+      "parent_node_name": "n010_CBTAlwaysSequenceNode",
+      "cls_name": "LockAnimDistanceAction",
+      "idx_in_parent": 1,
+      "use_navigate": true,
+      "use_input_navigate": false,
+      "server_boss_allow_navigate": false,
+      "entity_bb_key": "_T1",
+      "distance_mode": 0,
+      "distance_value": 6.0,
+      "distance_bb_key": "",
+      "target_hater_check": true,
+      "target_hater_num": 3,
+      "target_point_mode": 0,
+      "enable_half_angle_bb": false,
+      "half_angle_bb": "",
+      "half_angle": 0.0,
+      "half_angle_lr": 1,
+      "float_distance": 0.0,
+      "float_angle": 0.0,
+      "keep_end_yaw": false,
+      "turn_speed": -1.0,
+      "forward_anim_type": 1,
+      "move_speed_rate": "1.0",
+      "move_speed_default": "1.0",
+      "lock_end_anim": true,
+      "lock_enter_transit_time": -1.0,
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 0.5,
+      "timeout": "5",
+      "timeout_flag": true,
+      "enable_ai_combat_controller": false,
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false,
+      "lock_angle_threshold": -1.0
+    }
+  },
+  {
+    "function": "_M.n02_CBTSelectNode",
+    "source_line": 920,
+    "source_end_line": 932,
+    "data": {
+      "node_name": "n02_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 2,
+      "child_num": 1,
+      "child_name_list": [
+        "n020_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n020_CBTAlwaysSequenceNode",
+    "source_line": 934,
+    "source_end_line": 947,
+    "data": {
+      "node_name": "n020_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n02_CBTSelectNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0200_CBTSequenceNode",
+        "n0201_LockAnimDistanceAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0200_CBTSequenceNode",
+    "source_line": 949,
+    "source_end_line": 963,
+    "data": {
+      "node_name": "n0200_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n020_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSequenceNode",
+      "fast_node": "n0201_LockAnimDistanceAction",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n02000_JudgeTargetInRangeAction",
+        "n02001_TurningAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02000_JudgeTargetInRangeAction",
+    "source_line": 965,
+    "source_end_line": 980,
+    "data": {
+      "node_name": "n02000_JudgeTargetInRangeAction",
+      "cls": {
+        "lua": "AINodes.JudgeTargetInRangeAction"
+      },
+      "parent_node_name": "n0200_CBTSequenceNode",
+      "cls_name": "JudgeTargetInRangeAction",
+      "succ_fast_node": "n02001_TurningAction",
+      "idx_in_parent": 0,
+      "from_type": 0,
+      "from_value": "",
+      "to_type": 1,
+      "to_value": "_T1",
+      "left_v": "135.0",
+      "right_v": 225.0
+    }
+  },
+  {
+    "function": "_M.n02001_TurningAction",
+    "source_line": 982,
+    "source_end_line": 1005,
+    "data": {
+      "node_name": "n02001_TurningAction",
+      "cls": {
+        "lua": "AINodes.TurningAction"
+      },
+      "parent_node_name": "n0200_CBTSequenceNode",
+      "cls_name": "TurningAction",
+      "idx_in_parent": 1,
+      "target_type": 1,
+      "anim_trans_time": -1.0,
+      "entity_bb_key": "_T1",
+      "duration": 3.0,
+      "bias_yaw": 1.05,
+      "diff_yaw": 0.0,
+      "turn_speed": 1.0,
+      "yaw_speed": -1.0,
+      "end_diff": 0.0,
+      "enable_physics": true,
+      "once_turning": false,
+      "scale_yaw": false,
+      "interrupt_watch": true,
+      "turn_on_tach": false,
+      "disable_yaw_controller": false
+    }
+  },
+  {
+    "function": "_M.n0201_LockAnimDistanceAction",
+    "source_line": 1007,
+    "source_end_line": 1048,
+    "data": {
+      "node_name": "n0201_LockAnimDistanceAction",
+      "cls": {
+        "lua": "AINodes.LockAnimDistanceAction"
+      },
+      "parent_node_name": "n020_CBTAlwaysSequenceNode",
+      "cls_name": "LockAnimDistanceAction",
+      "idx_in_parent": 1,
+      "use_navigate": true,
+      "use_input_navigate": false,
+      "server_boss_allow_navigate": false,
+      "entity_bb_key": "_T1",
+      "distance_mode": 0,
+      "distance_value": 5.0,
+      "distance_bb_key": "",
+      "target_hater_check": true,
+      "target_hater_num": 3,
+      "target_point_mode": 0,
+      "enable_half_angle_bb": false,
+      "half_angle_bb": "",
+      "half_angle": 0.0,
+      "half_angle_lr": 1,
+      "float_distance": 0.0,
+      "float_angle": 0.0,
+      "keep_end_yaw": false,
+      "turn_speed": -1.0,
+      "forward_anim_type": 0,
+      "move_speed_rate": "1.0",
+      "move_speed_default": "1.0",
+      "lock_end_anim": false,
+      "lock_enter_transit_time": -1.0,
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 0.5,
+      "timeout": "3",
+      "timeout_flag": true,
+      "enable_ai_combat_controller": false,
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false,
+      "lock_angle_threshold": -1.0
+    }
+  },
+  {
+    "function": "_M.n03_CBTAlwaysSequenceNode",
+    "source_line": 1050,
+    "source_end_line": 1062,
+    "data": {
+      "node_name": "n03_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 3,
+      "child_num": 1,
+      "child_name_list": [
+        "n030_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n030_ApplySkillAction",
+    "source_line": 1064,
+    "source_end_line": 1102,
+    "data": {
+      "node_name": "n030_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n03_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021629,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n04_CBTAlwaysSequenceNode",
+    "source_line": 1104,
+    "source_end_line": 1116,
+    "data": {
+      "node_name": "n04_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 4,
+      "child_num": 1,
+      "child_name_list": [
+        "n040_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n040_ApplySkillAction",
+    "source_line": 1118,
+    "source_end_line": 1156,
+    "data": {
+      "node_name": "n040_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n04_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021435,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n05_CBTSequenceNode",
+    "source_line": 1158,
+    "source_end_line": 1170,
+    "data": {
+      "node_name": "n05_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 5,
+      "child_num": 1,
+      "child_name_list": [
+        "n050_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n050_ApplySkillAction",
+    "source_line": 1172,
+    "source_end_line": 1210,
+    "data": {
+      "node_name": "n050_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n05_CBTSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021632,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 27,
+      "action_flow_time": 25.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n06_CBTAlwaysSequenceNode",
+    "source_line": 1212,
+    "source_end_line": 1224,
+    "data": {
+      "node_name": "n06_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 6,
+      "child_num": 1,
+      "child_name_list": [
+        "n060_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n060_ApplySkillAction",
+    "source_line": 1226,
+    "source_end_line": 1264,
+    "data": {
+      "node_name": "n060_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n06_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021633,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n07_CBTSequenceNode",
+    "source_line": 1266,
+    "source_end_line": 1278,
+    "data": {
+      "node_name": "n07_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 7,
+      "child_num": 1,
+      "child_name_list": [
+        "n070_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n070_ApplySkillAction",
+    "source_line": 1280,
+    "source_end_line": 1318,
+    "data": {
+      "node_name": "n070_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n07_CBTSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021626,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "AIComboSkillClass",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 27,
+      "action_flow_time": 25.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n08_CBTAlwaysSequenceNode",
+    "source_line": 1320,
+    "source_end_line": 1332,
+    "data": {
+      "node_name": "n08_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 8,
+      "child_num": 1,
+      "child_name_list": [
+        "n080_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n080_ApplySkillAction",
+    "source_line": 1334,
+    "source_end_line": 1372,
+    "data": {
+      "node_name": "n080_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n08_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021627,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "AIComboSkillClass",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n09_CBTAlwaysSequenceNode",
+    "source_line": 1374,
+    "source_end_line": 1387,
+    "data": {
+      "node_name": "n09_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 9,
+      "child_num": 2,
+      "child_name_list": [
+        "n090_UpdateBlackboard",
+        "n091_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n090_UpdateBlackboard",
+    "source_line": 1389,
+    "source_end_line": 1403,
+    "data": {
+      "node_name": "n090_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n09_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n091_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n091_ApplySkillAction",
+    "source_line": 1405,
+    "source_end_line": 1443,
+    "data": {
+      "node_name": "n091_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n09_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021593,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 10,
+      "action_flow_time": 40.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0A_CBTAlwaysSequenceNode",
+    "source_line": 1445,
+    "source_end_line": 1458,
+    "data": {
+      "node_name": "n0A_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 10,
+      "child_num": 2,
+      "child_name_list": [
+        "n0A0_UpdateBlackboard",
+        "n0A1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0A0_UpdateBlackboard",
+    "source_line": 1460,
+    "source_end_line": 1474,
+    "data": {
+      "node_name": "n0A0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0A_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0A1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0A1_ApplySkillAction",
+    "source_line": 1476,
+    "source_end_line": 1514,
+    "data": {
+      "node_name": "n0A1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0A_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021594,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 11,
+      "action_flow_time": 55.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0B_CBTAlwaysSequenceNode",
+    "source_line": 1516,
+    "source_end_line": 1529,
+    "data": {
+      "node_name": "n0B_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 11,
+      "child_num": 2,
+      "child_name_list": [
+        "n0B0_CBTSequenceNode",
+        "n0B1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0B0_CBTSequenceNode",
+    "source_line": 1531,
+    "source_end_line": 1545,
+    "data": {
+      "node_name": "n0B0_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0B_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSequenceNode",
+      "fast_node": "n0B1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0B00_NotNode",
+        "n0B01_UpdateBlackboard"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0B00_NotNode",
+    "source_line": 1547,
+    "source_end_line": 1561,
+    "data": {
+      "node_name": "n0B00_NotNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.NotNode"
+      },
+      "parent_node_name": "n0B0_CBTSequenceNode",
+      "cls_name": "NotNode",
+      "succ_fast_node": "n0B01_UpdateBlackboard",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n0B000_CheckBuff"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0B000_CheckBuff",
+    "source_line": 1563,
+    "source_end_line": 1580,
+    "data": {
+      "node_name": "n0B000_CheckBuff",
+      "cls": {
+        "lua": "AINodes.CheckBuff"
+      },
+      "parent_node_name": "n0B00_NotNode",
+      "cls_name": "CheckBuff",
+      "idx_in_parent": 0,
+      "target_type": 1,
+      "target_bb_key": "_T1",
+      "buff_id_from_blackboard": false,
+      "buff_id_bb_key": "buff_id_bb_key",
+      "buff_id": "450097",
+      "check_level": false,
+      "level_value_type": 3,
+      "level_value": "",
+      "level_operation": ">"
+    }
+  },
+  {
+    "function": "_M.n0B01_UpdateBlackboard",
+    "source_line": 1582,
+    "source_end_line": 1595,
+    "data": {
+      "node_name": "n0B01_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0B0_CBTSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "idx_in_parent": 1,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0B1_ApplySkillAction",
+    "source_line": 1597,
+    "source_end_line": 1635,
+    "data": {
+      "node_name": "n0B1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0B_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021595,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 12,
+      "action_flow_time": 50.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0C_CBTAlwaysSequenceNode",
+    "source_line": 1637,
+    "source_end_line": 1650,
+    "data": {
+      "node_name": "n0C_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 12,
+      "child_num": 2,
+      "child_name_list": [
+        "n0C0_UpdateBlackboard",
+        "n0C1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0C0_UpdateBlackboard",
+    "source_line": 1652,
+    "source_end_line": 1666,
+    "data": {
+      "node_name": "n0C0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0C_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0C1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "kengki_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0C1_ApplySkillAction",
+    "source_line": 1668,
+    "source_end_line": 1706,
+    "data": {
+      "node_name": "n0C1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0C_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021596,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 13,
+      "action_flow_time": 65.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0D_CBTAlwaysSequenceNode",
+    "source_line": 1708,
+    "source_end_line": 1720,
+    "data": {
+      "node_name": "n0D_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 13,
+      "child_num": 1,
+      "child_name_list": [
+        "n0D0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0D0_ApplySkillAction",
+    "source_line": 1722,
+    "source_end_line": 1760,
+    "data": {
+      "node_name": "n0D0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0D_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021597,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 14,
+      "action_flow_time": 60.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0E_CBTAlwaysSequenceNode",
+    "source_line": 1762,
+    "source_end_line": 1774,
+    "data": {
+      "node_name": "n0E_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 14,
+      "child_num": 1,
+      "child_name_list": [
+        "n0E0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0E0_ApplySkillAction",
+    "source_line": 1776,
+    "source_end_line": 1814,
+    "data": {
+      "node_name": "n0E0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0E_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021598,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0F_CBTAlwaysSequenceNode",
+    "source_line": 1816,
+    "source_end_line": 1828,
+    "data": {
+      "node_name": "n0F_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 15,
+      "child_num": 1,
+      "child_name_list": [
+        "n0F0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0F0_ApplySkillAction",
+    "source_line": 1830,
+    "source_end_line": 1868,
+    "data": {
+      "node_name": "n0F0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0F_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021599,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 16,
+      "action_flow_time": 50.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0G_CBTAlwaysSequenceNode",
+    "source_line": 1870,
+    "source_end_line": 1882,
+    "data": {
+      "node_name": "n0G_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 16,
+      "child_num": 1,
+      "child_name_list": [
+        "n0G0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0G0_ApplySkillAction",
+    "source_line": 1884,
+    "source_end_line": 1922,
+    "data": {
+      "node_name": "n0G0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0G_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021600,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 17,
+      "action_flow_time": 60.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0H_CBTAlwaysSequenceNode",
+    "source_line": 1924,
+    "source_end_line": 1936,
+    "data": {
+      "node_name": "n0H_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 17,
+      "child_num": 1,
+      "child_name_list": [
+        "n0H0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0H0_ApplySkillAction",
+    "source_line": 1938,
+    "source_end_line": 1976,
+    "data": {
+      "node_name": "n0H0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0H_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021601,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 18,
+      "action_flow_time": 60.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0I_CBTAlwaysSequenceNode",
+    "source_line": 1978,
+    "source_end_line": 1991,
+    "data": {
+      "node_name": "n0I_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 18,
+      "child_num": 2,
+      "child_name_list": [
+        "n0I0_NotNode",
+        "n0I1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0I0_NotNode",
+    "source_line": 1993,
+    "source_end_line": 2007,
+    "data": {
+      "node_name": "n0I0_NotNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.NotNode"
+      },
+      "parent_node_name": "n0I_CBTAlwaysSequenceNode",
+      "cls_name": "NotNode",
+      "fast_node": "n0I1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n0I00_CheckObstacle"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0I00_CheckObstacle",
+    "source_line": 2009,
+    "source_end_line": 2027,
+    "data": {
+      "node_name": "n0I00_CheckObstacle",
+      "cls": {
+        "lua": "AINodes.CheckObstacle"
+      },
+      "parent_node_name": "n0I0_NotNode",
+      "cls_name": "CheckObstacle",
+      "idx_in_parent": 0,
+      "bb_target": "_T1",
+      "direction": 3,
+      "target_bone_name": "Bip001 Spine1",
+      "target_ent_bone_name": "Scene Root",
+      "distance": 5.0,
+      "collision_type": 39,
+      "ignore_self": true,
+      "draw_line_flag": false,
+      "use_sweep": false,
+      "use_target_ent": false
+    }
+  },
+  {
+    "function": "_M.n0I1_ApplySkillAction",
+    "source_line": 2029,
+    "source_end_line": 2067,
+    "data": {
+      "node_name": "n0I1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0I_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021602,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 19,
+      "action_flow_time": 55.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0J_CBTAlwaysSequenceNode",
+    "source_line": 2069,
+    "source_end_line": 2081,
+    "data": {
+      "node_name": "n0J_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 19,
+      "child_num": 1,
+      "child_name_list": [
+        "n0J0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0J0_ApplySkillAction",
+    "source_line": 2083,
+    "source_end_line": 2121,
+    "data": {
+      "node_name": "n0J0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0J_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021603,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 20,
+      "action_flow_time": 70.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0K_CBTAlwaysSequenceNode",
+    "source_line": 2123,
+    "source_end_line": 2135,
+    "data": {
+      "node_name": "n0K_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 20,
+      "child_num": 1,
+      "child_name_list": [
+        "n0K0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0K0_ApplySkillAction",
+    "source_line": 2137,
+    "source_end_line": 2175,
+    "data": {
+      "node_name": "n0K0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0K_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021604,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 21,
+      "action_flow_time": 65.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0L_CBTAlwaysSequenceNode",
+    "source_line": 2177,
+    "source_end_line": 2189,
+    "data": {
+      "node_name": "n0L_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 21,
+      "child_num": 1,
+      "child_name_list": [
+        "n0L0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0L0_ApplySkillAction",
+    "source_line": 2191,
+    "source_end_line": 2229,
+    "data": {
+      "node_name": "n0L0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0L_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021605,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0M_CBTAlwaysSequenceNode",
+    "source_line": 2231,
+    "source_end_line": 2243,
+    "data": {
+      "node_name": "n0M_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 22,
+      "child_num": 1,
+      "child_name_list": [
+        "n0M0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0M0_ApplySkillAction",
+    "source_line": 2245,
+    "source_end_line": 2283,
+    "data": {
+      "node_name": "n0M0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0M_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021606,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 23,
+      "action_flow_time": 80.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0N_CBTAlwaysSequenceNode",
+    "source_line": 2285,
+    "source_end_line": 2297,
+    "data": {
+      "node_name": "n0N_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 23,
+      "child_num": 1,
+      "child_name_list": [
+        "n0N0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0N0_ApplySkillAction",
+    "source_line": 2299,
+    "source_end_line": 2337,
+    "data": {
+      "node_name": "n0N0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0N_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021607,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 24,
+      "action_flow_time": 65.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0O_CBTAlwaysSequenceNode",
+    "source_line": 2339,
+    "source_end_line": 2351,
+    "data": {
+      "node_name": "n0O_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 24,
+      "child_num": 1,
+      "child_name_list": [
+        "n0O0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0O0_ApplySkillAction",
+    "source_line": 2353,
+    "source_end_line": 2391,
+    "data": {
+      "node_name": "n0O0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0O_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021608,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 25,
+      "action_flow_time": 55.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0P_CBTAlwaysSequenceNode",
+    "source_line": 2393,
+    "source_end_line": 2405,
+    "data": {
+      "node_name": "n0P_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 25,
+      "child_num": 1,
+      "child_name_list": [
+        "n0P0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0P0_ApplySkillAction",
+    "source_line": 2407,
+    "source_end_line": 2445,
+    "data": {
+      "node_name": "n0P0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0P_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021609,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0Q_CBTAlwaysSequenceNode",
+    "source_line": 2447,
+    "source_end_line": 2460,
+    "data": {
+      "node_name": "n0Q_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 26,
+      "child_num": 2,
+      "child_name_list": [
+        "n0Q0_UpdateBlackboard",
+        "n0Q1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0Q0_UpdateBlackboard",
+    "source_line": 2462,
+    "source_end_line": 2476,
+    "data": {
+      "node_name": "n0Q0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0Q_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0Q1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0Q1_ApplySkillAction",
+    "source_line": 2478,
+    "source_end_line": 2516,
+    "data": {
+      "node_name": "n0Q1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0Q_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021610,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 27,
+      "action_flow_time": 75.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0R_CBTAlwaysSequenceNode",
+    "source_line": 2518,
+    "source_end_line": 2530,
+    "data": {
+      "node_name": "n0R_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 27,
+      "child_num": 1,
+      "child_name_list": [
+        "n0R0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0R0_ApplySkillAction",
+    "source_line": 2532,
+    "source_end_line": 2570,
+    "data": {
+      "node_name": "n0R0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0R_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021611,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0S_CBTAlwaysSequenceNode",
+    "source_line": 2572,
+    "source_end_line": 2585,
+    "data": {
+      "node_name": "n0S_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 28,
+      "child_num": 2,
+      "child_name_list": [
+        "n0S0_UpdateBlackboard",
+        "n0S1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0S0_UpdateBlackboard",
+    "source_line": 2587,
+    "source_end_line": 2601,
+    "data": {
+      "node_name": "n0S0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0S_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0S1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0S1_ApplySkillAction",
+    "source_line": 2603,
+    "source_end_line": 2641,
+    "data": {
+      "node_name": "n0S1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0S_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021612,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 29,
+      "action_flow_time": 75.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0T_CBTAlwaysSequenceNode",
+    "source_line": 2643,
+    "source_end_line": 2656,
+    "data": {
+      "node_name": "n0T_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 29,
+      "child_num": 2,
+      "child_name_list": [
+        "n0T0_UpdateBlackboard",
+        "n0T1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0T0_UpdateBlackboard",
+    "source_line": 2658,
+    "source_end_line": 2672,
+    "data": {
+      "node_name": "n0T0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0T_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0T1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0T1_ApplySkillAction",
+    "source_line": 2674,
+    "source_end_line": 2712,
+    "data": {
+      "node_name": "n0T1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0T_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021613,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 30,
+      "action_flow_time": 75.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0U_CBTAlwaysSequenceNode",
+    "source_line": 2714,
+    "source_end_line": 2726,
+    "data": {
+      "node_name": "n0U_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 30,
+      "child_num": 1,
+      "child_name_list": [
+        "n0U0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0U0_ApplySkillAction",
+    "source_line": 2728,
+    "source_end_line": 2766,
+    "data": {
+      "node_name": "n0U0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0U_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021614,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 31,
+      "action_flow_time": 55.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0V_CBTAlwaysSequenceNode",
+    "source_line": 2768,
+    "source_end_line": 2780,
+    "data": {
+      "node_name": "n0V_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 31,
+      "child_num": 1,
+      "child_name_list": [
+        "n0V0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0V0_ApplySkillAction",
+    "source_line": 2782,
+    "source_end_line": 2820,
+    "data": {
+      "node_name": "n0V0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0V_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021615,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 32,
+      "action_flow_time": 55.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0W_CBTAlwaysSequenceNode",
+    "source_line": 2822,
+    "source_end_line": 2834,
+    "data": {
+      "node_name": "n0W_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 32,
+      "child_num": 1,
+      "child_name_list": [
+        "n0W0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0W0_ApplySkillAction",
+    "source_line": 2836,
+    "source_end_line": 2874,
+    "data": {
+      "node_name": "n0W0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0W_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021616,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0X_CBTAlwaysSequenceNode",
+    "source_line": 2876,
+    "source_end_line": 2888,
+    "data": {
+      "node_name": "n0X_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 33,
+      "child_num": 1,
+      "child_name_list": [
+        "n0X0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0X0_ApplySkillAction",
+    "source_line": 2890,
+    "source_end_line": 2928,
+    "data": {
+      "node_name": "n0X0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0X_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021625,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 0,
+      "action_flow_time": 0.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0Y_CBTAlwaysSequenceNode",
+    "source_line": 2930,
+    "source_end_line": 2942,
+    "data": {
+      "node_name": "n0Y_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 34,
+      "child_num": 1,
+      "child_name_list": [
+        "n0Y0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0Y0_ApplySkillAction",
+    "source_line": 2944,
+    "source_end_line": 2982,
+    "data": {
+      "node_name": "n0Y0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0Y_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021631,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 35,
+      "action_flow_time": 35.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0Z_CBTAlwaysSequenceNode",
+    "source_line": 2984,
+    "source_end_line": 2997,
+    "data": {
+      "node_name": "n0Z_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 35,
+      "child_num": 2,
+      "child_name_list": [
+        "n0Z0_UpdateBlackboard",
+        "n0Z1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0Z0_UpdateBlackboard",
+    "source_line": 2999,
+    "source_end_line": 3013,
+    "data": {
+      "node_name": "n0Z0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0Z_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0Z1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "kengki_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0Z1_ApplySkillAction",
+    "source_line": 3015,
+    "source_end_line": 3053,
+    "data": {
+      "node_name": "n0Z1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0Z_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021634,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 36,
+      "action_flow_time": 45.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0a_CBTAlwaysSequenceNode",
+    "source_line": 3055,
+    "source_end_line": 3068,
+    "data": {
+      "node_name": "n0a_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 36,
+      "child_num": 2,
+      "child_name_list": [
+        "n0a0_UpdateBlackboard",
+        "n0a1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0a0_UpdateBlackboard",
+    "source_line": 3070,
+    "source_end_line": 3084,
+    "data": {
+      "node_name": "n0a0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0a_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0a1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "kengki_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0a1_ApplySkillAction",
+    "source_line": 3086,
+    "source_end_line": 3124,
+    "data": {
+      "node_name": "n0a1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0a_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021635,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 37,
+      "action_flow_time": 60.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0b_CBTAlwaysSequenceNode",
+    "source_line": 3126,
+    "source_end_line": 3139,
+    "data": {
+      "node_name": "n0b_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 37,
+      "child_num": 2,
+      "child_name_list": [
+        "n0b0_UpdateBlackboard",
+        "n0b1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0b0_UpdateBlackboard",
+    "source_line": 3141,
+    "source_end_line": 3155,
+    "data": {
+      "node_name": "n0b0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0b_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0b1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "kengki_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0b1_ApplySkillAction",
+    "source_line": 3157,
+    "source_end_line": 3195,
+    "data": {
+      "node_name": "n0b1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0b_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021636,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 38,
+      "action_flow_time": 65.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0c_CBTAlwaysSequenceNode",
+    "source_line": 3197,
+    "source_end_line": 3210,
+    "data": {
+      "node_name": "n0c_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 38,
+      "child_num": 2,
+      "child_name_list": [
+        "n0c0_UpdateBlackboard",
+        "n0c1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0c0_UpdateBlackboard",
+    "source_line": 3212,
+    "source_end_line": 3226,
+    "data": {
+      "node_name": "n0c0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0c_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0c1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "kengki_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0c1_ApplySkillAction",
+    "source_line": 3228,
+    "source_end_line": 3266,
+    "data": {
+      "node_name": "n0c1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0c_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021637,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 39,
+      "action_flow_time": 60.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0d_CBTAlwaysSequenceNode",
+    "source_line": 3268,
+    "source_end_line": 3281,
+    "data": {
+      "node_name": "n0d_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 39,
+      "child_num": 2,
+      "child_name_list": [
+        "n0d0_NotNode",
+        "n0d1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0d0_NotNode",
+    "source_line": 3283,
+    "source_end_line": 3297,
+    "data": {
+      "node_name": "n0d0_NotNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.NotNode"
+      },
+      "parent_node_name": "n0d_CBTAlwaysSequenceNode",
+      "cls_name": "NotNode",
+      "fast_node": "n0d1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n0d00_CheckObstacle"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0d00_CheckObstacle",
+    "source_line": 3299,
+    "source_end_line": 3317,
+    "data": {
+      "node_name": "n0d00_CheckObstacle",
+      "cls": {
+        "lua": "AINodes.CheckObstacle"
+      },
+      "parent_node_name": "n0d0_NotNode",
+      "cls_name": "CheckObstacle",
+      "idx_in_parent": 0,
+      "bb_target": "_T1",
+      "direction": 3,
+      "target_bone_name": "Bip001 Spine1",
+      "target_ent_bone_name": "Scene Root",
+      "distance": 5.0,
+      "collision_type": 39,
+      "ignore_self": true,
+      "draw_line_flag": false,
+      "use_sweep": false,
+      "use_target_ent": false
+    }
+  },
+  {
+    "function": "_M.n0d1_ApplySkillAction",
+    "source_line": 3319,
+    "source_end_line": 3357,
+    "data": {
+      "node_name": "n0d1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0d_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021628,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 40,
+      "action_flow_time": 55.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0e_CBTAlwaysSequenceNode",
+    "source_line": 3359,
+    "source_end_line": 3371,
+    "data": {
+      "node_name": "n0e_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 40,
+      "child_num": 1,
+      "child_name_list": [
+        "n0e0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0e0_ApplySkillAction",
+    "source_line": 3373,
+    "source_end_line": 3411,
+    "data": {
+      "node_name": "n0e0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0e_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021639,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 41,
+      "action_flow_time": 60.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0f_CBTAlwaysSequenceNode",
+    "source_line": 3413,
+    "source_end_line": 3425,
+    "data": {
+      "node_name": "n0f_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 41,
+      "child_num": 1,
+      "child_name_list": [
+        "n0f0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0f0_ApplySkillAction",
+    "source_line": 3427,
+    "source_end_line": 3465,
+    "data": {
+      "node_name": "n0f0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0f_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021640,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 42,
+      "action_flow_time": 45.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0g_CBTAlwaysSequenceNode",
+    "source_line": 3467,
+    "source_end_line": 3480,
+    "data": {
+      "node_name": "n0g_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 42,
+      "child_num": 2,
+      "child_name_list": [
+        "n0g0_SetBlackboard",
+        "n0g1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0g0_SetBlackboard",
+    "source_line": 3482,
+    "source_end_line": 3496,
+    "data": {
+      "node_name": "n0g0_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n0g_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "fast_node": "n0g1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "kengki_count",
+      "value_type": 3,
+      "value": "0",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n0g1_ApplySkillAction",
+    "source_line": 3498,
+    "source_end_line": 3536,
+    "data": {
+      "node_name": "n0g1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0g_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021638,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 43,
+      "action_flow_time": 55.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0h_CBTAlwaysSequenceNode",
+    "source_line": 3538,
+    "source_end_line": 3550,
+    "data": {
+      "node_name": "n0h_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 43,
+      "child_num": 1,
+      "child_name_list": [
+        "n0h0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0h0_ApplySkillAction",
+    "source_line": 3552,
+    "source_end_line": 3590,
+    "data": {
+      "node_name": "n0h0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0h_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021622,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 44,
+      "action_flow_time": 85.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0i_CBTAlwaysSequenceNode",
+    "source_line": 3592,
+    "source_end_line": 3605,
+    "data": {
+      "node_name": "n0i_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 44,
+      "child_num": 2,
+      "child_name_list": [
+        "n0i0_CBTSequenceNode",
+        "n0i1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0i0_CBTSequenceNode",
+    "source_line": 3607,
+    "source_end_line": 3621,
+    "data": {
+      "node_name": "n0i0_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0i_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSequenceNode",
+      "fast_node": "n0i1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0i00_NotNode",
+        "n0i01_UpdateBlackboard"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0i00_NotNode",
+    "source_line": 3623,
+    "source_end_line": 3637,
+    "data": {
+      "node_name": "n0i00_NotNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.NotNode"
+      },
+      "parent_node_name": "n0i0_CBTSequenceNode",
+      "cls_name": "NotNode",
+      "succ_fast_node": "n0i01_UpdateBlackboard",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n0i000_CheckBuff"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0i000_CheckBuff",
+    "source_line": 3639,
+    "source_end_line": 3656,
+    "data": {
+      "node_name": "n0i000_CheckBuff",
+      "cls": {
+        "lua": "AINodes.CheckBuff"
+      },
+      "parent_node_name": "n0i00_NotNode",
+      "cls_name": "CheckBuff",
+      "idx_in_parent": 0,
+      "target_type": 1,
+      "target_bb_key": "_T1",
+      "buff_id_from_blackboard": false,
+      "buff_id_bb_key": "buff_id_bb_key",
+      "buff_id": "450097",
+      "check_level": false,
+      "level_value_type": 3,
+      "level_value": "",
+      "level_operation": ">"
+    }
+  },
+  {
+    "function": "_M.n0i01_UpdateBlackboard",
+    "source_line": 3658,
+    "source_end_line": 3671,
+    "data": {
+      "node_name": "n0i01_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0i0_CBTSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "idx_in_parent": 1,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0i1_ApplySkillAction",
+    "source_line": 3673,
+    "source_end_line": 3711,
+    "data": {
+      "node_name": "n0i1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0i_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021641,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 45,
+      "action_flow_time": 45.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0j_CBTAlwaysSequenceNode",
+    "source_line": 3713,
+    "source_end_line": 3725,
+    "data": {
+      "node_name": "n0j_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 45,
+      "child_num": 1,
+      "child_name_list": [
+        "n0j0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0j0_ApplySkillAction",
+    "source_line": 3727,
+    "source_end_line": 3765,
+    "data": {
+      "node_name": "n0j0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0j_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021623,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 46,
+      "action_flow_time": 85.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0k_CBTAlwaysSequenceNode",
+    "source_line": 3767,
+    "source_end_line": 3781,
+    "data": {
+      "node_name": "n0k_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 46,
+      "child_num": 3,
+      "child_name_list": [
+        "n0k0_ApplyBuff",
+        "n0k1_ApplyBuff",
+        "n0k2_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0k0_ApplyBuff",
+    "source_line": 3783,
+    "source_end_line": 3800,
+    "data": {
+      "node_name": "n0k0_ApplyBuff",
+      "cls": {
+        "lua": "AINodes.ApplyBuff"
+      },
+      "parent_node_name": "n0k_CBTAlwaysSequenceNode",
+      "cls_name": "ApplyBuff",
+      "fast_node": "n0k1_ApplyBuff",
+      "idx_in_parent": 0,
+      "op": "add",
+      "target_type": 1,
+      "target_list": "_T1",
+      "buff_id": "450098",
+      "buff_target": "",
+      "use_buff_level": false,
+      "buff_level_type": 1,
+      "buff_level_list": ""
+    }
+  },
+  {
+    "function": "_M.n0k1_ApplyBuff",
+    "source_line": 3802,
+    "source_end_line": 3819,
+    "data": {
+      "node_name": "n0k1_ApplyBuff",
+      "cls": {
+        "lua": "AINodes.ApplyBuff"
+      },
+      "parent_node_name": "n0k_CBTAlwaysSequenceNode",
+      "cls_name": "ApplyBuff",
+      "fast_node": "n0k2_ApplySkillAction",
+      "idx_in_parent": 1,
+      "op": "remove",
+      "target_type": 2,
+      "target_list": "_T1",
+      "buff_id": "450100",
+      "buff_target": "",
+      "use_buff_level": false,
+      "buff_level_type": 1,
+      "buff_level_list": ""
+    }
+  },
+  {
+    "function": "_M.n0k2_ApplySkillAction",
+    "source_line": 3821,
+    "source_end_line": 3859,
+    "data": {
+      "node_name": "n0k2_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0k_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 2,
+      "skill_type": 0,
+      "skill_slot": 90021646,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 46,
+      "action_flow_time": 85.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0l_CBTAlwaysSequenceNode",
+    "source_line": 3861,
+    "source_end_line": 3873,
+    "data": {
+      "node_name": "n0l_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 47,
+      "child_num": 1,
+      "child_name_list": [
+        "n0l0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0l0_ApplySkillAction",
+    "source_line": 3875,
+    "source_end_line": 3913,
+    "data": {
+      "node_name": "n0l0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0l_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021647,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 48,
+      "action_flow_time": 65.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0m_CBTAlwaysSequenceNode",
+    "source_line": 3915,
+    "source_end_line": 3927,
+    "data": {
+      "node_name": "n0m_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 48,
+      "child_num": 1,
+      "child_name_list": [
+        "n0m0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0m0_ApplySkillAction",
+    "source_line": 3929,
+    "source_end_line": 3967,
+    "data": {
+      "node_name": "n0m0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0m_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021648,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 49,
+      "action_flow_time": 50.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0n_CBTAlwaysSequenceNode",
+    "source_line": 3969,
+    "source_end_line": 3982,
+    "data": {
+      "node_name": "n0n_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 49,
+      "child_num": 2,
+      "child_name_list": [
+        "n0n0_UpdateBlackboard",
+        "n0n1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0n0_UpdateBlackboard",
+    "source_line": 3984,
+    "source_end_line": 3998,
+    "data": {
+      "node_name": "n0n0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0n_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0n1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0n1_ApplySkillAction",
+    "source_line": 4000,
+    "source_end_line": 4038,
+    "data": {
+      "node_name": "n0n1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0n_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021649,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 50,
+      "action_flow_time": 65.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0o_CBTAlwaysSequenceNode",
+    "source_line": 4040,
+    "source_end_line": 4053,
+    "data": {
+      "node_name": "n0o_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 50,
+      "child_num": 2,
+      "child_name_list": [
+        "n0o0_NotNode",
+        "n0o1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0o0_NotNode",
+    "source_line": 4055,
+    "source_end_line": 4069,
+    "data": {
+      "node_name": "n0o0_NotNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.NotNode"
+      },
+      "parent_node_name": "n0o_CBTAlwaysSequenceNode",
+      "cls_name": "NotNode",
+      "fast_node": "n0o1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n0o00_CheckObstacle"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0o00_CheckObstacle",
+    "source_line": 4071,
+    "source_end_line": 4089,
+    "data": {
+      "node_name": "n0o00_CheckObstacle",
+      "cls": {
+        "lua": "AINodes.CheckObstacle"
+      },
+      "parent_node_name": "n0o0_NotNode",
+      "cls_name": "CheckObstacle",
+      "idx_in_parent": 0,
+      "bb_target": "_T1",
+      "direction": 3,
+      "target_bone_name": "Bip001 Spine1",
+      "target_ent_bone_name": "Scene Root",
+      "distance": 5.0,
+      "collision_type": 39,
+      "ignore_self": true,
+      "draw_line_flag": false,
+      "use_sweep": false,
+      "use_target_ent": false
+    }
+  },
+  {
+    "function": "_M.n0o1_ApplySkillAction",
+    "source_line": 4091,
+    "source_end_line": 4129,
+    "data": {
+      "node_name": "n0o1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0o_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021650,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 51,
+      "action_flow_time": 65.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0p_CBTAlwaysSequenceNode",
+    "source_line": 4131,
+    "source_end_line": 4143,
+    "data": {
+      "node_name": "n0p_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 51,
+      "child_num": 1,
+      "child_name_list": [
+        "n0p0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0p0_ApplySkillAction",
+    "source_line": 4145,
+    "source_end_line": 4183,
+    "data": {
+      "node_name": "n0p0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0p_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021651,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 52,
+      "action_flow_time": 50.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0q_CBTAlwaysSequenceNode",
+    "source_line": 4185,
+    "source_end_line": 4197,
+    "data": {
+      "node_name": "n0q_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 52,
+      "child_num": 1,
+      "child_name_list": [
+        "n0q0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0q0_ApplySkillAction",
+    "source_line": 4199,
+    "source_end_line": 4237,
+    "data": {
+      "node_name": "n0q0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0q_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021652,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 53,
+      "action_flow_time": 55.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0r_CBTAlwaysSequenceNode",
+    "source_line": 4239,
+    "source_end_line": 4251,
+    "data": {
+      "node_name": "n0r_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 53,
+      "child_num": 1,
+      "child_name_list": [
+        "n0r0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0r0_ApplySkillAction",
+    "source_line": 4253,
+    "source_end_line": 4291,
+    "data": {
+      "node_name": "n0r0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0r_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021653,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 54,
+      "action_flow_time": 55.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0s_CBTAlwaysSequenceNode",
+    "source_line": 4293,
+    "source_end_line": 4305,
+    "data": {
+      "node_name": "n0s_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 54,
+      "child_num": 1,
+      "child_name_list": [
+        "n0s0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0s0_ApplySkillAction",
+    "source_line": 4307,
+    "source_end_line": 4345,
+    "data": {
+      "node_name": "n0s0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0s_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021654,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 55,
+      "action_flow_time": 60.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0t_CBTAlwaysSequenceNode",
+    "source_line": 4347,
+    "source_end_line": 4359,
+    "data": {
+      "node_name": "n0t_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 55,
+      "child_num": 1,
+      "child_name_list": [
+        "n0t0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0t0_ApplySkillAction",
+    "source_line": 4361,
+    "source_end_line": 4399,
+    "data": {
+      "node_name": "n0t0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0t_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021655,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 56,
+      "action_flow_time": 45.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0u_CBTAlwaysSequenceNode",
+    "source_line": 4401,
+    "source_end_line": 4413,
+    "data": {
+      "node_name": "n0u_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 56,
+      "child_num": 1,
+      "child_name_list": [
+        "n0u0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0u0_ApplySkillAction",
+    "source_line": 4415,
+    "source_end_line": 4453,
+    "data": {
+      "node_name": "n0u0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0u_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021656,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 57,
+      "action_flow_time": 50.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0v_CBTAlwaysSequenceNode",
+    "source_line": 4455,
+    "source_end_line": 4467,
+    "data": {
+      "node_name": "n0v_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 57,
+      "child_num": 1,
+      "child_name_list": [
+        "n0v0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0v0_ApplySkillAction",
+    "source_line": 4469,
+    "source_end_line": 4507,
+    "data": {
+      "node_name": "n0v0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0v_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021657,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 58,
+      "action_flow_time": 40.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0w_CBTAlwaysSequenceNode",
+    "source_line": 4509,
+    "source_end_line": 4522,
+    "data": {
+      "node_name": "n0w_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 58,
+      "child_num": 2,
+      "child_name_list": [
+        "n0w0_UpdateBlackboard",
+        "n0w1_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0w0_UpdateBlackboard",
+    "source_line": 4524,
+    "source_end_line": 4538,
+    "data": {
+      "node_name": "n0w0_UpdateBlackboard",
+      "cls": {
+        "lua": "AINodes.UpdateBlackboard"
+      },
+      "parent_node_name": "n0w_CBTAlwaysSequenceNode",
+      "cls_name": "UpdateBlackboard",
+      "fast_node": "n0w1_ApplySkillAction",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "attack_count",
+      "operator": "+",
+      "value_type": 1,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0w1_ApplySkillAction",
+    "source_line": 4540,
+    "source_end_line": 4578,
+    "data": {
+      "node_name": "n0w1_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0w_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 1,
+      "skill_type": 0,
+      "skill_slot": 90021658,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": true,
+      "action_flow_multi": false,
+      "action_flow_key": 59,
+      "action_flow_time": 55.0,
+      "action_flow_value": 1,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  },
+  {
+    "function": "_M.n0x_CBTAlwaysSequenceNode",
+    "source_line": 4580,
+    "source_end_line": 4592,
+    "data": {
+      "node_name": "n0x_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0_CBTSwitchCaseNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 59,
+      "child_num": 1,
+      "child_name_list": [
+        "n0x0_ApplySkillAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0x0_ApplySkillAction",
+    "source_line": 4594,
+    "source_end_line": 4632,
+    "data": {
+      "node_name": "n0x0_ApplySkillAction",
+      "cls": {
+        "lua": "AINodes.ApplySkillAction"
+      },
+      "parent_node_name": "n0x_CBTAlwaysSequenceNode",
+      "cls_name": "ApplySkillAction",
+      "idx_in_parent": 0,
+      "skill_type": 0,
+      "skill_slot": 90021645,
+      "skill_slot_bb_key": "",
+      "check_target": true,
+      "important_skill_log": false,
+      "spec_target": false,
+      "target_bb_key": "_T1",
+      "target_bone_name": "Bip001 Head",
+      "enable_physics": true,
+      "check_skill_cd": false,
+      "check_skill_resource": false,
+      "timer_key_type": 4,
+      "timer_key_list": "list()",
+      "timer_duration_list": "list()",
+      "blackboard_key_list": "list()",
+      "is_check_distance": false,
+      "check_distance": -1.0,
+      "can_gd": false,
+      "limit_can_gd_skill_state": 1,
+      "write_skill_id_to_bb": false,
+      "end_skill_on_cancel": true,
+      "action_flow_modify": false,
+      "action_flow_multi": false,
+      "action_flow_key": 46,
+      "action_flow_time": 85.0,
+      "action_flow_value": 0,
+      "action_flow_key_list": "list()",
+      "action_flow_time_list": "list()",
+      "action_flow_value_list": "list()",
+      "use_qishu_slot": false
+    }
+  }
+]

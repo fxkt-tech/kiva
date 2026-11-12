@@ -138,6 +138,9 @@ impl MeleeChain {
 pub struct Combatant {
     pub(super) pair: WeaponPair,
     pub(super) target: Option<Entity>,
+    /// Whether an empty target is filled with the nearest visible enemy.
+    /// On by default; the lock toggle switches it with the lock.
+    pub(super) auto_target: bool,
     pub(super) attack_cooldown: f32,
     pub(super) melee_cooldown: f32,
     pub(super) ranged_cooldown: f32,
@@ -157,6 +160,7 @@ impl Combatant {
         Self {
             pair,
             target: None,
+            auto_target: true,
             attack_cooldown: 0.0,
             melee_cooldown: 0.0,
             ranged_cooldown: 0.0,
@@ -176,6 +180,16 @@ impl Combatant {
     }
     pub fn target(&self) -> Option<Entity> {
         self.target
+    }
+    /// Whether targeting is automatic. Unlocking turns it off, locking again
+    /// turns it back on.
+    pub fn auto_target(&self) -> bool {
+        self.auto_target
+    }
+    /// The same combatant with targeting left to the lock toggle alone.
+    pub fn without_auto_target(mut self) -> Self {
+        self.auto_target = false;
+        self
     }
     pub fn melee_cooldown(&self) -> f32 {
         self.melee_cooldown

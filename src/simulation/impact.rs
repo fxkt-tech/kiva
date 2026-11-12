@@ -68,6 +68,7 @@ mod tests {
         app.add_plugins((MinimalPlugins, SimulationPlugin));
         app.finish();
         gameplay::setup(app.world_mut());
+        gameplay::manual_targeting(app.world_mut());
         tick(&mut app, 12);
         let player = app
             .world_mut()

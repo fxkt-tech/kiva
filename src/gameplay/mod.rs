@@ -31,6 +31,20 @@ impl EnemyMode {
 }
 
 /// Replace only the enemy roster. This also works while the simulation is paused.
+/// Test fixtures which exercise the lock toggle start from manual targeting.
+#[cfg(test)]
+pub(crate) fn manual_targeting(world: &mut World) {
+    let players: Vec<_> = world
+        .query_filtered::<Entity, With<Player>>()
+        .iter(world)
+        .collect();
+    for player in players {
+        let mut entity = world.entity_mut(player);
+        let combat = entity.take::<Combatant>().expect("a player fights");
+        entity.insert(combat.without_auto_target());
+    }
+}
+
 pub fn set_enemy_mode(world: &mut World, mode: EnemyMode) {
     if world.get_resource::<EnemyMode>() == Some(&mode) {
         return;
@@ -455,11 +469,11 @@ mod tests {
                         && matches!(event.kind, CombatEffect::EnemyWindup | CombatEffect::Melee)
                 })
         );
-        app.world_mut()
-            .get_mut::<CombatIntent>(player)
-            .unwrap()
-            .request_toggle_target();
-        tick(&mut app, 1);
+        // The shipped player targets automatically: the dummy is already locked.
+        assert_eq!(
+            app.world().get::<Combatant>(player).unwrap().target(),
+            Some(dummy)
+        );
         app.world_mut()
             .get_mut::<CombatIntent>(player)
             .unwrap()

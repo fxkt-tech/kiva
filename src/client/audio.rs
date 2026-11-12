@@ -366,6 +366,7 @@ mod tests {
         app.add_plugins((MinimalPlugins, SimulationPlugin));
         app.finish();
         crate::gameplay::setup(app.world_mut());
+        crate::gameplay::manual_targeting(app.world_mut());
         let player = app
             .world_mut()
             .query_filtered::<Entity, With<Player>>()
@@ -488,6 +489,7 @@ mod tests {
             app.add_plugins((MinimalPlugins, SimulationPlugin));
             app.finish();
             crate::gameplay::setup(app.world_mut());
+            crate::gameplay::manual_targeting(app.world_mut());
             let player = app
                 .world_mut()
                 .query_filtered::<Entity, With<Player>>()
@@ -882,6 +884,7 @@ mod tests {
             .add_systems(Update, sample);
         app.finish();
         crate::gameplay::setup(app.world_mut());
+        crate::gameplay::manual_targeting(app.world_mut());
         let window = app
             .world_mut()
             .spawn((Window::default(), CursorOptions::default(), PrimaryWindow))
@@ -1219,6 +1222,7 @@ mod tests {
         app.add_plugins((MinimalPlugins, SimulationPlugin));
         app.finish();
         crate::gameplay::setup(app.world_mut());
+        crate::gameplay::manual_targeting(app.world_mut());
         let player = app
             .world_mut()
             .query_filtered::<Entity, With<Player>>()

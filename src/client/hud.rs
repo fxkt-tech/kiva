@@ -301,7 +301,7 @@ mod tests {
     fn durability_is_sent_in_the_page_slot_order_of_each_pair() {
         let mut world = World::new();
         let player = world
-            .spawn(Combatant::new(crate::simulation::WeaponPair::default()))
+            .spawn(Combatant::new(crate::simulation::WeaponPair::default()).without_auto_target())
             .id();
         let arsenal = world.get::<Arsenal>(player).unwrap();
         let values = durability_by_hud_index(arsenal);
@@ -329,6 +329,7 @@ mod tests {
         app.add_plugins((MinimalPlugins, SimulationPlugin));
         app.finish();
         gameplay::setup(app.world_mut());
+        gameplay::manual_targeting(app.world_mut());
         tick(&mut app, 12);
         let player = app
             .world_mut()

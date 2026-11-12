@@ -27,7 +27,7 @@
 ## Contracts
 
 输入在 `BeforeFixedMainLoop` 采样，W/S 沿视角前后、A/D 横移；斜向归一化。
-鼠标右移令 yaw 减小；0.0025 rad/CSSpx，不乘 dt，不重复除 DPR。垂直移动不改变镜头俯角。
+鼠标右移令 yaw 减小；0.0025 rad/CSSpx，不乘 dt，不重复除 DPR。垂直移动不改变镜头俯角。锁定目标时 yaw 由 controls 转向目标（镜头因此绕目标转，见 [input.md](input.md)），不读鼠标。
 具体桥签名、位掩码、有序右键及原生事件规则见 [输入契约](input.md)。
 scene 根据 Body 的三维脚底前后快照和 fixed overstep 插值，camera 读取同一 PlayerView 位置。
 物理根与显示根独立，客户端不写物理实体的 Transform / Position。

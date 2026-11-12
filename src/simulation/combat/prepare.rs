@@ -259,8 +259,12 @@ fn switch_pair(combat: &mut Combatant, pair: WeaponPair) {
     combat.status = CombatStatus::PairSwitched;
 }
 
-/// Drop a target which can no longer be attacked, then apply a lock toggle:
-/// unlock, or pick the visible enemy best aligned with the actor's facing.
+/// Drop a target which can no longer be attacked, then apply a lock toggle
+/// and automatic targeting. Locked, the toggle unlocks and stops automatic
+/// targeting; unlocked, it locks onto the visible enemy best aligned with the
+/// actor's facing and resumes automatic targeting. While automatic, an empty
+/// target is filled with the nearest visible enemy, so a defeated or lost
+/// target is replaced by the next one.
 fn update_target(
     combat: &mut Combatant,
     toggle: bool,
@@ -276,33 +280,49 @@ fn update_target(
     }) {
         combat.target = None;
     }
-    if !toggle {
-        return;
+    if toggle {
+        if combat.target.is_some() {
+            combat.target = None;
+            combat.auto_target = false;
+            return;
+        }
+        combat.auto_target = true;
+        combat.target = pick_target(actor, world, enemies, |offset| {
+            let align = facing.dot(offset.normalize_or_zero());
+            (align > LOCK_ALIGNMENT).then_some(align - offset.length() * 0.01)
+        });
     }
+    if combat.auto_target && combat.target.is_none() {
+        combat.target = pick_target(actor, world, enemies, |offset| Some(-offset.length()));
+    }
+}
+
+/// The visible, attackable enemy within lock range which `score` rates
+/// highest from the actor's planar offset to it; `None` scores are excluded.
+fn pick_target(
+    actor: &Actor,
+    world: &CombatWorld,
+    enemies: &Candidates,
+    score: impl Fn(Vec2) -> Option<f32>,
+) -> Option<Entity> {
     let (entity, body) = (actor.entity, actor.body);
-    combat.target = if combat.target.is_some() {
-        None
-    } else {
-        enemies
-            .iter()
-            .filter(|(_, b, _, h, _, boss)| {
-                target_valid(h, *boss)
-                    && b.world_position().distance(body.world_position()) <= LOCK_RANGE
-            })
-            .filter(|(e, b, _, _, _, _)| {
-                world.visible(body.aim_position(), b.aim_position(), entity, *e)
-            })
-            .filter_map(|(e, b, _, _, _, _)| {
-                let offset = (b.world_position() - body.world_position()).xz();
-                let align = facing.dot(offset.normalize_or_zero());
-                (align > LOCK_ALIGNMENT).then_some((e, align - offset.length() * 0.01))
-            })
-            .max_by(|a, b| {
-                a.1.total_cmp(&b.1)
-                    .then_with(|| b.0.to_bits().cmp(&a.0.to_bits()))
-            })
-            .map(|(e, _)| e)
-    };
+    enemies
+        .iter()
+        .filter(|(_, b, _, h, _, boss)| {
+            target_valid(h, *boss)
+                && b.world_position().distance(body.world_position()) <= LOCK_RANGE
+        })
+        .filter(|(e, b, _, _, _, _)| {
+            world.visible(body.aim_position(), b.aim_position(), entity, *e)
+        })
+        .filter_map(|(e, b, _, _, _, _)| {
+            score((b.world_position() - body.world_position()).xz()).map(|score| (e, score))
+        })
+        .max_by(|a, b| {
+            a.1.total_cmp(&b.1)
+                .then_with(|| b.0.to_bits().cmp(&a.0.to_bits()))
+        })
+        .map(|(e, _)| e)
 }
 
 fn tick_combo_window(combat: &mut Combatant, enemies: &Candidates, dt: f32) {

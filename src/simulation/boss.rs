@@ -664,7 +664,7 @@ mod tests {
                 MotionState::default(),
                 Facing::default(),
                 Health::new(10_000.0),
-                Combatant::new(WeaponPair::HammerMusket),
+                Combatant::new(WeaponPair::HammerMusket).without_auto_target(),
                 CombatIntent::default(),
                 SpawnPoint(Vec2::ZERO),
             ))

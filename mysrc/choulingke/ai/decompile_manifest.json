@@ -1,0 +1,1032 @@
+{
+  "source_url": "https://github.com/Jeong-Min-Cho/unluac",
+  "source_commit": "744c8149d93f7739f17b7f0f506822fb93ba7193",
+  "patch_sha256": "8740dd40b8aefa20bdeab6c19836bef10c3e52d324662758ff0e6550ada24ae5",
+  "patch_reason": "NEWDICT/NEWDICTPROXY omit EXTRAARG when k=0. Accept omitted array capacity extension without changing instructions, jump offsets, constants or debug data.",
+  "license": "/home/asuka/kiva-asset-research/choulingke/tools/ai/unluac-source/license.txt",
+  "never_executed_game_bytecode": true,
+  "results": [
+    {
+      "source": "hexm/common/AI/nodes/composite_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 3198,
+      "sha256": "86216474ef350f1dbf7e4fd391581420f03c5b938a6c5ca323beb99719bc5ec1"
+    },
+    {
+      "source": "hexm/common/AI/nodes/composite_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 1,
+      "bytes": 5310,
+      "sha256": "2b08c2e38c81bbf5d7bf6ded2a6197b514765a3a8f5d2fcd27392f83c6ea5015"
+    },
+    {
+      "source": "hexm/common/AI/nodes/composite_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 121247,
+      "sha256": "46d3a3de6420c25699f8734aeb8984df51d28107b8fbff4795f7249e9114b703"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_xg_die.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 5301,
+      "sha256": "b0a6758d918bdd9871ce02f8390aeee0806c43e4bd1a18047bf8c4747db9435f"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_xg_die.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 24909,
+      "sha256": "0575273bd5a13ac9c9861ff98564564de56d4728dc4dc6dfbfa152cc7fd0c8eb"
+    },
+    {
+      "source": "hexm/common/base/npc_wanfa/modules/boss_clk_p1_common.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 504,
+      "sha256": "ed71dfdfcd82706c147762609aa6b4576281280e93019b97ad2a603912979483"
+    },
+    {
+      "source": "hexm/common/base/npc_wanfa/modules/boss_clk_p1_common.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 2915,
+      "sha256": "68ede0befaa1e2d21952a94bed5827fb3973fd902df50ea01542a322ec0fe34b"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_line_cut_client.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 1388,
+      "sha256": "c1fe3cc19798b8701ba0130b3ba48a64b4eccd115802c31e00a657c4263562a8"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_line_cut_client.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 6402,
+      "sha256": "789e0361d6474f2eb6493caaf06da9d6bf160c65038be6b5b5baf418a4dd6f52"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/action_flow.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 4712,
+      "sha256": "a3cbaba677dfce5469c68e096fe4edc00518586e8bf29b2938360c8e84dcf503"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/action_flow.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 21419,
+      "sha256": "08db94061dfaf6bc4af4338772f2a9a21e374c3f393e09bf24de38f52507f6ad"
+    },
+    {
+      "source": "hexm/client/ui/windows/fuben/boss/extra_blood/controllers/choulingke_neili_controller.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 10614,
+      "sha256": "fc664c0005b2fa5968187a4f98cfeb2d2041143ee5324a45cc0ce52d7b07e36d"
+    },
+    {
+      "source": "hexm/client/ui/windows/fuben/boss/extra_blood/controllers/choulingke_neili_controller.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 46555,
+      "sha256": "d92345065382073e4772dbcdbc38a86d34f36160ecac0f14a900be031682a8e9"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_routi_ctrl.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 16371,
+      "sha256": "2be41a2f15fbb061cdf145015345c4a36e06d0e550b457b99f43cec9fbf30d60"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_routi_ctrl.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 70251,
+      "sha256": "10d228ab5d9e7eb3868e617690485ae520e6efff202f69d814876ecc61224428"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/wanfa/zujian/lgj/jn_clk_weather_2.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 7083,
+      "sha256": "a0108129a10d9865285ab4ec89db65187d83991b603351d6d33421d9ea093418"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/wanfa/zujian/lgj/jn_clk_weather_2.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 28711,
+      "sha256": "3cddfbbdf2875508398a3bd7b7a2171132d2c5ec6e454dc75d296c02c441bc5d"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/base_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 5383,
+      "sha256": "9595906314a493468959991da3baeb462829aad87ae342fea69b7ccafe2f975e"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/base_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 35881,
+      "sha256": "b30e85e27abc2b5d098af131bdbac9a7e6c375377f03278b255a02bdca5326f4"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/base_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 89767,
+      "sha256": "4b46d7991a71bb8a078e13f4b69c230a616d2f85d4eba7d407a41b6c158c256d"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000031_CLK_P2_ComboCondition.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 42237,
+      "sha256": "8c515f779b8b3b2d5bc95036a0dadba3c2534d0eda2c05f4ee8c8466b9c7bb26"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000031_CLK_P2_ComboCondition.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 192724,
+      "sha256": "77c691f704f0408925dfe13142c01c493b29b50cec6f5f0182cf745917e9def3"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_soul_wander_client.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 1783,
+      "sha256": "5bb0081c08bd177840f4e5dcc1ea4baec88e829a85340cd7342cc86f0c61e813"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_soul_wander_client.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 26861,
+      "sha256": "42e2c191c29b2d7fffe4413603ad9da7976dc8a65331d20c28a36dda65428112"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_soul_wander_client.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 64505,
+      "sha256": "9dfabded950b9389321e7412b09b9b60f5e32ace249fa8be3736ab1c82d20b53"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/sub_btree_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/sub_btree_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 1,
+      "bytes": 11546,
+      "sha256": "8bcc0384ba9f605cbbd62a992dbbfd1663e5aa6884d1b10449c7bbafec0e64e1"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/sub_btree_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 40573,
+      "sha256": "4ea4c21172f6723d66a3cbb89e6eb574593c3629d31dd42be43089a4dce3c0b1"
+    },
+    {
+      "source": "hexm/client/ui/windows/fuben/boss/extra_blood/controllers/choulingke_dual_blood_controller.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 5453,
+      "sha256": "abc09b4915434efad372ed9a8c7d52e3f766b29fd714a1e6562589e7f734391b"
+    },
+    {
+      "source": "hexm/client/ui/windows/fuben/boss/extra_blood/controllers/choulingke_dual_blood_controller.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 43730,
+      "sha256": "b6e4c8622e9eb40fa2fa6937a5861c6d9ce3a0caa674881ef4e100558af21a34"
+    },
+    {
+      "source": "hexm/client/ui/windows/fuben/boss/extra_blood/controllers/choulingke_dual_blood_controller.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 103922,
+      "sha256": "5f23c177056cba8ceb86cc6de7fc3cfc2ec034f50713b6f3f8468fbe6daf73ec"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_larenxiaogui.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 30329,
+      "sha256": "fa34b1776fb169ba4ef51cba1200052f20b2cd71c3e2d145b1f732ee8f7db7b5"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_larenxiaogui.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 129801,
+      "sha256": "7e5ec14466cffe61850ed28339289ecb93ea6be4124323f3f04530e70f91b066"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_fight_P1.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 17254,
+      "sha256": "0183ed9a41873acba479d8e99aeb2b01ba71cc37fa7e48fb210c02f523a5985b"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_fight_P1.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 75955,
+      "sha256": "200c070f000162cb63253400b595b32311d457fa12df1b8e6acf20e0fbcccefe"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/common_idle_clk_zhuzi_1.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 4512,
+      "sha256": "94c9df22d121185bf799aa0ca291f7b80c42fc7a73e0cf938a39728d135b2ceb"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/common_idle_clk_zhuzi_1.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 19680,
+      "sha256": "e949490490b28e282e311d1fb4bb163498fec3f63308fe6d5f9a958b7a9d6bad"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_weak.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 10778,
+      "sha256": "5e9ea7e5c260dc977fc01fd24b74be8f7aa3a794646da77d398b2d08736b2a0f"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_weak.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 47250,
+      "sha256": "4391177fa005491e3e5928fe1568764a51e0cd0e9356808e7c840e8461042cbc"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_clk_test_action_group.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 1965,
+      "sha256": "a2af07b3a5b4097777a8612acc5fdfd7af2eb350ed8ca243f3d8a7053372a11b"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_clk_test_action_group.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 9930,
+      "sha256": "0ffc97eb19e14f41a6cfeca25c83d02e0f81672a82af6c4f90158d1acd924a1f"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_clk_p1_client.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 3043,
+      "sha256": "22454cfd942606c5666772c376d6dacc39bf77dc0e5c564b4c97b87bcf187886"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_clk_p1_client.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 15803,
+      "sha256": "66ab0185821c3bd7f30c05e6235a8d2505e4f17b70b949c026854f0e511fcc51"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/combat_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 1299,
+      "sha256": "f42196522e0e428b4a4549a2101f233b2dd8a6873f0fcda4460389f1b50e27d1"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/combat_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 225818,
+      "sha256": "2b589ccf49d38d45ba4430de5683238840ea7e54710c2766d2b8b0928537c9f5"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/combat_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 546173,
+      "sha256": "13eb1a9e503517609e710e2ecb5e703ae6fa1e41c2c23157caade248d09d326c"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_shadow_2.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 7216,
+      "sha256": "4d8a0d244e871bcf7da30a16b351c58322690a336e38f00d090a62bdba613640"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_shadow_2.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 29915,
+      "sha256": "a8358bbb520a55c63b39d1dd99093d867ea912754a0b908a59d4c16884a3bae6"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/fight_anim_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 11168,
+      "sha256": "c4b49f23fb2cd2e2add880da703e5da74073f82f89d84106f0ecb6130f15758c"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/fight_anim_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 1,
+      "bytes": 21178,
+      "sha256": "215f01443f1dde2e965d90e61d4473869b48c30b878666cac0999518e1ef46ef"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/fight_anim_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 346475,
+      "sha256": "ddb1c4c9380a3ea1e230493814dfba1656cc7a954598de7e65f9e11996e08832"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_hunling.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 45850,
+      "sha256": "15f02651cf299e1b619583aa73ccd923ecb19d37a7487be633c3b4dba8d319f5"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_hunling.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 189143,
+      "sha256": "29004841e1e694d54bf79b5adaa2e693a6d692521fc17288600417c44a1dacdc"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/ylk_P1_sp.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 25699,
+      "sha256": "cdcff382e7dcc21fe5f6298a9e8cd92dae051ba12d8beac1ac1854c227fb5ada"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/ylk_P1_sp.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 106422,
+      "sha256": "42d5372c2f1959dada6ddac0e2ac02a94169b1b35c5f2e0c59c265635b122a9c"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_P1_ComboCondition.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 47353,
+      "sha256": "d4d737b30108df64ff294c42bf10e80655ea8c82b64995a071694af4b3d76fe0"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_P1_ComboCondition.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 216810,
+      "sha256": "e29660b3a2f70df4c29be736bdcf17dacf2d40197ebf4b9fab13501e198995a7"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_neili_choulingke_duoren_view.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 5387,
+      "sha256": "e33757d977a927767afa3df9dd9b0a612757ba154f6aba47438639034aaf7ab7"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_neili_choulingke_duoren_view.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 24417,
+      "sha256": "00751dc2ddd74dc576f1c1a8c90c658adf9241ad19f62919af5e09bb5303169e"
+    },
+    {
+      "source": "hexm/common/base/npc_wanfa/misc/boss_dr_clk_misc.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 1221,
+      "sha256": "612aaa64b9efa611e49e95bb8eb040a198969a3871cb09e9ed37dcf8dcb02b81"
+    },
+    {
+      "source": "hexm/common/base/npc_wanfa/misc/boss_dr_clk_misc.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 2519,
+      "sha256": "28505bb38e101fa66e18a18f6e24767abfbc1d964b78eea5b5ad2164dff2ccd8"
+    },
+    {
+      "source": "hexm/common/base/npc_wanfa/misc/boss_dr_clk_misc.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 7524,
+      "sha256": "924ee4a7d4d5f1edf2015987fb136759bc7de0d14536f89264d13f7bd082d54a"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_behit.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 10041,
+      "sha256": "b0f6ab523e4aec58fc19e9c02248aa0802ec29ac32888716ece6970a137f3c3e"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_behit.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 45747,
+      "sha256": "47168c00794f4e5f7202b7bca908541ff213bfb03521b7dd538f36a971c85779"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_die.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 5733,
+      "sha256": "538c784a20b74d9628e5a5dd01567bd12f108d9725c536130c49969765da17b6"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_die.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 24994,
+      "sha256": "bc261b6cd11ed3888563985f6e90b830feaeb68af6daae4fba723fe609ee54b5"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_zhuijizibaoxiaogui.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 28592,
+      "sha256": "7958a1f91e07ecadfd7056731eae5e19558ef35664354b582d85ffdda069f8a8"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_zhuijizibaoxiaogui.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 116859,
+      "sha256": "94371a89e2c1191289a75764f8a0c64179d3d6cb3e6228d471fa3ab3a40ea3cf"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/guanqia/jn_boss/clk_p1_fight.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 49092,
+      "sha256": "e24ffefb00ec73c9dc5299ebc4235381b162d452b8bf0c754fdb4a1d6d99fb6b"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/guanqia/jn_boss/clk_p1_fight.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 186738,
+      "sha256": "fc3bd87d5f044cf4b9185b17910f6e556a328701e1c9632992c40d926aa7d818"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_shadow_1.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 20253,
+      "sha256": "e452818f4b6bcd76ab5829c245565e0f4de4a7b968b8fa9bdf386927241a004f"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_shadow_1.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 80623,
+      "sha256": "aa3082dd6dc9c74f1d3d8a2d551623ff2b4a33aec5384baa7e32cb2e0471d1b6"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_shadow_3.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 7216,
+      "sha256": "f63077c2864adce5880608854486168ec8b93f2b7096f9605b61a2aa24964c65"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/clk_shadow_3.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 29915,
+      "sha256": "0328ae1623d6bceb05dfeb3c8214f615be6970b7e98340577b8469f34282ef73"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_my_blood_choulingke_dao_view.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 4475,
+      "sha256": "2b1cde9941811050510b9ae061fe0f7e4bca47b8565841b3b5a3b532e651df7c"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_my_blood_choulingke_dao_view.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 21529,
+      "sha256": "106c8089bf04830987f940e947813fdcff00030fe62569cab75d7bcfd85484bf"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_tug_client.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 1175,
+      "sha256": "d70efb11d9436da88f61faa81cb112c8c766c418cdc7a7fd7f455e6e1c4187b2"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_tug_client.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 28694,
+      "sha256": "86cbf00aa1bdf59cad95bf8d956b17ec671fe5b95583da067612893ce144ab3d"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_tug_client.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 62220,
+      "sha256": "4cea7bdfe655aee82efe19c45e5448b94af68a75b49b557fce3503be285ed158"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/wanfa/zujian/lgj/jn_clk_weather_1.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 2527,
+      "sha256": "ca1ff2b97949365544765ad40ae6e6c763d3dcd0224da95b2ad67538e62f0473"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/wanfa/zujian/lgj/jn_clk_weather_1.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 11041,
+      "sha256": "b9183e974e3fca62d293d1061918002f58afac18f4cb34b2b6d03f23182b568b"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_chenshangling.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 3745,
+      "sha256": "3b114545decb26adb3c98188b88ab40bc9a93ef908fc7384003ebc5b6ef0ce06"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_CLK_chenshangling.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 15742,
+      "sha256": "ed14167a7760bfec689d92cd7d20d10eb6ae10c3724cf3b9ea9297f9515185fb"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_clk_client.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 504,
+      "sha256": "c464a04fb0532ad4935bc26e3240a2b3938e7f3df2b31b690c50a9272beadaa3"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_clk_client.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 2517,
+      "sha256": "e543a6848c742bc17ed4fe28292d3f87d9c40ecd35c7da1a23744e3df842d02d"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_clk_client.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 7104,
+      "sha256": "7f9dcda641109c31b3cb536d9da3f58edc743883ee9a50c12c970c45f58aff6b"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_choulingke_view.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 3737,
+      "sha256": "7f8314cf4b5565e1a4213ca15449a4fbc6f5767eef2324713461b748883618bc"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_choulingke_view.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 17672,
+      "sha256": "89a74241a13d713588bb8d0af01b3d5302bab2ae9641a8465f19e3dacd3c5a7c"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/common_idle_clk_zhuzi_2.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 4512,
+      "sha256": "80fc9d5bd9fcff56a53b6d127e513eaa7a6459a5f7293e24394855c959bceb02"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/common_idle_clk_zhuzi_2.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 19680,
+      "sha256": "b330bdc252ebc73bada94b02620123562c29ef0ad491fc641f6e5e369bf9a5bf"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_pc_choulingke_view.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 28325,
+      "sha256": "cbbf6b99e6a71a59b33e75aba59836d52da69aea2fa19dc5ad9cadd95b50bdbf"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_pc_choulingke_view.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 164015,
+      "sha256": "376836a7dbc815e51a07f20d9611271be0da1adfca75f2e1f1141e97f0499381"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_neili_choulingke_view.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 5248,
+      "sha256": "95234178cd3d20dee0851f184113928ac2149f7ac590f71237aaa9459f52e88d"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_neili_choulingke_view.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 24385,
+      "sha256": "142d522d9428a21c23e319030065473b02e999ac9074873a17b8ff3a029b44a0"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/guanqia/jn_boss/clk_p1_fight_end.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 7453,
+      "sha256": "23303cb78560e506de57a648047590cf289739c99f0fe2e0e4d68c17886c94ad"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/guanqia/jn_boss/clk_p1_fight_end.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 30407,
+      "sha256": "ba2fbd034175f5c0c5ad1c620f4d75fbdc42bd242df2917594b411a36d18c940"
+    },
+    {
+      "source": "hexm/client/ui/windows/fuben/boss/extra_blood/controllers/choulingke_blood_controller.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 5770,
+      "sha256": "c9837f9c39868d4c293bab5e88a28bb1e57c3e918d77cd76eb2b304930d7bab7"
+    },
+    {
+      "source": "hexm/client/ui/windows/fuben/boss/extra_blood/controllers/choulingke_blood_controller.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 25035,
+      "sha256": "8af53f270693250b83a6f4c42a69f87905b318df1c0304131fc4387c2ec3722c"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_clk_die_P1.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 3171,
+      "sha256": "1e8e0fa6478ec928a145f5aa9912d9d8143e03ce29d9c46d96b5af750ea76f5f"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_clk_die_P1.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 13333,
+      "sha256": "38a77c9f293c8ea234a345a8cdb0276640b929f71df46f58a55d495535608e19"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/target_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 1812,
+      "sha256": "9f48611e465f4b92b28070af36855a804c61c0fd3225f86105d156c482af242f"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/target_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 1,
+      "bytes": 98951,
+      "sha256": "2d528e3ef9b4fcf0d030ceb41196ff5b997bf1b26ed6c9b630632bfbd23f9b2f"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/target_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 332564,
+      "sha256": "524b6b4aa005752ab6c064c2428db1c77751850fcda52f7c7b9f9ef2d5f716d0"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/wanfa/duoren_boss/dr_clk.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 13512,
+      "sha256": "a736ed5f47942130666c98020d66d5094c9413bf00b51397d74deba25306b5fa"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/wanfa/duoren_boss/dr_clk.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 53350,
+      "sha256": "f720bc70a3be78fb75e932dedf76e12591b2d1b39acc497cbc28c2875fb5eedc"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_fight_dr_clk_specialskill.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 80910,
+      "sha256": "94b7736af45538d30526cb82c25db30b45acec2cc136918388c424d4122e4525"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_fight_dr_clk_specialskill.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 321417,
+      "sha256": "feb165bf6850d16144c668ec83d99a0400f43a6c6120aa0e4e660db8a65c32e2"
+    },
+    {
+      "source": "hexm/common/base/npc_wanfa/modules/boss_clk_common.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 2707,
+      "sha256": "1aa9f05b0a41916eb32c22c4baa8770cfb91a8b6ae9c36d30691aaafb653a25d"
+    },
+    {
+      "source": "hexm/common/base/npc_wanfa/modules/boss_clk_common.lua",
+      "mode": "nodebug",
+      "returncode": 1,
+      "bytes": 10924,
+      "sha256": "9a5fe75162257c5a7f35e5d8c91fc891474a36aeb5052327fffc80393c96df9a"
+    },
+    {
+      "source": "hexm/common/base/npc_wanfa/modules/boss_clk_common.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 40621,
+      "sha256": "9d7859993b8d5f112dea720497941773be9c6e37865ac5b6e37f1cdeefe89bda"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_fight_dr_clk_normal.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 31361,
+      "sha256": "6979f1471c2f51f982a8d6b9c325b0e73e205f59ab5cfb916294a8da531a4e02"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_fight_dr_clk_normal.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 126673,
+      "sha256": "9a32fd79ba008e8b1fd747d9523caef04d8b922df4d1314df386b0b7483ac0a7"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_fight_dr_clk_skill.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 19626,
+      "sha256": "6082d1549142636fc1a397c3eac1673f05ac41a9fed0f660edadd1e524023ff6"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/boss_fight_dr_clk_skill.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 80745,
+      "sha256": "15b1ec1f4398ad1e433db0715ec3c502e51dcd06e9f245d233a7bfc4dad60ceb"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_fight_P1.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 86706,
+      "sha256": "52492deb48565ef269f7713675d36521cdaf2326a087e018c495324a482ebf8a"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_fight_P1.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 410382,
+      "sha256": "fc05c40392948708500ff37f7831f4c6be89f0f8d962111c7defd174fe3be883"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_fight_Action.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 123033,
+      "sha256": "ec7c3924bc8aec8a3f0f5df8401065b473753badc841d2cb8199dff13e45ba33"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000025_CLK_fight_Action.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 479408,
+      "sha256": "412b78e1c1d57db16ef30a8f18a77222bfc11d06dbff0bcfe73cfe7f1fbe8234"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000031_CLK_fight_P2.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 84609,
+      "sha256": "f7df6ed9e2b1889f9d32fafdfeb74f28ebcbf6d857eac04ae64e90c974d601be"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/51000031_CLK_fight_P2.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 388911,
+      "sha256": "3f48755bafe6cc3f9d8fe3b2277ea07fdf1f68c06e2f1353cfa3fe71d904e3ef"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/wanfa/zujian/lgj/jn_clk_stagechange.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 6329,
+      "sha256": "0f01e1c1e576da7082a76f2567f3412d199df8bf3c6c6cd92d8bf04bce7f1465"
+    },
+    {
+      "source": "hexm/client/storyline_data/client/wanfa/zujian/lgj/jn_clk_stagechange.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 26142,
+      "sha256": "4f2ceb1faa774e9c6cc4077f333091dfbd70fd13de775e8c115f1b379b0b5be0"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/check_func_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 5826,
+      "sha256": "9d6603d2a64db5692c4c28f65e49a0fd5e5d8b806a3f83b2617f7801f39d43f1"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/check_func_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 21536,
+      "sha256": "544d7ced7e438615c78cb6e4ab838b0c3b565228dc2d4561070cd3812f6d67f0"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/check_func_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 53986,
+      "sha256": "035c9b21566f6422ea7d70c0be2b944672541af4ec7c8041d6151bda0c7ad796"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/attr_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 1911,
+      "sha256": "0a89f2b06a7e3c5fd051306de4e4fd4b44b0e4c150459f2a52e0f5f1910d552d"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/attr_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 155443,
+      "sha256": "782eaa990a9c004dbaef53a327fb0b113587a10c9990c7d18d8ff6e896dc545f"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/attr_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 370483,
+      "sha256": "e2718d02f5bb42bcbc7b163749e425cd9af28d4f70819b62f4948e80bc7d47cf"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/stage_action.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 1366,
+      "sha256": "db6182a99334bab0521eb9d3543c4435303867b28f9a478041948d996151d947"
+    },
+    {
+      "source": "hexm/common/AI/nodes/common_action_nodes/stage_action.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 6704,
+      "sha256": "ad5c5d55b2a07433fe67ea9cbd3e303e57f0b393b954798d8a516ae0ad1697f6"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_name_bg_choulingke_view.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 4828,
+      "sha256": "5c8c94178d6a4cfafa870e54e3c862a06aa7cd7e7a9f8c48d975f59bf43c2106"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_name_bg_choulingke_view.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 23392,
+      "sha256": "12f07e88b0232028267b46869c40e431da5fd1ae7281e3abc6c263ca20e13a8a"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_client.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 1284,
+      "sha256": "7920b47c7a98f4a787b6c163c712e2dd5fed8832de815ea838718b6fca978744"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_client.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 4737,
+      "sha256": "8979fd8ab625af3ffe258d67308a1b840cd21f2c53a8856521f921af1ee5e790"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_hp_transfer_client.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 2753,
+      "sha256": "1807fb0bd01d3e2bad183ef6d5fc0a54516fe470e19e1f206b3a1c96479ca1ef"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_hp_transfer_client.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 17236,
+      "sha256": "76ca9b01d360fbb4496213545ea0a5e4e1a07b591e7bb649590e4c9aab81b1d5"
+    },
+    {
+      "source": "hexm/client/entities/local/npc_members/wanfa/modules/boss_dr_clk_submodule/boss_dr_clk_hp_transfer_client.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 38649,
+      "sha256": "a01ea11a3e683f2faa370ebb44fc73c35add58e05ab79e9051e5efad85fc7f99"
+    },
+    {
+      "source": "hexm/common/AI/nodes/decorator_node.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 26249,
+      "sha256": "1c2e0eba9cc9b193a63d5146049c244f9fc3e8be789bc82fa0f9ec665b7c5aa0"
+    },
+    {
+      "source": "hexm/common/AI/nodes/decorator_node.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 124653,
+      "sha256": "2b1ce2eff396eb6982fbb7038964927799eb045add6eb5917a42c32a97d34c20"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_choulingke_yukou_view.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 2164,
+      "sha256": "5e08379d8a47e9cad2f70acad6b8fee644810375eec0cfd4d398aa3be3fda1c0"
+    },
+    {
+      "source": "hexm/client/ui/generated_view/home_hud_boss_blood_choulingke_yukou_view.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 8468,
+      "sha256": "7d48f0f250bbe86f50fe11505d1a09ad840d6ffa3ddcef2d7bf2fd13c5f416c8"
+    },
+    {
+      "source": "hexm/common/AI/nodes/ai_nodes.lua",
+      "mode": "decompile",
+      "returncode": 1,
+      "bytes": 5352,
+      "sha256": "5f381213415b5c9866360250a5a0042fad57ef37f1e869bd4d872a7618c2fee0"
+    },
+    {
+      "source": "hexm/common/AI/nodes/ai_nodes.lua",
+      "mode": "nodebug",
+      "returncode": 0,
+      "bytes": 16830,
+      "sha256": "4431797481636352acafd567469a7a243eae6277cbe72627a1159ba6c1fde9b4"
+    },
+    {
+      "source": "hexm/common/AI/nodes/ai_nodes.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 45738,
+      "sha256": "de0956607a8884528892c1677e3dec1db0c76dae7d306b97c135945f1e57e459"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_clk_ai_fight.lua",
+      "mode": "decompile",
+      "returncode": 0,
+      "bytes": 18520,
+      "sha256": "ef52d69ec5166cc7209debde46fe2447c09a3e1553369ea9b395bc84baa8059a"
+    },
+    {
+      "source": "Sunshine/AI/bt2code/output/dr_clk_ai_fight.lua",
+      "mode": "disassemble",
+      "returncode": 0,
+      "bytes": 86880,
+      "sha256": "3dba00f06c5ee7ddca8ecfefd53139ebc0f3c496f8bb52f956c49c467bd19a20"
+    }
+  ]
+}

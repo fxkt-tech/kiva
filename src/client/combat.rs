@@ -507,7 +507,14 @@ mod tests {
             .init_resource::<AnimationLibrary>()
             .add_systems(
                 Startup,
-                (crate::gameplay::setup, scene::setup, setup, camera::setup).chain(),
+                (
+                    crate::gameplay::setup,
+                    crate::gameplay::manual_targeting,
+                    scene::setup,
+                    setup,
+                    camera::setup,
+                )
+                    .chain(),
             )
             .add_systems(
                 Update,

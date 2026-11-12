@@ -2,8 +2,8 @@
 use crate::{
     gameplay::Player,
     simulation::{
-        ActionIntent, Body, CombatIntent, Combatant, DefenseEdge, DefenseState, Facing, MoveIntent,
-        SimulationActive,
+        ActionIntent, Body, CombatIntent, Combatant, DefenseEdge, DefenseState, Enemy, Facing,
+        MoveIntent, SimulationActive,
     },
 };
 #[cfg(not(target_arch = "wasm32"))]
@@ -34,6 +34,12 @@ const MOVEMENT_RELEASED: u32 = 1024;
 const SHIFT_RELEASED: u32 = 2048;
 #[cfg(not(target_arch = "wasm32"))]
 const MAX_DEFENSE_EDGES: usize = 64;
+/// While a target is locked the view turns to keep it straight ahead, closing
+/// the gap with this time constant; movement is then relative to the target,
+/// so sideways keys circle it.
+const LOCK_TURN_TIME: f32 = 0.08;
+/// Closer than this the bearing to the target is too unstable to follow.
+const LOCK_MIN_DISTANCE: f32 = 0.6;
 
 type PlayerIntents = (
     &'static Body,
@@ -45,11 +51,26 @@ type PlayerIntents = (
     &'static mut DefenseState,
 );
 
+/// Enemy bodies a locked view turns toward.
+type LockTargets<'w, 's> = Query<'w, 's, &'static Body, (With<Enemy>, Without<Player>)>;
+
 #[derive(Resource, Default)]
 pub(super) struct ViewYaw(f32);
 impl ViewYaw {
     pub fn yaw(&self) -> f32 {
         self.0
+    }
+    /// Turn toward the world planar `direction`, closing `share` of the gap.
+    fn face(&mut self, direction: Vec2, share: f32) {
+        if direction.length_squared() < 1e-6 || !share.is_finite() {
+            return;
+        }
+        let wanted = (-direction.x).atan2(-direction.y);
+        let gap = (wanted - self.0 + std::f32::consts::PI).rem_euclid(std::f32::consts::TAU)
+            - std::f32::consts::PI;
+        self.0 = (self.0 + gap * share.clamp(0.0, 1.0) + std::f32::consts::PI)
+            .rem_euclid(std::f32::consts::TAU)
+            - std::f32::consts::PI;
     }
     fn turn(&mut self, pixels: f32) {
         if pixels.is_finite() {
@@ -219,12 +240,17 @@ pub(super) fn sample(
         MessageReader<KeyboardInput>,
         MessageReader<MouseButtonInput>,
     ),
-    capture: (ResMut<CaptureState>, ResMut<SimulationActive>),
+    capture: (
+        ResMut<CaptureState>,
+        ResMut<SimulationActive>,
+        Res<Time>,
+        LockTargets,
+    ),
     mut yaw: ResMut<ViewYaw>,
     mut players: Query<PlayerIntents, With<Player>>,
 ) {
     let (mut buttons, motion) = mouse;
-    let (mut capture, mut simulation_active) = capture;
+    let (mut capture, mut simulation_active, time, enemies) = capture;
     #[cfg(target_arch = "wasm32")]
     let (active, look, held, commands, defense_edges) = {
         let _ = (&buttons, &motion, &mut window);
@@ -327,11 +353,21 @@ pub(super) fn sample(
         return;
     }
     // Both combo cameras discard look samples and retain the pre-combo yaw.
+    // A locked target owns the view: it turns to keep the target ahead, which
+    // makes the camera orbit it as the player moves.
     if !players
         .iter()
         .any(|(_, _, _, _, _, loadout, _)| loadout.is_combo_active())
     {
-        yaw.turn(look);
+        let bearing = players.iter().find_map(|(body, _, _, _, _, loadout, _)| {
+            let target = enemies.get(loadout.target()?).ok()?;
+            let offset = (target.world_position() - body.world_position()).xz();
+            (offset.length() >= LOCK_MIN_DISTANCE).then_some(offset)
+        });
+        match bearing {
+            Some(offset) => yaw.face(offset, 1.0 - (-time.delta_secs() / LOCK_TURN_TIME).exp()),
+            None => yaw.turn(look),
+        }
     }
     let axis = movement_axis([held & 1 != 0, held & 2 != 0, held & 4 != 0, held & 8 != 0]);
     let forward = movement_direction(Vec2::Y, yaw.yaw());
@@ -666,6 +702,7 @@ mod tests {
             .add_systems(Update, sample);
         app.finish();
         crate::gameplay::setup(app.world_mut());
+        crate::gameplay::manual_targeting(app.world_mut());
         let window = app
             .world_mut()
             .spawn((Window::default(), CursorOptions::default(), PrimaryWindow))
@@ -766,6 +803,137 @@ mod tests {
         let defense = app.world().get::<DefenseState>(actor).unwrap();
         assert!(!defense.is_active());
         assert_eq!(defense.parry_cooldown(), 0.0);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn frame(app: &mut App) {
+        app.world_mut()
+            .resource_mut::<Time>()
+            .advance_by(std::time::Duration::from_secs_f64(1.0 / 60.0));
+        app.world_mut().run_schedule(Update);
+        fixed(app, 1);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn shipped_input_app() -> (App, Entity, Entity) {
+        let (mut app, actor, window) = input_app();
+        // `input_app` keeps manual targeting for the toggle tests; the
+        // shipped player starts automatic, as gameplay spawns it.
+        let mut entity = app.world_mut().entity_mut(actor);
+        let combat = entity.take::<Combatant>().unwrap();
+        entity.insert(Combatant::new(combat.weapon_pair()));
+        (app, actor, window)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn bearing(app: &App, from: Entity, to: Entity) -> Vec2 {
+        let body = |entity| app.world().get::<Body>(entity).unwrap().world_position();
+        (body(to) - body(from)).xz()
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn view_forward(app: &App) -> Vec2 {
+        movement_direction(Vec2::Y, app.world().resource::<ViewYaw>().yaw())
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn the_shipped_player_targets_automatically_and_the_middle_button_unlocks_and_relocks() {
+        let (mut app, actor, window) = shipped_input_app();
+        frame(&mut app);
+        let dummy = app
+            .world_mut()
+            .query_filtered::<Entity, With<Enemy>>()
+            .single(app.world())
+            .unwrap();
+        fn combat(app: &App, actor: Entity) -> &Combatant {
+            app.world().get::<Combatant>(actor).unwrap()
+        }
+        assert_eq!(combat(&app, actor).target(), Some(dummy));
+        assert!(combat(&app, actor).auto_target());
+        // Middle button: unlock, and stay unlocked.
+        send_mouse(&mut app, window, MouseButton::Middle, ButtonState::Pressed);
+        send_mouse(&mut app, window, MouseButton::Middle, ButtonState::Released);
+        frame(&mut app);
+        for _ in 0..30 {
+            frame(&mut app);
+        }
+        assert_eq!(combat(&app, actor).target(), None);
+        assert!(!combat(&app, actor).auto_target());
+        // Middle again: lock, and target automatically from then on.
+        send_mouse(&mut app, window, MouseButton::Middle, ButtonState::Pressed);
+        send_mouse(&mut app, window, MouseButton::Middle, ButtonState::Released);
+        frame(&mut app);
+        assert_eq!(combat(&app, actor).target(), Some(dummy));
+        assert!(combat(&app, actor).auto_target());
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn a_locked_view_keeps_the_target_ahead_and_sideways_keys_circle_it() {
+        let (mut app, actor, window) = shipped_input_app();
+        let dummy = app
+            .world_mut()
+            .query_filtered::<Entity, With<Enemy>>()
+            .single(app.world())
+            .unwrap();
+        // The target is off to the side; the view turns to it within a few
+        // frames even though the mouse never moved.
+        crate::simulation::teleport_actor(app.world_mut(), dummy, Vec3::new(5.0, 0.0, -2.0));
+        for _ in 0..30 {
+            frame(&mut app);
+        }
+        assert_eq!(
+            app.world().get::<Combatant>(actor).unwrap().target(),
+            Some(dummy)
+        );
+        let ahead = view_forward(&app).dot(bearing(&app, actor, dummy).normalize());
+        assert!(ahead > 0.999, "the target is not straight ahead: {ahead}");
+        // Mouse look does not steal the view from the lock.
+        app.world_mut()
+            .resource_mut::<AccumulatedMouseMotion>()
+            .delta = Vec2::new(400.0, 0.0);
+        frame(&mut app);
+        app.world_mut()
+            .resource_mut::<AccumulatedMouseMotion>()
+            .delta = Vec2::ZERO;
+        let ahead = view_forward(&app).dot(bearing(&app, actor, dummy).normalize());
+        assert!(ahead > 0.99, "mouse look turned a locked view: {ahead}");
+        // Holding D circles the target: the bearing sweeps round while the
+        // distance stays about the same and the target stays ahead.
+        let start = bearing(&app, actor, dummy);
+        send_key(&mut app, window, KeyCode::KeyD, ButtonState::Pressed);
+        let mut swept = 0.0;
+        let mut previous = start;
+        for _ in 0..90 {
+            frame(&mut app);
+            let now = bearing(&app, actor, dummy);
+            swept += previous.angle_to(now);
+            previous = now;
+            let ahead = view_forward(&app).dot(now.normalize());
+            assert!(ahead > 0.97, "the target drifted out of view: {ahead}");
+        }
+        send_key(&mut app, window, KeyCode::KeyD, ButtonState::Released);
+        frame(&mut app);
+        assert!(
+            swept.abs() > 1.0,
+            "the player did not circle the target: {swept} rad"
+        );
+        let (from, to) = (start.length(), previous.length());
+        assert!(
+            (to - from).abs() < from * 0.35,
+            "circling changed the distance from {from} to {to}"
+        );
+        // Unlocked, the mouse turns the view again.
+        send_mouse(&mut app, window, MouseButton::Middle, ButtonState::Pressed);
+        send_mouse(&mut app, window, MouseButton::Middle, ButtonState::Released);
+        frame(&mut app);
+        let before = app.world().resource::<ViewYaw>().yaw();
+        app.world_mut()
+            .resource_mut::<AccumulatedMouseMotion>()
+            .delta = Vec2::new(100.0, 0.0);
+        frame(&mut app);
+        assert!((app.world().resource::<ViewYaw>().yaw() - before).abs() > 0.1);
     }
 
     #[cfg(not(target_arch = "wasm32"))]

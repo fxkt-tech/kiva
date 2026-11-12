@@ -319,7 +319,7 @@ fn actual_game_adapter_and_preview_drive_identical_real_palettes_and_weapon_moun
                     MotionState::default(),
                     Facing::default(),
                     Health::new(100.),
-                    Combatant::new(pair),
+                    Combatant::new(pair).without_auto_target(),
                     CombatIntent::default(),
                     SpawnPoint(Vec2::ZERO),
                 ))

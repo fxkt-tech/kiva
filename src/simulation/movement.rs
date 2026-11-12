@@ -1131,7 +1131,7 @@ mod tests {
         let (mut app, actor) = actor(CollisionWorld::new(100.0, vec![]));
         app.world_mut().entity_mut(actor).insert((
             Health::new(1.0),
-            Combatant::new(WeaponPair::HammerMusket),
+            Combatant::new(WeaponPair::HammerMusket).without_auto_target(),
             CombatIntent::default(),
             SpawnPoint(Vec2::ZERO),
         ));

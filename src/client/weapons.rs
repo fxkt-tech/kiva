@@ -184,6 +184,7 @@ mod tests {
                 Startup,
                 (
                     crate::gameplay::setup,
+                    crate::gameplay::manual_targeting,
                     scene::setup,
                     combat::setup,
                     setup_tether,

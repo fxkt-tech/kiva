@@ -198,7 +198,16 @@ mod tests {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin))
             .init_resource::<ViewYaw>()
-            .add_systems(Startup, (gameplay::setup, spawn_view, setup).chain())
+            .add_systems(
+                Startup,
+                (
+                    gameplay::setup,
+                    gameplay::manual_targeting,
+                    spawn_view,
+                    setup,
+                )
+                    .chain(),
+            )
             .add_systems(Update, (scene::sync_player, follow).chain());
         app.finish();
         app.update();

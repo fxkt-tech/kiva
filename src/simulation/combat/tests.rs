@@ -47,7 +47,7 @@ fn arena_with_target_scale(
             Facing::default(),
             Health::new(1000.0),
             SpawnPoint(Vec2::ZERO),
-            Combatant::new(pair),
+            Combatant::new(pair).without_auto_target(),
             CombatIntent::default(),
         ))
         .id();

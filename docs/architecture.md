@@ -31,7 +31,7 @@
 | `simulation/weapons.rs` | 锤鸟／链斧弓绑定组与哥哥近战普攻数据；近远枚举只作握柄类型 |
 | `simulation/geometry.rs` | 仅测试构建：无窗口夹具的平地／立柱描述及其装配，产品构建不包含 |
 | `gameplay/mod.rs`、`gameplay/terrain.rs` | `Level`、`Boundary`、`Player`、`EnemyMode`、共享地形几何及实体装配 |
-| `client/controls.rs` | `ViewYaw`，设备输入转世界方向；捕获失效时停止意图 |
+| `client/controls.rs` | `ViewYaw`，设备输入转世界方向；锁定目标时把 yaw 转向目标，使镜头绕目标转；捕获失效时停止意图 |
 | `client/bundle.rs` | 运行时资源文件的请求、到齐状态与一次性交付，不认识任何使用方；游戏清单、`Assemble` 调度与 `Assembled` 门槛在 `client/mod.rs` |
 | `client/loading.rs`、`web/loader.js` | WASM真实下载流进度、首次可见场景渲染准备／提交门槛，以及主线程最终就绪通知 |
 | `client/enemies.rs`、`web/enemies.js` | 进入卡片 / F2 的敌人模式请求及模式显示，调用玩法装配接口 |

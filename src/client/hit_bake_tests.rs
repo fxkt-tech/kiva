@@ -468,8 +468,6 @@ mod live {
                 let mut intent = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
                 if step < 110 {
                     intent.request_attack();
-                } else if step == 170 {
-                    intent.request_toggle_target();
                 } else if step == 180 {
                     intent.request_melee_skill();
                 }

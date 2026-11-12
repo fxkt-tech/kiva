@@ -268,7 +268,14 @@ mod tests {
             .init_resource::<AnimationLibrary>()
             .add_systems(
                 Startup,
-                (gameplay::setup, scene::setup, combat::setup, setup).chain(),
+                (
+                    gameplay::setup,
+                    gameplay::manual_targeting,
+                    scene::setup,
+                    combat::setup,
+                    setup,
+                )
+                    .chain(),
             )
             .add_systems(
                 Update,

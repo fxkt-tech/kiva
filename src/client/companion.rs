@@ -477,7 +477,14 @@ mod tests {
             .init_resource::<ViewYaw>()
             .add_systems(
                 Startup,
-                (crate::gameplay::setup, scene::setup, combat::setup, setup).chain(),
+                (
+                    crate::gameplay::setup,
+                    crate::gameplay::manual_targeting,
+                    scene::setup,
+                    combat::setup,
+                    setup,
+                )
+                    .chain(),
             )
             .add_systems(
                 Update,

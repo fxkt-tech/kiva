@@ -2259,6 +2259,7 @@ mod tests {
                     Startup,
                     (
                         crate::gameplay::setup,
+                        crate::gameplay::manual_targeting,
                         scene::setup,
                         combat::setup,
                         companion::setup,
@@ -2428,7 +2429,7 @@ mod tests {
                 MotionState::default(),
                 Facing::default(),
                 Health::new(100.0),
-                Combatant::new(WeaponPair::HammerMusket),
+                Combatant::new(WeaponPair::HammerMusket).without_auto_target(),
                 CombatIntent::default(),
                 SpawnPoint(Vec2::ZERO),
             ))

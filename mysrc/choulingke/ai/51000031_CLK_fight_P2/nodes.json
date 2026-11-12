@@ -1,0 +1,4169 @@
+[
+  {
+    "function": "_M.n0_CBTAlwaysSequenceNode",
+    "source_line": 7,
+    "source_end_line": 19,
+    "data": {
+      "node_name": "n0_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "cls_name": "CBTAlwaysSequenceNode",
+      "child_num": 3,
+      "child_name_list": [
+        "n00_PassNode",
+        "n01_ChooseTargetAction",
+        "n02_CBTParallelNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00_PassNode",
+    "source_line": 21,
+    "source_end_line": 39,
+    "data": {
+      "node_name": "n00_PassNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.PassNode"
+      },
+      "parent_node_name": "n0_CBTAlwaysSequenceNode",
+      "cls_name": "PassNode",
+      "fast_node": "n01_ChooseTargetAction",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n000_CBTAlwaysSequenceNode"
+      ],
+      "record_type": 1,
+      "total_pass_count": 1,
+      "pass_name": "",
+      "pass_group": "default"
+    }
+  },
+  {
+    "function": "_M.n000_CBTAlwaysSequenceNode",
+    "source_line": 41,
+    "source_end_line": 54,
+    "data": {
+      "node_name": "n000_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n00_PassNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0000_CBTAlwaysSequenceNode",
+        "n0001_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0000_CBTAlwaysSequenceNode",
+    "source_line": 56,
+    "source_end_line": 70,
+    "data": {
+      "node_name": "n0000_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n000_CBTAlwaysSequenceNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "fast_node": "n0001_CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n00000_StopWanfaAction",
+        "n00001_SetBlackboard"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00000_StopWanfaAction",
+    "source_line": 72,
+    "source_end_line": 81,
+    "data": {
+      "node_name": "n00000_StopWanfaAction",
+      "cls": {
+        "lua": "AINodes.StopWanfaAction"
+      },
+      "parent_node_name": "n0000_CBTAlwaysSequenceNode",
+      "cls_name": "StopWanfaAction",
+      "fast_node": "n00001_SetBlackboard",
+      "idx_in_parent": 0
+    }
+  },
+  {
+    "function": "_M.n00001_SetBlackboard",
+    "source_line": 83,
+    "source_end_line": 96,
+    "data": {
+      "node_name": "n00001_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n0000_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "idx_in_parent": 1,
+      "is_space": false,
+      "key": "_fight_stage_",
+      "value_type": 3,
+      "value": "2",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n0001_CBTAlwaysSequenceNode",
+    "source_line": 98,
+    "source_end_line": 120,
+    "data": {
+      "node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n000_CBTAlwaysSequenceNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 11,
+      "child_name_list": [
+        "n00010_EnterCombatAction",
+        "n00011_GetEntityAIData",
+        "n00012_ApplyWanfaAction",
+        "n00013_SetBlackboard",
+        "n00014_SetBlackboard",
+        "n00015_RegisterActionBtree",
+        "n00016_SetVariableAction",
+        "n00017_ApplyBuff",
+        "n00018_SetBlackboard",
+        "n00019_ApplyBuff",
+        "n0001A_CBTSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n00010_EnterCombatAction",
+    "source_line": 122,
+    "source_end_line": 131,
+    "data": {
+      "node_name": "n00010_EnterCombatAction",
+      "cls": {
+        "lua": "AINodes.EnterCombatAction"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "EnterCombatAction",
+      "fast_node": "n00011_GetEntityAIData",
+      "idx_in_parent": 0
+    }
+  },
+  {
+    "function": "_M.n00011_GetEntityAIData",
+    "source_line": 133,
+    "source_end_line": 151,
+    "data": {
+      "node_name": "n00011_GetEntityAIData",
+      "cls": {
+        "lua": "AINodes.GetEntityAIData"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "GetEntityAIData",
+      "fast_node": "n00012_ApplyWanfaAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "",
+      "config_no_bb_key": "",
+      "data_from": "ai_blackboard_data",
+      "is_all": true,
+      "data_key_type": 4,
+      "data_key": "",
+      "default_value_type": 4,
+      "default_value": "",
+      "save_bb_key": ""
+    }
+  },
+  {
+    "function": "_M.n00012_ApplyWanfaAction",
+    "source_line": 153,
+    "source_end_line": 165,
+    "data": {
+      "node_name": "n00012_ApplyWanfaAction",
+      "cls": {
+        "lua": "AINodes.ApplyWanfaAction"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "ApplyWanfaAction",
+      "fast_node": "n00013_SetBlackboard",
+      "idx_in_parent": 2,
+      "wanfa_no": 51000025,
+      "sub_wanfa_ids": [
+        "1",
+        "2",
+        "3"
+      ],
+      "leave_battle_end": true
+    }
+  },
+  {
+    "function": "_M.n00013_SetBlackboard",
+    "source_line": 167,
+    "source_end_line": 181,
+    "data": {
+      "node_name": "n00013_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "fast_node": "n00014_SetBlackboard",
+      "idx_in_parent": 3,
+      "is_space": false,
+      "key": "lastlockdirection",
+      "value_type": 3,
+      "value": "0",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n00014_SetBlackboard",
+    "source_line": 183,
+    "source_end_line": 197,
+    "data": {
+      "node_name": "n00014_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "fast_node": "n00015_RegisterActionBtree",
+      "idx_in_parent": 4,
+      "is_space": false,
+      "key": "_ACTION_FLOW_",
+      "value_type": 3,
+      "value": "0",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n00015_RegisterActionBtree",
+    "source_line": 199,
+    "source_end_line": 209,
+    "data": {
+      "node_name": "n00015_RegisterActionBtree",
+      "cls": {
+        "lua": "AINodes.RegisterActionBtree"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "RegisterActionBtree",
+      "fast_node": "n00016_SetVariableAction",
+      "idx_in_parent": 5,
+      "btree_name": "51000025_CLK_fight_Action"
+    }
+  },
+  {
+    "function": "_M.n00016_SetVariableAction",
+    "source_line": 211,
+    "source_end_line": 225,
+    "data": {
+      "node_name": "n00016_SetVariableAction",
+      "cls": {
+        "lua": "AINodes.SetVariableAction"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "SetVariableAction",
+      "fast_node": "n00017_ApplyBuff",
+      "idx_in_parent": 6,
+      "set_type": "single",
+      "key_type": 2,
+      "key": "lock_type",
+      "value_type": 3,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n00017_ApplyBuff",
+    "source_line": 227,
+    "source_end_line": 244,
+    "data": {
+      "node_name": "n00017_ApplyBuff",
+      "cls": {
+        "lua": "AINodes.ApplyBuff"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "ApplyBuff",
+      "fast_node": "n00018_SetBlackboard",
+      "idx_in_parent": 7,
+      "op": "add",
+      "target_type": 2,
+      "target_list": "bb_main_player",
+      "buff_id": "450109",
+      "buff_target": "",
+      "use_buff_level": false,
+      "buff_level_type": 1,
+      "buff_level_list": ""
+    }
+  },
+  {
+    "function": "_M.n00018_SetBlackboard",
+    "source_line": 246,
+    "source_end_line": 260,
+    "data": {
+      "node_name": "n00018_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "fast_node": "n00019_ApplyBuff",
+      "idx_in_parent": 8,
+      "is_space": false,
+      "key": "attack_count",
+      "value_type": 3,
+      "value": "0",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n00019_ApplyBuff",
+    "source_line": 262,
+    "source_end_line": 279,
+    "data": {
+      "node_name": "n00019_ApplyBuff",
+      "cls": {
+        "lua": "AINodes.ApplyBuff"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "ApplyBuff",
+      "fast_node": "n0001A_CBTSequenceNode",
+      "idx_in_parent": 9,
+      "op": "add",
+      "target_type": 1,
+      "target_list": "bb_main_player",
+      "buff_id": "450107",
+      "buff_target": "",
+      "use_buff_level": false,
+      "buff_level_type": 1,
+      "buff_level_list": ""
+    }
+  },
+  {
+    "function": "_M.n0001A_CBTSequenceNode",
+    "source_line": 281,
+    "source_end_line": 296,
+    "data": {
+      "node_name": "n0001A_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0001_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 10,
+      "child_num": 4,
+      "child_name_list": [
+        "n0001A0_CheckTargetAchievementDone",
+        "n0001A1_NotNode",
+        "n0001A2_ApplyBuff",
+        "n0001A3_PlaySound"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0001A0_CheckTargetAchievementDone",
+    "source_line": 298,
+    "source_end_line": 310,
+    "data": {
+      "node_name": "n0001A0_CheckTargetAchievementDone",
+      "cls": {
+        "lua": "AINodes.CheckTargetAchievementDone"
+      },
+      "parent_node_name": "n0001A_CBTSequenceNode",
+      "cls_name": "CheckTargetAchievementDone",
+      "succ_fast_node": "n0001A1_NotNode",
+      "idx_in_parent": 0,
+      "target_bb_key": "_T1",
+      "id_type": 1,
+      "check_id": 3109
+    }
+  },
+  {
+    "function": "_M.n0001A1_NotNode",
+    "source_line": 312,
+    "source_end_line": 326,
+    "data": {
+      "node_name": "n0001A1_NotNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.NotNode"
+      },
+      "parent_node_name": "n0001A_CBTSequenceNode",
+      "cls_name": "NotNode",
+      "succ_fast_node": "n0001A2_ApplyBuff",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n0001A10_CheckTargetAchievementDone"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0001A10_CheckTargetAchievementDone",
+    "source_line": 328,
+    "source_end_line": 339,
+    "data": {
+      "node_name": "n0001A10_CheckTargetAchievementDone",
+      "cls": {
+        "lua": "AINodes.CheckTargetAchievementDone"
+      },
+      "parent_node_name": "n0001A1_NotNode",
+      "cls_name": "CheckTargetAchievementDone",
+      "idx_in_parent": 0,
+      "target_bb_key": "_T1",
+      "id_type": 1,
+      "check_id": 3108
+    }
+  },
+  {
+    "function": "_M.n0001A2_ApplyBuff",
+    "source_line": 341,
+    "source_end_line": 358,
+    "data": {
+      "node_name": "n0001A2_ApplyBuff",
+      "cls": {
+        "lua": "AINodes.ApplyBuff"
+      },
+      "parent_node_name": "n0001A_CBTSequenceNode",
+      "cls_name": "ApplyBuff",
+      "succ_fast_node": "n0001A3_PlaySound",
+      "idx_in_parent": 2,
+      "op": "add",
+      "target_type": 2,
+      "target_list": "_T1",
+      "buff_id": "450100",
+      "buff_target": "",
+      "use_buff_level": false,
+      "buff_level_type": 1,
+      "buff_level_list": ""
+    }
+  },
+  {
+    "function": "_M.n0001A3_PlaySound",
+    "source_line": 360,
+    "source_end_line": 373,
+    "data": {
+      "node_name": "n0001A3_PlaySound",
+      "cls": {
+        "lua": "AINodes.PlaySound"
+      },
+      "parent_node_name": "n0001A_CBTSequenceNode",
+      "cls_name": "PlaySound",
+      "idx_in_parent": 3,
+      "sound_no": 6302990,
+      "sound_no_bb_key": "sound_no_bb_key",
+      "entity_bb_key": "",
+      "play_and_wait": false,
+      "is_3d": false
+    }
+  },
+  {
+    "function": "_M.n01_ChooseTargetAction",
+    "source_line": 375,
+    "source_end_line": 401,
+    "data": {
+      "node_name": "n01_ChooseTargetAction",
+      "cls": {
+        "lua": "AINodes.ChooseTargetAction"
+      },
+      "parent_node_name": "n0_CBTAlwaysSequenceNode",
+      "cls_name": "ChooseTargetAction",
+      "fast_node": "n02_CBTParallelNode",
+      "idx_in_parent": 1,
+      "target_source": 0,
+      "specify_npc_type": 3,
+      "specify_npc_no": "0",
+      "search_range_type": 3,
+      "search_range": "10",
+      "target_wx_list": "0",
+      "distance_filter_mode": 0,
+      "value_filter_mode": 1,
+      "pick_attr": "",
+      "pick_attr_mode": 0,
+      "target_bb_key": "_T1",
+      "filter_entity_mode": 0,
+      "entity_filter_key_type": 1,
+      "entity_filter_key": "",
+      "add_to_ray_check": false,
+      "ray_check_target_bone": "Bip001 Spine2",
+      "check_target_valid": false
+    }
+  },
+  {
+    "function": "_M.n02_CBTParallelNode",
+    "source_line": 403,
+    "source_end_line": 418,
+    "data": {
+      "node_name": "n02_CBTParallelNode",
+      "node_type": 3,
+      "cls": {
+        "lua": "AINodes.CBTParallelNode"
+      },
+      "parent_node_name": "n0_CBTAlwaysSequenceNode",
+      "cls_name": "CBTParallelNode",
+      "idx_in_parent": 2,
+      "child_num": 3,
+      "child_name_list": [
+        "n020_CBTWhileNode",
+        "n021_ApplyWatch",
+        "n022_ConditionPriorityNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n020_CBTWhileNode",
+    "source_line": 420,
+    "source_end_line": 434,
+    "data": {
+      "node_name": "n020_CBTWhileNode",
+      "cls": {
+        "lua": "AINodes.CBTWhileNode"
+      },
+      "parent_node_name": "n02_CBTParallelNode",
+      "cls_name": "CBTWhileNode",
+      "child_fast_idx": 1,
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0200_Nop",
+        "n0201_ReceiveEventDecorator"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0200_Nop",
+    "source_line": 436,
+    "source_end_line": 444,
+    "data": {
+      "node_name": "n0200_Nop",
+      "cls": {
+        "lua": "AINodes.Nop"
+      },
+      "parent_node_name": "n020_CBTWhileNode",
+      "cls_name": "Nop",
+      "idx_in_parent": 0
+    }
+  },
+  {
+    "function": "_M.n0201_ReceiveEventDecorator",
+    "source_line": 446,
+    "source_end_line": 471,
+    "data": {
+      "node_name": "n0201_ReceiveEventDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.ReceiveEventDecorator"
+      },
+      "parent_node_name": "n020_CBTWhileNode",
+      "cls_name": "ReceiveEventDecorator",
+      "fast_node": "n0201_ReceiveEventDecorator",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n02010_CBTAlwaysSequenceNode"
+      ],
+      "decorator_result": "SUCCEED",
+      "filter_type": "block",
+      "event_from": 0,
+      "eid_bb_key": "_T1",
+      "event_str_list": [
+        "e_max_aggro_changed"
+      ],
+      "save_data_key_list": [
+        ""
+      ],
+      "compare_key_list": [
+        ""
+      ],
+      "enable_reason": false,
+      "trigger_reason": "",
+      "callback_handle_func": "",
+      "trigger_event_name_bb_key": ""
+    }
+  },
+  {
+    "function": "_M.n02010_CBTAlwaysSequenceNode",
+    "source_line": 473,
+    "source_end_line": 485,
+    "data": {
+      "node_name": "n02010_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0201_ReceiveEventDecorator",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n020100_ChooseTargetAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n020100_ChooseTargetAction",
+    "source_line": 487,
+    "source_end_line": 512,
+    "data": {
+      "node_name": "n020100_ChooseTargetAction",
+      "cls": {
+        "lua": "AINodes.ChooseTargetAction"
+      },
+      "parent_node_name": "n02010_CBTAlwaysSequenceNode",
+      "cls_name": "ChooseTargetAction",
+      "idx_in_parent": 0,
+      "target_source": 0,
+      "specify_npc_type": 3,
+      "specify_npc_no": "0",
+      "search_range_type": 3,
+      "search_range": "10",
+      "target_wx_list": "0",
+      "distance_filter_mode": 0,
+      "value_filter_mode": 1,
+      "pick_attr": "",
+      "pick_attr_mode": 0,
+      "target_bb_key": "_T1",
+      "filter_entity_mode": 0,
+      "entity_filter_key_type": 1,
+      "entity_filter_key": "",
+      "add_to_ray_check": false,
+      "ray_check_target_bone": "Bip001 Spine2",
+      "check_target_valid": false
+    }
+  },
+  {
+    "function": "_M.n021_ApplyWatch",
+    "source_line": 514,
+    "source_end_line": 536,
+    "data": {
+      "node_name": "n021_ApplyWatch",
+      "cls": {
+        "lua": "AINodes.ApplyWatch"
+      },
+      "parent_node_name": "n02_CBTParallelNode",
+      "cls_name": "ApplyWatch",
+      "idx_in_parent": 1,
+      "is_enabled": true,
+      "target_bb_key": "_T1",
+      "watch_type": 0,
+      "is_blocked": true,
+      "watch_time_type": 1,
+      "watch_time": "10.0",
+      "cancel_over_angle": false,
+      "cancel_over_angle_value": 90.0,
+      "over_angle_finish": true,
+      "over_angle_watch_interval": 2.0,
+      "lookat_node_type_2": false,
+      "lookat_cancel": true,
+      "lookat_max_yaw": 60.0,
+      "lookat_max_pitch": 30.0
+    }
+  },
+  {
+    "function": "_M.n022_ConditionPriorityNode",
+    "source_line": 538,
+    "source_end_line": 559,
+    "data": {
+      "node_name": "n022_ConditionPriorityNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.ConditionPriorityNode"
+      },
+      "parent_node_name": "n02_CBTParallelNode",
+      "cls_name": "ConditionPriorityNode",
+      "idx_in_parent": 2,
+      "child_num": 5,
+      "child_name_list": [
+        "n0220_CBTAlwaysSequenceNode",
+        "n0221_CBTAlwaysSequenceNode",
+        "n0222_CBTSequenceNode",
+        "n0223_CBTSequenceNode",
+        "n0224_CBTAlwaysSequenceNode"
+      ],
+      "conditions": [
+        "0#AIComboCondition#51000031_CLK_P2_ComboCondition#CanComboCancel",
+        "0#CheckBuffCondition#self#with;450079",
+        "0#GedangCondition#ALL",
+        "0#BBCheckCondition#attack_count;<;int;5",
+        "-1"
+      ],
+      "tick_rate": 1.0
+    }
+  },
+  {
+    "function": "_M.n0220_CBTAlwaysSequenceNode",
+    "source_line": 561,
+    "source_end_line": 573,
+    "data": {
+      "node_name": "n0220_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n022_ConditionPriorityNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200_CBTSwitchCaseNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200_CBTSwitchCaseNode",
+    "source_line": 575,
+    "source_end_line": 649,
+    "data": {
+      "node_name": "n02200_CBTSwitchCaseNode",
+      "cls": {
+        "lua": "AINodes.CBTSwitchCaseNode"
+      },
+      "parent_node_name": "n0220_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSwitchCaseNode",
+      "idx_in_parent": 0,
+      "child_num": 29,
+      "child_name_list": [
+        "n022000_CBTSequenceNode",
+        "n022001_CBTSequenceNode",
+        "n022002_CBTSelectNode",
+        "n022003_CBTSequenceNode",
+        "n022004_CBTSequenceNode",
+        "n022005_CBTSelectNode",
+        "n022006_CBTSequenceNode",
+        "n022007_CBTSequenceNode",
+        "n022008_CBTSequenceNode",
+        "n022009_CBTSequenceNode",
+        "n02200A_CBTSequenceNode",
+        "n02200B_CBTSequenceNode",
+        "n02200C_CBTSelectNode",
+        "n02200D_CBTSequenceNode",
+        "n02200E_CBTSequenceNode",
+        "n02200F_CBTSequenceNode",
+        "n02200G_CBTSequenceNode",
+        "n02200H_CBTSequenceNode",
+        "n02200I_CBTSelectNode",
+        "n02200J_CBTSequenceNode",
+        "n02200K_CBTSequenceNode",
+        "n02200L_CBTSelectNode",
+        "n02200M_CBTSequenceNode",
+        "n02200N_CBTSequenceNode",
+        "n02200O_CBTSequenceNode",
+        "n02200P_CBTSequenceNode",
+        "n02200Q_CBTSequenceNode",
+        "n02200R_CBTSequenceNode",
+        "n02200S_CBTSequenceNode"
+      ],
+      "key_type": 1,
+      "key": "clk_Combo",
+      "case_type": 4,
+      "cases_dict": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5,
+        "7": 6,
+        "8": 7,
+        "9": 8,
+        "10": 9,
+        "11": 10,
+        "12": 11,
+        "13": 12,
+        "14": 13,
+        "15": 14,
+        "16": 15,
+        "17": 16,
+        "18": 17,
+        "19": 18,
+        "20": 19,
+        "21": 20,
+        "22": 21,
+        "behit_gold": 22,
+        "tandaor": 23,
+        "tandaol": 24,
+        "ceshan": 25,
+        "tandaoR": 26,
+        "tandaoL": 27,
+        "breaksuccess": 28
+      }
+    }
+  },
+  {
+    "function": "_M.n022000_CBTSequenceNode",
+    "source_line": 651,
+    "source_end_line": 663,
+    "data": {
+      "node_name": "n022000_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n0220000_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220000_ApplyActionDirect",
+    "source_line": 665,
+    "source_end_line": 674,
+    "data": {
+      "node_name": "n0220000_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n022000_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 22
+    }
+  },
+  {
+    "function": "_M.n022001_CBTSequenceNode",
+    "source_line": 676,
+    "source_end_line": 688,
+    "data": {
+      "node_name": "n022001_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n0220010_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220010_ApplyActionDirect",
+    "source_line": 690,
+    "source_end_line": 699,
+    "data": {
+      "node_name": "n0220010_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n022001_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 33
+    }
+  },
+  {
+    "function": "_M.n022002_CBTSelectNode",
+    "source_line": 701,
+    "source_end_line": 714,
+    "data": {
+      "node_name": "n022002_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 2,
+      "child_num": 2,
+      "child_name_list": [
+        "n0220020_PassNode",
+        "n0220021_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220020_PassNode",
+    "source_line": 716,
+    "source_end_line": 734,
+    "data": {
+      "node_name": "n0220020_PassNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.PassNode"
+      },
+      "parent_node_name": "n022002_CBTSelectNode",
+      "cls_name": "PassNode",
+      "fail_fast_node": "n0220021_ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200200_ApplyActionDirect"
+      ],
+      "record_type": 1,
+      "total_pass_count": 1,
+      "pass_name": "start",
+      "pass_group": "default"
+    }
+  },
+  {
+    "function": "_M.n02200200_ApplyActionDirect",
+    "source_line": 736,
+    "source_end_line": 745,
+    "data": {
+      "node_name": "n02200200_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n0220020_PassNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 28
+    }
+  },
+  {
+    "function": "_M.n0220021_ApplyActionByCondition",
+    "source_line": 747,
+    "source_end_line": 761,
+    "data": {
+      "node_name": "n0220021_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022002_CBTSelectNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 1,
+      "random_list": [
+        "56",
+        "53",
+        "51"
+      ],
+      "random_weights": [
+        "50",
+        "50",
+        "15"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022003_CBTSequenceNode",
+    "source_line": 763,
+    "source_end_line": 775,
+    "data": {
+      "node_name": "n022003_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 3,
+      "child_num": 1,
+      "child_name_list": [
+        "n0220030_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220030_ApplyActionByCondition",
+    "source_line": 777,
+    "source_end_line": 791,
+    "data": {
+      "node_name": "n0220030_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022003_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "48",
+        "49",
+        "24"
+      ],
+      "random_weights": [
+        "25",
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022004_CBTSequenceNode",
+    "source_line": 793,
+    "source_end_line": 805,
+    "data": {
+      "node_name": "n022004_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 4,
+      "child_num": 1,
+      "child_name_list": [
+        "n0220040_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220040_ApplyActionByCondition",
+    "source_line": 807,
+    "source_end_line": 821,
+    "data": {
+      "node_name": "n0220040_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022004_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "48",
+        "49",
+        "24"
+      ],
+      "random_weights": [
+        "50",
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022005_CBTSelectNode",
+    "source_line": 823,
+    "source_end_line": 836,
+    "data": {
+      "node_name": "n022005_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 5,
+      "child_num": 2,
+      "child_name_list": [
+        "n0220050_CBTSequenceNode",
+        "n0220051_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220050_CBTSequenceNode",
+    "source_line": 838,
+    "source_end_line": 852,
+    "data": {
+      "node_name": "n0220050_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022005_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n0220051_ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n02200500_CheckTargetDis",
+        "n02200501_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200500_CheckTargetDis",
+    "source_line": 854,
+    "source_end_line": 878,
+    "data": {
+      "node_name": "n02200500_CheckTargetDis",
+      "cls": {
+        "lua": "AINodes.CheckTargetDis"
+      },
+      "parent_node_name": "n0220050_CBTSequenceNode",
+      "cls_name": "CheckTargetDis",
+      "succ_fast_node": "n02200501_ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "base_type": 0,
+      "base_bb_key": "",
+      "target_type": 1,
+      "entity_bb_key": "_T1",
+      "target_abs_pos": [
+        0,
+        0,
+        0
+      ],
+      "distance_type": 1,
+      "distance_value_type": 1,
+      "distance": "6",
+      "skill_id_value_type": 1,
+      "skill_id": "",
+      "operation": "<="
+    }
+  },
+  {
+    "function": "_M.n02200501_ApplyActionByCondition",
+    "source_line": 880,
+    "source_end_line": 894,
+    "data": {
+      "node_name": "n02200501_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n0220050_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 1,
+      "random_list": [
+        "56",
+        "58"
+      ],
+      "random_weights": [
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220051_ApplyActionByCondition",
+    "source_line": 896,
+    "source_end_line": 910,
+    "data": {
+      "node_name": "n0220051_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022005_CBTSelectNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 1,
+      "random_list": [
+        "48",
+        "49",
+        "24"
+      ],
+      "random_weights": [
+        "25",
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022006_CBTSequenceNode",
+    "source_line": 912,
+    "source_end_line": 924,
+    "data": {
+      "node_name": "n022006_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 6,
+      "child_num": 1,
+      "child_name_list": [
+        "n0220060_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220060_ApplyActionDirect",
+    "source_line": 926,
+    "source_end_line": 935,
+    "data": {
+      "node_name": "n0220060_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n022006_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 28
+    }
+  },
+  {
+    "function": "_M.n022007_CBTSequenceNode",
+    "source_line": 937,
+    "source_end_line": 949,
+    "data": {
+      "node_name": "n022007_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 7,
+      "child_num": 1,
+      "child_name_list": [
+        "n0220070_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220070_ApplyActionDirect",
+    "source_line": 951,
+    "source_end_line": 960,
+    "data": {
+      "node_name": "n0220070_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n022007_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 55
+    }
+  },
+  {
+    "function": "_M.n022008_CBTSequenceNode",
+    "source_line": 962,
+    "source_end_line": 974,
+    "data": {
+      "node_name": "n022008_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 8,
+      "child_num": 1,
+      "child_name_list": [
+        "n0220080_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220080_ApplyActionByCondition",
+    "source_line": 976,
+    "source_end_line": 990,
+    "data": {
+      "node_name": "n0220080_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022008_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "23",
+        "54"
+      ],
+      "random_weights": [
+        "99",
+        "1"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022009_CBTSequenceNode",
+    "source_line": 992,
+    "source_end_line": 1004,
+    "data": {
+      "node_name": "n022009_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 9,
+      "child_num": 1,
+      "child_name_list": [
+        "n0220090_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0220090_ApplyActionByCondition",
+    "source_line": 1006,
+    "source_end_line": 1020,
+    "data": {
+      "node_name": "n0220090_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022009_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "57",
+        "54"
+      ],
+      "random_weights": [
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200A_CBTSequenceNode",
+    "source_line": 1022,
+    "source_end_line": 1034,
+    "data": {
+      "node_name": "n02200A_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 10,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200A0_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200A0_ApplyActionByCondition",
+    "source_line": 1036,
+    "source_end_line": 1050,
+    "data": {
+      "node_name": "n02200A0_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200A_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "57",
+        "54"
+      ],
+      "random_weights": [
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200B_CBTSequenceNode",
+    "source_line": 1052,
+    "source_end_line": 1064,
+    "data": {
+      "node_name": "n02200B_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 11,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200B0_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200B0_ApplyActionByCondition",
+    "source_line": 1066,
+    "source_end_line": 1080,
+    "data": {
+      "node_name": "n02200B0_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200B_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "52",
+        "31"
+      ],
+      "random_weights": [
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200C_CBTSelectNode",
+    "source_line": 1082,
+    "source_end_line": 1095,
+    "data": {
+      "node_name": "n02200C_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 12,
+      "child_num": 2,
+      "child_name_list": [
+        "n02200C0_PassNode",
+        "n02200C1_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200C0_PassNode",
+    "source_line": 1097,
+    "source_end_line": 1115,
+    "data": {
+      "node_name": "n02200C0_PassNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.PassNode"
+      },
+      "parent_node_name": "n02200C_CBTSelectNode",
+      "cls_name": "PassNode",
+      "fail_fast_node": "n02200C1_ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200C00_ApplyActionDirect"
+      ],
+      "record_type": 1,
+      "total_pass_count": 1,
+      "pass_name": "start",
+      "pass_group": "default"
+    }
+  },
+  {
+    "function": "_M.n02200C00_ApplyActionDirect",
+    "source_line": 1117,
+    "source_end_line": 1126,
+    "data": {
+      "node_name": "n02200C00_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200C0_PassNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 28
+    }
+  },
+  {
+    "function": "_M.n02200C1_ApplyActionByCondition",
+    "source_line": 1128,
+    "source_end_line": 1142,
+    "data": {
+      "node_name": "n02200C1_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200C_CBTSelectNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 1,
+      "random_list": [
+        "53",
+        "58",
+        "51"
+      ],
+      "random_weights": [
+        "50",
+        "50",
+        "15"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200D_CBTSequenceNode",
+    "source_line": 1144,
+    "source_end_line": 1156,
+    "data": {
+      "node_name": "n02200D_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 13,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200D0_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200D0_ApplyActionByCondition",
+    "source_line": 1158,
+    "source_end_line": 1172,
+    "data": {
+      "node_name": "n02200D0_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200D_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "48",
+        "49",
+        "24"
+      ],
+      "random_weights": [
+        "25",
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200E_CBTSequenceNode",
+    "source_line": 1174,
+    "source_end_line": 1186,
+    "data": {
+      "node_name": "n02200E_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 14,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200E0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200E0_ApplyActionDirect",
+    "source_line": 1188,
+    "source_end_line": 1197,
+    "data": {
+      "node_name": "n02200E0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200E_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 16
+    }
+  },
+  {
+    "function": "_M.n02200F_CBTSequenceNode",
+    "source_line": 1199,
+    "source_end_line": 1211,
+    "data": {
+      "node_name": "n02200F_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 15,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200F0_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200F0_ApplyActionByCondition",
+    "source_line": 1213,
+    "source_end_line": 1227,
+    "data": {
+      "node_name": "n02200F0_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200F_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "48",
+        "49",
+        "24"
+      ],
+      "random_weights": [
+        "50",
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200G_CBTSequenceNode",
+    "source_line": 1229,
+    "source_end_line": 1241,
+    "data": {
+      "node_name": "n02200G_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 16,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200G0_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200G0_ApplyActionByCondition",
+    "source_line": 1243,
+    "source_end_line": 1257,
+    "data": {
+      "node_name": "n02200G0_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200G_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "59",
+        "48"
+      ],
+      "random_weights": [
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200H_CBTSequenceNode",
+    "source_line": 1259,
+    "source_end_line": 1271,
+    "data": {
+      "node_name": "n02200H_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 17,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200H0_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200H0_ApplyActionByCondition",
+    "source_line": 1273,
+    "source_end_line": 1287,
+    "data": {
+      "node_name": "n02200H0_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200H_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "55",
+        "31"
+      ],
+      "random_weights": [
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200I_CBTSelectNode",
+    "source_line": 1289,
+    "source_end_line": 1302,
+    "data": {
+      "node_name": "n02200I_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 18,
+      "child_num": 2,
+      "child_name_list": [
+        "n02200I0_PassNode",
+        "n02200I1_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200I0_PassNode",
+    "source_line": 1304,
+    "source_end_line": 1322,
+    "data": {
+      "node_name": "n02200I0_PassNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.PassNode"
+      },
+      "parent_node_name": "n02200I_CBTSelectNode",
+      "cls_name": "PassNode",
+      "fail_fast_node": "n02200I1_ApplyActionDirect",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200I00_ApplyActionDirect"
+      ],
+      "record_type": 1,
+      "total_pass_count": 1,
+      "pass_name": "start",
+      "pass_group": "default"
+    }
+  },
+  {
+    "function": "_M.n02200I00_ApplyActionDirect",
+    "source_line": 1324,
+    "source_end_line": 1333,
+    "data": {
+      "node_name": "n02200I00_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200I0_PassNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 28
+    }
+  },
+  {
+    "function": "_M.n02200I1_ApplyActionDirect",
+    "source_line": 1335,
+    "source_end_line": 1344,
+    "data": {
+      "node_name": "n02200I1_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200I_CBTSelectNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 1,
+      "action_value": 59
+    }
+  },
+  {
+    "function": "_M.n02200J_CBTSequenceNode",
+    "source_line": 1346,
+    "source_end_line": 1358,
+    "data": {
+      "node_name": "n02200J_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 19,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200J0_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200J0_ApplyActionByCondition",
+    "source_line": 1360,
+    "source_end_line": 1374,
+    "data": {
+      "node_name": "n02200J0_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200J_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "57"
+      ],
+      "random_weights": [
+        "100"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200K_CBTSequenceNode",
+    "source_line": 1376,
+    "source_end_line": 1388,
+    "data": {
+      "node_name": "n02200K_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 20,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200K0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200K0_ApplyActionDirect",
+    "source_line": 1390,
+    "source_end_line": 1399,
+    "data": {
+      "node_name": "n02200K0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200K_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 60
+    }
+  },
+  {
+    "function": "_M.n02200L_CBTSelectNode",
+    "source_line": 1401,
+    "source_end_line": 1414,
+    "data": {
+      "node_name": "n02200L_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 21,
+      "child_num": 2,
+      "child_name_list": [
+        "n02200L0_CBTSequenceNode",
+        "n02200L1_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200L0_CBTSequenceNode",
+    "source_line": 1416,
+    "source_end_line": 1430,
+    "data": {
+      "node_name": "n02200L0_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200L_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n02200L1_ApplyActionDirect",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n02200L00_CheckTargetDis",
+        "n02200L01_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200L00_CheckTargetDis",
+    "source_line": 1432,
+    "source_end_line": 1456,
+    "data": {
+      "node_name": "n02200L00_CheckTargetDis",
+      "cls": {
+        "lua": "AINodes.CheckTargetDis"
+      },
+      "parent_node_name": "n02200L0_CBTSequenceNode",
+      "cls_name": "CheckTargetDis",
+      "succ_fast_node": "n02200L01_ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "base_type": 0,
+      "base_bb_key": "",
+      "target_type": 1,
+      "entity_bb_key": "_T1",
+      "target_abs_pos": [
+        0,
+        0,
+        0
+      ],
+      "distance_type": 1,
+      "distance_value_type": 1,
+      "distance": "6",
+      "skill_id_value_type": 1,
+      "skill_id": "",
+      "operation": "<="
+    }
+  },
+  {
+    "function": "_M.n02200L01_ApplyActionByCondition",
+    "source_line": 1458,
+    "source_end_line": 1472,
+    "data": {
+      "node_name": "n02200L01_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02200L0_CBTSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 1,
+      "random_list": [
+        "57"
+      ],
+      "random_weights": [
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200L1_ApplyActionDirect",
+    "source_line": 1474,
+    "source_end_line": 1483,
+    "data": {
+      "node_name": "n02200L1_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200L_CBTSelectNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 1,
+      "action_value": 48
+    }
+  },
+  {
+    "function": "_M.n02200M_CBTSequenceNode",
+    "source_line": 1485,
+    "source_end_line": 1497,
+    "data": {
+      "node_name": "n02200M_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 22,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200M0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200M0_ApplyActionDirect",
+    "source_line": 1499,
+    "source_end_line": 1508,
+    "data": {
+      "node_name": "n02200M0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200M_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 34
+    }
+  },
+  {
+    "function": "_M.n02200N_CBTSequenceNode",
+    "source_line": 1510,
+    "source_end_line": 1522,
+    "data": {
+      "node_name": "n02200N_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 23,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200N0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200N0_ApplyActionDirect",
+    "source_line": 1524,
+    "source_end_line": 1533,
+    "data": {
+      "node_name": "n02200N0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200N_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 7
+    }
+  },
+  {
+    "function": "_M.n02200O_CBTSequenceNode",
+    "source_line": 1535,
+    "source_end_line": 1547,
+    "data": {
+      "node_name": "n02200O_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 24,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200O0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200O0_ApplyActionDirect",
+    "source_line": 1549,
+    "source_end_line": 1558,
+    "data": {
+      "node_name": "n02200O0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200O_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 6
+    }
+  },
+  {
+    "function": "_M.n02200P_CBTSequenceNode",
+    "source_line": 1560,
+    "source_end_line": 1572,
+    "data": {
+      "node_name": "n02200P_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 25,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200P0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200P0_ApplyActionDirect",
+    "source_line": 1574,
+    "source_end_line": 1583,
+    "data": {
+      "node_name": "n02200P0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200P_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 4
+    }
+  },
+  {
+    "function": "_M.n02200Q_CBTSequenceNode",
+    "source_line": 1585,
+    "source_end_line": 1597,
+    "data": {
+      "node_name": "n02200Q_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 26,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200Q0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200Q0_ApplyActionDirect",
+    "source_line": 1599,
+    "source_end_line": 1608,
+    "data": {
+      "node_name": "n02200Q0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200Q_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 9
+    }
+  },
+  {
+    "function": "_M.n02200R_CBTSequenceNode",
+    "source_line": 1610,
+    "source_end_line": 1622,
+    "data": {
+      "node_name": "n02200R_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 27,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200R0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200R0_ApplyActionDirect",
+    "source_line": 1624,
+    "source_end_line": 1633,
+    "data": {
+      "node_name": "n02200R0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200R_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 8
+    }
+  },
+  {
+    "function": "_M.n02200S_CBTSequenceNode",
+    "source_line": 1635,
+    "source_end_line": 1647,
+    "data": {
+      "node_name": "n02200S_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02200_CBTSwitchCaseNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 28,
+      "child_num": 1,
+      "child_name_list": [
+        "n02200S0_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02200S0_ApplyActionDirect",
+    "source_line": 1649,
+    "source_end_line": 1658,
+    "data": {
+      "node_name": "n02200S0_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02200S_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 47
+    }
+  },
+  {
+    "function": "_M.n0221_CBTAlwaysSequenceNode",
+    "source_line": 1660,
+    "source_end_line": 1672,
+    "data": {
+      "node_name": "n0221_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n022_ConditionPriorityNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n02210_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02210_ApplyActionByCondition",
+    "source_line": 1674,
+    "source_end_line": 1688,
+    "data": {
+      "node_name": "n02210_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n0221_CBTAlwaysSequenceNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "1"
+      ],
+      "random_weights": [
+        "100"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0222_CBTSequenceNode",
+    "source_line": 1690,
+    "source_end_line": 1703,
+    "data": {
+      "node_name": "n0222_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022_ConditionPriorityNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 2,
+      "child_num": 2,
+      "child_name_list": [
+        "n02220_CheckBlackboard",
+        "n02221_Probability"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02220_CheckBlackboard",
+    "source_line": 1705,
+    "source_end_line": 1719,
+    "data": {
+      "node_name": "n02220_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n0222_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n02221_Probability",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "_GD_SKILL_ID",
+      "operator": "==",
+      "value_type": 3,
+      "value": "20901006"
+    }
+  },
+  {
+    "function": "_M.n02221_Probability",
+    "source_line": 1721,
+    "source_end_line": 1738,
+    "data": {
+      "node_name": "n02221_Probability",
+      "cls": {
+        "lua": "AINodes.CBTProbabilityNode"
+      },
+      "parent_node_name": "n0222_CBTSequenceNode",
+      "cls_name": "CBTProbabilityNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n022210_ApplyActionDirect",
+        "n022211_ApplyActionDirect"
+      ],
+      "child_weights": [
+        1,
+        1
+      ],
+      "acc_child_weights": [
+        1,
+        2
+      ],
+      "total_weight": 2,
+      "different_with_last": true
+    }
+  },
+  {
+    "function": "_M.n022210_ApplyActionDirect",
+    "source_line": 1740,
+    "source_end_line": 1749,
+    "data": {
+      "node_name": "n022210_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02221_Probability",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 0,
+      "action_value": 6
+    }
+  },
+  {
+    "function": "_M.n022211_ApplyActionDirect",
+    "source_line": 1751,
+    "source_end_line": 1760,
+    "data": {
+      "node_name": "n022211_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n02221_Probability",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 1,
+      "action_value": 7
+    }
+  },
+  {
+    "function": "_M.n0223_CBTSequenceNode",
+    "source_line": 1762,
+    "source_end_line": 1775,
+    "data": {
+      "node_name": "n0223_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022_ConditionPriorityNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 3,
+      "child_num": 2,
+      "child_name_list": [
+        "n02230_ChooseTargetAction",
+        "n02231_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02230_ChooseTargetAction",
+    "source_line": 1777,
+    "source_end_line": 1803,
+    "data": {
+      "node_name": "n02230_ChooseTargetAction",
+      "cls": {
+        "lua": "AINodes.ChooseTargetAction"
+      },
+      "parent_node_name": "n0223_CBTSequenceNode",
+      "cls_name": "ChooseTargetAction",
+      "succ_fast_node": "n02231_CBTSelectNode",
+      "idx_in_parent": 0,
+      "target_source": 0,
+      "specify_npc_type": 3,
+      "specify_npc_no": "0",
+      "search_range_type": 3,
+      "search_range": "10",
+      "target_wx_list": "0",
+      "distance_filter_mode": 0,
+      "value_filter_mode": 1,
+      "pick_attr": "",
+      "pick_attr_mode": 0,
+      "target_bb_key": "_T1",
+      "filter_entity_mode": 0,
+      "entity_filter_key_type": 1,
+      "entity_filter_key": "",
+      "add_to_ray_check": false,
+      "ray_check_target_bone": "Bip001 Spine2",
+      "check_target_valid": true
+    }
+  },
+  {
+    "function": "_M.n02231_CBTSelectNode",
+    "source_line": 1805,
+    "source_end_line": 1822,
+    "data": {
+      "node_name": "n02231_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n0223_CBTSequenceNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 6,
+      "child_name_list": [
+        "n022310_PassNode",
+        "n022311_CBTIfElseNode",
+        "n022312_CheckDisAndAngleDecorator",
+        "n022313_CheckDisAndAngleDecorator",
+        "n022314_CheckDisAndAngleDecorator",
+        "n022315_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022310_PassNode",
+    "source_line": 1824,
+    "source_end_line": 1842,
+    "data": {
+      "node_name": "n022310_PassNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.PassNode"
+      },
+      "parent_node_name": "n02231_CBTSelectNode",
+      "cls_name": "PassNode",
+      "fail_fast_node": "n022311_CBTIfElseNode",
+      "idx_in_parent": 0,
+      "child_num": 1,
+      "child_name_list": [
+        "n0223100_ApplyActionByCondition"
+      ],
+      "record_type": 1,
+      "total_pass_count": 1,
+      "pass_name": "",
+      "pass_group": "default"
+    }
+  },
+  {
+    "function": "_M.n0223100_ApplyActionByCondition",
+    "source_line": 1844,
+    "source_end_line": 1858,
+    "data": {
+      "node_name": "n0223100_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022310_PassNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "21"
+      ],
+      "random_weights": [
+        "100"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022311_CBTIfElseNode",
+    "source_line": 1860,
+    "source_end_line": 1875,
+    "data": {
+      "node_name": "n022311_CBTIfElseNode",
+      "cls": {
+        "lua": "AINodes.CBTIfElseNode"
+      },
+      "parent_node_name": "n02231_CBTSelectNode",
+      "cls_name": "CBTIfElseNode",
+      "fail_fast_node": "n022312_CheckDisAndAngleDecorator",
+      "idx_in_parent": 1,
+      "child_num": 3,
+      "child_name_list": [
+        "n0223110_CompareWithPercent",
+        "n0223111_CBTIfElseNode",
+        "n0223112_NotNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0223110_CompareWithPercent",
+    "source_line": 1877,
+    "source_end_line": 1894,
+    "data": {
+      "node_name": "n0223110_CompareWithPercent",
+      "cls": {
+        "lua": "AINodes.CompareWithPercent"
+      },
+      "parent_node_name": "n022311_CBTIfElseNode",
+      "cls_name": "CompareWithPercent",
+      "succ_fast_node": "n0223111_CBTIfElseNode",
+      "fail_fast_node": "n0223112_NotNode",
+      "idx_in_parent": 0,
+      "left_value_type": 2,
+      "left_value": "HP",
+      "right_value_type": 2,
+      "right_value": "HP_MAX",
+      "percent_type": 3,
+      "percent": "75",
+      "operation": "<="
+    }
+  },
+  {
+    "function": "_M.n0223111_CBTIfElseNode",
+    "source_line": 1896,
+    "source_end_line": 1910,
+    "data": {
+      "node_name": "n0223111_CBTIfElseNode",
+      "cls": {
+        "lua": "AINodes.CBTIfElseNode"
+      },
+      "parent_node_name": "n022311_CBTIfElseNode",
+      "cls_name": "CBTIfElseNode",
+      "idx_in_parent": 1,
+      "child_num": 3,
+      "child_name_list": [
+        "n02231110_CompareWithPercent",
+        "n02231111_CheckTimerDecorator",
+        "n02231112_CheckTimerDecorator"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231110_CompareWithPercent",
+    "source_line": 1912,
+    "source_end_line": 1929,
+    "data": {
+      "node_name": "n02231110_CompareWithPercent",
+      "cls": {
+        "lua": "AINodes.CompareWithPercent"
+      },
+      "parent_node_name": "n0223111_CBTIfElseNode",
+      "cls_name": "CompareWithPercent",
+      "succ_fast_node": "n02231111_CheckTimerDecorator",
+      "fail_fast_node": "n02231112_CheckTimerDecorator",
+      "idx_in_parent": 0,
+      "left_value_type": 2,
+      "left_value": "HP",
+      "right_value_type": 2,
+      "right_value": "HP_MAX",
+      "percent_type": 3,
+      "percent": "30",
+      "operation": "<="
+    }
+  },
+  {
+    "function": "_M.n02231111_CheckTimerDecorator",
+    "source_line": 1931,
+    "source_end_line": 1948,
+    "data": {
+      "node_name": "n02231111_CheckTimerDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckTimerDecorator"
+      },
+      "parent_node_name": "n0223111_CBTIfElseNode",
+      "cls_name": "CheckTimerDecorator",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n022311110_CBTSelectNode"
+      ],
+      "decorator_result": "",
+      "timer_key": "CA_timer",
+      "duration": 70.0,
+      "first_no_exec": false
+    }
+  },
+  {
+    "function": "_M.n022311110_CBTSelectNode",
+    "source_line": 1950,
+    "source_end_line": 1963,
+    "data": {
+      "node_name": "n022311110_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n02231111_CheckTimerDecorator",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0223111100_CBTSequenceNode",
+        "n0223111101_CBTSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0223111100_CBTSequenceNode",
+    "source_line": 1965,
+    "source_end_line": 1979,
+    "data": {
+      "node_name": "n0223111100_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022311110_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n0223111101_CBTSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n02231111000_CheckTargetDis",
+        "n02231111001_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231111000_CheckTargetDis",
+    "source_line": 1981,
+    "source_end_line": 2005,
+    "data": {
+      "node_name": "n02231111000_CheckTargetDis",
+      "cls": {
+        "lua": "AINodes.CheckTargetDis"
+      },
+      "parent_node_name": "n0223111100_CBTSequenceNode",
+      "cls_name": "CheckTargetDis",
+      "succ_fast_node": "n02231111001_ApplyActionDirect",
+      "idx_in_parent": 0,
+      "base_type": 0,
+      "base_bb_key": "",
+      "target_type": 1,
+      "entity_bb_key": "_T1",
+      "target_abs_pos": [
+        0,
+        0,
+        0
+      ],
+      "distance_type": 1,
+      "distance_value_type": 1,
+      "distance": "6",
+      "skill_id_value_type": 1,
+      "skill_id": "",
+      "operation": "<="
+    }
+  },
+  {
+    "function": "_M.n02231111001_ApplyActionDirect",
+    "source_line": 2007,
+    "source_end_line": 2016,
+    "data": {
+      "node_name": "n02231111001_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n0223111100_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 1,
+      "action_value": 60
+    }
+  },
+  {
+    "function": "_M.n0223111101_CBTSequenceNode",
+    "source_line": 2018,
+    "source_end_line": 2030,
+    "data": {
+      "node_name": "n0223111101_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022311110_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n02231111010_SetBlackboard"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231111010_SetBlackboard",
+    "source_line": 2032,
+    "source_end_line": 2045,
+    "data": {
+      "node_name": "n02231111010_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n0223111101_CBTSequenceNode",
+      "cls_name": "SetBlackboard",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "is_CA",
+      "value_type": 3,
+      "value": "1",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n02231112_CheckTimerDecorator",
+    "source_line": 2047,
+    "source_end_line": 2064,
+    "data": {
+      "node_name": "n02231112_CheckTimerDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckTimerDecorator"
+      },
+      "parent_node_name": "n0223111_CBTIfElseNode",
+      "cls_name": "CheckTimerDecorator",
+      "idx_in_parent": 2,
+      "child_num": 1,
+      "child_name_list": [
+        "n022311120_CBTSelectNode"
+      ],
+      "decorator_result": "",
+      "timer_key": "CA_timer",
+      "duration": 70.0,
+      "first_no_exec": false
+    }
+  },
+  {
+    "function": "_M.n022311120_CBTSelectNode",
+    "source_line": 2066,
+    "source_end_line": 2079,
+    "data": {
+      "node_name": "n022311120_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n02231112_CheckTimerDecorator",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0223111200_CBTSequenceNode",
+        "n0223111201_CBTSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0223111200_CBTSequenceNode",
+    "source_line": 2081,
+    "source_end_line": 2095,
+    "data": {
+      "node_name": "n0223111200_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022311120_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n0223111201_CBTSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n02231112000_CheckTargetDis",
+        "n02231112001_ApplyActionDirect"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231112000_CheckTargetDis",
+    "source_line": 2097,
+    "source_end_line": 2121,
+    "data": {
+      "node_name": "n02231112000_CheckTargetDis",
+      "cls": {
+        "lua": "AINodes.CheckTargetDis"
+      },
+      "parent_node_name": "n0223111200_CBTSequenceNode",
+      "cls_name": "CheckTargetDis",
+      "succ_fast_node": "n02231112001_ApplyActionDirect",
+      "idx_in_parent": 0,
+      "base_type": 0,
+      "base_bb_key": "",
+      "target_type": 1,
+      "entity_bb_key": "_T1",
+      "target_abs_pos": [
+        0,
+        0,
+        0
+      ],
+      "distance_type": 1,
+      "distance_value_type": 1,
+      "distance": "6",
+      "skill_id_value_type": 1,
+      "skill_id": "",
+      "operation": "<="
+    }
+  },
+  {
+    "function": "_M.n02231112001_ApplyActionDirect",
+    "source_line": 2123,
+    "source_end_line": 2132,
+    "data": {
+      "node_name": "n02231112001_ApplyActionDirect",
+      "cls": {
+        "lua": "AINodes.ApplyActionDirect"
+      },
+      "parent_node_name": "n0223111200_CBTSequenceNode",
+      "cls_name": "ApplyActionDirect",
+      "idx_in_parent": 1,
+      "action_value": 60
+    }
+  },
+  {
+    "function": "_M.n0223111201_CBTSequenceNode",
+    "source_line": 2134,
+    "source_end_line": 2146,
+    "data": {
+      "node_name": "n0223111201_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022311120_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n02231112010_SetBlackboard"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231112010_SetBlackboard",
+    "source_line": 2148,
+    "source_end_line": 2161,
+    "data": {
+      "node_name": "n02231112010_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n0223111201_CBTSequenceNode",
+      "cls_name": "SetBlackboard",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "is_CA",
+      "value_type": 3,
+      "value": "1",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n0223112_NotNode",
+    "source_line": 2163,
+    "source_end_line": 2176,
+    "data": {
+      "node_name": "n0223112_NotNode",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.NotNode"
+      },
+      "parent_node_name": "n022311_CBTIfElseNode",
+      "cls_name": "NotNode",
+      "idx_in_parent": 2,
+      "child_num": 1,
+      "child_name_list": [
+        "n02231120_Nop"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231120_Nop",
+    "source_line": 2178,
+    "source_end_line": 2186,
+    "data": {
+      "node_name": "n02231120_Nop",
+      "cls": {
+        "lua": "AINodes.Nop"
+      },
+      "parent_node_name": "n0223112_NotNode",
+      "cls_name": "Nop",
+      "idx_in_parent": 0
+    }
+  },
+  {
+    "function": "_M.n022312_CheckDisAndAngleDecorator",
+    "source_line": 2188,
+    "source_end_line": 2225,
+    "data": {
+      "node_name": "n022312_CheckDisAndAngleDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckDisAndAngleDecorator"
+      },
+      "parent_node_name": "n02231_CBTSelectNode",
+      "cls_name": "CheckDisAndAngleDecorator",
+      "fail_fast_node": "n022313_CheckDisAndAngleDecorator",
+      "idx_in_parent": 2,
+      "child_num": 1,
+      "child_name_list": [
+        "n0223120_ApplyActionByCondition"
+      ],
+      "decorator_result": "",
+      "check_dis": true,
+      "base_type": 0,
+      "base_bb_key": "",
+      "target_type": 1,
+      "entity_bb_key": "_T1",
+      "target_abs_pos": [
+        0,
+        0,
+        0
+      ],
+      "distance_type": 1,
+      "distance_value_type": 1,
+      "distance_interval": [
+        0,
+        0
+      ],
+      "distance": "12",
+      "operation": ">",
+      "check_angle": false,
+      "from_type": 0,
+      "from_value": "",
+      "to_type": 1,
+      "to_value": "_T1",
+      "left_v": "-60.0",
+      "right_v": 60.0
+    }
+  },
+  {
+    "function": "_M.n0223120_ApplyActionByCondition",
+    "source_line": 2227,
+    "source_end_line": 2241,
+    "data": {
+      "node_name": "n0223120_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022312_CheckDisAndAngleDecorator",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "3"
+      ],
+      "random_weights": [
+        "100"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022313_CheckDisAndAngleDecorator",
+    "source_line": 2243,
+    "source_end_line": 2280,
+    "data": {
+      "node_name": "n022313_CheckDisAndAngleDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckDisAndAngleDecorator"
+      },
+      "parent_node_name": "n02231_CBTSelectNode",
+      "cls_name": "CheckDisAndAngleDecorator",
+      "fail_fast_node": "n022314_CheckDisAndAngleDecorator",
+      "idx_in_parent": 3,
+      "child_num": 1,
+      "child_name_list": [
+        "n0223130_CBTSelectNode"
+      ],
+      "decorator_result": "",
+      "check_dis": true,
+      "base_type": 0,
+      "base_bb_key": "",
+      "target_type": 1,
+      "entity_bb_key": "_T1",
+      "target_abs_pos": [
+        0,
+        0,
+        0
+      ],
+      "distance_type": 1,
+      "distance_value_type": 1,
+      "distance_interval": [
+        0,
+        0
+      ],
+      "distance": "6",
+      "operation": ">",
+      "check_angle": false,
+      "from_type": 0,
+      "from_value": "",
+      "to_type": 1,
+      "to_value": "_T1",
+      "left_v": "-60.0",
+      "right_v": 60.0
+    }
+  },
+  {
+    "function": "_M.n0223130_CBTSelectNode",
+    "source_line": 2282,
+    "source_end_line": 2296,
+    "data": {
+      "node_name": "n0223130_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n022313_CheckDisAndAngleDecorator",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 3,
+      "child_name_list": [
+        "n02231300_CBTSequenceNode",
+        "n02231301_CheckTimerDecorator",
+        "n02231302_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231300_CBTSequenceNode",
+    "source_line": 2298,
+    "source_end_line": 2312,
+    "data": {
+      "node_name": "n02231300_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0223130_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n02231301_CheckTimerDecorator",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n022313000_CheckBuff",
+        "n022313001_CheckTimerDecorator"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022313000_CheckBuff",
+    "source_line": 2314,
+    "source_end_line": 2332,
+    "data": {
+      "node_name": "n022313000_CheckBuff",
+      "cls": {
+        "lua": "AINodes.CheckBuff"
+      },
+      "parent_node_name": "n02231300_CBTSequenceNode",
+      "cls_name": "CheckBuff",
+      "succ_fast_node": "n022313001_CheckTimerDecorator",
+      "idx_in_parent": 0,
+      "target_type": 2,
+      "target_bb_key": "_T1",
+      "buff_id_from_blackboard": false,
+      "buff_id_bb_key": "buff_id_bb_key",
+      "buff_id": "450100",
+      "check_level": false,
+      "level_value_type": 3,
+      "level_value": "",
+      "level_operation": ">"
+    }
+  },
+  {
+    "function": "_M.n022313001_CheckTimerDecorator",
+    "source_line": 2334,
+    "source_end_line": 2351,
+    "data": {
+      "node_name": "n022313001_CheckTimerDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckTimerDecorator"
+      },
+      "parent_node_name": "n02231300_CBTSequenceNode",
+      "cls_name": "CheckTimerDecorator",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n0223130010_ApplyActionByCondition"
+      ],
+      "decorator_result": "",
+      "timer_key": "xihun_timer",
+      "duration": 40.0,
+      "first_no_exec": false
+    }
+  },
+  {
+    "function": "_M.n0223130010_ApplyActionByCondition",
+    "source_line": 2353,
+    "source_end_line": 2367,
+    "data": {
+      "node_name": "n0223130010_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022313001_CheckTimerDecorator",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "29",
+        "30",
+        "27"
+      ],
+      "random_weights": [
+        "50",
+        "50",
+        "900"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231301_CheckTimerDecorator",
+    "source_line": 2369,
+    "source_end_line": 2387,
+    "data": {
+      "node_name": "n02231301_CheckTimerDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckTimerDecorator"
+      },
+      "parent_node_name": "n0223130_CBTSelectNode",
+      "cls_name": "CheckTimerDecorator",
+      "fail_fast_node": "n02231302_ApplyActionByCondition",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n022313010_ApplyActionByCondition"
+      ],
+      "decorator_result": "",
+      "timer_key": "xihun_timer",
+      "duration": 40.0,
+      "first_no_exec": false
+    }
+  },
+  {
+    "function": "_M.n022313010_ApplyActionByCondition",
+    "source_line": 2389,
+    "source_end_line": 2403,
+    "data": {
+      "node_name": "n022313010_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02231301_CheckTimerDecorator",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "29",
+        "30"
+      ],
+      "random_weights": [
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231302_ApplyActionByCondition",
+    "source_line": 2405,
+    "source_end_line": 2419,
+    "data": {
+      "node_name": "n02231302_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n0223130_CBTSelectNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 2,
+      "random_list": [
+        "48",
+        "49",
+        "24",
+        "3",
+        "21"
+      ],
+      "random_weights": [
+        "50",
+        "50",
+        "50",
+        "10",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022314_CheckDisAndAngleDecorator",
+    "source_line": 2421,
+    "source_end_line": 2458,
+    "data": {
+      "node_name": "n022314_CheckDisAndAngleDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckDisAndAngleDecorator"
+      },
+      "parent_node_name": "n02231_CBTSelectNode",
+      "cls_name": "CheckDisAndAngleDecorator",
+      "fail_fast_node": "n022315_ApplyActionByCondition",
+      "idx_in_parent": 4,
+      "child_num": 1,
+      "child_name_list": [
+        "n0223140_CBTSelectNode"
+      ],
+      "decorator_result": "",
+      "check_dis": true,
+      "base_type": 0,
+      "base_bb_key": "",
+      "target_type": 1,
+      "entity_bb_key": "_T1",
+      "target_abs_pos": [
+        0,
+        0,
+        0
+      ],
+      "distance_type": 1,
+      "distance_value_type": 1,
+      "distance_interval": [
+        0,
+        0
+      ],
+      "distance": "6",
+      "operation": "<=",
+      "check_angle": false,
+      "from_type": 0,
+      "from_value": "",
+      "to_type": 1,
+      "to_value": "_T1",
+      "left_v": "-60.0",
+      "right_v": 60.0
+    }
+  },
+  {
+    "function": "_M.n0223140_CBTSelectNode",
+    "source_line": 2460,
+    "source_end_line": 2474,
+    "data": {
+      "node_name": "n0223140_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n022314_CheckDisAndAngleDecorator",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 3,
+      "child_name_list": [
+        "n02231400_CBTSequenceNode",
+        "n02231401_CheckTimerDecorator",
+        "n02231402_ApplyActionByCondition"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231400_CBTSequenceNode",
+    "source_line": 2476,
+    "source_end_line": 2490,
+    "data": {
+      "node_name": "n02231400_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0223140_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n02231401_CheckTimerDecorator",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n022314000_CheckBuff",
+        "n022314001_CheckTimerDecorator"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022314000_CheckBuff",
+    "source_line": 2492,
+    "source_end_line": 2510,
+    "data": {
+      "node_name": "n022314000_CheckBuff",
+      "cls": {
+        "lua": "AINodes.CheckBuff"
+      },
+      "parent_node_name": "n02231400_CBTSequenceNode",
+      "cls_name": "CheckBuff",
+      "succ_fast_node": "n022314001_CheckTimerDecorator",
+      "idx_in_parent": 0,
+      "target_type": 2,
+      "target_bb_key": "_T1",
+      "buff_id_from_blackboard": false,
+      "buff_id_bb_key": "buff_id_bb_key",
+      "buff_id": "450100",
+      "check_level": false,
+      "level_value_type": 3,
+      "level_value": "",
+      "level_operation": ">"
+    }
+  },
+  {
+    "function": "_M.n022314001_CheckTimerDecorator",
+    "source_line": 2512,
+    "source_end_line": 2529,
+    "data": {
+      "node_name": "n022314001_CheckTimerDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckTimerDecorator"
+      },
+      "parent_node_name": "n02231400_CBTSequenceNode",
+      "cls_name": "CheckTimerDecorator",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n0223140010_ApplyActionByCondition"
+      ],
+      "decorator_result": "",
+      "timer_key": "xihun_timer",
+      "duration": 40.0,
+      "first_no_exec": false
+    }
+  },
+  {
+    "function": "_M.n0223140010_ApplyActionByCondition",
+    "source_line": 2531,
+    "source_end_line": 2545,
+    "data": {
+      "node_name": "n0223140010_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n022314001_CheckTimerDecorator",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "29",
+        "30",
+        "27"
+      ],
+      "random_weights": [
+        "50",
+        "50",
+        "900"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231401_CheckTimerDecorator",
+    "source_line": 2547,
+    "source_end_line": 2565,
+    "data": {
+      "node_name": "n02231401_CheckTimerDecorator",
+      "node_type": 2,
+      "cls": {
+        "lua": "AINodes.CheckTimerDecorator"
+      },
+      "parent_node_name": "n0223140_CBTSelectNode",
+      "cls_name": "CheckTimerDecorator",
+      "fail_fast_node": "n02231402_ApplyActionByCondition",
+      "idx_in_parent": 1,
+      "child_num": 1,
+      "child_name_list": [
+        "n022314010_ApplyActionByCondition"
+      ],
+      "decorator_result": "",
+      "timer_key": "xihun_timer",
+      "duration": 40.0,
+      "first_no_exec": false
+    }
+  },
+  {
+    "function": "_M.n022314010_ApplyActionByCondition",
+    "source_line": 2567,
+    "source_end_line": 2581,
+    "data": {
+      "node_name": "n022314010_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02231401_CheckTimerDecorator",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 0,
+      "random_list": [
+        "29",
+        "30"
+      ],
+      "random_weights": [
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02231402_ApplyActionByCondition",
+    "source_line": 2583,
+    "source_end_line": 2597,
+    "data": {
+      "node_name": "n02231402_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n0223140_CBTSelectNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 2,
+      "random_list": [
+        "50",
+        "25",
+        "53"
+      ],
+      "random_weights": [
+        "50",
+        "50",
+        "50"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022315_ApplyActionByCondition",
+    "source_line": 2599,
+    "source_end_line": 2613,
+    "data": {
+      "node_name": "n022315_ApplyActionByCondition",
+      "cls": {
+        "lua": "AINodes.ApplyActionByCondition"
+      },
+      "parent_node_name": "n02231_CBTSelectNode",
+      "cls_name": "ApplyActionByCondition",
+      "idx_in_parent": 5,
+      "random_list": [
+        "1"
+      ],
+      "random_weights": [
+        "100"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0224_CBTAlwaysSequenceNode",
+    "source_line": 2615,
+    "source_end_line": 2627,
+    "data": {
+      "node_name": "n0224_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n022_ConditionPriorityNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 4,
+      "child_num": 1,
+      "child_name_list": [
+        "n02240_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02240_CBTAlwaysSequenceNode",
+    "source_line": 2629,
+    "source_end_line": 2642,
+    "data": {
+      "node_name": "n02240_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0224_CBTAlwaysSequenceNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n022400_CBTAlwaysSequenceNode",
+        "n022401_SetBlackboard"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022400_CBTAlwaysSequenceNode",
+    "source_line": 2644,
+    "source_end_line": 2658,
+    "data": {
+      "node_name": "n022400_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n02240_CBTAlwaysSequenceNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "fast_node": "n022401_SetBlackboard",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0224000_CBTSequenceNode",
+        "n0224001_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0224000_CBTSequenceNode",
+    "source_line": 2660,
+    "source_end_line": 2674,
+    "data": {
+      "node_name": "n0224000_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022400_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSequenceNode",
+      "fast_node": "n0224001_CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n02240000_JudgeTargetInRangeAction",
+        "n02240001_TurningAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02240000_JudgeTargetInRangeAction",
+    "source_line": 2676,
+    "source_end_line": 2691,
+    "data": {
+      "node_name": "n02240000_JudgeTargetInRangeAction",
+      "cls": {
+        "lua": "AINodes.JudgeTargetInRangeAction"
+      },
+      "parent_node_name": "n0224000_CBTSequenceNode",
+      "cls_name": "JudgeTargetInRangeAction",
+      "succ_fast_node": "n02240001_TurningAction",
+      "idx_in_parent": 0,
+      "from_type": 0,
+      "from_value": "",
+      "to_type": 1,
+      "to_value": "_T1",
+      "left_v": "135.0",
+      "right_v": 225.0
+    }
+  },
+  {
+    "function": "_M.n02240001_TurningAction",
+    "source_line": 2693,
+    "source_end_line": 2716,
+    "data": {
+      "node_name": "n02240001_TurningAction",
+      "cls": {
+        "lua": "AINodes.TurningAction"
+      },
+      "parent_node_name": "n0224000_CBTSequenceNode",
+      "cls_name": "TurningAction",
+      "idx_in_parent": 1,
+      "target_type": 1,
+      "anim_trans_time": -1.0,
+      "entity_bb_key": "_T1",
+      "duration": 3.0,
+      "bias_yaw": 1.05,
+      "diff_yaw": 0.0,
+      "turn_speed": 1.0,
+      "yaw_speed": -1.0,
+      "end_diff": 0.0,
+      "enable_physics": true,
+      "once_turning": false,
+      "scale_yaw": false,
+      "interrupt_watch": true,
+      "turn_on_tach": false,
+      "disable_yaw_controller": false
+    }
+  },
+  {
+    "function": "_M.n0224001_CBTSelectNode",
+    "source_line": 2718,
+    "source_end_line": 2731,
+    "data": {
+      "node_name": "n0224001_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n022400_CBTAlwaysSequenceNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n02240010_CBTSequenceNode",
+        "n02240011_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02240010_CBTSequenceNode",
+    "source_line": 2733,
+    "source_end_line": 2747,
+    "data": {
+      "node_name": "n02240010_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0224001_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n02240011_CBTSelectNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n022400100_CheckTimer",
+        "n022400101_Probability"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022400100_CheckTimer",
+    "source_line": 2749,
+    "source_end_line": 2761,
+    "data": {
+      "node_name": "n022400100_CheckTimer",
+      "cls": {
+        "lua": "AINodes.CheckTimer"
+      },
+      "parent_node_name": "n02240010_CBTSequenceNode",
+      "cls_name": "CheckTimer",
+      "succ_fast_node": "n022400101_Probability",
+      "idx_in_parent": 0,
+      "timer_key_type": 4,
+      "timer_key": "LockTimer2",
+      "is_pass_none_timer": true
+    }
+  },
+  {
+    "function": "_M.n022400101_Probability",
+    "source_line": 2763,
+    "source_end_line": 2780,
+    "data": {
+      "node_name": "n022400101_Probability",
+      "cls": {
+        "lua": "AINodes.CBTProbabilityNode"
+      },
+      "parent_node_name": "n02240010_CBTSequenceNode",
+      "cls_name": "CBTProbabilityNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n0224001010_CBTSequenceNode",
+        "n0224001011_CBTSequenceNode"
+      ],
+      "child_weights": [
+        1,
+        1
+      ],
+      "acc_child_weights": [
+        1,
+        2
+      ],
+      "total_weight": 2,
+      "different_with_last": false
+    }
+  },
+  {
+    "function": "_M.n0224001010_CBTSequenceNode",
+    "source_line": 2782,
+    "source_end_line": 2795,
+    "data": {
+      "node_name": "n0224001010_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022400101_Probability",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n02240010100_CheckBlackboard",
+        "n02240010101_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02240010100_CheckBlackboard",
+    "source_line": 2797,
+    "source_end_line": 2811,
+    "data": {
+      "node_name": "n02240010100_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n0224001010_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n02240010101_CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "lastlockdirection",
+      "operator": "==",
+      "value_type": 3,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n02240010101_CBTAlwaysSequenceNode",
+    "source_line": 2813,
+    "source_end_line": 2827,
+    "data": {
+      "node_name": "n02240010101_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0224001010_CBTSequenceNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 3,
+      "child_name_list": [
+        "n022400101010_SetBlackboard",
+        "n022400101011_SetTimer",
+        "n022400101012_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022400101010_SetBlackboard",
+    "source_line": 2829,
+    "source_end_line": 2843,
+    "data": {
+      "node_name": "n022400101010_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n02240010101_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "fast_node": "n022400101011_SetTimer",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "lastlockdirection",
+      "value_type": 3,
+      "value": "0",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n022400101011_SetTimer",
+    "source_line": 2845,
+    "source_end_line": 2859,
+    "data": {
+      "node_name": "n022400101011_SetTimer",
+      "cls": {
+        "lua": "AINodes.SetTimer"
+      },
+      "parent_node_name": "n02240010101_CBTAlwaysSequenceNode",
+      "cls_name": "SetTimer",
+      "fast_node": "n022400101012_LockAnimLRAction",
+      "idx_in_parent": 1,
+      "timer_key": "LockTimer2",
+      "duration_type": "random",
+      "duration": 1.0,
+      "duration_max": 2.0,
+      "duration_bb": ""
+    }
+  },
+  {
+    "function": "_M.n022400101012_LockAnimLRAction",
+    "source_line": 2861,
+    "source_end_line": 2885,
+    "data": {
+      "node_name": "n022400101012_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n02240010101_CBTAlwaysSequenceNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 2,
+      "entity_bb_key": "_T1",
+      "move_type": 1,
+      "min_duration": "1",
+      "max_duration": "2",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "2",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n0224001011_CBTSequenceNode",
+    "source_line": 2887,
+    "source_end_line": 2900,
+    "data": {
+      "node_name": "n0224001011_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n022400101_Probability",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n02240010110_CheckBlackboard",
+        "n02240010111_CBTAlwaysSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02240010110_CheckBlackboard",
+    "source_line": 2902,
+    "source_end_line": 2916,
+    "data": {
+      "node_name": "n02240010110_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n0224001011_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n02240010111_CBTAlwaysSequenceNode",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "lastlockdirection",
+      "operator": "==",
+      "value_type": 3,
+      "value": "0"
+    }
+  },
+  {
+    "function": "_M.n02240010111_CBTAlwaysSequenceNode",
+    "source_line": 2918,
+    "source_end_line": 2932,
+    "data": {
+      "node_name": "n02240010111_CBTAlwaysSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTAlwaysSequenceNode"
+      },
+      "parent_node_name": "n0224001011_CBTSequenceNode",
+      "cls_name": "CBTAlwaysSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 3,
+      "child_name_list": [
+        "n022400101110_SetBlackboard",
+        "n022400101111_SetTimer",
+        "n022400101112_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022400101110_SetBlackboard",
+    "source_line": 2934,
+    "source_end_line": 2948,
+    "data": {
+      "node_name": "n022400101110_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n02240010111_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "fast_node": "n022400101111_SetTimer",
+      "idx_in_parent": 0,
+      "is_space": false,
+      "key": "lastlockdirection",
+      "value_type": 3,
+      "value": "1",
+      "reason": ""
+    }
+  },
+  {
+    "function": "_M.n022400101111_SetTimer",
+    "source_line": 2950,
+    "source_end_line": 2964,
+    "data": {
+      "node_name": "n022400101111_SetTimer",
+      "cls": {
+        "lua": "AINodes.SetTimer"
+      },
+      "parent_node_name": "n02240010111_CBTAlwaysSequenceNode",
+      "cls_name": "SetTimer",
+      "fast_node": "n022400101112_LockAnimLRAction",
+      "idx_in_parent": 1,
+      "timer_key": "LockTimer2",
+      "duration_type": "random",
+      "duration": 1.0,
+      "duration_max": 2.0,
+      "duration_bb": ""
+    }
+  },
+  {
+    "function": "_M.n022400101112_LockAnimLRAction",
+    "source_line": 2966,
+    "source_end_line": 2990,
+    "data": {
+      "node_name": "n022400101112_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n02240010111_CBTAlwaysSequenceNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 2,
+      "entity_bb_key": "_T1",
+      "move_type": 0,
+      "min_duration": "1",
+      "max_duration": "2",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "2",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n02240011_CBTSelectNode",
+    "source_line": 2992,
+    "source_end_line": 3005,
+    "data": {
+      "node_name": "n02240011_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n0224001_CBTSelectNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n022400110_CBTSequenceNode",
+        "n022400111_CBTSequenceNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022400110_CBTSequenceNode",
+    "source_line": 3007,
+    "source_end_line": 3021,
+    "data": {
+      "node_name": "n022400110_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02240011_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n022400111_CBTSequenceNode",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n0224001100_CheckBlackboard",
+        "n0224001101_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0224001100_CheckBlackboard",
+    "source_line": 3023,
+    "source_end_line": 3037,
+    "data": {
+      "node_name": "n0224001100_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n022400110_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n0224001101_CBTSelectNode",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "lastlockdirection",
+      "operator": "==",
+      "value_type": 3,
+      "value": "0"
+    }
+  },
+  {
+    "function": "_M.n0224001101_CBTSelectNode",
+    "source_line": 3039,
+    "source_end_line": 3052,
+    "data": {
+      "node_name": "n0224001101_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n022400110_CBTSequenceNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n02240011010_CBTSequenceNode",
+        "n02240011011_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02240011010_CBTSequenceNode",
+    "source_line": 3054,
+    "source_end_line": 3068,
+    "data": {
+      "node_name": "n02240011010_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0224001101_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n02240011011_LockAnimLRAction",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n022400110100_CheckObstacle",
+        "n022400110101_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022400110100_CheckObstacle",
+    "source_line": 3070,
+    "source_end_line": 3089,
+    "data": {
+      "node_name": "n022400110100_CheckObstacle",
+      "cls": {
+        "lua": "AINodes.CheckObstacle"
+      },
+      "parent_node_name": "n02240011010_CBTSequenceNode",
+      "cls_name": "CheckObstacle",
+      "succ_fast_node": "n022400110101_LockAnimLRAction",
+      "idx_in_parent": 0,
+      "bb_target": "_T1",
+      "direction": 4,
+      "target_bone_name": "Bip001 Spine1",
+      "target_ent_bone_name": "Scene Root",
+      "distance": 3.0,
+      "collision_type": 39,
+      "ignore_self": false,
+      "draw_line_flag": false,
+      "use_sweep": false,
+      "use_target_ent": false
+    }
+  },
+  {
+    "function": "_M.n022400110101_LockAnimLRAction",
+    "source_line": 3091,
+    "source_end_line": 3115,
+    "data": {
+      "node_name": "n022400110101_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n02240011010_CBTSequenceNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "_T1",
+      "move_type": 0,
+      "min_duration": "1",
+      "max_duration": "2",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "2",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n02240011011_LockAnimLRAction",
+    "source_line": 3117,
+    "source_end_line": 3141,
+    "data": {
+      "node_name": "n02240011011_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n0224001101_CBTSelectNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "_T1",
+      "move_type": 1,
+      "min_duration": "1",
+      "max_duration": "2",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "2",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n022400111_CBTSequenceNode",
+    "source_line": 3143,
+    "source_end_line": 3156,
+    "data": {
+      "node_name": "n022400111_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n02240011_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n0224001110_CheckBlackboard",
+        "n0224001111_CBTSelectNode"
+      ]
+    }
+  },
+  {
+    "function": "_M.n0224001110_CheckBlackboard",
+    "source_line": 3158,
+    "source_end_line": 3172,
+    "data": {
+      "node_name": "n0224001110_CheckBlackboard",
+      "cls": {
+        "lua": "AINodes.CheckBlackboard"
+      },
+      "parent_node_name": "n022400111_CBTSequenceNode",
+      "cls_name": "CheckBlackboard",
+      "succ_fast_node": "n0224001111_CBTSelectNode",
+      "idx_in_parent": 0,
+      "key_from": 1,
+      "key": "lastlockdirection",
+      "operator": "==",
+      "value_type": 3,
+      "value": "1"
+    }
+  },
+  {
+    "function": "_M.n0224001111_CBTSelectNode",
+    "source_line": 3174,
+    "source_end_line": 3187,
+    "data": {
+      "node_name": "n0224001111_CBTSelectNode",
+      "cls": {
+        "lua": "AINodes.CBTSelectNode"
+      },
+      "parent_node_name": "n022400111_CBTSequenceNode",
+      "cls_name": "CBTSelectNode",
+      "idx_in_parent": 1,
+      "child_num": 2,
+      "child_name_list": [
+        "n02240011110_CBTSequenceNode",
+        "n02240011111_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n02240011110_CBTSequenceNode",
+    "source_line": 3189,
+    "source_end_line": 3203,
+    "data": {
+      "node_name": "n02240011110_CBTSequenceNode",
+      "cls": {
+        "lua": "AINodes.CBTSequenceNode"
+      },
+      "parent_node_name": "n0224001111_CBTSelectNode",
+      "cls_name": "CBTSequenceNode",
+      "fail_fast_node": "n02240011111_LockAnimLRAction",
+      "idx_in_parent": 0,
+      "child_num": 2,
+      "child_name_list": [
+        "n022400111100_CheckObstacle",
+        "n022400111101_LockAnimLRAction"
+      ]
+    }
+  },
+  {
+    "function": "_M.n022400111100_CheckObstacle",
+    "source_line": 3205,
+    "source_end_line": 3224,
+    "data": {
+      "node_name": "n022400111100_CheckObstacle",
+      "cls": {
+        "lua": "AINodes.CheckObstacle"
+      },
+      "parent_node_name": "n02240011110_CBTSequenceNode",
+      "cls_name": "CheckObstacle",
+      "succ_fast_node": "n022400111101_LockAnimLRAction",
+      "idx_in_parent": 0,
+      "bb_target": "_T1",
+      "direction": 2,
+      "target_bone_name": "Bip001 Spine1",
+      "target_ent_bone_name": "Scene Root",
+      "distance": 3.0,
+      "collision_type": 39,
+      "ignore_self": false,
+      "draw_line_flag": false,
+      "use_sweep": false,
+      "use_target_ent": false
+    }
+  },
+  {
+    "function": "_M.n022400111101_LockAnimLRAction",
+    "source_line": 3226,
+    "source_end_line": 3250,
+    "data": {
+      "node_name": "n022400111101_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n02240011110_CBTSequenceNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "_T1",
+      "move_type": 1,
+      "min_duration": "1",
+      "max_duration": "2",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "2",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n02240011111_LockAnimLRAction",
+    "source_line": 3252,
+    "source_end_line": 3276,
+    "data": {
+      "node_name": "n02240011111_LockAnimLRAction",
+      "cls": {
+        "lua": "AINodes.LockAnimLRAction"
+      },
+      "parent_node_name": "n0224001111_CBTSelectNode",
+      "cls_name": "LockAnimLRAction",
+      "idx_in_parent": 1,
+      "entity_bb_key": "_T1",
+      "move_type": 0,
+      "min_duration": "1",
+      "max_duration": "2",
+      "lock_speed_type": 0,
+      "move_speed_rate": "0.7",
+      "move_speed_default": "1",
+      "enable_detect_block": true,
+      "detect_block_interval": 1.0,
+      "detect_block_threshold": 1.0,
+      "move_anim_y_not_move_up": true,
+      "is_spec_entity": false,
+      "timeout": "2",
+      "ai_behit_state": true,
+      "tag_id": "lock_behit",
+      "only_one_behit": false
+    }
+  },
+  {
+    "function": "_M.n022401_SetBlackboard",
+    "source_line": 3278,
+    "source_end_line": 3291,
+    "data": {
+      "node_name": "n022401_SetBlackboard",
+      "cls": {
+        "lua": "AINodes.SetBlackboard"
+      },
+      "parent_node_name": "n02240_CBTAlwaysSequenceNode",
+      "cls_name": "SetBlackboard",
+      "idx_in_parent": 1,
+      "is_space": false,
+      "key": "attack_count",
+      "value_type": 3,
+      "value": "0",
+      "reason": ""
+    }
+  }
+]

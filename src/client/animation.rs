@@ -1097,7 +1097,7 @@ mod tests {
                 MotionState::default(),
                 Facing::default(),
                 Health::new(100.0),
-                Combatant::new(WeaponPair::HammerMusket),
+                Combatant::new(WeaponPair::HammerMusket).without_auto_target(),
                 CombatIntent::default(),
                 SpawnPoint(Vec2::ZERO),
             ))
@@ -1183,7 +1183,7 @@ mod tests {
                 let actor = actor(&mut app);
                 app.world_mut()
                     .entity_mut(actor)
-                    .insert(Combatant::new(pair));
+                    .insert(Combatant::new(pair).without_auto_target());
                 if id == "game:walk_guard" {
                     app.world_mut()
                         .entity_mut(actor)
@@ -1823,6 +1823,7 @@ mod tests {
             .add_systems(Update, animate);
         app.finish();
         gameplay::setup(app.world_mut());
+        gameplay::manual_targeting(app.world_mut());
         for _ in 0..12 {
             frame(&mut app, true);
         }

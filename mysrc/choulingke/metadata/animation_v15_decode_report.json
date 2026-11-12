@@ -1,0 +1,1896 @@
+{
+  "decoded": [
+    {
+      "name": "AIR_HIT_FLY_BACKUP_01",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/AIR_HIT_FLY_BACKUP_01.anim",
+      "duration_ms": 2134,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 93895,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1170
+      }
+    },
+    {
+      "name": "HIT_LEVITATE_LIGHT_F",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/HIT_LEVITATE_LIGHT_F.anim",
+      "duration_ms": 701,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 50943,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 8
+      }
+    },
+    {
+      "name": "HIT_LEVITATE_POWER_F",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/HIT_LEVITATE_POWER_F.anim",
+      "duration_ms": 1301,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 70021,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 876
+      }
+    },
+    {
+      "name": "HIT_LEVITATE_STRONG_F",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/HIT_LEVITATE_STRONG_F.anim",
+      "duration_ms": 667,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 53959,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 428
+      }
+    },
+    {
+      "name": "Hit_Atk_ex_shuangdao",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/Hit_Atk_ex_shuangdao.anim",
+      "duration_ms": 6334,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 233460,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3536
+      }
+    },
+    {
+      "name": "attack_02_01",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/attack_02_01.anim",
+      "duration_ms": 7567,
+      "bones": 475,
+      "explicit_names": 320,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 257667,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4110
+      }
+    },
+    {
+      "name": "b_idle",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/b_idle.anim",
+      "duration_ms": 2001,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 75020,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 190
+      }
+    },
+    {
+      "name": "client_b_fight",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_b_fight.anim",
+      "duration_ms": 2001,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 75020,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 190
+      }
+    },
+    {
+      "name": "client_fight_run",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_run.anim",
+      "duration_ms": 634,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 48918,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 50
+      }
+    },
+    {
+      "name": "client_fight_turn_L_135",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_turn_L_135.anim",
+      "duration_ms": 1167,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 60971,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 32
+      }
+    },
+    {
+      "name": "client_fight_turn_L_180",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_turn_L_180.anim",
+      "duration_ms": 1167,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 60977,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 32
+      }
+    },
+    {
+      "name": "client_fight_turn_L_45",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_turn_L_45.anim",
+      "duration_ms": 1001,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 55347,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 32
+      }
+    },
+    {
+      "name": "client_fight_turn_L_90",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_turn_L_90.anim",
+      "duration_ms": 1001,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 58123,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 26
+      }
+    },
+    {
+      "name": "client_fight_turn_R_135",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_turn_R_135.anim",
+      "duration_ms": 1167,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 62309,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 32
+      }
+    },
+    {
+      "name": "client_fight_turn_R_180",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_turn_R_180.anim",
+      "duration_ms": 1167,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 61223,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 32
+      }
+    },
+    {
+      "name": "client_fight_turn_R_45",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_turn_R_45.anim",
+      "duration_ms": 1001,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 55501,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 26
+      }
+    },
+    {
+      "name": "client_fight_turn_R_90",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_fight_turn_R_90.anim",
+      "duration_ms": 1001,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 56029,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 26
+      }
+    },
+    {
+      "name": "client_lock_move_b",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_lock_move_b.anim",
+      "duration_ms": 1867,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 79005,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 876
+      }
+    },
+    {
+      "name": "client_lock_move_f",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_lock_move_f.anim",
+      "duration_ms": 1834,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 78144,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1142
+      }
+    },
+    {
+      "name": "client_lock_move_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_lock_move_l.anim",
+      "duration_ms": 1401,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 68676,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 918
+      }
+    },
+    {
+      "name": "client_lock_move_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_lock_move_r.anim",
+      "duration_ms": 1401,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 66510,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 932
+      }
+    },
+    {
+      "name": "client_skill_fg_b",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_skill_fg_b.anim",
+      "duration_ms": 3267,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 139712,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2038
+      }
+    },
+    {
+      "name": "client_skill_fg_f",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_skill_fg_f.anim",
+      "duration_ms": 2634,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 128909,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1674
+      }
+    },
+    {
+      "name": "client_skill_fg_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_skill_fg_l.anim",
+      "duration_ms": 1567,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 77176,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 946
+      }
+    },
+    {
+      "name": "client_skill_fg_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_skill_fg_r.anim",
+      "duration_ms": 1901,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 102955,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1282
+      }
+    },
+    {
+      "name": "client_skill_gd_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_skill_gd_l.anim",
+      "duration_ms": 1067,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 61230,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 680
+      }
+    },
+    {
+      "name": "client_skill_gd_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_skill_gd_r.anim",
+      "duration_ms": 1201,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 67466,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 652
+      }
+    },
+    {
+      "name": "client_tk_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_tk_l.anim",
+      "duration_ms": 1201,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 66560,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 778
+      }
+    },
+    {
+      "name": "client_tk_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/client_tk_r.anim",
+      "duration_ms": 1334,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 71582,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 904
+      }
+    },
+    {
+      "name": "cq_jian_skill_zs_01_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/cq_jian_skill_zs_01_hit.anim",
+      "duration_ms": 4034,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 161504,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2248
+      }
+    },
+    {
+      "name": "cq_q_skill_zs_01_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/cq_q_skill_zs_01_hit.anim",
+      "duration_ms": 6234,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 218130,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2962
+      }
+    },
+    {
+      "name": "dr_Skill_01_atk_loop",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_01_atk_loop.anim",
+      "duration_ms": 967,
+      "bones": 237,
+      "explicit_names": 237,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 54948,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 624,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "dr_Skill_01_atk_out",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_01_atk_out.anim",
+      "duration_ms": 2634,
+      "bones": 237,
+      "explicit_names": 237,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 111228,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1492,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "dr_Skill_01_in",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_01_in.anim",
+      "duration_ms": 1734,
+      "bones": 237,
+      "explicit_names": 237,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 67138,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 750,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "dr_Skill_01_loop",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_01_loop.anim",
+      "duration_ms": 2001,
+      "bones": 236,
+      "explicit_names": 236,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 67779,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 92,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "dr_Skill_02",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_02.anim",
+      "duration_ms": 5301,
+      "bones": 237,
+      "explicit_names": 237,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 205614,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2794,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "dr_Skill_03",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_03.anim",
+      "duration_ms": 2467,
+      "bones": 233,
+      "explicit_names": 233,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 91278,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1464
+      }
+    },
+    {
+      "name": "dr_Skill_04",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_04.anim",
+      "duration_ms": 3134,
+      "bones": 233,
+      "explicit_names": 233,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 107068,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1744
+      }
+    },
+    {
+      "name": "dr_Skill_05_in",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_05_in.anim",
+      "duration_ms": 5834,
+      "bones": 237,
+      "explicit_names": 237,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 286634,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3592,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "dr_Skill_05_loop_out",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/dr_Skill_05_loop_out.anim",
+      "duration_ms": 5834,
+      "bones": 237,
+      "explicit_names": 237,
+      "encoded_names": 0,
+      "track_count": 3,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 286634,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3592,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "hit_Atk_CJ_01",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_Atk_CJ_01.anim",
+      "duration_ms": 4667,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 179590,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2724
+      }
+    },
+    {
+      "name": "hit_common_repel_heavy_b",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_heavy_b.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 87579,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1086
+      }
+    },
+    {
+      "name": "hit_common_repel_heavy_f",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_heavy_f.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 85689,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1212
+      }
+    },
+    {
+      "name": "hit_common_repel_heavy_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_heavy_l.anim",
+      "duration_ms": 1901,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 89926,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1128
+      }
+    },
+    {
+      "name": "hit_common_repel_heavy_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_heavy_r.anim",
+      "duration_ms": 2067,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 94241,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1114
+      }
+    },
+    {
+      "name": "hit_common_repel_light_b",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_light_b.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 84947,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1100
+      }
+    },
+    {
+      "name": "hit_common_repel_light_f",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_light_f.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 86403,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 820
+      }
+    },
+    {
+      "name": "hit_common_repel_light_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_light_l.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 85837,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 820
+      }
+    },
+    {
+      "name": "hit_common_repel_light_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_light_r.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 83769,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1044
+      }
+    },
+    {
+      "name": "hit_common_repel_medium_b",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_medium_b.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 85999,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1072
+      }
+    },
+    {
+      "name": "hit_common_repel_medium_f",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_medium_f.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 86545,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1058
+      }
+    },
+    {
+      "name": "hit_common_repel_medium_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_medium_l.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 86149,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 820
+      }
+    },
+    {
+      "name": "hit_common_repel_medium_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_medium_r.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 86125,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1044
+      }
+    },
+    {
+      "name": "hit_common_repel_power_b",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_power_b.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 89501,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1142
+      }
+    },
+    {
+      "name": "hit_common_repel_power_f",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_common_repel_power_f.anim",
+      "duration_ms": 1834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 88851,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1142
+      }
+    },
+    {
+      "name": "hit_fly_backup_01",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_fly_backup_01.anim",
+      "duration_ms": 2101,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 93620,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 890
+      }
+    },
+    {
+      "name": "hit_guardbreak",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_guardbreak.anim",
+      "duration_ms": 2201,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 101090,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1548
+      }
+    },
+    {
+      "name": "hit_levitate_F_loop",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_levitate_F_loop.anim",
+      "duration_ms": 1334,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 61055,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 8
+      }
+    },
+    {
+      "name": "hit_weak_01",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_weak_01.anim",
+      "duration_ms": 1967,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 89291,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1142
+      }
+    },
+    {
+      "name": "hit_weak_02",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_weak_02.anim",
+      "duration_ms": 5134,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 162701,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1380
+      }
+    },
+    {
+      "name": "hit_weak_03",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/hit_weak_03.anim",
+      "duration_ms": 1434,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 71878,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 918
+      }
+    },
+    {
+      "name": "skill_huajie_01",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_huajie_01.anim",
+      "duration_ms": 5334,
+      "bones": 475,
+      "explicit_names": 319,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 222420,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3382
+      }
+    },
+    {
+      "name": "skill_huajie_01_jian_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_huajie_01_jian_hit.anim",
+      "duration_ms": 6301,
+      "bones": 475,
+      "explicit_names": 319,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 250754,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4082
+      }
+    },
+    {
+      "name": "skill_huajie_01_modao_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_huajie_01_modao_hit.anim",
+      "duration_ms": 7334,
+      "bones": 475,
+      "explicit_names": 319,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 291416,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4642
+      }
+    },
+    {
+      "name": "skill_huajie_01_shan_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_huajie_01_shan_hit.anim",
+      "duration_ms": 6034,
+      "bones": 475,
+      "explicit_names": 319,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 225550,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2836
+      }
+    },
+    {
+      "name": "skill_huajie_01_shengbiao_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_huajie_01_shengbiao_hit.anim",
+      "duration_ms": 3634,
+      "bones": 475,
+      "explicit_names": 319,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 160260,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2164
+      }
+    },
+    {
+      "name": "skill_huajie_01_shuangdao_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_huajie_01_shuangdao_hit.anim",
+      "duration_ms": 6334,
+      "bones": 475,
+      "explicit_names": 319,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 259288,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4236
+      }
+    },
+    {
+      "name": "skill_modao_zs_01_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_modao_zs_01_hit.anim",
+      "duration_ms": 2734,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 119556,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1422
+      }
+    },
+    {
+      "name": "skill_rtd_01",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_rtd_01.anim",
+      "duration_ms": 7401,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 256359,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4026
+      }
+    },
+    {
+      "name": "skill_shengbiao_zs_01_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_shengbiao_zs_01_hit.anim",
+      "duration_ms": 4667,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 180582,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2738
+      }
+    },
+    {
+      "name": "skill_wmgd_03",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_wmgd_03.anim",
+      "duration_ms": 1667,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 81102,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 960
+      }
+    },
+    {
+      "name": "skill_ylk_1",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_1.anim",
+      "duration_ms": 6267,
+      "bones": 88,
+      "explicit_names": 88,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 224101,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3900
+      }
+    },
+    {
+      "name": "skill_ylk_10",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_10.anim",
+      "duration_ms": 4401,
+      "bones": 1000,
+      "explicit_names": 1000,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 233459,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2836,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_11",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_11.anim",
+      "duration_ms": 4834,
+      "bones": 116,
+      "explicit_names": 3,
+      "encoded_names": 113,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 199763,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3116
+      }
+    },
+    {
+      "name": "skill_ylk_12",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_12.anim",
+      "duration_ms": 3967,
+      "bones": 81,
+      "explicit_names": 81,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 124400,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2542,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "skill_ylk_1_2",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_1_2.anim",
+      "duration_ms": 5434,
+      "bones": 110,
+      "explicit_names": 3,
+      "encoded_names": 107,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 228917,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3242,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_2",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_2.anim",
+      "duration_ms": 6201,
+      "bones": 464,
+      "explicit_names": 308,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 282578,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3900
+      }
+    },
+    {
+      "name": "skill_ylk_3",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_3.anim",
+      "duration_ms": 5834,
+      "bones": 464,
+      "explicit_names": 308,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 262520,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3662
+      }
+    },
+    {
+      "name": "skill_ylk_4",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_4.anim",
+      "duration_ms": 9401,
+      "bones": 1000,
+      "explicit_names": 1000,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 387007,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 5174,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "skill_ylk_5",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_5.anim",
+      "duration_ms": 5234,
+      "bones": 85,
+      "explicit_names": 85,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 148468,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2906,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_5_1",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_5_1.anim",
+      "duration_ms": 4834,
+      "bones": 85,
+      "explicit_names": 85,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 138436,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2444,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_5_1_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_5_1_hit.anim",
+      "duration_ms": 12434,
+      "bones": 86,
+      "explicit_names": 5,
+      "encoded_names": 81,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 353839,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4572,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_6",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_6.anim",
+      "duration_ms": 9734,
+      "bones": 999,
+      "explicit_names": 999,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 368361,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 5370,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_7",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_7.anim",
+      "duration_ms": 9567,
+      "bones": 999,
+      "explicit_names": 999,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 409107,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 5314
+      }
+    },
+    {
+      "name": "skill_ylk_8",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_8.anim",
+      "duration_ms": 9401,
+      "bones": 112,
+      "explicit_names": 3,
+      "encoded_names": 109,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 374026,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 6000
+      }
+    },
+    {
+      "name": "skill_ylk_9",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_9.anim",
+      "duration_ms": 3501,
+      "bones": 89,
+      "explicit_names": 4,
+      "encoded_names": 85,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 117872,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2304,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_P2_10",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_10.anim",
+      "duration_ms": 9501,
+      "bones": 115,
+      "explicit_names": 115,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 322892,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 5398,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_P2_11",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_11.anim",
+      "duration_ms": 5501,
+      "bones": 115,
+      "explicit_names": 115,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 199746,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3494,
+        "TRACKS_DATA": [
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "skill_ylk_P2_12",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_12.anim",
+      "duration_ms": 3567,
+      "bones": 115,
+      "explicit_names": 2,
+      "encoded_names": 113,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 131215,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1968,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_P2_13",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_13.anim",
+      "duration_ms": 5934,
+      "bones": 118,
+      "explicit_names": 118,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 198741,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3662,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_P2_14",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_14.anim",
+      "duration_ms": 5834,
+      "bones": 66,
+      "explicit_names": 66,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 167828,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3872
+      }
+    },
+    {
+      "name": "skill_ylk_P2_1_behit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_1_behit.anim",
+      "duration_ms": 3801,
+      "bones": 464,
+      "explicit_names": 310,
+      "encoded_names": 154,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 159411,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2500
+      }
+    },
+    {
+      "name": "skill_ylk_P2_2",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_2.anim",
+      "duration_ms": 5667,
+      "bones": 999,
+      "explicit_names": 999,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 257769,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3186,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "skill_ylk_P2_3",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_3.anim",
+      "duration_ms": 4467,
+      "bones": 111,
+      "explicit_names": 2,
+      "encoded_names": 109,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 171819,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2850,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_P2_4",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_4.anim",
+      "duration_ms": 7301,
+      "bones": 81,
+      "explicit_names": 81,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 238476,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4810
+      }
+    },
+    {
+      "name": "skill_ylk_P2_5",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_5.anim",
+      "duration_ms": 5767,
+      "bones": 261,
+      "explicit_names": 84,
+      "encoded_names": 177,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 251834,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3662,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "skill_ylk_P2_6",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_6.anim",
+      "duration_ms": 5501,
+      "bones": 999,
+      "explicit_names": 999,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 255629,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3172
+      }
+    },
+    {
+      "name": "skill_ylk_P2_7",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_7.anim",
+      "duration_ms": 5501,
+      "bones": 70,
+      "explicit_names": 70,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 171280,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3368
+      }
+    },
+    {
+      "name": "skill_ylk_P2_8",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_8.anim",
+      "duration_ms": 11767,
+      "bones": 64,
+      "explicit_names": 2,
+      "encoded_names": 62,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 456883,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 6546
+      }
+    },
+    {
+      "name": "skill_ylk_P2_8_behit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_8_behit.anim",
+      "duration_ms": 5967,
+      "bones": 90,
+      "explicit_names": 5,
+      "encoded_names": 85,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 205423,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3690,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "skill_ylk_P2_9",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_9.anim",
+      "duration_ms": 6134,
+      "bones": 70,
+      "explicit_names": 70,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 183194,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3508
+      }
+    },
+    {
+      "name": "skill_ylk_P2_9_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_9_hit.anim",
+      "duration_ms": 5334,
+      "bones": 80,
+      "explicit_names": 80,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 149565,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3186,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_P2_break",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_break.anim",
+      "duration_ms": 5101,
+      "bones": 109,
+      "explicit_names": 2,
+      "encoded_names": 107,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 182883,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3364,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_P2_executebehit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_P2_executebehit.anim",
+      "duration_ms": 17467,
+      "bones": 84,
+      "explicit_names": 84,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 450136,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 9832,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_huajie_6_1",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_huajie_6_1.anim",
+      "duration_ms": 5001,
+      "bones": 85,
+      "explicit_names": 4,
+      "encoded_names": 81,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 151037,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2934,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylk_p2_1",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylk_p2_1.anim",
+      "duration_ms": 9901,
+      "bones": 111,
+      "explicit_names": 2,
+      "encoded_names": 109,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 390185,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 6308,
+        "TRACKS_DATA": 3
+      }
+    },
+    {
+      "name": "skill_ylkzl_skill_1",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylkzl_skill_1.anim",
+      "duration_ms": 5834,
+      "bones": 116,
+      "explicit_names": 3,
+      "encoded_names": 113,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 345526,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4096,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "skill_ylkzl_skill_2",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylkzl_skill_2.anim",
+      "duration_ms": 7001,
+      "bones": 116,
+      "explicit_names": 3,
+      "encoded_names": 113,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 482136,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 4908
+      }
+    },
+    {
+      "name": "skill_ylkzl_skill_3",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylkzl_skill_3.anim",
+      "duration_ms": 4667,
+      "bones": 116,
+      "explicit_names": 3,
+      "encoded_names": 113,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 219524,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 3214
+      }
+    },
+    {
+      "name": "skill_ylkzl_skill_4",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_ylkzl_skill_4.anim",
+      "duration_ms": 4634,
+      "bones": 116,
+      "explicit_names": 3,
+      "encoded_names": 113,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 220748,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 2178
+      }
+    },
+    {
+      "name": "skill_yw_01",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_yw_01.anim",
+      "duration_ms": 7067,
+      "bones": 475,
+      "explicit_names": 319,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 240924,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1758
+      }
+    },
+    {
+      "name": "skill_zs_01_shan_hit",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/skill_zs_01_shan_hit.anim",
+      "duration_ms": 2001,
+      "bones": 474,
+      "explicit_names": 318,
+      "encoded_names": 156,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 98484,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 1170
+      }
+    },
+    {
+      "name": "weakhit_b",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/weakhit_b.anim",
+      "duration_ms": 834,
+      "bones": 86,
+      "explicit_names": 86,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 24911,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 554,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "weakhit_f",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/weakhit_f.anim",
+      "duration_ms": 834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 54711,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 428
+      }
+    },
+    {
+      "name": "weakhit_far_b",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/weakhit_far_b.anim",
+      "duration_ms": 834,
+      "bones": 86,
+      "explicit_names": 86,
+      "encoded_names": 0,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 24911,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 554,
+        "TRACKS_DATA": [
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "name": "weakhit_far_f",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/weakhit_far_f.anim",
+      "duration_ms": 834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 54711,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 428
+      }
+    },
+    {
+      "name": "weakhit_far_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/weakhit_far_l.anim",
+      "duration_ms": 834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 55047,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 442
+      }
+    },
+    {
+      "name": "weakhit_far_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/weakhit_far_r.anim",
+      "duration_ms": 834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 55531,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 400
+      }
+    },
+    {
+      "name": "weakhit_l",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/weakhit_l.anim",
+      "duration_ms": 834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 55047,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 442
+      }
+    },
+    {
+      "name": "weakhit_r",
+      "file": "/home/asuka/kiva-asset-research/choulingke/extracted/animation/weakhit_r.anim",
+      "duration_ms": 834,
+      "bones": 473,
+      "explicit_names": 318,
+      "encoded_names": 155,
+      "track_count": 2,
+      "sections": {
+        "HEADER": 32,
+        "CHANNEL_DATA": 55531,
+        "CURVE_DATA": 1,
+        "MOTION_DATA": 400
+      }
+    }
+  ],
+  "failed": []
+}
