@@ -7,7 +7,7 @@
 
 ## 资料边界
 
-- `mysrc/boss_01` 是同一资源包的中性命名重提取：五棵核心行为树与 `boss.rs` 已用的数据一致，
+- `~/go/src/github.com/fxkt-tech/mysrc/boss_01`（仓库外，原在 `mysrc/boss_01`）是同一资源包的中性命名重提取：五棵核心行为树与 `boss.rs` 已用的数据一致，
   动画二进制与旧 `mysrc/choulingke` 逐字节相同。新增可用的只有尚未接入的行为树（受击、虚弱、P1 特殊、分身、死亡）。
 - 技能槽 `9002xxxx` → 片段的映射仍未恢复（`skill_slots.json` 全部 `slot_to_animation: null`）。
   **下表的动作 → 片段配对和片段裁剪区间是 Kiva 适配**，不是原作配置。

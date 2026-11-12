@@ -4,7 +4,7 @@
 
 ## Goal
 
-用 `mysrc/boss_01/reparsed/ai` 的原作行为树重写愁铃客的决策，去掉旧的“三招一轮、停 3 秒”节奏。
+用 `~/go/src/github.com/fxkt-tech/mysrc/boss_01/reparsed/ai`（仓库外）的原作行为树重写愁铃客的决策，去掉旧的“三招一轮、停 3 秒”节奏。
 
 ## 来源
 
@@ -37,7 +37,7 @@
 
 - 自身增益 450079 分支、受击计数与金身（`BOSS01_behit`、`behit_gold` → 34）、真气虚弱（`BOSS01_weak`）。
 - 锁定 / 闪避 / 80 / 81 事件标签（`lock_behit`、`dodgetandao` → 4、6–9）。
-- 成就增益 450100 与吸魂 27、`CheckObstacle` 障碍探测、目标在背后时的 `TurningAction`（Boss 每步直接面向目标）。
+- 成就增益 450100 与吸魂 27、`CheckObstacle` 障碍探测。
 - P1 柱子特殊招、分身、死亡树。
 
 ## Acceptance Criteria
@@ -48,6 +48,10 @@
 - [x] 正反防御、闪避、弹反收步、墙体、暂停/HitStop、阶段、死亡重置回归通过
 - [x] `make check`、WASM Clippy 通过；`make bake-hits` 可复现
 - [ ] 用户在运行中的游戏里验收手感
+
+## 补充：背后转身（2026-11-13）
+
+原作只在动作 1/2/3 和打满一轮后的游走开头检查目标是否在背后（135°–225°），是则先 `TurningAction` 原地转身；出招和开场游走不检查。已按此实现为 `BossState::Turning`。转速原作取转身动画速度（`yaw_speed=-1`），未恢复，Kiva 用 180°/s；3s 超时取原值。
 
 ## 验证记录（2026-11-13）
 

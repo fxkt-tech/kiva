@@ -23,6 +23,8 @@ pub enum BossPhase {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BossState {
     Idle,
+    /// Turning in place to face a target behind before moving.
+    Turning,
     Pursuing,
     Strafing,
     Telegraph,
@@ -50,6 +52,16 @@ impl KivaTuning {
     const CIRCLE_SPEED: f32 = 0.7;
     /// A `LockAnimDistanceAction` gives up after this long.
     const APPROACH_TIMEOUT: f32 = 5.0;
+    /// `JudgeTargetInRangeAction` 135..225: the target is behind when it is
+    /// at least this far round from the Boss's facing.
+    const BEHIND: f32 = 135.0 * std::f32::consts::PI / 180.0;
+    /// `TurningAction` duration: the turn gives up after this long.
+    const TURN_TIMEOUT: f32 = 3.0;
+    /// Turning speed in rad/s. The source turns at its turn animation's
+    /// speed (`yaw_speed=-1`), which is unrecovered: half a turn per second.
+    const TURN_RATE: f32 = std::f32::consts::PI;
+    /// The turn is done within this angle of the target.
+    const TURN_DONE: f32 = 0.05;
     const TRANSITION: f32 = 2.2;
     const RESPAWN: f32 = 3.0;
     const DAMAGE_P1: f32 = 14.0;
@@ -96,6 +108,8 @@ pub struct Boss {
     after_circle: Option<u16>,
     /// The circling which ends the phase tree's attack round resets the count.
     resets_count: bool,
+    /// What the Boss does once it has turned to face its target.
+    pending: Option<Plan>,
     /// Phase one marks its target below 65% health (buff 450097).
     marked: bool,
     /// The target guarded the last strike (`GedangCondition`).
@@ -121,6 +135,7 @@ impl Default for Boss {
             circle_left: false,
             after_circle: None,
             resets_count: false,
+            pending: None,
             marked: false,
             guarded: false,
         }
@@ -277,6 +292,7 @@ impl Boss {
         Plan::Circle {
             seconds,
             then: None,
+            turn: true,
         }
     }
 
@@ -312,10 +328,25 @@ impl Boss {
         }
     }
 
+    /// Start `plan` toward a target in `direction`. A movement plan whose
+    /// target is behind first turns in place to face it (the source's
+    /// `JudgeTargetInRangeAction` 135..225 + `TurningAction`).
+    fn take_up(&mut self, plan: Plan, facing: &mut Facing, direction: Vec2) {
+        let behind = facing.direction().angle_to(direction).abs() >= KivaTuning::BEHIND;
+        if plan.turns_first() && behind && self.state != BossState::Turning {
+            self.pending = Some(plan);
+            self.action = None;
+            self.enter(BossState::Turning, KivaTuning::TURN_TIMEOUT);
+            return;
+        }
+        facing.set(direction);
+        self.carry_out(plan);
+    }
+
     fn carry_out(&mut self, plan: Plan) {
         match plan {
             Plan::Act(action) => self.begin_action(action),
-            Plan::Circle { seconds, then } => {
+            Plan::Circle { seconds, then, .. } => {
                 self.action = None;
                 self.circle(seconds, then);
             }
@@ -492,6 +523,17 @@ pub(super) fn advance(
         let mut decided = None;
         match boss.state {
             BossState::Idle => decided = Some(boss.decide(sight)),
+            BossState::Turning => {
+                movement.stop();
+                let forward = facing.direction();
+                let angle = forward.angle_to(direction);
+                let step = KivaTuning::TURN_RATE * dt;
+                if angle.abs() <= step.max(KivaTuning::TURN_DONE) || boss.elapsed >= boss.duration {
+                    decided = boss.pending.take();
+                } else {
+                    facing.set(Vec2::from_angle(step * angle.signum()).rotate(forward));
+                }
+            }
             BossState::Pursuing => {
                 facing.set(direction);
                 movement.set(direction);
@@ -664,8 +706,7 @@ pub(super) fn advance(
             BossState::Transition | BossState::Defeated => unreachable!(),
         }
         if let Some(plan) = decided {
-            facing.set(direction);
-            boss.carry_out(plan);
+            boss.take_up(plan, &mut facing, direction);
             if boss.state == BossState::Telegraph {
                 feedback.push(
                     entity,
@@ -887,6 +928,11 @@ mod tests {
                 boss.mind.choose(sight); // the phase's opening
                 boss.mind.attack_count = source::attack_limit(phase);
             }
+            // Facing the player, so the circling needs no turn first.
+            app.world_mut()
+                .get_mut::<Facing>(boss)
+                .unwrap()
+                .set(Vec2::Y);
             tick(&mut app, 1);
             let snapshot = app.world().get::<Boss>(boss).unwrap();
             assert_eq!(snapshot.state(), BossState::Strafing);
@@ -896,6 +942,69 @@ mod tests {
             // A fresh round: at most the strike just chosen is counted.
             assert!(app.world().get::<Boss>(boss).unwrap().attack_count() <= 1);
         }
+    }
+
+    /// The Boss taking up `plan` while its target (straight along +Z, as
+    /// the fixture places it) is `around` radians round from its facing.
+    fn arena_turn(plan: Plan, around: f32) -> (App, Entity) {
+        let (mut app, _, boss) = arena();
+        let toward = Vec2::Y;
+        let mut facing = Facing::default();
+        facing.set(Vec2::from_angle(around).rotate(toward));
+        app.world_mut()
+            .get_mut::<Boss>(boss)
+            .unwrap()
+            .take_up(plan, &mut facing, toward);
+        app.world_mut()
+            .get_mut::<Facing>(boss)
+            .unwrap()
+            .set(facing.direction());
+        (app, boss)
+    }
+
+    #[test]
+    fn a_target_behind_is_faced_by_turning_in_place_before_moving() {
+        let (mut app, boss) = arena_turn(Plan::Act(1), std::f32::consts::PI);
+        assert_eq!(state(&app, boss), BossState::Turning);
+        assert_eq!(app.world().get::<Boss>(boss).unwrap().action_id(), None);
+        let mut ticks = 0;
+        while state(&app, boss) == BossState::Turning {
+            assert_eq!(app.world().get::<MoveIntent>(boss).unwrap().0, Vec2::ZERO);
+            tick(&mut app, 1);
+            ticks += 1;
+        }
+        // Half a turn at half a turn per second.
+        assert!((55..=65).contains(&ticks), "turned in {ticks} steps");
+        let snapshot = app.world().get::<Boss>(boss).unwrap();
+        assert_eq!(snapshot.state(), BossState::Strafing);
+        assert_eq!(snapshot.action_id(), Some(1));
+        let facing = app.world().get::<Facing>(boss).unwrap().direction();
+        assert!(facing.angle_to(Vec2::Y).abs() < 0.1);
+    }
+
+    #[test]
+    fn only_movement_turns_first_and_only_from_behind() {
+        // To one side, the Boss moves at once.
+        let (app, boss) = arena_turn(Plan::Act(3), 2.0);
+        assert_eq!(state(&app, boss), BossState::Pursuing);
+        // A strike never turns first, even from behind.
+        let (app, boss) = arena_turn(Plan::Act(10), std::f32::consts::PI);
+        assert_eq!(state(&app, boss), BossState::Telegraph);
+        // The round-end circling turns, the opening circling does not.
+        let round_end = Plan::Circle {
+            seconds: 1.5,
+            then: None,
+            turn: true,
+        };
+        let (app, boss) = arena_turn(round_end, std::f32::consts::PI);
+        assert_eq!(state(&app, boss), BossState::Turning);
+        let opening = Plan::Circle {
+            seconds: 2.0,
+            then: Some(45),
+            turn: false,
+        };
+        let (app, boss) = arena_turn(opening, std::f32::consts::PI);
+        assert_eq!(state(&app, boss), BossState::Strafing);
     }
 
     #[test]

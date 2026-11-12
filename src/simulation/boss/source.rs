@@ -1,5 +1,6 @@
 //! The source encounter's decisions, transcribed node by node from
-//! `mysrc/boss_01/reparsed/ai`: the phase trees `51000025_BOSS01_fight_P1` and
+//! `reparsed/ai` of the boss_01 package (kept outside this repository, in
+//! `~/go/src/github.com/fxkt-tech/mysrc/boss_01`): the phase trees `51000025_BOSS01_fight_P1` and
 //! `51000031_BOSS01_fight_P2`, the dispatch tree `51000025_BOSS01_fight_Action`
 //! and the combo trees `51000025_BOSS01_P1_ComboCondition` /
 //! `51000031_BOSS01_P2_ComboCondition`. Action numbers, weights, distances,
@@ -148,11 +149,26 @@ pub(super) struct Sight {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(super) enum Plan {
     Act(u16),
-    /// Circle the target for `seconds`, then do `then`.
+    /// Circle the target for `seconds`, then do `then`. `turn`: first turn
+    /// to face a target behind (the round-end circling checks, the opening
+    /// circling does not).
     Circle {
         seconds: f32,
         then: Option<u16>,
+        turn: bool,
     },
+}
+
+impl Plan {
+    /// Whether this plan begins with the source's `JudgeTargetInRangeAction`
+    /// and `TurningAction`: the dispatch tree's movement actions 1, 2 and 3
+    /// and the phase trees' round-end circling. Skills do not.
+    pub fn turns_first(self) -> bool {
+        match self {
+            Plan::Act(action) => (1..=3).contains(&action),
+            Plan::Circle { turn, .. } => turn,
+        }
+    }
 }
 
 impl Mind {
@@ -255,6 +271,7 @@ impl Mind {
                     return Plan::Circle {
                         seconds: 2.0,
                         then: self.pick(&[(45, 100)]),
+                        turn: false,
                     };
                 }
                 let action = if d > 12.0 {
@@ -561,14 +578,16 @@ mod tests {
             mind.choose(sight(BossPhase::One, 3.0)),
             Plan::Circle {
                 seconds: 2.0,
-                then: Some(45)
+                then: Some(45),
+                turn: false,
             }
         );
         assert_ne!(
             mind.choose(sight(BossPhase::One, 3.0)),
             Plan::Circle {
                 seconds: 2.0,
-                then: Some(45)
+                then: Some(45),
+                turn: false,
             }
         );
         assert_eq!(

@@ -112,6 +112,7 @@ fn target_snapshot<'a>(
         maximum: health.maximum(),
         status: boss.map_or("锁定目标", |boss| match boss.state() {
             BossState::Idle => "伺机而动",
+            BossState::Turning => "转身中",
             BossState::Pursuing => "逼近中",
             BossState::Strafing => "游走中",
             BossState::Telegraph => "蓄势 · 留意来袭",
