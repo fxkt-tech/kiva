@@ -21,13 +21,14 @@ client 只提交意图和读取快照；不拥有动作计时、伤害、耐力�
 - DefenseKind::{Idle,Deflect,Waiting,Guard,Parry}；Stamina::{current,maximum,quiet_elapsed}。
 - HitContext／HitOutcome 供普通敌人与 Boss 共用来袭结算。事件含 sequence、actor、source_owner、pair: Option<WeaponPair>、action_id、hit_index、kind 和真实起止位置。`HitContext.origin` 是攻击者位置（决定防御是否正面），`contact: Option<Vec3>` 是刀刃接触点；有接触点时受击事件的 `position` 取它。
 - `HitTrack { duration, samples, windows, blade_radius, reach }` 是一招的刀刃轨迹；`TrackId::{all,duration,hit_track}` 列出全部挥刀招式、给出权威时长与烘焙数据。`ActionKind::{ALL,swings_blade}`、`WeaponPair::melee_skill`、`Boss::STRIKE_DURATION` 供烘焙与表现读取。
+- `Projectile` 是飞行中的一发：`owner／pair／action_id／index／position／interpolated(alpha)／direction／age／radius／is_thrown／is_returning／is_locked` 只读；`clear_projectiles(world)` 在敌人集合替换时清掉全部飞行物。`CombatEffect::ShotImpact` 表示一发被敌人以外的东西挡下（位置为落点）。`Combatant::axe_away()` 在近战武器被扔出未回、或拉近的链子占用时为真。
 - `HitProbes { enabled }` 是只读的判定几何历史（刀刃切片、受击胶囊、接触点），仅供调试显示；规则不读取它。
 
 ## Contracts
 
 ### 数据与模块
 
-技能数值只有一份：`combat/skills.rs` 的 `SkillSpec { duration, cooldown, cast_range, shape }`。`shape` 为 `Blade`（普攻，只有刀刃扫掠，数值取 `MeleeProfile`）、`Area`（刀刃扫掠加一次范围伤害，中心为自身或锁定目标）、`Shot`（妹妹单发，可带离手时刻）或 `Volley`（妹妹三连发，可带拉近）。准入用的施放距离与结算用的射程读同一个 `cast_range`；下文各节的数字是这张表的说明，以表为准。`WeaponPair::action(Slot)` 把输入槽位映射到动作。
+技能数值只有一份：`combat/skills.rs` 的 `SkillSpec { duration, cooldown, cast_range, shape }`。`shape` 为 `Blade`（普攻，只有刀刃扫掠，数值取 `MeleeProfile`）、`Area`（刀刃扫掠加一次范围伤害，中心为自身或锁定目标）、`Shot`（妹妹单发；`thrown` 表示发出去的是哥哥的近战武器）或 `Volley`（妹妹三连发，可带拉近）。`Shot`／`Volley` 各带一个 `ProjectileSpec { speed, radius, max_range, guidance }`。准入用的施放距离与结算用的射程读同一个 `cast_range`；下文各节的数字是这张表的说明，以表为准。`WeaponPair::action(Slot)` 把输入槽位映射到动作。
 加一个已有形态的技能：加 `ActionKind` 变体、一行 `spec` 和一处槽位映射，不写新的规则代码。联动窗口的保持条件（锤鸟要求原目标浮空、链斧弓要求被本次动作僵直）仍在 `availability::window_valid` 里按武器组判断。
 每行另有 `wear`（准入时扣的武器耐久）和 `rage`（强化释放积累的暴怒）；`Area`／`Shot` 带 `empowered`（强化倍率）。
 `ActionKind::{shot_times,throw_times,return_window,strike_effect}` 把表里的时间点和起手效果以只读方式提供给表现层；`WeaponPair::ALL` 是全部武器组的声明顺序。
@@ -69,16 +70,29 @@ E／Q 冷却独立、跨武器组保留；技能动作中不接受新攻击、�
 Jump／Dodge只在motor真实接受后记录，拒绝的第三次跳跃不发声。Land由物理publish后的真实离地→接触产生，有0.05s离地去抖；初次接地、传送、复活先重建基线，不制造落地。
 Footstep累计碰撞后相对支撑面的真实位移，排除空气、堵墙、无输入、滑铲／闪避；步距2m、蹲伏0.8m再乘Body.scale是Kiva适配。各客户端独立消费游标，暂停／HitStop不推进运动事实，不用声音时钟驱动物理。
 
+### 远程弹体
+
+远程攻击在标记时刻只发射，不结算。`combat/projectile.rs` 的每一发是一个没有碰撞体的 `Projectile` 实体，`advance_projectiles` 排在玩家动作结算之后、普通敌人之前，受同一暂停／HitStop 门控。
+
+- 每步先按制导转向，再从上一位置到新位置做球体扫掠（半径取该行，排除发射者与传感器，已倒地或处于无敌阶段的敌人不挡路）：先碰到的是敌人就由它吃下这一发，是别的东西就停在那里并发 `ShotImpact`。飞满 `max_range` 即消失。挡在路线上的其他敌人会替原目标挨打。
+- **是否锁定是每个技能行的数据**：`Guidance::Locked { turn_rate }` 每步以不超过该角速度转向发射时记下的原目标的瞄准点，最后一步之内直接飞向它；原目标失效后保持当时方向直飞。`Guidance::Straight` 沿发射方向直飞，不追任何目标。锁定的技能保留“需要锁定目标且在 `cast_range` 内”的准入；直飞的技能把 `cast_range` 留空，不需要锁定，没有目标时朝正前方发射（`DEFAULT_AIM_DISTANCE`）。当前四个远程技能全部是 `Locked { turn_rate: 12 }`；`Straight` 由弹体测试覆盖，暂无技能行使用。
+- 命中走共同的 `hit_enemy`：伤害、控制、烈阳、事件归属不变，受击事件位置是弹体接触点，`origin` 是枪口。弹体带着发射时冻结的动作快照，命中事件的 `action_id／pair／hit_index` 不随之后的换组或新动作改变。
+- 命中才触发的效果都移到弹体落点：Q 的僵直与联动窗口（仍要求打中的是该动作的原目标）、锤鸟每发的 `SniperImpact`、最后一发的 HitStop。`Shot`／`SniperShot`／`AxeThrow` 事件在发射时发出。
+- 三连发每发在自己的标记时刻朝原目标当时的位置发射；锁定的连发在原目标失效后取消尚未发射的部分，已在飞的继续飞。
+- 被扔出的近战武器（链斧）命中或飞满射程后原速飞回主人胸口，回程不再碰撞；回到手上或拉近联动开始接管时才算归还。归还前 `axe_away()` 为真，该组不能普攻或用近战技能，切到另一组不受影响。
+- 主人倒地时他的飞行物立即消失；F2 换敌人经 `clear_projectiles` 清空。
+- 初值（待试玩）：鸟铳 120 m/s、锤鸟连发 160 m/s、弓箭 60 m/s、链斧 35 m/s；射程 26m（链斧 16m）。
+
 ### 两套技能与联动
 
 锤 E 在原目标 4.5m 内、其周围 3m 内结算 20 伤害和约 3m 真实物理击飞；必须原目标实际被击飞才开放对应窗口。范围在烘焙轨迹的落点时刻结算，刀刃先碰到的敌人先结算，每个敌人一次。
-鸟铳 Q 是妹妹单枪、40 伤害及 0.45s 僵直。锤鸟 Tab 消费本次 E 的原目标窗口，0.30／0.42／0.54s 三发分别结算 28 伤害，总序列 0.96s。
+鸟铳 Q 是妹妹单枪（0.18s 发射）、40 伤害及 0.45s 僵直。锤鸟 Tab 消费本次 E 的原目标窗口，0.30／0.42／0.54s 三发分别发射、各 28 伤害，总序列 0.96s。伤害在弹体到达时结算。
 链斧 E 围绕自身造成范围伤害并施加单一 SlowEffect，减速进入真实 motor；同类效果不叠乘。
-弓 Q 发射链斧、35 伤害和 0.90s 僵直，离手期间不能再次用该链斧近战；未接联动则按时间线归还。
-链斧弓 Tab 必须原目标仍被本次 source_action_id 僵直；0.12／0.28／0.44s 三箭分别 18 伤害，总序列 0.93s。
+弓 Q 在 0.15s 发射链斧、35 伤害和 0.90s 僵直，离手期间不能再次用该链斧近战；未接联动则链斧飞回手中才归还，与技能时长无关。
+链斧弓 Tab 必须原目标仍被本次 source_action_id 僵直；0.12／0.28／0.44s 三箭分别发射、各 18 伤害，总序列 0.93s。
 拉近接受胶囊碰撞，最大平面速度 18m/s、最多 0.65s、接近约 1.4m 停止；高差、墙体或持续无有效前进时取消。不能改显示根／Position 伪造接近。
-Tab 接受时要求浮空／本次僵直；承诺后自然落地或僵直到期不取消已经接受的三发。每发仍检查原目标、范围、视线和阶段无敌，不跳转新目标。
-最后一发锤鸟成功命中沿用一次 3 固定步 HitStop；普通 Q 不触发这个专用停顿。
+Tab 接受时要求浮空／本次僵直；承诺后自然落地或僵直到期不取消已经接受的三发。每发发射前仍检查原目标是否有效，不跳转新目标；视线、范围和阶段无敌由弹体的飞行决定。
+最后一发锤鸟成功命中时沿用一次 3 固定步 HitStop；普通 Q 不触发这个专用停顿。
 
 ### 防御与耐力
 
@@ -119,7 +133,9 @@ ComboWindow 保存 source_action_id、pair、original_target 和 remaining；僵
 | 情况 | 行为 |
 |---|---|
 | 无锁定／超范围／隔墙／冷却中起手 | 拒绝并消费请求，不开启新冷却 |
-| 起手后目标走开或遮挡 | 该次命中跳过，保留已经开始的冷却 |
+| 起手后目标走开或遮挡 | 锁定的弹体追着目标飞，被墙或别的敌人挡下则这一发落空；保留已经开始的冷却 |
+| 弹体飞行中原目标死亡或进入无敌 | 弹体沿当时方向直飞，可能打中路线上的其他敌人 |
+| 链斧未回手时普攻／近战技能 | 不可用；切到另一组可正常使用 |
 | 目标在正前方但刀刃够不着，或隔着墙 | 不命中；刀刃实际扫过的侧面目标命中 |
 | 烘焙数据与动画、武器或时长不一致 | `hit_tracks_match_animation` 失败，提示运行 `make bake-hits` |
 | 重复 Tab／换组／技能动作中的攻击 | 活动动作不被替换，不排队，不重复伤害 |
@@ -145,6 +161,7 @@ Bad：只播放三次闪光却扣一笔伤害；链斧拉近穿墙；F2 后在�
 测量实际高台／平地击飞最高点、拉近碰撞／停距／高差及减速位移；保留原物理、二段跳、Shift／蹲伏、HitStop／暂停回归。
 能量覆盖每次命中的烈阳、拆招的月光、强化 E／Q 的伤害与清零、暴怒积累／释放／普攻翻倍／自动联动／20s 耗尽、弹反反击与事件顺序、耐久消耗／耗尽换组／联动窗口保留／Z 循环、复活重置（`combat/energy_tests.rs`）。
 防御覆盖短按／长按／释放／取消、独立冷却边界、正背面、第五次有效格挡、低耐力恢复和同一步快照一致性。
+弹体覆盖（`combat/projectile_tests.rs`）：飞行时间等于距离除以速度、锁定弹追上横移和下落的目标而直飞弹落空、无目标直飞到射程尽头消失、挡路的敌人先中、墙挡下并报告落点、倒地者不挡路、暂停冻结、主人倒地和换敌人清空、链斧回手前不能挥、每个远程技能行的制导与准入一致。依赖命中时刻的旧测试改为等弹体落地。
 近战判定覆盖：几何单元测试（弧而非弦、够不着、身后、蹲伏、朝向／缩放）、真实固定步里的侧面命中／够不着／隔墙、Boss 阶段随烘焙窗口切换；依赖命中时刻的测试从 `HitTrack` 读取接触 tick，不写死。客户端 `hit_bake_tests::live` 在真实战斗里核对画面中的刀与烘焙数据在有效窗口内相差不超过 3cm。
 执行 make check；Web Rust 另跑 WASM Clippy，打包另用临时目录 Trunk 构建。
 

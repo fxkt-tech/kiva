@@ -1058,6 +1058,13 @@ mod tests {
             .unwrap()
             .request_combo();
         tick(&mut app, 34);
+        // The third bullet is still on its way for a step or two.
+        for _ in 0..4 {
+            if health(&app, boss) == Boss::PHASE_HEALTH - 104.0 {
+                break;
+            }
+            tick(&mut app, 1);
+        }
         assert_eq!(health(&app, boss), Boss::PHASE_HEALTH - 104.0);
         assert_eq!(
             app.world()

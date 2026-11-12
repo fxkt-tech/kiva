@@ -182,10 +182,12 @@ pub(super) fn sync(world: &mut World) {
             .filter(|(_, mount)| mount.root == root)
             .map(|(entity, mount)| (entity, mount.pair))
             .collect();
+        // Shown parts inherit the root's visibility: a part forced visible
+        // would stay drawn where it was once the sister is hidden again.
         for (entity, pair) in mounts {
             *world.get_mut::<Transform>(entity).unwrap() = body_pose;
             *world.get_mut::<Visibility>(entity).unwrap() = if pair == state.pair {
-                Visibility::Visible
+                Visibility::Inherited
             } else {
                 Visibility::Hidden
             };
@@ -198,7 +200,7 @@ pub(super) fn sync(world: &mut World) {
             .collect();
         for (entity, pair) in weapons {
             *world.get_mut::<Visibility>(entity).unwrap() = if pair == state.pair {
-                Visibility::Visible
+                Visibility::Inherited
             } else {
                 Visibility::Hidden
             };
@@ -289,6 +291,88 @@ mod tests {
         assert_eq!(world.resource::<Assets<Mesh>>().len(), counts.1);
         assert_eq!(world.resource::<Assets<StandardMaterial>>().len(), counts.2);
     }
+    #[test]
+    fn the_sisters_weapon_and_accessory_disappear_with_her_after_a_skill_or_combo() {
+        let mut world = World::new();
+        world.init_resource::<Assets<Mesh>>();
+        world.init_resource::<Assets<StandardMaterial>>();
+        world.init_resource::<AnimationLibrary>();
+        world.init_resource::<super::super::source_animation::SourceAnimationLibrary>();
+        world.init_resource::<Time<Fixed>>();
+        world.insert_resource(SimulationActive(false));
+        world.init_resource::<HitStop>();
+        let owner = world.spawn_empty().id();
+        let performer = world
+            .spawn((Companion { owner }, CompanionState::default()))
+            .id();
+        setup(&mut world);
+        let root = world
+            .query_filtered::<Entity, With<CompanionView>>()
+            .single(&world)
+            .unwrap();
+        // Whether a part would be drawn: nothing on the way up to the root
+        // hides it, and nothing below a hidden ancestor is forced visible.
+        fn drawn(world: &World, mut entity: Entity) -> bool {
+            loop {
+                match world.get::<Visibility>(entity) {
+                    Some(Visibility::Hidden) => return false,
+                    Some(Visibility::Visible) => return true,
+                    _ => {}
+                }
+                match world.get::<ChildOf>(entity) {
+                    Some(parent) => entity = parent.parent(),
+                    None => return true,
+                }
+            }
+        }
+        let parts = |world: &mut World, pair: WeaponPair| -> Vec<Entity> {
+            let mut parts: Vec<_> = world
+                .query::<(Entity, &SisterWeapon)>()
+                .iter(world)
+                .filter(|(_, weapon)| weapon.pair == pair)
+                .map(|(entity, _)| entity)
+                .collect();
+            parts.extend(
+                world
+                    .query::<(Entity, &SisterBodyMount)>()
+                    .iter(world)
+                    .filter(|(_, mount)| mount.pair == pair)
+                    .map(|(entity, _)| entity),
+            );
+            parts
+        };
+        for pair in WeaponPair::ALL {
+            // She appears for a skill or a combo with this pair's weapon…
+            let mut state = world.get_mut::<CompanionState>(performer).unwrap();
+            state.visible = true;
+            state.pair = pair;
+            sync(&mut world);
+            assert!(drawn(&world, root));
+            let shown = parts(&mut world, pair);
+            assert!(!shown.is_empty());
+            assert!(shown.iter().all(|&part| drawn(&world, part)));
+            for other in WeaponPair::ALL.into_iter().filter(|other| *other != pair) {
+                assert!(
+                    parts(&mut world, other)
+                        .iter()
+                        .all(|&part| !drawn(&world, part))
+                );
+            }
+            // …and when it is over, nothing of hers stays behind.
+            world.get_mut::<CompanionState>(performer).unwrap().visible = false;
+            sync(&mut world);
+            assert!(!drawn(&world, root));
+            for any in WeaponPair::ALL {
+                assert!(
+                    parts(&mut world, any)
+                        .iter()
+                        .all(|&part| !drawn(&world, part)),
+                    "{any:?} weapon stayed visible after the sister left"
+                );
+            }
+        }
+    }
+
     #[test]
     fn both_source_weapons_keep_their_up_axis_at_every_heading_and_pitch() {
         let mut world = World::new();

@@ -637,6 +637,7 @@ impl RigPose {
             CombatEffect::Defeat
             | CombatEffect::Dodge
             | CombatEffect::SniperShot
+            | CombatEffect::ShotImpact
             | CombatEffect::Rejected
             | CombatEffect::Enrage
             | CombatEffect::MeleeStart => return,

@@ -73,12 +73,44 @@ pub(super) struct Area {
     pub empowered: f32,
 }
 
-/// The companion fires once at the target.
+/// How a shot in flight finds its way.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Guidance {
+    /// It steers toward the target locked when it was fired, turning at
+    /// most this many radians per second. The skill needs a locked target.
+    Locked { turn_rate: f32 },
+    /// It flies where it was aimed. The skill needs no lock; without one it
+    /// is aimed straight ahead.
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "supported flight mode; no current skill row uses it"
+        )
+    )]
+    Straight,
+}
+
+/// A ranged attack's projectile: a sphere swept through each fixed step.
+#[derive(Clone, Copy)]
+pub(super) struct ProjectileSpec {
+    /// Metres per second.
+    pub speed: f32,
+    pub radius: f32,
+    /// It disappears after flying this far.
+    pub max_range: f32,
+    pub guidance: Guidance,
+}
+
+/// The companion fires once.
 #[derive(Clone, Copy)]
 pub(super) struct Shot {
-    /// When the thrown chain axe leaves the hand, before it lands.
-    pub depart: Option<f32>,
-    pub impact: f32,
+    /// When the shot leaves, in action time.
+    pub fire: f32,
+    /// The shot is the owner's melee weapon: it returns to the hand and
+    /// cannot be swung meanwhile.
+    pub thrown: bool,
+    pub projectile: ProjectileSpec,
     pub damage: f32,
     pub stun: f32,
     /// Opened when the target is actually stunned.
@@ -87,11 +119,11 @@ pub(super) struct Shot {
     pub empowered: f32,
 }
 
-/// The companion fires three times at the original target.
+/// The companion fires three times.
 #[derive(Clone, Copy)]
 pub(super) struct Volley {
     pub times: [f32; 3],
-    pub range: f32,
+    pub projectile: ProjectileSpec,
     pub damage: f32,
     /// Dedicated impact presentation and a hit stop on the last shot.
     pub sniper: bool,
@@ -115,7 +147,8 @@ pub(super) struct SkillSpec {
     pub duration: f32,
     /// Started on admission; ordinary attacks use their own duration.
     pub cooldown: f32,
-    /// Needs a visible locked target this close; also the shot's range.
+    /// Needs a visible locked target this close. A skill whose shots fly
+    /// [`Guidance::Straight`] leaves it empty and needs no lock.
     pub cast_range: Option<f32>,
     /// Durability the equipped weapon pair loses when this starts.
     pub wear: u8,
@@ -125,7 +158,8 @@ pub(super) struct SkillSpec {
 }
 
 impl SkillSpec {
-    /// Whether the action remembers a target when it starts.
+    /// Whether the action remembers the locked target when it starts. A
+    /// straight shot does too when there is one: it is aimed at it.
     pub(super) fn targeted(&self) -> bool {
         match self.shape {
             Shape::Blade => false,
@@ -215,8 +249,14 @@ const MUSKET_SHOT: SkillSpec = SkillSpec {
     wear: 10,
     rage: 2,
     shape: Shape::Shot(Shot {
-        depart: None,
-        impact: 0.18,
+        fire: 0.18,
+        thrown: false,
+        projectile: ProjectileSpec {
+            speed: 120.0,
+            radius: 0.22,
+            max_range: 26.0,
+            guidance: Guidance::Locked { turn_rate: 12.0 },
+        },
         damage: 40.0,
         stun: 0.45,
         window: None,
@@ -230,8 +270,14 @@ const AXE_SHOT: SkillSpec = SkillSpec {
     wear: 10,
     rage: 2,
     shape: Shape::Shot(Shot {
-        depart: Some(0.15),
-        impact: 0.30,
+        fire: 0.15,
+        thrown: true,
+        projectile: ProjectileSpec {
+            speed: 35.0,
+            radius: 0.3,
+            max_range: 16.0,
+            guidance: Guidance::Locked { turn_rate: 12.0 },
+        },
         damage: 35.0,
         stun: 0.90,
         window: Some(0.90),
@@ -246,7 +292,12 @@ const HAMMER_COMBO: SkillSpec = SkillSpec {
     rage: 0,
     shape: Shape::Volley(Volley {
         times: [0.30, 0.42, 0.54],
-        range: 22.0,
+        projectile: ProjectileSpec {
+            speed: 160.0,
+            radius: 0.22,
+            max_range: 26.0,
+            guidance: Guidance::Locked { turn_rate: 12.0 },
+        },
         damage: 28.0,
         sniper: true,
         pull: None,
@@ -261,7 +312,12 @@ const CHAIN_COMBO: SkillSpec = SkillSpec {
     rage: 0,
     shape: Shape::Volley(Volley {
         times: [0.12, 0.28, 0.44],
-        range: 22.0,
+        projectile: ProjectileSpec {
+            speed: 60.0,
+            radius: 0.22,
+            max_range: 26.0,
+            guidance: Guidance::Locked { turn_rate: 12.0 },
+        },
         damage: 18.0,
         sniper: false,
         pull: Some(Pull {
@@ -284,16 +340,8 @@ impl ActionKind {
     pub fn shot_times(self) -> &'static [f32] {
         match &self.spec().shape {
             Shape::Volley(volley) => &volley.times,
-            Shape::Shot(shot) => std::slice::from_ref(shot.depart.as_ref().unwrap_or(&shot.impact)),
+            Shape::Shot(shot) => std::slice::from_ref(&shot.fire),
             Shape::Blade | Shape::Area(_) => &[],
-        }
-    }
-
-    /// `(departure, impact)` of a weapon which is thrown and lands later.
-    pub fn throw_times(self) -> Option<(f32, f32)> {
-        match self.spec().shape {
-            Shape::Shot(shot) => shot.depart.map(|depart| (depart, shot.impact)),
-            _ => None,
         }
     }
 

@@ -6,6 +6,8 @@ use std::time::Duration;
 mod energy_tests;
 #[path = "melee_chain_tests.rs"]
 mod melee_chain_tests;
+#[path = "projectile_tests.rs"]
+mod projectile_tests;
 fn tick(app: &mut App, n: usize) {
     for _ in 0..n {
         app.world_mut().run_schedule(FixedUpdate);
@@ -110,6 +112,27 @@ fn shots(app: &App, p: Entity) -> Vec<CombatEvent> {
 /// One incoming hit: the enemy turns to the player and its blade passes
 /// through them in this very step. The swing is started at the tick whose
 /// sweep reaches the player, so defense timing stays exact to the step.
+/// Step until `done` holds, at most `limit` steps; returns the steps taken.
+fn until(app: &mut App, limit: usize, done: impl Fn(&App) -> bool) -> usize {
+    for steps in 0..=limit {
+        if done(app) {
+            return steps;
+        }
+        tick(app, 1);
+    }
+    panic!("the condition was not reached within {limit} steps");
+}
+/// Shots currently in flight.
+fn flying(app: &App) -> usize {
+    app.world()
+        .iter_entities()
+        .filter(|entity| entity.contains::<super::Projectile>())
+        .count()
+}
+/// Step until every shot in flight has landed or expired.
+fn land_shots(app: &mut App) {
+    until(app, 120, |app| flying(app) == 0);
+}
 fn strike(app: &mut App, p: Entity, e: Entity) {
     use super::sweep::{HitTrack, Hurtbox, Stance, sweep};
     let track = crate::simulation::TrackId::Enemy.hit_track().unwrap();
@@ -267,17 +290,34 @@ fn hammer_three_shots_each_have_their_own_fixed_marker_and_companion_identity() 
     tick(&mut app, 17);
     assert_eq!(hp(&app, e), 980.0);
     assert!(shots(&app, p).is_empty());
-    tick(&mut app, 1);
-    assert_eq!(hp(&app, e), 952.0);
-    tick(&mut app, 7);
-    assert_eq!(hp(&app, e), 952.0);
-    tick(&mut app, 1);
-    assert_eq!(hp(&app, e), 924.0);
-    tick(&mut app, 6);
-    assert_eq!(hp(&app, e), 924.0);
-    tick(&mut app, 1);
+    // Each shot leaves at its own marker and hurts only when it arrives.
+    let (mut launched, mut landed) = (Vec::new(), Vec::new());
+    for step in 1..=24 {
+        tick(&mut app, 1);
+        if shots(&app, p).len() > launched.len() {
+            launched.push(step);
+        }
+        let hits = ((980.0 - hp(&app, e)) / 28.0).round() as usize;
+        if hits > landed.len() {
+            landed.push(step);
+            assert_eq!(hits, landed.len(), "one shot, one hit");
+            if hits == 3 {
+                assert!(app.world().resource::<HitStop>().is_active());
+                break;
+            }
+            assert!(!app.world().resource::<HitStop>().is_active());
+        }
+    }
+    assert_eq!(launched, [1, 9, 16]);
+    assert_eq!(landed.len(), 3);
+    for (launch, land) in launched.iter().zip(&landed) {
+        let flight = land - launch;
+        assert!(
+            (1..=3).contains(&flight),
+            "a shot flew {flight} steps over four metres"
+        );
+    }
     assert_eq!(hp(&app, e), 896.0);
-    assert!(app.world().resource::<HitStop>().is_active());
     let companion = app
         .world()
         .get::<Combatant>(p)
@@ -304,8 +344,13 @@ fn ordinary_musket_q_stuns_once_and_keeps_e_cooldown_independent() {
     lock(&mut app, p, e);
     request(&mut app, p, CombatIntent::request_ranged_skill);
     tick(&mut app, 11);
-    assert_eq!(hp(&app, e), 1000.0);
+    assert!(shots(&app, p).is_empty());
     tick(&mut app, 1);
+    assert_eq!(shots(&app, p).len(), 1);
+    // The bullet needs a moment to cross four metres.
+    assert_eq!(hp(&app, e), 1000.0);
+    let flight = until(&mut app, 4, |app| hp(app, e) < 1000.0);
+    assert!(flight >= 1);
     assert_eq!(hp(&app, e), 960.0);
     let enemy = app.world().get::<Enemy>(e).unwrap();
     assert!(enemy.stun_remaining() > 0.4);
@@ -335,8 +380,10 @@ fn third_shot_is_cancelled_if_the_second_kills_and_selected_target_clears_immedi
     app.world_mut().get_mut::<Health>(e).unwrap().damage(940.0);
     start_combo(&mut app, p);
     tick(&mut app, 26);
+    land_shots(&mut app);
     assert_eq!(hp(&app, e), 0.0);
     assert_eq!(shots(&app, p).len(), 2);
+    tick(&mut app, 8);
     assert_eq!(app.world().get::<Combatant>(p).unwrap().target(), None);
     assert!(
         app.world()
@@ -480,9 +527,9 @@ fn axe_shot_has_separate_throw_hit_return_and_source_bound_stun() {
     tick(&mut app, 1);
     assert!(app.world().get::<Combatant>(p).unwrap().axe_away());
     assert_eq!(hp(&app, e), 1000.0);
-    tick(&mut app, 8);
-    assert_eq!(hp(&app, e), 1000.0);
-    tick(&mut app, 1);
+    // Eight metres at 35 m/s: the axe is in the air for about a fifth of a second.
+    let out = until(&mut app, 30, |app| hp(app, e) < 1000.0);
+    assert!((9..=15).contains(&out), "the axe flew out for {out} steps");
     assert_eq!(hp(&app, e), 965.0);
     let c = app.world().get::<Combatant>(p).unwrap();
     let window = c.combo_window().unwrap();
@@ -490,14 +537,23 @@ fn axe_shot_has_separate_throw_hit_return_and_source_bound_stun() {
         app.world().get::<Enemy>(e).unwrap().stun_source(),
         Some(window.source_action_id)
     );
-    tick(&mut app, 28);
-    assert!(!app.world().get::<Combatant>(p).unwrap().axe_away());
+    // It is out of the hand until it has flown all the way back, however
+    // long the skill itself lasts; meanwhile it cannot be swung.
+    assert_eq!(flying(&app), 1);
+    let back = until(&mut app, 40, |app| {
+        !app.world().get::<Combatant>(p).unwrap().axe_away()
+    });
+    assert!(
+        (9..=16).contains(&back),
+        "the axe flew back for {back} steps"
+    );
+    assert_eq!(flying(&app), 0);
 }
 fn chain_setup() -> (App, Entity, Entity) {
     let (mut app, p, e) = arena(WeaponPair::ChainAxeBow, Vec3::NEG_Z * 8.0, 0.0);
     lock(&mut app, p, e);
     request(&mut app, p, CombatIntent::request_ranged_skill);
-    tick(&mut app, 19);
+    until(&mut app, 45, |app| hp(app, e) < 1000.0);
     assert_eq!(hp(&app, e), 965.0);
     (app, p, e)
 }
@@ -513,18 +569,25 @@ fn chain_pull_uses_physics_and_three_separate_arrows_from_a_fixed_sister() {
         .active_action()
         .unwrap()
         .companion_position;
-    tick(&mut app, 7);
-    assert_eq!(hp(&app, e), 965.0);
-    tick(&mut app, 1);
-    assert_eq!(hp(&app, e), 947.0);
-    tick(&mut app, 8);
-    assert_eq!(hp(&app, e), 947.0);
-    tick(&mut app, 1);
-    assert_eq!(hp(&app, e), 929.0);
-    tick(&mut app, 9);
-    assert_eq!(hp(&app, e), 929.0);
-    tick(&mut app, 1);
-    assert_eq!(hp(&app, e), 911.0);
+    // Three arrows leave at their markers and each hurts when it arrives.
+    let (mut launched, mut landed) = (Vec::new(), Vec::new());
+    for step in 1..=27 {
+        tick(&mut app, 1);
+        // The Q which opened the window was the first shot event.
+        if shots(&app, p).len() - 1 > launched.len() {
+            launched.push(step);
+        }
+        let hits = ((965.0 - hp(&app, e)) / 18.0).round() as usize;
+        if hits > landed.len() {
+            landed.push(step);
+            assert_eq!(hits, landed.len(), "one arrow, one hit");
+        }
+    }
+    assert_eq!(launched, [8, 17, 27]);
+    assert!(landed.len() >= 2);
+    for (launch, land) in launched.iter().zip(&landed) {
+        assert!(land > launch, "an arrow hit in the step it was loosed");
+    }
     let pos = app.world().get::<Body>(p).unwrap().world_position();
     assert!(origin.distance(pos) > 3.0);
     let action = app
@@ -536,6 +599,8 @@ fn chain_pull_uses_physics_and_three_separate_arrows_from_a_fixed_sister() {
     assert_eq!(action.companion_position, sister);
     assert_eq!(shots(&app, p).len(), 4);
     tick(&mut app, 50);
+    assert_eq!(hp(&app, e), 911.0);
+    assert_eq!(flying(&app), 0);
     assert!(!app.world().get::<Combatant>(p).unwrap().axe_away());
     assert!(!app.world().get::<Combatant>(p).unwrap().is_combo_active());
     assert!(
@@ -816,7 +881,7 @@ fn pull_arrives_with_braking_without_contact_or_pushing_the_target() {
         let (mut app, p, e) = arena(WeaponPair::ChainAxeBow, Vec3::NEG_Z * distance, 0.0);
         lock(&mut app, p, e);
         request(&mut app, p, CombatIntent::request_ranged_skill);
-        tick(&mut app, 19);
+        until(&mut app, 45, |app| hp(app, e) < 1000.0);
         start_combo(&mut app, p);
         let target_start = app.world().get::<Body>(e).unwrap().world_position();
         let mut minimum = f32::MAX;
@@ -908,8 +973,16 @@ fn every_projectile_rechecks_visibility_and_does_not_replay_a_skipped_shot() {
     tick(&mut app, 18);
     assert_eq!(hp(&app, e), 980.0);
     assert_eq!(shots(&app, p).len(), 1);
+    // The first shot was stopped by the wall, not by a check at the muzzle.
+    assert!(
+        app.world()
+            .resource::<CombatFeedback>()
+            .events()
+            .any(|event| event.kind == CombatEffect::ShotImpact && event.hit_index == 0)
+    );
     app.world_mut().despawn(wall);
     tick(&mut app, 15);
+    land_shots(&mut app);
     assert_eq!(hp(&app, e), 924.0);
     assert_eq!(shots(&app, p).len(), 3);
     tick(&mut app, 50);
@@ -990,10 +1063,11 @@ fn late_tab_keeps_three_shots_when_gravity_naturally_lands_the_original_target()
     start_combo(&mut app, p);
     tick(&mut app, 32);
     assert!(app.world().get::<MotionState>(e).unwrap().is_grounded());
-    assert_eq!(hp(&app, e), 924.0);
+    assert_eq!(shots(&app, p).len(), 2);
     tick(&mut app, 1);
-    assert_eq!(hp(&app, e), 896.0);
     assert_eq!(shots(&app, p).len(), 3);
+    land_shots(&mut app);
+    assert_eq!(hp(&app, e), 896.0);
 }
 #[test]
 fn many_crossed_combo_markers_execute_in_order_once_even_past_completion() {
@@ -1055,6 +1129,7 @@ fn stationary_skill_range_matches_admission_for_scaled_targets_on_high_ground() 
                 }
                 request(&mut app, p, skill);
                 tick(&mut app, 22);
+                land_shots(&mut app);
                 let combat = app.world().get::<Combatant>(p).unwrap();
                 let cooldown = if melee {
                     combat.melee_cooldown()

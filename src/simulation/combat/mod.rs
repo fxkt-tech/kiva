@@ -16,6 +16,7 @@ mod hit;
 #[allow(clippy::approx_constant, clippy::excessive_precision)]
 mod hit_tracks;
 mod prepare;
+mod projectile;
 mod resolve;
 mod runtime;
 mod skills;
@@ -36,6 +37,8 @@ pub use health::{Health, SpawnPoint};
 pub(super) use hit::{CombatWorld, apply_hit, settle_defense};
 pub use hit::{HitContext, HitOutcome};
 pub(super) use prepare::{prepare, tick_slows};
+pub(super) use projectile::advance_projectiles;
+pub use projectile::{Projectile, clear_projectiles};
 pub(super) use resolve::{recover_stamina, resolve_actions};
 pub use sweep::{HitProbe, HitProbes, HitTrack, Hurtbox, ProbeShape};
 pub(super) use sweep::{strike, tick_probes, ticks_between};

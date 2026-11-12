@@ -390,6 +390,21 @@ mod tests {
                 .is_some()
         );
         assert!(app.world().get::<Body>(performer).is_none());
+        // The bullet is in flight; its impact is shown where and when it lands.
+        let landed = |app: &App| {
+            app.world()
+                .resource::<CombatFeedback>()
+                .events()
+                .any(|event| event.kind == CombatEffect::SniperImpact)
+        };
+        assert!(!landed(&app));
+        for _ in 0..4 {
+            if landed(&app) {
+                break;
+            }
+            tick(&mut app, 1);
+        }
+        render(&mut app, 0.0);
         let assets = app.world().resource::<ImpactAssets>();
         let sphere = assets.sphere.clone();
         let hit = *app

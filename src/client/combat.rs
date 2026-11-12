@@ -7,8 +7,8 @@ use crate::{
     gameplay::Player,
     simulation::{
         Body, Boss, BossState, CombatEffect, CombatFeedback, Combatant, DefenseState, Enemy,
-        Facing, Health, HitStop, MotionState, SimulationActive, SurfaceHit, WeaponMode, WeaponPair,
-        surface_below,
+        Facing, Health, HitStop, MotionState, Projectile, SimulationActive, SurfaceHit, WeaponMode,
+        WeaponPair, surface_below,
     },
 };
 
@@ -330,6 +330,55 @@ fn marker_surface(
     }
 }
 
+/// A bullet or an arrow in flight.
+#[derive(Component)]
+pub(super) struct ProjectileView(Entity);
+
+/// Draw each shot in flight at the simulation's interpolated position,
+/// heading where it flies. The thrown chain axe has its own view.
+pub(super) fn sync_projectiles(
+    mut commands: Commands,
+    timing: (Res<Time<Fixed>>, Res<SimulationActive>, Res<HitStop>),
+    assets: Res<VisualAssets>,
+    projectiles: Query<(Entity, &Projectile)>,
+    mut views: Query<(Entity, &ProjectileView, &mut Transform)>,
+) {
+    let alpha = super::display_alpha(&timing.0, &timing.1, &timing.2);
+    let pose = |projectile: &Projectile, scale: Vec3| {
+        Transform::from_translation(projectile.interpolated(alpha))
+            .looking_to(projectile.direction(), Vec3::Y)
+            .with_scale(scale)
+    };
+    let mut shown = Vec::new();
+    for (view, ProjectileView(projectile), mut transform) in &mut views {
+        match projectiles.get(*projectile) {
+            Ok((_, flying)) => {
+                *transform = pose(flying, transform.scale);
+                shown.push(*projectile);
+            }
+            Err(_) => commands.entity(view).despawn(),
+        }
+    }
+    for (entity, projectile) in &projectiles {
+        if projectile.is_thrown() || shown.contains(&entity) {
+            continue;
+        }
+        let arrow =
+            super::loadout::of(projectile.pair()).projectile == super::loadout::Projectile::Arrow;
+        let (material, scale) = if arrow {
+            (&assets.teal, Vec3::new(0.04, 0.04, 0.85))
+        } else {
+            (&assets.gold, Vec3::new(0.05, 0.05, 0.45))
+        };
+        commands.spawn((
+            ProjectileView(entity),
+            Mesh3d(assets.cube.clone()),
+            MeshMaterial3d(material.clone()),
+            pose(projectile, scale),
+        ));
+    }
+}
+
 pub(super) fn effects(
     mut commands: Commands,
     (time, active): (Res<Time>, Res<SimulationActive>),
@@ -356,51 +405,13 @@ pub(super) fn effects(
     }
     for event in events {
         let (mesh, material, transform, duration, expansion) = match event.kind {
-            CombatEffect::SniperShot
+            // A shot is drawn as its projectile, where the simulation has it.
+            CombatEffect::Shot
+            | CombatEffect::SniperShot
             | CombatEffect::SniperImpact
             | CombatEffect::AxeThrow
             | CombatEffect::MeleeStart => {
                 continue;
-            }
-            CombatEffect::Shot => {
-                let arrow = event.pair.is_some_and(|pair| {
-                    super::loadout::of(pair).projectile == super::loadout::Projectile::Arrow
-                });
-                if arrow {
-                    let direction = (event.end - event.position).normalize_or(Vec3::NEG_Z);
-                    for (offset, scale) in [
-                        (0.0, Vec3::new(0.12, 0.06, 0.16)),
-                        (0.25, Vec3::new(0.12, 0.07, 0.08)),
-                    ] {
-                        let transform = Transform::from_translation(event.end - direction * offset)
-                            .looking_at(event.end + direction, Vec3::Y)
-                            .with_scale(scale);
-                        commands.spawn((
-                            Mesh3d(assets.cube.clone()),
-                            MeshMaterial3d(assets.teal.clone()),
-                            transform,
-                            Effect {
-                                remaining: 0.18,
-                                duration: 0.18,
-                                expansion: 0.,
-                                scale,
-                            },
-                        ));
-                    }
-                }
-                let length = event.position.distance(event.end).max(0.05);
-                let mut transform = Transform::from_translation((event.position + event.end) * 0.5)
-                    .with_scale(Vec3::new(0.035, 0.035, length));
-                if length > 0.05 {
-                    transform = transform.looking_at(event.end, Vec3::Y);
-                }
-                (
-                    &assets.cube,
-                    if arrow { &assets.teal } else { &assets.gold },
-                    transform,
-                    0.16,
-                    0.0,
-                )
             }
             CombatEffect::Hammer | CombatEffect::ChainSweep | CombatEffect::Melee => (
                 &assets.ring,
@@ -545,6 +556,56 @@ mod tests {
         let mut query = bevy::ecs::system::SystemState::<SpatialQuery>::new(app.world_mut());
         let spatial = query.get_mut(app.world_mut()).unwrap();
         surface_below(&spatial, origin, 32.0, excluded).unwrap()
+    }
+
+    #[test]
+    fn a_shot_in_flight_is_drawn_where_the_simulation_has_it_and_removed_when_it_lands() {
+        let mut app = headless_app();
+        app.add_systems(Update, sync_projectiles);
+        let player = physical_player(&mut app);
+        fixed_ticks(&mut app, 12);
+        let mut intent = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
+        intent.request_toggle_target();
+        fixed_ticks(&mut app, 1);
+        let mut intent = app.world_mut().get_mut::<CombatIntent>(player).unwrap();
+        intent.request_ranged_skill();
+        let views = |app: &mut App| -> Vec<Transform> {
+            app.world_mut()
+                .query_filtered::<&Transform, With<ProjectileView>>()
+                .iter(app.world())
+                .copied()
+                .collect()
+        };
+        let flying = |app: &mut App| -> Vec<(Vec3, Vec3)> {
+            let alpha = super::super::display_alpha(
+                app.world().resource::<Time<Fixed>>(),
+                app.world().resource::<SimulationActive>(),
+                app.world().resource::<HitStop>(),
+            );
+            app.world_mut()
+                .query::<&Projectile>()
+                .iter(app.world())
+                .map(|projectile| (projectile.interpolated(alpha), projectile.direction()))
+                .collect()
+        };
+        let (mut seen, mut landed) = (false, false);
+        for _ in 0..40 {
+            fixed_ticks(&mut app, 1);
+            app.world_mut().run_schedule(Update);
+            let shots = flying(&mut app);
+            let drawn = views(&mut app);
+            assert_eq!(drawn.len(), shots.len());
+            if let (Some(shot), Some(view)) = (shots.first(), drawn.first()) {
+                seen = true;
+                // Between fixed steps, like every other display root.
+                assert!(view.translation.distance(shot.0) < 0.0001);
+                assert!((view.rotation * Vec3::NEG_Z).dot(shot.1) > 0.999);
+            } else if seen {
+                landed = true;
+                break;
+            }
+        }
+        assert!(seen && landed);
     }
 
     #[test]

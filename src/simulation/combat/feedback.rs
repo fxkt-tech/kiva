@@ -10,6 +10,8 @@ pub enum CombatEffect {
     Shot,
     SniperShot,
     SniperImpact,
+    /// A shot was stopped by something other than an enemy.
+    ShotImpact,
     Hammer,
     ChainSweep,
     AxeThrow,

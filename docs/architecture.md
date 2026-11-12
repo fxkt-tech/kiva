@@ -23,7 +23,7 @@
 | `simulation/physics.rs` | Avian 权威三维姿态、角色控制、接触支撑、箱体／地形姿态快照与瞬移清理 |
 | `simulation/movement.rs` | `Body` 只读三维脚底快照与平面投影；`MoveIntent` 世界 x/z 移动意图 |
 | `simulation/actions.rs` | `ActionIntent`、`Facing`、`MotionState`；动作计时、跳跃额度及接触结果 |
-| `simulation/combat/` | 战斗规则，按职责分文件：`skills`（全部技能数值的数据表）、`prepare`（指令消费与准入）、`resolve`（按技能形态结算刀刃扫掠与标记）、`sweep`（唯一的近战判定：刀刃扫掠对物理胶囊）、`hit_tracks`（生成的刀刃轨迹数据）、`hit`（共同命中与防御顺序）、`enemy`（普通敌人）、`energy`（烈阳／月光／暴怒）、`arsenal`（武器耐久）、`combatant`／`health`／`feedback`／`companion`／`availability`／`runtime` |
+| `simulation/combat/` | 战斗规则，按职责分文件：`skills`（全部技能数值的数据表）、`prepare`（指令消费与准入）、`resolve`（按技能形态结算刀刃扫掠与标记）、`sweep`（唯一的近战判定：刀刃扫掠对物理胶囊）、`hit_tracks`（生成的刀刃轨迹数据）、`projectile`（飞行中的远程弹体：制导、球体扫掠与落点结算）、`hit`（共同命中与防御顺序）、`enemy`（普通敌人）、`energy`（烈阳／月光／暴怒）、`arsenal`（武器耐久）、`combatant`／`health`／`feedback`／`companion`／`availability`／`runtime` |
 | `simulation/abilities.rs` | 动作／联动的只读快照类型、联动窗口与逻辑妹妹状态 |
 | `simulation/defense.rs`、`resources.rs` | 有序右键、拆招／防御／弹反、耐力与减速的唯一状态 |
 | `simulation/boss.rs` | 单愁铃客 Boss 的行动循环、阶段、预警、命中和复活 |
@@ -72,7 +72,7 @@
 
 1. **装配**（只发生一次）：Startup 只通知初始化阶段并请求运行时资源清单。清单全部到齐的那一帧，`First` 中的 `assemble` 运行一次 `Assemble` 调度：源动画库 → 玩法 / 物理场景装配 → 显示根 → 战斗表现 → 相机 → 通知进入画面准备阶段。到齐前输入采样、表现同步和模拟规则都不运行；任一文件失败即报告失败。
 2. **采样输入**：Bevy 输入更新后，在 `RunFixedMainLoopSystems::BeforeFixedMainLoop` 处理敌人模式请求、采样控制并提交意图。
-3. **固定步**（`FixedUpdate`，60Hz）：命中停顿步头 → 减速计时 → 暴怒消耗与释放 → 动作／防御准备 → motor → Avian 求解 → 当前空间查询、接触与快照 → 判定探针计时 → 玩家动作结算 → 普通敌人 → Boss → 可用性 → 耐力恢复 → 妹妹快照 → 瞬移清理。
+3. **固定步**（`FixedUpdate`，60Hz）：命中停顿步头 → 减速计时 → 暴怒消耗与释放 → 动作／防御准备 → motor → Avian 求解 → 当前空间查询、接触与快照 → 判定探针计时 → 玩家动作结算 → 弹体推进与命中 → 普通敌人 → Boss → 可用性 → 耐力恢复 → 妹妹快照 → 瞬移清理。
 4. **表现**（`Update`，单链顺序执行）：外观替换 → 人物显示根 → 敌人显示树回收与补齐 → 武器显隐 → 身体姿态 → 妹妹 → 蒙皮骨骼 → 骨骼附件 → 绳索 → 标记与特效 → 冲击 → 音频 → HUD → 相机。相机读取同一个显示根位置，不追加平滑延迟。
 5. **渲染与就绪**：Bevy 完成全局变换传播和渲染。首次进入由渲染子应用在真实提交后确认主视图有输出、可见网格和管线已就绪，再由主线程放行 Web 入口；资源到齐或实体装配完成都不能替代。
 
@@ -91,7 +91,7 @@
 - 新游戏规则放模拟层，关卡和装配放玩法层，意图和表现放客户端。
 - 近战判定是基础设施，不是内容：命中只由烘焙的刀刃轨迹对物理胶囊的扫掠决定。新增或修改一个挥刀招式是改数据（技能表、`client/animation/attack_clips.rs` 的片段映射行）后运行 `make bake-hits`，不写判定代码，也不手填距离、角度或命中时刻。
 - 内容是数据：技能的时长、冷却、距离、标记时间、伤害和控制只写在 `combat/skills.rs` 的表里。加一个已有形态（范围、单发、三连发）的技能是加一行数据和一处槽位映射；只有新形态才写新的结算函数。
-- 武器组的表现只写在 `client/loadout.rs` 的表里，表现模块读行而不按具体武器组分支。表现需要的时间点（妹妹每发的时刻、链斧离手与命中、联动回切）通过 `ActionKind::{shot_times,throw_times,return_window,strike_effect}` 从模拟的同一张技能表读取，客户端不保留副本。
+- 武器组的表现只写在 `client/loadout.rs` 的表里，表现模块读行而不按具体武器组分支。表现需要的时间点（妹妹每发的时刻、联动回切）通过 `ActionKind::{shot_times,return_window,strike_effect}` 从模拟的同一张技能表读取；飞行中的子弹、箭和链斧直接读模拟的 `Projectile`，客户端不保留副本。
 - `tests/layering.rs` 会拒绝在这些表之外点名具体的武器组或技能；例外清单和理由写在该测试里（生成的 `hit_tracks.rs` 是其中一张表）。
 - 会改变位置的机制仍通过模拟驱动物理组件并发布 `Body` 快照；修改地形以 `Level` 共享几何为源。
 - 新的表现消费者使用 `FeedbackCursor`，不要另写一套“暂停不补播”的判断。

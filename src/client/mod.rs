@@ -249,13 +249,12 @@ pub(super) fn run() {
                 stickman::sync_attachments,
                 weapons::sync_tether,
                 combat::sync_markers,
-                combat::effects,
+                (combat::effects, combat::sync_projectiles).chain(),
                 impact::update,
                 audio::sync,
                 hud::sync,
                 camera::follow,
-                hit_debug::toggle,
-                hit_debug::draw,
+                (hit_debug::toggle, hit_debug::draw).chain(),
             )
                 .chain()
                 .run_if(resource_exists::<Assembled>),

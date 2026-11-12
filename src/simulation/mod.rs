@@ -23,7 +23,7 @@ pub(crate) use combat::ensure_companions as combat_setup_companions;
 pub use combat::{
     Arsenal, CombatEffect, CombatEvent, CombatFeedback, CombatIntent, CombatStatus, Combatant,
     Enemy, Energy, Health, HitContext, HitOutcome, HitProbe, HitProbes, HitTrack, Hurtbox,
-    ProbeShape, SpawnPoint,
+    ProbeShape, Projectile, SpawnPoint, clear_projectiles,
 };
 pub use defense::{DefenseEdge, DefenseKind, DefenseSnapshot, DefenseState};
 #[cfg(test)]
@@ -107,6 +107,7 @@ impl Plugin for SimulationPlugin {
                     physics::publish,
                     combat::tick_probes,
                     combat::resolve_actions,
+                    combat::advance_projectiles,
                     combat::advance_enemies,
                     boss::advance,
                     combat::publish_availability,

@@ -6,16 +6,13 @@ use super::hit::{
     Blow, CombatWorld, Enemies, Landed, Players, defeat_if_fallen, hit_enemy, target_lost,
     target_valid, valid_shot,
 };
+use super::projectile::{Payload, Projectile};
 use super::runtime::ActionRuntime;
-use super::skills::{Area, Centre, Control, Shape, Shot, Volley};
+use super::skills::{Area, Centre, Control, Guidance, Shape, Shot, Volley};
 use super::sweep::{HitTrack, strike, ticks_between};
 use super::{CombatEffect, CombatFeedback, Combatant, Health, HitProbes};
-use crate::simulation::{ActionKind, ActionSnapshot, Body, ComboWindow, HitStop, Stamina};
+use crate::simulation::{ActionKind, ActionSnapshot, Body, ComboWindow, Stamina};
 use bevy::prelude::*;
-
-/// Presentation radii of a fired shot and of the thrown chain axe.
-const SHOT_RADIUS: f32 = 0.22;
-const AXE_RADIUS: f32 = 0.3;
 
 /// Who acts in this tick. `performer` is the companion for ranged skills.
 struct Striker<'a> {
@@ -31,6 +28,8 @@ struct Stage<'a, 'w, 's, 'world_w, 'world_s> {
     enemies: &'a mut Enemies<'w, 's>,
     feedback: &'a mut CombatFeedback,
     probes: &'a mut HitProbes,
+    /// Shots fired in this tick; they are spawned after the resolver.
+    launched: Vec<Projectile>,
     /// Blows which dealt damage in this tick; each one feeds the sun meter.
     damaging_hits: u8,
 }
@@ -39,8 +38,8 @@ pub(in crate::simulation) fn resolve_actions(
     time: Res<Time<Fixed>>,
     world: CombatWorld,
     mut feedback: ResMut<CombatFeedback>,
-    mut hit_stop: ResMut<HitStop>,
     mut probes: ResMut<HitProbes>,
+    mut commands: Commands,
     mut players: Players,
     mut enemies: Enemies,
 ) {
@@ -109,6 +108,7 @@ pub(in crate::simulation) fn resolve_actions(
             enemies: &mut enemies,
             feedback: &mut feedback,
             probes: &mut probes,
+            launched: Vec::new(),
             damaging_hits: 0,
         };
         let spec = runtime.snapshot.kind.spec();
@@ -126,21 +126,14 @@ pub(in crate::simulation) fn resolve_actions(
                 );
             }
             Shape::Shot(shot) => {
-                let range = spec.cast_range.unwrap_or(f32::INFINITY);
-                fire_shot(
-                    &shot,
-                    range,
-                    &striker,
-                    &mut runtime,
-                    &mut combat,
-                    &mut stage,
-                );
+                fire_shot(&shot, &striker, &mut runtime, &mut combat, &mut stage);
             }
             Shape::Volley(volley) => {
-                if fire_volley(&volley, &striker, &mut runtime, &mut combat, &mut stage) {
-                    hit_stop.request_sniper();
-                }
+                fire_volley(&volley, &striker, &mut runtime, &mut combat, &mut stage);
             }
+        }
+        for projectile in stage.launched.drain(..) {
+            commands.spawn(projectile);
         }
         energy.gain_sun(stage.damaging_hits);
         if !runtime.cancelled && runtime.snapshot.elapsed + 1e-6 >= runtime.snapshot.duration {
@@ -347,11 +340,63 @@ fn area_centre(
     }
 }
 
-/// The companion's single shot. A thrown chain axe first leaves the hand and
-/// lands later; stunning the target can open the skill's combo window.
+/// The companion's single shot: at its moment it leaves her weapon and flies.
+/// What it hits, and the combo window it may open, is settled where it lands.
 fn fire_shot(
     shot: &Shot,
-    range: f32,
+    striker: &Striker,
+    runtime: &mut ActionRuntime,
+    combat: &mut Combatant,
+    stage: &mut Stage,
+) {
+    if !runtime.marker(0, shot.fire) {
+        return;
+    }
+    let snapshot = runtime.snapshot;
+    let (owner, performer) = (striker.owner, striker.performer);
+    let source = snapshot.source_position;
+    runtime.snapshot.shot_count += 1;
+    let mut effects = vec![(CombatEffect::Shot, shot.projectile.radius)];
+    if shot.thrown {
+        // The melee weapon itself flies; it is back when the projectile is.
+        combat.thrown = Some(snapshot.pair);
+        effects.push((CombatEffect::AxeThrow, shot.projectile.radius));
+    }
+    for (kind, radius) in effects {
+        stage.feedback.action(
+            performer,
+            owner,
+            &snapshot,
+            0,
+            kind,
+            source,
+            snapshot.aim_position,
+            radius,
+        );
+    }
+    stage.launched.push(Projectile::launch(
+        owner,
+        performer,
+        snapshot,
+        0,
+        (source, snapshot.aim_position),
+        shot.projectile,
+        Payload {
+            damage: shot.damage * runtime.damage_scale,
+            control: Control::Stun(shot.stun),
+            window: shot.window,
+            sniper: false,
+            hit_stop: false,
+        },
+        shot.thrown,
+    ));
+}
+
+/// The companion's three shots. Each leaves at its own moment toward where
+/// the original target is then; once that target is lost the shots not yet
+/// fired are cancelled, while those in flight fly on.
+fn fire_volley(
+    volley: &Volley,
     striker: &Striker,
     runtime: &mut ActionRuntime,
     combat: &mut Combatant,
@@ -360,157 +405,56 @@ fn fire_shot(
     let snapshot = runtime.snapshot;
     let (owner, performer) = (striker.owner, striker.performer);
     let source = snapshot.source_position;
-    if let Some(depart) = shot.depart
-        && runtime.marker(0, depart)
-    {
-        combat.axe_away = true;
-        runtime.snapshot.shot_count += 1;
-        for (kind, radius) in [
-            (CombatEffect::Shot, SHOT_RADIUS),
-            (CombatEffect::AxeThrow, AXE_RADIUS),
-        ] {
-            stage.feedback.action(
-                performer,
-                owner,
-                &snapshot,
-                0,
-                kind,
-                source,
-                snapshot.aim_position,
-                radius,
-            );
-        }
-    }
-    if !runtime.marker(1, shot.impact) {
-        return;
-    }
-    // A thrown axe already announced its departure; this marker only lands it.
-    if shot.depart.is_none() {
-        stage.feedback.action(
-            performer,
-            owner,
-            &snapshot,
-            0,
-            CombatEffect::Shot,
-            source,
-            snapshot.aim_position,
-            SHOT_RADIUS,
-        );
-        runtime.snapshot.shot_count += 1;
-    }
-    let Some(target) = snapshot.target else {
-        return;
-    };
-    let Some(aim) = valid_shot(
-        stage.world,
-        source,
-        (owner, striker.body),
-        target,
-        range,
-        stage.enemies,
-    ) else {
-        return;
-    };
-    runtime.snapshot.aim_position = aim;
-    let stunned = land(
-        Blow {
-            target,
-            source: performer,
-            index: 0,
-            damage: shot.damage * runtime.damage_scale,
-            control: Control::Stun(shot.stun),
-            origin: source,
-            contact: None,
-        },
-        owner,
-        &snapshot,
-        stage,
-    );
-    if stunned && let Some(remaining) = shot.window {
-        combat.combo = Some(window(&snapshot, target, remaining));
-    }
-}
-
-/// The companion's three shots at the original target. Each re-checks the
-/// target, range and line of sight; losing or defeating the target cancels
-/// the rest. Returns whether the final sniper shot landed and wants a hit stop.
-fn fire_volley(
-    volley: &Volley,
-    striker: &Striker,
-    runtime: &mut ActionRuntime,
-    combat: &mut Combatant,
-    stage: &mut Stage,
-) -> bool {
-    let snapshot = runtime.snapshot;
-    let (owner, performer) = (striker.owner, striker.performer);
-    let source = snapshot.source_position;
     let last = volley.times.len() - 1;
-    let mut hit_stop = false;
+    let locked = matches!(volley.projectile.guidance, Guidance::Locked { .. });
     for (index, time) in volley.times.into_iter().enumerate() {
         if !runtime.marker(index as u8, time) {
             continue;
         }
-        let target = snapshot.target.unwrap();
-        if target_lost(target, stage.enemies) {
+        if locked
+            && snapshot
+                .target
+                .is_none_or(|target| target_lost(target, stage.enemies))
+        {
             runtime.cancel();
             combat.axe_away = false;
             break;
         }
         runtime.snapshot.shot_count += 1;
-        let aim = valid_shot(
-            stage.world,
-            source,
-            (owner, striker.body),
-            target,
-            volley.range,
-            stage.enemies,
-        );
-        stage.feedback.action(
-            performer,
+        let aim = runtime.snapshot.aim_position;
+        let mut effects = vec![CombatEffect::Shot];
+        if volley.sniper {
+            effects.push(CombatEffect::SniperShot);
+        }
+        for kind in effects {
+            stage.feedback.action(
+                performer,
+                owner,
+                &snapshot,
+                index as u8,
+                kind,
+                source,
+                aim,
+                volley.projectile.radius,
+            );
+        }
+        stage.launched.push(Projectile::launch(
             owner,
-            &snapshot,
+            performer,
+            snapshot,
             index as u8,
-            CombatEffect::Shot,
-            source,
-            aim.unwrap_or(runtime.snapshot.aim_position),
-            SHOT_RADIUS,
-        );
-        let Some(aim) = aim else {
-            continue;
-        };
-        runtime.snapshot.aim_position = aim;
-        let alive = land(
-            Blow {
-                target,
-                source: performer,
-                index: index as u8,
+            (source, aim),
+            volley.projectile,
+            Payload {
                 damage: volley.damage * runtime.damage_scale,
                 control: Control::None,
-                origin: source,
-                contact: None,
+                window: None,
+                sniper: volley.sniper,
+                hit_stop: volley.sniper && index == last,
             },
-            owner,
-            &snapshot,
-            stage,
-        );
-        if volley.sniper {
-            for (actor, kind, from, to) in [
-                (performer, CombatEffect::SniperShot, source, aim),
-                (target, CombatEffect::SniperImpact, aim, source),
-            ] {
-                stage
-                    .feedback
-                    .action(actor, owner, &snapshot, index as u8, kind, from, to, 0.0);
-            }
-            hit_stop |= index == last;
-        }
-        if !alive {
-            runtime.cancel();
-            combat.axe_away = false;
-            break;
-        }
+            false,
+        ));
     }
-    hit_stop
 }
 
 /// Land one blow and count it when it dealt damage. Returns whether the

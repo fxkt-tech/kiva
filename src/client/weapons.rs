@@ -72,7 +72,7 @@ pub(super) fn sync_tether(world: &mut World) {
             stickman::{Attachment, BoneVisual},
         },
         gameplay::Player,
-        simulation::{Combatant, HitStop, SimulationActive},
+        simulation::{Combatant, HitStop, Projectile, SimulationActive},
     };
     let time = world.resource::<Time<Fixed>>();
     let dt = time.delta_secs();
@@ -85,9 +85,21 @@ pub(super) fn sync_tether(world: &mut World) {
         .query_filtered::<&Combatant, With<Player>>()
         .single(world)
         .expect("one player");
-    let action = combat
+    // The chain of a pull holds the axe in the target until the closing return.
+    let pull = combat
         .active_action()
         .filter(|a| super::loadout::of(a.pair).tethered && combat.axe_away());
+    // A thrown axe is a projectile: out to what it hits, then back to the hand.
+    let thrown = world
+        .query::<&Projectile>()
+        .iter(world)
+        .find(|projectile| projectile.is_thrown())
+        .map(|projectile| {
+            (
+                projectile.interpolated(alpha),
+                (projectile.age() - dt * (1. - alpha)).max(0.),
+            )
+        });
     let (view, root) = world
         .query_filtered::<(Entity, &Transform), With<PlayerView>>()
         .single(world)
@@ -112,32 +124,26 @@ pub(super) fn sync_tether(world: &mut World) {
         .expect("player has a melee wrist attachment");
     let mut views = world.query_filtered::<TetherData, TetherViews>();
     for (mut transform, mut visibility, is_axe) in views.iter_mut(world) {
-        let Some(a) = action else {
-            *visibility = Visibility::Hidden;
-            continue;
-        };
-        let elapsed = (a.elapsed - dt * (1. - alpha)).max(0.);
-        // Thrown: out to the target until it lands, then back to the hand.
-        // In a pull sequence it stays in the target until the closing return.
-        let point = if let Some((depart, impact)) = a.kind.throw_times() {
-            if elapsed < impact {
-                let flight = (elapsed - depart) / (impact - depart);
-                a.source_position.lerp(a.aim_position, flight.clamp(0., 1.))
-            } else {
-                let recall = (elapsed - impact) / (a.duration - impact);
-                a.aim_position.lerp(hand, recall.clamp(0., 1.))
-            }
-        } else if let Some((start, duration)) = a.kind.return_window() {
-            a.aim_position
-                .lerp(hand, ((elapsed - start) / duration).clamp(0., 1.))
+        // The axe spins on rule time, so it freezes with the simulation.
+        let (point, spin) = if let Some((point, age)) = thrown {
+            (point, age * 20.)
+        } else if let Some(a) = pull
+            && let Some((start, duration)) = a.kind.return_window()
+        {
+            let elapsed = (a.elapsed - dt * (1. - alpha)).max(0.);
+            (
+                a.aim_position
+                    .lerp(hand, ((elapsed - start) / duration).clamp(0., 1.)),
+                elapsed * 20.,
+            )
         } else {
             *visibility = Visibility::Hidden;
             continue;
         };
         *visibility = Visibility::Visible;
         if is_axe {
-            *transform = Transform::from_translation(point)
-                .with_rotation(Quat::from_rotation_z(elapsed * 20.));
+            *transform =
+                Transform::from_translation(point).with_rotation(Quat::from_rotation_z(spin));
         } else {
             *transform = Transform::from_translation((point + hand) * 0.5)
                 .looking_at(point, Vec3::Y)
@@ -276,7 +282,13 @@ mod tests {
             .get_mut::<CombatIntent>(player)
             .unwrap()
             .request_ranged_skill();
-        tick(app, 13);
+        // Until the axe has left the hand; a close target sends it straight back.
+        for _ in 0..13 {
+            tick(app, 1);
+            if app.world().get::<Combatant>(player).unwrap().axe_away() {
+                break;
+            }
+        }
         assert!(app.world().get::<Combatant>(player).unwrap().axe_away());
         render(app.world_mut());
     }
@@ -449,7 +461,16 @@ mod tests {
             render(app.world_mut());
             assert_returned(app.world_mut(), player);
             assert_eq!(asset_counts(app.world()), counts);
-            assert_eq!(app.world().entities().count_spawned(), entities);
+            // The axe in flight was one simulation projectile; it is gone
+            // once the axe is back, and nothing else was left behind.
+            assert_eq!(app.world().entities().count_spawned(), entities - 1);
+            assert!(
+                app.world_mut()
+                    .query::<&crate::simulation::Projectile>()
+                    .iter(app.world())
+                    .next()
+                    .is_none()
+            );
             tick(&mut app, 260);
         }
     }

@@ -146,6 +146,8 @@ pub struct Combatant {
     pub(super) melee_chain: MeleeChain,
     pub(super) companion: Option<Entity>,
     pub(super) axe_away: bool,
+    /// The pair whose melee weapon is in flight as a projectile.
+    pub(super) thrown: Option<WeaponPair>,
     pub(super) status: CombatStatus,
     pub(super) availability: ActionAvailability,
     pub(super) pull_velocity: Option<Vec2>,
@@ -163,6 +165,7 @@ impl Combatant {
             melee_chain: MeleeChain::default(),
             companion: None,
             axe_away: false,
+            thrown: None,
             status: CombatStatus::Ready,
             availability: default(),
             pull_velocity: None,
@@ -205,8 +208,16 @@ impl Combatant {
     pub fn companion(&self) -> Option<Entity> {
         self.companion
     }
+    /// The equipped melee weapon is out of the hand: thrown and not yet
+    /// back, or holding the chain of a pull.
     pub fn axe_away(&self) -> bool {
-        self.axe_away
+        self.axe_away || self.thrown == Some(self.pair)
+    }
+    /// Whether the committed action pulls its actor along the chain.
+    pub(super) fn pulls(&self) -> bool {
+        self.action
+            .as_ref()
+            .is_some_and(|action| !action.cancelled && action.snapshot.kind.spec().pull().is_some())
     }
     pub fn status(&self) -> CombatStatus {
         self.status
@@ -220,6 +231,7 @@ impl Combatant {
         self.action = None;
         self.melee_chain.clear();
         self.axe_away = false;
+        self.thrown = None;
         self.pull_velocity = None;
         self.availability = ActionAvailability::default();
     }

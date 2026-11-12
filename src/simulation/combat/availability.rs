@@ -55,11 +55,11 @@ pub(super) fn availability_for(
         })
     });
     ActionAvailability {
-        attack: free && combat.attack_cooldown == 0.0 && !combat.axe_away,
+        attack: free && combat.attack_cooldown == 0.0 && !combat.axe_away(),
         melee_skill: free
             && ground
             && combat.melee_cooldown == 0.0
-            && !combat.axe_away
+            && !combat.axe_away()
             && castable(Slot::MeleeSkill),
         ranged_skill: free
             && ground

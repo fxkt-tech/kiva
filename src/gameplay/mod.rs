@@ -42,6 +42,8 @@ pub fn set_enemy_mode(world: &mut World, mode: EnemyMode) {
     for enemy in enemies {
         world.despawn(enemy);
     }
+    // Shots in flight belong to the fight which just ended.
+    crate::simulation::clear_projectiles(world);
     for (mut combat, mut intent) in world
         .query::<(&mut Combatant, &mut CombatIntent)>()
         .iter_mut(world)
