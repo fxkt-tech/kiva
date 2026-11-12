@@ -14,8 +14,8 @@ mod resources;
 mod weapons;
 
 pub use abilities::{
-    ActionAvailability, ActionKind, ActionSnapshot, ComboWindow, Companion, CompanionState,
-    MeleeStage, SequenceSnapshot,
+    ActionAvailability, ActionKind, ActionSnapshot, AttackClock, ComboWindow, Companion,
+    CompanionState, MeleeStage, SequenceSnapshot, TrackId,
 };
 pub use actions::{ActionIntent, Facing, MotionState};
 pub use boss::{Boss, BossPhase, BossState};

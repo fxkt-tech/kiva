@@ -192,6 +192,10 @@ impl Combatant {
     pub fn active_action(&self) -> Option<ActionSnapshot> {
         self.action.as_ref().map(|a| a.snapshot)
     }
+    /// The committed action's timeline, shared with enemies and the Boss.
+    pub fn attack_clock(&self) -> Option<crate::simulation::AttackClock> {
+        self.active_action().map(|action| action.clock())
+    }
     pub fn sequence(&self) -> Option<SequenceSnapshot> {
         self.action.as_ref().and_then(ActionRuntime::sequence)
     }

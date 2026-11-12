@@ -45,6 +45,7 @@
 | `client/forest_material.rs`、`assets/shaders/forest.wesl` | 标准PBR地表分层与干湿响应、共享环境材质和近叶可见/深度裁切，不改变模拟碰撞 |
 | `client/skeleton.rs` | 随包 CC0 动画的解码、局部采样、父子骨骼求值 |
 | `client/animation.rs`、`animation/poses.rs` | 根据只读模拟快照与明确 actor 的事件选择 / 混合身体姿态 |
+| `client/animation/attack_clips.rs` | 每条攻击时间轴（`TrackId`）播放的源片段与时间映射，一招一行；攻击姿态只按模拟的 `AttackClock` 采样 |
 | `client/loadout.rs` | 每组武器的表现数据，一组一行：名称、模型文件、挥击姿态、弹道外观、音效、妹妹片段、联动镜头、HUD 编号 |
 | `client/camera.rs` | 从相同显示位置与朝向派生跟随镜头 |
 | `client/combat.rs` | 只读敌人 / 武器 / 标记 / 特效，按反馈序号消费并回收临时实体 |

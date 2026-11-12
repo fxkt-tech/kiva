@@ -9,6 +9,7 @@
 - `SourceAnimationLibrary::for_rig(SourceRig::{Yanyun,Naraka})` 选择独立骨架；`SourcePose` 显式携带 rig、scope、model、weight。旧库默认 API 保留燕云语义。
 - `SourceScope::{FullBody,UpperBody,Fingers}` 限定目标组合范围，游戏与源对照共用；不得用不同拓扑的局部数组直接混合。
 - `RigPose::frame` 读取 `ActionSnapshot.melee_stage/elapsed/duration`、`DefenseSnapshot` 和实际运动状态；伤害 marker 不重启动作。
+- `animation/attack_clips.rs` 是攻击片段表：每个 `TrackId` 一行 `AttackClip { rig, clip, keys }`，`keys` 把攻击时间轴的比例分段线性映射到片段位置（横刀攻击片段取片段比例，其余取秒）。玩家普攻、技能、普通敌人和 Boss 的攻击姿态都按 `AttackClock.elapsed` 查这张表；同一模拟时刻在任何渲染帧率下采样到相同的片段时间。技能行按 `strike_effect()` 选择，不点名技能。表中 `BOSS_STRIKE`／`ENEMY_ATTACK` 的阶段边界由测试对照真实固定步时间轴。
 - Web 保留 `playEffect(name)`、`playSniperShot()`、`setActive(bool)`，新增只读 `cueOffset(name) -> number`。原生音频为空操作。
 - `python3 scripts/prepare-naraka-animations.py --verify` 校验冻结源件、原生证据并逐帧重算 runtime 插值／FK／真实手部 LBS；`--repackage` 验证后再生成运行时文件。普通 verify 不依赖游戏目录、Unity 或第三方 Python 包。
 - `python3 scripts/import-naraka-audio.py --verify assets/prepared/naraka/audio` 从冻结 WEM／无损 PCM 重建并核对 Ogg、cue、manifest；需要 ffmpeg/ffprobe，普通 verify 不读取游戏或调用 vgmstream。

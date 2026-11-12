@@ -1,4 +1,5 @@
 //! Authored skeletal animation driven by read-only simulation snapshots and actor-tagged events.
+mod attack_clips;
 mod naraka;
 mod poses;
 mod preview;
@@ -13,9 +14,9 @@ use super::{
     source_animation::{SourceAnimationLibrary, SourceRig, SourceScope},
 };
 use crate::simulation::{
-    ActionKind, ActionSnapshot, Body, Boss, BossState, CombatEffect, CombatFeedback, Combatant,
-    DefenseKind, DefenseSnapshot, DefenseState, Enemy, Facing, Health, HitStop, MeleeStage,
-    MotionState, SimulationActive, WeaponMode, WeaponPair,
+    ActionKind, ActionSnapshot, AttackClock, Body, Boss, BossState, CombatEffect, CombatFeedback,
+    Combatant, DefenseKind, DefenseSnapshot, DefenseState, Enemy, Facing, Health, HitStop,
+    MeleeStage, MotionState, SimulationActive, WeaponMode, WeaponPair,
 };
 use poses::Gesture;
 
@@ -360,7 +361,16 @@ impl RigPose {
         {
             None
         } else {
+            let clocked = input
+                .attack
+                .and_then(|clock| attack_clips::of(clock.track).map(|row| (row, clock)))
+                .filter(|(row, _)| row.rig == SourceRig::Yanyun);
             match self.state {
+                PoseState::Attack(
+                    Gesture::Slash | Gesture::Axe | Gesture::Hammer | Gesture::Windup,
+                ) if let Some((row, clock)) = clocked => {
+                    Some((row.clip, row.position(&clock), false))
+                }
                 PoseState::Attack(Gesture::Slash | Gesture::Axe | Gesture::Hammer) => {
                     let duration = if self.state == PoseState::Attack(Gesture::Hammer) {
                         0.6
@@ -416,11 +426,13 @@ impl RigPose {
                 _ => None,
             }
         };
-        let boss_selection = input
-            .boss_attack
+        // Enemies and the Boss play their attack row on the simulation's own
+        // attack clock; the native player reaches the same rows below.
+        let attack_selection = input
+            .attack
             .filter(|_| {
-                input.alive
-                    && libraries.for_rig(SourceRig::Naraka).is_some()
+                !native_player
+                    && input.alive
                     && !input.airborne
                     && input.boss_deflected.is_none()
                     && !matches!(
@@ -428,14 +440,16 @@ impl RigPose {
                         PoseState::Attack(Gesture::Hit | Gesture::HeavyHit)
                     )
             })
-            .map(|attack| naraka::Selection {
-                rig: SourceRig::Naraka,
-                name: naraka::melee_clip(attack.stage),
-                seconds: attack.fraction,
+            .and_then(|clock| attack_clips::of(clock.track).map(|row| (row, clock)))
+            .filter(|(row, _)| libraries.for_rig(row.rig).is_some())
+            .map(|(row, clock)| naraka::Selection {
+                rig: row.rig,
+                name: row.clip,
+                seconds: row.position(&clock),
                 looping: false,
-                adaptation: "Kiva Boss windup/strike/recovery clock; shared Li Huowang melee clips",
+                adaptation: "Kiva attack clock; attack clip table",
             });
-        let selection = boss_selection.or_else(|| {
+        let selection = attack_selection.or_else(|| {
             if native_player {
                 self.naraka_selection(input, action, defense).or_else(|| {
                     legacy_selection.map(|(name, seconds, looping)| naraka::Selection {
@@ -457,8 +471,11 @@ impl RigPose {
             }
         });
         self.trace.melee_stage = input
-            .boss_attack
-            .map(|attack| attack.stage)
+            .attack
+            .and_then(|clock| match clock.track {
+                crate::simulation::TrackId::Boss { stage } => Some(stage),
+                _ => None,
+            })
             .or_else(|| action.and_then(|action| action.melee_stage));
         self.trace.defense = defense.map(|defense| defense.kind);
         self.trace.defense_interrupted =
@@ -863,46 +880,10 @@ struct SniperPose {
     recoil: f32,
 }
 
-/// Display-only mapping: source clips never decide attacks or damage.
-#[derive(Clone, Copy)]
-struct BossAttackPose {
-    stage: MeleeStage,
-    fraction: f32,
-}
-
-impl BossAttackPose {
-    fn from_boss(boss: &Boss) -> Option<Self> {
-        // Reserve the source's windup, strike and follow-through for the matching
-        // simulation phases. The long third-strike rest does not stretch the clip.
-        let (index, fraction) = match boss.state() {
-            BossState::Telegraph => (
-                boss.attacks_in_burst(),
-                0.45 * (boss.elapsed() / boss.duration().max(0.001)).clamp(0.0, 1.0),
-            ),
-            BossState::Attacking => (
-                boss.attacks_in_burst().checked_sub(1)?,
-                0.45 + 0.20 * (boss.elapsed() / boss.duration().max(0.001)).clamp(0.0, 1.0),
-            ),
-            BossState::Recovering if boss.elapsed() < 0.65 => (
-                boss.attacks_in_burst().checked_sub(1)?,
-                0.65 + 0.35 * boss.elapsed() / 0.65,
-            ),
-            _ => return None,
-        };
-        Some(Self {
-            stage: match index {
-                0 => MeleeStage::One,
-                1 => MeleeStage::Two,
-                _ => MeleeStage::Three,
-            },
-            fraction,
-        })
-    }
-}
-
 #[derive(Clone, Copy)]
 struct Inputs {
-    boss_attack: Option<BossAttackPose>,
+    /// The actor's current attack timeline, if it is attacking.
+    attack: Option<AttackClock>,
     alive: bool,
     airborne: bool,
     jumps_used: u8,
@@ -1015,7 +996,8 @@ pub(super) fn animate(
     }
     let latest_sequence = feedback.events().last().map_or(0, |event| event.sequence);
     for (view, mut rig) in &mut views {
-        let Ok((body, motion, health, facing, combat, _, boss, defense)) = actors.get(view.owner)
+        let Ok((body, motion, health, facing, combat, enemy, boss, defense)) =
+            actors.get(view.owner)
         else {
             continue;
         };
@@ -1032,7 +1014,10 @@ pub(super) fn animate(
             - (-facing.direction().x).atan2(-facing.direction().y);
         let speed = body.step_displacement().length() / fixed.delta_secs().max(0.0001);
         let input = Inputs {
-            boss_attack: boss.and_then(BossAttackPose::from_boss),
+            attack: combat
+                .and_then(Combatant::attack_clock)
+                .or_else(|| enemy.and_then(Enemy::attack_clock))
+                .or_else(|| boss.and_then(Boss::attack_clock)),
             boss_deflected: boss
                 .filter(|boss| boss.state() == BossState::Stunned)
                 .map(|boss| (boss.elapsed(), boss.duration())),
@@ -1156,7 +1141,7 @@ mod tests {
 
     fn idle_input() -> Inputs {
         Inputs {
-            boss_attack: None,
+            attack: None,
             boss_deflected: None,
             alive: true,
             airborne: false,
@@ -1422,14 +1407,15 @@ mod tests {
             if snapshot.state() != BossState::Attacking || snapshot.elapsed() < 0.10 {
                 continue;
             }
-            let attack = BossAttackPose::from_boss(snapshot).unwrap();
-            let name = naraka::melee_clip(attack.stage);
+            let clock = snapshot.attack_clock().unwrap();
+            let row = attack_clips::of(clock.track).unwrap();
+            let name = row.clip;
             let source = app
                 .world()
                 .resource::<SourceAnimationLibrary>()
                 .for_rig(SourceRig::Naraka)
                 .unwrap();
-            let expected = attack.fraction * source.duration(source.clip(name).unwrap());
+            let expected = row.position(&clock) * source.duration(source.clip(name).unwrap());
             let trace = actor_rig(&app, boss).trace();
             assert_eq!(trace.source_rig, Some(SourceRig::Naraka.id()));
             assert_eq!(trace.source_clip.as_deref(), Some(name));
@@ -2234,6 +2220,136 @@ mod tests {
         }
         assert_eq!(stages.len(), 3);
     }
+    #[test]
+    fn attack_poses_follow_the_simulation_clock_not_the_render_rate() {
+        let library = AnimationLibrary::default();
+        let sources = SourceAnimationLibrary::bundled();
+        let skill = ActionSnapshot {
+            action_id: 7,
+            kind: ActionKind::HammerSlam,
+            pair: WeaponPair::HammerMusket,
+            melee_stage: None,
+            target: None,
+            elapsed: 0.3,
+            duration: 0.5,
+            shot_count: 0,
+            aim_position: Vec3::ZERO,
+            source_position: Vec3::ZERO,
+            companion_position: Vec3::ZERO,
+        };
+        let enemy = AttackClock {
+            action_id: 3,
+            track: crate::simulation::TrackId::Enemy,
+            elapsed: 0.3,
+            duration: attack_clips::ENEMY_ATTACK[1],
+        };
+        for (effect, blade, clock, action) in [
+            (CombatEffect::Hammer, false, skill.clock(), Some(skill)),
+            (CombatEffect::EnemyWindup, true, enemy, None),
+        ] {
+            let row = attack_clips::of(clock.track).unwrap();
+            let rig_library = sources.for_rig(row.rig).unwrap();
+            let expected = rig_library.sample_time(
+                rig_library.clip(row.clip).unwrap(),
+                row.position(&clock),
+                false,
+            );
+            // The same simulation moment, displayed after different amounts of
+            // render time: the old render-clock pose differed between them.
+            for (dt, frames) in [(1.0 / 30.0, 7), (1.0 / 144.0, 12)] {
+                let mut rig = RigPose::new(&library);
+                rig.observe(&library, effect, WeaponPair::HammerMusket, blade);
+                let mut input = idle_input();
+                input.attack = Some(clock);
+                for _ in 0..frames {
+                    rig.advance(&library, input, dt);
+                    rig.advance_sources(&sources, input, action, None, !blade, dt);
+                }
+                assert_eq!(rig.trace.source_clip.as_deref(), Some(row.clip));
+                assert!(
+                    (rig.trace.source_seconds - expected).abs() < 1e-5,
+                    "{effect:?} at render dt {dt}: {} != {expected}",
+                    rig.trace.source_seconds
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn attack_clip_phase_boundaries_match_the_simulation_timelines() {
+        let mut app = app();
+        let player = actor(&mut app);
+        app.world_mut()
+            .entity_mut(player)
+            .insert(Health::new(10_000.0));
+        let boss = actor(&mut app);
+        app.world_mut()
+            .entity_mut(boss)
+            .remove::<(Combatant, CombatIntent)>()
+            .insert((
+                Body::new(Vec2::new(0.0, -2.5), 5.2, 0.3),
+                Boss::default(),
+                Enemy::default(),
+                Health::new(Boss::PHASE_HEALTH),
+            ));
+        let tick = 1.0 / 60.0 + 1e-4;
+        let mut previous = BossState::Idle;
+        let mut checked = 0;
+        for _ in 0..600 {
+            frame(&mut app, true);
+            let snapshot = app.world().get::<Boss>(boss).unwrap();
+            let state = snapshot.state();
+            if state != previous
+                && let Some(clock) = snapshot.attack_clock()
+            {
+                assert_eq!(clock.duration, attack_clips::BOSS_STRIKE[2]);
+                let boundary = match state {
+                    BossState::Attacking => Some(attack_clips::BOSS_STRIKE[0]),
+                    BossState::Recovering => Some(attack_clips::BOSS_STRIKE[1]),
+                    _ => None,
+                };
+                if let Some(boundary) = boundary {
+                    assert!(
+                        (clock.elapsed - boundary).abs() <= tick,
+                        "{state:?} began at {} not {boundary}",
+                        clock.elapsed
+                    );
+                    checked += 1;
+                }
+            }
+            previous = state;
+        }
+        assert!(checked >= 4, "only {checked} boss boundaries observed");
+
+        let mut app = super::tests::app();
+        let player = actor(&mut app);
+        app.world_mut()
+            .entity_mut(player)
+            .insert(Health::new(10_000.0));
+        let enemy = actor(&mut app);
+        app.world_mut()
+            .entity_mut(enemy)
+            .remove::<(Combatant, CombatIntent)>()
+            .insert((Body::new(Vec2::new(0.0, -1.2), 4.0, 0.35), Enemy::default()));
+        let mut struck = false;
+        let mut winding = false;
+        for _ in 0..240 {
+            frame(&mut app, true);
+            let snapshot = app.world().get::<Enemy>(enemy).unwrap();
+            let Some(clock) = snapshot.attack_clock() else {
+                continue;
+            };
+            assert_eq!(clock.duration, attack_clips::ENEMY_ATTACK[1]);
+            if winding && !snapshot.is_winding_up() {
+                assert!((clock.elapsed - attack_clips::ENEMY_ATTACK[0]).abs() <= tick);
+                struck = true;
+                break;
+            }
+            winding = snapshot.is_winding_up();
+        }
+        assert!(struck, "the enemy never struck");
+    }
+
     #[test]
     fn different_source_hierarchies_fade_without_reusing_local_pose_indices() {
         let library = AnimationLibrary::default();

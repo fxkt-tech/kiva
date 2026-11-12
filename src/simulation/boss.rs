@@ -4,8 +4,8 @@ use avian3d::prelude::{SpatialQuery, SpatialQueryFilter};
 use bevy::prelude::*;
 
 use super::{
-    ActionIntent, Body, CombatEffect, CombatFeedback, Combatant, Facing, Health, MotionState,
-    MoveIntent, SpawnPoint,
+    ActionIntent, AttackClock, Body, CombatEffect, CombatFeedback, Combatant, Facing, Health,
+    MeleeStage, MotionState, MoveIntent, SpawnPoint, TrackId,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -34,6 +34,8 @@ impl KivaTuning {
     const TELEGRAPH: f32 = 0.72;
     const ACTIVE: f32 = 0.22;
     const RECOVERY: f32 = 0.65;
+    /// One strike's whole timeline: telegraph, active window and recovery.
+    const MOVE: f32 = Self::TELEGRAPH + Self::ACTIVE + Self::RECOVERY;
     const ATTACKS_PER_BURST: u8 = 3;
     const BURST_REST: f32 = 3.0;
     const TRANSITION: f32 = 2.2;
@@ -85,6 +87,8 @@ pub struct Boss {
     strike_resolved: bool,
     engaged: bool,
     stun_source: Option<u64>,
+    /// The strike in progress: its stage and the time since its telegraph began.
+    strike: Option<(MeleeStage, f32)>,
 }
 
 impl Default for Boss {
@@ -103,6 +107,7 @@ impl Default for Boss {
             strike_resolved: false,
             engaged: false,
             stun_source: None,
+            strike: None,
         }
     }
 }
@@ -137,6 +142,18 @@ impl Boss {
     }
     pub fn sequence(&self) -> u64 {
         self.sequence
+    }
+    /// The current strike's single timeline, from its telegraph through its
+    /// recovery. Interruptions (stun, knock-up, phase change) end it; the rest
+    /// after a burst is not part of it.
+    pub fn attack_clock(&self) -> Option<AttackClock> {
+        let (stage, elapsed) = self.strike?;
+        (elapsed <= KivaTuning::MOVE).then_some(AttackClock {
+            action_id: self.sequence,
+            track: TrackId::Boss { stage },
+            elapsed,
+            duration: KivaTuning::MOVE,
+        })
     }
     /// The 9002xxxx slot -> source graph/clip mapping has not been recovered.
     pub fn clip_name(&self) -> Option<&'static str> {
@@ -175,6 +192,18 @@ impl Boss {
         self.stun_source = None;
         self.elapsed = 0.0;
         self.duration = duration;
+        self.strike = None;
+    }
+
+    /// The next phase of the same strike, keeping its timeline.
+    fn continue_strike(&mut self, state: BossState, duration: f32) {
+        let strike = self.strike;
+        self.enter(state, duration);
+        self.strike = strike;
+    }
+
+    fn strike_elapsed(&self) -> f32 {
+        self.strike.map_or(0.0, |(_, elapsed)| elapsed)
     }
 
     fn reset_fight(&mut self) {
@@ -229,7 +258,15 @@ impl Boss {
         match action {
             1 | 2 => self.enter(BossState::Strafing, 2.0),
             3 => self.enter(BossState::Pursuing, 5.0),
-            _ => self.enter(BossState::Telegraph, KivaTuning::TELEGRAPH),
+            _ => {
+                self.enter(BossState::Telegraph, KivaTuning::TELEGRAPH);
+                let stage = match self.attacks_in_burst {
+                    0 => MeleeStage::One,
+                    1 => MeleeStage::Two,
+                    _ => MeleeStage::Three,
+                };
+                self.strike = Some((stage, 0.0));
+            }
         }
     }
 }
@@ -334,6 +371,9 @@ pub(super) fn advance(
         }
         health.tick(dt);
         boss.elapsed += dt;
+        if let Some((_, elapsed)) = &mut boss.strike {
+            *elapsed += dt;
+        }
         if boss.state == BossState::Transition {
             movement.stop();
             if boss.elapsed >= boss.duration {
@@ -447,11 +487,11 @@ pub(super) fn advance(
                 } else {
                     movement.stop();
                 }
-                if boss.elapsed >= boss.duration {
+                if boss.strike_elapsed() >= KivaTuning::TELEGRAPH {
                     let action = boss.action.unwrap();
                     boss.cooldowns[action as usize] = SOURCE_COOLDOWNS[(action - 4) as usize];
                     boss.attacks_in_burst += 1;
-                    boss.enter(BossState::Attacking, KivaTuning::ACTIVE);
+                    boss.continue_strike(BossState::Attacking, KivaTuning::ACTIVE);
                     feedback.push(
                         entity,
                         CombatEffect::Melee,
@@ -548,13 +588,15 @@ pub(super) fn advance(
                         target_intent.clear();
                     }
                 }
-                if boss.state == BossState::Attacking && boss.elapsed >= boss.duration {
+                if boss.state == BossState::Attacking
+                    && boss.strike_elapsed() >= KivaTuning::TELEGRAPH + KivaTuning::ACTIVE
+                {
                     let recovery = if boss.attacks_in_burst >= KivaTuning::ATTACKS_PER_BURST {
                         KivaTuning::BURST_REST
                     } else {
                         KivaTuning::RECOVERY
                     };
-                    boss.enter(BossState::Recovering, recovery);
+                    boss.continue_strike(BossState::Recovering, recovery);
                     movement.stop();
                 }
             }

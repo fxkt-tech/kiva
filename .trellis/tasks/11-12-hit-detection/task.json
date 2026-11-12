@@ -1,0 +1,30 @@
+{
+  "id": "hit-detection",
+  "name": "hit-detection",
+  "title": "攻击判定统一：动画烘焙的扫掠命中与真实弹体",
+  "description": "所有攻击改为可靠的空间判定：近战用从动画烘焙的刀刃扫掠体积，远程改为真实弹体；动画时间统一由模拟时钟驱动",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "asuka",
+  "assignee": "asuka",
+  "createdAt": "2026-11-12",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "11-12-anim-sim-clock",
+    "11-12-melee-sweep",
+    "11-12-projectiles"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

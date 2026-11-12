@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/simulation/combat-v1.md", "reason": "战斗契约：防御顺序、事件、标记"}
+{"file": ".trellis/spec/simulation/index.md", "reason": "模拟层规范与固定步顺序"}
+{"file": "docs/architecture.md", "reason": "分层与状态所有权"}
+{"file": ".trellis/tasks/11-12-hit-detection/design.md", "reason": "共用设计"}

@@ -5,13 +5,15 @@ use super::hit::{
 };
 use super::{ActionIds, CombatEffect, CombatFeedback, HitContext, HitOutcome};
 use crate::simulation::defense::decay;
-use crate::simulation::{Body, SlowEffect};
+use crate::simulation::{AttackClock, Body, SlowEffect, TrackId};
 use bevy::prelude::*;
 
 /// Kiva's ordinary enemy tuning.
 const FIRST_ATTACK_DELAY: f32 = 0.8;
 const ATTACK_COOLDOWN: f32 = 1.25;
 const WINDUP: f32 = 0.42;
+/// The strike's follow-through after the windup; part of the attack timeline.
+const SWING: f32 = 0.42;
 const DAMAGE: f32 = 12.0;
 const REACH: f32 = 2.0;
 const ENGAGE_DISTANCE: f32 = 1.7;
@@ -28,6 +30,8 @@ pub struct Enemy {
     pub(super) stun_source: Option<u64>,
     pub(super) attack_target: Option<Entity>,
     pub(super) attack_id: u64,
+    /// Time since the current attack's windup began, through its follow-through.
+    pub(super) attack_elapsed: Option<f32>,
 }
 impl Default for Enemy {
     fn default() -> Self {
@@ -39,6 +43,7 @@ impl Default for Enemy {
             stun_source: None,
             attack_target: None,
             attack_id: 0,
+            attack_elapsed: None,
         }
     }
 }
@@ -64,6 +69,15 @@ impl Enemy {
     pub fn recovery_remaining(&self) -> f32 {
         self.recovery
     }
+    /// The attack's single timeline: windup, then follow-through.
+    pub fn attack_clock(&self) -> Option<AttackClock> {
+        self.attack_elapsed.map(|elapsed| AttackClock {
+            action_id: self.attack_id,
+            track: TrackId::Enemy,
+            elapsed,
+            duration: WINDUP + SWING,
+        })
+    }
     pub fn stun_source(&self) -> Option<u64> {
         (self.recovery > 0.0).then_some(self.stun_source).flatten()
     }
@@ -77,6 +91,7 @@ impl Enemy {
     pub(super) fn stun(&mut self, source: u64, duration: f32) {
         self.windup = 0.0;
         self.attack_target = None;
+        self.attack_elapsed = None;
         self.recovery = duration;
         self.stun_source = Some(source);
     }
@@ -116,6 +131,10 @@ pub(in crate::simulation) fn advance_enemies(
         }
         actions.clear();
         enemy.cooldown = decay(enemy.cooldown, dt);
+        if let Some(elapsed) = enemy.attack_elapsed {
+            let elapsed = elapsed + dt;
+            enemy.attack_elapsed = (elapsed <= WINDUP + SWING + 1e-6).then_some(elapsed);
+        }
         defeat_if_fallen(entity, &body, &mut health, &mut feedback);
         let was_dead = !health.is_alive();
         if health.tick(dt) {
@@ -135,6 +154,7 @@ pub(in crate::simulation) fn advance_enemies(
             movement.stop();
             enemy.windup = 0.0;
             enemy.attack_target = None;
+            enemy.attack_elapsed = None;
             continue;
         }
         if enemy.recovery > 0.0 {
@@ -149,6 +169,7 @@ pub(in crate::simulation) fn advance_enemies(
             movement.stop();
             enemy.windup = 0.0;
             enemy.attack_target = None;
+            enemy.attack_elapsed = None;
             continue;
         }
         if enemy.windup > 0.0 {
@@ -214,6 +235,7 @@ pub(in crate::simulation) fn advance_enemies(
             movement.stop();
             if enemy.cooldown == 0.0 {
                 enemy.windup = WINDUP;
+                enemy.attack_elapsed = Some(0.0);
                 enemy.attack_target = Some(target);
                 enemy.attack_id = ids.next();
                 feedback.push(

@@ -103,12 +103,9 @@ impl RigPose {
         }
         if let Some(action) = action {
             if action.kind == ActionKind::Melee {
-                let name = melee_clip(action.melee_stage.unwrap_or(MeleeStage::One));
-                return clip(
-                    name,
-                    (action.elapsed / action.duration.max(0.001)).clamp(0.0, 1.0),
-                    false,
-                );
+                let clock = action.clock();
+                let row = super::attack_clips::of(clock.track)?;
+                return clip(row.clip, row.position(&clock), false);
             }
             // E / Tab preserve the established single/paired choreography.
             return None;
@@ -210,7 +207,7 @@ mod tests {
     use super::*;
     fn input() -> Inputs {
         Inputs {
-            boss_attack: None,
+            attack: None,
             alive: true,
             airborne: false,
             jumps_used: 0,

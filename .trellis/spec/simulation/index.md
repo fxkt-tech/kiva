@@ -25,6 +25,7 @@
 - `CombatFeedback::events()` 为只读有界历史；`SimulationActive(bool)` 暂停整条固定步链。
 - `HitStop::is_active()` 暴露冲击停顿状态；模拟请求 0.04s 狙击命中停顿，固定步向上取整（60Hz 为 3 步 / 50ms）。
 
+- `AttackClock { action_id, track: TrackId, elapsed, duration }` 是三类攻击者共用的攻击时间轴：`Combatant::attack_clock()`（由 `ActionSnapshot::clock()` 派生）、`Enemy::attack_clock()`（蓄力＋0.42s 收势）、`Boss::attack_clock()`（预警＋出招＋收招为一条招式时间轴，晕眩／击飞／转阶段即结束，三连后的停手不属于它）。`TrackId::{PlayerMelee{pair,stage},PlayerSkill(kind),Boss{stage},Enemy}` 只作数据表的键。表现按它采样攻击姿态，不保留渲染端攻击计时。
 - `Boss::{phase,state,action_id,skill_slot,elapsed,duration,sequence,clip_name,is_invulnerable}` 是单Boss只读表现接口；`BossPhase::{One,Two}` / `BossState` 的状态由Boss独占。`clip_name()` 在原技能槽到动画映射未恢复前返回None。
 
 ## Contracts

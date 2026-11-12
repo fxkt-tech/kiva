@@ -35,6 +35,28 @@ impl ActionKind {
         matches!(self, Self::HammerCombo | Self::ChainCombo)
     }
 }
+/// Which attack timeline an [`AttackClock`] runs on. A key into the
+/// presentation clip table and the baked hit data; it carries no display facts.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TrackId {
+    PlayerMelee { pair: WeaponPair, stage: MeleeStage },
+    PlayerSkill(ActionKind),
+    Boss { stage: MeleeStage },
+    Enemy,
+}
+
+/// One attack's authoritative clock, the same shape for the player, ordinary
+/// enemies and the Boss. Presentation samples its attack pose from `elapsed`
+/// instead of keeping a render-time clock of its own.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct AttackClock {
+    /// Identity of this attack: an action id, an enemy attack id or a Boss sequence.
+    pub action_id: u64,
+    pub track: TrackId,
+    pub elapsed: f32,
+    pub duration: f32,
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct ActionSnapshot {
     pub action_id: u64,
@@ -62,6 +84,22 @@ pub struct SequenceSnapshot {
     pub source_position: Vec3,
     pub companion_position: Vec3,
     pub cancelled: bool,
+}
+impl ActionSnapshot {
+    pub fn clock(&self) -> AttackClock {
+        AttackClock {
+            action_id: self.action_id,
+            track: match (self.kind, self.melee_stage) {
+                (ActionKind::Melee, Some(stage)) => TrackId::PlayerMelee {
+                    pair: self.pair,
+                    stage,
+                },
+                (kind, _) => TrackId::PlayerSkill(kind),
+            },
+            elapsed: self.elapsed,
+            duration: self.duration,
+        }
+    }
 }
 impl SequenceSnapshot {
     pub const AIM_DURATION: f32 = 0.30;
