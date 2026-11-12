@@ -75,25 +75,21 @@ pub(super) fn setup(world: &mut World) {
             ))
             .id();
         avatar::spawn_with_appearance(world, root, Appearance::Bailingmiao);
-        let body_mount = world
-            .spawn((
-                SisterBodyMount {
-                    root,
-                    pair: WeaponPair::ChainAxeBow,
-                },
-                Transform::IDENTITY,
-                Visibility::Hidden,
-            ))
-            .id();
-        weapon_models::spawn(
-            world,
-            body_mount,
-            WeaponPair::ChainAxeBow,
-            WeaponMode::Ranged,
-            Mount::Spine,
-        );
-        world.entity_mut(root).add_child(body_mount);
-        for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+        for pair in WeaponPair::ALL {
+            if !super::loadout::of(pair).spine_accessory {
+                continue;
+            }
+            let body_mount = world
+                .spawn((
+                    SisterBodyMount { root, pair },
+                    Transform::IDENTITY,
+                    Visibility::Hidden,
+                ))
+                .id();
+            weapon_models::spawn(world, body_mount, pair, WeaponMode::Ranged, Mount::Spine);
+            world.entity_mut(root).add_child(body_mount);
+        }
+        for pair in WeaponPair::ALL {
             let weapon = world
                 .spawn((
                     SisterWeapon { root, pair },
@@ -157,16 +153,10 @@ pub(super) fn sync(world: &mut World) {
                 frame.pitch,
                 frame.grips,
             );
-            let markers: &[f32] = match state.kind {
-                crate::simulation::ActionKind::HammerCombo => &[0.30, 0.42, 0.54],
-                crate::simulation::ActionKind::ChainCombo => &[0.12, 0.28, 0.44],
-                crate::simulation::ActionKind::AxeShot => &[0.15],
-                _ => &[0.18],
-            };
             let shot_age = state
                 .shot_count
                 .checked_sub(1)
-                .and_then(|index| markers.get(index as usize))
+                .and_then(|index| state.kind.shot_times().get(index as usize))
                 .map(|time| state.elapsed - time);
             world.resource_scope(
                 |world, source: Mut<super::source_animation::SourceAnimationLibrary>| {

@@ -113,7 +113,7 @@ pub(super) fn setup(world: &mut World) {
         .query_filtered::<Entity, With<PlayerView>>()
         .single(world)
         .expect("one player");
-    for set in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
+    for set in WeaponPair::ALL {
         let root = world
             .spawn((
                 WeaponVisual(set, WeaponMode::Melee),
@@ -363,7 +363,9 @@ pub(super) fn effects(
                 continue;
             }
             CombatEffect::Shot => {
-                let arrow = event.pair == Some(WeaponPair::ChainAxeBow);
+                let arrow = event.pair.is_some_and(|pair| {
+                    super::loadout::of(pair).projectile == super::loadout::Projectile::Arrow
+                });
                 if arrow {
                     let direction = (event.end - event.position).normalize_or(Vec3::NEG_Z);
                     for (offset, scale) in [

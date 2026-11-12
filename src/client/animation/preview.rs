@@ -104,7 +104,7 @@ impl PreviewRig {
         Self {
             rig: RigPose::new(library),
             id: String::new(),
-            pair: WeaponPair::HammerMusket,
+            pair: WeaponPair::default(),
             blade: false,
             frame: 0,
         }

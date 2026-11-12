@@ -1,7 +1,6 @@
 use super::*;
-use crate::simulation::{
-    CollisionWorld, DefenseEdge, SimulationActive, SimulationPlugin, spawn_box, teleport_actor,
-};
+use crate::simulation::*;
+use bevy::prelude::*;
 use std::time::Duration;
 #[path = "melee_chain_tests.rs"]
 mod melee_chain_tests;

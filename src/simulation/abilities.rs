@@ -1,4 +1,5 @@
-//! Read-only action and companion snapshots; combat owns marker execution.
+//! Read-only action and companion snapshots; combat owns the runtime, the
+//! skill numbers and marker execution.
 use super::WeaponPair;
 use bevy::prelude::*;
 
@@ -32,16 +33,6 @@ pub enum ActionKind {
 impl ActionKind {
     pub fn is_combo(self) -> bool {
         matches!(self, Self::HammerCombo | Self::ChainCombo)
-    }
-    pub(super) fn duration(self, pair: WeaponPair) -> f32 {
-        match self {
-            Self::Melee => pair.melee_profile(MeleeStage::One).duration,
-            Self::HammerSlam | Self::ChainSweep => 0.50,
-            Self::MusketShot => 0.40,
-            Self::AxeShot => 0.75,
-            Self::HammerCombo => 0.96,
-            Self::ChainCombo => 0.93,
-        }
     }
 }
 #[derive(Clone, Copy, Debug)]
@@ -139,54 +130,6 @@ impl Default for CompanionState {
             shot_count: 0,
             source_position: Vec3::ZERO,
             aim_position: Vec3::ZERO,
-        }
-    }
-}
-pub(super) struct ActionRuntime {
-    pub snapshot: ActionSnapshot,
-    pub previous: f32,
-    pub markers: u8,
-    pub cancelled: bool,
-    pub return_remaining: f32,
-    pub pull_stalled: f32,
-    pub pull_stopped: bool,
-}
-impl ActionRuntime {
-    pub fn sequence(&self) -> Option<SequenceSnapshot> {
-        let s = self.snapshot;
-        s.kind.is_combo().then(|| SequenceSnapshot {
-            action_id: s.action_id,
-            kind: s.kind,
-            pair: s.pair,
-            target: s.target.expect("combo has target"),
-            elapsed: s.elapsed,
-            duration: s.duration,
-            shot_count: s.shot_count,
-            aim_position: s.aim_position,
-            source_position: s.source_position,
-            companion_position: s.companion_position,
-            cancelled: self.cancelled,
-        })
-    }
-    pub fn cancel(&mut self) {
-        if !self.cancelled {
-            self.cancelled = true;
-            self.return_remaining = 0.28;
-            let start = if self.snapshot.kind == ActionKind::HammerCombo {
-                0.68
-            } else {
-                0.65
-            };
-            self.snapshot.elapsed = self.snapshot.elapsed.max(start);
-        }
-    }
-    pub fn marker(&mut self, index: u8, time: f32) -> bool {
-        let bit = 1 << index;
-        if self.markers & bit == 0 && self.previous < time && self.snapshot.elapsed + 1e-6 >= time {
-            self.markers |= bit;
-            true
-        } else {
-            false
         }
     }
 }

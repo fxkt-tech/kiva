@@ -88,6 +88,7 @@ impl Plugin for SimulationPlugin {
                     physics::fixed_clock,
                     physics::install,
                     combat::ensure_companions,
+                    combat::tick_slows,
                     combat::prepare,
                     physics::motor,
                     physics::resize_characters,
@@ -100,10 +101,12 @@ impl Plugin for SimulationPlugin {
                 FixedUpdate,
                 (
                     physics::publish,
-                    combat::advance,
+                    combat::resolve_actions,
+                    combat::advance_enemies,
                     boss::advance,
                     combat::publish_availability,
-                    combat::finish_resources,
+                    combat::recover_stamina,
+                    combat::publish_companions,
                     physics::flush_teleports,
                 )
                     .chain()

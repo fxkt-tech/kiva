@@ -224,16 +224,9 @@ impl RigPose {
     ) {
         let elapsed = state.elapsed;
         let shots = state.shot_count;
-        let kind = state.kind;
-        let markers: &[f32] = match kind {
-            ActionKind::HammerCombo => &[0.30, 0.42, 0.54],
-            ActionKind::ChainCombo => &[0.12, 0.28, 0.44],
-            ActionKind::AxeShot => &[0.15],
-            _ => &[0.18],
-        };
         let last = shots
             .checked_sub(1)
-            .and_then(|index| markers.get(index as usize))
+            .and_then(|index| state.kind.shot_times().get(index as usize))
             .copied();
         let recoil = last.map_or(0.0, |time| {
             (1.0 - (elapsed - time) / 0.10).clamp(0.0, 1.0) * 0.06
@@ -254,24 +247,13 @@ impl RigPose {
             return;
         };
         let attack = shot_age.is_some_and(|age| (0.0..0.40).contains(&age));
-        let (name, adaptation) = match (pair, attack) {
-            (WeaponPair::ChainAxeBow, false) => (
-                "male_bow_hold_idle_01",
-                "verified shared female bow source; Kiva upper-body/fingers + CC0 lower body / grip IK",
-            ),
-            (WeaponPair::ChainAxeBow, true) => (
-                "male_bow_attack_01",
-                "verified shared female bow source; Kiva shot clock / upper body + CC0 lower body / grip IK",
-            ),
-            (WeaponPair::HammerMusket, false) => (
-                naraka::GUN_HOLD,
-                "verified shared female_fk source on canonical Avatar; upper body + CC0 lower body / target grip IK",
-            ),
-            (WeaponPair::HammerMusket, true) => (
-                naraka::GUN_ATTACK,
-                "verified shared female_fk source on canonical Avatar; upper body + CC0 lower body / Kiva shot clock / target grip IK",
-            ),
+        let loadout = super::loadout::of(pair);
+        let selected = if attack {
+            &loadout.companion_attack
+        } else {
+            &loadout.companion_hold
         };
+        let (name, adaptation) = (selected.name, selected.adaptation);
         let Some(clip) = source.clip(name) else {
             return;
         };
@@ -615,13 +597,10 @@ impl RigPose {
     ) {
         let kind = match effect {
             CombatEffect::Melee if blade => Gesture::Slash,
-            CombatEffect::Melee => {
-                if set == WeaponPair::ChainAxeBow {
-                    Gesture::Axe
-                } else {
-                    Gesture::Hammer
-                }
-            }
+            CombatEffect::Melee => match super::loadout::of(set).swing {
+                super::loadout::Swing::Hammer => Gesture::Hammer,
+                super::loadout::Swing::Axe => Gesture::Axe,
+            },
             CombatEffect::Shot => Gesture::Shot,
             CombatEffect::Hammer => Gesture::Hammer,
             CombatEffect::ChainSweep => Gesture::Axe,
@@ -1039,17 +1018,11 @@ pub(super) fn animate(
         else {
             continue;
         };
-        let set = combat.map_or(WeaponPair::HammerMusket, Combatant::weapon_pair);
+        let set = combat.map_or(WeaponPair::default(), Combatant::weapon_pair);
         let mode = WeaponMode::Melee;
-        let action = combat.and_then(Combatant::active_action).map(|action| {
-            let effect = match action.kind {
-                ActionKind::Melee => Some(CombatEffect::Melee),
-                ActionKind::HammerSlam => Some(CombatEffect::Hammer),
-                ActionKind::ChainSweep => Some(CombatEffect::ChainSweep),
-                _ => None,
-            };
-            (action.action_id, effect)
-        });
+        let action = combat
+            .and_then(Combatant::active_action)
+            .map(|action| (action.action_id, action.kind.strike_effect()));
         let direction = motion.dodge_direction();
         let dodge_yaw = (-direction.x).atan2(-direction.y)
             - (-facing.direction().x).atan2(-facing.direction().y);

@@ -48,7 +48,7 @@ Web mode脚本最先固定页面模式，startup／loader／input／hud／enemie
 外观卡片可选择愁铃客 / 李火旺，捕获期间 F3 切换，选择保存在 `AppearanceSelection`；外观只决定哥哥身体／服饰，不改变 WeaponPair 或武器。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。哥哥默认李火旺；`Appearance::default()` 仍为愁铃客，供敌人使用。白灵淼仅用于妹妹，不进入 F3 或 Web 选择枚举；换装不影响敌人、妹妹或当前武器。
 `AvatarAssets` 保留愁铃客资源，`AvatarAssetCache` 分别缓存李火旺与白灵淼；多次换装／技能复用原句柄。角色自身的 AvatarPart 标记限定身体回收范围，不能清空玩家所有 Children 或重建 RigPose。显示根、物理 actor、动作状态、武器根的 BoneVisual 所属保持不变。
 KIVAAV03 增加每材质 doubleSided 和每骨 sourceRestModel，KIVAAV02 仍按原格式读取。源导入姿态可能不同于 bind pose，蒙皮正确性使用原 LBS 数值对照，不强改逆绑定为当前姿态抵消。李火旺骨名与燕云索引独立，身体23结构驱动校准参考臂向并保留自身骨长，源指轨另按三节语义链传递；源动作与附件读取实际皮肤掌框。原 packed/ID 图未经通道证明不能接为颜色或 ORM；面容、发材质和刚性刀穗的美术适配必须在 assets/lihuowang 来源清单中明确。
-原生 F2 在有焦点时切换，窗口标题显示当前模式。模式改变后先回收失效敌人的显示树与血条，再用共享网格 / 材质创建新表现。
+原生 F2 在有焦点时切换，窗口标题显示当前模式。武器组的名称、模型、音效、姿态等表现集中在 `loadout.rs` 的表里（见 [战斗表现契约](combat-presentation.md)）。模式改变后先回收失效敌人的显示树与血条，再用共享网格 / 材质创建新表现。
 可信捕获、原生事件、Shift／C、有序右键与取消的唯一输入契约见 [input.md](input.md)。
 零固定步保留意图、多固定步一次消费；输入只改变意图与 ViewYaw，不能修改 MotionState 或已承诺技能。
 战斗显示复用网格和材质，按 CombatFeedback 单调序号消费，临时特效到期 despawn。

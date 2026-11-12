@@ -14,6 +14,7 @@ mod forest_material;
 mod hud;
 mod impact;
 mod loading;
+mod loadout;
 mod model_asset;
 mod rendering;
 mod scene;
@@ -152,7 +153,7 @@ pub(super) fn assemble_after_loading(app: &mut App, manifest: Vec<&'static str>)
 fn game_manifest() -> Vec<&'static str> {
     let mut paths = source_animation::PATHS.to_vec();
     paths.extend(avatar::Appearance::ALL.map(avatar::Appearance::asset_path));
-    paths.extend(weapon_models::PATHS);
+    paths.extend(loadout::model_paths());
     paths.extend(environment::TEXTURES);
     paths
 }

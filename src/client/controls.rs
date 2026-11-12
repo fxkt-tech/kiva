@@ -26,8 +26,8 @@ const ATTACK: u32 = 4;
 const MELEE_SKILL: u32 = 8;
 const COMBO: u32 = 16;
 const TOGGLE_TARGET: u32 = 32;
-const HAMMER_MUSKET: u32 = 64;
-const CHAIN_AXE_BOW: u32 = 128;
+const PAIR_1: u32 = 64;
+const PAIR_2: u32 = 128;
 const RANGED_SKILL: u32 = 256;
 const CROUCH_TOGGLE: u32 = 512;
 const MOVEMENT_RELEASED: u32 = 1024;
@@ -145,8 +145,8 @@ impl CaptureState {
             KeyCode::KeyE => MELEE_SKILL,
             KeyCode::KeyQ => RANGED_SKILL,
             KeyCode::Tab => COMBO,
-            KeyCode::Digit1 => HAMMER_MUSKET,
-            KeyCode::Digit2 => CHAIN_AXE_BOW,
+            KeyCode::Digit1 => PAIR_1,
+            KeyCode::Digit2 => PAIR_2,
             KeyCode::KeyC => CROUCH_TOGGLE,
             _ => 0,
         }
@@ -290,8 +290,8 @@ pub(super) fn sample(
             if command == CROUCH_TOGGLE {
                 commands ^= CROUCH_TOGGLE;
             } else {
-                if command & (HAMMER_MUSKET | CHAIN_AXE_BOW) != 0 {
-                    commands &= !(HAMMER_MUSKET | CHAIN_AXE_BOW);
+                if command & (PAIR_1 | PAIR_2) != 0 {
+                    commands &= !(PAIR_1 | PAIR_2);
                 }
                 commands |= command;
             }
@@ -384,11 +384,11 @@ pub(super) fn sample(
         if commands & COMBO != 0 {
             combat.request_combo();
         }
-        if commands & HAMMER_MUSKET != 0 {
-            combat.request_pair(WeaponPair::HammerMusket);
-        }
-        if commands & CHAIN_AXE_BOW != 0 {
-            combat.request_pair(WeaponPair::ChainAxeBow);
+        // Keys 1 and 2 select the weapon pairs in their declared order.
+        for (bit, pair) in [PAIR_1, PAIR_2].into_iter().zip(WeaponPair::ALL) {
+            if commands & bit != 0 {
+                combat.request_pair(pair);
+            }
         }
         if commands & TOGGLE_TARGET != 0 {
             combat.request_toggle_target();

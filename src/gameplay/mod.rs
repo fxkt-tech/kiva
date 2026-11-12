@@ -235,7 +235,7 @@ pub fn setup(world: &mut World) {
         ActionIntent::default(),
         MotionState::default(),
         Facing::default(),
-        Combatant::new(WeaponPair::HammerMusket),
+        Combatant::new(WeaponPair::default()),
         CombatIntent::default(),
         Health::new(1000.0),
         SpawnPoint(Vec2::ZERO),

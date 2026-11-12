@@ -2,11 +2,6 @@
 //! Timings here never execute hits, movement or successful defenses.
 use super::*;
 
-// Verified female_fk overrides share these male-named original FK clips.
-// Target lower body and physical grips remain the established Kiva choreography.
-pub(super) const GUN_HOLD: &str = "male_fk_hold_idle_01";
-pub(super) const GUN_ATTACK: &str = "male_fk_attack_01";
-
 pub(super) struct Selection {
     pub rig: SourceRig,
     pub name: &'static str,

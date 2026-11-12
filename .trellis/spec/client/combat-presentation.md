@@ -18,6 +18,9 @@
 
 ## Contracts
 
+每组武器的表现是 `client/loadout.rs` 里的一行 `Loadout`：`hud_index`、近战名称、近战／远程模型文件、是否有脊柱配件、近战武器是否带链离手、`swing`（挥击姿态）、`projectile`（子弹／箭）、`shot_sound`、妹妹持握／射击片段及其说明、`combo_camera`（低位仰视并带后坐／平视）。武器、妹妹、动画、音频、特效、镜头和 HUD 通过 `loadout::of(pair)` 读取，不得按具体武器组写分支；历史事件仍用事件自带的 `pair` 取行。
+妹妹每发的时刻、链斧离手／命中、联动回切窗口来自 `ActionKind::{shot_times,throw_times,return_window}`，动作起手姿态用 `strike_effect`；这些数字只存在于模拟的技能表，下文出现的时间是说明而不是第二份数据。键 1／2 按 `WeaponPair::ALL` 的顺序选择武器组。
+
 哥哥默认李火旺，沿用近战动作；妹妹使用白灵淼衣装／莲母发型／女性基脸和自己的结构参考与 RigPose，不贴 PlayerView／ActorView 来重放哥哥所有动作。
 妹妹出场位置、射击源、瞄准点和 elapsed 都来自模拟；显示使用相同 fixed overstep，暂停和 HitStop 取当前快照。
 引冰落以局部原点为枪口，羿之影以局部原点为箭源，均朝 -Z；武器、枪口火花、弹道与模拟 source_position 对齐。弓箭类型按事件 pair 判断，不能因玩家随后切组而改变历史表现。

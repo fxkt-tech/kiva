@@ -27,10 +27,7 @@ impl TetherAssets {
 }
 
 pub(super) fn melee_name(pair: WeaponPair) -> &'static str {
-    match pair {
-        WeaponPair::HammerMusket => "伏浪锚 · 锤子",
-        WeaponPair::ChainAxeBow => "谪星·摧山 · 链斧",
-    }
+    super::loadout::of(pair).melee_name
 }
 
 /// Source melee extends +Y from the grip; ranged points -Z from the firing source.
@@ -48,7 +45,12 @@ pub(super) fn setup_tether(world: &mut World) {
     let axe = world
         .spawn((FlyingAxe, Transform::IDENTITY, Visibility::Hidden))
         .id();
-    spawn(world, axe, WeaponPair::ChainAxeBow, WeaponMode::Melee);
+    // The chained melee weapon is the one which flies.
+    let tethered = WeaponPair::ALL
+        .into_iter()
+        .find(|pair| super::loadout::of(*pair).tethered)
+        .expect("one weapon pair is thrown on a chain");
+    spawn(world, axe, tethered, WeaponMode::Melee);
     world.spawn((
         Tether,
         Mesh3d(assets.cube),
@@ -70,7 +72,7 @@ pub(super) fn sync_tether(world: &mut World) {
             stickman::{Attachment, BoneVisual},
         },
         gameplay::Player,
-        simulation::{ActionKind, Combatant, HitStop, SimulationActive},
+        simulation::{Combatant, HitStop, SimulationActive},
     };
     let time = world.resource::<Time<Fixed>>();
     let dt = time.delta_secs();
@@ -85,7 +87,7 @@ pub(super) fn sync_tether(world: &mut World) {
         .expect("one player");
     let action = combat
         .active_action()
-        .filter(|a| a.pair == WeaponPair::ChainAxeBow && combat.axe_away());
+        .filter(|a| super::loadout::of(a.pair).tethered && combat.axe_away());
     let (view, root) = world
         .query_filtered::<(Entity, &Transform), With<PlayerView>>()
         .single(world)
@@ -115,17 +117,22 @@ pub(super) fn sync_tether(world: &mut World) {
             continue;
         };
         let elapsed = (a.elapsed - dt * (1. - alpha)).max(0.);
-        let point = if a.kind == ActionKind::AxeShot {
-            if elapsed < 0.30 {
-                a.source_position
-                    .lerp(a.aim_position, ((elapsed - 0.15) / 0.15).clamp(0., 1.))
+        // Thrown: out to the target until it lands, then back to the hand.
+        // In a pull sequence it stays in the target until the closing return.
+        let point = if let Some((depart, impact)) = a.kind.throw_times() {
+            if elapsed < impact {
+                let flight = (elapsed - depart) / (impact - depart);
+                a.source_position.lerp(a.aim_position, flight.clamp(0., 1.))
             } else {
-                a.aim_position
-                    .lerp(hand, ((elapsed - 0.30) / (a.duration - 0.30)).clamp(0., 1.))
+                let recall = (elapsed - impact) / (a.duration - impact);
+                a.aim_position.lerp(hand, recall.clamp(0., 1.))
             }
-        } else {
+        } else if let Some((start, duration)) = a.kind.return_window() {
             a.aim_position
-                .lerp(hand, ((elapsed - 0.65) / 0.28).clamp(0., 1.))
+                .lerp(hand, ((elapsed - start) / duration).clamp(0., 1.))
+        } else {
+            *visibility = Visibility::Hidden;
+            continue;
         };
         *visibility = Visibility::Visible;
         if is_axe {

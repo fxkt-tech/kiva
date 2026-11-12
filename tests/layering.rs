@@ -140,3 +140,69 @@ fn client_modules_do_not_depend_on_each_other_in_a_cycle() {
         visit(module, &uses, &mut done, &mut Vec::new());
     }
 }
+
+/// Enum variants named as `Type::Variant` in `text`, e.g. `WeaponPair::ChainAxeBow`.
+/// Constants (`ALL`) and functions (`default()`) are not variants.
+fn named_variants<'a>(text: &'a str, type_name: &str) -> Vec<&'a str> {
+    let prefix = format!("{type_name}::");
+    text.match_indices(&prefix)
+        .filter_map(|(at, _)| {
+            let rest = &text[at + prefix.len()..];
+            let end = rest
+                .find(|c: char| !(c.is_alphanumeric() || c == '_'))
+                .unwrap_or(rest.len());
+            let name = &rest[..end];
+            let mut letters = name.chars();
+            let camel_case = letters.next().is_some_and(char::is_uppercase)
+                && letters.next().is_some_and(char::is_lowercase);
+            camel_case.then_some(name)
+        })
+        .collect()
+}
+
+/// Content is data: a weapon pair or a skill is described by a row in a table,
+/// and the machinery reads the row. Production code which branches on one
+/// concrete pair or skill anywhere else would have to be edited for every new
+/// one, so it is only allowed in the tables themselves.
+#[test]
+fn concrete_weapon_pairs_and_skills_are_named_only_in_their_tables() {
+    let pair_tables = [
+        "simulation/weapons.rs",             // the pairs and their melee profiles
+        "simulation/combat/skills.rs",       // input slot → skill
+        "simulation/combat/availability.rs", // what keeps each combo window open
+        "client/loadout.rs",                 // how each pair looks and sounds
+        "client/viewer/session.rs",          // the inspection page's weapon list
+    ];
+    let skill_tables = [
+        "simulation/abilities.rs", // the skills and the idle companion's default
+        "simulation/combat/skills.rs", // every skill number
+        "client/hud.rs",           // the wording of each started skill
+    ];
+    let mut scanned = 0;
+    for layer in ["simulation", "gameplay", "client"] {
+        for (file, text) in sources(layer) {
+            let file = format!("{layer}/{file}");
+            scanned += 1;
+            if !pair_tables.contains(&file.as_str()) {
+                let named = named_variants(&text, "WeaponPair");
+                assert!(named.is_empty(), "{file} branches on weapon pair {named:?}");
+            }
+            if !skill_tables.contains(&file.as_str()) {
+                // The ordinary attack is a mechanic of its own, not content.
+                let named: Vec<_> = named_variants(&text, "ActionKind")
+                    .into_iter()
+                    .filter(|name| *name != "Melee")
+                    .collect();
+                assert!(named.is_empty(), "{file} branches on skill {named:?}");
+            }
+        }
+    }
+    assert!(scanned > 40, "the scan found too few source files");
+    assert_eq!(
+        named_variants(
+            "WeaponPair::ALL WeaponPair::default() WeaponPair::ChainAxeBow,",
+            "WeaponPair"
+        ),
+        ["ChainAxeBow"]
+    );
+}

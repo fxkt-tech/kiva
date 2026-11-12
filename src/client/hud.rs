@@ -58,11 +58,7 @@ fn loadout_snapshot(combat: &Combatant, health: &Health) -> LoadoutSnapshot {
     let a = combat.availability();
     let alive = health.is_alive();
     LoadoutSnapshot {
-        pair: if combat.weapon_pair() == crate::simulation::WeaponPair::HammerMusket {
-            1
-        } else {
-            2
-        },
+        pair: super::loadout::of(combat.weapon_pair()).hud_index,
         maximum: health.maximum(),
         attack: alive && a.attack,
         melee: alive && a.melee_skill,

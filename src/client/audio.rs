@@ -273,11 +273,9 @@ fn consume(
         CombatEffect::Defeat if defender => Some(Sound::Naraka("naraka_death")),
         // Native flintlock/bow family sounds are Kiva adaptations, not media
         // exclusive to the displayed weapon skin or the companion character.
-        CombatEffect::Shot if is_player => match event.pair {
-            Some(WeaponPair::HammerMusket) => Some(Sound::Naraka("naraka_gun")),
-            Some(WeaponPair::ChainAxeBow) => Some(Sound::Naraka("naraka_bow")),
-            None => None,
-        },
+        CombatEffect::Shot if is_player => event
+            .pair
+            .map(|pair| Sound::Naraka(super::loadout::of(pair).shot_sound)),
         // SniperShot accompanies Shot; successful dodge is handled separately from motion start.
         _ => None,
     }

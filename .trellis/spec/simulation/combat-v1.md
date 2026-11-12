@@ -2,7 +2,7 @@
 
 ## Scope / Trigger
 
-修改 simulation/{combat,abilities,defense,resources,weapons,boss}.rs、physics motor 的战斗约束或相关真实固定步测试时阅读。
+修改 simulation/combat/、simulation/{abilities,defense,resources,weapons,boss}.rs、physics motor 的战斗约束或相关真实固定步测试时阅读。
 client 只提交意图和读取快照；不拥有动作计时、伤害、耐力或强制位移。
 
 ## Signatures
@@ -22,9 +22,16 @@ client 只提交意图和读取快照；不拥有动作计时、伤害、耐力�
 
 ## Contracts
 
+### 数据与模块
+
+技能数值只有一份：`combat/skills.rs` 的 `SkillSpec { duration, cooldown, cast_range, shape }`。`shape` 为 `Arc`（普攻，数值取 `MeleeProfile`）、`Area`（一个标记的范围伤害，中心为自身或锁定目标）、`Shot`（妹妹单发，可带离手时刻）或 `Volley`（妹妹三连发，可带拉近）。准入用的施放距离与结算用的射程读同一个 `cast_range`；下文各节的数字是这张表的说明，以表为准。`WeaponPair::action(Slot)` 把输入槽位映射到动作。
+加一个已有形态的技能：加 `ActionKind` 变体、一行 `spec` 和一处槽位映射，不写新的规则代码。联动窗口的保持条件（锤鸟要求原目标浮空、链斧弓要求被本次动作僵直）仍在 `availability::window_valid` 里按武器组判断。
+`ActionKind::{shot_times,throw_times,return_window,strike_effect}` 把表里的时间点和起手效果以只读方式提供给表现层；`WeaponPair::ALL` 是全部武器组的声明顺序。
+`prepare` 在物理前消费指令、推进已承诺动作并至多准入一个新动作，每一步是具名函数；`resolve_actions` 在物理后按形态结算标记；`advance_enemies` 独立处理普通敌人。`ActionRuntime` 归战斗模块私有。
+
 ### 调度与权限
 
-60Hz 同一门控：HitStop 步头 → 安装／准备动作与防御 → motor → Avian／当前空间查询 → publish → 玩家与普通敌人战斗 → Boss → 耐力恢复和妹妹快照 → 瞬移清理。
+60Hz 同一门控：HitStop 步头 → 安装 → 减速计时 → 准备动作与防御 → motor → Avian／当前空间查询 → publish → 玩家动作结算 → 普通敌人 → Boss → 可用性 → 耐力恢复 → 妹妹快照 → 瞬移清理。
 动作 elapsed 和冷却每步只推进一次。标记越界时有序执行，各标记只结算一次；不用动画结束回调制造命中。
 动作准入在消费输入时验证；快照必须与本步完成后的动作／窗口／死亡状态一致。
 默认无目标，中键锁定／解锁不自动补选。需要目标的技能不隐式选择；链斧 E 与普攻可以无锁定执行。

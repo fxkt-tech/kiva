@@ -23,6 +23,8 @@ pub enum WeaponMode {
     Ranged,
 }
 impl WeaponPair {
+    pub const ALL: [Self; 2] = [Self::HammerMusket, Self::ChainAxeBow];
+
     pub fn melee_profile(self, stage: MeleeStage) -> MeleeProfile {
         // The three stages deliberately retain the existing ordinary-attack
         // numbers. Stage three has no extra damage, armor or guard break.

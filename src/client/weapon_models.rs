@@ -1,6 +1,8 @@
 //! Cached current-pose source weapons. Grip/firing axes and body mounts are Kiva adaptations.
 use super::model_asset::{self, Reader};
 use crate::simulation::{WeaponMode, WeaponPair};
+use std::collections::HashMap;
+
 use bevy::{
     asset::RenderAssetUsages,
     mesh::{Indices, PrimitiveTopology},
@@ -28,42 +30,25 @@ pub(super) struct WeaponModel {
     parts: Vec<ModelPart>,
 }
 
+/// Decoded models by file; each file is decoded once.
 #[derive(Resource, Default)]
 struct WeaponModels {
-    models: [Option<WeaponModel>; 4],
+    models: HashMap<&'static str, WeaponModel>,
 }
 
-pub(super) const PATHS: [&str; 4] = [
-    "fulangmao/weapon.bin",
-    "zhexingcuishan/weapon.bin",
-    "yinbingluo/weapon.bin",
-    "yizhiying/weapon.bin",
-];
-
 pub(super) fn asset_path(pair: WeaponPair, mode: WeaponMode) -> &'static str {
-    PATHS[match (pair, mode) {
-        (WeaponPair::HammerMusket, WeaponMode::Melee) => 0,
-        (WeaponPair::ChainAxeBow, WeaponMode::Melee) => 1,
-        (WeaponPair::HammerMusket, WeaponMode::Ranged) => 2,
-        (WeaponPair::ChainAxeBow, WeaponMode::Ranged) => 3,
-    }]
+    super::loadout::of(pair).model(mode)
 }
 
 impl WeaponModel {
     pub(super) fn shared(world: &mut World, pair: WeaponPair, mode: WeaponMode) -> Self {
         world.init_resource::<WeaponModels>();
-        let index = match (pair, mode) {
-            (WeaponPair::HammerMusket, WeaponMode::Melee) => 0,
-            (WeaponPair::ChainAxeBow, WeaponMode::Melee) => 1,
-            (WeaponPair::HammerMusket, WeaponMode::Ranged) => 2,
-            (WeaponPair::ChainAxeBow, WeaponMode::Ranged) => 3,
-        };
-        let cached = &world.resource::<WeaponModels>().models[index];
-        if let Some(model) = cached {
+        let path = asset_path(pair, mode);
+        if let Some(model) = world.resource::<WeaponModels>().models.get(path) {
             return model.clone();
         }
         world.init_resource::<Assets<Image>>();
-        let data = super::bundle::take(world, asset_path(pair, mode));
+        let data = super::bundle::take(world, path);
         let mut reader = Reader(&data);
         assert_eq!(&reader.take::<8>(), b"KIVAWP01");
         let length = reader.u32();
@@ -127,7 +112,10 @@ impl WeaponModel {
         }
         assert!(reader.0.is_empty());
         let model = Self { grips, parts };
-        world.resource_mut::<WeaponModels>().models[index] = Some(model.clone());
+        world
+            .resource_mut::<WeaponModels>()
+            .models
+            .insert(path, model.clone());
         model
     }
 }

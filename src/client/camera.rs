@@ -1,14 +1,13 @@
 use super::controls::ViewYaw;
 use super::impact::ImpactState;
+use super::loadout::ComboCamera;
 use super::{ActorView, PlayerView};
 use avian3d::prelude::{Collider, Sensor, ShapeCastConfig, SpatialQuery, SpatialQueryFilter};
 use bevy::{ecs::system::SystemParam, prelude::*};
 
 use crate::{
     gameplay::Player,
-    simulation::{
-        ActionKind, Body, Combatant, Health, HitStop, SequenceSnapshot, SimulationActive,
-    },
+    simulation::{Body, Combatant, Health, HitStop, SequenceSnapshot, SimulationActive},
 };
 
 #[derive(Component)]
@@ -110,6 +109,10 @@ pub(super) fn setup(
     ));
 }
 
+fn framing(sequence: &SequenceSnapshot) -> ComboCamera {
+    super::loadout::of(sequence.pair).combo_camera
+}
+
 pub(super) fn follow(
     yaw: Res<ViewYaw>,
     timing: (
@@ -142,7 +145,7 @@ pub(super) fn follow(
                     || sequence.aim_position(),
                     |(body, _)| body.interpolated_world(alpha) + body.aim_offset(),
                 );
-            let rear = if sequence.kind == ActionKind::ChainCombo {
+            let rear = if framing(&sequence) == ComboCamera::EyeLevel {
                 let mut pose = sniper_pose(view.translation, target, yaw.yaw());
                 pose.translation.y = view.translation.y + 1.2;
                 pose.look_at(target, Vec3::Y);
@@ -161,7 +164,7 @@ pub(super) fn follow(
         }
     }
     if sequence
-        .is_some_and(|sequence| sequence.kind == ActionKind::HammerCombo && !sequence.cancelled)
+        .is_some_and(|sequence| framing(&sequence) == ComboCamera::Sniper && !sequence.cancelled)
         && let Some((displacement, rotation)) = impact.recoil(owner.owner)
     {
         let desired = pose.translation + pose.rotation * displacement;
