@@ -9,14 +9,14 @@
 - window.kivaInput：isActive(): boolean、takeLook(): number、keys(): number、takeActions(): number、takeDefenseEdges(): number[]、ready(): void。
 - takeDefenseEdges：1=Pressed，2=Released，3=Cancelled；最多 64 条，按发生顺序一次消费。
 - keys：W=1、S=2、A=4、D=8、左右 Shift 聚合为 sprint=16。
-- takeActions：jump=1、dodge=2、attack=4、melee_skill=8、combo=16、toggle_target=32、pair1=64、pair2=128、ranged_skill=256、crouch=512、movement_released=1024、shift_released=2048。
+- takeActions：jump=1、dodge=2、attack=4、melee_skill=8、combo=16、toggle_target=32、next_pair=64（Z）、rage=128（X）、ranged_skill=256、crouch=512、movement_released=1024、shift_released=2048。
 - Rust 把边沿提交给 DefenseState::push_edge；清理调用 DefenseState::clear，不能伪造 Released。
 - CombatIntent 分别接收 request_melee_skill、request_ranged_skill、request_toggle_target、request_pair(WeaponPair)；无 takeAim、滚轮切人格或 Q 切目标。
 
 ## Contracts
 
 输入在 BeforeFixedMainLoop 采样。鼠标水平以 0.0025 rad/CSSpx 更新 ViewYaw，不乘 dt、不盲目除 DPR；垂直不改变镜头俯仰。
-左键始终为哥哥近战，E/Q 为普通近/远技能，中键按压奇偶性切锁定，1/2 选武器组；长按按键不重复施放。C 按压使用 XOR 奇偶性，松键不取消蹲伏。
+左键始终为哥哥近战，E/Q 为普通近/远技能，中键按压奇偶性切锁定，Z 循环切换武器组、X 释放暴怒技（均为单次边沿，一次采样内重复按只算一次；数字键不再选组）；长按按键不重复施放。C 按压使用 XOR 奇偶性，松键不取消蹲伏。
 原生按当前窗口的 KeyboardInput／MouseButtonInput 顺序消费，不能仅比较两帧最终 pressed 快照。Shift 两键聚合首次按下才闪避；物理方向键事实独立于方向向量是否抵消。
 movement_released／shift_released 锁存所有方向键／所有 Shift 释放事实；即使同次采样前已重新按下，也必须先 set_*_held(false)，再提交最终 held 状态。否则旧疾跑锁存与长按时长会跨一次完整松键错误延续。原生与 Web 同义，不能只处理最终位掩码。
 右键有序队列保留同帧短按。显示帧零固定步时 Rust 中意图保留，多固定步只消费一次；长按计时不使用 JS 墙钟。

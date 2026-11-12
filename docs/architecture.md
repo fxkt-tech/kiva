@@ -23,7 +23,7 @@
 | `simulation/physics.rs` | Avian 权威三维姿态、角色控制、接触支撑、箱体／地形姿态快照与瞬移清理 |
 | `simulation/movement.rs` | `Body` 只读三维脚底快照与平面投影；`MoveIntent` 世界 x/z 移动意图 |
 | `simulation/actions.rs` | `ActionIntent`、`Facing`、`MotionState`；动作计时、跳跃额度及接触结果 |
-| `simulation/combat/` | 战斗规则，按职责分文件：`skills`（全部技能数值的数据表）、`prepare`（指令消费与准入）、`resolve`（按技能形态结算标记）、`hit`（共同命中与防御顺序）、`enemy`（普通敌人）、`combatant`／`health`／`feedback`／`companion`／`availability`／`runtime` |
+| `simulation/combat/` | 战斗规则，按职责分文件：`skills`（全部技能数值的数据表）、`prepare`（指令消费与准入）、`resolve`（按技能形态结算标记）、`hit`（共同命中与防御顺序）、`enemy`（普通敌人）、`energy`（烈阳／月光／暴怒）、`arsenal`（武器耐久）、`combatant`／`health`／`feedback`／`companion`／`availability`／`runtime` |
 | `simulation/abilities.rs` | 动作／联动的只读快照类型、联动窗口与逻辑妹妹状态 |
 | `simulation/defense.rs`、`resources.rs` | 有序右键、拆招／防御／弹反、耐力与减速的唯一状态 |
 | `simulation/boss.rs` | 单愁铃客 Boss 的行动循环、阶段、预警、命中和复活 |
@@ -70,7 +70,7 @@
 
 1. **装配**（只发生一次）：Startup 只通知初始化阶段并请求运行时资源清单。清单全部到齐的那一帧，`First` 中的 `assemble` 运行一次 `Assemble` 调度：源动画库 → 玩法 / 物理场景装配 → 显示根 → 战斗表现 → 相机 → 通知进入画面准备阶段。到齐前输入采样、表现同步和模拟规则都不运行；任一文件失败即报告失败。
 2. **采样输入**：Bevy 输入更新后，在 `RunFixedMainLoopSystems::BeforeFixedMainLoop` 处理敌人模式请求、采样控制并提交意图。
-3. **固定步**（`FixedUpdate`，60Hz）：命中停顿步头 → 减速计时 → 动作／防御准备 → motor → Avian 求解 → 当前空间查询、接触与快照 → 玩家动作结算 → 普通敌人 → Boss → 可用性 → 耐力恢复 → 妹妹快照 → 瞬移清理。
+3. **固定步**（`FixedUpdate`，60Hz）：命中停顿步头 → 减速计时 → 暴怒消耗与释放 → 动作／防御准备 → motor → Avian 求解 → 当前空间查询、接触与快照 → 玩家动作结算 → 普通敌人 → Boss → 可用性 → 耐力恢复 → 妹妹快照 → 瞬移清理。
 4. **表现**（`Update`，单链顺序执行）：外观替换 → 人物显示根 → 敌人显示树回收与补齐 → 武器显隐 → 身体姿态 → 妹妹 → 蒙皮骨骼 → 骨骼附件 → 绳索 → 标记与特效 → 冲击 → 音频 → HUD → 相机。相机读取同一个显示根位置，不追加平滑延迟。
 5. **渲染与就绪**：Bevy 完成全局变换传播和渲染。首次进入由渲染子应用在真实提交后确认主视图有输出、可见网格和管线已就绪，再由主线程放行 Web 入口；资源到齐或实体装配完成都不能替代。
 

@@ -414,6 +414,15 @@ pub(super) fn effects(
                 0.35,
                 0.25,
             ),
+            CombatEffect::Enrage => (
+                &assets.ring,
+                &assets.gold,
+                surfaces
+                    .effect_transform(event.position)
+                    .with_scale(Vec3::splat(event.radius.max(0.6))),
+                0.6,
+                1.2,
+            ),
             CombatEffect::EnemyWindup => (
                 &assets.ring,
                 &assets.gold,

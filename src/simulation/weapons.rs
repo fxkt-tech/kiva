@@ -25,6 +25,17 @@ pub enum WeaponMode {
 impl WeaponPair {
     pub const ALL: [Self; 2] = [Self::HammerMusket, Self::ChainAxeBow];
 
+    /// Position in [`Self::ALL`], the order the pairs cycle in.
+    pub fn index(self) -> usize {
+        Self::ALL
+            .iter()
+            .position(|pair| *pair == self)
+            .expect("every pair is listed")
+    }
+    pub fn next(self) -> Self {
+        Self::ALL[(self.index() + 1) % Self::ALL.len()]
+    }
+
     pub fn melee_profile(self, stage: MeleeStage) -> MeleeProfile {
         // The three stages deliberately retain the existing ordinary-attack
         // numbers. Stage three has no extra damage, armor or guard break.

@@ -320,7 +320,7 @@ test("startup and input bridges load before the generated WASM module", () => {
 test("action presses are consumed once and repeat cannot replay an action", () => {
   const f = fixture(); f.parse(); f.capture();
   const press = (code, repeat = false) => emit(f.document, "keydown", { code, repeat, isTrusted: true });
-  for (const code of ["Space", "ShiftLeft", "KeyE", "Tab", "Digit1", "KeyQ"]) press(code);
+  for (const code of ["Space", "ShiftLeft", "KeyE", "Tab", "KeyZ", "KeyQ"]) press(code);
   emit(f.document, "pointerdown", { isTrusted: true, pointerType: "mouse", button: 0 });
   assert.equal(f.input.takeActions(), 1 | 2 | 4 | 8 | 16 | 64 | 256);
   assert.equal(f.input.takeActions(), 0);
@@ -329,8 +329,12 @@ test("action presses are consumed once and repeat cannot replay an action", () =
   emit(f.document, "keyup", { code: "Space", isTrusted: true });
   press("Space");
   assert.equal(f.input.takeActions(), 1);
-  emit(f.document, "keydown", { code: "Digit2", isTrusted: true });
+  emit(f.document, "keydown", { code: "KeyX", isTrusted: true });
   assert.equal(f.input.takeActions(), 128);
+  // The number keys no longer select a pair.
+  emit(f.document, "keydown", { code: "Digit1", isTrusted: true });
+  emit(f.document, "keydown", { code: "Digit2", isTrusted: true });
+  assert.equal(f.input.takeActions(), 0);
 });
 
 const pointer = (f, type, button = 2, extras = {}) => emit(f.document, type, {
@@ -643,11 +647,14 @@ test("capture click never attacks; confirmation discards previous device actions
   assert.deepEqual(defense(f), [3]);
 });
 
-test("the last requested pair wins within one browser batch", () => {
+test("cycling the weapon pair and releasing rage are separate single edges", () => {
   const f = fixture(); f.parse(); f.capture();
-  emit(f.document, "keydown", { code: "Digit2", isTrusted: true });
-  emit(f.document, "keydown", { code: "Digit1", isTrusted: true });
-  assert.equal(f.input.takeActions(), 64);
+  emit(f.document, "keydown", { code: "KeyZ", isTrusted: true });
+  emit(f.document, "keydown", { code: "KeyX", isTrusted: true });
+  // A held key repeating cannot cycle again.
+  emit(f.document, "keydown", { code: "KeyZ", isTrusted: true, repeat: true });
+  assert.equal(f.input.takeActions(), 64 | 128);
+  assert.equal(f.input.takeActions(), 0);
 });
 
 test("all-direction release and repress keeps the release fact with the final held snapshot", () => {

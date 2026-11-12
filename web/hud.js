@@ -6,6 +6,8 @@
   let target = null;
   let loadout = { set: 1, maximum: 1000, attack: false, melee: false, ranged: false, guard: false, combo: false };
   let resources = { stamina: 100, maximum: 100, melee: 0, ranged: 0, axeAway: false, defense: 0 };
+  let energy = { sun: 0, sunMaximum: 10, moon: 0, moonMaximum: 10, rage: 0, rageMaximum: 20, enraged: false, ready: false };
+  let durability = { values: [], maximum: 50 };
   let mounted = document.readyState !== "loading";
   const nonnegative = value => Number.isFinite(value) ? Math.max(0, value) : 0;
   const label = value => typeof value === "string" ? value : "";
@@ -45,6 +47,18 @@
     node(id)?.style.setProperty(name, value);
   }
 
+  const fraction = (value, maximum) => maximum > 0 ? Math.min(1, nonnegative(value) / maximum) : 0;
+  // The edge meter is a clipped outline: empty hides it, full drops the clip.
+  function meter(key, value) {
+    const percent = Math.round(Math.min(1, nonnegative(value)) * 100);
+    attribute(`fill-${key}`, "y", 1 - percent / 100);
+    attribute(`fill-${key}`, "height", percent / 100 + 0.1);
+    style(`edge-${key}`, "clip-path", percent >= 100 ? "none" : "");
+    style(`edge-${key}`, "visibility", percent <= 0 ? "hidden" : "visible");
+    attribute(`meter-${key}`, "aria-valuenow", percent);
+    toggle(`meter-${key}`, "full", percent >= 100);
+  }
+
   function paint() {
     if (!mounted || !latest) return;
     const set = sets[loadout.set];
@@ -66,7 +80,7 @@
       const active = loadout.set === pair;
       toggle(id, "active", active);
       attribute(id, "aria-current", active);
-      attribute(id, "aria-label", `套装 ${pair} · ${sets[pair].melee} / ${sets[pair].ranged}${active && resources.axeAway ? " · 回收中" : ""}`);
+      attribute(id, "aria-label", `套装 ${pair} · ${sets[pair].melee} / ${sets[pair].ranged} · 耐久 ${number(durability.values[pair - 1])} / ${number(durability.maximum)}${active && resources.axeAway ? " · 回收中" : ""}`);
     }
 
     progress("hud-stamina-bar", resources.maximum > 0 ? resources.stamina / resources.maximum : 0, resources.stamina, resources.maximum);
@@ -80,18 +94,34 @@
       style(id, "--cooldown-fill", `${Math.max(0, 1 - cooldown / total) * 100}%`);
       ready(id, alive && available && cooldown <= 0);
       const restriction = !alive ? "倒地中不可用" : cooldown > 0 ? `冷却 ${cooldown.toFixed(1)}s` : !available ? "当前条件不可用" : "就绪";
-      attribute(id, "title", `${key} · ${caption} · ${restriction}`);
-      attribute(id, "aria-label", `${key} · ${caption} · ${restriction}`);
+      const empowered = energy.enraged || (key === "E" ? energy.sun >= energy.sunMaximum : energy.moon >= energy.moonMaximum);
+      const description = `${key} · ${caption}${empowered ? " · 强化" : ""} · ${restriction}`;
+      toggle(id, "empowered", empowered);
+      attribute(id, "title", description);
+      attribute(id, "aria-label", description);
     }
     ready("hud-skill-combo", alive && loadout.combo && latest.combo > 0);
     attribute("hud-skill-combo", "title", `Tab · 联动 · ${set.finisher} · ${set.condition}`);
     attribute("hud-skill-combo", "aria-label", `Tab · 联动 · ${set.finisher} · ${set.condition}`);
-    // Reserved UI: simulation does not yet own energy, durability or rage values.
-    for (const id of ["hud-ranged-energy-bar", "hud-melee-energy-bar", "hud-rage-value-bar"]) {
-      progress(id, 0, 0, 100);
+    // Sun fills the melee skill, moon the ranged skill; rage is the stored
+    // meter, or what is left of the enraged state.
+    for (const [id, key, value, maximum] of [
+      ["melee-energy", "meleeEnergy", energy.sun, energy.sunMaximum],
+      ["ranged-energy", "rangedEnergy", energy.moon, energy.moonMaximum],
+      ["rage-value", "rageValue", energy.rage, energy.rageMaximum],
+    ]) {
+      progress(`hud-${id}-bar`, fraction(value, maximum), value, maximum);
+      toggle(`hud-${id}`, "full", maximum > 0 && value >= maximum);
+      meter(key, fraction(value, maximum));
     }
-    style("hud-rage-value", "--rage-fraction", "0");
-    ready("hud-skill-rage", false);
+    style("hud-rage-value", "--rage-fraction", String(fraction(energy.rage, energy.rageMaximum)));
+    toggle("hud-rage-value", "enraged", energy.enraged);
+    ready("hud-skill-rage", alive && energy.ready);
+    toggle("hud-skill-rage", "enraged", energy.enraged);
+    attribute("hud-skill-rage", "aria-label", `X · 暴怒技 · ${energy.enraged ? `暴怒中 · 剩余 ${Math.ceil(energy.rage)}s` : energy.ready ? "可用" : "暴怒值未满"}`);
+    for (const pair of [1, 2]) {
+      meter(`pair${pair}Durability`, fraction(durability.values[pair - 1], durability.maximum));
+    }
 
     const hasCombo = alive && latest.combo > 0;
     hidden("hud-combo", !hasCombo);
@@ -118,6 +148,22 @@
     },
     renderResources(stamina, maximum, meleeCooldown, rangedCooldown, axeAway, defense) {
       resources = { stamina: Math.min(nonnegative(stamina), nonnegative(maximum)), maximum: nonnegative(maximum), melee: nonnegative(meleeCooldown), ranged: nonnegative(rangedCooldown), axeAway: axeAway === true, defense: Number.isInteger(defense) && defense >= 0 && defense <= 4 ? defense : 0 };
+      paint();
+    },
+    renderEnergy(sun, sunMaximum, moon, moonMaximum, rage, rageMaximum, enraged, rageReady) {
+      const bounded = (value, maximum) => Math.min(nonnegative(value), nonnegative(maximum));
+      energy = {
+        sun: bounded(sun, sunMaximum), sunMaximum: nonnegative(sunMaximum),
+        moon: bounded(moon, moonMaximum), moonMaximum: nonnegative(moonMaximum),
+        rage: bounded(rage, rageMaximum), rageMaximum: nonnegative(rageMaximum),
+        enraged: enraged === true, ready: rageReady === true,
+      };
+      paint();
+    },
+    // One value per weapon pair, in the page's pair-slot order.
+    renderDurability(values, maximum) {
+      const max = nonnegative(maximum);
+      durability = { values: Array.from(values || [], value => Math.min(nonnegative(value), max)).slice(0, 2), maximum: max };
       paint();
     },
     renderTarget(name, current, maximum, status = "锁定目标") {

@@ -20,7 +20,7 @@
   const SHIFT_RELEASED = 2048;
   const pressed = new Set();
   const heldKeys = Object.freeze({ KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8, ShiftLeft: 16, ShiftRight: 16 });
-  const actionKeys = Object.freeze({ Space: 1, KeyE: 8, Tab: 16, Digit1: 64, Digit2: 128, KeyQ: 256, KeyC: 512 });
+  const actionKeys = Object.freeze({ Space: 1, KeyE: 8, Tab: 16, KeyZ: 64, KeyX: 128, KeyQ: 256, KeyC: 512 });
   let error = "";
   let startupDetail = { phase: "download", loaded: 0, total: 0 };
   let previous = null;
@@ -173,8 +173,6 @@
     pressed.add(event.code);
     refreshKeys();
     if (firstShift) actions |= 2;
-    // A rapid change of pair has one unambiguous final selection.
-    if (event.code === "Digit1" || event.code === "Digit2") actions &= ~(64 | 128);
     if (event.code === "KeyC") actions ^= 512;
     else actions |= actionKeys[event.code] || 0;
   }, true);

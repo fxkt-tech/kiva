@@ -13,13 +13,15 @@
 - Combatant::sequence() 返回 SequenceSnapshot；kind 区分 HammerCombo 与 ChainCombo，cancelled 及 action_id 用于恢复和冲击归属。
 - kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)，pair=1 锤鸟／2 链斧弓。
 - kivaHud.renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)，defense=0 Idle／1 Deflect／2 Waiting／3 Guard／4 Parry。
+- kivaHud.renderEnergy(sun,sunMaximum,moon,moonMaximum,rage,rageMaximum,enraged,rageReady)：烈阳／月光／暴怒的当前值与上限；暴怒中 `rage` 是剩余量（等于剩余秒数）。
+- kivaHud.renderDurability(values,maximum)：`values` 为每组武器的耐久，按页面套装槽位顺序（`Loadout.hud_index-1`）。
 - renderTarget(name,current,maximum,status) 与 render(persona,weapon,fraction,health,combo,cooldown,context) 保留只读方向。
 - CombatEvent.pair 固定记录产生事件时的武器组；声音或弹道不能用当前套装猜历史事件的武器。
 
 ## Contracts
 
 每组武器的表现是 `client/loadout.rs` 里的一行 `Loadout`：`hud_index`、近战名称、近战／远程模型文件、是否有脊柱配件、近战武器是否带链离手、`swing`（挥击姿态）、`projectile`（子弹／箭）、`shot_sound`、妹妹持握／射击片段及其说明、`combo_camera`（低位仰视并带后坐／平视）。武器、妹妹、动画、音频、特效、镜头和 HUD 通过 `loadout::of(pair)` 读取，不得按具体武器组写分支；历史事件仍用事件自带的 `pair` 取行。
-妹妹每发的时刻、链斧离手／命中、联动回切窗口来自 `ActionKind::{shot_times,throw_times,return_window}`，动作起手姿态用 `strike_effect`；这些数字只存在于模拟的技能表，下文出现的时间是说明而不是第二份数据。键 1／2 按 `WeaponPair::ALL` 的顺序选择武器组。
+妹妹每发的时刻、链斧离手／命中、联动回切窗口来自 `ActionKind::{shot_times,throw_times,return_window}`，动作起手姿态用 `strike_effect`；这些数字只存在于模拟的技能表，下文出现的时间是说明而不是第二份数据。键 Z 按 `WeaponPair::ALL` 的顺序循环切换武器组。
 
 哥哥默认李火旺，沿用近战动作；妹妹使用白灵淼衣装／莲母发型／女性基脸和自己的结构参考与 RigPose，不贴 PlayerView／ActorView 来重放哥哥所有动作。
 妹妹出场位置、射击源、瞄准点和 elapsed 都来自模拟；显示使用相同 fixed overstep，暂停和 HitStop 取当前快照。
@@ -36,7 +38,7 @@ F3 只替换哥哥身体和服饰，保留 RigPose／显示根／物理状态；
 目标死亡或取消时使用序列最后瞄准点恢复；相机不另建会推进技能的时钟。
 普通特效与专用冲击各持一个 `client::FeedbackCursor`（`take(feedback, active)` 批量消费，`advance(sequence)` 逐条消费），SniperShot／SniperImpact 只追加表现，不重复伤害或播放第二声。
 
-HUD 显示玩家生命 1000、耐力、当前组、E／Q 独立冷却、右键阶段、Tab 条件与链斧离手。就绪快照必须跟随模拟本步最终状态。
+HUD 显示玩家生命 1000、耐力、当前组、E／Q 独立冷却、右键阶段、Tab 条件与链斧离手；烈阳填充 E 的轮廓、月光填充 Q 的轮廓、暴怒条与暴怒技轮廓显示暴怒值，各套装轮廓显示耐久。烈阳／月光满或暴怒中，对应技能标记为强化；暴怒技仅在 `rageReady` 时就绪。页面对越界值做截断，不自行推算任何数值。暴怒释放时特效在玩家脚下显示一圈扩散环（`CombatEffect::Enrage`），暂无专属音效和动作。就绪快照必须跟随模拟本步最终状态。
 目标血条来自当前 Combatant.target，联动原目标不能强行覆盖用户当前锁定。
 Web 只更新安全文字、progress、SVG href、显隐、样式类和无障碍属性；无独立冷却时钟或演示点击控制。
 

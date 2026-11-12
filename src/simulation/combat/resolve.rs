@@ -2,8 +2,8 @@
 //! markers. Each skill shape has one resolver which reads its numbers from the
 //! skill table; every marker settles exactly once.
 use super::hit::{
-    Blow, CombatWorld, Enemies, Players, defeat_if_fallen, hit_enemy, target_lost, target_valid,
-    valid_shot,
+    Blow, CombatWorld, Enemies, Landed, Players, defeat_if_fallen, hit_enemy, target_lost,
+    target_valid, valid_shot,
 };
 use super::runtime::ActionRuntime;
 use super::skills::{Area, Centre, Control, MELEE_ARC, Shape, Shot, Volley};
@@ -28,6 +28,8 @@ struct Stage<'a, 'w, 's, 'world_w, 'world_s> {
     world: &'a CombatWorld<'world_w, 'world_s>,
     enemies: &'a mut Enemies<'w, 's>,
     feedback: &'a mut CombatFeedback,
+    /// Blows which dealt damage in this tick; each one feeds the sun meter.
+    damaging_hits: u8,
 }
 
 pub(in crate::simulation) fn resolve_actions(
@@ -52,6 +54,7 @@ pub(in crate::simulation) fn resolve_actions(
         spawn,
         mut defense,
         mut stamina,
+        (mut energy, mut arsenal),
     ) in &mut players
     {
         defeat_if_fallen(entity, &body, &mut health, &mut feedback);
@@ -68,6 +71,8 @@ pub(in crate::simulation) fn resolve_actions(
             combat.ranged_cooldown = 0.0;
             defense.reset();
             stamina.refill();
+            energy.reset();
+            arsenal.refill();
             feedback.push(
                 entity,
                 CombatEffect::Respawn,
@@ -99,6 +104,7 @@ pub(in crate::simulation) fn resolve_actions(
             world: &world,
             enemies: &mut enemies,
             feedback: &mut feedback,
+            damaging_hits: 0,
         };
         let spec = runtime.snapshot.kind.spec();
         match spec.shape {
@@ -131,6 +137,7 @@ pub(in crate::simulation) fn resolve_actions(
                 }
             }
         }
+        energy.gain_sun(stage.damaging_hits);
         if !runtime.cancelled && runtime.snapshot.elapsed + 1e-6 >= runtime.snapshot.duration {
             combat.axe_away = false;
             if runtime.snapshot.kind == ActionKind::Melee {
@@ -184,19 +191,18 @@ fn strike_arc(striker: &Striker, runtime: &mut ActionRuntime, stage: &mut Stage)
         .map(|(e, ..)| e)
         .collect();
     for target in targets {
-        hit_enemy(
+        land(
             Blow {
                 target,
                 source: owner,
                 index: 0,
-                damage: profile.damage,
+                damage: profile.damage * runtime.damage_scale,
                 control: Control::None,
                 origin: body.aim_position(),
             },
             owner,
             &snapshot,
-            stage.enemies,
-            stage.feedback,
+            stage,
         );
     }
 }
@@ -264,19 +270,18 @@ fn strike_area(
         .map(|(e, ..)| e)
         .collect();
     for target in targets {
-        let controlled = hit_enemy(
+        let controlled = land(
             Blow {
                 target,
                 source: owner,
                 index: 0,
-                damage: area.damage,
+                damage: area.damage * runtime.damage_scale,
                 control: area.control,
                 origin: body.aim_position(),
             },
             owner,
             &snapshot,
-            stage.enemies,
-            stage.feedback,
+            stage,
         );
         if controlled
             && snapshot.target == Some(target)
@@ -352,19 +357,18 @@ fn fire_shot(
         return;
     };
     runtime.snapshot.aim_position = aim;
-    let stunned = hit_enemy(
+    let stunned = land(
         Blow {
             target,
             source: performer,
             index: 0,
-            damage: shot.damage,
+            damage: shot.damage * runtime.damage_scale,
             control: Control::Stun(shot.stun),
             origin: source,
         },
         owner,
         &snapshot,
-        stage.enemies,
-        stage.feedback,
+        stage,
     );
     if stunned && let Some(remaining) = shot.window {
         combat.combo = Some(window(&snapshot, target, remaining));
@@ -419,19 +423,18 @@ fn fire_volley(
             continue;
         };
         runtime.snapshot.aim_position = aim;
-        let alive = hit_enemy(
+        let alive = land(
             Blow {
                 target,
                 source: performer,
                 index: index as u8,
-                damage: volley.damage,
+                damage: volley.damage * runtime.damage_scale,
                 control: Control::None,
                 origin: source,
             },
             owner,
             &snapshot,
-            stage.enemies,
-            stage.feedback,
+            stage,
         );
         if volley.sniper {
             for (actor, kind, from, to) in [
@@ -453,6 +456,16 @@ fn fire_volley(
     hit_stop
 }
 
+/// Land one blow and count it when it dealt damage. Returns whether the
+/// target took it and is still standing.
+fn land(blow: Blow, owner: Entity, action: &ActionSnapshot, stage: &mut Stage) -> bool {
+    let landed = hit_enemy(blow, owner, action, stage.enemies, stage.feedback);
+    if landed != Landed::Missed {
+        stage.damaging_hits += 1;
+    }
+    landed == Landed::Survived
+}
+
 fn window(action: &ActionSnapshot, target: Entity, remaining: f32) -> ComboWindow {
     ComboWindow {
         source_action_id: action.action_id,
@@ -465,7 +478,7 @@ fn window(action: &ActionSnapshot, target: Entity, remaining: f32) -> ComboWindo
 /// Remove a killed selected target in the damage tick, before a hit stop
 /// freezes anything.
 fn forget_lost_targets(players: &mut Players, enemies: &mut Enemies) {
-    for (_, _, _, _, _, _, _, mut combat, _, _, _, _) in players {
+    for (_, _, _, _, _, _, _, mut combat, _, _, _, _, _) in players {
         if combat.target.is_some_and(|t| target_lost(t, enemies)) {
             combat.target = None;
         }

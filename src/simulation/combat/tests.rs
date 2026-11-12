@@ -2,6 +2,8 @@ use super::*;
 use crate::simulation::*;
 use bevy::prelude::*;
 use std::time::Duration;
+#[path = "energy_tests.rs"]
+mod energy_tests;
 #[path = "melee_chain_tests.rs"]
 mod melee_chain_tests;
 fn tick(app: &mut App, n: usize) {

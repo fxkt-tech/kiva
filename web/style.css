@@ -218,6 +218,8 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
       .hud-rage > .hud-label { color: #f08869; font-size: 1.09375cqw; }
       .hud-rage.ready .hud-square { border-color: #8e7545; background: linear-gradient(145deg, #a34633, #7c3027); box-shadow: 0 0 0.78125cqw #a83c2926, 0 0.078125cqw 0.3125cqw #0005; }
       .hud-rage.ready > .hud-label { color: #f08869; }
+      .hud-rage.enraged .hud-square { border-color: #f08869; box-shadow: 0 0 1.09375cqw #e6533c80, 0 0.078125cqw 0.3125cqw #0005; }
+      .hud-slot.empowered .hud-square { box-shadow: 0 0 0.9375cqw #f0cf7873, 0 0.078125cqw 0.3125cqw #0005; }
       .hud-rage:disabled { cursor: default; }
       .hud-rage:not(:disabled):hover .hud-square { border-color: #b39556; background: linear-gradient(145deg, #a34633, #7c3027); }
       .hud-rage:focus-visible { outline: none; }

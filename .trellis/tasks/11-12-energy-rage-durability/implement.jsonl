@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/index.md", "reason": "工程边界与质量门槛"}
+{"file": ".trellis/spec/simulation/combat-v1.md", "reason": "技能表、防御与归属契约"}
+{"file": ".trellis/spec/client/input.md", "reason": "按键位掩码"}
+{"file": ".trellis/spec/client/combat-presentation.md", "reason": "HUD 与表现契约"}

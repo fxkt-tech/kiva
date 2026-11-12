@@ -2,8 +2,8 @@
 use crate::{
     gameplay::Player,
     simulation::{
-        ActionKind, Boss, BossPhase, BossState, CombatStatus, Combatant, DefenseKind, DefenseState,
-        Enemy, Health, MotionState, Stamina,
+        ActionKind, Arsenal, Boss, BossPhase, BossState, CombatStatus, Combatant, DefenseKind,
+        DefenseState, Enemy, Energy, Health, MotionState, Stamina,
     },
 };
 use bevy::prelude::*;
@@ -39,6 +39,19 @@ extern "C" {
         axe_away: bool,
         defense: u32,
     );
+    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderEnergy)]
+    fn render_energy(
+        sun: f32,
+        sun_maximum: f32,
+        moon: f32,
+        moon_maximum: f32,
+        rage: f32,
+        rage_maximum: f32,
+        enraged: bool,
+        rage_ready: bool,
+    );
+    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderDurability)]
+    fn render_durability(durability: Vec<f32>, maximum: f32);
     #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderTarget)]
     fn render_target(name: &str, current: f32, maximum: f32, status: &str);
 }
@@ -111,13 +124,34 @@ fn target_snapshot<'a>(
     })
 }
 
+type PlayerSnapshot = (
+    &'static Combatant,
+    &'static Health,
+    &'static MotionState,
+    &'static DefenseState,
+    &'static Stamina,
+    &'static Energy,
+    &'static Arsenal,
+);
+
+/// Durability of every pair, placed where the page's pair slots expect it.
+#[cfg(any(target_arch = "wasm32", test))]
+fn durability_by_hud_index(arsenal: &Arsenal) -> Vec<f32> {
+    let mut values = vec![0.0; crate::simulation::WeaponPair::ALL.len()];
+    for pair in crate::simulation::WeaponPair::ALL {
+        let slot = super::loadout::of(pair).hud_index as usize - 1;
+        values[slot] = f32::from(arsenal.durability(pair));
+    }
+    values
+}
+
 pub(super) fn sync(
-    player: Single<(&Combatant, &Health, &MotionState, &DefenseState, &Stamina), With<Player>>,
+    player: Single<PlayerSnapshot, With<Player>>,
     enemies: Query<(&Enemy, &Health, Option<&Boss>)>,
     mut window: Single<&mut Window>,
     #[cfg(not(target_arch = "wasm32"))] mode: Res<crate::gameplay::EnemyMode>,
 ) {
-    let (combat, health, motion, defense, stamina) = *player;
+    let (combat, health, motion, defense, stamina, energy, arsenal) = *player;
     let target = target_snapshot(combat, health, |entity| enemies.get(entity).ok());
     let weapon = super::weapons::melee_name(combat.weapon_pair());
     let context = if !health.is_alive() {
@@ -154,6 +188,8 @@ pub(super) fn sync(
         "疾跑中 · 松开方向键停止"
     } else if !motion.is_grounded() {
         "空中"
+    } else if energy.is_enraged() {
+        "暴怒中 · 普攻翻倍 · 技能强化 · 自动联动"
     } else {
         status_text(combat.status())
     };
@@ -179,6 +215,20 @@ pub(super) fn sync(
             combat.axe_away(),
             kind,
         );
+        render_energy(
+            f32::from(energy.sun()),
+            f32::from(Energy::SUN_MAX),
+            f32::from(energy.moon()),
+            f32::from(Energy::MOON_MAX),
+            energy.rage(),
+            Energy::RAGE_MAX,
+            energy.is_enraged(),
+            energy.rage_ready(),
+        );
+        render_durability(
+            durability_by_hud_index(arsenal),
+            f32::from(Arsenal::DURABILITY),
+        );
         if let Some(t) = target {
             render_target(t.name, t.current, t.maximum, t.status);
         } else {
@@ -203,7 +253,7 @@ pub(super) fn sync(
             )
         });
         window.title = format!(
-            "Kiva · {} [F2] · 哥哥 / {weapon} · HP {:.0}/{:.0} · 耐力 {:.0} · E {:.1}s / Q {:.1}s · {context}{target}",
+            "Kiva · {} [F2] · 哥哥 / {weapon} · HP {:.0}/{:.0} · 耐力 {:.0} · 烈阳 {} 月光 {} 暴怒 {:.0} · 耐久 {} · E {:.1}s / Q {:.1}s · {context}{target}",
             match *mode {
                 crate::gameplay::EnemyMode::Target => "靶子",
                 crate::gameplay::EnemyMode::Combat => "实战",
@@ -211,6 +261,10 @@ pub(super) fn sync(
             health.current(),
             health.maximum(),
             stamina.current(),
+            energy.sun(),
+            energy.moon(),
+            energy.rage(),
+            arsenal.durability(combat.weapon_pair()),
             combat.melee_cooldown(),
             combat.ranged_cooldown()
         );
@@ -221,6 +275,8 @@ fn status_text(status: CombatStatus) -> &'static str {
     match status {
         CombatStatus::Ready => "准备就绪",
         CombatStatus::PairSwitched => "切换武器组",
+        CombatStatus::WeaponExhausted => "武器耐久耗尽 · 已换下一组",
+        CombatStatus::Enraged => "暴怒",
         CombatStatus::Started(kind) => match kind {
             ActionKind::Melee => "近战攻击",
             ActionKind::HammerSlam => "震地击飞",
@@ -240,6 +296,21 @@ fn status_text(status: CombatStatus) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn durability_is_sent_in_the_page_slot_order_of_each_pair() {
+        let mut world = World::new();
+        let player = world
+            .spawn(Combatant::new(crate::simulation::WeaponPair::default()))
+            .id();
+        let arsenal = world.get::<Arsenal>(player).unwrap();
+        let values = durability_by_hud_index(arsenal);
+        assert_eq!(values, vec![f32::from(Arsenal::DURABILITY); 2]);
+        // Fresh meters start empty and nothing is ready.
+        let energy = world.get::<Energy>(player).unwrap();
+        assert_eq!((energy.sun(), energy.moon(), energy.rage()), (0, 0, 0.0));
+        assert!(!energy.rage_ready() && !energy.is_enraged());
+    }
     use crate::{
         gameplay,
         simulation::{CombatIntent, SimulationPlugin, WeaponPair, teleport_actor},

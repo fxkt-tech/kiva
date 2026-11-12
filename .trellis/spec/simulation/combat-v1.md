@@ -8,7 +8,8 @@ client 只提交意图和读取快照；不拥有动作计时、伤害、耐力�
 ## Signatures
 
 - WeaponPair::{HammerMusket,ChainAxeBow}；WeaponMode 仅描述挂点握柄，不代表可控制人格。
-- CombatIntent::{request_attack,request_melee_skill,request_ranged_skill,request_combo,request_toggle_target,request_pair,cancel_melee_chain,clear}。
+- CombatIntent::{request_attack,request_melee_skill,request_ranged_skill,request_combo,request_toggle_target,request_pair,request_next_pair,request_rage,cancel_melee_chain,clear}。
+- Energy::{sun,moon,rage,is_enraged,rage_ready} 与 Arsenal::durability(pair) 只读；二者随 `Combatant` 自动添加。
 - Combatant::{weapon_pair,target,attack_cooldown,melee_cooldown,ranged_cooldown,combo_window,combo_remaining,active_action,sequence,companion,axe_away,availability,clear_targets}。
 - ActionAvailability 包含 attack、melee_skill、ranged_skill、combo、defense、equip、movement_actions。
 - `MeleeStage::{One,Two,Three}`；ActionSnapshot、CombatEvent、HitContext 各保留 `melee_stage: Option<MeleeStage>`，非普攻为None。
@@ -26,6 +27,7 @@ client 只提交意图和读取快照；不拥有动作计时、伤害、耐力�
 
 技能数值只有一份：`combat/skills.rs` 的 `SkillSpec { duration, cooldown, cast_range, shape }`。`shape` 为 `Arc`（普攻，数值取 `MeleeProfile`）、`Area`（一个标记的范围伤害，中心为自身或锁定目标）、`Shot`（妹妹单发，可带离手时刻）或 `Volley`（妹妹三连发，可带拉近）。准入用的施放距离与结算用的射程读同一个 `cast_range`；下文各节的数字是这张表的说明，以表为准。`WeaponPair::action(Slot)` 把输入槽位映射到动作。
 加一个已有形态的技能：加 `ActionKind` 变体、一行 `spec` 和一处槽位映射，不写新的规则代码。联动窗口的保持条件（锤鸟要求原目标浮空、链斧弓要求被本次动作僵直）仍在 `availability::window_valid` 里按武器组判断。
+每行另有 `wear`（准入时扣的武器耐久）和 `rage`（强化释放积累的暴怒）；`Area`／`Shot` 带 `empowered`（强化倍率）。
 `ActionKind::{shot_times,throw_times,return_window,strike_effect}` 把表里的时间点和起手效果以只读方式提供给表现层；`WeaponPair::ALL` 是全部武器组的声明顺序。
 `prepare` 在物理前消费指令、推进已承诺动作并至多准入一个新动作，每一步是具名函数；`resolve_actions` 在物理后按形态结算标记；`advance_enemies` 独立处理普通敌人。`ActionRuntime` 归战斗模块私有。
 
@@ -68,11 +70,25 @@ Tab 接受时要求浮空／本次僵直；承诺后自然落地或僵直到期�
 拆招窗 0.20s，持续按住达到 0.20s 进入防御；从有效防御物理松开开启 0.18s 弹反窗。拆招／弹反各自再触发冷却 0.65s。
 短按松开保留已开启的拆招直到结束，不额外弹反；取消、失焦与死亡都不能当 Released。
 闪避无敌优先，其次正面拆招、弹反、有效格挡、普通受伤。正面点积阈值沿用 >0.25。
-拆招免伤且不额外僵直；弹反免伤并让攻击者进入 0.80s 僵直；不附加反伤。
+拆招免伤且不额外僵直；弹反免伤，对攻击者反击 `PARRY_DAMAGE`（10）并使其进入 0.80s 僵直。反击走共同命中（`apply_hit`），事件顺序为玩家的 Parry 之后紧跟攻击者的 Hit；普通敌人与 Boss 都经 `settle_defense` 结算。
 耐力上限 100，成功格挡扣 20 并承受原伤害的 50%；刚好扣到 0 的这一击仍成立，之后不足时正常受伤，无破防和命中次数上限。
 拆招／弹反／闪避不扣耐力。实际到达命中判定的来袭重置安静期；进攻活动期间不恢复，安静 1.0s 后每秒恢复 15。
 恢复排在所有来袭之后；SimulationActive／HitStop 冻结恢复与所有规则时间。复活补满，F2 不补满。
 防御移动为常速 0.35 倍；跳跃／闪避可退出防御姿态，设备层不能直接改 MotionState。
+
+### 烈阳、月光与暴怒
+
+`Energy` 组件独立于 `Combatant`，由战斗规则系统独占写入。数值：烈阳／月光上限 10，暴怒上限 20、暴怒状态持续 20s（`Energy::{SUN_MAX,MOON_MAX,RAGE_MAX,RAGE_DURATION}`），暴怒中普攻伤害 ×2。
+烈阳：玩家每一次造成伤害的命中 +1（范围技命中两个敌人为 2，三连发最多 3；被闪避／无敌／目标失效不计），弹反成立 +1。月光：来袭被闪避无敌或拆招化解 +1；格挡、弹反和受伤不计。
+强化：烈阳满时下一次 E、月光满时下一次 Q 自动强化——伤害乘以该技能行的 `empowered`（当前均为 1.5），对应能量清零，并积累该行的 `rage`（E 为 1、Q 为 2）。强化在准入时判定并固定在动作上（`ActionRuntime.damage_scale`），被拒绝的请求不消耗能量。联动不强化。
+暴怒：暴怒值满后 X（`CombatIntent::request_rage`）进入暴怒状态，无额外攻击动作；请求由独立系统 `release_rage` 消费，未满或倒地时请求被丢弃。暴怒中：普攻伤害 ×2；E／Q 必定强化，不消耗烈阳／月光，也不再积累暴怒；联动窗口成立后的下一步自动准入联动，等同按下 Tab。暴怒值在规则时间内匀速耗尽（`drain_rage`），暂停与 HitStop 不消耗；耗尽即结束。
+复活把三种能量清零并结束暴怒；F2 换敌人保留。
+
+### 武器耐久
+
+`Arsenal` 组件记录每组武器的耐久，上限 50。准入一个动作时扣该技能行的 `wear`（普攻 1、E／Q 各 10、联动 0）；扣到 0 为止，不因耐久不足拒绝动作，被拒绝的请求不扣。
+耐久为 0 的武器组在没有进行中的动作且没有打开的联动窗口时自动换到下一组（`WeaponPair::next`，按 `ALL` 循环），被换下的那组立即回满，状态为 `WeaponExhausted`。自动换组不要求站在地面，也不被防御阻止。
+Z（`request_next_pair`）手动循环换组，沿用原有条件（空闲且在地面），不恢复耐久。复活回满全部武器组；F2 保留。
 
 ### 归属与生命周期
 
@@ -81,7 +97,7 @@ ComboWindow 保存 source_action_id、pair、original_target 和 remaining；僵
 玩家死亡、目标死亡／移除、Boss 无敌阶段、模式替换取消未发射部分；镜头快照可有界恢复并保留最后瞄准点。F2 在暂停时也必须同步隐藏妹妹、清掉拉力／旧动作，不能等待恢复后的固定步。
 暂停只清设备意图并冻结已承诺技能；恢复不补旧输入，不恢复跳跃次数。F3 不改动作、物理、武器组或妹妹。
 玩家／靶子死亡 3s 后复活，清旧输入、目标、联动、临时控制效果和冷却；靶子保持被动。Boss 新遭遇清理旧减速等控制效果。
-反馈最多 128 条、序号单调增加，各显示消费者各自游标；玩家最近一次指令结果以 `CombatStatus`（Ready／PairSwitched／Started(kind)／TargetOutOfReach／Busy／Guarding／Unavailable）发布，不携带界面文字；不能把显示历史当作命中去重账本。
+反馈最多 128 条、序号单调增加，各显示消费者各自游标；玩家最近一次指令结果以 `CombatStatus`（Ready／PairSwitched／WeaponExhausted／Enraged／Started(kind)／TargetOutOfReach／Busy／Guarding／Unavailable）发布，不携带界面文字；不能把显示历史当作命中去重账本。
 
 ## Validation & Error Matrix
 
@@ -95,7 +111,9 @@ ComboWindow 保存 source_action_id、pair、original_target 和 remaining；僵
 | 右键队列取消／溢出 | 取消当前手势，重新按下才可重建 |
 | 目标落地或僵直到期 | 尚未接受的窗口失效，已接受的三发按原目标继续复验 |
 | Boss 转阶段／死亡／F2 替换 | 停止旧攻击与拉力，清妹妹／目标，镜头恢复 |
-| 暂停／HitStop | 不补算规则时间、不推进耐力或冷却 |
+| 暂停／HitStop | 不补算规则时间、不推进耐力或冷却，也不消耗暴怒 |
+| 暴怒值未满或倒地时按 X | 请求被消费，不进入暴怒，无事件 |
+| 耐久为 0 但动作或联动窗口仍在 | 不换组；结束后的首个准备步换组并回满旧组 |
 
 ## Good / Base / Bad Cases
 
@@ -108,6 +126,7 @@ Bad：只播放三次闪光却扣一笔伤害；链斧拉近穿墙；F2 后在�
 使用真实 FixedUpdate 测试逐段唯一start／marker、单缓冲、0.45s续段／过期、第三段封顶、同帧优先级和零固定步取消；覆盖最后半步闪避冷却竞争、实际运动声事实与重置。
 使用真实 FixedUpdate 测试三发时间点前后、独立 hit_index、原目标／stun_source、视线、阶段免疫、死亡和取消，不只断言最终总血量。
 测量实际高台／平地击飞最高点、拉近碰撞／停距／高差及减速位移；保留原物理、二段跳、Shift／蹲伏、HitStop／暂停回归。
+能量覆盖每次命中的烈阳、拆招的月光、强化 E／Q 的伤害与清零、暴怒积累／释放／普攻翻倍／自动联动／20s 耗尽、弹反反击与事件顺序、耐久消耗／耗尽换组／联动窗口保留／Z 循环、复活重置（`combat/energy_tests.rs`）。
 防御覆盖短按／长按／释放／取消、独立冷却边界、正背面、第五次有效格挡、低耐力恢复和同一步快照一致性。
 执行 make check；Web Rust 另跑 WASM Clippy，打包另用临时目录 Trunk 构建。
 

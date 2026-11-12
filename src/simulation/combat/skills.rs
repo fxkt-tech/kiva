@@ -10,6 +10,8 @@ pub(super) const LOCK_ALIGNMENT: f32 = 0.35;
 pub(super) const MELEE_ARC: f32 = 0.25;
 /// A cancelled volley keeps its camera this long while it returns.
 pub(super) const RETURN_DURATION: f32 = SequenceSnapshot::RETURN_DURATION;
+/// A parry strikes back at the attacker for this much.
+pub(in crate::simulation) const PARRY_DAMAGE: f32 = 10.0;
 /// After an ordinary attack retires, its follow-up stage stays available.
 pub(super) const CHAIN_GRACE: f32 = 0.45;
 
@@ -68,6 +70,8 @@ pub(super) struct Area {
     pub effect: CombatEffect,
     /// Opened when the original target is actually controlled.
     pub window: Option<f32>,
+    /// Damage multiplier of the empowered version.
+    pub empowered: f32,
 }
 
 /// The companion fires once at the target.
@@ -80,6 +84,8 @@ pub(super) struct Shot {
     pub stun: f32,
     /// Opened when the target is actually stunned.
     pub window: Option<f32>,
+    /// Damage multiplier of the empowered version.
+    pub empowered: f32,
 }
 
 /// The companion fires three times at the original target.
@@ -111,6 +117,10 @@ pub(super) struct SkillSpec {
     pub cooldown: f32,
     /// Needs a visible locked target this close; also the shot's range.
     pub cast_range: Option<f32>,
+    /// Durability the equipped weapon pair loses when this starts.
+    pub wear: u8,
+    /// Rage built by releasing the empowered version.
+    pub rage: u8,
     pub shape: Shape,
 }
 
@@ -138,6 +148,15 @@ impl SkillSpec {
         }
     }
 
+    /// Damage multiplier of the empowered version; 1 where there is none.
+    pub(super) fn empowered(&self) -> f32 {
+        match self.shape {
+            Shape::Area(area) => area.empowered,
+            Shape::Shot(shot) => shot.empowered,
+            Shape::Arc | Shape::Volley(_) => 1.0,
+        }
+    }
+
     pub(super) fn pull(&self) -> Option<Pull> {
         match self.shape {
             Shape::Volley(volley) => volley.pull,
@@ -150,12 +169,16 @@ const MELEE: SkillSpec = SkillSpec {
     duration: 0.0, // Per stage, from the weapon's MeleeProfile.
     cooldown: 0.0,
     cast_range: None,
+    wear: 1,
+    rage: 0,
     shape: Shape::Arc,
 };
 const HAMMER_SLAM: SkillSpec = SkillSpec {
     duration: 0.50,
     cooldown: 3.0,
     cast_range: Some(4.5),
+    wear: 10,
+    rage: 1,
     shape: Shape::Area(Area {
         time: 0.20,
         centre: Centre::Target,
@@ -164,12 +187,15 @@ const HAMMER_SLAM: SkillSpec = SkillSpec {
         control: Control::Launch(3.0),
         effect: CombatEffect::Hammer,
         window: Some(0.85),
+        empowered: 1.5,
     }),
 };
 const CHAIN_SWEEP: SkillSpec = SkillSpec {
     duration: 0.50,
     cooldown: 3.0,
     cast_range: None,
+    wear: 10,
+    rage: 1,
     shape: Shape::Area(Area {
         time: 0.15,
         centre: Centre::Actor,
@@ -181,36 +207,45 @@ const CHAIN_SWEEP: SkillSpec = SkillSpec {
         },
         effect: CombatEffect::ChainSweep,
         window: None,
+        empowered: 1.5,
     }),
 };
 const MUSKET_SHOT: SkillSpec = SkillSpec {
     duration: 0.40,
     cooldown: 4.0,
     cast_range: Some(22.0),
+    wear: 10,
+    rage: 2,
     shape: Shape::Shot(Shot {
         depart: None,
         impact: 0.18,
         damage: 40.0,
         stun: 0.45,
         window: None,
+        empowered: 1.5,
     }),
 };
 const AXE_SHOT: SkillSpec = SkillSpec {
     duration: 0.75,
     cooldown: 4.0,
     cast_range: Some(12.0),
+    wear: 10,
+    rage: 2,
     shape: Shape::Shot(Shot {
         depart: Some(0.15),
         impact: 0.30,
         damage: 35.0,
         stun: 0.90,
         window: Some(0.90),
+        empowered: 1.5,
     }),
 };
 const HAMMER_COMBO: SkillSpec = SkillSpec {
     duration: 0.96,
     cooldown: 0.0,
     cast_range: None,
+    wear: 0,
+    rage: 0,
     shape: Shape::Volley(Volley {
         times: [0.30, 0.42, 0.54],
         range: 22.0,
@@ -224,6 +259,8 @@ const CHAIN_COMBO: SkillSpec = SkillSpec {
     duration: 0.93,
     cooldown: 0.0,
     cast_range: None,
+    wear: 0,
+    rage: 0,
     shape: Shape::Volley(Volley {
         times: [0.12, 0.28, 0.44],
         range: 22.0,

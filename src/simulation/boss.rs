@@ -257,6 +257,7 @@ type Opponents = (
     &'static mut super::Stamina,
     &'static mut Combatant,
     &'static mut super::CombatIntent,
+    &'static mut super::Energy,
 );
 
 /// Runs after current physical snapshots and player combat, with the same pause gate.
@@ -349,13 +350,13 @@ pub(super) fn advance(
         }
         let target = players
             .iter()
-            .filter(|(_, _, _, health, _, _, _, _, _, _)| health.is_alive())
+            .filter(|(_, _, _, health, ..)| health.is_alive())
             .min_by(|a, b| {
                 a.1.world_position()
                     .distance_squared(body.world_position())
                     .total_cmp(&b.1.world_position().distance_squared(body.world_position()))
             })
-            .map(|(entity, _, _, _, _, _, _, _, _, _)| entity);
+            .map(|(entity, ..)| entity);
         let Some(target) = target else {
             movement.stop();
             if boss.engaged {
@@ -379,6 +380,7 @@ pub(super) fn advance(
             mut target_stamina,
             mut target_combat,
             mut target_intent,
+            mut target_energy,
         ) = players.get_mut(target).unwrap();
         let offset = target_body.world_position() - body.world_position();
         let distance = offset.length();
@@ -515,8 +517,24 @@ pub(super) fn advance(
                         false,
                         &mut feedback,
                     );
-                    if outcome == super::HitOutcome::Parried {
+                    let riposte = super::combat::settle_defense(
+                        outcome,
+                        (target, target_body),
+                        &mut target_energy,
+                    );
+                    if let Some(riposte) = riposte {
                         let source = boss.sequence;
+                        super::combat::apply_hit(
+                            riposte.context(entity, source),
+                            &body,
+                            &facing,
+                            &motion,
+                            &mut health,
+                            None,
+                            None,
+                            boss.is_invulnerable(),
+                            &mut feedback,
+                        );
                         boss.stun(source, 0.80);
                         movement.stop();
                     }
@@ -862,6 +880,16 @@ mod tests {
                 BossState::Recovering
             };
             wait_for(&mut app, boss, boundary);
+            // The parry also strikes back and earns one sun; a miss does neither.
+            let riposte = if interrupted { 10.0 } else { 0.0 };
+            assert_eq!(health(&app, boss), Boss::PHASE_HEALTH - riposte);
+            assert_eq!(
+                app.world()
+                    .get::<super::super::Energy>(player)
+                    .unwrap()
+                    .sun(),
+                u8::from(interrupted)
+            );
             assert_eq!(
                 app.world().get::<MoveIntent>(boss).unwrap().0,
                 Vec2::ZERO,

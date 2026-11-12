@@ -3,7 +3,7 @@ use crate::{
     gameplay::Player,
     simulation::{
         ActionIntent, Body, CombatIntent, Combatant, DefenseEdge, DefenseState, Facing, MoveIntent,
-        SimulationActive, WeaponPair,
+        SimulationActive,
     },
 };
 #[cfg(not(target_arch = "wasm32"))]
@@ -26,8 +26,8 @@ const ATTACK: u32 = 4;
 const MELEE_SKILL: u32 = 8;
 const COMBO: u32 = 16;
 const TOGGLE_TARGET: u32 = 32;
-const PAIR_1: u32 = 64;
-const PAIR_2: u32 = 128;
+const NEXT_PAIR: u32 = 64;
+const RAGE: u32 = 128;
 const RANGED_SKILL: u32 = 256;
 const CROUCH_TOGGLE: u32 = 512;
 const MOVEMENT_RELEASED: u32 = 1024;
@@ -145,8 +145,8 @@ impl CaptureState {
             KeyCode::KeyE => MELEE_SKILL,
             KeyCode::KeyQ => RANGED_SKILL,
             KeyCode::Tab => COMBO,
-            KeyCode::Digit1 => PAIR_1,
-            KeyCode::Digit2 => PAIR_2,
+            KeyCode::KeyZ => NEXT_PAIR,
+            KeyCode::KeyX => RAGE,
             KeyCode::KeyC => CROUCH_TOGGLE,
             _ => 0,
         }
@@ -290,9 +290,6 @@ pub(super) fn sample(
             if command == CROUCH_TOGGLE {
                 commands ^= CROUCH_TOGGLE;
             } else {
-                if command & (PAIR_1 | PAIR_2) != 0 {
-                    commands &= !(PAIR_1 | PAIR_2);
-                }
                 commands |= command;
             }
         }
@@ -384,11 +381,11 @@ pub(super) fn sample(
         if commands & COMBO != 0 {
             combat.request_combo();
         }
-        // Keys 1 and 2 select the weapon pairs in their declared order.
-        for (bit, pair) in [PAIR_1, PAIR_2].into_iter().zip(WeaponPair::ALL) {
-            if commands & bit != 0 {
-                combat.request_pair(pair);
-            }
+        if commands & NEXT_PAIR != 0 {
+            combat.request_next_pair();
+        }
+        if commands & RAGE != 0 {
+            combat.request_rage();
         }
         if commands & TOGGLE_TARGET != 0 {
             combat.request_toggle_target();
@@ -435,7 +432,12 @@ mod tests {
     #[test]
     fn native_skill_keydowns_are_distinct_and_hold_repeat_release_do_not_attack() {
         let mut capture = captured();
-        for (code, command) in [(KeyCode::KeyE, MELEE_SKILL), (KeyCode::KeyQ, RANGED_SKILL)] {
+        for (code, command) in [
+            (KeyCode::KeyE, MELEE_SKILL),
+            (KeyCode::KeyQ, RANGED_SKILL),
+            (KeyCode::KeyZ, NEXT_PAIR),
+            (KeyCode::KeyX, RAGE),
+        ] {
             let mut press = key(code, ButtonState::Pressed);
             assert_eq!(capture.keyboard_event(&press, press.window, true), command);
             assert_eq!(capture.keyboard_event(&press, press.window, true), 0);

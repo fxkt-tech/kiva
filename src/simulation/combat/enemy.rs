@@ -1,6 +1,8 @@
 //! The ordinary enemy: chase, wind up, strike, recover. The Boss owns its own
 //! component and is skipped here.
-use super::hit::{CombatWorld, Enemies, Players, apply_hit, defeat_if_fallen};
+use super::hit::{
+    CombatWorld, Enemies, Players, Riposte, apply_hit, defeat_if_fallen, settle_defense,
+};
 use super::{ActionIds, CombatEffect, CombatFeedback, HitContext, HitOutcome};
 use crate::simulation::defense::decay;
 use crate::simulation::{Body, SlowEffect};
@@ -163,15 +165,26 @@ pub(in crate::simulation) fn advance_enemies(
                     REACH,
                 );
                 if let Some(target) = enemy.attack_target.take() {
-                    let parried = land_attack(
+                    let id = enemy.attack_id;
+                    let riposte = land_attack(
                         (entity, &body),
-                        (target, enemy.attack_id),
+                        (target, id),
                         &world,
                         &mut players,
                         &mut feedback,
                     );
-                    if parried {
-                        let id = enemy.attack_id;
+                    if let Some(riposte) = riposte {
+                        apply_hit(
+                            riposte.context(entity, id),
+                            &body,
+                            &facing,
+                            &motion,
+                            &mut health,
+                            None,
+                            None,
+                            false,
+                            &mut feedback,
+                        );
                         enemy.stun(id, PARRIED_STUN);
                         movement.stop();
                     }
@@ -181,8 +194,8 @@ pub(in crate::simulation) fn advance_enemies(
         }
         let target = players
             .iter()
-            .filter(|(_, _, _, _, _, _, h, _, _, _, _, _)| h.is_alive())
-            .map(|(e, b, _, _, _, _, _, _, _, _, _, _)| (e, b.world_position(), b.aim_position()))
+            .filter(|(_, _, _, _, _, _, h, _, _, _, _, _, _)| h.is_alive())
+            .map(|(e, b, ..)| (e, b.world_position(), b.aim_position()))
             .filter(|(_, p, _)| p.distance(body.world_position()) < SIGHT)
             .min_by(|a, b| {
                 a.1.distance_squared(body.world_position())
@@ -218,14 +231,14 @@ pub(in crate::simulation) fn advance_enemies(
 }
 
 /// A finished wind-up reaches its chosen player only if they are still alive,
-/// in reach and visible. Returns whether the player parried it.
+/// in reach and visible. Returns the riposte when the player parried it.
 fn land_attack(
     attacker: (Entity, &Body),
     attack: (Entity, u64),
     world: &CombatWorld,
     players: &mut Players,
     feedback: &mut CombatFeedback,
-) -> bool {
+) -> Option<Riposte> {
     let (entity, body) = attacker;
     let (target, attack_id) = attack;
     let Ok((
@@ -241,9 +254,10 @@ fn land_attack(
         _,
         mut defense,
         mut stamina,
+        (mut energy, _),
     )) = players.get_mut(target)
     else {
-        return false;
+        return None;
     };
     if !target_health.is_alive()
         || body.world_position().distance(target_body.world_position()) > REACH
@@ -254,7 +268,7 @@ fn land_attack(
             target,
         )
     {
-        return false;
+        return None;
     }
     let result = apply_hit(
         HitContext {
@@ -285,5 +299,5 @@ fn land_attack(
         target_intent.clear();
         target_actions.clear();
     }
-    result == HitOutcome::Parried
+    settle_defense(result, (target, &target_body), &mut energy)
 }

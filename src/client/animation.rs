@@ -617,6 +617,7 @@ impl RigPose {
             | CombatEffect::Dodge
             | CombatEffect::SniperShot
             | CombatEffect::Rejected
+            | CombatEffect::Enrage
             | CombatEffect::MeleeStart => return,
         };
         self.playback = Some(Playback { kind, elapsed: 0.0 });

@@ -1,13 +1,14 @@
 //! Before physics: consume the player's commands, advance the committed action
 //! and admit at most one new action. Each step of the tick is a named function.
 use super::availability::{availability_for, window_valid};
-use super::combatant::{ATTACK, COMBO, MELEE_SKILL, RANGED_SKILL, TOGGLE};
+use super::combatant::{ATTACK, COMBO, MELEE_SKILL, NEXT_PAIR, RANGED_SKILL, TOGGLE};
 use super::companion::companion_pose;
-use super::hit::{Candidates, CombatWorld, target_valid};
+use super::hit::{Candidates, CombatWorld, PlayerMeters, target_valid};
 use super::runtime::ActionRuntime;
 use super::skills::{LOCK_ALIGNMENT, LOCK_RANGE, Shape, Slot};
 use super::{
-    ActionIds, CombatEffect, CombatFeedback, CombatIntent, CombatStatus, Combatant, Enemy, Health,
+    ActionIds, Arsenal, CombatEffect, CombatFeedback, CombatIntent, CombatStatus, Combatant, Enemy,
+    Energy, Health,
 };
 use crate::simulation::defense::decay;
 use crate::simulation::{
@@ -36,6 +37,7 @@ type PreparePlayer = (
     &'static Stamina,
     &'static mut ActionIntent,
     &'static Health,
+    PlayerMeters,
 );
 
 /// The acting player's read-only physical facts for this tick.
@@ -65,6 +67,7 @@ pub(in crate::simulation) fn prepare(
         stamina,
         mut actions,
         health,
+        (mut energy, mut arsenal),
     ) in &mut players
     {
         let commands = std::mem::take(&mut intent.commands);
@@ -100,25 +103,25 @@ pub(in crate::simulation) fn prepare(
             actions.discard_movement_actions();
         }
         let grounded = motion.is_grounded() && !motion.is_dodging() && !motion.is_sliding();
-        let gesture_id = defense.snapshot().gesture_id;
-        defense.advance(
-            dt,
-            grounded && !busy,
-            actions.movement_requested(),
+        let moving = actions.movement_requested();
+        advance_defense(
+            &mut defense,
+            &mut combat,
             motion,
             stamina,
+            grounded && !busy,
+            moving,
+            dt,
         );
-        if defense.snapshot().gesture_id != gesture_id || motion.is_dodging() || motion.is_sliding()
-        {
-            combat.melee_chain.clear();
-        }
         let free = !busy && !defense.is_active() && !motion.is_dodging() && !motion.is_sliding();
-        if let Some(pair) = pair
-            && free
-            && grounded
-        {
-            switch_pair(&mut combat, pair);
-        }
+        let requested = pair.or((commands & NEXT_PAIR != 0).then(|| combat.pair.next()));
+        switch_weapons(
+            &mut combat,
+            &mut arsenal,
+            requested,
+            !busy,
+            free && grounded,
+        );
         let distance = target_distance(&combat, &actor, &world, &enemies);
         let availability = availability_for(&combat, motion, &defense, distance);
         combat.availability = availability;
@@ -134,9 +137,12 @@ pub(in crate::simulation) fn prepare(
             combat.melee_chain.buffered = true;
         }
         let attack = commands & ATTACK != 0 || (queued_attack && !movement_has_priority);
-        if let Some(slot) = admit(commands, attack, availability) {
+        // While enraged a prerequisite skill flows into its combo unprompted.
+        let combo = commands & COMBO != 0 || energy.is_enraged();
+        if let Some(slot) = admit(commands, combo, attack, availability) {
             let kind = combat.pair.action(slot);
-            let Some(plan) = plan(kind, &mut combat, &mut facing, &actor, &world, &enemies) else {
+            let Some(mut plan) = plan(kind, &mut combat, &mut facing, &actor, &world, &enemies)
+            else {
                 combat.reject(
                     CombatStatus::TargetOutOfReach,
                     entity,
@@ -145,6 +151,8 @@ pub(in crate::simulation) fn prepare(
                 );
                 continue;
             };
+            plan.damage_scale = damage_scale(slot, kind, &mut energy);
+            arsenal.wear(combat.pair, kind.spec().wear);
             commit(
                 slot,
                 kind,
@@ -187,6 +195,57 @@ fn tick_timers(combat: &mut Combatant, cancel_chain: bool, dt: f32) {
     combat.melee_cooldown = decay(combat.melee_cooldown, dt);
     combat.ranged_cooldown = decay(combat.ranged_cooldown, dt);
     combat.pull_velocity = None;
+}
+
+/// Advance the right-button gesture. A new gesture, a dodge or a slide drops
+/// the ordinary attack's queued follow-up.
+fn advance_defense(
+    defense: &mut DefenseState,
+    combat: &mut Combatant,
+    motion: &MotionState,
+    stamina: &Stamina,
+    can_defend: bool,
+    moving: bool,
+    dt: f32,
+) {
+    let gesture_id = defense.snapshot().gesture_id;
+    defense.advance(dt, can_defend, moving, motion, stamina);
+    if defense.snapshot().gesture_id != gesture_id || motion.is_dodging() || motion.is_sliding() {
+        combat.melee_chain.clear();
+    }
+}
+
+/// A worn-out pair is rotated out and restored as soon as no action or combo
+/// window depends on it; otherwise a selection is honoured while free on the
+/// ground.
+fn switch_weapons(
+    combat: &mut Combatant,
+    arsenal: &mut Arsenal,
+    requested: Option<WeaponPair>,
+    idle: bool,
+    free_on_ground: bool,
+) {
+    if idle && combat.combo.is_none() && arsenal.exhausted(combat.pair) {
+        let worn = combat.pair;
+        arsenal.restore(worn);
+        switch_pair(combat, worn.next());
+        combat.status = CombatStatus::WeaponExhausted;
+    } else if let Some(pair) = requested
+        && free_on_ground
+    {
+        switch_pair(combat, pair);
+    }
+}
+
+/// How much harder the new action hits: ordinary attacks while enraged, and
+/// skills whose meter is full (which spends the meter).
+fn damage_scale(slot: Slot, kind: ActionKind, energy: &mut Energy) -> f32 {
+    let spec = kind.spec();
+    match slot {
+        Slot::Attack => energy.attack_scale(),
+        Slot::MeleeSkill | Slot::RangedSkill if energy.empower(slot, spec.rage) => spec.empowered(),
+        Slot::MeleeSkill | Slot::RangedSkill | Slot::Combo => 1.0,
+    }
 }
 
 /// Equip the other weapon pair; windows and follow-ups belong to the old one.
@@ -350,8 +409,13 @@ fn target_distance(
 }
 
 /// The highest-priority requested input which is available right now.
-fn admit(commands: u8, attack: bool, availability: ActionAvailability) -> Option<Slot> {
-    if commands & COMBO != 0 && availability.combo {
+fn admit(
+    commands: u8,
+    combo: bool,
+    attack: bool,
+    availability: ActionAvailability,
+) -> Option<Slot> {
+    if combo && availability.combo {
         Some(Slot::Combo)
     } else if commands & MELEE_SKILL != 0 && availability.melee_skill {
         Some(Slot::MeleeSkill)
@@ -371,6 +435,7 @@ struct Plan {
     aim: Vec3,
     companion_position: Vec3,
     source_position: Vec3,
+    damage_scale: f32,
 }
 
 /// Resolve the new action's target and aim. A combo consumes its window even
@@ -422,6 +487,7 @@ fn plan(
         aim,
         companion_position,
         source_position,
+        damage_scale: 1.0,
     })
 }
 
@@ -454,7 +520,7 @@ fn commit(
         source_position: plan.source_position,
         companion_position: plan.companion_position,
     };
-    combat.action = Some(ActionRuntime::new(snapshot));
+    combat.action = Some(ActionRuntime::new(snapshot, plan.damage_scale));
     if let Some(stage) = plan.melee_stage {
         combat.melee_chain.begin(action_id, stage);
         let position = actor.body.aim_position();

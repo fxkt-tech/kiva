@@ -12,9 +12,11 @@ pub(super) struct ActionRuntime {
     pub return_remaining: f32,
     pub pull_stalled: f32,
     pub pull_stopped: bool,
+    /// Fixed when the action starts: empowerment or the enraged attack bonus.
+    pub damage_scale: f32,
 }
 impl ActionRuntime {
-    pub fn new(snapshot: ActionSnapshot) -> Self {
+    pub fn new(snapshot: ActionSnapshot, damage_scale: f32) -> Self {
         Self {
             snapshot,
             previous: 0.0,
@@ -23,6 +25,7 @@ impl ActionRuntime {
             return_remaining: 0.0,
             pull_stalled: 0.0,
             pull_stopped: false,
+            damage_scale,
         }
     }
     pub fn sequence(&self) -> Option<SequenceSnapshot> {

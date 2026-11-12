@@ -21,8 +21,8 @@ pub use actions::{ActionIntent, Facing, MotionState};
 pub use boss::{Boss, BossPhase, BossState};
 pub(crate) use combat::ensure_companions as combat_setup_companions;
 pub use combat::{
-    CombatEffect, CombatEvent, CombatFeedback, CombatIntent, CombatStatus, Combatant, Enemy,
-    Health, HitContext, HitOutcome, SpawnPoint,
+    Arsenal, CombatEffect, CombatEvent, CombatFeedback, CombatIntent, CombatStatus, Combatant,
+    Enemy, Energy, Health, HitContext, HitOutcome, SpawnPoint,
 };
 pub use defense::{DefenseEdge, DefenseKind, DefenseSnapshot, DefenseState};
 #[cfg(test)]
@@ -89,6 +89,8 @@ impl Plugin for SimulationPlugin {
                     physics::install,
                     combat::ensure_companions,
                     combat::tick_slows,
+                    combat::drain_rage,
+                    combat::release_rage,
                     combat::prepare,
                     physics::motor,
                     physics::resize_characters,

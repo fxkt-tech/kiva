@@ -115,7 +115,7 @@ test("target clearing, death and expired combo remove stale state without a cloc
   for(const id of ["hud-skill-start","hud-skill-ranged","hud-skill-combo","hud-skill-rage"])assert.equal(f.at(id).attributes["aria-disabled"],"true");
 });
 
-test("cooldown water follows snapshots; reserved resources have no invented values", () => {
+test("cooldown water follows snapshots; meters stay empty until the simulation reports them", () => {
   const f = fixture(true);
   player(f);
   f.hud.renderLoadout(1, 1000, true, true, true, true, false);
@@ -133,4 +133,61 @@ test("cooldown water follows snapshots; reserved resources have no invented valu
   assert.equal(f.at("hud-rage-value").style["--rage-fraction"], "0");
   assert.equal(f.at("hud-skill-rage").attributes["aria-disabled"], "true");
   assert.match(markup, /id="hud-skill-rage"[^>]* disabled/);
+  for (const key of ["meleeEnergy", "rangedEnergy", "rageValue", "pair1Durability", "pair2Durability"]) {
+    assert.equal(f.at(`meter-${key}`).attributes["aria-valuenow"], "0");
+    assert.equal(f.at(`edge-${key}`).style.visibility, "hidden");
+  }
+});
+
+test("sun, moon, rage and durability follow the simulation's snapshots", () => {
+  const f = fixture(true);
+  player(f);
+  f.hud.renderLoadout(1, 1000, true, true, true, true, false);
+  f.hud.renderResources(100, 100, 0, 0, false, 0);
+  f.hud.renderEnergy(10, 10, 5, 10, 8, 20, false, false);
+  f.hud.renderDurability(new Float32Array([25, 50]), 50);
+  assert.equal(f.at("hud-melee-energy-bar").value, 1);
+  assert.equal(f.at("hud-ranged-energy-bar").value, 0.5);
+  assert.equal(f.at("hud-rage-value-bar").value, 0.4);
+  assert.equal(f.at("hud-rage-value").style["--rage-fraction"], "0.4");
+  // A full sun empowers E only; the outline drops its clip when full.
+  assert.equal(f.at("meter-meleeEnergy").attributes["aria-valuenow"], "100");
+  assert.equal(f.at("meter-meleeEnergy").classList.contains("full"), true);
+  assert.equal(f.at("edge-meleeEnergy").style["clip-path"], "none");
+  assert.equal(f.at("edge-meleeEnergy").style.visibility, "visible");
+  assert.equal(f.at("meter-rangedEnergy").attributes["aria-valuenow"], "50");
+  assert.equal(f.at("fill-rangedEnergy").attributes.y, "0.5");
+  assert.equal(f.at("edge-rangedEnergy").style["clip-path"], "");
+  assert.equal(f.at("hud-skill-start").classList.contains("empowered"), true);
+  assert.equal(f.at("hud-skill-ranged").classList.contains("empowered"), false);
+  assert.match(f.at("hud-skill-start").attributes["aria-label"], /强化/);
+  assert.equal(f.at("hud-skill-rage").attributes["aria-disabled"], "true");
+  assert.match(f.at("hud-skill-rage").attributes["aria-label"], /暴怒值未满/);
+  assert.equal(f.at("meter-pair1Durability").attributes["aria-valuenow"], "50");
+  assert.equal(f.at("meter-pair2Durability").attributes["aria-valuenow"], "100");
+  assert.match(f.at("hud-pair1").attributes["aria-label"], /耐久 25 \/ 50/);
+
+  f.hud.renderEnergy(0, 10, 0, 10, 20, 20, false, true);
+  assert.equal(f.at("hud-skill-rage").attributes["aria-disabled"], "false");
+  assert.equal(f.at("hud-skill-rage").classList.contains("ready"), true);
+  assert.match(f.at("hud-skill-rage").attributes["aria-label"], /可用/);
+  assert.equal(f.at("hud-skill-start").classList.contains("empowered"), false);
+
+  // Enraged: the meter is the time left, and both skills are empowered.
+  f.hud.renderEnergy(0, 10, 0, 10, 12.4, 20, true, false);
+  assert.equal(f.at("hud-skill-rage").classList.contains("ready"), false);
+  assert.equal(f.at("hud-skill-rage").classList.contains("enraged"), true);
+  assert.match(f.at("hud-skill-rage").attributes["aria-label"], /暴怒中 · 剩余 13s/);
+  for (const id of ["hud-skill-start", "hud-skill-ranged"]) assert.equal(f.at(id).classList.contains("empowered"), true);
+
+  // Nonsense from the bridge is bounded, never shown as an overfull meter.
+  f.hud.renderEnergy(99, 10, NaN, 10, -3, 20, "yes", 1);
+  f.hud.renderDurability([Infinity, -5, 40], 50);
+  assert.equal(f.at("hud-melee-energy-bar").value, 1);
+  assert.equal(f.at("hud-ranged-energy-bar").value, 0);
+  assert.equal(f.at("hud-rage-value-bar").value, 0);
+  assert.equal(f.at("hud-skill-rage").classList.contains("enraged"), false);
+  assert.equal(f.at("hud-skill-rage").attributes["aria-disabled"], "true");
+  assert.equal(f.at("meter-pair1Durability").attributes["aria-valuenow"], "0");
+  assert.equal(f.at("meter-pair2Durability").attributes["aria-valuenow"], "0");
 });

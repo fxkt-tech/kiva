@@ -1,8 +1,9 @@
 //! One ordering of defenses and damage shared by players, enemies and the Boss,
 //! plus the spatial queries and entity views the rule systems share.
-use super::skills::Control;
+use super::skills::{Control, PARRY_DAMAGE};
 use super::{
-    CombatEffect, CombatEvent, CombatFeedback, CombatIntent, Combatant, Enemy, Health, SpawnPoint,
+    Arsenal, CombatEffect, CombatEvent, CombatFeedback, CombatIntent, Combatant, Enemy, Energy,
+    Health, SpawnPoint,
 };
 use crate::simulation::actions::GRAVITY;
 use crate::simulation::{
@@ -176,7 +177,10 @@ pub(in crate::simulation) type PlayerData = (
     &'static SpawnPoint,
     &'static mut DefenseState,
     &'static mut Stamina,
+    PlayerMeters,
 );
+/// The meters combat fills and spends, kept apart from [`Combatant`].
+pub(in crate::simulation) type PlayerMeters = (&'static mut Energy, &'static mut Arsenal);
 pub(in crate::simulation) type EnemyData = (
     Entity,
     &'static mut Body,
@@ -229,15 +233,23 @@ pub(super) struct Blow {
     pub origin: Vec3,
 }
 
-/// Returns true when the target took the damage and survived, which is also
-/// the only case in which the control effect is applied.
+/// How a player's blow ended.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum Landed {
+    /// Dodged, invulnerable or no longer there: no damage.
+    Missed,
+    /// Damaged and still standing; only now is the control effect applied.
+    Survived,
+    Killed,
+}
+
 pub(super) fn hit_enemy(
     blow: Blow,
     owner: Entity,
     action: &ActionSnapshot,
     enemies: &mut Enemies,
     feedback: &mut CombatFeedback,
-) -> bool {
+) -> Landed {
     let Ok((
         _,
         body,
@@ -252,7 +264,7 @@ pub(super) fn hit_enemy(
         mut slow,
     )) = enemies.get_mut(blow.target)
     else {
-        return false;
+        return Landed::Missed;
     };
     let outcome = apply_hit(
         HitContext {
@@ -275,8 +287,11 @@ pub(super) fn hit_enemy(
         boss.as_ref().is_some_and(|b| b.is_invulnerable()),
         feedback,
     );
-    if outcome != HitOutcome::Damaged || !health.is_alive() {
-        return false;
+    if outcome != HitOutcome::Damaged {
+        return Landed::Missed;
+    }
+    if !health.is_alive() {
+        return Landed::Killed;
     }
     match blow.control {
         Control::None => {}
@@ -294,7 +309,54 @@ pub(super) fn hit_enemy(
         }
         Control::Slow { factor, duration } => slow.apply(factor, duration),
     }
-    true
+    Landed::Survived
+}
+
+/// A parry strikes back at the attacker.
+pub(in crate::simulation) struct Riposte {
+    by: Entity,
+    origin: Vec3,
+}
+
+impl Riposte {
+    /// The hit to apply to `attacker`, answering its attack `action_id`.
+    pub(in crate::simulation) fn context(&self, attacker: Entity, action_id: u64) -> HitContext {
+        HitContext {
+            source: self.by,
+            source_owner: self.by,
+            pair: None,
+            melee_stage: None,
+            target: attacker,
+            action_id,
+            hit_index: 0,
+            damage: PARRY_DAMAGE,
+            origin: self.origin,
+        }
+    }
+}
+
+/// What defending an incoming hit earns the defender: moon for a dodge or a
+/// deflect, sun and a riposte for a parry. Ordinary enemies and the Boss
+/// settle their attacks through this one rule.
+pub(in crate::simulation) fn settle_defense(
+    outcome: HitOutcome,
+    defender: (Entity, &Body),
+    energy: &mut Energy,
+) -> Option<Riposte> {
+    match outcome {
+        HitOutcome::Dodged | HitOutcome::Deflected => {
+            energy.gain_moon();
+            None
+        }
+        HitOutcome::Parried => {
+            energy.gain_sun(1);
+            Some(Riposte {
+                by: defender.0,
+                origin: defender.1.aim_position(),
+            })
+        }
+        _ => None,
+    }
 }
 
 /// The target's aim point when a shot from `source` can still reach it.

@@ -1,7 +1,7 @@
 //! The player's combat commands and state. Only the rule systems write it.
 use super::runtime::ActionRuntime;
 use super::skills::CHAIN_GRACE;
-use super::{CombatEffect, CombatFeedback};
+use super::{Arsenal, CombatEffect, CombatFeedback, Energy};
 use crate::simulation::defense::decay;
 use crate::simulation::{
     ActionAvailability, ActionKind, ActionSnapshot, ComboWindow, DefenseState, MeleeStage,
@@ -14,6 +14,8 @@ pub(super) const MELEE_SKILL: u8 = 2;
 pub(super) const RANGED_SKILL: u8 = 4;
 pub(super) const COMBO: u8 = 8;
 pub(super) const TOGGLE: u8 = 16;
+pub(super) const NEXT_PAIR: u8 = 32;
+pub(super) const RAGE: u8 = 64;
 
 #[derive(Component, Default)]
 pub struct CombatIntent {
@@ -40,6 +42,14 @@ impl CombatIntent {
     pub fn request_pair(&mut self, pair: WeaponPair) {
         self.pair = Some(pair);
     }
+    /// Cycle to the next weapon pair.
+    pub fn request_next_pair(&mut self) {
+        self.commands |= NEXT_PAIR;
+    }
+    /// Release the rage skill, if the meter is full.
+    pub fn request_rage(&mut self) {
+        self.commands |= RAGE;
+    }
     /// Drop only uncommitted ordinary-attack follow-ups at the next rule tick.
     /// This latch survives a paused frame with no FixedUpdate.
     pub fn cancel_melee_chain(&mut self) {
@@ -59,6 +69,10 @@ pub enum CombatStatus {
     #[default]
     Ready,
     PairSwitched,
+    /// The equipped pair wore out and was rotated out for the next one.
+    WeaponExhausted,
+    /// The rage skill was released.
+    Enraged,
     Started(ActionKind),
     /// The pull combo's target is too far above or below.
     TargetOutOfReach,
@@ -117,6 +131,8 @@ impl MeleeChain {
 #[require(
     DefenseState,
     Stamina,
+    Energy,
+    Arsenal,
     crate::simulation::motion_feedback::MotionFeedbackState
 )]
 pub struct Combatant {

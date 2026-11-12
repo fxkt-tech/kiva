@@ -20,6 +20,8 @@ pub enum CombatEffect {
     Dodge,
     Defeat,
     Respawn,
+    /// The player entered the enraged state.
+    Enrage,
     EnemyWindup,
     Rejected,
 }
