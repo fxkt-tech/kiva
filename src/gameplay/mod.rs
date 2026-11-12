@@ -28,13 +28,6 @@ impl EnemyMode {
             Self::Combat => Self::Target,
         }
     }
-
-    pub fn label(self) -> &'static str {
-        match self {
-            Self::Target => "靶子",
-            Self::Combat => "实战",
-        }
-    }
 }
 
 /// Replace only the enemy roster. This also works while the simulation is paused.

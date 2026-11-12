@@ -21,6 +21,9 @@
 movement_released／shift_released 锁存所有方向键／所有 Shift 释放事实；即使同次采样前已重新按下，也必须先 set_*_held(false)，再提交最终 held 状态。否则旧疾跑锁存与长按时长会跨一次完整松键错误延续。原生与 Web 同义，不能只处理最终位掩码。
 右键有序队列保留同帧短按。显示帧零固定步时 Rust 中意图保留，多固定步只消费一次；长按计时不使用 JS 墙钟。
 捕获必须由 pointerlockchange 加焦点共同确认，Promise 完成不代表捕获成功。捕获点击不同时攻击。
+Esc 解锁或失焦会清累计，失焦后必须重新点击，延迟到达的旧请求不能恢复控制。
+未锁定时从可信鼠标的 `clientX` 与 `movementX` 学习 CSS 单位增益；DPR 只用于判定校准是否失效，不直接用于除法。合并事件与父事件二选一，排除窗口边缘截断样本。浏览器保留系统鼠标加速。
+Web 桥只记录有效捕获期间的可信按键，失锁清零并忽略新的重复 keydown，防止快速失焦再捕获重放旧按键。原生按 WindowFocused 事件消费中间的失焦，不能只看最终 Window.focused；原生使用 Bevy 输入及 `CursorOptions`，Windows 使用 Confined，其他平台使用 Locked。
 首次入口的ready由必要场景渲染准备与提交决定，不能在Startup末尾提前放行；加载进度和捕获进行中反馈见 [startup.md](startup.md)。ready前按钮与画布都不能申请捕获；恢复不重新加载。
 Esc、blur、pointercancel、丢失捕获均取消，不能开启释放弹反。取消锁存跨过同帧失焦和重新捕获；队列溢出也先取消，保持按住不能自动重建 Pressed，要求一次新按压。
 失活清 MoveIntent、ActionIntent、CombatIntent 和 DefenseState 意图；不改 MotionState、不补跳跃额度、不清已承诺技能／冷却。

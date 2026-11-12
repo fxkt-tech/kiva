@@ -1,6 +1,6 @@
 # Kiva 开发规范
 
-Rust / Bevy 单 crate，Trunk 构建 WebAssembly。这里只记录当前俯视探索 Demo 的事实；
+Rust / Bevy 单 crate，Trunk 构建 WebAssembly。这里只记录当前竹林动作战斗原型的事实；
 未实现方案写在 `.trellis/tasks/`，旧 MOBA 规则查看 `lol` 分支。
 
 | 层 | 入口 | 路径 |

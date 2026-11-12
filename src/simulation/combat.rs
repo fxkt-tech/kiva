@@ -4,7 +4,7 @@ use super::defense::decay;
 use super::{
     ActionAvailability, ActionIntent, ActionKind, ActionSnapshot, Body, Boss, ComboWindow,
     Companion, CompanionState, DefenseKind, DefenseState, Facing, HitStop, MeleeStage, MotionState,
-    MoveIntent, SequenceSnapshot, SlowEffect, Stamina, WeaponMode, WeaponPair,
+    MoveIntent, SequenceSnapshot, SlowEffect, Stamina, WeaponPair,
 };
 use avian3d::prelude::{Sensor, SpatialQuery, SpatialQueryFilter};
 use bevy::{ecs::system::SystemParam, prelude::*};
@@ -294,6 +294,23 @@ impl CombatIntent {
     }
 }
 
+/// The outcome of the player's latest combat command; presentation words it.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum CombatStatus {
+    #[default]
+    Ready,
+    PairSwitched,
+    Started(ActionKind),
+    /// The pull combo's target is too far above or below.
+    TargetOutOfReach,
+    /// Rejected: another action is still running.
+    Busy,
+    /// Rejected: defending.
+    Guarding,
+    /// Rejected: no valid target or window, or still cooling down.
+    Unavailable,
+}
+
 #[derive(Default)]
 struct MeleeChain {
     next_stage: MeleeStage,
@@ -350,7 +367,7 @@ pub struct Combatant {
     melee_chain: MeleeChain,
     companion: Option<Entity>,
     axe_away: bool,
-    status: &'static str,
+    status: CombatStatus,
     availability: ActionAvailability,
     pull_velocity: Option<Vec2>,
 }
@@ -367,16 +384,13 @@ impl Combatant {
             melee_chain: MeleeChain::default(),
             companion: None,
             axe_away: false,
-            status: "准备就绪",
+            status: CombatStatus::Ready,
             availability: default(),
             pull_velocity: None,
         }
     }
     pub fn weapon_pair(&self) -> WeaponPair {
         self.pair
-    }
-    pub fn weapon_name(&self) -> &'static str {
-        self.pair.weapon_name(WeaponMode::Melee)
     }
     pub fn target(&self) -> Option<Entity> {
         self.target
@@ -411,7 +425,7 @@ impl Combatant {
     pub fn axe_away(&self) -> bool {
         self.axe_away
     }
-    pub fn status(&self) -> &'static str {
+    pub fn status(&self) -> CombatStatus {
         self.status
     }
     pub fn availability(&self) -> ActionAvailability {
@@ -441,7 +455,7 @@ impl Combatant {
     }
     fn reject(
         &mut self,
-        status: &'static str,
+        status: CombatStatus,
         entity: Entity,
         position: Vec3,
         feedback: &mut CombatFeedback,
@@ -908,7 +922,7 @@ pub(super) fn prepare(
             combat.pair = pair;
             combat.combo = None;
             combat.axe_away = false;
-            combat.status = "切换武器组";
+            combat.status = CombatStatus::PairSwitched;
         }
         let current_pair = combat.pair;
         let target_distance = combat
@@ -976,7 +990,12 @@ pub(super) fn prepare(
                         (b.world_position().y - body.world_position().y).abs() > 1.5
                     })
             {
-                combat.reject("目标高差过大", entity, body.aim_position(), &mut feedback);
+                combat.reject(
+                    CombatStatus::TargetOutOfReach,
+                    entity,
+                    body.aim_position(),
+                    &mut feedback,
+                );
                 continue;
             }
             let aim = target.and_then(|t| enemies.get(t).ok()).map_or(
@@ -1041,26 +1060,18 @@ pub(super) fn prepare(
                 ActionKind::MusketShot | ActionKind::AxeShot => combat.ranged_cooldown = 4.0,
                 _ => {}
             }
-            combat.status = match kind {
-                ActionKind::Melee => "近战攻击",
-                ActionKind::HammerSlam => "震地击飞",
-                ActionKind::MusketShot => "妹妹鸟铳射击",
-                ActionKind::ChainSweep => "链斧环扫",
-                ActionKind::AxeShot => "妹妹射出链斧",
-                ActionKind::HammerCombo => "妹妹三枪联动",
-                ActionKind::ChainCombo => "拉近三箭联动",
-            };
+            combat.status = CombatStatus::Started(kind);
             actions.discard_movement_actions();
         } else if commands & (MELEE_SKILL | RANGED_SKILL | COMBO) != 0
             || (commands & ATTACK != 0 && !buffered_input)
         {
             combat.reject(
                 if busy {
-                    "动作执行中"
+                    CombatStatus::Busy
                 } else if defense.is_active() {
-                    "防御中无法进攻"
+                    CombatStatus::Guarding
                 } else {
-                    "条件不足 / 冷却中"
+                    CombatStatus::Unavailable
                 },
                 entity,
                 body.aim_position(),

@@ -7,7 +7,7 @@ const RECOIL_DURATION: f32 = 0.12;
 
 #[derive(Resource, Default)]
 pub(super) struct ImpactState {
-    cursor: u64,
+    cursor: super::FeedbackCursor,
     shot: Option<(Entity, f32)>,
 }
 
@@ -235,11 +235,8 @@ pub(super) fn update(
             };
         }
     }
-    let cursor = state.cursor;
-    for event in feedback.events().filter(|event| event.sequence > cursor) {
-        if !active.0 {
-            continue;
-        }
+    let mut cursor = state.cursor;
+    for event in cursor.take(&feedback, active.0) {
         match event.kind {
             CombatEffect::SniperShot => {
                 state.shot = Some((event.source_owner, 0.0));
@@ -249,9 +246,7 @@ pub(super) fn update(
             _ => {}
         }
     }
-    if let Some(event) = feedback.events().last() {
-        state.cursor = event.sequence;
-    }
+    state.cursor = cursor;
 }
 
 #[cfg(test)]

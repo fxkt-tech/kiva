@@ -55,7 +55,7 @@ pub(super) struct Effect {
     scale: Vec3,
 }
 #[derive(Resource, Default)]
-pub(super) struct EffectCursor(u64);
+pub(super) struct EffectCursor(super::FeedbackCursor);
 
 type SurfaceExclusions = Or<(With<Body>, With<Sensor>)>;
 
@@ -343,14 +343,10 @@ pub(super) fn effects(
     mut effects: Query<(Entity, &mut Effect, &mut Transform)>,
 ) {
     let (feedback, assets) = feedback;
-    let latest = feedback
-        .events()
-        .last()
-        .map_or(cursor.0, |event| event.sequence);
+    // Paused frames still consume feedback, so returning to the game cannot
+    // replay an old attack; existing effects stay frozen meanwhile.
+    let events = cursor.0.take(&feedback, active.0);
     if !active.0 {
-        // Freeze existing effects and discard unpresented feedback, as audio
-        // does, so returning to the game cannot replay an old attack.
-        cursor.0 = latest;
         return;
     }
     for (entity, mut effect, mut transform) in &mut effects {
@@ -362,7 +358,7 @@ pub(super) fn effects(
             transform.scale = effect.scale * (1.0 + effect.expansion * progress);
         }
     }
-    for event in feedback.events().filter(|event| event.sequence > cursor.0) {
+    for event in events {
         let (mesh, material, transform, duration, expansion) = match event.kind {
             CombatEffect::SniperShot
             | CombatEffect::SniperImpact
@@ -456,7 +452,6 @@ pub(super) fn effects(
             },
         ));
     }
-    cursor.0 = latest;
 }
 
 fn mesh(
@@ -850,6 +845,46 @@ mod tests {
                 < 0.001
         );
         assert!((attack.rotation * Vec3::Y).dot(support.normal) > 0.999);
+    }
+
+    #[test]
+    fn feedback_recorded_while_paused_is_consumed_without_spawning_effects_on_resume() {
+        let mut app = headless_app();
+        let player = app
+            .world_mut()
+            .query_filtered::<Entity, With<Player>>()
+            .single(app.world())
+            .unwrap();
+        let effects = |app: &mut App| {
+            app.world_mut()
+                .query_filtered::<Entity, With<Effect>>()
+                .iter(app.world())
+                .count()
+        };
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_attack();
+        fixed_ticks(&mut app, 12);
+        assert!(app.world().resource::<CombatFeedback>().events().count() > 0);
+        // The frame which would have shown the attack is a paused one.
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        app.world_mut().run_schedule(Update);
+        assert_eq!(effects(&mut app), 0);
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        app.world_mut().run_schedule(Update);
+        assert_eq!(effects(&mut app), 0, "resume replayed an old attack");
+        // A later attack is still presented exactly once.
+        fixed_ticks(&mut app, 60);
+        app.world_mut().run_schedule(Update);
+        let shown = effects(&mut app);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_attack();
+        fixed_ticks(&mut app, 12);
+        app.world_mut().run_schedule(Update);
+        assert!(effects(&mut app) > shown);
     }
 
     #[test]

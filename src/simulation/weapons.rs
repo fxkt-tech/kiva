@@ -23,20 +23,6 @@ pub enum WeaponMode {
     Ranged,
 }
 impl WeaponPair {
-    pub fn name(self) -> &'static str {
-        match self {
-            Self::HammerMusket => "锤子 / 鸟铳",
-            Self::ChainAxeBow => "链斧 / 弓箭",
-        }
-    }
-    pub fn weapon_name(self, mode: WeaponMode) -> &'static str {
-        match (self, mode) {
-            (Self::HammerMusket, WeaponMode::Melee) => "锤子",
-            (Self::HammerMusket, WeaponMode::Ranged) => "鸟铳",
-            (Self::ChainAxeBow, WeaponMode::Melee) => "链斧",
-            (Self::ChainAxeBow, WeaponMode::Ranged) => "弓箭",
-        }
-    }
     pub fn melee_profile(self, stage: MeleeStage) -> MeleeProfile {
         // The three stages deliberately retain the existing ordinary-attack
         // numbers. Stage three has no extra damage, armor or guard break.

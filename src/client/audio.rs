@@ -73,8 +73,8 @@ impl PendingAttack {
 #[derive(Default)]
 pub(super) struct AudioState {
     cancellation_epoch: u64,
-    combat_cursor: u64,
-    motion_cursor: u64,
+    combat_cursor: super::FeedbackCursor,
+    motion_cursor: super::FeedbackCursor,
     starts_seen: HashMap<Entity, u64>,
     pending: Vec<PendingAttack>,
 }
@@ -103,7 +103,7 @@ impl AudioState {
         self.pending
             .retain(|cue| actors.iter().any(|actor| cue.elapsed(actor).is_some()));
         for event in combat {
-            let fresh = event.sequence > self.combat_cursor;
+            let fresh = event.sequence > self.combat_cursor.0;
             let owner = actors
                 .iter()
                 .any(|actor| actor.entity == event.source_owner);
@@ -170,10 +170,9 @@ impl AudioState {
             }
         }
         for event in motion {
-            if event.sequence <= self.motion_cursor {
+            if !self.motion_cursor.advance(event.sequence) {
                 continue;
             }
-            self.motion_cursor = event.sequence;
             if !active
                 || !actors
                     .iter()
@@ -247,18 +246,14 @@ fn cue_offset(sound: Sound) -> f32 {
 }
 
 fn consume(
-    cursor: &mut u64,
+    cursor: &mut super::FeedbackCursor,
     event: &CombatEvent,
     active: bool,
     is_player: bool,
     defender: bool,
 ) -> Option<Sound> {
-    if event.sequence <= *cursor {
-        return None;
-    }
     // Inactive frames advance the cursor too; resume never replays old facts.
-    *cursor = event.sequence;
-    if !active {
+    if !cursor.advance(event.sequence) || !active {
         return None;
     }
     match event.kind {
@@ -317,7 +312,7 @@ mod tests {
 
     #[test]
     fn sounds_follow_actual_feedback_once_for_both_sides_of_combat() {
-        let mut cursor = 0;
+        let mut cursor = crate::client::FeedbackCursor::default();
         for (sequence, kind, player, expected) in [
             (1, CombatEffect::EnemyWindup, false, None),
             (2, CombatEffect::Melee, false, Some(Sound::Attack)),
@@ -339,10 +334,10 @@ mod tests {
 
     #[test]
     fn paused_feedback_and_older_history_cannot_replay_on_resume() {
-        let mut cursor = 0;
+        let mut cursor = crate::client::FeedbackCursor::default();
         let hit = event(143, CombatEffect::Deflect);
         assert_eq!(consume(&mut cursor, &hit, false, true, false), None);
-        assert_eq!(cursor, 143);
+        assert_eq!(cursor.0, 143);
         assert_eq!(consume(&mut cursor, &hit, true, true, false), None);
         assert_eq!(
             consume(
@@ -408,7 +403,7 @@ mod tests {
             .unwrap()
             .companion()
             .unwrap();
-        let mut cursor = 0;
+        let mut cursor = crate::client::FeedbackCursor::default();
         let feedback = app.world().resource::<CombatFeedback>();
         let mut shots = 0;
         for event in feedback.events() {
@@ -433,7 +428,7 @@ mod tests {
     }
     #[test]
     fn shot_sound_uses_immutable_event_pair_even_when_consuming_history() {
-        let mut cursor = 0;
+        let mut cursor = crate::client::FeedbackCursor::default();
         let mut arrow = event(1, CombatEffect::Shot);
         arrow.pair = Some(WeaponPair::ChainAxeBow);
         assert_eq!(

@@ -29,7 +29,7 @@
 
 音频 `naraka-cues.json` version=1：每 cue 的 priority(0..3)、offset(0..2s)、1..4 layers；每层 delay(0..2s)、1..16 个 variant(file/weight/gain)。仅允许固定 16 名 cue、`naraka-[0-9]{1,10}.ogg` 同源文件、正且有限权重、gain∈[0,1]，最多 64 媒体。当前 48 Ogg；16 名中包括可选通用死亡语音，不自动叠加。
 
-原 Wwise Event→PlayAction→容器→Sound→DIDX/WEM 身份及变体保留。落地两条 PlayAction 是两个声音层，原 bank 的 100ms 延迟与零延迟分别保留；未证明的原 track 时间单位不猜。cue offset=0 是 Kiva 起手适配。波形不变调，variant gain 对应解码峰值预算，乘全局 0.18 一次。
+原 Wwise Event→PlayAction→容器→Sound→DIDX/WEM 身份及变体保留。落地两条 PlayAction 是两个声音层，原 bank 的 100ms 延迟与零延迟分别保留；未证明的原 track 时间单位不猜。cue offset=0 是 Kiva 起手适配。波形不变调，variant gain 对应解码峰值预算，乘全局音效增益一次（`web/audio.js` 的 `EFFECT_VOLUME`，当前 0.45；BGM 为 `MUSIC_VOLUME` 0.18）。实际成功闪避结算播放用户选定的 `move_soul_dodge_1p` 三个等权变体（cue `naraka_dodge_success`），普通闪避起手声独立保留；来源调查见 [成功闪避音效](../../../docs/plans/naraka-success-dodge-audio.md)。
 
 `MeleeStart` 以 actor/action_id/pair/stage 和当前权威 elapsed 排起手声，超过预定点 0.12s、身份失效或动作结束即丢弃；旧 Melee marker 只管伤害／FX，不再重复挥声。实际 Hit／Deflect／Block／Parry 和 MotionFeedback 分别产生反馈；空右键没有成功声。Shot（actor=Companion） 按不可变 pair 播 `naraka_gun`／`naraka_bow`，伴随 SniperShot 不重复。
 

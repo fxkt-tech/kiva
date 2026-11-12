@@ -74,7 +74,7 @@ ComboWindow 保存 source_action_id、pair、original_target 和 remaining；僵
 玩家死亡、目标死亡／移除、Boss 无敌阶段、模式替换取消未发射部分；镜头快照可有界恢复并保留最后瞄准点。F2 在暂停时也必须同步隐藏妹妹、清掉拉力／旧动作，不能等待恢复后的固定步。
 暂停只清设备意图并冻结已承诺技能；恢复不补旧输入，不恢复跳跃次数。F3 不改动作、物理、武器组或妹妹。
 玩家／靶子死亡 3s 后复活，清旧输入、目标、联动、临时控制效果和冷却；靶子保持被动。Boss 新遭遇清理旧减速等控制效果。
-反馈最多 128 条、序号单调增加，各显示消费者各自游标；不能把显示历史当作命中去重账本。
+反馈最多 128 条、序号单调增加，各显示消费者各自游标；玩家最近一次指令结果以 `CombatStatus`（Ready／PairSwitched／Started(kind)／TargetOutOfReach／Busy／Guarding／Unavailable）发布，不携带界面文字；不能把显示历史当作命中去重账本。
 
 ## Validation & Error Matrix
 

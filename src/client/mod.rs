@@ -41,6 +41,40 @@ pub(super) struct ActorView {
 #[derive(Component)]
 pub(super) struct PlayerView;
 
+/// How far one presentation has consumed the simulation's bounded feedback.
+///
+/// Every consumer shares one rule: an event is presented at most once, and
+/// events which arrive while paused are consumed without being presented, so
+/// resuming never replays an old hit, shot or sound.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) struct FeedbackCursor(u64);
+
+impl FeedbackCursor {
+    /// True the first time `sequence` is seen. Call it on paused frames too.
+    pub(super) fn advance(&mut self, sequence: u64) -> bool {
+        let fresh = sequence > self.0;
+        if fresh {
+            self.0 = sequence;
+        }
+        fresh
+    }
+
+    /// Consume everything recorded so far; yields it only while `active`.
+    pub(super) fn take<'a>(
+        &mut self,
+        feedback: &'a crate::simulation::CombatFeedback,
+        active: bool,
+    ) -> impl Iterator<Item = &'a crate::simulation::CombatEvent> {
+        let from = self.0;
+        if let Some(last) = feedback.events().last() {
+            self.advance(last.sequence);
+        }
+        feedback
+            .events()
+            .filter(move |event| active && event.sequence > from)
+    }
+}
+
 fn init_resource<R: Resource + FromWorld>(world: &mut World) {
     world.init_resource::<R>();
 }
@@ -114,7 +148,7 @@ pub(super) fn run() {
         DefaultPlugins
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "Kiva · Top-down / WASD + Mouse".into(),
+                    title: "Kiva · 竹林演武".into(),
                     resolution: (1440, 900).into(),
                     #[cfg(target_arch = "wasm32")]
                     canvas: Some("#game".into()),

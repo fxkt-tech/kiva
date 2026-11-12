@@ -2,8 +2,8 @@
 use crate::{
     gameplay::Player,
     simulation::{
-        Boss, BossPhase, BossState, Combatant, DefenseKind, DefenseState, Enemy, Health,
-        MotionState, Stamina,
+        ActionKind, Boss, BossPhase, BossState, CombatStatus, Combatant, DefenseKind, DefenseState,
+        Enemy, Health, MotionState, Stamina,
     },
 };
 use bevy::prelude::*;
@@ -159,7 +159,7 @@ pub(super) fn sync(
     } else if !motion.is_grounded() {
         "空中"
     } else {
-        combat.status()
+        status_text(combat.status())
     };
     #[cfg(target_arch = "wasm32")]
     {
@@ -208,7 +208,10 @@ pub(super) fn sync(
         });
         window.title = format!(
             "Kiva · {} [F2] · 哥哥 / {weapon} · HP {:.0}/{:.0} · 耐力 {:.0} · E {:.1}s / Q {:.1}s · {context}{target}",
-            mode.label(),
+            match *mode {
+                crate::gameplay::EnemyMode::Target => "靶子",
+                crate::gameplay::EnemyMode::Combat => "实战",
+            },
             health.current(),
             health.maximum(),
             stamina.current(),
@@ -217,6 +220,27 @@ pub(super) fn sync(
         );
     }
 }
+/// Wording of the simulation's latest command outcome.
+fn status_text(status: CombatStatus) -> &'static str {
+    match status {
+        CombatStatus::Ready => "准备就绪",
+        CombatStatus::PairSwitched => "切换武器组",
+        CombatStatus::Started(kind) => match kind {
+            ActionKind::Melee => "近战攻击",
+            ActionKind::HammerSlam => "震地击飞",
+            ActionKind::MusketShot => "妹妹鸟铳射击",
+            ActionKind::ChainSweep => "链斧环扫",
+            ActionKind::AxeShot => "妹妹射出链斧",
+            ActionKind::HammerCombo => "妹妹三枪联动",
+            ActionKind::ChainCombo => "拉近三箭联动",
+        },
+        CombatStatus::TargetOutOfReach => "目标高差过大",
+        CombatStatus::Busy => "动作执行中",
+        CombatStatus::Guarding => "防御中无法进攻",
+        CombatStatus::Unavailable => "条件不足 / 冷却中",
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
