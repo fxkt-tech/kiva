@@ -171,6 +171,26 @@
         </div>
         <noscript>请启用 JavaScript 后运行游戏。</noscript>
       </div>
+      <!-- First load only: the title, real loading progress, then any key to enter.
+           Once the player has entered, Esc shows the entry card above instead. -->
+      <div id="splash" class="splash" role="dialog" aria-labelledby="splash-title" aria-describedby="splash-status">
+        <svg class="splash-defs" aria-hidden="true" focusable="false">
+          <filter id="splash-brush" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035 0.09" numOctaves="3" seed="7" result="grain" />
+            <feDisplacementMap in="SourceGraphic" in2="grain" scale="9" xChannelSelector="R" yChannelSelector="G" result="rough" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="fibres" />
+            <feColorMatrix in="fibres" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.25" result="dry" />
+            <feComposite in="rough" in2="dry" operator="in" />
+          </filter>
+        </svg>
+        <h1 id="splash-title" class="splash-title"><span>四</span><span>方</span><span>诛</span><span>杀</span></h1>
+        <div class="splash-load">
+          <div class="splash-bar" role="progressbar" id="splash-bar" aria-label="游戏载入进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="splash-fill"></span></div>
+          <p id="splash-status" class="splash-status" role="status" aria-live="polite">正在下载…</p>
+        </div>
+        <p id="splash-prompt" class="splash-prompt" hidden>点击任意键进入游戏</p>
+        <button id="splash-retry" class="splash-retry" type="button" hidden>重新加载</button>
+      </div>
     </main>
 
     <main id="viewer" class="viewer-shell" aria-label="模型、武器与动作验收台" hidden>

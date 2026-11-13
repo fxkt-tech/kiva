@@ -4,6 +4,11 @@
   if (window.kivaPage?.isViewer()) return;
   let ready = false;
   let confirmed = false;
+  // The first-load splash stays until the player has entered once; after that the
+  // entry card is the pause screen.
+  let introduced = false;
+  // The splash bar never runs backwards across loading phases.
+  let shownProgress = 0;
   let request = null;
   let look = 0;
   let keys = 0;
@@ -86,9 +91,11 @@
       : counted ? `正在加载资源 ${startupDetail.loaded} / ${startupDetail.total}`
         : startupDetail.phase === "initialize" ? "正在准备游戏…"
           : measured ? `正在下载 ${percent}%` : "正在下载…";
+    const splash = document.getElementById("splash");
+    if (splash) renderSplash(splash, failed, pending, loadingLabel);
     const enterButton = document.getElementById("enter");
     const progress = document.getElementById("enter-progress");
-    entry.hidden = isActive();
+    entry.hidden = isActive() || (splash !== null && !introduced);
     enterButton.hidden = false;
     enterButton.disabled = !ready || pending;
     enterButton.setAttribute("aria-busy", String(busy));
@@ -111,6 +118,38 @@
         : startupDetail.phase === "render" ? "正在准备首次画面，请稍候…"
           : counted ? "正在加载模型、动作与场景贴图…"
             : startupDetail.phase === "initialize" ? "正在准备场景与游戏引擎…" : downloading);
+  }
+
+  // Download is most of the wait; the engine then reports its files, then the first frame.
+  function loadFraction() {
+    if (ready) return 1;
+    const { phase, loaded, total } = startupDetail;
+    const part = total > 0 ? Math.min(1, loaded / total) : 0;
+    const value = phase === "download" ? 0.6 * part : phase === "initialize" ? 0.6 + 0.35 * part : 0.95;
+    shownProgress = Math.max(shownProgress, value);
+    return shownProgress;
+  }
+
+  function renderSplash(splash, failed, pending, loadingLabel) {
+    splash.hidden = introduced;
+    if (introduced) return;
+    const fraction = loadFraction();
+    const percent = Math.round(fraction * 100);
+    const bar = document.getElementById("splash-bar");
+    if (bar) {
+      bar.hidden = ready || failed;
+      bar.setAttribute("aria-valuenow", String(percent));
+    }
+    document.getElementById("splash-fill")?.style.setProperty("width", `${percent}%`);
+    const status = document.getElementById("splash-status");
+    if (status) {
+      status.textContent = ready ? (pending ? "正在进入…" : error) : failed ? startupDetail.reason : loadingLabel;
+      status.hidden = ready && !pending && !error;
+    }
+    const prompt = document.getElementById("splash-prompt");
+    if (prompt) prompt.hidden = !ready || pending;
+    const retry = document.getElementById("splash-retry");
+    if (retry) retry.hidden = !failed;
   }
 
   function enter() {
@@ -138,6 +177,7 @@
   document.addEventListener("pointerlockchange", () => {
     if (document.pointerLockElement === canvas() && document.hasFocus() && (request || confirmed)) {
       confirmed = true;
+      introduced = true;
       request = null;
       clearInputs();
       error = "";
@@ -276,8 +316,19 @@
     },
   });
 
+  // On the splash, any key enters: not Esc, function keys or browser shortcuts.
+  document.addEventListener("keydown", (event) => {
+    if (!event.isTrusted || introduced || !ready || event.repeat) return;
+    if (!document.getElementById("splash")) return;
+    if (event.code === "Escape" || /^F\d+$/.test(event.code) || event.metaKey || event.ctrlKey || event.altKey) return;
+    event.preventDefault?.();
+    enter();
+  });
+
   function bind() {
     document.getElementById("enter").addEventListener("click", enter);
+    document.getElementById("splash")?.addEventListener("click", enter);
+    document.getElementById("splash-retry")?.addEventListener("click", () => window.location.reload());
     canvas().addEventListener("click", enter);
     document.getElementById("retry").addEventListener("click", () => window.location.reload());
     window.kivaStartup.subscribe((_state, detail) => {

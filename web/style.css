@@ -258,3 +258,45 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 .hud-offscreen .hud-chevrons { animation: hud-nudge .9s ease-in-out infinite alternate; }
 @keyframes hud-nudge { to { translate: -.4cqw 0; } }
 @media (prefers-reduced-motion: reduce) { .game-hud *, .game-hud *::before, .game-hud *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- First-load splash ----------
+   Full-screen black over everything, a blood-red brush title, the real loading progress,
+   then "any key". Fixed to the viewport, so it lives outside the contained .game-frame. */
+.splash {
+  --splash-blood: #b3121b; --splash-blood-deep: #5e0408; --splash-ink: #d9cfc4;
+  position: fixed; inset: 0; z-index: 100; display: grid; place-content: center; justify-items: center;
+  gap: clamp(28px, 6vh, 64px); padding: 24px; background: #000; color: var(--splash-ink);
+  cursor: pointer; user-select: none;
+}
+.splash-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.splash-title {
+  margin: 0; display: flex; gap: .04em; line-height: 1;
+  font-family: "Xingkai SC", "STXingkai", "华文行楷", "Kaiti SC", "STKaiti", "KaiTi", "楷体", serif;
+  font-weight: 400; font-size: clamp(72px, 17vw, 240px); letter-spacing: 0;
+  color: var(--splash-blood); filter: url(#splash-brush) drop-shadow(0 0 .12em #7a0a1066);
+}
+.splash-title > span {
+  display: inline-block;
+  background: linear-gradient(170deg, #d4202a 0%, var(--splash-blood) 45%, var(--splash-blood-deep) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.splash-load { display: grid; justify-items: center; gap: 12px; width: min(460px, 70vw); }
+.splash-bar { width: 100%; height: 4px; background: #2a0a0c; overflow: hidden; }
+.splash-bar > span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--splash-blood-deep), #d4202a); box-shadow: 0 0 8px #c41a2280; transition: width .25s ease-out; }
+.splash-status { margin: 0; font-size: 13px; letter-spacing: .12em; color: #8d8079; text-align: center; }
+.splash-prompt { margin: 0; font-family: "Songti SC", "SimSun", "Noto Serif CJK SC", serif; font-size: clamp(16px, 1.6vw, 22px); letter-spacing: .4em; color: var(--splash-ink); }
+.splash-retry { font: inherit; letter-spacing: .2em; color: var(--splash-ink); background: transparent; border: 1px solid #5e0408; padding: 8px 22px; cursor: pointer; }
+.splash-retry:focus-visible { outline: 2px solid #d4202a; outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+  /* Each character is written in turn: a brush wipe from top-left. */
+  .splash-title > span { animation: splash-write .7s cubic-bezier(.3, .6, .3, 1) both; }
+  .splash-title > span:nth-child(2) { animation-delay: .35s; }
+  .splash-title > span:nth-child(3) { animation-delay: .7s; }
+  .splash-title > span:nth-child(4) { animation-delay: 1.05s; }
+  @keyframes splash-write {
+    from { clip-path: polygon(0 0, 0 0, 0 0, 0 0); opacity: .4; }
+    to { clip-path: polygon(0 0, 260% 0, 0 260%, 0 0); opacity: 1; }
+  }
+  .splash-prompt { animation: splash-breathe 1.8s ease-in-out infinite alternate; }
+  @keyframes splash-breathe { from { opacity: .35; } to { opacity: 1; } }
+}

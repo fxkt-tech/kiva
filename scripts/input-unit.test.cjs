@@ -11,6 +11,7 @@ class Target {
   disabled = false;
   textContent = "";
   attributes = new Map();
+  style = { setProperty(name, value) { this[name] = value; } };
   setAttribute(name, value) { this.attributes.set(name, String(value)); }
   getAttribute(name) { return this.attributes.get(name) ?? null; }
   removeAttribute(name) { this.attributes.delete(name); }
@@ -35,7 +36,8 @@ const emit = (target, type, fields = {}) => {
   return event;
 };
 
-function fixture(gpu = {}) {
+const SPLASH = ["splash", "splash-bar", "splash-fill", "splash-status", "splash-prompt", "splash-retry"];
+function fixture(gpu = {}, extra = []) {
   const window = Object.assign(new Target(), { devicePixelRatio: 2, innerWidth: 1200, location: { reload() {} } });
   const document = Object.assign(new Target(), { readyState: "loading", pointerLockElement: null });
   const nodes = new Map();
@@ -51,7 +53,7 @@ function fixture(gpu = {}) {
   vm.runInContext(source("input.js"), context);
   const input = window.kivaInput;
   const parse = () => {
-    for (const id of ["game", "entry", "enter", "enter-label", "enter-progress", "retry", "entry-message"]) nodes.set(id, new Target());
+    for (const id of ["game", "entry", "enter", "enter-label", "enter-progress", "retry", "entry-message", ...extra]) nodes.set(id, new Target());
     nodes.get("game").focus = () => { focused = true; };
     nodes.get("game").requestPointerLock = () => {
       requests++;
@@ -715,4 +717,80 @@ test("untrusted or inactive key releases cannot publish release facts", () => {
   emit(f.document, "keyup", { code: "KeyW", isTrusted: false });
   assert.equal(f.input.keys(), 1);
   assert.equal(f.input.takeActions(), 0);
+});
+
+const key = (f, code, fields = {}) => emit(f.document, "keydown", { isTrusted: true, code, repeat: false, ...fields });
+
+test("the splash covers first load with monotonic progress, hiding the entry card", () => {
+  const f = fixture({}, SPLASH);
+  f.parse();
+  const at = (id) => f.nodes.get(id);
+  assert.equal(at("splash").hidden, false);
+  assert.equal(at("entry").hidden, true);
+  assert.equal(at("splash-prompt").hidden, true);
+  f.window.kivaStartup.progress("download", 50, 100);
+  assert.equal(at("splash-fill").style.width, "30%");
+  assert.equal(at("splash-status").textContent, "正在下载 50%");
+  f.window.kivaStartup.progress("initialize", 0, 0);
+  assert.equal(at("splash-fill").style.width, "60%");
+  f.window.kivaStartup.progress("initialize", 10, 20);
+  assert.equal(at("splash-fill").style.width, "77%");
+  assert.equal(at("splash-bar").getAttribute("aria-valuenow"), "77");
+  f.input.ready();
+  assert.equal(at("splash-bar").hidden, true);
+  assert.equal(at("splash-prompt").hidden, false);
+  assert.equal(at("splash-status").hidden, true);
+  assert.equal(at("entry").hidden, true);
+});
+
+test("any ordinary key on the ready splash enters; Esc, function keys and shortcuts do not", () => {
+  const f = fixture({}, SPLASH);
+  f.parse();
+  key(f, "KeyA");
+  assert.equal(f.requests(), 0, "not before the engine is ready");
+  f.input.ready();
+  for (const [code, fields] of [["Escape", {}], ["F5", {}], ["KeyR", { metaKey: true }], ["KeyR", { ctrlKey: true }], ["KeyA", { isTrusted: false }], ["KeyA", { repeat: true }]]) {
+    key(f, code, fields);
+  }
+  assert.equal(f.requests(), 0);
+  const event = key(f, "Space");
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(f.requests(), 1);
+  assert.equal(f.nodes.get("splash-status").textContent, "正在进入…");
+  f.confirm();
+  assert.equal(f.nodes.get("splash").hidden, true);
+  assert.equal(f.nodes.get("entry").hidden, true);
+  // Esc afterwards is the pause screen: the entry card, never the splash again.
+  key(f, "Escape");
+  assert.equal(f.nodes.get("splash").hidden, true);
+  assert.equal(f.nodes.get("entry").hidden, false);
+  key(f, "KeyA");
+  assert.equal(f.requests(), 1, "keys on the pause card do not capture");
+});
+
+test("a click enters too, and a refused lock keeps the splash with its reason", async () => {
+  const f = fixture({}, SPLASH);
+  f.parse();
+  f.input.ready();
+  emit(f.nodes.get("splash"), "click");
+  assert.equal(f.requests(), 1);
+  f.reject();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(f.nodes.get("splash").hidden, false);
+  assert.equal(f.nodes.get("splash-status").hidden, false);
+  assert.match(f.nodes.get("splash-status").textContent, /未能锁定鼠标/);
+  assert.equal(f.nodes.get("splash-prompt").hidden, false);
+  key(f, "KeyA");
+  assert.equal(f.requests(), 2);
+});
+
+test("a failed load shows its reason and a reload on the splash", () => {
+  const f = fixture({}, SPLASH);
+  emit(f.window, "error");
+  f.parse();
+  assert.equal(f.nodes.get("splash").hidden, false);
+  assert.equal(f.nodes.get("splash-retry").hidden, false);
+  assert.equal(f.nodes.get("splash-bar").hidden, true);
+  assert.match(f.nodes.get("splash-status").textContent, /加载失败/);
+  assert.equal(f.nodes.get("splash-prompt").hidden, true);
 });
