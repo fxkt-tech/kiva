@@ -36,6 +36,13 @@ impl HitTrack {
         f32::from(tick) / crate::simulation::TICK_RATE as f32
     }
 
+    /// Which of [`Self::windows`] `tick` falls in: one swing of the blade.
+    pub fn window(&self, tick: u16) -> Option<usize> {
+        self.windows
+            .iter()
+            .position(|&(start, end)| (start..=end).contains(&tick))
+    }
+
     pub fn is_active(&self, tick: u16) -> bool {
         self.windows
             .iter()

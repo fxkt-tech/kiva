@@ -91,7 +91,10 @@ pub struct Boss {
     duration: f32,
     sequence: u64,
     mind: Mind,
-    strike_resolved: bool,
+    /// The swings (active windows) of the strike in progress which have
+    /// already been resolved against the target, one bit per window. Each
+    /// swing lands at most once; a stun resolves them all.
+    resolved_swings: u64,
     engaged: bool,
     stun_source: Option<u64>,
     /// The strike in progress: its row of [`Self::STRIKES`] and the time
@@ -126,7 +129,7 @@ impl Default for Boss {
             duration: 0.0,
             sequence: 0,
             mind: Mind::default(),
-            strike_resolved: false,
+            resolved_swings: 0,
             engaged: false,
             stun_source: None,
             strike: None,
@@ -225,7 +228,7 @@ impl Boss {
         if !self.is_invulnerable() {
             self.enter(BossState::Stunned, duration);
             self.stun_source = Some(source);
-            self.strike_resolved = true;
+            self.resolved_swings = u64::MAX;
         }
     }
     fn enter(&mut self, state: BossState, duration: f32) {
@@ -307,7 +310,7 @@ impl Boss {
     fn begin_action(&mut self, action: u16) {
         self.action = Some(action);
         self.sequence += 1;
-        self.strike_resolved = false;
+        self.resolved_swings = 0;
         self.engage = 0.0;
         self.mind.dispatch(action, self.marked);
         match action {
@@ -606,7 +609,10 @@ pub(super) fn advance(
                 let mut finished = false;
                 for tick in ticks_between(elapsed - dt, elapsed) {
                     finished |= tick >= track.last_active();
-                    if boss.strike_resolved || !track.is_active(tick) {
+                    let Some(swing) = track.window(tick) else {
+                        continue;
+                    };
+                    if boss.resolved_swings & (1 << swing) != 0 {
                         continue;
                     }
                     // The blade hits only where it actually passes.
@@ -621,7 +627,7 @@ pub(super) fn advance(
                     ) else {
                         continue;
                     };
-                    boss.strike_resolved = true;
+                    boss.resolved_swings |= 1 << swing;
                     let damage = if boss.phase == BossPhase::One {
                         KivaTuning::DAMAGE_P1
                     } else {
@@ -635,7 +641,7 @@ pub(super) fn advance(
                             melee_stage: None,
                             target,
                             action_id: boss.sequence,
-                            hit_index: 0,
+                            hit_index: swing as u8,
                             damage,
                             origin: body.aim_position(),
                             contact: Some(contact),
@@ -858,7 +864,7 @@ mod tests {
     }
 
     #[test]
-    fn phase_one_circles_first_then_opens_with_its_source_strike_and_hits_once() {
+    fn phase_one_circles_first_then_opens_with_its_source_strike_and_each_swing_lands_once() {
         let (mut app, player, boss) = arena();
         tick(&mut app, 1);
         let snapshot = app.world().get::<Boss>(boss).unwrap();
@@ -871,17 +877,32 @@ mod tests {
         assert_eq!(snapshot.skill_slot(), Some(90021641));
         assert_eq!(snapshot.attack_count(), 1);
         assert_eq!(health(&app, player), 10_000.0);
+        let swings = app
+            .world()
+            .get::<Boss>(boss)
+            .unwrap()
+            .strike_track()
+            .windows
+            .len();
         finish_swing(&mut app, boss);
-        // However many times its blade passes, one strike lands once.
-        assert_eq!(health(&app, player), 10_000.0 - KivaTuning::DAMAGE_P1);
+        // Every swing which passes through the player lands, each once.
         assert_eq!(strike_count(&app, boss), 1);
         let feedback = app.world().resource::<CombatFeedback>();
+        let mut landed: Vec<u8> = feedback
+            .events()
+            .filter(|event| event.actor == player && event.kind == CombatEffect::Hit)
+            .map(|event| event.hit_index)
+            .collect();
+        let hits = landed.len();
+        landed.dedup();
+        assert_eq!(landed.len(), hits, "a swing landed twice: {landed:?}");
+        assert!(
+            hits >= 2 && hits <= swings,
+            "{hits} of {swings} swings landed"
+        );
         assert_eq!(
-            feedback
-                .events()
-                .filter(|event| event.actor == player && event.kind == CombatEffect::Hit)
-                .count(),
-            1
+            health(&app, player),
+            10_000.0 - KivaTuning::DAMAGE_P1 * hits as f32
         );
     }
 
@@ -1175,7 +1196,7 @@ mod tests {
     }
 
     #[test]
-    fn a_dodge_protected_by_the_existing_motor_rejects_the_boss_active_hit_once() {
+    fn a_dodge_protected_by_the_existing_motor_rejects_the_swing_it_covers() {
         let (mut app, player, boss) = arena();
         let contact = ticks_to_contact();
         wait_for(&mut app, boss, BossState::Telegraph);
@@ -1203,14 +1224,28 @@ mod tests {
         );
         // Only the dodged strike: a combo may follow it.
         finish_swing(&mut app, boss);
-        assert_eq!(health(&app, player), 10_000.0);
+        // The dodge took the swing it covered; later swings land as usual.
+        let feedback = app.world().resource::<CombatFeedback>();
+        let dodged: Vec<u8> = feedback
+            .events()
+            .filter(|event| event.actor == player && event.kind == CombatEffect::Dodge)
+            .map(|event| event.hit_index)
+            .collect();
+        // Its protection can span two close swings.
+        assert!(!dodged.is_empty());
+        assert!(
+            !feedback.events().any(|event| event.actor == player
+                && event.kind == CombatEffect::Hit
+                && dodged.contains(&event.hit_index)),
+            "the dodged swing also landed"
+        );
+        let hits = feedback
+            .events()
+            .filter(|event| event.actor == player && event.kind == CombatEffect::Hit)
+            .count();
         assert_eq!(
-            app.world()
-                .resource::<CombatFeedback>()
-                .events()
-                .filter(|event| event.actor == player && event.kind == CombatEffect::Dodge)
-                .count(),
-            1
+            health(&app, player),
+            10_000.0 - KivaTuning::DAMAGE_P1 * hits as f32
         );
     }
 
