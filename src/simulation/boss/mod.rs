@@ -95,6 +95,10 @@ pub struct Boss {
     /// already been resolved against the target, one bit per window. Each
     /// swing lands at most once; a stun resolves them all.
     resolved_swings: u64,
+    /// Which strike of a combo the current one is: 1 for a fresh strike.
+    chain: u8,
+    /// The next strike continues a combo.
+    chaining: bool,
     engaged: bool,
     stun_source: Option<u64>,
     /// The strike in progress: its row of [`Self::STRIKES`] and the time
@@ -130,6 +134,8 @@ impl Default for Boss {
             sequence: 0,
             mind: Mind::default(),
             resolved_swings: 0,
+            chain: 0,
+            chaining: false,
             engaged: false,
             stun_source: None,
             strike: None,
@@ -178,6 +184,23 @@ impl Boss {
         self.action.and_then(source::slot)
     }
     /// The source tree's `attack_count`: strikes counted since it last circled.
+    /// Seconds left of the telegraph, and its whole length, while the Boss
+    /// telegraphs a strike.
+    pub fn telegraph(&self) -> Option<(f32, f32)> {
+        (self.state == BossState::Telegraph)
+            .then(|| ((self.duration - self.elapsed).max(0.0), self.duration))
+    }
+    /// The strike in progress: how many swings it has and which of them have
+    /// already been resolved against the target (one bit per swing).
+    pub fn swings(&self) -> Option<(u8, u64)> {
+        let (strike, _) = self.strike?;
+        let swings = TrackId::Boss { strike }.hit_track()?.windows.len();
+        Some((swings as u8, self.resolved_swings))
+    }
+    /// Which strike of a combo the current one is (1 for a fresh strike).
+    pub fn chain(&self) -> u8 {
+        if self.strike.is_some() { self.chain } else { 0 }
+    }
     pub fn attack_count(&self) -> u8 {
         self.mind.attack_count
     }
@@ -323,6 +346,11 @@ impl Boss {
             }
             _ => {
                 let strike = Self::strike_of(action).expect("every source action 4..=60 strikes");
+                self.chain = if std::mem::take(&mut self.chaining) {
+                    self.chain.saturating_add(1)
+                } else {
+                    1
+                };
                 self.strike = Some((strike, 0.0));
                 // The telegraph lasts until the blade becomes dangerous.
                 let telegraph = self.strike_track().strike_time();
@@ -695,7 +723,10 @@ pub(super) fn advance(
                     // tree may cancel the recovery into a follow-up.
                     let action = boss.action.expect("a strike has its action");
                     match boss.mind.combo(action, sight) {
-                        Some(next) => decided = Some(Plan::Act(next)),
+                        Some(next) => {
+                            boss.chaining = true;
+                            decided = Some(Plan::Act(next));
+                        }
                         None => {
                             let recovery = (boss.strike_duration_now() - elapsed).max(0.0);
                             boss.continue_strike(BossState::Recovering, recovery);
@@ -922,6 +953,13 @@ mod tests {
         );
         assert_eq!(snapshot.sequence(), first + 1);
         assert!(matches!(snapshot.action_id(), Some(43 | 16)));
+        // The follow-up is the combo's second strike, still telegraphing.
+        assert_eq!(snapshot.chain(), 2);
+        let (left, total) = snapshot.telegraph().unwrap();
+        assert!(left > 0.0 && left <= total);
+        let (swings, resolved) = snapshot.swings().unwrap();
+        assert!(swings >= 1);
+        assert_eq!(resolved, 0);
     }
 
     #[test]

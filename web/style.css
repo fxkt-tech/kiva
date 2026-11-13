@@ -97,164 +97,164 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 @container (max-width: 500px) { .overlay { padding: 12px; } .card { padding: 20px; } .guide-groups { grid-template-columns: 1fr; gap: 24px; } .guide-header > span { display: none; } }
 
 /* Read-only combat HUD. Values and clocks come from simulation snapshots. */
-      /* ---------- HUD（迁移目标） ---------- */
-      /* 以 1280×720 为设计基准：1px = 0.078125cqw。
-         cqw 相对于 .game-frame 的内容宽度，文字、间距和控件随画面同比缩放。 */
-      .game-hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; color: #eeeee2; font-size: 1.01562cqw; }
-      .game-hud kbd { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; font: inherit; }
-      .game-hud progress { display: block; appearance: none; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; }
-      .game-hud progress::-webkit-progress-bar { background: transparent; }
-      .hud-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-      svg.hud-glyph { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
-      .hud-shade { position: absolute; inset: 0; background: linear-gradient(#08151173, transparent 22%, transparent 66%, #08130fc4); }
+/* ---------- HUD v2 ----------
+   Sizes are in cqw of .game-frame, so the HUD scales with the picture (design base 1280×720).
+   Language: gold-rimmed ink-dark cores; sheared segments for points (energy, rage, durability,
+   swings); square health blocks of 100 each; chamfered skill keys. No boxed panels: one low ink
+   wash under the bottom band keeps the battlefield clear. */
+.game-hud {
+  --hud-gold: #c8a862; --hud-gold-hi: #f1dca0; --hud-gold-lo: #6d5730; --hud-core: #0a0f0d;
+  --hud-ink: #ebe5d0; --hud-dim: #e2d8b8b3; --hud-blood: #b8232c; --hud-jade: #c4d4bd; --hud-jade-lo: #84a07f;
+  --hud-stamina: #d6c88c; --hud-sun: #ec9233; --hud-moon: #8fa6ec; --hud-rage: #e2553d; --hud-warn: #ff8a6e;
+  --hud-brush: "STKaiti", "KaiTi", "Kaiti SC", "Songti SC", "SimSun", "Noto Serif CJK SC", serif;
+  --hud-serif: "Songti SC", "SimSun", "Noto Serif CJK SC", serif;
+  --hud-digits: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; color: var(--hud-ink);
+  font-size: 1cqw; line-height: 1.3; text-shadow: 0 .1cqw .3cqw #000d;
+}
+.game-hud kbd { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; font: inherit; }
+.game-hud .hud-n { font-family: var(--hud-digits); font-variant-numeric: tabular-nums lining-nums; letter-spacing: .02em; }
+.hud-wash { position: absolute; left: 0; right: 0; bottom: 0; height: 13%; background: linear-gradient(transparent, #000000a6); }
 
-      .hud-corner { position: absolute; top: 1.25cqw; display: grid; gap: 0.46875cqw; text-shadow: 0 0.078125cqw 0.3125cqw #07100c; }
-      .hud-place { left: 1.25cqw; }
-      .hud-place small { color: #dedfc3a6; font-size: 0.703125cqw; letter-spacing: .18em; }
-      .hud-place strong { font-family: "Songti SC", "SimSun", "Noto Serif CJK SC", serif; font-weight: 400; font-size: 1.32812cqw; letter-spacing: .12em; }
-      .hud-mode { font-size: 0.78125cqw; letter-spacing: .12em; color: #cacfbfc2; }
-      .hud-utility { right: 1.25cqw; text-align: right; color: #e3e6d4b3; font-size: 0.78125cqw; line-height: 1.8; }
-      .hud-utility kbd { margin-right: 0.46875cqw; color: #e3e6d4; }
+/* Corners */
+.hud-place { position: absolute; top: 1.6cqw; left: 1.8cqw; display: grid; justify-items: start; gap: .15cqw; text-align: left; }
+.hud-place strong { font-family: var(--hud-brush); font-weight: 400; font-size: 1.45cqw; letter-spacing: .14em; color: #e9e1c6; }
+.hud-mode { font-size: .7cqw; color: #d0d3c399; letter-spacing: .12em; }
+.hud-utility { position: absolute; top: 1.6cqw; right: 1.8cqw; display: flex; align-items: center; gap: .4cqw; font-size: .72cqw; color: #d0d3c399; }
+.hud-utility kbd { font-family: var(--hud-digits); border: .08cqw solid #d0d3c366; padding: 0 .35cqw; }
 
-      /* Boss：居中名号，暗金色平直边框，血红色血槽。 */
-      .hud-target { position: absolute; top: 1.25cqw; left: 50%; transform: translateX(-50%); width: calc(100% / 3); text-shadow: 0 0.15625cqw 0.390625cqw #030b08; }
-      .hud-target-name { display: block; color: #e8dfc9; text-align: center; padding-left: .1em; font-family: "Songti SC", "SimSun", "Noto Serif CJK SC", serif; font-size: 1.25cqw; font-weight: 400; letter-spacing: .1em; line-height: 1.875cqw; }
-      .hud-target-hp { position: relative; height: 0.9375cqw; margin-top: 0.78125cqw; background: #8e7545;  }
-      .hud-target-track { position: absolute; inset: 0.078125cqw; overflow: hidden; background: #11120feb;  }
-      .hud-target-trail { position: absolute; inset: 0 auto 0 0; width: 0; background: #c3ac79; }
-      .game-hud #hud-target-bar { position: relative; color: #a31621; }
-      #hud-target-bar::-webkit-progress-value { background: linear-gradient(#b51e2a, #8b111d); box-shadow: inset 0 0.078125cqw #e55c6333; }
-      #hud-target-bar::-moz-progress-bar { background: linear-gradient(#b51e2a, #8b111d); box-shadow: inset 0 0.078125cqw #e55c6333; }
+/* Points: one sheared block per point. The right side leans the other way. */
+.hud-segs { display: flex; gap: .16cqw; }
+.hud-segs > i { width: .62cqw; height: .5cqw; background: #ffffff22; transform: skewX(var(--hud-lean, -22deg)); }
+.hud-right { --hud-lean: 22deg; }
 
-      /* 生命与耐力共用一个底部容器，边距包含最下方的耐力条。 */
-      .hud-vitals { position: absolute; bottom: 1.25cqw; left: 50%; transform: translateX(-50%); width: min(24%, 21.875cqw); text-shadow: 0 0.078125cqw 0.3125cqw #050d09; }
-      .hud-vitals-header { margin-bottom: 0.46875cqw; text-align: center; font-size: 0.859375cqw; line-height: 1.25cqw; color: #d9d1bc; }
-      .hud-player-hp, .hud-stamina { position: relative; height: 0.9375cqw; padding: 0.078125cqw; border: 0.078125cqw solid #cecfb380; background: #121e18d9; overflow: hidden; }
-      #hud-health-bar { color: #c6d0bb; }
-      #hud-health-bar::-webkit-progress-value { background: linear-gradient(#e4e8d5, #b9c5b0); box-shadow: 0 0 0.390625cqw #d6e8c426; }
-      #hud-health-bar::-moz-progress-bar { background: linear-gradient(#e4e8d5, #b9c5b0); box-shadow: 0 0 0.390625cqw #d6e8c426; }
-      /* 血条上方：远程 / 暴怒 / 近战等宽排列。 */
-      .hud-energy-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .3125cqw; margin-bottom: .3125cqw; }
-      .hud-resource { height: .78125cqw; padding: .078125cqw; border: .078125cqw solid #ffffff26; background: #101a18e6; overflow: hidden; }
-      .hud-energy-ranged { --resource-color: #0033FF; --resource-glow: #798dc9; }
-      .hud-energy-melee { --resource-color: #b96716; --resource-glow: #d8892b; }
-      .hud-rage-value { --resource-color: #e6533c; }
-      .hud-energy-ranged progress { direction: rtl; }
-      .hud-rage-value { position: relative; }
-      .hud-rage-value progress { opacity: 0; }
-      .hud-rage-value::after {
-        /* 绝对定位的包含块已扣除边框，此处只保留内边距。 */
-        content: ""; position: absolute; left: 50%; top: .078125cqw; bottom: .078125cqw;
-        width: calc((100% - .15625cqw) * var(--rage-fraction, 0));
-        transform: translateX(-50%); background: var(--resource-color);
-      }
-      .hud-resource progress { color: var(--resource-color); }
-      .hud-resource progress::-webkit-progress-value { background: var(--resource-color); }
-      .hud-resource progress::-moz-progress-bar { background: var(--resource-color); }
-      .hud-energy-row .hud-resource.full { box-shadow: 0 0 .46875cqw var(--resource-glow); }
-      .hud-state { position: absolute; bottom: calc(100% + 1.01562cqw); width: 100%; text-align: center; color: #dce2cca6; font-size: 0.859375cqw; letter-spacing: .06em; }
-      .hud-state.linked { color: #f3dfaa; }
-      .hud-state .hud-key { margin-right: 0.46875cqw; color: #fbebbc; }
-      .hud-state .hud-time { margin-left: 0.625cqw; color: #c7b88d; font-size: 0.78125cqw; font-variant-numeric: tabular-nums; }
-      .hud-stamina { width: 50%; height: 0.390625cqw; margin: 0.390625cqw auto 0; border-color: #acb4a55e; background: #182520; }
-      #hud-stamina-bar { width: 100%; height: 100%; color: #bfb989; }
-      #hud-stamina-bar::-webkit-progress-value { background: #bfb989; }
-      #hud-stamina-bar::-moz-progress-bar { background: #bfb989; }
+/* Health blocks: one per 100 health; a trail of recent damage follows the fill after a pause. */
+.hud-blocks { display: flex; gap: .16cqw; }
+.hud-blocks > i { position: relative; flex: var(--hud-block, 1) 1 0; overflow: hidden; background: var(--hud-core); border: .1cqw solid var(--hud-gold); border-top-color: var(--hud-gold-hi); border-bottom-color: var(--hud-gold-lo); }
+.hud-blocks > i > b { position: absolute; left: 0; top: 0; bottom: 0; width: 0; }
+.hud-blocks > i > .trail { background: var(--hud-trail); transition: width .45s ease-in .35s; }
+.hud-blocks > i > .fill { background: var(--hud-fill); box-shadow: inset 0 .12cqw #ffffff40; }
 
-      /* 右下：上三、中二、下一的交错菱形阵列。
-         横向每半格一个定位点，下排同时向右、向下错开半格，嵌入上排缺口。
-         最后一列和最后一行保留完整外接框，确保右侧、底部边界包含全部图形。 */
-      .hud-combat {
-        --d: 3.59375cqw;                 /* 正方形边长 */
-        --gap: 0.625cqw;                /* 同排相邻菱形尖角的间距 */
-        --dia: calc(var(--d) * 1.4142);            /* 旋转后的外接框尺寸 */
-        --step: calc(var(--d) * 1.4142 + var(--gap)); /* 格距 */
-        --half: calc(var(--step) / 2); /* 两排在横、纵方向上的错位量 */
-        position: absolute; right: 1.25cqw; bottom: 1.25cqw;
-        display: grid;
-        grid-template-columns: repeat(4, var(--half)) var(--dia);
-        grid-template-rows: var(--half) var(--half) var(--dia);
-        text-shadow: 0 0.078125cqw 0.234375cqw #08100b;
-      }
-      .hud-slot, .hud-weapon-choice { position: relative; display: grid; place-items: center; width: var(--dia); height: var(--dia); padding: 0; border: 0; background: transparent; }
-      .hud-slot { grid-row: 1; }
-      .hud-slot.hud-start { grid-column: 5; }
-      .hud-slot.hud-combo-slot { grid-column: 3; }
-      .hud-slot.hud-ranged { grid-column: 1; }
-      .hud-square { position: absolute; width: var(--d); height: var(--d); transform: rotate(45deg); border: 0.078125cqw solid #ddd6b48c; border-radius: 0.15625cqw; background: linear-gradient(140deg, #17231f99, #223029cc); box-shadow: 0 0.078125cqw 0.3125cqw #0005; transition: background .15s, border-color .15s, box-shadow .15s; }
-      .hud-square::before { position: absolute; inset: 0.234375cqw; content: ""; border: 0.078125cqw solid #d7d2ae26; border-radius: inherit; }
-      .hud-label { position: relative; z-index: 1; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 1.25cqw; font-weight: 500; line-height: 1; white-space: nowrap; text-align: center; }
-      .hud-label-combo { font-size: 1.01562cqw; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: .16em; }
-      .hud-slot > .hud-label { color: #e2e3ca; }
-      .hud-slot[aria-disabled="true"] { opacity: .45; }
-      .hud-slot.ready .hud-square { border-color: #f2edcf; background: linear-gradient(145deg, #e9e5ca, #b5af8e); }
-      .hud-slot.ready > .hud-label { color: #262b22; text-shadow: none; }
-      .hud-slot.cooling { opacity: 1; }
-      .hud-slot.cooling .hud-square { background: #253129d9; }
-      /* 水位层不旋转，裁成菱形后保持水面水平。 */
-      .hud-cooldown { display: none; position: absolute; inset: 0.078125cqw; overflow: hidden; clip-path: url(#hud-rounded-diamond); }
-      .hud-cooldown::before { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: var(--cooldown-fill, 0%); background: linear-gradient(to top, #afa986, #e9e5ca); border-top: 0.078125cqw solid #fff6d9; }
-      .hud-cooldown-time { display: none; position: absolute; z-index: 2; top: calc(50% + 0.390625cqw); color: #fff4d6; font-size: 0.78125cqw; line-height: 0.9375cqw; font-variant-numeric: tabular-nums; text-shadow: 0 0.078125cqw 0.234375cqw #07100c, 0 0 0.234375cqw #07100c; }
-      .hud-slot.cooling .hud-cooldown, .hud-slot.cooling .hud-cooldown-time { display: block; }
-      .hud-slot.cooling .hud-label { transform: translateY(-0.546875cqw); color: #fff4d6; text-shadow: 0 0.078125cqw 0.234375cqw #07100c, 0 0 0.234375cqw #07100c; }
-      .hud-slot.hud-combo-slot.ready .hud-square { box-shadow: 0 0 1.09375cqw #f0cf7859; animation: hud-link-breathe 1.8s ease-in-out infinite alternate; }
+/* Top: locked target */
+.hud-target { position: absolute; top: 1.6cqw; left: 50%; transform: translateX(-50%); width: 50cqw; display: grid; gap: .35cqw; }
+.hud-target-row { display: flex; align-items: baseline; gap: .8cqw; padding-inline: .6cqw; }
+.hud-target-name { font-family: var(--hud-brush); font-size: 1.9cqw; line-height: 1; color: #f2e7c9; letter-spacing: .12em; }
+.hud-target-phase { font-family: var(--hud-serif); font-size: .78cqw; color: #f4c2b8; letter-spacing: .16em; }
+.hud-target-health { margin-left: auto; font-size: .82cqw; color: #f2e7c9; }
+.hud-target-bar { display: flex; align-items: center; gap: .5cqw; height: 1cqw; }
+.hud-target-bar > .hud-blocks { flex: 1; height: 100%; --hud-fill: linear-gradient(#e0414c, var(--hud-blood) 55%, #6e0f16); --hud-trail: #e7d29a; }
+.hud-target-bar > .hud-blocks:empty { display: none; }
+.hud-target-bar > .hud-blocks.spent { opacity: .45; }
+.hud-split { flex: none; width: .7cqw; height: .7cqw; transform: rotate(45deg); background: linear-gradient(var(--hud-gold-hi), var(--hud-gold-lo)); box-shadow: 0 0 .3cqw #000; }
+.hud-cue { justify-self: center; display: grid; justify-items: center; gap: .3cqw; margin-top: .35cqw; }
+.hud-cue-word { display: flex; align-items: baseline; gap: .7cqw; }
+.hud-cue-word b { font-family: var(--hud-brush); font-weight: 400; font-size: 1.7cqw; line-height: 1; color: var(--hud-warn); text-shadow: 0 0 .8cqw #ff5a3c99, 0 .1cqw .3cqw #000; }
+.hud-cue-word span { font-family: var(--hud-serif); font-size: .74cqw; color: #ffc7b6cc; letter-spacing: .14em; }
+.hud-cue-word .hud-n { font-size: .95cqw; color: #ffe1c4; letter-spacing: 0; }
+.hud-cue.striking .hud-cue-word b { color: #ffd2c4; }
+.hud-cue-count { position: relative; width: 14cqw; height: .38cqw; padding: .08cqw; background: linear-gradient(var(--hud-gold-hi), var(--hud-gold) 50%, var(--hud-gold-lo)); }
+.hud-cue-count > span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff5a3c, #ffd08a); }
+.hud-cue.striking .hud-cue-count { visibility: hidden; }
+.hud-swings > i { width: .9cqw; height: .32cqw; }
+.hud-swings > i.hit { background: #e2505a; }
+.hud-cue-state { justify-self: center; margin-top: .3cqw; font-family: var(--hud-serif); font-size: .82cqw; color: #e8dcc0cc; letter-spacing: .16em; }
 
-      .hud-slot.hud-combo-slot.executing { opacity: 1; }
-      .hud-slot.hud-combo-slot.executing .hud-square { border-color: #d9b876; background: #413b28; }
-      .hud-slot.hud-combo-slot.executing .hud-label { color: #f0dbab; }
+/* Lock reticle on the target, or an edge arrow when it is off screen. */
+.hud-reticle { position: absolute; width: 5cqw; height: 5cqw; transform: translate(-50%, -50%); }
+.hud-reticle > i { position: absolute; width: 1cqw; height: 1cqw; border: .14cqw solid var(--hud-gold-hi); filter: drop-shadow(0 0 .3cqw #000); }
+.hud-reticle > i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.hud-reticle > i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.hud-reticle > i:nth-child(3) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+.hud-reticle > i:nth-child(4) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.hud-reticle > span { position: absolute; left: 100%; top: 0; margin-left: .5cqw; font-size: .78cqw; color: var(--hud-gold-hi); white-space: nowrap; }
+.hud-offscreen { position: absolute; top: 46%; left: 1.8cqw; display: grid; justify-items: center; gap: .3cqw; color: var(--hud-warn); }
+.hud-offscreen.right { left: auto; right: 1.8cqw; }
+.hud-chevrons { display: flex; }
+.hud-chevrons > i { width: 1.3cqw; height: 2.4cqw; margin-right: -.5cqw; background: linear-gradient(90deg, var(--hud-warn), #ff8a6e33); clip-path: polygon(100% 0, 40% 50%, 100% 100%, 60% 100%, 0 50%, 60% 0); }
+.hud-chevrons > i:nth-child(2) { opacity: .55; }
+.hud-offscreen.right .hud-chevrons { transform: scaleX(-1); }
+.hud-offscreen > span:last-child { font-family: var(--hud-serif); font-size: .78cqw; letter-spacing: .2em; }
 
-      /* 第二行：按稳定 id 定位，分别嵌入 Q / Tab 和 Tab / E 之间。 */
-      .hud-weapon-choice { grid-row: 2; color: #c2cbbfd9; }
-      .hud-pair-one { grid-column: 2; }
-      .hud-pair-two { grid-column: 4; }
-      .hud-weapon-choice.active .hud-square { border-color: #f2edcf; background: linear-gradient(145deg, #e9e5ca, #b5af8e); box-shadow: 0 0 0.9375cqw #eadcaf4d, 0 0.078125cqw 0.3125cqw #0005; }
-      .hud-weapon-choice .hud-label { font-size: 1.09375cqw; }
-      .hud-weapon-choice.active { color: #e9e5ca; }
-      .hud-weapon-choice.active .hud-label { color: #2a3027; text-shadow: none; }
-      /* 第三行：暴怒技居中，朱红色搭配暗金边框。 */
-      .hud-slot.hud-rage { grid-row: 3; grid-column: 3; pointer-events: auto; cursor: pointer; font: inherit; }
-      .hud-rage .hud-square { border-color: #8e7545; background: linear-gradient(145deg, #903c2e, #682b24); box-shadow: inset 0 0 0.78125cqw #3d171c66, 0 0.078125cqw 0.3125cqw #0005; }
-      .hud-rage .hud-square::before { border-color: #b395562e; }
-      .hud-rage > .hud-label { color: #f08869; font-size: 1.09375cqw; }
-      .hud-rage.ready .hud-square { border-color: #8e7545; background: linear-gradient(145deg, #a34633, #7c3027); box-shadow: 0 0 0.78125cqw #a83c2926, 0 0.078125cqw 0.3125cqw #0005; }
-      .hud-rage.ready > .hud-label { color: #f08869; }
-      .hud-rage.enraged .hud-square { border-color: #f08869; box-shadow: 0 0 1.09375cqw #e6533c80, 0 0.078125cqw 0.3125cqw #0005; }
-      .hud-slot.empowered .hud-square { box-shadow: 0 0 0.9375cqw #f0cf7873, 0 0.078125cqw 0.3125cqw #0005; }
-      .hud-rage:disabled { cursor: default; }
-      .hud-rage:not(:disabled):hover .hud-square { border-color: #b39556; background: linear-gradient(145deg, #a34633, #7c3027); }
-      .hud-rage:focus-visible { outline: none; }
-      .hud-rage:focus-visible .hud-square { outline: 0.15625cqw solid #d0b777; outline-offset: 0.234375cqw; }
-      /* 水位槽沿按钮外侧四边闭合，液面始终保持水平。 */
-      .hud-edge-meter { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-      .hud-edge-track, .hud-edge-fill { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-      .hud-edge-meter { --meter-color: #e5bd62; }
-      .hud-start .hud-edge-meter { --meter-color: #b96716; }
-      .hud-ranged .hud-edge-meter { --meter-color: #0033FF; }
-      .hud-weapon-choice .hud-edge-meter { --meter-color: #f1f0e9; }
-      .hud-rage .hud-edge-meter { --meter-color: #e6533c; }
-      .hud-edge-track { stroke: var(--meter-color); stroke-opacity: .24; }
-      .hud-edge-fill { stroke: var(--meter-color); filter: drop-shadow(0 0 1px var(--meter-color)); }
-      .hud-start .hud-edge-fill, .hud-ranged .hud-edge-fill { filter: none; }
-      .hud-start .hud-edge-meter, .hud-ranged .hud-edge-meter { --energy-glow: #d8892b; }
-      .hud-ranged .hud-edge-meter { --energy-glow: #798dc9; }
-      .hud-start .hud-edge-track, .hud-start .hud-edge-fill,
-      .hud-ranged .hud-edge-track, .hud-ranged .hud-edge-fill { stroke-width: 5; }
-      .hud-start .hud-edge-meter.full .hud-edge-fill,
-      .hud-ranged .hud-edge-meter.full .hud-edge-fill {
-        filter: drop-shadow(0 0 2px var(--energy-glow)) drop-shadow(0 0 5px var(--meter-color));
-      }
-      .hud-slot.hud-combo-slot .hud-square {
-        /* 底部斜边的横纵投影均为 dia / 4，斜边长为 d / 2。 */
-        top: 0; width: calc(var(--dia) * .5); height: var(--dia); transform: none;
-        border: 0; border-radius: 0; clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%);
-        background: #bcb58c;
-      }
-      .hud-slot.hud-combo-slot .hud-square::before {
-        inset: 0.078125cqw; border: 0; background: #1a2923;
-        clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%);
-      }
-      .hud-slot.hud-combo-slot.ready .hud-square::before { background: linear-gradient(#e9e5ca, #b5af8e); }
-      .hud-slot.hud-combo-slot.executing .hud-square::before { background: #413b28; }
+/* Bottom sides: 妹妹 on the left, 哥哥 on the right, mirrored. */
+.hud-side { position: absolute; bottom: 1.4cqw; display: flex; align-items: flex-end; gap: .9cqw; }
+.hud-left { left: 1.8cqw; }
+.hud-right { right: 1.8cqw; flex-direction: row-reverse; }
+.hud-col { display: grid; gap: .3cqw; }
+.hud-right .hud-col { justify-items: end; }
+.hud-who { display: flex; align-items: baseline; gap: .6cqw; font-size: .74cqw; color: var(--hud-dim); }
+.hud-right .hud-who { flex-direction: row-reverse; }
+.hud-who b { font-family: var(--hud-brush); font-weight: 400; font-size: 1.25cqw; line-height: 1; letter-spacing: .1em; color: #f4ecd2; }
+.hud-who > span { font-family: var(--hud-serif); letter-spacing: .06em; color: #e9dfbf; }
+.hud-meter { display: flex; align-items: center; gap: .5cqw; font-family: var(--hud-serif); font-size: .7cqw; color: var(--hud-dim); letter-spacing: .1em; }
+.hud-right .hud-meter { flex-direction: row-reverse; }
+.hud-meter .hud-n { font-size: .8cqw; color: #f4ecd2; letter-spacing: 0; }
+.hud-meter kbd { font-family: var(--hud-digits); font-size: .64cqw; border: .08cqw solid currentColor; padding: 0 .28cqw; opacity: .9; }
+.hud-sun .hud-segs > i.on { background: linear-gradient(#ffd08c, var(--hud-sun)); }
+.hud-moon .hud-segs > i.on { background: linear-gradient(#e6ecff, var(--hud-moon)); }
+.hud-moon.full .hud-segs { filter: drop-shadow(0 0 .35cqw #8fa6ecee); }
+.hud-sun.full .hud-segs { filter: drop-shadow(0 0 .35cqw #ec9233ee); }
+.hud-tag { color: #c2d0fb; }
+.hud-rage, .hud-durability { gap: .5cqw; }
+.hud-rage .hud-segs, .hud-durability .hud-segs { gap: .14cqw; }
+.hud-rage .hud-segs > i, .hud-durability .hud-segs > i { width: .36cqw; height: .42cqw; }
+.hud-rage { color: #f2967c; }
+.hud-rage .hud-segs > i.on { background: linear-gradient(#ffb19c, var(--hud-rage)); }
+.hud-rage .hud-n { color: #ffd2c4; }
+.hud-rage.ready .hud-segs, .hud-rage.enraged .hud-segs { filter: drop-shadow(0 0 .4cqw #e2553dee); }
+.hud-durability { color: #e9dfc2; }
+.hud-durability .hud-segs > i.on { background: linear-gradient(#fbf3dc, #a99e7c); }
+.hud-durability.low .hud-segs > i.on { background: linear-gradient(#ffd9a0, #c98a35); }
+.hud-durability.low .hud-n { color: #f1b56a; }
 
-      @keyframes hud-link-breathe { from { box-shadow: 0 0 0.546875cqw #f0cf7833; } to { box-shadow: 0 0 1.48438cqw #f0cf7873; } }
-      @media (prefers-reduced-motion: reduce) { .game-hud *, .game-hud *::before, .game-hud *::after { animation: none !important; transition: none !important; } }
+/* Skill keys: chamfered square, gold rim, cooldown as rising water. */
+.hud-key { --s: 3.5cqw; position: relative; flex: none; width: var(--s); height: var(--s); display: grid; place-items: center; clip-path: polygon(18% 0, 100% 0, 100% 82%, 82% 100%, 0 100%, 0 18%); background: linear-gradient(150deg, var(--hud-gold-hi), var(--hud-gold) 45%, var(--hud-gold-lo)); }
+.hud-key-core { position: absolute; inset: .14cqw; clip-path: inherit; overflow: hidden; background: radial-gradient(90% 90% at 50% 25%, #26332c, var(--hud-core)); }
+.hud-water { position: absolute; left: 0; right: 0; bottom: 0; height: 0; }
+.hud-glyph { position: relative; z-index: 1; font-family: var(--hud-brush); font-size: 1.4cqw; line-height: 1; }
+.hud-letter { position: absolute; z-index: 2; top: .2cqw; left: 50%; transform: translateX(-50%); font-family: var(--hud-digits); font-size: .63cqw; color: var(--hud-gold-hi); }
+.hud-time { position: absolute; z-index: 2; bottom: .25cqw; font-family: var(--hud-digits); font-size: .7cqw; color: #fff4d6; }
+.hud-key.ready .hud-key-core { background: radial-gradient(90% 90% at 50% 25%, #f6f0d8, #c6bc95); }
+.hud-key.ready .hud-glyph { color: #1e231c; text-shadow: none; }
+.hud-key.ready .hud-letter { color: #5b4a1f; text-shadow: none; }
+.hud-key.cooling .hud-water { height: var(--cooldown-fill, 0%); background: linear-gradient(#e9e2c4b8, #a49c7ab8); border-top: .1cqw solid #fff6d9; }
+.hud-key.cooling .hud-glyph { color: #fff4d6; transform: translateY(-.12em); }
+.hud-key.empowered { filter: drop-shadow(0 0 .6cqw #f0cf78cc); }
+#hud-key-q.empowered { background: linear-gradient(150deg, #eef2ff, var(--hud-moon) 45%, #46579a); filter: drop-shadow(0 0 .6cqw #8fa6ecdd); }
+#hud-key-e.empowered { background: linear-gradient(150deg, #fff0d8, var(--hud-sun) 45%, #8a4d14); filter: drop-shadow(0 0 .6cqw #ec9233dd); }
+.hud-key[aria-disabled="true"]:not(.cooling) { opacity: .4; }
+
+/* Center: health blocks with the number on top, stamina as their underline, then the link. */
+.hud-center { position: absolute; left: 50%; bottom: 1.4cqw; transform: translateX(-50%); width: 30cqw; display: grid; justify-items: center; gap: .35cqw; }
+.hud-status { position: absolute; bottom: calc(100% + .6cqw); white-space: nowrap; font-family: var(--hud-serif); font-size: .82cqw; color: #f3dfaa; letter-spacing: .16em; }
+.hud-vitals { position: relative; width: 100%; display: grid; gap: .12cqw; }
+.hud-health { height: 1.15cqw; --hud-fill: linear-gradient(#f2f6ea, var(--hud-jade) 50%, var(--hud-jade-lo)); --hud-trail: #d86a57; }
+.hud-health-text { position: absolute; left: 0; right: 0; top: 0; height: 1.15cqw; display: grid; place-items: center; font-size: .78cqw; color: #fbf7ea; text-shadow: 0 0 .2cqw #000, 0 0 .4cqw #000; }
+.hud-stamina { height: .34cqw; width: 100%; }
+.hud-stamina > span { display: block; height: 100%; width: 100%; background: linear-gradient(#f3e8b5, var(--hud-stamina)); }
+
+/* Tab link: the sister's wing (moon, left) and the brother's wing (sun, right) meet at a gold
+   diamond with the key. The window drains from both tips toward the diamond. */
+.hud-link { --left: 0%; display: flex; align-items: center; height: 1.7cqw; font-family: var(--hud-serif); }
+.hud-wing { position: relative; display: flex; align-items: center; height: 1.15cqw; padding: 0 1.1cqw; font-size: .74cqw; letter-spacing: .12em; color: #f6e9c2; background: linear-gradient(#2c2414f0, #15110af5); border-block: .1cqw solid var(--rim); }
+.hud-wing-left { --rim: #9fb3ef; transform: skewX(-22deg); margin-right: -.55cqw; padding-right: 1.3cqw; justify-content: flex-end; border-left: .1cqw solid var(--rim); }
+.hud-wing-right { --rim: #e7a75a; transform: skewX(22deg); margin-left: -.55cqw; padding-left: 1.3cqw; border-right: .1cqw solid var(--rim); }
+.hud-wing > span { display: inline-flex; gap: .5cqw; transform: skewX(22deg); white-space: nowrap; }
+.hud-wing-right > span { transform: skewX(-22deg); }
+.hud-wing::after { content: ""; position: absolute; bottom: -.1cqw; height: .2cqw; width: var(--left); background: var(--rim); box-shadow: 0 0 .4cqw var(--rim); }
+.hud-wing-left::after { right: 0; }
+.hud-wing-right::after { left: 0; }
+.hud-gem { position: relative; z-index: 1; flex: none; width: 2.5cqw; height: 2.5cqw; display: grid; place-items: center; }
+.hud-gem::before, .hud-gem::after { content: ""; position: absolute; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.hud-gem::before { inset: 0; background: linear-gradient(160deg, #fff2c4, var(--hud-gold) 45%, var(--hud-gold-lo)); }
+.hud-gem::after { inset: .16cqw; background: radial-gradient(80% 80% at 50% 30%, #f8eccb, #c9a75a); }
+.hud-gem kbd { position: relative; z-index: 1; font-family: var(--hud-digits); font-size: .6cqw; color: #2a2210; text-shadow: none; }
+#hud-link-time { color: #fff0c4; letter-spacing: 0; }
+.hud-link.wait .hud-wing { color: #e2d8b888; border-color: #6d573088; }
+.hud-link.wait .hud-wing::after { display: none; }
+.hud-link.wait .hud-gem::after { background: radial-gradient(80% 80% at 50% 30%, #3a3320, #1a160c); }
+.hud-link.wait .hud-gem kbd { color: #c8a862aa; }
+.hud-link.ready { animation: hud-link-breathe 1.6s ease-in-out infinite alternate; }
+@keyframes hud-link-breathe { from { filter: drop-shadow(0 0 .2cqw #f0cf7844); } to { filter: drop-shadow(0 0 1cqw #f0cf78aa); } }
+.hud-offscreen .hud-chevrons { animation: hud-nudge .9s ease-in-out infinite alternate; }
+@keyframes hud-nudge { to { translate: -.4cqw 0; } }
+@media (prefers-reduced-motion: reduce) { .game-hud *, .game-hud *::before, .game-hud *::after { animation: none !important; transition: none !important; } }

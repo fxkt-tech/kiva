@@ -14,12 +14,12 @@
 - `avatar::spawn(world, owner)` 为玩家 / 敌人共用的纯显示构造器，创建蒙皮和骨骼附件，返回可关联受击变色的身体部件；`EnemyBody(owner)` 标记敌人的身体表面，由战斗表现着色，其余表面由 `avatar::sync` 着色。
 - `AnimationLibrary::{bone,duration,sample,model_pose}` / `blend` 采样随包骨骼资产；`RigPose::new(&AnimationLibrary)` 保存局部混合及模型空间姿态。
 - `stickman::{attach_weapon,sync_attachments}` 绑定右手腕，并在姿态采样后同步几何；WeaponMode 分别校正近战柄轴和远程枪轴。
-- `scene::sync_player` → 敌人显示根 / 武器显隐 → `animation::animate` → `companion::sync` → `avatar::sync` → `stickman::sync_attachments` → `weapons::sync_tether` → HUD → `camera::follow` 在 Update 链式执行。
+- `scene::sync_player` → 敌人显示根 / 武器显隐 → `animation::animate` → `companion::sync` → `avatar::sync` → `stickman::sync_attachments` → `weapons::sync_tether` → `camera::follow` → HUD 在 Update 链式执行（HUD 在镜头之后，锁定框用本帧视角投影）。
 - `ActorView { owner }` / `PlayerView` 标记纯显示根，与 `EnemyBody` 一起定义在 `client/mod.rs`；客户端模块之间不得环形依赖（`tests/layering.rs`）；输入、战斗身份留在物理实体。
 - Web 桥 `window.kivaInput.isActive(): boolean` / `takeLook(): number` / `keys(): number` / `takeActions(): number` / `takeDefenseEdges(): number[]` / `ready(): void`。
 - wasm-bindgen 绑定在 `client/web.rs`，原生不需要 JS；加载观察器为 `window.kivaStartup.subscribe(callback)`。
 - `window.kivaHud.render(persona, weapon, healthFraction, health, combo, cooldown, context)`；绑定在 `client/hud.rs`，只有显示方向。
-- `window.kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)` 与 `renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)`；具体快照契约见 combat-presentation.md。
+- `window.kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)`、`renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)`、`renderTarget(name,current,maximum,status,phase,phases)`、`renderBossCue(kind,left,total,chain,swings,resolved)`、`renderLock(mode,x,y,distance,side)`；具体快照契约见 combat-presentation.md。
 - `window.kivaEnemies.takeMode(): number`（0=无请求、1=靶子、2=实战）/ `render(mode)`；绑定在 `client/enemies.rs`，固定循环前把选择交给 `gameplay::set_enemy_mode`。
 - `window.kivaAppearance.takeAppearance(): number`（0=无请求、1=愁铃客、2=李火旺）/ `render(value)`；绑定在 `client/appearance.rs`，选择仅属于客户端，`appearance::reconcile` 在动画前只替换哥哥身体／服饰，保留当前武器。
 - `window.kivaAudio.{playSniperShot(): boolean, playEffect(name): boolean, cueOffset(name): number, setActive(bool)}`；绑定在 `client/audio.rs`，消费已结算攻击／命中／防御和妹妹射击；Shot 及伴随 SniperShot 不重复发声。
@@ -52,10 +52,10 @@ KIVAAV03 增加每材质 doubleSided 和每骨 sourceRestModel，KIVAAV02 仍按
 可信捕获、原生事件、Shift／C、有序右键与取消的唯一输入契约见 [input.md](input.md)。
 零固定步保留意图、多固定步一次消费；输入只改变意图与 ViewYaw，不能修改 MotionState 或已承诺技能。
 战斗显示复用网格和材质，按 CombatFeedback 单调序号消费，临时特效到期 despawn。
-Web HUD 顶部居中为米金边框、暗红填充的锁定敌人长血条；底部居中为玩家生命和状态；右下角为 E／Q／左键／右键／Tab 技能组、当前绑定组与离手提示，底部另有耐力条。完整按键指南留在进入 / 暂停卡片。
+Web HUD v2（设计稿任务 `11-13-hud-v2`）：顶部居中为锁定目标，血量每 100 一块（超过 20 块画成一整条），Boss 两阶段并排、左段为后一阶段、中间金色菱形分界，下方是蓄势倒计时、连招第几式和本招各刀（已结算的刀标红）；锁定目标在画面内时显示锁定框与距离，在画面外显示屏幕边缘箭头（侧方／身后）。底部一条矮带：左为妹妹（当前组远程武器、月光 10 格、当前组耐久 20 格与 Z、Q 键），中为生命分块与贴在下面的耐力线、其下 Tab 联动（两翼加金菱形，未满足条件时变暗并写出条件，剩余窗口为两翼下沿缩短的金线），右为哥哥（当前组近战武器、烈阳 10 格、暴怒 20 格与 X、E 键），两侧左右镜像。战斗提示浮在血条上方。不显示备用武器组。完整按键指南留在进入 / 暂停卡片。
 目标只通过 Combatant.target() 查询活敌人，不在显示层另选最近目标；无目标、目标死亡 / 被移除或玩家倒地时隐藏并清理旧值。
 套装与防御阶段使用明确数字枚举，不解析中文武器名；技能可用性是当前 Health / MotionState / Combatant 的只读提示，模拟仍负责范围、落点和动作结算。
-HUD 脚本只更新 textContent、progress.value、图标 href、可见性、样式类和无障碍属性，不使用 innerHTML 或独立计时器；暂停后冷却与联动显示随模拟快照冻结。
+HUD 脚本只更新 textContent、样式属性、可见性、样式类和无障碍属性，按数量用 createElement 建血块和分格，不使用 innerHTML 或独立计时器；伤害残影只靠 CSS 过渡；暂停后冷却与联动显示随模拟快照冻结。
 HUD 为 pointer-events:none 的纯显示层，E／Q／Tab／中键／Z／X 通过实际输入桥；不能带入预览 HTML 的点击演示和模拟计时。HUD CSS 使用 hud-* 名称和 .game-hud 作用域，不能污染入口的 button / kbd / progress / p 样式。
 愁铃客标准高度1.73m，原主骨架986节点已恢复；source_animation对35个具名原clip有界解码、稀疏T/R/S采样与层级求值，按原骨名驱动独立Skin调色板，CC0回退仍用23个明确结构锚点。`avatar::sync` 只更新显示骨骼；挂点位置用适配后的手腕，枪轴方向沿用原动作。13个穿戴部件、17个材质槽中的皮肤及长刀使用原主色/法线纹理，PNG显式sRGB/linear；未知原作材质参数不猜测为已恢复。靶子从 Body.scale() 读取1.45比例，模型替换不能反写 Body 或改变玩家相机锚点。
 底层资产为 `src/client/embedded/stickman.anim`（23 骨骼 / 19 动画），CC0 许可证与说明在同目录 `stickman-LICENSE.txt`／`stickman-README.md`；永劫 KIVASR02 为独立63骨／44片段，燕云 KIVASR01 仍986骨／35片段；CC0 骨架 `include_bytes!` 嵌入，两份源动画由 `bundle` 运行时加载（`SourceAnimationLibrary` 为 `FromWorld`，测试用 `bundled()`），均显式小端解码。

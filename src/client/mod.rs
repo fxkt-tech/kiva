@@ -248,8 +248,9 @@ pub(super) fn run() {
                 (combat::effects, combat::sync_projectiles).chain(),
                 impact::update,
                 audio::sync,
-                hud::sync,
+                // After the camera, so the lock reticle uses this frame's view.
                 camera::follow,
+                hud::sync,
                 (hit_debug::toggle, hit_debug::draw).chain(),
             )
                 .chain()

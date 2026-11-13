@@ -53,7 +53,11 @@ extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderDurability)]
     fn render_durability(durability: Vec<f32>, maximum: f32);
     #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderTarget)]
-    fn render_target(name: &str, current: f32, maximum: f32, status: &str);
+    fn render_target(name: &str, current: f32, maximum: f32, status: &str, phase: u32, phases: u32);
+    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderBossCue)]
+    fn render_boss_cue(kind: u32, left: f32, total: f32, chain: u32, swings: u32, resolved: u32);
+    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderLock)]
+    fn render_lock(mode: u32, x: f32, y: f32, distance: f32, side: i32);
 }
 #[cfg(any(target_arch = "wasm32", test))]
 #[derive(Debug, PartialEq)]
@@ -86,6 +90,73 @@ struct TargetSnapshot {
     current: f32,
     maximum: f32,
     status: &'static str,
+    /// The Boss's phase (1 or 2) of `phases`; anything else has one.
+    phase: u32,
+    phases: u32,
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+/// What the HUD shows of the Boss's strike in progress.
+#[derive(Debug, Default, PartialEq)]
+struct BossCue {
+    /// 0 none, 1 telegraph, 2 striking.
+    kind: u32,
+    left: f32,
+    total: f32,
+    chain: u32,
+    swings: u32,
+    resolved: u32,
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn boss_cue(boss: &Boss) -> BossCue {
+    let kind = match boss.state() {
+        BossState::Telegraph => 1,
+        BossState::Attacking => 2,
+        _ => return BossCue::default(),
+    };
+    let (left, total) = boss.telegraph().unwrap_or((0.0, 0.0));
+    let (swings, resolved) = boss.swings().unwrap_or((0, 0));
+    BossCue {
+        kind,
+        left,
+        total,
+        chain: u32::from(boss.chain()),
+        swings: u32::from(swings),
+        // The page reads at most 31 swings.
+        resolved: (resolved & 0x7fff_ffff) as u32,
+    }
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+/// Where the locked target is relative to the view: on screen at a point (fractions of the
+/// viewport), off to one side, or behind the camera.
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum LockView {
+    OnScreen(Vec2),
+    Aside { right: bool },
+    Behind { right: bool },
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+fn lock_view(camera: &Camera, view: &Transform, point: Vec3) -> Option<LockView> {
+    let offset = point - view.translation;
+    let right = offset.dot(*view.right()) >= 0.0;
+    if offset.dot(*view.forward()) <= 0.0 {
+        return Some(LockView::Behind { right });
+    }
+    let size = camera.logical_viewport_size()?;
+    let screen = camera
+        .world_to_viewport(&GlobalTransform::from(*view), point)
+        .ok()
+        .map(|position| position / size);
+    Some(match screen {
+        Some(at) if (0.0..=1.0).contains(&at.x) && (0.0..=1.0).contains(&at.y) => {
+            LockView::OnScreen(at)
+        }
+        Some(at) => LockView::Aside { right: at.x > 0.5 },
+        None => LockView::Aside { right },
+    })
 }
 
 fn target_snapshot<'a>(
@@ -98,11 +169,8 @@ fn target_snapshot<'a>(
     }
     let (enemy, health, boss) = lookup(combat.target()?)?;
     health.is_alive().then(|| TargetSnapshot {
-        name: if let Some(boss) = boss {
-            match boss.phase() {
-                BossPhase::One => "愁铃客 · 一阶段",
-                BossPhase::Two => "愁铃客 · 二阶段",
-            }
+        name: if boss.is_some() {
+            "愁铃客"
         } else if enemy.is_passive() {
             "愁铃客 · 演武"
         } else {
@@ -115,17 +183,23 @@ fn target_snapshot<'a>(
             BossState::Turning => "转身中",
             BossState::Pursuing => "逼近中",
             BossState::Strafing => "游走中",
-            BossState::Telegraph => "蓄势 · 留意来袭",
+            BossState::Telegraph => "蓄势",
             BossState::Attacking => "出招中",
             BossState::Recovering => "收势中",
             BossState::Stunned => "僵直中",
             BossState::Transition => "转阶段 · 暂时无敌",
             BossState::Defeated => "已击败",
         }),
+        phase: boss.map_or(1, |boss| match boss.phase() {
+            BossPhase::One => 1,
+            BossPhase::Two => 2,
+        }),
+        phases: if boss.is_some() { 2 } else { 1 },
     })
 }
 
 type PlayerSnapshot = (
+    &'static crate::simulation::Body,
     &'static Combatant,
     &'static Health,
     &'static MotionState,
@@ -146,14 +220,24 @@ fn durability_by_hud_index(arsenal: &Arsenal) -> Vec<f32> {
     values
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn sync(
     player: Single<PlayerSnapshot, With<Player>>,
     enemies: Query<(&Enemy, &Health, Option<&Boss>)>,
     mut window: Single<&mut Window>,
     #[cfg(not(target_arch = "wasm32"))] mode: Res<crate::gameplay::EnemyMode>,
+    #[cfg(target_arch = "wasm32")] bodies: Query<&crate::simulation::Body, With<Enemy>>,
+    #[cfg(target_arch = "wasm32")] camera: Single<
+        (&Camera, &Transform),
+        With<super::camera::GameCamera>,
+    >,
+    #[cfg(target_arch = "wasm32")] time: Res<Time<Fixed>>,
+    #[cfg(target_arch = "wasm32")] active: Res<crate::simulation::SimulationActive>,
+    #[cfg(target_arch = "wasm32")] hit_stop: Res<crate::simulation::HitStop>,
 ) {
-    let (combat, health, motion, defense, stamina, energy, arsenal) = *player;
+    let (body, combat, health, motion, defense, stamina, energy, arsenal) = *player;
     let target = target_snapshot(combat, health, |entity| enemies.get(entity).ok());
+    let _ = body;
     let weapon = super::weapons::melee_name(combat.weapon_pair());
     let context = if !health.is_alive() {
         "倒地 · 即将回到出生点"
@@ -230,10 +314,48 @@ pub(super) fn sync(
             durability_by_hud_index(arsenal),
             f32::from(Arsenal::DURABILITY),
         );
-        if let Some(t) = target {
-            render_target(t.name, t.current, t.maximum, t.status);
+        if let Some(t) = &target {
+            render_target(t.name, t.current, t.maximum, t.status, t.phase, t.phases);
         } else {
-            render_target("", 0., 0., "");
+            render_target("", 0., 0., "", 1, 1);
+        }
+        let locked = target.is_some().then(|| combat.target()).flatten();
+        let cue = locked
+            .and_then(|entity| enemies.get(entity).ok())
+            .and_then(|(_, _, boss)| boss)
+            .map(boss_cue)
+            .unwrap_or_default();
+        render_boss_cue(
+            cue.kind,
+            cue.left,
+            cue.total,
+            cue.chain,
+            cue.swings,
+            cue.resolved,
+        );
+        let alpha = super::display_alpha(&time, &active, &hit_stop);
+        let (camera, view) = *camera;
+        match locked.and_then(|entity| bodies.get(entity).ok()) {
+            Some(enemy) => {
+                // The upper body, where the displayed actor is this frame.
+                let point = enemy.interpolated_world(alpha)
+                    + (enemy.aim_position() - enemy.world_position());
+                let distance = enemy
+                    .world_position()
+                    .xz()
+                    .distance(body.world_position().xz());
+                match lock_view(camera, view, point) {
+                    Some(LockView::OnScreen(at)) => render_lock(1, at.x, at.y, distance, 0),
+                    Some(LockView::Aside { right }) => {
+                        render_lock(2, 0., 0., distance, if right { 1 } else { -1 })
+                    }
+                    Some(LockView::Behind { right }) => {
+                        render_lock(3, 0., 0., distance, if right { 1 } else { -1 })
+                    }
+                    None => render_lock(0, 0., 0., 0., 0),
+                }
+            }
+            None => render_lock(0, 0., 0., 0., 0),
         }
         render(
             "哥哥",
@@ -297,6 +419,27 @@ fn status_text(status: CombatStatus) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_target_behind_the_camera_is_reported_on_its_side() {
+        // A target behind the view needs no projection, so no render target either.
+        let camera = Camera::default();
+        let view = Transform::from_xyz(0.0, 2.0, 6.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y);
+        assert_eq!(
+            lock_view(&camera, &view, Vec3::new(3.0, 1.0, 12.0)),
+            Some(LockView::Behind { right: true })
+        );
+        assert_eq!(
+            lock_view(&camera, &view, Vec3::new(-3.0, 1.0, 12.0)),
+            Some(LockView::Behind { right: false })
+        );
+    }
+
+    #[test]
+    fn the_boss_cue_reports_its_telegraph_and_swings_only_while_striking() {
+        let boss = Boss::default();
+        assert_eq!(boss_cue(&boss), BossCue::default());
+    }
 
     #[test]
     fn durability_is_sent_in_the_page_slot_order_of_each_pair() {

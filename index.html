@@ -40,52 +40,67 @@
       <div class="game-frame">
         <canvas id="game" tabindex="0" aria-label="竹林演武：WASD 移动，左键近战，E 近战技，Q 妹妹远程技，中键锁定，右键拆招防御弹反，Tab 联动，Z 换组，X 暴怒，Esc 暂停。"></canvas>
         <div class="game-hud" id="game-hud" aria-label="战斗状态">
-          <div class="hud-shade" aria-hidden="true"></div>
-          <svg class="hud-defs" aria-hidden="true"><defs>
-            <clipPath id="hud-rounded-diamond" clipPathUnits="objectBoundingBox"><path d="M .47 .03 Q .5 0 .53 .03 L .97 .47 Q 1 .5 .97 .53 L .53 .97 Q .5 1 .47 .97 L .03 .53 Q 0 .5 .03 .47 Z" /></clipPath>
-            <symbol id="hud-icon-musket" viewBox="0 0 40 40"><path d="M5 23h30M9 23v7l7-7M13 19h15v8H13M21 19v-5h7v5M31 21v4M5 21v4"/></symbol>
-            <symbol id="hud-icon-bow" viewBox="0 0 40 40"><path d="M10 4q30 16 0 32l13-16zM5 20h29m-6-5 6 5-6 5"/></symbol>
-            <symbol id="hud-icon-hammer" viewBox="0 0 40 40"><path d="M18 15v22h5V15M6 5h29v12H6zM10 5v12m21-12v12"/></symbol>
-            <symbol id="hud-icon-axe" viewBox="0 0 40 40"><path d="M19 6v30m3-25 12-5v17l-12-5m-4-7L6 6v17l12-5M19 36l-4 3"/></symbol>
-            <symbol id="hud-icon-attack" viewBox="0 0 40 40"><path d="m9 31 20-24M14 33 34 9M5 23 20 10M8 31l3 3M26 8l4 3"/></symbol>
-            <symbol id="hud-icon-guard" viewBox="0 0 40 40"><path d="m7 33 24-26-7 18-13 10zM6 9l28 21M4 17l10-1M26 5l1 9M27 29l8 5"/></symbol>
-            <symbol id="hud-icon-target" viewBox="0 0 40 40"><circle cx="20" cy="20" r="10"/><path d="M20 4v10m0 12v10M4 20h10m12 0h10"/></symbol>
-          </defs></svg>
+          <div class="hud-wash" aria-hidden="true"></div>
 
-          <header class="hud-corner hud-place">
-            <small>KIVA / BAMBOO FOREST</small>
-            <strong>幽篁竹林</strong><span id="hud-enemy-mode" class="hud-mode">靶子模式 · F2 切换</span><span id="hud-appearance" class="hud-mode">外观 · 李火旺 · F3 切换</span>
+          <header class="hud-place">
+            <strong>幽篁竹林</strong>
+            <span id="hud-enemy-mode" class="hud-mode">靶子模式 · F2 切换</span>
+            <span id="hud-appearance" class="hud-mode">外观 · 李火旺 · F3 切换</span>
           </header>
-          <aside class="hud-corner hud-utility"><span><kbd>Esc</kbd>暂停</span></aside>
+          <aside class="hud-utility"><kbd>Esc</kbd>暂停</aside>
 
-          <section id="hud-target" class="hud-target" aria-label="锁定目标生命" hidden>
-            <span id="hud-target-name" class="hud-target-name"></span>
-            <div class="hud-target-hp"><div class="hud-target-track"><span id="hud-target-trail" class="hud-target-trail" aria-hidden="true"></span><progress id="hud-target-bar" max="1" value="0" aria-label="敌人生命"></progress></div></div>
-          </section>
-
-          <section class="hud-vitals" aria-label="玩家生命、耐力与技能能量">
-            <div id="hud-status" class="hud-state">准备就绪</div>
-            <div id="hud-combo" class="hud-state linked" hidden><kbd class="hud-key">Tab</kbd><span id="hud-combo-name">妹妹三枪</span><span id="hud-combo-time" class="hud-time"></span></div>
-            <div class="hud-vitals-header"><span><span id="hud-persona">哥哥</span> · <span id="hud-weapon">伏浪锚 · 锤子</span></span></div>
-            <div class="hud-energy-row" aria-label="技能能量">
-              <div class="hud-resource hud-energy-ranged" id="hud-ranged-energy"><progress id="hud-ranged-energy-bar" max="1" value="0" aria-label="远程技能能量"></progress></div>
-              <div class="hud-resource hud-rage-value" id="hud-rage-value"><progress id="hud-rage-value-bar" max="1" value="0" aria-label="暴怒值"></progress></div>
-              <div class="hud-resource hud-energy-melee" id="hud-melee-energy"><progress id="hud-melee-energy-bar" max="1" value="0" aria-label="近战技能能量"></progress></div>
+          <!-- 顶部：锁定目标。Boss 两个阶段的血块并排，左段是后一阶段。 -->
+          <section id="hud-target" class="hud-target" aria-label="锁定目标" hidden>
+            <div class="hud-target-row"><span id="hud-target-name" class="hud-target-name"></span><span id="hud-target-phase" class="hud-target-phase"></span><span id="hud-target-health" class="hud-target-health hud-n"></span></div>
+            <div class="hud-target-bar" role="meter" id="hud-target-meter" aria-label="目标生命" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0">
+              <div id="hud-target-later" class="hud-blocks"></div>
+              <span id="hud-target-split" class="hud-split" hidden></span>
+              <div id="hud-target-first" class="hud-blocks"></div>
             </div>
-            <div class="hud-player-hp"><progress id="hud-health-bar" max="1" value="1" aria-label="玩家生命"></progress></div>
-            <div class="hud-stamina" aria-label="耐力"><progress id="hud-stamina-bar" max="1" value="1" aria-label="耐力"></progress></div>
+            <div id="hud-boss-cue" class="hud-cue" hidden>
+              <div class="hud-cue-word"><span id="hud-boss-chain"></span><b id="hud-boss-word"></b><span id="hud-boss-time" class="hud-n"></span></div>
+              <div id="hud-boss-count" class="hud-cue-count"><span id="hud-boss-count-fill"></span></div>
+              <div id="hud-boss-swings" class="hud-segs hud-swings"></div>
+            </div>
+            <div id="hud-boss-state" class="hud-cue-state" hidden></div>
           </section>
 
-          <section class="hud-combat" aria-label="技能与武器">
-            <!-- 第一行视觉顺序：Q 远程技 / Tab 联动 / E 近战技 -->
-            <div id="hud-skill-start" class="hud-slot hud-start" role="group" aria-label="E 锤击 · 击飞" aria-disabled="true"><svg class="hud-edge-meter" viewBox="0 0 100 100" role="meter" id="meter-meleeEnergy" aria-label="近战技能能量" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><defs><clipPath id="clip-meleeEnergy" clipPathUnits="objectBoundingBox"><rect id="fill-meleeEnergy" x="-0.1" y="1" width="1.2" height="0" /></clipPath></defs><path class="hud-edge-track" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" /><path id="edge-meleeEnergy" class="hud-edge-fill" style="visibility: hidden" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" clip-path="url(#clip-meleeEnergy)" /></svg><span class="hud-square"></span><span class="hud-cooldown" aria-hidden="true"></span><span id="hud-start-label" class="hud-label" aria-hidden="true">锤</span><span id="hud-skill-start-time" class="hud-cooldown-time" aria-hidden="true"></span></div>
-            <div id="hud-skill-combo" class="hud-slot hud-combo-slot" role="group" aria-label="Tab 联动" aria-disabled="true"><span class="hud-square"></span><span id="hud-combo-label" class="hud-label hud-label-combo" aria-hidden="true">联动</span></div>
-            <div id="hud-skill-ranged" class="hud-slot hud-ranged" role="group" aria-label="Q 白灵淼引冰落" aria-disabled="true"><svg class="hud-edge-meter" viewBox="0 0 100 100" role="meter" id="meter-rangedEnergy" aria-label="远程技能能量" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><defs><clipPath id="clip-rangedEnergy" clipPathUnits="objectBoundingBox"><rect id="fill-rangedEnergy" x="-0.1" y="1" width="1.2" height="0" /></clipPath></defs><path class="hud-edge-track" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" /><path id="edge-rangedEnergy" class="hud-edge-fill" style="visibility: hidden" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" clip-path="url(#clip-rangedEnergy)" /></svg><span class="hud-square"></span><span class="hud-cooldown" aria-hidden="true"></span><span id="hud-ranged-skill-label" class="hud-label" aria-hidden="true">铳</span><span id="hud-skill-ranged-time" class="hud-cooldown-time" aria-hidden="true"></span></div>
-            <!-- 第二行：锤铳 / 斧弓，当前选中的武器组高亮 -->
-            <div id="hud-pair1" class="hud-weapon-choice hud-pair-one active" role="group" aria-label="套装 1 · 锤铳 · 伏浪锚" aria-current="true"><svg class="hud-edge-meter" viewBox="0 0 100 100" role="meter" id="meter-pair1Durability" aria-label="锤铳耐久" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><defs><clipPath id="clip-pair1Durability" clipPathUnits="objectBoundingBox"><rect id="fill-pair1Durability" x="-0.1" y="1" width="1.2" height="0" /></clipPath></defs><path class="hud-edge-track" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" /><path id="edge-pair1Durability" class="hud-edge-fill" style="visibility: hidden" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" clip-path="url(#clip-pair1Durability)" /></svg><span class="hud-square"></span><span id="hud-pair1-label" class="hud-label" aria-hidden="true">锤铳</span></div>
-            <div id="hud-pair2" class="hud-weapon-choice hud-pair-two" role="group" aria-label="套装 2 · 斧弓 · 谪星·摧山" aria-current="false"><svg class="hud-edge-meter" viewBox="0 0 100 100" role="meter" id="meter-pair2Durability" aria-label="斧弓耐久" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><defs><clipPath id="clip-pair2Durability" clipPathUnits="objectBoundingBox"><rect id="fill-pair2Durability" x="-0.1" y="1" width="1.2" height="0" /></clipPath></defs><path class="hud-edge-track" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" /><path id="edge-pair2Durability" class="hud-edge-fill" style="visibility: hidden" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" clip-path="url(#clip-pair2Durability)" /></svg><span class="hud-square"></span><span id="hud-pair2-label" class="hud-label" aria-hidden="true">斧弓</span></div>
-            <!-- 第三行：暴怒技 -->
-            <button id="hud-skill-rage" class="hud-slot hud-rage" type="button" aria-label="暴怒技" disabled aria-disabled="true"><svg class="hud-edge-meter" viewBox="0 0 100 100" role="meter" id="meter-rageValue" aria-label="暴怒值" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><defs><clipPath id="clip-rageValue" clipPathUnits="objectBoundingBox"><rect id="fill-rageValue" x="-0.1" y="1" width="1.2" height="0" /></clipPath></defs><path class="hud-edge-track" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" /><path id="edge-rageValue" class="hud-edge-fill" style="visibility: hidden" d="M 47 3 Q 50 0 53 3 L 97 47 Q 100 50 97 53 L 53 97 Q 50 100 47 97 L 3 53 Q 0 50 3 47 Z" clip-path="url(#clip-rageValue)" /></svg><span class="hud-square" aria-hidden="true"></span><span class="hud-label">暴怒</span></button>
+          <div id="hud-reticle" class="hud-reticle" aria-hidden="true" hidden><i></i><i></i><i></i><i></i><span id="hud-reticle-distance" class="hud-n"></span></div>
+          <div id="hud-offscreen" class="hud-offscreen" aria-hidden="true" hidden><span class="hud-chevrons"><i></i><i></i></span><span id="hud-offscreen-label"></span></div>
+
+          <!-- 左下：妹妹 · 当前远程武器 · 月光 · 当前武器组耐久 · Q -->
+          <section class="hud-side hud-left" aria-label="妹妹">
+            <div class="hud-col">
+              <div class="hud-who"><b>妹妹</b><span id="hud-sister-weapon"></span></div>
+              <div class="hud-meter hud-moon" id="hud-moon-row"><span>月光</span><div id="hud-moon" class="hud-segs"></div><span id="hud-moon-value" class="hud-n">0</span><span id="hud-moon-tag" class="hud-tag" hidden>Q 强化</span></div>
+              <div class="hud-meter hud-durability" id="hud-durability-row"><kbd>Z</kbd><span>耐久</span><div id="hud-durability" class="hud-segs"></div><span id="hud-durability-value" class="hud-n">0</span></div>
+            </div>
+            <div id="hud-key-q" class="hud-key" role="group" aria-label="Q" aria-disabled="true"><span class="hud-key-core"><span class="hud-water"></span></span><span class="hud-letter">Q</span><span id="hud-key-q-glyph" class="hud-glyph">铳</span><span id="hud-key-q-time" class="hud-time"></span></div>
+          </section>
+
+          <!-- 中下：生命与耐力，联动 -->
+          <section class="hud-center" aria-label="生命与联动">
+            <div id="hud-status" class="hud-status">准备就绪</div>
+            <div class="hud-vitals">
+              <div id="hud-health-blocks" class="hud-blocks hud-health" role="meter" aria-label="生命" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1"></div>
+              <div id="hud-health-text" class="hud-health-text hud-n"></div>
+              <div class="hud-stamina" role="meter" id="hud-stamina" aria-label="耐力" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1"><span id="hud-stamina-fill"></span></div>
+            </div>
+            <div id="hud-link" class="hud-link wait" role="group" aria-label="Tab 联动" aria-disabled="true">
+              <span class="hud-wing hud-wing-left"><span>联动</span></span>
+              <span class="hud-gem"><kbd>Tab</kbd></span>
+              <span class="hud-wing hud-wing-right"><span><span id="hud-link-text"></span><span id="hud-link-time" class="hud-n"></span></span></span>
+            </div>
+          </section>
+
+          <!-- 右下：哥哥 · 当前近战武器 · 烈阳 · 暴怒 · E -->
+          <section class="hud-side hud-right" aria-label="哥哥">
+            <div class="hud-col">
+              <div class="hud-who"><b>哥哥</b><span id="hud-brother-weapon"></span></div>
+              <div class="hud-meter hud-sun" id="hud-sun-row"><span>烈阳</span><div id="hud-sun" class="hud-segs"></div><span id="hud-sun-value" class="hud-n">0</span></div>
+              <div class="hud-meter hud-rage" id="hud-rage-row" aria-disabled="true"><kbd>X</kbd><span>暴怒</span><div id="hud-rage" class="hud-segs"></div><span id="hud-rage-value" class="hud-n">0</span></div>
+            </div>
+            <div id="hud-key-e" class="hud-key" role="group" aria-label="E" aria-disabled="true"><span class="hud-key-core"><span class="hud-water"></span></span><span class="hud-letter">E</span><span id="hud-key-e-glyph" class="hud-glyph">锤</span><span id="hud-key-e-time" class="hud-time"></span></div>
           </section>
         </div>
         <div id="entry" class="overlay" role="dialog" aria-labelledby="entry-title">
