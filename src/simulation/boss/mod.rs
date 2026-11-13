@@ -147,7 +147,7 @@ impl Default for Boss {
 
 impl Boss {
     /// Two health bars are a Kiva adaptation, not the source 65/75/30% buff checks.
-    pub const PHASE_HEALTH: f32 = 650.0;
+    pub const PHASE_HEALTH: f32 = 700.0;
     /// Every strike's whole timeline in seconds: telegraph, swings and
     /// recovery. Each plays one named source clip at its own speed (client
     /// attack clip table); these are the lengths of those spans.

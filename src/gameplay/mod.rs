@@ -500,7 +500,7 @@ mod tests {
         assert_eq!(enemies.iter(world).count(), 1);
         for (enemy, health, body) in enemies.iter(world) {
             assert!(!enemy.is_passive());
-            assert_eq!(health.maximum(), 650.0);
+            assert_eq!(health.maximum(), 700.0);
             assert_eq!(body.scale(), 1.0);
         }
         assert_eq!(world.query::<&Boss>().iter(world).count(), 1);
