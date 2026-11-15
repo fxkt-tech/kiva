@@ -1,0 +1,41 @@
+{
+  "version": "zhuque-youth-face-v1",
+  "source": "\\\\wsl.localhost\\Ubuntu-24.04\\home\\asuka\\go\\src\\github.com\\fxkt-tech\\kiva\\art\\wasteland\\greybox\\head-source.blend",
+  "source_sha256": "22f91320e513634362a6a5559ce6d4153852fd0d849cb998d730eebc3a800078",
+  "coordinate_contract": "game meters,+Yup,-Zforward; study applies the reviewed Blender basis",
+  "source_topology_reused": true,
+  "facial_animation_system": false,
+  "head_and_eyes_objects": 5,
+  "original_detail_objects": 2,
+  "evaluated_triangles": 9804,
+  "study_detail_triangles": 88,
+  "maximum_vertex_change_from_base_map_m": 0.009303564687363718,
+  "sculpt_changes": [
+    "Lower-face shortening with unchanged skull/eye anchor",
+    "Slight cheek volume and softened adult nose projection",
+    "Relaxed asymmetric lip-corner lift",
+    "Lower, flatter tapered eyebrows and settled upper eyelids"
+  ],
+  "game_bounds": [
+    [
+      -0.08490092292428017,
+      1.4406324863433837,
+      -0.09309553205016
+    ],
+    [
+      0.08618489608168602,
+      1.7000966280698777,
+      0.0867304612994194
+    ]
+  ],
+  "limits": [
+    "Static head study only; fullbody rig/skin validation is performed by the builder.",
+    "Simple clay/charcoal preview, no final skin textures or eye shader.",
+    "Static eyelid form is part of adapted head topology; brows are separate low-profile strips."
+  ],
+  "public_api": {
+    "adapt_source_vertex": "(source_xyz, original_object_name) -> game_model_xyz",
+    "create_face_details": "(mesh_factory, strand_factory) -> two brow mesh objects; requires adapted head already in scene; strand factory retained for compatibility"
+  },
+  "brow_placement": "Ray-projected to actual adapted head surface,1.2mm forward hair-height offset; no guessing depth"
+}

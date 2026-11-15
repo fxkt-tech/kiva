@@ -1576,3 +1576,35 @@ main工作区实现44段原生Humanoid转换、三段普通连击、分阶段防
 ### Next Steps
 
 - 查看交付记录 .trellis/tasks/archive/2026-11/11-11-naraka-presentation/integration-report.md。
+
+
+## Session 47: 朱雀第一版模型材质与游戏接入
+<!-- trellis-session: v=2 fp=87fa428d589f20d6 -->
+
+**Date**: 2026-11-15
+**Task**: 朱雀第一版模型材质与游戏接入
+**Branch**: `feat/wasteland-protagonist`
+
+### Summary
+
+完成可编辑纹理源、严格GLB/AV04导出与朱雀ID3；最终资产及实际WebGPU姿态复核通过，等待美术审阅。
+
+### Main Changes
+
+- 39,976tri、4材质、16张2K；曲面正背火焰羽缘、独立确定性Ember材质、默认外观保持。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] make check、WASM Clippy、隔离Trunk构建；140矩阵姿态、5代表帧223740真实顶点对照；独立UV/PNG/AV04/GLBAO读回；21张实际WebGPU截图、暂停保持。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 用户审阅第一版3D造型；无布料物理、衣物磨旧较克制，任务保留in_progress，未提交。

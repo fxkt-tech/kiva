@@ -1,0 +1,22 @@
+{
+  "stage": "concept-v11 scarf + flame-feather cape, cloth-simulated authoring source (not a runtime publication)",
+  "method": "flat pattern pieces (constrained Delaunay) draped by Blender cloth against the unchanged character in the relaxed review pose; flat pattern kept as rest shape and UV",
+  "spacing_m": 0.009,
+  "frames": 90,
+  "lean_backward_gravity_fraction": 0.24,
+  "sim_seconds": 158.8,
+  "control_vertices": 29239,
+  "control_triangles": 49780,
+  "evaluated_triangles": 632136,
+  "pieces": {
+    "cape_inner": 27562,
+    "cape_outer": 16289,
+    "scarf": 5929
+  },
+  "preserved_character_components": 164,
+  "limits": [
+    "Drape authored in relaxed arms-down review pose; arm bones are not in the cape weights, so the rest A-pose may show arm/cape overlap",
+    "Backward gravity bias is an authoring stylisation matching the concept flare, not runtime physics",
+    "Runtime LOD/GLB/AV04 export not yet run for this cape"
+  ]
+}

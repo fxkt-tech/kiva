@@ -1,0 +1,205 @@
+{
+  "source_blend_sha256": "5e1b9995eaeb9c099b3fa025046949a185430b34a8d9f77930e2a5aa71bd3f45",
+  "character_meshes": 4,
+  "vertices": 20894,
+  "evaluated_triangles": 39430,
+  "material_count": 4,
+  "max_influences": 2,
+  "max_weight_sum_error": 2.9802322387695312e-08,
+  "max_actual_rest_displacement_m": 1.7967527344609325e-07,
+  "opaque_atlas_independent_intersection_checks": {
+    "charcoal": {
+      "triangles": 14060,
+      "minimum_uv_area": 1.2265441995396031e-09,
+      "positive_area_overlaps_gt_1e_12": 0,
+      "max_pair_intersection_area": 0,
+      "candidate_pairs_independently_clipped": 94975
+    },
+    "cloth": {
+      "triangles": 13484,
+      "minimum_uv_area": 1.5054704149974896e-09,
+      "positive_area_overlaps_gt_1e_12": 0,
+      "max_pair_intersection_area": 0,
+      "candidate_pairs_independently_clipped": 50553
+    },
+    "fire_fringe": {
+      "triangles": 714,
+      "repeated_uv_intentional": true
+    },
+    "skin": {
+      "triangles": 11172,
+      "minimum_uv_area": 8.416508201491979e-08,
+      "positive_area_overlaps_gt_1e_12": 0,
+      "max_pair_intersection_area": 0,
+      "candidate_pairs_independently_clipped": 85514
+    }
+  },
+  "actual_plain_inner_sleeves": {
+    "sampled_face_centroids": 1352,
+    "maximum_srgb_tagged_pixel_rgb": 0.125490203499794,
+    "maximum_emissive_rgb": 0.0
+  },
+  "images": {
+    "charcoal_base": {
+      "file": "charcoal_base.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "sha256": "8333bbec7a1df7b8c12aa9266e67aab8f093a7fa061e61364f59859bc57b25ba",
+      "packed": true
+    },
+    "charcoal_normal": {
+      "file": "charcoal_normal.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "sha256": "0899d5f0fda543b6e7fadfb97f7968ebf0b876a2c77e7ee147a75d3b1faeb449",
+      "packed": true
+    },
+    "charcoal_orm": {
+      "file": "charcoal_orm.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "sha256": "1478dffc88fc78286e735a93eb73794dc3a4f4d70c09d79a5042f2087793673c",
+      "packed": true
+    },
+    "charcoal_emission": {
+      "file": "charcoal_emission.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "sha256": "0f00589a59bcf5d85c3692e53ddaa5abfc7456930b7551858fe1f385043baf4d",
+      "packed": true
+    },
+    "cloth_base": {
+      "file": "cloth_base.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "sha256": "efbb2f12e5c6822e9ca785cbdd74db783f2c1a100cee051e42fc088a463561fc",
+      "packed": true
+    },
+    "cloth_normal": {
+      "file": "cloth_normal.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "sha256": "cfc3ec3c69ecea299a2e9a788de5b230cb0f01438979a5dfda57c2782504eeab",
+      "packed": true
+    },
+    "cloth_orm": {
+      "file": "cloth_orm.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "sha256": "540de19f1037057f3772f7724704a662555a35b68d20335a3c63f1e747185daf",
+      "packed": true
+    },
+    "cloth_emission": {
+      "file": "cloth_emission.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "sha256": "61d5c354719c04ce7903c6a56e5c561f92d5706d0362513603b50a0f4c4bbd07",
+      "packed": true
+    },
+    "fire_fringe_base": {
+      "file": "fire_fringe_base.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "sha256": "12daa53a845f4a4314d6e92249805d8874a4166a6d227a75f973d356a949d714",
+      "packed": true
+    },
+    "fire_fringe_normal": {
+      "file": "fire_fringe_normal.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "sha256": "ae52b893ea97f9d4f8e32664b4e5d4c7c697579a9779d7dca7a30abcfdea76c9",
+      "packed": true
+    },
+    "fire_fringe_orm": {
+      "file": "fire_fringe_orm.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "sha256": "297e7445a31cf5b3275138e22fb0753b45eb0ca8d5ff1cca1249a9ae068e7eca",
+      "packed": true
+    },
+    "fire_fringe_emission": {
+      "file": "fire_fringe_emission.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "sha256": "12daa53a845f4a4314d6e92249805d8874a4166a6d227a75f973d356a949d714",
+      "packed": true
+    },
+    "skin_base": {
+      "file": "skin_base.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "sha256": "ed50547410edfb841b0ec14cc871aa367febe34ae102f64829177bec28947dba",
+      "packed": true
+    },
+    "skin_normal": {
+      "file": "skin_normal.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "sha256": "28e8633a1d779cb9e04db5ca732aca38c9f14ec645445d11d854b49e414ab1eb",
+      "packed": true
+    },
+    "skin_orm": {
+      "file": "skin_orm.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "sha256": "2de83ccac78e6ab36ef12ebca31d40082b173b9acabb5042f7e7e089a3ddbc76",
+      "packed": true
+    },
+    "skin_emission": {
+      "file": "skin_emission.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "sha256": "ba910461d935c16ed062110e45d694579a649cf24eaf34b0cabc3d0c299cf5a8",
+      "packed": true
+    }
+  },
+  "limits": "Read-only actual source asset verification. Runtime binary, exchangeGLB and realgameGPU acceptance reviewed separately."
+}

@@ -6,6 +6,8 @@
 
 永劫／燕云双来源、原生 Humanoid 转换、scope 与音效 cue 见 [naraka-motion.md](naraka-motion.md)。
 
+离线参考骨架、真实显示驱动姿态导出与 Blender 坐标／绑定映射见 [character-authoring.md](character-authoring.md)。
+
 `?view=model` 为独立的模型／武器／动作验收App，共用真实游戏姿态和挂点，不装配模拟或游戏输入；入口、时间轴、部件显隐与共享计算契约见 [model-viewer.md](model-viewer.md)。
 
 ## Signatures
@@ -21,7 +23,7 @@
 - `window.kivaHud.render(persona, weapon, healthFraction, health, combo, cooldown, context)`；绑定在 `client/hud.rs`，只有显示方向。
 - `window.kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)`、`renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)`、`renderTarget(name,current,maximum,status,phase,phases)`、`renderBossCue(kind,left,total,chain,swings,resolved)`、`renderLock(mode,x,y,distance,side)`；具体快照契约见 combat-presentation.md。
 - `window.kivaEnemies.takeMode(): number`（0=无请求、1=靶子、2=实战）/ `render(mode)`；绑定在 `client/enemies.rs`，固定循环前把选择交给 `gameplay::set_enemy_mode`。
-- `window.kivaAppearance.takeAppearance(): number`（0=无请求、1=愁铃客、2=李火旺）/ `render(value)`；绑定在 `client/appearance.rs`，选择仅属于客户端，`appearance::reconcile` 在动画前只替换哥哥身体／服饰，保留当前武器。
+- `window.kivaAppearance.takeAppearance(): number`（0=无请求、1=愁铃客、2=李火旺、3=朱雀）/ `render(value)`；绑定在 `client/appearance.rs`，选择仅属于客户端，`appearance::reconcile` 在动画前只替换哥哥身体／服饰，保留当前武器。
 - `window.kivaAudio.{playSniperShot(): boolean, playEffect(name): boolean, cueOffset(name): number, setActive(bool)}`；绑定在 `client/audio.rs`，消费已结算攻击／命中／防御和妹妹射击；Shot 及伴随 SniperShot 不重复发声。
 
 ## Contracts
@@ -45,9 +47,9 @@ scene 根据 Body 的三维脚底前后快照和 fixed overstep 插值，camera 
 Web mode脚本最先固定页面模式，startup／loader／input／hud／enemies／appearance／audio／viewer先于Trunk模块同步安装，DOM就绪后才绑定元素；游戏专属脚本在查看模式先退出。专用WASM流报告真实下载进度；游戏按钮加载时可见但disabled，Rust观察首轮必要渲染准备与提交后才最终ready。捕获进行中有反馈，确认／失败与恢复保持原输入契约；完整门槛见[startup.md](startup.md)。
 音效仅在可信进入点击或画布按下时创建 / 恢复 Web Audio；随包音频异步解码一次，原有程序枪声仅保留兼容接口，实际妹妹枪弓使用已验证永劫 cue。至多 4 个短音效声部及 1 个 BGM 循环（音效增益 0.45、BGM 0.18），暂停立即停止/回收短音效并保存 BGM 播放位置；恢复只创建一条循环。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
 首次加载显示全屏黑底开屏 `#splash`（血红毛笔字“四方诛杀”、真实载入进度、就绪后“点击任意键进入游戏”）：引擎就绪后任意普通键或点击请求指针锁定，Esc、F 键和带 Cmd／Ctrl／Alt 的快捷键不触发；第一次真正捕获后开屏永久隐藏，此后 Esc 显示进入卡片作为暂停页。开屏是 `.game-shell` 的直接子元素（`.game-frame` 有尺寸约束，fixed 子元素会被困在画面内）。进入卡片可选择靶子 / 实战，捕获期间 F2 切换；按钮请求在暂停或引擎加载时保留至一次消费，模式权威在玩法层。
-外观卡片可选择愁铃客 / 李火旺，捕获期间 F3 切换，选择保存在 `AppearanceSelection`；外观只决定哥哥身体／服饰，不改变 WeaponPair 或武器。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。哥哥默认李火旺；`Appearance::default()` 仍为愁铃客，供敌人使用。白灵淼仅用于妹妹，不进入 F3 或 Web 选择枚举；换装不影响敌人、妹妹或当前武器。
-`AvatarAssets` 保留愁铃客资源，`AvatarAssetCache` 分别缓存李火旺与白灵淼；多次换装／技能复用原句柄。角色自身的 AvatarPart 标记限定身体回收范围，不能清空玩家所有 Children 或重建 RigPose。显示根、物理 actor、动作状态、武器根的 BoneVisual 所属保持不变。
-KIVAAV03 增加每材质 doubleSided 和每骨 sourceRestModel，KIVAAV02 仍按原格式读取。源导入姿态可能不同于 bind pose，蒙皮正确性使用原 LBS 数值对照，不强改逆绑定为当前姿态抵消。李火旺骨名与燕云索引独立，身体23结构驱动校准参考臂向并保留自身骨长，源指轨另按三节语义链传递；源动作与附件读取实际皮肤掌框。原 packed/ID 图未经通道证明不能接为颜色或 ORM；面容、发材质和刚性刀穗的美术适配必须在 provenance/characters/lihuowang 来源清单中明确。
+外观卡片可选择愁铃客 / 李火旺 / 朱雀，捕获期间 F3 切换，选择保存在 `AppearanceSelection`；外观只决定哥哥身体／服饰，不改变 WeaponPair 或武器。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。哥哥默认李火旺；`Appearance::default()` 仍为愁铃客，供敌人使用。白灵淼仅用于妹妹，不进入 F3 或 Web 选择枚举；换装不影响敌人、妹妹或当前武器。
+`AvatarAssets` 保留愁铃客资源，`AvatarAssetCache` 分别缓存李火旺、白灵淼与朱雀；多次换装／技能复用原句柄。角色自身的 AvatarPart 标记限定身体回收范围，不能清空玩家所有 Children 或重建 RigPose。显示根、物理 actor、动作状态、武器根的 BoneVisual 所属保持不变。
+朱雀使用 KIVAAV04，增加显式透明模式、HDR发光和独立火焰效果标签，详见 [角色制作](character-authoring.md)。KIVAAV03 增加每材质 doubleSided 和每骨 sourceRestModel，KIVAAV02 仍按原格式读取。源导入姿态可能不同于 bind pose，蒙皮正确性使用原 LBS 数值对照，不强改逆绑定为当前姿态抵消。李火旺骨名与燕云索引独立，身体23结构驱动校准参考臂向并保留自身骨长，源指轨另按三节语义链传递；源动作与附件读取实际皮肤掌框。原 packed/ID 图未经通道证明不能接为颜色或 ORM；面容、发材质和刚性刀穗的美术适配必须在 provenance/characters/lihuowang 来源清单中明确。
 原生 F2 在有焦点时切换，窗口标题显示当前模式。武器组的名称、模型、音效、姿态等表现集中在 `loadout.rs` 的表里（见 [战斗表现契约](combat-presentation.md)）。模式改变后先回收失效敌人的显示树与血条，再用共享网格 / 材质创建新表现。
 可信捕获、原生事件、Shift／C、有序右键与取消的唯一输入契约见 [input.md](input.md)。
 零固定步保留意图、多固定步一次消费；输入只改变意图与 ViewYaw，不能修改 MotionState 或已承诺技能。

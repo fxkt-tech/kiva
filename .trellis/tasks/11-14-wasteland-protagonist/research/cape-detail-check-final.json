@@ -1,0 +1,783 @@
+{
+  "original_sha256": "b9847c7088bcb171e9dbccd8d13bdd42f1b26b7e3aff992a3e67a445ba17f59b",
+  "artifacts": [
+    {
+      "path": "\\\\wsl.localhost\\Ubuntu-24.04\\home\\asuka\\go\\src\\github.com\\fxkt-tech\\kiva\\art\\wasteland\\cape-refined\\zhuque-cape-detail.blend",
+      "sha256": "b741e39c4e48ef26efffacab187c11974fc9f363002c3aebab573eb558e52d4e",
+      "sha256_after_audit": "b741e39c4e48ef26efffacab187c11974fc9f363002c3aebab573eb558e52d4e",
+      "artifact_changed_concurrently": false,
+      "preserved_components": 164,
+      "retained_components_exact": true,
+      "rig_sourceRest_exact": true,
+      "cape": [
+        {
+          "object": "Cape 02 - continuous asymmetric shoulder shawl",
+          "intentional_thin_fire_surface": false,
+          "control": {
+            "vertices": 4633,
+            "faces": 4480,
+            "triangles": 8960,
+            "quad_faces": 4480,
+            "zero_area_faces": 0,
+            "boundary_edges": 304,
+            "non_manifold_edges": 304,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.01489179194969208,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "evaluated": {
+            "vertices": 36450,
+            "faces": 36448,
+            "triangles": 72896,
+            "quad_faces": 36448,
+            "zero_area_faces": 0,
+            "boundary_edges": 0,
+            "non_manifold_edges": 0,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.00021729300889742075,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "effective_subsurf": true,
+          "thickness_m": [
+            0.0035000001080334187
+          ]
+        },
+        {
+          "object": "Cape 02 - contour matched fire ONLY",
+          "intentional_thin_fire_surface": true,
+          "control": {
+            "vertices": 4232,
+            "faces": 3680,
+            "triangles": 7360,
+            "quad_faces": 3680,
+            "zero_area_faces": 0,
+            "boundary_edges": 1072,
+            "non_manifold_edges": 1072,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.043773859048334106,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "evaluated": {
+            "vertices": 4232,
+            "faces": 3680,
+            "triangles": 7360,
+            "quad_faces": 3680,
+            "zero_area_faces": 0,
+            "boundary_edges": 1072,
+            "non_manifold_edges": 1072,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.04377385447097895,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "effective_subsurf": false,
+          "thickness_m": []
+        },
+        {
+          "object": "Cape 02 - layered compressed neck cowl",
+          "intentional_thin_fire_surface": false,
+          "control": {
+            "vertices": 5920,
+            "faces": 5760,
+            "triangles": 11520,
+            "quad_faces": 5760,
+            "zero_area_faces": 0,
+            "boundary_edges": 320,
+            "non_manifold_edges": 320,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.007899922822790267,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "evaluated": {
+            "vertices": 46720,
+            "faces": 46720,
+            "triangles": 93440,
+            "quad_faces": 46720,
+            "zero_area_faces": 0,
+            "boundary_edges": 0,
+            "non_manifold_edges": 0,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.00020336089235743288,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "effective_subsurf": true,
+          "thickness_m": [
+            0.003000000026077032
+          ]
+        },
+        {
+          "object": "Cape 02 - shoulder gathered long cloth",
+          "intentional_thin_fire_surface": false,
+          "control": {
+            "vertices": 14065,
+            "faces": 13824,
+            "triangles": 27648,
+            "quad_faces": 13824,
+            "zero_area_faces": 0,
+            "boundary_edges": 480,
+            "non_manifold_edges": 480,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.06209696047591282,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "evaluated": {
+            "vertices": 111554,
+            "faces": 111552,
+            "triangles": 223104,
+            "quad_faces": 111552,
+            "zero_area_faces": 0,
+            "boundary_edges": 0,
+            "non_manifold_edges": 0,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.0018514859831492943,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "effective_subsurf": true,
+          "thickness_m": [
+            0.003000000026077032
+          ]
+        }
+      ],
+      "maximum_weight_sum_error": 3.073364496231079e-08,
+      "maximum_influences": 3,
+      "upper_back_clearance": {
+        "samples": 37748,
+        "minimum_clearance_m": -0.012660808861255646,
+        "points_more_than_1mm_inside_retained_upper_back": 109,
+        "negative_points_by_object": {
+          "Cape 02 - layered compressed neck cowl": 109
+        },
+        "negative_points_by_target": {
+          "Body torso under clothing": 109
+        },
+        "worst_points": [
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.096603624522686,
+              -0.04605024307966232,
+              1.3718109130859375
+            ],
+            "clearance_m": -0.012660808861255646,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.0905417799949646,
+              -0.1331011801958084,
+              -0.9869580864906311
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.0952313169836998,
+              -0.04741173982620239,
+              1.372139573097229
+            ],
+            "clearance_m": -0.011739075183868408,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.12284616380929947,
+              -0.1378055363893509,
+              -0.9828115701675415
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09399238973855972,
+              -0.04563107714056969,
+              1.3742119073867798
+            ],
+            "clearance_m": -0.011233899742364883,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.7100667953491211,
+              0.7040535807609558,
+              -0.010658245533704758
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.0988081619143486,
+              -0.04513339325785637,
+              1.372549295425415
+            ],
+            "clearance_m": -0.01088150218129158,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.49292847514152527,
+              -0.5573217272758484,
+              -0.6681421399116516
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09383886307477951,
+              -0.04874251410365105,
+              1.3725109100341797
+            ],
+            "clearance_m": -0.010598678141832352,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.14840398728847504,
+              -0.13583076000213623,
+              -0.9795541167259216
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09268767386674881,
+              -0.046933140605688095,
+              1.3746087551116943
+            ],
+            "clearance_m": -0.010440263897180557,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.6941255927085876,
+              0.7198208570480347,
+              0.006886073853820562
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09744489938020706,
+              -0.04653964564204216,
+              1.372776985168457
+            ],
+            "clearance_m": -0.009990710765123367,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.4565117657184601,
+              -0.5764391422271729,
+              -0.6777276992797852
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09134887158870697,
+              -0.04821861535310745,
+              1.3750290870666504
+            ],
+            "clearance_m": -0.009559623897075653,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.6777634024620056,
+              0.7349374294281006,
+              0.022448047995567322
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09242919087409973,
+              -0.05004294216632843,
+              1.3729066848754883
+            ],
+            "clearance_m": -0.009470507502555847,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.16579341888427734,
+              -0.12801593542099,
+              -0.9778161644935608
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09605670720338821,
+              -0.04791467636823654,
+              1.373064637184143
+            ],
+            "clearance_m": -0.009071655571460724,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.42224475741386414,
+              -0.5907300114631653,
+              -0.6875663995742798
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09478875249624252,
+              -0.04614285007119179,
+              1.3751269578933716
+            ],
+            "clearance_m": -0.008756127208471298,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.42200037837028503,
+              0.5908278226852417,
+              0.6876323223114014
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09464706480503082,
+              -0.04925818368792534,
+              1.3733981847763062
+            ],
+            "clearance_m": -0.008446861058473587,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.3916519284248352,
+              -0.6001270413398743,
+              -0.6974641680717468
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.08997519314289093,
+              -0.049486663192510605,
+              1.3754535913467407
+            ],
+            "clearance_m": -0.00841960683465004,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.6615834832191467,
+              0.7490389347076416,
+              0.0353245735168457
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09968941658735275,
+              -0.04561099782586098,
+              1.3736190795898438
+            ],
+            "clearance_m": -0.008387472480535507,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.5175043344497681,
+              -0.554875373840332,
+              -0.6513851881027222
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09100461006164551,
+              -0.05131381377577782,
+              1.3733083009719849
+            ],
+            "clearance_m": -0.00837201252579689,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.17416977882385254,
+              -0.11545536667108536,
+              -0.9779237508773804
+            ]
+          }
+        ],
+        "method": "Back-to-front raycast against retained actual torso/top/collar/neck faces; sampled evaluated cape vertices."
+      },
+      "representative_actual_posed_vertices": 397912,
+      "maximum_actual_mesh_vs_independent_LBS_error_m": 3.926250972227871e-07,
+      "limits": "Clearance/finite skin checks do not replace visual art or all-pose self-intersection review."
+    },
+    {
+      "path": "\\\\wsl.localhost\\Ubuntu-24.04\\home\\asuka\\go\\src\\github.com\\fxkt-tech\\kiva\\art\\wasteland\\cape-refined\\zhuque-cape-runtime-source.blend",
+      "sha256": "964a094925d12fa9770f62fd5b87701a1c41514d68178c7517f71a0217b0c004",
+      "sha256_after_audit": "964a094925d12fa9770f62fd5b87701a1c41514d68178c7517f71a0217b0c004",
+      "artifact_changed_concurrently": false,
+      "preserved_components": 164,
+      "retained_components_exact": true,
+      "rig_sourceRest_exact": true,
+      "cape": [
+        {
+          "object": "Cape 02 - continuous asymmetric shoulder shawl",
+          "intentional_thin_fire_surface": false,
+          "control": {
+            "vertices": 4633,
+            "faces": 4480,
+            "triangles": 8960,
+            "quad_faces": 4480,
+            "zero_area_faces": 0,
+            "boundary_edges": 304,
+            "non_manifold_edges": 304,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.01489179194969208,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "evaluated": {
+            "vertices": 9266,
+            "faces": 9264,
+            "triangles": 18528,
+            "quad_faces": 9264,
+            "zero_area_faces": 0,
+            "boundary_edges": 0,
+            "non_manifold_edges": 0,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.00021794513525609489,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "effective_subsurf": false,
+          "thickness_m": [
+            0.0035000001080334187
+          ]
+        },
+        {
+          "object": "Cape 02 - contour matched fire ONLY",
+          "intentional_thin_fire_surface": true,
+          "control": {
+            "vertices": 4232,
+            "faces": 3680,
+            "triangles": 7360,
+            "quad_faces": 3680,
+            "zero_area_faces": 0,
+            "boundary_edges": 1072,
+            "non_manifold_edges": 1072,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.043773859048334106,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "evaluated": {
+            "vertices": 4232,
+            "faces": 3680,
+            "triangles": 7360,
+            "quad_faces": 3680,
+            "zero_area_faces": 0,
+            "boundary_edges": 1072,
+            "non_manifold_edges": 1072,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.04377385447097895,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "effective_subsurf": false,
+          "thickness_m": []
+        },
+        {
+          "object": "Cape 02 - layered compressed neck cowl",
+          "intentional_thin_fire_surface": false,
+          "control": {
+            "vertices": 5920,
+            "faces": 5760,
+            "triangles": 11520,
+            "quad_faces": 5760,
+            "zero_area_faces": 0,
+            "boundary_edges": 320,
+            "non_manifold_edges": 320,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.007899922822790267,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "evaluated": {
+            "vertices": 11840,
+            "faces": 11840,
+            "triangles": 23680,
+            "quad_faces": 11840,
+            "zero_area_faces": 0,
+            "boundary_edges": 0,
+            "non_manifold_edges": 0,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.0002038652792696766,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "effective_subsurf": false,
+          "thickness_m": [
+            0.003000000026077032
+          ]
+        },
+        {
+          "object": "Cape 02 - shoulder gathered long cloth",
+          "intentional_thin_fire_surface": false,
+          "control": {
+            "vertices": 14065,
+            "faces": 13824,
+            "triangles": 27648,
+            "quad_faces": 13824,
+            "zero_area_faces": 0,
+            "boundary_edges": 480,
+            "non_manifold_edges": 480,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.06209696047591282,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "evaluated": {
+            "vertices": 28130,
+            "faces": 28128,
+            "triangles": 56256,
+            "quad_faces": 28128,
+            "zero_area_faces": 0,
+            "boundary_edges": 0,
+            "non_manifold_edges": 0,
+            "inconsistent_winding_edges": 0,
+            "loose_vertices": 0,
+            "absolute_signed_volume_m3": 0.0018523752560916519,
+            "nonfinite_vertices_or_normals": 0
+          },
+          "effective_subsurf": false,
+          "thickness_m": [
+            0.003000000026077032
+          ]
+        }
+      ],
+      "maximum_weight_sum_error": 2.9802322387695312e-08,
+      "maximum_influences": 3,
+      "upper_back_clearance": {
+        "samples": 9484,
+        "minimum_clearance_m": -0.012715190649032593,
+        "points_more_than_1mm_inside_retained_upper_back": 36,
+        "negative_points_by_object": {
+          "Cape 02 - layered compressed neck cowl": 36
+        },
+        "negative_points_by_target": {
+          "Body torso under clothing": 36
+        },
+        "worst_points": [
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09662535041570663,
+              -0.046056777238845825,
+              1.371765375137329
+            ],
+            "clearance_m": -0.012715190649032593,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.08753052353858948,
+              -0.13039080798625946,
+              -0.9875913262367249
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09385950118303299,
+              -0.04875184968113899,
+              1.3724908828735352
+            ],
+            "clearance_m": -0.010601263493299484,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.14445599913597107,
+              -0.13576661050319672,
+              -0.98015296459198
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.0927012488245964,
+              -0.04695509746670723,
+              1.3745956420898438
+            ],
+            "clearance_m": -0.010428916662931442,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.6969847083091736,
+              0.7170558571815491,
+              0.006575057283043861
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.08998823165893555,
+              -0.04950479045510292,
+              1.3754639625549316
+            ],
+            "clearance_m": -0.008385386317968369,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.6631680727005005,
+              0.7475640177726746,
+              0.03682611137628555
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09102366864681244,
+              -0.051327016204595566,
+              1.3733174800872803
+            ],
+            "clearance_m": -0.008341524749994278,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.1699569672346115,
+              -0.11856824904680252,
+              -0.9782925248146057
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09832305461168289,
+              -0.047040753066539764,
+              1.3736975193023682
+            ],
+            "clearance_m": -0.007681794464588165,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.47836726903915405,
+              -0.5715737342834473,
+              -0.6666844487190247
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09688230603933334,
+              -0.045327115803956985,
+              1.3756945133209229
+            ],
+            "clearance_m": -0.0075113289058208466,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.47733187675476074,
+              0.5719858407974243,
+              0.6670730710029602
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.08813473582267761,
+              -0.05378914251923561,
+              1.3740918636322021
+            ],
+            "clearance_m": -0.006269928067922592,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.15716247260570526,
+              -0.08715365082025528,
+              -0.9837195873260498
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.08713559806346893,
+              -0.05197944864630699,
+              1.3762660026550293
+            ],
+            "clearance_m": -0.006257984787225723,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.6318051218986511,
+              0.7733346223831177,
+              0.05268523097038269
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09548991918563843,
+              -0.049782294780015945,
+              1.374259114265442
+            ],
+            "clearance_m": -0.005889754742383957,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.40973910689353943,
+              -0.5935246348381042,
+              -0.6927065849304199
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09424653649330139,
+              -0.04800425097346306,
+              1.3763309717178345
+            ],
+            "clearance_m": -0.00555993989109993,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.4084996283054352,
+              0.5938565135002136,
+              0.6931540369987488
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.08519826084375381,
+              -0.056148361414670944,
+              1.3746753931045532
+            ],
+            "clearance_m": -0.004516888409852982,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.10641032457351685,
+              -0.05065286159515381,
+              -0.9930312633514404
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.08414963632822037,
+              -0.054369207471609116,
+              1.3768514394760132
+            ],
+            "clearance_m": -0.004492525011301041,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              -0.6048474907875061,
+              0.7947293519973755,
+              0.05064411461353302
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.09256397932767868,
+              -0.0523935966193676,
+              1.374951720237732
+            ],
+            "clearance_m": -0.004483778029680252,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.35608014464378357,
+              -0.5962545275688171,
+              -0.7195050120353699
+            ]
+          },
+          {
+            "object": "Cape 02 - layered compressed neck cowl",
+            "blender_point": [
+              0.10286742448806763,
+              -0.045122578740119934,
+              1.3759373426437378
+            ],
+            "clearance_m": -0.0037335604429244995,
+            "target_surface": "Body torso under clothing",
+            "cape_vertex_normal": [
+              0.6160003542900085,
+              -0.5401531457901001,
+              -0.5733917951583862
+            ]
+          }
+        ],
+        "method": "Back-to-front raycast against retained actual torso/top/collar/neck faces; sampled evaluated cape vertices."
+      },
+      "representative_actual_posed_vertices": 106936,
+      "maximum_actual_mesh_vs_independent_LBS_error_m": 3.905874055461905e-07,
+      "limits": "Clearance/finite skin checks do not replace visual art or all-pose self-intersection review."
+    }
+  ]
+}

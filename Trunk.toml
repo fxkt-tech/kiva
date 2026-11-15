@@ -11,7 +11,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: { wasm }}));
 """
 
 [watch]
-ignore = ["README.md", "docs", "tests", "scripts", ".github", "Makefile"]
+ignore = ["README.md", "docs", "tests", "scripts", ".github", "Makefile", "art", "tools", "provenance", ".trellis", ".agents", ".codex"]
 
 [serve]
 addresses = ["127.0.0.1"]

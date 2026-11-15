@@ -473,6 +473,7 @@ fn update(world: &mut World) {
     } else {
         Visibility::Hidden
     };
+    super::character_effects::apply_at(world, f64::from(seconds));
     world.insert_resource(orbit);
     world.insert_resource(session);
     world.insert_resource(scene);

@@ -1,0 +1,43 @@
+{
+  "source": "art/wasteland/textured/zhuque-v11-textured.blend",
+  "source_sha256": "b9847c7088bcb171e9dbccd8d13bdd42f1b26b7e3aff992a3e67a445ba17f59b",
+  "runtime": "assets/characters/zhuque.bin",
+  "runtime_sha256": "2c15b4cde4bc5d7b4c97cb9dab27f7f24f0195fcc668903f81af02932f63959f",
+  "glb_sha256": "54f24775258b3dd0b4a7b2bc6f98fa416cd2664d0d8725dcfc9a1229f30b4d82",
+  "triangles": 39976,
+  "parts": 4,
+  "materials": 4,
+  "textures": 16,
+  "missing_source_uv_development_only": [],
+  "auxiliary_collapse": {
+    "cape_L": "gMan Spine2",
+    "cape_C": "gMan Spine2",
+    "cape_R": "gMan Spine2"
+  },
+  "runtime_snapshots": 140,
+  "maximum_joint_matrix_error": 2.60770320892334e-06,
+  "maximum_auxiliary_collapse_matrix_error": 7.748603820800781e-07,
+  "actual_blender_vertices_compared": 223740,
+  "actual_blender_compared_poses": [
+    "HammerMusket:reference:0.00",
+    "HammerMusket:game:run:0.25",
+    "HammerMusket:game:jump:0.50",
+    "HammerMusket:game:dodge_right:0.35",
+    "HammerMusket:PlayerMelee { pair: HammerMusket, stage: One }:tick024"
+  ],
+  "maximum_f32_weights255_lbs_error_m": 0.0004368405872966123,
+  "glb_declared_orm_materials_checked": 4,
+  "vertices_read_from_actual_glb": 44748,
+  "maximum_glb_bind_to_authored_geometry_error_m": 5.707117338715761e-07,
+  "glb_uv_vertices_checked": 44748,
+  "maximum_glb_runtime_uv_error": 2.9802322387695312e-08,
+  "glb_posed_vertices_checked": 223740,
+  "glb_compared_poses": [
+    "HammerMusket:reference:0.00",
+    "HammerMusket:game:run:0.25",
+    "HammerMusket:game:jump:0.50",
+    "HammerMusket:game:dodge_right:0.35",
+    "HammerMusket:PlayerMelee { pair: HammerMusket, stage: One }:tick024"
+  ],
+  "maximum_glb_runtime_posed_lbs_error_m": 0.00043705349544160107
+}

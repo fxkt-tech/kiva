@@ -41,11 +41,13 @@ pub(super) fn sample(
         match take_appearance() {
             1 => selection.0 = Appearance::Choulingke,
             2 => selection.0 = Appearance::Lihuowang,
+            3 => selection.0 = Appearance::Zhuque,
             _ => {}
         }
         render(match selection.0 {
             Appearance::Choulingke => 1,
             Appearance::Lihuowang => 2,
+            Appearance::Zhuque => 3,
             Appearance::Bailingmiao => unreachable!("player appearance excludes companion"),
         });
     }
@@ -53,7 +55,8 @@ pub(super) fn sample(
     if window.focused && active.0 && keys.just_pressed(KeyCode::F3) {
         selection.0 = match selection.0 {
             Appearance::Choulingke => Appearance::Lihuowang,
-            Appearance::Lihuowang => Appearance::Choulingke,
+            Appearance::Lihuowang => Appearance::Zhuque,
+            Appearance::Zhuque => Appearance::Choulingke,
             Appearance::Bailingmiao => unreachable!("player appearance excludes companion"),
         };
     }
@@ -151,6 +154,12 @@ mod tests {
 
     #[test]
     fn paired_appearance_switch_preserves_paused_airborne_actor_pose_and_enemy() {
+        for selected in [Appearance::Lihuowang, Appearance::Zhuque] {
+            check_selected_appearance(selected);
+        }
+    }
+
+    fn check_selected_appearance(selected: Appearance) {
         let (mut world, actor, view) = scene();
         let original_transform = *world.get::<Transform>(view).unwrap();
         let source_model = world
@@ -188,12 +197,9 @@ mod tests {
             .single(&world)
             .unwrap();
         let sister_children: Vec<_> = world.get::<Children>(sister).unwrap().iter().collect();
-        world.resource_mut::<AppearanceSelection>().0 = Appearance::Lihuowang;
+        world.resource_mut::<AppearanceSelection>().0 = selected;
         reconcile(&mut world);
-        assert_eq!(
-            world.get::<AvatarAppearance>(view).unwrap().0,
-            Appearance::Lihuowang
-        );
+        assert_eq!(world.get::<AvatarAppearance>(view).unwrap().0, selected);
         assert_eq!(*world.get::<Transform>(view).unwrap(), original_transform);
         assert_eq!(
             world.get::<Body>(actor).unwrap().world_position(),
@@ -261,7 +267,7 @@ mod tests {
                 sister_children
             );
             assert_eq!(weapon_meshes(&mut world, true), old_melee);
-            world.resource_mut::<AppearanceSelection>().0 = Appearance::Lihuowang;
+            world.resource_mut::<AppearanceSelection>().0 = selected;
             reconcile(&mut world);
             assert_eq!(
                 (

@@ -55,6 +55,7 @@ pub(super) fn appearance_id(value: Appearance) -> &'static str {
         Appearance::Choulingke => "choulingke",
         Appearance::Lihuowang => "lihuowang",
         Appearance::Bailingmiao => "bailingmiao",
+        Appearance::Zhuque => "zhuque",
     }
 }
 pub(super) fn parse_appearance(id: &str) -> Option<Appearance> {
@@ -62,6 +63,7 @@ pub(super) fn parse_appearance(id: &str) -> Option<Appearance> {
         "choulingke" => Some(Appearance::Choulingke),
         "lihuowang" => Some(Appearance::Lihuowang),
         "bailingmiao" => Some(Appearance::Bailingmiao),
+        "zhuque" => Some(Appearance::Zhuque),
         _ => None,
     }
 }
@@ -166,12 +168,11 @@ impl Session {
             return "custom";
         }
         match (self.appearance, self.weapon) {
-            (Appearance::Lihuowang | Appearance::Choulingke, Weapon::Hammer)
-                if !self.action.contains("companion") =>
-            {
-                "brother_hammer"
-            }
-            (Appearance::Lihuowang | Appearance::Choulingke, Weapon::Axe)
+            (
+                Appearance::Lihuowang | Appearance::Choulingke | Appearance::Zhuque,
+                Weapon::Hammer,
+            ) if !self.action.contains("companion") => "brother_hammer",
+            (Appearance::Lihuowang | Appearance::Choulingke | Appearance::Zhuque, Weapon::Axe)
                 if !self.action.contains("companion") =>
             {
                 "brother_axe"

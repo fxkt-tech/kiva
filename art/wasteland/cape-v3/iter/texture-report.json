@@ -1,0 +1,92 @@
+{
+  "cape_inner": {
+    "bbox": [
+      -0.7175901368343065,
+      -1.123018018018018,
+      0.7658720342194177,
+      0.015
+    ],
+    "size": [
+      1632,
+      1252
+    ],
+    "files": {
+      "base": {
+        "path": "cape_inner_base.png",
+        "sha256": "72ad039b83bcdcfa1796767cfe3f8cf060d931f727724d48ac57927d84471a18"
+      },
+      "emission": {
+        "path": "cape_inner_emission.png",
+        "sha256": "88f6a7fe80ba3ee47015faa790c59859e7633079963a67ba53d7a746d4e937b2"
+      },
+      "normal": {
+        "path": "cape_inner_normal.png",
+        "sha256": "18dc2798e6f7f8c6a34b6bf5ec054c468d03c8f2be9c127489e65d449f8a9071"
+      },
+      "orm": {
+        "path": "cape_inner_orm.png",
+        "sha256": "7399fb7f0dc37bd34f62a63ebbee0a21d88f53e7d55aa699b37e9f3bc1f24ff0"
+      }
+    }
+  },
+  "cape_outer": {
+    "bbox": [
+      -0.5363255201239372,
+      -0.8185514018691589,
+      0.5983522415932188,
+      0.015
+    ],
+    "size": [
+      1249,
+      917
+    ],
+    "files": {
+      "base": {
+        "path": "cape_outer_base.png",
+        "sha256": "0f752927c90044396f1393e94fe419176526c72d56e9708f62be7941d7aa3989"
+      },
+      "emission": {
+        "path": "cape_outer_emission.png",
+        "sha256": "e63ebc2e4b004ff3c3b7ef24d2cd7dcdde9a16917f14e3a639142c5149a811d3"
+      },
+      "normal": {
+        "path": "cape_outer_normal.png",
+        "sha256": "6120f00d4525c1695628c223dff5dcda34c584f3a52fbab537f41ce86194d106"
+      },
+      "orm": {
+        "path": "cape_outer_orm.png",
+        "sha256": "6009191bf8d73e2086361c77c2782bb7d02c8de63e3dd6de470bbff8c3be1037"
+      }
+    }
+  },
+  "scarf": {
+    "bbox": [
+      0.0,
+      -0.22,
+      1.09,
+      0.22
+    ],
+    "size": [
+      1199,
+      484
+    ],
+    "files": {
+      "base": {
+        "path": "scarf_base.png",
+        "sha256": "77b9c086ecd898bb3dc45feadf4f13976272cbaf53d05917291fc63846d7513a"
+      },
+      "emission": {
+        "path": "scarf_emission.png",
+        "sha256": "05fa796127925b804c5bf350cb2f19160926a0b7136b19d1eb7a461b7bacc4c6"
+      },
+      "normal": {
+        "path": "scarf_normal.png",
+        "sha256": "8b8d2248424de2ddae79646d65abd6fd1918bb3f1d932f53cb59d9bcfb1ed8b9"
+      },
+      "orm": {
+        "path": "scarf_orm.png",
+        "sha256": "884567818ec8367c2ab17df219ad36fd12c35e42cbc4ef6a3324a0a16dd7342d"
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "Ruff and py_compile passed",
+    "4885 source vertices deterministic and finite",
+    "Shared head/eye warp and3mm iris presentation contract passed",
+    "Independent saved study reopen:7meshes/9804evaluatedtriangles, all finite"
+  ],
+  "verification": "Independent background Blender reopened existing saved study without rebuilding",
+  "reopened_meshes": 7,
+  "evaluated_triangles": 9804,
+  "finite_vertices": 4933,
+  "helper_sha256": "d08440b7628bfc33646cfff3451cd237debd788b435018b6cd7c926b598a83ac",
+  "study_sha256": "2eaa9cad48e420a65be9a306e4b1b97be6f735b1b85f92ae673e78660022525d",
+  "limits": "Study only; whole-body rig/140-pose checks owned by full builder"
+}

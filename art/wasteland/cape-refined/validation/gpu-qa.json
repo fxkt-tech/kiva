@@ -1,0 +1,160 @@
+{
+  "url": "http://127.0.0.1:3221/?view=model",
+  "runtime_sha256": "4ccf4c8392b99c99ce075ace84eabb95cdfef6f478ad4e31e8052f1cfd053c23",
+  "errors": [],
+  "checks": [
+    {
+      "image": "final-front.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:idle",
+      "time": "0.000 / 3.000 s · 第 0 帧",
+      "trace": "状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：male_hengdao_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-back.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:idle",
+      "time": "0.000 / 3.000 s · 第 0 帧",
+      "trace": "状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：male_hengdao_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-three-quarter.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:idle",
+      "time": "0.000 / 3.000 s · 第 0 帧",
+      "trace": "状态：idle\nCC0底层：Sword_Idle · 0.000s\n源层：male_hengdao_idle_01 · 0.000s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-attack.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:attack",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.693s\n源层：male_hengdao_attack_light_01 · 0.490s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(One) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-attack2.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:attack2",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.693s\n源层：male_hengdao_attack_light_02 · 0.681s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Two) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-attack3.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:attack3",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：gesture\nCC0底层：Sword_Attack · 0.693s\n源层：male_hengdao_attack_light_03 · 0.660s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Three) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-crouch.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:crouch",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：crouch\nCC0底层：Sword_Idle · 0.400s\n源层：male_hengdao_crouch_idle_01 · 0.400s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 1.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-run.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:run",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：run\nCC0底层：Jog_Fwd_Loop · 0.640s\n源层：male_hengdao_run_01 · 0.400s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-jump.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:jump",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：airborne blend\nCC0底层：混合／参考 · 0.000s\n源层：male_hengdao_jump_down_loop_01 · 0.220s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=male_hengdao_finger_right_01 (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-dodge_right.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:dodge_right",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：dodge\nCC0底层：Roll · 1.397s\n源层：male_hengdao_dodge_right_01 · 1.905s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-guard.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:guard",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：defense\nCC0底层：Sword_Block · 0.400s\n源层：male_hengdao_shock_01 · 0.400s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：Some(Guard) 0.183s · 手势：Some((Deflect, 0.38333336)) · 已打断 false\n适配：Kiva defensive entry/hold\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-fulangmao-hit.png",
+      "current": "朱雀 · 伏浪锚 · 锤子",
+      "action": "game:hit",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：idle\nCC0底层：Sword_Idle · 0.167s\n源层：male_hengdao_idle_01 · 0.167s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-attack.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:attack",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：gesture\nCC0底层：Sword_Regular_B · 0.330s\n源层：male_hengdao_attack_light_01 · 0.735s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(One) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-attack2.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:attack2",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：gesture\nCC0底层：Sword_Regular_B · 0.330s\n源层：male_hengdao_attack_light_02 · 1.022s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Two) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-attack3.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:attack3",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：gesture\nCC0底层：Sword_Regular_B · 0.330s\n源层：male_hengdao_attack_light_03 · 0.990s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：Some(Three) · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-crouch.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:crouch",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：crouch\nCC0底层：Sword_Idle · 0.400s\n源层：male_hengdao_crouch_idle_01 · 0.400s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 1.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-run.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:run",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：run\nCC0底层：Jog_Fwd_Loop · 0.640s\n源层：male_hengdao_run_01 · 0.400s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-jump.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:jump",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：airborne blend\nCC0底层：混合／参考 · 0.000s\n源层：male_hengdao_jump_down_loop_01 · 0.220s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=male_hengdao_finger_right_01 (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-dodge_right.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:dodge_right",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：dodge\nCC0底层：Roll · 1.397s\n源层：male_hengdao_dodge_right_01 · 1.905s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-guard.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:guard",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：defense\nCC0底层：Sword_Block · 0.400s\n源层：male_hengdao_shock_01 · 0.400s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main; no supplemental finger layers\n组合范围：source full body\n阶段：None · 防御：Some(Guard) 0.183s · 手势：Some((Deflect, 0.38333336)) · 已打断 false\n适配：Kiva defensive entry/hold\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    },
+    {
+      "image": "final-zhexingcuishan-hit.png",
+      "current": "朱雀 · 谪星摧山 · 链斧",
+      "action": "game:hit",
+      "time": "0.400 / 3.000 s · 第 24 帧",
+      "trace": "状态：idle\nCC0底层：Sword_Idle · 0.167s\n源层：male_hengdao_idle_01 · 0.167s · 权重 1.000\n骨架：naraka/l22_male_skeleton\n实际源层：native main priority; Kiva missing-chain supplements: L=male_hengdao_finger_left_01 / R=none (original controller weights unknown)\n组合范围：source full body\n阶段：None · 防御：None 0.000s · 手势：None · 已打断 false\n适配：native Humanoid bake; Kiva retarget\n回退：无\n过渡 1.000 · 蹲姿IK 0.000 · 双手IK 关闭"
+    }
+  ],
+  "paused_time_stable": true,
+  "source_high_sha256": "b741e39c4e48ef26efffacab187c11974fc9f363002c3aebab573eb558e52d4e",
+  "source_runtime_sha256": "964a094925d12fa9770f62fd5b87701a1c41514d68178c7517f71a0217b0c004",
+  "browser": "Windows Edge 157, actual WebGPU",
+  "scope": "21 screenshots: 3 views + 9 actual action snapshots for each weapon at 0.400s, playback/pause stability. Not full continuous game simulation/combat recording.",
+  "hot_reload": "QA page websocket isolated; user Trunk service left running."
+}
