@@ -13,16 +13,19 @@
   /* Layout: the UI fills the window at any resolution. Every size and offset is in rem, and the
      root font size follows the window (16px at 1920×1080), so the whole layout scales in
      proportion from 720p to 4K; elements stay anchored to the window edges. */
-  @theme {
+  @theme static {
     /* 朱雀: the protagonist and the main action. 青鸾: the sister, selection and guidance. */
     --color-zhuque: #d6382b;
-    --color-ember: #f06a2c;
-    --color-gold: #e7b23f;
+    --color-ember: #fa5424;
+    --color-gold: #f5b310;
     --color-qingluan: #23a596;
     --color-qingluan-hi: #5fd8c8;
     /* wasteland neutrals */
     --color-char: #1b1e21;
     --color-ash: #2a2f33;
+    /* explore page: slate cards on a pale, misty page */
+    --color-slate: #223b45;
+    --color-mist: #efefef;
     --color-paper: #e9ebe8;
     --color-paper-2: #c6cbc9;
     --color-ink: #f3f4f2;
@@ -64,6 +67,83 @@
   @utility num { font-family: var(--font-num); font-weight: 700; font-variant-numeric: tabular-nums; }
 </style>
 <style>
+  /* Lobby: keep its existing anchors, spacing and content; share the explore plate language. */
+  #lobby {
+    --lobby-rule: #dbe5e54d;
+    --lobby-plate: #223b45e8;
+    color: var(--color-ink);
+    text-shadow: 0 .08rem .12rem #14242cd9;
+  }
+  #lobby > svg { opacity: .45; }
+  #lobby nav::before { background: var(--lobby-rule); }
+  #lobby kv-menu-item button {
+    text-shadow: .06rem .06rem 0 #14242c, 0 .15rem .35rem #14242c99;
+    transition: color 150ms, text-shadow 150ms;
+  }
+  #lobby kv-menu-item button:hover { translate: none; color: white; text-shadow: 0 .1rem .3rem #14242c; }
+  #lobby kv-menu-item button b { letter-spacing: .025em; }
+  #lobby kv-menu-item[lead] button b { color: white; }
+  #lobby kv-menu-item[lead] button b > i { background: var(--color-ember); box-shadow: none; }
+  #lobby kv-menu-item button::after {
+    content: ''; pointer-events: none; position: absolute; left: 0; right: 0; bottom: -.65rem;
+    height: 1px; background: linear-gradient(90deg, #eef3f380, #eef3f300);
+    opacity: 0; transition: opacity 150ms;
+  }
+  #lobby kv-menu-item button:is(:hover, :focus-visible)::after { opacity: 1; }
+  #lobby > div { color: #d1d9dc; text-shadow: 0 .08rem .18rem #14242c; }
+  #lobby kv-resource svg { filter: none; }
+  #lobby kv-resource .num, #lobby > div .num { color: #eef2f2; }
+  /* Explore follows the reference's quiet white field and compact industrial plates. */
+  #sortie { --accent: var(--color-ember); --panel-width: 31.5rem; color: #263238; }
+  #sortie #nodes { right: var(--panel-width); }
+  #sortie #track { gap: 13rem; padding-inline: 7rem; transform: translateY(-1.15rem); }
+  #sortie #track::before { background: #77858a; height: 1px; }
+  #sortie > header { right: 0; top: 1.5rem; }
+  #sortie > header h1 { font-size: 1.85rem; letter-spacing: 0; }
+  #sortie > header small { margin-left: -13.8rem; margin-bottom: .15rem; color: var(--accent); }
+  #sortie > div:has(> #to-lobby) { top: 1.3rem; left: 1.75rem; gap: 1.8rem; }
+  #sortie #to-lobby, #sortie #to-home { width: 3.75rem; height: 3.75rem; border-radius: .25rem; background: #d5d6d6d9; color: #303b40; }
+  #sortie #to-lobby svg { width: 2.5rem; height: 2.5rem; }
+  #sortie #d-reward { bottom: 2.8rem; left: 1.75rem; color: #8d9292; font-size: 1.25rem; }
+  #sortie aside { width: var(--panel-width); border-left: 1px solid #c3c8ca; box-shadow: -.1rem 0 .3rem #0001; background: #efefeff5; }
+  #sortie aside::before { content: ''; pointer-events: none; position: absolute; width: 23rem; height: 23rem; right: -5rem; bottom: -5rem; border: .4rem double #53636b0b; border-radius: 50%; background: repeating-conic-gradient(from 30deg, #53636b06 0deg 1deg, transparent 1deg 30deg); }
+  #sortie aside > div:first-child { height: 10.7rem; border-bottom: .35rem solid #c9cbcc; }
+  #sortie aside > div:first-child img { filter: saturate(.3) brightness(.8); object-position: 50% 34%; }
+  #sortie aside > div:first-child > div { bottom: 1rem; left: 2rem; gap: .65rem; }
+  #sortie #d-name { font-size: 2rem; letter-spacing: 0; }
+  #sortie #d-level { font-family: inherit; }
+  #sortie aside > div:nth-child(2) { padding: 1.15rem 1.8rem; gap: .9rem; }
+  #sortie #d-desc { font-size: 1.45rem; line-height: 1.55; padding: 0 .6rem .7rem; border-bottom: .125rem solid #b8bbbd; }
+  #sortie summary { background: #394e57; padding: .35rem 1rem; font-size: 1.45rem; line-height: 1.2; box-shadow: 0 .08rem .35rem #0003; letter-spacing: .05em; }
+  #sortie summary i { opacity: .7; }
+  #sortie #d-goals { gap: .42rem; padding: .6rem .7rem .15rem; }
+  #sortie #d-goals li { color: #405e6a; font-size: 1.3rem; gap: .55rem; }
+  #sortie #d-goals svg { width: 1.3rem; height: 1.3rem; flex-shrink: 0; }
+  #sortie #d-foes { padding: .9rem .55rem 0; gap: .85rem; }
+  #sortie #d-foes li { width: 6rem; height: 6rem; background: linear-gradient(145deg, #a9adae, #828b8f); box-shadow: 0 .1rem .3rem #0003; }
+  #sortie #d-foes li::after { content: ''; position: absolute; inset: 65% 0 0; background: linear-gradient(transparent, #18272dd9); }
+  #sortie #d-foes b { z-index: 1; bottom: .2rem; font-size: 1.4rem; }
+  #sortie #d-foes .enemy-portrait { width: 100%; height: 100%; transform: none; }
+  #sortie aside > div:last-child { padding: 1rem 1.8rem 2.5rem; z-index: 1; }
+  #sortie #b-go { height: 4rem; background: #1d2e36; border-radius: .15rem; font-size: 1.6rem; letter-spacing: 0; }
+  #sortie #b-go:hover { background: #314952; }
+  #sortie #b-go > span:first-child { background: #334b55; width: 2.8rem; height: 2.8rem; }
+  #sortie #b-go > span:first-child svg { display: none; }
+  #sortie #b-go > span:first-child::after { content: ''; width: 1.6rem; height: 1.6rem; border: .25rem solid var(--color-gold); border-radius: 50%; }
+  #sortie #b-go > span:last-child { font-size: 1rem; opacity: .6; }
+  #sortie kv-stage > small { top: -1.5rem; font-size: 1.05rem; }
+  #sortie kv-stage > small i { color: var(--accent); }
+  #sortie kv-stage button { width: 20.5rem; grid-template-rows: 4.65rem 1rem; border-radius: .25rem; background: #223b45f5; box-shadow: 0 .18rem .35rem #0003; }
+  #sortie kv-stage[data-selected] button { outline: .2rem solid white; outline-offset: .05rem; }
+  #sortie kv-stage button > span:first-child { padding: 0 1.5rem 0 1.25rem; background: repeating-linear-gradient(90deg, transparent 0 5rem, #ffffff02 5rem 5.5rem); }
+  #sortie kv-stage button b { font-family: var(--font-sans); font-size: 1.85rem; font-weight: 900; letter-spacing: .02em; color: #e2e4e5; }
+  #sortie kv-stage button > span:first-child svg { width: 1.85rem; height: 1.85rem; stroke: #fff; stroke-width: 1.4; }
+  #sortie kv-stage button > span:nth-child(2) { color: #552b1b; font-style: italic; background: repeating-linear-gradient(90deg, #fa5424 0 1rem, #f85020 1rem 1.7rem, #f45b26 1.7rem 2rem); }
+  #sortie kv-stage button > i:first-of-type { top: .5rem; right: .7rem; width: 2rem; height: .6rem; opacity: .5; }
+  #sortie kv-stage button > i:last-child { width: 1.75rem; height: 1.75rem; top: -.55rem; right: -.55rem; background: #ff7023; box-shadow: 0 0 0 .15rem #9faeb4; }
+  #sortie kv-stage[data-state=locked] button { background: #7a878e; }
+  #sortie kv-stage[data-state=locked] button > span:nth-child(2) { background: #9da6aa; color: #4a555b; }
+  #sortie kv-stage[data-state=locked] button > span:first-child svg { color: #a8b1b6; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
 </style>
 
@@ -72,17 +152,10 @@
   <symbol id="i-scrap" viewBox="0 0 24 24"><path d="M12 2.5 20.5 7.5v9L12 21.5 3.5 16.5v-9z" fill="#9aa3a6"/><circle cx="12" cy="12" r="3.4" fill="#33393c"/></symbol>
   <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20 3C11 4 5.5 9.5 4.5 19.5L6 21c1-3 2.4-5.4 4.2-7.2L14 14l-2.6-1.6L17 11l-3-1.4L19 8l-2.4-.9z" fill="#ef4b36"/></symbol>
   <symbol id="i-feather-teal" viewBox="0 0 24 24"><path d="M20 3C11 4 5.5 9.5 4.5 19.5L6 21c1-3 2.4-5.4 4.2-7.2L14 14l-2.6-1.6L17 11l-3-1.4L19 8l-2.4-.9z" fill="#5fd8c8"/></symbol>
-  <symbol id="i-mail" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 6h17v12h-17z"/><path d="m3.5 6.5 8.5 7 8.5-7"/></g></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M12 2.5 22.5 20.5h-21zM12 9.6 7.6 17.2h8.8z" fill="currentColor" fill-rule="evenodd"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-medal" viewBox="0 0 24 24"><path d="M12 1.5 21.1 6.75v10.5L12 22.5 2.9 17.25V6.75z" fill="currentColor"/><path d="m3 12 5-3 5 3 8-4v5l-8 4-5-3-5 3z" fill="#fff" stroke="#fff" stroke-width="1"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="2.2"/></symbol>
-  <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></g></symbol>
-  <symbol id="i-gear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"/></g></symbol>
-  <symbol id="i-ticket" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M14 7v10" stroke-dasharray="2 2"/></g></symbol>
-  <symbol id="i-chat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 5h16v11H9l-5 4z"/></g><g fill="currentColor"><circle cx="9" cy="10.5" r="1.1"/><circle cx="12" cy="10.5" r="1.1"/><circle cx="15" cy="10.5" r="1.1"/></g></symbol>
-  <symbol id="i-roster" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c1-4.2 4-6 7.5-6s6.5 1.8 7.5 6"/></g></symbol>
-  <symbol id="i-armory" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 19 17 7M14 4l6 6M4 16l4 4M6.5 13.5l4 4"/></g></symbol>
-  <symbol id="i-supply" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.5 8 12 3.5 20.5 8v8L12 20.5 3.5 16z"/><path d="M3.5 8 12 12.5 20.5 8M12 12.5v8"/></g></symbol>
-  <symbol id="i-orders" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3.5h12v17H6z"/><path d="M9 9l1.6 1.6L14 7.4M9 15h6"/></g></symbol>
-  <symbol id="i-archive" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5h6l2 2h8v12H4z"/><path d="M8 12h8"/></g></symbol>
 </svg>
 
 <main id="stage" class="fixed inset-0 isolate overflow-hidden bg-char [color-scheme:dark]">
@@ -98,101 +171,71 @@
     </g>
   </svg>
 
-  <nav class="absolute top-28 left-16 grid w-64 gap-2.5 border-l border-white/25 pl-4" aria-label="活动">
-    <kv-banner title="拾荒者考核" note="通过考核获得赤羽 ×300" tone="0"></kv-banner>
-    <kv-banner id="ev-rain" title="锈雨夜行" note="限时 · 剩余 14 天" tone="1" hot alert></kv-banner>
-    <kv-banner title="重启灰原哨站" note="营地建设" tone="2" alert></kv-banner>
-    <kv-banner title="熔炉回廊" note="挑战期" tone="3" alert></kv-banner>
+
+  <nav class="absolute top-1/2 left-10 grid -translate-y-1/2 justify-items-start gap-14 pl-6 before:absolute before:inset-y-[-.75rem] before:left-0 before:w-px before:bg-white/25" aria-label="主菜单">
+    <kv-menu-item id="to-sortie" lead label="探索"></kv-menu-item>
+    <kv-menu-item label="回忆"></kv-menu-item>
+    <kv-menu-item label="武器"></kv-menu-item>
+    <kv-menu-item label="行囊"></kv-menu-item>
+    <kv-menu-item label="绘卷"></kv-menu-item>
   </nav>
 
-  <nav class="absolute top-24 right-16 grid justify-items-end gap-7" aria-label="主菜单">
-    <kv-menu-item id="to-sortie" lead label="出击" code="// KV-0417 · 进行中" note="主线 3-7 炼厂夜战" dot></kv-menu-item>
-    <kv-menu-item label="限时作战" code="// 22.4886.31" icon="clock" dot></kv-menu-item>
-    <kv-menu-item label="整备室" code="// 44.7326.74"></kv-menu-item>
-    <kv-menu-item label="活动层" code="// 12.5501.45" tag="内容更新" tone="zhuque" dot></kv-menu-item>
-    <kv-menu-item label="招募" code="// 86.3598.19" up></kv-menu-item>
-    <kv-menu-item label="商城" code="// 51.8486.17" tag="精选新品" tone="qingluan" dot></kv-menu-item>
-  </nav>
-
-  <div class="absolute bottom-44 left-16 grid justify-items-center gap-5">
-    <button type="button" aria-label="邮件" class="relative grid size-16 place-items-center rounded-full bg-char/75 ring-1 ring-white/30 hover:brightness-125">
-      <svg class="size-7 text-white" aria-hidden="true"><use href="#i-mail"/></svg>
-      <i class="absolute top-1 right-1 size-2.5 rounded-full bg-zhuque"></i>
-    </button>
-    <button type="button" aria-label="姐姐 · 青鸾" class="relative grid size-20 place-items-center rounded-full bg-char/75 ring-2 ring-qingluan-hi shadow-[0_0_1.4rem_#5fd8c866] hover:brightness-125">
-      <svg class="size-9" aria-hidden="true"><use href="#i-feather-teal"/></svg>
-      <span class="absolute -bottom-7 text-xs font-bold whitespace-nowrap text-qingluan-hi">青鸾</span>
-    </button>
+  <div class="absolute bottom-9 left-16 flex items-center gap-6 text-sm font-bold text-ink-2">
+    <span>拾荒队等级 <b class="num text-base text-ink">42</b></span>
+    <kv-resource icon="feather" value="1,260" label="火羽" compact plain></kv-resource>
+    <kv-resource icon="feather-teal" value="86" label="青羽" compact plain></kv-resource>
   </div>
 
-  <div class="absolute bottom-9 left-16 grid gap-3">
-    <div class="flex text-white">
-      <button type="button" aria-label="设置" class="grid h-10 w-16 place-items-center border-l border-white/30 hover:drop-shadow-[0_0_.4rem_#fff8]"><svg class="size-7"><use href="#i-gear"/></svg></button>
-      <button type="button" aria-label="兑换码" class="grid h-10 w-16 place-items-center border-l border-white/30 hover:drop-shadow-[0_0_.4rem_#fff8]"><svg class="size-7"><use href="#i-ticket"/></svg></button>
-      <button type="button" aria-label="通讯" class="grid h-10 w-16 place-items-center border-x border-white/30 hover:drop-shadow-[0_0_.4rem_#fff8]"><svg class="size-7"><use href="#i-chat"/></svg></button>
-    </div>
-    <div class="flex items-center gap-6 text-sm font-bold text-ink-2">
-      <span>拾荒队等级 <b class="num text-base text-ink">42</b></span>
-      <kv-resource icon="stamina" value="132" max="160" label="体力" compact></kv-resource>
-      <kv-resource icon="feather" value="1,260" label="赤羽" compact></kv-resource>
-    </div>
-  </div>
-
-  <nav class="absolute right-104 bottom-9 flex text-white" aria-label="常用">
-    <kv-dock-item icon="archive" label="档案"></kv-dock-item>
-    <kv-dock-item icon="roster" label="编队"></kv-dock-item>
-    <kv-dock-item icon="armory" label="兵器"></kv-dock-item>
-    <kv-dock-item icon="orders" label="委托"></kv-dock-item>
-    <kv-dock-item icon="supply" label="营地"></kv-dock-item>
-  </nav>
-
-  <button type="button" id="promo" class="absolute right-16 bottom-9 h-28 w-84 overflow-hidden text-left ring-1 ring-white/40 hover:ring-2 hover:ring-white">
-    <canvas class="absolute inset-0 h-full w-full" width="640" height="224"></canvas>
-    <b class="absolute top-3 left-4 text-2xl font-black italic">定向补给</b>
-    <span class="absolute inset-x-0 bottom-0 bg-zhuque px-4 py-1 text-xs font-bold whitespace-nowrap [text-shadow:none]">「朱雀 · 焚羽」限时 UP</span>
-  </button>
 </section>
 
 <!-- ===================== sortie ===================== -->
-<section id="sortie" class="absolute inset-0 font-sans shade" aria-label="出击" hidden>
-  <button type="button" id="to-lobby" class="absolute top-8 left-12 flex items-center gap-3 text-white hover:text-qingluan-hi">
-    <svg class="size-9" aria-hidden="true"><use href="#i-back"/></svg>
-    <b class="text-xl font-black tracking-wide">出击 · 主线</b>
-  </button>
-  <div class="absolute top-8 right-12 flex items-center gap-8">
-    <kv-resource icon="stamina" value="132" max="160" label="体力"></kv-resource>
-    <kv-resource icon="feather" value="1,260" label="赤羽"></kv-resource>
+<section id="sortie" class="absolute inset-0 font-sans text-ink-dark" aria-label="探索" hidden>
+  <div id="nodes" class="absolute inset-y-0 right-[31rem] left-0 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div id="track" class="relative flex h-full w-max min-w-full items-center gap-[9rem] px-[7rem] before:absolute before:inset-x-0 before:top-1/2 before:h-px before:bg-[#3b4448]"></div>
   </div>
 
-  <nav id="chapters" class="absolute top-28 left-12 grid w-72 gap-2" aria-label="章节"></nav>
-
-  <div id="nodes" class="absolute top-36 right-136 bottom-32 left-92">
-    <svg id="routes" class="absolute inset-0 h-full w-full overflow-visible drop-shadow-[0_0_.2rem_#000a]" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <div class="absolute top-6 left-8 flex gap-6">
+    <button type="button" id="to-lobby" aria-label="返回" class="grid size-16 place-items-center bg-[#cdd2d4]/85 text-ink-dark shadow-[0_.1rem_.4rem_#0002] hover:bg-white"><svg class="size-8" aria-hidden="true"><use href="#i-back"/></svg></button>
+    <button type="button" id="to-home" aria-label="主界面" class="grid size-16 place-items-center bg-[#cdd2d4]/85 text-ink-dark shadow-[0_.1rem_.4rem_#0002] hover:bg-white"><svg class="size-9" aria-hidden="true"><use href="#i-home"/></svg></button>
   </div>
 
-  <aside class="absolute top-28 right-12 bottom-10 grid w-120 grid-rows-[auto_auto_1fr_auto] bg-char/80 [text-shadow:none]" aria-label="关卡详情">
-    <div class="grid gap-2 px-8 pt-8 pb-5">
-      <div class="flex gap-2 text-xs font-bold">
-        <span class="bg-qingluan px-2">主线</span>
-        <span id="d-boss" class="bg-zhuque px-2">首领战</span>
+  <header class="pointer-events-none absolute top-5 right-[31rem] left-0 grid justify-items-center">
+    <small id="d-chapter-code" class="num -mb-0.5 -ml-10 text-[.6rem] leading-none text-zhuque">C- 03.0</small>
+    <h1 class="m-0 text-2xl leading-tight font-black tracking-wide"><i class="mr-2 not-italic text-zhuque">/</i><span id="d-chapter">03 炼厂</span></h1>
+  </header>
+
+  <p id="d-reward" class="absolute bottom-7 left-8 m-0 border-l-[.25rem] border-[#8b9397] pl-2 text-sm leading-none font-bold text-[#6b7377]"></p>
+
+  <aside class="absolute inset-y-0 right-0 grid w-[31rem] grid-rows-[auto_1fr_auto] bg-mist shadow-[-.5rem_0_2rem_#0000001f]" aria-label="关卡详情">
+    <div class="relative h-[11rem] overflow-hidden bg-slate">
+      <img src="朱雀焚羽破空.png" alt="" class="absolute inset-0 h-full w-full object-cover">
+      <i class="absolute inset-0 bg-linear-to-t from-black/75 via-black/25 to-transparent"></i>
+      <div class="absolute bottom-5 left-8 grid gap-1.5 text-white shade">
+        <span class="text-base leading-none font-bold text-white/80">推荐等级 <b id="d-level" class="num">44</b></span>
+        <h2 id="d-name" class="m-0 text-3xl leading-none font-black tracking-wide">炼厂夜战</h2>
       </div>
-      <h2 class="m-0 flex items-baseline gap-4 text-3xl leading-tight font-black">
-        <span id="d-code" class="num text-ember">3-7</span><span id="d-name">炼厂夜战</span>
-      </h2>
     </div>
-    <p id="d-desc" class="m-0 px-8 pb-5 text-sm text-ink-2"></p>
-    <div class="grid content-start gap-4 border-t border-white/15 px-8 py-5 text-sm">
-      <div class="flex items-baseline justify-between"><span class="text-ink-2">推荐战力</span><b id="d-power" class="num text-lg"></b></div>
-      <div class="flex items-baseline justify-between"><span class="text-ink-2">当前战力</span><b class="num text-lg">8,412</b></div>
-      <ul id="d-goals" class="m-0 grid list-none gap-3 p-0"></ul>
-      <div id="d-drops" class="flex gap-2.5"></div>
+    <div class="grid content-start gap-4 overflow-y-auto px-7 pt-6 pb-4">
+      <p id="d-desc" class="m-0 border-b-2 border-[#c9cfd2] px-2 pb-3 text-base font-bold"></p>
+      <details open class="group/sec">
+        <summary class="flex cursor-pointer list-none items-center justify-between bg-slate px-4 py-1.5 text-lg font-black text-white [&::-webkit-details-marker]:hidden">挑战目标<i class="size-0 -rotate-90 border-x-[.35rem] border-t-[.45rem] border-x-transparent border-t-white transition-transform group-open/sec:rotate-0"></i></summary>
+        <ul id="d-goals" class="m-0 grid list-none gap-2 px-3 pt-3 pb-0"></ul>
+      </details>
+      <details open class="group/sec">
+        <summary class="flex cursor-pointer list-none items-center justify-between bg-slate px-4 py-1.5 text-lg font-black text-white [&::-webkit-details-marker]:hidden">敌方单位<i class="size-0 -rotate-90 border-x-[.35rem] border-t-[.45rem] border-x-transparent border-t-white transition-transform group-open/sec:rotate-0"></i></summary>
+        <ul id="d-foes" class="m-0 flex list-none flex-wrap gap-3 px-2 pt-3 pb-0"></ul>
+      </details>
+      <details class="group/sec">
+        <summary class="flex cursor-pointer list-none items-center justify-between bg-slate px-4 py-1.5 text-lg font-black text-white [&::-webkit-details-marker]:hidden">可能掉落<i class="size-0 -rotate-90 border-x-[.35rem] border-t-[.45rem] border-x-transparent border-t-white transition-transform group-open/sec:rotate-0"></i></summary>
+        <ul id="d-drops" class="m-0 flex list-none flex-wrap gap-3 px-2 pt-3 pb-0"></ul>
+      </details>
     </div>
-    <div class="grid grid-cols-[1fr_1.4fr] gap-3 px-8 pt-4 pb-8">
-      <div class="col-span-2 flex items-center justify-end gap-2 text-xs text-ink-2">
-        <svg class="size-6" aria-hidden="true"><use href="#i-stamina"/></svg>消耗 <span id="d-cost" class="num text-base text-ink">15</span>
-      </div>
-      <button type="button" id="b-sweep" class="h-16 bg-paper text-lg font-bold tracking-widest text-ink-dark hover:bg-white disabled:cursor-not-allowed disabled:opacity-45">扫荡</button>
-      <button type="button" id="b-go" class="h-16 bg-zhuque text-lg font-black tracking-widest text-white hover:bg-[#e1412f] disabled:cursor-not-allowed disabled:opacity-45">开始作战</button>
+    <div class="px-7 pt-3 pb-7">
+      <button type="button" id="b-go" class="relative flex h-[4.5rem] w-full items-center justify-center bg-slate text-xl font-black tracking-[.3em] text-white shadow-[0_.15rem_.5rem_#0003] hover:bg-[#34424a] disabled:cursor-not-allowed disabled:opacity-50">
+        <span class="absolute top-1/2 left-3 grid size-13 -translate-y-1/2 place-items-center bg-[#1b2226] [clip-path:polygon(25%_0,75%_0,100%_50%,75%_100%,25%_100%,0_50%)]" aria-hidden="true"><svg class="size-6"><use href="#i-stamina"/></svg></span>
+        <span id="b-go-label">挑战</span>
+        <span class="num absolute right-5 text-base font-bold tracking-normal text-white/55" title="体力消耗">−<span id="d-cost">15</span></span>
+      </button>
     </div>
   </aside>
 </section>
@@ -215,126 +258,53 @@
     has(name) { return this.hasAttribute(name); }
   }
 
-  // An icon, an amount, and a light "+" block.
+  // An icon, an amount, and a light "+" block. `plain` is a read-only readout without the "+".
   customElements.define("kv-resource", class extends KvElement {
-    static observedAttributes = ["icon", "value", "max", "label"];
+    static observedAttributes = ["icon", "value", "max", "label", "plain"];
     render() {
       const max = this.has("max") ? `<small class="text-[.75em] text-ink-2">/${esc(this.attr("max"))}</small>` : "";
-      const big = !this.has("compact");
+      const big = !this.has("compact"), plain = this.has("plain");
       this.className = "group flex items-center gap-2.5";
+      if (plain) this.title = this.attr("label");
       this.innerHTML = `
         <svg class="${big ? "size-8" : "size-6"} drop-shadow-[0_.05rem_.15rem_#000c]" aria-hidden="true">${use(this.attr("icon"))}</svg>
         <span class="num ${big ? "text-xl" : "text-base"} text-ink">${esc(this.attr("value"))}${max}</span>
-        <button type="button" aria-label="获取${esc(this.attr("label"))}" class="grid ${big ? "size-8 text-xl" : "size-6 text-base"} place-items-center bg-paper font-num font-bold leading-none text-ink-dark [text-shadow:none] hover:bg-white">+</button>`;
+        ${plain ? "" : `<button type="button" aria-label="获取${esc(this.attr("label"))}" class="grid ${big ? "size-8 text-xl" : "size-6 text-base"} place-items-center bg-paper font-num font-bold leading-none text-ink-dark [text-shadow:none] hover:bg-white">+</button>`}`;
     }
   });
 
-  // Right-aligned text menu entry. `lead` is the big first entry with the vermilion bar.
+  // Left-aligned text menu entry. `lead` is the big first entry with the vermilion bar on its left.
   customElements.define("kv-menu-item", class extends KvElement {
-    static observedAttributes = ["label", "code", "note", "tag", "tone", "icon", "up", "dot", "lead"];
+    static observedAttributes = ["label", "lead"];
     render() {
       const lead = this.has("lead");
-      const tag = this.attr("tag")
-        ? `<span class="absolute right-0 -bottom-7 px-1.5 text-xs font-black [text-shadow:none] ${this.attr("tone") === "qingluan" ? "bg-qingluan" : "bg-zhuque"}">${esc(this.attr("tag"))}</span>` : "";
       this.innerHTML = `
-        <button type="button" class="relative grid justify-items-end leading-none transition-transform hover:-translate-x-2">
-          ${this.has("icon") ? `<svg class="absolute top-1.5 right-[calc(100%+.75rem)] size-7 text-white" aria-hidden="true">${use(this.attr("icon"))}</svg>` : ""}
-          ${this.has("up") ? `<span class="num absolute top-1 right-[calc(100%+.6rem)] text-base text-ember italic">UP</span>` : ""}
-          <b class="font-black ${lead ? "text-4xl tracking-wider" : "text-2xl tracking-wide"}">${esc(this.attr("label"))}${lead ? `<i class="ml-3 inline-block h-[.8em] w-1.5 bg-zhuque align-[-.05em] shadow-[0_0_.8rem_#d6382b99]"></i>` : ""}</b>
-          <code class="num mt-1.5 text-xs font-semibold tracking-wider text-white/55">${esc(this.attr("code"))}${this.attr("note") ? ` <i class="not-italic text-ember">${esc(this.attr("note"))}</i>` : ""}</code>
-          ${this.has("dot") ? `<i class="absolute top-0 -right-3.5 size-2 rounded-full bg-zhuque"></i>` : ""}
-          ${tag}
+        <button type="button" class="relative grid justify-items-start leading-none transition-transform hover:translate-x-2">
+          <b class="relative font-black ${lead ? "text-4xl tracking-wider" : "text-2xl tracking-wide"}">${lead ? `<i class="absolute inset-y-0 right-[calc(100%+.75rem)] my-auto h-[.8em] w-1.5 bg-zhuque shadow-[0_0_.8rem_#d6382b99]"></i>` : ""}${esc(this.attr("label"))}</b>
         </button>`;
-      this.className = `group ${lead ? "mb-3" : ""} ${this.attr("tag") ? "mb-5" : ""}`;
+      this.className = "group";
     }
   });
 
-  // Event banner with art, title, note, and an optional alert badge.
-  const TONES = [["#5c6a70", "#1d2427"], ["#f06a2c", "#4a1f18"], ["#3b4a50", "#14191b"], ["#23a596", "#0f2e2b"], ["#d6382b", "#2a1210"]];
-  function thumb(canvas, tone) {
-    const t = canvas.getContext("2d"), w = canvas.width, h = canvas.height, [a, b] = TONES[tone] || TONES[0];
-    const gr = t.createLinearGradient(0, 0, w, h); gr.addColorStop(0, a); gr.addColorStop(1, b);
-    t.fillStyle = gr; t.fillRect(0, 0, w, h);
-    t.fillStyle = "#0007"; t.beginPath(); t.moveTo(0, h);
-    for (let x = 0; x <= w; x += w / 18) t.lineTo(x, h * (.82 - ((x * 7 + tone * 13) % 45) / 100));
-    t.lineTo(w, h); t.fill();
-    const sh = t.createLinearGradient(0, 0, w * .7, 0); sh.addColorStop(0, "#000a"); sh.addColorStop(1, "#0000");
-    t.fillStyle = sh; t.fillRect(0, 0, w, h);
-  }
-  window.kvThumb = thumb;
-  customElements.define("kv-banner", class extends KvElement {
-    static observedAttributes = ["title", "note", "tone", "hot", "alert"];
-    render() {
-      this.className = "group block";
-      this.innerHTML = `
-        <button type="button" class="relative block h-23 w-full text-left hover:brightness-115">
-          <canvas class="absolute inset-0 h-full w-full" width="512" height="184"></canvas>
-          <b class="absolute top-2.5 left-3 text-base font-black tracking-wide">${esc(this.attr("title"))}</b>
-          <small class="absolute bottom-2 left-3 text-xs font-bold ${this.has("hot") ? "text-[#ffd2b8]" : "text-qingluan-hi"}">${esc(this.attr("note"))}</small>
-          ${this.has("alert") ? `<i class="num absolute -top-2 -right-2 grid size-5 place-items-center rounded-full bg-ember text-xs not-italic leading-none [text-shadow:none]">!</i>` : ""}
-        </button>`;
-      thumb(this.querySelector("canvas"), Number(this.attr("tone")));
-    }
-  });
-
-  // Bottom dock entry: icon over label, divided by hairlines.
-  customElements.define("kv-dock-item", class extends KvElement {
-    static observedAttributes = ["icon", "label"];
-    render() {
-      this.className = "group block border-l border-white/25 first:border-l-0";
-      this.innerHTML = `
-        <button type="button" class="grid w-28 justify-items-center gap-1.5 py-1 hover:drop-shadow-[0_0_.45rem_#fff9]">
-          <svg class="size-10 drop-shadow-[0_.05rem_.2rem_#000c]" aria-hidden="true">${use(this.attr("icon"))}</svg>
-          <span class="text-sm font-black tracking-widest">${esc(this.attr("label"))}</span>
-        </button>`;
-    }
-  });
-
-  // Chapter tab. data-state: current | locked.
-  customElements.define("kv-chapter", class extends KvElement {
-    static observedAttributes = ["index", "name", "progress"];
-    render() {
-      this.className = "group block";
-      this.innerHTML = `
-        <button type="button" class="grid h-20 w-full content-center bg-char/75 px-5 text-left hover:bg-ash/85
-          group-data-[state=current]:bg-paper group-data-[state=current]:text-ink-dark group-data-[state=current]:[text-shadow:none]
-          group-data-[state=locked]:cursor-not-allowed group-data-[state=locked]:opacity-45">
-          <small class="num text-xs font-semibold text-ink-2 group-data-[state=current]:text-[#4f5659]">CHAPTER ${esc(this.attr("index"))}</small>
-          <b class="text-lg font-black tracking-wide">${esc(this.attr("name"))}</b>
-          <span class="num text-xs">${esc(this.attr("progress"))}</span>
-        </button>`;
-    }
-  });
-
-  // Stage node. data-state: cleared | current | locked; data-selected marks the open one.
+  // Stage card on the explore track. data-state: cleared | current | locked; data-selected marks the open one.
   customElements.define("kv-stage", class extends KvElement {
-    static observedAttributes = ["code", "name", "stars", "boss"];
+    static observedAttributes = ["code", "serial", "stars", "boss"];
     render() {
       const stars = Number(this.attr("stars")) || 0;
-      this.className = "group absolute -translate-x-1/2 -translate-y-1/2";
+      this.className = "group relative block shrink-0";
       this.innerHTML = `
-        <button type="button" class="grid min-w-40 gap-0.5 border-b-[.25rem] border-transparent bg-char px-3.5 pt-2.5 pb-2 text-left hover:bg-ash
-          group-data-[state=cleared]:border-qingluan-hi
-          group-data-[state=current]:bg-zhuque
-          group-data-[state=locked]:cursor-not-allowed group-data-[state=locked]:opacity-50
-          group-data-[selected]:outline-2 group-data-[selected]:outline-offset-4 group-data-[selected]:outline-white">
-          <span class="num text-xl leading-none">${esc(this.attr("code"))}${this.has("boss") ? ` <span class="font-sans text-xs font-black text-ember group-data-[state=current]:text-white">首领</span>` : ""}</span>
-          <small class="text-xs font-bold">${esc(this.attr("name"))}</small>
-          <span class="flex h-3 gap-1">${[0, 1, 2].map((k) => `<i class="size-3 rotate-45 scale-75 ${k < stars ? "bg-gold" : "bg-white/25"}"></i>`).join("")}</span>
+        <small class="absolute -top-7 left-0 text-xs leading-none font-black whitespace-nowrap"><i class="mr-1 not-italic text-zhuque">/</i>${this.has("boss") ? "头目战斗" : "普通战斗"}</small>
+        <button type="button" class="relative grid w-[20rem] grid-rows-[4.75rem_.875rem] bg-slate text-left text-white shadow-[0_.2rem_.6rem_#0004] ring-white transition-[filter] hover:brightness-115
+          group-data-[selected]:ring-[.2rem]
+          group-data-[state=locked]:cursor-not-allowed group-data-[state=locked]:bg-[#6f797e]">
+          <span class="flex items-center justify-between gap-4 pr-5 pl-4">
+            <span class="flex gap-1">${[0, 1, 2].map((k) => `<svg class="size-8 ${k < stars ? "text-gold" : "text-white/20"}" aria-hidden="true">${use("medal")}</svg>`).join("")}</span>
+            <b class="num text-3xl leading-none tracking-wide">${esc(this.attr("code"))}</b>
+          </span>
+          <span class="num flex items-center justify-end bg-ember px-3 text-[.55rem] leading-none text-ink-dark group-data-[state=locked]:bg-[#a7aeb2]">${esc(this.attr("serial"))}</span>
+          <i class="absolute top-2 right-12 h-2 w-5 bg-[radial-gradient(#ffffff59_1px,transparent_1.3px)] bg-size-[.4rem_.4rem]"></i>
+          <i class="absolute -top-3 -right-3 hidden size-8 place-items-center rounded-full bg-ember text-white ring-2 ring-white group-data-[state=cleared]:grid"><svg class="size-4" aria-hidden="true">${use("check")}</svg></i>
         </button>`;
-    }
-  });
-
-  // Drop item. data-rarity: common | rare | epic.
-  customElements.define("kv-item", class extends KvElement {
-    static observedAttributes = ["glyph", "count", "first"];
-    render() {
-      this.className = "group relative grid size-18 place-items-center bg-paper text-lg font-black text-ink-dark";
-      this.innerHTML = `
-        <span class="-translate-y-2">${esc(this.attr("glyph"))}</span>
-        <small class="num absolute right-1.5 bottom-2 text-xs">${esc(this.attr("count"))}</small>
-        <i class="absolute inset-x-0 bottom-0 h-1.5 bg-common group-data-[rarity=rare]:bg-rare group-data-[rarity=epic]:bg-epic"></i>
-        ${this.has("first") ? `<i class="absolute top-0 left-0 bg-zhuque px-1 text-xs font-bold not-italic text-white">首通</i>` : ""}`;
     }
   });
 })();
@@ -343,165 +313,159 @@
 (() => {
   const $ = (id) => document.getElementById(id);
 
-  // ---- scene placeholders, drawn at the window's size and pixel ratio ----
+  // ---- scene backgrounds, drawn at the window's size and pixel ratio ----
   const scene = $("scene"), g = scene.getContext("2d");
-  let view = "lobby", seed = 7;
-  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  function skyline(W, H, base, height, color, step) {
-    g.fillStyle = color; g.beginPath(); g.moveTo(0, H);
-    for (let x = 0; x <= W; x += step) {
-      const h = height * (.35 + rnd() * .65);
-      g.lineTo(x, base - h); g.lineTo(x + step * (.5 + rnd() * .4), base - h);
-      if (rnd() < .3) g.lineTo(x + step * .9, base - h * .4);
-    }
-    g.lineTo(W, H); g.fill();
+  let view = "lobby";
+  // Lobby background: 朱雀焚羽破空.png, scaled to cover the window. Until it loads (or if it
+  // fails) the canvas stays on a flat charcoal fill.
+  const lobbyArt = new Image();
+  const mapArt = document.createElement("canvas");
+  lobbyArt.onload = () => { paint(); prepareMapArt(); if (view === "sortie") paint(); };
+  // Difference compositing extracts contours without reading image pixels. Local file
+  // previews allow drawing the artwork but block getImageData on the resulting canvas.
+  function prepareMapArt() {
+    mapArt.width = 1600; mapArt.height = Math.round(1600 * lobbyArt.naturalHeight / lobbyArt.naturalWidth);
+    const contours = document.createElement("canvas");
+    contours.width = mapArt.width; contours.height = mapArt.height;
+    const edges = contours.getContext("2d");
+    edges.filter = "grayscale(1)";
+    edges.drawImage(lobbyArt, 0, 0, contours.width, contours.height);
+    edges.globalCompositeOperation = "difference";
+    edges.drawImage(lobbyArt, -1, -1, contours.width, contours.height);
+    const ctx = mapArt.getContext("2d");
+    ctx.fillStyle = "#e9edef";
+    ctx.fillRect(0, 0, mapArt.width, mapArt.height);
+    ctx.globalAlpha = .55;
+    ctx.filter = "invert(1)";
+    ctx.drawImage(contours, 0, 0);
   }
-  function protagonist(cx, top, s) {
-    g.save(); g.translate(cx, top); g.scale(s, s);
-    for (const side of [-1, 1]) for (let i = 0; i < 10; i++) {
-      const a = -Math.PI / 2 + side * (.4 + i * .13), len = 330 - i * 16;
-      const x0 = side * 30, y0 = 200, x1 = x0 + Math.cos(a) * len, y1 = y0 + Math.sin(a) * len;
-      const gr = g.createLinearGradient(x0, y0, x1, y1);
-      gr.addColorStop(0, "#7d1d16"); gr.addColorStop(.6, "#d6382b"); gr.addColorStop(.9, "#f06a2c"); gr.addColorStop(1, "#e7b23f");
-      g.fillStyle = gr; g.globalAlpha = .85 - i * .04; g.beginPath();
-      const nx = -Math.sin(a) * 20, ny = Math.cos(a) * 20;
-      g.moveTo(x0, y0); g.quadraticCurveTo((x0 + x1) / 2 + nx, (y0 + y1) / 2 + ny, x1, y1);
-      g.quadraticCurveTo((x0 + x1) / 2 - nx * .3, (y0 + y1) / 2 - ny * .3, x0, y0); g.fill();
-    }
-    g.globalAlpha = 1;
-    const p = new Path2D(); p.ellipse(0, 0, 64, 78, 0, 0, Math.PI * 2);
-    p.moveTo(-170, 1000); p.lineTo(-112, 130); p.quadraticCurveTo(0, 70, 112, 130); p.lineTo(185, 1000); p.closePath();
-    const bg = g.createLinearGradient(-150, 0, 180, 0); bg.addColorStop(0, "#15181a"); bg.addColorStop(1, "#3a4146");
-    g.fillStyle = bg; g.fill(p);
-    g.fillStyle = "#d6382b"; g.beginPath(); g.moveTo(-70, 95); g.bezierCurveTo(40, 125, 140, 55, 320, 110); g.lineTo(300, 142);
-    g.bezierCurveTo(150, 105, 40, 165, -60, 132); g.fill();
-    g.restore();
+  lobbyArt.src = "朱雀焚羽破空.png";
+  function cover(img, W, H) {
+    if (!img.complete || !img.naturalWidth) return;
+    const k = Math.max(W / img.naturalWidth, H / img.naturalHeight), w = img.naturalWidth * k, h = img.naturalHeight * k;
+    g.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
   }
-  function drawLobby(W, H, u) {
-    seed = 7;
-    const sky = g.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, "#1e2428"); sky.addColorStop(.55, "#4b5257"); sky.addColorStop(.78, "#8c6f5a"); sky.addColorStop(1, "#2a2d2f");
-    g.fillStyle = sky; g.fillRect(0, 0, W, H);
-    const sun = g.createRadialGradient(W * .7, H * .62, 10 * u, W * .7, H * .62, 520 * u);
-    sun.addColorStop(0, "#f2a35c88"); sun.addColorStop(1, "#f2a35c00"); g.fillStyle = sun; g.fillRect(0, 0, W, H);
-    skyline(W, H, H * .78, 330 * u, "#353c40", 70 * u); skyline(W, H, H * .84, 230 * u, "#262b2e", 52 * u); skyline(W, H, H * .92, 120 * u, "#181b1d", 38 * u);
-    g.fillStyle = "#121415"; g.fillRect(0, H * .9, W, H * .1);
-    for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(220,215,205,${rnd() * .18})`; g.fillRect(rnd() * W, rnd() * H, (2 + rnd() * 3) * u, u); }
-    protagonist(W * .44, H * .16, 1.02 * u);
-    const v = g.createRadialGradient(W / 2, H / 2, H * .4, W / 2, H / 2, Math.max(W, H)); v.addColorStop(0, "#0000"); v.addColorStop(1, "#000a");
+  function drawLobby(W, H) {
+    g.fillStyle = "#1b1e21"; g.fillRect(0, 0, W, H);
+    cover(lobbyArt, W, H);
+    const v = g.createRadialGradient(W / 2, H / 2, H * .55, W / 2, H / 2, Math.max(W, H)); v.addColorStop(0, "#0000"); v.addColorStop(1, "#0008");
     g.fillStyle = v; g.fillRect(0, 0, W, H);
   }
-  function drawMap(W, H, u) {
-    seed = 3;
-    g.fillStyle = "#3d3e3b"; g.fillRect(0, 0, W, H);
-    for (let i = 0; i < 1600; i++) { g.fillStyle = `rgba(${rnd() < .5 ? "20,20,18" : "120,116,104"},${rnd() * .25})`; g.fillRect(rnd() * W, rnd() * H, (4 + rnd() * 30) * u, (2 + rnd() * 10) * u); }
-    g.strokeStyle = "rgba(255,255,255,.05)"; g.lineWidth = 1;
-    for (let x = 0; x < W; x += 60 * u) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
-    for (let y = 0; y < H; y += 60 * u) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
-    for (let i = 0; i < 26; i++) {
-      const x = rnd() * W, y = rnd() * H, w = (60 + rnd() * 220) * u, h = (30 + rnd() * 90) * u;
-      g.fillStyle = rnd() < .5 ? "#5a5a55" : "#4a4238"; g.fillRect(x, y, w, h); g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(x + 8 * u, y + h, w, 10 * u);
+  // Explore: the same art washed out into a pale sketch, fogged at the bottom, red glow at the top.
+  function drawMap(W, H) {
+    g.fillStyle = "#eef0f1"; g.fillRect(0, 0, W, H);
+    const mapW = Math.max(1, W - 31.5 * parseFloat(getComputedStyle(document.documentElement).fontSize) * Math.min(window.devicePixelRatio || 1, 2));
+    if (mapArt.width && lobbyArt.complete && lobbyArt.naturalWidth) {
+      const k = Math.max(mapW / mapArt.width, H / mapArt.height);
+      g.drawImage(mapArt, (mapW-mapArt.width*k)/2, (H-mapArt.height*k)/2, mapArt.width*k, mapArt.height*k);
     }
-    g.strokeStyle = "rgba(214,56,43,.5)"; g.setLineDash([14 * u, 10 * u]); g.lineWidth = 3 * u; g.strokeRect(W * .1, H * .1, W * .8, H * .78); g.setLineDash([]);
-    const v = g.createRadialGradient(W * .45, H / 2, H * .3, W * .45, H / 2, Math.max(W, H)); v.addColorStop(0, "#0000"); v.addColorStop(1, "#000c");
-    g.fillStyle = v; g.fillRect(0, 0, W, H);
+    const fog = g.createLinearGradient(0, H * .65, 0, H);
+    fog.addColorStop(0, "#eef0f100"); fog.addColorStop(1, "#eef0f1ed");
+    g.fillStyle = fog; g.fillRect(0, 0, W, H);
+    const glow = g.createRadialGradient(W * .5, -H * .12, 0, W * .5, -H * .12, H * .34);
+    glow.addColorStop(0, "#e858454d"); glow.addColorStop(1, "#e8584500"); g.fillStyle = glow; g.fillRect(0, 0, W, H);
   }
   function paint() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const box = $("stage").getBoundingClientRect();
     scene.width = Math.round(box.width * dpr); scene.height = Math.round(box.height * dpr);
-    const W = scene.width, H = scene.height, u = W / 1920;
-    (view === "lobby" ? drawLobby : drawMap)(W, H, u);
+    (view === "lobby" ? drawLobby : drawMap)(scene.width, scene.height);
   }
-  kvThumb($("promo").querySelector("canvas"), 4);
 
-  // ---- sortie data ----
+  // ---- explore data ----
   const chapters = [
     { name: "灰原", stages: ["废站", "枯河", "沙堡", "旧哨", "风蚀口", "灰原试炼"] },
     { name: "断桥", stages: ["渡口", "断桥", "雾滩", "残庙", "石阶", "桥头堡"] },
     { name: "炼厂", stages: ["围墙", "管廊", "空营", "铃声", "熔炉", "储罐区", "炼厂夜战", "铃之主"] },
-    { name: "酸雨带", stages: [] },
   ];
-  const cleared = [6, 6, 6, 0];
+  const cleared = [6, 6, 6];
   const stars = [[3,3,3,3,2,3], [3,3,2,3,3,1], [3,3,3,2,3,1]];
-  const pts = [[6, 70], [18, 36], [30, 74], [42, 40], [54, 76], [66, 34], [80, 66], [94, 30]];
+  const PLAYER_LEVEL = 42;
   let chapter = 2, selected = 6;
 
   function info(ci, si) {
     const boss = si === chapters[ci].stages.length - 1 || (ci === 2 && si === 6);
     return {
       boss, done: si < cleared[ci], current: si === cleared[ci], locked: si > cleared[ci],
-      power: 3600 + ci * 1800 + si * 320 + (boss ? 600 : 0), cost: 6 + ci * 3 + (boss ? 3 : 0),
-      desc: ci === 2 && si === 6 ? "愁铃客在炼厂深处设伏。击破第一阶段后，它会转入更凶的连招。"
-        : si > cleared[ci] ? "尚未解锁。通关上一关后开放。" : si < cleared[ci] ? "已通关。可扫荡获取材料。" : "沿管廊推进，清除沿途的拾荒者。",
+      level: 24 + ci * 6 + si + (boss ? 2 : 0), cost: 6 + ci * 3 + (boss ? 3 : 0),
+      serial: `//D${String(416 + ci * 113 + si * 37).slice(-3)}-${String(248 + si * 131).slice(-3)}-${String(702 + ci * 59 + si * 87).slice(-3)}`,
+      desc: ci === 2 && si === 6 ? "灰烬深处，最后的铃声即将响起。"
+        : si > cleared[ci] ? "尚未解锁。通关上一关后开放。" : si < cleared[ci] ? "已通关。可再次挑战获取材料。" : "沿管廊推进，清除沿途的拾荒者。",
     };
   }
-  function renderSortie() {
-    $("chapters").replaceChildren(...chapters.map((c, i) => {
-      const el = document.createElement("kv-chapter");
-      el.setAttribute("index", `0${i + 1}`); el.setAttribute("name", c.name);
-      el.setAttribute("progress", c.stages.length ? `${cleared[i]}/${c.stages.length}` : "未开放");
-      if (!c.stages.length) el.dataset.state = "locked"; else if (i === chapter) el.dataset.state = "current";
-      el.addEventListener("click", () => {
-        if (!c.stages.length) return toast("通关第三章后开放");
-        chapter = i; selected = Math.min(cleared[i], c.stages.length - 1); renderSortie();
-      });
-      return el;
-    }));
-    const ch = chapters[chapter], nodes = $("nodes");
-    nodes.querySelectorAll("kv-stage").forEach((n) => n.remove());
-    const p = ch.stages.map((_, i) => pts[Math.round(i * (pts.length - 1) / (ch.stages.length - 1))]);
-    const line = (a, b, done) => `<polyline fill="none" vector-effect="non-scaling-stroke" stroke="${done ? "#5fd8c8" : "#ffffff66"}" stroke-width="${done ? 3 : 2}" ${done ? "" : 'stroke-dasharray="6 6"'} points="${p.slice(a, b + 1).map((q) => q.join(",")).join(" ")}"/>`;
-    const reach = Math.min(cleared[chapter], p.length - 1);
-    $("routes").innerHTML = line(reach, p.length - 1, false) + line(0, reach, true);
-    ch.stages.forEach((name, i) => {
+  // Square portrait tile for an enemy or a drop: a glyph, a caption, an optional rarity bar and tag.
+  const tile = (glyph, caption, bar, tag) => `
+    <li class="relative grid size-[6.25rem] place-items-center overflow-hidden bg-linear-to-b from-[#5b676e] to-[#252d32] text-3xl font-black text-white/85">
+      <span class="-translate-y-2">${glyph}</span>
+      <b class="num shade absolute inset-x-0 bottom-1.5 text-center text-lg leading-none text-white">${caption}</b>
+      ${bar ? `<i class="absolute inset-x-0 bottom-0 h-1 ${bar}"></i>` : ""}
+      ${tag ? `<i class="absolute top-0 left-0 bg-zhuque px-1 text-xs font-bold not-italic text-white">${tag}</i>` : ""}
+    </li>`;
+  const enemyPortrait = (boss) => `<svg class="enemy-portrait" viewBox="0 0 100 100" aria-hidden="true">
+    <ellipse cx="50" cy="78" rx="38" ry="7" fill="#26353b" opacity=".3"/>
+    <path d="m29 61 7-15h30l8 15-7 16H32z" fill="#253741"/>
+    <path d="m36 54-4 23 12 4 4-24m9-3 1 25 12-3-4-22" fill="#384f5d" stroke="#1d2b34" stroke-width="2"/>
+    <path d="m8 34 13-10 52-3 19 13-4 20-65 5L8 48z" fill="${boss ? '#51585e' : '#354d60'}" stroke="#20313c" stroke-width="2"/>
+    <path d="m21 24 9 12 49-3-6-12z" fill="#698293"/><path d="m30 36-7 23 65-5 4-20-13-1-4 18-39 3z" fill="#20313f"/>
+    <path d="m42 24-1 29m21-30 2 28" stroke="#a4b2b8" stroke-width="2" opacity=".7"/>
+    <path d="m84 35 12 3v9l-10 2" fill="#19282f"/><path d="m13 40 14 1-2 8-13-2z" fill="#67808b"/>
+    <path d="m40 66 5-3 12 1 4 7-5 4-14-1z" fill="#20333f"/><circle cx="50" cy="69" r="3" fill="#91a9ad"/>
+  </svg>`;
+  function renderSortie(center) {
+    const ch = chapters[chapter], track = $("track");
+    $("d-chapter-code").textContent = `C- 0${chapter + 1}.0`;
+    $("d-chapter").textContent = `0${chapter + 1} ${ch.name}`;
+    $("d-reward").textContent = cleared[chapter] >= ch.stages.length ? "章节奖励已全部领取" : `章节进度 ${cleared[chapter]}/${ch.stages.length}`;
+    track.replaceChildren(...ch.stages.map((name, i) => {
       const s = info(chapter, i), el = document.createElement("kv-stage");
-      el.setAttribute("code", `${chapter + 1}-${i + 1}`); el.setAttribute("name", name);
+      el.setAttribute("code", `KV-${chapter + 1}-${i + 1}`); el.setAttribute("serial", s.serial);
       el.setAttribute("stars", s.done ? stars[chapter][i] : 0);
       if (s.boss) el.setAttribute("boss", "");
       el.dataset.state = s.done ? "cleared" : s.current ? "current" : "locked";
       if (i === selected) el.dataset.selected = "";
-      el.style.left = `${p[i][0]}%`; el.style.top = `${p[i][1]}%`;
-      el.addEventListener("click", () => { selected = i; renderSortie(); nodes.querySelectorAll("kv-stage")[i].querySelector("button").focus(); });
-      nodes.append(el);
-    });
-    const s = info(chapter, selected), st = s.done ? stars[chapter][selected] : 0;
-    $("d-boss").hidden = !s.boss;
-    $("d-code").textContent = `${chapter + 1}-${selected + 1}`;
-    $("d-name").textContent = ch.stages[selected];
-    $("d-desc").textContent = s.desc;
-    $("d-power").textContent = s.power.toLocaleString("en-US");
-    $("d-power").className = `num text-lg ${8412 >= s.power ? "text-qingluan-hi" : "text-ember"}`;
-    $("d-goals").innerHTML = ["击败全部敌人", "在 7 回合内获胜", "姐姐未被击倒"]
-      .map((t, k) => `<li class="flex items-center gap-3"><i class="size-3.5 rotate-45 ${k < st ? "bg-gold" : "bg-white/25"}"></i>${t}</li>`).join("");
-    $("d-cost").textContent = s.cost;
-    const drops = [["铁", "×6", "common"], ["件", "1.2K", "common"], ["芯", "×1", "rare"], ...(s.boss ? [["羽", "×30", "epic", !s.done]] : [])];
-    $("d-drops").replaceChildren(...drops.map(([glyph, count, rarity, first]) => {
-      const el = document.createElement("kv-item");
-      el.setAttribute("glyph", glyph); el.setAttribute("count", count); el.dataset.rarity = rarity;
-      if (first) el.setAttribute("first", "");
+      el.addEventListener("click", () => { selected = i; renderSortie(true); $("track").children[i].querySelector("button").focus({ preventScroll: true }); });
       return el;
     }));
-    $("b-sweep").disabled = !s.done; $("b-go").disabled = s.locked;
-    $("b-go").textContent = s.locked ? "未解锁" : "开始作战";
+    if (center !== undefined) {
+      const el = track.children[selected], nodes = $("nodes");
+      nodes.scrollTo({ left: el.offsetLeft + el.offsetWidth / 2 - nodes.clientWidth / 2, behavior: center ? "smooth" : "instant" });
+    }
+    const s = info(chapter, selected), st = s.done ? stars[chapter][selected] : 0;
+    $("d-name").textContent = ch.stages[selected];
+    $("d-level").textContent = s.level;
+    $("d-level").className = `num ${s.level > PLAYER_LEVEL ? "text-[#ff9b8a]" : ""}`;
+    $("d-desc").textContent = s.desc;
+    $("d-goals").innerHTML = ["击败全部敌人", "在 7 回合内获胜", "姐姐未被击倒"]
+      .map((t, k) => `<li class="flex items-center gap-2.5 text-base font-bold"><svg class="size-6 ${k < st ? "text-gold" : "text-[#b9c0c4]"}" aria-hidden="true"><use href="#i-medal"/></svg>${t}</li>`).join("");
+    const foes = s.boss ? [["铃", s.level + 2], ["拾", s.level], ["拾", s.level]] : [["拾", s.level], ["拾", s.level], ["犬", s.level - 1]];
+    $("d-foes").innerHTML = foes.map(([glyph, lv]) => tile(enemyPortrait(glyph === "铃"), `Lv.${lv}`)).join("");
+    const drops = [["铁", "×6", "bg-common"], ["件", "1.2K", "bg-common"], ["芯", "×1", "bg-rare"], ...(s.boss ? [["羽", "×30", "bg-epic", !s.done && "首通"]] : [])];
+    $("d-drops").innerHTML = drops.map(([glyph, count, bar, tag]) => tile(glyph, count, bar, tag)).join("");
+    $("d-cost").textContent = s.cost;
+    $("b-go").disabled = s.locked;
+    $("b-go-label").textContent = s.locked ? "未解锁" : "挑战";
   }
+  // A vertical wheel scrolls the stage track sideways.
+  $("nodes").addEventListener("wheel", (e) => {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    e.preventDefault(); $("nodes").scrollLeft += e.deltaY;
+  }, { passive: false });
 
   let timer;
   function toast(text) { const t = $("toast"); t.textContent = text; t.dataset.show = ""; clearTimeout(timer); timer = setTimeout(() => delete t.dataset.show, 1600); }
   function show(next) {
     view = next; $("lobby").hidden = next !== "lobby"; $("sortie").hidden = next !== "sortie";
-    if (next === "sortie") renderSortie();
+    if (next === "sortie") renderSortie(false);
     paint();
   }
   $("to-sortie").addEventListener("click", () => show("sortie"));
   $("to-lobby").addEventListener("click", () => show("lobby"));
+  $("to-home").addEventListener("click", () => show("lobby"));
   $("b-go").addEventListener("click", () => toast(`样张：这里会带着 ${chapter + 1}-${selected + 1} 进入战斗`));
-  $("b-sweep").addEventListener("click", () => toast("样张：扫荡完成"));
-  document.querySelectorAll("#lobby kv-menu-item:not(#to-sortie), #lobby kv-banner, #lobby kv-dock-item, #lobby button[aria-label], #promo, kv-resource")
+  document.querySelectorAll("#lobby kv-menu-item:not(#to-sortie), #lobby button[aria-label], kv-resource:not([plain])")
     .forEach((el) => el.addEventListener("click", (e) => { e.stopPropagation(); toast("样张：这个页面还未制作"); }));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && view === "sortie") show("lobby"); });
-  const now = new Date();
-  $("ev-rain").setAttribute("note", `限时 · 剩余 ${Math.max(0, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate())} 天`);
+
 
   addEventListener("resize", paint);
   show(location.hash === "#sortie" ? "sortie" : "lobby");
