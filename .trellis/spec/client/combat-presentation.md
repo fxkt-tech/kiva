@@ -14,6 +14,7 @@
 - `kivaHud.frame(json)`：`client/hud.rs` 的 `HudFrame` 每次 HUD 更新发送一次，字段具名、camelCase：`context`；`health`／`stamina` 为 `{current,maximum}`；`loadout{set,meleeReady,rangedReady,comboReady}`（`set` 为 `Loadout.hud_index`）；`melee`／`ranged`／`combo` 为 `{left,total}`（技能冷却总时长取自技能表，联动总时长为 `ComboWindow.duration`）；`axeAway`；`energy{sun,sunMaximum,moon,moonMaximum,rage,rageMaximum,enraged,rageReady}`（暴怒中 `rage` 是剩余量，等于剩余秒数）；`durability{values,maximum}`（`values` 按页面套装槽位顺序，即 `hud_index-1`）；`target`、`cue`、`lock` 在没有时为 `null`。`cue{striking,left,total,chain,swings,resolved}`；`lock.kind` 为 `onScreen`（带 `x`、`y`）、`aside` 或 `behind`（带 `right`），都带 `distance`。非有限数值写成 `null`。
 - 形状由 `tests/fixtures/hud/*.json` 固定：Rust 测试 `the_page_contract_fixtures_match_what_rust_sends` 与之比较（`KIVA_UPDATE_FIXTURES=1` 重写），`scripts/hud-unit.test.cjs` 只从这些 fixture 出发，只能覆盖 fixture 里已有的字段。改字段时同时改 fixture、`web/hud.js` 和 Node 测试。
 - 只发页面会读的字段；新增字段要同时有页面读取和 Node 断言。
+- `hud::sync` 在所有平台构造 `HudFrame` 资源（无平台 cfg），按量化后的值 `set_if_neq`：剩余时间 0.01s、锁定位置为视口的 1/1000、距离 0.01m、耐力与暴怒 0.01。`hud::publish` 只在资源变化时发送：WASM 调用 `kivaHud.frame`，原生由同一帧写窗口标题（敌人模式变化时也写）。静止画面不发送；页面保留最后一帧，不能依赖每帧都收到。
 - CombatEvent.pair 固定记录产生事件时的武器组；声音或弹道不能用当前套装猜历史事件的武器。
 
 ## Contracts

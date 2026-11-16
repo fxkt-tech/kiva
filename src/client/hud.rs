@@ -3,7 +3,7 @@ use crate::{
     gameplay::Player,
     simulation::{
         ActionKind, Arsenal, Boss, BossPhase, BossState, CombatStatus, Combatant, DefenseKind,
-        DefenseState, Enemy, Energy, Health, MotionState, Stamina,
+        DefenseState, Enemy, Energy, Health, MotionState, Stamina, WeaponPair,
     },
 };
 use bevy::prelude::*;
@@ -17,7 +17,6 @@ extern "C" {
 }
 
 /// A countdown and the length it started at.
-#[cfg(any(target_arch = "wasm32", test))]
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 struct Clock {
     left: f32,
@@ -25,7 +24,6 @@ struct Clock {
 }
 
 /// A value out of its maximum.
-#[cfg(any(target_arch = "wasm32", test))]
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 struct Meter {
     current: f32,
@@ -33,20 +31,18 @@ struct Meter {
 }
 
 /// The current pair's page slot and which of its inputs would be admitted.
-#[cfg(any(target_arch = "wasm32", test))]
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 struct LoadoutSnapshot {
-    pair: u32,
+    pair: WeaponPair,
     melee: bool,
     ranged: bool,
     combo: bool,
 }
-#[cfg(any(target_arch = "wasm32", test))]
 fn loadout_snapshot(combat: &Combatant, health: &Health) -> LoadoutSnapshot {
     let a = combat.availability();
     let alive = health.is_alive();
     LoadoutSnapshot {
-        pair: super::loadout::of(combat.weapon_pair()).hud_index,
+        pair: combat.weapon_pair(),
         melee: alive && a.melee_skill,
         ranged: alive && a.ranged_skill,
         combo: alive && a.combo,
@@ -63,7 +59,6 @@ struct TargetSnapshot {
     phases: u32,
 }
 
-#[cfg(any(target_arch = "wasm32", test))]
 /// What the HUD shows of the Boss's strike in progress: its telegraph, or its swings.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 struct BossCue {
@@ -76,7 +71,6 @@ struct BossCue {
     resolved: u32,
 }
 
-#[cfg(any(target_arch = "wasm32", test))]
 fn boss_cue(boss: &Boss) -> Option<BossCue> {
     let striking = match boss.state() {
         BossState::Telegraph => false,
@@ -96,7 +90,6 @@ fn boss_cue(boss: &Boss) -> Option<BossCue> {
     })
 }
 
-#[cfg(any(target_arch = "wasm32", test))]
 /// Where the locked target is relative to the view: on screen at a point (fractions of the
 /// viewport), off to one side, or behind the camera.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -106,7 +99,6 @@ enum LockView {
     Behind { right: bool },
 }
 
-#[cfg(any(target_arch = "wasm32", test))]
 fn lock_view(camera: &Camera, view: &Transform, point: Vec3) -> Option<LockView> {
     let offset = point - view.translation;
     let right = offset.dot(*view.right()) >= 0.0;
@@ -127,11 +119,12 @@ fn lock_view(camera: &Camera, view: &Transform, point: Vec3) -> Option<LockView>
     })
 }
 
-/// Everything the page HUD draws for one update, sent as one JSON object by
-/// `window.kivaHud.frame`. `tests/fixtures/hud` pins the shape for web/hud.js.
-#[cfg(any(target_arch = "wasm32", test))]
-#[derive(Clone, Debug, Default, PartialEq)]
-struct HudFrame {
+/// Everything the HUD shows for one update. [`sync`] rebuilds it each frame
+/// and stores it only when it differs; [`publish`] sends a changed frame to
+/// the page as one JSON object (`window.kivaHud.frame`, shape pinned by
+/// `tests/fixtures/hud`) or, natively, to the window title.
+#[derive(Resource, Clone, Debug, Default, PartialEq)]
+pub(super) struct HudFrame {
     context: &'static str,
     health: Meter,
     stamina: Meter,
@@ -154,7 +147,6 @@ struct HudFrame {
     lock: Option<(LockView, f32)>,
 }
 
-#[cfg(any(target_arch = "wasm32", test))]
 impl HudFrame {
     /// The player's own part of the frame; target, cue and lock start empty.
     fn player(
@@ -214,6 +206,33 @@ impl HudFrame {
         }
     }
 
+    /// Rounded below what the HUD can show, so float noise in a value which
+    /// is not really changing (a projected position, a still countdown) does
+    /// not count as a change.
+    fn quantized(mut self) -> Self {
+        fn step(value: f32, per_unit: f32) -> f32 {
+            (value * per_unit).round() / per_unit
+        }
+        for clock in [&mut self.melee, &mut self.ranged, &mut self.combo] {
+            clock.left = step(clock.left, 100.0);
+        }
+        if let Some(cue) = &mut self.cue {
+            cue.left = step(cue.left, 100.0);
+        }
+        self.stamina.current = step(self.stamina.current, 100.0);
+        self.rage.current = step(self.rage.current, 100.0);
+        if let Some((view, distance)) = &mut self.lock {
+            *distance = step(*distance, 100.0);
+            if let LockView::OnScreen(at) = view {
+                *at = Vec2::new(step(at.x, 1000.0), step(at.y, 1000.0));
+            }
+        }
+        self
+    }
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+impl HudFrame {
     fn to_json(&self) -> String {
         use super::json::{Object, number};
         let meter = |m: Meter| {
@@ -229,7 +248,7 @@ impl HudFrame {
                 .finish()
         };
         let loadout = Object::new()
-            .integer("set", self.loadout.pair)
+            .integer("set", super::loadout::of(self.loadout.pair).hud_index)
             .boolean("meleeReady", self.loadout.melee)
             .boolean("rangedReady", self.loadout.ranged)
             .boolean("comboReady", self.loadout.combo)
@@ -387,7 +406,6 @@ pub(super) fn describe() {
 }
 
 /// Durability of every pair, placed where the page's pair slots expect it.
-#[cfg(any(target_arch = "wasm32", test))]
 fn durability_by_hud_index(arsenal: &Arsenal) -> Vec<f32> {
     let mut values = vec![0.0; crate::simulation::WeaponPair::ALL.len()];
     for pair in crate::simulation::WeaponPair::ALL {
@@ -397,29 +415,111 @@ fn durability_by_hud_index(arsenal: &Arsenal) -> Vec<f32> {
     values
 }
 
+/// Rebuilds the frame from this step's snapshots and this frame's view; the
+/// resource only changes when something the HUD shows did.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn sync(
     player: Single<PlayerSnapshot, With<Player>>,
     enemies: Query<(&Enemy, &Health, Option<&Boss>)>,
-    mut window: Single<&mut Window>,
-    #[cfg(not(target_arch = "wasm32"))] mode: Res<crate::gameplay::EnemyMode>,
-    #[cfg(target_arch = "wasm32")] bodies: Query<&crate::simulation::Body, With<Enemy>>,
-    #[cfg(target_arch = "wasm32")] camera: Single<
-        (&Camera, &Transform),
-        With<super::camera::GameCamera>,
-    >,
-    #[cfg(target_arch = "wasm32")] time: Res<Time<Fixed>>,
-    #[cfg(target_arch = "wasm32")] active: Res<crate::simulation::SimulationActive>,
-    #[cfg(target_arch = "wasm32")] hit_stop: Res<crate::simulation::HitStop>,
+    bodies: Query<&crate::simulation::Body, With<Enemy>>,
+    camera: Single<(&Camera, &Transform), With<super::camera::GameCamera>>,
+    time: Res<Time<Fixed>>,
+    active: Res<crate::simulation::SimulationActive>,
+    hit_stop: Res<crate::simulation::HitStop>,
+    mut frame: ResMut<HudFrame>,
 ) {
     let (body, combat, health, motion, defense, stamina, energy, arsenal) = *player;
-    let target = target_snapshot(combat, health, |entity| enemies.get(entity).ok());
-    let _ = body;
-    let context = if !health.is_alive() {
+    let context = context_text(combat, health, motion, defense, energy);
+    let mut next = HudFrame::player(combat, health, stamina, energy, arsenal, context);
+    next.target = target_snapshot(combat, health, |entity| enemies.get(entity).ok());
+    let locked = next.target.and(combat.target());
+    next.cue = locked
+        .and_then(|entity| enemies.get(entity).ok())
+        .and_then(|(_, _, boss)| boss)
+        .and_then(boss_cue);
+    let alpha = super::display_alpha(&time, &active, &hit_stop);
+    let (camera, view) = *camera;
+    next.lock = locked
+        .and_then(|entity| bodies.get(entity).ok())
+        .and_then(|enemy| {
+            // The upper body, where the displayed actor is this frame.
+            let point =
+                enemy.interpolated_world(alpha) + (enemy.aim_position() - enemy.world_position());
+            let distance = enemy
+                .world_position()
+                .xz()
+                .distance(body.world_position().xz());
+            lock_view(camera, view, point).map(|view| (view, distance))
+        });
+    frame.set_if_neq(next.quantized());
+}
+
+/// Sends a changed frame to the page.
+#[cfg(target_arch = "wasm32")]
+pub(super) fn publish(frame: Res<HudFrame>) {
+    if frame.is_changed() {
+        send_frame(&frame.to_json());
+    }
+}
+
+/// Writes a changed frame, or a new enemy mode, into the window title.
+#[cfg(not(target_arch = "wasm32"))]
+pub(super) fn publish(
+    frame: Res<HudFrame>,
+    mode: Res<crate::gameplay::EnemyMode>,
+    mut window: Single<&mut Window>,
+) {
+    if frame.is_changed() || mode.is_changed() {
+        window.title = frame.title(*mode);
+    }
+}
+
+#[cfg(any(not(target_arch = "wasm32"), test))]
+impl HudFrame {
+    /// The native build's one-line HUD.
+    fn title(&self, mode: crate::gameplay::EnemyMode) -> String {
+        let pair = self.loadout.pair;
+        let weapon = super::weapons::melee_name(pair);
+        let slot = super::loadout::of(pair).hud_index as usize - 1;
+        let durability = self.durability.get(slot).copied().unwrap_or(0.0);
+        let target = self.target.map_or_else(String::new, |t| {
+            format!(
+                " · {} {:.0}/{:.0} · {}",
+                t.name, t.current, t.maximum, t.status
+            )
+        });
+        format!(
+            "Kiva · {} [F2] · 哥哥 / {weapon} · HP {:.0}/{:.0} · 耐力 {:.0} · 烈阳 {:.0} 月光 {:.0} 暴怒 {:.0} · 耐久 {durability:.0} · E {:.1}s / Q {:.1}s · {}{target}",
+            match mode {
+                crate::gameplay::EnemyMode::Target => "靶子",
+                crate::gameplay::EnemyMode::Combat => "实战",
+            },
+            self.health.current,
+            self.health.maximum,
+            self.stamina.current,
+            self.sun.current,
+            self.moon.current,
+            self.rage.current,
+            self.melee.left,
+            self.ranged.left,
+            self.context,
+        )
+    }
+}
+
+/// What the player is doing, for the status line above the health bar.
+fn context_text(
+    combat: &Combatant,
+    health: &Health,
+    motion: &MotionState,
+    defense: &DefenseState,
+    energy: &Energy,
+) -> &'static str {
+    if !health.is_alive() {
         "倒地 · 即将回到出生点"
     } else if let Some(stage) = combat
         .active_action()
-        .filter(|action| action.kind == crate::simulation::ActionKind::Melee)
+        .filter(|action| action.kind == ActionKind::Melee)
         .and_then(|action| action.melee_stage)
     {
         match stage {
@@ -453,60 +553,9 @@ pub(super) fn sync(
         "暴怒中 · 普攻翻倍 · 技能强化 · 自动联动"
     } else {
         status_text(combat.status())
-    };
-    #[cfg(target_arch = "wasm32")]
-    {
-        let _ = &mut window;
-        let mut frame = HudFrame::player(combat, health, stamina, energy, arsenal, context);
-        let locked = target.is_some().then(|| combat.target()).flatten();
-        frame.cue = locked
-            .and_then(|entity| enemies.get(entity).ok())
-            .and_then(|(_, _, boss)| boss)
-            .and_then(boss_cue);
-        let alpha = super::display_alpha(&time, &active, &hit_stop);
-        let (camera, view) = *camera;
-        frame.lock = locked
-            .and_then(|entity| bodies.get(entity).ok())
-            .and_then(|enemy| {
-                // The upper body, where the displayed actor is this frame.
-                let point = enemy.interpolated_world(alpha)
-                    + (enemy.aim_position() - enemy.world_position());
-                let distance = enemy
-                    .world_position()
-                    .xz()
-                    .distance(body.world_position().xz());
-                lock_view(camera, view, point).map(|view| (view, distance))
-            });
-        frame.target = target;
-        send_frame(&frame.to_json());
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        let weapon = super::weapons::melee_name(combat.weapon_pair());
-        let target = target.map_or_else(String::new, |t| {
-            format!(
-                " · {} {:.0}/{:.0} · {}",
-                t.name, t.current, t.maximum, t.status
-            )
-        });
-        window.title = format!(
-            "Kiva · {} [F2] · 哥哥 / {weapon} · HP {:.0}/{:.0} · 耐力 {:.0} · 烈阳 {} 月光 {} 暴怒 {:.0} · 耐久 {} · E {:.1}s / Q {:.1}s · {context}{target}",
-            match *mode {
-                crate::gameplay::EnemyMode::Target => "靶子",
-                crate::gameplay::EnemyMode::Combat => "实战",
-            },
-            health.current(),
-            health.maximum(),
-            stamina.current(),
-            energy.sun(),
-            energy.moon(),
-            energy.rage(),
-            arsenal.durability(combat.weapon_pair()),
-            combat.melee_cooldown(),
-            combat.ranged_cooldown()
-        );
     }
 }
+
 /// Wording of the simulation's latest command outcome.
 fn status_text(status: CombatStatus) -> &'static str {
     match status {
@@ -610,7 +659,7 @@ mod tests {
                 maximum: 100.0,
             },
             loadout: LoadoutSnapshot {
-                pair: 1,
+                pair: WeaponPair::HammerMusket,
                 melee: true,
                 ranged: true,
                 combo: false,
@@ -681,7 +730,7 @@ mod tests {
         let behind = HudFrame {
             context: "暴怒中 · 普攻翻倍 · 技能强化 · 自动联动",
             loadout: LoadoutSnapshot {
-                pair: 2,
+                pair: WeaponPair::ChainAxeBow,
                 ..idle.loadout
             },
             axe_away: true,
@@ -890,6 +939,102 @@ mod tests {
             assert_eq!(target(&app, player), None);
         }
     }
+    #[derive(Resource, Default)]
+    struct Sent(u32);
+    fn count(frame: Res<HudFrame>, mut sent: ResMut<Sent>) {
+        if frame.is_changed() {
+            sent.0 += 1;
+        }
+    }
+    /// The arena with a game camera, `sync`, and a counter standing in for `publish`.
+    fn hud_arena() -> (App, Entity) {
+        let (mut app, player) = arena();
+        app.world_mut().spawn((
+            super::super::camera::GameCamera,
+            Camera::default(),
+            Transform::from_xyz(0.0, 6.0, 4.2).looking_at(Vec3::ZERO, Vec3::Y),
+        ));
+        app.init_resource::<HudFrame>()
+            .init_resource::<Sent>()
+            .add_systems(Update, (sync, count).chain());
+        (app, player)
+    }
+    /// One fixed step, then one display frame; how many frames were sent so far.
+    fn step(app: &mut App) -> u32 {
+        tick(app, 1);
+        app.world_mut().run_schedule(Update);
+        app.world().resource::<Sent>().0
+    }
+
+    #[test]
+    fn a_still_arena_sends_its_frame_once() {
+        let (mut app, _) = hud_arena();
+        let first = step(&mut app);
+        assert_eq!(first, 1);
+        for _ in 0..30 {
+            assert_eq!(step(&mut app), first, "nothing on screen changed");
+        }
+        assert_eq!(app.world().resource::<HudFrame>().context, "准备就绪");
+    }
+
+    #[test]
+    fn a_running_cooldown_sends_every_step_and_stops_when_it_ends() {
+        let (mut app, player) = hud_arena();
+        lock(&mut app, player);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_melee_skill();
+        let mut sent = step(&mut app);
+        assert!(app.world().resource::<HudFrame>().melee.left > 0.0);
+        for _ in 0..20 {
+            let now = step(&mut app);
+            assert_eq!(
+                now,
+                sent + 1,
+                "a 1/60 s countdown step is above the 0.01 s quantum"
+            );
+            sent = now;
+        }
+        // Run the cooldown and any combo window out; then the frame settles again.
+        for _ in 0..400 {
+            step(&mut app);
+        }
+        let settled = step(&mut app);
+        let frame = app.world().resource::<HudFrame>();
+        assert_eq!((frame.melee.left, frame.combo), (0.0, Clock::default()));
+        assert_eq!(step(&mut app), settled);
+        assert_eq!(step(&mut app), settled);
+    }
+
+    #[test]
+    fn noise_below_what_the_hud_shows_is_not_a_change() {
+        let frame = |x: f32, distance: f32, left: f32| {
+            HudFrame {
+                lock: Some((LockView::OnScreen(Vec2::new(x, 0.25)), distance)),
+                melee: Clock { left, total: 3.0 },
+                ..HudFrame::default()
+            }
+            .quantized()
+        };
+        assert_eq!(frame(0.5, 7.5, 1.0), frame(0.500_02, 7.500_4, 1.000_3));
+        assert_ne!(frame(0.5, 7.5, 1.0), frame(0.502, 7.5, 1.0));
+        assert_ne!(frame(0.5, 7.5, 1.0), frame(0.5, 7.5, 1.0 - 1.0 / 60.0));
+    }
+
+    #[test]
+    fn the_native_title_is_written_from_the_same_frame() {
+        let [(_, idle), _, (_, behind)] = contract_frames();
+        assert_eq!(
+            idle.title(gameplay::EnemyMode::Target),
+            "Kiva · 靶子 [F2] · 哥哥 / 伏浪锚 · 锤子 · HP 1000/1000 · 耐力 100 · 烈阳 0 月光 0 暴怒 0 · 耐久 50 · E 0.0s / Q 0.0s · 准备就绪"
+        );
+        assert_eq!(
+            behind.title(gameplay::EnemyMode::Combat),
+            "Kiva · 实战 [F2] · 哥哥 / 谪星·摧山 · 链斧 · HP 1000/1000 · 耐力 100 · 烈阳 0 月光 0 暴怒 12 · 耐久 50 · E 0.0s / Q 0.0s · 暴怒中 · 普攻翻倍 · 技能强化 · 自动联动 · 愁铃客 434/700 · 出招中"
+        );
+    }
+
     #[test]
     fn admission_snapshot_has_1000_health_dual_slots_and_no_player_ranged_mode() {
         let (mut app, player) = arena();
@@ -930,7 +1075,7 @@ mod tests {
         assert!(c.melee_cooldown() > before - 0.03);
         assert_eq!(c.ranged_cooldown(), 0.);
         let snapshot = loadout_snapshot(c, app.world().get::<Health>(player).unwrap());
-        assert_eq!(snapshot.pair, 2);
+        assert_eq!(snapshot.pair, WeaponPair::ChainAxeBow);
         assert!(!snapshot.melee);
         assert!(snapshot.ranged);
     }

@@ -206,6 +206,7 @@ pub(super) fn run() {
         .init_resource::<controls::CaptureState>()
         .init_resource::<skeleton::AnimationLibrary>()
         .init_resource::<appearance::AppearanceSelection>()
+        .init_resource::<hud::HudFrame>()
         .add_systems(
             Assemble,
             (
@@ -252,7 +253,7 @@ pub(super) fn run() {
                 audio::sync,
                 // After the camera, so the lock reticle uses this frame's view.
                 camera::follow,
-                hud::sync,
+                (hud::sync, hud::publish).chain(),
                 (hit_debug::toggle, hit_debug::draw).chain(),
             )
                 .chain()
