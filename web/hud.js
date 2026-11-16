@@ -1,6 +1,8 @@
 /* Read-only snapshots: simulation owns targets, health, action availability and all timers.
-   The page never keeps a clock: every number comes from the latest snapshot, and the only
-   motion over time (the damage trail, the link's breathing) is CSS. */
+   The page never keeps a clock: every number comes from the latest frame, and the only
+   motion over time (the damage trail, the link's breathing) is CSS.
+   Rust sends one named-field frame per update (client/hud.rs `HudFrame`); the shape is pinned
+   by the fixtures under tests/fixtures/hud, which the Node tests start from. */
 (() => {
   "use strict";
   if (window.kivaPage?.isViewer()) return;
@@ -11,26 +13,83 @@
   const RAGE_SEGMENTS = 20;
   const DURABILITY_SEGMENTS = 20;
   const LOW_DURABILITY = 0.3;
+  // The page reads at most this many Boss swings, one bit each.
+  const MAX_SWINGS = 31;
   const ORDINALS = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+  const WORDING = ["melee", "meleeGlyph", "ranged", "rangedGlyph", "meleeSkill", "rangedSkill", "combo", "comboCondition"];
+  const LOCKS = ["onScreen", "aside", "behind"];
 
+  // The latest frame, normalised; null until Rust sends one.
   let latest = null;
-  let target = null;
-  let cue = { kind: 0, left: 0, total: 0, chain: 0, swings: 0, resolved: 0 };
-  let lock = { mode: 0, x: 0, y: 0, distance: 0, side: 0 };
   // Each pair's wording by page slot, from Rust's loadout rows (defineLoadouts).
   let sets = {};
-  let loadout = { set: 1, maximum: 1000, attack: false, melee: false, ranged: false, guard: false, combo: false };
-  let resources = { stamina: 100, maximum: 100, melee: 0, meleeTotal: 0, ranged: 0, rangedTotal: 0, axeAway: false, defense: 0 };
-  let energy = { sun: 0, sunMaximum: 10, moon: 0, moonMaximum: 10, rage: 0, rageMaximum: 20, enraged: false, ready: false };
-  let durability = { values: [], maximum: 50 };
   let mounted = document.readyState !== "loading";
   const nonnegative = value => Number.isFinite(value) ? Math.max(0, value) : 0;
   const label = value => typeof value === "string" ? value : "";
+  const flag = value => value === true;
+  const count = (value, maximum) => Number.isInteger(value) && value > 0 ? Math.min(value, maximum) : 0;
+  const object = value => value && typeof value === "object" ? value : {};
   const number = value => Math.ceil(nonnegative(value)).toLocaleString("en-US");
   const fraction = (value, maximum) => maximum > 0 ? Math.min(1, nonnegative(value) / maximum) : 0;
   const percent = value => `${Math.round(Math.min(1, nonnegative(value)) * 1000) / 10}%`;
   const node = id => document.getElementById(id);
-  const WORDING = ["melee", "meleeGlyph", "ranged", "rangedGlyph", "meleeSkill", "rangedSkill", "combo", "comboCondition"];
+
+  // A value out of its maximum, never above it.
+  function meter(value) {
+    const { current, maximum } = object(value);
+    const max = nonnegative(maximum);
+    return { current: Math.min(nonnegative(current), max), maximum: max };
+  }
+  function clock(value) {
+    const { left, total } = object(value);
+    return { left: nonnegative(left), total: nonnegative(total) };
+  }
+  // Every field bounded; anything missing or malformed reads as empty, never throws.
+  function normalize(frame) {
+    const f = object(frame);
+    const loadout = object(f.loadout);
+    const energy = object(f.energy);
+    const durability = object(f.durability);
+    const durabilityMaximum = nonnegative(durability.maximum);
+    const target = f.target && typeof f.target === "object" ? meter(f.target) : null;
+    const lock = object(f.lock);
+    const cue = f.cue && typeof f.cue === "object" ? f.cue : null;
+    return {
+      context: label(f.context),
+      health: meter(f.health),
+      stamina: meter(f.stamina),
+      loadout: {
+        set: count(loadout.set, Number.MAX_SAFE_INTEGER),
+        melee: flag(loadout.meleeReady), ranged: flag(loadout.rangedReady), combo: flag(loadout.comboReady),
+      },
+      melee: clock(f.melee), ranged: clock(f.ranged), combo: clock(f.combo),
+      axeAway: flag(f.axeAway),
+      energy: {
+        ...Object.fromEntries(["sun", "moon", "rage"].flatMap(name => {
+          const { current, maximum } = meter({ current: energy[name], maximum: energy[`${name}Maximum`] });
+          return [[name, current], [`${name}Maximum`, maximum]];
+        })),
+        enraged: flag(energy.enraged), rageReady: flag(energy.rageReady),
+      },
+      durability: {
+        values: Array.isArray(durability.values) ? durability.values.map(value => Math.min(nonnegative(value), durabilityMaximum)) : [],
+        maximum: durabilityMaximum,
+      },
+      target: target && label(f.target.name) && target.current > 0 && target.maximum > 0 ? {
+        name: label(f.target.name), health: target.current, maximum: target.maximum, status: label(f.target.status),
+        phases: f.target.phases === 2 ? 2 : 1, phase: f.target.phases === 2 && f.target.phase === 2 ? 2 : 1,
+      } : null,
+      cue: cue ? {
+        striking: flag(cue.striking), left: nonnegative(cue.left), total: nonnegative(cue.total),
+        chain: count(cue.chain, Number.MAX_SAFE_INTEGER), swings: count(cue.swings, MAX_SWINGS),
+        resolved: Number.isInteger(cue.resolved) && cue.resolved >= 0 ? cue.resolved : 0,
+      } : null,
+      lock: LOCKS.includes(lock.kind) ? {
+        kind: lock.kind, x: Math.min(1, nonnegative(lock.x)), y: Math.min(1, nonnegative(lock.y)),
+        distance: nonnegative(lock.distance), right: flag(lock.right),
+      } : null,
+    };
+  }
 
   function text(id, value) {
     const element = node(id);
@@ -102,8 +161,8 @@
     attribute(id, "aria-label", `${description}${empowered ? " · 强化" : ""} · ${restriction}`);
   }
 
-  function paintTarget(alive) {
-    const selected = alive ? target : null;
+  function paintTarget(f, alive) {
+    const selected = alive ? f.target : null;
     hidden("hud-target", !selected);
     if (!selected) {
       hidden("hud-reticle", true);
@@ -123,56 +182,60 @@
     toggle("hud-target-first", "spent", twoPhases && !first);
     hidden("hud-target-split", !twoPhases);
 
-    const striking = cue.kind === 2;
-    const cueShown = cue.kind === 1 || striking;
-    hidden("hud-boss-cue", !cueShown);
-    hidden("hud-boss-state", cueShown || !selected.status);
+    const cue = f.cue;
+    hidden("hud-boss-cue", !cue);
+    hidden("hud-boss-state", Boolean(cue) || !selected.status);
     text("hud-boss-state", selected.status);
-    if (cueShown) {
-      toggle("hud-boss-cue", "striking", striking);
+    if (cue) {
+      toggle("hud-boss-cue", "striking", cue.striking);
       text("hud-boss-chain", cue.chain > 1 ? `连招 · 第${ORDINALS[cue.chain - 1] || cue.chain}式` : "");
-      text("hud-boss-word", striking ? "出招" : "蓄势");
-      text("hud-boss-time", striking ? "" : cue.left.toFixed(1));
+      text("hud-boss-word", cue.striking ? "出招" : "蓄势");
+      text("hud-boss-time", cue.striking ? "" : cue.left.toFixed(1));
       style("hud-boss-count-fill", "width", percent(fraction(cue.left, cue.total)));
       segments("hud-boss-swings", cue.swings, 0, index => (cue.resolved & (1 << index)) !== 0);
     }
 
-    hidden("hud-reticle", lock.mode !== 1);
-    hidden("hud-offscreen", lock.mode !== 2 && lock.mode !== 3);
-    if (lock.mode === 1) {
+    const lock = f.lock;
+    const onScreen = lock?.kind === "onScreen";
+    hidden("hud-reticle", !onScreen);
+    hidden("hud-offscreen", !lock || onScreen);
+    if (onScreen) {
       style("hud-reticle", "left", percent(lock.x));
       style("hud-reticle", "top", percent(lock.y));
       text("hud-reticle-distance", `${lock.distance.toFixed(1)}m`);
-    } else if (lock.mode === 2 || lock.mode === 3) {
-      toggle("hud-offscreen", "right", lock.side > 0);
-      text("hud-offscreen-label", lock.mode === 3 ? "身后" : "侧方");
+    } else if (lock) {
+      toggle("hud-offscreen", "right", lock.right);
+      text("hud-offscreen-label", lock.kind === "behind" ? "身后" : "侧方");
     }
   }
 
   function paint() {
     if (!mounted || !latest) return;
-    const set = sets[loadout.set];
+    const f = latest;
+    const set = sets[f.loadout.set];
     if (!set) return;
-    const alive = latest.health > 0;
+    const alive = f.health.current > 0;
+    const health = `${number(f.health.current)} / ${number(f.health.maximum)}`;
 
     // Center: health blocks, stamina, the link.
-    text("hud-status", latest.context);
-    blocks("hud-health-blocks", latest.health, loadout.maximum);
-    text("hud-health-text", `${number(latest.health)} / ${number(loadout.maximum)}`);
-    attribute("hud-health-blocks", "aria-valuenow", latest.fraction.toFixed(3));
-    attribute("hud-health-blocks", "aria-valuetext", `${number(latest.health)} / ${number(loadout.maximum)}`);
-    const stamina = fraction(resources.stamina, resources.maximum);
+    text("hud-status", f.context);
+    blocks("hud-health-blocks", f.health.current, f.health.maximum);
+    text("hud-health-text", health);
+    attribute("hud-health-blocks", "aria-valuenow", fraction(f.health.current, f.health.maximum).toFixed(3));
+    attribute("hud-health-blocks", "aria-valuetext", health);
+    const stamina = fraction(f.stamina.current, f.stamina.maximum);
     style("hud-stamina-fill", "width", percent(stamina));
     attribute("hud-stamina", "aria-valuenow", stamina.toFixed(3));
-    const linked = alive && loadout.combo && latest.combo > 0;
+    const linked = alive && f.loadout.combo && f.combo.left > 0;
     toggle("hud-link", "ready", linked);
     toggle("hud-link", "wait", !linked);
     attribute("hud-link", "aria-disabled", !linked);
-    style("hud-link", "--left", linked ? percent(latest.combo / Math.max(latest.combo, latest.window || latest.combo)) : "0%");
+    style("hud-link", "--left", linked ? percent(fraction(f.combo.left, f.combo.total)) : "0%");
     text("hud-link-text", linked ? set.combo : set.comboCondition);
-    text("hud-link-time", linked ? latest.combo.toFixed(1) : "");
-    attribute("hud-link", "aria-label", `Tab · 联动 · ${set.combo} · ${linked ? `剩余 ${latest.combo.toFixed(1)}s` : set.comboCondition}`);
+    text("hud-link-time", linked ? f.combo.left.toFixed(1) : "");
+    attribute("hud-link", "aria-label", `Tab · 联动 · ${set.combo} · ${linked ? `剩余 ${f.combo.left.toFixed(1)}s` : set.comboCondition}`);
 
+    const energy = f.energy;
     // Left: the sister.
     text("hud-sister-weapon", `${set.ranged} · ${set.rangedGlyph}`);
     text("hud-key-q-glyph", set.rangedGlyph);
@@ -181,14 +244,15 @@
     text("hud-moon-value", String(Math.floor(energy.moon)));
     toggle("hud-moon-row", "full", moonFull);
     hidden("hud-moon-tag", !(moonFull || energy.enraged));
-    const wear = fraction(durability.values[loadout.set - 1], durability.maximum);
+    const durability = f.durability.values[f.loadout.set - 1];
+    const wear = fraction(durability, f.durability.maximum);
     segments("hud-durability", DURABILITY_SEGMENTS, Math.floor(wear * DURABILITY_SEGMENTS + 1e-6));
-    text("hud-durability-value", number(durability.values[loadout.set - 1]));
+    text("hud-durability-value", number(durability));
     toggle("hud-durability-row", "low", wear <= LOW_DURABILITY);
-    key("hud-key-q", resources.ranged, resources.rangedTotal, loadout.ranged, alive, energy.enraged || moonFull, `Q · ${set.rangedSkill}`);
+    key("hud-key-q", f.ranged.left, f.ranged.total, f.loadout.ranged, alive, energy.enraged || moonFull, `Q · ${set.rangedSkill}`);
 
     // Right: the brother.
-    text("hud-brother-weapon", `${set.melee} · ${set.meleeGlyph}${resources.axeAway ? " · 回收中" : ""}`);
+    text("hud-brother-weapon", `${set.melee} · ${set.meleeGlyph}${f.axeAway ? " · 回收中" : ""}`);
     text("hud-key-e-glyph", set.meleeGlyph);
     const sunFull = energy.sunMaximum > 0 && energy.sun >= energy.sunMaximum;
     segments("hud-sun", ENERGY_SEGMENTS, Math.floor(fraction(energy.sun, energy.sunMaximum) * ENERGY_SEGMENTS + 1e-6));
@@ -196,22 +260,27 @@
     toggle("hud-sun-row", "full", sunFull);
     segments("hud-rage", RAGE_SEGMENTS, Math.ceil(fraction(energy.rage, energy.rageMaximum) * RAGE_SEGMENTS - 1e-6));
     text("hud-rage-value", String(Math.ceil(energy.rage)));
-    toggle("hud-rage-row", "ready", alive && energy.ready);
+    toggle("hud-rage-row", "ready", alive && energy.rageReady);
     toggle("hud-rage-row", "enraged", energy.enraged);
-    attribute("hud-rage-row", "aria-disabled", !(alive && energy.ready));
-    attribute("hud-rage-row", "aria-label", `X · 暴怒技 · ${energy.enraged ? `暴怒中 · 剩余 ${Math.ceil(energy.rage)}s` : energy.ready ? "可用" : "暴怒值未满"}`);
-    key("hud-key-e", resources.melee, resources.meleeTotal, loadout.melee, alive, energy.enraged || sunFull, `E · ${set.meleeSkill}`);
+    attribute("hud-rage-row", "aria-disabled", !(alive && energy.rageReady));
+    attribute("hud-rage-row", "aria-label", `X · 暴怒技 · ${energy.enraged ? `暴怒中 · 剩余 ${Math.ceil(energy.rage)}s` : energy.rageReady ? "可用" : "暴怒值未满"}`);
+    key("hud-key-e", f.melee.left, f.melee.total, f.loadout.melee, alive, energy.enraged || sunFull, `E · ${set.meleeSkill}`);
 
-    paintTarget(alive);
+    paintTarget(f, alive);
+  }
+
+  // JSON text from Rust; anything unreadable is ignored and the last good value kept.
+  function parse(json) {
+    try { return JSON.parse(json); } catch { return null; }
   }
 
   window.kivaHud = Object.freeze({
     // Every pair's wording, keyed by page slot; a pair with any field missing is dropped.
     defineLoadouts(json) {
-      let parsed = null;
-      try { parsed = JSON.parse(json); } catch { parsed = null; }
+      const parsed = parse(json);
+      if (!parsed || typeof parsed !== "object") return;
       const defined = {};
-      for (const [slot, row] of Object.entries(parsed && typeof parsed === "object" ? parsed : {})) {
+      for (const [slot, row] of Object.entries(parsed)) {
         if (!/^[1-9]\d*$/.test(slot) || !row || typeof row !== "object") continue;
         if (WORDING.every(name => typeof row[name] === "string")) {
           defined[slot] = Object.freeze(Object.fromEntries(WORDING.map(name => [name, row[name]])));
@@ -220,80 +289,11 @@
       sets = Object.freeze(defined);
       paint();
     },
-    render(persona, weapon, healthFraction, health, combo, cooldown, context) {
-      const remaining = nonnegative(combo);
-      latest = {
-        persona: label(persona), weapon: label(weapon),
-        fraction: Math.min(1, nonnegative(healthFraction)), health: nonnegative(health),
-        combo: remaining, cooldown: nonnegative(cooldown), context: label(context),
-        // The longest window seen in this link, so the drain line has a full length.
-        window: remaining > 0 ? Math.max(remaining, latest?.combo > 0 ? latest.window : 0) : 0,
-      };
-      paint();
-    },
-    renderLoadout(set, maximum, attackReady, meleeReady, rangedReady, guardReady, comboReady) {
-      loadout = {
-        set: Number.isInteger(set) && set > 0 ? set : 0, maximum: nonnegative(maximum),
-        attack: attackReady === true, melee: meleeReady === true, ranged: rangedReady === true, guard: guardReady === true, combo: comboReady === true,
-      };
-      paint();
-    },
-    // Each cooldown comes with the total its skill started, for the water level.
-    renderResources(stamina, maximum, meleeCooldown, meleeTotal, rangedCooldown, rangedTotal, axeAway, defense) {
-      resources = {
-        stamina: Math.min(nonnegative(stamina), nonnegative(maximum)), maximum: nonnegative(maximum),
-        melee: nonnegative(meleeCooldown), meleeTotal: nonnegative(meleeTotal),
-        ranged: nonnegative(rangedCooldown), rangedTotal: nonnegative(rangedTotal),
-        axeAway: axeAway === true, defense: Number.isInteger(defense) && defense >= 0 && defense <= 4 ? defense : 0,
-      };
-      paint();
-    },
-    renderEnergy(sun, sunMaximum, moon, moonMaximum, rage, rageMaximum, enraged, rageReady) {
-      const bounded = (value, maximum) => Math.min(nonnegative(value), nonnegative(maximum));
-      energy = {
-        sun: bounded(sun, sunMaximum), sunMaximum: nonnegative(sunMaximum),
-        moon: bounded(moon, moonMaximum), moonMaximum: nonnegative(moonMaximum),
-        rage: bounded(rage, rageMaximum), rageMaximum: nonnegative(rageMaximum),
-        enraged: enraged === true, ready: rageReady === true,
-      };
-      paint();
-    },
-    // One value per weapon pair, in the page's pair-slot order.
-    renderDurability(values, maximum) {
-      const max = nonnegative(maximum);
-      durability = { values: Array.from(values || [], value => Math.min(nonnegative(value), max)), maximum: max };
-      paint();
-    },
-    // `phase` of `phases`: a Boss has two, each with `maximum` health.
-    renderTarget(name, current, maximum, status = "", phase = 1, phases = 1) {
-      const health = nonnegative(current);
-      const max = nonnegative(maximum);
-      const count = phases === 2 ? 2 : 1;
-      target = label(name) && health > 0 && max > 0
-        ? { name: label(name), health: Math.min(health, max), maximum: max, status: label(status), phases: count, phase: count === 2 && phase === 2 ? 2 : 1 }
-        : null;
-      paint();
-    },
-    // The Boss's strike in progress: kind 0 none, 1 telegraph (left / total seconds), 2 striking.
-    // `resolved` has one bit per swing already resolved against the player.
-    renderBossCue(kind, left, total, chain, swings, resolved) {
-      cue = {
-        kind: kind === 1 || kind === 2 ? kind : 0,
-        left: nonnegative(left), total: nonnegative(total),
-        chain: Number.isInteger(chain) && chain > 0 ? chain : 0,
-        swings: Number.isInteger(swings) && swings > 0 ? Math.min(swings, 31) : 0,
-        resolved: Number.isInteger(resolved) && resolved >= 0 ? resolved : 0,
-      };
-      paint();
-    },
-    // Where the locked target is: mode 0 none, 1 on screen at (x, y) as fractions of the
-    // frame, 2 off screen to one side, 3 behind the camera; side is -1 left or 1 right.
-    renderLock(mode, x, y, distance, side) {
-      lock = {
-        mode: mode === 1 || mode === 2 || mode === 3 ? mode : 0,
-        x: Math.min(1, nonnegative(x)), y: Math.min(1, nonnegative(y)),
-        distance: nonnegative(distance), side: side > 0 ? 1 : -1,
-      };
+    // The whole HUD for one update.
+    frame(json) {
+      const parsed = parse(json);
+      if (!parsed || typeof parsed !== "object") return;
+      latest = normalize(parsed);
       paint();
     },
   });

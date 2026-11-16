@@ -11,11 +11,9 @@
 - companion::setup／sync 读取 CompanionState，维护独立白灵淼蒙皮／RigPose 显示根。
 - weapons::spawn／setup_tether／sync_tether 建立共享武器、链斧离手实体和绳索；四件源模型由 weapon_models 按 pair＋mode 缓存，格式与挂点见 [model-assets.md](model-assets.md)。
 - Combatant::sequence() 返回 SequenceSnapshot；kind 区分 HammerCombo 与 ChainCombo，cancelled 及 action_id 用于恢复和冲击归属。
-- kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)，pair=1 锤鸟／2 链斧弓。
-- kivaHud.renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)，defense=0 Idle／1 Deflect／2 Waiting／3 Guard／4 Parry。
-- kivaHud.renderEnergy(sun,sunMaximum,moon,moonMaximum,rage,rageMaximum,enraged,rageReady)：烈阳／月光／暴怒的当前值与上限；暴怒中 `rage` 是剩余量（等于剩余秒数）。
-- kivaHud.renderDurability(values,maximum)：`values` 为每组武器的耐久，按页面套装槽位顺序（`Loadout.hud_index-1`）。
-- renderTarget(name,current,maximum,status) 与 render(persona,weapon,fraction,health,combo,cooldown,context) 保留只读方向。
+- `kivaHud.frame(json)`：`client/hud.rs` 的 `HudFrame` 每次 HUD 更新发送一次，字段具名、camelCase：`context`；`health`／`stamina` 为 `{current,maximum}`；`loadout{set,meleeReady,rangedReady,comboReady}`（`set` 为 `Loadout.hud_index`）；`melee`／`ranged`／`combo` 为 `{left,total}`（技能冷却总时长取自技能表，联动总时长为 `ComboWindow.duration`）；`axeAway`；`energy{sun,sunMaximum,moon,moonMaximum,rage,rageMaximum,enraged,rageReady}`（暴怒中 `rage` 是剩余量，等于剩余秒数）；`durability{values,maximum}`（`values` 按页面套装槽位顺序，即 `hud_index-1`）；`target`、`cue`、`lock` 在没有时为 `null`。`cue{striking,left,total,chain,swings,resolved}`；`lock.kind` 为 `onScreen`（带 `x`、`y`）、`aside` 或 `behind`（带 `right`），都带 `distance`。非有限数值写成 `null`。
+- 形状由 `tests/fixtures/hud/*.json` 固定：Rust 测试 `the_page_contract_fixtures_match_what_rust_sends` 与之比较（`KIVA_UPDATE_FIXTURES=1` 重写），`scripts/hud-unit.test.cjs` 只从这些 fixture 出发，只能覆盖 fixture 里已有的字段。改字段时同时改 fixture、`web/hud.js` 和 Node 测试。
+- 只发页面会读的字段；新增字段要同时有页面读取和 Node 断言。
 - CombatEvent.pair 固定记录产生事件时的武器组；声音或弹道不能用当前套装猜历史事件的武器。
 
 ## Contracts
@@ -40,7 +38,7 @@ F3 只替换哥哥身体和服饰，保留 RigPose／显示根／物理状态；
 目标死亡或取消时使用序列最后瞄准点恢复；相机不另建会推进技能的时钟。
 普通特效与专用冲击各持一个 `client::FeedbackCursor`（`take(feedback, active)` 批量消费，`advance(sequence)` 逐条消费），SniperShot／SniperImpact 只追加表现，不重复伤害或播放第二声。
 
-HUD 显示玩家生命 1000、耐力、当前组、E／Q 独立冷却、Tab 条件与链斧离手；烈阳、月光各 10 格，暴怒 20 格，当前组耐久 20 格（每格 2.5，≤30% 变琥珀色）。烈阳／月光满或暴怒中，对应技能标记为强化；暴怒行仅在 `rageReady` 时标为可用。Boss 读招快照来自 `Boss::{telegraph,swings,chain}`，锁定位置由 `client/hud.rs` 用游戏镜头投影目标上身（`mode` 0 无、1 画面内、2 侧方、3 身后）。页面对越界值做截断，不自行推算任何数值，也不保存规则或武器组数据：E／Q 冷却水位的总时长随 `renderResources` 由 `ActionKind::cooldown()`（技能表）给出，武器组文案只来自 `defineLoadouts`，未定义的组号不绘制。暴怒释放时特效在玩家脚下显示一圈扩散环（`CombatEffect::Enrage`），暂无专属音效和动作。就绪快照必须跟随模拟本步最终状态。
+HUD 显示玩家生命 1000、耐力、当前组、E／Q 独立冷却、Tab 条件与链斧离手；烈阳、月光各 10 格，暴怒 20 格，当前组耐久 20 格（每格 2.5，≤30% 变琥珀色）。烈阳／月光满或暴怒中，对应技能标记为强化；暴怒行仅在 `rageReady` 时标为可用。Boss 读招快照来自 `Boss::{telegraph,swings,chain}`，锁定位置由 `client/hud.rs` 用游戏镜头投影目标上身（`lock.kind`）。页面对越界值做截断，不自行推算任何数值，也不保存规则或武器组数据：E／Q 冷却水位与联动剩余线的总时长都在帧里（`ActionKind::cooldown()`、`ComboWindow.duration`），武器组文案只来自 `defineLoadouts`，未定义的组号不绘制。暴怒释放时特效在玩家脚下显示一圈扩散环（`CombatEffect::Enrage`），暂无专属音效和动作。就绪快照必须跟随模拟本步最终状态。
 目标血条来自当前 Combatant.target，联动原目标不能强行覆盖用户当前锁定。
 Web 只更新安全文字、progress、SVG href、显隐、样式类和无障碍属性；无独立冷却时钟或演示点击控制。
 

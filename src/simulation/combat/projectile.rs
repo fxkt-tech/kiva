@@ -297,6 +297,7 @@ pub(in crate::simulation) fn advance_projectiles(
                     pair: projectile.action.pair,
                     original_target: hit.entity,
                     remaining,
+                    duration: remaining,
                 });
             }
         } else {

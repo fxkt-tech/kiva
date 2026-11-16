@@ -140,6 +140,8 @@ pub struct ComboWindow {
     pub pair: WeaponPair,
     pub original_target: Entity,
     pub remaining: f32,
+    /// How long the window was when it opened.
+    pub duration: f32,
 }
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ActionAvailability {

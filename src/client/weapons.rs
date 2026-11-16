@@ -26,6 +26,8 @@ impl TetherAssets {
     }
 }
 
+/// Only the native window title names the weapon; the page uses `Loadout::hud`.
+#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
 pub(super) fn melee_name(pair: WeaponPair) -> &'static str {
     super::loadout::of(pair).melee_name
 }

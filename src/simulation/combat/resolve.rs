@@ -473,6 +473,7 @@ fn window(action: &ActionSnapshot, target: Entity, remaining: f32) -> ComboWindo
         pair: action.pair,
         original_target: target,
         remaining,
+        duration: remaining,
     }
 }
 

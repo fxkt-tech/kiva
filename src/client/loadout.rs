@@ -59,6 +59,8 @@ pub(super) struct Loadout {
     pub hud_index: u32,
     #[cfg_attr(not(any(target_arch = "wasm32", test)), allow(dead_code))]
     pub hud: HudText,
+    /// The native window title's name for the melee weapon.
+    #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
     pub melee_name: &'static str,
     pub melee_model: &'static str,
     pub ranged_model: &'static str,

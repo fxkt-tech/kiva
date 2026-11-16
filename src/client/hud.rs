@@ -10,68 +10,35 @@ use bevy::prelude::*;
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen::prelude::wasm_bindgen]
 extern "C" {
-    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = render)]
-    fn render(
-        persona: &str,
-        weapon: &str,
-        fraction: f32,
-        health: f32,
-        combo: f32,
-        cooldown: f32,
-        context: &str,
-    );
-    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderLoadout)]
-    fn render_loadout(
-        pair: u32,
-        maximum: f32,
-        attack: bool,
-        melee: bool,
-        ranged: bool,
-        guard: bool,
-        combo: bool,
-    );
     #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = defineLoadouts)]
     fn define_loadouts(json: &str);
-    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderResources)]
-    fn render_resources(
-        stamina: f32,
-        maximum: f32,
-        melee: f32,
-        melee_total: f32,
-        ranged: f32,
-        ranged_total: f32,
-        axe_away: bool,
-        defense: u32,
-    );
-    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderEnergy)]
-    fn render_energy(
-        sun: f32,
-        sun_maximum: f32,
-        moon: f32,
-        moon_maximum: f32,
-        rage: f32,
-        rage_maximum: f32,
-        enraged: bool,
-        rage_ready: bool,
-    );
-    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderDurability)]
-    fn render_durability(durability: Vec<f32>, maximum: f32);
-    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderTarget)]
-    fn render_target(name: &str, current: f32, maximum: f32, status: &str, phase: u32, phases: u32);
-    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderBossCue)]
-    fn render_boss_cue(kind: u32, left: f32, total: f32, chain: u32, swings: u32, resolved: u32);
-    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderLock)]
-    fn render_lock(mode: u32, x: f32, y: f32, distance: f32, side: i32);
+    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = frame)]
+    fn send_frame(json: &str);
 }
+
+/// A countdown and the length it started at.
 #[cfg(any(target_arch = "wasm32", test))]
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+struct Clock {
+    left: f32,
+    total: f32,
+}
+
+/// A value out of its maximum.
+#[cfg(any(target_arch = "wasm32", test))]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+struct Meter {
+    current: f32,
+    maximum: f32,
+}
+
+/// The current pair's page slot and which of its inputs would be admitted.
+#[cfg(any(target_arch = "wasm32", test))]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 struct LoadoutSnapshot {
     pair: u32,
-    maximum: f32,
-    attack: bool,
     melee: bool,
     ranged: bool,
-    guard: bool,
     combo: bool,
 }
 #[cfg(any(target_arch = "wasm32", test))]
@@ -80,15 +47,12 @@ fn loadout_snapshot(combat: &Combatant, health: &Health) -> LoadoutSnapshot {
     let alive = health.is_alive();
     LoadoutSnapshot {
         pair: super::loadout::of(combat.weapon_pair()).hud_index,
-        maximum: health.maximum(),
-        attack: alive && a.attack,
         melee: alive && a.melee_skill,
         ranged: alive && a.ranged_skill,
-        guard: alive && a.defense,
         combo: alive && a.combo,
     }
 }
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 struct TargetSnapshot {
     name: &'static str,
     current: f32,
@@ -100,36 +64,36 @@ struct TargetSnapshot {
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
-/// What the HUD shows of the Boss's strike in progress.
-#[derive(Debug, Default, PartialEq)]
+/// What the HUD shows of the Boss's strike in progress: its telegraph, or its swings.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 struct BossCue {
-    /// 0 none, 1 telegraph, 2 striking.
-    kind: u32,
+    striking: bool,
     left: f32,
     total: f32,
     chain: u32,
     swings: u32,
+    /// One bit per swing already resolved against the player.
     resolved: u32,
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
-fn boss_cue(boss: &Boss) -> BossCue {
-    let kind = match boss.state() {
-        BossState::Telegraph => 1,
-        BossState::Attacking => 2,
-        _ => return BossCue::default(),
+fn boss_cue(boss: &Boss) -> Option<BossCue> {
+    let striking = match boss.state() {
+        BossState::Telegraph => false,
+        BossState::Attacking => true,
+        _ => return None,
     };
     let (left, total) = boss.telegraph().unwrap_or((0.0, 0.0));
     let (swings, resolved) = boss.swings().unwrap_or((0, 0));
-    BossCue {
-        kind,
+    Some(BossCue {
+        striking,
         left,
         total,
         chain: u32::from(boss.chain()),
         swings: u32::from(swings),
         // The page reads at most 31 swings.
         resolved: (resolved & 0x7fff_ffff) as u32,
-    }
+    })
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
@@ -161,6 +125,186 @@ fn lock_view(camera: &Camera, view: &Transform, point: Vec3) -> Option<LockView>
         Some(at) => LockView::Aside { right: at.x > 0.5 },
         None => LockView::Aside { right },
     })
+}
+
+/// Everything the page HUD draws for one update, sent as one JSON object by
+/// `window.kivaHud.frame`. `tests/fixtures/hud` pins the shape for web/hud.js.
+#[cfg(any(target_arch = "wasm32", test))]
+#[derive(Clone, Debug, Default, PartialEq)]
+struct HudFrame {
+    context: &'static str,
+    health: Meter,
+    stamina: Meter,
+    loadout: LoadoutSnapshot,
+    melee: Clock,
+    ranged: Clock,
+    combo: Clock,
+    axe_away: bool,
+    sun: Meter,
+    moon: Meter,
+    rage: Meter,
+    enraged: bool,
+    rage_ready: bool,
+    /// Every pair's durability, in page slot order.
+    durability: Vec<f32>,
+    durability_maximum: f32,
+    target: Option<TargetSnapshot>,
+    cue: Option<BossCue>,
+    /// Where the locked target is, and its planar distance.
+    lock: Option<(LockView, f32)>,
+}
+
+#[cfg(any(target_arch = "wasm32", test))]
+impl HudFrame {
+    /// The player's own part of the frame; target, cue and lock start empty.
+    fn player(
+        combat: &Combatant,
+        health: &Health,
+        stamina: &Stamina,
+        energy: &Energy,
+        arsenal: &Arsenal,
+        context: &'static str,
+    ) -> Self {
+        let pair = combat.weapon_pair();
+        Self {
+            context,
+            health: Meter {
+                current: health.current(),
+                maximum: health.maximum(),
+            },
+            stamina: Meter {
+                current: stamina.current(),
+                maximum: stamina.maximum(),
+            },
+            loadout: loadout_snapshot(combat, health),
+            melee: Clock {
+                left: combat.melee_cooldown(),
+                total: pair.melee_skill().cooldown(),
+            },
+            ranged: Clock {
+                left: combat.ranged_cooldown(),
+                total: pair.ranged_skill().cooldown(),
+            },
+            combo: combat
+                .combo_window()
+                .map_or_else(Clock::default, |window| Clock {
+                    left: window.remaining,
+                    total: window.duration,
+                }),
+            axe_away: combat.axe_away(),
+            sun: Meter {
+                current: f32::from(energy.sun()),
+                maximum: f32::from(Energy::SUN_MAX),
+            },
+            moon: Meter {
+                current: f32::from(energy.moon()),
+                maximum: f32::from(Energy::MOON_MAX),
+            },
+            rage: Meter {
+                current: energy.rage(),
+                maximum: Energy::RAGE_MAX,
+            },
+            enraged: energy.is_enraged(),
+            rage_ready: energy.rage_ready(),
+            durability: durability_by_hud_index(arsenal),
+            durability_maximum: f32::from(Arsenal::DURABILITY),
+            target: None,
+            cue: None,
+            lock: None,
+        }
+    }
+
+    fn to_json(&self) -> String {
+        use super::json::{Object, number};
+        let meter = |m: Meter| {
+            Object::new()
+                .number("current", m.current)
+                .number("maximum", m.maximum)
+                .finish()
+        };
+        let clock = |c: Clock| {
+            Object::new()
+                .number("left", c.left)
+                .number("total", c.total)
+                .finish()
+        };
+        let loadout = Object::new()
+            .integer("set", self.loadout.pair)
+            .boolean("meleeReady", self.loadout.melee)
+            .boolean("rangedReady", self.loadout.ranged)
+            .boolean("comboReady", self.loadout.combo)
+            .finish();
+        let energy = Object::new()
+            .number("sun", self.sun.current)
+            .number("sunMaximum", self.sun.maximum)
+            .number("moon", self.moon.current)
+            .number("moonMaximum", self.moon.maximum)
+            .number("rage", self.rage.current)
+            .number("rageMaximum", self.rage.maximum)
+            .boolean("enraged", self.enraged)
+            .boolean("rageReady", self.rage_ready)
+            .finish();
+        let values = self
+            .durability
+            .iter()
+            .map(|value| number(*value))
+            .collect::<Vec<_>>()
+            .join(",");
+        let durability = Object::new()
+            .raw("values", &format!("[{values}]"))
+            .number("maximum", self.durability_maximum)
+            .finish();
+        let target = self.target.as_ref().map(|t| {
+            Object::new()
+                .string("name", t.name)
+                .number("current", t.current)
+                .number("maximum", t.maximum)
+                .string("status", t.status)
+                .integer("phase", t.phase)
+                .integer("phases", t.phases)
+                .finish()
+        });
+        let cue = self.cue.as_ref().map(|c| {
+            Object::new()
+                .boolean("striking", c.striking)
+                .number("left", c.left)
+                .number("total", c.total)
+                .integer("chain", c.chain)
+                .integer("swings", c.swings)
+                .integer("resolved", c.resolved)
+                .finish()
+        });
+        let lock = self.lock.map(|(view, distance)| {
+            let object = match view {
+                LockView::OnScreen(at) => Object::new()
+                    .string("kind", "onScreen")
+                    .number("x", at.x)
+                    .number("y", at.y),
+                LockView::Aside { right } => Object::new()
+                    .string("kind", "aside")
+                    .boolean("right", right),
+                LockView::Behind { right } => Object::new()
+                    .string("kind", "behind")
+                    .boolean("right", right),
+            };
+            object.number("distance", distance).finish()
+        });
+        Object::new()
+            .string("context", self.context)
+            .raw("health", &meter(self.health))
+            .raw("stamina", &meter(self.stamina))
+            .raw("loadout", &loadout)
+            .raw("melee", &clock(self.melee))
+            .raw("ranged", &clock(self.ranged))
+            .raw("combo", &clock(self.combo))
+            .boolean("axeAway", self.axe_away)
+            .raw("energy", &energy)
+            .raw("durability", &durability)
+            .optional("target", target)
+            .optional("cue", cue)
+            .optional("lock", lock)
+            .finish()
+    }
 }
 
 fn target_snapshot<'a>(
@@ -216,28 +360,27 @@ type PlayerSnapshot = (
 /// Every pair's HUD wording as a JSON object keyed by its page slot.
 #[cfg(any(target_arch = "wasm32", test))]
 fn loadouts_json() -> String {
-    use super::json::quote;
-    let rows = crate::simulation::WeaponPair::ALL.map(|pair| {
+    use super::json::Object;
+    let mut all = Object::new();
+    for pair in crate::simulation::WeaponPair::ALL {
         let row = super::loadout::of(pair);
         let text = &row.hud;
-        let fields = [
-            ("melee", text.melee),
-            ("meleeGlyph", text.melee_glyph),
-            ("ranged", text.ranged),
-            ("rangedGlyph", text.ranged_glyph),
-            ("meleeSkill", text.melee_skill),
-            ("rangedSkill", text.ranged_skill),
-            ("combo", text.combo),
-            ("comboCondition", text.combo_condition),
-        ]
-        .map(|(name, value)| format!("{}:{}", quote(name), quote(value)))
-        .join(",");
-        format!("\"{}\":{{{fields}}}", row.hud_index)
-    });
-    format!("{{{}}}", rows.join(","))
+        let wording = Object::new()
+            .string("melee", text.melee)
+            .string("meleeGlyph", text.melee_glyph)
+            .string("ranged", text.ranged)
+            .string("rangedGlyph", text.ranged_glyph)
+            .string("meleeSkill", text.melee_skill)
+            .string("rangedSkill", text.ranged_skill)
+            .string("combo", text.combo)
+            .string("comboCondition", text.combo_condition)
+            .finish();
+        all = all.raw(&row.hud_index.to_string(), &wording);
+    }
+    all.finish()
 }
 
-/// Gives the page every pair's wording once, before the first snapshot.
+/// Gives the page every pair's wording once, before the first frame.
 pub(super) fn describe() {
     #[cfg(target_arch = "wasm32")]
     define_loadouts(&loadouts_json());
@@ -272,7 +415,6 @@ pub(super) fn sync(
     let (body, combat, health, motion, defense, stamina, energy, arsenal) = *player;
     let target = target_snapshot(combat, health, |entity| enemies.get(entity).ok());
     let _ = body;
-    let weapon = super::weapons::melee_name(combat.weapon_pair());
     let context = if !health.is_alive() {
         "倒地 · 即将回到出生点"
     } else if let Some(stage) = combat
@@ -315,65 +457,17 @@ pub(super) fn sync(
     #[cfg(target_arch = "wasm32")]
     {
         let _ = &mut window;
-        let a = loadout_snapshot(combat, health);
-        render_loadout(
-            a.pair, a.maximum, a.attack, a.melee, a.ranged, a.guard, a.combo,
-        );
-        let kind = match defense.kind() {
-            DefenseKind::Idle => 0,
-            DefenseKind::Deflect => 1,
-            DefenseKind::Waiting => 2,
-            DefenseKind::Guard => 3,
-            DefenseKind::Parry => 4,
-        };
-        let pair = combat.weapon_pair();
-        render_resources(
-            stamina.current(),
-            stamina.maximum(),
-            combat.melee_cooldown(),
-            pair.melee_skill().cooldown(),
-            combat.ranged_cooldown(),
-            pair.ranged_skill().cooldown(),
-            combat.axe_away(),
-            kind,
-        );
-        render_energy(
-            f32::from(energy.sun()),
-            f32::from(Energy::SUN_MAX),
-            f32::from(energy.moon()),
-            f32::from(Energy::MOON_MAX),
-            energy.rage(),
-            Energy::RAGE_MAX,
-            energy.is_enraged(),
-            energy.rage_ready(),
-        );
-        render_durability(
-            durability_by_hud_index(arsenal),
-            f32::from(Arsenal::DURABILITY),
-        );
-        if let Some(t) = &target {
-            render_target(t.name, t.current, t.maximum, t.status, t.phase, t.phases);
-        } else {
-            render_target("", 0., 0., "", 1, 1);
-        }
+        let mut frame = HudFrame::player(combat, health, stamina, energy, arsenal, context);
         let locked = target.is_some().then(|| combat.target()).flatten();
-        let cue = locked
+        frame.cue = locked
             .and_then(|entity| enemies.get(entity).ok())
             .and_then(|(_, _, boss)| boss)
-            .map(boss_cue)
-            .unwrap_or_default();
-        render_boss_cue(
-            cue.kind,
-            cue.left,
-            cue.total,
-            cue.chain,
-            cue.swings,
-            cue.resolved,
-        );
+            .and_then(boss_cue);
         let alpha = super::display_alpha(&time, &active, &hit_stop);
         let (camera, view) = *camera;
-        match locked.and_then(|entity| bodies.get(entity).ok()) {
-            Some(enemy) => {
+        frame.lock = locked
+            .and_then(|entity| bodies.get(entity).ok())
+            .and_then(|enemy| {
                 // The upper body, where the displayed actor is this frame.
                 let point = enemy.interpolated_world(alpha)
                     + (enemy.aim_position() - enemy.world_position());
@@ -381,31 +475,14 @@ pub(super) fn sync(
                     .world_position()
                     .xz()
                     .distance(body.world_position().xz());
-                match lock_view(camera, view, point) {
-                    Some(LockView::OnScreen(at)) => render_lock(1, at.x, at.y, distance, 0),
-                    Some(LockView::Aside { right }) => {
-                        render_lock(2, 0., 0., distance, if right { 1 } else { -1 })
-                    }
-                    Some(LockView::Behind { right }) => {
-                        render_lock(3, 0., 0., distance, if right { 1 } else { -1 })
-                    }
-                    None => render_lock(0, 0., 0., 0., 0),
-                }
-            }
-            None => render_lock(0, 0., 0., 0., 0),
-        }
-        render(
-            "哥哥",
-            weapon,
-            health.current() / health.maximum(),
-            health.current(),
-            combat.combo_remaining(),
-            combat.melee_cooldown(),
-            context,
-        );
+                lock_view(camera, view, point).map(|view| (view, distance))
+            });
+        frame.target = target;
+        send_frame(&frame.to_json());
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
+        let weapon = super::weapons::melee_name(combat.weapon_pair());
         let target = target.map_or_else(String::new, |t| {
             format!(
                 " · {} {:.0}/{:.0} · {}",
@@ -475,7 +552,7 @@ mod tests {
     #[test]
     fn the_boss_cue_reports_its_telegraph_and_swings_only_while_striking() {
         let boss = Boss::default();
-        assert_eq!(boss_cue(&boss), BossCue::default());
+        assert_eq!(boss_cue(&boss), None);
     }
 
     #[test]
@@ -518,6 +595,215 @@ mod tests {
             assert!(pair.ranged_skill().cooldown() > 0.0);
         }
         assert_eq!(ActionKind::Melee.cooldown(), 0.0);
+    }
+    /// The frames the page's tests start from: idle, a Boss telegraphing in
+    /// view mid-combo, and a Boss striking from behind while enraged.
+    fn contract_frames() -> [(&'static str, HudFrame); 3] {
+        let idle = HudFrame {
+            context: "准备就绪",
+            health: Meter {
+                current: 1000.0,
+                maximum: 1000.0,
+            },
+            stamina: Meter {
+                current: 100.0,
+                maximum: 100.0,
+            },
+            loadout: LoadoutSnapshot {
+                pair: 1,
+                melee: true,
+                ranged: true,
+                combo: false,
+            },
+            melee: Clock {
+                left: 0.0,
+                total: 3.0,
+            },
+            ranged: Clock {
+                left: 0.0,
+                total: 4.0,
+            },
+            sun: Meter {
+                current: 0.0,
+                maximum: 10.0,
+            },
+            moon: Meter {
+                current: 0.0,
+                maximum: 10.0,
+            },
+            rage: Meter {
+                current: 0.0,
+                maximum: 20.0,
+            },
+            durability: vec![50.0, 50.0],
+            durability_maximum: 50.0,
+            ..HudFrame::default()
+        };
+        let boss = TargetSnapshot {
+            name: "愁铃客",
+            current: 434.0,
+            maximum: 700.0,
+            status: "蓄势",
+            phase: 1,
+            phases: 2,
+        };
+        let telegraph = HudFrame {
+            context: "联动中 · 妹妹协同攻击",
+            loadout: LoadoutSnapshot {
+                combo: true,
+                ..idle.loadout
+            },
+            melee: Clock {
+                left: 1.5,
+                total: 3.0,
+            },
+            combo: Clock {
+                left: 0.6,
+                total: 0.9,
+            },
+            sun: Meter {
+                current: 7.0,
+                ..idle.sun
+            },
+            durability: vec![31.0, 50.0],
+            target: Some(boss),
+            cue: Some(BossCue {
+                striking: false,
+                left: 0.3,
+                total: 1.2,
+                chain: 2,
+                swings: 4,
+                resolved: 0,
+            }),
+            lock: Some((LockView::OnScreen(Vec2::new(0.5625, 0.375)), 7.5)),
+            ..idle.clone()
+        };
+        let behind = HudFrame {
+            context: "暴怒中 · 普攻翻倍 · 技能强化 · 自动联动",
+            loadout: LoadoutSnapshot {
+                pair: 2,
+                ..idle.loadout
+            },
+            axe_away: true,
+            rage: Meter {
+                current: 12.5,
+                ..idle.rage
+            },
+            enraged: true,
+            target: Some(TargetSnapshot {
+                status: "出招中",
+                phase: 2,
+                ..boss
+            }),
+            cue: Some(BossCue {
+                striking: true,
+                chain: 1,
+                swings: 4,
+                resolved: 0b0101,
+                ..BossCue::default()
+            }),
+            lock: Some((LockView::Behind { right: false }, 4.0)),
+            ..idle.clone()
+        };
+        [
+            ("idle", idle),
+            ("boss-telegraph", telegraph),
+            ("boss-behind", behind),
+        ]
+    }
+    /// `json` must equal the checked-in fixture the page's tests read;
+    /// `KIVA_UPDATE_FIXTURES=1` rewrites it instead.
+    fn contract(name: &str, json: &str) {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/hud")
+            .join(format!("{name}.json"));
+        if std::env::var_os("KIVA_UPDATE_FIXTURES").is_some() {
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(&path, format!("{json}\n")).unwrap();
+            return;
+        }
+        let expected = std::fs::read_to_string(&path)
+            .unwrap_or_else(|_| panic!("{} is missing", path.display()));
+        assert_eq!(
+            expected.trim_end(),
+            json,
+            "{name}.json differs from what client/hud.rs sends: rerun with \
+             KIVA_UPDATE_FIXTURES=1, then update web/hud.js and its tests"
+        );
+    }
+
+    #[test]
+    fn the_page_contract_fixtures_match_what_rust_sends() {
+        for (name, frame) in contract_frames() {
+            contract(name, &frame.to_json());
+        }
+        contract("loadouts", &loadouts_json());
+    }
+
+    #[test]
+    fn a_real_player_frame_carries_its_rules_and_meters() {
+        let (mut app, player) = arena();
+        lock(&mut app, player);
+        let w = app.world();
+        let combat = w.get::<Combatant>(player).unwrap();
+        let frame = HudFrame::player(
+            combat,
+            w.get::<Health>(player).unwrap(),
+            w.get::<Stamina>(player).unwrap(),
+            w.get::<Energy>(player).unwrap(),
+            w.get::<Arsenal>(player).unwrap(),
+            "准备就绪",
+        );
+        assert_eq!(frame.health.maximum, 1000.0);
+        assert_eq!(
+            frame.melee.total,
+            combat.weapon_pair().melee_skill().cooldown()
+        );
+        assert_eq!(
+            frame.ranged.total,
+            combat.weapon_pair().ranged_skill().cooldown()
+        );
+        assert_eq!(frame.combo, Clock::default());
+        assert_eq!(
+            frame.durability,
+            durability_by_hud_index(w.get::<Arsenal>(player).unwrap())
+        );
+        assert_eq!(frame.durability_maximum, f32::from(Arsenal::DURABILITY));
+        // The player's part never names a target; sync adds it.
+        assert_eq!((frame.target, frame.cue, frame.lock), (None, None, None));
+        // Non-finite values cannot break the page's JSON.
+        let broken = HudFrame {
+            health: Meter {
+                current: f32::NAN,
+                maximum: f32::INFINITY,
+            },
+            ..HudFrame::default()
+        };
+        assert!(
+            broken
+                .to_json()
+                .contains(r#""health":{"current":null,"maximum":null}"#)
+        );
+    }
+
+    #[test]
+    fn a_combo_window_reports_its_opening_length() {
+        let (mut app, player) = arena();
+        lock(&mut app, player);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_melee_skill();
+        let mut opened = None;
+        for _ in 0..120 {
+            tick(&mut app, 1);
+            if let Some(window) = app.world().get::<Combatant>(player).unwrap().combo_window() {
+                opened.get_or_insert(window.duration);
+                assert_eq!(window.duration, opened.unwrap());
+                assert!(window.remaining <= window.duration);
+            }
+        }
+        assert!(opened.is_some_and(|duration| duration > 0.0));
     }
     use crate::{
         gameplay,
@@ -611,8 +897,9 @@ mod tests {
             app.world().get::<Combatant>(player).unwrap(),
             app.world().get::<Health>(player).unwrap(),
         );
-        assert_eq!(snapshot.maximum, 1000.);
-        assert!(snapshot.attack);
+        assert_eq!(app.world().get::<Health>(player).unwrap().maximum(), 1000.);
+        let availability = || app.world().get::<Combatant>(player).unwrap().availability();
+        assert!(availability().attack);
         assert!(!snapshot.melee && !snapshot.ranged);
         lock(&mut app, player);
         app.world_mut()
@@ -624,7 +911,9 @@ mod tests {
             app.world().get::<Combatant>(player).unwrap(),
             app.world().get::<Health>(player).unwrap(),
         );
-        assert!(!a.attack && !a.melee && !a.ranged && !a.guard);
+        assert!(!a.melee && !a.ranged && !a.combo);
+        let busy = app.world().get::<Combatant>(player).unwrap().availability();
+        assert!(!busy.attack && !busy.defense);
         tick(&mut app, 35);
         let before = app
             .world()
