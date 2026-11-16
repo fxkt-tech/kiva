@@ -760,33 +760,13 @@ mod tests {
             ("boss-behind", behind),
         ]
     }
-    /// `json` must equal the checked-in fixture the page's tests read;
-    /// `KIVA_UPDATE_FIXTURES=1` rewrites it instead.
-    fn contract(name: &str, json: &str) {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/hud")
-            .join(format!("{name}.json"));
-        if std::env::var_os("KIVA_UPDATE_FIXTURES").is_some() {
-            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-            std::fs::write(&path, format!("{json}\n")).unwrap();
-            return;
-        }
-        let expected = std::fs::read_to_string(&path)
-            .unwrap_or_else(|_| panic!("{} is missing", path.display()));
-        assert_eq!(
-            expected.trim_end(),
-            json,
-            "{name}.json differs from what client/hud.rs sends: rerun with \
-             KIVA_UPDATE_FIXTURES=1, then update web/hud.js and its tests"
-        );
-    }
-
     #[test]
     fn the_page_contract_fixtures_match_what_rust_sends() {
+        use super::super::json::contract;
         for (name, frame) in contract_frames() {
-            contract(name, &frame.to_json());
+            contract(&format!("hud/{name}"), &frame.to_json());
         }
-        contract("loadouts", &loadouts_json());
+        contract("hud/loadouts", &loadouts_json());
     }
 
     #[test]

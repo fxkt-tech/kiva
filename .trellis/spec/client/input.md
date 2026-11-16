@@ -6,10 +6,11 @@
 
 ## Signatures
 
-- window.kivaInput：isActive(): boolean、takeLook(): number、keys(): number、takeActions(): number、takeDefenseEdges(): number[]、ready(): void。
+- window.kivaInput：bits（只读位布局）、isActive(): boolean、takeLook(): number、keys(): number、takeActions(): number、takeDefenseEdges(): number[]、ready(): void。
 - takeDefenseEdges：1=Pressed，2=Released，3=Cancelled；最多 64 条，按发生顺序一次消费。
 - keys：W=1、S=2、A=4、D=8、左右 Shift 聚合为 sprint=16。
 - takeActions：jump=1、dodge=2、attack=4、melee_skill=8、combo=16、toggle_target=32、next_pair=64（Z）、rage=128（X）、ranged_skill=256、crouch=512、movement_released=1024、shift_released=2048。
+- 位值只在 `client/controls.rs` 的具名常量和 `web/input.js` 的 `HELD`／`ACTION`／`DEFENSE_EDGE` 表中出现（两边都不写数字字面量），表通过只读的 `kivaInput.bits` 暴露。Rust 测试把布局写入 `tests/fixtures/input/bits.json`（`KIVA_UPDATE_FIXTURES=1` 重写），`input-unit.test.cjs` 断言页面表与它相同，测试里也只按名字引用位。改位值时两边和 fixture 一起改。
 - Rust 把边沿提交给 DefenseState::push_edge；清理调用 DefenseState::clear，不能伪造 Released。
 - CombatIntent 分别接收 request_melee_skill、request_ranged_skill、request_toggle_target、request_pair(WeaponPair)；无 takeAim、滚轮切人格或 Q 切目标。
 

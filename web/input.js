@@ -18,14 +18,22 @@
   let rightBlocked = false;
   const mousePressed = new Set();
   const MAX_DEFENSE_EDGES = 64;
-  const DEFENSE_PRESSED = 1;
-  const DEFENSE_RELEASED = 2;
-  const DEFENSE_CANCELLED = 3;
-  const MOVEMENT_RELEASED = 1024;
-  const SHIFT_RELEASED = 2048;
+  // The bit layout shared with client/controls.rs; Rust writes it to
+  // tests/fixtures/input/bits.json and the Node tests compare this against it.
+  const HELD = Object.freeze({ forward: 1, back: 2, left: 4, right: 8, movement: 15, sprint: 16 });
+  const ACTION = Object.freeze({
+    jump: 1, dodge: 2, attack: 4, meleeSkill: 8, combo: 16, toggleTarget: 32, nextPair: 64,
+    rage: 128, rangedSkill: 256, crouchToggle: 512, movementReleased: 1024, shiftReleased: 2048,
+  });
+  const DEFENSE_EDGE = Object.freeze({ pressed: 1, released: 2, cancelled: 3 });
   const pressed = new Set();
-  const heldKeys = Object.freeze({ KeyW: 1, KeyS: 2, KeyA: 4, KeyD: 8, ShiftLeft: 16, ShiftRight: 16 });
-  const actionKeys = Object.freeze({ Space: 1, KeyE: 8, Tab: 16, KeyZ: 64, KeyX: 128, KeyQ: 256, KeyC: 512 });
+  const heldKeys = Object.freeze({
+    KeyW: HELD.forward, KeyS: HELD.back, KeyA: HELD.left, KeyD: HELD.right, ShiftLeft: HELD.sprint, ShiftRight: HELD.sprint,
+  });
+  const actionKeys = Object.freeze({
+    Space: ACTION.jump, KeyE: ACTION.meleeSkill, Tab: ACTION.combo, KeyZ: ACTION.nextPair, KeyX: ACTION.rage,
+    KeyQ: ACTION.rangedSkill, KeyC: ACTION.crouchToggle,
+  });
   let error = "";
   let startupDetail = { phase: "download", loaded: 0, total: 0 };
   let previous = null;
@@ -40,9 +48,9 @@
   function clearInputs() {
     look = 0;
     // A blur and recapture may both occur before Rust samples again.
-    actions &= MOVEMENT_RELEASED | SHIFT_RELEASED;
-    if (keys & 15) actions |= MOVEMENT_RELEASED;
-    if (keys & 16) actions |= SHIFT_RELEASED;
+    actions &= ACTION.movementReleased | ACTION.shiftReleased;
+    if (keys & HELD.movement) actions |= ACTION.movementReleased;
+    if (keys & HELD.sprint) actions |= ACTION.shiftReleased;
     keys = 0;
     cancelDefense();
     mousePressed.clear();
@@ -209,11 +217,11 @@
     }
     if (heldKeys[event.code] || actionKeys[event.code]) event.preventDefault?.();
     if (event.repeat || pressed.has(event.code)) return;
-    const firstShift = heldKeys[event.code] === 16 && (keys & 16) === 0;
+    const firstShift = heldKeys[event.code] === HELD.sprint && (keys & HELD.sprint) === 0;
     pressed.add(event.code);
     refreshKeys();
-    if (firstShift) actions |= 2;
-    if (event.code === "KeyC") actions ^= 512;
+    if (firstShift) actions |= ACTION.dodge;
+    if (event.code === "KeyC") actions ^= ACTION.crouchToggle;
     else actions |= actionKeys[event.code] || 0;
   }, true);
   document.addEventListener("keyup", (event) => {
@@ -223,8 +231,8 @@
     pressed.delete(event.code);
     refreshKeys();
     if (isActive()) {
-      if ((previouslyHeld & 15) && !(keys & 15)) actions |= MOVEMENT_RELEASED;
-      if ((previouslyHeld & 16) && !(keys & 16)) actions |= SHIFT_RELEASED;
+      if ((previouslyHeld & HELD.movement) && !(keys & HELD.movement)) actions |= ACTION.movementReleased;
+      if ((previouslyHeld & HELD.sprint) && !(keys & HELD.sprint)) actions |= ACTION.shiftReleased;
     }
   }, true);
   document.addEventListener("pointerdown", (event) => {
@@ -233,16 +241,16 @@
     event.preventDefault?.();
     if (mousePressed.has(event.button)) return;
     mousePressed.add(event.button);
-    if (event.button === 0) actions |= 4;
-    if (event.button === 1) actions ^= 32;
-    if (event.button === 2 && !rightBlocked) queueDefense(DEFENSE_PRESSED);
+    if (event.button === 0) actions |= ACTION.attack;
+    if (event.button === 1) actions ^= ACTION.toggleTarget;
+    if (event.button === 2 && !rightBlocked) queueDefense(DEFENSE_EDGE.pressed);
   }, true);
   document.addEventListener("pointerup", (event) => {
     if (!event.isTrusted || event.pointerType !== "mouse" || !isActive()) return;
     if (!mousePressed.delete(event.button)) return;
     if (event.button === 2) {
       if (rightBlocked) rightBlocked = false;
-      else queueDefense(DEFENSE_RELEASED);
+      else queueDefense(DEFENSE_EDGE.released);
     }
   }, true);
   document.addEventListener("pointercancel", (event) => {
@@ -290,6 +298,8 @@
   }, true);
 
   window.kivaInput = Object.freeze({
+    // Read-only, for the contract test against Rust's layout.
+    bits: Object.freeze({ held: HELD, actions: ACTION, defenseEdges: DEFENSE_EDGE }),
     isActive,
     keys: () => isActive() ? keys : 0,
     takeActions() {
@@ -303,7 +313,7 @@
       return delta;
     },
     takeDefenseEdges() {
-      const pending = defenseCancelled ? [DEFENSE_CANCELLED] : [];
+      const pending = defenseCancelled ? [DEFENSE_EDGE.cancelled] : [];
       if (isActive()) pending.push(...defenseEdges);
       defenseEdges = [];
       defenseCancelled = false;

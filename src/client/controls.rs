@@ -19,7 +19,17 @@ use bevy::{
 use std::collections::HashSet;
 
 const LOOK_SENSITIVITY: f32 = 0.0025;
+
+// The bit layout shared with web/input.js; `bridge_layout` writes it to
+// tests/fixtures/input/bits.json, which the page's tests compare against.
+// Held keys (`kivaInput.keys()`, and the native `held()`):
+const FORWARD: u32 = 1;
+const BACK: u32 = 2;
+const LEFT: u32 = 4;
+const RIGHT: u32 = 8;
+const MOVEMENT: u32 = FORWARD | BACK | LEFT | RIGHT;
 const SPRINT: u32 = 16;
+// One-shot commands (`kivaInput.takeActions()`):
 const JUMP: u32 = 1;
 const DODGE: u32 = 2;
 const ATTACK: u32 = 4;
@@ -32,6 +42,13 @@ const RANGED_SKILL: u32 = 256;
 const CROUCH_TOGGLE: u32 = 512;
 const MOVEMENT_RELEASED: u32 = 1024;
 const SHIFT_RELEASED: u32 = 2048;
+// Right-button defense edges (`kivaInput.takeDefenseEdges()`):
+#[cfg(any(target_arch = "wasm32", test))]
+const DEFENSE_PRESSED: u8 = 1;
+#[cfg(any(target_arch = "wasm32", test))]
+const DEFENSE_RELEASED: u8 = 2;
+#[cfg(any(target_arch = "wasm32", test))]
+const DEFENSE_CANCELLED: u8 = 3;
 #[cfg(not(target_arch = "wasm32"))]
 const MAX_DEFENSE_EDGES: usize = 64;
 /// While a target is locked the view turns to keep it straight ahead, closing
@@ -125,10 +142,10 @@ impl CaptureState {
     fn held(&self) -> u32 {
         let mut held = 0;
         for (key, bit) in [
-            (KeyCode::KeyW, 1),
-            (KeyCode::KeyS, 2),
-            (KeyCode::KeyA, 4),
-            (KeyCode::KeyD, 8),
+            (KeyCode::KeyW, FORWARD),
+            (KeyCode::KeyS, BACK),
+            (KeyCode::KeyA, LEFT),
+            (KeyCode::KeyD, RIGHT),
             (KeyCode::ShiftLeft, SPRINT),
             (KeyCode::ShiftRight, SPRINT),
         ] {
@@ -148,7 +165,7 @@ impl CaptureState {
             self.pressed.remove(&event.key_code);
             let held = self.held();
             let mut released = 0;
-            if previously_held & 15 != 0 && held & 15 == 0 {
+            if previously_held & MOVEMENT != 0 && held & MOVEMENT == 0 {
                 released |= MOVEMENT_RELEASED;
             }
             if previously_held & SPRINT != 0 && held & SPRINT == 0 {
@@ -262,9 +279,9 @@ pub(super) fn sample(
             super::web::take_defense_edges()
                 .into_iter()
                 .filter_map(|edge| match edge {
-                    1 => Some(DefenseEdge::Pressed),
-                    2 => Some(DefenseEdge::Released),
-                    3 => Some(DefenseEdge::Cancelled),
+                    DEFENSE_PRESSED => Some(DefenseEdge::Pressed),
+                    DEFENSE_RELEASED => Some(DefenseEdge::Released),
+                    DEFENSE_CANCELLED => Some(DefenseEdge::Cancelled),
                     _ => None,
                 })
                 .collect::<Vec<_>>(),
@@ -369,7 +386,7 @@ pub(super) fn sample(
             None => yaw.turn(look),
         }
     }
-    let axis = movement_axis([held & 1 != 0, held & 2 != 0, held & 4 != 0, held & 8 != 0]);
+    let axis = movement_axis([FORWARD, BACK, LEFT, RIGHT].map(|bit| held & bit != 0));
     let forward = movement_direction(Vec2::Y, yaw.yaw());
     for (body, mut intent, mut actions, mut facing, mut combat, loadout, mut defense) in
         &mut players
@@ -387,7 +404,7 @@ pub(super) fn sample(
             actions.set_movement_held(false);
         }
         actions.set_shift_held(held & SPRINT != 0);
-        actions.set_movement_held(held & 15 != 0);
+        actions.set_movement_held(held & MOVEMENT != 0);
         for edge in &defense_edges {
             // A blur/capture cancellation can arrive in a frame which has
             // already regained focus. Latch it until the next fixed tick.
@@ -432,6 +449,79 @@ pub(super) fn sample(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Every bit the page and Rust exchange, by name.
+    fn bridge_layout() -> String {
+        use super::super::json::Object;
+        let held = Object::new()
+            .integer("forward", FORWARD)
+            .integer("back", BACK)
+            .integer("left", LEFT)
+            .integer("right", RIGHT)
+            .integer("movement", MOVEMENT)
+            .integer("sprint", SPRINT)
+            .finish();
+        let actions = Object::new()
+            .integer("jump", JUMP)
+            .integer("dodge", DODGE)
+            .integer("attack", ATTACK)
+            .integer("meleeSkill", MELEE_SKILL)
+            .integer("combo", COMBO)
+            .integer("toggleTarget", TOGGLE_TARGET)
+            .integer("nextPair", NEXT_PAIR)
+            .integer("rage", RAGE)
+            .integer("rangedSkill", RANGED_SKILL)
+            .integer("crouchToggle", CROUCH_TOGGLE)
+            .integer("movementReleased", MOVEMENT_RELEASED)
+            .integer("shiftReleased", SHIFT_RELEASED)
+            .finish();
+        let defense = Object::new()
+            .integer("pressed", u32::from(DEFENSE_PRESSED))
+            .integer("released", u32::from(DEFENSE_RELEASED))
+            .integer("cancelled", u32::from(DEFENSE_CANCELLED))
+            .finish();
+        Object::new()
+            .raw("held", &held)
+            .raw("actions", &actions)
+            .raw("defenseEdges", &defense)
+            .finish()
+    }
+
+    #[test]
+    fn the_page_input_bits_match_the_fixture_web_input_is_checked_against() {
+        super::super::json::contract("input/bits", &bridge_layout());
+    }
+
+    #[test]
+    fn each_group_of_bits_is_distinct() {
+        let held = [FORWARD, BACK, LEFT, RIGHT, SPRINT];
+        let actions = [
+            JUMP,
+            DODGE,
+            ATTACK,
+            MELEE_SKILL,
+            COMBO,
+            TOGGLE_TARGET,
+            NEXT_PAIR,
+            RAGE,
+            RANGED_SKILL,
+            CROUCH_TOGGLE,
+            MOVEMENT_RELEASED,
+            SHIFT_RELEASED,
+        ];
+        for group in [&held[..], &actions[..]] {
+            assert!(group.iter().all(|bit| bit.is_power_of_two()));
+            let all = group.iter().fold(0, |all, bit| {
+                assert_eq!(all & bit, 0, "bit {bit} is used twice");
+                all | bit
+            });
+            assert_eq!(all.count_ones() as usize, group.len());
+        }
+        assert_eq!(MOVEMENT & SPRINT, 0);
+        let edges = [DEFENSE_PRESSED, DEFENSE_RELEASED, DEFENSE_CANCELLED];
+        assert!(edges.iter().all(|edge| *edge != 0));
+        assert!(edges[0] != edges[1] && edges[1] != edges[2] && edges[0] != edges[2]);
+    }
 
     #[cfg(not(target_arch = "wasm32"))]
     fn captured() -> CaptureState {

@@ -76,6 +76,28 @@ impl Object {
     }
 }
 
+/// Test-only: `json` must equal the checked-in `tests/fixtures/<path>.json`
+/// which a page's Node tests read; `KIVA_UPDATE_FIXTURES=1` rewrites it.
+#[cfg(test)]
+pub(super) fn contract(path: &str, json: &str) {
+    let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures")
+        .join(format!("{path}.json"));
+    if std::env::var_os("KIVA_UPDATE_FIXTURES").is_some() {
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        std::fs::write(&file, format!("{json}\n")).unwrap();
+        return;
+    }
+    let expected =
+        std::fs::read_to_string(&file).unwrap_or_else(|_| panic!("{} is missing", file.display()));
+    assert_eq!(
+        expected.trim_end(),
+        json,
+        "{path}.json differs from what Rust uses: rerun with KIVA_UPDATE_FIXTURES=1, \
+         then update the page script and its tests"
+    );
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

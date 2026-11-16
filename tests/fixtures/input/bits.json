@@ -1,0 +1,1 @@
+{"held":{"forward":1,"back":2,"left":4,"right":8,"movement":15,"sprint":16},"actions":{"jump":1,"dodge":2,"attack":4,"meleeSkill":8,"combo":16,"toggleTarget":32,"nextPair":64,"rage":128,"rangedSkill":256,"crouchToggle":512,"movementReleased":1024,"shiftReleased":2048},"defenseEdges":{"pressed":1,"released":2,"cancelled":3}}
