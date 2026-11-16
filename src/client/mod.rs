@@ -5,6 +5,7 @@ mod audio;
 mod avatar;
 mod bundle;
 mod camera;
+mod character_effects;
 mod combat;
 mod companion;
 pub(super) mod controls;
@@ -245,6 +246,7 @@ pub(super) fn run() {
                 animation::animate,
                 companion::sync,
                 avatar::sync,
+                character_effects::update_game,
                 stickman::sync_attachments,
                 weapons::sync_tether,
                 combat::sync_markers,
@@ -305,7 +307,7 @@ mod tests {
     #[test]
     fn every_runtime_file_of_the_game_is_shipped_once() {
         let paths = game_manifest();
-        assert_eq!(paths.len(), 23);
+        assert_eq!(paths.len(), 24);
         let mut unique = paths.clone();
         unique.sort_unstable();
         unique.dedup();

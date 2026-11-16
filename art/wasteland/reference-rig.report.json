@@ -1,0 +1,13 @@
+{
+  "artifact": "reference-rig.blend",
+  "blender_version": "5.3.0",
+  "reference_bones": 53,
+  "deform_bones": 52,
+  "structural_anchors": 23,
+  "meshes": 0,
+  "rest_reconstruction_max_matrix_error": 1.1920928955078125e-07,
+  "native_joint_head_max_position_error_m": 0.0,
+  "structural_anchor_max_position_error_m": 0.0,
+  "source_rest_and_ibm_kept_separate": true,
+  "limits": "Reference skeleton round-trip only. No new mesh, skinning, attack playback or in-game acceptance yet."
+}

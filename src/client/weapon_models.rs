@@ -53,14 +53,15 @@ impl WeaponModel {
         assert_eq!(&reader.take::<8>(), b"KIVAWP01");
         let length = reader.u32();
         reader.bytes(length); // Offline provenance, without a runtime JSON dependency.
-        let materials = model_asset::materials(world, &mut reader, true)
-            .into_iter()
-            .map(|material| {
-                world
-                    .resource_mut::<Assets<StandardMaterial>>()
-                    .add(material)
-            })
-            .collect::<Vec<_>>();
+        let materials =
+            model_asset::materials(world, &mut reader, model_asset::MaterialFormat::DoubleSided)
+                .into_iter()
+                .map(|decoded| {
+                    world
+                        .resource_mut::<Assets<StandardMaterial>>()
+                        .add(decoded.material)
+                })
+                .collect::<Vec<_>>();
         let grips = [reader.vec3(), reader.vec3()];
         let count = reader.u16();
         let mut parts = Vec::new();

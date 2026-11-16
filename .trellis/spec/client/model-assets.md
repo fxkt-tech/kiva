@@ -7,7 +7,7 @@
 
 ## Signatures
 
-- `Appearance::{Choulingke,Lihuowang,Bailingmiao}`：默认值为愁铃客；玩家选择默认李火旺，白灵淼仅用于 Companion。
+- `Appearance::{Choulingke,Lihuowang,Bailingmiao,Zhuque}`：默认值为愁铃客；玩家选择默认李火旺，白灵淼仅用于 Companion。
 - `AvatarAssets::{shared,cached}`／`AvatarAssetCache` 复用身体网格、PNG、材质变体与逆绑定资产。
 - `WeaponModel::shared(world,pair,mode)` 以 pair＋WeaponMode 对应四个固定缓存槽，保存模型及 `[Vec3;2]` 双手握点；`weapon_models::spawn(world,parent,pair,mode,Mount::{Weapon,Spine})` 按挂接类型创建显示实体。
 - `uv run --offline --with numpy --with pillow python scripts/import-prepared-models.py [--verify]`：从冻结的 prepared 包生成三组运行资源；verify 在临时目录重建并逐字节比较。
@@ -44,7 +44,7 @@ quiver／arrowbag 的位置是 Kiva 身体挂接适配；独立 related 箭几�
 这些原静态输入集中在原点，未知 Float／shader 变形不能据预览 PNG 猜测。本次采用逐部件有记录的 Kiva 固定装配，含来自 HeadPosition 的参考设计锚点；不能把该字段称为原 Actor 装配矩阵，也不声称恢复源默认／随机星格、完整刃形算法、溶解、灵光或 cubemap 效果。
 手持与 FlyingAxe 复用完全相同的近战网格／材质句柄。绳索只有共享线段几何，起点在本帧 avatar／stickman 附件同步后由 PlayerView 根变换与实际握柄局部变换合成；不读取滞后一帧的 GlobalTransform，不用 Body＋固定高度替代手腕，不写物理状态。
 
-`model_asset` 共用 AV03／KIVAWP01 的材质和 PNG 读入；基础色使用 sRGB，已证明的 normal／surface 使用线性空间，未知 packed／ID／SH 图不猜接颜色或 ORM。
+`model_asset` 共用 AV02／AV03／AV04／KIVAWP01 的材质和 PNG 读入；基础色使用 sRGB，已证明的 normal／surface 使用线性空间，未知 packed／ID／SH 图不猜接颜色或 ORM。
 白灵淼女性基脸无原绑定贴图，运行时中性皮肤／眼睛／睫毛色为明确的 PBR 适配；不宣称专属捏脸、妆容、染色／发丝／布料 shader 或原作武器动画已恢复。
 prepared 原件与清单冻结，更新转换只写新运行目录。来源、哈希、LBS 误差、变换／尺寸和未恢复项随各运行资源一起记录。
 
@@ -71,6 +71,10 @@ Bad：仅移动抽象 RigPose 手坐标而 palette 仍垂手，或只读取武�
 World 回归检查实际 female palette 握点／臂长／几何变形、陡角度时脚掌与腿长、枪口0和 -Z、不同 yaw／pitch 下的武器上轴、两条真实三发技能与暂停、F2／死亡／F3 隔离，以及反复施放的实体／网格／纹理／材质数量稳定。
 近战额外验证两套哥哥身体的实际手腕轴、握柄与 +Y、四槽缓存和 source mesh 数量、链斧手持／飞行句柄一致、绳索本帧端点，以及普通 Q／完整拉近联动／取消／死亡／暂停回收且资产数量稳定。
 运行 make check、WASM Clippy；入口或随包资源清单改变后运行临时目录 Trunk 构建，并核对产物中的资源文件。真实画面观察单独记录，数值检查不替代画面验收。
+
+朱雀为原创制作外观，运行资源为 `assets/characters/zhuque.bin`（AV04），浏览器稳定 ID3。
+制作/UV/自身绑定/火焰及严格导出合同见 [character-authoring.md](character-authoring.md)，
+素材出处及转换证据在 `provenance/characters/zhuque/`。
 
 ## Wrong vs Correct
 

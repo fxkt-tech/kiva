@@ -6,6 +6,8 @@ use std::collections::HashMap;
 mod hand;
 #[cfg(test)]
 mod hand_tests;
+#[cfg(test)]
+mod wasteland_pose_tests;
 
 use bevy::{
     asset::RenderAssetUsages,
@@ -33,10 +35,16 @@ pub(super) enum Appearance {
     Choulingke,
     Lihuowang,
     Bailingmiao,
+    Zhuque,
 }
 
 impl Appearance {
-    pub(super) const ALL: [Self; 3] = [Self::Choulingke, Self::Lihuowang, Self::Bailingmiao];
+    pub(super) const ALL: [Self; 4] = [
+        Self::Choulingke,
+        Self::Lihuowang,
+        Self::Bailingmiao,
+        Self::Zhuque,
+    ];
 
     /// The body, outfit and bound accessories of this appearance.
     pub(super) fn asset_path(self) -> &'static str {
@@ -44,6 +52,7 @@ impl Appearance {
             Self::Choulingke => "characters/choulingke.bin",
             Self::Lihuowang => "characters/lihuowang.bin",
             Self::Bailingmiao => "characters/bailingmiao.bin",
+            Self::Zhuque => "characters/zhuque.bin",
         }
     }
 }
@@ -127,6 +136,7 @@ pub(super) struct AvatarAssets {
 pub(super) struct AvatarAssetCache {
     lihuowang: Option<AvatarAssets>,
     bailingmiao: Option<AvatarAssets>,
+    zhuque: Option<AvatarAssets>,
 }
 
 #[derive(Component)]
@@ -171,8 +181,13 @@ impl AvatarAssets {
             let data = super::bundle::take(world, appearance.asset_path());
             let mut reader = Reader(&data);
             let format = reader.take::<8>();
-            assert!(matches!(&format, b"KIVAAV02" | b"KIVAAV03"));
-            let source_pose = &format == b"KIVAAV03";
+            assert!(matches!(&format, b"KIVAAV02" | b"KIVAAV03" | b"KIVAAV04"));
+            let source_pose = &format != b"KIVAAV02";
+            let material_format = match &format {
+                b"KIVAAV02" => super::model_asset::MaterialFormat::Legacy,
+                b"KIVAAV03" => super::model_asset::MaterialFormat::DoubleSided,
+                _ => super::model_asset::MaterialFormat::Emissive,
+            };
             let header_length = reader.u32();
             reader.bytes(header_length); // Offline provenance; no runtime paths or JSON dependency.
             let driver_count = reader.u16();
@@ -289,21 +304,28 @@ impl AvatarAssets {
                     [index_for("ball_r"), index_for("ball_l")],
                 )
             };
-            let materials = super::model_asset::materials(world, &mut reader, source_pose)
+            let materials = super::model_asset::materials(world, &mut reader, material_format)
                 .into_iter()
-                .map(|material| {
-                    let mut assets = world.resource_mut::<Assets<StandardMaterial>>();
-                    MaterialVariants {
-                        normal: assets.add(material.clone()),
-                        hit: assets.add(StandardMaterial {
-                            emissive: LinearRgba::rgb(0.9, 0.5, 0.2),
-                            ..material.clone()
-                        }),
-                        telegraph: assets.add(StandardMaterial {
-                            emissive: LinearRgba::rgb(0.45, 0.24, 0.025),
-                            ..material
-                        }),
+                .map(|decoded| {
+                    let material = decoded.material;
+                    let variants = {
+                        let mut assets = world.resource_mut::<Assets<StandardMaterial>>();
+                        MaterialVariants {
+                            normal: assets.add(material.clone()),
+                            hit: assets.add(StandardMaterial {
+                                emissive: material.emissive + LinearRgba::rgb(0.9, 0.5, 0.2),
+                                ..material.clone()
+                            }),
+                            telegraph: assets.add(StandardMaterial {
+                                emissive: material.emissive + LinearRgba::rgb(0.45, 0.24, 0.025),
+                                ..material
+                            }),
+                        }
+                    };
+                    for handle in [&variants.normal, &variants.hit, &variants.telegraph] {
+                        super::character_effects::register(world, handle, decoded.effect);
                     }
+                    variants
                 })
                 .collect::<Vec<_>>();
             let part_count = reader.u16();
@@ -435,6 +457,9 @@ impl AvatarAssets {
                 Appearance::Bailingmiao => {
                     world.resource_mut::<AvatarAssetCache>().bailingmiao = Some(assets);
                 }
+                Appearance::Zhuque => {
+                    world.resource_mut::<AvatarAssetCache>().zhuque = Some(assets);
+                }
             }
         }
         Self::cached(
@@ -480,6 +505,7 @@ impl AvatarAssets {
             Appearance::Choulingke => original,
             Appearance::Lihuowang => cache?.lihuowang.as_ref(),
             Appearance::Bailingmiao => cache?.bailingmiao.as_ref(),
+            Appearance::Zhuque => cache?.zhuque.as_ref(),
         }
     }
 

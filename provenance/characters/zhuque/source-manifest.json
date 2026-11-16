@@ -1,0 +1,573 @@
+{
+  "schema": "kiva-authored-character-provenance-v1",
+  "format": "KIVAAV04",
+  "identity": "Original Zhuque v11 wasteland protagonist",
+  "authoring_source": "art/wasteland/cape-refined/zhuque-cape-runtime-source.blend",
+  "source_sha256": "964a094925d12fa9770f62fd5b87701a1c41514d68178c7517f71a0217b0c004",
+  "runtime": "assets/characters/zhuque.bin",
+  "runtime_sha256": "4ccf4c8392b99c99ce075ace84eabb95cdfef6f478ad4e31e8052f1cfd053c23",
+  "exchange_glb": "art/wasteland/runtime/zhuque.glb",
+  "glb_sha256": "76c137c504b15d7836b32675fce4ddc8f9089ff38e733c863c3f7431e7b415bf",
+  "export_tool": "tools/wasteland/export_runtime.py",
+  "export_tool_sha256": "e3fe9595d8fd16ef79369460449c3e5938cde7970250740658d3a3baf1abfe79",
+  "blender_version": "5.3.0",
+  "height_m": 1.73,
+  "triangles": 139152,
+  "material_roles": [
+    "cape_detail",
+    "fire_fringe",
+    "charcoal",
+    "cloth",
+    "skin"
+  ],
+  "runtime_core_bones": [
+    "gMan Pelvis",
+    "gMan Spine",
+    "gMan Spine1",
+    "gMan Spine2",
+    "gMan Neck",
+    "gMan Head",
+    "gMan L Clavicle",
+    "gMan L UpperArm",
+    "gMan L Forearm",
+    "gMan L Hand",
+    "gMan L Finger0",
+    "gMan L Finger01",
+    "gMan L Finger02",
+    "gMan L Finger1",
+    "gMan L Finger11",
+    "gMan L Finger12",
+    "gMan L Finger2",
+    "gMan L Finger21",
+    "gMan L Finger22",
+    "gMan L Finger3",
+    "gMan L Finger31",
+    "gMan L Finger32",
+    "gMan L Finger4",
+    "gMan L Finger41",
+    "gMan L Finger42",
+    "gMan R Clavicle",
+    "gMan R UpperArm",
+    "gMan R Forearm",
+    "gMan R Hand",
+    "gMan R Finger0",
+    "gMan R Finger01",
+    "gMan R Finger02",
+    "gMan R Finger1",
+    "gMan R Finger11",
+    "gMan R Finger12",
+    "gMan R Finger2",
+    "gMan R Finger21",
+    "gMan R Finger22",
+    "gMan R Finger3",
+    "gMan R Finger31",
+    "gMan R Finger32",
+    "gMan R Finger4",
+    "gMan R Finger41",
+    "gMan R Finger42",
+    "gMan R Thigh",
+    "gMan R Calf",
+    "gMan R Foot",
+    "gMan R Toe0",
+    "gMan L Thigh",
+    "gMan L Calf",
+    "gMan L Foot",
+    "gMan L Toe0"
+  ],
+  "authoring_auxiliary_bones": [
+    "cape_L",
+    "cape_C",
+    "cape_R"
+  ],
+  "auxiliary_weight_collapse": {
+    "cape_L": "gMan Spine2",
+    "cape_C": "gMan Spine2",
+    "cape_R": "gMan Spine2"
+  },
+  "bind_contract": "sourceRest=original target R; OWN inverseBind=R^-1; geometry in game model space. No old IBM copied.",
+  "reference_skeleton": {
+    "file": "art/wasteland/reference-rig.json",
+    "sha256": "eacf8d4914e97ed10e96ef4eaa7e3bd97dc4ab77eddf78abc62698f82b91c28d",
+    "usage": "Existing Lihuowang actual target structural skeleton and source-rest reference only; old visible meshes and IBMs are not copied."
+  },
+  "animation_validation": {
+    "file": "art/wasteland/greybox/runtime-poses.json",
+    "sha256": "0c3981cf2d7dfa885629df79f8d46229f367c003f0b3df54789ee36628cf5181",
+    "snapshots": 140,
+    "provenance": "Existing PreviewRig movement or AttackReplay actual clocks through avatar::sync, then actual PaletteJoint model transforms before IBM."
+  },
+  "head_topology": {
+    "source": "Blender official Human Base Meshes bundle v1.4.1",
+    "source_url": "https://www.blender.org/download/demo-files/",
+    "license": "CC0",
+    "source_blend_sha256": "3c121505651140ceb4d69fd1d8923f7788ffadd81672f5be14845a5f2c75c137",
+    "objects": [
+      "GEO-head_animation_realistic.sclera.R",
+      "GEO-head_animation_realistic.sclera.L",
+      "GEO-head_animation_realistic.iris.R",
+      "GEO-head_animation_realistic.iris.L",
+      "GEO-head_animation_realistic"
+    ],
+    "preparation": "Only base topology, no Multires modifier/materials. Objects baked into source head local coordinates, no shape retargeting here.",
+    "source_coordinates": "+Z up, -Y face forward; later character adapter explicitly converts into Kiva game coordinates.",
+    "source_archive_sha256": "811f43accbb31a88266d932f8f5563b2d13586fca0ba2693aad1f5fe582b3515"
+  },
+  "textures": [
+    {
+      "file": "art/wasteland/runtime/textures/texture-00.png",
+      "sha256": "b5d0e2166add5440afacaa577322ed9f9bee4bfebef0a548a95e31b88ebe0bfe",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 2960329
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-01.png",
+      "sha256": "5d8b362c67ac4f5145d595a2ecc9bf2ec5fb8aa44e24aa4a5672539e8a6b1212",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 5558768
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-02.png",
+      "sha256": "c532894698cb150701b2b12b9a8ceb4971f42dd8845d117f4c8558633623cc40",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 90658
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-03.png",
+      "sha256": "62be9dca387954d33bc73588e8dac8b053800221c35f3ffc29138dfb4e17fdd8",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 2802154
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-04.png",
+      "sha256": "3d223d07857328af7152be78eb0c990030b79977ef762e34683d5b0d9aec1180",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 1887874
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-05.png",
+      "sha256": "ae52b893ea97f9d4f8e32664b4e5d4c7c697579a9779d7dca7a30abcfdea76c9",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 78300
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-06.png",
+      "sha256": "3d223d07857328af7152be78eb0c990030b79977ef762e34683d5b0d9aec1180",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 1887874
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-07.png",
+      "sha256": "297e7445a31cf5b3275138e22fb0753b45eb0ca8d5ff1cca1249a9ae068e7eca",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 78301
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-08.png",
+      "sha256": "8333bbec7a1df7b8c12aa9266e67aab8f093a7fa061e61364f59859bc57b25ba",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 589127
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-09.png",
+      "sha256": "0899d5f0fda543b6e7fadfb97f7968ebf0b876a2c77e7ee147a75d3b1faeb449",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 1414032
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-10.png",
+      "sha256": "0f00589a59bcf5d85c3692e53ddaa5abfc7456930b7551858fe1f385043baf4d",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 372099
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-11.png",
+      "sha256": "1478dffc88fc78286e735a93eb73794dc3a4f4d70c09d79a5042f2087793673c",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 2175005
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-12.png",
+      "sha256": "efbb2f12e5c6822e9ca785cbdd74db783f2c1a100cee051e42fc088a463561fc",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 943093
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-13.png",
+      "sha256": "cfc3ec3c69ecea299a2e9a788de5b230cb0f01438979a5dfda57c2782504eeab",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 1651017
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-14.png",
+      "sha256": "61d5c354719c04ce7903c6a56e5c561f92d5706d0362513603b50a0f4c4bbd07",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 524184
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-15.png",
+      "sha256": "540de19f1037057f3772f7724704a662555a35b68d20335a3c63f1e747185daf",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 2446014
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-16.png",
+      "sha256": "ed50547410edfb841b0ec14cc871aa367febe34ae102f64829177bec28947dba",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 641992
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-17.png",
+      "sha256": "28e8633a1d779cb9e04db5ca732aca38c9f14ec645445d11d854b49e414ab1eb",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 683579
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-18.png",
+      "sha256": "ba910461d935c16ed062110e45d694579a649cf24eaf34b0cabc3d0c299cf5a8",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 304310
+    },
+    {
+      "file": "art/wasteland/runtime/textures/texture-19.png",
+      "sha256": "2de83ccac78e6ab36ef12ebca31d40082b173b9acabb5042f7e7e089a3ddbc76",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bytes": 1532709
+    }
+  ],
+  "materials": [
+    {
+      "name": "Zhuque_cape_detail_PBR.001",
+      "base": 0,
+      "normal": 1,
+      "surface": 3,
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "color": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mode": 0,
+      "opacity": 1.0,
+      "emissive": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive_texture": 2,
+      "surface_effect": 0,
+      "double_sided": true,
+      "alpha_cutoff": 0.5
+    },
+    {
+      "name": "Zhuque_cape_fire_PBR",
+      "base": 4,
+      "normal": 5,
+      "surface": 7,
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "color": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mode": 2,
+      "opacity": 1.0,
+      "emissive": [
+        5.5,
+        5.5,
+        5.5
+      ],
+      "emissive_texture": 6,
+      "surface_effect": 1,
+      "double_sided": true,
+      "alpha_cutoff": 0.5
+    },
+    {
+      "name": "Zhuque_charcoal_PBR",
+      "base": 8,
+      "normal": 9,
+      "surface": 11,
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "color": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mode": 0,
+      "opacity": 1.0,
+      "emissive": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive_texture": 10,
+      "surface_effect": 0,
+      "double_sided": true,
+      "alpha_cutoff": 0.5
+    },
+    {
+      "name": "Zhuque_cloth_PBR",
+      "base": 12,
+      "normal": 13,
+      "surface": 15,
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "color": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mode": 0,
+      "opacity": 1.0,
+      "emissive": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive_texture": 14,
+      "surface_effect": 0,
+      "double_sided": true,
+      "alpha_cutoff": 0.5
+    },
+    {
+      "name": "Zhuque_skin_PBR",
+      "base": 16,
+      "normal": 17,
+      "surface": 19,
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "color": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "alpha_mode": 0,
+      "opacity": 1.0,
+      "emissive": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive_texture": 18,
+      "surface_effect": 0,
+      "double_sided": true,
+      "alpha_cutoff": 0.5
+    }
+  ],
+  "development_projected_uv": [],
+  "development_material_factors_only": false,
+  "limitations": [
+    "No cloth physics or facial expressions; cape auxiliary weights explicitly collapse to Spine2, verified for all140 snapshots.",
+    "Dedicated AlphaBlend cape fire has deterministic UV flow/emission pulse; opaque cloth UV stays fixed.",
+    "Cape paired inner/outer/rim fabric UV sharing is intentional; ORM.R=1, no differential AO bake.",
+    "Runtime LOD is139152 triangles; editable high source430128 triangles is separate. Numeric deformation proof does not replace real GPU visual QA."
+  ],
+  "triangle_budget": 150000,
+  "high_detail_authoring": {
+    "file": "art/wasteland/cape-refined/zhuque-cape-detail.blend",
+    "sha256": "b741e39c4e48ef26efffacab187c11974fc9f363002c3aebab573eb558e52d4e",
+    "evaluated_full_character_triangles": 430128,
+    "usage": "Editable high-detail authoring only; not directly exported. Runtime source disables cape Subsurf while preserving Solidify and actual authored control-cage folds.",
+    "runtime_source": "art/wasteland/cape-refined/zhuque-cape-runtime-source.blend",
+    "runtime_source_sha256": "964a094925d12fa9770f62fd5b87701a1c41514d68178c7517f71a0217b0c004",
+    "runtime_full_character_triangles": 139152,
+    "shape_comparison": [
+      {
+        "object": "Cape 02 - continuous asymmetric shoulder shawl",
+        "runtime_triangles": 18528,
+        "high_triangles": 72896,
+        "max_high_vertex_to_runtime_surface_m": 0.0005776096950285137,
+        "rms_high_vertex_to_runtime_surface_m": 0.00011694493695818782
+      },
+      {
+        "object": "Cape 02 - layered compressed neck cowl",
+        "runtime_triangles": 23680,
+        "high_triangles": 93440,
+        "max_high_vertex_to_runtime_surface_m": 0.0007849386893212795,
+        "rms_high_vertex_to_runtime_surface_m": 0.0001458988664916006
+      },
+      {
+        "object": "Cape 02 - shoulder gathered long cloth",
+        "runtime_triangles": 56256,
+        "high_triangles": 223104,
+        "max_high_vertex_to_runtime_surface_m": 0.0023507922887802124,
+        "rms_high_vertex_to_runtime_surface_m": 0.0001534320818238874
+      }
+    ]
+  },
+  "previous_published_baseline": {
+    "source": "art/wasteland/textured/zhuque-v11-textured.blend",
+    "source_sha256": "b9847c7088bcb171e9dbccd8d13bdd42f1b26b7e3aff992a3e67a445ba17f59b",
+    "runtime_sha256": "2c15b4cde4bc5d7b4c97cb9dab27f7f24f0195fcc668903f81af02932f63959f",
+    "triangles": 39976,
+    "manifest": "provenance/characters/zhuque/baseline-v11-source-manifest.json",
+    "note": "Historical snapshot of prior publication; runtime path now contains the upgraded cape. Old textured source is retained."
+  },
+  "preserved_prior_texture_channels": [
+    {
+      "old_material": "Zhuque_charcoal_PBR",
+      "current_material": "Zhuque_charcoal_PBR",
+      "channel": "base",
+      "unchanged_exported_png_sha256": "8333bbec7a1df7b8c12aa9266e67aab8f093a7fa061e61364f59859bc57b25ba"
+    },
+    {
+      "old_material": "Zhuque_charcoal_PBR",
+      "current_material": "Zhuque_charcoal_PBR",
+      "channel": "normal",
+      "unchanged_exported_png_sha256": "0899d5f0fda543b6e7fadfb97f7968ebf0b876a2c77e7ee147a75d3b1faeb449"
+    },
+    {
+      "old_material": "Zhuque_charcoal_PBR",
+      "current_material": "Zhuque_charcoal_PBR",
+      "channel": "surface",
+      "unchanged_exported_png_sha256": "1478dffc88fc78286e735a93eb73794dc3a4f4d70c09d79a5042f2087793673c"
+    },
+    {
+      "old_material": "Zhuque_charcoal_PBR",
+      "current_material": "Zhuque_charcoal_PBR",
+      "channel": "emissive_texture",
+      "unchanged_exported_png_sha256": "0f00589a59bcf5d85c3692e53ddaa5abfc7456930b7551858fe1f385043baf4d"
+    },
+    {
+      "old_material": "Zhuque_cloth_PBR",
+      "current_material": "Zhuque_cloth_PBR",
+      "channel": "base",
+      "unchanged_exported_png_sha256": "efbb2f12e5c6822e9ca785cbdd74db783f2c1a100cee051e42fc088a463561fc"
+    },
+    {
+      "old_material": "Zhuque_cloth_PBR",
+      "current_material": "Zhuque_cloth_PBR",
+      "channel": "normal",
+      "unchanged_exported_png_sha256": "cfc3ec3c69ecea299a2e9a788de5b230cb0f01438979a5dfda57c2782504eeab"
+    },
+    {
+      "old_material": "Zhuque_cloth_PBR",
+      "current_material": "Zhuque_cloth_PBR",
+      "channel": "surface",
+      "unchanged_exported_png_sha256": "540de19f1037057f3772f7724704a662555a35b68d20335a3c63f1e747185daf"
+    },
+    {
+      "old_material": "Zhuque_cloth_PBR",
+      "current_material": "Zhuque_cloth_PBR",
+      "channel": "emissive_texture",
+      "unchanged_exported_png_sha256": "61d5c354719c04ce7903c6a56e5c561f92d5706d0362513603b50a0f4c4bbd07"
+    },
+    {
+      "old_material": "Zhuque_fire_fringe_PBR.001",
+      "current_material": "Zhuque_cape_fire_PBR",
+      "channel": "base",
+      "unchanged_exported_png_sha256": "3d223d07857328af7152be78eb0c990030b79977ef762e34683d5b0d9aec1180"
+    },
+    {
+      "old_material": "Zhuque_fire_fringe_PBR.001",
+      "current_material": "Zhuque_cape_fire_PBR",
+      "channel": "normal",
+      "unchanged_exported_png_sha256": "ae52b893ea97f9d4f8e32664b4e5d4c7c697579a9779d7dca7a30abcfdea76c9"
+    },
+    {
+      "old_material": "Zhuque_fire_fringe_PBR.001",
+      "current_material": "Zhuque_cape_fire_PBR",
+      "channel": "surface",
+      "unchanged_exported_png_sha256": "297e7445a31cf5b3275138e22fb0753b45eb0ca8d5ff1cca1249a9ae068e7eca"
+    },
+    {
+      "old_material": "Zhuque_fire_fringe_PBR.001",
+      "current_material": "Zhuque_cape_fire_PBR",
+      "channel": "emissive_texture",
+      "unchanged_exported_png_sha256": "3d223d07857328af7152be78eb0c990030b79977ef762e34683d5b0d9aec1180"
+    },
+    {
+      "old_material": "Zhuque_skin_PBR",
+      "current_material": "Zhuque_skin_PBR",
+      "channel": "base",
+      "unchanged_exported_png_sha256": "ed50547410edfb841b0ec14cc871aa367febe34ae102f64829177bec28947dba"
+    },
+    {
+      "old_material": "Zhuque_skin_PBR",
+      "current_material": "Zhuque_skin_PBR",
+      "channel": "normal",
+      "unchanged_exported_png_sha256": "28e8633a1d779cb9e04db5ca732aca38c9f14ec645445d11d854b49e414ab1eb"
+    },
+    {
+      "old_material": "Zhuque_skin_PBR",
+      "current_material": "Zhuque_skin_PBR",
+      "channel": "surface",
+      "unchanged_exported_png_sha256": "2de83ccac78e6ab36ef12ebca31d40082b173b9acabb5042f7e7e089a3ddbc76"
+    },
+    {
+      "old_material": "Zhuque_skin_PBR",
+      "current_material": "Zhuque_skin_PBR",
+      "channel": "emissive_texture",
+      "unchanged_exported_png_sha256": "ba910461d935c16ed062110e45d694579a649cf24eaf34b0cabc3d0c299cf5a8"
+    }
+  ],
+  "cape_uv_exception": "Three cloth panel rectangles do not overlap each other. Paired Solidify inner/outer and rims intentionally share same undifferentiated fabric texels. No claim of globally unique cape atlas; no differential AO baked into shared regions.",
+  "cape_material_notes": "Independent actual FILE/packed 2K PNG cape base/normal/ORM/emission. sRGB base explicitly encoded from linear ~0.015–0.025 cloth, normal Strength1, no unsupported sheen preview. ORM.R=1 unoccluded AO; no differential AO bake. Existing body3 materials/12PNGs untouched; dedicated new fire uses exact prior4PNG bytes with new coverage.",
+  "cape_geometry_preservation_report": {
+    "file": "provenance/characters/zhuque/cape-authoring-report.json",
+    "preservation_passed": true,
+    "note": "Non-cape component fingerprints remain the prior source; report is authoring evidence, not a substitute for runtime export proof."
+  }
+}

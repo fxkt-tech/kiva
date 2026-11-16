@@ -134,7 +134,7 @@ fn wall_clock_partition_and_speed_do_not_change_canonical_frame() {
 fn actual_assets_and_entity_counts_stabilize_across_repeated_body_and_weapon_switches() {
     let mut app = app();
     apply(&mut app, "seek\t0.75");
-    for appearance in ["lihuowang", "bailingmiao", "choulingke"] {
+    for appearance in ["lihuowang", "bailingmiao", "choulingke", "zhuque"] {
         apply(&mut app, &format!("appearance\t{appearance}"));
     }
     for weapon in [
@@ -296,6 +296,7 @@ fn actual_game_adapter_and_preview_drive_identical_real_palettes_and_weapon_moun
         Appearance::Choulingke,
         Appearance::Lihuowang,
         Appearance::Bailingmiao,
+        Appearance::Zhuque,
     ] {
         for pair in [WeaponPair::HammerMusket, WeaponPair::ChainAxeBow] {
             let mut app = App::new();
@@ -506,15 +507,27 @@ fn source_seek_to_loop_endpoint_retains_real_tail_sample() {
 
 #[test]
 fn an_unloaded_selection_keeps_the_previous_model_and_revision_until_its_files_arrive() {
+    for (appearance, weapon) in [
+        (Appearance::Bailingmiao, Weapon::Bow),
+        (Appearance::Zhuque, Weapon::Axe),
+    ] {
+        check_pending_selection(appearance, weapon);
+    }
+}
+
+fn check_pending_selection(appearance: Appearance, weapon: Weapon) {
     let mut app = app_with(true);
     let shown = asset_counts(app.world());
     let registered = app.world().resource::<Scene>().registered_revision;
-    apply(&mut app, "appearance\tbailingmiao");
-    apply(&mut app, "weapon\tyizhiying");
+    apply(
+        &mut app,
+        &format!("appearance\t{}", session::appearance_id(appearance)),
+    );
+    apply(&mut app, &format!("weapon\t{}", weapon.id()));
     {
         let scene = app.world().resource::<Scene>();
         let session = app.world().resource::<Session>();
-        assert_eq!(session.appearance, Appearance::Bailingmiao);
+        assert_eq!(session.appearance, appearance);
         assert!(scene.loading && !scene.load_failed);
         assert_eq!(scene.shown_appearance, Appearance::Lihuowang);
         assert_eq!(scene.shown_weapon, Weapon::Hammer);
@@ -540,8 +553,8 @@ fn an_unloaded_selection_keeps_the_previous_model_and_revision_until_its_files_a
     let scene = app.world().resource::<Scene>();
     let session = app.world().resource::<Session>();
     assert!(!scene.loading && !scene.load_failed);
-    assert_eq!(scene.shown_appearance, Appearance::Bailingmiao);
-    assert_eq!(scene.shown_weapon, Weapon::Bow);
+    assert_eq!(scene.shown_appearance, appearance);
+    assert_eq!(scene.shown_weapon, weapon);
     assert_eq!(scene.registered_revision, session.revision);
     assert_eq!(session.status, "");
 }

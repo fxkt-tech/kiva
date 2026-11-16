@@ -60,6 +60,7 @@ p { color: #a9bcbe; font-size: 14px; line-height: 1.8; min-height: 50px; margin:
 .enemy-mode-options button[aria-pressed="true"], .appearance-options button[aria-pressed="true"] { border-color: #74c4bb; background: #74c4bb20; color: #a4e1d9; box-shadow: inset 0 0 0 1px #74c4bb20; }
 #enemy-mode-hint, #appearance-hint { display: block; margin-top: 10px; color: #839b9e; font-size: 10px; line-height: 1.7; }
 .appearance-options button { flex-direction: column; gap: 4px; }
+.appearance-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .appearance-options small { color: inherit; opacity: 0.8; font-size: 10px; }
 .entry-hint { color: #839b9e; font-size: 11px; line-height: 1.8; }
 button { width: 100%; display: flex; justify-content: space-between; align-items: center; border: 0; border-radius: 6px; padding: 14px 18px; font: inherit; font-size: 14px; color: #082928; background: #74c4bb; cursor: pointer; }
