@@ -30,12 +30,16 @@ extern "C" {
         guard: bool,
         combo: bool,
     );
+    #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = defineLoadouts)]
+    fn define_loadouts(json: &str);
     #[wasm_bindgen(js_namespace = ["window", "kivaHud"], js_name = renderResources)]
     fn render_resources(
         stamina: f32,
         maximum: f32,
         melee: f32,
+        melee_total: f32,
         ranged: f32,
+        ranged_total: f32,
         axe_away: bool,
         defense: u32,
     );
@@ -209,6 +213,36 @@ type PlayerSnapshot = (
     &'static Arsenal,
 );
 
+/// Every pair's HUD wording as a JSON object keyed by its page slot.
+#[cfg(any(target_arch = "wasm32", test))]
+fn loadouts_json() -> String {
+    use super::json::quote;
+    let rows = crate::simulation::WeaponPair::ALL.map(|pair| {
+        let row = super::loadout::of(pair);
+        let text = &row.hud;
+        let fields = [
+            ("melee", text.melee),
+            ("meleeGlyph", text.melee_glyph),
+            ("ranged", text.ranged),
+            ("rangedGlyph", text.ranged_glyph),
+            ("meleeSkill", text.melee_skill),
+            ("rangedSkill", text.ranged_skill),
+            ("combo", text.combo),
+            ("comboCondition", text.combo_condition),
+        ]
+        .map(|(name, value)| format!("{}:{}", quote(name), quote(value)))
+        .join(",");
+        format!("\"{}\":{{{fields}}}", row.hud_index)
+    });
+    format!("{{{}}}", rows.join(","))
+}
+
+/// Gives the page every pair's wording once, before the first snapshot.
+pub(super) fn describe() {
+    #[cfg(target_arch = "wasm32")]
+    define_loadouts(&loadouts_json());
+}
+
 /// Durability of every pair, placed where the page's pair slots expect it.
 #[cfg(any(target_arch = "wasm32", test))]
 fn durability_by_hud_index(arsenal: &Arsenal) -> Vec<f32> {
@@ -292,11 +326,14 @@ pub(super) fn sync(
             DefenseKind::Guard => 3,
             DefenseKind::Parry => 4,
         };
+        let pair = combat.weapon_pair();
         render_resources(
             stamina.current(),
             stamina.maximum(),
             combat.melee_cooldown(),
+            pair.melee_skill().cooldown(),
             combat.ranged_cooldown(),
+            pair.ranged_skill().cooldown(),
             combat.axe_away(),
             kind,
         );
@@ -454,6 +491,33 @@ mod tests {
         let energy = world.get::<Energy>(player).unwrap();
         assert_eq!((energy.sun(), energy.moon(), energy.rage()), (0, 0, 0.0));
         assert!(!energy.rage_ready() && !energy.is_enraged());
+    }
+    #[test]
+    fn every_pair_wording_is_sent_under_its_page_slot() {
+        let json = loadouts_json();
+        for pair in WeaponPair::ALL {
+            let row = super::super::loadout::of(pair);
+            assert!(json.contains(&format!("\"{}\":{{\"melee\":", row.hud_index)));
+            for text in [row.hud.melee, row.hud.combo, row.hud.combo_condition] {
+                assert!(json.contains(text), "{text} is missing");
+            }
+        }
+        assert!(json.starts_with('{') && json.ends_with('}'));
+        assert_eq!(
+            json.matches("\"comboCondition\"").count(),
+            WeaponPair::ALL.len()
+        );
+    }
+
+    #[test]
+    fn skill_cooldown_totals_come_from_the_rules() {
+        // The page draws its cooldown fill against these, so a slot's total is
+        // what admission actually starts.
+        for pair in WeaponPair::ALL {
+            assert!(pair.melee_skill().cooldown() > 0.0);
+            assert!(pair.ranged_skill().cooldown() > 0.0);
+        }
+        assert_eq!(ActionKind::Melee.cooldown(), 0.0);
     }
     use crate::{
         gameplay,

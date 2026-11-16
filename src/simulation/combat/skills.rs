@@ -353,6 +353,11 @@ impl ActionKind {
         }
     }
 
+    /// The cooldown admission starts; zero for actions which have none.
+    pub fn cooldown(self) -> f32 {
+        self.spec().cooldown
+    }
+
     /// Whether the actor swings its melee weapon, and so has a baked blade path.
     pub fn swings_blade(self) -> bool {
         matches!(self.spec().shape, Shape::Blade | Shape::Area(_))
@@ -386,6 +391,11 @@ impl WeaponPair {
     /// The skill on this pair's melee-skill input.
     pub fn melee_skill(self) -> ActionKind {
         self.action(Slot::MeleeSkill)
+    }
+
+    /// The skill on this pair's ranged-skill input.
+    pub fn ranged_skill(self) -> ActionKind {
+        self.action(Slot::RangedSkill)
     }
 
     /// The action each input commits with this pair equipped.

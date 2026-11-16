@@ -19,7 +19,7 @@
 - Web 桥 `window.kivaInput.isActive(): boolean` / `takeLook(): number` / `keys(): number` / `takeActions(): number` / `takeDefenseEdges(): number[]` / `ready(): void`。
 - wasm-bindgen 绑定在 `client/web.rs`，原生不需要 JS；加载观察器为 `window.kivaStartup.subscribe(callback)`。
 - `window.kivaHud.render(persona, weapon, healthFraction, health, combo, cooldown, context)`；绑定在 `client/hud.rs`，只有显示方向。
-- `window.kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)`、`renderResources(stamina,maximum,meleeCooldown,rangedCooldown,axeAway,defense)`、`renderTarget(name,current,maximum,status,phase,phases)`、`renderBossCue(kind,left,total,chain,swings,resolved)`、`renderLock(mode,x,y,distance,side)`；具体快照契约见 combat-presentation.md。
+- `window.kivaHud.renderLoadout(pair,maximum,attackReady,meleeReady,rangedReady,guardReady,comboReady)`、`renderResources(stamina,maximum,meleeCooldown,meleeTotal,rangedCooldown,rangedTotal,axeAway,defense)`、`renderTarget(name,current,maximum,status,phase,phases)`、`renderBossCue(kind,left,total,chain,swings,resolved)`、`renderLock(mode,x,y,distance,side)`；装配时 `defineLoadouts(json)` 一次发送各武器组文案（以 `hud_index` 为键）；具体快照契约见 combat-presentation.md。
 - `window.kivaEnemies.takeMode(): number`（0=无请求、1=靶子、2=实战）/ `render(mode)`；绑定在 `client/enemies.rs`，固定循环前把选择交给 `gameplay::set_enemy_mode`。
 - `window.kivaAppearance.takeAppearance(): number`（0=无请求、1=愁铃客、2=李火旺）/ `render(value)`；绑定在 `client/appearance.rs`，选择仅属于客户端，`appearance::reconcile` 在动画前只替换哥哥身体／服饰，保留当前武器。
 - `window.kivaAudio.{playSniperShot(): boolean, playEffect(name): boolean, cueOffset(name): number, setActive(bool)}`；绑定在 `client/audio.rs`，消费已结算攻击／命中／防御和妹妹射击；Shot 及伴随 SniperShot 不重复发声。

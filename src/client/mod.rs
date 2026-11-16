@@ -16,6 +16,7 @@ mod hit_bake_tests;
 mod hit_debug;
 mod hud;
 mod impact;
+mod json;
 mod loading;
 mod loadout;
 mod model_asset;
@@ -218,6 +219,7 @@ pub(super) fn run() {
                 camera::setup,
                 rendering::setup,
                 environment::setup_camera_fog,
+                hud::describe,
                 loading::scene_ready,
             )
                 .chain(),

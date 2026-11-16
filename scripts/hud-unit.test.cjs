@@ -24,7 +24,13 @@ function element(tag = "div") {
   };
 }
 
-function fixture(ready = false) {
+// Stand-in for the JSON client/hud.rs builds from the loadout rows.
+const LOADOUTS = JSON.stringify({
+  1: { melee: "伏浪锚", meleeGlyph: "锤", ranged: "引冰落", rangedGlyph: "铳", meleeSkill: "锤击 · 范围击飞", rangedSkill: "白灵淼 · 单发引冰落", combo: "妹妹三枪", comboCondition: "锤 E 击飞原目标后可用" },
+  2: { melee: "谪星·摧山", meleeGlyph: "斧", ranged: "羿之影", rangedGlyph: "弓", meleeSkill: "链斧横扫 · 减速", rangedSkill: "白灵淼 · 射出链斧", combo: "拉近 · 妹妹三箭", comboCondition: "弓 Q 僵直原目标后可用" },
+});
+
+function fixture(ready = false, defined = true) {
   const nodes = new Map();
   const callbacks = new Map();
   const document = {
@@ -41,6 +47,7 @@ function fixture(ready = false) {
   };
   const timer = () => { throw new Error("HUD cannot own a clock"); };
   vm.runInNewContext(source, { window, document, setInterval: timer, setTimeout: timer });
+  if (defined) window.kivaHud.defineLoadouts(LOADOUTS);
   if (ready) parse();
   return { nodes, hud: window.kivaHud, parse, at: id => nodes.get(id) };
 }
@@ -56,7 +63,7 @@ const fills = (f, id) => f.at(id).children.map(block => block.children[1].style.
 test("early snapshots replay safely once the page is parsed", () => {
   const f = fixture();
   f.hud.renderLoadout(2, 1000, true, false, true, true, true);
-  f.hud.renderResources(60, 100, 3.24, 1.28, true, 3);
+  f.hud.renderResources(60, 100, 3.24, 3, 1.28, 4, true, 3);
   f.hud.renderTarget("训练靶子", 999_980, 1_000_000);
   player(f, { health: 750, fraction: 0.75, combo: 0.8, context: "链斧离手" });
   f.parse();
@@ -158,19 +165,23 @@ test("keys follow availability, cooldown water and empowerment", () => {
   player(f);
   for (const [pair, melee, ranged] of [[1, "锤", "铳"], [2, "斧", "弓"]]) {
     f.hud.renderLoadout(pair, 1000, true, true, true, true, false);
-    f.hud.renderResources(100, 100, 0, 0, false, 0);
+    f.hud.renderResources(100, 100, 0, 3, 0, 4, false, 0);
     assert.equal(f.at("hud-key-e-glyph").textContent, melee);
     assert.equal(f.at("hud-key-q-glyph").textContent, ranged);
     assert.equal(f.at("hud-key-e").classList.contains("ready"), true);
     assert.equal(f.at("hud-key-q").classList.contains("ready"), true);
   }
-  f.hud.renderResources(80, 100, 1.5, 2, false, 0);
+  // The water level is measured against the total each skill actually started.
+  f.hud.renderResources(80, 100, 1.5, 3, 2, 4, false, 0);
   for (const id of ["hud-key-e", "hud-key-q"]) {
     assert.equal(f.at(id).style["--cooldown-fill"], "50%");
     assert.equal(f.at(id).classList.contains("cooling"), true);
     assert.equal(f.at(id).classList.contains("ready"), false);
   }
-  f.hud.renderResources(80, 100, 0, 0, false, 0);
+  f.hud.renderResources(80, 100, 1, 4, 3, 6, false, 0);
+  assert.equal(f.at("hud-key-e").style["--cooldown-fill"], "75%");
+  assert.equal(f.at("hud-key-q").style["--cooldown-fill"], "50%");
+  f.hud.renderResources(80, 100, 0, 3, 0, 4, false, 0);
   f.hud.renderEnergy(10, 10, 5, 10, 8, 20, false, false);
   assert.equal(f.at("hud-key-e").classList.contains("empowered"), true);
   assert.equal(f.at("hud-key-q").classList.contains("empowered"), false);
@@ -236,7 +247,7 @@ test("all numerical values are bounded, strings stay inert, and death clears the
   const hostile = '<img src=x onerror="throw 1">';
   for (const invalid of [NaN, Infinity, -1]) {
     f.hud.renderLoadout(1, invalid, true, true, true, true, true);
-    f.hud.renderResources(invalid, invalid, invalid, invalid, true, 99);
+    f.hud.renderResources(invalid, invalid, invalid, invalid, invalid, invalid, true, 99);
     f.hud.renderTarget(hostile, invalid, invalid, hostile, invalid, invalid);
     f.hud.renderBossCue(invalid, invalid, invalid, invalid, invalid, invalid);
     f.hud.renderLock(invalid, invalid, invalid, invalid, invalid);
@@ -255,5 +266,35 @@ test("all numerical values are bounded, strings stay inert, and death clears the
   assert.equal(f.at("hud-target").hidden, true);
   for (const id of ["hud-key-e", "hud-key-q", "hud-link", "hud-rage-row"]) assert.equal(f.at(id).attributes["aria-disabled"], "true");
   f.nodes.clear();
-  assert.doesNotThrow(() => { player(f); f.hud.renderResources(100, 100, 0, 0, false, 0); });
+  assert.doesNotThrow(() => { player(f); f.hud.renderResources(100, 100, 0, 3, 0, 4, false, 0); });
+});
+
+test("pair wording comes only from defineLoadouts; nothing is drawn for an undefined pair", () => {
+  const f = fixture(true, false);
+  assert.doesNotThrow(() => {
+    f.hud.renderLoadout(1, 1000, true, true, true, true, false);
+    f.hud.renderResources(100, 100, 0, 3, 0, 4, false, 0);
+    player(f, { context: "未定义" });
+  });
+  assert.equal(f.at("hud-status").textContent, "");
+  assert.equal(f.at("hud-key-e-glyph").textContent, "");
+
+  // Malformed definitions, and rows missing a field, are ignored.
+  f.hud.defineLoadouts("{not json");
+  f.hud.defineLoadouts(JSON.stringify({ 1: { melee: "残缺" }, x: JSON.parse(LOADOUTS)[1] }));
+  assert.equal(f.at("hud-status").textContent, "");
+
+  // A third pair is just another row; no slot number is hard-coded in the page.
+  const rows = JSON.parse(LOADOUTS);
+  rows[3] = { ...rows[1], melee: "新近战", meleeGlyph: "新", comboCondition: "新条件" };
+  f.hud.defineLoadouts(JSON.stringify(rows));
+  f.hud.renderLoadout(3, 1000, true, true, true, true, false);
+  player(f);
+  assert.equal(f.at("hud-key-e-glyph").textContent, "新");
+  assert.equal(f.at("hud-brother-weapon").textContent, "新近战 · 新");
+  assert.equal(f.at("hud-link-text").textContent, "新条件");
+  assert.equal(f.at("hud-status").textContent, "准备就绪");
+  f.hud.renderLoadout(9, 1000, true, true, true, true, false);
+  player(f, { context: "未知组" });
+  assert.equal(f.at("hud-status").textContent, "准备就绪");
 });

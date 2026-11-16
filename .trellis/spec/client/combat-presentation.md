@@ -20,7 +20,7 @@
 
 ## Contracts
 
-每组武器的表现是 `client/loadout.rs` 里的一行 `Loadout`：`hud_index`、近战名称、近战／远程模型文件、是否有脊柱配件、近战武器是否带链离手、`swing`（挥击姿态）、`projectile`（子弹／箭）、`shot_sound`、妹妹持握／射击片段及其说明、`combo_camera`（低位仰视并带后坐／平视）。武器、妹妹、动画、音频、特效、镜头和 HUD 通过 `loadout::of(pair)` 读取，不得按具体武器组写分支；历史事件仍用事件自带的 `pair` 取行。
+每组武器的表现是 `client/loadout.rs` 里的一行 `Loadout`：`hud_index`、`hud`（页面文案：近战／远程名称与键上类别字、E／Q／Tab 描述、联动条件）、近战名称、近战／远程模型文件、是否有脊柱配件、近战武器是否带链离手、`swing`（挥击姿态）、`projectile`（子弹／箭）、`shot_sound`、妹妹持握／射击片段及其说明、`combo_camera`（低位仰视并带后坐／平视）。武器、妹妹、动画、音频、特效、镜头和 HUD 通过 `loadout::of(pair)` 读取，不得按具体武器组写分支；历史事件仍用事件自带的 `pair` 取行。
 妹妹每发的时刻、联动回切窗口来自 `ActionKind::{shot_times,return_window}`；飞行中的子弹、箭和链斧读模拟的 `Projectile`，动作起手姿态用 `strike_effect`；这些数字只存在于模拟的技能表，下文出现的时间是说明而不是第二份数据。键 Z 按 `WeaponPair::ALL` 的顺序循环切换武器组。
 
 哥哥默认李火旺，沿用近战动作；妹妹使用白灵淼衣装／莲母发型／女性基脸和自己的结构参考与 RigPose，不贴 PlayerView／ActorView 来重放哥哥所有动作。
@@ -40,7 +40,7 @@ F3 只替换哥哥身体和服饰，保留 RigPose／显示根／物理状态；
 目标死亡或取消时使用序列最后瞄准点恢复；相机不另建会推进技能的时钟。
 普通特效与专用冲击各持一个 `client::FeedbackCursor`（`take(feedback, active)` 批量消费，`advance(sequence)` 逐条消费），SniperShot／SniperImpact 只追加表现，不重复伤害或播放第二声。
 
-HUD 显示玩家生命 1000、耐力、当前组、E／Q 独立冷却、Tab 条件与链斧离手；烈阳、月光各 10 格，暴怒 20 格，当前组耐久 20 格（每格 2.5，≤30% 变琥珀色）。烈阳／月光满或暴怒中，对应技能标记为强化；暴怒行仅在 `rageReady` 时标为可用。Boss 读招快照来自 `Boss::{telegraph,swings,chain}`，锁定位置由 `client/hud.rs` 用游戏镜头投影目标上身（`mode` 0 无、1 画面内、2 侧方、3 身后）。页面对越界值做截断，不自行推算任何数值。暴怒释放时特效在玩家脚下显示一圈扩散环（`CombatEffect::Enrage`），暂无专属音效和动作。就绪快照必须跟随模拟本步最终状态。
+HUD 显示玩家生命 1000、耐力、当前组、E／Q 独立冷却、Tab 条件与链斧离手；烈阳、月光各 10 格，暴怒 20 格，当前组耐久 20 格（每格 2.5，≤30% 变琥珀色）。烈阳／月光满或暴怒中，对应技能标记为强化；暴怒行仅在 `rageReady` 时标为可用。Boss 读招快照来自 `Boss::{telegraph,swings,chain}`，锁定位置由 `client/hud.rs` 用游戏镜头投影目标上身（`mode` 0 无、1 画面内、2 侧方、3 身后）。页面对越界值做截断，不自行推算任何数值，也不保存规则或武器组数据：E／Q 冷却水位的总时长随 `renderResources` 由 `ActionKind::cooldown()`（技能表）给出，武器组文案只来自 `defineLoadouts`，未定义的组号不绘制。暴怒释放时特效在玩家脚下显示一圈扩散环（`CombatEffect::Enrage`），暂无专属音效和动作。就绪快照必须跟随模拟本步最终状态。
 目标血条来自当前 Combatant.target，联动原目标不能强行覆盖用户当前锁定。
 Web 只更新安全文字、progress、SVG href、显隐、样式类和无障碍属性；无独立冷却时钟或演示点击控制。
 

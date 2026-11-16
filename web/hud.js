@@ -11,16 +11,16 @@
   const RAGE_SEGMENTS = 20;
   const DURABILITY_SEGMENTS = 20;
   const LOW_DURABILITY = 0.3;
-  // Simulation cooldown durations (combat.rs), for the water level only.
-  const COOLDOWN = { melee: 3, ranged: 4 };
   const ORDINALS = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 
   let latest = null;
   let target = null;
   let cue = { kind: 0, left: 0, total: 0, chain: 0, swings: 0, resolved: 0 };
   let lock = { mode: 0, x: 0, y: 0, distance: 0, side: 0 };
+  // Each pair's wording by page slot, from Rust's loadout rows (defineLoadouts).
+  let sets = {};
   let loadout = { set: 1, maximum: 1000, attack: false, melee: false, ranged: false, guard: false, combo: false };
-  let resources = { stamina: 100, maximum: 100, melee: 0, ranged: 0, axeAway: false, defense: 0 };
+  let resources = { stamina: 100, maximum: 100, melee: 0, meleeTotal: 0, ranged: 0, rangedTotal: 0, axeAway: false, defense: 0 };
   let energy = { sun: 0, sunMaximum: 10, moon: 0, moonMaximum: 10, rage: 0, rageMaximum: 20, enraged: false, ready: false };
   let durability = { values: [], maximum: 50 };
   let mounted = document.readyState !== "loading";
@@ -30,10 +30,7 @@
   const fraction = (value, maximum) => maximum > 0 ? Math.min(1, nonnegative(value) / maximum) : 0;
   const percent = value => `${Math.round(Math.min(1, nonnegative(value)) * 1000) / 10}%`;
   const node = id => document.getElementById(id);
-  const sets = Object.freeze({
-    1: { melee: "伏浪锚", meleeKind: "锤", ranged: "引冰落", rangedKind: "铳", starter: "锤击 · 范围击飞", remote: "白灵淼 · 单发引冰落", finisher: "妹妹三枪", condition: "锤 E 击飞原目标后可用" },
-    2: { melee: "谪星·摧山", meleeKind: "斧", ranged: "羿之影", rangedKind: "弓", starter: "链斧横扫 · 减速", remote: "白灵淼 · 射出链斧", finisher: "拉近 · 妹妹三箭", condition: "弓 Q 僵直原目标后可用" },
-  });
+  const WORDING = ["melee", "meleeGlyph", "ranged", "rangedGlyph", "meleeSkill", "rangedSkill", "combo", "comboCondition"];
 
   function text(id, value) {
     const element = node(id);
@@ -96,7 +93,7 @@
   function key(id, cooldown, total, available, alive, empowered, description) {
     text(`${id}-time`, cooldown > 0 ? cooldown.toFixed(1) : "");
     toggle(id, "cooling", alive && cooldown > 0);
-    style(id, "--cooldown-fill", `${Math.max(0, 1 - cooldown / total) * 100}%`);
+    style(id, "--cooldown-fill", `${(1 - fraction(cooldown, total)) * 100}%`);
     const ready = alive && available && cooldown <= 0;
     toggle(id, "ready", ready);
     toggle(id, "empowered", alive && empowered);
@@ -155,6 +152,7 @@
   function paint() {
     if (!mounted || !latest) return;
     const set = sets[loadout.set];
+    if (!set) return;
     const alive = latest.health > 0;
 
     // Center: health blocks, stamina, the link.
@@ -171,13 +169,13 @@
     toggle("hud-link", "wait", !linked);
     attribute("hud-link", "aria-disabled", !linked);
     style("hud-link", "--left", linked ? percent(latest.combo / Math.max(latest.combo, latest.window || latest.combo)) : "0%");
-    text("hud-link-text", linked ? set.finisher : set.condition);
+    text("hud-link-text", linked ? set.combo : set.comboCondition);
     text("hud-link-time", linked ? latest.combo.toFixed(1) : "");
-    attribute("hud-link", "aria-label", `Tab · 联动 · ${set.finisher} · ${linked ? `剩余 ${latest.combo.toFixed(1)}s` : set.condition}`);
+    attribute("hud-link", "aria-label", `Tab · 联动 · ${set.combo} · ${linked ? `剩余 ${latest.combo.toFixed(1)}s` : set.comboCondition}`);
 
     // Left: the sister.
-    text("hud-sister-weapon", `${set.ranged} · ${set.rangedKind}`);
-    text("hud-key-q-glyph", set.rangedKind);
+    text("hud-sister-weapon", `${set.ranged} · ${set.rangedGlyph}`);
+    text("hud-key-q-glyph", set.rangedGlyph);
     const moonFull = energy.moonMaximum > 0 && energy.moon >= energy.moonMaximum;
     segments("hud-moon", ENERGY_SEGMENTS, Math.floor(fraction(energy.moon, energy.moonMaximum) * ENERGY_SEGMENTS + 1e-6));
     text("hud-moon-value", String(Math.floor(energy.moon)));
@@ -187,11 +185,11 @@
     segments("hud-durability", DURABILITY_SEGMENTS, Math.floor(wear * DURABILITY_SEGMENTS + 1e-6));
     text("hud-durability-value", number(durability.values[loadout.set - 1]));
     toggle("hud-durability-row", "low", wear <= LOW_DURABILITY);
-    key("hud-key-q", resources.ranged, COOLDOWN.ranged, loadout.ranged, alive, energy.enraged || moonFull, `Q · ${set.remote}`);
+    key("hud-key-q", resources.ranged, resources.rangedTotal, loadout.ranged, alive, energy.enraged || moonFull, `Q · ${set.rangedSkill}`);
 
     // Right: the brother.
-    text("hud-brother-weapon", `${set.melee} · ${set.meleeKind}${resources.axeAway ? " · 回收中" : ""}`);
-    text("hud-key-e-glyph", set.meleeKind);
+    text("hud-brother-weapon", `${set.melee} · ${set.meleeGlyph}${resources.axeAway ? " · 回收中" : ""}`);
+    text("hud-key-e-glyph", set.meleeGlyph);
     const sunFull = energy.sunMaximum > 0 && energy.sun >= energy.sunMaximum;
     segments("hud-sun", ENERGY_SEGMENTS, Math.floor(fraction(energy.sun, energy.sunMaximum) * ENERGY_SEGMENTS + 1e-6));
     text("hud-sun-value", String(Math.floor(energy.sun)));
@@ -202,12 +200,26 @@
     toggle("hud-rage-row", "enraged", energy.enraged);
     attribute("hud-rage-row", "aria-disabled", !(alive && energy.ready));
     attribute("hud-rage-row", "aria-label", `X · 暴怒技 · ${energy.enraged ? `暴怒中 · 剩余 ${Math.ceil(energy.rage)}s` : energy.ready ? "可用" : "暴怒值未满"}`);
-    key("hud-key-e", resources.melee, COOLDOWN.melee, loadout.melee, alive, energy.enraged || sunFull, `E · ${set.starter}`);
+    key("hud-key-e", resources.melee, resources.meleeTotal, loadout.melee, alive, energy.enraged || sunFull, `E · ${set.meleeSkill}`);
 
     paintTarget(alive);
   }
 
   window.kivaHud = Object.freeze({
+    // Every pair's wording, keyed by page slot; a pair with any field missing is dropped.
+    defineLoadouts(json) {
+      let parsed = null;
+      try { parsed = JSON.parse(json); } catch { parsed = null; }
+      const defined = {};
+      for (const [slot, row] of Object.entries(parsed && typeof parsed === "object" ? parsed : {})) {
+        if (!/^[1-9]\d*$/.test(slot) || !row || typeof row !== "object") continue;
+        if (WORDING.every(name => typeof row[name] === "string")) {
+          defined[slot] = Object.freeze(Object.fromEntries(WORDING.map(name => [name, row[name]])));
+        }
+      }
+      sets = Object.freeze(defined);
+      paint();
+    },
     render(persona, weapon, healthFraction, health, combo, cooldown, context) {
       const remaining = nonnegative(combo);
       latest = {
@@ -221,13 +233,19 @@
     },
     renderLoadout(set, maximum, attackReady, meleeReady, rangedReady, guardReady, comboReady) {
       loadout = {
-        set: set === 2 ? 2 : 1, maximum: nonnegative(maximum),
+        set: Number.isInteger(set) && set > 0 ? set : 0, maximum: nonnegative(maximum),
         attack: attackReady === true, melee: meleeReady === true, ranged: rangedReady === true, guard: guardReady === true, combo: comboReady === true,
       };
       paint();
     },
-    renderResources(stamina, maximum, meleeCooldown, rangedCooldown, axeAway, defense) {
-      resources = { stamina: Math.min(nonnegative(stamina), nonnegative(maximum)), maximum: nonnegative(maximum), melee: nonnegative(meleeCooldown), ranged: nonnegative(rangedCooldown), axeAway: axeAway === true, defense: Number.isInteger(defense) && defense >= 0 && defense <= 4 ? defense : 0 };
+    // Each cooldown comes with the total its skill started, for the water level.
+    renderResources(stamina, maximum, meleeCooldown, meleeTotal, rangedCooldown, rangedTotal, axeAway, defense) {
+      resources = {
+        stamina: Math.min(nonnegative(stamina), nonnegative(maximum)), maximum: nonnegative(maximum),
+        melee: nonnegative(meleeCooldown), meleeTotal: nonnegative(meleeTotal),
+        ranged: nonnegative(rangedCooldown), rangedTotal: nonnegative(rangedTotal),
+        axeAway: axeAway === true, defense: Number.isInteger(defense) && defense >= 0 && defense <= 4 ? defense : 0,
+      };
       paint();
     },
     renderEnergy(sun, sunMaximum, moon, moonMaximum, rage, rageMaximum, enraged, rageReady) {
@@ -243,7 +261,7 @@
     // One value per weapon pair, in the page's pair-slot order.
     renderDurability(values, maximum) {
       const max = nonnegative(maximum);
-      durability = { values: Array.from(values || [], value => Math.min(nonnegative(value), max)).slice(0, 2), maximum: max };
+      durability = { values: Array.from(values || [], value => Math.min(nonnegative(value), max)), maximum: max };
       paint();
     },
     // `phase` of `phases`: a Boss has two, each with `maximum` health.

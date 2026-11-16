@@ -35,11 +35,30 @@ pub(super) struct SourceClip {
     pub adaptation: &'static str,
 }
 
+/// The page HUD's wording of a pair, sent once by `kivaHud.defineLoadouts`.
+#[cfg_attr(not(any(target_arch = "wasm32", test)), allow(dead_code))]
+pub(super) struct HudText {
+    /// The melee weapon's name and the one character on its E key.
+    pub melee: &'static str,
+    pub melee_glyph: &'static str,
+    /// The ranged weapon's name and the one character on its Q key.
+    pub ranged: &'static str,
+    pub ranged_glyph: &'static str,
+    /// What E, Q and Tab do.
+    pub melee_skill: &'static str,
+    pub ranged_skill: &'static str,
+    pub combo: &'static str,
+    /// What opens the combo window.
+    pub combo_condition: &'static str,
+}
+
 pub(super) struct Loadout {
-    /// The pair's number in the `window.kivaHud.renderLoadout` contract; the
-    /// native build has no page to send it to.
+    /// The pair's number in the `window.kivaHud` contract; the native build
+    /// has no page to send it to.
     #[cfg_attr(not(any(target_arch = "wasm32", test)), allow(dead_code))]
     pub hud_index: u32,
+    #[cfg_attr(not(any(target_arch = "wasm32", test)), allow(dead_code))]
+    pub hud: HudText,
     pub melee_name: &'static str,
     pub melee_model: &'static str,
     pub ranged_model: &'static str,
@@ -69,6 +88,16 @@ impl Loadout {
 // Target lower body and physical grips remain the established Kiva choreography.
 const HAMMER_MUSKET: Loadout = Loadout {
     hud_index: 1,
+    hud: HudText {
+        melee: "伏浪锚",
+        melee_glyph: "锤",
+        ranged: "引冰落",
+        ranged_glyph: "铳",
+        melee_skill: "锤击 · 范围击飞",
+        ranged_skill: "白灵淼 · 单发引冰落",
+        combo: "妹妹三枪",
+        combo_condition: "锤 E 击飞原目标后可用",
+    },
     melee_name: "伏浪锚 · 锤子",
     melee_model: "weapons/melee/fulangmao.bin",
     ranged_model: "weapons/ranged/yinbingluo.bin",
@@ -90,6 +119,16 @@ const HAMMER_MUSKET: Loadout = Loadout {
 
 const CHAIN_AXE_BOW: Loadout = Loadout {
     hud_index: 2,
+    hud: HudText {
+        melee: "谪星·摧山",
+        melee_glyph: "斧",
+        ranged: "羿之影",
+        ranged_glyph: "弓",
+        melee_skill: "链斧横扫 · 减速",
+        ranged_skill: "白灵淼 · 射出链斧",
+        combo: "拉近 · 妹妹三箭",
+        combo_condition: "弓 Q 僵直原目标后可用",
+    },
     melee_name: "谪星·摧山 · 链斧",
     melee_model: "weapons/melee/zhexingcuishan.bin",
     ranged_model: "weapons/ranged/yizhiying.bin",
@@ -134,8 +173,8 @@ mod tests {
         let mut hud: Vec<_> = rows.iter().map(|row| row.hud_index).collect();
         hud.sort_unstable();
         hud.dedup();
-        // web/hud.js accepts exactly these numbers.
-        assert_eq!(hud, [1, 2]);
+        // Each page slot holds one pair; durability is sent in this order.
+        assert_eq!(hud, (1..=rows.len() as u32).collect::<Vec<_>>());
         let mut models = model_paths();
         assert_eq!(models.len(), WeaponPair::ALL.len() * 2);
         models.sort_unstable();

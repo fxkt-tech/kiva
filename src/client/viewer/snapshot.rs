@@ -1,30 +1,11 @@
-//! Small dependency-free JSON output. All text, including source part names, is escaped.
-use super::super::animation::PoseTrace;
+//! Viewer snapshot JSON. All text, including source part names, is escaped.
+use super::super::{animation::PoseTrace, json::quote};
 use super::{
     Scene,
     orbit::Orbit,
     session::{self, Mode, Session},
 };
-use std::fmt::Write;
 
-pub(super) fn quote(value: &str) -> String {
-    let mut text = String::from("\"");
-    for c in value.chars() {
-        match c {
-            '"' => text.push_str("\\\""),
-            '\\' => text.push_str("\\\\"),
-            '\n' => text.push_str("\\n"),
-            '\r' => text.push_str("\\r"),
-            '\t' => text.push_str("\\t"),
-            c if c < ' ' => {
-                write!(text, "\\u{:04x}", c as u32).unwrap();
-            }
-            c => text.push(c),
-        }
-    }
-    text.push('"');
-    text
-}
 fn entries(values: &[(&str, &str)]) -> String {
     values
         .iter()
@@ -181,15 +162,4 @@ pub(super) fn render(
     }
     snapshot.push('}');
     snapshot
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn escapes_all_json_control_characters_and_source_labels() {
-        assert_eq!(
-            quote("a\"b\\\n\t\r\u{1}帽"),
-            "\"a\\\"b\\\\\\n\\t\\r\\u0001帽\""
-        );
-    }
 }
