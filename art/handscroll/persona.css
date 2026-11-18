@@ -1,0 +1,128 @@
+.persona {
+  --pigment: #923b2a;
+  --portrait-ink: #3b302b;
+  --portrait-kai: "Kaiti SC", STKaiti, KaiTi, serif;
+  --regular: var(--portrait-kai);
+  color: var(--portrait-ink);
+}
+
+.persona[data-portrait="qingluan"] { --pigment: #315c63; }
+.persona [hidden] { display: none; }
+.persona .portrait-reveal { z-index: 1; }
+.persona .stage-ui { z-index: 2; }
+
+.portrait-notes {
+  position: absolute;
+  left: 71.5%;
+  top: 15%;
+  width: 24.5%;
+}
+
+.portrait-switch {
+  display: flex;
+  gap: .9cqw;
+  width: fit-content;
+  border-bottom: 1px solid #947b5e66;
+}
+
+.portrait-switch button {
+  position: relative;
+  padding: .35cqw .55cqw .57cqw;
+  color: #624f41;
+  font: max(14px, 1.55cqw)/1.32 var(--portrait-kai);
+  letter-spacing: .07em;
+}
+
+.portrait-switch button small { padding-right: .26em; font-size: .78em; }
+.portrait-switch button b { font-weight: 500; }
+.portrait-switch button[aria-pressed="true"] { color: var(--pigment); }
+.portrait-switch button[aria-pressed="true"] b { font-weight: bold; }
+.portrait-switch button[aria-pressed="true"]::before {
+  content: "";
+  position: absolute;
+  inset: auto .1cqw -.08cqw;
+  background: currentColor;
+  height: .22cqw;
+  clip-path: polygon(0 30%,10% 18%,55% 9%,95% 4%,100% 54%,89% 100%,41% 88%,1% 100%);
+}
+.portrait-switch button::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+.portrait-title {
+  display: flex;
+  align-items: flex-end;
+  gap: .62cqw;
+  margin: 2.45cqw 0 0 -.4cqw;
+}
+.portrait-title h1 {
+  margin: 0;
+  font: bold 6.35cqw/1.04 "Xingkai SC", STXingkai, var(--portrait-kai);
+  color: #342a27;
+  letter-spacing: .03em;
+}
+.portrait-title span {
+  writing-mode: vertical-rl;
+  margin: 0 0 .52cqw;
+  padding: .16cqw .1cqw;
+  color: var(--pigment);
+  border: 1px solid currentColor;
+  outline: 1px solid currentColor;
+  outline-offset: 1px;
+  font: bold max(10px, 1.05cqw)/1.1 var(--portrait-kai);
+  letter-spacing: .06em;
+  transform: rotate(3deg);
+}
+
+.portrait-weapon {
+  display: flex;
+  gap: .75cqw;
+  align-items: baseline;
+  margin: 2.5cqw 0 0;
+}
+.portrait-weapon dt, .portrait-combo small {
+  font: max(11px, 1.16cqw)/1.32 var(--portrait-kai);
+  color: #6c5747;
+}
+.portrait-weapon dd {
+  margin: 0;
+  font: bold max(16px, 2.2cqw)/1.25 var(--portrait-kai);
+  white-space: nowrap;
+}
+
+.portrait-skill, .portrait-combo {
+  display: flex;
+  align-items: baseline;
+  gap: .64cqw;
+}
+.portrait-skill { margin: .78cqw 0 0; font-size: max(12px, 1.42cqw); }
+.persona kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.3em;
+  padding: .16em .22em .11em;
+  border: 1px solid #9a8063aa;
+  font: max(10px, 1.04cqw)/1.1 Georgia, serif;
+  color: #594638;
+}
+.portrait-combo {
+  flex-wrap: wrap;
+  column-gap: .55cqw;
+  row-gap: .28cqw;
+  margin: 1.75cqw 0 0;
+  border-top: 1px solid #9b846350;
+  padding-top: 1.1cqw;
+}
+.portrait-combo strong { font: bold max(14px, 1.75cqw)/1.25 var(--portrait-kai); }
+.portrait-condition {
+  margin: .58cqw 0 0;
+  font-size: max(11px, 1.28cqw);
+  line-height: 1.4;
+  color: #554439;
+}

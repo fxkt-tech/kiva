@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>百鸟图 · 灰鸦</title>
+  <link rel="stylesheet" href="bestiary.css">
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { display: grid; place-items: center; background: #252427; }
+    .bestiary {
+      position: relative;
+      width: min(100vw, 177.7778vh);
+      width: min(100vw, 177.7778dvh);
+      aspect-ratio: 16 / 9;
+      container-type: inline-size;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <main class="bestiary" aria-labelledby="album-name">
+    <img class="bestiary-art" src="bestiary-landscape.webp" alt="灰鸦立在垂落的电线上，嘴里衔着铜垫圈。秃鹫盘旋在断桥上空，雾鸮从桥下的薄雾里望出来。">
+    <ul class="bird-marks" aria-label="画中鸟">
+      <li data-bird="crow" aria-current="true">灰鸦</li>
+      <li data-bird="vulture">秃鹫</li>
+      <li data-bird="owl">雾鸮</li>
+    </ul>
+    <header class="bestiary-heading"><h1 id="album-name">百鸟图</h1></header>
+    <article class="bestiary-note" aria-labelledby="bird-name">
+      <h2 id="bird-name">灰鸦</h2>
+      <p class="bird-habits"><span>栖在废站的电线上，</span><span>爱啄发亮的东西。</span></p>
+      <p class="bird-tactic"><b>交手记</b><span>待鸦群聚拢，</span><span>一锤可击飞数只。</span></p>
+    </article>
+  </main>
+</body>
+</html>

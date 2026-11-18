@@ -1,0 +1,178 @@
+.supply {
+  --regular: "Kaiti SC", STKaiti, KaiTi, serif;
+  --script: "Xingkai SC", STXingkai, var(--regular);
+  --supply-red: #893a29;
+  --supply-ink: #372d28;
+  --supply-muted: #6a5541;
+  --supply-left: 70.2%;
+  --supply-right: 3.45%;
+  color: var(--supply-ink);
+  font-family: var(--regular);
+}
+
+.supply [hidden] { display: none; }
+.supply-sheet { position: absolute; inset: 0; }
+.supply-sheet.supply-reveal { z-index: 1; }
+.supply .supply-overlay { z-index: 2; pointer-events: none; }
+.supply .fold { font-size: max(12px, 1.3cqw); }
+.supply-title, .supply-stalls, .supply-ledger, .supply-wallet {
+  position: absolute;
+  left: var(--supply-left);
+  right: var(--supply-right);
+}
+.supply-title {
+  top: 5.3%;
+  margin: 0;
+  color: var(--supply-muted);
+  font: 500 max(13px, 1.48cqw)/1.24 var(--regular);
+  letter-spacing: .2em;
+}
+.supply-stalls {
+  top: 13%;
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  border-block-end: 1px solid #a58c6e75;
+}
+.supply-stalls button {
+  position: relative;
+  min-width: max(44px, 5.1cqw);
+  min-height: max(33px, 3.15cqw);
+  padding: .22cqw .58cqw;
+  text-align: center;
+  color: var(--supply-muted);
+  font-size: max(15px, 1.67cqw);
+  letter-spacing: .1em;
+}
+.supply-stalls button[aria-pressed="true"] { color: var(--supply-red); font-weight: bold; }
+.supply-stalls button[aria-pressed="true"]::before {
+  content: "";
+  position: absolute;
+  height: max(2px, .18cqw);
+  inset: auto .5cqw -1px;
+  background: currentColor;
+  clip-path: polygon(0 30%, 19% 4%, 79% 23%, 100% 0, 98% 74%, 24% 95%, 4% 100%);
+}
+
+.supply-goods button {
+  position: absolute;
+  top: var(--goods-top, 39%);
+  bottom: var(--goods-bottom, 18%);
+  left: var(--goods-x);
+  width: var(--goods-width, 18%);
+  transform: translateX(-50%);
+}
+.supply-goods [data-ware="tea"] { --goods-x: 11.5%; --goods-width: 22%; }
+.supply-goods [data-ware="stone"] { --goods-x: 32.3%; --goods-width: 20.6%; --goods-top: 46%; }
+.supply-goods [data-ware="page"] { --goods-x: 55.1%; --goods-width: 23.5%; --goods-top: 43%; }
+.supply-goods [data-ware="gift"] { --goods-x: 11.1%; --goods-width: 18%; --goods-top: 54%; }
+.supply-goods [data-ware="red"] { --goods-x: 29.6%; --goods-width: 19%; --goods-top: 34%; }
+.supply-goods [data-ware="red"]::before {
+  content: "";
+  position: absolute;
+  inset: 4% 94% 53% -31%;
+}
+.supply-goods [data-ware="blue"] { --goods-x: 52.1%; --goods-width: 21.8%; }
+.supply-goods [data-ware="core"] { --goods-x: 10.7%; --goods-width: 16.7%; --goods-top: 48%; }
+.supply-goods [data-ware="scrap"] { --goods-x: 30.2%; --goods-width: 21.5%; --goods-top: 45%; }
+.supply-goods [data-ware="gear"] { --goods-x: 53%; --goods-width: 22%; --goods-top: 44%; }
+.supply-tag {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  display: flex;
+  align-items: center;
+  gap: .3em;
+  white-space: nowrap;
+  padding: .13em .53em .18em;
+  border: 1px solid #78604499;
+  color: #3c322a;
+  background: #eadcc1 url("supply-travel.webp") 97% 12% / 2600% auto;
+  box-shadow: .08em .15em .22em #32241345;
+  font-size: max(14px, 1.55cqw);
+  letter-spacing: .065em;
+}
+.supply-goods button:nth-child(2) .supply-tag { transform: translateX(-50%) rotate(1.5deg); }
+.supply-goods button[aria-pressed="true"] .supply-tag {
+  background: #923e2d;
+  color: #fff0cc;
+  box-shadow: inset 0 0 0 .1em #ad5d45, inset 0 0 0 calc(.1em + 1px) #e6b89299, .08em .15em .22em #32241345;
+}
+.supply-tag small { font: 500 .72em/1 var(--regular); border-inline-start: 1px solid currentColor; padding-inline-start: .4em; }
+.supply-goods button:hover .supply-tag { border-color: #864932; }
+.supply-goods button:focus-visible { outline: none; }
+.supply-goods button:focus-visible .supply-tag { outline: 2px solid #742d21; outline-offset: 4px; }
+
+.supply-ledger { top: 27%; }
+.supply-ledger h2, .supply-ledger p, .supply-wallet dd { margin: 0; }
+.supply-ledger h2 {
+  font: bold 4.65cqw/1.16 var(--script);
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.supply[data-ware-view="gift"] .supply-ledger h2 { font-size: 3.75cqw; }
+.supply-ledger #supply-desc {
+  margin-top: .8cqw;
+  min-height: 3.1em;
+  font-size: max(13px, 1.46cqw);
+  line-height: 1.5;
+  text-wrap: balance;
+}
+.supply-unit, .supply-quantity, .supply-sale {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .35cqw;
+}
+.supply-unit { font-size: max(11px, 1.22cqw); color: var(--supply-muted); }
+.supply-quantity { margin-top: .65cqw; font-size: max(12px, 1.3cqw); }
+.supply-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: .15cqw;
+  font-variant-numeric: tabular-nums;
+}
+.supply-stepper button {
+  min-width: max(26px, 2.8cqw);
+  min-height: max(29px, 2.7cqw);
+  font: 500 max(16px, 1.8cqw)/1 var(--regular);
+  text-align: center;
+}
+.supply-stepper button[aria-disabled="true"] { opacity: .42; cursor: default; }
+#supply-count { min-width: 1.5em; text-align: center; }
+.supply-sale {
+  margin-top: .37cqw;
+  padding-top: .68cqw;
+  border-block-start: 1px solid #92755070;
+  font-size: max(12px, 1.22cqw);
+}
+.supply-sale b { font: 600 max(14px, 1.65cqw)/1.2 var(--regular); }
+#supply-buy {
+  padding: .35em .65em;
+  color: #fff0cd;
+  background: var(--supply-red);
+  box-shadow: inset 0 0 0 1px #83402d, inset 0 0 0 .17em #9b503b, inset 0 0 0 calc(.17em + 1px) #e7b895;
+  font: bold max(15px, 1.85cqw)/1.15 var(--regular);
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+#supply-buy[aria-disabled="true"] {
+  cursor: default;
+  color: #796350;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px #a58e74;
+  font-size: max(13px, 1.48cqw);
+}
+.supply-ledger #supply-receipt { margin-top: .6cqw; color: var(--supply-red); font-size: max(12px, 1.33cqw); line-height: 1.36; }
+.supply-wallet {
+  bottom: 5.6%;
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding-top: .72cqw;
+  border-block-start: 1px solid #9c826555;
+  font-variant-numeric: tabular-nums;
+}
+.supply-wallet dt { color: var(--supply-muted); font-size: max(11px, 1.13cqw); }
+.supply-wallet dd { margin-top: .13em; font: 600 max(14px, 1.6cqw)/1.18 var(--regular); }
