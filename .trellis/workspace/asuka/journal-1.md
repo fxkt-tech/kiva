@@ -1608,3 +1608,30 @@ main工作区实现44段原生Humanoid转换、三段普通连击、分阶段防
 ### Next Steps
 
 - 用户审阅第一版3D造型；无布料物理、衣物磨旧较克制，任务保留in_progress，未提交。
+
+
+## Session 48: 废站首幕与局外绘卷接入
+<!-- trellis-session: v=2 fp=14c4dbda24601934 -->
+
+**Date**: 2026-11-19
+**Task**: 废站首幕与局外绘卷接入
+**Branch**: `main`
+
+### Summary
+
+网页与原生游戏从卷首进入废站；武库选择同步到战斗，积水实时映出朱雀和姐姐青鸾。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f715a58` | feat: integrate the handscroll lobby and station reflections into gameplay |
+
+### Testing
+
+- [OK] make check 通过，397 项 Rust 测试和 129 项 Node 测试通过，2 项 Rust 测试忽略。
+- [OK] 原生 Vulkan 和网页 WebGPU 实测选关、换装、暂停回卷与继续战斗。
+
+### Status
+
+[OK] **Completed**

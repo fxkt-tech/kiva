@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/client/startup.md", "reason": "模式选择和首帧就绪"}
+{"file": ".trellis/spec/client/input.md", "reason": "捕获和一次性输入"}
+{"file": ".trellis/spec/client/character-authoring.md", "reason": "角色资产制作与验证"}
+{"file": ".trellis/spec/gameplay/index.md", "reason": "关卡装配边界"}
+{"file": ".trellis/spec/simulation/physics.md", "reason": "运动权威与固定步"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "输入到画面的状态归属"}
