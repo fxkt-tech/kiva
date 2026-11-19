@@ -1,6 +1,7 @@
 [build]
 target = "index.html"
 dist = "dist"
+public_url = "./"
 pattern_script = """
 <script type="module">
 import init, * as bindings from '{base}{js}';
@@ -11,7 +12,10 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: { wasm }}));
 """
 
 [watch]
-ignore = ["README.md", "docs", "tests", "scripts", ".github", "Makefile", "art", "tools", "provenance", ".trellis", ".agents", ".codex"]
+ignore = [
+    "README.md", "docs", "tests", "scripts", ".github", "Makefile", "tools", "provenance", ".trellis", ".agents", ".codex",
+    "**/art/station/**", "**/art/wasteland/**", "**/art/handscroll/*.{html,mp4,png,webp}",
+]
 
 [serve]
 addresses = ["127.0.0.1"]

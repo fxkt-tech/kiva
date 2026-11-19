@@ -1,15 +1,15 @@
 // The two display rows follow the HUD names and combo windows in src/client/loadout.rs.
 class HandscrollArmory {
-  constructor(page) {
+  constructor(page, host) {
     this.page = page;
     this.sets = {
       hammer: {
         melee: "伏浪锚", ranged: "引冰落", meleeSkill: "范围击飞", rangedSkill: "单发引冰落",
-        combo: "妹妹三枪", condition: "锤 E 击飞原目标后可用",
+        combo: "姐姐三枪", condition: "锤 E 击飞原目标后可用",
       },
       axe: {
         melee: "谪星·摧山", ranged: "羿之影", meleeSkill: "链斧横扫 · 减速", rangedSkill: "射出链斧",
-        combo: "拉近 · 妹妹三箭", condition: "弓 Q 僵直原目标后可用",
+        combo: "拉近 · 姐姐三箭", condition: "弓 Q 僵直原目标后可用",
       },
     };
     this.buttons = Array.from(page.querySelectorAll("[data-pair]"));
@@ -21,10 +21,16 @@ class HandscrollArmory {
     }
     this.equip.addEventListener("click", () => {
       if (this.viewed === this.equipped) return;
-      this.equipped = this.viewed;
-      this.inspect(this.equipped);
+      if (host) host.equip(this.viewed);
+      this.setEquipped(host ? host.getState().pair : this.viewed);
     });
     this.inspect(this.equipped);
+  }
+
+  setEquipped(key) {
+    if (key === this.equipped) return;
+    this.equipped = key;
+    this.inspect(this.viewed);
   }
 
   inspect(key) {

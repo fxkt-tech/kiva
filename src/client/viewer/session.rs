@@ -56,6 +56,7 @@ pub(super) fn appearance_id(value: Appearance) -> &'static str {
         Appearance::Lihuowang => "lihuowang",
         Appearance::Bailingmiao => "bailingmiao",
         Appearance::Zhuque => "zhuque",
+        Appearance::Qingluan => "qingluan",
     }
 }
 pub(super) fn parse_appearance(id: &str) -> Option<Appearance> {
@@ -64,6 +65,7 @@ pub(super) fn parse_appearance(id: &str) -> Option<Appearance> {
         "lihuowang" => Some(Appearance::Lihuowang),
         "bailingmiao" => Some(Appearance::Bailingmiao),
         "zhuque" => Some(Appearance::Zhuque),
+        "qingluan" => Some(Appearance::Qingluan),
         _ => None,
     }
 }

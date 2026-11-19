@@ -1,6 +1,6 @@
 //! Display-only snapshots. Simulation owns all admission, health and clocks.
 use crate::{
-    gameplay::Player,
+    gameplay::{GameLevel, Player},
     simulation::{
         ActionKind, Arsenal, Boss, BossPhase, BossState, CombatStatus, Combatant, DefenseKind,
         DefenseState, Enemy, Energy, Health, MotionState, Stamina, WeaponPair,
@@ -376,9 +376,16 @@ type PlayerSnapshot = (
     &'static Arsenal,
 );
 
+fn role_text(level: GameLevel, forest: &'static str, station: &'static str) -> &'static str {
+    match level {
+        GameLevel::BambooForest => forest,
+        GameLevel::Station => station,
+    }
+}
+
 /// Every pair's HUD wording as a JSON object keyed by its page slot.
 #[cfg(any(target_arch = "wasm32", test))]
-fn loadouts_json() -> String {
+fn loadouts_json(level: GameLevel) -> String {
     use super::json::Object;
     let mut all = Object::new();
     for pair in crate::simulation::WeaponPair::ALL {
@@ -390,8 +397,20 @@ fn loadouts_json() -> String {
             .string("ranged", text.ranged)
             .string("rangedGlyph", text.ranged_glyph)
             .string("meleeSkill", text.melee_skill)
-            .string("rangedSkill", text.ranged_skill)
-            .string("combo", text.combo)
+            .string(
+                "rangedSkill",
+                &format!(
+                    "{} · {}",
+                    role_text(level, "白灵淼", "青鸾"),
+                    text.ranged_skill
+                ),
+            )
+            .string(
+                "combo",
+                &text
+                    .combo
+                    .replace("{companion}", role_text(level, "妹妹", "青鸾")),
+            )
             .string("comboCondition", text.combo_condition)
             .finish();
         all = all.raw(&row.hud_index.to_string(), &wording);
@@ -400,9 +419,9 @@ fn loadouts_json() -> String {
 }
 
 /// Gives the page every pair's wording once, before the first frame.
-pub(super) fn describe() {
+pub(super) fn describe(#[cfg(target_arch = "wasm32")] level: Res<GameLevel>) {
     #[cfg(target_arch = "wasm32")]
-    define_loadouts(&loadouts_json());
+    define_loadouts(&loadouts_json(*level));
 }
 
 /// Durability of every pair, placed where the page's pair slots expect it.
@@ -419,6 +438,7 @@ fn durability_by_hud_index(arsenal: &Arsenal) -> Vec<f32> {
 /// resource only changes when something the HUD shows did.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn sync(
+    level: Res<GameLevel>,
     player: Single<PlayerSnapshot, With<Player>>,
     enemies: Query<(&Enemy, &Health, Option<&Boss>)>,
     bodies: Query<&crate::simulation::Body, With<Enemy>>,
@@ -429,7 +449,7 @@ pub(super) fn sync(
     mut frame: ResMut<HudFrame>,
 ) {
     let (body, combat, health, motion, defense, stamina, energy, arsenal) = *player;
-    let context = context_text(combat, health, motion, defense, energy);
+    let context = context_text(*level, combat, health, motion, defense, energy);
     let mut next = HudFrame::player(combat, health, stamina, energy, arsenal, context);
     next.target = target_snapshot(combat, health, |entity| enemies.get(entity).ok());
     let locked = next.target.and(combat.target());
@@ -462,24 +482,34 @@ pub(super) fn publish(frame: Res<HudFrame>) {
     }
 }
 
-/// Writes a changed frame, or a new enemy mode, into the window title.
+/// The native title follows the handscroll while browsing and the HUD during combat.
 #[cfg(not(target_arch = "wasm32"))]
 pub(super) fn publish(
     frame: Res<HudFrame>,
     mode: Res<crate::gameplay::EnemyMode>,
+    level: Res<GameLevel>,
+    scroll: Option<Res<super::handscroll::NativeHandscroll>>,
     mut window: Single<&mut Window>,
 ) {
-    if frame.is_changed() || mode.is_changed() {
-        window.title = frame.title(*mode);
+    if scroll.as_ref().is_some_and(|menu| menu.is_open()) {
+        if window.title != "断轨听羽" {
+            window.title = "断轨听羽".into();
+        }
+    } else if frame.is_changed()
+        || mode.is_changed()
+        || scroll.is_some_and(|menu| menu.is_changed())
+    {
+        window.title = frame.title(*mode, *level);
     }
 }
 
 #[cfg(any(not(target_arch = "wasm32"), test))]
 impl HudFrame {
     /// The native build's one-line HUD.
-    fn title(&self, mode: crate::gameplay::EnemyMode) -> String {
+    fn title(&self, mode: crate::gameplay::EnemyMode, level: GameLevel) -> String {
         let pair = self.loadout.pair;
         let weapon = super::weapons::melee_name(pair);
+        let player = role_text(level, "哥哥", "朱雀");
         let slot = super::loadout::of(pair).hud_index as usize - 1;
         let durability = self.durability.get(slot).copied().unwrap_or(0.0);
         let target = self.target.map_or_else(String::new, |t| {
@@ -489,7 +519,7 @@ impl HudFrame {
             )
         });
         format!(
-            "Kiva · {} [F2] · 哥哥 / {weapon} · HP {:.0}/{:.0} · 耐力 {:.0} · 烈阳 {:.0} 月光 {:.0} 暴怒 {:.0} · 耐久 {durability:.0} · E {:.1}s / Q {:.1}s · {}{target}",
+            "Kiva · {} [F2] · {player} / {weapon} · HP {:.0}/{:.0} · 耐力 {:.0} · 烈阳 {:.0} 月光 {:.0} 暴怒 {:.0} · 耐久 {durability:.0} · E {:.1}s / Q {:.1}s · {}{target}",
             match mode {
                 crate::gameplay::EnemyMode::Target => "靶子",
                 crate::gameplay::EnemyMode::Combat => "实战",
@@ -509,6 +539,7 @@ impl HudFrame {
 
 /// What the player is doing, for the status line above the health bar.
 fn context_text(
+    level: GameLevel,
     combat: &Combatant,
     health: &Health,
     motion: &MotionState,
@@ -528,7 +559,7 @@ fn context_text(
             crate::simulation::MeleeStage::Three => "普攻 · 第 3 段",
         }
     } else if combat.is_combo_active() {
-        "联动中 · 妹妹协同攻击"
+        role_text(level, "联动中 · 妹妹协同攻击", "联动中 · 青鸾协同攻击")
     } else if combat.axe_away() {
         "链斧离手 · 回收中"
     } else if defense.kind() == DefenseKind::Deflect {
@@ -552,12 +583,12 @@ fn context_text(
     } else if energy.is_enraged() {
         "暴怒中 · 普攻翻倍 · 技能强化 · 自动联动"
     } else {
-        status_text(combat.status())
+        status_text(level, combat.status())
     }
 }
 
 /// Wording of the simulation's latest command outcome.
-fn status_text(status: CombatStatus) -> &'static str {
+fn status_text(level: GameLevel, status: CombatStatus) -> &'static str {
     match status {
         CombatStatus::Ready => "准备就绪",
         CombatStatus::PairSwitched => "切换武器组",
@@ -566,10 +597,10 @@ fn status_text(status: CombatStatus) -> &'static str {
         CombatStatus::Started(kind) => match kind {
             ActionKind::Melee => "近战攻击",
             ActionKind::HammerSlam => "震地击飞",
-            ActionKind::MusketShot => "妹妹鸟铳射击",
+            ActionKind::MusketShot => role_text(level, "妹妹鸟铳射击", "青鸾鸟铳射击"),
             ActionKind::ChainSweep => "链斧环扫",
-            ActionKind::AxeShot => "妹妹射出链斧",
-            ActionKind::HammerCombo => "妹妹三枪联动",
+            ActionKind::AxeShot => role_text(level, "妹妹射出链斧", "青鸾射出链斧"),
+            ActionKind::HammerCombo => role_text(level, "妹妹三枪联动", "青鸾三枪联动"),
             ActionKind::ChainCombo => "拉近三箭联动",
         },
         CombatStatus::TargetOutOfReach => "目标高差过大",
@@ -620,11 +651,11 @@ mod tests {
     }
     #[test]
     fn every_pair_wording_is_sent_under_its_page_slot() {
-        let json = loadouts_json();
+        let json = loadouts_json(GameLevel::BambooForest);
         for pair in WeaponPair::ALL {
             let row = super::super::loadout::of(pair);
             assert!(json.contains(&format!("\"{}\":{{\"melee\":", row.hud_index)));
-            for text in [row.hud.melee, row.hud.combo, row.hud.combo_condition] {
+            for text in [row.hud.melee, row.hud.ranged_skill, row.hud.combo_condition] {
                 assert!(json.contains(text), "{text} is missing");
             }
         }
@@ -766,12 +797,12 @@ mod tests {
         for (name, frame) in contract_frames() {
             contract(&format!("hud/{name}"), &frame.to_json());
         }
-        contract("hud/loadouts", &loadouts_json());
+        contract("hud/loadouts", &loadouts_json(GameLevel::BambooForest));
     }
 
     #[test]
     fn a_real_player_frame_carries_its_rules_and_meters() {
-        let (mut app, player) = arena();
+        let (mut app, player) = arena(GameLevel::BambooForest);
         lock(&mut app, player);
         let w = app.world();
         let combat = w.get::<Combatant>(player).unwrap();
@@ -817,7 +848,7 @@ mod tests {
 
     #[test]
     fn a_combo_window_reports_its_opening_length() {
-        let (mut app, player) = arena();
+        let (mut app, player) = arena(GameLevel::BambooForest);
         lock(&mut app, player);
         app.world_mut()
             .get_mut::<CombatIntent>(player)
@@ -847,9 +878,10 @@ mod tests {
             app.world_mut().run_schedule(FixedUpdate);
         }
     }
-    fn arena() -> (App, Entity) {
+    fn arena(level: GameLevel) -> (App, Entity) {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, SimulationPlugin));
+        app.insert_resource(level);
         app.finish();
         gameplay::setup(app.world_mut());
         gameplay::manual_targeting(app.world_mut());
@@ -878,7 +910,7 @@ mod tests {
     }
     #[test]
     fn explicit_target_snapshots_follow_real_damage_and_hide_after_clear_or_death() {
-        let (mut app, player) = arena();
+        let (mut app, player) = arena(GameLevel::BambooForest);
         assert_eq!(target(&app, player), None);
         lock(&mut app, player);
         let selected = app
@@ -907,7 +939,7 @@ mod tests {
     #[test]
     fn player_death_and_roster_replacement_clear_target_display() {
         for mode_change in [true, false] {
-            let (mut app, player) = arena();
+            let (mut app, player) = arena(GameLevel::BambooForest);
             lock(&mut app, player);
             assert!(target(&app, player).is_some());
             if mode_change {
@@ -927,8 +959,8 @@ mod tests {
         }
     }
     /// The arena with a game camera, `sync`, and a counter standing in for `publish`.
-    fn hud_arena() -> (App, Entity) {
-        let (mut app, player) = arena();
+    fn hud_arena(level: GameLevel) -> (App, Entity) {
+        let (mut app, player) = arena(level);
         app.world_mut().spawn((
             super::super::camera::GameCamera,
             Camera::default(),
@@ -946,9 +978,39 @@ mod tests {
         app.world().resource::<Sent>().0
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn the_station_hud_uses_its_actual_party_when_the_companion_fires() {
+        let (mut app, player) = hud_arena(GameLevel::Station);
+        let window = app.world_mut().spawn(Window::default()).id();
+        app.add_systems(Update, publish.after(sync));
+        let target = app
+            .world_mut()
+            .query_filtered::<&crate::simulation::Body, With<Enemy>>()
+            .single(app.world())
+            .unwrap()
+            .world_position();
+        teleport_actor(app.world_mut(), player, target + Vec3::Z * 4.0);
+        tick(&mut app, 12);
+        lock(&mut app, player);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_ranged_skill();
+        step(&mut app);
+        let hud = app.world().resource::<HudFrame>();
+        assert_eq!(hud.context, "青鸾鸟铳射击");
+        assert!(hud.to_json().contains("青鸾鸟铳射击"));
+        let title = &app.world().get::<Window>(window).unwrap().title;
+        assert!(title.contains("朱雀 /") && title.contains("青鸾鸟铳射击"));
+        let loadouts = loadouts_json(GameLevel::Station);
+        assert!(loadouts.contains("青鸾 · 单发引冰落") && loadouts.contains("拉近 · 青鸾三箭"));
+        assert!(!loadouts.contains("妹妹") && !loadouts.contains("白灵淼"));
+    }
+
     #[test]
     fn a_still_arena_sends_its_frame_once() {
-        let (mut app, _) = hud_arena();
+        let (mut app, _) = hud_arena(GameLevel::BambooForest);
         let first = step(&mut app);
         assert_eq!(first, 1);
         for _ in 0..30 {
@@ -959,7 +1021,7 @@ mod tests {
 
     #[test]
     fn a_running_cooldown_sends_every_step_and_stops_when_it_ends() {
-        let (mut app, player) = hud_arena();
+        let (mut app, player) = hud_arena(GameLevel::BambooForest);
         lock(&mut app, player);
         app.world_mut()
             .get_mut::<CombatIntent>(player)
@@ -1006,18 +1068,18 @@ mod tests {
     fn the_native_title_is_written_from_the_same_frame() {
         let [(_, idle), _, (_, behind)] = contract_frames();
         assert_eq!(
-            idle.title(gameplay::EnemyMode::Target),
+            idle.title(gameplay::EnemyMode::Target, GameLevel::BambooForest),
             "Kiva · 靶子 [F2] · 哥哥 / 伏浪锚 · 锤子 · HP 1000/1000 · 耐力 100 · 烈阳 0 月光 0 暴怒 0 · 耐久 50 · E 0.0s / Q 0.0s · 准备就绪"
         );
         assert_eq!(
-            behind.title(gameplay::EnemyMode::Combat),
+            behind.title(gameplay::EnemyMode::Combat, GameLevel::BambooForest),
             "Kiva · 实战 [F2] · 哥哥 / 谪星·摧山 · 链斧 · HP 1000/1000 · 耐力 100 · 烈阳 0 月光 0 暴怒 12 · 耐久 50 · E 0.0s / Q 0.0s · 暴怒中 · 普攻翻倍 · 技能强化 · 自动联动 · 愁铃客 434/700 · 出招中"
         );
     }
 
     #[test]
     fn admission_snapshot_has_1000_health_dual_slots_and_no_player_ranged_mode() {
-        let (mut app, player) = arena();
+        let (mut app, player) = arena(GameLevel::BambooForest);
         let snapshot = loadout_snapshot(
             app.world().get::<Combatant>(player).unwrap(),
             app.world().get::<Health>(player).unwrap(),

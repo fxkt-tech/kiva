@@ -17,6 +17,7 @@ pub(super) fn sample(
     mode: Res<EnemyMode>,
     #[cfg(not(target_arch = "wasm32"))] keys: Res<ButtonInput<KeyCode>>,
     #[cfg(not(target_arch = "wasm32"))] window: Single<&Window>,
+    #[cfg(not(target_arch = "wasm32"))] scroll: Option<Res<super::handscroll::NativeHandscroll>>,
 ) {
     #[cfg(target_arch = "wasm32")]
     let requested = {
@@ -31,7 +32,10 @@ pub(super) fn sample(
         }
     };
     #[cfg(not(target_arch = "wasm32"))]
-    let requested = (window.focused && keys.just_pressed(KeyCode::F2)).then(|| mode.toggled());
+    let requested = (window.focused
+        && keys.just_pressed(KeyCode::F2)
+        && !scroll.is_some_and(|menu| menu.is_open()))
+    .then(|| mode.toggled());
 
     if let Some(requested) = requested {
         commands.queue(move |world: &mut World| set_enemy_mode(world, requested));

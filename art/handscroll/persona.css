@@ -1,7 +1,7 @@
 .persona {
   --pigment: #923b2a;
   --portrait-ink: #3b302b;
-  --portrait-kai: "Kaiti SC", STKaiti, KaiTi, serif;
+  --portrait-kai: "Kaiti SC", STKaiti, KaiTi, "Scroll CJK", serif;
   --regular: var(--portrait-kai);
   color: var(--portrait-ink);
 }

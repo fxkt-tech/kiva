@@ -3,6 +3,7 @@ use super::{
     animation::RigPose,
     avatar::{self, Appearance, AvatarAssetCache, AvatarAssets},
     skeleton::AnimationLibrary,
+    station::qingluan,
     weapon_models::{self, Mount, WeaponModel},
     weapons,
 };
@@ -11,11 +12,8 @@ use crate::simulation::{
 };
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub(super) struct CompanionView {
-    pub owner: Entity,
-    pub performer: Entity,
-}
+pub(super) use super::CompanionView;
+
 #[derive(Component)]
 struct SisterBodyMount {
     root: Entity,
@@ -52,6 +50,12 @@ pub(super) fn local_frame(
 }
 
 pub(super) fn setup(world: &mut World) {
+    let station = world.get_resource::<qingluan::Placement>().copied();
+    let appearance = if station.is_some() {
+        Appearance::Qingluan
+    } else {
+        Appearance::Bailingmiao
+    };
     let actors: Vec<_> = world
         .query::<(Entity, &Companion)>()
         .iter(world)
@@ -74,7 +78,7 @@ pub(super) fn setup(world: &mut World) {
                 Visibility::Hidden,
             ))
             .id();
-        avatar::spawn_with_appearance(world, root, Appearance::Bailingmiao);
+        avatar::spawn_with_appearance(world, root, appearance);
         for pair in WeaponPair::ALL {
             if !super::loadout::of(pair).spine_accessory {
                 continue;
@@ -99,6 +103,9 @@ pub(super) fn setup(world: &mut World) {
                 .id();
             weapons::spawn(world, weapon, pair, WeaponMode::Ranged);
             world.entity_mut(root).add_child(weapon);
+        }
+        if let Some(stage) = station {
+            qingluan::bind(world, root, stage);
         }
     }
 }
@@ -126,12 +133,36 @@ pub(super) fn sync(world: &mut World) {
             world.despawn(root);
             continue;
         };
-        *world.get_mut::<Visibility>(root).unwrap() = if state.visible {
+        let station = world.get_resource::<qingluan::Placement>().copied();
+        *world.get_mut::<Visibility>(root).unwrap() = if state.visible || station.is_some() {
             Visibility::Visible
         } else {
             Visibility::Hidden
         };
         if !state.visible {
+            if let Some(stage) = station {
+                if world
+                    .get::<RigPose>(root)
+                    .unwrap()
+                    .companion_hands
+                    .is_some()
+                {
+                    // The station body remains visible after a shot. Restore the
+                    // initial hidden equipment before sampling its empty-hand pose.
+                    let children = world.get::<Children>(root).unwrap();
+                    let equipment: Vec<_> = children
+                        .iter()
+                        .filter(|&child| {
+                            world.get::<SisterWeapon>(child).is_some()
+                                || world.get::<SisterBodyMount>(child).is_some()
+                        })
+                        .collect();
+                    for child in equipment {
+                        *world.get_mut::<Visibility>(child).unwrap() = Visibility::Hidden;
+                    }
+                }
+                qingluan::idle(world, root, owner, stage);
+            }
             continue;
         }
         let position = state.previous_position.lerp(state.position, alpha);
@@ -172,7 +203,10 @@ pub(super) fn sync(world: &mut World) {
         let assets = AvatarAssets::cached(
             world.get_resource::<AvatarAssets>(),
             world.get_resource::<AvatarAssetCache>(),
-            Appearance::Bailingmiao,
+            world
+                .get::<avatar::AvatarAppearance>(root)
+                .expect("companion skin")
+                .0,
         )
         .expect("companion skin is cached");
         let body_pose = assets.body_mount(world.get::<RigPose>(root).unwrap());

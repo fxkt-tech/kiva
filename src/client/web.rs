@@ -3,6 +3,12 @@
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "kivaPage"], js_name = isViewer)]
     fn browser_viewer_mode() -> bool;
+    #[wasm_bindgen(js_namespace = ["window", "kivaPage"], js_name = isStation)]
+    fn browser_station_mode() -> bool;
+    #[wasm_bindgen(js_namespace = ["window", "kivaHandscroll"], js_name = takePair)]
+    pub(super) fn take_pair() -> u32;
+    #[wasm_bindgen(js_namespace = ["window", "kivaHandscroll"], js_name = renderPair)]
+    pub(super) fn render_pair(code: u32);
     #[wasm_bindgen(js_namespace = ["window", "kivaViewer"], js_name = takeCommands)]
     fn browser_viewer_commands() -> String;
     #[wasm_bindgen(js_namespace = ["window", "kivaViewer"], js_name = render)]
@@ -90,6 +96,13 @@ pub(super) fn viewer_mode() -> bool {
     return browser_viewer_mode();
     #[cfg(not(target_arch = "wasm32"))]
     false
+}
+
+pub(super) fn station_mode() -> bool {
+    #[cfg(target_arch = "wasm32")]
+    return browser_station_mode();
+    #[cfg(not(target_arch = "wasm32"))]
+    !std::env::args_os().skip(1).any(|arg| arg == "--bamboo")
 }
 
 pub(super) fn viewer_take_commands() -> String {

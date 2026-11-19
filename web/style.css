@@ -44,6 +44,8 @@ body { display: grid; place-items: center; height: 100dvh; background: var(--bac
   background: #111a21;
 }
 #game { position: absolute; inset: 0; display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+#handscroll { position: fixed; inset: 0; z-index: 101; width: 100%; height: 100%; border: 0; background: #e9dfc5; }
+html[data-handscroll="open"] :is(#entry, #splash) { display: none; }
 .eyebrow { font-size: 10px; letter-spacing: 0.18em; color: #9bbab9; }
 kbd { padding: 3px 6px; margin-right: 5px; border: 1px solid #aac5c54d; border-radius: 4px; font-family: inherit; }
 .overlay { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-rows: minmax(0, 1fr); place-items: safe center; overflow: auto; background: #0b131b9c; backdrop-filter: blur(5px); padding: 24px; }
@@ -88,7 +90,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 .control-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 46px; padding: 10px 0; border-bottom: 1px solid #91b4b314; }
 .control-row:last-child { border-bottom: 0; }
 .control-row dt { color: #d0dddd; font-size: 12px; line-height: 1.5; }
-.control-row dt > span { display: block; margin-top: 4px; color: #839b9e; font-size: 10px; line-height: 1.6; }
+.control-row dt > span:not(.control-label) { display: block; margin-top: 4px; color: #839b9e; font-size: 10px; line-height: 1.6; }
 .control-row dd { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin: 0; }
 .control-row dd > span { color: #617c80; font-size: 10px; }
 .card kbd { display: inline-grid; place-items: center; min-width: 25px; min-height: 27px; margin: 0; padding: 3px 7px; border: 1px solid #718b8e70; border-bottom: 3px solid #0b171e; border-radius: 5px; background: linear-gradient(#30434c, #25353e); box-shadow: inset 0 1px 0 #ffffff12, 0 2px 3px #0003; color: #d5e5e4; font-family: inherit; font-size: 11px; line-height: 1.4; white-space: nowrap; }

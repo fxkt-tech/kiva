@@ -1,8 +1,8 @@
 .armory {
-  font-family: "Songti SC", STSong, SimSun, serif;
+  font-family: "Songti SC", STSong, SimSun, "Scroll CJK", serif;
   color: #382e2b;
-  --armory-kai: "Kaiti SC", STKaiti, KaiTi, serif;
-  --armory-brush: "Xingkai SC", STXingkai, "Kaiti SC", KaiTi, serif;
+  --armory-kai: "Kaiti SC", STKaiti, KaiTi, "Scroll CJK", serif;
+  --armory-brush: "Xingkai SC", STXingkai, "Kaiti SC", KaiTi, "Scroll CJK", serif;
 }
 
 .armory .scene { background: #e6d4b2; }

@@ -134,7 +134,13 @@ fn wall_clock_partition_and_speed_do_not_change_canonical_frame() {
 fn actual_assets_and_entity_counts_stabilize_across_repeated_body_and_weapon_switches() {
     let mut app = app();
     apply(&mut app, "seek\t0.75");
-    for appearance in ["lihuowang", "bailingmiao", "choulingke", "zhuque"] {
+    for appearance in [
+        "lihuowang",
+        "bailingmiao",
+        "choulingke",
+        "zhuque",
+        "qingluan",
+    ] {
         apply(&mut app, &format!("appearance\t{appearance}"));
     }
     for weapon in [

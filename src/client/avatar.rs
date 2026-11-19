@@ -35,16 +35,12 @@ pub(super) enum Appearance {
     Choulingke,
     Lihuowang,
     Bailingmiao,
+    Qingluan,
     Zhuque,
 }
 
 impl Appearance {
-    pub(super) const ALL: [Self; 4] = [
-        Self::Choulingke,
-        Self::Lihuowang,
-        Self::Bailingmiao,
-        Self::Zhuque,
-    ];
+    pub(super) const PLAYABLE: [Self; 3] = [Self::Choulingke, Self::Lihuowang, Self::Zhuque];
 
     /// The body, outfit and bound accessories of this appearance.
     pub(super) fn asset_path(self) -> &'static str {
@@ -52,6 +48,7 @@ impl Appearance {
             Self::Choulingke => "characters/choulingke.bin",
             Self::Lihuowang => "characters/lihuowang.bin",
             Self::Bailingmiao => "characters/bailingmiao.bin",
+            Self::Qingluan => "characters/qingluan.bin",
             Self::Zhuque => "characters/zhuque.bin",
         }
     }
@@ -136,6 +133,7 @@ pub(super) struct AvatarAssets {
 pub(super) struct AvatarAssetCache {
     lihuowang: Option<AvatarAssets>,
     bailingmiao: Option<AvatarAssets>,
+    qingluan: Option<AvatarAssets>,
     zhuque: Option<AvatarAssets>,
 }
 
@@ -457,6 +455,9 @@ impl AvatarAssets {
                 Appearance::Bailingmiao => {
                     world.resource_mut::<AvatarAssetCache>().bailingmiao = Some(assets);
                 }
+                Appearance::Qingluan => {
+                    world.resource_mut::<AvatarAssetCache>().qingluan = Some(assets);
+                }
                 Appearance::Zhuque => {
                     world.resource_mut::<AvatarAssetCache>().zhuque = Some(assets);
                 }
@@ -505,6 +506,7 @@ impl AvatarAssets {
             Appearance::Choulingke => original,
             Appearance::Lihuowang => cache?.lihuowang.as_ref(),
             Appearance::Bailingmiao => cache?.bailingmiao.as_ref(),
+            Appearance::Qingluan => cache?.qingluan.as_ref(),
             Appearance::Zhuque => cache?.zhuque.as_ref(),
         }
     }
@@ -967,7 +969,10 @@ impl AvatarAssets {
             return result;
         }
         let fallback_drivers = self.posed_drivers(rig);
-        if self.appearance == Appearance::Bailingmiao {
+        if matches!(
+            self.appearance,
+            Appearance::Bailingmiao | Appearance::Qingluan
+        ) {
             for (driver, posed) in self.drivers.iter().zip(&fallback_drivers) {
                 result[driver.bone] = Transform::from_translation(posed.translation)
                     .with_rotation(posed.rotation * driver.reference.rotation);
@@ -1239,6 +1244,9 @@ pub(super) fn sync(
 }
 
 #[cfg(test)]
+pub(super) use tests::sample_matching_surface;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::simulation::{
@@ -1268,7 +1276,7 @@ mod tests {
         sample_matching_surface(world, owner, None)
     }
 
-    fn sample_matching_surface(
+    pub(in crate::client) fn sample_matching_surface(
         world: &mut World,
         owner: Entity,
         name_prefix: Option<&str>,

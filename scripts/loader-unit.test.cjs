@@ -169,14 +169,20 @@ test("Trunk uses the dedicated loader while retaining its bindings and started e
   assert.match(config, /TrunkApplicationStarted/);
   assert(html.indexOf('<script src="loader.js"></script>') < html.indexOf('data-trunk rel="rust"'));
   const pattern = config.match(/pattern_script = """([\s\S]*?)"""/)[1];
-  const emitted = pattern.replaceAll("{base}", "/nested/")
-    .replaceAll("{js}", "game-hashed.js").replaceAll("{wasm}", "game-hashed_bg.wasm")
-    .replace(/<\/?script[^>]*>/g, "").replace(/^import .*;$/m, "");
+  const publicUrl = config.match(/^public_url\s*=\s*"([^"]+)"/m)[1];
+  const module = pattern.replaceAll("{base}", publicUrl)
+    .replaceAll("{js}", "game-hashed.js").replaceAll("{wasm}", "game-hashed_bg.wasm");
+  const jsUrl = module.match(/from '([^']+)'/)[1];
+  const emitted = module.replace(/<\/?script[^>]*>/g, "").replace(/^import .*;$/m, "");
   const wasm = {};
   const bindings = {};
   let started;
   const window = { kivaLoader: { async load(_init, url) {
-    assert.equal(url, "/nested/game-hashed_bg.wasm");
+    for (const mount of ["/", "/fixture/"]) {
+      const page = new URL(mount + "?view=station", "https://game.example");
+      assert.equal(new URL(jsUrl, page).pathname, mount + "game-hashed.js");
+      assert.equal(new URL(url, page).pathname, mount + "game-hashed_bg.wasm");
+    }
     return wasm;
   } } };
   await vm.runInNewContext(`(async () => { ${emitted} })()`, {

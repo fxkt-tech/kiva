@@ -1,5 +1,5 @@
 .supply {
-  --regular: "Kaiti SC", STKaiti, KaiTi, serif;
+  --regular: "Kaiti SC", STKaiti, KaiTi, "Scroll CJK", serif;
   --script: "Xingkai SC", STXingkai, var(--regular);
   --supply-red: #893a29;
   --supply-ink: #372d28;
@@ -88,7 +88,7 @@
   padding: .13em .53em .18em;
   border: 1px solid #78604499;
   color: #3c322a;
-  background: #eadcc1 url("supply-travel.webp") 97% 12% / 2600% auto;
+  background: #eadcc1 url("../../assets/handscroll/supply-travel.webp") 97% 12% / 2600% auto;
   box-shadow: .08em .15em .22em #32241345;
   font-size: max(14px, 1.55cqw);
   letter-spacing: .065em;

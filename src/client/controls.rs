@@ -98,6 +98,28 @@ impl ViewYaw {
     }
 }
 
+/// Once the scroll is open only sortie/resume can capture. Direct station launch
+/// accepts one initial scene click before handing subsequent entries to the scroll.
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Resource, Default)]
+pub(super) struct ScrollCapture {
+    pub(super) awaiting_direct_click: bool,
+    requested: bool,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl ScrollCapture {
+    pub(super) fn new(direct: bool) -> Self {
+        Self {
+            awaiting_direct_click: direct,
+            requested: false,
+        }
+    }
+    pub(super) fn request(&mut self) {
+        self.requested = true;
+    }
+}
+
 #[derive(Resource, Default)]
 pub(super) struct CaptureState {
     cancellation_epoch: u64,
@@ -121,6 +143,10 @@ impl CaptureState {
 
 #[cfg(not(target_arch = "wasm32"))]
 impl CaptureState {
+    pub(super) fn is_active(&self) -> bool {
+        self.active
+    }
+
     fn clear_inputs(&mut self) {
         self.pressed.clear();
         self.mouse_pressed.clear();
@@ -256,6 +282,7 @@ pub(super) fn sample(
         MessageReader<WindowFocused>,
         MessageReader<KeyboardInput>,
         MessageReader<MouseButtonInput>,
+        Option<ResMut<ScrollCapture>>,
     ),
     capture: (
         ResMut<CaptureState>,
@@ -268,6 +295,8 @@ pub(super) fn sample(
 ) {
     let (mut buttons, motion) = mouse;
     let (mut capture, mut simulation_active, time, enemies) = capture;
+    #[cfg(not(target_arch = "wasm32"))]
+    let (mut focus_events, mut keyboard_events, mut mouse_events, mut scroll) = native_events;
     #[cfg(target_arch = "wasm32")]
     let (active, look, held, commands, defense_edges) = {
         let _ = (&buttons, &motion, &mut window);
@@ -289,7 +318,6 @@ pub(super) fn sample(
     };
     #[cfg(not(target_arch = "wasm32"))]
     let (active, look, held, commands, defense_edges) = {
-        let (mut focus_events, mut keyboard_events, mut mouse_events) = native_events;
         let was_active = capture.active;
         let mut lost_focus = false;
         for event in focus_events.read() {
@@ -297,20 +325,25 @@ pub(super) fn sample(
         }
         let keyboard_events = keyboard_events.read().collect::<Vec<_>>();
         let mouse_events = mouse_events.read().collect::<Vec<_>>();
-        capture.update(
-            window.1.focused,
-            lost_focus,
-            keyboard_events.iter().any(|event| {
-                event.window == window.0
-                    && event.key_code == KeyCode::Escape
-                    && event.state == ButtonState::Pressed
-            }),
-            mouse_events.iter().any(|event| {
-                event.window == window.0
-                    && event.button == MouseButton::Left
-                    && event.state == ButtonState::Pressed
-            }),
-        );
+        let escape = keyboard_events.iter().any(|event| {
+            event.window == window.0
+                && event.key_code == KeyCode::Escape
+                && event.state == ButtonState::Pressed
+        });
+        let clicked = mouse_events.iter().any(|event| {
+            event.window == window.0
+                && event.button == MouseButton::Left
+                && event.state == ButtonState::Pressed
+        });
+        let enter = scroll.as_mut().map_or(clicked, |gate| {
+            std::mem::take(&mut gate.requested) || (gate.awaiting_direct_click && clicked)
+        });
+        capture.update(window.1.focused, lost_focus, escape, enter);
+        if let Some(gate) = scroll.as_mut()
+            && (capture.active || escape)
+        {
+            gate.awaiting_direct_click = false;
+        }
         window.2.visible = !capture.active;
         window.2.grab_mode = if capture.active {
             if cfg!(target_os = "windows") {
@@ -322,7 +355,7 @@ pub(super) fn sample(
             CursorGrabMode::None
         };
         // Capture clicks and all inputs from that frame are consumed without play.
-        if !was_active {
+        if !was_active && (capture.active || scroll.is_none()) {
             keys.reset_all();
             buttons.reset_all();
         }
@@ -359,8 +392,17 @@ pub(super) fn sample(
     }
     simulation_active.0 = active;
     if !active {
-        keys.reset_all();
-        buttons.reset_all();
+        // While the native scroll owns the window, preserve held modifiers and
+        // repeat suppression for its keyboard navigation. Capture still discards
+        // the opening gesture above; gameplay reads fresh ordered edges only.
+        #[cfg(not(target_arch = "wasm32"))]
+        let clear_device = scroll.is_none();
+        #[cfg(target_arch = "wasm32")]
+        let clear_device = true;
+        if clear_device {
+            keys.reset_all();
+            buttons.reset_all();
+        }
         for (_, mut intent, mut actions, _, mut combat, _, mut defense) in &mut players {
             intent.stop();
             actions.clear();

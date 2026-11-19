@@ -55,6 +55,7 @@ function fixture(search = "?view=model") {
   let clipboardFails = false;
   const window = Object.assign(new Target(), { location: { search, reload() { reloads++; } } });
   const document = Object.assign(new Target(), { readyState: "loading", documentElement: new Target("html") });
+  document.hasFocus = () => true;
   const nodes = new Map();
   const controls = [];
   document.getElementById = (id) => nodes.get(id) || null;
@@ -69,6 +70,7 @@ function fixture(search = "?view=model") {
   function parse() {
     for (const match of html.matchAll(/<([a-z]+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)) {
       const item = new Target(match[1]); item.id = match[3];
+      item.focus = () => { item.focused = true; document.activeElement = item; };
       if (/\bhidden\b/.test(match[2])) item.hidden = true;
       nodes.set(item.id, item);
     }
@@ -119,9 +121,25 @@ test("viewer mode installs no game capture, HUD, selection or audio bridges/list
   const beforeWindow = [...f.window.listeners.keys()];
   const beforeDocument = [...f.document.listeners.keys()];
   for (const name of ["input.js", "hud.js", "enemies.js", "appearance.js", "audio.js"]) f.run(name);
-  for (const name of ["kivaInput", "kivaHud", "kivaEnemies", "kivaAppearance", "kivaAudio"]) assert.equal(f.window[name], undefined);
+  for (const name of ["kivaInput", "kivaHud", "kivaEnemies", "kivaAppearance", "kivaAudio", "kivaHandscroll"]) assert.equal(f.window[name], undefined);
   assert.deepEqual([...f.window.listeners.keys()], beforeWindow);
   assert.deepEqual([...f.document.listeners.keys()], beforeDocument);
+});
+
+test("station links install the regular game bridges", () => {
+  for (const search of ["?level=station", "?view=station"]) {
+    const f = fixture(search);
+    assert.equal(f.window.kivaPage.isViewer(), false);
+    assert.equal(f.window.kivaPage.isStation(), true);
+    assert.equal(f.document.documentElement.getAttribute("data-kiva-view"), "game");
+    for (const name of ["input.js", "hud.js", "enemies.js", "appearance.js", "audio.js"]) f.run(name);
+    for (const name of ["kivaInput", "kivaHud", "kivaEnemies", "kivaAppearance", "kivaAudio", "kivaHandscroll"]) {
+      assert.ok(f.window[name], name);
+    }
+    assert.equal(f.window.kivaViewer, undefined);
+    assert.equal(f.window.kivaInput.isActive(), false);
+  }
+  assert.equal(fixture("?view=model&level=station").window.kivaPage.isStation(), false);
 });
 
 test("early snapshot/catalog replay waits for true engine ready and current model ready", () => {

@@ -247,8 +247,7 @@
     voice.release();
   }
 
-  function unlock(event) {
-    if (event.isTrusted !== true) return;
+  function unlock() {
     try {
       if (!context || context.state === "closed" || !shot) {
         // A new gesture can observe "closed" before the old statechange event
@@ -282,6 +281,10 @@
   }
 
   window.kivaAudio = Object.freeze({
+    // A trusted click inside our same-origin frame activates its parent as well.
+    unlockFromGesture() {
+      if (navigator.userActivation?.isActive) unlock();
+    },
     playSniperShot() {
       return playBuffer(shot) !== null;
     },
@@ -316,8 +319,9 @@
   window.addEventListener?.("blur", () => window.kivaAudio.setActive(false));
 
   function mount() {
-    document.getElementById("enter")?.addEventListener("click", unlock);
-    document.getElementById("game")?.addEventListener("pointerdown", unlock);
+    const gesture = (event) => { if (event.isTrusted) unlock(); };
+    document.getElementById("enter")?.addEventListener("click", gesture);
+    document.getElementById("game")?.addEventListener("pointerdown", gesture);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount, { once: true });
   else mount();

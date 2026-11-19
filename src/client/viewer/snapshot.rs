@@ -34,6 +34,7 @@ fn catalog(session: &Session) -> String {
         entries(&[
             ("lihuowang", "李火旺"),
             ("zhuque", "朱雀"),
+            ("qingluan", "青鸾 · 废站"),
             ("bailingmiao", "白灵淼"),
             ("choulingke", "愁铃客")
         ]),

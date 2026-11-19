@@ -26,6 +26,20 @@
          nothing else, so the whole folder is published as assets/ next to
          the page (see client/bundle.rs). Provenance lives in provenance/. -->
     <link data-trunk rel="copy-dir" href="assets" />
+    <link data-trunk rel="copy-file" href="handscroll-motion-preview.html" />
+    <link data-trunk rel="copy-file" href="art/handscroll/armory.css" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/armory.js" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/bestiary.css" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/bestiary.js" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/ink.js" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/persona.css" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/persona.js" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/scroll.css" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/scroll.js" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/stage-select.css" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/supply.css" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/supply.js" data-target-path="art/handscroll" />
+    <link data-trunk rel="copy-file" href="art/handscroll/water.js" data-target-path="art/handscroll" />
     <script src="audio.js"></script>
     <link data-trunk rel="copy-file" href="web/style.css" />
     <link rel="stylesheet" href="style.css" />
@@ -37,13 +51,14 @@
   </head>
   <body>
     <main class="game-shell">
-      <div class="game-frame">
-        <canvas id="game" tabindex="0" aria-label="竹林演武：WASD 移动，左键近战，E 近战技，Q 妹妹远程技，中键锁定，右键拆招防御弹反，Tab 联动，Z 换组，X 暴怒，Esc 暂停。"></canvas>
+      <div class="game-frame" id="game-frame">
+        <span id="game-instructions" hidden>WASD 移动，左键近战，E 近战技，Q <span data-station-text="青鸾远程技">妹妹远程技</span>，中键锁定，右键拆招防御弹反，Tab 联动，Z 换组，X 暴怒，Esc 暂停。</span>
+        <canvas id="game" tabindex="0" aria-labelledby="game-instructions"></canvas>
         <div class="game-hud" id="game-hud" aria-label="战斗状态">
           <div class="hud-wash" aria-hidden="true"></div>
 
           <header class="hud-place">
-            <strong>幽篁竹林</strong>
+            <strong id="hud-level" data-station-text="废站">幽篁竹林</strong>
             <span id="hud-enemy-mode" class="hud-mode">靶子模式 · F2 切换</span>
             <span id="hud-appearance" class="hud-mode">外观 · 李火旺 · F3 切换</span>
           </header>
@@ -69,9 +84,9 @@
           <div id="hud-offscreen" class="hud-offscreen" aria-hidden="true" hidden><span class="hud-chevrons"><i></i><i></i></span><span id="hud-offscreen-label"></span></div>
 
           <!-- 左下：妹妹 · 当前远程武器 · 月光 · 当前武器组耐久 · Q -->
-          <section class="hud-side hud-left" aria-label="妹妹">
+          <section class="hud-side hud-left" aria-labelledby="hud-companion-name">
             <div class="hud-col">
-              <div class="hud-who"><b>妹妹</b><span id="hud-sister-weapon"></span></div>
+              <div class="hud-who"><b id="hud-companion-name" data-station-text="青鸾">妹妹</b><span id="hud-sister-weapon"></span></div>
               <div class="hud-meter hud-moon" id="hud-moon-row"><span>月光</span><div id="hud-moon" class="hud-segs"></div><span id="hud-moon-value" class="hud-n">0</span><span id="hud-moon-tag" class="hud-tag" hidden>Q 强化</span></div>
               <div class="hud-meter hud-durability" id="hud-durability-row"><kbd>Z</kbd><span>耐久</span><div id="hud-durability" class="hud-segs"></div><span id="hud-durability-value" class="hud-n">0</span></div>
             </div>
@@ -94,9 +109,9 @@
           </section>
 
           <!-- 右下：哥哥 · 当前近战武器 · 烈阳 · 暴怒 · E -->
-          <section class="hud-side hud-right" aria-label="哥哥">
+          <section class="hud-side hud-right" aria-labelledby="hud-player-name">
             <div class="hud-col">
-              <div class="hud-who"><b>哥哥</b><span id="hud-brother-weapon"></span></div>
+              <div class="hud-who"><b id="hud-player-name" data-station-text="朱雀">哥哥</b><span id="hud-brother-weapon"></span></div>
               <div class="hud-meter hud-sun" id="hud-sun-row"><span>烈阳</span><div id="hud-sun" class="hud-segs"></div><span id="hud-sun-value" class="hud-n">0</span></div>
               <div class="hud-meter hud-rage" id="hud-rage-row" aria-disabled="true"><kbd>X</kbd><span>暴怒</span><div id="hud-rage" class="hud-segs"></div><span id="hud-rage-value" class="hud-n">0</span></div>
             </div>
@@ -106,10 +121,11 @@
         <div id="entry" class="overlay" role="dialog" aria-labelledby="entry-title">
           <section class="card">
             <div class="entry-intro">
-              <span class="eyebrow">KIVA / BAMBOO FOREST</span>
-              <h1 id="entry-title">幽篁竹林</h1>
+              <span id="entry-region" data-station-text="KIVA / STATION" class="eyebrow">KIVA / BAMBOO FOREST</span>
+              <h1 id="entry-title" data-station-text="废站 · 映面同行">幽篁竹林</h1>
               <p id="entry-message" role="status" aria-live="polite">正在下载游戏…</p>
               <a class="viewer-game-link" href="?view=model">模型、武器与动作验收 →</a>
+              <a id="level-link" class="viewer-game-link" href="?level=station">废站 · 映面同行 →</a>
               <fieldset class="enemy-mode-select">
                 <legend>敌人模式</legend>
                 <div class="enemy-mode-options">
@@ -119,7 +135,7 @@
                 <span id="enemy-mode-hint">1 个静止靶子 · 100 万生命 · 不会攻击</span>
               </fieldset>
               <fieldset class="appearance-select">
-                <legend>哥哥身体与服饰</legend>
+                <legend data-station-text="主角身体与服饰">哥哥身体与服饰</legend>
                 <div class="appearance-options">
                   <button id="appearance-choulingke" type="button" aria-pressed="false"><span>愁铃客</span><small>身体与服饰</small></button>
                   <button id="appearance-lihuowang" type="button" aria-pressed="true"><span>李火旺</span><small>身体与服饰</small></button>
@@ -129,6 +145,7 @@
               </fieldset>
               <div class="entry-actions">
                 <button id="enter" type="button" disabled aria-busy="true" aria-describedby="entry-message"><span id="enter-label">正在下载…</span><span class="enter-indicator" aria-hidden="true">→</span><progress id="enter-progress" max="1" aria-label="游戏下载进度"></progress></button>
+                <button id="return-to-handscroll" type="button" hidden>返回手卷</button>
                 <button id="retry" hidden>重新加载</button>
                 <span class="entry-hint">进入后捕获鼠标，按 <kbd>Esc</kbd> 暂停</span>
               </div>
@@ -156,13 +173,13 @@
                     <div class="control-row"><dt>近战普攻</dt><dd><kbd>左键</kbd></dd></div>
                     <div class="control-row"><dt>拆招 / 防御 / 弹反<span>按下拆招，长按防御，有效防御松开弹反</span></dt><dd><kbd>右键</kbd></dd></div>
                     <div class="control-row"><dt>近战技能<span>锤击飞 / 链斧减速 · 独立冷却</span></dt><dd><kbd>E</kbd></dd></div>
-                    <div class="control-row"><dt>妹妹远程技能<span>引冰落单发 / 羿之影射链斧 · 需要锁定</span></dt><dd><kbd>Q</kbd></dd></div>
+                    <div class="control-row"><dt><span class="control-label" data-station-text="青鸾远程技能">妹妹远程技能</span><span>引冰落单发 / 羿之影射链斧 · 需要锁定</span></dt><dd><kbd>Q</kbd></dd></div>
                     <div class="control-row"><dt>释放联动<span>锤 E 浮空后三枪 / 弓 Q 僵直后拉近三箭</span></dt><dd><kbd>Tab</kbd></dd></div>
                     <div class="control-row"><dt>切换武器组<span>伏浪锚（锤子）＋引冰落 / 谪星·摧山（链斧）＋羿之影 · 耐久耗尽自动切换</span></dt><dd><kbd>Z</kbd></dd></div>
                     <div class="control-row"><dt>暴怒技<span>暴怒值满后释放 · 20 秒内普攻翻倍、技能强化、自动联动</span></dt><dd><kbd>X</kbd></dd></div>
                     <div class="control-row"><dt>锁定 / 解锁目标<span>默认自动索敌 · 锁定后镜头绕目标 · 解锁后鼠标转视角</span></dt><dd><kbd>中键</kbd></dd></div>
                     <div class="control-row"><dt>靶子 / 实战</dt><dd><kbd>F2</kbd></dd></div>
-                    <div class="control-row"><dt>哥哥身体与服饰<span>愁铃客 / 李火旺 / 朱雀 · 保留当前武器</span></dt><dd><kbd>F3</kbd></dd></div>
+                    <div class="control-row"><dt><span class="control-label" data-station-text="主角身体与服饰">哥哥身体与服饰</span><span>愁铃客 / 李火旺 / 朱雀 · 保留当前武器</span></dt><dd><kbd>F3</kbd></dd></div>
                     <div class="control-row"><dt>判定显示<span>调试：刀刃扫掠、受击体与接触点</span></dt><dd><kbd>F4</kbd></dd></div>
                   </dl>
                 </section>
@@ -172,6 +189,7 @@
         </div>
         <noscript>请启用 JavaScript 后运行游戏。</noscript>
       </div>
+      <iframe id="handscroll" title="断轨听羽 · 局外绘卷" hidden></iframe>
       <!-- First load only: the title, real loading progress, then any key to enter.
            Once the player has entered, Esc shows the entry card above instead. -->
       <div id="splash" class="splash" role="dialog" aria-labelledby="splash-title" aria-describedby="splash-status">

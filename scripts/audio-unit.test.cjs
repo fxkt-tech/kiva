@@ -113,14 +113,15 @@ function fixture(options = {}) {
   } : undefined;
   const math = Object.create(Math);
   if (options.random) math.random = options.random;
-  vm.runInContext(source, vm.createContext({ window, document, fetch, Math: math }));
+  const userActivation = { isActive: false };
+  vm.runInContext(source, vm.createContext({ window, document, fetch, Math: math, navigator: { userActivation } }));
   const parse = () => { addNodes(); document.readyState = "interactive"; document.emit("DOMContentLoaded"); };
   const gesture = (id = "enter", trusted = true) => {
     const event = nodes.get(id).emit(id === "enter" ? "click" : "pointerdown", { isTrusted: trusted });
     if (trusted) window.kivaAudio.setActive(true);
     return event;
   };
-  return { audio: window.kivaAudio, window, document, nodes, contexts, requests, metadataResolvers, parse, gesture };
+  return { audio: window.kivaAudio, window, document, nodes, contexts, requests, metadataResolvers, userActivation, parse, gesture };
 }
 
 test("bridge is available before DOM and only trusted entry/canvas gestures unlock audio", () => {
@@ -143,6 +144,19 @@ test("bridge is available before DOM and only trusted entry/canvas gestures unlo
   assert.equal(mounted.contexts.length, 1);
   assert.equal(mounted.contexts[0].resumeCalls, 0);
   assert.equal(mounted.audio.playSniperShot(), true);
+});
+
+test("the handscroll can unlock audio during the same-origin frame's activation", () => {
+  const f = fixture();
+  f.audio.unlockFromGesture();
+  assert.equal(f.contexts.length, 0);
+  f.userActivation.isActive = true;
+  f.audio.unlockFromGesture();
+  assert.equal(f.contexts.length, 1);
+  assert.equal(f.contexts[0].resumeCalls, 1);
+  assert.equal(f.audio.playSniperShot(), false);
+  f.audio.setActive(true);
+  assert.equal(f.audio.playSniperShot(), true);
 });
 
 test("shots while locked or resuming are discarded instead of replayed after unlock", async () => {

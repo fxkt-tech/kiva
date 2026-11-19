@@ -10,7 +10,9 @@ use crate::{
 use super::{ActorView, PlayerView, controls::ViewYaw};
 
 pub(super) fn setup(world: &mut World) {
-    super::environment::setup(world);
+    if world.contains_resource::<crate::gameplay::Level>() {
+        super::environment::setup(world);
+    }
     spawn_player(world);
 }
 

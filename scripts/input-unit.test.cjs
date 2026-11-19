@@ -18,7 +18,10 @@ class Target {
   style = { setProperty(name, value) { this[name] = value; } };
   setAttribute(name, value) { this.attributes.set(name, String(value)); }
   getAttribute(name) { return this.attributes.get(name) ?? null; }
+  hasAttribute(name) { return this.attributes.has(name); }
   removeAttribute(name) { this.attributes.delete(name); }
+  set src(value) { this.setAttribute("src", value); }
+  get src() { return this.getAttribute("src"); }
   set value(value) { this.setAttribute("value", value); }
   get value() { return Number(this.getAttribute("value")); }
   addEventListener(type, callback, options) {
@@ -41,10 +44,13 @@ const emit = (target, type, fields = {}) => {
 };
 
 const SPLASH = ["splash", "splash-bar", "splash-fill", "splash-status", "splash-prompt", "splash-retry"];
-function fixture(gpu = {}, extra = []) {
-  const window = Object.assign(new Target(), { devicePixelRatio: 2, innerWidth: 1200, location: { reload() {} } });
-  const document = Object.assign(new Target(), { readyState: "loading", pointerLockElement: null });
+function fixture(gpu = {}, extra = [], search = "?view=game") {
+  let reloads = 0;
+  const window = Object.assign(new Target(), { devicePixelRatio: 2, innerWidth: 1200, location: { search, reload() { reloads++; } } });
+  const document = Object.assign(new Target(), { readyState: "loading", pointerLockElement: null, documentElement: new Target() });
   const nodes = new Map();
+  const labels = [];
+  document.querySelectorAll = (selector) => selector === "[data-station-text]" ? labels : [];
   let focused = true;
   let rejectRequest;
   let resolveRequest;
@@ -52,13 +58,30 @@ function fixture(gpu = {}, extra = []) {
   document.hasFocus = () => focused;
   document.getElementById = (id) => nodes.get(id) || null;
   document.exitPointerLock = () => { document.pointerLockElement = null; };
-  const context = vm.createContext({ window, document, navigator: { gpu }, CustomEvent: class { constructor(type) { this.type = type; } } });
+  const context = vm.createContext({ window, document, navigator: { gpu }, URLSearchParams, CustomEvent: class { constructor(type) { this.type = type; } } });
+  vm.runInContext(source("mode.js"), context);
   vm.runInContext(source("startup.js"), context);
   vm.runInContext(source("input.js"), context);
   const input = window.kivaInput;
   const parse = () => {
-    for (const id of ["game", "entry", "enter", "enter-label", "enter-progress", "retry", "entry-message", ...extra]) nodes.set(id, new Target());
-    nodes.get("game").focus = () => { focused = true; };
+    for (const id of ["game", "entry", "enter", "enter-label", "enter-progress", "retry", "entry-message", "level-link", ...extra]) nodes.set(id, new Target());
+    if (window.kivaPage.isStation()) {
+      const markup = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
+      for (const [, attrs, stationText, initial] of markup.matchAll(/<[a-z]+\b([^>]*?)data-station-text="([^"]+)"[^>]*>([^<]*)</g)) {
+        const id = attrs.match(/\bid="([^"]+)"/)?.[1];
+        const label = nodes.get(id) || new Target();
+        label.textContent = initial;
+        label.dataset = { stationText };
+        labels.push(label);
+        if (id) nodes.set(id, label);
+      }
+    }
+    const frame = nodes.get("handscroll");
+    if (frame) {
+      frame.contentWindow = new Target();
+      frame.focus = () => { document.activeElement = frame; };
+    }
+    nodes.get("game").focus = () => { focused = true; document.activeElement = nodes.get("game"); };
     nodes.get("game").requestPointerLock = () => {
       requests++;
       return new Promise((resolve, reject) => { resolveRequest = resolve; rejectRequest = reject; });
@@ -78,7 +101,7 @@ function fixture(gpu = {}, extra = []) {
   return {
     window, document, nodes, input, parse, click, confirm, capture, move,
     reject: () => rejectRequest(new Error("denied")), resolve: () => resolveRequest(),
-    requests: () => requests,
+    requests: () => requests, reloads: () => reloads,
     blur: () => { focused = false; emit(window, "blur"); },
     focus: () => { focused = true; emit(window, "focus"); },
   };
@@ -115,6 +138,34 @@ test("first entry is visible and disabled until real engine readiness", () => {
   assert.equal(f.nodes.get("enter").disabled, false);
   assert.equal(f.nodes.get("enter-label").textContent, "点击进入");
   assert.equal(f.requests(), 0);
+});
+
+test("station uses game capture, mouse look and the E/Q/Tab combat bindings after pause", () => {
+  const f = fixture({}, ["entry-region", "entry-title", "hud-level", "level-link"], "?level=station");
+  f.parse(); f.input.ready();
+  assert.equal(f.nodes.get("hud-level").textContent, "废站");
+  assert.equal(f.nodes.get("level-link").href, "?view=game");
+  assert.equal(f.nodes.get("hud-companion-name").textContent, "青鸾");
+  assert.equal(f.nodes.get("hud-player-name").textContent, "朱雀");
+  const labels = f.document.querySelectorAll("[data-station-text]").map(node => node.textContent);
+  assert.ok(labels.includes("青鸾远程技能"));
+  assert.equal(labels.filter(text => text === "主角身体与服饰").length, 2);
+  assert.ok(!labels.some(text => /妹妹|哥哥/.test(text)));
+  const key = (code) => emit(f.document, "keydown", { code, isTrusted: true });
+  f.click(); key("KeyE"); f.move(50);
+  assert.equal(f.input.isActive(), false);
+  f.confirm();
+  assert.equal(f.input.takeLook(), 0);
+  assert.equal(f.input.takeActions(), 0);
+  f.move(32); key("KeyW"); key("KeyE"); key("KeyQ"); key("Tab");
+  assert.equal(f.input.takeLook(), 32);
+  assert.equal(f.input.keys(), H.forward);
+  assert.equal(f.input.takeActions(), A.meleeSkill | A.rangedSkill | A.combo);
+  key("Escape");
+  assert.equal(f.input.isActive(), false);
+  assert.equal(f.input.keys(), 0);
+  f.click(); f.confirm(); key("KeyQ");
+  assert.ok(f.input.takeActions() & A.rangedSkill);
 });
 
 test("capture pending has immediate feedback and becomes retryable after failure or blur", async () => {
@@ -804,4 +855,148 @@ test("the page's input bits are the layout Rust decodes", () => {
   // A plain copy: the page's objects come from another realm.
   assert.deepEqual(JSON.parse(JSON.stringify(f.input.bits)), BITS);
   assert.equal(Object.isFrozen(f.input.bits.actions), true);
+});
+
+const SCROLL = [...SPLASH, "handscroll", "game-frame", "return-to-handscroll"];
+
+test("default view opens the same-origin scroll while station loads, direct routes keep their entries", () => {
+  for (const [search, station, open] of [
+    ["", true, true], ["?lang=zh", true, true],
+    ["?level=station", true, false], ["?view=station", true, false],
+    ["?view=game", false, false], ["?level=bamboo", false, false],
+  ]) {
+    const f = fixture({}, SCROLL, search);
+    f.parse();
+    assert.equal(f.window.kivaPage.isStation(), station, search);
+    assert.equal(f.window.kivaHandscroll.isOpen(), open);
+    assert.equal(f.nodes.get("handscroll").hidden, !open);
+    assert.equal(f.nodes.get("game-frame").inert, open);
+    assert.equal(f.nodes.get("splash").hidden, open);
+    assert.equal(f.nodes.get("return-to-handscroll").hidden, !station);
+    assert.equal(f.nodes.get("handscroll").src, open ? "handscroll-motion-preview.html" : null);
+  }
+});
+
+test("scroll entry requires real readiness, reports denial, and keeps the same frame across combat", async () => {
+  const f = fixture({}, SCROLL, "");
+  const host = f.window.kivaHandscroll;
+  let audio = 0;
+  f.window.kivaAudio = { unlockFromGesture() { audio++; } };
+  f.parse();
+  const frame = f.nodes.get("handscroll");
+  let notifications = 0;
+  let reopened = 0;
+  f.window.addEventListener("kiva-handscroll-change", () => notifications++);
+  frame.contentWindow.addEventListener("kiva-handscroll-open", () => reopened++);
+  f.window.kivaStartup.progress("download", 1024, 1024);
+  assert.match(host.getState().message, /100%/);
+  assert.equal(host.getState().ready, false);
+  host.enter("1-1");
+  assert.equal(f.requests(), 0);
+  f.input.ready();
+  assert.equal(host.getState().ready, true);
+  key(f, "Space"); pointer(f, "pointerdown", 0);
+  f.click(); emit(f.nodes.get("game"), "click"); emit(f.nodes.get("splash"), "click");
+  host.enter("1-2"); host.enter("1-3");
+  assert.equal(f.requests(), 0);
+  host.enter("1-1"); host.enter("1-1");
+  assert.equal(f.requests(), 1);
+  assert.equal(audio, 1);
+  assert.equal(host.getState().ready, false);
+  assert.match(host.getState().message, /锁定鼠标/);
+  f.reject(); await Promise.resolve();
+  assert.equal(host.getState().ready, true);
+  assert.equal(host.getState().started, false);
+  assert.match(host.getState().message, /未能锁定鼠标/);
+  host.enter("1-1");
+  key(f, "KeyE"); pointer(f, "pointerdown", 0); f.confirm();
+  assert.equal(f.input.isActive(), true);
+  assert.equal(f.input.takeActions(), 0);
+  assert.equal(frame.hidden, true);
+  assert.equal(host.isOpen(), false);
+  assert.equal(host.getState().started, true);
+  key(f, "Escape");
+  assert.equal(f.input.isActive(), false);
+  assert.equal(f.nodes.get("entry").hidden, false);
+  emit(f.nodes.get("return-to-handscroll"), "click");
+  assert.equal(frame.hidden, false);
+  assert.equal(f.document.activeElement, frame);
+  assert.equal(f.nodes.get("game-frame").inert, true);
+  assert.equal(reopened, 1);
+  assert.equal(host.getState().started, true);
+  assert.ok(notifications > 0);
+  assert.equal(audio, 2);
+  assert.equal(f.requests(), 2);
+});
+
+test("direct station returns to the title once its scroll document loads", () => {
+  const f = fixture({}, SCROLL, "?level=station");
+  f.parse(); f.capture();
+  key(f, "Escape");
+  const frame = f.nodes.get("handscroll");
+  let reopened = 0;
+  frame.contentWindow.addEventListener("kiva-handscroll-open", () => reopened++);
+  assert.equal(frame.src, null);
+  emit(f.nodes.get("return-to-handscroll"), "click");
+  assert.equal(frame.src, "handscroll-motion-preview.html");
+  assert.equal(reopened, 0);
+  emit(frame, "load");
+  assert.equal(reopened, 1);
+  assert.equal(f.document.activeElement, frame);
+});
+
+test("scroll reports an engine failure and offers a real reload", () => {
+  const f = fixture({}, SCROLL, "");
+  f.window.kivaStartup.fail("场景加载失败");
+  f.parse();
+  const host = f.window.kivaHandscroll;
+  assert.equal(host.getState().failed, true);
+  assert.equal(host.getState().message, "场景加载失败");
+  host.enter("1-1");
+  assert.equal(f.requests(), 0);
+  host.retry();
+  assert.equal(f.reloads(), 1);
+  f.input.ready();
+  host.retry();
+  assert.equal(f.reloads(), 1);
+});
+
+test("armory choices survive paused snapshots, are consumed once, and follow later combat swaps", () => {
+  const f = fixture({}, SCROLL, "");
+  f.parse();
+  const host = f.window.kivaHandscroll;
+  assert.equal(host.getState().pair, "hammer");
+  host.equip("axe"); host.equip("axe"); host.equip("invalid");
+  host.renderPair(1);
+  assert.equal(host.getState().pair, "axe");
+  assert.equal(host.takePair(), 2);
+  host.renderPair(1);
+  assert.equal(host.getState().pair, "axe");
+  assert.equal(host.takePair(), 0);
+  host.equip("hammer");
+  assert.equal(host.takePair(), 1);
+  assert.equal(host.takePair(), 0);
+  host.renderPair(1);
+  f.input.ready(); host.enter("1-1"); f.confirm();
+  host.renderPair(2);
+  host.equip("hammer");
+  assert.equal(host.getState().pair, "axe");
+  assert.equal(host.takePair(), 0);
+  key(f, "Escape");
+  emit(f.nodes.get("return-to-handscroll"), "click");
+  assert.equal(host.getState().pair, "axe");
+});
+
+test("Trunk publishes the authored scroll and its document-relative CSS and scripts", () => {
+  const root = path.join(__dirname, "..");
+  const preview = fs.readFileSync(path.join(root, "handscroll-motion-preview.html"), "utf8");
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  assert.match(html, /<link data-trunk rel="copy-file" href="handscroll-motion-preview\.html"/);
+  assert.doesNotMatch(html, /rel="copy-dir" href="art(?:\/|")/);
+  const references = [...preview.matchAll(/(?:href|src)="(art\/handscroll\/[^"]+\.(?:css|js))"/g)]
+    .map(([, reference]) => reference).sort();
+  const published = [...html.matchAll(/rel="copy-file" href="(art\/handscroll\/[^"]+)" data-target-path="art\/handscroll"/g)]
+    .map(([, reference]) => reference).sort();
+  assert.deepEqual(published, references);
+  for (const file of published) assert.ok(fs.existsSync(path.join(root, file)), file);
 });

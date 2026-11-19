@@ -1,5 +1,7 @@
 //! One-shot sniper presentation. Its clock runs through hit stop, but not Esc.
-use bevy::prelude::*;
+use bevy::{camera::visibility::RenderLayers, light::NotShadowCaster, prelude::*};
+
+use super::CompanionView;
 
 use crate::simulation::{CombatEffect, CombatFeedback, SimulationActive};
 
@@ -103,47 +105,68 @@ fn spawn(
     kind: ParticleKind,
     duration: f32,
     motion: (Vec3, f32),
-) {
-    commands.spawn((
-        Mesh3d(mesh.clone()),
-        MeshMaterial3d(material.clone()),
-        transform,
-        ImpactParticle {
-            kind,
-            age: 0.0,
-            duration,
-            velocity: motion.0,
-            growth: motion.1,
-            scale: transform.scale,
-        },
-    ));
+) -> Entity {
+    commands
+        .spawn((
+            Mesh3d(mesh.clone()),
+            MeshMaterial3d(material.clone()),
+            transform,
+            ImpactParticle {
+                kind,
+                age: 0.0,
+                duration,
+                velocity: motion.0,
+                growth: motion.1,
+                scale: transform.scale,
+            },
+        ))
+        .id()
 }
 
-fn shot(commands: &mut Commands, assets: &ImpactAssets, muzzle: Vec3, end: Vec3) {
+fn shot(
+    commands: &mut Commands,
+    assets: &ImpactAssets,
+    muzzle: Vec3,
+    end: Vec3,
+    layers: Option<&RenderLayers>,
+) {
     let direction = (end - muzzle).normalize_or(Vec3::NEG_Z);
     let rotation = Quat::from_rotation_arc(Vec3::NEG_Z, direction);
-    spawn(
-        commands,
+    let mut flash =
+        |mesh: &Handle<Mesh>, material: &Handle<StandardMaterial>, transform, duration, growth| {
+            let particle = spawn(
+                commands,
+                mesh,
+                material,
+                transform,
+                ParticleKind::Muzzle,
+                duration,
+                (direction * 0.5, growth),
+            );
+            if let Some(layers) = layers {
+                commands
+                    .entity(particle)
+                    .insert((layers.clone(), NotShadowCaster));
+            }
+        };
+    flash(
         &assets.sphere,
         &assets.white,
         Transform::from_translation(muzzle)
             .with_rotation(rotation)
             .with_scale(Vec3::new(0.25, 0.25, 0.55)),
-        ParticleKind::Muzzle,
         0.065,
-        (direction * 0.5, 0.5),
+        0.5,
     );
     for angle in [0.0, std::f32::consts::FRAC_PI_2] {
-        spawn(
-            commands,
+        flash(
             &assets.cube,
             &assets.gold,
             Transform::from_translation(muzzle + direction * 0.12)
                 .with_rotation(rotation * Quat::from_rotation_z(angle))
                 .with_scale(Vec3::new(0.65, 0.035, 0.04)),
-            ParticleKind::Muzzle,
             0.08,
-            (direction * 0.5, 0.3),
+            0.3,
         );
     }
     let length = muzzle.distance(end);
@@ -204,6 +227,7 @@ pub(super) fn update(
     timing: (Res<Time>, Res<SimulationActive>),
     feedback: (Res<CombatFeedback>, Res<ImpactAssets>),
     mut state: ResMut<ImpactState>,
+    emitters: Query<(&CompanionView, &RenderLayers)>,
     mut particles: Query<(Entity, &mut ImpactParticle, &mut Transform)>,
 ) {
     let (time, active) = timing;
@@ -240,7 +264,10 @@ pub(super) fn update(
         match event.kind {
             CombatEffect::SniperShot => {
                 state.shot = Some((event.source_owner, 0.0));
-                shot(&mut commands, &assets, event.position, event.end);
+                let layers = emitters
+                    .iter()
+                    .find_map(|(view, layers)| (view.performer == event.actor).then_some(layers));
+                shot(&mut commands, &assets, event.position, event.end, layers);
             }
             CombatEffect::SniperImpact => hit(&mut commands, &assets, event.position, event.end),
             _ => {}
@@ -362,6 +389,40 @@ mod tests {
             .query::<&ImpactParticle>()
             .iter(app.world())
             .count()
+    }
+
+    #[test]
+    fn reflected_shooter_isolates_only_her_muzzle_flash() {
+        let (mut app, player, _) = arena();
+        let performer = app
+            .world()
+            .get::<Combatant>(player)
+            .unwrap()
+            .companion()
+            .unwrap();
+        app.world_mut().spawn((
+            CompanionView {
+                owner: player,
+                performer,
+            },
+            RenderLayers::layer(2),
+        ));
+        prepare(&mut app, player);
+        discharge(&mut app, player);
+        tick(&mut app, 4);
+        render(&mut app, 0.);
+        let mut counts = [0; 4];
+        for (particle, layers, no_shadow) in app
+            .world_mut()
+            .query::<(&ImpactParticle, Option<&RenderLayers>, Has<NotShadowCaster>)>()
+            .iter(app.world())
+        {
+            let muzzle = particle.kind == ParticleKind::Muzzle;
+            assert_eq!(layers.cloned(), muzzle.then(|| RenderLayers::layer(2)));
+            assert_eq!(no_shadow, muzzle);
+            counts[particle.kind as usize] += 1;
+        }
+        assert_eq!(counts, [3, 2, 1, 10]);
     }
 
     #[test]

@@ -12,8 +12,14 @@
   const goal = station.querySelector("#stage-goal");
   const battle = station.querySelector("#battle");
   const feedback = station.querySelector("#battle-status");
+  const retry = station.querySelector("#retry-game");
+  // The standalone print also works when framed by a preview site.
+  const host = window.frameElement && window.parent.kivaHandscroll;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let menuOpen = true;
+  const canAnimate = () => menuOpen && !document.hidden && !reduced.matches;
   let selected = stageButtons.find((button) => button.getAttribute("aria-pressed") === "true");
-  const armory = new HandscrollArmory(document.querySelector(".armory"));
+  const armory = new HandscrollArmory(document.querySelector(".armory"), host);
   const stageRoute = {
     name: "station", leaf: station, trigger: sortie, origin: brush,
     back: document.querySelector("#return"), focus: () => selected,
@@ -26,7 +32,7 @@
   };
   const ink = new HandscrollInk(document.querySelector("#ink-field"), document.querySelector("#ink-threshold"));
   const canReveal = () =>
-    position === 1 && !animation && !inkLayer && !pointer?.dragging && !document.hidden && !reduced.matches;
+    position === 1 && !animation && !inkLayer && !pointer?.dragging && canAnimate();
   const persona = new HandscrollPersona(document.querySelector(".persona"), armory, ink, canReveal);
   const personaBookmark = document.querySelector("#persona-open");
   const personaRoute = {
@@ -52,7 +58,6 @@
   // Each route is one facing leaf paired with the same opening.
   let route = stageRoute;
   let nextRoute = null;
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const clamp = (value) => Math.max(0, Math.min(1, value));
   let position = 0;
@@ -90,11 +95,11 @@
     const oldPage = inside ? opening : route.leaf;
     const newControl = inside ? route.focus() : route.trigger;
     const transferFocus = oldPage.contains(document.activeElement) && document.activeElement.matches(":focus-visible");
-    if (!inside) feedback.textContent = "";
+    if (!inside && !host) feedback.textContent = "";
     opening.inert = inside;
     route.leaf.inert = !inside;
     scroll.dataset.page = name;
-    if (transferFocus) newControl.focus({ preventScroll: true });
+    if (menuOpen && transferFocus) newControl.focus({ preventScroll: true });
   }
 
   function stopAnimation() {
@@ -127,11 +132,11 @@
     stopAnimation();
     if (!to) {
       sortie.classList.remove("impressed");
-      feedback.textContent = "";
+      if (!host) feedback.textContent = "";
     }
     const from = position;
     const distance = Math.abs(to - from);
-    if (reduced.matches || document.hidden || distance < .001) {
+    if (!canAnimate() || distance < .001) {
       finishAt(to);
       return;
     }
@@ -156,7 +161,7 @@
     route.finishInner?.();
     // Reverse a partially unrolled scroll or a wet edge in place. Only
     // an explicit departure from a resting page creates a fresh ink field.
-    if (position === 1 - to && !inkLayer && !reduced.matches) {
+    if (position === 1 - to && !inkLayer && canAnimate()) {
       ink.prepareFrom(scroll, to ? route.origin : route.back, event);
       inkLayer = to ? route.leaf : opening;
       route.leaf.hidden = false;
@@ -210,17 +215,51 @@
     });
     heading.replaceChildren(...characters);
     heading.setAttribute("aria-label", name);
-    goal.textContent = selected.dataset.goal;
+    const locked = host && selected.dataset.stage !== "1-1";
+    goal.previousElementSibling.textContent = locked ? "状态" : "目标";
+    const description = host ? selected.dataset.gameGoal : selected.dataset.goal;
+    goal.textContent = locked ? "尚未开放" : description;
     seal.textContent = name;
     sortie.setAttribute("aria-label", `出击，前往第一章灰原的${name}`);
     battle.setAttribute("aria-label", `进入战斗，${name}`);
-    feedback.textContent = "";
+    if (host) refreshGame();
+    else feedback.textContent = "";
+  }
+
+  function refreshGame() {
+    const state = host.getState();
+    const open = host.isOpen();
+    if (menuOpen !== open) {
+      menuOpen = open;
+      document.documentElement.toggleAttribute("data-menu-closed", !open);
+      if (!open) settleImmediately();
+      window.dispatchEvent(new Event("handscroll-visibilitychange"));
+    }
+    if (state.pair !== armory.equipped) {
+      armory.setEquipped(state.pair);
+      persona.inspect(persona.selectedButton);
+    }
+    const available = selected.dataset.stage === "1-1";
+    const name = selected.querySelector(".name").textContent;
+    const label = available && state.started ? "继续战斗" : "进入战斗";
+    if (battle.textContent !== label) battle.textContent = label;
+    battle.setAttribute("aria-label", `${name}，${label}`);
+    battle.disabled = !available || !state.ready || state.failed || !open;
+    const message = available ? state.message : "";
+    if (feedback.textContent !== message) feedback.textContent = message;
+    retry.hidden = !available || !state.failed;
   }
 
   for (const button of stageButtons) {
     button.addEventListener("click", () => selectStage(button));
   }
-  battle.addEventListener("click", () => {
+  battle.addEventListener("click", (event) => {
+    if (host) {
+      if (!event.isTrusted || battle.disabled || selected.dataset.stage !== "1-1") return;
+      host.enter("1-1");
+      refreshGame();
+      return;
+    }
     const chapter = document.createElement("span");
     chapter.textContent = `出战预览 · ${selected.dataset.stage} ${selected.querySelector(".name").textContent}`;
     const weapons = document.createElement("span");
@@ -322,4 +361,19 @@
     }
   });
   paint(0);
+  if (host) {
+    for (const notice of station.querySelectorAll(".stage-access")) notice.hidden = false;
+    window.parent.addEventListener("kiva-handscroll-change", refreshGame);
+    window.addEventListener("pagehide", (event) => {
+      if (!event.persisted) window.parent.removeEventListener("kiva-handscroll-change", refreshGame);
+    });
+    window.addEventListener("kiva-handscroll-open", () => {
+      settleImmediately();
+      finishAt(0);
+      sortie.classList.remove("impressed");
+      sortie.focus({ preventScroll: true });
+    });
+    retry.addEventListener("click", () => host.retry());
+    selectStage(selected);
+  }
 })();

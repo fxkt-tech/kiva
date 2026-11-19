@@ -1,7 +1,7 @@
 .bestiary {
   --ink: #382f2a;
   --cinnabar: #973d2b;
-  --kai: "Kaiti SC", STKaiti, KaiTi, serif;
+  --kai: "Kaiti SC", STKaiti, KaiTi, "Scroll CJK", serif;
   --brush: "Xingkai SC", STXingkai, var(--kai);
   --regular: var(--kai);
   color: var(--ink);
@@ -21,7 +21,7 @@
   letter-spacing: .1em;
   color: #40382e;
   border-inline: 1px solid #7c725c;
-  background: #efdfbe url("bestiary-landscape.webp") 97% 18% / 4000% auto;
+  background: #efdfbe url("../../assets/handscroll/bestiary-landscape.webp") 97% 18% / 4000% auto;
 }
 .bird-marks [data-bird="crow"] { --x: 36.2%; --y: 45%; --tilt: -3deg; }
 .bird-marks [data-bird="vulture"] { --x: 61.7%; --y: 17.4%; --tilt: 2deg; }

@@ -18,7 +18,7 @@ use bevy::{
 const RENDER_FAILURE: &str = "画面准备失败，请重新加载后重试";
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-enum Readiness {
+pub(super) enum Readiness {
     #[default]
     Preparing,
     Failed,
@@ -30,7 +30,7 @@ enum Readiness {
 pub(super) struct StartupSignal(Arc<Mutex<Readiness>>);
 
 impl StartupSignal {
-    fn get(&self) -> Readiness {
+    pub(super) fn get(&self) -> Readiness {
         *self.0.lock().unwrap_or_else(PoisonError::into_inner)
     }
 

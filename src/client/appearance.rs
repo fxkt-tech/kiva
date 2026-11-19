@@ -16,6 +16,13 @@ impl Default for AppearanceSelection {
 }
 
 impl AppearanceSelection {
+    pub(super) fn for_level(level: crate::gameplay::GameLevel) -> Self {
+        match level {
+            crate::gameplay::GameLevel::BambooForest => Self::default(),
+            crate::gameplay::GameLevel::Station => Self(Appearance::Zhuque),
+        }
+    }
+
     pub(super) fn current(&self) -> Appearance {
         self.0
     }
@@ -48,7 +55,9 @@ pub(super) fn sample(
             Appearance::Choulingke => 1,
             Appearance::Lihuowang => 2,
             Appearance::Zhuque => 3,
-            Appearance::Bailingmiao => unreachable!("player appearance excludes companion"),
+            Appearance::Bailingmiao | Appearance::Qingluan => {
+                unreachable!("player appearance excludes companion")
+            }
         });
     }
     #[cfg(not(target_arch = "wasm32"))]
@@ -57,7 +66,9 @@ pub(super) fn sample(
             Appearance::Choulingke => Appearance::Lihuowang,
             Appearance::Lihuowang => Appearance::Zhuque,
             Appearance::Zhuque => Appearance::Choulingke,
-            Appearance::Bailingmiao => unreachable!("player appearance excludes companion"),
+            Appearance::Bailingmiao | Appearance::Qingluan => {
+                unreachable!("player appearance excludes companion")
+            }
         };
     }
 }
@@ -309,6 +320,10 @@ mod tests {
         assert_eq!(
             AppearanceSelection::default().current(),
             Appearance::Lihuowang
+        );
+        assert_eq!(
+            AppearanceSelection::for_level(crate::gameplay::GameLevel::Station).current(),
+            Appearance::Zhuque
         );
         assert_eq!(Appearance::default(), Appearance::Choulingke);
     }

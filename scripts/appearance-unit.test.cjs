@@ -5,7 +5,7 @@ const vm = require("node:vm");
 const { test } = require("node:test");
 const source = fs.readFileSync(path.join(__dirname, "../web/appearance.js"), "utf8");
 
-function fixture(ready = false) {
+function fixture(ready = false, station = false) {
   const nodes = new Map();
   const events = new Map();
   let active = false;
@@ -27,7 +27,7 @@ function fixture(ready = false) {
     events.get("DOMContentLoaded")?.();
   };
   if (ready) parse();
-  const window = { kivaInput: { isActive: () => active } };
+  const window = { kivaInput: { isActive: () => active }, kivaPage: { isViewer: () => false, isStation: () => station } };
   const timer = () => { throw new Error("Appearance selection cannot own a clock"); };
   vm.runInNewContext(source, { window, document, setInterval: timer, setTimeout: timer });
   const key = (extra = {}) => {
@@ -144,4 +144,14 @@ test("brother defaults to Li Huowang before any Rust snapshot or request", () =>
   assert.equal(f.at("appearance-choulingke").attributes["aria-pressed"], "false");
   assert.equal(f.at("hud-appearance").textContent, "外观 · 李火旺 · F3 切换");
   assert.equal(f.bridge.takeAppearance(), 0);
+});
+
+
+test("station starts with Zhuque and accepts a different selection before the opening frame", () => {
+  const f = fixture(true, true);
+  assert.equal(f.at("appearance-zhuque").attributes["aria-pressed"], "true");
+  assert.equal(f.at("hud-appearance").textContent, "外观 · 朱雀 · F3 切换");
+  assert.equal(f.bridge.takeAppearance(), 0);
+  f.at("appearance-lihuowang").click();
+  assert.equal(f.bridge.takeAppearance(), 2);
 });

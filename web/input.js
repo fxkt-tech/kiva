@@ -2,11 +2,16 @@
 (() => {
   "use strict";
   if (window.kivaPage?.isViewer()) return;
+  const welcome = window.kivaPage?.isStation() ? "进入月台，在积水中寻找青鸾。" : "进入竹林，迎战愁铃客。";
   let ready = false;
   let confirmed = false;
   // The first-load splash stays until the player has entered once; after that the
   // entry card is the pause screen.
   let introduced = false;
+  let scrollOpen = window.kivaPage.startsInHandscroll();
+  let pair = "hammer";
+  let queuedPair = 0;
+  let awaitingPair = false;
   // The splash bar never runs backwards across loading phases.
   let shownProgress = 0;
   let request = null;
@@ -85,6 +90,19 @@
     for (const code of pressed) keys |= heldKeys[code] || 0;
   }
 
+  function notifyScroll() {
+    window.dispatchEvent(new CustomEvent("kiva-handscroll-change"));
+  }
+
+  function loadingLabel() {
+    if (startupDetail.phase === "render") return "正在准备画面…";
+    const { loaded, total } = startupDetail;
+    if (startupDetail.phase === "initialize") {
+      return total > 0 ? `正在加载资源 ${loaded} / ${total}` : "正在准备游戏…";
+    }
+    return total > 0 ? `正在下载 ${Math.floor(100 * loaded / total)}%` : "正在下载…";
+  }
+
   function render() {
     const entry = document.getElementById("entry");
     if (!entry) return;
@@ -92,23 +110,28 @@
     const pending = ready && request !== null;
     const busy = (!ready && !failed) || pending;
     const measured = !ready && !failed && startupDetail.phase === "download" && startupDetail.total > 0;
-    const percent = measured ? Math.floor(100 * startupDetail.loaded / startupDetail.total) : null;
     // After the program starts, the engine reports completed / required files.
     const counted = !ready && !failed && startupDetail.phase === "initialize" && startupDetail.total > 0;
-    const loadingLabel = startupDetail.phase === "render" ? "正在准备画面…"
-      : counted ? `正在加载资源 ${startupDetail.loaded} / ${startupDetail.total}`
-        : startupDetail.phase === "initialize" ? "正在准备游戏…"
-          : measured ? `正在下载 ${percent}%` : "正在下载…";
+    const label = loadingLabel();
+    const frame = document.getElementById("handscroll");
+    if (frame) {
+      frame.hidden = !scrollOpen;
+      if (scrollOpen && !frame.hasAttribute("src")) frame.src = "handscroll-motion-preview.html";
+    }
+    const game = document.getElementById("game-frame");
+    if (game) game.inert = scrollOpen && !pending;
+    const back = document.getElementById("return-to-handscroll");
+    if (back) back.hidden = !window.kivaPage.isStation();
     const splash = document.getElementById("splash");
-    if (splash) renderSplash(splash, failed, pending, loadingLabel);
+    if (splash) renderSplash(splash, failed, pending, label);
     const enterButton = document.getElementById("enter");
     const progress = document.getElementById("enter-progress");
-    entry.hidden = isActive() || (splash !== null && !introduced);
+    entry.hidden = scrollOpen || isActive() || (splash !== null && !introduced);
     enterButton.hidden = false;
     enterButton.disabled = !ready || pending;
     enterButton.setAttribute("aria-busy", String(busy));
     document.getElementById("enter-label").textContent = pending ? "正在进入…"
-      : ready ? "点击进入" : failed ? "加载失败" : loadingLabel;
+      : ready ? "点击进入" : failed ? "加载失败" : label;
     progress.hidden = ready || failed;
     if (measured || counted) {
       progress.max = startupDetail.total;
@@ -121,11 +144,12 @@
       : startupDetail.loaded > 0 ? `正在下载游戏，已接收 ${bytes(startupDetail.loaded)}…` : "正在下载游戏…";
     document.getElementById("entry-message").textContent = error || (pending
       ? "正在锁定鼠标，成功后即可进入。" : ready
-      ? "进入竹林，迎战愁铃客。" : failed
+      ? welcome : failed
         ? startupDetail.reason
         : startupDetail.phase === "render" ? "正在准备首次画面，请稍候…"
           : counted ? "正在加载模型、动作与场景贴图…"
             : startupDetail.phase === "initialize" ? "正在准备场景与游戏引擎…" : downloading);
+    notifyScroll();
   }
 
   // Download is most of the wait; the engine then reports its files, then the first frame.
@@ -139,8 +163,8 @@
   }
 
   function renderSplash(splash, failed, pending, loadingLabel) {
-    splash.hidden = introduced;
-    if (introduced) return;
+    splash.hidden = introduced || scrollOpen;
+    if (splash.hidden) return;
     const fraction = loadFraction();
     const percent = Math.round(fraction * 100);
     const bar = document.getElementById("splash-bar");
@@ -160,23 +184,29 @@
     if (retry) retry.hidden = !failed;
   }
 
-  function enter() {
-    if (!ready || request || isActive()) return;
+  function captureDenied() {
+    if (!request || confirmed) return;
+    clearCapture();
+    error = "未能锁定鼠标，请再次点击进入。";
+    render();
+    if (scrollOpen && document.hasFocus()) document.getElementById("handscroll")?.focus();
+  }
+
+  function enter(fromScroll = false) {
+    if (!ready || request || isActive() || scrollOpen !== fromScroll) return;
     const target = canvas();
     if (!target) return;
-    target.focus();
     const attempt = {};
     request = attempt;
     error = "";
     render();
     const rejected = () => {
-      if (request !== attempt || confirmed) return;
-      clearCapture();
-      error = "未能锁定鼠标，请再次点击进入。";
-      render();
+      if (request === attempt) captureDenied();
     };
     try {
       // Default pointer lock retains system mouse acceleration.
+      if (fromScroll) window.kivaAudio?.unlockFromGesture();
+      target.focus();
       const result = target.requestPointerLock();
       if (result?.catch) result.catch(rejected);
     } catch { rejected(); }
@@ -186,6 +216,10 @@
     if (document.pointerLockElement === canvas() && document.hasFocus() && (request || confirmed)) {
       confirmed = true;
       introduced = true;
+      if (scrollOpen) {
+        scrollOpen = false;
+        document.documentElement.removeAttribute("data-handscroll");
+      }
       request = null;
       clearInputs();
       error = "";
@@ -195,12 +229,7 @@
     }
     render();
   });
-  document.addEventListener("pointerlockerror", () => {
-    if (!request || confirmed) return;
-    clearCapture();
-    error = "未能锁定鼠标，请再次点击进入。";
-    render();
-  });
+  document.addEventListener("pointerlockerror", captureDenied);
   window.addEventListener("blur", () => {
     clearCapture();
     if (document.pointerLockElement === canvas()) document.exitPointerLock();
@@ -326,9 +355,47 @@
     },
   });
 
+  window.kivaHandscroll = Object.freeze({
+    isOpen: () => scrollOpen,
+    getState() {
+      const failed = !ready && window.__kivaStartup === "failed";
+      const message = error || (failed ? startupDetail.reason : !ready ? loadingLabel()
+        : request ? "正在锁定鼠标，成功后即可进入。" : "");
+      return { ready: ready && !request, failed, message, pair, started: introduced };
+    },
+    enter(stageId) {
+      if ((stageId === "station" || stageId === "1-1") && scrollOpen) enter(true);
+    },
+    retry() {
+      if (scrollOpen && !ready && window.__kivaStartup === "failed") window.location.reload();
+    },
+    equip(choice) {
+      if (!scrollOpen || (choice !== "hammer" && choice !== "axe") || choice === pair) return;
+      pair = choice;
+      queuedPair = choice === "hammer" ? 1 : 2;
+      awaitingPair = true;
+      notifyScroll();
+    },
+    takePair() {
+      const choice = queuedPair;
+      queuedPair = 0;
+      return choice;
+    },
+    renderPair(code) {
+      if (queuedPair || (code !== 1 && code !== 2)) return;
+      const actual = code === 1 ? "hammer" : "axe";
+      // Rust can report the old loadout until the first resumed fixed step.
+      if (awaitingPair && !isActive() && actual !== pair) return;
+      awaitingPair = false;
+      if (actual === pair) return;
+      pair = actual;
+      notifyScroll();
+    },
+  });
+
   // On the splash, any key enters: not Esc, function keys or browser shortcuts.
   document.addEventListener("keydown", (event) => {
-    if (!event.isTrusted || introduced || !ready || event.repeat) return;
+    if (!event.isTrusted || scrollOpen || introduced || !ready || event.repeat) return;
     if (!document.getElementById("splash")) return;
     if (event.code === "Escape" || /^F\d+$/.test(event.code) || event.metaKey || event.ctrlKey || event.altKey) return;
     event.preventDefault?.();
@@ -336,11 +403,28 @@
   });
 
   function bind() {
-    document.getElementById("enter").addEventListener("click", enter);
-    document.getElementById("splash")?.addEventListener("click", enter);
+    document.getElementById("enter").addEventListener("click", () => enter());
+    document.getElementById("splash")?.addEventListener("click", () => enter());
     document.getElementById("splash-retry")?.addEventListener("click", () => window.location.reload());
-    canvas().addEventListener("click", enter);
+    canvas().addEventListener("click", () => enter());
     document.getElementById("retry").addEventListener("click", () => window.location.reload());
+    const frame = document.getElementById("handscroll");
+    const focusScroll = () => {
+      frame.focus();
+      if (introduced) frame.contentWindow.dispatchEvent(new CustomEvent("kiva-handscroll-open"));
+    };
+    frame?.addEventListener("load", () => {
+      if (scrollOpen && document.hasFocus()) focusScroll();
+    });
+    document.getElementById("return-to-handscroll")?.addEventListener("click", () => {
+      if (!window.kivaPage.isStation() || isActive() || request || scrollOpen) return;
+      scrollOpen = true;
+      document.documentElement.setAttribute("data-handscroll", "open");
+      error = "";
+      const loaded = frame.hasAttribute("src");
+      render();
+      if (loaded) focusScroll();
+    });
     window.kivaStartup.subscribe((_state, detail) => {
       startupDetail = detail;
       render();

@@ -2,7 +2,7 @@
 (() => {
   "use strict";
   if (window.kivaPage?.isViewer()) return;
-  let current = 2;
+  let current = window.kivaPage?.isStation() ? 3 : 2;
   let pending = 0;
   const choices = [
     [1, "choulingke", "愁铃客"],

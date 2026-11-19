@@ -2,9 +2,9 @@
   --red: #923725;
   --ink: #352b29;
   --paper: #f1dfba;
-  --script: "Xingkai SC", STXingkai, "Kaiti SC", KaiTi, serif;
-  --regular: "Kaiti SC", STKaiti, KaiTi, serif;
-  font-family: "Songti SC", STSong, SimSun, serif;
+  --script: "Xingkai SC", STXingkai, "Kaiti SC", KaiTi, "Scroll CJK", serif;
+  --regular: "Kaiti SC", STKaiti, KaiTi, "Scroll CJK", serif;
+  font-family: "Songti SC", STSong, SimSun, "Scroll CJK", serif;
   color: #352b29;
 }
 
@@ -50,7 +50,7 @@
   padding: .24em .28em .36em;
   transform: rotate(var(--tilt));
   transform-origin: center bottom;
-  background: linear-gradient(#eee4cbaf,#e9dfc5af), url("stage-select-landscape.webp") 89% 28% / 940% auto, #eee1c3;
+  background: linear-gradient(#eee4cbaf,#e9dfc5af), url("../../assets/handscroll/stage-select-landscape.webp") 89% 28% / 940% auto, #eee1c3;
   box-shadow: inset 0 0 0 1px #756b52, inset 0 0 0 .16em #eee0c2, inset 0 0 0 calc(.16em + 1px) #9c8b6e;
 }
 .name {
@@ -60,6 +60,7 @@
   letter-spacing: .06em;
   line-height: 1.12;
 }
+.stage-access { margin-top: .35em; font-size: max(9px, .76cqw); white-space: nowrap; }
 .order {
   font-family: var(--regular);
   font-size: max(.65em, .98cqw);
@@ -76,7 +77,7 @@
   font-size: 1.87cqw;
 }
 .place:is([aria-current="location"], :has(> .label[aria-pressed="true"])) .label {
-  background: linear-gradient(105deg,#993e2b,#a44732) center / cover, url("stage-select-landscape.webp") 86% 23% / 850% auto;
+  background: linear-gradient(105deg,#993e2b,#a44732) center / cover, url("../../assets/handscroll/stage-select-landscape.webp") 86% 23% / 850% auto;
   background-blend-mode: multiply;
   color: #ffedc7;
   box-shadow: inset 0 0 0 1px #853522, inset 0 0 0 .15em #9c3e2a, inset 0 0 0 calc(.15em + 1px) #eecf9f;
@@ -139,12 +140,13 @@
   white-space: nowrap;
   transform: rotate(-1deg);
 }
+.battle:disabled { cursor: default; opacity: .72; filter: saturate(.3); }
 .battle::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: linear-gradient(92deg,#a34c36,#9f402e 17%,#963725 75%,#a74f37), url("stage-select-landscape.webp");
+  background-image: linear-gradient(92deg,#a34c36,#9f402e 17%,#963725 75%,#a74f37), url("../../assets/handscroll/stage-select-landscape.webp");
   background-size: 100% 100%, 360% auto;
   background-position: center, 87% 36%;
   background-blend-mode: multiply;

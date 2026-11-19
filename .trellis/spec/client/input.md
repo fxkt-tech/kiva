@@ -25,6 +25,7 @@ movement_released／shift_released 锁存所有方向键／所有 Shift 释放�
 Esc 解锁或失焦会清累计，失焦后必须重新点击，延迟到达的旧请求不能恢复控制。
 未锁定时从可信鼠标的 `clientX` 与 `movementX` 学习 CSS 单位增益；DPR 只用于判定校准是否失效，不直接用于除法。合并事件与父事件二选一，排除窗口边缘截断样本。浏览器保留系统鼠标加速。
 Web 桥只记录有效捕获期间的可信按键，失锁清零并忽略新的重复 keydown，防止快速失焦再捕获重放旧按键。原生按 WindowFocused 事件消费中间的失焦，不能只看最终 Window.focused；原生使用 Bevy 输入及 `CursorOptions`，Windows 使用 Confined，其他平台使用 Locked。
+绘卷武库通过 MenuLoadout 提交绝对 WeaponPair 选择。固定步在激活后向真实 CombatIntent 请求切换，动作或腾空暂时拒绝时保留请求。相同装备保留联动和冷却。FixedPostUpdate 从 Combatant 回读结果，战斗中的 Z 换组也通过同一回读更新武库。
 首次入口的ready由必要场景渲染准备与提交决定，不能在Startup末尾提前放行；加载进度和捕获进行中反馈见 [startup.md](startup.md)。ready前按钮与画布都不能申请捕获；恢复不重新加载。
 Esc、blur、pointercancel、丢失捕获均取消，不能开启释放弹反。取消锁存跨过同帧失焦和重新捕获；队列溢出也先取消，保持按住不能自动重建 Pressed，要求一次新按压。
 失活清 MoveIntent、ActionIntent、CombatIntent 和 DefenseState 意图；不改 MotionState、不补跳跃额度、不清已承诺技能／冷却。

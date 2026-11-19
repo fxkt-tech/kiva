@@ -1,7 +1,7 @@
-# Kiva · 竹林演武
+# Kiva · 断轨听羽
 
 Bevy 0.20.1 / Avian 0.8 / Rust 单 crate 游戏，通过 Trunk / WASM / WebGPU 在浏览器运行，也支持原生桌面。
-当前是带动作和双人格武器联动的竹林战斗原型：固定 16:9 俯视镜头、李火旺／白灵淼双角色与愁铃客敌人。
+从手卷进入废站，操作朱雀在积水中寻找姐姐青鸾。竹林演武保留李火旺、白灵淼与愁铃客的战斗场景。
 旧的 MOBA 游戏完整保存在 `lol` 分支，当前代码与素材已重新整理。
 
 ## 运行
@@ -14,14 +14,20 @@ cargo install trunk --locked
 make run
 ```
 
-浏览器打开 <http://localhost:3221>，等待加载后点击进入。需要支持 WebGPU 的浏览器和 GPU 加速。
+浏览器打开卷首。选择「出击」展开灰原地图，选「废站」，待场景就绪后选择「进入战斗」。人格、武库、图录和补给从卷边的四枚题签进入。浏览器需要支持 WebGPU 和 GPU 加速。[打开手卷](http://localhost:3221/)
 本地使用 localhost，发布使用 HTTPS。游戏运行不需要 Node.js。
 自定义端口：`make run ARGS='--port 8080'`。开发服务由开发者自行启动与关闭。
+
+废站首幕「映面同行」使用下表的动作游戏操作。进入后横移、转动鼠标或挥动武器，可以在月台积水中观察朱雀、武器、廊柱和姐姐青鸾。原生启动命令为 `cargo run --locked -- --station`。[进入废站](http://localhost:3221/?level=station) · [绕柱实机录像](art/station/puddle-play.mp4) · [青鸾模型转面](art/station/qingluan-turnaround.webp)
+
+原生 `cargo run --locked` 打开绘卷，`cargo run --locked -- --bamboo` 直达竹林。[进入竹林演武](http://localhost:3221/?view=game)
+
+废站里按 Esc 暂停。网页点「返回手卷」，原生直接回到卷首。再次出击会继续这一局。武库显示当前装备，战斗中按 Z 换组也会同步回来。补给账本在同一次运行中保留，重新启动后恢复初始余额与库存。
 
 模型、武器与动作验收页：<http://localhost:3221/?view=model>。可切换角色与武器，暂停、逐帧和自由转动镜头，
 检查实际游戏的模型、蒙皮与挂接；使用方法和检查范围见[验收页说明](docs/model-viewer.md)。
 
-原生桌面使用 `cargo run --locked`，需要可用的图形环境。模型、动作和贴图在运行时从 `assets/` 读取（Web 构建由 Trunk 复制到页面旁），
+原生桌面需要可用的图形环境。模型、动作和贴图在运行时从 `assets/` 读取（Web 构建由 Trunk 复制到页面旁），
 单独分发原生可执行文件时需要把 `assets/` 放在它旁边。Linux 构建依赖包括
 `build-essential`、`pkg-config`、`libx11-dev` 和 `libxkbcommon-dev`。
 
@@ -43,7 +49,7 @@ make run
 | 中键 | 锁定 / 解锁目标 |
 | E / Q | 哥哥近战技 / 妹妹远程技 |
 | Tab | 有效窗口内释放对应联动 |
-| F3 | 切换哥哥李火旺 / 愁铃客外观 |
+| F3 | 切换李火旺、朱雀与愁铃客外观 |
 | F2 | 切换靶子 / 实战模式，重新生成敌人；进入卡片也可选择 |
 | Esc / 切出窗口 | 释放鼠标并暂停；重新点击继续 |
 

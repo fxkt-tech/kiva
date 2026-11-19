@@ -23,7 +23,7 @@ Trunk 0.22.1 通过字面量 pattern_script 的 `{base}{js}`／`{base}{wasm}` �
 专用 loader 只包装自身 WASM Response，保留 streaming／背压、HTTP状态、MIME和缓存路径，不全局修改 fetch。
 已知且与解码流可比的 Content-Length 才能作为分母；Content-Encoding、缺失／非法长度或累计超过声称总量时使用未知总量，显示阶段／已收字节。CORS可暴露长度而隐藏编码头，因此cors响应缺少编码信息也按未知总量处理。EOF 不伪造计数；已知长度不足、reader／fetch／init失败必须终止并报告错误，提前失败取消未读流，取消失败不覆盖原错误。
 
-角色、源动画、武器和环境贴图不编入 WASM，由 AssetServer 在初始化阶段加载：`AssetPlugin` 的 Web 根为页面目录（`file_path="."`，Trunk `copy-dir` 把 `assets/<目录>` 放到页面旁），原生根为 `assets`，`meta_check=Never`。所有文件以 `Blob` 类型请求，PNG 不经过 Bevy 图像 loader。
+角色、源动画、武器和环境贴图不编入 WASM，由 AssetServer 在初始化阶段加载：`AssetPlugin` 的 Web 根为页面目录下的 `assets/`（Trunk `copy-dir` 复制整份资源目录），原生根同为 `assets`，`meta_check=Never`。所有文件以 `Blob` 类型请求，PNG 不经过 Bevy 图像 loader。
 清单到齐前不装配：`Assemble` 只运行一次，输入采样与表现链以 `resource_exists::<Assembled>` 门控，`SimulationActive` 在装配前为 false。等待期间每帧报告 `progress("initialize", 已完成文件数, 总数)`；任一文件失败调用一次 `fail`，不装配、不重试。`take` 把字节移出资产存储并标记已交付，重复解码或解码未到齐文件是程序错误。清单到齐不等于 ready。
 无窗口测试没有 AssetServer：`status` 视为到齐，`take` 直接读 `assets/` 下的同一文件，仅限 `cfg(test)`。
 
@@ -34,7 +34,15 @@ Trunk 0.22.1 通过字面量 pattern_script 的 `{base}{js}`／`{base}{wasm}` �
 Rust门槛同时要求目标MainView已提取、有真实输出附件写入、非空可见Mesh3d均具有材质／网格准备后的specialization、PipelineCache存在且已就绪，并位于真实渲染提交／present之后。查看页还要求当前revision所选身体的可见Mesh，地板或旧选择不能代替。
 SpecializedMaterialPipelineCache为本机Bevy共享缓存，覆盖Standard与Forest；初始空队列／设备空提交／只装配实体均不是ready，隐藏妹妹／后续技能材质不成为首次可见场景门槛。
 ShaderNotLoaded／ShaderImportNotYetAvailable按Bevy机制等待；处理shader／创建module错误报告失败。渲染错误包装器先通知Web，再委托原RenderErrorHandler保持AppExit／恢复策略。跨世界信号有界且最终通知一次，DOM桥仅主线程调用。
-原生不依赖JS，不改变原生激活；无渲染测试上下文不能凭空放行，WASM缺渲染器可报告失败。
+原生使用同一渲染就绪信号，无渲染测试上下文不能凭空放行。WASM 缺渲染器可报告失败。
+
+## 局外绘卷与直达入口
+
+网页根路径和原生无参数启动均先展开绘卷，并在后台准备废站。卷首、选关、人格、武库、百鸟图、补给共享 `assets/handscroll/` 的原画。Web 包保留 `handscroll-motion-preview.html` 及它使用的脚本、样式和中文字体的相对路径，支持从部署子目录进入。
+
+Web 的 `?level=station` 和 `?view=station`、原生的 `--station` 直达废站。网页的 `?view=game` 和 `?level=bamboo`、原生的 `--bamboo` 直达竹林。查看器继续使用 `?view=model`。
+
+绘卷打开时允许翻页、选择武器及在本局账本购买。废站可在首帧提交后出击，地图其余地点可查看。Web 由绘卷的可信点击同步请求父画布指针锁定，捕获成功后收卷，失败则保留可重试的入口。原生由绘卷的出击动作申请捕获。菜单操作只由菜单消费。已就绪的游戏在整幅绘卷覆盖窗口时停止主相机和积水反射绘制，进入同一局后恢复。
 
 ## Validation & Error Matrix
 

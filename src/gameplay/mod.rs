@@ -1,5 +1,6 @@
 //! The demo's level data and player assembly, independent of rendering and input.
 
+pub mod station;
 pub mod terrain;
 
 use bevy::prelude::*;
@@ -13,6 +14,13 @@ use crate::simulation::{
 
 #[derive(Component)]
 pub struct Player;
+
+#[derive(Resource, Clone, Copy, Default, Debug, PartialEq, Eq)]
+pub enum GameLevel {
+    #[default]
+    BambooForest,
+    Station,
+}
 
 #[derive(Resource, Default, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EnemyMode {
@@ -82,35 +90,38 @@ pub fn set_enemy_mode(world: &mut World, mode: EnemyMode) {
 }
 
 fn spawn_enemies(world: &mut World, mode: EnemyMode) {
-    let positions: &[Vec2] = match mode {
-        EnemyMode::Target => &[Vec2::new(0.0, -4.0)],
-        EnemyMode::Combat => &[Vec2::new(0.0, -6.0)],
+    let level = world
+        .get_resource::<GameLevel>()
+        .copied()
+        .unwrap_or_default();
+    let position = match (level, mode) {
+        (GameLevel::Station, _) => station::ENEMY_SPAWN,
+        (GameLevel::BambooForest, EnemyMode::Target) => Vec2::new(0.0, -4.0),
+        (GameLevel::BambooForest, EnemyMode::Combat) => Vec2::new(0.0, -6.0),
     };
-    for &position in positions {
-        let (enemy, health) = match mode {
-            EnemyMode::Target => (Enemy::target_dummy(), 1_000_000.0),
-            EnemyMode::Combat => (Enemy::default(), Boss::PHASE_HEALTH),
-        };
-        let mut facing = Facing::default();
-        facing.set(-position);
-        let mut entity = world.spawn((
-            enemy,
-            Body::new(
-                position,
-                if mode == EnemyMode::Combat { 5.2 } else { 2.0 },
-                0.3,
-            )
-            .scaled(if mode == EnemyMode::Target { 1.45 } else { 1.0 }),
-            MoveIntent::default(),
-            ActionIntent::default(),
-            MotionState::default(),
-            facing,
-            Health::new(health),
-            SpawnPoint(position),
-        ));
-        if mode == EnemyMode::Combat {
-            entity.insert(Boss::default());
-        }
+    let (enemy, health) = match mode {
+        EnemyMode::Target => (Enemy::target_dummy(), 1_000_000.0),
+        EnemyMode::Combat => (Enemy::default(), Boss::PHASE_HEALTH),
+    };
+    let mut facing = Facing::default();
+    facing.set(-position);
+    let mut entity = world.spawn((
+        enemy,
+        Body::new(
+            position,
+            if mode == EnemyMode::Combat { 5.2 } else { 2.0 },
+            0.3,
+        )
+        .scaled(if mode == EnemyMode::Target { 1.45 } else { 1.0 }),
+        MoveIntent::default(),
+        ActionIntent::default(),
+        MotionState::default(),
+        facing,
+        Health::new(health),
+        SpawnPoint(position),
+    ));
+    if mode == EnemyMode::Combat {
+        entity.insert(Boss::default());
     }
 }
 
@@ -222,7 +233,7 @@ fn forest_clearance(point: Vec2) -> bool {
     clearing || hill || path_distance(point) < 1.9
 }
 
-pub fn setup(world: &mut World) {
+fn setup_forest(world: &mut World) {
     let level = Level::bamboo_forest();
     spawn_terrain(
         world,
@@ -244,9 +255,22 @@ pub fn setup(world: &mut World) {
         world.entity_mut(entity).insert(boundary);
     }
     world.insert_resource(level);
+}
+
+pub fn setup(world: &mut World) {
+    let spawn = match *world.get_resource_or_init::<GameLevel>() {
+        GameLevel::BambooForest => {
+            setup_forest(world);
+            Vec3::ZERO
+        }
+        GameLevel::Station => {
+            station::setup(world);
+            station::LAYOUT.spawn
+        }
+    };
     world.spawn((
         Player,
-        Body::new(Vec2::ZERO, 6.0, 0.35),
+        Body::at(spawn, 6.0, 0.35),
         MoveIntent::default(),
         ActionIntent::default(),
         MotionState::default(),
@@ -254,7 +278,7 @@ pub fn setup(world: &mut World) {
         Combatant::new(WeaponPair::default()),
         CombatIntent::default(),
         Health::new(1000.0),
-        SpawnPoint(Vec2::ZERO),
+        SpawnPoint(spawn.xz()),
     ));
     let mode = world
         .get_resource::<EnemyMode>()
@@ -411,6 +435,79 @@ mod tests {
             assert!(body.world_position().y.abs() < 0.03);
             assert!(motion.is_grounded());
         }
+    }
+
+    #[test]
+    fn station_player_can_freely_turn_at_spawn_and_uses_the_game_jump_and_combat_rules() {
+        use crate::simulation::{Companion, SimulationActive};
+
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, SimulationPlugin))
+            .insert_resource(GameLevel::Station);
+        app.finish();
+        setup(app.world_mut());
+        let world = app.world_mut();
+        let player = world
+            .query_filtered::<Entity, With<Player>>()
+            .single(world)
+            .unwrap();
+        assert_eq!(
+            world.get::<Body>(player).unwrap().world_position(),
+            station::LAYOUT.spawn
+        );
+        assert_eq!(
+            world.get::<SpawnPoint>(player).unwrap().0,
+            station::LAYOUT.spawn.xz()
+        );
+        assert_eq!(
+            world.query::<&Companion>().single(world).unwrap().owner,
+            player
+        );
+        tick(&mut app, 12);
+        assert!(
+            app.world()
+                .get::<MotionState>(player)
+                .unwrap()
+                .is_grounded()
+        );
+        assert_eq!(app.world().get::<Combatant>(player).unwrap().target(), None);
+        app.world_mut()
+            .get_mut::<ActionIntent>(player)
+            .unwrap()
+            .request_jump();
+        tick(&mut app, 8);
+        let feet = app.world().get::<Body>(player).unwrap().world_position();
+        assert!(feet.y > 0.5);
+        app.world_mut().resource_mut::<SimulationActive>().0 = false;
+        tick(&mut app, 8);
+        assert_eq!(
+            app.world().get::<Body>(player).unwrap().world_position(),
+            feet
+        );
+        app.world_mut().resource_mut::<SimulationActive>().0 = true;
+        tick(&mut app, 60);
+        app.world_mut()
+            .get_mut::<CombatIntent>(player)
+            .unwrap()
+            .request_attack();
+        tick(&mut app, 1);
+        assert!(
+            app.world()
+                .get::<Combatant>(player)
+                .unwrap()
+                .active_action()
+                .is_some()
+        );
+        set_enemy_mode(app.world_mut(), EnemyMode::Combat);
+        let world = app.world_mut();
+        assert_eq!(
+            world
+                .query_filtered::<&SpawnPoint, With<Boss>>()
+                .single(world)
+                .unwrap()
+                .0,
+            station::ENEMY_SPAWN
+        );
     }
 
     #[test]

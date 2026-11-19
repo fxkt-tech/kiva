@@ -17,7 +17,7 @@
   const cycleLength = 6.8;
   const tau = 2 * Math.PI;
   const still = matchMedia("(prefers-reduced-motion: reduce)");
-  const art = new Image();
+  const art = document.getElementById("key-art");
 
   // Stay below the platform lip, clear of the broken sleepers and foreground grass.
   const pond = new Path2D(
@@ -162,7 +162,8 @@
   }
 
   function syncPlayback() {
-    const active = inView && !document.hidden && !still.matches && art.complete && art.naturalWidth > 0;
+    const active = inView && !document.hidden && !document.documentElement.hasAttribute("data-menu-closed")
+      && !still.matches && art.complete && art.naturalWidth > 0;
     if (active) {
       if (!frame && !timer) frame = requestAnimationFrame(animate);
       return;
@@ -184,6 +185,6 @@
   document.addEventListener("visibilitychange", syncPlayback);
   still.addEventListener("change", syncPlayback);
   art.addEventListener("load", syncPlayback);
-  art.src = new URL("duangui-key-art.png", document.currentScript.src).href;
+  window.addEventListener("handscroll-visibilitychange", syncPlayback);
   fitCanvas();
 })();

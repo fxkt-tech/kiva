@@ -12,6 +12,9 @@ pub(super) mod controls;
 mod enemies;
 mod environment;
 mod forest_material;
+#[cfg(not(target_arch = "wasm32"))]
+mod handscroll;
+mod handscroll_visibility;
 #[cfg(test)]
 mod hit_bake_tests;
 mod hit_debug;
@@ -20,11 +23,13 @@ mod impact;
 mod json;
 mod loading;
 mod loadout;
+mod menu_loadout;
 mod model_asset;
 mod rendering;
 mod scene;
 mod skeleton;
 mod source_animation;
+mod station;
 mod stickman;
 mod texture_mips;
 mod viewer;
@@ -32,6 +37,7 @@ mod weapon_models;
 mod weapons;
 mod web;
 
+use crate::gameplay::GameLevel;
 use bevy::{
     asset::{AssetMetaCheck, AssetPlugin},
     ecs::schedule::ScheduleLabel,
@@ -46,6 +52,13 @@ pub(super) struct ActorView {
 
 #[derive(Component)]
 pub(super) struct PlayerView;
+
+/// The display root for a combat companion and the actor it assists.
+#[derive(Component)]
+pub(super) struct CompanionView {
+    pub(super) owner: Entity,
+    pub(super) performer: Entity,
+}
 
 /// A body surface of an enemy's avatar; its owner is the simulation enemy.
 /// Combat presentation tints these, the avatar tints every other surface.
@@ -155,49 +168,82 @@ pub(super) fn assemble_after_loading(app: &mut App, manifest: Vec<&'static str>)
 
 /// Everything the game scene decodes while it is assembled. Each module owns
 /// its own paths; `bundle` itself knows nothing about its users.
-fn game_manifest() -> Vec<&'static str> {
+fn game_manifest(level: GameLevel) -> Vec<&'static str> {
     let mut paths = source_animation::PATHS.to_vec();
-    paths.extend(avatar::Appearance::ALL.map(avatar::Appearance::asset_path));
+    paths.extend(avatar::Appearance::PLAYABLE.map(avatar::Appearance::asset_path));
     paths.extend(loadout::model_paths());
-    paths.extend(environment::TEXTURES);
+    match level {
+        GameLevel::BambooForest => {
+            paths.extend(environment::TEXTURES);
+            paths.push(avatar::Appearance::Bailingmiao.asset_path());
+        }
+        GameLevel::Station => {
+            paths.extend(station::TEXTURES);
+            paths.push(avatar::Appearance::Qingluan.asset_path());
+        }
+    }
     paths
 }
 
 pub(super) fn run() {
     let mut app = App::new();
-    app.add_plugins(
-        DefaultPlugins
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Kiva · 竹林演武".into(),
-                    resolution: (1440, 900).into(),
-                    #[cfg(target_arch = "wasm32")]
-                    canvas: Some("#game".into()),
-                    #[cfg(target_arch = "wasm32")]
-                    fit_canvas_to_parent: true,
-                    #[cfg(target_arch = "wasm32")]
-                    prevent_default_event_handling: true,
-                    ..default()
-                }),
-                ..default()
-            })
-            .set(AssetPlugin {
-                // Trunk publishes the repository's assets/ next to the page;
-                // native builds read it from the working directory.
-                file_path: "assets".into(),
-                // No .meta files are shipped, so do not request them.
-                meta_check: AssetMetaCheck::Never,
+    let level = if web::station_mode() {
+        GameLevel::Station
+    } else {
+        GameLevel::BambooForest
+    };
+    let plugins = DefaultPlugins
+        .set(WindowPlugin {
+            primary_window: Some(Window {
+                title: match level {
+                    GameLevel::Station => "Kiva · 废站 · 映面同行",
+                    GameLevel::BambooForest => "Kiva · 竹林演武",
+                }
+                .into(),
+                resolution: (1440, 900).into(),
+                #[cfg(target_arch = "wasm32")]
+                canvas: Some("#game".into()),
+                #[cfg(target_arch = "wasm32")]
+                fit_canvas_to_parent: true,
+                #[cfg(target_arch = "wasm32")]
+                prevent_default_event_handling: true,
                 ..default()
             }),
-    )
-    .add_plugins(loading::StartupPlugin);
+            ..default()
+        })
+        .set(AssetPlugin {
+            // Trunk publishes the repository's assets/ next to the page;
+            // native builds read it from the working directory.
+            file_path: "assets".into(),
+            // No .meta files are shipped, so do not request them.
+            meta_check: AssetMetaCheck::Never,
+            ..default()
+        });
+    app.add_plugins(plugins).add_plugins(loading::StartupPlugin);
     if web::viewer_mode() {
         viewer::configure(&mut app);
-        app.run();
-        return;
+    } else {
+        configure_game(&mut app, level);
     }
-    assemble_after_loading(&mut app, game_manifest());
-    app.add_plugins(forest_material::ForestMaterialPlugin)
+    app.run();
+}
+
+fn configure_game(app: &mut App, level: GameLevel) {
+    assemble_after_loading(app, game_manifest(level));
+    menu_loadout::configure(app);
+    handscroll_visibility::configure(app);
+    #[cfg(not(target_arch = "wasm32"))]
+    if level == GameLevel::Station {
+        let direct = std::env::args_os().skip(1).any(|arg| arg == "--station");
+        handscroll::configure(app, direct);
+    }
+    match level {
+        GameLevel::BambooForest => {
+            app.add_plugins(forest_material::ForestMaterialPlugin);
+        }
+        GameLevel::Station => station::configure_effects(app),
+    }
+    app.insert_resource(level)
         .add_plugins(crate::simulation::SimulationPlugin)
         // Nothing is simulated before the scene exists; input sampling owns
         // this flag from the first assembled frame.
@@ -206,7 +252,7 @@ pub(super) fn run() {
         .init_resource::<controls::ViewYaw>()
         .init_resource::<controls::CaptureState>()
         .init_resource::<skeleton::AnimationLibrary>()
-        .init_resource::<appearance::AppearanceSelection>()
+        .insert_resource(appearance::AppearanceSelection::for_level(level))
         .init_resource::<hud::HudFrame>()
         .add_systems(
             Assemble,
@@ -215,12 +261,13 @@ pub(super) fn run() {
                 crate::gameplay::setup,
                 scene::setup,
                 combat::setup,
-                companion::setup,
                 weapons::setup_tether,
                 impact::setup,
                 camera::setup,
                 rendering::setup,
-                environment::setup_camera_fog,
+                environment::setup_camera_fog.run_if(resource_exists::<crate::gameplay::Level>),
+                station::setup.run_if(resource_exists::<crate::gameplay::station::StationLayout>),
+                companion::setup,
                 hud::describe,
                 loading::scene_ready,
             )
@@ -238,7 +285,7 @@ pub(super) fn run() {
             (
                 appearance::reconcile,
                 scene::sync_player,
-                environment::animate_foliage,
+                environment::animate_foliage.run_if(resource_exists::<crate::gameplay::Level>),
                 combat::reconcile_enemies,
                 combat::sync_enemies,
                 combat::sync_health_bars,
@@ -261,7 +308,6 @@ pub(super) fn run() {
                 .chain()
                 .run_if(resource_exists::<Assembled>),
         );
-    app.run();
 }
 
 #[cfg(test)]
@@ -306,17 +352,27 @@ mod tests {
 
     #[test]
     fn every_runtime_file_of_the_game_is_shipped_once() {
-        let paths = game_manifest();
-        assert_eq!(paths.len(), 24);
-        let mut unique = paths.clone();
-        unique.sort_unstable();
-        unique.dedup();
-        assert_eq!(unique.len(), paths.len());
-        for path in paths {
-            let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("assets")
-                .join(path);
-            assert!(file.is_file(), "{path} is missing from assets/");
+        for level in [GameLevel::BambooForest, GameLevel::Station] {
+            let paths = game_manifest(level);
+            let mut unique = paths.clone();
+            unique.sort_unstable();
+            unique.dedup();
+            assert_eq!(unique.len(), paths.len());
+            assert!(paths.contains(&avatar::Appearance::Zhuque.asset_path()));
+            assert_eq!(
+                paths.contains(&avatar::Appearance::Qingluan.asset_path()),
+                level == GameLevel::Station
+            );
+            assert_eq!(
+                paths.contains(&avatar::Appearance::Bailingmiao.asset_path()),
+                level == GameLevel::BambooForest
+            );
+            for path in paths {
+                let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("assets")
+                    .join(path);
+                assert!(file.is_file(), "{path} is missing from assets/");
+            }
         }
     }
 
