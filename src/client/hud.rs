@@ -489,6 +489,8 @@ pub(super) fn publish(
     mode: Res<crate::gameplay::EnemyMode>,
     level: Res<GameLevel>,
     scroll: Option<Res<super::handscroll::NativeHandscroll>>,
+    style: Option<Res<super::render_style::RenderStyle>>,
+    styles: Option<Res<super::render_style::LevelStyles>>,
     mut window: Single<&mut Window>,
 ) {
     if scroll.as_ref().is_some_and(|menu| menu.is_open()) {
@@ -497,10 +499,24 @@ pub(super) fn publish(
         }
     } else if frame.is_changed()
         || mode.is_changed()
+        || style.as_ref().is_some_and(|style| style.is_changed())
         || scroll.is_some_and(|menu| menu.is_changed())
     {
-        window.title = frame.title(*mode, *level);
+        let mut title = frame.title(*mode, *level);
+        if let (Some(style), Some(styles)) = (style, styles) {
+            title.push_str(&render_style_title(*style, &styles));
+        }
+        window.title = title;
     }
+}
+
+#[cfg(any(not(target_arch = "wasm32"), test))]
+fn render_style_title(
+    style: super::render_style::RenderStyle,
+    styles: &super::render_style::LevelStyles,
+) -> String {
+    let key = if styles.count() > 1 { " [F8]" } else { "" };
+    format!(" · 渲染 {}{key}", style.label())
 }
 
 #[cfg(any(not(target_arch = "wasm32"), test))]
@@ -1062,6 +1078,21 @@ mod tests {
         assert_eq!(frame(0.5, 7.5, 1.0), frame(0.500_02, 7.500_4, 1.000_3));
         assert_ne!(frame(0.5, 7.5, 1.0), frame(0.502, 7.5, 1.0));
         assert_ne!(frame(0.5, 7.5, 1.0), frame(0.5, 7.5, 1.0 - 1.0 / 60.0));
+    }
+
+    #[test]
+    fn the_native_title_names_the_render_style_and_offers_f8_only_when_it_switches() {
+        use super::super::render_style::{LevelStyles, RenderStyle};
+        let bamboo = LevelStyles::for_level(GameLevel::BambooForest);
+        let station = LevelStyles::for_level(GameLevel::Station);
+        assert_eq!(
+            render_style_title(RenderStyle::Yancai, &bamboo),
+            " · 渲染 岩彩 [F8]"
+        );
+        assert_eq!(
+            render_style_title(RenderStyle::Pbr, &station),
+            " · 渲染 写实"
+        );
     }
 
     #[test]

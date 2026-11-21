@@ -29,6 +29,10 @@ pub(super) struct ForestSurface {
     pub cover_normal: Option<Handle<Image>>,
     #[uniform(105)]
     pub cover_strength: f32,
+    /// Render style: x = yancai enabled, y = key illuminance / pi used to
+    /// normalise forward light bands, z = band count. Zero is the PBR look.
+    #[uniform(106)]
+    pub yancai: Vec4,
 }
 
 impl MaterialExtension for ForestSurface {
@@ -89,7 +93,7 @@ mod tests {
         let modules = [
             (
                 "bevy_pbr::render::mesh_view_bindings",
-                "struct View { world_position: vec3<f32>, lod_view_world_position: vec3<f32> }; @group(0) @binding(0) var<uniform> view: View;",
+                "struct View { world_position: vec3<f32>, lod_view_world_position: vec3<f32>, exposure: f32 }; @group(0) @binding(0) var<uniform> view: View;",
             ),
             (
                 "bevy_pbr::render::forward_io",
@@ -101,7 +105,7 @@ mod tests {
             ),
             (
                 "bevy_pbr::render::pbr_fragment",
-                "import bevy_pbr::render::forward_io::VertexOutput; struct SurfaceMaterial { base_color: vec4<f32>, perceptual_roughness: f32, clearcoat: f32, clearcoat_perceptual_roughness: f32, flags: u32, alpha_cutoff: f32 }; struct Surface { material: SurfaceMaterial, N: vec3<f32>, world_normal: vec3<f32>, clearcoat_N: vec3<f32> }; fn pbr_input_from_standard_material(in: VertexOutput, front: bool) -> Surface { return Surface(); }",
+                "import bevy_pbr::render::forward_io::VertexOutput; struct SurfaceMaterial { base_color: vec4<f32>, perceptual_roughness: f32, reflectance: vec3<f32>, clearcoat: f32, clearcoat_perceptual_roughness: f32, flags: u32, alpha_cutoff: f32 }; struct Surface { material: SurfaceMaterial, N: vec3<f32>, world_normal: vec3<f32>, clearcoat_N: vec3<f32> }; fn pbr_input_from_standard_material(in: VertexOutput, front: bool) -> Surface { return Surface(); }",
             ),
             (
                 "bevy_pbr::render::pbr_functions",
@@ -147,6 +151,10 @@ mod tests {
                 .unwrap();
             assert!(source.contains("@fragment"));
             assert!(source.contains("@binding(100)"));
+            assert!(source.contains("@binding(106)"));
+            // The yancai branch lives in both paths; forward also bands light.
+            assert!(source.contains("yancai"));
+            assert_eq!(source.contains("view.exposure"), !deferred);
             assert!(source.contains("@binding(0)"));
             assert!(source.contains("discard;"));
         }

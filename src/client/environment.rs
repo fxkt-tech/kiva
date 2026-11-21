@@ -13,6 +13,7 @@ use bevy::{
 use crate::gameplay::{Bamboo, Boundary, Level, TerrainGeometry, path_distance, variation};
 
 use super::forest_material::{ForestMaterial, ForestSurface};
+use super::render_style::RenderStyle;
 use crate::simulation::SimulationActive;
 
 mod ground_cover;
@@ -85,12 +86,144 @@ pub(super) enum EnvironmentPart {
     Pebbles,
 }
 
-pub(super) fn fog() -> DistanceFog {
-    DistanceFog {
-        color: Color::srgb(0.19, 0.27, 0.34),
-        directional_light_color: Color::srgba(0.83, 0.82, 0.72, 0.10),
-        directional_light_exponent: 18.0,
-        falloff: FogFalloff::from_visibility_squared(44.0),
+/// The two bamboo-clearing directional lights, retuned in place on a switch.
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum SceneLight {
+    Key,
+    Fill,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(super) struct LightSpec {
+    pub color: Color,
+    pub illuminance: f32,
+}
+
+/// Everything about the clearing's light and air that a render style owns.
+/// Light poses, shadow cascades and the environment-map image stay shared.
+#[derive(Clone, Debug)]
+pub(super) struct SceneLighting {
+    pub clear: Color,
+    pub ambient: Color,
+    pub ambient_brightness: f32,
+    pub key: LightSpec,
+    pub fill: LightSpec,
+    pub environment_intensity: f32,
+    pub fog: DistanceFog,
+}
+
+pub(super) fn bamboo_lighting(style: RenderStyle) -> SceneLighting {
+    match style {
+        // The shipped look; switching back must reproduce it exactly.
+        RenderStyle::Pbr => SceneLighting {
+            clear: Color::srgb(0.12, 0.19, 0.26),
+            ambient: Color::srgb(0.63, 0.77, 0.90),
+            ambient_brightness: 200.0,
+            key: LightSpec {
+                color: Color::srgb(1.0, 0.97, 0.91),
+                illuminance: 4_800.0,
+            },
+            fill: LightSpec {
+                color: Color::srgb(0.57, 0.74, 0.94),
+                illuminance: 850.0,
+            },
+            environment_intensity: 310.0,
+            fog: DistanceFog {
+                color: Color::srgb(0.19, 0.27, 0.34),
+                directional_light_color: Color::srgba(0.83, 0.82, 0.72, 0.10),
+                directional_light_exponent: 18.0,
+                falloff: FogFalloff::from_visibility_squared(44.0),
+            },
+        },
+        // Initial yancai values, to be tuned against screenshots: paper-warm
+        // key, azurite fill, little sky gradient, distance fades to paper.
+        RenderStyle::Yancai => SceneLighting {
+            clear: Color::srgb(0.80, 0.78, 0.70),
+            ambient: Color::srgb(0.62, 0.70, 0.74),
+            ambient_brightness: 260.0,
+            key: LightSpec {
+                color: Color::srgb(1.0, 0.94, 0.82),
+                illuminance: 4_800.0,
+            },
+            fill: LightSpec {
+                color: Color::srgb(0.42, 0.58, 0.70),
+                illuminance: 600.0,
+            },
+            environment_intensity: 90.0,
+            fog: DistanceFog {
+                color: Color::srgb(0.78, 0.77, 0.70),
+                directional_light_color: Color::srgba(0.0, 0.0, 0.0, 0.0),
+                directional_light_exponent: 18.0,
+                falloff: FogFalloff::from_visibility_squared(72.0),
+            },
+        },
+    }
+}
+
+/// The forest material's share of a style: forward light bands are measured
+/// against the key light so they agree with the deferred post pass.
+pub(super) fn forest_style(style: RenderStyle) -> Vec4 {
+    match style {
+        RenderStyle::Pbr => Vec4::ZERO,
+        RenderStyle::Yancai => Vec4::new(
+            1.0,
+            bamboo_lighting(style).key.illuminance / std::f32::consts::PI,
+            3.0,
+            0.0,
+        ),
+    }
+}
+
+fn style_forest_materials(materials: &mut Assets<ForestMaterial>, style: RenderStyle) {
+    let wanted = forest_style(style);
+    let stale: Vec<_> = materials
+        .iter()
+        .filter(|(_, material)| material.extension.yancai != wanted)
+        .map(|(id, _)| id)
+        .collect();
+    for id in stale {
+        if let Some(mut material) = materials.get_mut(id) {
+            material.extension.yancai = wanted;
+        }
+    }
+}
+
+fn current_lighting(world: &World) -> SceneLighting {
+    bamboo_lighting(
+        world
+            .get_resource::<RenderStyle>()
+            .copied()
+            .unwrap_or_default(),
+    )
+}
+
+/// Applies the selected style's lighting without respawning anything.
+pub(super) fn apply_style(
+    style: Res<RenderStyle>,
+    mut clear: ResMut<ClearColor>,
+    mut ambient: ResMut<GlobalAmbientLight>,
+    mut lights: Query<(&SceneLight, &mut DirectionalLight)>,
+    mut cameras: Query<(&mut DistanceFog, Option<&mut EnvironmentMapLight>), With<Camera3d>>,
+    mut materials: ResMut<Assets<ForestMaterial>>,
+) {
+    style_forest_materials(&mut materials, *style);
+    let profile = bamboo_lighting(*style);
+    clear.0 = profile.clear;
+    ambient.color = profile.ambient;
+    ambient.brightness = profile.ambient_brightness;
+    for (role, mut light) in &mut lights {
+        let spec = match role {
+            SceneLight::Key => profile.key,
+            SceneLight::Fill => profile.fill,
+        };
+        light.color = spec.color;
+        light.illuminance = spec.illuminance;
+    }
+    for (mut fog, environment) in &mut cameras {
+        *fog = profile.fog.clone();
+        if let Some(mut environment) = environment {
+            environment.intensity = profile.environment_intensity;
+        }
     }
 }
 
@@ -100,11 +233,12 @@ pub(super) fn setup_camera_fog(world: &mut World) {
         .query_filtered::<Entity, With<Camera3d>>()
         .iter(world)
         .collect();
+    let fog = current_lighting(world).fog;
     let lighting = world
         .get_resource::<ForestLighting>()
         .map(|lighting| lighting.0.clone());
     for camera in cameras {
-        world.entity_mut(camera).insert(fog());
+        world.entity_mut(camera).insert(fog.clone());
         if let Some(lighting) = &lighting {
             world.entity_mut(camera).insert(lighting.clone());
         }
@@ -122,16 +256,18 @@ pub(super) fn setup(world: &mut World) {
             level.boundaries(),
         )
     };
-    world.insert_resource(ClearColor(Color::srgb(0.12, 0.19, 0.26)));
+    let profile = current_lighting(world);
+    world.insert_resource(ClearColor(profile.clear));
     world.insert_resource(GlobalAmbientLight {
-        color: Color::srgb(0.63, 0.77, 0.90),
-        brightness: 200.0,
+        color: profile.ambient,
+        brightness: profile.ambient_brightness,
         ..default()
     });
     world.spawn((
+        SceneLight::Key,
         DirectionalLight {
-            color: Color::srgb(1.0, 0.97, 0.91),
-            illuminance: 4_800.0,
+            color: profile.key.color,
+            illuminance: profile.key.illuminance,
             shadow_maps_enabled: true,
             ..default()
         },
@@ -145,9 +281,10 @@ pub(super) fn setup(world: &mut World) {
         .build(),
     ));
     world.spawn((
+        SceneLight::Fill,
         DirectionalLight {
-            color: Color::srgb(0.57, 0.74, 0.94),
-            illuminance: 850.0,
+            color: profile.fill.color,
+            illuminance: profile.fill.illuminance,
             ..default()
         },
         Transform::from_xyz(8.0, 6.0, -12.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -161,7 +298,7 @@ pub(super) fn setup(world: &mut World) {
         Color::srgb(0.24, 0.32, 0.31),
         Color::srgb(0.13, 0.15, 0.13),
     )
-    .with_intensity(310.0);
+    .with_intensity(profile.environment_intensity);
     world.insert_resource(ForestLighting(lighting));
     // The adjacent manifest retains Model -> material -> named texture refs.
     // Source parameter blocks were unavailable; response scalars are authored.
@@ -239,6 +376,7 @@ pub(super) fn setup(world: &mut World) {
                     cover_base: (kind == 0.0).then(|| cover_base.clone()),
                     cover_normal: (kind == 0.0).then(|| cover_normal.clone()),
                     cover_strength: if kind == 0.0 { 0.85 } else { 0.0 },
+                    yancai: Vec4::ZERO,
                 },
             })
         };
@@ -342,6 +480,11 @@ pub(super) fn setup(world: &mut World) {
         ));
     }
     ground_cover::setup(world, &stone, &litter_material);
+    let style = world
+        .get_resource::<RenderStyle>()
+        .copied()
+        .unwrap_or_default();
+    style_forest_materials(&mut world.resource_mut::<Assets<ForestMaterial>>(), style);
 }
 
 /// Decorative leaf cohorts sway by a few centimetres. Their actual Transform
@@ -764,6 +907,127 @@ mod tests {
                 .all(|channel| (0.88..=1.0).contains(channel))
                 && rgba[3] == 1.0
         }));
+    }
+
+    /// Every style-owned value on the clearing, comparable across switches.
+    fn style_snapshot(world: &mut World) -> String {
+        let mut lights: Vec<_> = world
+            .query::<(&SceneLight, &DirectionalLight)>()
+            .iter(world)
+            .map(|(role, light)| format!("{role:?} {:?} {}", light.color, light.illuminance))
+            .collect();
+        lights.sort();
+        let camera = world
+            .query_filtered::<Entity, With<super::super::camera::GameCamera>>()
+            .single(world)
+            .unwrap();
+        let fog = world.get::<DistanceFog>(camera).unwrap();
+        let ambient = world.resource::<GlobalAmbientLight>();
+        let mut styled: Vec<_> = world
+            .resource::<Assets<ForestMaterial>>()
+            .iter()
+            .map(|(_, material)| format!("{:?}", material.extension.yancai))
+            .collect();
+        styled.dedup();
+        format!(
+            "materials {styled:?} | {:?} | {:?} {} | {lights:?} | {:?} {:?} {} {:?} | env {:?} | ssr {:?} | post {:?} {:?} | normals {}",
+            world.resource::<ClearColor>().0,
+            ambient.color,
+            ambient.brightness,
+            fog.color,
+            fog.directional_light_color,
+            fog.directional_light_exponent,
+            fog.falloff,
+            world
+                .get::<EnvironmentMapLight>(camera)
+                .map(|light| light.intensity),
+            world
+                .get::<bevy::pbr::ScreenSpaceReflections>(camera)
+                .map(|ssr| (ssr.linear_steps, ssr.thickness)),
+            world.get::<super::super::render_style::yancai_post::YancaiShade>(camera),
+            world.get::<super::super::render_style::yancai_post::YancaiPaper>(camera),
+            world
+                .get::<bevy::core_pipeline::prepass::NormalPrepass>(camera)
+                .is_some(),
+        )
+    }
+
+    fn styled_clearing() -> App {
+        use super::super::{camera::GameCamera, render_style, rendering};
+        let mut app = App::new();
+        app.init_resource::<Assets<Mesh>>()
+            .init_resource::<Assets<StandardMaterial>>()
+            .insert_resource(RenderStyle::default())
+            .insert_resource(render_style::LevelStyles::for_level(
+                crate::gameplay::GameLevel::BambooForest,
+            ))
+            .add_systems(
+                Update,
+                (apply_style, rendering::apply_style).run_if(render_style::switched),
+            );
+        crate::gameplay::setup(app.world_mut());
+        setup(app.world_mut());
+        app.world_mut().spawn((GameCamera, Camera3d::default()));
+        rendering::setup(app.world_mut());
+        setup_camera_fog(app.world_mut());
+        app.update();
+        app
+    }
+
+    #[test]
+    fn switching_styles_round_trips_the_shipped_lighting_without_growing_the_scene() {
+        let mut app = styled_clearing();
+        let world = app.world_mut();
+        let shipped = style_snapshot(world);
+        let counts = |world: &mut World| {
+            (
+                world.query::<Entity>().iter(world).count(),
+                world.resource::<Assets<Mesh>>().len(),
+                world.resource::<Assets<ForestMaterial>>().len(),
+                world.resource::<Assets<Image>>().len(),
+            )
+        };
+        let before = counts(world);
+        // The setup reads the same Pbr profile that switching applies.
+        let pbr = bamboo_lighting(RenderStyle::Pbr);
+        assert!(shipped.contains(&format!("{:?}", pbr.clear)));
+        assert!(shipped.contains("Some(310.0)"));
+        assert!(shipped.contains("ssr Some(") && shipped.ends_with("normals true"));
+
+        *app.world_mut().resource_mut::<RenderStyle>() = RenderStyle::Yancai;
+        app.update();
+        let yancai = style_snapshot(app.world_mut());
+        assert_ne!(yancai, shipped);
+        assert!(yancai.contains("ssr None") && yancai.ends_with("normals true"));
+        // The post chain uses the same key-light normalisation as the
+        // forest material's forward bands.
+        assert!(yancai.contains(&format!(
+            "post Some(YancaiShade {{ light_over_pi: {:?}, bands: 3.0 }}) Some(",
+            forest_style(RenderStyle::Yancai).y
+        )));
+        assert!(shipped.contains("post None None"));
+        // Every forest material switches together, to the key-light bands.
+        assert!(yancai.starts_with(&format!(
+            "materials [\"{:?}\"]",
+            forest_style(RenderStyle::Yancai)
+        )));
+        assert!(shipped.starts_with(&format!("materials [\"{:?}\"]", Vec4::ZERO)));
+        assert!(yancai.contains(&format!(
+            "env Some({:?})",
+            bamboo_lighting(RenderStyle::Yancai).environment_intensity
+        )));
+
+        for _ in 0..3 {
+            for style in [RenderStyle::Pbr, RenderStyle::Yancai] {
+                *app.world_mut().resource_mut::<RenderStyle>() = style;
+                app.update();
+            }
+        }
+        *app.world_mut().resource_mut::<RenderStyle>() = RenderStyle::Pbr;
+        app.update();
+        let world = app.world_mut();
+        assert_eq!(style_snapshot(world), shipped);
+        assert_eq!(counts(world), before);
     }
 
     #[test]

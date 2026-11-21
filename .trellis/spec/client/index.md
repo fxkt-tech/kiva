@@ -12,6 +12,8 @@
 
 废站使用共用动作输入、相机与独立平面反射，装配和取景约定见[废站映面](station.md)。
 
+渲染风格（写实 / 岩彩）、F8 切换和岩彩后处理见[渲染风格](render-style.md)。
+
 ## Signatures
 
 - `controls::ViewYaw::yaw()` 供 scene 和 camera 读取；鼠标样本只能由 controls 消费一次。
@@ -25,6 +27,7 @@
 - `window.kivaHud.defineLoadouts(json)`（装配时一次，各武器组文案以 `hud_index` 为键）／`frame(json)`（每次 HUD 更新一次 `HudFrame`）；绑定在 `client/hud.rs`，只有显示方向；字段契约与 fixture 见 combat-presentation.md。
 - `window.kivaEnemies.takeMode(): number`（0=无请求、1=靶子、2=实战）/ `render(mode)`；绑定在 `client/enemies.rs`，固定循环前把选择交给 `gameplay::set_enemy_mode`。
 - `window.kivaAppearance.takeAppearance(): number`（0=无请求、1=愁铃客、2=李火旺、3=朱雀）/ `render(value)`；绑定在 `client/appearance.rs`，选择仅属于客户端，`appearance::reconcile` 在动画前只替换哥哥身体／服饰，保留当前武器。
+- `window.kivaRenderStyle.takeStyle(): number`（0=无请求、1=下一种风格）/ `render(style, count)`（1=写实、2=岩彩；count 为本关登记的风格数）；绑定在 `client/render_style.rs`，风格仅属于客户端表现，不进入模拟。
 - `window.kivaAudio.{playSniperShot(): boolean, playEffect(name): boolean, cueOffset(name): number, setActive(bool)}`；绑定在 `client/audio.rs`，消费已结算攻击／命中／防御和妹妹射击；Shot 及伴随 SniperShot 不重复发声。
 
 ## Contracts
@@ -49,6 +52,9 @@ Web mode脚本最先固定页面模式，startup／loader／input／hud／enemie
 音效仅在可信出击、继续或画布按下时创建 / 恢复 Web Audio；随包音频异步解码一次，原有程序枪声仅保留兼容接口，实际妹妹枪弓使用已验证永劫 cue。至多 4 个短音效声部及 1 个 BGM 循环（音效增益 0.45、BGM 0.18），暂停立即停止/回收短音效并保存 BGM 播放位置；恢复只创建一条循环。未解锁、不支持或播放失败时跳过，不积压旧声；暂停仍前移反馈游标。原生构建音效为空操作，不新增平台音频依赖。
 默认游戏入口为《断轨听羽》绘卷。Web 在同源 iframe 加载随包预览页面，原生通过 Bevy UI 绘制同一组原画。武库选择交给固定步战斗系统，战斗内 Z 换组也回传给武库。废站暂停后可以回卷并继续同一局。直达竹林、直达废站、独立模型查看器的参数见 [启动契约](startup.md)。直达游戏沿用开屏与捕获提示，捕获期间 F2 切换敌人模式。
 外观卡片可选择愁铃客 / 李火旺 / 朱雀，捕获期间 F3 切换，选择保存在 `AppearanceSelection`；外观只决定哥哥身体／服饰，不改变 WeaponPair 或武器。按钮请求保留至 Rust 单次消费，JS 当前显示由 Rust render 确认；原生只在有焦点且模拟激活时响应 F3。选择可在玩家显示根创建前保存，暂停按钮仍可换装。哥哥默认李火旺；`Appearance::default()` 仍为愁铃客，供敌人使用。白灵淼仅用于妹妹，不进入 F3 或 Web 选择枚举；换装不影响敌人、妹妹或当前武器。
+
+竹林可在写实与岩彩之间按 F8 切换（F4 仍是判定显示），废站只有写实；风格只属于客户端表现。登记、切换、各模块职责和岩彩后处理契约见[渲染风格](render-style.md)。
+
 `AvatarAssets` 保留愁铃客资源，`AvatarAssetCache` 分别缓存李火旺、白灵淼与朱雀；多次换装／技能复用原句柄。角色自身的 AvatarPart 标记限定身体回收范围，不能清空玩家所有 Children 或重建 RigPose。显示根、物理 actor、动作状态、武器根的 BoneVisual 所属保持不变。
 朱雀使用 KIVAAV04，增加显式透明模式、HDR发光和独立火焰效果标签，详见 [角色制作](character-authoring.md)。KIVAAV03 增加每材质 doubleSided 和每骨 sourceRestModel，KIVAAV02 仍按原格式读取。源导入姿态可能不同于 bind pose，蒙皮正确性使用原 LBS 数值对照，不强改逆绑定为当前姿态抵消。李火旺骨名与燕云索引独立，身体23结构驱动校准参考臂向并保留自身骨长，源指轨另按三节语义链传递；源动作与附件读取实际皮肤掌框。原 packed/ID 图未经通道证明不能接为颜色或 ORM；面容、发材质和刚性刀穗的美术适配必须在 provenance/characters/lihuowang 来源清单中明确。
 原生 F2 在有焦点时切换，窗口标题显示当前模式。武器组的名称、模型、音效、姿态等表现集中在 `loadout.rs` 的表里（见 [战斗表现契约](combat-presentation.md)）。模式改变后先回收失效敌人的显示树与血条，再用共享网格 / 材质创建新表现。

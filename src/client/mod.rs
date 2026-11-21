@@ -25,6 +25,7 @@ mod loading;
 mod loadout;
 mod menu_loadout;
 mod model_asset;
+mod render_style;
 mod rendering;
 mod scene;
 mod skeleton;
@@ -232,6 +233,7 @@ fn configure_game(app: &mut App, level: GameLevel) {
     assemble_after_loading(app, game_manifest(level));
     menu_loadout::configure(app);
     handscroll_visibility::configure(app);
+    render_style::configure(app);
     #[cfg(not(target_arch = "wasm32"))]
     if level == GameLevel::Station {
         let direct = std::env::args_os().skip(1).any(|arg| arg == "--station");
@@ -253,6 +255,8 @@ fn configure_game(app: &mut App, level: GameLevel) {
         .init_resource::<controls::CaptureState>()
         .init_resource::<skeleton::AnimationLibrary>()
         .insert_resource(appearance::AppearanceSelection::for_level(level))
+        .insert_resource(render_style::RenderStyle::default())
+        .insert_resource(render_style::LevelStyles::for_level(level))
         .init_resource::<hud::HudFrame>()
         .add_systems(
             Assemble,
@@ -275,7 +279,12 @@ fn configure_game(app: &mut App, level: GameLevel) {
         )
         .add_systems(
             RunFixedMainLoop,
-            (enemies::sample, controls::sample, appearance::sample)
+            (
+                enemies::sample,
+                controls::sample,
+                appearance::sample,
+                render_style::sample,
+            )
                 .chain()
                 .run_if(resource_exists::<Assembled>)
                 .in_set(bevy::app::RunFixedMainLoopSystems::BeforeFixedMainLoop),
@@ -307,6 +316,15 @@ fn configure_game(app: &mut App, level: GameLevel) {
             )
                 .chain()
                 .run_if(resource_exists::<Assembled>),
+        )
+        .add_systems(
+            Update,
+            (
+                environment::apply_style.run_if(resource_exists::<crate::gameplay::Level>),
+                rendering::apply_style,
+            )
+                .run_if(resource_exists::<Assembled>)
+                .run_if(render_style::switched),
         );
 }
 

@@ -16,6 +16,7 @@ import bevy_pbr::{
 import bevy_pbr::render::{
     forward_io::{VertexOutput, FragmentOutput},
     pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
+    mesh_view_bindings::view,
 };
 
 @group(constants::MATERIAL_BIND_GROUP) @binding(101) var cover_base: texture_2d<f32>;
@@ -23,6 +24,36 @@ import bevy_pbr::render::{
 @group(constants::MATERIAL_BIND_GROUP) @binding(103) var cover_normal: texture_2d<f32>;
 @group(constants::MATERIAL_BIND_GROUP) @binding(104) var cover_normal_sampler: sampler;
 @group(constants::MATERIAL_BIND_GROUP) @binding(105) var<uniform> cover_strength: f32;
+// x = yancai enabled, y = key illuminance / pi, z = light band count.
+@group(constants::MATERIAL_BIND_GROUP) @binding(106) var<uniform> yancai: vec4<f32>;
+
+const LUMA: vec3<f32> = vec3<f32>(0.2126, 0.7152, 0.0722);
+// Mineral pigments, linear: malachite, azurite, ochre, blue-grey slate.
+const MALACHITE: vec3<f32> = vec3<f32>(0.10, 0.30, 0.17);
+const AZURITE: vec3<f32> = vec3<f32>(0.06, 0.15, 0.30);
+const OCHRE: vec3<f32> = vec3<f32>(0.30, 0.20, 0.11);
+const SLATE: vec3<f32> = vec3<f32>(0.19, 0.23, 0.24);
+
+/// Re-hue `base` to `pigment` while keeping its value, so textures still
+/// read as shapes but sit in the mineral palette.
+fn pigmented(base: vec3<f32>, pigment: vec3<f32>, amount: f32) -> vec3<f32> {
+    let value = dot(base, LUMA);
+    let matched = pigment * (value / max(dot(pigment, LUMA), 1e-4));
+    return mix(base, matched, amount);
+}
+
+/// Forward-only light bands; the deferred majority is banded in the post
+/// pass with the same normalisation. Shadows turn azurite, not black.
+@if(!PREPASS_PIPELINE)
+fn yancai_band(lit: vec3<f32>, albedo: vec3<f32>) -> vec3<f32> {
+    let norm = view.exposure * yancai.y;
+    let shade = dot(lit, LUMA) / (max(dot(albedo, LUMA), 1e-3) * norm);
+    let steps = max(yancai.z, 1.0);
+    let raw = clamp(shade, 0.0, 1.0) * steps;
+    let level = (floor(raw) + smoothstep(0.42, 0.58, fract(raw))) / steps;
+    let tint = mix(vec3<f32>(0.36, 0.50, 0.62), vec3<f32>(1.0, 0.95, 0.86), level);
+    return albedo * tint * mix(0.55, 1.0, level) * norm;
+}
 
 fn noise(point: vec2<f32>) -> f32 {
     let cell = floor(point);
@@ -122,12 +153,42 @@ fn fragment(in: VertexOutput, @builtin(front_facing) is_front: bool) -> Fragment
     }
     surface.material.base_color = vec4<f32>(surface.material.base_color.rgb * mix(vec3<f32>(1.0), tint, style.y), surface.material.base_color.a);
 
+    if yancai.x > 0.5 {
+        // Yancai: matte mineral pigment over the same shapes. No wet sheen,
+        // clearcoat or specular; flatter normals read as brushed planes.
+        let base = surface.material.base_color.rgb;
+        let green = smoothstep(-0.01, 0.03, base.g - max(base.r, base.b));
+        var pigment = SLATE;
+        var amount = 0.75;
+        if kind < 0.5 {
+            // Diluted ochre ground so figures and moss stay the accents.
+            pigment = mix(OCHRE, MALACHITE, green);
+            amount = 0.6;
+        } else if kind < 1.5 {
+            pigment = mix(MALACHITE, OCHRE, smoothstep(0.55, 0.8, patches) * 0.5);
+        } else if kind > 2.5 {
+            pigment = mix(MALACHITE, AZURITE, smoothstep(0.35, 0.75, patches) * 0.6);
+        }
+        // Mineral grain: coarse ground pigment, faded where it would alias.
+        let granule = mix(0.5, noise(p.xz * 61.0 + p.y * 17.0), fine_visibility);
+        let painted = pigmented(base, pigment, amount) * (0.92 + granule * 0.16);
+        surface.material.base_color = vec4<f32>(painted, surface.material.base_color.a);
+        surface.material.perceptual_roughness = 1.0;
+        surface.material.reflectance = vec3<f32>(0.0);
+        surface.material.clearcoat = 0.0;
+        surface.N = normalize(mix(normalize(surface.world_normal), surface.N, 0.35));
+    }
+
 @if(PREPASS_PIPELINE)
     let out = deferred_output(in, surface);
 @if(!PREPASS_PIPELINE)
     var out: FragmentOutput;
 @if(!PREPASS_PIPELINE)
     out.color = apply_pbr_lighting(surface);
+@if(!PREPASS_PIPELINE)
+    if yancai.x > 0.5 {
+        out.color = vec4<f32>(yancai_band(out.color.rgb, surface.material.base_color.rgb), out.color.a);
+    }
 @if(!PREPASS_PIPELINE)
     out.color = main_pass_post_lighting_processing(surface, out.color);
     return out;
