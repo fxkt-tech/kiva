@@ -66,7 +66,8 @@ public sealed class WorkshopHud
     public void Paint(WorkshopTool tool,WorkshopGear gear,bool valid,bool first,bool second,bool gliding)
     {
         int index=(int)tool;
-        sight.enabled=WorkshopToolSpec.Owned(gear,index);
+        var options=GameSettings.Current;
+        sight.enabled=options.crosshair && WorkshopToolSpec.Owned(gear,index);
         sight.Show(index,true,!valid,first,second);
         for(int i=0;i<slots.Length;i++){
             bool owned=WorkshopToolSpec.Owned(gear,i);
@@ -76,13 +77,13 @@ public sealed class WorkshopHud
         }
         wing.enabled=(gear & WorkshopGear.Glider)!=0;wing.Show(3,flying:gliding);
         toolName.enabled=Time.unscaledTime<labelUntil;
-        if(Time.unscaledTime>hintUntil)hint.text="";
+        if(Time.unscaledTime>hintUntil || !options.hints)hint.text="";
     }
 
-    public void Exit(Camera eye,Vector3 world,bool visible)
+    public void Exit(Camera eye,Vector3 world)
     {
-        exit.enabled=visible;
-        if(!visible)return;
+        exit.enabled=GameSettings.Current.exitGuide;
+        if(!exit.enabled)return;
         var p=eye.WorldToViewportPoint(world);bool behind=p.z<0;
         if(behind)p.x=p.x>.5f?0:1;
         float x=Mathf.Clamp(p.x,.07f,.93f),y=Mathf.Clamp(p.y,.16f,.88f);

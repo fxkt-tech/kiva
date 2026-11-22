@@ -5,6 +5,7 @@ public sealed class WorkshopPortals
 {
     public const float OuterRadius=PaperTerrain.Cell*.45f;
     public const float Radius=OuterRadius*.93f;
+    const int FirstPortalLayer=9; // AzurePortal, then VermilionPortal, in TagManager.
     static readonly Quaternion HalfTurn=Quaternion.Euler(0,180,0);
     readonly PortalWindow[] windows=new PortalWindow[2];
     readonly Transform root;
@@ -19,7 +20,7 @@ public sealed class WorkshopPortals
         for(int i=0;i<2;i++){
             var w=new GameObject(i==0?"青鸾门":"朱雀门").AddComponent<PortalWindow>();
             w.transform.SetParent(root,false);
-            w.gameObject.layer=LayerMask.NameToLayer(i==0?"AzurePortal":"VermilionPortal");
+            w.gameObject.layer=FirstPortalLayer+i;
             w.Build(96,fronts[i],backs[i],i==1);
             windows[i]=w;
             w.Clear();

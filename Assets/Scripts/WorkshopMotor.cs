@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public sealed class WorkshopMotor : MonoBehaviour
 {
@@ -8,9 +9,6 @@ public sealed class WorkshopMotor : MonoBehaviour
     public Rigidbody Body { get; private set; }
     public bool Grounded { get; private set; }
     public bool Gliding { get; private set; }
-    public float EntrySpeed { get; private set; }
-    public float ExitSpeed { get; private set; }
-    public int Passages { get; private set; }
     public float Yaw { get; private set; }
     float pitch,roll;
     bool jump,glideHeld,steerJump;
@@ -81,7 +79,6 @@ public sealed class WorkshopMotor : MonoBehaviour
         Body.linearVelocity=Body.angularVelocity=Vector3.zero;
         Yaw=heading;pitch=tilt;roll=0;
         exitTick=double.NegativeInfinity;
-        EntrySpeed=ExitSpeed=0;Passages=0;
         Grounded=steerJump=false;
         StopInput();
         bird.Face(Yaw);
@@ -92,15 +89,24 @@ public sealed class WorkshopMotor : MonoBehaviour
 
     public void InputFrame(bool hasWing)
     {
-        Yaw+=Input.GetAxisRaw("Mouse X")*2.2f;
-        pitch=Mathf.Clamp(pitch-Input.GetAxisRaw("Mouse Y")*2.2f,-89,89);
+        var keys=Keyboard.current;var mouse=Mouse.current;
+        if(keys==null || mouse==null){StopInput();Look();return;}
+        // .22 degrees per pixel matches the former Input Manager mouse axes.
+        var options=GameSettings.Current;
+        var turn=mouse.delta.ReadValue()*(.22f*options.sensitivity);
+        Yaw+=turn.x;
+        pitch=Mathf.Clamp(pitch+(options.invertY?turn.y:-turn.y),-89,89);
+        Eyes.fieldOfView=options.fieldOfView;
         roll=Mathf.MoveTowards(roll,0,240*Time.deltaTime);
-        movement=Vector2.ClampMagnitude(new Vector2(Input.GetAxisRaw("Horizontal"),Input.GetAxisRaw("Vertical")),1);
-        if(Input.GetKeyDown(KeyCode.Space)){
+        static float Axis(bool negative,bool positive)=>(positive?1:0)-(negative?1:0);
+        movement=Vector2.ClampMagnitude(new Vector2(
+            Axis(keys.aKey.isPressed || keys.leftArrowKey.isPressed,keys.dKey.isPressed || keys.rightArrowKey.isPressed),
+            Axis(keys.sKey.isPressed || keys.downArrowKey.isPressed,keys.wKey.isPressed || keys.upArrowKey.isPressed)),1);
+        if(keys.spaceKey.wasPressedThisFrame){
             if(Grounded)jump=true;
-            else if(hasWing)glideHeld=true;
+            else if(hasWing)glideHeld=!options.glideToggle || !glideHeld;
         }
-        if(!Input.GetKey(KeyCode.Space))glideHeld=false;
+        if(!options.glideToggle && !keys.spaceKey.isPressed)glideHeld=false;
         Look();
     }
 
@@ -128,7 +134,7 @@ public sealed class WorkshopMotor : MonoBehaviour
         exitStart=point-Vector3.up*EyeOffset;
         exitTick=Time.fixedTimeAsDouble;
         Body.position=exitStart;Body.linearVelocity=after;
-        EntrySpeed=velocity.magnitude;ExitSpeed=after.magnitude;Passages++;steerJump=false;
+        steerJump=false;
         var rotated=turn*Quaternion.Euler(pitch,Yaw,roll);
         var f=rotated*Vector3.forward;
         pitch=Mathf.Clamp(-Mathf.Asin(Mathf.Clamp(f.y,-1,1))*Mathf.Rad2Deg,-89,89);

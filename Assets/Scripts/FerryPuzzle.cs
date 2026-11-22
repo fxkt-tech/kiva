@@ -1,16 +1,14 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-// Session and progression. Level geometry, surface rules, devices and locomotion are shared
-// by both the campaign stage and the F2 practice room.
+// Session and progression for one campaign stage.
 public sealed class FerryPuzzle : MonoBehaviour
 {
-    WorkshopLevel main,practice,current;
-    Transform hall,trial;
-    WorkshopGeometry hallGeometry,trialGeometry;
-    WorkshopGeometry Geometry=>current.practice?trialGeometry:hallGeometry;
-    Transform Room=>current.practice?trial:hall;
+    WorkshopLevel current;
+    Transform hall;
+    WorkshopGeometry geometry;
     WorkshopPlacement placement;
     WorkshopMotor motor;
     WorkshopHud hud;
@@ -21,6 +19,8 @@ public sealed class FerryPuzzle : MonoBehaviour
     bool paused,checkpoint;
     float previousTimeScale;
     Action finish;
+    Action<bool> pauseChanged;
+    FerryLighting lighting;
     readonly System.Collections.Generic.List<Material> materials=new System.Collections.Generic.List<Material>();
     Texture2D fibers;
 
@@ -53,24 +53,24 @@ public sealed class FerryPuzzle : MonoBehaviour
         return new[]{white,shade,bamboo,alternate};
     }
 
-    public void Build(Text status,WorkshopLevel level,Action onFinish)
+    public void Build(Text status,WorkshopLevel level,Action onFinish,Action<bool> onPause)
     {
-        main=level;practice=Resources.Load<WorkshopLevel>("Levels/Practice");current=main;
+        pauseChanged=onPause;
+        current=level;
         finish=onFinish;hud=new WorkshopHud(status);
         var inks=FaceInks();
-        hall=Group(transform,main.title);trial=Group(transform,practice.title);
-        trial.localPosition=Vector3.right*100;
-        hallGeometry=new WorkshopGeometry(main,hall,inks);trialGeometry=new WorkshopGeometry(practice,trial,inks);
+        hall=Group(transform,current.title);
+        geometry=new WorkshopGeometry(current,hall,inks);
         var ochre=Pigment(FerryLighting.OchreBack);
-        if(main.westWindow){
+        if(current.westWindow){
             var wood=Keep(FerryLighting.Mineral("Timber",new Color(.79f,.46f,.23f)));
             var glass=Keep(new Material(Resources.Load<Material>("Mineral/WestWindowPaper")));
             PaperChamber.WestWindowFrame(hall,wood,glass,ochre);
         }
         var exitLamp=Group(hall,"出口灯");
-        exitLamp.localPosition=main.exitFeet+new Vector3(-.5f,.38f,.9f);
+        exitLamp.localPosition=current.exitFeet+new Vector3(-.5f,.38f,.9f);
         var plaque=Keep(FerryLighting.Mineral("Paper",new Color(.41f,.43f,.31f)));
-        var sign=main.exitSign;
+        var sign=current.exitSign;
         PaperChamber.Cartouche(hall,sign,180,plaque,ochre);
         var canvas=Group(hall,"出口纸牌").gameObject.AddComponent<Canvas>();
         canvas.renderMode=RenderMode.WorldSpace;
@@ -90,17 +90,14 @@ public sealed class FerryPuzzle : MonoBehaviour
         motor.BuildEquipment(inks[0],inks[2],ochre);
         preview=Group(transform,"安装预览").gameObject.AddComponent<PlacementPreview>();
         preview.Build();
-        gameObject.AddComponent<FerryLighting>().Initialize(motor.Eyes,exitLamp);
-        trial.gameObject.SetActive(false);
+        lighting=gameObject.AddComponent<FerryLighting>();
+        lighting.Initialize(motor.Eyes,exitLamp);
     }
 
-    public void Begin()=>Enter(main);
-
-    void Enter(WorkshopLevel level)
+    public void Begin()
     {
-        placement.Clear(transform);
-        current=level;checkpoint=false;
-        hall.gameObject.SetActive(current==main);trial.gameObject.SetActive(current==practice);
+        checkpoint=false;
+        lighting.ApplyQuality();
         Pause(false);
         placement.Portals.Prepare(motor.Eyes);
         Restart();
@@ -110,26 +107,35 @@ public sealed class FerryPuzzle : MonoBehaviour
     {
         placement.Clear(transform);
         preview.gameObject.SetActive(false);
-        Geometry.ResetBricks();
+        geometry.ResetBricks();
         gear=current.startingGear | (checkpoint?current.supplyGear:WorkshopGear.None);
         selected=WorkshopTool.Gun;
         if(!WorkshopToolSpec.Owned(gear,0))Cycle(1);
         motor.Equip(gear);
         var spawn=checkpoint?current.checkpointFeet:current.spawnFeet;
-        motor.Spawn(Room.TransformPoint(spawn),checkpoint?current.checkpointYaw:current.spawnYaw,current.practice?22:checkpoint?8:-4);
+        motor.Spawn(hall.TransformPoint(spawn),checkpoint?current.checkpointYaw:current.spawnYaw,checkpoint?8:-4);
         Physics.SyncTransforms();
         if(WorkshopToolSpec.Owned(gear,(int)selected))hud.Selected(selected);
         hud.Hint(checkpoint?current.retryHint:current.entryHint,6);
     }
 
+    public void Resume()=>Pause(false);
+    public void TogglePause()=>Pause(!paused);
+
+    // Pausing opens the settings sheet; the owner shows and hides it through pauseChanged.
     void Pause(bool value)
     {
+        bool changed=value!=paused;
         if(value && !paused){previousTimeScale=Time.timeScale;Time.timeScale=0;}
         if(!value && paused)Time.timeScale=previousTimeScale;
         paused=value;motor.StopInput();
         Cursor.lockState=value?CursorLockMode.None:CursorLockMode.Locked;Cursor.visible=value;
-        if(value){preview.gameObject.SetActive(false);hud.Hint("WASD 移动　·　空格跳跃 / 滑翔　·　1–3 或滚轮切换　·　R 重试　·　F2 试投场　·　Esc 继续",120);}
-        else hud.Hint("",0);
+        if(value)preview.gameObject.SetActive(false);
+        hud.Hint("",0);
+        if(!changed)return;
+        // The portal depth may have changed while the sheet was open.
+        if(!value)placement.Portals.Prepare(motor.Eyes);
+        pauseChanged?.Invoke(value);
     }
 
     void OnDisable()
@@ -154,24 +160,22 @@ public sealed class FerryPuzzle : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape))Pause(!paused);
+        var keys=Keyboard.current;var mouse=Mouse.current;
+        if(keys==null || mouse==null)return;
+        if(keys.escapeKey.wasPressedThisFrame)Pause(!paused);
         if(paused)return;
-        if(Input.GetKeyDown(KeyCode.F2)){Enter(current==main?practice:main);return;}
-        if(Input.GetKeyDown(KeyCode.T)){Enter(current);return;}
-        if(Input.GetKeyDown(KeyCode.R)){
-            if(current.practice)motor.Spawn(Room.TransformPoint(current.spawnFeet),current.spawnYaw,22);
-            else Restart();
-            return;
-        }
+        if(keys.tKey.wasPressedThisFrame){Begin();return;}
+        if(keys.rKey.wasPressedThisFrame){Restart();return;}
         motor.InputFrame((gear & WorkshopGear.Glider)!=0);
-        for(int i=0;i<3;i++)if(Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1+i)))Select(i);
-        float scroll=Input.mouseScrollDelta.y;
+        for(int i=0;i<3;i++)if(keys[Key.Digit1+i].wasPressedThisFrame)Select(i);
+        float scroll=mouse.scroll.ReadValue().y;
         if(scroll!=0)Cycle(scroll>0?-1:1);
+        bool primary=mouse.leftButton.wasPressedThisFrame,secondary=mouse.rightButton.wasPressedThisFrame;
         int slot=WorkshopToolSpec.For(selected).slot;
-        if(selected==WorkshopTool.Gun && Input.GetMouseButtonDown(1))slot=1;
+        if(selected==WorkshopTool.Gun && secondary)slot=1;
         bool owned=WorkshopToolSpec.Owned(gear,(int)selected);
         aim=owned?placement.Aim(motor.Eyes,slot):default;
-        bool fire=Input.GetMouseButtonDown(0) || (selected==WorkshopTool.Gun && Input.GetMouseButtonDown(1));
+        bool fire=primary || (selected==WorkshopTool.Gun && secondary);
         if(!fire && selected==WorkshopTool.Gun && !aim.Valid && aim.mount.face){
             var other=placement.Check(aim.mount.face,aim.mount.Position,1);
             if(other.Valid)aim=other;
@@ -179,7 +183,7 @@ public sealed class FerryPuzzle : MonoBehaviour
         if(fire && owned){
             if(aim.Valid){
                 placement.Install(slot,aim);
-                if(!current.practice && slot>=2){
+                if(slot>=2){
                     if(placement.Installed(2) && placement.Installed(3))hud.Hint("踩上弹弹菇，腾空后再次按住空格展开纸翼",5);
                     else hud.Hint(slot==3?"按 2 选择弹弹菇，装到移动纸砖的白色顶面":"按 3 选择风扇，装到槽端的白面",5);
                 }
@@ -192,15 +196,10 @@ public sealed class FerryPuzzle : MonoBehaviour
 
     void FixedUpdate()
     {
-        int before=motor.Passages;
         motor.Step();
-        placement.ApplyDevices(motor.Body,Geometry.Bodies);
-        var at=Room.InverseTransformPoint(motor.Body.position);
+        placement.ApplyDevices(motor.Body,geometry.Bodies);
+        var at=hall.InverseTransformPoint(motor.Body.position);
         if(at.y<current.spawnFeet.y-14){Restart();return;}
-        if(current.practice){
-            if(before!=motor.Passages)hud.Hint($"入门 {motor.EntrySpeed:F1} m/s  →  出门 {motor.ExitSpeed:F1} m/s",4);
-            return;
-        }
         if(!checkpoint && motor.Grounded && current.supplyZone.Contains(at)){
             checkpoint=true;gear|=current.supplyGear;
             motor.Equip(gear);
@@ -214,7 +213,7 @@ public sealed class FerryPuzzle : MonoBehaviour
     {
         motor.Pose();
         placement.Portals.Draw(motor.Eyes);
-        hud.Exit(motor.Eyes,Room.TransformPoint(current.exitSign-Vector3.forward*.06f),!current.practice);
+        hud.Exit(motor.Eyes,hall.TransformPoint(current.exitSign-Vector3.forward*.06f));
     }
 
     void OnDestroy(){foreach(var m in materials)if(m)Destroy(m);if(fibers)Destroy(fibers);}

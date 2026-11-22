@@ -9,7 +9,6 @@ public sealed class FerryLighting : MonoBehaviour
     Material lanternPaper, lanternLaps, lanternCap;
     VolumeProfile profile;
     float phase;
-    Camera player;
 
     public static readonly Color OchreBack=new Color(.91f,.61f,.40f);
 
@@ -73,9 +72,11 @@ public sealed class FerryLighting : MonoBehaviour
         return light;
     }
 
+    HDAdditionalLightData sunShadows;
+    public void ApplyQuality()=>sunShadows.SetShadowResolution(GameSettings.Current.shadowResolution);
+
     public void Initialize(Camera eyes, Transform exitLamp)
     {
-        player = eyes;
         LightRooms();
         LightLanterns(exitLamp);
         ConfigureViews();
@@ -96,7 +97,8 @@ public sealed class FerryLighting : MonoBehaviour
         hdSun.dirLightPCSSMaxPenumbraSize=.055f;
         hdSun.dirLightPCSSMinFilterSizeTexels=1f;
         hdSun.shadowDimmer=.9f;
-        hdSun.SetShadowResolution(2048);
+        sunShadows=hdSun;
+        ApplyQuality();
 
         Spot("窗纸漫射",new Vector3(-5.73f,4.2f,-1.5f),new Vector3(.2f,1.8f,4.8f),
             new Color(1f,.84f,.65f),20500f,130f,22);
@@ -106,11 +108,6 @@ public sealed class FerryLighting : MonoBehaviour
             new Color(1f,.85f,.71f),1900f,125f,10f);
         Spot("井壁回光",new Vector3(3.8f,1.8f,2f),new Vector3(.2f,-4f,3f),
             new Color(.89f,.94f,.84f),2500f,112f,12);
-        var trial = Spot("试投场窗光", new Vector3(88,13,-5), new Vector3(102,2,10),
-            new Color(1f,.88f,.72f), 104000f, 93f, 44f);
-        trial.cookie = Resources.Load<Texture2D>("Mineral/WindowLight");
-        trial.shadows = LightShadows.Soft;
-        trial.shapeRadius = .75f;
     }
 
     void LightLanterns(Transform exitLamp)
@@ -192,12 +189,11 @@ public sealed class FerryLighting : MonoBehaviour
 
     void PositionLantern()
     {
-        bool trial=player.transform.position.x>50;
-        var center=trial?new Vector3(100,8,-3):new Vector3(.66f,5.3f,-2.15f);
+        var center=new Vector3(.66f,5.3f,-2.15f);
         carriage.localPosition=center+new Vector3(.78f*Mathf.Cos(phase),.20f*Mathf.Sin(phase*2),.83f*Mathf.Sin(phase));
         carriage.localRotation=Quaternion.Euler(0,phase*Mathf.Rad2Deg,4*Mathf.Sin(phase));
         var crown=transform.InverseTransformPoint(carriage.TransformPoint(Vector3.up*.39f));
-        float length=(trial?16.5f:7.5f)-crown.y;
+        float length=7.5f-crown.y;
         hangingCord.localPosition=crown+Vector3.up*length*.5f;
         hangingCord.localScale=new Vector3(.018f,length*.5f,.018f);
     }

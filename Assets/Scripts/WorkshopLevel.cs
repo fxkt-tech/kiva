@@ -35,5 +35,5 @@ public sealed class WorkshopLevel : ScriptableObject
     public Bounds supplyZone, exitZone;
     public WorkshopGear startingGear=WorkshopGear.Gun, supplyGear;
     public string entryHint, supplyHint, retryHint;
-    public bool westWindow, practice;
+    public bool westWindow;
 }

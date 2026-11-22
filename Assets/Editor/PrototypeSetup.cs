@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 public static class PrototypeSetup
@@ -65,7 +66,7 @@ public static class PrototypeSetup
         var camera = new GameObject("Camera").AddComponent<Camera>();
         camera.clearFlags = CameraClearFlags.SolidColor;
         camera.backgroundColor = Color.black;
-        new GameObject("EventSystem",typeof(EventSystem),typeof(StandaloneInputModule));
+        new GameObject("EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));
         var canvas = new GameObject("Campaign Canvas",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));
         canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
         var scaler = canvas.GetComponent<CanvasScaler>();

@@ -9,7 +9,6 @@ public sealed class PortalWindow : MonoBehaviour
     static readonly Quaternion HalfTurn = Quaternion.Euler(0, 180, 0);
     readonly Plane[] frustum = new Plane[6];
     readonly List<View> views = new List<View>();
-    PortalRenderSettings settings;
     Material paper;
     Shader windowShader;
     Mesh mesh;
@@ -97,7 +96,6 @@ public sealed class PortalWindow : MonoBehaviour
         surface.sharedMaterial=paper;
         surface.shadowCastingMode=ShadowCastingMode.Off;
         windowShader=Resources.Load<Shader>("Portals/Window");
-        settings=Resources.Load<PortalRenderSettings>("Portals/Rendering");
     }
 
     View CreateView(Camera player,int depth)
@@ -132,12 +130,13 @@ public sealed class PortalWindow : MonoBehaviour
         // Allocate on level entry, depth changes or resize, never based on the projected aperture size.
         int width=player.pixelWidth,height=player.pixelHeight;
         if(width<1 || height<1)return;
-        while(views.Count>settings.MaxDepth){
+        int depth=GameSettings.Current.portalDepth;
+        while(views.Count>depth){
             ReleaseView(views[views.Count-1]);
             views.RemoveAt(views.Count-1);
         }
         float scale=Mathf.Min(.75f,1600f/Mathf.Max(width,height));
-        for(int i=0;i<settings.MaxDepth;i++,scale*=.5f){
+        for(int i=0;i<depth;i++,scale*=.5f){
             if(i==views.Count)views.Add(CreateView(player,i+1));
             var pass=views[i];
             int w=Mathf.Max(1,Mathf.RoundToInt(width*scale)),h=Mathf.Max(1,Mathf.RoundToInt(height*scale));
