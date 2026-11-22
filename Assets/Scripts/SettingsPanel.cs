@@ -4,193 +4,104 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using static NightUi;
 
-// The one full-screen settings page: mulberry paper over the mountain painting, a mineral-green
-// spine with the categories, and the rows of the chosen category. The lobby shows every row;
-// inside a level the lobby-only rows are left out.
+// The one full-screen settings page, in the shared night-mountain style (see NightUi).
+// The lobby shows every row; inside a level the lobby-only rows are left out.
 public sealed class SettingsPanel : MonoBehaviour
 {
-    static readonly Color Ink=new Color(.13f,.17f,.17f);
-    static readonly Color Faint=new Color(.13f,.17f,.17f,.16f);
-    static readonly Color Paper=new Color(.95f,.89f,.75f);
-    static readonly Color Teal=new Color(.13f,.36f,.38f);
-    static readonly Color Cinnabar=new Color(.72f,.33f,.23f);
-    static readonly Color Gold=new Color(.80f,.62f,.33f);
-    const float RowHeight=58,Control=300;
-    const float ViewHeight=470;
+    const float RowHeight=52,ListWidth=680,ViewHeight=422,ListLeft=340,ListTop=126;
     const string Controls="操作";
     static readonly string[] Sections={"鼠标","键盘"};
-    // Fixed bindings: section, action, then the key caps.
+    // Fixed bindings: section, action, what it does, then the key caps.
     static readonly string[][] Keys={
-        new[]{"鼠标","视角","移动鼠标"},
-        new[]{"鼠标","青鸾门 / 装置","左键"},
-        new[]{"鼠标","朱雀门","右键"},
-        new[]{"鼠标","切换道具","滚轮"},
-        new[]{"键盘","移动","W","A","S","D"},
-        new[]{"键盘","跳跃","空格"},
-        new[]{"键盘","滑翔","空中","空格"},
-        new[]{"键盘","切换道具","1","2","3"},
-        new[]{"键盘","重试","R"},
-        new[]{"键盘","重开本关","T"},
-        new[]{"键盘","设置","Esc"},
+        new[]{"鼠标","视角","移动鼠标转动视角。","移动鼠标"},
+        new[]{"鼠标","青鸾门 / 装置","持时空枪时放青鸾门；持弹弹菇或风扇时把装置装到白面上。","左键"},
+        new[]{"鼠标","朱雀门","持时空枪时放朱雀门。","右键"},
+        new[]{"鼠标","切换道具","滚动滚轮在已拥有的道具间切换。","滚轮"},
+        new[]{"键盘","移动","前后左右移动。方向键同样可用。","W","A","S","D"},
+        new[]{"键盘","跳跃","站在地面时起跳。","空格"},
+        new[]{"键盘","滑翔","取得纸翼后，在空中按空格展开。","空中","空格"},
+        new[]{"键盘","切换道具","1 时空枪，2 弹弹菇，3 风扇。","1","2","3"},
+        new[]{"键盘","重试","回到最近的检查点。","R"},
+        new[]{"键盘","重开本关","从关卡起点重新开始。","T"},
+        new[]{"键盘","设置","暂停并打开设置，再按一次返回游戏。","Esc"},
     };
-    RectTransform view;
-    RawImage thumb;
-    Font body,brush;
-    Texture2D grain;
+
     CanvasGroup group;
-    RectTransform page,rows;
-    Text heading,note;
+    SettingShape thumb;
+    RectTransform page,view,rows,confirm;
+    Text title,note,helpName,helpText,confirmText;
     Action resume;
     bool inLevel;
-    string category;
+    string category,shown;
     readonly List<string> categories=new List<string>();
-    readonly List<Text> tabLabels=new List<Text>();
-    readonly List<RawImage> tabMarks=new List<RawImage>();
+    // A display change waits for the player to keep it.
+    bool pending;
+    float deadline;
+    bool oldCustom,oldWindowed;
+    int oldWidth,oldHeight,screenWidth,screenHeight;
+    FullScreenMode screenMode;
 
-    public static SettingsPanel Create(Transform canvas,Font font)
+    public static SettingsPanel Create(Transform canvas)
     {
         var panel=new GameObject("设置",typeof(RectTransform),typeof(CanvasGroup)).AddComponent<SettingsPanel>();
-        panel.Build((RectTransform)panel.transform,canvas,font);
+        Fill((RectTransform)panel.transform,canvas);
+        panel.group=panel.GetComponent<CanvasGroup>();
+        Backdrop(panel.transform);
+        panel.page=Page(panel.transform,"版心");
         panel.gameObject.SetActive(false);
         return panel;
     }
 
-    static void Fill(RectTransform rect,Transform parent)
-    {
-        rect.SetParent(parent,false);
-        rect.anchorMin=Vector2.zero;rect.anchorMax=Vector2.one;
-        rect.offsetMin=rect.offsetMax=Vector2.zero;
-    }
-
-    void Build(RectTransform root,Transform canvas,Font font)
-    {
-        Fill(root,canvas);
-        group=GetComponent<CanvasGroup>();
-        body=font;
-        brush=Font.CreateDynamicFontFromOSFont(new[]{"KaiTi","STKaiti","Kaiti SC","FangSong","Songti SC","Microsoft YaHei","PingFang SC"},48);
-        // Coarse pigment grain, multiplied into every flat colour field.
-        const int size=128;
-        grain=new Texture2D(size,size,TextureFormat.RGBA32,false){name="岩彩颗粒",wrapMode=TextureWrapMode.Repeat,filterMode=FilterMode.Bilinear};
-        var pixels=new Color32[size*size];
-        var random=new System.Random(7);
-        for(int i=0;i<pixels.Length;i++){
-            double roll=random.NextDouble();
-            byte v=(byte)(roll<.035?150+random.Next(40):roll>.975?255:214+random.Next(34));
-            pixels[i]=new Color32(v,v,v,255);
-        }
-        grain.SetPixels32(pixels);grain.Apply(false,true);
-
-        var painting=new GameObject("山景",typeof(RectTransform),typeof(RawImage)).GetComponent<RawImage>();
-        painting.rectTransform.SetParent(root,false);
-        painting.texture=Resources.Load<Texture2D>("Mountain");
-        var fit=painting.gameObject.AddComponent<AspectRatioFitter>();
-        fit.aspectMode=AspectRatioFitter.AspectMode.EnvelopeParent;
-        fit.aspectRatio=(float)painting.texture.width/painting.texture.height;
-        var sheet=new GameObject("桑皮纸",typeof(RectTransform),typeof(RawImage)).GetComponent<RawImage>();
-        Fill(sheet.rectTransform,root);
-        sheet.texture=Resources.Load<Texture2D>("Mineral/Mulberry");
-        sheet.uvRect=new Rect(0,0,2.4f,1.35f);
-        sheet.color=new Color(Paper.r,Paper.g,Paper.b,.87f);
-
-        page=new GameObject("版心",typeof(RectTransform)).GetComponent<RectTransform>();
-        page.SetParent(root,false);
-        page.anchorMin=page.anchorMax=page.pivot=Vector2.one*.5f;
-        page.sizeDelta=new Vector2(1280,720);
-    }
-
-    static RectTransform Place(Transform parent,string name,float x,float y,float w,float h)
-    {
-        var rect=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();
-        rect.SetParent(parent,false);
-        rect.anchorMin=rect.anchorMax=rect.pivot=Vector2.up;
-        rect.anchoredPosition=new Vector2(x,-y);
-        rect.sizeDelta=new Vector2(w,h);
-        return rect;
-    }
-
-    RawImage Box(Transform parent,string name,float x,float y,float w,float h,Color color,bool pigment=false)
-    {
-        var image=Place(parent,name,x,y,w,h).gameObject.AddComponent<RawImage>();
-        image.color=color;image.raycastTarget=false;
-        if(pigment){image.texture=grain;image.uvRect=new Rect(x/150f,y/150f,w/150f,h/150f);}
-        return image;
-    }
-
-    Text Write(Transform parent,string value,Font font,int size,Color color,float x,float y,float w,float h,
-        TextAnchor anchor=TextAnchor.MiddleLeft)
-    {
-        var text=Place(parent,value,x,y,w,h).gameObject.AddComponent<Text>();
-        text.font=font;text.fontSize=size;text.color=color;text.alignment=anchor;
-        text.horizontalOverflow=HorizontalWrapMode.Overflow;text.verticalOverflow=VerticalWrapMode.Overflow;
-        text.supportRichText=false;text.raycastTarget=false;text.text=value;
-        return text;
-    }
-
-    static void Press(Graphic target,Action act)
-    {
-        target.raycastTarget=true;
-        var button=target.gameObject.AddComponent<Button>();
-        button.targetGraphic=target;
-        button.navigation=new Navigation{mode=Navigation.Mode.None};
-        button.onClick.AddListener(()=>act());
-    }
-
-    void Stamp(string caption,float x,float y,float w,Color color,Action act)
-    {
-        var plate=Box(page,caption,x,y,w,48,color,true);
-        Write(plate.transform,caption,brush,24,Paper,0,0,w,48,TextAnchor.MiddleCenter);
-        Press(plate,act);
-    }
+    // ---------- the page ----------
 
     // onResume closes the page from the caller's side (a level unpauses); without it the page closes itself.
     public void Open(bool level,Action onResume=null,Action onLeave=null)
     {
-        inLevel=level;resume=onResume;
+        inLevel=level;resume=onResume;pending=false;
         for(int i=page.childCount-1;i>=0;i--)Destroy(page.GetChild(i).gameObject);
-        rows=view=null;thumb=null;
-        categories.Clear();tabLabels.Clear();tabMarks.Clear();
+        view=rows=null;thumb=null;shown=null;
+        categories.Clear();
         foreach(var item in GameSettings.Items)
             if(!(level && item.lobbyOnly) && !categories.Contains(item.category))categories.Add(item.category);
         if(!categories.Contains(category))category=categories[0];
+        Back(page,"设置",Resume);
+        var restore=Box(page,"恢复默认",826,22,236,46,Color.clear);
+        Shape(page,"恢复标",SettingShape.Kind.Diamond,836,37,16,16,White,White);
+        Write(page,"恢复本页默认",Hand,22,White,862,26,200,38,TextAnchor.MiddleLeft,true);
+        Press(restore,ResetCategory);
 
-        // The spine runs off the left and both vertical edges whatever the aspect ratio.
-        var spine=Box(page,"石青书脊",0,0,0,0,Teal,true);
-        spine.rectTransform.anchorMin=spine.rectTransform.anchorMax=new Vector2(0,.5f);
-        spine.rectTransform.pivot=new Vector2(1,.5f);
-        spine.rectTransform.anchoredPosition=new Vector2(292,0);
-        spine.rectTransform.sizeDelta=new Vector2(3300,6000);
-        spine.uvRect=new Rect(0,0,22,40);
-        spine.raycastTarget=true;
-        var edge=Box(page,"泥金线",0,0,0,0,Gold);
-        edge.rectTransform.anchorMin=edge.rectTransform.anchorMax=new Vector2(0,.5f);
-        edge.rectTransform.pivot=new Vector2(0,.5f);
-        edge.rectTransform.anchoredPosition=new Vector2(298,0);
-        edge.rectTransform.sizeDelta=new Vector2(2,6000);
+        Shape(page,"列表底",SettingShape.Kind.Hair,304,112,742,450,new Color(.024f,.12f,.2f,.6f),Color.clear).fade=.06f;
+        Shape(page,"上线",SettingShape.Kind.Hair,284,112,782,1,new Color(White.r,White.g,White.b,.85f),Color.clear);
+        Shape(page,"下线",SettingShape.Kind.Hair,284,561,782,1,new Color(White.r,White.g,White.b,.85f),Color.clear);
+        Shape(page,"星",SettingShape.Kind.Spark,290,104,16,16,White,White);
+        Shape(page,"星",SettingShape.Kind.Spark,1042,553,16,16,White,White);
+        note=Write(page,"",Body,13,new Color(White.r,White.g,White.b,.7f),ListLeft,84,700,24);
 
-        Write(page,"设\n置",brush,76,Paper,64,52,100,190,TextAnchor.UpperLeft).lineSpacing=.95f;
-        var seal=Box(page,"印",172,66,34,34,Cinnabar,true);
-        Write(seal.transform,"岚",brush,22,Paper,0,0,34,34,TextAnchor.MiddleCenter);
-        for(int i=0;i<categories.Count;i++){
-            string name=categories[i];
-            float y=300+i*60;
-            var hit=Box(page,name+"页签",40,y,230,52,Color.clear);
-            tabMarks.Add(Box(page,name+"朱线",48,y+13,4,26,Cinnabar));
-            tabLabels.Add(Write(page,name,brush,30,Paper,72,y,180,52));
-            Press(hit,()=>{category=name;ShowRows();});
-        }
-        var cloud=Place(page,"如意",70,556,84,126).gameObject.AddComponent<RawImage>();
-        cloud.texture=Resources.Load<Texture2D>("Mineral/Ruyi");
-        cloud.raycastTarget=false;
-        cloud.rectTransform.localRotation=Quaternion.Euler(0,0,4);
+        Shape(page,"说明标",SettingShape.Kind.Diamond,330,588,16,16,VermilionLight,Vermilion);
+        helpName=Write(page,"",Hand,22,Blush,360,578,400,32);
+        helpText=Write(page,"",Body,15,new Color(White.r,White.g,White.b,.9f),360,612,560,48,TextAnchor.UpperLeft);
+        helpText.horizontalOverflow=HorizontalWrapMode.Wrap;
 
-        heading=Write(page,category,brush,46,Ink,360,54,300,60);
-        Box(page,"朱砂短线",362,120,56,4,Cinnabar,true);
-        note=Write(page,"",body,15,new Color(Ink.r,Ink.g,Ink.b,.55f),640,72,580,30,TextAnchor.MiddleRight);
+        title=Banner(page,category);
+
         if(level){
-            Stamp("返回选关",880,640,160,Teal,()=>{if(onLeave!=null)onLeave();else Close();});
-            Stamp("继 续",1060,640,160,Cinnabar,Resume);
-        }else Stamp("返 回",1060,640,160,Cinnabar,Resume);
+            Diamond(page,"选关",1036,620,96,25,false,()=>{if(onLeave!=null)onLeave();else Close();});
+            Diamond(page,"继续",1170,620,124,31,true,Resume);
+        }else Diamond(page,"完成",1170,620,124,31,true,Resume);
+
+        // Shown while a display change waits to be kept.
+        confirm=Place(page,"确认",330,500,690,50);
+        Shape(confirm,"底",SettingShape.Kind.Hex,0,0,690,50,new Color(.07f,.42f,.58f),new Color(.04f,.23f,.34f)).raycastTarget=true;
+        confirmText=Write(confirm,"",Body,15,White,36,0,400,50);
+        var keep=Box(confirm,"保留",480,10,80,30,new Color(1,.89f,.84f));
+        Write(keep.transform,"保留",Hand,19,Vermilion,0,0,80,30,TextAnchor.MiddleCenter).GetComponent<Shadow>().enabled=false;
+        Press(keep,()=>{pending=false;ShowRows();});
+        var revert=Box(confirm,"还原",572,10,80,30,new Color(1,1,1,.16f));
+        Write(revert.transform,"还原",Hand,19,White,0,0,80,30,TextAnchor.MiddleCenter);
+        Press(revert,Revert);
+
         ShowRows();
         transform.SetAsLastSibling();
         group.alpha=0;
@@ -200,56 +111,209 @@ public sealed class SettingsPanel : MonoBehaviour
     void ShowRows()
     {
         // Choosing an option rebuilds the rows; stay where the list was scrolled to.
-        float scrolled=rows && heading.text==category?rows.anchoredPosition.y:0;
+        float scrolled=rows && shown==category?rows.anchoredPosition.y:0;
         if(view){view.gameObject.SetActive(false);Destroy(view.gameObject);}
-        view=Place(page,"设置项",340,150,880,ViewHeight);
+        var old=page.Find("分类");
+        if(old){old.gameObject.SetActive(false);Destroy(old.gameObject);}
+        shown=category;
+        title.text=Vertical(category);
+
+        var tabs=Place(page,"分类",0,0,300,720);
+        tabs.SetSiblingIndex(0);
+        for(int i=0;i<categories.Count;i++){
+            string name=categories[i];
+            bool chosen=name==category;
+            float y=128+i*78;
+            var hit=Box(tabs,name,44,y,250,56,Color.clear);
+            if(chosen){
+                var band=Shape(tabs,"带",SettingShape.Kind.Bar,72,y+6,232,44,new Color(.16f,.59f,.8f,.75f),new Color(.16f,.59f,.8f,0));
+                Shape(band.transform,"线",SettingShape.Kind.Bar,0,0,232,1,new Color(White.r,White.g,White.b,.5f),new Color(1,1,1,0));
+                Shape(band.transform,"线",SettingShape.Kind.Bar,0,43,232,1,new Color(White.r,White.g,White.b,.5f),new Color(1,1,1,0));
+            }
+            Gem(tabs,71,y+28,chosen?62:48,chosen);
+            Write(tabs,name,Hand,chosen?32:28,new Color(White.r,White.g,White.b,chosen?1:.62f),116,y,170,56,TextAnchor.MiddleLeft,chosen)
+                .text=Spaced(name);
+            Press(hit,()=>{category=name;ShowRows();});
+        }
+
+        view=Place(page,"设置项",ListLeft,ListTop,ListWidth,ViewHeight);
         view.gameObject.AddComponent<RawImage>().color=Color.clear;
         view.gameObject.AddComponent<RectMask2D>();
-        rows=Place(view,"行",0,0,880,0);
-        heading.text=category;
-        for(int i=0;i<categories.Count;i++){
-            bool chosen=categories[i]==category;
-            tabMarks[i].enabled=chosen;
-            tabLabels[i].color=new Color(Paper.r,Paper.g,Paper.b,chosen?1:.5f);
-        }
+        rows=Place(view,"行",0,0,ListWidth,0);
         bool hidden=false;
-        float y=0;
+        float top=0;
         void Rows(string section)
         {
             foreach(var item in GameSettings.Items){
                 if(item.category!=category || item.section!=section)continue;
                 if(inLevel && item.lobbyOnly){hidden=true;continue;}
-                Write(rows,item.label,brush,26,Ink,20,y,260,RowHeight);
-                Box(rows,"界线",0,y+RowHeight-1,880,1,Faint);
-                if(item.kind==SettingItem.Kind.Slider)Slide(item,y);
-                else if(item.kind==SettingItem.Kind.Options)Chips(item,y);
-                else Stepper(item,y);
-                y+=RowHeight;
+                var row=Row(item.label,item.help,top,item.Changed);
+                if(item.kind==SettingItem.Kind.Slider)Slide(row,item);
+                else if(item.kind==SettingItem.Kind.Options)Options(row,item);
+                else Stepper(row,item);
+                top+=RowHeight;
             }
         }
         if(category==Controls)foreach(string section in Sections){
-            if(y>0)y+=18;
-            Box(rows,section+"朱点",20,y+17,8,8,Cinnabar).rectTransform.localRotation=Quaternion.Euler(0,0,45);
-            Write(rows,section,brush,22,Cinnabar,40,y,200,42);
-            Box(rows,"界线",0,y+41,880,1,new Color(Cinnabar.r,Cinnabar.g,Cinnabar.b,.5f));
-            y+=42;
+            if(top>0)top+=8;
+            Shape(rows,section+"标",SettingShape.Kind.Diamond,2,top+13,13,13,Blush,Blush);
+            Write(rows,section,Hand,22,Blush,26,top,120,40);
+            Shape(rows,"线",SettingShape.Kind.Bar,96,top+20,ListWidth-110,1,new Color(Blush.r,Blush.g,Blush.b,.7f),new Color(Blush.r,Blush.g,Blush.b,0));
+            top+=40;
             Rows(section);
-            foreach(var key in Keys)if(key[0]==section){KeyRow(key,y);y+=RowHeight;}
+            foreach(var key in Keys)if(key[0]==section){
+                var row=Row(key[1],key[2],top,false);
+                float right=ListWidth-12;
+                for(int k=key.Length-1;k>=3;k--){
+                    float width=22+TextWidth(key[k],10,17);
+                    var cap=Shape(row,key[k],SettingShape.Kind.Octagon,right-width,11,width,30,new Color(.1f,.27f,.37f),new Color(.07f,.2f,.29f));
+                    cap.rim=new Color(White.r,White.g,White.b,.6f);cap.rimWidth=1;
+                    Write(cap.transform,key[k],Body,15,White,0,0,width,30,TextAnchor.MiddleCenter);
+                    right-=width+6;
+                }
+                top+=RowHeight;
+            }
         }
         else Rows(null);
         note.text=hidden?"分辨率、显示模式和阴影精度在大厅的设置中调整":"";
+        Describe(null,null);
+        confirm.gameObject.SetActive(pending);
+        confirm.SetAsLastSibling();
 
-        rows.sizeDelta=new Vector2(880,y);
+        rows.sizeDelta=new Vector2(ListWidth,top);
         var scroll=view.gameObject.AddComponent<ScrollRect>();
         scroll.viewport=view;scroll.content=rows;
         scroll.horizontal=false;scroll.movementType=ScrollRect.MovementType.Clamped;
         scroll.scrollSensitivity=36;
-        rows.anchoredPosition=new Vector2(0,Mathf.Clamp(scrolled,0,Mathf.Max(0,y-ViewHeight)));
-        if(!thumb){
-            Box(page,"滚动槽",1234,150,2,ViewHeight,Faint);
-            thumb=Box(page,"滚动标",1232,150,6,60,Teal,true);
-        }
+        rows.anchoredPosition=new Vector2(0,Mathf.Clamp(scrolled,0,Mathf.Max(0,top-ViewHeight)));
+        if(!thumb)thumb=Shape(page,"滚动标",SettingShape.Kind.Fall,1030,ListTop,3,60,AzureLight,Azure);
         MoveThumb();
+    }
+
+    // A row lights up under the pointer and explains itself below the list.
+    RectTransform Row(string label,string help,float top,bool changed)
+    {
+        var row=Place(rows,label,0,top,ListWidth,RowHeight);
+        row.gameObject.AddComponent<RawImage>().color=Color.clear;
+        var lit=Place(row,"高亮",0,0,ListWidth,RowHeight);
+        Shape(lit,"带",SettingShape.Kind.Bar,0,0,ListWidth*.8f,RowHeight,new Color(.24f,.67f,.88f,.4f),new Color(.24f,.67f,.88f,0));
+        Shape(lit,"标",SettingShape.Kind.Diamond,0,RowHeight*.5f-6,12,12,new Color(1,.89f,.84f),VermilionLight);
+        lit.gameObject.SetActive(false);
+        Shape(row,"界线",SettingShape.Kind.Hair,0,RowHeight-1,ListWidth,1,new Color(White.r,White.g,White.b,.24f),Color.clear).fade=.08f;
+        var name=Write(row,label,Hand,25,White,18,0,300,RowHeight);
+        if(changed)Shape(row,"已改",SettingShape.Kind.Diamond,28+name.preferredWidth,RowHeight*.5f-4,9,9,new Color(.89f,.4f,.29f),new Color(.89f,.4f,.29f));
+        var hover=row.gameObject.AddComponent<HoverWatch>();
+        hover.entered=()=>{lit.gameObject.SetActive(true);Describe(label,help);};
+        hover.left=()=>lit.gameObject.SetActive(false);
+        return row;
+    }
+
+    void Describe(string name,string text)
+    {
+        helpName.text=name??category;
+        helpText.text=text??"把鼠标移到某一项上，这里显示它的作用。";
+    }
+
+    void Slide(RectTransform row,SettingItem item)
+    {
+        const float length=300;
+        float right=ListWidth-12;
+        var value=Write(row,item.Value,Body,19,White,right-54,0,54,RowHeight,TextAnchor.MiddleRight);
+        var root=Place(row,"滑条",right-54-18-length,0,length,RowHeight);
+        root.gameObject.AddComponent<RawImage>().color=Color.clear;
+        Box(root,"轨",0,RowHeight*.5f-1,length,2,new Color(White.r,White.g,White.b,.3f));
+        if(item.steps<=40)for(int i=0;i<=item.steps;i++)
+            Box(root,"刻度",i*length/item.steps,RowHeight*.5f+5,1,5,new Color(White.r,White.g,White.b,.4f));
+        var fillArea=new GameObject("填充区",typeof(RectTransform)).GetComponent<RectTransform>();
+        Fill(fillArea,root);
+        // The slider stretches the fill and the handle to their areas, so the areas carry the height.
+        fillArea.anchorMin=new Vector2(0,.5f);fillArea.anchorMax=new Vector2(1,.5f);fillArea.sizeDelta=new Vector2(0,4);
+        var fill=new GameObject("填充",typeof(RectTransform),typeof(CanvasRenderer)).AddComponent<SettingShape>();
+        fill.rectTransform.SetParent(fillArea,false);
+        fill.rectTransform.sizeDelta=Vector2.zero;
+        fill.kind=SettingShape.Kind.Bar;fill.color=new Color(.24f,.67f,.88f,.6f);fill.second=new Color(1,.54f,.4f);fill.raycastTarget=false;
+        var handleArea=new GameObject("游标区",typeof(RectTransform)).GetComponent<RectTransform>();
+        Fill(handleArea,root);
+        handleArea.anchorMin=new Vector2(0,.5f);handleArea.anchorMax=new Vector2(1,.5f);handleArea.sizeDelta=Vector2.zero;
+        var handle=new GameObject("游标",typeof(RectTransform)).GetComponent<RectTransform>();
+        handle.SetParent(handleArea,false);
+        handle.sizeDelta=new Vector2(24,24);
+        var glow=Box(handle,"光",-12,-12,48,48,new Color(1,.47f,.31f,.8f));
+        glow.texture=Glow;
+        var bead=Shape(handle,"菱",SettingShape.Kind.Diamond,0,0,24,24,Color.white,new Color(1,.93f,.9f));
+        bead.rim=new Color(.85f,.28f,.17f);bead.rimWidth=2.4f;
+
+        var slider=root.gameObject.AddComponent<Slider>();
+        slider.transition=Selectable.Transition.None;
+        slider.navigation=new Navigation{mode=Navigation.Mode.None};
+        slider.fillRect=fill.rectTransform;slider.handleRect=handle;
+        slider.direction=Slider.Direction.LeftToRight;
+        slider.wholeNumbers=true;slider.minValue=0;slider.maxValue=item.steps;
+        slider.SetValueWithoutNotify(item.Index);
+        slider.onValueChanged.AddListener(v=>{item.Choose(Mathf.RoundToInt(v));value.text=item.Value;});
+    }
+
+    void Options(RectTransform row,SettingItem item)
+    {
+        float right=ListWidth-12;
+        int chosen=item.Index;
+        for(int i=item.names.Length-1;i>=0;i--){
+            string name=item.names[i];
+            float width=38+TextWidth(name,11,21);
+            bool on=i==chosen;
+            var chip=Shape(row,name,SettingShape.Kind.Hex,right-width,9,width,34,
+                on?AzureLight:Color.clear,on?new Color(.07f,.42f,.58f):Color.clear);
+            Write(chip.transform,name,Hand,21,new Color(White.r,White.g,White.b,on?1:.55f),0,0,width,34,TextAnchor.MiddleCenter);
+            int pick=i;
+            Press(chip,()=>Change(item,pick));
+            right-=width+4;
+        }
+    }
+
+    void Stepper(RectTransform row,SettingItem item)
+    {
+        float right=ListWidth-12;
+        for(int side=1;side>=-1;side-=2){
+            int direction=side;
+            float x=side>0?right-36:right-36-190-36;
+            var arrow=Shape(row,side<0?"上一项":"下一项",SettingShape.Kind.Diamond,x,8,36,36,new Color(.36f,.75f,.88f),AzureDeep);
+            arrow.rim=new Color(1,.89f,.84f,.8f);arrow.rimWidth=1.5f;
+            Write(arrow.transform,side<0?"‹":"›",Body,20,White,0,-2,36,36,TextAnchor.MiddleCenter);
+            Press(arrow,()=>Change(item,direction));
+        }
+        Write(row,item.Value,Body,19,White,right-36-190,0,190,RowHeight,TextAnchor.MiddleCenter);
+    }
+
+    void Change(SettingItem item,int value)
+    {
+        if(item.display){
+            if(!pending){
+                var s=GameSettings.Current;
+                oldCustom=s.customDisplay;oldWindowed=s.windowed;oldWidth=s.width;oldHeight=s.height;
+                screenWidth=Screen.width;screenHeight=Screen.height;screenMode=Screen.fullScreenMode;
+            }
+            pending=true;deadline=Time.unscaledTime+10;
+        }
+        item.Choose(value);
+        ShowRows();
+    }
+
+    void Revert()
+    {
+        var s=GameSettings.Current;
+        s.customDisplay=oldCustom;s.windowed=oldWindowed;s.width=oldWidth;s.height=oldHeight;
+        Screen.SetResolution(screenWidth,screenHeight,screenMode);
+        s.Save();
+        pending=false;
+        ShowRows();
+    }
+
+    void ResetCategory()
+    {
+        if(pending)Revert();
+        foreach(var item in GameSettings.Items)
+            if(item.category==category && !(inLevel && item.lobbyOnly))item.Reset();
+        ShowRows();
     }
 
     void MoveThumb()
@@ -259,91 +323,8 @@ public sealed class SettingsPanel : MonoBehaviour
         thumb.enabled=extra>1;
         if(!thumb.enabled)return;
         float length=ViewHeight*ViewHeight/rows.sizeDelta.y;
-        thumb.rectTransform.sizeDelta=new Vector2(6,length);
-        thumb.rectTransform.anchoredPosition=new Vector2(1232,-150-(ViewHeight-length)*Mathf.Clamp01(rows.anchoredPosition.y/extra));
-    }
-
-    // One fixed binding: the action and its key caps.
-    void KeyRow(string[] key,float y)
-    {
-        Write(rows,key[1],brush,26,Ink,20,y,260,RowHeight);
-        Box(rows,"界线",0,y+RowHeight-1,880,1,Faint);
-        float x=Control;
-        for(int k=2;k<key.Length;k++){
-            string cap=key[k];
-            float width=24;
-            foreach(char c in cap)width+=c<128?12:20;
-            var plate=Box(rows,cap,x,y+12,width,34,new Color(Ink.r,Ink.g,Ink.b,.1f),true);
-            Box(plate.transform,"键底",0,32,width,2,new Color(Ink.r,Ink.g,Ink.b,.45f));
-            Write(plate.transform,cap,body,18,Ink,0,0,width,32,TextAnchor.MiddleCenter);
-            x+=width+6;
-        }
-    }
-
-    void Slide(SettingItem item,float y)
-    {
-        const float length=360;
-        var root=Place(rows,item.label+"滑条",Control,y,length,RowHeight);
-        root.gameObject.AddComponent<RawImage>().color=Color.clear;
-        Box(root,"轨",0,RowHeight*.5f-1,length,2,new Color(Ink.r,Ink.g,Ink.b,.3f));
-        var value=Write(rows,item.Value,body,20,Ink,Control+length+24,y,120,RowHeight);
-
-        RectTransform Inset(string name)
-        {
-            var area=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();
-            Fill(area,root);
-            area.offsetMin=new Vector2(9,0);area.offsetMax=new Vector2(-9,0);
-            return area;
-        }
-        var fill=new GameObject("石青",typeof(RectTransform),typeof(RawImage)).GetComponent<RawImage>();
-        fill.rectTransform.SetParent(Inset("填充区"),false);
-        fill.rectTransform.anchorMin=new Vector2(0,.5f);fill.rectTransform.anchorMax=new Vector2(0,.5f);
-        fill.rectTransform.sizeDelta=new Vector2(0,4);
-        fill.color=Teal;fill.raycastTarget=false;
-        var handle=new GameObject("游标",typeof(RectTransform)).GetComponent<RectTransform>();
-        handle.SetParent(Inset("游标区"),false);
-        handle.anchorMin=handle.anchorMax=new Vector2(0,.5f);
-        handle.sizeDelta=new Vector2(22,22);
-        var gem=new GameObject("朱砂",typeof(RectTransform),typeof(RawImage)).GetComponent<RawImage>();
-        gem.rectTransform.SetParent(handle,false);
-        gem.rectTransform.sizeDelta=new Vector2(14,14);
-        gem.rectTransform.localRotation=Quaternion.Euler(0,0,45);
-        gem.color=Cinnabar;gem.raycastTarget=false;
-
-        var slider=root.gameObject.AddComponent<Slider>();
-        slider.navigation=new Navigation{mode=Navigation.Mode.None};
-        slider.fillRect=fill.rectTransform;slider.handleRect=handle;slider.targetGraphic=gem;
-        slider.direction=Slider.Direction.LeftToRight;
-        slider.wholeNumbers=true;slider.minValue=0;slider.maxValue=item.steps;
-        slider.SetValueWithoutNotify(item.Index);
-        slider.onValueChanged.AddListener(v=>{item.Choose(Mathf.RoundToInt(v));value.text=item.Value;});
-    }
-
-    void Chips(SettingItem item,float y)
-    {
-        float x=Control;
-        int chosen=item.Index;
-        for(int i=0;i<item.names.Length;i++){
-            string name=item.names[i];
-            float width=30;
-            foreach(char c in name)width+=c<128?12:21;
-            var chip=Box(rows,item.label+name,x,y+11,width,36,i==chosen?Teal:Color.clear,i==chosen);
-            Write(chip.transform,name,body,19,i==chosen?Paper:new Color(Ink.r,Ink.g,Ink.b,.62f),0,0,width,36,TextAnchor.MiddleCenter);
-            int pick=i;
-            Press(chip,()=>{item.Choose(pick);ShowRows();});
-            x+=width+6;
-        }
-    }
-
-    void Stepper(SettingItem item,float y)
-    {
-        var value=Write(rows,item.Value,body,20,Ink,Control+44,y,200,RowHeight,TextAnchor.MiddleCenter);
-        for(int side=-1;side<=1;side+=2){
-            int direction=side;
-            var arrow=Box(rows,item.label+(side<0?"上一项":"下一项"),side<0?Control:Control+252,y+11,36,36,Teal,true);
-            Write(arrow.transform,side<0?"‹":"›",body,24,Paper,0,-2,36,36,TextAnchor.MiddleCenter);
-            Press(arrow,()=>{item.Choose(direction);value.text=item.Value;});
-        }
+        thumb.rectTransform.sizeDelta=new Vector2(3,length);
+        thumb.rectTransform.anchoredPosition=new Vector2(1030,-ListTop-(ViewHeight-length)*Mathf.Clamp01(rows.anchoredPosition.y/extra));
     }
 
     void Resume()
@@ -352,8 +333,10 @@ public sealed class SettingsPanel : MonoBehaviour
         else Close();
     }
 
+    // Leaving the page keeps a display change that was still waiting.
     public void Close()
     {
+        pending=false;
         if(EventSystem.current)EventSystem.current.SetSelectedGameObject(null);
         gameObject.SetActive(false);
     }
@@ -362,9 +345,13 @@ public sealed class SettingsPanel : MonoBehaviour
     {
         group.alpha=Mathf.MoveTowards(group.alpha,1,Time.unscaledDeltaTime*7);
         MoveThumb();
+        if(pending){
+            float left=deadline-Time.unscaledTime;
+            if(left<=0)Revert();
+            else confirmText.text="显示设置已更改，"+Mathf.CeilToInt(left)+" 秒后自动还原。";
+        }
         // Inside a level the level itself owns Esc.
         if(!inLevel && Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame)Close();
     }
 
-    void OnDestroy(){if(grain)Destroy(grain);}
 }
