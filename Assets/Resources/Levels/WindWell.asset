@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33bf120718af81ad87276ac7b02628b, type: 3}
+  m_Name: WindWell
+  m_EditorClassIdentifier:
+  title: 风井纸坊
+  description: 从井边跃下，借风和纸翼抵达灯下出口。
+  fixedBricks:
+  - label: 井底
+    start: {x: -4, y: -4, z: -4}
+    size: {x: 10, y: 1, z: 9}
+    white: 8
+  - label: 北外墙
+    start: {x: -4, y: -3, z: 5}
+    size: {x: 10, y: 9, z: 1}
+    white: 0
+  - label: 北墙白纸
+    start: {x: -3, y: -2, z: 5}
+    size: {x: 7, y: 5, z: 1}
+    white: 16
+  - label: 南外墙
+    start: {x: -4, y: -3, z: -5}
+    size: {x: 10, y: 9, z: 1}
+    white: 0
+  - label: 风槽白壁
+    start: {x: 4, y: -1, z: -5}
+    size: {x: 1, y: 2, z: 1}
+    white: 32
+  - label: 东外墙
+    start: {x: 6, y: -3, z: -4}
+    size: {x: 1, y: 9, z: 9}
+    white: 0
+  - label: 西窗下墙
+    start: {x: -5, y: -3, z: -4}
+    size: {x: 1, y: 4, z: 9}
+    white: 0
+  - label: 西窗上墙
+    start: {x: -5, y: 4, z: -4}
+    size: {x: 1, y: 2, z: 9}
+    white: 0
+  - label: 西窗南墙
+    start: {x: -5, y: 1, z: -4}
+    size: {x: 1, y: 3, z: 1}
+    white: 0
+  - label: 西窗北墙
+    start: {x: -5, y: 1, z: 2}
+    size: {x: 1, y: 3, z: 3}
+    white: 0
+  - label: 纸坊天花
+    start: {x: -5, y: 6, z: -5}
+    size: {x: 12, y: 1, z: 11}
+    white: 4
+  - label: 入井台
+    start: {x: -4, y: -3, z: -4}
+    size: {x: 3, y: 3, z: 4}
+    white: 0
+  - label: 落台与风槽步道
+    start: {x: 0, y: -3, z: -4}
+    size: {x: 4, y: 3, z: 6}
+    white: 0
+  - label: 风槽地板
+    start: {x: 4, y: -3, z: -4}
+    size: {x: 2, y: 2, z: 6}
+    white: 0
+  - label: 风槽止挡
+    start: {x: 4, y: -1, z: 1}
+    size: {x: 2, y: 1, z: 1}
+    white: 0
+  - label: 低竹檐
+    start: {x: 4, y: 1, z: -3}
+    size: {x: 1, y: 1, z: 2}
+    white: 0
+  - label: 灯下出口
+    start: {x: -4, y: 2, z: 1}
+    size: {x: 3, y: 1, z: 3}
+    white: 0
+  physicalBricks:
+  - label: 风槽纸砖
+    cell: {x: 4, y: -1, z: -3}
+    white: 8
+    mass: 2
+  spawnFeet: {x: -3.45, y: 0, z: -4.85}
+  spawnYaw: 14
+  checkpointFeet: {x: 4.7, y: 0, z: 0.65}
+  checkpointYaw: 144
+  exitFeet: {x: -3.7, y: 4.5, z: 3.3}
+  exitSign: {x: -3.7, y: 3.75, z: 1.46}
+  supplyZone:
+    m_Center: {x: 3, y: 0.62, z: -1.5}
+    m_Extent: {x: 2.98, y: 0.68, z: 4.48}
+  exitZone:
+    m_Center: {x: -3.65, y: 5, z: 3.6}
+    m_Extent: {x: 2, y: 0.65, z: 1.98}
+  westWindow: 1
+  startingGear: 1
+  supplyGear: 14
+  entryHint: 风井纸坊　·　在井底和对岸白墙放门，从井边跃下
+  supplyHint: 取得风扇、弹弹菇和纸翼　·　按 3 选择风扇，左键贴在槽端白面
+  retryHint: 在槽端白面安装风扇，把纸砖推到井口
+  practice: 0
