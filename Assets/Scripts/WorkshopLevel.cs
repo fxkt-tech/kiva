@@ -27,7 +27,33 @@ public struct LooseBrick
 [CreateAssetMenu(menuName="纸坊/关卡")]
 public sealed class WorkshopLevel : ScriptableObject
 {
+    [Serializable]
+    public struct Perch
+    {
+        public string id;
+        public BirdSpecies species;
+        public Vector3 feet, flightOffset;
+        public float yaw;
+    }
+
+    public string stageId;
+    public Perch[] perches = Array.Empty<Perch>();
+
+    void OnValidate()
+    {
+        if(string.IsNullOrWhiteSpace(stageId) || perches==null || perches.Length==0){
+            Debug.LogWarning("请填写关卡编号并添加至少一个栖点。",this);
+            return;
+        }
+        var ids = new System.Collections.Generic.HashSet<string>();
+        foreach (var perch in perches)
+            if (!perch.species || string.IsNullOrWhiteSpace(perch.species.id) || string.IsNullOrWhiteSpace(perch.id) || !ids.Add(perch.id))
+                Debug.LogWarning("栖点需要鸟种和唯一编号。", this);
+    }
+
     public string title, description;
+    public string locationName;
+    [TextArea] public string arrivalStory;
     public BrickRegion[] fixedBricks=Array.Empty<BrickRegion>();
     public LooseBrick[] physicalBricks=Array.Empty<LooseBrick>();
     public Vector3 spawnFeet, checkpointFeet, exitFeet, exitSign;

@@ -15,7 +15,7 @@ public sealed class GameSettings
     // The launch resolution and window mode are kept until the player chooses otherwise.
     public bool customDisplay,windowed;
     public int width,height;
-    public bool crosshair=true,exitGuide=true,hints=true;
+    public bool crosshair=true,exitGuide=true,hints=true,birdDirections=true;
 
     static GameSettings current,defaults;
     public static GameSettings Current=>current??=Load();
@@ -35,7 +35,10 @@ public sealed class GameSettings
     {
         var loaded=new GameSettings();
         try{
-            if(File.Exists(SavePath))JsonUtility.FromJsonOverwrite(File.ReadAllText(SavePath),loaded);
+            var file=SavePath;
+            if(!File.Exists(file) && Application.productName=="百鸟卷")
+                file=Path.Combine(Path.GetDirectoryName(Application.persistentDataPath),"kiva","settings.json");
+            if(File.Exists(file))JsonUtility.FromJsonOverwrite(File.ReadAllText(file),loaded);
         }catch(Exception e){
             Debug.LogWarning("设置读取失败，使用默认值："+e.Message);
             loaded=new GameSettings();
@@ -45,7 +48,10 @@ public sealed class GameSettings
 
     public void Save()
     {
-        try{File.WriteAllText(SavePath,JsonUtility.ToJson(this,true));}
+        try{
+            Directory.CreateDirectory(Application.persistentDataPath);
+            File.WriteAllText(SavePath,JsonUtility.ToJson(this,true));
+        }
         catch(Exception e){Debug.LogWarning("设置保存失败："+e.Message);}
     }
 
@@ -106,10 +112,12 @@ public sealed class GameSettings
         new SettingItem(SettingItem.Kind.Stepper,"画面","分辨率",null,0,null,(s,d)=>s.StepResolution(d),
             s=>s.width>0?s.width+" × "+s.height:Screen.width+" × "+Screen.height)
             .Display(s=>s.width>0,s=>s.ForgetDisplay()).Help("游戏画面的像素尺寸。改动后需要确认，10 秒不确认自动还原。"),
+        SettingItem.Toggle("界面","鸟鸣方位",s=>s.birdDirections,(s,v)=>s.birdDirections=v)
+            .Help("附近有未入卷的小鸟鸣叫时，在屏幕边缘显示一枚白羽。"),
         SettingItem.Toggle("界面","准星",s=>s.crosshair,(s,v)=>s.crosshair=v)
             .Help("屏幕中央的瞄准标记，同时显示两扇门是否已放置。"),
-        SettingItem.Toggle("界面","出口指引",s=>s.exitGuide,(s,v)=>s.exitGuide=v)
-            .Help("看不到出口时，在屏幕边缘提示出口方向。"),
+        SettingItem.Toggle("界面","目的地指引",s=>s.exitGuide,(s,v)=>s.exitGuide=v)
+            .Help("在屏幕边缘提示关卡目的地的方向。"),
         SettingItem.Toggle("界面","操作提示",s=>s.hints,(s,v)=>s.hints=v)
             .Help("左下角的引导文字，比如取得装置后的用法说明。"),
     };
@@ -148,17 +156,17 @@ public sealed class SettingItem
     }
 
     public int Index=>index(GameSettings.Current);
-    public string Value=>show(GameSettings.Current);
+    public string Value=>show!=null?show(GameSettings.Current):names[Index];
     public bool Changed=>changed!=null?changed(GameSettings.Current):index(GameSettings.Current)!=index(GameSettings.Defaults);
 
     // Change, apply and save in one place.
-    public void Choose(int value)
+    public void Choose(int value,bool save=true)
     {
         var settings=GameSettings.Current;
         choose(settings,value);
         settings.Apply();
         if(display)settings.ApplyDisplay();
-        settings.Save();
+        if(save)settings.Save();
     }
 
     public void Reset()
@@ -181,6 +189,6 @@ public sealed class SettingItem
 
     public static SettingItem Choice(string category,string label,Func<GameSettings,int> get,Action<GameSettings,int> set,
         int[] values,string[] names)
-        =>new SettingItem(Kind.Options,category,label,names,0,s=>Mathf.Max(0,Array.IndexOf(values,get(s))),
+        =>new SettingItem(Kind.Options,category,label,names,values.Length-1,s=>Mathf.Max(0,Array.IndexOf(values,get(s))),
             (s,i)=>set(s,values[i]),null);
 }

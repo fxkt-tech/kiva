@@ -12,97 +12,110 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c33bf120718af81ad87276ac7b02628b, type: 3}
   m_Name: WindWell
   m_EditorClassIdentifier:
-  title: 风井纸坊
-  description: 从井边跃下，借风和纸翼抵达灯下出口。
+  stageId: spring-stream/under-the-eaves
+  perches:
+  - id: west-window
+    species: {fileID: 11400000, guid: 06b46460c5470d04fa5ee54cdea20095, type: 2}
+    feet: {x: -5.35, y: 4.5, z: 2.15}
+    flightOffset: {x: 0.62, y: 0.45, z: -0.79}
+    yaw: 117
+  title: "\u6A90\u4E0B\u65E7\u5DE2"
+  description: "\u6EAA\u6751\u892A\u4E86\u8272\uFF0C\u7EB8\u574A\u897F\u7A97\u4E0B\u5374\u8FD8\u5B88\u7740\u4E00\u53EA\u5BB6\u71D5\u3002\u6731\u96C0\u542C\u89C1\u5B83\u53EB\u4E86\u4E00\u58F0\uFF0C\u4FBF\u5F80\u90A3\u9053\u65AD\u5F00\u7684\u5C4B\u6A90\u98DE\u53BB\u3002"
+  locationName: "\u98CE\u4E95\u7EB8\u574A"
+  arrivalStory: "\u5BB6\u71D5\u8854\u6765\u5E72\u8349\uFF0C\u653E\u5728\u6731\u96C0\u811A\u8FB9\u3002\n\u201C\u4ECA\u5E74\uFF0C\u4E5F\u7ED9\u4F60\u7559\u4E86\u4F4D\u7F6E\u3002\u201D"
   fixedBricks:
-  - label: 井底
+  - label: "\u4E95\u5E95"
     start: {x: -4, y: -4, z: -4}
     size: {x: 10, y: 1, z: 9}
     white: 8
-  - label: 北外墙
+  - label: "\u5317\u5916\u5899"
     start: {x: -4, y: -3, z: 5}
     size: {x: 10, y: 9, z: 1}
     white: 0
-  - label: 北墙白纸
+  - label: "\u5317\u5899\u767D\u7EB8"
     start: {x: -3, y: -2, z: 5}
     size: {x: 7, y: 5, z: 1}
     white: 16
-  - label: 南外墙
+  - label: "\u5357\u5916\u5899"
     start: {x: -4, y: -3, z: -5}
     size: {x: 10, y: 9, z: 1}
     white: 0
-  - label: 风槽白壁
+  - label: "\u98CE\u69FD\u767D\u58C1"
     start: {x: 4, y: -1, z: -5}
     size: {x: 1, y: 2, z: 1}
     white: 32
-  - label: 东外墙
+  - label: "\u4E1C\u5916\u5899"
     start: {x: 6, y: -3, z: -4}
     size: {x: 1, y: 9, z: 9}
     white: 0
-  - label: 西窗下墙
+  - label: "\u897F\u7A97\u4E0B\u5899"
     start: {x: -5, y: -3, z: -4}
     size: {x: 1, y: 4, z: 9}
     white: 0
-  - label: 西窗上墙
+  - label: "\u897F\u7A97\u4E0A\u5899"
     start: {x: -5, y: 4, z: -4}
     size: {x: 1, y: 2, z: 9}
     white: 0
-  - label: 西窗南墙
+  - label: "\u897F\u7A97\u5357\u5899"
     start: {x: -5, y: 1, z: -4}
     size: {x: 1, y: 3, z: 1}
     white: 0
-  - label: 西窗北墙
+  - label: "\u897F\u7A97\u5317\u5899"
     start: {x: -5, y: 1, z: 2}
     size: {x: 1, y: 3, z: 3}
     white: 0
-  - label: 纸坊天花
+  - label: "\u7EB8\u574A\u5929\u82B1"
     start: {x: -5, y: 6, z: -5}
     size: {x: 12, y: 1, z: 11}
     white: 4
-  - label: 入井台
+  - label: "\u5165\u4E95\u53F0"
     start: {x: -4, y: -3, z: -4}
     size: {x: 3, y: 3, z: 4}
     white: 0
-  - label: 落台与风槽步道
+  - label: "\u843D\u53F0\u4E0E\u98CE\u69FD\u6B65\u9053"
     start: {x: 0, y: -3, z: -4}
     size: {x: 4, y: 3, z: 6}
     white: 0
-  - label: 风槽地板
+  - label: "\u98CE\u69FD\u5730\u677F"
     start: {x: 4, y: -3, z: -4}
     size: {x: 2, y: 2, z: 6}
     white: 0
-  - label: 风槽止挡
+  - label: "\u98CE\u69FD\u6B62\u6321"
     start: {x: 4, y: -1, z: 1}
-    size: {x: 2, y: 1, z: 1}
+    size: {x: 1, y: 2, z: 1}
     white: 0
-  - label: 低竹檐
+  - label: "\u98CE\u69FD\u4E1C\u53F0"
+    start: {x: 5, y: -1, z: 0}
+    size: {x: 1, y: 1, z: 1}
+    white: 0
+  - label: "\u4F4E\u7AF9\u6A90"
     start: {x: 4, y: 1, z: -3}
     size: {x: 1, y: 1, z: 2}
     white: 0
-  - label: 灯下出口
+  - label: "\u706F\u4E0B\u51FA\u53E3"
     start: {x: -4, y: 2, z: 1}
     size: {x: 3, y: 1, z: 3}
     white: 0
   physicalBricks:
-  - label: 风槽纸砖
+  - label: "\u98CE\u69FD\u7EB8\u7816"
     cell: {x: 4, y: -1, z: -3}
     white: 8
     mass: 2
   spawnFeet: {x: -3.45, y: 0, z: -4.85}
-  spawnYaw: 14
   checkpointFeet: {x: 4.7, y: 0, z: 0.65}
-  checkpointYaw: 144
   exitFeet: {x: -3.7, y: 4.5, z: 3.3}
   exitSign: {x: -3.7, y: 3.75, z: 1.46}
+  spawnYaw: 14
+  checkpointYaw: 144
   supplyZone:
     m_Center: {x: 3, y: 0.62, z: -1.5}
     m_Extent: {x: 2.98, y: 0.68, z: 4.48}
   exitZone:
     m_Center: {x: -3.65, y: 5, z: 3.6}
     m_Extent: {x: 2, y: 0.65, z: 1.98}
-  westWindow: 1
   startingGear: 1
   supplyGear: 14
-  entryHint: 风井纸坊　·　在井底和对岸白墙放门，从井边跃下
-  supplyHint: 取得风扇、弹弹菇和纸翼　·　按 3 选择风扇，左键贴在槽端白面
-  retryHint: 在槽端白面安装风扇，把纸砖推到井口
+  entryHint: "\u5BFB\u56DE\u897F\u7A97\u9AD8\u53F0\u6A90\u4E0B\u7684\u5BB6\u71D5\u3000\xB7\u3000\u5728\u4E95\u5E95\u4E0E\u5BF9\u5CB8\u767D\u5899\u5F00\u95E8\uFF0C\u501F\u843D\u52BF\u98DE\u4E0A\u843D\u53F0"
+  supplyHint: "\u53D6\u5F97\u98CE\u6247\u3001\u5F39\u5F39\u83C7\u548C\u7EB8\u7FFC\u3000\xB7\u3000\u6309 3 \u9009\u62E9\u98CE\u6247\uFF0C\u5DE6\u952E\u8D34\u5728\u69FD\u7AEF\u767D\u9762"
+  retryHint: "\u6CBF\u98CE\u69FD\u63A8\u7816\u642D\u6865\uFF0C\u5728\u7816\u9876\u653E\u7F6E\u5F39\u5F39\u83C7\uFF0C\u817E\u7A7A\u6ED1\u5411\u897F\u7A97\u6A90\u4E0B"
+  westWindow: 1

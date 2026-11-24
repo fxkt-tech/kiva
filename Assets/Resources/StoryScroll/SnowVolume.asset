@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c6e87e69a0649a8b489a33d948a7fb2, type: 3}
+  m_Name: SnowVolume
+  m_EditorClassIdentifier: Assembly-CSharp::StoryVolume
+  number: "\u7B2C\u56DB\u5377"
+  title: "\u96EA\u5C3D\u5F52\u9014"
+  preface:
+  painting: {fileID: 0}
+  chapters: []
+  storyPanorama: {fileID: 2800000, guid: 5d1d46a31dfa48a3b779ab9fb750a753, type: 3}
+  storyCrop:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  birdSpots:
+  - name: "\u7EA2\u8179\u7070\u96C0"
+    habitat: "\u96EA\u677E\u5165\u53E3 \xB7 \u8FCE\u98CE\u679D"
+    position: {x: 0.09148936, y: 0.31309903}
+    hitSize: {x: 0.09148936, y: 0.22683705}
+    chapter: {fileID: 0}
+  - name: "\u6E21\u9E26"
+    habitat: "\u677E\u4E0B\u6E05\u5D16 \xB7 \u5CA9\u77F3\u6298\u89D2"
+    position: {x: 0.14787234, y: 0.5846645}
+    hitSize: {x: 0.11170213, y: 0.27795526}
+    chapter: {fileID: 0}
+  - name: "\u96EA\u96C0"
+    habitat: "\u5317\u5CAD \xB7 \u77ED\u8349\u4E0E\u77F3\u7F1D"
+    position: {x: 0.24148937, y: 0.42172524}
+    hitSize: {x: 0.07446808, y: 0.2172524}
+    chapter: {fileID: 0}
+  - name: "\u5CA9\u96F7\u9E1F"
+    habitat: "\u80CC\u98CE\u5761 \xB7 \u677E\u6839\u79EF\u96EA"
+    position: {x: 0.30531916, y: 0.6996805}
+    hitSize: {x: 0.09255319, y: 0.22683705}
+    chapter: {fileID: 0}
+  - name: "\u96EA\u9E2E"
+    habitat: "\u971C\u5CA9\u4E2D \xB7 \u5D16\u9876\u5E73\u53F0"
+    position: {x: 0.40212765, y: 0.38338658}
+    hitSize: {x: 0.08723404, y: 0.26198083}
+    chapter: {fileID: 0}
+  - name: "\u89D2\u767E\u7075"
+    habitat: "\u5C71\u95F4\u77F3\u6865\u4E0A\u6E38 \xB7 \u8349\u5C16"
+    position: {x: 0.5053192, y: 0.6357827}
+    hitSize: {x: 0.088297874, y: 0.24920128}
+    chapter: {fileID: 0}
+  - name: "\u559C\u9E4A"
+    habitat: "\u98CE\u4EAD\u524D \xB7 \u96EA\u677E\u957F\u679D"
+    position: {x: 0.58829784, y: 0.4057508}
+    hitSize: {x: 0.113829784, y: 0.25878593}
+    chapter: {fileID: 0}
+  - name: "\u84DD\u6B4C\u9E32"
+    habitat: "\u96EA\u6865\u4E0B\u6E38 \xB7 \u9752\u77F3\u65C1"
+    position: {x: 0.6755319, y: 0.69009584}
+    hitSize: {x: 0.09893617, y: 0.25239617}
+    chapter: {fileID: 0}
+  - name: "\u71D5\u96C0"
+    habitat: "\u7EB8\u706F\u5C71\u9053 \xB7 \u96EA\u679D"
+    position: {x: 0.7670213, y: 0.50479233}
+    hitSize: {x: 0.08723404, y: 0.22683705}
+    chapter: {fileID: 0}
+  - name: "\u767D\u9E64"
+    habitat: "\u5377\u5C3E\u96EA\u4EAD \xB7 \u6696\u706F\u524D"
+    position: {x: 0.8904255, y: 0.35782748}
+    hitSize: {x: 0.09680851, y: 0.36741215}
+    chapter: {fileID: 0}
+  allChaptersPublished: 0

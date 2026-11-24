@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c6e87e69a0649a8b489a33d948a7fb2, type: 3}
+  m_Name: ReedVolume
+  m_EditorClassIdentifier: Assembly-CSharp::StoryVolume
+  number: "\u7B2C\u4E09\u5377"
+  title: "\u79CB\u6CFD\u5F52\u9E3F"
+  preface:
+  painting: {fileID: 0}
+  chapters: []
+  storyPanorama: {fileID: 2800000, guid: 9537a3ed05324218a730c37dbaf26171, type: 3}
+  storyCrop:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  birdSpots:
+  - name: "\u4E39\u9876\u9E64"
+    habitat: "\u67AB\u5CB8 \xB7 \u9752\u82D4\u6D45\u77F3"
+    position: {x: 0.08404256, y: 0.456869}
+    hitSize: {x: 0.09148936, y: 0.37060702}
+    chapter: {fileID: 0}
+  - name: "\u7FE0\u9E1F"
+    habitat: "\u6CCA\u5CB8\u5CA9 \xB7 \u77F3\u5761\u4E0B\u65B9"
+    position: {x: 0.16489361, y: 0.71884984}
+    hitSize: {x: 0.08510638, y: 0.25559106}
+    chapter: {fileID: 0}
+  - name: "\u7EA2\u989D\u91D1\u7FC5\u96C0"
+    habitat: "\u67AB\u5CB8 \xB7 \u6A2A\u679D\u7EA2\u53F6\u95F4"
+    position: {x: 0.24893618, y: 0.3226837}
+    hitSize: {x: 0.07978723, y: 0.20766774}
+    chapter: {fileID: 0}
+  - name: "\u8349\u9E6D"
+    habitat: "\u6D45\u6E7E \xB7 \u91D1\u82A6\u80CC\u9762"
+    position: {x: 0.2925532, y: 0.5654952}
+    hitSize: {x: 0.10638298, y: 0.3546326}
+    chapter: {fileID: 0}
+  - name: "\u9E33\u9E2F"
+    habitat: "\u79CB\u6C34\u6E7E \xB7 \u665A\u971E\u5012\u5F71"
+    position: {x: 0.40106383, y: 0.66134185}
+    hitSize: {x: 0.11276596, y: 0.2428115}
+    chapter: {fileID: 0}
+  - name: "\u666E\u901A\u9E2C\u9E5A"
+    habitat: "\u79CB\u6C34\u4E2D\u592E \xB7 \u9732\u6C34\u5CA9"
+    position: {x: 0.5159575, y: 0.38019168}
+    hitSize: {x: 0.10957447, y: 0.28115016}
+    chapter: {fileID: 0}
+  - name: "\u5927\u5929\u9E45"
+    habitat: "\u65E5\u5F71\u4E0B\u6E38 \xB7 \u6D45\u91D1\u6C34\u9762"
+    position: {x: 0.6031915, y: 0.7060703}
+    hitSize: {x: 0.1287234, y: 0.3003195}
+    chapter: {fileID: 0}
+  - name: "\u7EA2\u5634\u9E25"
+    habitat: "\u6E56\u8FB9\u6808\u9053 \xB7 \u65E7\u6728\u6869"
+    position: {x: 0.6968085, y: 0.31948882}
+    hitSize: {x: 0.07446808, y: 0.19169329}
+    chapter: {fileID: 0}
+  - name: "\u7070\u96C1"
+    habitat: "\u53F3\u5CB8\u82C7\u5E8A \xB7 \u79CB\u8349\u524D"
+    position: {x: 0.8138298, y: 0.6805112}
+    hitSize: {x: 0.113829784, y: 0.36102235}
+    chapter: {fileID: 0}
+  - name: "\u7EFF\u5934\u9E2D"
+    habitat: "\u6808\u9053\u4E4B\u5916 \xB7 \u8FDC\u5CB8\u6C34\u7EB9"
+    position: {x: 0.90957445, y: 0.45047924}
+    hitSize: {x: 0.08723404, y: 0.22683705}
+    chapter: {fileID: 0}
+  allChaptersPublished: 0

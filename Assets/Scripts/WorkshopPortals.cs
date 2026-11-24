@@ -66,7 +66,11 @@ public sealed class WorkshopPortals
     }
 
     public bool Crossing(Vector3 eye,Vector3 velocity,out Vector3 mapped,out Quaternion turn,out Vector3 mappedVelocity,bool physics=false)
+        => Crossing(eye,velocity,out mapped,out turn,out mappedVelocity,out _,physics);
+
+    public bool Crossing(Vector3 eye,Vector3 velocity,out Vector3 mapped,out Quaternion turn,out Vector3 mappedVelocity,out float overshoot,bool physics)
     {
+        overshoot=0;
         mapped=eye;turn=Quaternion.identity;mappedVelocity=velocity;
         if(!Paired)return false;
         for(int i=0;i<2;i++){
@@ -82,6 +86,7 @@ public sealed class WorkshopPortals
             turn=exit.rotation*HalfTurn*inverse;
             mapped=exit.position+exit.rotation*(HalfTurn*local);
             mappedVelocity=slots[1-i].face.PointVelocity(mapped)+turn*relative;
+            overshoot=-local.z/inward;
             return true;
         }
         return false;

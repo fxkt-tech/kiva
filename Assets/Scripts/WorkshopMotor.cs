@@ -14,6 +14,9 @@ public sealed class WorkshopMotor : MonoBehaviour
     bool jump,glideHeld,steerJump;
     Vector2 movement;
     Vector3 exitStart;
+    public bool CrossedThisStep { get; private set; }
+    public Vector3 EntryCenter { get; private set; }
+    public Vector3 ExitCenter { get; private set; }
     double exitTick=double.NegativeInfinity;
     VermilionBird bird;
     PhysicsMaterial friction;
@@ -130,8 +133,11 @@ public sealed class WorkshopMotor : MonoBehaviour
         velocity.x=horizontal.x;velocity.z=horizontal.z;
         jump=false;
         Body.linearVelocity=velocity;
-        if(!portals.Crossing(Body.position+Vector3.up*EyeOffset,velocity,out var point,out var turn,out var after,true))return;
+        CrossedThisStep=portals.Crossing(Body.position+Vector3.up*EyeOffset,velocity,out var point,out var turn,out var after,out float overshoot,true);
+        if(!CrossedThisStep)return;
+        EntryCenter=Body.position-velocity*overshoot;
         exitStart=point-Vector3.up*EyeOffset;
+        ExitCenter=exitStart-after*overshoot;
         exitTick=Time.fixedTimeAsDouble;
         Body.position=exitStart;Body.linearVelocity=after;
         steerJump=false;

@@ -3,9 +3,10 @@ using UnityEngine.UI;
 
 // Flat shapes for the settings page, drawn as meshes so they stay crisp at any size.
 // `color` is the top (or left) colour and `second` the bottom (or right) one.
+[RequireComponent(typeof(CanvasRenderer))]
 public sealed class SettingShape : MaskableGraphic
 {
-    public enum Kind { Diamond, Hex, Octagon, Spark, Chevron, Bar, Fall, Hair }
+    public enum Kind { Diamond, Hex, Octagon, Spark, Chevron, Bar, Fall, Hair, Feather, FoldTab, Gear, SoftShadow, Scroll, Disc }
     public Kind kind;
     public Color second=Color.white,rim=Color.clear;
     public float rimWidth;
@@ -36,6 +37,47 @@ public sealed class SettingShape : MaskableGraphic
         var clear=new Color(color.r,color.g,color.b,0);
         Vector2[] points=null;
         switch(kind){
+            case Kind.Disc:
+                points=new Vector2[40];
+                for(int i=0;i<points.Length;i++){
+                    float a=i*2*Mathf.PI/points.Length;
+                    points[i]=r.center+new Vector2(Mathf.Cos(a)*r.width*.5f,Mathf.Sin(a)*r.height*.5f);
+                }
+                break;
+            case Kind.SoftShadow:{
+                vh.AddVert(r.center,color,Vector2.zero);
+                for(int i=0;i<32;i++){
+                    float a=i*Mathf.PI/16;
+                    vh.AddVert(r.center+new Vector2(r.width*.5f*Mathf.Cos(a),r.height*.5f*Mathf.Sin(a)),clear,Vector2.zero);
+                }
+                for(int i=0;i<32;i++)vh.AddTriangle(0,i+1,1+(i+1)%32);
+                return;
+            }
+            case Kind.Scroll:{
+                Vector2 P(float x,float y)=>new Vector2(x0+x*r.width,y0+y*r.height);
+                void Strip(float x,float y,float w,float h,Color ink)=>Quad(vh,P(x,y),P(x,y+h),P(x+w,y+h),P(x+w,y),ink,ink,ink,ink);
+                Strip(.17f,.24f,.68f,.53f,color);Strip(.10f,.14f,.10f,.73f,second);Strip(.81f,.14f,.10f,.73f,second);
+                Strip(.29f,.56f,.39f,.055f,second);Strip(.29f,.40f,.26f,.055f,second);
+                return;
+            }
+            case Kind.Gear:{
+                float radius=Mathf.Min(r.width,r.height)*.46f;
+                for(int i=0;i<32;i++){
+                    float a=i*Mathf.PI/16,b=(i+1)*Mathf.PI/16;
+                    var d0=new Vector2(Mathf.Cos(a),Mathf.Sin(a));
+                    var d1=new Vector2(Mathf.Cos(b),Mathf.Sin(b));
+                    float ra=i%4<2?radius:radius*.76f,rb=(i+1)%4<2?radius:radius*.76f;
+                    Quad(vh,r.center+d0*ra,r.center+d1*rb,r.center+d1*(radius*.34f),r.center+d0*(radius*.34f),color,color,color,color);
+                }
+                return;
+            }
+            case Kind.Feather:
+                points=new[]{new Vector2(x0+r.width*.18f,y0),new Vector2(x0,ym),new Vector2(xm,y1),new Vector2(x1,y1),new Vector2(x1,ym)};
+                break;
+            case Kind.FoldTab:
+                float cut=Mathf.Min(r.width*.12f,r.height*.45f);
+                points=new[]{new Vector2(x0,y0),new Vector2(x0+cut,y1),new Vector2(x1,y1),new Vector2(x1-cut,y0)};
+                break;
             case Kind.Diamond:
                 points=new[]{new Vector2(xm,y1),new Vector2(x1,ym),new Vector2(xm,y0),new Vector2(x0,ym)};break;
             case Kind.Hex:{

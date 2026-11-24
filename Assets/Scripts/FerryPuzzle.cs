@@ -12,6 +12,9 @@ public sealed class FerryPuzzle : MonoBehaviour
     WorkshopPlacement placement;
     WorkshopMotor motor;
     WorkshopHud hud;
+    StageBirds birds;
+    public string CollectionStatus => birds.Progress;
+    public bool SaveCollection() => birds.SavePending(motor.Body.position);
     PlacementPreview preview;
     WorkshopTool selected;
     PlacementAim aim;
@@ -35,10 +38,10 @@ public sealed class FerryPuzzle : MonoBehaviour
 
     Material[] FaceInks()
     {
-        var white=Pigment(new Color(.94f,.87f,.72f));
-        var shade=Pigment(new Color(.91f,.84f,.69f));
-        var bamboo=Pigment(new Color(.44f,.54f,.39f));
-        var alternate=Pigment(new Color(.42f,.52f,.38f));
+        var white=Pigment(new Color(.95f,.95f,.90f));
+        var shade=Pigment(new Color(.91f,.92f,.90f));
+        var bamboo=Pigment(new Color(.50f,.63f,.54f));
+        var alternate=Pigment(new Color(.48f,.61f,.53f));
         // A seamless long-fibre wash distinguishes bamboo even in diffuse window light.
         const int size=96;
         fibers=new Texture2D(size,size,TextureFormat.RGBA32,true,true){name="竹纤维",wrapMode=TextureWrapMode.Repeat,filterMode=FilterMode.Trilinear,anisoLevel=4};
@@ -53,7 +56,7 @@ public sealed class FerryPuzzle : MonoBehaviour
         return new[]{white,shade,bamboo,alternate};
     }
 
-    public void Build(Text status,WorkshopLevel level,Action onFinish,Action<bool> onPause)
+    public void Build(Text status,WorkshopLevel level,BirdCollection collection,Action onFinish,Action<bool> onPause)
     {
         pauseChanged=onPause;
         current=level;
@@ -81,12 +84,15 @@ public sealed class FerryPuzzle : MonoBehaviour
         lettering.rectTransform.SetParent(signRect,false);
         lettering.rectTransform.sizeDelta=signRect.sizeDelta;
         lettering.font=status.font;lettering.fontSize=47;lettering.color=Color.white;
-        lettering.alignment=TextAnchor.MiddleCenter;lettering.raycastTarget=false;lettering.text="出口";
+        lettering.alignment=TextAnchor.MiddleCenter;lettering.raycastTarget=false;
+        lettering.text=current.perches.Length==1?"旧巢":"出口";
         var fronts=new[]{Pigment(new Color(.13f,.48f,.66f)),Pigment(new Color(.78f,.27f,.16f))};
         var backs=new[]{Pigment(new Color(.60f,.79f,.77f)),ochre};
         placement=new WorkshopPlacement(transform,fronts,backs,inks[0],inks[2]);
         motor=Group(transform,"朱雀").gameObject.AddComponent<WorkshopMotor>();
         motor.Build(placement.Portals);
+        motor.Eyes.gameObject.AddComponent<AudioListener>();
+        birds=new StageBirds(Group(hall,"鸟群"),current,collection,hud,Pigment,onFinish);
         motor.BuildEquipment(inks[0],inks[2],ochre);
         preview=Group(transform,"安装预览").gameObject.AddComponent<PlacementPreview>();
         preview.Build();
@@ -97,6 +103,7 @@ public sealed class FerryPuzzle : MonoBehaviour
     public void Begin()
     {
         checkpoint=false;
+        birds.Enter();
         lighting.ApplyQuality();
         Pause(false);
         placement.Portals.Prepare(motor.Eyes);
@@ -114,6 +121,7 @@ public sealed class FerryPuzzle : MonoBehaviour
         motor.Equip(gear);
         var spawn=checkpoint?current.checkpointFeet:current.spawnFeet;
         motor.Spawn(hall.TransformPoint(spawn),checkpoint?current.checkpointYaw:current.spawnYaw,checkpoint?8:-4);
+        birds.ResetPosition(motor.Body.position);
         Physics.SyncTransforms();
         if(WorkshopToolSpec.Owned(gear,(int)selected))hud.Selected(selected);
         hud.Hint(checkpoint?current.retryHint:current.entryHint,6);
@@ -128,7 +136,7 @@ public sealed class FerryPuzzle : MonoBehaviour
         bool changed=value!=paused;
         if(value && !paused){previousTimeScale=Time.timeScale;Time.timeScale=0;}
         if(!value && paused)Time.timeScale=previousTimeScale;
-        paused=value;motor.StopInput();
+        paused=value;AudioListener.pause=value;motor.StopInput();
         Cursor.lockState=value?CursorLockMode.None:CursorLockMode.Locked;Cursor.visible=value;
         if(value)preview.gameObject.SetActive(false);
         hud.Hint("",0);
@@ -140,6 +148,7 @@ public sealed class FerryPuzzle : MonoBehaviour
 
     void OnDisable()
     {
+        AudioListener.pause=false;
         if(paused){Time.timeScale=previousTimeScale;paused=false;}
         Cursor.lockState=CursorLockMode.None;Cursor.visible=true;
     }
@@ -162,9 +171,8 @@ public sealed class FerryPuzzle : MonoBehaviour
     {
         var keys=Keyboard.current;var mouse=Mouse.current;
         if(keys==null || mouse==null)return;
-        if(keys.escapeKey.wasPressedThisFrame)Pause(!paused);
         if(paused)return;
-        if(keys.tKey.wasPressedThisFrame){Begin();return;}
+        if(keys.tKey.wasPressedThisFrame){checkpoint=false;Restart();return;}
         if(keys.rKey.wasPressedThisFrame){Restart();return;}
         motor.InputFrame((gear & WorkshopGear.Glider)!=0);
         for(int i=0;i<3;i++)if(keys[Key.Digit1+i].wasPressedThisFrame)Select(i);
@@ -196,6 +204,7 @@ public sealed class FerryPuzzle : MonoBehaviour
 
     void FixedUpdate()
     {
+        var incoming=motor.Body.position;
         motor.Step();
         placement.ApplyDevices(motor.Body,geometry.Bodies);
         var at=hall.InverseTransformPoint(motor.Body.position);
@@ -206,14 +215,15 @@ public sealed class FerryPuzzle : MonoBehaviour
             if(!WorkshopToolSpec.Owned(gear,(int)selected))Cycle(1);
             hud.Hint(current.supplyHint,7);
         }
-        if(motor.Grounded && current.exitZone.Contains(at))finish();
+        if(current.perches.Length==0 && motor.Grounded && current.exitZone.Contains(at))finish();
+        else birds.Step(motor,incoming);
     }
 
     void LateUpdate()
     {
         motor.Pose();
         placement.Portals.Draw(motor.Eyes);
-        hud.Exit(motor.Eyes,hall.TransformPoint(current.exitSign-Vector3.forward*.06f));
+        hud.Exit(motor.Eyes,hall.TransformPoint(current.exitSign-Vector3.forward*.06f),current.perches.Length==1?"旧巢":"出口");
     }
 
     void OnDestroy(){foreach(var m in materials)if(m)Destroy(m);if(fibers)Destroy(fibers);}

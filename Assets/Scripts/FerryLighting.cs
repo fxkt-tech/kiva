@@ -88,7 +88,7 @@ public sealed class FerryLighting : MonoBehaviour
         // The real west aperture and its muntins shape the directional light through the
         // non-shadow-casting window paper.
         var sun=AddLight(transform,"西窗日光",Vector3.zero,LightType.Directional,
-            new Color(1f,.84f,.62f),LightUnit.Lux,1300);
+            new Color(1f,.94f,.82f),LightUnit.Lux,1300);
         sun.transform.localRotation=Quaternion.LookRotation(new Vector3(1f,-.67f,.28f));
         sun.shadows=LightShadows.Soft;
         sun.shadowNearPlane=.08f;
@@ -101,13 +101,13 @@ public sealed class FerryLighting : MonoBehaviour
         ApplyQuality();
 
         Spot("窗纸漫射",new Vector3(-5.73f,4.2f,-1.5f),new Vector3(.2f,1.8f,4.8f),
-            new Color(1f,.84f,.65f),20500f,130f,22);
+            new Color(1f,.94f,.85f),20500f,130f,22);
         Spot("暖纸反照",new Vector3(3.4f,5.6f,-4.7f),new Vector3(-1f,2.1f,4.8f),
-            new Color(1f,.90f,.76f),15000f,124f,22);
+            new Color(.83f,.92f,1f),15000f,124f,22);
         Spot("窗下纸色回光",new Vector3(-2.8f,3.6f,-5.5f),new Vector3(-3.4f,.9f,-1.5f),
-            new Color(1f,.85f,.71f),1900f,125f,10f);
+            new Color(.88f,.85f,.99f),1900f,125f,10f);
         Spot("井壁回光",new Vector3(3.8f,1.8f,2f),new Vector3(.2f,-4f,3f),
-            new Color(.89f,.94f,.84f),2500f,112f,12);
+            new Color(.77f,.90f,.98f),2500f,112f,12);
     }
 
     void LightLanterns(Transform exitLamp)

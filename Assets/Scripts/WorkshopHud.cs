@@ -5,6 +5,9 @@ public sealed class WorkshopHud
 {
     readonly Transform root;
     readonly Text hint,exit,toolName;
+    readonly Text collection;
+    readonly SettingShape feather;
+    float messageUntil,featherUntil;
     readonly WorkshopGlyph sight,wing;
     readonly WorkshopGlyph[] slots=new WorkshopGlyph[3];
     readonly Image[] marks=new Image[3];
@@ -22,6 +25,12 @@ public sealed class WorkshopHud
         status.alignment=TextAnchor.LowerLeft;
         if(!status.GetComponent<Shadow>())status.gameObject.AddComponent<Shadow>();
         exit=Label("出口指引",Vector2.zero,Vector2.zero,17,new Vector2(96,30));
+        collection=Label("",Vector2.up,new Vector2(250,-51),22,new Vector2(340,44));
+        collection.alignment=TextAnchor.MiddleLeft;collection.name="入卷提示";
+        feather=NightUi.Shape(root,"鸟鸣方位",SettingShape.Kind.Feather,0,0,28,36,Color.white,new Color(.80f,.91f,.93f));
+        feather.rectTransform.pivot=Vector2.one*.5f;
+        feather.gameObject.AddComponent<Shadow>();
+        feather.enabled=false;
         toolName=Label("道具名",Vector2.right,new Vector2(-128,87),18,new Vector2(170,28));
         sight=Glyph("准星",Vector2.one*.5f,Vector2.zero);
         for(int i=0;i<3;i++){
@@ -61,12 +70,32 @@ public sealed class WorkshopHud
     }
 
     public void Hint(string value,float seconds=3){hint.text=value;hintUntil=Time.unscaledTime+seconds;}
+    public void Collection(string text,bool sticky=false)
+    {
+        collection.text=text;messageUntil=sticky?float.PositiveInfinity:Time.time+2;
+    }
+    public void HideDirection(){feather.enabled=false;}
+    public void BirdCall(Camera eye,Vector3 world)
+    {
+        if(!GameSettings.Current.birdDirections)return;
+        var p=eye.WorldToViewportPoint(world);
+        Vector2 v=new Vector2(p.x-.5f,p.y-.5f);
+        if(p.z<0)v=-v;
+        if(v.sqrMagnitude<.001f)v=Vector2.up;
+        v/=Mathf.Max(Mathf.Abs(v.x),Mathf.Abs(v.y));
+        var rect=feather.rectTransform;
+        rect.anchorMin=rect.anchorMax=Vector2.one*.5f+v*.43f;
+        rect.anchoredPosition=Vector2.zero;rect.localRotation=Quaternion.Euler(0,0,Mathf.Atan2(v.y,v.x)*Mathf.Rad2Deg-90);
+        feather.enabled=true;featherUntil=Time.time+1;
+    }
     public void Selected(WorkshopTool tool){toolName.text=WorkshopToolSpec.For(tool).name;labelUntil=Time.unscaledTime+1.2f;}
 
     public void Paint(WorkshopTool tool,WorkshopGear gear,bool valid,bool first,bool second,bool gliding)
     {
         int index=(int)tool;
         var options=GameSettings.Current;
+        if(Time.time>=messageUntil)collection.text="";
+        if(Time.time>=featherUntil || !options.birdDirections)feather.enabled=false;
         sight.enabled=options.crosshair && WorkshopToolSpec.Owned(gear,index);
         sight.Show(index,true,!valid,first,second);
         for(int i=0;i<slots.Length;i++){
@@ -80,7 +109,7 @@ public sealed class WorkshopHud
         if(Time.unscaledTime>hintUntil || !options.hints)hint.text="";
     }
 
-    public void Exit(Camera eye,Vector3 world)
+    public void Exit(Camera eye,Vector3 world,string destination)
     {
         exit.enabled=GameSettings.Current.exitGuide;
         if(!exit.enabled)return;
@@ -93,6 +122,6 @@ public sealed class WorkshopHud
         }
         var rect=exit.rectTransform;rect.anchorMin=rect.anchorMax=new Vector2(x,y);
         rect.anchoredPosition=Vector2.zero;
-        exit.text=behind || p.x!=x?(x<.5f?"← 出口":"出口 →"):"出口";
+        exit.text=behind || p.x!=x?(x<.5f?"← "+destination:destination+" →"):destination;
     }
 }
