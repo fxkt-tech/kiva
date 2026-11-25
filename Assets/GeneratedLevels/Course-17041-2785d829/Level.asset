@@ -1,0 +1,165 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33bf120718af81ad87276ac7b02628b, type: 3}
+  m_Name: Level
+  m_EditorClassIdentifier: Assembly-CSharp::WorkshopLevel
+  stageId: generated/course/2785d82945104828a5c223adb169415f/1
+  perches:
+  - id: landing
+    species: {fileID: 11400000, guid: 06b46460c5470d04fa5ee54cdea20095, type: 2}
+    feet: {x: -9.75, y: 4.5, z: -15.674999}
+    flightOffset: {x: 0, y: 0, z: 0}
+    yaw: 0
+  title: "\u7EB8\u574A\u4E2D\u5EAD \xB7 \u8FDB\u9636"
+  description: 
+  locationName: 
+  arrivalStory: 
+  fixedBricks:
+  - label: "\u7EB8\u69FD\u57FA\u5E95"
+    start: {x: -9, y: -11, z: -16}
+    size: {x: 23, y: 1, z: 22}
+    white: 0
+  - label: "\u8D77\u6B65\u53F0"
+    start: {x: -8, y: -10, z: 0}
+    size: {x: 20, y: 10, z: 5}
+    white: 0
+  - label: "\u843D\u811A\u53F0 \u5BF9\u5CB8\u56DE\u5ECA"
+    start: {x: -8, y: 2, z: -14}
+    size: {x: 20, y: 1, z: 4}
+    white: 0
+  - label: "\u5ECA\u540E\u6321\u5899"
+    start: {x: -8, y: -10, z: -14}
+    size: {x: 20, y: 12, z: 1}
+    white: 0
+  - label: "\u5ECA\u4E0B\u652F\u58A9"
+    start: {x: -8, y: -10, z: -13}
+    size: {x: 1, y: 12, z: 3}
+    white: 0
+  - label: "\u5ECA\u4E0B\u652F\u58A9"
+    start: {x: -4, y: -10, z: -13}
+    size: {x: 1, y: 12, z: 3}
+    white: 0
+  - label: "\u5ECA\u4E0B\u652F\u58A9"
+    start: {x: 0, y: -10, z: -13}
+    size: {x: 1, y: 12, z: 3}
+    white: 0
+  - label: "\u5ECA\u4E0B\u652F\u58A9"
+    start: {x: 4, y: -10, z: -13}
+    size: {x: 1, y: 12, z: 3}
+    white: 0
+  - label: "\u5ECA\u4E0B\u652F\u58A9"
+    start: {x: 8, y: -10, z: -13}
+    size: {x: 1, y: 12, z: 3}
+    white: 0
+  - label: "\u5ECA\u7AEF\u627F\u53F0"
+    start: {x: 11, y: -10, z: -13}
+    size: {x: 1, y: 12, z: 3}
+    white: 0
+  - label: "\u56DE\u5ECA\u5916\u67F1"
+    start: {x: -8, y: -10, z: -15}
+    size: {x: 1, y: 17, z: 1}
+    white: 0
+  - label: "\u56DE\u5ECA\u5916\u67F1"
+    start: {x: -4, y: -10, z: -15}
+    size: {x: 1, y: 17, z: 1}
+    white: 0
+  - label: "\u56DE\u5ECA\u5916\u67F1"
+    start: {x: 0, y: -10, z: -15}
+    size: {x: 1, y: 17, z: 1}
+    white: 0
+  - label: "\u56DE\u5ECA\u5916\u67F1"
+    start: {x: 4, y: -10, z: -15}
+    size: {x: 1, y: 17, z: 1}
+    white: 0
+  - label: "\u56DE\u5ECA\u5916\u67F1"
+    start: {x: 8, y: -10, z: -15}
+    size: {x: 1, y: 17, z: 1}
+    white: 0
+  - label: "\u56DE\u5ECA\u6A90\u6881"
+    start: {x: -8, y: 7, z: -15}
+    size: {x: 20, y: 1, z: 1}
+    white: 0
+  - label: "\u623F\u95F4\u56F4\u5899"
+    start: {x: -9, y: -10, z: 5}
+    size: {x: 23, y: 20, z: 1}
+    white: 0
+  - label: "\u623F\u95F4\u56F4\u5899"
+    start: {x: -9, y: -10, z: -16}
+    size: {x: 23, y: 20, z: 1}
+    white: 0
+  - label: "\u623F\u95F4\u56F4\u5899"
+    start: {x: -9, y: -10, z: -15}
+    size: {x: 1, y: 20, z: 20}
+    white: 0
+  - label: "\u623F\u95F4\u56F4\u5899"
+    start: {x: 13, y: -10, z: -15}
+    size: {x: 1, y: 20, z: 20}
+    white: 0
+  - label: "\u623F\u95F4\u9876\u68DA"
+    start: {x: -9, y: 10, z: -16}
+    size: {x: 23, y: 1, z: 22}
+    white: 0
+  - label: "\u5DE5\u4F4D\u5730\u57FA"
+    start: {x: 0, y: -10, z: -2}
+    size: {x: 6, y: 8, z: 2}
+    white: 0
+  - label: "\u69FD\u8FB9\u627F\u53F0"
+    start: {x: 0, y: -2, z: -2}
+    size: {x: 4, y: 1, z: 1}
+    white: 0
+  - label: "\u76F4\u69FD\u5E95\u677F"
+    start: {x: 0, y: -2, z: -1}
+    size: {x: 4, y: 1, z: 1}
+    white: 0
+  - label: "\u98CE\u6247\u5B89\u88C5\u9762"
+    start: {x: -1, y: -1, z: -1}
+    size: {x: 1, y: 1, z: 1}
+    white: 2
+  - label: "\u8D77\u6B65\u4FA7\u53F0"
+    start: {x: 0, y: -1, z: 0}
+    size: {x: 5, y: 1, z: 2}
+    white: 0
+  - label: "\u69FD\u8FB9"
+    start: {x: 0, y: -1, z: -2}
+    size: {x: 4, y: 1, z: 1}
+    white: 0
+  - label: "\u6B62\u6321"
+    start: {x: 4, y: -1, z: -1}
+    size: {x: 1, y: 1, z: 1}
+    white: 0
+  - label: "\u98CE\u6247\u5899\u57FA"
+    start: {x: -1, y: -10, z: -1}
+    size: {x: 1, y: 9, z: 1}
+    white: 0
+  physicalBricks:
+  - label: "\u98CE\u69FD\u7EB8\u7816"
+    cell: {x: 1, y: -1, z: -1}
+    white: 8
+    mass: 2
+  spawnFeet: {x: -9.75, y: 0, z: 3.75}
+  checkpointFeet: {x: 0, y: 0, z: 0}
+  exitFeet: {x: -9.75, y: 4.5, z: -15.674999}
+  exitSign: {x: -9.75, y: 4, z: -15.674999}
+  spawnYaw: 142.97754
+  checkpointYaw: 0
+  supplyZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  exitZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  startingGear: 14
+  supplyGear: 0
+  entryHint: "\u6CBF\u4E0B\u5C42\u5DE5\u4F4D\u63A8\u7816\uFF0C\u5728\u7816\u9876\u88C5\u83C7\uFF0C\u5C55\u5F00\u7EB8\u7FFC\u98DE\u5411\u5BF9\u9762\u56DE\u5ECA\u3002"
+  supplyHint: 
+  retryHint: 
+  westWindow: 0

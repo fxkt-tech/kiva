@@ -18,7 +18,7 @@ public static class WorkshopLevelGenerator
     const string Output="Assets/GeneratedLevels";
     const int MaxCandidates=8, MaxSteps=480;
     const float MinMargin=.20f, MinRunUp=.50f;
-    enum Phase { Solution, ReplaySolution, Search, ReplayCounter, Perturb, Done, Watch, WatchCounter, Play, ComposeView, VerifyView, WatchOriginal }
+    enum Phase { Solution, ReplaySolution, Search, ReplayCounter, Perturb, Done, Watch, WatchCounter, Play, ComposeView, VerifyView, WatchOriginal, SkillSample }
 
     [Serializable] sealed class Job
     {
@@ -48,6 +48,7 @@ public static class WorkshopLevelGenerator
     static WorkshopViewAssessment assessment;
     static Vector3 springRunway;
     static bool Spatial=>Configured && job.request.version>=2;
+    static bool Atrium=>Configured && job.request.IsAtrium;
     static int actionTick;
     static Vector3 mountPoint;
     static int tick,cursor,runStart,brakeStep,installStep;
@@ -63,6 +64,12 @@ public static class WorkshopLevelGenerator
 
     [MenuItem(Menu+"按指定解法生成")]
     public static void GenerateNew()=>WorkshopGeneratorWindow.Open();
+    const string QuickMenu=Menu+"按精彩程度生成/";
+    [MenuItem(QuickMenu+"标准",false,100)] static void Standard()=>Quick(WorkshopGrade.Standard);
+    [MenuItem(QuickMenu+"进阶",false,101)] static void Advanced()=>Quick(WorkshopGrade.Advanced);
+    [MenuItem(QuickMenu+"挑战",false,102)] static void Challenge()=>Quick(WorkshopGrade.Challenge);
+    static void Quick(WorkshopGrade grade)=>Generate(Guid.NewGuid().GetHashCode(),WorkshopGenerationRequest.Atrium(grade,WorkshopGeneratorWindow.SpacePreference));
+    [MenuItem(QuickMenu+"标准",true),MenuItem(QuickMenu+"进阶",true),MenuItem(QuickMenu+"挑战",true)]
     [MenuItem(Menu+"按指定解法生成",true)]
     static bool CanLaunch()=>!EditorApplication.isPlayingOrWillChangePlaymode;
     [MenuItem(Menu+"取消生成",true)]
@@ -160,6 +167,7 @@ public static class WorkshopLevelGenerator
         string id=$"generated/{(Configured?"course":"push-bounce")}/{job.id}/{index+1}";
         var a=job.attempts[index];
         if(!Configured)return a.layout.Build(id);
+        if(job.request.IsAtrium)return WorkshopAtrium.Build(job.request,id,job.seed,index,out a.legs);
         if(!Modular)return WorkshopCourse.PushMap(job.request,id,a.layout);
         var bypasses=new List<int>();
         for(int i=0;i<index;i++)if(job.attempts[i].counterConfirmed)bypasses.Add(job.attempts[i].counterLeg);
@@ -186,7 +194,8 @@ public static class WorkshopLevelGenerator
             SessionState.SetBool(State+".running",true);
             AssemblyReloadEvents.beforeAssemblyReload+=StopTrials;
             Time.timeScale=8;
-            progressId=Progress.Start(SavedMap?"准备玩家视角回放":"按指定解法生成");
+            string title=SavedMap?"准备玩家视角回放":Atrium?$"按精彩程度生成 · {job.request.GradeText}":"按指定解法生成";
+            progressId=Progress.Start(title);
             SessionState.SetInt(State+".progress",progressId);
             Progress.RegisterCancelCallback(progressId,()=>{Cancel();return true;});
         }
@@ -256,7 +265,8 @@ public static class WorkshopLevelGenerator
                 job.phase==Phase.WatchCounter || job.phase==Phase.ReplayCounter?Current.counterLeg:-1;
             int probe=job.phase==Phase.Search?job.sample/count:omit>=0?Current.counterProbe:0;
             var shell=probe>0?new WorkshopShellBypass(map,shellTools[probe-1]):null;
-            course=new WorkshopCourseTrial(puzzle,map,Current.legs,events,omit,viewDriver!=null,shell);
+            var skill=job.phase==Phase.SkillSample?SkillVariation(job.sample):null;
+            course=new WorkshopCourseTrial(puzzle,map,Current.legs,events,omit,viewDriver!=null,shell,skill?.delay??0,skill?.angle??0);
         }else{
           brick=puzzle.GetComponentInChildren<WorkshopBrick>().GetComponent<Rigidbody>();
           foreach(var device in puzzle.GetComponentsInChildren<PaperDevice>(true)){
@@ -279,7 +289,8 @@ public static class WorkshopLevelGenerator
         if(job.phase!=Phase.Play)puzzle.CollectInput=_=>{};
         puzzle.BeforePhysics=GuardedStep;
         puzzle.Begin();
-        assessment=Spatial && job.phase==Phase.VerifyView?new WorkshopViewAssessment(motor):null;
+        if(Atrium && job.phase==Phase.Solution)WorkshopAtrium.Inspect(map,Current.legs[0],motor,Current);
+        assessment=Spatial && job.phase==Phase.VerifyView?new WorkshopViewAssessment(motor,Atrium):null;
         if(job.phase==Phase.Search && !Modular){
             var edge=(Vector3)platform.start*PaperTerrain.Cell+new Vector3(.4f,0,.4f);
             search=new WorkshopShortcutSearch(puzzle,map,false,edge);
@@ -299,7 +310,7 @@ public static class WorkshopLevelGenerator
                 Phase.Solution=>"尝试正解", Phase.ReplaySolution=>"重放正解",
                 Phase.Search=>Modular?$"尝试绕过第 {job.sample%Current.legs.Count+1} 段 {course.ShellName}":$"搜索捷径 {job.sample+1}/{searchCount}", Phase.ReplayCounter=>"重放捷径",
                 Phase.Perturb=>$"验证助跑偏差 {Current.tolerance.Count+1}/4", Phase.ComposeView=>"录制玩家视角操作",
-                Phase.VerifyView=>"独立重放玩家视角操作", _=>throw new InvalidOperationException()
+                Phase.VerifyView=>"独立重放玩家视角操作",Phase.SkillSample=>$"实测操作容错 {job.sample+1}/4", _=>throw new InvalidOperationException()
             };
             Progress.Report(progressId,(float)job.index/MaxCandidates,$"候选 {job.index+1}/{MaxCandidates} · {stage}");
         }
@@ -480,6 +491,12 @@ public static class WorkshopLevelGenerator
             if(!positive)reason+=" · "+course.Status;
         }
         if(viewDriver!=null && !viewDriver.AllClicksPlayed){positive=false;reason+=" · 安装动作未全部复现";}
+        if(positive && Atrium && job.phase==Phase.VerifyView){
+            float minimumTurn=job.request.grade switch {WorkshopGrade.Advanced=>12,WorkshopGrade.Challenge=>40,_=>0};
+            if(events.airTurn<minimumTurn || assessment.result.visible<assessment.result.checkedTargets){
+                positive=false;reason+=" · 起手时落台受遮挡或空中转向不足";
+            }
+        }
         if(Preview){
             bool ok=job.phase==Phase.Play?settled:job.phase!=Phase.WatchCounter?positive:
                 alternative && (events.bounce>0)==(Current.shortcut.bounce>0);
@@ -502,6 +519,7 @@ public static class WorkshopLevelGenerator
                 if(++job.viewPass<2){job.phase=Phase.ComposeView;break;}
                 string note="玩家视角操作尚未通过复验，可在报告中播放原始验证回放。";
                 if(SavedMap){ended=true;WorkshopReplayBench.EndGeneration(false,note);return;}
+                if(Atrium)Current.conclusion=note;
                 Current.playerViewNote=note;job.phase=Phase.Done;break;
             }
             if(job.phase==Phase.ComposeView){
@@ -527,6 +545,9 @@ public static class WorkshopLevelGenerator
             }
             break;
         case Phase.Solution:
+            if(Atrium && (!Current.connected || !Current.stationVisible || !Current.birdVisible)){
+                Reject($"中庭未通过入口及结构检查（连通 {Current.connected}、可见栖点 {Current.birdVisible}、可见工位 {Current.stationVisible}）");break;
+            }
             if(!positive){Reject("正解未满足验收："+reason);break;}
             Current.solution=recording;Current.nominal=events;job.phase=Phase.ReplaySolution;break;
         case Phase.ReplaySolution:
@@ -565,6 +586,15 @@ public static class WorkshopLevelGenerator
             if(Current.tolerance.Count<4)break;
             Current.conclusion="正解已重放，四种起点与方向扰动组合均通过，采样范围内未找到原位起跳捷径。";
             job.accepted=job.index;job.phase=Phase.Done;break;
+        case Phase.SkillSample:
+            var skill=SkillVariation(job.sample);skill.passed=positive;Current.skillSamples.Add(skill);
+            if(job.sample<2 && !positive){Reject("轻微操作偏差未能稳定通关");break;}
+            if(++job.sample<4)break;
+            if(job.request.grade!=WorkshopGrade.Standard && Current.skillSamples[2].passed && Current.skillSamples[3].passed){
+                Reject("两次明显操作偏差仍能完成动作链，重选布局");break;
+            }
+            Current.conclusion=$"{job.request.GradeText}中庭已通过通关、入口视线与操作容错验证。";
+            job.accepted=job.index;job.phase=Phase.Done;break;
         }
         ended=true;
         Debug.Log(Modular?$"生成候选 · {reason} · 收鸟 {events.collect} / 结算 {events.finish} · 抵达平台净余量 {events.edgeMargin:F2} m":
@@ -577,8 +607,10 @@ public static class WorkshopLevelGenerator
                 rated++;
                 if(best<0 || BetterView(a,job.attempts[best]))best=i;
             }
-            // Compare two playable layouts on a multi-leg route, within the original total budget.
-            if(viewTrial && Current.legs.Count>1 && rated<2 && job.attempts.Count<MaxCandidates)Add(default);
+            // A preset stops at the first fully qualified courtyard; a custom route compares two.
+            if(Atrium && viewTrial && Current.viewAssessment?.verified!=true)job.accepted=-1;
+            int required=Atrium?1:2;
+            if(viewTrial && Current.legs.Count>1 && rated<required && job.attempts.Count<MaxCandidates)Add(default);
             else if(best>=0 && (viewTrial || job.accepted<0 || job.attempts[job.accepted].counterConfirmed))job.accepted=best;
         }
         if(job.phase==Phase.Done && job.accepted>=0 && !viewTrial && job.attempts[job.accepted].viewAssessment?.verified!=true){
@@ -621,6 +653,7 @@ public static class WorkshopLevelGenerator
         int legs=Current.legs.Count,total=legs*(1+shellTools.Count);
         while(job.sample<total && Current.legs[job.sample%legs].action==WorkshopAction.Walk)job.sample++;
         if(job.sample<total)return;
+        if(Atrium){job.phase=Phase.SkillSample;job.sample=0;return;}
         Current.conclusion="已重放指定路线并完成收鸟结算。唯一性未验证。";
         job.accepted=job.index;job.phase=Phase.Done;
     }
@@ -629,7 +662,7 @@ public static class WorkshopLevelGenerator
     {
         Current.conclusion=why;
         if(job.attempts.Count>=MaxCandidates){
-            if(Modular){
+            if(Modular && !Atrium){
                 job.accepted=job.attempts.FindIndex(a=>a.solutionConfirmed && a.counterConfirmed);
                 if(job.accepted>=0)job.attempts[job.accepted].conclusion="存在第二解：指定路线和绕过指定动作的路线均已重放，可对比试玩。";
             }
@@ -652,6 +685,13 @@ public static class WorkshopLevelGenerator
         // Bias toward longer stationary jumps, retaining seed-dependent choices among them.
         choices.Sort((a,b)=>StationaryGap(b).CompareTo(StationaryGap(a)));
         Add(choices[random.Next(Math.Min(5,choices.Count))]);
+    }
+
+    static WorkshopGenerationReport.SkillSample SkillVariation(int i){
+        bool jump=job.request.grade==WorkshopGrade.Standard;
+        int delay=i switch {0=>jump?-2:2,1=>jump?1:4,_=>jump?9:65};
+        float angle=i switch {0=>-2,1=>2,2=>-24,_=>24};
+        return new WorkshopGenerationReport.SkillSample{delay=delay,angle=angle};
     }
 
     static float StationaryGap(Layout l)=>Vector2.Distance(new Vector2(.75f,l.StartZ),new Vector2(l.NearCorner.x,l.NearCorner.z));

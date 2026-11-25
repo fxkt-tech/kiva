@@ -7,7 +7,11 @@ internal sealed class WorkshopGeneratorWindow : EditorWindow
     [SerializeField] WorkshopModule modules=WorkshopModule.All;
     [SerializeField] WorkshopGear gear=WorkshopGear.Fan|WorkshopGear.Mushroom;
     [SerializeField] string sequence="";
-    [SerializeField] WorkshopSpace space=WorkshopSpace.Enclosed;
+    static string SpaceKey=>"WorkshopGenerator.quickSpace."+Application.dataPath;
+    internal static WorkshopSpace SpacePreference{
+        get=>(WorkshopSpace)EditorPrefs.GetInt(SpaceKey,(int)WorkshopSpace.Enclosed);
+        set=>EditorPrefs.SetInt(SpaceKey,(int)value);
+    }
     [SerializeField] int seed=Guid.NewGuid().GetHashCode();
     Vector2 scroll;
     (WorkshopModule,WorkshopGear,string,int,WorkshopSpace)? lastInput;
@@ -31,7 +35,9 @@ internal sealed class WorkshopGeneratorWindow : EditorWindow
             if(i%3==2 || i==WorkshopGenerationRequest.Names.Length-1)EditorGUILayout.EndHorizontal();
         }
         EditorGUILayout.Space();
-        space=(WorkshopSpace)EditorGUILayout.Popup("空间形态",(int)space,new[]{"封闭","开放"});
+        var previous=SpacePreference;
+        var space=(WorkshopSpace)EditorGUILayout.Popup("空间形态",(int)previous,new[]{"封闭","开放"});
+        if(space!=previous)SpacePreference=space;
         using(new EditorGUILayout.HorizontalScope()){
             seed=EditorGUILayout.IntField("随机种子",seed);
             if(GUILayout.Button("换种子",GUILayout.Width(68)))seed=Guid.NewGuid().GetHashCode();
@@ -46,6 +52,9 @@ internal sealed class WorkshopGeneratorWindow : EditorWindow
         if(request!=null)EditorGUILayout.HelpBox((string.IsNullOrWhiteSpace(sequence)?"自动规划（本地动作搜索）　":"将验证　")+request.Description,MessageType.Info);
         using(new EditorGUI.DisabledScope(request==null || EditorApplication.isPlayingOrWillChangePlaymode))
             if(GUILayout.Button("按以上输入生成地图",GUILayout.Height(30)))WorkshopLevelGenerator.Generate(seed,request);
+        using(new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
+            if(GUILayout.Button(new GUIContent("一键生成进阶关","使用当前空间形态和种子，自动配置道具与操作顺序。"),GUILayout.Height(30)))
+                WorkshopLevelGenerator.Generate(seed,WorkshopGenerationRequest.Atrium(WorkshopGrade.Advanced,space));
         EditorGUILayout.EndScrollView();
     }
 }

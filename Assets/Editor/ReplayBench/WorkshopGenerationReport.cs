@@ -46,7 +46,14 @@ public sealed class WorkshopGenerationReport : ScriptableObject
         public Vector3 landing;
         public bool landed;
         public float edgeMargin,runUp,approachOffset,headingOffset;
+        public float airTurn,portalSpringSeconds;
         public List<string> trace=new List<string>();
+    }
+    [Serializable] internal class SkillSample
+    {
+        public int delay;
+        public float angle;
+        public bool passed;
     }
 
     [Serializable] internal class ViewAssessment
@@ -65,6 +72,8 @@ public sealed class WorkshopGenerationReport : ScriptableObject
         public Tape solution,counter,playerView;
         public string playerViewNote;
         public ViewAssessment viewAssessment;
+        public bool connected,birdVisible,stationVisible;
+        public List<SkillSample> skillSamples=new List<SkillSample>();
         public bool HasPlayerView=>playerView!=null && playerView.version==WorkshopPlayerView.TapeVersion && playerView.endTick>0 &&
             playerView.commands.Count>0 && playerView.levelHash==hash;
         public bool solutionConfirmed,counterConfirmed;
@@ -89,10 +98,11 @@ public sealed class WorkshopGenerationReport : ScriptableObject
         bool configured=request!=null && request.version>0;
         bool modular=configured && !request.Classic;
         if(configured){
+            if(request.IsAtrium)EditorGUILayout.LabelField("精彩程度",request.GradeText+" · 中庭与回廊");
             EditorGUILayout.LabelField("空间形态",request.SpaceText);
             EditorGUILayout.LabelField("允许的场景模块",request.ModulesText);
             EditorGUILayout.LabelField("玩家可用道具",request.GearText);
-            EditorGUILayout.LabelField("输入顺序",string.IsNullOrWhiteSpace(request.sequence)?"留空 · 本地自动规划":request.sequence,EditorStyles.wordWrappedLabel);
+            EditorGUILayout.LabelField("输入顺序",request.IsAtrium?"按档位自动编排":string.IsNullOrWhiteSpace(request.sequence)?"留空 · 本地自动规划":request.sequence,EditorStyles.wordWrappedLabel);
         }
         EditorGUILayout.LabelField(configured?request.Description:Actions,EditorStyles.wordWrappedLabel);
         EditorGUILayout.LabelField("随机种子",seed.ToString());
@@ -110,6 +120,16 @@ public sealed class WorkshopGenerationReport : ScriptableObject
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField($"候选 {i+1}",EditorStyles.boldLabel);
                 EditorGUILayout.LabelField(a.conclusion,EditorStyles.wordWrappedLabel);
+                if(configured && request.IsAtrium){
+                    EditorGUILayout.LabelField($"静态结构连通 {(a.connected?"是":"否")}　入口可见栖点 {(a.birdVisible?"是":"否")} / 工位 {(a.stationVisible?"是":"否")}",EditorStyles.wordWrappedMiniLabel);
+                    if(a.solutionConfirmed && a.nominal.airTurn>0)EditorGUILayout.LabelField($"相对弹射工位朝向，空中最大转角 {a.nominal.airTurn:F0}°"+(a.nominal.portalSpringSeconds>0?$"，出门至弹起 {a.nominal.portalSpringSeconds:F2} 秒":""),EditorStyles.wordWrappedMiniLabel);
+                    for(int j=0;j<a.skillSamples.Count;j++){
+                        var s=a.skillSamples[j];
+                        float seconds=s.delay*a.solution.fixedDelta;
+                        string shift=request.grade==WorkshopGrade.Standard?$"起跳点沿助跑方向 {seconds*4.8f:+0.00;-0.00;0} 米":$"开翼延后 {seconds:F2} 秒";
+                        EditorGUILayout.LabelField($"{(j<2?"轻微":"明显")}偏差 · {shift}、方向偏转 {s.angle:+0;-0;0}° · {(s.passed?"通关":"未完成指定路线")}",EditorStyles.wordWrappedMiniLabel);
+                    }
+                }
                 if(a.viewAssessment!=null && a.viewAssessment.verified){
                     var v=a.viewAssessment;
                     EditorGUILayout.LabelField($"行进转向 {v.courseTurns} 次，操作转向 {v.lookTurns} 次，最长连续直行 {v.longestStraight:F1} 米",EditorStyles.wordWrappedLabel);

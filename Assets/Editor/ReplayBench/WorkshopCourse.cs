@@ -18,6 +18,8 @@ internal static class WorkshopCourse
         public int heading;
         public bool hasJunction;
         public Vector3 junction;
+        public bool portalSpring;
+        public Vector3 springMount,exitDirection;
         public Vector3 Forward=>WorkshopCourseSpace.Axis(heading);
         public Vector3 Side=>new Vector3(-Forward.z,0,Forward.x);
     }
@@ -36,7 +38,7 @@ internal static class WorkshopCourse
         blocks.Add(Region("活动砖座",edge-1,height-2,lane,1,1,1));
     }
 
-    static void Channel(List<BrickRegion> blocks,List<LooseBrick> bricks,Vector3Int at,int start,int stop){
+    internal static void Channel(List<BrickRegion> blocks,List<LooseBrick> bricks,Vector3Int at,int start,int stop){
         int x=at.x,y=at.y,z=at.z;
         blocks.Add(Region("直槽底板",x,y-1,z,1,1,stop));
         blocks.Add(Region("风扇安装面",x,y,z-1,1,1,1,WhiteFaces.Front));
@@ -45,7 +47,7 @@ internal static class WorkshopCourse
         blocks.Add(Region("止挡",x,y,z+stop,1,1,1));
         bricks.Add(new LooseBrick{label="风槽纸砖",cell=at+new Vector3Int(0,0,start),mass=2,white=WhiteFaces.Top});
     }
-    static WorkshopLevel Map(WorkshopGenerationRequest r,string id,string title,List<BrickRegion> blocks,List<LooseBrick> bricks,Vector3 spawn,Vector3 bird,float yaw){
+    internal static WorkshopLevel Map(WorkshopGenerationRequest r,string id,string title,List<BrickRegion> blocks,List<LooseBrick> bricks,Vector3 spawn,Vector3 bird,float yaw){
         var map=ScriptableObject.CreateInstance<WorkshopLevel>();
         map.stageId=id;map.title=title;map.spawnFeet=spawn;map.spawnYaw=yaw;
         map.entryHint=r.Description;map.startingGear=r.gear;map.exitFeet=bird;map.exitSign=bird+Vector3.down*.5f;

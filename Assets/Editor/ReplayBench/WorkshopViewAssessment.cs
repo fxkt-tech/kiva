@@ -6,24 +6,30 @@ internal sealed class WorkshopViewAssessment
 {
     internal readonly WorkshopGenerationReport.ViewAssessment result=new WorkshopGenerationReport.ViewAssessment();
     readonly WorkshopMotor motor;
+    readonly bool measureFlight;
+    bool wasGliding;
     Vector3 previousPosition,motion,straightHeading,previousRoute,previousLook;
     float straight;
     string lastAction;
     int lastSight=-1;
 
-    internal WorkshopViewAssessment(WorkshopMotor motor){
-        this.motor=motor;previousPosition=motor.Body.position;
+    internal WorkshopViewAssessment(WorkshopMotor motor,bool measureFlight=false){
+        this.motor=motor;this.measureFlight=measureFlight;previousPosition=motor.Body.position;
     }
     internal void Travel(){
         var p=motor.Body.position;
         if(motor.CrossedThisStep){
             previousLook=straightHeading=motion=Vector3.zero;straight=0;
+            if(measureFlight)Look("穿门后");
         }else{
             var delta=p-previousPosition;delta.y=0;motion+=delta;
             // Sample a body-width of travel so idle contact jitter cannot split a straight.
             if(motion.sqrMagnitude>=.35f*.35f)MeasureMotion();
         }
         previousPosition=p;
+        if(measureFlight && wasGliding!=motor.Gliding){
+            wasGliding=motor.Gliding;Look(wasGliding?"展开纸翼":"滑翔抵达");
+        }
     }
     void MeasureMotion(){
         if(motion.sqrMagnitude<.0001f)return;

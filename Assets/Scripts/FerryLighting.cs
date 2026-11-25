@@ -85,6 +85,20 @@ public sealed class FerryLighting : MonoBehaviour
 
     public void LightGeneratedRooms(WorkshopLevel level)
     {
+        foreach(var beam in level.fixedBricks){
+            if(beam.label!="回廊檐梁")continue;
+            var center=((Vector3)beam.start+(Vector3)beam.size*.5f)*PaperTerrain.Cell;
+            center.y=beam.start.y*PaperTerrain.Cell-.55f;
+            var along=beam.size.x>beam.size.z?Vector3.right:Vector3.forward;
+            int bays=Mathf.Max(beam.size.x,beam.size.z);
+            for(float offset=2.5f;offset<bays;offset+=4){
+                var hanger=new GameObject("檐下纸灯").transform;
+                hanger.SetParent(transform,false);
+                hanger.localPosition=center+along*((offset-bays*.5f)*PaperTerrain.Cell);
+                hanger.localScale=Vector3.one*1.45f;
+                FoldedPaper.Lantern(hanger,lanternPaper,lanternLaps,lanternCap);
+            }
+        }
         if(!System.Array.Exists(level.fixedBricks,b=>b.label=="房间顶棚"))return;
         foreach(var pad in level.fixedBricks){
             if(pad.label!="起步台" && pad.label!="起步侧台" && pad.label!="连接走台" &&

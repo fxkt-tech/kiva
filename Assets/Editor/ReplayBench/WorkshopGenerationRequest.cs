@@ -6,12 +6,16 @@ using System.Text.RegularExpressions;
 [Flags] internal enum WorkshopModule { Fixed=1, Loose=2, White=4, Bamboo=8, All=Fixed|Loose|White|Bamboo }
 internal enum WorkshopAction { Walk, Jump, Push, Spring, Glide, Wind, Portal, LooseSpring }
 internal enum WorkshopSpace { Enclosed, Open }
+internal enum WorkshopGrade { None, Standard, Advanced, Challenge }
 
 [Serializable]
 internal sealed class WorkshopGenerationRequest
 {
     public int version;
     public WorkshopSpace space;
+    public WorkshopGrade grade;
+    public bool IsAtrium=>grade!=WorkshopGrade.None;
+    public string GradeText=>grade switch {WorkshopGrade.Standard=>"标准",WorkshopGrade.Advanced=>"进阶",WorkshopGrade.Challenge=>"挑战",_=>""};
     public bool Enclosed=>version>=2 && space==WorkshopSpace.Enclosed;
     public string SpaceText=>Enclosed?"封闭":"开放";
     public WorkshopModule modules;
@@ -36,6 +40,22 @@ internal sealed class WorkshopGenerationRequest
         .Where(Has).Select(m=>m switch {WorkshopModule.Fixed=>"固定砖",WorkshopModule.Loose=>"活动砖",WorkshopModule.White=>"白面",_=>"竹面"}));
     public string GearText=>gear==0?"无":string.Join("、",new[]{WorkshopGear.Gun,WorkshopGear.Mushroom,WorkshopGear.Fan,WorkshopGear.Glider}
         .Where(g=>(gear&g)!=0).Select(g=>g switch {WorkshopGear.Gun=>"时空枪",WorkshopGear.Mushroom=>"弹弹菇",WorkshopGear.Fan=>"风扇",_=>"纸翼"}));
+
+    internal static WorkshopGenerationRequest Atrium(WorkshopGrade grade,WorkshopSpace space){
+        var r=new WorkshopGenerationRequest{version=3,grade=grade,space=space,modules=WorkshopModule.Fixed|WorkshopModule.White|WorkshopModule.Bamboo};
+        switch(grade){
+        case WorkshopGrade.Standard:
+            r.gear=WorkshopGear.Gun;r.actions=new[]{WorkshopAction.Portal,WorkshopAction.Jump};break;
+        case WorkshopGrade.Advanced:
+            r.modules|=WorkshopModule.Loose;r.gear=WorkshopGear.Fan|WorkshopGear.Mushroom|WorkshopGear.Glider;
+            r.actions=new[]{WorkshopAction.Push,WorkshopAction.Spring,WorkshopAction.Glide,WorkshopAction.Walk};break;
+        case WorkshopGrade.Challenge:
+            r.gear=WorkshopGear.Gun|WorkshopGear.Mushroom|WorkshopGear.Glider;
+            r.actions=new[]{WorkshopAction.Portal,WorkshopAction.Spring,WorkshopAction.Glide,WorkshopAction.Jump};break;
+        default:throw new ArgumentOutOfRangeException(nameof(grade));
+        }
+        return r;
+    }
 
     public static WorkshopGenerationRequest Resolve(WorkshopModule modules,WorkshopGear gear,string text,int seed,WorkshopSpace space=WorkshopSpace.Enclosed)
     {
