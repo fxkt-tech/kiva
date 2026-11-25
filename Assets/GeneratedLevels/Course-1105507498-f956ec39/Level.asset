@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33bf120718af81ad87276ac7b02628b, type: 3}
+  m_Name: Level
+  m_EditorClassIdentifier: Assembly-CSharp::WorkshopLevel
+  stageId: generated/course/f956ec39494f4b20b65ca7553858bd62/1
+  perches:
+  - id: landing
+    species: {fileID: 11400000, guid: 06b46460c5470d04fa5ee54cdea20095, type: 2}
+    feet: {x: 115.5, y: 9, z: 2.25}
+    flightOffset: {x: 0, y: 0, z: 0}
+    yaw: -90
+  title: "\u5BFB\u9E1F \xB7 \u6B65\u884C"
+  description: 
+  locationName: 
+  arrivalStory: 
+  fixedBricks:
+  - label: "\u8D77\u6B65\u53F0"
+    start: {x: -4, y: -1, z: -1}
+    size: {x: 7, y: 1, z: 5}
+    white: 0
+  - label: "\u843D\u811A\u53F0 1"
+    start: {x: 3, y: -1, z: -1}
+    size: {x: 7, y: 1, z: 5}
+    white: 0
+  - label: "\u843D\u811A\u53F0 2"
+    start: {x: 12, y: -1, z: -1}
+    size: {x: 9, y: 1, z: 5}
+    white: 0
+  - label: "\u5F39\u5C04\u767D\u9762"
+    start: {x: 20, y: -1, z: 1}
+    size: {x: 1, y: 1, z: 1}
+    white: 8
+  - label: "\u843D\u811A\u53F0 3"
+    start: {x: 31, y: -1, z: -1}
+    size: {x: 7, y: 1, z: 5}
+    white: 0
+  - label: "\u5165\u53E3\u95E8\u9762"
+    start: {x: 37, y: 0, z: 2}
+    size: {x: 1, y: 1, z: 1}
+    white: 1
+  - label: "\u843D\u811A\u53F0 4"
+    start: {x: 44, y: 1, z: -1}
+    size: {x: 8, y: 1, z: 5}
+    white: 0
+  - label: "\u51FA\u53E3\u95E8\u9762"
+    start: {x: 45, y: 2, z: 2}
+    size: {x: 1, y: 1, z: 1}
+    white: 16
+  - label: "\u5F39\u5C04\u767D\u9762"
+    start: {x: 51, y: 1, z: 1}
+    size: {x: 1, y: 1, z: 1}
+    white: 8
+  - label: "\u843D\u811A\u53F0 5"
+    start: {x: 57, y: 3, z: -1}
+    size: {x: 8, y: 1, z: 5}
+    white: 0
+  - label: "\u5165\u53E3\u95E8\u9762"
+    start: {x: 64, y: 4, z: 2}
+    size: {x: 1, y: 1, z: 1}
+    white: 1
+  - label: "\u843D\u811A\u53F0 6"
+    start: {x: 71, y: 5, z: -1}
+    size: {x: 8, y: 1, z: 5}
+    white: 0
+  - label: "\u51FA\u53E3\u95E8\u9762"
+    start: {x: 72, y: 6, z: 2}
+    size: {x: 1, y: 1, z: 1}
+    white: 16
+  physicalBricks: []
+  spawnFeet: {x: -2.25, y: 0, z: 2.25}
+  checkpointFeet: {x: 0, y: 0, z: 0}
+  exitFeet: {x: 115.5, y: 9, z: 2.25}
+  exitSign: {x: 115.5, y: 8.5, z: 2.25}
+  spawnYaw: 90
+  checkpointYaw: 0
+  supplyZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  exitZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  startingGear: 15
+  supplyGear: 0
+  entryHint: "\u6B65\u884C \u2192 \u8DF3\u8FC7\u65AD\u53E3 \u2192 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u5C55\u5F00\u7EB8\u7FFC\u6ED1\u7FD4 \u2192 \u7A7F\u8FC7\u4F20\u9001\u95E8 \u2192 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u7A7F\u8FC7\u4F20\u9001\u95E8 \u2192 \u6536\u9E1F\u5E76\u843D\u5730"
+  supplyHint: 
+  retryHint: 
+  westWindow: 0

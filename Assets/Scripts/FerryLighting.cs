@@ -83,6 +83,19 @@ public sealed class FerryLighting : MonoBehaviour
         PositionLantern();
     }
 
+    public void LightGeneratedRooms(WorkshopLevel level)
+    {
+        if(!System.Array.Exists(level.fixedBricks,b=>b.label=="房间顶棚"))return;
+        foreach(var pad in level.fixedBricks){
+            if(pad.label!="起步台" && pad.label!="起步侧台" && pad.label!="连接走台" &&
+               pad.label!="目标高台" && !(pad.label?.StartsWith("落脚台 ",System.StringComparison.Ordinal)??false))continue;
+            var center=((Vector3)pad.start+(Vector3)pad.size*.5f)*PaperTerrain.Cell;
+            center.y=(pad.start.y+pad.size.y)*PaperTerrain.Cell+2.8f;
+            var light=AddLight(transform,"室内纸光",center,LightType.Point,new Color(1f,.92f,.79f),LightUnit.Lumen,3700);
+            light.range=16f;
+        }
+    }
+
     void LightRooms()
     {
         // The real west aperture and its muntins shape the directional light through the

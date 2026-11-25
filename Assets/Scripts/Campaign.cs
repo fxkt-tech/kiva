@@ -97,6 +97,7 @@ public sealed class Campaign : MonoBehaviour
         if(!level){
             var go=new GameObject(chapter.locationName);go.SetActive(false);level=go.AddComponent<FerryPuzzle>();
             level.Build(hint,chapter,Book,Finish,PauseChanged);
+            level.GetComponent<FerryLighting>().LightGeneratedRooms(chapter);
         }
         Show(null);level.Begin();
     }

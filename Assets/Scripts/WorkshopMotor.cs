@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public sealed class WorkshopMotor : MonoBehaviour
 {
@@ -90,27 +89,19 @@ public sealed class WorkshopMotor : MonoBehaviour
 
     public void StopInput(){movement=Vector2.zero;jump=glideHeld=Gliding=false;}
 
-    public void InputFrame(bool hasWing)
+    public void InputFrame(WorkshopInput input,bool hasWing)
     {
-        var keys=Keyboard.current;var mouse=Mouse.current;
-        if(keys==null || mouse==null){StopInput();Look();return;}
-        // .22 degrees per pixel matches the former Input Manager mouse axes.
-        var options=GameSettings.Current;
-        var turn=mouse.delta.ReadValue()*(.22f*options.sensitivity);
-        Yaw+=turn.x;
-        pitch=Mathf.Clamp(pitch+(options.invertY?turn.y:-turn.y),-89,89);
-        Eyes.fieldOfView=options.fieldOfView;
+        Yaw+=input.turn.x;
+        pitch=Mathf.Clamp(pitch+input.turn.y,-89,89);
+        Eyes.fieldOfView=GameSettings.Current.fieldOfView;
         roll=Mathf.MoveTowards(roll,0,240*Time.deltaTime);
-        static float Axis(bool negative,bool positive)=>(positive?1:0)-(negative?1:0);
-        movement=Vector2.ClampMagnitude(new Vector2(
-            Axis(keys.aKey.isPressed || keys.leftArrowKey.isPressed,keys.dKey.isPressed || keys.rightArrowKey.isPressed),
-            Axis(keys.sKey.isPressed || keys.downArrowKey.isPressed,keys.wKey.isPressed || keys.upArrowKey.isPressed)),1);
-        if(keys.spaceKey.wasPressedThisFrame){
+        movement=input.movement;
+        if(input.spacePressed){
             if(Grounded)jump=true;
-            else if(hasWing)glideHeld=!options.glideToggle || !glideHeld;
+            else if(hasWing)glideHeld=!input.toggleGlide || !glideHeld;
         }
-        if(!options.glideToggle && !keys.spaceKey.isPressed)glideHeld=false;
-        Look();
+        if(!input.toggleGlide && !input.spaceHeld)glideHeld=false;
+        Look(Time.inFixedTimeStep);
     }
 
     public void Step()
@@ -151,14 +142,14 @@ public sealed class WorkshopMotor : MonoBehaviour
         Look();bird.Face(Yaw);
     }
 
-    void Look()
+    void Look(bool physics=false)
     {
-        var center=transform.position;
-        if(exitTick==Time.fixedTimeAsDouble)
+        var center=physics?Body.position:transform.position;
+        if(!physics && exitTick==Time.fixedTimeAsDouble)
             center=Vector3.Lerp(exitStart,Body.position,(float)((Time.timeAsDouble-exitTick)/Time.fixedDeltaTime));
         var eye=center+Vector3.up*EyeOffset;
         var look=Quaternion.Euler(pitch,Yaw,roll);
-        if(portals.Crossing(eye,Body.linearVelocity,out var mapped,out var turn,out _)){eye=mapped;look=turn*look;}
+        if(portals.Crossing(eye,Body.linearVelocity,out var mapped,out var turn,out _,physics)){eye=mapped;look=turn*look;}
         Eyes.transform.SetPositionAndRotation(eye,look);
     }
 

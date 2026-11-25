@@ -8,6 +8,8 @@ public sealed class PaperDevice : MonoBehaviour
     Transform rotor;
     readonly HashSet<Rigidbody> bounced=new HashSet<Rigidbody>();
     float pulse;
+    public WorkshopTool Kind=>kind;
+    public event System.Action<Rigidbody,Rigidbody> Applied;
 
     static Vector3 Ring(int i,int sides,float radius,float z)
     {
@@ -83,7 +85,9 @@ public sealed class PaperDevice : MonoBehaviour
             var line=center-origin;
             if(Physics.Raycast(origin,line,out var hit,line.magnitude,~0,QueryTriggerInteraction.Ignore) && hit.rigidbody!=body)return;
             float speed=Vector3.Dot(body.linearVelocity-host.PointVelocity(center),normal);
-            body.AddForce(normal*(48f*Mathf.Clamp01(1-speed/12f)),ForceMode.Force);
+            float force=48f*Mathf.Clamp01(1-speed/12f);
+            body.AddForce(normal*force,ForceMode.Force);
+            if(force>0)Applied?.Invoke(body,host.Host);
             return;
         }
         float extent;
@@ -97,6 +101,7 @@ public sealed class PaperDevice : MonoBehaviour
         float approach=Vector3.Dot(body.linearVelocity-host.PointVelocity(center),normal);
         if(approach>.3f || !bounced.Add(body))return;
         body.AddForce(normal*(12.4f-approach),ForceMode.VelocityChange);
+        Applied?.Invoke(body,host.Host);
         pulse=1;
     }
 }

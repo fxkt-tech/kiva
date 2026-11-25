@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33bf120718af81ad87276ac7b02628b, type: 3}
+  m_Name: Rejected-6
+  m_EditorClassIdentifier: 
+  stageId: generated/push-bounce/7c04fd177761461aaef0438ba1a2f8f2/6
+  perches:
+  - id: landing
+    species: {fileID: 11400000, guid: 06b46460c5470d04fa5ee54cdea20095, type: 2}
+    feet: {x: 9.8, y: 6, z: 11.4}
+    flightOffset: {x: 0, y: 0, z: 0}
+    yaw: -90
+  title: "\u63A8\u7816\u6E21\u69FD"
+  description: 
+  locationName: 
+  arrivalStory: 
+  fixedBricks:
+  - label: "\u76F4\u69FD\u5E95\u677F"
+    start: {x: 0, y: -1, z: 0}
+    size: {x: 1, y: 1, z: 4}
+    white: 0
+  - label: "\u98CE\u6247\u5B89\u88C5\u9762"
+    start: {x: 0, y: 0, z: -1}
+    size: {x: 1, y: 1, z: 1}
+    white: 32
+  - label: "\u8D77\u6B65\u4FA7\u53F0"
+    start: {x: -2, y: 0, z: 0}
+    size: {x: 2, y: 1, z: 5}
+    white: 0
+  - label: "\u69FD\u8FB9"
+    start: {x: 1, y: 0, z: 0}
+    size: {x: 1, y: 1, z: 4}
+    white: 0
+  - label: "\u6B62\u6321"
+    start: {x: 0, y: 0, z: 4}
+    size: {x: 1, y: 1, z: 1}
+    white: 0
+  - label: "\u76EE\u6807\u9AD8\u53F0"
+    start: {x: 5, y: 3, z: 7}
+    size: {x: 3, y: 1, z: 3}
+    white: 0
+  physicalBricks:
+  - label: "\u98CE\u69FD\u7EB8\u7816"
+    cell: {x: 0, y: 0, z: 1}
+    white: 8
+    mass: 2
+  spawnFeet: {x: -0.55, y: 1.5, z: 1.4}
+  checkpointFeet: {x: 0, y: 0, z: 0}
+  exitFeet: {x: 9.8, y: 6, z: 11.4}
+  exitSign: {x: 8, y: 5.45, z: 10.46}
+  spawnYaw: 137
+  checkpointYaw: 0
+  supplyZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  exitZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  startingGear: 6
+  supplyGear: 0
+  entryHint: "\u6309 3 \u9009\u98CE\u6247\uFF0C\u5BF9\u51C6\u69FD\u9996\u767D\u9762\u70B9\u51FB\u3002\u6CBF\u4FA7\u53F0\u8D70\u5230\u6B62\u6321\uFF0C\u6309 2 \u5728\u7816\u9876\u88C5\u83C7\uFF0C\u5411\u9AD8\u53F0\u52A9\u8DD1\u3002"
+  supplyHint: 
+  retryHint: 
+  westWindow: 0

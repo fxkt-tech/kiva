@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 // Session and progression for one campaign stage.
@@ -15,6 +14,9 @@ public sealed class FerryPuzzle : MonoBehaviour
     StageBirds birds;
     public string CollectionStatus => birds.Progress;
     public bool SaveCollection() => birds.SavePending(motor.Body.position);
+    public Action<WorkshopInput> CollectInput { private get; set; }
+    public Action BeforePhysics { private get; set; }
+    public event Action Restarted;
     PlacementPreview preview;
     WorkshopTool selected;
     PlacementAim aim;
@@ -123,6 +125,7 @@ public sealed class FerryPuzzle : MonoBehaviour
         motor.Spawn(hall.TransformPoint(spawn),checkpoint?current.checkpointYaw:current.spawnYaw,checkpoint?8:-4);
         birds.ResetPosition(motor.Body.position);
         Physics.SyncTransforms();
+        Restarted?.Invoke();
         if(WorkshopToolSpec.Owned(gear,(int)selected))hud.Selected(selected);
         hud.Hint(checkpoint?current.retryHint:current.entryHint,6);
     }
@@ -169,16 +172,19 @@ public sealed class FerryPuzzle : MonoBehaviour
 
     void Update()
     {
-        var keys=Keyboard.current;var mouse=Mouse.current;
-        if(keys==null || mouse==null)return;
-        if(paused)return;
-        if(keys.tKey.wasPressedThisFrame){checkpoint=false;Restart();return;}
-        if(keys.rKey.wasPressedThisFrame){Restart();return;}
-        motor.InputFrame((gear & WorkshopGear.Glider)!=0);
-        for(int i=0;i<3;i++)if(keys[Key.Digit1+i].wasPressedThisFrame)Select(i);
-        float scroll=mouse.scroll.ReadValue().y;
-        if(scroll!=0)Cycle(scroll>0?-1:1);
-        bool primary=mouse.leftButton.wasPressedThisFrame,secondary=mouse.rightButton.wasPressedThisFrame;
+        if(paused || !WorkshopInput.Read(out var input))return;
+        if(CollectInput!=null)CollectInput(input);
+        else ApplyInput(input);
+    }
+
+    public void ApplyInput(WorkshopInput input)
+    {
+        if(input.restart)checkpoint=false;
+        if(input.restart || input.retry){Restart();return;}
+        motor.InputFrame(input,(gear & WorkshopGear.Glider)!=0);
+        for(int i=0;i<3;i++)if((input.selectMask & (1<<i))!=0)Select(i);
+        if(input.cycle!=0)Cycle(input.cycle);
+        bool primary=input.primary,secondary=input.secondary;
         int slot=WorkshopToolSpec.For(selected).slot;
         if(selected==WorkshopTool.Gun && secondary)slot=1;
         bool owned=WorkshopToolSpec.Owned(gear,(int)selected);
@@ -192,7 +198,7 @@ public sealed class FerryPuzzle : MonoBehaviour
             if(aim.Valid){
                 placement.Install(slot,aim);
                 if(slot>=2){
-                    if(placement.Installed(2) && placement.Installed(3))hud.Hint("踩上弹弹菇，腾空后再次按住空格展开纸翼",5);
+                    if(placement.Installed(2) && placement.Installed(3))hud.Hint((gear & WorkshopGear.Glider)!=0?"踩上弹弹菇，腾空后再次按住空格展开纸翼":"踩上弹弹菇起跳",5);
                     else hud.Hint(slot==3?"按 2 选择弹弹菇，装到移动纸砖的白色顶面":"按 3 选择风扇，装到槽端的白面",5);
                 }
             }
@@ -204,6 +210,8 @@ public sealed class FerryPuzzle : MonoBehaviour
 
     void FixedUpdate()
     {
+        BeforePhysics?.Invoke();
+        if(!enabled)return;
         var incoming=motor.Body.position;
         motor.Step();
         placement.ApplyDevices(motor.Body,geometry.Bodies);

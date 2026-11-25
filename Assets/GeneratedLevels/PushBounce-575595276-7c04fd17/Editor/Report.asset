@@ -1,0 +1,1442 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3094a1f4741ca34db8ff8c204e9cf67, type: 3}
+  m_Name: Report
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::WorkshopGenerationReport
+  seed: 575595276
+  accepted: -1
+  unityVersion: 6000.6.10f1
+  rulesHash: aa6d1ee3fe1196ec36f9f3df9d7be59b
+  attempts:
+  - layout:
+      start: 1
+      stop: 4
+      nearX: 3
+      nearZ: 5
+    conclusion: "\u53D1\u73B0\u53EF\u91CD\u653E\u7684\u514D\u63A8\u7816\u6377\u5F84"
+    solution:
+      version: 1
+      endTick: 235
+      levelHash: bcb4527c58373dd9d398dd75dcd84f3c
+      fixedDelta: 0.019999992
+      usedBrickAtStop: 1
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands:
+      - tick: 8
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0.12110901, y: 39.485565}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 1
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 4
+          cycle: 0
+      - tick: 24
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -137.12111, y: -35.485565}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 65
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 79
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 93.791336, y: 25.169493}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 1
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 2
+          cycle: 0
+      - tick: 85
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -3.7913208, y: -25.169495}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 86
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0, y: 0.0000019073489}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 201
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 205
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 127.44667, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 206
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 4.1556854, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 207
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 3.0003204, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 208
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 2.3282166, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 209
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.910492, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 210
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.6415253, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 211
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.4687347, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 212
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.3653564, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 213
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.319458, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 214
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.3317566, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 215
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.417984, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 216
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+    counter:
+      version: 1
+      endTick: 216
+      levelHash: bcb4527c58373dd9d398dd75dcd84f3c
+      fixedDelta: 0.019999992
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands:
+      - tick: 9
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -14.163422, y: 4}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 10
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.0000076293945, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 14
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 28
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: -75.713135, y: 22.681023}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 1
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 2
+          cycle: 0
+      - tick: 31
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -2.438263, y: -22.681023}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 32
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.0000076293945, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 146
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 147
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.0759735, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 148
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.00031280518, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 151
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 152
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.0000038146973, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 154
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 155
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.0000038146973, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 157
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 158
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.000015258789, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 159
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.000011444092, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 164
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 165
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.00002670288, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 168
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 169
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.000034332275, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 172
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 173
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.000038146973, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 176
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 177
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.000045776367, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 179
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 181
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -0.000030517578, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 182
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+    solutionConfirmed: 1
+    counterConfirmed: 1
+    launchedSamples: 1
+    nominal:
+      push: 8
+      bounce: 97
+      collect: 197
+      finish: 232
+      landing: {x: 9.697392, y: 6.3043027, z: 11.488909}
+      landed: 1
+      edgeMargin: 1.9490075
+      runUp: 0.75790215
+      approachOffset: 0
+      headingOffset: 0
+    shortcut:
+      push: 0
+      bounce: 42
+      collect: 177
+      finish: 213
+      landing: {x: 7.1566763, y: 6.2751255, z: 8.82291}
+      landed: 1
+      edgeMargin: 0.9693103
+      runUp: 0.6572574
+      approachOffset: 0
+      headingOffset: 0
+    tolerance: []
+    samples:
+    - "\u6837\u672C 1\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 42 \u6B65\u5F39\u8D77\uFF0C\u5DF2\u6536\u9E1F\u5E76\u843D\u5730\u7ED3\u7B97\uFF0C213 \u6B65"
+    map: {fileID: 11400000, guid: 7ecadc0c89c75534d95c6a3bc0fcfaf0, type: 2}
+    hash: bcb4527c58373dd9d398dd75dcd84f3c
+  - layout:
+      start: 1
+      stop: 4
+      nearX: 4
+      nearZ: 7
+    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    solution:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    counter:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    solutionConfirmed: 0
+    counterConfirmed: 0
+    launchedSamples: 0
+    nominal:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    shortcut:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    tolerance: []
+    samples: []
+    map: {fileID: 0}
+    hash: 
+  - layout:
+      start: 1
+      stop: 6
+      nearX: 4
+      nearZ: 7
+    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    solution:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    counter:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    solutionConfirmed: 0
+    counterConfirmed: 0
+    launchedSamples: 0
+    nominal:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    shortcut:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    tolerance: []
+    samples: []
+    map: {fileID: 0}
+    hash: 
+  - layout:
+      start: 2
+      stop: 6
+      nearX: 5
+      nearZ: 7
+    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    solution:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    counter:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    solutionConfirmed: 0
+    counterConfirmed: 0
+    launchedSamples: 0
+    nominal:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    shortcut:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    tolerance: []
+    samples: []
+    map: {fileID: 0}
+    hash: 
+  - layout:
+      start: 2
+      stop: 5
+      nearX: 5
+      nearZ: 7
+    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    solution:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    counter:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    solutionConfirmed: 0
+    counterConfirmed: 0
+    launchedSamples: 0
+    nominal:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    shortcut:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    tolerance: []
+    samples: []
+    map: {fileID: 0}
+    hash: 
+  - layout:
+      start: 1
+      stop: 4
+      nearX: 5
+      nearZ: 7
+    conclusion: "\u6270\u52A8\u540E\u672A\u80FD\u7A33\u5B9A\u843D\u53F0\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    solution:
+      version: 1
+      endTick: 236
+      levelHash: b3a2910f6d312c248e6c6f55a00f86d3
+      fixedDelta: 0.019999992
+      usedBrickAtStop: 1
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands:
+      - tick: 8
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0.12110901, y: 39.485565}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 1
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 4
+          cycle: 0
+      - tick: 24
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -137.12111, y: -35.485565}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 65
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 79
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 93.78253, y: 25.157972}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 1
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 2
+          cycle: 0
+      - tick: 85
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: -7.7825317, y: -25.157959}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 201
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 82.58995, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 202
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 8.034851, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 203
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 6.804657, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 204
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 5.764694, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 205
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 4.915756, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 206
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 4.2333984, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 207
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 3.687317, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 208
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 3.2494507, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 209
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 2.8966675, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 210
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 2.6105957, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 211
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 2.376999, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 212
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 2.1842651, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 213
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 2.0233002, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 214
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.8858337, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 215
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.7634735, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 216
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.6456146, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 217
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.5153503, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 218
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.3392181, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 219
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 1.0380096, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 220
+        input:
+          movement: {x: 0, y: 1}
+          turn: {x: 0.3802185, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+      - tick: 221
+        input:
+          movement: {x: 0, y: 0}
+          turn: {x: 0, y: 0}
+          spacePressed: 0
+          spaceHeld: 0
+          toggleGlide: 0
+          primary: 0
+          secondary: 0
+          retry: 0
+          restart: 0
+          selectMask: 0
+          cycle: 0
+    counter:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    solutionConfirmed: 1
+    counterConfirmed: 0
+    launchedSamples: 7
+    nominal:
+      push: 8
+      bounce: 97
+      collect: 198
+      finish: 233
+      landing: {x: 9.674904, y: 6.2973385, z: 12.057781}
+      landed: 1
+      edgeMargin: 1.2041812
+      runUp: 0.7649726
+      approachOffset: 0
+      headingOffset: 0
+    shortcut:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    tolerance:
+    - push: 8
+      bounce: 95
+      collect: 197
+      finish: 232
+      landing: {x: 9.642352, y: 6.286939, z: 12.108025}
+      landed: 1
+      edgeMargin: 1.2544246
+      runUp: 0.7683159
+      approachOffset: -0.12
+      headingOffset: -2
+    - push: 8
+      bounce: 98
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 1.0081762
+      approachOffset: -0.12
+      headingOffset: 2
+    samples:
+    - "\u6837\u672C 1\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 42 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C212 \u6B65"
+    - "\u6837\u672C 2\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C -12\xB0\uFF09\xB7 \u7B2C 52 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C222 \u6B65"
+    - "\u6837\u672C 3\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 12\xB0\uFF09\xB7 \u7B2C 34 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C204 \u6B65"
+    - "\u6837\u672C 4\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C -24\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
+    - "\u6837\u672C 5\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 24\xB0\uFF09\xB7 \u7B2C 43 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C213 \u6B65"
+    - "\u6837\u672C 6\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 44 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C214 \u6B65"
+    - "\u6837\u672C 7\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C -12\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
+    - "\u6837\u672C 8\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 12\xB0\uFF09\xB7 \u7B2C 38 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C208 \u6B65"
+    - "\u6837\u672C 9\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C -24\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
+    - "\u6837\u672C 10\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 24\xB0\uFF09\xB7 \u7B2C 41 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C211 \u6B65"
+    map: {fileID: 11400000, guid: 933cdb2d55a738a41b923c259439bc5f, type: 2}
+    hash: b3a2910f6d312c248e6c6f55a00f86d3
+  - layout:
+      start: 1
+      stop: 5
+      nearX: 5
+      nearZ: 7
+    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    solution:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    counter:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    solutionConfirmed: 0
+    counterConfirmed: 0
+    launchedSamples: 0
+    nominal:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    shortcut:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    tolerance: []
+    samples: []
+    map: {fileID: 0}
+    hash: 
+  - layout:
+      start: 1
+      stop: 5
+      nearX: 4
+      nearZ: 7
+    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    solution:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    counter:
+      version: 1
+      endTick: 0
+      levelHash: 
+      fixedDelta: 0
+      usedBrickAtStop: 0
+      wallSpring: 0
+      updraft: 0
+      wallPoint: {x: 0, y: 0, z: 0}
+      springPoint: {x: 0, y: 0, z: 0}
+      commands: []
+    solutionConfirmed: 0
+    counterConfirmed: 0
+    launchedSamples: 0
+    nominal:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    shortcut:
+      push: 0
+      bounce: 0
+      collect: 0
+      finish: 0
+      landing: {x: 0, y: 0, z: 0}
+      landed: 0
+      edgeMargin: 0
+      runUp: 0
+      approachOffset: 0
+      headingOffset: 0
+    tolerance: []
+    samples: []
+    map: {fileID: 0}
+    hash: 
