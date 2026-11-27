@@ -41,8 +41,8 @@ public static class PaperChamber
         var paper=sheet.Mount(root,"透光窗纸",glazing);
         paper.transform.localPosition=new Vector3(wall-.25f,(head+sill)*.5f,midZ);
         // The thickness map covers all five by seven panes, aligned with the real bars.
-        glazing.SetTextureScale("_BaseColorMap",new Vector2(-1f/(width*.76f),1f/(height*.76f)));
-        glazing.SetTextureOffset("_BaseColorMap",Vector2.one*.5f);
+        glazing.SetTextureScale("_BaseMap",new Vector2(-1f/(width*.76f),1f/(height*.76f)));
+        glazing.SetTextureOffset("_BaseMap",Vector2.one*.5f);
         paper.GetComponent<Renderer>().shadowCastingMode=ShadowCastingMode.Off;
         var seal=new GameObject("窗内挡板").AddComponent<BoxCollider>();
         seal.transform.SetParent(root,false);seal.transform.localPosition=new Vector3(wall-.12f,(head+sill)*.5f,midZ);

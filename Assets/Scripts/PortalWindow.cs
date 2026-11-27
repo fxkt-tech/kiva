@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering;
 using System.Collections.Generic;
 
@@ -107,19 +107,10 @@ public sealed class PortalWindow : MonoBehaviour
         camera.allowMSAA=player.allowMSAA;
         // Apply the display transform once, after the player camera has composited
         // the HDR view through the opening and the surrounding paper rim.
-        var data = cameraObject.AddComponent<HDAdditionalCameraData>();
-        if(player.TryGetComponent<HDAdditionalCameraData>(out var source)){
-            data.volumeLayerMask=source.volumeLayerMask;
-            data.antialiasing=source.antialiasing;
-            data.SMAAQuality=source.SMAAQuality;
-        }
-        data.hasPersistentHistory=true;
-        data.customRenderingSettings = true;
-        foreach (var effect in new[] { FrameSettingsField.Bloom, FrameSettingsField.ColorGrading, FrameSettingsField.Tonemapping })
-        {
-            data.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)effect] = true;
-            data.renderingPathCustomFrameSettings.SetEnabled(effect, false);
-        }
+        camera.allowHDR=true;
+        var data=camera.GetUniversalAdditionalCameraData();
+        data.renderPostProcessing=false;
+        data.volumeLayerMask=player.GetUniversalAdditionalCameraData().volumeLayerMask;
         var display=new Material(windowShader);
         display.SetFloat("_ClampNearPlane",depth==1?1:0);
         return new View { camera=camera, display=display };

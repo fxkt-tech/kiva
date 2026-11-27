@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.Rendering.Universal;
 
 public sealed class FerryLighting : MonoBehaviour
 {
@@ -18,32 +18,18 @@ public sealed class FerryLighting : MonoBehaviour
         mat.SetColor("_Pigment",pigment);
         mat.SetTexture("_Fibres",Resources.Load<Texture2D>("Mineral/MulberryDetail"));
         mat.SetTexture("_MineralWash",Resources.Load<Texture2D>("Mineral/Pigments"));
-        HDMaterial.ValidateMaterial(mat);
         return mat;
     }
 
     public static Material Mineral(string family, Color color)
     {
-        var material = new Material(Shader.Find("HDRP/Lit")) { name=family };
+        var material = new Material(Resources.Load<Material>("Mineral/Paper Pigment")) { name=family };
         material.SetColor("_BaseColor",color);
-        material.SetTexture("_BaseColorMap",Resources.Load<Texture2D>("Mineral/Mulberry"));
-        bool quill=family=="Quill";
-        material.SetFloat("_UVBase",quill?5:0);
-        material.SetFloat("_ObjectSpaceUVMapping",1f);
-        material.SetTextureScale("_BaseColorMap",Vector2.one*.65f);
-        material.SetTexture("_DetailMap",Resources.Load<Texture2D>("Mineral/MulberryDetail"));
-        material.SetTextureScale("_DetailMap",Vector2.one*.64f);
-        material.SetFloat("_DetailAlbedoScale",quill?.24f:.38f);
-        material.SetFloat("_DetailNormalScale",quill?.055f:.12f);
-        material.SetFloat("_DetailSmoothnessScale",0);
-        material.SetFloat("_Metallic",0);
+        material.SetTextureScale("_BaseMap",Vector2.one*.65f);
+        material.SetTextureScale("_DetailAlbedoMap",Vector2.one*.64f);
+        material.SetFloat("_DetailAlbedoMapScale",family=="Quill"?.24f:.38f);
+        material.SetFloat("_BumpScale",family=="Paper"?.08f:0);
         material.SetFloat("_Smoothness",family=="Lacquer"?.24f:.11f);
-        // A small amount of relief keeps the paper tactile at arm's length.
-        if(family=="Paper"){
-            material.SetTexture("_NormalMap",Resources.Load<Texture2D>("Mineral/PaperNormal"));
-            material.SetFloat("_NormalScale",.08f);
-        }
-        HDMaterial.ValidateMaterial(material);
         return material;
     }
 
@@ -54,10 +40,10 @@ public sealed class FerryLighting : MonoBehaviour
         light.transform.SetParent(parent, false);
         light.transform.localPosition = position;
         light.type = type;
-        light.gameObject.AddComponent<HDAdditionalLightData>();
         light.color = color;
-        light.lightUnit = unit;
-        light.intensity = intensity;
+        // Convert the reference rig to irradiance at the game's fixed exposure.
+        float sourceIntensity = unit == LightUnit.Lumen ? intensity / (4f * Mathf.PI) : intensity;
+        light.intensity = sourceIntensity / 275f;
         return light;
     }
 
@@ -72,8 +58,11 @@ public sealed class FerryLighting : MonoBehaviour
         return light;
     }
 
-    HDAdditionalLightData sunShadows;
-    public void ApplyQuality()=>sunShadows.SetShadowResolution(GameSettings.Current.shadowResolution);
+    public void ApplyQuality()
+    {
+        if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset pipeline)
+            pipeline.mainLightShadowmapResolution = GameSettings.Current.shadowResolution;
+    }
 
     public void Initialize(Camera eyes, Transform exitLamp)
     {
@@ -119,12 +108,7 @@ public sealed class FerryLighting : MonoBehaviour
         sun.transform.localRotation=Quaternion.LookRotation(new Vector3(1f,-.67f,.28f));
         sun.shadows=LightShadows.Soft;
         sun.shadowNearPlane=.08f;
-        var hdSun=sun.GetComponent<HDAdditionalLightData>();
-        hdSun.angularDiameter=.34f;
-        hdSun.dirLightPCSSMaxPenumbraSize=.055f;
-        hdSun.dirLightPCSSMinFilterSizeTexels=1f;
-        hdSun.shadowDimmer=.9f;
-        sunShadows=hdSun;
+        sun.shadowStrength=.9f;
         ApplyQuality();
 
         Spot("窗纸漫射",new Vector3(-5.73f,4.2f,-1.5f),new Vector3(.2f,1.8f,4.8f),
@@ -159,6 +143,7 @@ public sealed class FerryLighting : MonoBehaviour
             new Color(1f,.70f,.43f), LightUnit.Lumen, 1650f);
         moving.range=9;
         moving.shadows=LightShadows.Soft;
+        moving.GetUniversalAdditionalLightData().additionalLightsShadowResolutionTier=UniversalAdditionalLightData.AdditionalLightsShadowResolutionTierMedium;
         moving.shapeRadius=.30f;
         var beacon = AddLight(exitLamp, "船灯反光", Vector3.down*.48f, LightType.Point,
             new Color(1f,.72f,.45f), LightUnit.Lumen, 1200f);
@@ -172,39 +157,26 @@ public sealed class FerryLighting : MonoBehaviour
         volume.isGlobal=true;
         volume.priority=100;
         profile=volume.profile;
-        profile.Add<DiffusionProfileList>(true).diffusionProfiles.Override(
-            new[]{Resources.Load<DiffusionProfileSettings>("Mineral/WindowPaperProfile")});
-        var exposure=profile.Add<Exposure>(true);
-        exposure.mode.Override(ExposureMode.Fixed);
-        exposure.fixedExposure.Override(6.6f);
-        var indirect=profile.Add<IndirectLightingController>(true);
-        indirect.indirectDiffuseLightingMultiplier.Override(.19f);
-        indirect.reflectionLightingMultiplier.Override(.29f);
-        var fog=profile.Add<Fog>(true);
-        fog.enabled.Override(false);
-        profile.Add<HDShadowSettings>().maxShadowDistance.Override(44f);
-        var occlusion = profile.Add<ScreenSpaceAmbientOcclusion>();
-        occlusion.intensity.Override(.65f);
-        occlusion.radius.Override(.45f);
-        occlusion.directLightingStrength.Override(.16f);
+        var tonemapping=profile.Add<Tonemapping>(true);
+        tonemapping.mode.Override(TonemappingMode.Neutral);
         var bloom = profile.Add<Bloom>();
         bloom.threshold.Override(1.1f);
         bloom.intensity.Override(.12f);
-        profile.Add<MotionBlur>().intensity.Override(0f);
         foreach(var cam in GetComponentsInChildren<Camera>(true)){
-            var view=cam.GetComponent<HDAdditionalCameraData>()??cam.gameObject.AddComponent<HDAdditionalCameraData>();
-            view.volumeLayerMask=-1;
-            view.antialiasing = HDAdditionalCameraData.AntialiasingMode.SubpixelMorphologicalAntiAliasing;
-            view.SMAAQuality = HDAdditionalCameraData.SMAAQualityLevel.High;
+            var view=cam.GetUniversalAdditionalCameraData();
+            view.renderPostProcessing=true;
+            view.volumeLayerMask=1 << gameObject.layer;
+            view.antialiasing=AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+            view.antialiasingQuality=AntialiasingQuality.High;
             cam.allowMSAA=false;
         }
     }
 
     static Material LampPigment(Color tint,Color transmitted)
     {
-        var mat=Mineral("Fold",tint);
-        mat.SetColor("_EmissiveColor",transmitted);
-        HDMaterial.ValidateMaterial(mat);
+        var mat=new Material(Resources.Load<Material>("Mineral/Lantern Pigment"));
+        mat.SetColor("_BaseColor",tint);
+        mat.SetColor("_EmissionColor",transmitted / 96f);
         return mat;
     }
 

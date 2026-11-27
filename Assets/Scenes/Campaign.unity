@@ -3233,8 +3233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e36aa2e075a4bc3bf8f97fa688d5b9f, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LobbyEmission
-  emissionMask: {fileID: 2800000, guid: fe928eb90c034ce4b3cb107760a0bf9a, type: 3}
-  emissionShader: {fileID: 4800000, guid: d154f9602a6d4fdca93c5d515b95d256, type: 3}
+  emissionMaterial: {fileID: 2100000, guid: cc5b94af684d433e810d77298deb58d2, type: 2}
   compositeShader: {fileID: 4800000, guid: d983bd38ec114a8a98757fd8fd16e670, type: 3}
   graphics:
   - {fileID: 2056887911}

@@ -9,8 +9,7 @@ public sealed class PlacementPreview : MonoBehaviour
 
     public void Build()
     {
-        ink=new Material(Shader.Find("HDRP/Unlit"));
-        ink.SetColor("_UnlitColor",new Color(.94f,.96f,.96f));
+        ink=Resources.Load<Material>("Mineral/Placement Ink");
         for(int i=0;i<lines.Length;i++){
             var line=new GameObject("白墨预览").AddComponent<LineRenderer>();
             line.transform.SetParent(transform,false);line.gameObject.layer=2;
@@ -53,5 +52,4 @@ public sealed class PlacementPreview : MonoBehaviour
         }
     }
 
-    void OnDestroy(){if(ink)Destroy(ink);}
 }

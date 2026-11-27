@@ -1,18 +1,17 @@
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public sealed class LobbyEmission : MonoBehaviour
 {
-    [SerializeField] Texture2D emissionMask;
-    [SerializeField] Shader emissionShader;
+    [SerializeField] Material emissionMaterial;
     [SerializeField] Shader compositeShader;
     [SerializeField] RawImage[] graphics;
 
     RenderTexture output;
-    Material emission, composite;
+    Material composite;
     VolumeProfile profile;
     Camera bloomCamera;
 
@@ -31,13 +30,13 @@ public sealed class LobbyEmission : MonoBehaviour
 
     void CreateBloomCamera()
     {
-        output = new RenderTexture(emissionMask.width, emissionMask.height, 0, GraphicsFormat.R16G16B16A16_SFloat)
+        var emissionMask = emissionMaterial.mainTexture;
+        output = new RenderTexture(emissionMask.width, emissionMask.height, 24, GraphicsFormat.R16G16B16A16_SFloat)
         {
             name = "Lobby Emission HDR",
             wrapMode = TextureWrapMode.Clamp,
             filterMode = FilterMode.Bilinear
         };
-        emission = new Material(emissionShader) { mainTexture = emissionMask };
         composite = new Material(compositeShader);
         composite.SetTexture("_EmissionMask", emissionMask);
         foreach (var graphic in graphics)
@@ -59,13 +58,10 @@ public sealed class LobbyEmission : MonoBehaviour
         bloomCamera.allowHDR = true;
         bloomCamera.allowMSAA = false;
 
-        var cameraData = renderObject.AddComponent<HDAdditionalCameraData>();
-        cameraData.clearColorMode = HDAdditionalCameraData.ClearColorMode.Color;
-        cameraData.backgroundColorHDR = Color.black;
+        var cameraData = bloomCamera.GetUniversalAdditionalCameraData();
+        cameraData.SetRenderer(1); // Lobby Bloom Renderer draws the glyph mask before bloom.
+        cameraData.renderPostProcessing = true;
         cameraData.volumeLayerMask = 1 << renderObject.layer;
-        cameraData.customRenderingSettings = true;
-        cameraData.renderingPathCustomFrameSettings.SetEnabled(FrameSettingsField.ExposureControl, false);
-        cameraData.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)FrameSettingsField.ExposureControl] = true;
 
         profile = ScriptableObject.CreateInstance<VolumeProfile>();
         var bloom = profile.Add<Bloom>(true);
@@ -73,7 +69,6 @@ public sealed class LobbyEmission : MonoBehaviour
         bloom.intensity.Override(.32f);
         bloom.scatter.Override(.52f);
         bloom.tint.Override(Color.white);
-        bloom.anamorphic.Override(false);
         profile.Add<Tonemapping>().mode.Override(TonemappingMode.None);
 
         var volume = renderObject.AddComponent<Volume>();
@@ -81,17 +76,6 @@ public sealed class LobbyEmission : MonoBehaviour
         volume.priority = 100;
         volume.sharedProfile = profile;
 
-        var pass = renderObject.AddComponent<CustomPassVolume>();
-        pass.targetCamera = bloomCamera;
-        pass.injectionPoint = CustomPassInjectionPoint.BeforePostProcess;
-        pass.customPasses.Add(new FullScreenCustomPass
-        {
-            name = "Lobby Emission",
-            fullscreenPassMaterial = emission,
-            materialPassName = "Emission",
-            targetColorBuffer = CustomPass.TargetBuffer.Camera,
-            targetDepthBuffer = CustomPass.TargetBuffer.None
-        });
         renderObject.SetActive(true);
     }
 
@@ -109,7 +93,6 @@ public sealed class LobbyEmission : MonoBehaviour
             output.Release();
             Destroy(output);
         }
-        Destroy(emission);
         Destroy(composite);
         if (profile)
         {

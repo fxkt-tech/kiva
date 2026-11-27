@@ -4,7 +4,7 @@ Shader "Kiva/Lobby Wordmark Emission"
 
     SubShader
     {
-        Tags { "RenderPipeline" = "HDRenderPipeline" }
+        Tags { "RenderPipeline" = "UniversalPipeline" }
         Pass
         {
             Name "Emission"
