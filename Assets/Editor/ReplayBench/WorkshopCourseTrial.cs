@@ -9,7 +9,7 @@ internal sealed class WorkshopCourseTrial
     readonly Rigidbody[] bricks;
     readonly IReadOnlyList<WorkshopCourse.Leg> legs;
     readonly WorkshopGenerationReport.Measurement result;
-    readonly Vector3 bird;
+    readonly Vector3 goal;
     readonly int omit;
     readonly bool playerView;
     readonly WorkshopShellBypass shell;
@@ -45,7 +45,7 @@ internal sealed class WorkshopCourseTrial
         this.shell=shell;
         this.timingOffset=timingOffset;this.aimError=aimError;
         perturbJump=(timingOffset!=0 || aimError!=0) && !legs.Any(l=>l.glide);
-        this.legs=legs;this.result=result;this.omit=omit;this.playerView=playerView;bird=level.perches[0].feet;
+        this.legs=legs;this.result=result;this.omit=omit;this.playerView=playerView;goal=level.exitFeet;
         motor=puzzle.GetComponentInChildren<WorkshopMotor>();
         bricks=puzzle.GetComponentsInChildren<WorkshopBrick>().Select(b=>b.GetComponent<Rigidbody>()).ToArray();
         foreach(var d in puzzle.GetComponentsInChildren<PaperDevice>(true))
@@ -121,7 +121,7 @@ internal sealed class WorkshopCourseTrial
         var input=Face(point-eye,false);input.selectMask=1<<(int)tool;input.primary=!secondary;input.secondary=secondary;return input;
     }
     internal WorkshopInput Command(int tick){
-        if(Complete)return Walk(bird);
+        if(Complete)return Walk(goal);
         var l=Leg;var p=motor.Body.position;
         if(l.hasJunction && !passedJunction){
             var to=l.junction-p;to.y=0;

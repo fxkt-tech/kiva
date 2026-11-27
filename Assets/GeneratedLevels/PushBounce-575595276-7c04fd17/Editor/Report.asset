@@ -22,7 +22,7 @@ MonoBehaviour:
       stop: 4
       nearX: 3
       nearZ: 5
-    conclusion: "\u53D1\u73B0\u53EF\u91CD\u653E\u7684\u514D\u63A8\u7816\u6377\u5F84"
+    conclusion: "发现可重放的免推砖捷径"
     solution:
       version: 1
       endTick: 235
@@ -649,7 +649,6 @@ MonoBehaviour:
     nominal:
       push: 8
       bounce: 97
-      collect: 197
       finish: 232
       landing: {x: 9.697392, y: 6.3043027, z: 11.488909}
       landed: 1
@@ -660,7 +659,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 42
-      collect: 177
       finish: 213
       landing: {x: 7.1566763, y: 6.2751255, z: 8.82291}
       landed: 1
@@ -670,7 +668,7 @@ MonoBehaviour:
       headingOffset: 0
     tolerance: []
     samples:
-    - "\u6837\u672C 1\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 42 \u6B65\u5F39\u8D77\uFF0C\u5DF2\u6536\u9E1F\u5E76\u843D\u5730\u7ED3\u7B97\uFF0C213 \u6B65"
+    - "样本 1（朝出口位置，偏转 0\xB0）· 第 42 步弹起，已抵达出口，213 步"
     map: {fileID: 11400000, guid: 7ecadc0c89c75534d95c6a3bc0fcfaf0, type: 2}
     hash: bcb4527c58373dd9d398dd75dcd84f3c
   - layout:
@@ -678,7 +676,7 @@ MonoBehaviour:
       stop: 4
       nearX: 4
       nearZ: 7
-    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    conclusion: "正解未满足验收：跌落后重试"
     solution:
       version: 1
       endTick: 0
@@ -707,7 +705,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -718,7 +715,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -735,7 +731,7 @@ MonoBehaviour:
       stop: 6
       nearX: 4
       nearZ: 7
-    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    conclusion: "正解未满足验收：跌落后重试"
     solution:
       version: 1
       endTick: 0
@@ -764,7 +760,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -775,7 +770,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -792,7 +786,7 @@ MonoBehaviour:
       stop: 6
       nearX: 5
       nearZ: 7
-    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    conclusion: "正解未满足验收：跌落后重试"
     solution:
       version: 1
       endTick: 0
@@ -821,7 +815,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -832,7 +825,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -849,7 +841,7 @@ MonoBehaviour:
       stop: 5
       nearX: 5
       nearZ: 7
-    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    conclusion: "正解未满足验收：跌落后重试"
     solution:
       version: 1
       endTick: 0
@@ -878,7 +870,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -889,7 +880,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -906,7 +896,7 @@ MonoBehaviour:
       stop: 4
       nearX: 5
       nearZ: 7
-    conclusion: "\u6270\u52A8\u540E\u672A\u80FD\u7A33\u5B9A\u843D\u53F0\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    conclusion: "扰动后未能稳定落台：跌落后重试"
     solution:
       version: 1
       endTick: 236
@@ -1273,7 +1263,6 @@ MonoBehaviour:
     nominal:
       push: 8
       bounce: 97
-      collect: 198
       finish: 233
       landing: {x: 9.674904, y: 6.2973385, z: 12.057781}
       landed: 1
@@ -1284,7 +1273,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -1295,7 +1283,6 @@ MonoBehaviour:
     tolerance:
     - push: 8
       bounce: 95
-      collect: 197
       finish: 232
       landing: {x: 9.642352, y: 6.286939, z: 12.108025}
       landed: 1
@@ -1305,7 +1292,6 @@ MonoBehaviour:
       headingOffset: -2
     - push: 8
       bounce: 98
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -1314,16 +1300,16 @@ MonoBehaviour:
       approachOffset: -0.12
       headingOffset: 2
     samples:
-    - "\u6837\u672C 1\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 42 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C212 \u6B65"
-    - "\u6837\u672C 2\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C -12\xB0\uFF09\xB7 \u7B2C 52 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C222 \u6B65"
-    - "\u6837\u672C 3\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 12\xB0\uFF09\xB7 \u7B2C 34 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C204 \u6B65"
-    - "\u6837\u672C 4\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C -24\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
-    - "\u6837\u672C 5\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 24\xB0\uFF09\xB7 \u7B2C 43 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C213 \u6B65"
-    - "\u6837\u672C 6\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 44 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C214 \u6B65"
-    - "\u6837\u672C 7\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C -12\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
-    - "\u6837\u672C 8\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 12\xB0\uFF09\xB7 \u7B2C 38 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C208 \u6B65"
-    - "\u6837\u672C 9\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C -24\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
-    - "\u6837\u672C 10\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 24\xB0\uFF09\xB7 \u7B2C 41 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C211 \u6B65"
+    - "样本 1（朝出口位置，偏转 0\xB0）· 第 42 步弹起，跌落后重试，212 步"
+    - "样本 2（朝出口位置，偏转 -12\xB0）· 第 52 步弹起，跌落后重试，222 步"
+    - "样本 3（朝出口位置，偏转 12\xB0）· 第 34 步弹起，跌落后重试，204 步"
+    - "样本 4（朝出口位置，偏转 -24\xB0）· 未触发原位弹射，耗尽物理步预算，481 步"
+    - "样本 5（朝出口位置，偏转 24\xB0）· 第 43 步弹起，跌落后重试，213 步"
+    - "样本 6（朝高台近角，偏转 0\xB0）· 第 44 步弹起，跌落后重试，214 步"
+    - "样本 7（朝高台近角，偏转 -12\xB0）· 未触发原位弹射，耗尽物理步预算，481 步"
+    - "样本 8（朝高台近角，偏转 12\xB0）· 第 38 步弹起，跌落后重试，208 步"
+    - "样本 9（朝高台近角，偏转 -24\xB0）· 未触发原位弹射，耗尽物理步预算，481 步"
+    - "样本 10（朝高台近角，偏转 24\xB0）· 第 41 步弹起，跌落后重试，211 步"
     map: {fileID: 11400000, guid: 933cdb2d55a738a41b923c259439bc5f, type: 2}
     hash: b3a2910f6d312c248e6c6f55a00f86d3
   - layout:
@@ -1331,7 +1317,7 @@ MonoBehaviour:
       stop: 5
       nearX: 5
       nearZ: 7
-    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    conclusion: "正解未满足验收：跌落后重试"
     solution:
       version: 1
       endTick: 0
@@ -1360,7 +1346,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -1371,7 +1356,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -1388,7 +1372,7 @@ MonoBehaviour:
       stop: 5
       nearX: 4
       nearZ: 7
-    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    conclusion: "正解未满足验收：跌落后重试"
     solution:
       version: 1
       endTick: 0
@@ -1417,7 +1401,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -1428,7 +1411,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0

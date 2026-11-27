@@ -13,11 +13,6 @@ MonoBehaviour:
   m_Name: SideWall
   m_EditorClassIdentifier:
   stageId: replay-bench/side-wall
-  perches:
-  - id: landing
-    species: {fileID: 11400000, guid: 06b46460c5470d04fa5ee54cdea20095, type: 2}
-    feet: {x: 9.8, y: 6, z: 11.4}
-    yaw: -90
   title: 推砖弹射
   fixedBricks:
   - label: 直槽底板
@@ -56,6 +51,8 @@ MonoBehaviour:
   spawnFeet: {x: -0.55, y: 1.5, z: 1.4}
   spawnYaw: 137
   exitFeet: {x: 9.8, y: 6, z: 11.4}
-  exitSign: {x: 8, y: 5.45, z: 7.46}
   startingGear: 6
   entryHint: 按 3 选风扇，对准槽首白面点击。沿侧台走到止挡，按 2 在砖顶装菇，向高台助跑。
+  exitZone:
+    m_Center: {x: 9.8, y: 6.45, z: 11.4}
+    m_Extent: {x: 0.75, y: 0.55, z: 0.75}

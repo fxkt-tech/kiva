@@ -7,7 +7,7 @@ sealed class WorkshopShortcutSearch
 {
     internal static readonly int[] RunUpAngles={0,-12,12,-24,24};
     enum Phase { CrossBrick, ReachFarBank, AimFromBank, PlaceOnWall, LeaveFan, ReturnAcrossBrick,
-        ReachRunUp, LineUp, PlaceOnBrick, Run, AfterWallKick, FindBird }
+        ReachRunUp, LineUp, PlaceOnBrick, Run, AfterWallKick, FindExit }
     struct Candidate
     {
         public Vector3 spring, wall, normal, direction;
@@ -31,7 +31,7 @@ sealed class WorkshopShortcutSearch
     public WorkshopShortcutSearch(FerryPuzzle puzzle,WorkshopLevel level,bool wallAssist,Vector3? landingEdge=null,bool roomWallsOnly=false)
     {
         motor=puzzle.GetComponentInChildren<WorkshopMotor>();
-        goal=level.perches[0].feet;
+        goal=level.exitFeet;
         if((level.startingGear & WorkshopGear.Mushroom)==0)return;
         var walls=new List<(Vector3 point,Vector3 normal)>();
         var tops=new List<Vector3>();
@@ -176,7 +176,7 @@ sealed class WorkshopShortcutSearch
                 phase++;
                 return c.updraft?Face(c.direction,Vector2.up):Install(c.spring,WorkshopTool.Mushroom);
             }
-            if(motor.Grounded && motor.Body.position.y>=goal.y){phase=Phase.FindBird;return default;}
+            if(motor.Grounded && motor.Body.position.y>=goal.y){phase=Phase.FindExit;return default;}
             return Face(c.direction,Vector2.up);
         case Phase.AfterWallKick:
             if(motor.Grounded && motor.Body.position.y>=goal.y){phase++;return default;}

@@ -12,16 +12,32 @@ public sealed class WorkshopLevelEditor : Editor
         }
         DrawDefaultInspector();
     }
-    void OnEnable(){SceneView.duringSceneGui+=Draw;}
-    void OnDisable(){SceneView.duringSceneGui-=Draw;}
-    void Draw(SceneView view){
-        var stage=(WorkshopLevel)target;
-        foreach(var perch in stage.perches){
-            Handles.color=new Color(.2f,.65f,.77f);
-            var chest=perch.feet+Vector3.up*.25f;
-            Handles.DrawWireDisc(perch.feet,Vector3.up,.35f);
-            Handles.DrawWireDisc(chest,view.camera.transform.forward,.45f);
-            Handles.Label(chest+Vector3.up*.48f,perch.species?perch.species.birdName:perch.id);
+    [MenuItem("CONTEXT/WorkshopLevel/生成可编辑关卡预设")]
+    static void Bake(MenuCommand command)
+    {
+        var source=(WorkshopLevel)command.context;
+        var path=EditorUtility.SaveFilePanelInProject("保存关卡预设",source.name,"prefab","选择关卡预设位置");
+        if(string.IsNullOrEmpty(path))return;
+        Bake(source,path);
+    }
+
+    public static void Bake(WorkshopLevel source, string path)
+    {
+        const string template="Assets/Prefabs/LayoutTemplate.prefab";
+        if(path==template)throw new System.ArgumentException("请选择独立的关卡预设路径。");
+        var root=(GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(template));
+        try
+        {
+            root.name=source.name;
+            root.GetComponent<WorkshopLayout>().Populate(source,(prefab,parent)=>
+                (GameObject)PrefabUtility.InstantiatePrefab(prefab,parent));
+            foreach(var node in root.GetComponentsInChildren<Transform>(true))
+                PrefabUtility.RecordPrefabInstancePropertyModifications(node.gameObject);
+            foreach(var component in root.GetComponentsInChildren<Component>(true))
+                if(PrefabUtility.IsPartOfPrefabInstance(component))
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(component);
+            PrefabUtility.SaveAsPrefabAsset(root,path);
         }
+        finally { DestroyImmediate(root); }
     }
 }

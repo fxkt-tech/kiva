@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33bf120718af81ad87276ac7b02628b, type: 3}
+  m_Name: BambooCourt
+  m_EditorClassIdentifier: Assembly-CSharp::WorkshopLevel
+  stageId: workshop/bamboo-court
+  title: "\u7AF9\u9762\u6D4B\u8BD5\u573A"
+  description: "\u516D\u683C\u89C1\u65B9\u7684\u7AF9\u9762\u573A\u5730\uFF0C\u5317\u5899\u5DE6\u7AF9\u53F3\u767D\u3002"
+  locationName: "\u7AF9\u9762\u6D4B\u8BD5\u573A"
+  fixedBricks:
+  - label: "\u7AF9\u9762\u5730\u677F"
+    start: {x: -3, y: -1, z: -3}
+    size: {x: 6, y: 1, z: 6}
+    white: 0
+  - label: "\u5317\u5899 \xB7 \u7AF9\u9762"
+    start: {x: -3, y: 0, z: 3}
+    size: {x: 3, y: 6, z: 1}
+    white: 0
+  - label: "\u5317\u5899 \xB7 \u767D\u9762"
+    start: {x: 0, y: 0, z: 3}
+    size: {x: 3, y: 6, z: 1}
+    white: 63
+  physicalBricks: []
+  spawnFeet: {x: 0, y: 0, z: 0}
+  checkpointFeet: {x: 0, y: 0, z: 0}
+  exitFeet: {x: 0, y: 0, z: 0}
+  spawnYaw: 0
+  checkpointYaw: 0
+  supplyZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  exitZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  startingGear: 1
+  supplyGear: 0
+  entryHint: 
+  supplyHint: 
+  retryHint: 

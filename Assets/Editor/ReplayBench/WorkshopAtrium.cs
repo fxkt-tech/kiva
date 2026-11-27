@@ -32,7 +32,7 @@ internal static class WorkshopAtrium
             var ray=point-eye;
             return !Physics.Raycast(eye,ray.normalized,ray.magnitude-.05f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
         }
-        attempt.birdVisible=Clear(map.perches[0].feet+Vector3.up*.25f);
+        attempt.exitVisible=Clear(map.exitFeet+Vector3.up*.25f);
         attempt.stationVisible=Clear(first.approach+Vector3.up*.10f);
     }
 
@@ -59,7 +59,7 @@ internal static class WorkshopAtrium
         if(push)Gallery("落脚台 对岸回廊",south,end-south);
         else{
             Gallery("落脚台 上廊",cut,end-cut);
-            Gallery("落脚台 归巢廊",south,cut-gap-south);
+            Gallery("落脚台 出口廊",south,cut-gap-south);
         }
         // Piers and a continuous lintel mark the outer gallery edge in both space modes.
         for(int z=south;z<end;z+=4)
@@ -75,7 +75,7 @@ internal static class WorkshopAtrium
         }
 
         var spawn=At(-2.5f,0,south+1.5f);
-        var bird=At(east+.45f,upper,south+1.5f);
+        var goal=At(east+.45f,upper,south+1.5f);
         float lane=east+width*.5f;
         if(push){
             // The wooden quay supports the side of the channel, leaving the brick's lane clear.
@@ -122,12 +122,10 @@ internal static class WorkshopAtrium
             leg.heading=along.x>.5f?0:along.x<-.5f?2:along.z>0?1:-1;
             leg.springMount=frame.Point(leg.springMount);leg.exitDirection=frame.Point(leg.exitDirection);
         }
-        spawn=frame.Point(spawn);bird=frame.Point(bird);
-        var glance=(bird-spawn).normalized+(legs[0].approach-spawn).normalized;
+        spawn=frame.Point(spawn);goal=frame.Point(goal);
+        var glance=(goal-spawn).normalized+(legs[0].approach-spawn).normalized;
         float yaw=Mathf.Atan2(glance.x,glance.z)*Mathf.Rad2Deg;
-        var map=WorkshopCourse.Map(r,id,"纸坊中庭 · "+r.GradeText,blocks,loose,spawn,bird,yaw);
-        var facing=spawn-bird;
-        map.perches[0].yaw=Mathf.Atan2(facing.x,facing.z)*Mathf.Rad2Deg;
+        var map=WorkshopCourse.Map(r,id,"纸坊中庭 · "+r.GradeText,blocks,loose,spawn,goal,yaw);
         map.entryHint=push?"沿下层工位推砖，在砖顶装菇，展开纸翼飞向对面回廊。":
             chain?"先在远端门面前的白砖上装菇，再布置双门。出门弹起后，展开纸翼转向对岸回廊。":"在工位布置双门，到上层回廊后跳过排水缺口。";
         return map;

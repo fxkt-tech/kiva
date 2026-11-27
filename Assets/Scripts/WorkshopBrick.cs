@@ -7,19 +7,13 @@ public sealed class WorkshopBrick : MonoBehaviour
 {
     readonly HashSet<WorkshopFace> holes=new HashSet<WorkshopFace>();
     WorkshopFace[] faces;
-    BoxCollider solid;
+    [SerializeField] BoxCollider solid;
     PhysicsMaterial finish;
 
     public void Seal()
     {
         faces=GetComponentsInChildren<WorkshopFace>(true);
-        var core=new GameObject("整砖碰撞");
-        core.transform.SetParent(transform,false);
-        core.layer=2;
-        solid=core.AddComponent<BoxCollider>();
-        solid.size=Vector3.one*PaperTerrain.Cell;
-        finish=new PhysicsMaterial("磨光竹轨"){staticFriction=.16f,dynamicFriction=.12f,frictionCombine=PhysicsMaterialCombine.Minimum};
-        solid.sharedMaterial=finish;
+        finish=solid.sharedMaterial;
         foreach(var face in faces)face.SetShell(false,finish);
     }
 
@@ -33,5 +27,4 @@ public sealed class WorkshopBrick : MonoBehaviour
         foreach(var side in faces)side.SetShell(!closed,finish);
     }
 
-    void OnDestroy(){if(finish)Destroy(finish);}
 }

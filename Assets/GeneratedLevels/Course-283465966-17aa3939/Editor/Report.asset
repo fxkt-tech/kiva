@@ -21,7 +21,7 @@ MonoBehaviour:
     space: 0
     modules: 15
     gear: 15
-    sequence: "\u6B65\u884C \u2192 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u5C55\u5F00\u7EB8\u7FFC\u6ED1\u7FD4 \u2192 \u7A7F\u8FC7\u4F20\u9001\u95E8 \u2192 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u7A7F\u8FC7\u4F20\u9001\u95E8"
+    sequence: "步行 → 踩弹弹菇起跳 → 展开纸翼滑翔 → 穿过传送门 → 踩弹弹菇起跳 → 穿过传送门"
     actions: 000000000300000004000000060000000300000006000000i
   attempts:
   - layout:
@@ -29,7 +29,7 @@ MonoBehaviour:
       stop: 4
       nearX: 3
       nearZ: 5
-    conclusion: "\u72EC\u7ACB\u56DE\u653E\u672A\u590D\u73B0\u6B63\u89E3\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 4 \u6BB5 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3\uFF0C\u89D2\u8272 (-5.3, 0.4, 2.3)\uFF0C\u8D77\u6B65\u70B9 (47.3, 3.0, -32.3)\uFF0C\u76EE\u6807 (65.3, 6.0, -32.3)\uFF0C\u5C31\u4F4D\u6B65 0\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
+    conclusion: "独立回放未复现正解：跌落后重试 · 第 4 段 踩弹弹菇起跳，角色 (-5.3, 0.4, 2.3)，起步点 (47.3, 3.0, -32.3)，目标 (65.3, 6.0, -32.3)，就位步 0，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
     solution:
       version: 1
       endTick: 1434
@@ -7845,7 +7845,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 1378
       finish: 1413
       landing: {x: 65.376434, y: 9.441535, z: -58.184288}
       landed: 1
@@ -7854,15 +7853,14 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 590 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 788 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.46 m"
-      - "\u7B2C 1125 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 1.76 m"
-      - "\u7B2C 1333 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.33 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 590 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 788 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.46 m"
+      - "第 1125 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 1.76 m"
+      - "第 1333 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.33 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -7958,7 +7956,7 @@ MonoBehaviour:
       stop: 0
       nearX: 0
       nearZ: 0
-    conclusion: "\u72EC\u7ACB\u56DE\u653E\u672A\u590D\u73B0\u6B63\u89E3\uFF1A\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97 \xB7 \u7B2C 5 \u6BB5 \u7A7F\u8FC7\u4F20\u9001\u95E8\uFF0C\u89D2\u8272 (70.1, -6.1, -49.1)\uFF0C\u8D77\u6B65\u70B9 (65.3, 6.0, -45.8)\uFF0C\u76EE\u6807 (65.3, 9.0, -65.3)\uFF0C\u5C31\u4F4D\u6B65 0\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
+    conclusion: "独立回放未复现正解：耗尽物理步预算 · 第 5 段 穿过传送门，角色 (70.1, -6.1, -49.1)，起步点 (65.3, 6.0, -45.8)，目标 (65.3, 9.0, -65.3)，就位步 0，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
     solution:
       version: 1
       endTick: 1427
@@ -15917,7 +15915,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 1371
       finish: 1406
       landing: {x: 65.34546, y: 9.423247, z: -62.812798}
       landed: 1
@@ -15926,15 +15923,14 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 601 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 801 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.41 m"
-      - "\u7B2C 1135 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.92 m"
-      - "\u7B2C 1328 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.46 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 601 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 801 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.41 m"
+      - "第 1135 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 2.92 m"
+      - "第 1328 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.46 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -16030,7 +16026,7 @@ MonoBehaviour:
       stop: 0
       nearX: 0
       nearZ: 0
-    conclusion: "\u72EC\u7ACB\u56DE\u653E\u672A\u590D\u73B0\u6B63\u89E3\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 4 \u6BB5 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3\uFF0C\u89D2\u8272 (-5.3, 0.4, 5.3)\uFF0C\u8D77\u6B65\u70B9 (15.8, 3.0, 72.8)\uFF0C\u76EE\u6807 (34.5, 6.0, 72.8)\uFF0C\u5C31\u4F4D\u6B65 0\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
+    conclusion: "独立回放未复现正解：跌落后重试 · 第 4 段 踩弹弹菇起跳，角色 (-5.3, 0.4, 5.3)，起步点 (15.8, 3.0, 72.8)，目标 (34.5, 6.0, 72.8)，就位步 0，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
     solution:
       version: 1
       endTick: 1445
@@ -24067,7 +24063,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 1389
       finish: 1424
       landing: {x: 35.112606, y: 9.431366, z: 98.77171}
       landed: 1
@@ -24076,15 +24071,14 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 587 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 797 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.33 m"
-      - "\u7B2C 1098 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 1.77 m"
-      - "\u7B2C 1313 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.42 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 587 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 797 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.33 m"
+      - "第 1098 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 1.77 m"
+      - "第 1313 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.42 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -24180,7 +24174,7 @@ MonoBehaviour:
       stop: 0
       nearX: 0
       nearZ: 0
-    conclusion: "\u72EC\u7ACB\u56DE\u653E\u672A\u590D\u73B0\u6B63\u89E3\uFF1A\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97 \xB7 \u7B2C 5 \u6BB5 \u7A7F\u8FC7\u4F20\u9001\u95E8\uFF0C\u89D2\u8272 (9.8, -0.8, -73.1)\uFF0C\u8D77\u6B65\u70B9 (47.3, 6.0, -66.8)\uFF0C\u76EE\u6807 (66.8, 9.0, -66.8)\uFF0C\u5C31\u4F4D\u6B65 0\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 True"
+    conclusion: "独立回放未复现正解：耗尽物理步预算 · 第 5 段 穿过传送门，角色 (9.8, -0.8, -73.1)，起步点 (47.3, 6.0, -66.8)，目标 (66.8, 9.0, -66.8)，就位步 0，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 True"
     solution:
       version: 1
       endTick: 1451
@@ -31905,7 +31899,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 1395
       finish: 1430
       landing: {x: 62.717556, y: 9.423816, z: -66.54452}
       landed: 1
@@ -31914,15 +31907,14 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 601 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 809 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.39 m"
-      - "\u7B2C 1100 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.26 m"
-      - "\u7B2C 1319 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.36 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 601 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 809 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.39 m"
+      - "第 1100 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 3.26 m"
+      - "第 1319 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.36 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -32018,7 +32010,7 @@ MonoBehaviour:
       stop: 0
       nearX: 0
       nearZ: 0
-    conclusion: "\u72EC\u7ACB\u56DE\u653E\u672A\u590D\u73B0\u6B63\u89E3\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 4 \u6BB5 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3\uFF0C\u89D2\u8272 (-3.8, 0.4, -3.8)\uFF0C\u8D77\u6B65\u70B9 (50.3, 3.0, -38.3)\uFF0C\u76EE\u6807 (69.8, 6.0, -38.3)\uFF0C\u5C31\u4F4D\u6B65 0\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
+    conclusion: "独立回放未复现正解：跌落后重试 · 第 4 段 踩弹弹菇起跳，角色 (-3.8, 0.4, -3.8)，起步点 (50.3, 3.0, -38.3)，目标 (69.8, 6.0, -38.3)，就位步 0，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
     solution:
       version: 1
       endTick: 1454
@@ -41069,7 +41061,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 1398
       finish: 1433
       landing: {x: 69.90568, y: 9.416761, z: -62.71348}
       landed: 1
@@ -41078,15 +41069,14 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 581 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 763 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.23 m"
-      - "\u7B2C 1103 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 1.77 m"
-      - "\u7B2C 1323 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.36 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 581 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 763 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.23 m"
+      - "第 1103 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 1.77 m"
+      - "第 1323 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.36 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -41182,7 +41172,7 @@ MonoBehaviour:
       stop: 0
       nearX: 0
       nearZ: 0
-    conclusion: "\u72EC\u7ACB\u56DE\u653E\u672A\u590D\u73B0\u6B63\u89E3\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 5 \u6BB5 \u7A7F\u8FC7\u4F20\u9001\u95E8\uFF0C\u89D2\u8272 (-3.8, 0.4, 2.3)\uFF0C\u8D77\u6B65\u70B9 (35.3, 6.0, 72.8)\uFF0C\u76EE\u6807 (35.3, 9.0, 92.3)\uFF0C\u5C31\u4F4D\u6B65 0\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
+    conclusion: "独立回放未复现正解：跌落后重试 · 第 5 段 穿过传送门，角色 (-3.8, 0.4, 2.3)，起步点 (35.3, 6.0, 72.8)，目标 (35.3, 9.0, 92.3)，就位步 0，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
     solution:
       version: 1
       endTick: 1462
@@ -48140,7 +48130,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 1405
       finish: 1441
       landing: {x: 35.170135, y: 9.435327, z: 88.18586}
       landed: 1
@@ -48149,15 +48138,14 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 594 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 813 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.38 m"
-      - "\u7B2C 1113 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.68 m"
-      - "\u7B2C 1328 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.33 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 594 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 813 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.38 m"
+      - "第 1113 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 2.68 m"
+      - "第 1328 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.33 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -48253,7 +48241,7 @@ MonoBehaviour:
       stop: 0
       nearX: 0
       nearZ: 0
-    conclusion: "\u72EC\u7ACB\u56DE\u653E\u672A\u590D\u73B0\u6B63\u89E3\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 4 \u6BB5 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3\uFF0C\u89D2\u8272 (-3.8, 0.4, -2.3)\uFF0C\u8D77\u6B65\u70B9 (18.8, 3.0, 59.3)\uFF0C\u76EE\u6807 (36.8, 6.0, 59.3)\uFF0C\u5C31\u4F4D\u6B65 0\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
+    conclusion: "独立回放未复现正解：跌落后重试 · 第 4 段 踩弹弹菇起跳，角色 (-3.8, 0.4, -2.3)，起步点 (18.8, 3.0, 59.3)，目标 (36.8, 6.0, 59.3)，就位步 0，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
     solution:
       version: 1
       endTick: 1463
@@ -56095,7 +56083,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 1406
       finish: 1442
       landing: {x: 62.742195, y: 9.422563, z: 59.37229}
       landed: 1
@@ -56104,15 +56091,14 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 602 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 833 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.40 m"
-      - "\u7B2C 1121 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 1.42 m"
-      - "\u7B2C 1346 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.39 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 602 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 833 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.40 m"
+      - "第 1121 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 1.42 m"
+      - "第 1346 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.39 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -56208,7 +56194,7 @@ MonoBehaviour:
       stop: 0
       nearX: 0
       nearZ: 0
-    conclusion: "\u72EC\u7ACB\u56DE\u653E\u672A\u590D\u73B0\u6B63\u89E3\uFF1A\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97 \xB7 \u7B2C 5 \u6BB5 \u7A7F\u8FC7\u4F20\u9001\u95E8\uFF0C\u89D2\u8272 (9.7, 3.4, -63.5)\uFF0C\u8D77\u6B65\u70B9 (45.8, 6.0, -60.8)\uFF0C\u76EE\u6807 (63.0, 9.0, -60.8)\uFF0C\u5C31\u4F4D\u6B65 0\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 True"
+    conclusion: "独立回放未复现正解：耗尽物理步预算 · 第 5 段 穿过传送门，角色 (9.7, 3.4, -63.5)，起步点 (45.8, 6.0, -60.8)，目标 (63.0, 9.0, -60.8)，就位步 0，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 True"
     solution:
       version: 1
       endTick: 1445
@@ -62919,7 +62905,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 1389
       finish: 1424
       landing: {x: 59.70653, y: 9.403132, z: -60.523586}
       landed: 1
@@ -62928,15 +62913,14 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 581 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 811 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.32 m"
-      - "\u7B2C 1120 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.26 m"
-      - "\u7B2C 1328 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.35 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 581 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 811 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.32 m"
+      - "第 1120 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 3.26 m"
+      - "第 1328 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.35 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0

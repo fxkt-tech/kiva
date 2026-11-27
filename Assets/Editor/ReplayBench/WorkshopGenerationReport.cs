@@ -6,7 +6,7 @@ using Tape = WorkshopReplayBench.Tape;
 
 public sealed class WorkshopGenerationReport : ScriptableObject
 {
-    public const string Actions="风扇推砖到止挡 → 从同一块砖顶弹射 → 收鸟并落地";
+    public const string Actions="风扇推砖到止挡 → 从同一块砖顶弹射 → 抵达出口";
     [Serializable] internal struct Layout
     {
         public int start,stop,nearX,nearZ;
@@ -31,7 +31,6 @@ public sealed class WorkshopGenerationReport : ScriptableObject
                         var end=region.start+region.size;
                         region.start.x=nearX;region.start.z=nearZ;
                         region.size=end-region.start;
-                        map.exitSign.z=nearZ*PaperTerrain.Cell-.04f;
                         break;
                 }
                 map.fixedBricks[i]=region;
@@ -42,7 +41,7 @@ public sealed class WorkshopGenerationReport : ScriptableObject
 
     [Serializable] internal class Measurement
     {
-        public int push,bounce,collect,finish;
+        public int push,bounce,finish;
         public Vector3 landing;
         public bool landed;
         public float edgeMargin,runUp,approachOffset,headingOffset;
@@ -72,7 +71,7 @@ public sealed class WorkshopGenerationReport : ScriptableObject
         public Tape solution,counter,playerView;
         public string playerViewNote;
         public ViewAssessment viewAssessment;
-        public bool connected,birdVisible,stationVisible;
+        public bool connected,exitVisible,stationVisible;
         public List<SkillSample> skillSamples=new List<SkillSample>();
         public bool HasPlayerView=>playerView!=null && playerView.version==WorkshopPlayerView.TapeVersion && playerView.endTick>0 &&
             playerView.commands.Count>0 && playerView.levelHash==hash;
@@ -121,7 +120,7 @@ public sealed class WorkshopGenerationReport : ScriptableObject
                 EditorGUILayout.LabelField($"候选 {i+1}",EditorStyles.boldLabel);
                 EditorGUILayout.LabelField(a.conclusion,EditorStyles.wordWrappedLabel);
                 if(configured && request.IsAtrium){
-                    EditorGUILayout.LabelField($"静态结构连通 {(a.connected?"是":"否")}　入口可见栖点 {(a.birdVisible?"是":"否")} / 工位 {(a.stationVisible?"是":"否")}",EditorStyles.wordWrappedMiniLabel);
+                    EditorGUILayout.LabelField($"静态结构连通 {(a.connected?"是":"否")}　入口可见出口 {(a.exitVisible?"是":"否")} / 工位 {(a.stationVisible?"是":"否")}",EditorStyles.wordWrappedMiniLabel);
                     if(a.solutionConfirmed && a.nominal.airTurn>0)EditorGUILayout.LabelField($"相对弹射工位朝向，空中最大转角 {a.nominal.airTurn:F0}°"+(a.nominal.portalSpringSeconds>0?$"，出门至弹起 {a.nominal.portalSpringSeconds:F2} 秒":""),EditorStyles.wordWrappedMiniLabel);
                     for(int j=0;j<a.skillSamples.Count;j++){
                         var s=a.skillSamples[j];
@@ -141,9 +140,9 @@ public sealed class WorkshopGenerationReport : ScriptableObject
                     var m=a.nominal;
                     if(modular){
                         foreach(var line in m.trace)EditorGUILayout.LabelField(line,EditorStyles.wordWrappedMiniLabel);
-                        EditorGUILayout.LabelField($"收鸟 {m.collect} → 结算 {m.finish}（物理步）");
+                        EditorGUILayout.LabelField($"抵达出口 {m.finish}（物理步）");
                     }else{
-                        EditorGUILayout.LabelField($"推砖 {m.push} → 弹射 {m.bounce} → 收鸟 {m.collect} → 结算 {m.finish}（物理步）",EditorStyles.wordWrappedLabel);
+                        EditorGUILayout.LabelField($"推砖 {m.push} → 弹射 {m.bounce} → 抵达出口 {m.finish}（物理步）",EditorStyles.wordWrappedLabel);
                         EditorGUILayout.LabelField($"正解助跑 {m.runUp:F2} m，首次落台净余量 {m.edgeMargin:F2} m。",EditorStyles.wordWrappedLabel);
                     }
                     foreach(var t in a.tolerance)

@@ -46,20 +46,14 @@ public sealed class WorkshopPlacement
 {
     // Blue, vermilion, mushroom and fan each retain one installation.
     readonly SurfaceMount[] mounts=new SurfaceMount[4];
-    readonly PaperDevice[] devices=new PaperDevice[2];
+    readonly PaperDevice[] devices;
     public WorkshopPortals Portals { get; }
-    public bool Installed(int slot)=>mounts[slot].face;
 
-    public WorkshopPlacement(Transform root,Material[] fronts,Material[] backs,Material paper,Material bamboo)
+    public WorkshopPlacement(Transform root, PortalWindow[] windows, PaperDevice[] tools)
     {
-        Portals=new WorkshopPortals(root,mounts,fronts,backs);
-        for(int i=0;i<2;i++){
-            var d=new GameObject(i==0?"弹弹菇":"风扇").AddComponent<PaperDevice>();
-            d.transform.SetParent(root,false);
-            d.Build(i==0?WorkshopTool.Mushroom:WorkshopTool.Fan,paper,bamboo,backs[1]);
-            devices[i]=d;
-            d.gameObject.SetActive(false);
-        }
+        Portals = new WorkshopPortals(root, mounts, windows);
+        devices = tools;
+        foreach (var device in devices) device.gameObject.SetActive(false);
     }
 
     public PlacementAim Aim(Camera eye,int slot)

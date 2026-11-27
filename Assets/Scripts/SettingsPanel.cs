@@ -17,13 +17,14 @@ public sealed class SettingsPanel : MonoBehaviour
     static readonly Rect RibbonUv=new Rect(705/1536f,1-670/1024f,781/1536f,187/1024f);
     static readonly Rect PaperSignUv=new Rect(2/1536f,1-1007/1024f,760/1536f,212/1024f);
 
-    RectTransform page,rows,footer;
+    [SerializeField] RectTransform page;
+    RectTransform rows,footer;
     CanvasGroup controls;
     ScrollRect scroll;
-    Text timer,subtitle;
-    Texture2D paperSigns,workshopView;
+    Text timer;
+    [SerializeField] Texture2D paperSigns,workshopView;
     Action resume,leave;
-    bool level,pending;
+    bool pending;
     float deadline;
     string category=Categories[0],progress;
     DisplaySnapshot before;
@@ -51,46 +52,9 @@ public sealed class SettingsPanel : MonoBehaviour
         }
     }
 
-    public static SettingsPanel Create(Transform canvas)
+    public void Open(Action onResume,Action onLeave,string status)
     {
-        var root=new GameObject("全屏设置",typeof(RectTransform),typeof(Image));
-        var bounds=(RectTransform)root.transform;
-        Fill(bounds,canvas);
-        root.GetComponent<Image>().color=Paper;
-        root.GetComponent<Image>().raycastTarget=true;
-
-        var panel=root.AddComponent<SettingsPanel>();
-        panel.paperSigns=Resources.Load<Texture2D>("GuestRoom/GuestPaperButtons");
-        panel.workshopView=Resources.Load<Texture2D>("GuestRoom/WorkshopView");
-        panel.BuildBackdrop(bounds);
-        panel.page=Page(bounds,"设置版心");
-        root.SetActive(false);
-        return panel;
-    }
-
-    void BuildBackdrop(Transform bounds)
-    {
-        var texture=Resources.Load<Texture2D>("Settings/SettingsPaper");
-        const float split=320;
-        const float paintSplit=.245f;
-        for(int i=0;i<2;i++)
-        {
-            bool left=i==0;
-            var image=Art(bounds,left?"紫绢书脊":"月白纸面",texture,0,0,1,1,false);
-            var rect=image.rectTransform;
-            rect.pivot=new Vector2(.5f,.5f);
-            rect.anchorMin=left?Vector2.zero:new Vector2(.5f,0);
-            rect.anchorMax=left?new Vector2(.5f,1):Vector2.one;
-            rect.offsetMin=left?Vector2.zero:new Vector2(split-640,0);
-            rect.offsetMax=left?new Vector2(split-640,0):Vector2.zero;
-            image.uvRect=left?new Rect(0,0,paintSplit,1):new Rect(paintSplit,0,1-paintSplit,1);
-            if(!texture)image.color=left?DarkSilk:Paper;
-        }
-    }
-
-    public void Open(bool inLevel,Action onResume=null,Action onLeave=null,string status=null)
-    {
-        level=inLevel;resume=onResume;leave=onLeave;progress=status;
+        resume=onResume;leave=onLeave;progress=status;
         transform.SetAsLastSibling();
         gameObject.SetActive(true);
         Draw();
@@ -103,7 +67,7 @@ public sealed class SettingsPanel : MonoBehaviour
         controls=content.gameObject.AddComponent<CanvasGroup>();
         var currentTab=Navigation(content);
         Label(content,category,ContentX-3,50,342,75,47,BodyInk,NightUi.Display);
-        subtitle=Label(content,progress??"",697,52,516,55,20,Notes,Hand,TextAnchor.MiddleRight);
+        Label(content,progress,697,52,516,55,20,Notes,Hand,TextAnchor.MiddleRight);
         Rule(content,ContentX,132,Width);
 
         var view=Place(content,"选项列表",ContentX,ViewTop,Width,ViewHeight);
@@ -122,7 +86,7 @@ public sealed class SettingsPanel : MonoBehaviour
         if(category=="界面"){CrosshairPreview();top=174;}
         foreach(var item in GameSettings.Items)
         {
-            if(item.category!=category || (level && item.lobbyOnly) || item.label=="准星")continue;
+            if(item.category!=category || item.label=="准星")continue;
             Row(item,top);
             top+=RowHeight;
         }
@@ -134,8 +98,8 @@ public sealed class SettingsPanel : MonoBehaviour
         Rule(content,ContentX,619,Width);
         footer=Place(content,"设置操作",ContentX,FooterY,Width,57);
         ActionStamp(footer,"恢复本页默认",0,1,183,48,ResetCategory);
-        if(level)ActionStamp(footer,"返回剧情",487,1,163,48,()=>leave?.Invoke());
-        ActionStamp(footer,level?"继续":"完成",673,0,190,51,Back,true);
+        ActionStamp(footer,"返回大厅",487,1,163,48,leave);
+        ActionStamp(footer,"继续",673,0,190,51,Back,true);
         if(focusName!=null)
         {
             foreach(var choice in rows.GetComponentsInChildren<Selectable>())
@@ -229,7 +193,6 @@ public sealed class SettingsPanel : MonoBehaviour
             var bed=Panel(hit.transform,"织边",0,0,266,154,selected?new Color(.868f,.82f,.884f):new Color(.91f,.87f,.866f,.72f));
             Frame(bed.transform,266,154,selected?Gilt:new Color(.57f,.46f,.55f,.44f),1);
             var preview=Art(hit.transform,"纸坊预览",workshopView,7,7,252,106);
-            preview.uvRect=new Rect(.47f,.40f,.45f,.43f);
             if(option==1)
             {
                 var center=Place(preview.transform,"时空枪准星",110,37,32,32);
@@ -241,7 +204,7 @@ public sealed class SettingsPanel : MonoBehaviour
             Mark(hit.transform,16,124,selected,false);
             Label(hit.transform,name,46,113,206,40,20,BodyInk,Hand);
             FocusGlint(hit,266,154);
-            hit.gameObject.AddComponent<FolioFocus>().scroll=scroll;
+            hit.gameObject.AddComponent<ScrollFocus>().scroll=scroll;
         }
         Rule(rows,0,164,Width);
     }
@@ -267,7 +230,7 @@ public sealed class SettingsPanel : MonoBehaviour
         else if(item.kind==SettingItem.Kind.Options && item.names.Length==2) ToggleRow(row,item);
         else StepRow(row,item);
         foreach(var button in row.GetComponentsInChildren<Selectable>())
-            button.gameObject.AddComponent<FolioFocus>().scroll=scroll;
+            button.gameObject.AddComponent<ScrollFocus>().scroll=scroll;
     }
 
     void SliderRow(Transform row,SettingItem item)
@@ -342,8 +305,8 @@ public sealed class SettingsPanel : MonoBehaviour
         top+=48;
         string[,] keys={
             {"移动","W A S D / 方向键"},{"转动视角","移动鼠标"},
-            {"跳跃 / 滑翔","空格"},{"青鸾门 / 放置装置","鼠标左键"},
-            {"朱雀门","鼠标右键"},{"切换道具","1 / 2 / 3 / 滚轮"},
+            {"跳跃 / 滑翔","空格"},{"青门 / 放置装置","鼠标左键"},
+            {"朱门","鼠标右键"},{"切换道具","1 / 2 / 3 / 滚轮"},
             {"重试 / 重开","R / T"},{"暂停 / 继续","Esc"}
         };
         for(int i=0;i<keys.GetLength(0);i++)
@@ -404,7 +367,7 @@ public sealed class SettingsPanel : MonoBehaviour
 
     void ResetCategory()
     {
-        var items=Array.FindAll(GameSettings.Items,item=>item.category==category && !(level && item.lobbyOnly));
+        var items=Array.FindAll(GameSettings.Items,item=>item.category==category);
         void ResetPage(){
             foreach(var item in items)item.ResetValue();
             GameSettings.Current.Apply();
@@ -418,16 +381,10 @@ public sealed class SettingsPanel : MonoBehaviour
         }
     }
 
-    public void Notice(string value)
-    {
-        progress=value;
-        if(subtitle)subtitle.text=value;
-    }
-
     public void Back()
     {
         if(pending){Resolve(false);return;}
-        if(resume!=null)resume();else Close();
+        resume();
     }
 
     public void Close()

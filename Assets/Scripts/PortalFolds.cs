@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 // Three alternating folds in each cut sector compress it into the coloured rim.
@@ -14,32 +13,15 @@ public sealed class PortalFolds : MonoBehaviour
     bool retire;
     const float Duration=.39f;
 
-    public static PortalFolds Create(Transform parent,int count,Material ink,Material reverse)
+    public void Initialize()
     {
-        var go=new GameObject("折页",typeof(MeshFilter),typeof(MeshRenderer));
-        go.layer=2;
-        go.transform.SetParent(parent,false);
-        var fold=go.AddComponent<PortalFolds>();
-        fold.leaves=count;
-        fold.vertices=new Vector3[count*Pleats*8];
-        fold.uv=new Vector2[fold.vertices.Length];
-        fold.mesh=new Mesh{name="门沿山折与谷折"};
-        fold.mesh.MarkDynamic();
-        var front=new List<int>();var back=new List<int>();
-        for(int i=0;i<count*Pleats;i++){
-            int k=i*8;
-            front.AddRange(new[]{k,k+1,k+2,k,k+2,k+3});
-            back.AddRange(new[]{k+4,k+6,k+5,k+4,k+7,k+6});
-        }
-        fold.mesh.vertices=fold.vertices;
-        fold.mesh.subMeshCount=2;
-        fold.mesh.SetTriangles(front,0);fold.mesh.SetTriangles(back,1);
-        fold.Apply();
-        go.GetComponent<MeshFilter>().sharedMesh=fold.mesh;
-        var renderer=go.GetComponent<MeshRenderer>();
-        renderer.sharedMaterials=new[]{ink,reverse};
-        renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
-        return fold;
+        var filter = GetComponent<MeshFilter>();
+        mesh = Instantiate(filter.sharedMesh);
+        mesh.MarkDynamic();
+        filter.sharedMesh = mesh;
+        vertices = mesh.vertices;
+        uv = mesh.uv;
+        leaves = vertices.Length / (Pleats * 8);
     }
 
     public void Open(bool restart,bool paired)

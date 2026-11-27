@@ -1,24 +1,9 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public sealed class PlacementPreview : MonoBehaviour
 {
-    readonly LineRenderer[] lines=new LineRenderer[5];
-    Material ink;
+    [SerializeField] LineRenderer[] lines;
     WorkshopTool lastTool=(WorkshopTool)(-1);
-
-    public void Build()
-    {
-        ink=Resources.Load<Material>("Mineral/Placement Ink");
-        for(int i=0;i<lines.Length;i++){
-            var line=new GameObject("白墨预览").AddComponent<LineRenderer>();
-            line.transform.SetParent(transform,false);line.gameObject.layer=2;
-            line.useWorldSpace=false;line.widthMultiplier=.018f;line.sharedMaterial=ink;
-            line.shadowCastingMode=ShadowCastingMode.Off;line.receiveShadows=false;
-            lines[i]=line;
-        }
-        gameObject.SetActive(false);
-    }
 
     public void Show(Camera eye,WorkshopTool tool,PlacementAim aim)
     {

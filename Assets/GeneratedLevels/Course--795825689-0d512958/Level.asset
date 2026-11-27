@@ -13,134 +13,127 @@ MonoBehaviour:
   m_Name: Level
   m_EditorClassIdentifier: Assembly-CSharp::WorkshopLevel
   stageId: generated/course/0d512958082c4de3905cef867714b359/1
-  perches:
-  - id: landing
-    species: {fileID: 11400000, guid: 06b46460c5470d04fa5ee54cdea20095, type: 2}
-    feet: {x: -12.75, y: 3, z: -15.674999}
-    flightOffset: {x: 0, y: 0, z: 0}
-    yaw: 0
-  title: "\u7EB8\u574A\u4E2D\u5EAD \xB7 \u6311\u6218"
+  title: "纸坊中庭 · 挑战"
   description: 
   locationName: 
-  arrivalStory: 
   fixedBricks:
-  - label: "\u7EB8\u69FD\u57FA\u5E95"
+  - label: "纸槽基底"
     start: {x: -11, y: -11, z: -15}
     size: {x: 23, y: 1, z: 21}
     white: 0
-  - label: "\u8D77\u6B65\u53F0"
+  - label: "起步台"
     start: {x: -10, y: -10, z: 0}
     size: {x: 20, y: 10, z: 5}
     white: 0
-  - label: "\u843D\u811A\u53F0 \u4E0A\u5ECA"
+  - label: "落脚台 上廊"
     start: {x: -3, y: 1, z: -13}
     size: {x: 13, y: 1, z: 3}
     white: 0
-  - label: "\u5ECA\u540E\u6321\u5899"
+  - label: "廊后挡墙"
     start: {x: -3, y: -10, z: -13}
     size: {x: 13, y: 11, z: 1}
     white: 0
-  - label: "\u5ECA\u4E0B\u652F\u58A9"
+  - label: "廊下支墩"
     start: {x: -3, y: -10, z: -12}
     size: {x: 1, y: 11, z: 2}
     white: 0
-  - label: "\u5ECA\u4E0B\u652F\u58A9"
+  - label: "廊下支墩"
     start: {x: 1, y: -10, z: -12}
     size: {x: 1, y: 11, z: 2}
     white: 0
-  - label: "\u5ECA\u4E0B\u652F\u58A9"
+  - label: "廊下支墩"
     start: {x: 5, y: -10, z: -12}
     size: {x: 1, y: 11, z: 2}
     white: 0
-  - label: "\u5ECA\u4E0B\u652F\u58A9"
+  - label: "廊下支墩"
     start: {x: 9, y: -10, z: -12}
     size: {x: 1, y: 11, z: 2}
     white: 0
-  - label: "\u5ECA\u7AEF\u627F\u53F0"
+  - label: "廊端承台"
     start: {x: 9, y: -10, z: -12}
     size: {x: 1, y: 11, z: 2}
     white: 0
-  - label: "\u843D\u811A\u53F0 \u5F52\u5DE2\u5ECA"
+  - label: "落脚台 出口廊"
     start: {x: -10, y: 1, z: -13}
     size: {x: 5, y: 1, z: 3}
     white: 0
-  - label: "\u5ECA\u540E\u6321\u5899"
+  - label: "廊后挡墙"
     start: {x: -10, y: -10, z: -13}
     size: {x: 5, y: 11, z: 1}
     white: 0
-  - label: "\u5ECA\u4E0B\u652F\u58A9"
+  - label: "廊下支墩"
     start: {x: -10, y: -10, z: -12}
     size: {x: 1, y: 11, z: 2}
     white: 0
-  - label: "\u5ECA\u4E0B\u652F\u58A9"
+  - label: "廊下支墩"
     start: {x: -6, y: -10, z: -12}
     size: {x: 1, y: 11, z: 2}
     white: 0
-  - label: "\u5ECA\u7AEF\u627F\u53F0"
+  - label: "廊端承台"
     start: {x: -6, y: -10, z: -12}
     size: {x: 1, y: 11, z: 2}
     white: 0
-  - label: "\u56DE\u5ECA\u5916\u67F1"
+  - label: "回廊外柱"
     start: {x: -10, y: -10, z: -14}
     size: {x: 1, y: 16, z: 1}
     white: 0
-  - label: "\u56DE\u5ECA\u5916\u67F1"
+  - label: "回廊外柱"
     start: {x: -6, y: -10, z: -14}
     size: {x: 1, y: 16, z: 1}
     white: 0
-  - label: "\u56DE\u5ECA\u5916\u67F1"
+  - label: "回廊外柱"
     start: {x: -2, y: -10, z: -14}
     size: {x: 1, y: 16, z: 1}
     white: 0
-  - label: "\u56DE\u5ECA\u5916\u67F1"
+  - label: "回廊外柱"
     start: {x: 2, y: -10, z: -14}
     size: {x: 1, y: 16, z: 1}
     white: 0
-  - label: "\u56DE\u5ECA\u5916\u67F1"
+  - label: "回廊外柱"
     start: {x: 6, y: -10, z: -14}
     size: {x: 1, y: 16, z: 1}
     white: 0
-  - label: "\u56DE\u5ECA\u6A90\u6881"
+  - label: "回廊檐梁"
     start: {x: -10, y: 6, z: -14}
     size: {x: 20, y: 1, z: 1}
     white: 0
-  - label: "\u623F\u95F4\u56F4\u5899"
+  - label: "房间围墙"
     start: {x: -11, y: -10, z: 5}
     size: {x: 23, y: 20, z: 1}
     white: 0
-  - label: "\u623F\u95F4\u56F4\u5899"
+  - label: "房间围墙"
     start: {x: -11, y: -10, z: -15}
     size: {x: 23, y: 20, z: 1}
     white: 0
-  - label: "\u623F\u95F4\u56F4\u5899"
+  - label: "房间围墙"
     start: {x: -11, y: -10, z: -14}
     size: {x: 1, y: 20, z: 19}
     white: 0
-  - label: "\u623F\u95F4\u56F4\u5899"
+  - label: "房间围墙"
     start: {x: 11, y: -10, z: -14}
     size: {x: 1, y: 20, z: 19}
     white: 0
-  - label: "\u623F\u95F4\u9876\u68DA"
+  - label: "房间顶棚"
     start: {x: -11, y: 10, z: -15}
     size: {x: 23, y: 1, z: 21}
     white: 0
-  - label: "\u5165\u95E8\u5DE5\u4F4D"
+  - label: "入门工位"
     start: {x: 0, y: -10, z: -1}
     size: {x: 3, y: 10, z: 1}
     white: 0
-  - label: "\u5165\u53E3\u95E8\u9762"
+  - label: "入口门面"
     start: {x: 1, y: 0, z: -1}
     size: {x: 1, y: 1, z: 1}
     white: 32
-  - label: "\u5317\u4FA7\u5F39\u5C04\u5DE5\u4F4D"
+  - label: "北侧弹射工位"
     start: {x: 5, y: -10, z: -4}
     size: {x: 5, y: 10, z: 4}
     white: 0
-  - label: "\u51FA\u53E3\u95E8\u9762"
+  - label: "出口门面"
     start: {x: 8, y: 0, z: -3}
     size: {x: 1, y: 1, z: 1}
     white: 1
-  - label: "\u51FA\u95E8\u5F39\u5C04\u767D\u9762"
+  - label: "出门弹射白面"
     start: {x: 6, y: -1, z: -3}
     size: {x: 1, y: 1, z: 1}
     white: 8
@@ -148,18 +141,16 @@ MonoBehaviour:
   spawnFeet: {x: -12.75, y: 0, z: 3.75}
   checkpointFeet: {x: 0, y: 0, z: 0}
   exitFeet: {x: -12.75, y: 3, z: -15.674999}
-  exitSign: {x: -12.75, y: 2.5, z: -15.674999}
   spawnYaw: 134.66237
   checkpointYaw: 0
   supplyZone:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 0, y: 0, z: 0}
   exitZone:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
+    m_Center: {x: -12.75, y: 3.45, z: -15.674999}
+    m_Extent: {x: 0.75, y: 0.55, z: 0.75}
   startingGear: 11
   supplyGear: 0
-  entryHint: "\u5148\u5728\u8FDC\u7AEF\u95E8\u9762\u524D\u7684\u767D\u7816\u4E0A\u88C5\u83C7\uFF0C\u518D\u5E03\u7F6E\u53CC\u95E8\u3002\u51FA\u95E8\u5F39\u8D77\u540E\uFF0C\u5C55\u5F00\u7EB8\u7FFC\u8F6C\u5411\u5BF9\u5CB8\u56DE\u5ECA\u3002"
+  entryHint: "先在远端门面前的白砖上装菇，再布置双门。出门弹起后，展开纸翼转向对岸回廊。"
   supplyHint: 
   retryHint: 
-  westWindow: 0

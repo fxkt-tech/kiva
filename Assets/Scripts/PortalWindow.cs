@@ -9,11 +9,11 @@ public sealed class PortalWindow : MonoBehaviour
     static readonly Quaternion HalfTurn = Quaternion.Euler(0, 180, 0);
     readonly Plane[] frustum = new Plane[6];
     readonly List<View> views = new List<View>();
-    Material paper;
-    Shader windowShader;
-    Mesh mesh;
-    MeshRenderer surface;
+    [SerializeField] Material paper;
+    [SerializeField] Shader windowShader;
+    [SerializeField] MeshRenderer surface;
 
+    Mesh mesh;
     PortalFolds folds,closing;
     bool placed, needsFirstFrame;
 
@@ -43,59 +43,15 @@ public sealed class PortalWindow : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void Build(int sides,Material ink,Material reverse,bool notched)
+    public void Bind(Transform owner)
     {
-        var band=new PaperMesh.Builder(2);
-        float border=WorkshopPortals.OuterRadius-WorkshopPortals.Radius;
-        Vector3 Ring(float angle,float radius,float depth) => new Vector3(
-            Mathf.Sin(angle)*radius,Mathf.Cos(angle)*radius,depth);
-        for(int i=0;i<sides;i++){
-            float a=i*2*Mathf.PI/sides,b=(i+1)*2*Mathf.PI/sides;
-            float outerA=WorkshopPortals.Radius+border*(notched && i%12==0?.46f:.93f);
-            float outerB=WorkshopPortals.Radius+border*(notched && (i+1)%12==0?.46f:.93f);
-            var inside=Ring(a,WorkshopPortals.Radius,.029f);
-            var insideB=Ring(b,WorkshopPortals.Radius,.029f);
-            var ridge=Ring(a,WorkshopPortals.Radius+border*.25f,.045f);
-            var ridgeB=Ring(b,WorkshopPortals.Radius+border*.25f,.045f);
-            band.Quad(0,Vector3.forward,inside,insideB,ridgeB,ridge);
-            band.Quad(0,Vector3.forward,ridge,ridgeB,Ring(b,outerB,.024f),Ring(a,outerA,.024f));
-            band.Quad(1,Vector3.forward,Ring(a,outerA,.024f),Ring(b,outerB,.024f),
-                Ring(b,outerB+border*.07f,.014f),Ring(a,outerA+border*.07f,.014f));
-        }
-        band.Mount(transform,"圆形折纸门缘",ink,reverse).layer=gameObject.layer;
-        folds=PortalFolds.Create(transform,Mathf.Min(sides,16),ink,reverse);
-        folds.gameObject.layer=gameObject.layer;
-        closing=PortalFolds.Create(transform.parent,Mathf.Min(sides,16),ink,reverse);
-        closing.gameObject.layer=transform.parent.gameObject.layer;
-        closing.gameObject.SetActive(false);
-        var face = new GameObject("门内视野", typeof(MeshFilter), typeof(MeshRenderer));
-        face.transform.SetParent(transform,false);
-        face.layer = WindowLayer;
-        var vertices = new Vector3[sides+1];
-        var triangles = new int[sides*3];
-        for(int i=0;i<sides;i++)
-        {
-            float angle = i*2*Mathf.PI/sides;
-            vertices[i+1] = new Vector3(Mathf.Sin(angle)*WorkshopPortals.Radius,
-                Mathf.Cos(angle)*WorkshopPortals.Radius,0);
-            triangles[i*3+1]=(i+1)%sides+1;
-            triangles[i*3+2]=i+1;
-        }
-        mesh = new Mesh { vertices=vertices, triangles=triangles };
-        var uv=new Vector2[vertices.Length];
-        for(int i=0;i<vertices.Length;i++)uv[i]=(Vector2)vertices[i]/(2*WorkshopPortals.Radius)+Vector2.one*.5f;
-        mesh.uv=uv;
-        mesh.RecalculateNormals();
-        mesh.RecalculateTangents();
-        var bounds=mesh.bounds;
-        bounds.Expand(new Vector3(0,0,.2f)); // Keep the disc visible inside the eye's near plane.
-        mesh.bounds=bounds;
-        face.GetComponent<MeshFilter>().sharedMesh=mesh;
-        surface=face.GetComponent<MeshRenderer>();
-        paper=reverse;
-        surface.sharedMaterial=paper;
-        surface.shadowCastingMode=ShadowCastingMode.Off;
-        windowShader=Resources.Load<Shader>("Portals/Window");
+        mesh = surface.GetComponent<MeshFilter>().sharedMesh;
+        folds = GetComponentInChildren<PortalFolds>(true);
+        closing = Instantiate(folds, owner);
+        closing.gameObject.layer = owner.gameObject.layer;
+        folds.Initialize();
+        closing.Initialize();
+        Clear();
     }
 
     View CreateView(Camera player,int depth)
@@ -250,6 +206,5 @@ public sealed class PortalWindow : MonoBehaviour
     void OnDestroy()
     {
         foreach(var pass in views)ReleaseView(pass);
-        if(mesh)Destroy(mesh);
     }
 }

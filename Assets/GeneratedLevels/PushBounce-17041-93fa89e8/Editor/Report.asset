@@ -22,7 +22,7 @@ MonoBehaviour:
       stop: 4
       nearX: 3
       nearZ: 5
-    conclusion: "\u53D1\u73B0\u53EF\u91CD\u653E\u7684\u514D\u63A8\u7816\u6377\u5F84"
+    conclusion: "发现可重放的免推砖捷径"
     solution:
       version: 1
       endTick: 235
@@ -623,7 +623,6 @@ MonoBehaviour:
     nominal:
       push: 8
       bounce: 97
-      collect: 197
       finish: 232
       landing: {x: 9.701718, y: 6.2995715, z: 11.4875765}
       landed: 1
@@ -634,7 +633,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 42
-      collect: 177
       finish: 213
       landing: {x: 7.15605, y: 6.275377, z: 8.82343}
       landed: 1
@@ -644,7 +642,7 @@ MonoBehaviour:
       headingOffset: 0
     tolerance: []
     samples:
-    - "\u6837\u672C 1\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 42 \u6B65\u5F39\u8D77\uFF0C\u5DF2\u6536\u9E1F\u5E76\u843D\u5730\u7ED3\u7B97\uFF0C213 \u6B65"
+    - "样本 1（朝出口位置，偏转 0\xB0）· 第 42 步弹起，已抵达出口，213 步"
     map: {fileID: 11400000, guid: 54ac032b1038f624ba52c850c4ea1461, type: 2}
     hash: e6d0b0924b439a0b5007775fdb6ca76b
   - layout:
@@ -652,7 +650,7 @@ MonoBehaviour:
       stop: 6
       nearX: 5
       nearZ: 7
-    conclusion: "\u6B63\u89E3\u672A\u6EE1\u8DB3\u9A8C\u6536\uFF1A\u8DCC\u843D\u540E\u91CD\u8BD5"
+    conclusion: "正解未满足验收：跌落后重试"
     solution:
       version: 1
       endTick: 0
@@ -681,7 +679,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -692,7 +689,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -709,7 +705,7 @@ MonoBehaviour:
       stop: 4
       nearX: 4
       nearZ: 7
-    conclusion: "\u6B63\u89E3\u5DF2\u91CD\u653E\uFF0C\u56DB\u79CD\u8D77\u70B9\u4E0E\u65B9\u5411\u6270\u52A8\u7EC4\u5408\u5747\u901A\u8FC7\uFF0C\u91C7\u6837\u8303\u56F4\u5185\u672A\u627E\u5230\u539F\u4F4D\u8D77\u8DF3\u6377\u5F84\u3002"
+    conclusion: "正解已重放，四种起点与方向扰动组合均通过，采样范围内未找到原位起跳捷径。"
     solution:
       version: 1
       endTick: 236
@@ -1089,7 +1085,6 @@ MonoBehaviour:
     nominal:
       push: 8
       bounce: 97
-      collect: 198
       finish: 233
       landing: {x: 9.67787, y: 6.299162, z: 12.0377445}
       landed: 1
@@ -1100,7 +1095,6 @@ MonoBehaviour:
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -1111,7 +1105,6 @@ MonoBehaviour:
     tolerance:
     - push: 8
       bounce: 94
-      collect: 195
       finish: 230
       landing: {x: 9.426971, y: 6.295791, z: 11.595693}
       landed: 1
@@ -1121,7 +1114,6 @@ MonoBehaviour:
       headingOffset: -2
     - push: 8
       bounce: 95
-      collect: 195
       finish: 230
       landing: {x: 9.696606, y: 6.299293, z: 11.570806}
       landed: 1
@@ -1131,7 +1123,6 @@ MonoBehaviour:
       headingOffset: 2
     - push: 8
       bounce: 97
-      collect: 199
       finish: 234
       landing: {x: 9.426971, y: 6.2960567, z: 11.883691}
       landed: 1
@@ -1141,7 +1132,6 @@ MonoBehaviour:
       headingOffset: -2
     - push: 8
       bounce: 98
-      collect: 199
       finish: 234
       landing: {x: 9.696606, y: 6.2995553, z: 11.858805}
       landed: 1
@@ -1150,15 +1140,15 @@ MonoBehaviour:
       approachOffset: 0.12
       headingOffset: 2
     samples:
-    - "\u6837\u672C 1\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 42 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C212 \u6B65"
-    - "\u6837\u672C 2\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C -12\xB0\uFF09\xB7 \u7B2C 52 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C222 \u6B65"
-    - "\u6837\u672C 3\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 12\xB0\uFF09\xB7 \u7B2C 34 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C204 \u6B65"
-    - "\u6837\u672C 4\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C -24\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
-    - "\u6837\u672C 5\uFF08\u671D\u9E1F\u4F4D\uFF0C\u504F\u8F6C 24\xB0\uFF09\xB7 \u7B2C 43 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C213 \u6B65"
-    - "\u6837\u672C 6\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 0\xB0\uFF09\xB7 \u7B2C 48 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C219 \u6B65"
-    - "\u6837\u672C 7\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C -12\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
-    - "\u6837\u672C 8\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 12\xB0\uFF09\xB7 \u7B2C 42 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C212 \u6B65"
-    - "\u6837\u672C 9\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C -24\xB0\uFF09\xB7 \u672A\u89E6\u53D1\u539F\u4F4D\u5F39\u5C04\uFF0C\u8017\u5C3D\u7269\u7406\u6B65\u9884\u7B97\uFF0C481 \u6B65"
-    - "\u6837\u672C 10\uFF08\u671D\u9AD8\u53F0\u8FD1\u89D2\uFF0C\u504F\u8F6C 24\xB0\uFF09\xB7 \u7B2C 34 \u6B65\u5F39\u8D77\uFF0C\u8DCC\u843D\u540E\u91CD\u8BD5\uFF0C204 \u6B65"
+    - "样本 1（朝出口位置，偏转 0\xB0）· 第 42 步弹起，跌落后重试，212 步"
+    - "样本 2（朝出口位置，偏转 -12\xB0）· 第 52 步弹起，跌落后重试，222 步"
+    - "样本 3（朝出口位置，偏转 12\xB0）· 第 34 步弹起，跌落后重试，204 步"
+    - "样本 4（朝出口位置，偏转 -24\xB0）· 未触发原位弹射，耗尽物理步预算，481 步"
+    - "样本 5（朝出口位置，偏转 24\xB0）· 第 43 步弹起，跌落后重试，213 步"
+    - "样本 6（朝高台近角，偏转 0\xB0）· 第 48 步弹起，跌落后重试，219 步"
+    - "样本 7（朝高台近角，偏转 -12\xB0）· 未触发原位弹射，耗尽物理步预算，481 步"
+    - "样本 8（朝高台近角，偏转 12\xB0）· 第 42 步弹起，跌落后重试，212 步"
+    - "样本 9（朝高台近角，偏转 -24\xB0）· 未触发原位弹射，耗尽物理步预算，481 步"
+    - "样本 10（朝高台近角，偏转 24\xB0）· 第 34 步弹起，跌落后重试，204 步"
     map: {fileID: 11400000, guid: 5cec3ecfc807eef4e85ea9a1de0ab205, type: 2}
     hash: 6d20fc2e38eb7efd28d3d52db8261f63

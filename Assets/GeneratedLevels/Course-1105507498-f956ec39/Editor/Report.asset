@@ -20,7 +20,7 @@ MonoBehaviour:
     version: 1
     modules: 15
     gear: 15
-    sequence: "\u6B65\u884C \u2192 \u8DF3\u8FC7\u65AD\u53E3 \u2192 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u5C55\u5F00\u7EB8\u7FFC\u6ED1\u7FD4 \u2192 \u7A7F\u8FC7\u4F20\u9001\u95E8 \u2192 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u7A7F\u8FC7\u4F20\u9001\u95E8"
+    sequence: "步行 → 跳过断口 → 踩弹弹菇起跳 → 展开纸翼滑翔 → 穿过传送门 → 踩弹弹菇起跳 → 穿过传送门"
     actions: 00000000010000000300000004000000060000000300000006000000i
   attempts:
   - layout:
@@ -28,7 +28,7 @@ MonoBehaviour:
       stop: 4
       nearX: 3
       nearZ: 5
-    conclusion: "\u5DF2\u91CD\u653E\u6307\u5B9A\u8DEF\u7EBF\u5E76\u5B8C\u6210\u6536\u9E1F\u7ED3\u7B97\u3002\u552F\u4E00\u6027\u672A\u9A8C\u8BC1\u3002"
+    conclusion: "已重放指定路线并完成出口结算。唯一性未验证。"
     solution:
       version: 1
       endTick: 1235
@@ -10365,14 +10365,13 @@ MonoBehaviour:
       - point: {x: 96, y: 6.75, z: 3.75}
         tool: 1
         secondary: 0
-    playerViewNote: "\u73A9\u5BB6\u89C6\u89D2\u64CD\u4F5C\u5DF2\u72EC\u7ACB\u56DE\u653E\u901A\u5173\u3002"
+    playerViewNote: "玩家视角操作已独立回放通关。"
     solutionConfirmed: 1
     counterConfirmed: 0
     launchedSamples: 0
     nominal:
       push: 0
       bounce: 0
-      collect: 1180
       finish: 1215
       landing: {x: 109.10021, y: 9.395505, z: 2.2837172}
       landed: 1
@@ -10381,16 +10380,15 @@ MonoBehaviour:
       approachOffset: 0
       headingOffset: 0
       trace:
-      - "\u7B2C 94 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.28 m"
-      - "\u7B2C 249 \u6B65 \xB7 \u8DF3\u8FC7\u65AD\u53E3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.51 m"
-      - "\u7B2C 675 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 3.40 m"
-      - "\u7B2C 778 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.37 m"
-      - "\u7B2C 985 \u6B65 \xB7 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 1.30 m"
-      - "\u7B2C 1118 \u6B65 \xB7 \u7A7F\u8FC7\u4F20\u9001\u95E8 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.25 m"
+      - "第 94 步 · 步行 · 动作已验证 · 抵达平台净余量 0.28 m"
+      - "第 249 步 · 跳过断口 · 动作已验证 · 抵达平台净余量 0.51 m"
+      - "第 675 步 · 踩弹弹菇起跳 → 滑翔 · 动作已验证 · 抵达平台净余量 3.40 m"
+      - "第 778 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.37 m"
+      - "第 985 步 · 踩弹弹菇起跳 · 动作已验证 · 抵达平台净余量 1.30 m"
+      - "第 1118 步 · 穿过传送门 · 动作已验证 · 抵达平台净余量 2.25 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -10401,11 +10399,11 @@ MonoBehaviour:
       trace: []
     tolerance: []
     samples:
-    - "\u5C1D\u8BD5\u7ED5\u8FC7\u7B2C 2 \u6BB5 \xB7 \u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 2 \u6BB5 \u8DF3\u8FC7\u65AD\u53E3\uFF0C\u89D2\u8272 (-2.3, 0.4, 2.3)\uFF0C\u8D77\u6B65\u70B9 (9.8, 0.0, 2.3)\uFF0C\u76EE\u6807 (24.8, 0.0, 2.3)\uFF0C\u5C31\u4F4D\u6B65 145\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
-    - "\u5C1D\u8BD5\u7ED5\u8FC7\u7B2C 3 \u6BB5 \xB7 \u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 3 \u6BB5 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3\uFF0C\u89D2\u8272 (-2.3, 0.4, 2.3)\uFF0C\u8D77\u6B65\u70B9 (26.3, 0.0, 2.3)\uFF0C\u76EE\u6807 (51.8, 0.0, 2.3)\uFF0C\u5C31\u4F4D\u6B65 329\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
-    - "\u5C1D\u8BD5\u7ED5\u8FC7\u7B2C 4 \u6BB5 \xB7 \u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 4 \u6BB5 \u7A7F\u8FC7\u4F20\u9001\u95E8\uFF0C\u89D2\u8272 (-2.3, 0.4, 2.3)\uFF0C\u8D77\u6B65\u70B9 (51.8, 0.0, 2.3)\uFF0C\u76EE\u6807 (72.0, 3.0, 2.3)\uFF0C\u5C31\u4F4D\u6B65 705\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
-    - "\u5C1D\u8BD5\u7ED5\u8FC7\u7B2C 5 \u6BB5 \xB7 \u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 5 \u6BB5 \u8E29\u5F39\u5F39\u83C7\u8D77\u8DF3\uFF0C\u89D2\u8272 (-2.3, 0.4, 2.3)\uFF0C\u8D77\u6B65\u70B9 (72.8, 3.0, 2.3)\uFF0C\u76EE\u6807 (91.5, 6.0, 2.3)\uFF0C\u5C31\u4F4D\u6B65 827\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
-    - "\u5C1D\u8BD5\u7ED5\u8FC7\u7B2C 6 \u6BB5 \xB7 \u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 6 \u6BB5 \u7A7F\u8FC7\u4F20\u9001\u95E8\uFF0C\u89D2\u8272 (-2.3, 0.4, 2.3)\uFF0C\u8D77\u6B65\u70B9 (92.3, 6.0, 2.3)\uFF0C\u76EE\u6807 (112.5, 9.0, 2.3)\uFF0C\u5C31\u4F4D\u6B65 1048\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False"
+    - "尝试绕过第 2 段 · 跌落后重试 · 第 2 段 跳过断口，角色 (-2.3, 0.4, 2.3)，起步点 (9.8, 0.0, 2.3)，目标 (24.8, 0.0, 2.3)，就位步 145，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
+    - "尝试绕过第 3 段 · 跌落后重试 · 第 3 段 踩弹弹菇起跳，角色 (-2.3, 0.4, 2.3)，起步点 (26.3, 0.0, 2.3)，目标 (51.8, 0.0, 2.3)，就位步 329，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
+    - "尝试绕过第 4 段 · 跌落后重试 · 第 4 段 穿过传送门，角色 (-2.3, 0.4, 2.3)，起步点 (51.8, 0.0, 2.3)，目标 (72.0, 3.0, 2.3)，就位步 705，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
+    - "尝试绕过第 5 段 · 跌落后重试 · 第 5 段 踩弹弹菇起跳，角色 (-2.3, 0.4, 2.3)，起步点 (72.8, 3.0, 2.3)，目标 (91.5, 6.0, 2.3)，就位步 827，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
+    - "尝试绕过第 6 段 · 跌落后重试 · 第 6 段 穿过传送门，角色 (-2.3, 0.4, 2.3)，起步点 (92.3, 6.0, 2.3)，目标 (112.5, 9.0, 2.3)，就位步 1048，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False"
     map: {fileID: 11400000, guid: af3a37b95049cfe499dda5700a4872ef, type: 2}
     hash: ad7ffd8a5a9867ba3c589bf95f0219a5
     counterLeg: 0

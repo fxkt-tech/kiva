@@ -39,12 +39,6 @@ public sealed class LobbyEmission : MonoBehaviour
         };
         composite = new Material(compositeShader);
         composite.SetTexture("_EmissionMask", emissionMask);
-        foreach (var graphic in graphics)
-        {
-            graphic.texture = output;
-            graphic.material = composite;
-        }
-
         var renderObject = new GameObject("Lobby Bloom Camera");
         renderObject.SetActive(false);
         renderObject.transform.SetParent(transform, false);
@@ -83,7 +77,11 @@ public sealed class LobbyEmission : MonoBehaviour
     {
         if (camera != bloomCamera) return;
         bloomCamera.enabled = false;
-        foreach (var graphic in graphics) graphic.enabled = true;
+        foreach (var graphic in graphics)
+        {
+            graphic.texture = output;
+            graphic.material = composite;
+        }
     }
 
     void OnDestroy()

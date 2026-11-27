@@ -24,7 +24,7 @@ internal sealed class WorkshopGenerationRequest
     public WorkshopAction[] actions;
     public static readonly string[] Names={"步行","跳过断口","风扇推活动砖","踩弹弹菇起跳","展开纸翼滑翔","借风扇跨越断口","穿过传送门","从活动砖顶弹起"};
     static readonly string[] Patterns={
-        "(?:步行|行走|走路|走到(?:目标|鸟旁))",
+        "(?:步行|行走|走路|走到(?:目标|出口))",
         "(?:起跳|跳跃|跳过(?:断口|缺口|沟)|助跑跳跃)",
         "(?:(?:安装|放置|用|使用)?风扇)?(?:把活动砖推|推(?:动)?(?:活动|纸)?砖)(?:到(?:止挡|断口|尽头))?",
         "(?:(?:在|从|借|踩上?)?(?:同一块|该|这块|原位|活动)?砖顶(?:的|上)?(?:装|安装)?(?:弹弹菇|菇)?(?:并)?(?:助跑)?(?:弹起|弹射|起跳)|(?:踩|借|使用|用)?(?:弹弹菇|蘑菇)(?:弹射|起跳|弹起)?|弹射)",
@@ -35,7 +35,7 @@ internal sealed class WorkshopGenerationRequest
     public bool Has(WorkshopModule m)=>(modules&m)==m;
     public bool Classic=>actions!=null && actions.SequenceEqual(new[]{WorkshopAction.Push,WorkshopAction.Spring});
     public string Description=>string.Join(" → ",actions.Select((a,i)=>
-        a==WorkshopAction.Spring && i>0 && actions[i-1]==WorkshopAction.Push?"从同一块砖顶弹射":Names[(int)a]))+" → 收鸟并落地";
+        a==WorkshopAction.Spring && i>0 && actions[i-1]==WorkshopAction.Push?"从同一块砖顶弹射":Names[(int)a]))+" → 抵达出口";
     public string ModulesText=>string.Join("、",new[]{WorkshopModule.Fixed,WorkshopModule.Loose,WorkshopModule.White,WorkshopModule.Bamboo}
         .Where(Has).Select(m=>m switch {WorkshopModule.Fixed=>"固定砖",WorkshopModule.Loose=>"活动砖",WorkshopModule.White=>"白面",_=>"竹面"}));
     public string GearText=>gear==0?"无":string.Join("、",new[]{WorkshopGear.Gun,WorkshopGear.Mushroom,WorkshopGear.Fan,WorkshopGear.Glider}
@@ -60,7 +60,7 @@ internal sealed class WorkshopGenerationRequest
     public static WorkshopGenerationRequest Resolve(WorkshopModule modules,WorkshopGear gear,string text,int seed,WorkshopSpace space=WorkshopSpace.Enclosed)
     {
         var r=new WorkshopGenerationRequest{version=2,modules=modules,gear=gear,sequence=text??"",space=space};
-        if(!r.Has(WorkshopModule.Fixed))throw new ArgumentException("当前搭建器需要固定砖承载出生点和目标栖点。");
+        if(!r.Has(WorkshopModule.Fixed))throw new ArgumentException("当前搭建器需要固定砖承载出生点和出口。");
         if(!r.Has(WorkshopModule.White) && !r.Has(WorkshopModule.Bamboo))throw new ArgumentException("请至少允许一种表面：白面或竹面。");
         var plan=new List<WorkshopAction>();
         if(string.IsNullOrWhiteSpace(text))plan=r.Plan(seed);
@@ -69,8 +69,8 @@ internal sealed class WorkshopGenerationRequest
             foreach(string part in Regex.Split(text.Trim(),"\\s*(?:→|->|然后|随后|接着|(?<=[起跳挡口射门翔砖台])后|再(?=[用借从踩展穿跳滑收])|，|,|；|;|\\r?\\n)\\s*")){
                 string token=Regex.Replace(part.Trim().TrimEnd('。'),"^(?:首先|先)","");
                 if(token.Length==0)continue;
-                if(Regex.IsMatch(token,"^(?:收鸟(?:并落地(?:结算)?)?|落地(?:结算)?|到达目标台)$")){goal=true;continue;}
-                if(goal)throw new ArgumentException("收鸟结算必须放在所有操作之后。");
+                if(Regex.IsMatch(token,"^(?:(?:到达|抵达)出口(?:并落地)?|落地(?:结算)?|到达目标台)$")){goal=true;continue;}
+                if(goal)throw new ArgumentException("出口结算必须放在所有操作之后。");
                 int i=Array.FindIndex(Patterns,p=>Regex.IsMatch(token,"^(?:"+p+")$"));
                 if(i<0)throw new ArgumentException("无法识别「"+token+"」。可点击下方动作补入顺序，每个动作以 → 分隔。");
                 var action=(WorkshopAction)i;

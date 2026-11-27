@@ -5,26 +5,20 @@ public sealed class WorkshopPortals
 {
     public const float OuterRadius=PaperTerrain.Cell*.45f;
     public const float Radius=OuterRadius*.93f;
-    const int FirstPortalLayer=9; // AzurePortal, then VermilionPortal, in TagManager.
     static readonly Quaternion HalfTurn=Quaternion.Euler(0,180,0);
-    readonly PortalWindow[] windows=new PortalWindow[2];
+    readonly PortalWindow[] windows;
     readonly Transform root;
     readonly SurfaceMount[] slots;
     readonly List<Vector2> holes=new List<Vector2>(2);
     public bool Paired=>slots[0].face && slots[1].face;
     public bool Open(int i)=>slots[i].face;
 
-    public WorkshopPortals(Transform owner,SurfaceMount[] mounts,Material[] fronts,Material[] backs)
+    public WorkshopPortals(Transform owner, SurfaceMount[] mounts, PortalWindow[] portals)
     {
-        slots=mounts;root=owner;
-        for(int i=0;i<2;i++){
-            var w=new GameObject(i==0?"青鸾门":"朱雀门").AddComponent<PortalWindow>();
-            w.transform.SetParent(root,false);
-            w.gameObject.layer=FirstPortalLayer+i;
-            w.Build(96,fronts[i],backs[i],i==1);
-            windows[i]=w;
-            w.Clear();
-        }
+        slots = mounts;
+        root = owner;
+        windows = portals;
+        foreach (var portal in windows) portal.Bind(root);
     }
 
     public void Prepare(Camera eyes){foreach(var w in windows)w.PrepareTarget(eyes);}

@@ -9,7 +9,7 @@ using Measurement = WorkshopGenerationReport.Measurement;
 using Tape = WorkshopReplayBench.Tape;
 using TimedInput = WorkshopReplayBench.TimedInput;
 
-// Trials share one Play Mode session, with fresh game objects and a new ledger per trial.
+// Trials share one Play Mode session, with fresh game objects per trial.
 public static class WorkshopLevelGenerator
 {
     const string Menu="纸坊/关卡生成器/";
@@ -32,7 +32,6 @@ public static class WorkshopLevelGenerator
     static Job job;
     static WorkshopLevel map;
     static FerryPuzzle puzzle;
-    static BirdCollection book;
     static Rigidbody brick;
     static WorkshopMotor motor;
     static WorkshopShortcutSearch search;
@@ -52,7 +51,7 @@ public static class WorkshopLevelGenerator
     static int actionTick;
     static Vector3 mountPoint;
     static int tick,cursor,runStart,brakeStep,installStep;
-    static bool retried,airborne,pushed,ended,springClicked,atPerch,hopped;
+    static bool retried,airborne,pushed,ended,springClicked,hopped;
     static bool generating;
     static int progressId=-1;
     static Vector3 runFrom;
@@ -177,8 +176,10 @@ public static class WorkshopLevelGenerator
     static string RulesHash()
     {
         var parts=new System.Text.StringBuilder(Application.unityVersion);
-        foreach(var script in new[]{"FerryPuzzle","WorkshopMotor","WorkshopGeometry","PaperTerrain","PaperDevice","WorkshopPlacement","StageBirds"})
+        foreach(var script in new[]{"FerryPuzzle","WorkshopMotor","WorkshopGeometry","PaperTerrain","PaperDevice","WorkshopPlacement","WorkshopLayout","WorkshopBlock"})
             parts.Append(AssetDatabase.GetAssetDependencyHash("Assets/Scripts/"+script+".cs"));
+        foreach(var prefab in new[]{"WorkshopRig","LayoutTemplate"})
+            parts.Append(AssetDatabase.GetAssetDependencyHash("Assets/Prefabs/"+prefab+".prefab"));
         foreach(var settings in new[]{"DynamicsManager","TimeManager"})
             parts.Append(File.ReadAllText("ProjectSettings/"+settings+".asset").Replace("\r\n","\n"));
         return Hash128.Compute(parts.ToString()).ToString();
@@ -235,7 +236,7 @@ public static class WorkshopLevelGenerator
             platform=Array.Find(map.fixedBricks,r=>r.label=="目标高台");
             if(platform.size==Vector3Int.zero)throw new InvalidDataException("模板缺少目标高台。");
         }
-        retried=airborne=pushed=ended=springClicked=atPerch=hopped=false;
+        retried=airborne=pushed=ended=springClicked=hopped=false;
         tick=cursor=runStart=brakeStep=installStep=actionTick=0;
         events=new Measurement();
         if(job.phase==Phase.Perturb){
@@ -250,7 +251,7 @@ public static class WorkshopLevelGenerator
         if(job.phase==Phase.ReplayCounter || job.phase==Phase.WatchCounter)inputTape=Current.counter;
         if(inputTape!=null && inputTape.fixedDelta!=Time.fixedDeltaTime)throw new InvalidDataException("回放物理步长不匹配。");
         recording=new Tape{fixedDelta=Time.fixedDeltaTime};
-        puzzle=WorkshopReplayBench.BuildSession(map,Finish,out book);
+        puzzle=WorkshopReplayBench.BuildSession(map,Finish);
         motor=puzzle.GetComponentInChildren<WorkshopMotor>();
         bool compose=job.phase==Phase.ComposeView;
         if(compose)recording.version=WorkshopPlayerView.TapeVersion;
@@ -326,7 +327,6 @@ public static class WorkshopLevelGenerator
     static void Step()
     {
         tick++;
-        if(events.collect==0 && book.Has(map.stageId,map.perches[0].id))events.collect=tick-1;
         if(job.phase==Phase.Play)return;
         assessment?.Travel();
         if(Modular){
@@ -385,15 +385,7 @@ public static class WorkshopLevelGenerator
         Vector3? gaze=Modular?course.LookAtPoint:null;
         if(!Modular && pushed && !events.landed){
             if(!springClicked)gaze=brick.position+Vector3.up*.75f;
-            else if(motor.Body.position.x<map.perches[0].feet.x-1)gaze=map.perches[0].feet;
-        }
-        // Walk into the pickup area before stopping. Keep looking ahead as the bird returns.
-        if(events.collect>0 && (Modular?course.Complete:events.landed)){
-            var delta=map.perches[0].feet-motor.Body.position;delta.y=0;
-            atPerch|=delta.sqrMagnitude<.3f*.3f;
-            intent=atPerch?default:Aim(delta,true);
-            gaze=motor.Body.position+Vector3.up*(.90f*WorkshopMotor.BirdScale-WorkshopMotor.HalfHeight)
-                +Quaternion.Euler(0,motor.Yaw,0)*Vector3.forward;
+            else if(motor.Body.position.x<map.exitFeet.x-1)gaze=map.exitFeet;
         }
         return viewDriver.Move(intent,gaze);
     }
@@ -464,7 +456,7 @@ public static class WorkshopLevelGenerator
             return direction.sqrMagnitude>.09f?Aim(direction,true):default;
         }
         if(events.landed){
-            var delta=map.perches[0].feet-motor.Body.position;delta.y=0;
+            var delta=map.exitFeet-motor.Body.position;delta.y=0;
             return delta.magnitude>.28f?Aim(delta,true):default;
         }
         // The fan contributes forward speed. On trimmed platforms, angle the run slightly
@@ -476,18 +468,18 @@ public static class WorkshopLevelGenerator
     static void Finish()
     {
         if(ended)return;
-        try{events.finish=tick;Outcome(true,"已收鸟并落地结算");}
+        try{events.finish=tick;Outcome(true,"已抵达出口");}
         catch(Exception e){ended=true;WorkshopReplayBench.EndGeneration(false,e.ToString());}
     }
 
     static void Outcome(bool settled,string reason)
     {
         bool positive=settled && !retried && events.push>0 && events.push<events.bounce &&
-            events.bounce<=events.collect && events.landed && events.edgeMargin>=MinMargin && events.runUp>=MinRunUp;
-        bool alternative=settled && !retried && !pushed && events.collect>0;
+            events.bounce<=events.finish && events.landed && events.edgeMargin>=MinMargin && events.runUp>=MinRunUp;
+        bool alternative=settled && !retried && !pushed && events.finish>0;
         if(Modular){
-            positive=settled && !retried && course.Complete && course.Matched && course.CompletionTick<=events.collect;
-            alternative=settled && !retried && events.collect>0 && !positive;
+            positive=settled && !retried && course.Complete && course.Matched && course.CompletionTick<=events.finish;
+            alternative=settled && !retried && events.finish>0 && !positive;
             if(!positive)reason+=" · "+course.Status;
         }
         if(viewDriver!=null && !viewDriver.AllClicksPlayed){positive=false;reason+=" · 安装动作未全部复现";}
@@ -506,7 +498,7 @@ public static class WorkshopLevelGenerator
             }
             ended=true;WorkshopReplayBench.EndGeneration(ok,ok?reason:"未复现记录的路线："+reason);return;
         }
-        // The bird's grounded settlement may move a few ticks between clean physics sessions.
+        // The final landing may move a few ticks between clean physics sessions.
         recording.endTick=tick+(Modular || PreparingView?Mathf.CeilToInt(.4f/Time.fixedDeltaTime):3);
         recording.usedBrickAtStop=positive;
         bool viewTrial=PreparingView;
@@ -527,7 +519,7 @@ public static class WorkshopLevelGenerator
                 Debug.Log($"已录制玩家视角 · {tick} 物理步 · {viewDriver.Clicks} 次瞄准后点击 · 最高转速 {viewDriver.PeakTurnSpeed:F1}°/秒");
                 job.phase=Phase.VerifyView;break;
             }
-            Debug.Log($"玩家视角独立回放已通过 · 收鸟 {events.collect} / 结算 {events.finish}");
+            Debug.Log($"玩家视角独立回放已通过 · 抵达出口 {events.finish}");
             if(assessment!=null){
                 assessment.Finish();
                 var v=assessment.result;
@@ -545,8 +537,8 @@ public static class WorkshopLevelGenerator
             }
             break;
         case Phase.Solution:
-            if(Atrium && (!Current.connected || !Current.stationVisible || !Current.birdVisible)){
-                Reject($"中庭未通过入口及结构检查（连通 {Current.connected}、可见栖点 {Current.birdVisible}、可见工位 {Current.stationVisible}）");break;
+            if(Atrium && (!Current.connected || !Current.stationVisible || !Current.exitVisible)){
+                Reject($"中庭未通过入口及结构检查（连通 {Current.connected}、可见出口 {Current.exitVisible}、可见工位 {Current.stationVisible}）");break;
             }
             if(!positive){Reject("正解未满足验收："+reason);break;}
             Current.solution=recording;Current.nominal=events;job.phase=Phase.ReplaySolution;break;
@@ -565,7 +557,7 @@ public static class WorkshopLevelGenerator
             }
             if(events.bounce>0 && job.sample<regularSearchCount)Current.launchedSamples++;
             var angles=WorkshopShortcutSearch.RunUpAngles;
-            string probeLabel=job.sample>=regularSearchCount?"借用围墙":$"{(job.sample<angles.Length?"朝鸟位":"朝高台近角")}，偏转 {angles[job.sample%angles.Length]}°";
+            string probeLabel=job.sample>=regularSearchCount?"借用围墙":$"{(job.sample<angles.Length?"朝出口":"朝高台近角")}，偏转 {angles[job.sample%angles.Length]}°";
             Current.samples.Add($"样本 {job.sample+1}（{probeLabel}）· "+
                 (events.bounce>0?$"第 {events.bounce} 步弹起":"未触发原位弹射")+"，"+reason+$"，{tick} 步");
             if(settled){
@@ -597,8 +589,8 @@ public static class WorkshopLevelGenerator
             job.accepted=job.index;job.phase=Phase.Done;break;
         }
         ended=true;
-        Debug.Log(Modular?$"生成候选 · {reason} · 收鸟 {events.collect} / 结算 {events.finish} · 抵达平台净余量 {events.edgeMargin:F2} m":
-            $"生成候选 · {reason} · 推砖 {events.push} / 弹射 {events.bounce} / 收鸟 {events.collect} / 结算 {events.finish} · 落台净余量 {events.edgeMargin:F2} m");
+        Debug.Log(Modular?$"生成候选 · {reason} · 抵达出口 {events.finish} · 抵达平台净余量 {events.edgeMargin:F2} m":
+            $"生成候选 · {reason} · 推砖 {events.push} / 弹射 {events.bounce} / 抵达出口 {events.finish} · 落台净余量 {events.edgeMargin:F2} m");
         if(!SavedMap && Spatial && Modular && job.phase==Phase.Done){
             int rated=0,best=-1;
             for(int i=0;i<job.attempts.Count;i++){
@@ -654,7 +646,7 @@ public static class WorkshopLevelGenerator
         while(job.sample<total && Current.legs[job.sample%legs].action==WorkshopAction.Walk)job.sample++;
         if(job.sample<total)return;
         if(Atrium){job.phase=Phase.SkillSample;job.sample=0;return;}
-        Current.conclusion="已重放指定路线并完成收鸟结算。唯一性未验证。";
+        Current.conclusion="已重放指定路线并完成出口结算。唯一性未验证。";
         job.accepted=job.index;job.phase=Phase.Done;
     }
 
@@ -670,10 +662,10 @@ public static class WorkshopLevelGenerator
         }
         if(Modular){Add(default);return;}
         var choices=new List<Layout>();
-        // Keep the perch on the platform. Move its near edges beyond observed shortcut landings.
-        var perch=map.perches[0].feet/PaperTerrain.Cell;
+        // Keep the exit on the platform. Move its near edges beyond observed shortcut landings.
+        var goalCell=map.exitFeet/PaperTerrain.Cell;
         for(int start=1;start<=2;start++)for(int stop=4;stop<=6;stop++)
-        for(int x=3;x<Mathf.FloorToInt(perch.x);x++)for(int z=5;z<=Mathf.FloorToInt(perch.z);z++){
+        for(int x=3;x<Mathf.FloorToInt(goalCell.x);x++)for(int z=5;z<=Mathf.FloorToInt(goalCell.z);z++){
             var layout=new Layout{start=start,stop=stop,nearX=x,nearZ=z};
             if(job.attempts.Exists(a=>a.layout.Equals(layout)))continue;
             if(job.attempts.Exists(a=>a.counterConfirmed && a.layout.start==start && a.shortcut.landed &&

@@ -17,56 +17,16 @@ public sealed class WorkshopMotor : MonoBehaviour
     public Vector3 EntryCenter { get; private set; }
     public Vector3 ExitCenter { get; private set; }
     double exitTick=double.NegativeInfinity;
-    VermilionBird bird;
-    PhysicsMaterial friction;
+    [SerializeField] VermilionBird bird;
+    [SerializeField] Transform glider;
+    [SerializeField] GameObject gun;
     WorkshopPortals portals;
 
-    public void Build(WorkshopPortals pair)
+    public void Bind(WorkshopPortals pair)
     {
-        portals=pair;
-        gameObject.layer=2;
-        Body=gameObject.AddComponent<Rigidbody>();
-        Body.constraints=RigidbodyConstraints.FreezeRotation;
-        Body.interpolation=RigidbodyInterpolation.Interpolate;
-        Body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
-        var cap=gameObject.AddComponent<CapsuleCollider>();cap.height=HalfHeight*2;cap.radius=.52f*BirdScale;
-        friction=new PhysicsMaterial("纸羽侧滑"){dynamicFriction=0,staticFriction=0,frictionCombine=PhysicsMaterialCombine.Minimum};
-        cap.sharedMaterial=friction;
-        bird=new GameObject("朱雀剪纸").AddComponent<VermilionBird>();
-        bird.transform.SetParent(transform,false);
-        bird.transform.localPosition=Vector3.down*HalfHeight;
-        bird.transform.localScale=Vector3.one*BirdScale;
-        bird.Build();
-        Eyes=new GameObject("朱雀第一人称").AddComponent<Camera>();
-        Eyes.transform.SetParent(transform,false);
-        Eyes.cullingMask &= ~(1<<VermilionBird.ModelLayer);
-        Eyes.fieldOfView=70;Eyes.nearClipPlane=.04f;Eyes.depth=5;
-        Eyes.clearFlags=CameraClearFlags.SolidColor;Eyes.backgroundColor=new Color(.77f,.74f,.61f);
-    }
-
-    Transform glider;
-    GameObject gun;
-    public void BuildEquipment(Material paper,Material bamboo,Material ochre)
-    {
-        var gear=new PaperMesh.Builder(2);
-        var back=new Vector3(.46f,.62f,.10f);
-        var front=back+new Vector3(0,.06f,.55f);
-        var side=Vector3.right*.07f;
-        gear.Quad(0,Vector3.up,back-side,back+side,front+side,front-side);
-        gear.Quad(1,Vector3.right,back+side,back+side-Vector3.up*.13f,front+side-Vector3.up*.07f,front+side);
-        gun=gear.Mount(bird.transform,"随身时空枪",bamboo,ochre);
-        gun.layer=VermilionBird.ModelLayer;
-        var wing=new PaperMesh.Builder(2);
-        for(int s=-1;s<=1;s+=2){
-            var nose=new Vector3(0,.12f,.2f);var tail=new Vector3(0,0,-.62f);
-            var fold=new Vector3(s*.54f,.07f,-.38f);var tip=new Vector3(s*1.52f,.17f,-.64f);
-            wing.Triangle(0,Vector3.up,nose,fold,tip);wing.Triangle(1,Vector3.up,nose,tail,fold);
-            wing.Triangle(1,Vector3.down,nose,fold,tip);wing.Triangle(0,Vector3.down,nose,tail,fold);
-        }
-        glider=wing.Mount(bird.transform,"折纸滑翔翼",paper,ochre).transform;
-        glider.gameObject.layer=VermilionBird.ModelLayer;
-        glider.localPosition=new Vector3(0,1.02f,-.18f);
-        Equip(WorkshopGear.Gun);
+        portals = pair;
+        Body = GetComponent<Rigidbody>();
+        Eyes = GetComponentInChildren<Camera>(true);
     }
 
     public void Equip(WorkshopGear inventory){
@@ -157,5 +117,4 @@ public sealed class WorkshopMotor : MonoBehaviour
         Look();bird.Pose(Body.linearVelocity,Yaw,Grounded,Time.deltaTime);
         if(glider.gameObject.activeSelf)glider.localScale=new Vector3(Gliding?1f:.24f,1,1);
     }
-    void OnDestroy(){if(friction)Destroy(friction);}
 }

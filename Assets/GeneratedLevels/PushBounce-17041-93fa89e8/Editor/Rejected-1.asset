@@ -13,43 +13,36 @@ MonoBehaviour:
   m_Name: Rejected-1
   m_EditorClassIdentifier: 
   stageId: generated/push-bounce/93fa89e8695f418eab6da55673dfac60/1
-  perches:
-  - id: landing
-    species: {fileID: 11400000, guid: 06b46460c5470d04fa5ee54cdea20095, type: 2}
-    feet: {x: 9.8, y: 6, z: 11.4}
-    flightOffset: {x: 0, y: 0, z: 0}
-    yaw: -90
-  title: "\u63A8\u7816\u6E21\u69FD"
+  title: "推砖渡槽"
   description: 
   locationName: 
-  arrivalStory: 
   fixedBricks:
-  - label: "\u76F4\u69FD\u5E95\u677F"
+  - label: "直槽底板"
     start: {x: 0, y: -1, z: 0}
     size: {x: 1, y: 1, z: 4}
     white: 0
-  - label: "\u98CE\u6247\u5B89\u88C5\u9762"
+  - label: "风扇安装面"
     start: {x: 0, y: 0, z: -1}
     size: {x: 1, y: 1, z: 1}
     white: 32
-  - label: "\u8D77\u6B65\u4FA7\u53F0"
+  - label: "起步侧台"
     start: {x: -2, y: 0, z: 0}
     size: {x: 2, y: 1, z: 5}
     white: 0
-  - label: "\u69FD\u8FB9"
+  - label: "槽边"
     start: {x: 1, y: 0, z: 0}
     size: {x: 1, y: 1, z: 4}
     white: 0
-  - label: "\u6B62\u6321"
+  - label: "止挡"
     start: {x: 0, y: 0, z: 4}
     size: {x: 1, y: 1, z: 1}
     white: 0
-  - label: "\u76EE\u6807\u9AD8\u53F0"
+  - label: "目标高台"
     start: {x: 3, y: 3, z: 5}
     size: {x: 5, y: 1, z: 5}
     white: 0
   physicalBricks:
-  - label: "\u98CE\u69FD\u7EB8\u7816"
+  - label: "风槽纸砖"
     cell: {x: 0, y: 0, z: 1}
     white: 8
     mass: 2
@@ -63,11 +56,10 @@ MonoBehaviour:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 0, y: 0, z: 0}
   exitZone:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
+    m_Center: {x: 9.8, y: 6.45, z: 11.4}
+    m_Extent: {x: 0.75, y: 0.55, z: 0.75}
   startingGear: 6
   supplyGear: 0
-  entryHint: "\u6309 3 \u9009\u98CE\u6247\uFF0C\u5BF9\u51C6\u69FD\u9996\u767D\u9762\u70B9\u51FB\u3002\u6CBF\u4FA7\u53F0\u8D70\u5230\u6B62\u6321\uFF0C\u6309 2 \u5728\u7816\u9876\u88C5\u83C7\uFF0C\u5411\u9AD8\u53F0\u52A9\u8DD1\u3002"
+  entryHint: "按 3 选风扇，对准槽首白面点击。沿侧台走到止挡，按 2 在砖顶装菇，向高台助跑。"
   supplyHint: 
   retryHint: 
-  westWindow: 0

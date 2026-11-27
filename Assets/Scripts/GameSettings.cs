@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-// One saved record shared by the lobby settings and the in-level settings.
+// The lobby and gameplay apply the same saved settings.
 [Serializable]
 public sealed class GameSettings
 {
@@ -14,7 +14,7 @@ public sealed class GameSettings
     public int shadowResolution=2048;
     public bool customDisplay,windowed;
     public int width,height;
-    public bool crosshair=true,exitGuide=true,hints=true,birdDirections=true;
+    public bool crosshair=true,hints=true;
 
     static readonly Vector2Int DefaultResolutionLimit=new Vector2Int(2560,1440);
     internal static readonly (string name,Vector2Int size)[] ResolutionPresets={
@@ -45,8 +45,8 @@ public sealed class GameSettings
         var loaded=new GameSettings();
         try{
             var file=SavePath;
-            if(!File.Exists(file) && Application.productName=="百鸟卷")
-                file=Path.Combine(Path.GetDirectoryName(Application.persistentDataPath),"kiva","settings.json");
+            if(!File.Exists(file) && Application.productName=="Kiva")
+                file=Path.Combine(Path.GetDirectoryName(Application.persistentDataPath),"百鸟卷","settings.json");
             if(File.Exists(file))JsonUtility.FromJsonOverwrite(File.ReadAllText(file),loaded);
         }catch(Exception e){
             Debug.LogWarning("设置读取失败，使用默认值："+e.Message);
@@ -123,15 +123,13 @@ public sealed class GameSettings
         SetResolution(sizes[(sizes.IndexOf(now)+direction+sizes.Count)%sizes.Count]);
     }
 
-    // The single definition table. Both screens are generated from it; lobby-only rows are
-    // hidden inside a level.
     public static readonly SettingItem[] Items={
         SettingItem.Slider("操作","鼠标灵敏度",s=>s.sensitivity,(s,v)=>s.sensitivity=v,.2f,3,.1f,"0.0")
-            .In("鼠标").Help("转动视角的快慢。1.0 是默认手感，数值越大转得越快。"),
+            .Help("转动视角的快慢。1.0 是默认手感，数值越大转得越快。"),
         SettingItem.Toggle("操作","反转 Y 轴",s=>s.invertY,(s,v)=>s.invertY=v)
-            .In("鼠标").Help("开启后，鼠标向前推视角向下，向后拉视角向上。"),
+            .Help("开启后，鼠标向前推视角向下，向后拉视角向上。"),
         SettingItem.Toggle("操作","滑翔方式",s=>s.glideToggle,(s,v)=>s.glideToggle=v,"按住空格","按一下切换")
-            .In("键盘").Help("按住：松开空格就收起纸翼。切换：空中按一下展开，再按一下收起。"),
+            .Help("按住：松开空格就收起纸翼。切换：空中按一下展开，再按一下收起。"),
         SettingItem.Slider("画面","视野角",s=>s.fieldOfView,(s,v)=>s.fieldOfView=Mathf.RoundToInt(v),60,100,5,"0")
             .Help("视野的宽窄。数值大看得更广，但画面边缘会拉伸。"),
         SettingItem.Slider("画面","门中门层数",s=>s.portalDepth,(s,v)=>s.portalDepth=Mathf.RoundToInt(v),0,4,1,"0")
@@ -143,21 +141,17 @@ public sealed class GameSettings
             .Help("限制最高帧率，降低发热和风扇噪音。"),
         SettingItem.Choice("画面","阴影精度",s=>s.shadowResolution,(s,v)=>s.shadowResolution=v,
             new[]{1024,2048,4096},new[]{"低","中","高"})
-            .LobbyOnly().Help("西窗日光投影的清晰度。进入关卡时生效。"),
+            .Help("关卡主光投影的清晰度。进入关卡时生效。"),
         new SettingItem(SettingItem.Kind.Options,"画面","显示模式",new[]{"窗口","全屏"},0,
             s=>(s.customDisplay?!s.windowed:Screen.fullScreen)?1:0,(s,i)=>{s.windowed=i==0;s.customDisplay=true;},null)
-            .Display(s=>s.customDisplay,s=>s.customDisplay=false).LobbyOnly().Help("窗口或无边框全屏。改动后需要确认，10 秒不确认自动还原。"),
+            .Display(s=>s.customDisplay,s=>s.customDisplay=false).Help("窗口或无边框全屏。改动后需要确认，10 秒不确认自动还原。"),
         new SettingItem(SettingItem.Kind.Resolution,"画面","画面尺寸",null,0,null,(s,d)=>s.StepResolution(d),
             s=>{var size=s.Resolution;return size.x+" × "+size.y;})
             .Display(s=>s.width>0 && s.height>0,s=>s.width=s.height=0).Help("默认按屏幕尺寸，最高 2K。用 − / ＋ 可选其他分辨率。"),
-        SettingItem.Toggle("界面","鸟鸣方位",s=>s.birdDirections,(s,v)=>s.birdDirections=v)
-            .Help("附近有未入卷的小鸟鸣叫时，在屏幕边缘显示一枚白羽。"),
         SettingItem.Toggle("界面","准星",s=>s.crosshair,(s,v)=>s.crosshair=v)
             .Help("屏幕中央的瞄准标记，同时显示两扇门是否已放置。"),
-        SettingItem.Toggle("界面","目的地指引",s=>s.exitGuide,(s,v)=>s.exitGuide=v)
-            .Help("在屏幕边缘提示关卡目的地的方向。"),
         SettingItem.Toggle("界面","操作提示",s=>s.hints,(s,v)=>s.hints=v)
-            .Help("左下角的引导文字，比如取得装置后的用法说明。"),
+            .Help("显示关卡提示和装置无法安装的原因。"),
     };
 }
 
@@ -169,9 +163,9 @@ public sealed class SettingItem
     public readonly string category,label;
     public readonly string[] names;
     public readonly int steps;
-    public string section,help;
+    public string help;
     // Changes to the actual window are previewed before they are saved.
-    public bool lobbyOnly,display;
+    public bool display;
     readonly Func<GameSettings,int> index;
     readonly Action<GameSettings,int> choose;
     readonly Func<GameSettings,string> show;
@@ -185,9 +179,7 @@ public sealed class SettingItem
         this.index=index;this.choose=choose;this.show=show;
     }
 
-    public SettingItem In(string heading){section=heading;return this;}
     public SettingItem Help(string text){help=text;return this;}
-    public SettingItem LobbyOnly(){lobbyOnly=true;return this;}
     public SettingItem Display(Func<GameSettings,bool> isChanged,Action<GameSettings> forget)
     {
         display=true;changed=isChanged;reset=forget;return this;

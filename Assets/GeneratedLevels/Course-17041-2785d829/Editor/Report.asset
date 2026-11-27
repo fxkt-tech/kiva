@@ -30,7 +30,7 @@ MonoBehaviour:
       stop: 4
       nearX: 3
       nearZ: 5
-    conclusion: "\u8FDB\u9636\u4E2D\u5EAD\u5DF2\u901A\u8FC7\u901A\u5173\u3001\u5165\u53E3\u89C6\u7EBF\u4E0E\u64CD\u4F5C\u5BB9\u9519\u9A8C\u8BC1\u3002"
+    conclusion: "进阶中庭已通过通关、入口视线与操作容错验证。"
     solution:
       version: 1
       endTick: 723
@@ -7135,7 +7135,7 @@ MonoBehaviour:
       - point: {x: 5.2500315, y: 0.00016897917, z: -0.74998003}
         tool: 2
         secondary: 0
-    playerViewNote: "\u73A9\u5BB6\u89C6\u89D2\u64CD\u4F5C\u5DF2\u72EC\u7ACB\u56DE\u653E\u901A\u5173\u3002"
+    playerViewNote: "玩家视角操作已独立回放通关。"
     viewAssessment:
       verified: 1
       courseTurns: 1
@@ -7144,10 +7144,10 @@ MonoBehaviour:
       checkedTargets: 1
       longestStraight: 24.912085
       details:
-      - "\u7B2C 1 \u2192 2 \u6BB5\u884C\u8FDB\u65B9\u5411\u6539\u53D8 125\xB0"
-      - "\u6ED1\u7FD4\u62B5\u8FBE \u2192 \u7B2C 2 \u6BB5\u62B5\u8FBE\u8D70\u53F0\uFF0C\u89C6\u7EBF\u8F6C\u52A8 126\xB0"
+      - "第 1 → 2 段行进方向改变 125\xB0"
+      - "滑翔抵达 → 第 2 段抵达走台，视线转动 126\xB0"
     connected: 1
-    birdVisible: 1
+    exitVisible: 1
     stationVisible: 1
     skillSamples:
     - delay: 2
@@ -7168,7 +7168,6 @@ MonoBehaviour:
     nominal:
       push: 0
       bounce: 0
-      collect: 667
       finish: 702
       landing: {x: -6.6427345, y: 4.907999, z: -18.086655}
       landed: 1
@@ -7179,12 +7178,11 @@ MonoBehaviour:
       airTurn: 46.89757
       portalSpringSeconds: 0
       trace:
-      - "\u7B2C 379 \u6B65 \xB7 \u98CE\u6247\u63A8\u6D3B\u52A8\u7816 \u2192 \u7816\u9876\u5F39\u5C04 \u2192 \u6ED1\u7FD4 \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 2.03 m"
-      - "\u7B2C 633 \u6B65 \xB7 \u6B65\u884C \xB7 \u52A8\u4F5C\u5DF2\u9A8C\u8BC1 \xB7 \u62B5\u8FBE\u5E73\u53F0\u51C0\u4F59\u91CF 0.29 m"
+      - "第 379 步 · 风扇推活动砖 → 砖顶弹射 → 滑翔 · 动作已验证 · 抵达平台净余量 2.03 m"
+      - "第 633 步 · 步行 · 动作已验证 · 抵达平台净余量 0.29 m"
     shortcut:
       push: 0
       bounce: 0
-      collect: 0
       finish: 0
       landing: {x: 0, y: 0, z: 0}
       landed: 0
@@ -7197,7 +7195,7 @@ MonoBehaviour:
       trace: []
     tolerance: []
     samples:
-    - "\u5C1D\u8BD5\u7ED5\u8FC7\u7B2C 1 \u6BB5 \xB7 \u5E38\u89C4\u79FB\u52A8 \xB7 \u8DCC\u843D\u540E\u91CD\u8BD5 \xB7 \u7B2C 1 \u6BB5 \u98CE\u6247\u63A8\u6D3B\u52A8\u7816\uFF0C\u89D2\u8272 (-9.8, 0.4, 3.8)\uFF0C\u8D77\u6B65\u70B9 (1.1, 0.0, 0.4)\uFF0C\u76EE\u6807 (14.3, 4.5, -18.0)\uFF0C\u5C31\u4F4D\u6B65 126\uFF0C\u88C5\u83C7\u6B65 0\uFF0C\u63A8\u7816 False\uFF0C\u5F39\u5C04 False\uFF0C\u6ED1\u7FD4 False\uFF0C\u98CE\u529B False\uFF0C\u7A7F\u95E8 False\uFF0C\u7816\u5FC3 (2.3, -0.8, -0.8)"
+    - "尝试绕过第 1 段 · 常规移动 · 跌落后重试 · 第 1 段 风扇推活动砖，角色 (-9.8, 0.4, 3.8)，起步点 (1.1, 0.0, 0.4)，目标 (14.3, 4.5, -18.0)，就位步 126，装菇步 0，推砖 False，弹射 False，滑翔 False，风力 False，穿门 False，砖心 (2.3, -0.8, -0.8)"
     map: {fileID: 11400000, guid: 975f4f89663eda64f811e49afa350b59, type: 2}
     hash: e0fd27841fda97c26d397e54875157c6
     counterLeg: 0

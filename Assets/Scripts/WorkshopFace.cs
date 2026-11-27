@@ -8,6 +8,7 @@ public sealed class WorkshopFace : MonoBehaviour
     public Rigidbody Host { get; private set; }
     HashSet<Vector2Int> tiles;
     readonly List<PortalSurfaceCollider> colliders=new List<PortalSurfaceCollider>();
+    Rect rectangle;
     const float Cell=PaperTerrain.Cell;
 
     public void Build(HashSet<Vector2Int> cells,bool white,Rigidbody host)
@@ -29,11 +30,23 @@ public sealed class WorkshopFace : MonoBehaviour
             while(CompleteRow(height))height++;
             for(int y=0;y<height;y++)for(int x=0;x<width;x++)remaining.Remove(at+new Vector2Int(x,y));
             var rect=new Rect(at.x*Cell,at.y*Cell,width*Cell,height*Cell);
-            var patch=new GameObject("面碰撞").AddComponent<PortalSurfaceCollider>();
-            patch.transform.SetParent(transform,false);
-            patch.Initialize(rect,white || host);
-            colliders.Add(patch);
+            AddPatch(rect);
         }
+    }
+
+    public void Build(Rect bounds, bool white)
+    {
+        White = white;
+        rectangle = bounds;
+        AddPatch(bounds);
+    }
+
+    void AddPatch(Rect bounds)
+    {
+        var patch = new GameObject("面碰撞").AddComponent<PortalSurfaceCollider>();
+        patch.transform.SetParent(transform, false);
+        patch.Initialize(bounds, White || Host);
+        colliders.Add(patch);
     }
 
     public bool Fits(Vector2 center,float radius)
@@ -41,6 +54,9 @@ public sealed class WorkshopFace : MonoBehaviour
         if(!White)return false;
         // A tangent tile edge counts as fitting, even on a rotated physical brick.
         float r=radius-.0002f;
+        if (tiles == null)
+            return center.x-r >= rectangle.xMin && center.x+r <= rectangle.xMax &&
+                   center.y-r >= rectangle.yMin && center.y+r <= rectangle.yMax;
         var lo=Vector2Int.FloorToInt((center-Vector2.one*r)/Cell);
         var hi=Vector2Int.FloorToInt((center+Vector2.one*r)/Cell);
         for(int y=lo.y;y<=hi.y;y++)for(int x=lo.x;x<=hi.x;x++){

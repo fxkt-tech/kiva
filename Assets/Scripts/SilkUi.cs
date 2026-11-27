@@ -4,11 +4,7 @@ using static NightUi;
 
 public static class SilkUi
 {
-    public static readonly Color Cream=new Color(.97f,.94f,.83f);
-    public static readonly Color Gold=new Color(.85f,.72f,.48f);
-    public static readonly Color Plum=new Color(.29f,.20f,.34f);
     public static readonly Color Violet=new Color(.46f,.33f,.50f);
-    public static readonly Color Night=new Color(.105f,.14f,.20f);
     public static RawImage Art(Transform parent,string name,Texture texture,float x,float y,float w,float h,bool crop=true){
         var raw=Place(parent,name,x,y,w,h).gameObject.AddComponent<RawImage>();
         raw.texture=texture;raw.raycastTarget=false;
@@ -33,8 +29,5 @@ public static class SilkUi
         var paper=Panel(parent,name,x,y,w,h,new Color(1,1,1,.015f));
         return SelectableButton(paper,action);
     }
-    public static void Foil(Transform parent,string name,float x,float y,float w){
-        Panel(parent,name,x,y,w,1,Gold);
-        Shape(parent,"菱花",SettingShape.Kind.Diamond,x+w*.5f-4,y-3,8,7,Gold,Gold);
-    }
+
 }

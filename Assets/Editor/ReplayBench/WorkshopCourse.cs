@@ -47,11 +47,11 @@ internal static class WorkshopCourse
         blocks.Add(Region("止挡",x,y,z+stop,1,1,1));
         bricks.Add(new LooseBrick{label="风槽纸砖",cell=at+new Vector3Int(0,0,start),mass=2,white=WhiteFaces.Top});
     }
-    internal static WorkshopLevel Map(WorkshopGenerationRequest r,string id,string title,List<BrickRegion> blocks,List<LooseBrick> bricks,Vector3 spawn,Vector3 bird,float yaw){
+    internal static WorkshopLevel Map(WorkshopGenerationRequest r,string id,string title,List<BrickRegion> blocks,List<LooseBrick> bricks,Vector3 spawn,Vector3 goal,float yaw){
         var map=ScriptableObject.CreateInstance<WorkshopLevel>();
         map.stageId=id;map.title=title;map.spawnFeet=spawn;map.spawnYaw=yaw;
-        map.entryHint=r.Description;map.startingGear=r.gear;map.exitFeet=bird;map.exitSign=bird+Vector3.down*.5f;
-        map.perches=new[]{new WorkshopLevel.Perch{id="landing",species=Resources.Load<BirdSpecies>("Birds/barn-swallow"),feet=bird,yaw=-90}};
+        map.entryHint=r.Description;map.startingGear=r.gear;map.exitFeet=goal;
+        map.exitZone=new Bounds(goal+Vector3.up*.45f,new Vector3(1.5f,1.1f,1.5f));
         map.fixedBricks=blocks.ToArray();map.physicalBricks=bricks.ToArray();
         if(!r.Has(WorkshopModule.Bamboo)){
             for(int i=0;i<map.fixedBricks.Length;i++)map.fixedBricks[i].white=WhiteFaces.All;
@@ -64,8 +64,7 @@ internal static class WorkshopCourse
         Channel(blocks,bricks,Vector3Int.zero,layout.start,layout.stop);
         blocks.Add(Region("目标高台",layout.nearX,3,layout.nearZ,8-layout.nearX,1,10-layout.nearZ));
         if(r.Enclosed)WorkshopCourseSpace.Enclose(blocks,new[]{WorkshopCourseSpace.Room(blocks,8)});
-        var map=Map(r,id,"推砖渡槽",blocks,bricks,new Vector3(-.55f,1.5f,1.4f),new Vector3(9.8f,6f,11.4f),137);
-        map.exitSign=new Vector3(8,5.45f,layout.nearZ*Cell-.04f);return map;
+        return Map(r,id,"推砖渡槽",blocks,bricks,new Vector3(-.55f,1.5f,1.4f),new Vector3(9.8f,6f,11.4f),137);
     }
 
     internal static WorkshopLevel Build(WorkshopGenerationRequest r,string id,int seed,int attempt,int[] bypasses,out List<Leg> legs){
@@ -76,7 +75,7 @@ internal static class WorkshopCourse
         var rooms=new List<BoundsInt>();
         var headings=r.version>=2?WorkshopCourseSpace.Headings(r.actions,random):null;
         if(r.version<2)blocks.Add(Region("起步台",edge-7,height-1,lane-2,7,1,5));
-        Vector3 bird=default;
+        Vector3 goal=default;
         for(int i=0;i<r.actions.Length;i++){
             var leg=new Leg{action=r.actions[i]};
             if(leg.action==WorkshopAction.Push && i+1<r.actions.Length && r.actions[i+1]==WorkshopAction.Spring){leg.brickSpring=true;i++;}
@@ -147,7 +146,7 @@ internal static class WorkshopCourse
             if(leg.action==WorkshopAction.Portal)
                 tiles.Add(Region("出口门面",near+1,height,lane+1,1,1,1,WhiteFaces.Back));
             leg.destination=new Bounds(new Vector3((near+width*.5f)*Cell,height*Cell,(low+depth*.5f)*Cell),new Vector3(width*Cell,.2f,depth*Cell));
-            bird=new Vector3(leg.destination.max.x-2*Cell,leg.destination.center.y,leg.destination.center.z);
+            goal=new Vector3(leg.destination.max.x-2*Cell,leg.destination.center.y,leg.destination.center.z);
             if(r.version>=2){
                 int clearance=leg.brickSpring || leg.action==WorkshopAction.Spring || leg.action==WorkshopAction.LooseSpring?8:4;
                 var room=WorkshopCourseSpace.Room(tiles,clearance);
@@ -156,11 +155,11 @@ internal static class WorkshopCourse
                 if(r.Enclosed && index>0)WorkshopCourseSpace.Door(tiles,room,edge-6,0,0);
                 foreach(var tile in tiles)blocks.Add(frame.Tile(tile));
                 foreach(var body in loose)bricks.Add(frame.Brick(body));
-                frame.Place(leg);bird=frame.Point(bird);
+                frame.Place(leg);goal=frame.Point(goal);
             }
             edge=near+width;legs.Add(leg);
         }
         if(r.Enclosed)WorkshopCourseSpace.Enclose(blocks,rooms);
-        return Map(r,id,"寻鸟 · "+WorkshopGenerationRequest.Names[(int)legs[0].action],blocks,bricks,spawn,bird,90);
+        return Map(r,id,"机关 · "+WorkshopGenerationRequest.Names[(int)legs[0].action],blocks,bricks,spawn,goal,90);
     }
 }

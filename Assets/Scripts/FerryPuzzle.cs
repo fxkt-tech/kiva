@@ -1,112 +1,48 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
-// Session and progression for one campaign stage.
 public sealed class FerryPuzzle : MonoBehaviour
 {
+    [SerializeField] WorkshopMotor motor;
+    [SerializeField] PortalWindow[] windows;
+    [SerializeField] PaperDevice[] devices;
+    [SerializeField] PlacementPreview preview;
+    WorkshopLayout layout;
     WorkshopLevel current;
-    Transform hall;
     WorkshopGeometry geometry;
     WorkshopPlacement placement;
-    WorkshopMotor motor;
     WorkshopHud hud;
-    StageBirds birds;
-    public string CollectionStatus => birds.Progress;
-    public bool SaveCollection() => birds.SavePending(motor.Body.position);
     public Action<WorkshopInput> CollectInput { private get; set; }
     public Action BeforePhysics { private get; set; }
     public event Action Restarted;
-    PlacementPreview preview;
     WorkshopTool selected;
     PlacementAim aim;
     WorkshopGear gear;
-    bool paused,checkpoint;
+    bool paused,checkpoint,finished;
     float previousTimeScale;
     Action finish;
     Action<bool> pauseChanged;
-    FerryLighting lighting;
-    readonly System.Collections.Generic.List<Material> materials=new System.Collections.Generic.List<Material>();
-    Texture2D fibers;
 
-    Transform Group(Transform parent,string label)
+    public void Build(WorkshopHud display, WorkshopLayout stage, Action onFinish, Action<bool> onPause)
     {
-        var t=new GameObject(label).transform;
-        t.SetParent(parent,false);return t;
-    }
-
-    Material Keep(Material m){materials.Add(m);return m;}
-    Material Pigment(Color c)=>Keep(FerryLighting.FoldedMineral(c));
-
-    Material[] FaceInks()
-    {
-        var white=Pigment(new Color(.95f,.95f,.90f));
-        var shade=Pigment(new Color(.91f,.92f,.90f));
-        var bamboo=Pigment(new Color(.50f,.63f,.54f));
-        var alternate=Pigment(new Color(.48f,.61f,.53f));
-        // A seamless long-fibre wash distinguishes bamboo even in diffuse window light.
-        const int size=96;
-        fibers=new Texture2D(size,size,TextureFormat.RGBA32,true,true){name="竹纤维",wrapMode=TextureWrapMode.Repeat,filterMode=FilterMode.Trilinear,anisoLevel=4};
-        var pixels=new Color32[size*size];
-        for(int y=0;y<size;y++)for(int x=0;x<size;x++){
-            float u=x*2*Mathf.PI/size,v=y*2*Mathf.PI/size;
-            float grain=.48f+.12f*Mathf.Sin(17*u+.4f*Mathf.Sin(v))+.08f*Mathf.Sin(29*u+v)+.045f*Mathf.Cos(3*u-v);
-            pixels[y*size+x]=new Color(grain,grain,grain,1);
-        }
-        fibers.SetPixels32(pixels);fibers.Apply(true,true);
-        bamboo.SetTexture("_MineralWash",fibers);alternate.SetTexture("_MineralWash",fibers);
-        return new[]{white,shade,bamboo,alternate};
-    }
-
-    public void Build(Text status,WorkshopLevel level,BirdCollection collection,Action onFinish,Action<bool> onPause)
-    {
-        pauseChanged=onPause;
-        current=level;
-        finish=onFinish;hud=new WorkshopHud(status);
-        var inks=FaceInks();
-        hall=Group(transform,current.title);
-        geometry=new WorkshopGeometry(current,hall);
-        var ochre=Pigment(FerryLighting.OchreBack);
-        if(current.westWindow){
-            var wood=Keep(FerryLighting.Mineral("Timber",new Color(.79f,.46f,.23f)));
-            var glass=Keep(new Material(Resources.Load<Material>("Mineral/WestWindowPaper")));
-            PaperChamber.WestWindowFrame(hall,wood,glass,ochre);
-        }
-        var exitLamp=Group(hall,"出口灯");
-        exitLamp.localPosition=current.exitFeet+new Vector3(-.5f,.38f,.9f);
-        var plaque=Keep(FerryLighting.Mineral("Paper",new Color(.41f,.43f,.31f)));
-        var sign=current.exitSign;
-        PaperChamber.Cartouche(hall,sign,180,plaque,ochre);
-        var canvas=Group(hall,"出口纸牌").gameObject.AddComponent<Canvas>();
-        canvas.renderMode=RenderMode.WorldSpace;
-        canvas.transform.localPosition=sign-Vector3.forward*.046f;
-        canvas.transform.localScale=Vector3.one*.008f;
-        var signRect=(RectTransform)canvas.transform;signRect.sizeDelta=new Vector2(125,100);
-        var lettering=new GameObject("出口",typeof(RectTransform),typeof(Text)).GetComponent<Text>();
-        lettering.rectTransform.SetParent(signRect,false);
-        lettering.rectTransform.sizeDelta=signRect.sizeDelta;
-        lettering.font=status.font;lettering.fontSize=47;lettering.color=Color.white;
-        lettering.alignment=TextAnchor.MiddleCenter;lettering.raycastTarget=false;
-        lettering.text=current.perches.Length==1?"旧巢":"出口";
-        var fronts=new[]{Pigment(new Color(.13f,.48f,.66f)),Pigment(new Color(.78f,.27f,.16f))};
-        var backs=new[]{Pigment(new Color(.60f,.79f,.77f)),ochre};
-        placement=new WorkshopPlacement(transform,fronts,backs,inks[0],inks[2]);
-        motor=Group(transform,"朱雀").gameObject.AddComponent<WorkshopMotor>();
-        motor.Build(placement.Portals);
-        motor.Eyes.gameObject.AddComponent<AudioListener>();
-        birds=new StageBirds(Group(hall,"鸟群"),current,collection,hud,Pigment,onFinish);
-        motor.BuildEquipment(inks[0],inks[2],ochre);
-        preview=Group(transform,"安装预览").gameObject.AddComponent<PlacementPreview>();
-        preview.Build();
-        lighting=gameObject.AddComponent<FerryLighting>();
-        lighting.Initialize(motor.Eyes,exitLamp,current.westWindow);
+        hud = display;
+        layout = stage;
+        current = stage.Definition;
+        finish = onFinish;
+        pauseChanged = onPause;
+        geometry = new WorkshopGeometry(stage);
+        placement = new WorkshopPlacement(transform, windows, devices);
+        motor.Bind(placement.Portals);
     }
 
     public void Begin()
     {
         checkpoint=false;
-        birds.Enter();
-        lighting.ApplyQuality();
+        finished=false;
+        if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset pipeline)
+            pipeline.mainLightShadowmapResolution = GameSettings.Current.shadowResolution;
         Pause(false);
         placement.Portals.Prepare(motor.Eyes);
         Restart();
@@ -121,9 +57,8 @@ public sealed class FerryPuzzle : MonoBehaviour
         selected=WorkshopTool.Gun;
         if(!WorkshopToolSpec.Owned(gear,0))Cycle(1);
         motor.Equip(gear);
-        var spawn=checkpoint?current.checkpointFeet:current.spawnFeet;
-        motor.Spawn(hall.TransformPoint(spawn),checkpoint?current.checkpointYaw:current.spawnYaw,checkpoint?8:-4);
-        birds.ResetPosition(motor.Body.position);
+        Transform spawn=checkpoint?layout.Checkpoint:layout.Spawn;
+        motor.Spawn(spawn.position,spawn.eulerAngles.y,checkpoint?8:-4);
         Physics.SyncTransforms();
         Restarted?.Invoke();
         if(WorkshopToolSpec.Owned(gear,(int)selected))hud.Selected(selected);
@@ -195,13 +130,7 @@ public sealed class FerryPuzzle : MonoBehaviour
             if(other.Valid)aim=other;
         }
         if(fire && owned){
-            if(aim.Valid){
-                placement.Install(slot,aim);
-                if(slot>=2){
-                    if(placement.Installed(2) && placement.Installed(3))hud.Hint((gear & WorkshopGear.Glider)!=0?"踩上弹弹菇，腾空后再次按住空格展开纸翼":"踩上弹弹菇起跳",5);
-                    else hud.Hint(slot==3?"按 2 选择弹弹菇，装到移动纸砖的白色顶面":"按 3 选择风扇，装到槽端的白面",5);
-                }
-            }
+            if(aim.Valid)placement.Install(slot,aim);
             else hud.Hint(aim.reason,1.3f);
         }
         preview.Show(motor.Eyes,selected,aim);
@@ -211,28 +140,29 @@ public sealed class FerryPuzzle : MonoBehaviour
     void FixedUpdate()
     {
         BeforePhysics?.Invoke();
-        if(!enabled)return;
-        var incoming=motor.Body.position;
+        if(!isActiveAndEnabled || finished)return;
+        bool wasGrounded = motor.Grounded;
         motor.Step();
         placement.ApplyDevices(motor.Body,geometry.Bodies);
-        var at=hall.InverseTransformPoint(motor.Body.position);
-        if(at.y<current.spawnFeet.y-14){Restart();return;}
-        if(!checkpoint && motor.Grounded && current.supplyZone.Contains(at)){
+        var at=motor.Body.position;
+        if(at.y<layout.Spawn.position.y-14){Restart();return;}
+        if(!checkpoint && layout.Supply && motor.Grounded && layout.Supply.Contains(at)){
             checkpoint=true;gear|=current.supplyGear;
             motor.Equip(gear);
             if(!WorkshopToolSpec.Owned(gear,(int)selected))Cycle(1);
             hud.Hint(current.supplyHint,7);
         }
-        if(current.perches.Length==0 && motor.Grounded && current.exitZone.Contains(at))finish();
-        else birds.Step(motor,incoming);
+        if(layout.Exit && wasGrounded && motor.Grounded && layout.Exit.Contains(at))
+        {
+            finished=true;
+            finish?.Invoke();
+        }
     }
 
     void LateUpdate()
     {
         motor.Pose();
         placement.Portals.Draw(motor.Eyes);
-        hud.Exit(motor.Eyes,hall.TransformPoint(current.exitSign-Vector3.forward*.06f),current.perches.Length==1?"旧巢":"出口");
     }
 
-    void OnDestroy(){foreach(var m in materials)if(m)Destroy(m);if(fibers)Destroy(fibers);}
 }

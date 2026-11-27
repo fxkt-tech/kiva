@@ -54,8 +54,7 @@ public static class WorkshopReplayBench
     static readonly List<WorkshopInput> pending=new List<WorkshopInput>();
     static int tick,cursor;
     static Rigidbody pushedBrick;
-    static int pushTick,bounceTick,pickupTick;
-    static BirdCollection book;
+    static int pushTick,bounceTick;
     static WorkshopLevel level;
     static WorkshopShortcutSearch search;
     static int wallTick,wallKick,stationaryTick,liftTick;
@@ -165,7 +164,6 @@ public static class WorkshopReplayBench
         if(change==PlayModeStateChange.EnteredEditMode){
             var path=SessionState.GetString(Key+"previousScene","");
             EditorSceneManager.playModeStartScene=string.IsNullOrEmpty(path)?null:AssetDatabase.LoadAssetAtPath<SceneAsset>(path);
-            ClearLedger();
             SessionState.EraseInt(Key+"mode");
             var next=(Mode)SessionState.GetInt(Key+"next",0);
             SessionState.EraseInt(Key+"next");
@@ -216,11 +214,9 @@ public static class WorkshopReplayBench
                 throw new InvalidDataException("回放版本、关卡内容或物理步长已改变，请重新录制。");
         }
 
-        puzzle=BuildSession(level,Finish,out book);
+        puzzle=BuildSession(level,Finish);
         puzzle.CollectInput=input=>{if(PlayerRecording && playback==null)pending.Add(input);};
         puzzle.BeforePhysics=BeforePhysics;
-        // Restart preserves the game's collection ledger but breaks the intended action chain.
-        pickupTick=0;
         retried=false;
         puzzle.Restarted+=()=>{
             pushedBrick=null;pushTick=bounceTick=0;
@@ -267,19 +263,23 @@ public static class WorkshopReplayBench
         }
     }
 
-    internal static FerryPuzzle BuildSession(WorkshopLevel stage,Action finish,out BirdCollection ledger)
+    internal static FerryPuzzle BuildSession(WorkshopLevel stage, Action finish)
     {
-        var folder=Path.Combine(Path.GetTempPath(),"kiva-bench-"+Guid.NewGuid().ToString("N"));
-        SessionState.SetString(Key+"ledger",folder);
-        ledger=new BirdCollection(Path.Combine(folder,"book.json"));
         sessionCanvas=new GameObject("关卡 HUD",typeof(RectTransform),typeof(Canvas)).GetComponent<Canvas>();
         sessionCanvas.renderMode=RenderMode.ScreenSpaceOverlay;
-        var hint=new GameObject("操作提示",typeof(RectTransform),typeof(Text)).GetComponent<Text>();
-        hint.transform.SetParent(sessionCanvas.transform,false);
-        hint.font=NightUi.Body;
-        puzzle=new GameObject(stage.title).AddComponent<FerryPuzzle>();
-        puzzle.Build(hint,stage,ledger,finish,null);
-        puzzle.GetComponent<FerryLighting>().LightGeneratedRooms(stage);
+        T Instance<T>(string name, Transform parent=null) where T:Component
+        {
+            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/"+name+".prefab");
+            return UnityEngine.Object.Instantiate(prefab,parent).GetComponent<T>();
+        }
+        var hud=Instance<WorkshopHud>("GameplayHUD",sessionCanvas.transform);
+        puzzle=Instance<FerryPuzzle>("WorkshopRig");
+        RenderSettings.sun=Instance<Light>("StageLight",puzzle.transform);
+        RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;
+        RenderSettings.ambientLight=new Color(.61f,.64f,.69f);
+        var layout=Instance<WorkshopLayout>("LayoutTemplate",puzzle.transform);
+        layout.Populate(stage,(prefab,parent)=>UnityEngine.Object.Instantiate(prefab,parent));
+        puzzle.Build(hud,layout,finish,null);
         return puzzle;
     }
 
@@ -290,7 +290,6 @@ public static class WorkshopReplayBench
         UnityEngine.Object.Destroy(puzzle.gameObject);
         sessionCanvas.gameObject.SetActive(false);
         UnityEngine.Object.Destroy(sessionCanvas.gameObject);
-        ClearLedger();
     }
 
     internal static void ShowViewPreparation(){
@@ -307,20 +306,9 @@ public static class WorkshopReplayBench
         label.text="正在准备并验证玩家视角回放…";
     }
 
-    static void ClearLedger()
-    {
-        var temp=SessionState.GetString(Key+"ledger","");
-        if(Directory.Exists(temp)){
-            foreach(string name in new[]{"book.json","book.json.bak","book.json.tmp"})File.Delete(Path.Combine(temp,name));
-            Directory.Delete(temp);
-        }
-        SessionState.EraseString(Key+"ledger");
-    }
-
     static void BeforePhysics()
     {
         tick++;
-        if(pickupTick==0 && book.Has(level.stageId,level.perches[0].id))pickupTick=tick-1;
         if(Searching){
             if(retried || tick>480){RejectTrial(retried?"离开场地后重试":"超出单条路线的 480 步预算");return;}
             pending.Add(search.Command(tick,wallKick));
@@ -344,7 +332,7 @@ public static class WorkshopReplayBench
     static void Finish()
     {
         if(mode==Mode.WallControl){FinishControl(true);return;}
-        bool usedBrick=pushTick>0 && bounceTick>=pushTick && pickupTick>=bounceTick;
+        bool usedBrick=pushTick>0 && bounceTick>=pushTick && tick>=bounceTick;
         if(Searching || ShortcutReplay){
             var wall=Searching?search.Wall:playback.wallPoint;
             var spring=Searching?search.Spring:playback.springPoint;
@@ -353,7 +341,7 @@ public static class WorkshopReplayBench
             int launchTick=updraft?liftTick:stationaryTick;
             int impulse=wallSpring?wallKick:wallTick;
             bool wallMatched=!Variant || (impulse>0 && impulse<=launchTick && launchTick-impulse<=12 && Vector3.Distance(wall,actualWall)<.1f);
-            if(retried || fanPushedBrick || launchTick<=0 || pickupTick<launchTick || !wallMatched || Vector3.Distance(spring,actualSpring)>.1f){
+            if(retried || fanPushedBrick || launchTick<=0 || tick<launchTick || !wallMatched || Vector3.Distance(spring,actualSpring)>.1f){
                 if(Searching)RejectTrial($"已结算，墙面风力步 {wallTick}、原位砖顶弹射步 {stationaryTick}、风推砖 {fanPushedBrick}");
                 else ReplayFailed("反例回放未复现相同的作用面和跨越方式。");
                 return;
@@ -385,11 +373,11 @@ public static class WorkshopReplayBench
         if(Searching || ShortcutReplay){
             string assist=Variant?$"侧墙 {actualWall:F2} 在第 {Mathf.Max(wallTick,wallKick)} 步通过{(wallKick>0?"弹弹菇":"风扇")}推动角色，":"";
             string launch=liftTick>0?$"第 {liftTick} 步进入原位砖顶上升风场":$"第 {stationaryTick} 步从原位砖顶弹起";
-            End(true,(Searching?"发现候选":"反例重放成功")+" · "+assist+launch+$"，第 {pickupTick} 步收鸟，已经落地结算，全程未用风推砖。");
+            End(true,(Searching?"发现候选":"反例重放成功")+" · "+assist+launch+$"，第 {tick} 步抵达出口，已经落地结算，全程未用风推砖。");
             return;
         }
         End(true,usedBrick?
-            $"风推砖（第 {pushTick} 步）→ 止挡处砖顶弹射（第 {bounceTick} 步）→ 收鸟（第 {pickupTick} 步）→ 落地结算。":
+            $"风推砖（第 {pushTick} 步）→ 止挡处砖顶弹射（第 {bounceTick} 步）→ 抵达出口（第 {tick} 步）→ 落地结算。":
             "已通关，未观察到完整的推砖弹射链。");
     }
 
@@ -425,18 +413,13 @@ public static class WorkshopReplayBench
     {
         if(search.Number<search.Count){
             SessionState.SetInt(Key+"trial",search.Number);
-            if(!book.Has(level.stageId,level.perches[0].id) && !book.NeedsSave){
-                Debug.Log($"候选 {search.Number}/{search.Count} · {why}");
-                tick=cursor=pickupTick=wallTick=wallKick=stationaryTick=liftTick=0;
-                fanPushedBrick=retried=false;
-                recording.commands.Clear();
-                pending.Clear();
-                search.Next();
-                puzzle.Begin();
-                return;
-            }
-            SessionState.SetInt(Key+"next",(int)mode);
-            End(true,$"候选 {search.Number}/{search.Count} · {why}，继续搜索。");
+            Debug.Log($"候选 {search.Number}/{search.Count} · {why}");
+            tick=cursor=wallTick=wallKick=stationaryTick=liftTick=0;
+            fanPushedBrick=retried=false;
+            recording.commands.Clear();
+            pending.Clear();
+            search.Next();
+            puzzle.Begin();
         }else End(false,$"已采样 {search.Count} 条助跑路线，{why}。未确认此类捷径，唯一性未验证。");
     }
 
