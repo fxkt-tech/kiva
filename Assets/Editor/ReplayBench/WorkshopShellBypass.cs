@@ -22,8 +22,8 @@ internal sealed class WorkshopShellBypass
 
     internal static List<WorkshopTool> Tools(WorkshopGenerationRequest r){
         var tools=new List<WorkshopTool>();
-        // With bamboo enabled the enclosure has no installable face.
-        if(r==null || !r.Enclosed || r.Has(WorkshopModule.Bamboo))return tools;
+        // With a non-installable finish enabled the enclosure has no installable face.
+        if(r==null || !r.Enclosed || r.HasSolidFinish)return tools;
         foreach(var pair in new[]{(WorkshopGear.Gun,WorkshopTool.Gun),(WorkshopGear.Mushroom,WorkshopTool.Mushroom),(WorkshopGear.Fan,WorkshopTool.Fan)})
             if((r.gear&pair.Item1)!=0)tools.Add(pair.Item2);
         return tools;
@@ -44,7 +44,7 @@ internal sealed class WorkshopShellBypass
             var ray=p-eye;
             if(ray.sqrMagnitude>35*35 || !Physics.Raycast(eye,ray.normalized,out var hit,ray.magnitude+.1f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))continue;
             var face=hit.collider.GetComponentInParent<WorkshopFace>();
-            if(!face || !face.White || Mathf.Abs(hit.normal.y)>.1f || (hit.point-p).sqrMagnitude>.025f ||
+            if(!face || !face.AllowsInstallation || Mathf.Abs(hit.normal.y)>.1f || (hit.point-p).sqrMagnitude>.025f ||
                !face.Fits(face.transform.InverseTransformPoint(hit.point),WorkshopToolSpec.For(tool).radius))continue;
             if(excludeNear && Vector3.Distance(exclude,hit.point)<2f)continue;
             float score=(goal-hit.point).sqrMagnitude;

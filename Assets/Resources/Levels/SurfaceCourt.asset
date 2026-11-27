@@ -10,25 +10,45 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c33bf120718af81ad87276ac7b02628b, type: 3}
-  m_Name: BambooCourt
+  m_Name: SurfaceCourt
   m_EditorClassIdentifier: Assembly-CSharp::WorkshopLevel
-  stageId: workshop/bamboo-court
-  title: "\u7AF9\u9762\u6D4B\u8BD5\u573A"
-  description: "\u516D\u683C\u89C1\u65B9\u7684\u7AF9\u9762\u573A\u5730\uFF0C\u5317\u5899\u5DE6\u7AF9\u53F3\u767D\u3002"
-  locationName: "\u7AF9\u9762\u6D4B\u8BD5\u573A"
+  stageId: workshop/surface-court
+  title: "材质试场"
+  description: "四种材质从地面延伸到北墙，各占三格宽。"
+  locationName: "材质试场"
   fixedBricks:
-  - label: "\u7AF9\u9762\u5730\u677F"
+  - label: "地板 · 金属面"
+    start: {x: -6, y: -1, z: -3}
+    size: {x: 3, y: 1, z: 6}
+    faces: 4032
+  - label: "地板 · 岩石面"
     start: {x: -3, y: -1, z: -3}
-    size: {x: 6, y: 1, z: 6}
-    white: 0
-  - label: "\u5317\u5899 \xB7 \u7AF9\u9762"
+    size: {x: 3, y: 1, z: 6}
+    faces: 0
+  - label: "地板 · 白面"
+    start: {x: 0, y: -1, z: -3}
+    size: {x: 3, y: 1, z: 6}
+    faces: 63
+  - label: "地板 · 水晶面"
+    start: {x: 3, y: -1, z: -3}
+    size: {x: 3, y: 1, z: 6}
+    faces: 4095
+  - label: "北墙 · 金属面"
+    start: {x: -6, y: 0, z: 3}
+    size: {x: 3, y: 6, z: 1}
+    faces: 4032
+  - label: "北墙 · 岩石面"
     start: {x: -3, y: 0, z: 3}
     size: {x: 3, y: 6, z: 1}
-    white: 0
-  - label: "\u5317\u5899 \xB7 \u767D\u9762"
+    faces: 0
+  - label: "北墙 · 白面"
     start: {x: 0, y: 0, z: 3}
     size: {x: 3, y: 6, z: 1}
-    white: 63
+    faces: 63
+  - label: "北墙 · 水晶面"
+    start: {x: 3, y: 0, z: 3}
+    size: {x: 3, y: 6, z: 1}
+    faces: 4095
   physicalBricks: []
   spawnFeet: {x: 0, y: 0, z: 0}
   checkpointFeet: {x: 0, y: 0, z: 0}

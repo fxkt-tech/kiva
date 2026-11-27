@@ -176,7 +176,7 @@ public static class WorkshopLevelGenerator
     static string RulesHash()
     {
         var parts=new System.Text.StringBuilder(Application.unityVersion);
-        foreach(var script in new[]{"FerryPuzzle","WorkshopMotor","WorkshopGeometry","PaperTerrain","PaperDevice","WorkshopPlacement","WorkshopLayout","WorkshopBlock"})
+        foreach(var script in new[]{"FerryPuzzle","WorkshopMotor","WorkshopGeometry","PaperTerrain","PaperDevice","WorkshopPlacement","WorkshopLayout","WorkshopBlock","BlockFaces","WorkshopFace"})
             parts.Append(AssetDatabase.GetAssetDependencyHash("Assets/Scripts/"+script+".cs"));
         foreach(var prefab in new[]{"WorkshopRig","LayoutTemplate"})
             parts.Append(AssetDatabase.GetAssetDependencyHash("Assets/Prefabs/"+prefab+".prefab"));
@@ -297,7 +297,7 @@ public static class WorkshopLevelGenerator
             search=new WorkshopShortcutSearch(puzzle,map,false,edge);
             int sample=job.sample;
             regularSearchCount=searchCount=search.Count;
-            if(Spatial && job.request.Enclosed && !job.request.Has(WorkshopModule.Bamboo)){
+            if(Spatial && job.request.Enclosed && !job.request.HasSolidFinish){
                 var walls=new WorkshopShortcutSearch(puzzle,map,true,roomWallsOnly:true);
                 searchCount+=Math.Min(2,walls.Count);
                 if(sample>=regularSearchCount){search=walls;sample-=regularSearchCount;}

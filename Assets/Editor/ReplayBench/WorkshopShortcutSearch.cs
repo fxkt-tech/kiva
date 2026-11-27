@@ -36,7 +36,7 @@ sealed class WorkshopShortcutSearch
         var walls=new List<(Vector3 point,Vector3 normal)>();
         var tops=new List<Vector3>();
         foreach(var face in puzzle.GetComponentsInChildren<WorkshopFace>()){
-            if(!face.White)continue;
+            if(!face.AllowsInstallation)continue;
             var normal=face.transform.forward;
             foreach(var box in face.GetComponentsInChildren<BoxCollider>()){
                 if(!box.isTrigger)continue;

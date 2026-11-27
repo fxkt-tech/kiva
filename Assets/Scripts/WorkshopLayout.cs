@@ -32,23 +32,19 @@ public sealed class WorkshopLayout : MonoBehaviour
             exit = create(exitPrefab, transform).GetComponent<StageZone>();
             SetZone(exit, source.exitZone);
         }
-        var regions = new List<BrickRegion>();
-        foreach (var next in source.fixedBricks)
-        {
-            // Later regions override earlier cells. Split intersecting boxes once during authoring
-            // so rendering and portal installation see the same material at every boundary.
-            var pieces = new List<BrickRegion>();
-            foreach (var old in regions) Subtract(old, next, pieces);
-            pieces.Add(next);
-            regions = pieces;
-        }
-        foreach (var region in regions)
+        // Regions are an authoring shortcut. A later entry paints over the same cell.
+        var cells = new Dictionary<Vector3Int, BrickRegion>();
+        foreach (var region in source.fixedBricks)
+            foreach (var cell in new BoundsInt(region.start, region.size).allPositionsWithin)
+                cells[cell] = region;
+
+        foreach (var entry in cells)
         {
             var block = create(fixedBlock.gameObject, transform).GetComponent<WorkshopBlock>();
-            block.name = region.label;
-            block.transform.localPosition = ((Vector3)region.start + (Vector3)region.size * .5f) * PaperTerrain.Cell;
-            block.transform.localScale = region.size;
-            block.SetFaces(region.white);
+            var cell = entry.Key;
+            block.name = $"{entry.Value.label} ({cell.x},{cell.y},{cell.z})";
+            block.transform.localPosition = ((Vector3)cell + Vector3.one * .5f) * PaperTerrain.Cell;
+            block.SetFaces(entry.Value.faces);
         }
         foreach (var loose in source.physicalBricks)
         {
@@ -56,37 +52,7 @@ public sealed class WorkshopLayout : MonoBehaviour
             block.name = loose.label;
             block.transform.localPosition = ((Vector3)loose.cell + Vector3.one * .5f) * PaperTerrain.Cell;
             block.GetComponent<Rigidbody>().mass = Mathf.Max(.1f, loose.mass);
-            block.SetFaces(loose.white);
-        }
-    }
-
-    static void Subtract(BrickRegion old, BrickRegion next, List<BrickRegion> output)
-    {
-        var lo = old.start;
-        var hi = lo + old.size;
-        var first = Vector3Int.Max(lo, next.start);
-        var last = Vector3Int.Min(hi, next.start + next.size);
-        if (first.x >= last.x || first.y >= last.y || first.z >= last.z)
-        {
-            output.Add(old);
-            return;
-        }
-        for (int axis = 0; axis < 3; axis++)
-        {
-            if (lo[axis] < first[axis])
-            {
-                var end = hi;
-                end[axis] = first[axis];
-                output.Add(new BrickRegion { label = old.label, start = lo, size = end - lo, white = old.white });
-                lo[axis] = first[axis];
-            }
-            if (hi[axis] > last[axis])
-            {
-                var start = lo;
-                start[axis] = last[axis];
-                output.Add(new BrickRegion { label = old.label, start = start, size = hi - start, white = old.white });
-                hi[axis] = last[axis];
-            }
+            block.SetFaces(loose.faces);
         }
     }
 

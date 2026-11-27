@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-[Flags] internal enum WorkshopModule { Fixed=1, Loose=2, White=4, Bamboo=8, All=Fixed|Loose|White|Bamboo }
+[Flags] internal enum WorkshopModule { Fixed=1, Loose=2, White=4, Rock=8, Metal=16, Crystal=32, All=Fixed|Loose|White|Rock|Metal|Crystal }
 internal enum WorkshopAction { Walk, Jump, Push, Spring, Glide, Wind, Portal, LooseSpring }
 internal enum WorkshopSpace { Enclosed, Open }
 internal enum WorkshopGrade { None, Standard, Advanced, Challenge }
@@ -33,16 +33,17 @@ internal sealed class WorkshopGenerationRequest
         "(?:穿过传送门|穿门|传送|用时空枪穿门)"
     };
     public bool Has(WorkshopModule m)=>(modules&m)==m;
+    public bool HasSolidFinish => (modules & (WorkshopModule.Rock | WorkshopModule.Metal | WorkshopModule.Crystal)) != 0;
     public bool Classic=>actions!=null && actions.SequenceEqual(new[]{WorkshopAction.Push,WorkshopAction.Spring});
     public string Description=>string.Join(" → ",actions.Select((a,i)=>
         a==WorkshopAction.Spring && i>0 && actions[i-1]==WorkshopAction.Push?"从同一块砖顶弹射":Names[(int)a]))+" → 抵达出口";
-    public string ModulesText=>string.Join("、",new[]{WorkshopModule.Fixed,WorkshopModule.Loose,WorkshopModule.White,WorkshopModule.Bamboo}
-        .Where(Has).Select(m=>m switch {WorkshopModule.Fixed=>"固定砖",WorkshopModule.Loose=>"活动砖",WorkshopModule.White=>"白面",_=>"竹面"}));
+    public string ModulesText=>string.Join("、",new[]{WorkshopModule.Fixed,WorkshopModule.Loose,WorkshopModule.White,WorkshopModule.Rock,WorkshopModule.Metal,WorkshopModule.Crystal}
+        .Where(Has).Select(m=>m switch {WorkshopModule.Fixed=>"固定砖",WorkshopModule.Loose=>"活动砖",WorkshopModule.White=>"白面",WorkshopModule.Rock=>"岩石面",WorkshopModule.Metal=>"金属面",_=>"水晶面"}));
     public string GearText=>gear==0?"无":string.Join("、",new[]{WorkshopGear.Gun,WorkshopGear.Mushroom,WorkshopGear.Fan,WorkshopGear.Glider}
         .Where(g=>(gear&g)!=0).Select(g=>g switch {WorkshopGear.Gun=>"时空枪",WorkshopGear.Mushroom=>"弹弹菇",WorkshopGear.Fan=>"风扇",_=>"纸翼"}));
 
     internal static WorkshopGenerationRequest Atrium(WorkshopGrade grade,WorkshopSpace space){
-        var r=new WorkshopGenerationRequest{version=3,grade=grade,space=space,modules=WorkshopModule.Fixed|WorkshopModule.White|WorkshopModule.Bamboo};
+        var r=new WorkshopGenerationRequest{version=3,grade=grade,space=space,modules=WorkshopModule.All & ~WorkshopModule.Loose};
         switch(grade){
         case WorkshopGrade.Standard:
             r.gear=WorkshopGear.Gun;r.actions=new[]{WorkshopAction.Portal,WorkshopAction.Jump};break;
@@ -61,7 +62,7 @@ internal sealed class WorkshopGenerationRequest
     {
         var r=new WorkshopGenerationRequest{version=2,modules=modules,gear=gear,sequence=text??"",space=space};
         if(!r.Has(WorkshopModule.Fixed))throw new ArgumentException("当前搭建器需要固定砖承载出生点和出口。");
-        if(!r.Has(WorkshopModule.White) && !r.Has(WorkshopModule.Bamboo))throw new ArgumentException("请至少允许一种表面：白面或竹面。");
+        if(!r.Has(WorkshopModule.White) && !r.HasSolidFinish)throw new ArgumentException("请至少允许一种表面：白面、岩石面、金属面或水晶面。");
         var plan=new List<WorkshopAction>();
         if(string.IsNullOrWhiteSpace(text))plan=r.Plan(seed);
         else{

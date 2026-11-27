@@ -417,9 +417,11 @@ MonoBehaviour:
   - {fileID: 1594268895852945610}
   - {fileID: 6982759576862100439}
   - {fileID: 2610209756644311124}
-  paper: {fileID: 2100000, guid: fc79ec214e574cfa913d4d4172a2eb95, type: 2}
-  bamboo: {fileID: 2100000, guid: de60bee4c2b344aabb3b4074f8866af5, type: 2}
-  white: 0
+  plaster: {fileID: 2100000, guid: fc79ec214e574cfa913d4d4172a2eb95, type: 2}
+  rock: {fileID: 2100000, guid: de60bee4c2b344aabb3b4074f8866af5, type: 2}
+  metal: {fileID: 2100000, guid: ace41db7370448b09246f407f54228b0, type: 2}
+  crystal: {fileID: 2100000, guid: 544bf641a3b744bda56bafe72c02ff1c, type: 2}
+  faces: 0
 --- !u!1 &4475861360679809775
 GameObject:
   m_ObjectHideFlags: 0

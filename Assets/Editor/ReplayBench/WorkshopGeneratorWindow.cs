@@ -21,7 +21,7 @@ internal sealed class WorkshopGeneratorWindow : EditorWindow
     void OnGUI(){
         scroll=EditorGUILayout.BeginScrollView(scroll);
         EditorGUILayout.LabelField("允许的场景模块",EditorStyles.boldLabel);
-        foreach(var (flag,name) in new[]{(WorkshopModule.Fixed,"固定砖"),(WorkshopModule.Loose,"活动砖"),(WorkshopModule.White,"白面"),(WorkshopModule.Bamboo,"竹面")})
+        foreach(var (flag,name) in new[]{(WorkshopModule.Fixed,"固定砖"),(WorkshopModule.Loose,"活动砖"),(WorkshopModule.White,"白面"),(WorkshopModule.Rock,"岩石面"),(WorkshopModule.Metal,"金属面"),(WorkshopModule.Crystal,"水晶面")})
             modules=EditorGUILayout.ToggleLeft(name,(modules&flag)!=0)?modules|flag:modules&~flag;
         EditorGUILayout.Space();EditorGUILayout.LabelField("玩家可用道具",EditorStyles.boldLabel);
         foreach(var (flag,name) in new[]{(WorkshopGear.Gun,"时空枪"),(WorkshopGear.Mushroom,"弹弹菇"),(WorkshopGear.Fan,"风扇"),(WorkshopGear.Glider,"纸翼")})

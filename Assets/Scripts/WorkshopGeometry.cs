@@ -9,14 +9,16 @@ public sealed class WorkshopGeometry
 
     public WorkshopGeometry(WorkshopLayout layout)
     {
-        var fixedCells = new Dictionary<Vector3Int, WhiteFaces>();
+        var fixedCells = new Dictionary<Vector3Int, BlockFaces>();
+        var unitBlocks = new Dictionary<Vector3Int, WorkshopBlock>();
         foreach (var block in layout.GetComponentsInChildren<WorkshopBlock>())
         {
             var t = block.transform;
             if (block.TryGetComponent<Rigidbody>(out var body))
             {
-                var cells = new Dictionary<Vector3Int, WhiteFaces> { { Vector3Int.zero, block.Faces } };
+                var cells = new Dictionary<Vector3Int, BlockFaces> { { Vector3Int.zero, block.Faces } };
                 PaperTerrain.BuildFaces(t, cells, body, -Vector3.one * (PaperTerrain.Cell * .5f));
+                block.AnchorMovingTexture();
                 block.GetComponent<WorkshopBrick>().Seal();
                 body.centerOfMass = Vector3.zero;
                 body.inertiaTensor = Vector3.one * (body.mass * PaperTerrain.Cell * PaperTerrain.Cell / 6f);
@@ -35,7 +37,9 @@ public sealed class WorkshopGeometry
             }
             foreach (var cell in new BoundsInt(start, size).allPositionsWithin)
                 fixedCells[cell] = block.Faces;
+            if (size == Vector3Int.one) unitBlocks[start] = block;
         }
+        foreach (var entry in unitBlocks) entry.Value.HideInternalFaces(entry.Key, fixedCells);
         PaperTerrain.BuildFaces(layout.transform, fixedCells, null, Vector3.zero);
     }
 

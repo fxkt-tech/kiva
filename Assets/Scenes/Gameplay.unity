@@ -750,7 +750,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1253985660094685391, guid: 2ceae77da279004428d0de29e4000e5c, type: 3}
       propertyPath: m_Name
-      value: BambooCourt
+      value: SurfaceCourt
       objectReference: {fileID: 0}
     - target: {fileID: 7135234195848160867, guid: 2ceae77da279004428d0de29e4000e5c, type: 3}
       propertyPath: m_LocalPosition.x

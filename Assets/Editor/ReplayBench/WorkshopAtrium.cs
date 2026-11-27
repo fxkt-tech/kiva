@@ -43,8 +43,8 @@ internal static class WorkshopAtrium
         int width=chain?3:push?4:5, upper=push?3:2, cut=chain?-3:-1, gap=chain?2:1;
         int end=north+2,west=-5,outside=east+width,roof=10;
         var blocks=new List<BrickRegion>();var loose=new List<LooseBrick>();legs=new List<Leg>();
-        void Block(string label,int x,int y,int z,int w,int h,int d,WhiteFaces white=WhiteFaces.Bamboo){
-            blocks.Add(new BrickRegion{label=label,start=new Vector3Int(x,y,z),size=new Vector3Int(w,h,d),white=white});
+        void Block(string label,int x,int y,int z,int w,int h,int d,BlockFaces faces=BlockFaces.Rock){
+            blocks.Add(new BrickRegion{label=label,start=new Vector3Int(x,y,z),size=new Vector3Int(w,h,d),faces=faces});
         }
         void Bank(string label,int x,int z,int w,int d,int top)=>Block(label,x,Bed+1,z,w,top-Bed-1,d);
         void Gallery(string label,int z,int length){
@@ -92,20 +92,20 @@ internal static class WorkshopAtrium
         }else{
             int gateZ=chain?0:north-3;
             Bank("入门工位",0,gateZ,1,3,0);
-            Block("入口门面",0,0,gateZ+1,1,1,1,WhiteFaces.Left);
+            Block("入口门面",0,0,gateZ+1,1,1,1,BlockFaces.WhiteLeft);
             var portal=new Leg{action=WorkshopAction.Portal,approach=At(-2.5f,0,gateZ+.5f),mount=At(0,.5f,gateZ+1.5f),
                 destination=chain?Deck(east,upper,cut+1,width,5):Deck(east,upper,gateZ-2,width,5)};
             if(chain){
                 // The exit discharges straight onto a spring visible from the entrance quay.
                 Bank("北侧弹射工位",0,north-3,4,5,0);
-                Block("出口门面",2,0,north,1,1,1,WhiteFaces.Back);
-                Block("出门弹射白面",2,-1,north-2,1,1,1,WhiteFaces.Top);
+                Block("出口门面",2,0,north,1,1,1,BlockFaces.WhiteBack);
+                Block("出门弹射白面",2,-1,north-2,1,1,1,BlockFaces.WhiteTop);
                 portal.exitMount=At(2.5f,.5f,north);
                 portal.springMount=At(2.5f,0,north-1.5f);portal.exitDirection=Vector3.back;
                 portal.portalSpring=portal.glide=true;
             }else{
                 int wallX=east+width/2;
-                Block("出口门面",wallX,upper,gateZ+1,1,1,1,WhiteFaces.Back);
+                Block("出口门面",wallX,upper,gateZ+1,1,1,1,BlockFaces.WhiteBack);
                 portal.exitMount=At(wallX+.5f,upper+.5f,gateZ+1);
             }
             legs.Add(portal);

@@ -46,21 +46,23 @@ internal static class WorkshopCourseSpace
             var a=Grid(box.min);var b=Grid(box.max);
             return new BoundsInt(Vector3Int.Min(a,b),Vector3Int.Max(a,b)-Vector3Int.Min(a,b));
         }
-        static WhiteFaces Face(Vector3Int v)=>v.x>0?WhiteFaces.Right:v.x<0?WhiteFaces.Left:v.z>0?WhiteFaces.Front:WhiteFaces.Back;
-        WhiteFaces Rotate(WhiteFaces faces){
-            var rotated=faces & (WhiteFaces.Top|WhiteFaces.Bottom);
-            if((faces&WhiteFaces.Right)!=0)rotated|=Face(along);
-            if((faces&WhiteFaces.Left)!=0)rotated|=Face(-along);
-            if((faces&WhiteFaces.Front)!=0)rotated|=Face(side);
-            if((faces&WhiteFaces.Back)!=0)rotated|=Face(-side);
-            return rotated;
+        static int HorizontalSide(Vector3Int direction) =>
+            direction.x > 0 ? 1 : direction.x < 0 ? 0 : direction.z > 0 ? 5 : 4;
+
+        BlockFaces Rotate(BlockFaces faces)
+        {
+            // Vertical sides keep their orientation; rotate the four horizontal normals.
+            return faces.With(HorizontalSide(along), faces.At(1))
+                        .With(HorizontalSide(-along), faces.At(0))
+                        .With(HorizontalSide(side), faces.At(5))
+                        .With(HorizontalSide(-side), faces.At(4));
         }
         internal BrickRegion Tile(BrickRegion tile){
             var bounds=Box(new BoundsInt(tile.start,tile.size));
-            tile.start=bounds.min;tile.size=bounds.size;tile.white=Rotate(tile.white);return tile;
+            tile.start=bounds.min;tile.size=bounds.size;tile.faces=Rotate(tile.faces);return tile;
         }
         internal LooseBrick Brick(LooseBrick brick){
-            brick.cell=Box(new BoundsInt(brick.cell,Vector3Int.one)).min;brick.white=Rotate(brick.white);return brick;
+            brick.cell=Box(new BoundsInt(brick.cell,Vector3Int.one)).min;brick.faces=Rotate(brick.faces);return brick;
         }
         internal void Place(WorkshopCourse.Leg leg){
             var bounds=leg.destination;

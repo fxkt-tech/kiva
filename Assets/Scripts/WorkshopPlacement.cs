@@ -61,7 +61,7 @@ public sealed class WorkshopPlacement
         if(!Physics.Raycast(eye.transform.position,eye.transform.forward,out var hit,35f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Collide))
             return new PlacementAim{reason="需要白面"};
         var face=hit.collider.GetComponentInParent<WorkshopFace>();
-        if(!face || !face.White || Vector3.Dot(face.transform.forward,hit.normal)<.95f)
+        if(!face || !face.AllowsInstallation || Vector3.Dot(face.transform.forward,hit.normal)<.95f)
             return new PlacementAim{reason="需要白面"};
         return Check(face,hit.point,slot);
     }
@@ -70,7 +70,7 @@ public sealed class WorkshopPlacement
     {
         var mount=new SurfaceMount{face=face,local=face.transform.InverseTransformPoint(world),radius=WorkshopToolSpec.ForMount(slot).radius};
         var aim=new PlacementAim{mount=mount};
-        if(!face.White)aim.reason="需要白面";
+        if(!face.AllowsInstallation)aim.reason="需要白面";
         else if(!face.Fits(mount.local,mount.radius))aim.reason="边缘空间不足";
         else for(int i=0;i<mounts.Length;i++){
             var other=mounts[i];

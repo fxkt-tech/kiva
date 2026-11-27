@@ -4,17 +4,18 @@ using UnityEngine;
 // One coordinate system for coplanar faces of one kind on the same rigid host.
 public sealed class WorkshopFace : MonoBehaviour
 {
-    public bool White { get; private set; }
+    public SurfaceKind Kind { get; private set; }
+    public bool AllowsInstallation => Kind.AllowsInstallation();
     public Rigidbody Host { get; private set; }
     HashSet<Vector2Int> tiles;
     readonly List<PortalSurfaceCollider> colliders=new List<PortalSurfaceCollider>();
     Rect rectangle;
     const float Cell=PaperTerrain.Cell;
 
-    public void Build(HashSet<Vector2Int> cells,bool white,Rigidbody host)
+    public void Build(HashSet<Vector2Int> cells,SurfaceKind kind,Rigidbody host)
     {
         tiles=cells;
-        White=white;
+        Kind=kind;
         Host=host;
         var remaining=new HashSet<Vector2Int>(cells);
         var ordered=new List<Vector2Int>(cells);
@@ -34,9 +35,9 @@ public sealed class WorkshopFace : MonoBehaviour
         }
     }
 
-    public void Build(Rect bounds, bool white)
+    public void Build(Rect bounds, SurfaceKind kind)
     {
-        White = white;
+        Kind = kind;
         rectangle = bounds;
         AddPatch(bounds);
     }
@@ -45,13 +46,13 @@ public sealed class WorkshopFace : MonoBehaviour
     {
         var patch = new GameObject("面碰撞").AddComponent<PortalSurfaceCollider>();
         patch.transform.SetParent(transform, false);
-        patch.Initialize(bounds, White || Host);
+        patch.Initialize(bounds, AllowsInstallation || Host);
         colliders.Add(patch);
     }
 
     public bool Fits(Vector2 center,float radius)
     {
-        if(!White)return false;
+        if(!AllowsInstallation)return false;
         // A tangent tile edge counts as fitting, even on a rotated physical brick.
         float r=radius-.0002f;
         if (tiles == null)

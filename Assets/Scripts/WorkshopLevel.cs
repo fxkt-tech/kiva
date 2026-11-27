@@ -1,8 +1,6 @@
 using System;
 using UnityEngine;
-
-[Flags]
-public enum WhiteFaces { Bamboo=0, Left=1, Right=2, Bottom=4, Top=8, Back=16, Front=32, All=63 }
+using UnityEngine.Serialization;
 
 [Flags]
 public enum WorkshopGear { None=0, Gun=1, Mushroom=2, Fan=4, Glider=8, All=15 }
@@ -12,7 +10,7 @@ public struct BrickRegion
 {
     public string label;
     public Vector3Int start, size;
-    public WhiteFaces white;
+    [FormerlySerializedAs("white")] public BlockFaces faces;
 }
 
 [Serializable]
@@ -20,7 +18,7 @@ public struct LooseBrick
 {
     public string label;
     public Vector3Int cell;
-    public WhiteFaces white;
+    [FormerlySerializedAs("white")] public BlockFaces faces;
     [Min(.1f)] public float mass;
 }
 

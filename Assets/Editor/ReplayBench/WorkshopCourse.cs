@@ -23,8 +23,8 @@ internal static class WorkshopCourse
         public Vector3 Forward=>WorkshopCourseSpace.Axis(heading);
         public Vector3 Side=>new Vector3(-Forward.z,0,Forward.x);
     }
-    static BrickRegion Region(string name,int x,int y,int z,int w,int h,int d,WhiteFaces faces=WhiteFaces.Bamboo)=>
-        new BrickRegion{label=name,start=new Vector3Int(x,y,z),size=new Vector3Int(w,h,d),white=faces};
+    static BrickRegion Region(string name,int x,int y,int z,int w,int h,int d,BlockFaces faces=BlockFaces.Rock)=>
+        new BrickRegion{label=name,start=new Vector3Int(x,y,z),size=new Vector3Int(w,h,d),faces=faces};
 
     static void Recess(List<BrickRegion> blocks,int edge,int height,int lane){
         // Split the runway around the moving brick so the rigidbody has its own supporting tile.
@@ -41,11 +41,11 @@ internal static class WorkshopCourse
     internal static void Channel(List<BrickRegion> blocks,List<LooseBrick> bricks,Vector3Int at,int start,int stop){
         int x=at.x,y=at.y,z=at.z;
         blocks.Add(Region("直槽底板",x,y-1,z,1,1,stop));
-        blocks.Add(Region("风扇安装面",x,y,z-1,1,1,1,WhiteFaces.Front));
+        blocks.Add(Region("风扇安装面",x,y,z-1,1,1,1,BlockFaces.WhiteFront));
         blocks.Add(Region("起步侧台",x-2,y,z,2,1,stop+1));
         blocks.Add(Region("槽边",x+1,y,z,1,1,stop));
         blocks.Add(Region("止挡",x,y,z+stop,1,1,1));
-        bricks.Add(new LooseBrick{label="风槽纸砖",cell=at+new Vector3Int(0,0,start),mass=2,white=WhiteFaces.Top});
+        bricks.Add(new LooseBrick{label="风槽纸砖",cell=at+new Vector3Int(0,0,start),mass=2,faces=BlockFaces.WhiteTop});
     }
     internal static WorkshopLevel Map(WorkshopGenerationRequest r,string id,string title,List<BrickRegion> blocks,List<LooseBrick> bricks,Vector3 spawn,Vector3 goal,float yaw){
         var map=ScriptableObject.CreateInstance<WorkshopLevel>();
@@ -53,10 +53,23 @@ internal static class WorkshopCourse
         map.entryHint=r.Description;map.startingGear=r.gear;map.exitFeet=goal;
         map.exitZone=new Bounds(goal+Vector3.up*.45f,new Vector3(1.5f,1.1f,1.5f));
         map.fixedBricks=blocks.ToArray();map.physicalBricks=bricks.ToArray();
-        if(!r.Has(WorkshopModule.Bamboo)){
-            for(int i=0;i<map.fixedBricks.Length;i++)map.fixedBricks[i].white=WhiteFaces.All;
-            for(int i=0;i<map.physicalBricks.Length;i++)map.physicalBricks[i].white=WhiteFaces.All;
+        var finishes = new List<SurfaceKind>();
+        if (r.Has(WorkshopModule.Rock)) finishes.Add(SurfaceKind.Rock);
+        if (r.Has(WorkshopModule.Metal)) finishes.Add(SurfaceKind.Metal);
+        if (r.Has(WorkshopModule.Crystal)) finishes.Add(SurfaceKind.Crystal);
+        if (finishes.Count == 0) finishes.Add(SurfaceKind.Plaster);
+        BlockFaces Paint(BlockFaces authored, int index)
+        {
+            var finish = finishes[index % finishes.Count];
+            for (int side = 0; side < 6; side++)
+                if (authored.At(side) == SurfaceKind.Rock || !r.Has(WorkshopModule.White))
+                    authored = authored.With(side, finish);
+            return authored;
         }
+        for (int i = 0; i < map.fixedBricks.Length; i++)
+            map.fixedBricks[i].faces = Paint(map.fixedBricks[i].faces, i);
+        for (int i = 0; i < map.physicalBricks.Length; i++)
+            map.physicalBricks[i].faces = Paint(map.physicalBricks[i].faces, i + map.fixedBricks.Length);
         return map;
     }
     internal static WorkshopLevel PushMap(WorkshopGenerationRequest r,string id,WorkshopGenerationReport.Layout layout){
@@ -108,19 +121,19 @@ internal static class WorkshopCourse
             case WorkshopAction.LooseSpring:
                 if(leg.action==WorkshopAction.LooseSpring){
                     Recess(tiles,edge,height,lane);
-                    loose.Add(new LooseBrick{label="弹射活动砖",cell=new Vector3Int(edge-1,height-1,lane),mass=2,white=WhiteFaces.Top});
-                }else tiles.Add(Region("弹射白面",edge-1,height-1,lane,1,1,1,WhiteFaces.Top));
+                    loose.Add(new LooseBrick{label="弹射活动砖",cell=new Vector3Int(edge-1,height-1,lane),mass=2,faces=BlockFaces.WhiteTop});
+                }else tiles.Add(Region("弹射白面",edge-1,height-1,lane,1,1,1,BlockFaces.WhiteTop));
                 near+=leg.glide?random.Next(9,11):random.Next(4,6);height+=leg.glide?0:2;
                 break;
             case WorkshopAction.Wind:
-                tiles.Add(Region("顺风安装面",edge-5,height,lane+1,1,1,1,WhiteFaces.Right));
+                tiles.Add(Region("顺风安装面",edge-5,height,lane+1,1,1,1,BlockFaces.WhiteRight));
                 leg.approach=new Vector3((edge-2.5f)*Cell,height*Cell,line+Cell);
                 leg.mount=new Vector3((edge-4)*Cell,(height+.5f)*Cell,line+Cell);
                 int windLeg=legs.Count;
                 near+=3+Math.Min(2,bypasses.Count(n=>n==windLeg));height--;
                 break;
             case WorkshopAction.Portal:
-                tiles.Add(Region("入口门面",edge-1,height,lane+1,1,1,1,WhiteFaces.Left));
+                tiles.Add(Region("入口门面",edge-1,height,lane+1,1,1,1,BlockFaces.WhiteLeft));
                 leg.mount=new Vector3((edge-1)*Cell,(height+.5f)*Cell,line+Cell);
                 near+=random.Next(4,7);height+=2;
                 leg.exitMount=new Vector3((near+1.5f)*Cell,(height+.5f)*Cell,(lane+1)*Cell);
@@ -136,7 +149,7 @@ internal static class WorkshopCourse
                 if(leg.brickSpring){near=at.x+(leg.glide?10:4);height+=3;lane=at.z+(leg.glide?7:8);depth=7;}
                 else{
                     near=at.x+2;lane=at.z+3;
-                    tiles.Add(Region("移开风扇的位置",at.x-2,at.y,at.z+stop-2,1,1,1,WhiteFaces.Top));
+                    tiles.Add(Region("移开风扇的位置",at.x-2,at.y,at.z+stop-2,1,1,1,BlockFaces.WhiteTop));
                     leg.exitMount=leg.origin+new Vector3(-1.5f*Cell,Cell,(stop-1.5f)*Cell);
                 }
                 break;
@@ -144,7 +157,7 @@ internal static class WorkshopCourse
             int low=lane-depth/2;
             tiles.Add(Region("落脚台 "+(legs.Count+1),near,height-1,low,width,1,depth));
             if(leg.action==WorkshopAction.Portal)
-                tiles.Add(Region("出口门面",near+1,height,lane+1,1,1,1,WhiteFaces.Back));
+                tiles.Add(Region("出口门面",near+1,height,lane+1,1,1,1,BlockFaces.WhiteBack));
             leg.destination=new Bounds(new Vector3((near+width*.5f)*Cell,height*Cell,(low+depth*.5f)*Cell),new Vector3(width*Cell,.2f,depth*Cell));
             goal=new Vector3(leg.destination.max.x-2*Cell,leg.destination.center.y,leg.destination.center.z);
             if(r.version>=2){
