@@ -12,11 +12,19 @@ public sealed class GameSettings
     public int fieldOfView=70,portalDepth=-1,frameCap;
     public bool vSync=true;
     public int shadowResolution=2048;
-    // The launch resolution and window mode are kept until the player chooses otherwise.
     public bool customDisplay,windowed;
     public int width,height;
     public bool crosshair=true,exitGuide=true,hints=true,birdDirections=true;
 
+    static readonly Vector2Int DefaultResolutionLimit=new Vector2Int(2560,1440);
+    internal static readonly (string name,Vector2Int size)[] ResolutionPresets={
+        ("1080P",new Vector2Int(1920,1080)),
+        ("2K",DefaultResolutionLimit),
+        ("4K",new Vector2Int(3840,2160))
+    };
+    FullScreenMode launchMode;
+    int displayRequest;
+    internal bool DisplayChanging { get; private set; }
     static GameSettings current,defaults;
     public static GameSettings Current=>current??=Load();
     public static GameSettings Defaults=>defaults??=new GameSettings().Normalised();
@@ -24,6 +32,7 @@ public sealed class GameSettings
 
     GameSettings Normalised()
     {
+        launchMode=Screen.fullScreenMode;
         if(portalDepth<0)portalDepth=Resources.Load<PortalRenderSettings>("Portals/Rendering").MaxDepth;
         sensitivity=Mathf.Clamp(sensitivity,.2f,3);
         fieldOfView=Mathf.Clamp(fieldOfView,60,100);
@@ -61,29 +70,58 @@ public sealed class GameSettings
         Application.targetFrameRate=frameCap>0?frameCap:-1;
     }
 
+    static Vector2Int DefaultResolution(int desktopWidth,int desktopHeight)
+    {
+        var limit=DefaultResolutionLimit;
+        float scale=Mathf.Min(1f,Mathf.Min((float)limit.x/desktopWidth,(float)limit.y/desktopHeight));
+        return new Vector2Int(Mathf.Max(1,Mathf.RoundToInt(desktopWidth*scale)),
+            Mathf.Max(1,Mathf.RoundToInt(desktopHeight*scale)));
+    }
+
+    public Vector2Int Resolution
+    {
+        get {
+            if(width>0 && height>0)return new Vector2Int(width,height);
+            var display=Screen.mainWindowDisplayInfo;
+            if(display.width>0 && display.height>0)return DefaultResolution(display.width,display.height);
+            return DefaultResolution(Mathf.Max(1,Screen.width),Mathf.Max(1,Screen.height));
+        }
+    }
+
     public void ApplyDisplay()
     {
-        if(!customDisplay)return;
-        var mode=windowed?FullScreenMode.Windowed:FullScreenMode.FullScreenWindow;
-        if(width>0 && height>0)Screen.SetResolution(width,height,mode);
-        else Screen.fullScreenMode=mode;
+        var mode=customDisplay?(windowed?FullScreenMode.Windowed:FullScreenMode.FullScreenWindow):launchMode;
+        RequestDisplay(Resolution,mode);
     }
+
+    internal async void RequestDisplay(Vector2Int size,FullScreenMode mode)
+    {
+        int request=++displayRequest;
+        DisplayChanging=true;
+        Screen.SetResolution(size.x,size.y,mode);
+        // Windows can send a desktop-sized resize after applying the request,
+        // especially on startup or when changing window modes.
+        for(int i=0;i<3;i++)await Awaitable.NextFrameAsync();
+        if(request!=displayRequest)return;
+        if(Screen.width!=size.x || Screen.height!=size.y || Screen.fullScreenMode!=mode){
+            Screen.SetResolution(size.x,size.y,mode);
+            await Awaitable.NextFrameAsync();
+        }
+        if(request==displayRequest)DisplayChanging=false;
+    }
+
+    public void SetResolution(Vector2Int size){width=size.x;height=size.y;}
 
     void StepResolution(int direction)
     {
-        var sizes=new List<Vector2Int>();
-        foreach(var r in Screen.resolutions){
-            var size=new Vector2Int(r.width,r.height);
-            if(!sizes.Contains(size))sizes.Add(size);
-        }
-        if(sizes.Count==0)return;
-        var now=width>0?new Vector2Int(width,height):new Vector2Int(Screen.width,Screen.height);
-        int index=sizes.IndexOf(now);
-        index=index<0?sizes.Count-1:(index+direction+sizes.Count)%sizes.Count;
-        width=sizes[index].x;height=sizes[index].y;customDisplay=true;
+        var now=Resolution;
+        var available=new HashSet<Vector2Int>{now};
+        foreach(var preset in ResolutionPresets)available.Add(preset.size);
+        foreach(var r in Screen.resolutions)available.Add(new Vector2Int(r.width,r.height));
+        var sizes=new List<Vector2Int>(available);
+        sizes.Sort((a,b)=>a.x==b.x?a.y.CompareTo(b.y):a.x.CompareTo(b.x));
+        SetResolution(sizes[(sizes.IndexOf(now)+direction+sizes.Count)%sizes.Count]);
     }
-
-    void ForgetDisplay(){customDisplay=false;width=height=0;}
 
     // The single definition table. Both screens are generated from it; lobby-only rows are
     // hidden inside a level.
@@ -108,10 +146,10 @@ public sealed class GameSettings
             .LobbyOnly().Help("西窗日光投影的清晰度。进入关卡时生效。"),
         new SettingItem(SettingItem.Kind.Options,"画面","显示模式",new[]{"窗口","全屏"},0,
             s=>(s.customDisplay?!s.windowed:Screen.fullScreen)?1:0,(s,i)=>{s.windowed=i==0;s.customDisplay=true;},null)
-            .Display(s=>s.customDisplay,s=>s.ForgetDisplay()).Help("窗口或无边框全屏。改动后需要确认，10 秒不确认自动还原。"),
-        new SettingItem(SettingItem.Kind.Stepper,"画面","分辨率",null,0,null,(s,d)=>s.StepResolution(d),
-            s=>s.width>0?s.width+" × "+s.height:Screen.width+" × "+Screen.height)
-            .Display(s=>s.width>0,s=>s.ForgetDisplay()).Help("游戏画面的像素尺寸。改动后需要确认，10 秒不确认自动还原。"),
+            .Display(s=>s.customDisplay,s=>s.customDisplay=false).LobbyOnly().Help("窗口或无边框全屏。改动后需要确认，10 秒不确认自动还原。"),
+        new SettingItem(SettingItem.Kind.Resolution,"画面","画面尺寸",null,0,null,(s,d)=>s.StepResolution(d),
+            s=>{var size=s.Resolution;return size.x+" × "+size.y;})
+            .Display(s=>s.width>0 && s.height>0,s=>s.width=s.height=0).Help("默认按屏幕尺寸，最高 2K。用 − / ＋ 可选其他分辨率。"),
         SettingItem.Toggle("界面","鸟鸣方位",s=>s.birdDirections,(s,v)=>s.birdDirections=v)
             .Help("附近有未入卷的小鸟鸣叫时，在屏幕边缘显示一枚白羽。"),
         SettingItem.Toggle("界面","准星",s=>s.crosshair,(s,v)=>s.crosshair=v)
@@ -123,16 +161,16 @@ public sealed class GameSettings
     };
 }
 
-// Slider: Index runs over 0..steps. Options: Index picks one of names. Stepper: Choose takes a direction.
+// Resolution arrows step through display modes. Other controls select an option or slider index.
 public sealed class SettingItem
 {
-    public enum Kind { Slider, Options, Stepper }
+    public enum Kind { Slider, Options, Resolution }
     public readonly Kind kind;
     public readonly string category,label;
     public readonly string[] names;
     public readonly int steps;
     public string section,help;
-    // Display rows change the window itself: lobby only, and confirmed before they are kept.
+    // Changes to the actual window are previewed before they are saved.
     public bool lobbyOnly,display;
     readonly Func<GameSettings,int> index;
     readonly Action<GameSettings,int> choose;
@@ -152,7 +190,7 @@ public sealed class SettingItem
     public SettingItem LobbyOnly(){lobbyOnly=true;return this;}
     public SettingItem Display(Func<GameSettings,bool> isChanged,Action<GameSettings> forget)
     {
-        lobbyOnly=display=true;changed=isChanged;reset=forget;return this;
+        display=true;changed=isChanged;reset=forget;return this;
     }
 
     public int Index=>index(GameSettings.Current);
@@ -169,13 +207,11 @@ public sealed class SettingItem
         if(save)settings.Save();
     }
 
-    public void Reset()
+    public void ResetValue()
     {
         var settings=GameSettings.Current;
         if(reset!=null)reset(settings);
         else choose(settings,index(GameSettings.Defaults));
-        settings.Apply();
-        settings.Save();
     }
 
     public static SettingItem Slider(string category,string label,Func<GameSettings,float> get,Action<GameSettings,float> set,

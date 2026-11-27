@@ -47,7 +47,7 @@ public sealed class SettingsPanel : MonoBehaviour
         {
             var saved=GameSettings.Current;
             saved.customDisplay=custom;saved.windowed=windowed;saved.width=width;saved.height=height;
-            Screen.SetResolution(visibleWidth,visibleHeight,mode);
+            saved.RequestDisplay(new Vector2Int(visibleWidth,visibleHeight),mode);
         }
     }
 
@@ -309,6 +309,19 @@ public sealed class SettingsPanel : MonoBehaviour
 
     void StepRow(Transform row,SettingItem item)
     {
+        if(item.kind==SettingItem.Kind.Resolution){
+            var settings=GameSettings.Current;
+            var currentSize=settings.Resolution;
+            for(int i=0;i<GameSettings.ResolutionPresets.Length;i++){
+                var preset=GameSettings.ResolutionPresets[i];
+                string key=item.label+"/"+preset.name;
+                var button=ActionStamp(row,preset.name,175+i*105,1,97,38,()=>{
+                    if(settings.width==preset.size.x && settings.height==preset.size.y)return;
+                    PreviewDisplay(()=>{settings.SetResolution(preset.size);settings.ApplyDisplay();},key);
+                },currentSize==preset.size);
+                button.name=key;
+            }
+        }
         Label(row,item.Value,568,0,231,40,19,BodyInk,Body,TextAnchor.MiddleCenter);
         foreach(int increment in new[]{-1,1})
         {
@@ -316,7 +329,7 @@ public sealed class SettingsPanel : MonoBehaviour
             string sign=offset<0?"−":"＋";
             string key=item.label+sign;
             var button=ActionStamp(row,sign,offset<0?500:801,0,53,39,()=>{
-                int value=item.kind==SettingItem.Kind.Stepper?offset:Mathf.Clamp(item.Index+offset,0,item.steps);
+                int value=item.kind==SettingItem.Kind.Resolution?offset:Mathf.Clamp(item.Index+offset,0,item.steps);
                 Change(item,value,key);
             });
             button.name=key;
@@ -344,14 +357,19 @@ public sealed class SettingsPanel : MonoBehaviour
 
     void Change(SettingItem item,int choice,string focusName)
     {
-        if(item.display)before=DisplaySnapshot.Capture();
-        item.Choose(choice,!item.display);
+        if(item.display){
+            PreviewDisplay(()=>item.Choose(choice,false),focusName);
+            return;
+        }
+        item.Choose(choice);
         Draw(rows.anchoredPosition.y,focusName);
-        if(item.display)ConfirmDisplay();
     }
 
-    void ConfirmDisplay()
+    void PreviewDisplay(Action apply,string focusName=null)
     {
+        before=DisplaySnapshot.Capture();
+        apply();
+        Draw(rows.anchoredPosition.y,focusName);
         pending=true;
         deadline=Time.unscaledTime+DefaultSeconds;
         controls.interactable=false;
@@ -369,21 +387,35 @@ public sealed class SettingsPanel : MonoBehaviour
     }
 
     void UpdateTimer(float seconds)
-        =>timer.text="保留当前显示设置？　 "+Mathf.CeilToInt(seconds)+" 秒后还原";
+        =>timer.text=GameSettings.Current.DisplayChanging?"正在切换画面尺寸…":
+            $"保留 {Screen.width} × {Screen.height}？　{Mathf.CeilToInt(seconds)} 秒后还原";
 
     void Resolve(bool keep)
     {
+        var settings=GameSettings.Current;
+        if(keep && settings.DisplayChanging)return;
         if(!keep)before.Restore();
-        GameSettings.Current.Save();
+        else if(settings.width>0 && settings.height>0)
+            settings.SetResolution(new Vector2Int(Screen.width,Screen.height));
+        settings.Save();
         pending=false;
         Draw(rows.anchoredPosition.y);
     }
 
     void ResetCategory()
     {
-        foreach(var item in GameSettings.Items)
-            if(item.category==category && !(level && item.lobbyOnly))item.Reset();
-        Draw();
+        var items=Array.FindAll(GameSettings.Items,item=>item.category==category && !(level && item.lobbyOnly));
+        void ResetPage(){
+            foreach(var item in items)item.ResetValue();
+            GameSettings.Current.Apply();
+        }
+        if(Array.Exists(items,item=>item.display && item.Changed)){
+            PreviewDisplay(()=>{ResetPage();GameSettings.Current.ApplyDisplay();});
+        }else{
+            ResetPage();
+            GameSettings.Current.Save();
+            Draw();
+        }
     }
 
     public void Notice(string value)
