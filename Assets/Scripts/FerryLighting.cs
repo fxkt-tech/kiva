@@ -64,9 +64,9 @@ public sealed class FerryLighting : MonoBehaviour
             pipeline.mainLightShadowmapResolution = GameSettings.Current.shadowResolution;
     }
 
-    public void Initialize(Camera eyes, Transform exitLamp)
+    public void Initialize(Camera eyes, Transform exitLamp, bool westWindow = false)
     {
-        LightRooms();
+        LightRooms(westWindow);
         LightLanterns(exitLamp);
         ConfigureViews();
         PositionLantern();
@@ -99,13 +99,13 @@ public sealed class FerryLighting : MonoBehaviour
         }
     }
 
-    void LightRooms()
+    void LightRooms(bool westWindow)
     {
         // The real west aperture and its muntins shape the directional light through the
         // non-shadow-casting window paper.
         var sun=AddLight(transform,"西窗日光",Vector3.zero,LightType.Directional,
             new Color(1f,.94f,.82f),LightUnit.Lux,1300);
-        sun.transform.localRotation=Quaternion.LookRotation(new Vector3(1f,-.67f,.28f));
+        sun.transform.localRotation=Quaternion.LookRotation(westWindow ? new Vector3(1f,-.19f,.86f) : new Vector3(1f,-.67f,.28f));
         sun.shadows=LightShadows.Soft;
         sun.shadowNearPlane=.08f;
         sun.shadowStrength=.9f;

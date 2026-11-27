@@ -8,10 +8,11 @@ Shader "Kiva/Transmitted Window Paper"
     }
     SubShader
     {
-        Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" }
+        Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Transparent" "Queue"="Transparent" }
         Pass
         {
-            Cull Off
+            Cull Off ZWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
@@ -36,7 +37,7 @@ Shader "Kiva/Transmitted Window Paper"
             {
                 half thickness = SAMPLE_TEXTURE2D(_ThicknessMap, sampler_ThicknessMap, input.uv).r;
                 half3 paper = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.fibreUV).rgb;
-                return half4(_Transmission.rgb * lerp(1.35h, 0.58h, thickness) * pow(paper, 1.6h), 1);
+                return half4(_Transmission.rgb * lerp(1.35h, 0.58h, thickness) * pow(paper, 1.6h), .018h + thickness * .052h);
             }
             ENDHLSL
         }

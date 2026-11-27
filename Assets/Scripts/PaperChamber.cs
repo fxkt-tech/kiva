@@ -47,18 +47,11 @@ public static class PaperChamber
         var seal=new GameObject("窗内挡板").AddComponent<BoxCollider>();
         seal.transform.SetParent(root,false);seal.transform.localPosition=new Vector3(wall-.12f,(head+sill)*.5f,midZ);
         seal.size=new Vector3(.18f,head-sill,far-near);
-        for(int i=0;i<=5;i++){
-            float z=near+i*Cell;
-            Beam(root,"窗梃",new Vector3(wall+.045f,(head+sill)*.5f,z),new Vector3(.28f,head-sill+.17f,.135f),wood);
-            Beam(root,"窗梃亮边",new Vector3(wall+.19f,(head+sill)*.5f,z-.055f),new Vector3(.018f,head-sill,.020f),ochre);
-        }
-        for(int i=1;i<=6;i++){
-            float y=sill+i*(head-sill)/7;
-            Beam(root,"横向窗棂",new Vector3(wall+.07f,y,midZ),new Vector3(.25f,.083f,far-near),wood);
-        }
-        foreach(float y in new[]{sill,head}){
-            Beam(root,"朱木窗框",new Vector3(wall+.09f,y,midZ),new Vector3(.41f,.19f,far-near+.38f),wood);
-            Beam(root,"赭金压条",new Vector3(wall+.31f,y+.072f,midZ),new Vector3(.052f,.045f,far-near+.44f),ochre);
+        ValleyScenery.WindowArch(root,new Vector3(wall+.05f,sill,midZ),width,height-.12f);
+        // Two slender mullions keep the glazed boundary legible against the valley.
+        for(int i=1;i<=2;i++){
+            float z=Mathf.Lerp(near,far,i/3f);
+            Beam(root,"木窗梃",new Vector3(wall+.04f,(head+sill)*.5f,z),new Vector3(.13f,height,.07f),wood);
         }
         Beam(root,"金纸窗台",new Vector3(wall+.21f,sill-.13f,midZ),new Vector3(.64f,.12f,far-near+.54f),ochre);
     }

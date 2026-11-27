@@ -65,7 +65,7 @@ public sealed class FerryPuzzle : MonoBehaviour
         finish=onFinish;hud=new WorkshopHud(status);
         var inks=FaceInks();
         hall=Group(transform,current.title);
-        geometry=new WorkshopGeometry(current,hall,inks);
+        geometry=new WorkshopGeometry(current,hall);
         var ochre=Pigment(FerryLighting.OchreBack);
         if(current.westWindow){
             var wood=Keep(FerryLighting.Mineral("Timber",new Color(.79f,.46f,.23f)));
@@ -99,7 +99,7 @@ public sealed class FerryPuzzle : MonoBehaviour
         preview=Group(transform,"安装预览").gameObject.AddComponent<PlacementPreview>();
         preview.Build();
         lighting=gameObject.AddComponent<FerryLighting>();
-        lighting.Initialize(motor.Eyes,exitLamp);
+        lighting.Initialize(motor.Eyes,exitLamp,current.westWindow);
     }
 
     public void Begin()

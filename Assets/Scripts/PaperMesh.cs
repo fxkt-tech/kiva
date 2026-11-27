@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 public sealed class PaperMesh : MonoBehaviour
 {
     Mesh ownedMesh;
+    public void Own(Mesh mesh) => ownedMesh=mesh;
     void OnDestroy() { if (ownedMesh) Destroy(ownedMesh); }
 
     public sealed class Builder
@@ -59,7 +60,7 @@ public sealed class PaperMesh : MonoBehaviour
             mesh.RecalculateNormals();mesh.RecalculateTangents();mesh.RecalculateBounds();
             go.GetComponent<MeshFilter>().sharedMesh=mesh;
             go.GetComponent<MeshRenderer>().sharedMaterials=visible.ToArray();
-            go.AddComponent<PaperMesh>().ownedMesh=mesh;
+            go.AddComponent<PaperMesh>().Own(mesh);
             return go;
         }
     }
